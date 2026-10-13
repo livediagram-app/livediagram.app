@@ -102,8 +102,8 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
     {
       id: 'slides',
       name: 'Slides',
-      line: 'Decks and carousels, one idea to a page.',
-      kinds: ['blank-slide-deck', 'slide-deck', 'social-carousel'],
+      line: 'Decks to present, one idea to a slide.',
+      kinds: ['blank-slide-deck', 'slide-deck'],
     },
     {
       id: 'infographics',
@@ -119,9 +119,9 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
     },
     {
       id: 'posters',
-      name: 'Posters',
-      line: 'Posters and cards to print, pin up or send.',
-      kinds: ['event-poster', 'live-card'],
+      name: 'Posters and Social',
+      line: 'Posters, cards and social posts to print, pin up or share.',
+      kinds: ['event-poster', 'social-carousel', 'live-card'],
     },
     {
       id: 'logos',

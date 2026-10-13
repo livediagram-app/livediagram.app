@@ -59,15 +59,19 @@ describe('Start Facilitating', () => {
 });
 
 describe('Start Illustrating', () => {
-  it('groups by what is made: Slides, Infographics, Articles, Posters, Logos', () => {
+  it('groups by what is made: Slides, Infographics, Articles, Posters and Social, Logos', () => {
     expect(TEMPLATE_STARTS.illustrate.groups.map((g) => g.name)).toEqual([
       'Recommended',
       'Slides',
       'Infographics',
       'Articles',
-      'Posters',
+      'Posters and Social',
       'Logos',
     ]);
+    // A carousel is posted, not presented.
+    const group = (id: string) => TEMPLATE_STARTS.illustrate.groups.find((g) => g.id === id)!.kinds;
+    expect(group('slides')).not.toContain('social-carousel');
+    expect(group('posters')).toContain('social-carousel');
     expect(TEMPLATE_STARTS.illustrate.blank).toBe('blank-illustration');
   });
 
@@ -82,14 +86,12 @@ describe('Start Illustrating', () => {
       articles: 'blank-article',
       logos: 'blank-logo',
     });
-    // Each once, and never in Recommended, which keeps the mode's own blank.
+    // Each once in its group, and none in Recommended but Blank Slide Deck, which takes the Slide
+    // Deck's place there.
     const recommended = TEMPLATE_STARTS.illustrate.groups[0]!.kinds;
-    for (const k of [
-      'blank-slide-deck',
-      'blank-infographic',
-      'blank-article',
-      'blank-logo',
-    ] as const) {
+    expect(recommended).toContain('blank-slide-deck');
+    expect(recommended).not.toContain('slide-deck');
+    for (const k of ['blank-infographic', 'blank-article', 'blank-logo'] as const) {
       expect(recommended).not.toContain(k);
       expect(TEMPLATE_STARTS.illustrate.groups.filter((g) => g.kinds.includes(k))).toHaveLength(1);
     }

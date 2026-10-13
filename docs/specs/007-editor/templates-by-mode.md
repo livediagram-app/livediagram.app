@@ -111,9 +111,13 @@ Spreadsheet):
   page of that kind does ([Illustrate pages](illustrate-pages.md)); an article page never shows one.
 - **Blanks like the others** (`isBlankTemplate`): in no category and on no category shelf, the tab keeps its name, a
   `/new?template=` link to one opens with the start closed. None is a mode's blank, so none leads Recommended or is
-  what the wizard creates; the editor's Popular lists are unchanged (the Quick Start finds them by search).
+  what the wizard creates. One is recommended: **Blank Slide Deck** takes the Slide Deck's place in Illustrate's
+  Popular (so in Start Illustrating's Recommended, after Blank Illustration and Article), since a deck is most often
+  built from its own slides; the others are found in their groups or by search.
 - **Each leads its group in Start Illustrating**: Blank Slide Deck first in **Slides**, Blank Infographic in
   **Infographics**, Blank Article in **Articles**, Blank Logo in **Logos** ([Template starts](start-diagramming.md)).
+  **Slides** holds decks alone; the Social Carousel, made to post rather than present, is in **Posters and Social**
+  (posters, cards and social posts to print, pin up or share).
 - The landing page's **Blank Slate** shelf lists them after Blank Illustration, in that order (Slide Deck, Article,
   Infographic, Logo).
 
