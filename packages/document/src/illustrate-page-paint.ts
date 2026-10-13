@@ -14,7 +14,13 @@ export function sameFill(a: PageFill | undefined, b: PageFill | undefined): bool
   if (a.kind === 'solid' && b.kind === 'solid')
     return a.color.toLowerCase() === b.color.toLowerCase();
   if (a.kind === 'gradient' && b.kind === 'gradient') {
-    return a.from === b.from && a.to === b.to && a.angle === b.angle && a.motion === b.motion;
+    return (
+      a.from === b.from &&
+      a.to === b.to &&
+      a.angle === b.angle &&
+      a.motion === b.motion &&
+      (a.speed ?? 1) === (b.speed ?? 1)
+    );
   }
   if (a.kind === 'image' && b.kind === 'image') return samePageImage(a, b);
   return false;

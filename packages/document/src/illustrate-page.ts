@@ -155,7 +155,15 @@ export function isPageSizeId(v: unknown): v is PageSizeId {
 // (absent is the paper: a colour, a gradient or a picture, "Image backgrounds") and a pattern over it.
 export type PageFill =
   | { kind: 'solid'; color: string }
-  | { kind: 'gradient'; from: string; to: string; angle: number; motion?: PageMotion }
+  | {
+      kind: 'gradient';
+      from: string;
+      to: string;
+      angle: number;
+      motion?: PageMotion;
+      // How fast the motion runs: 1 is its own pace. Absent is 1.
+      speed?: number;
+    }
   | PageImageFill;
 
 // A slide's animated background (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds"):
@@ -175,7 +183,16 @@ export const PAGE_MOTIONS = [
   'waves',
   'spotlight',
   'beams',
+  'sunburst',
+  'fireflies',
+  'snowfall',
+  'lava',
+  'dot-wave',
+  'clouds',
 ] as const;
+// A motion's speed: a rate on its own pace, as the canvas's animated styles take one.
+export const PAGE_MOTION_SPEED_MIN = 0.25;
+export const PAGE_MOTION_SPEED_MAX = 3;
 export type PageMotion = (typeof PAGE_MOTIONS)[number];
 export function isPageMotion(v: unknown): v is PageMotion {
   return typeof v === 'string' && (PAGE_MOTIONS as readonly string[]).includes(v);
@@ -248,6 +265,13 @@ function parseFill(v: unknown): PageFill | undefined {
       to: f.to,
       angle: ((Math.round(raw) % 360) + 360) % 360,
       ...(isPageMotion(f.motion) ? { motion: f.motion } : {}),
+      ...(isPageMotion(f.motion) &&
+      typeof f.speed === 'number' &&
+      f.speed >= PAGE_MOTION_SPEED_MIN &&
+      f.speed <= PAGE_MOTION_SPEED_MAX &&
+      f.speed !== 1
+        ? { speed: f.speed }
+        : {}),
     };
   }
   if (f.kind === 'image') return parsePageImageFill(f);

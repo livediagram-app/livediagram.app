@@ -275,3 +275,37 @@ describe('the Animated category', () => {
     expect(radio('Waves').getAttribute('aria-checked')).toBe('true');
   });
 });
+
+describe('the Animated speed', () => {
+  it('previews while dragged and is set once, on letting go, keeping the motion', () => {
+    const page = {
+      id: 's',
+      orientation: 'landscape',
+      kind: 'slide',
+      background: {
+        fill: { kind: 'gradient', from: '#0b1020', to: '#123456', angle: 160, motion: 'waves' },
+      },
+    };
+    const onBackground = vi.fn();
+    onPreview = vi.fn();
+    render(
+      <BackgroundSection
+        page={page as IllustratePage}
+        themePresets={theme}
+        onBackground={onBackground}
+        onPreview={onPreview}
+      />,
+    );
+    const slider = screen.getByRole('slider', { name: 'Animation speed' });
+    fireEvent.change(slider, { target: { value: '2' } });
+    expect(onPreview).toHaveBeenLastCalledWith({
+      fill: expect.objectContaining({ motion: 'waves', speed: 2 }),
+    });
+    expect(onBackground).not.toHaveBeenCalled();
+    fireEvent.pointerUp(slider);
+    expect(onBackground).toHaveBeenCalledTimes(1);
+    expect(onBackground).toHaveBeenLastCalledWith({
+      fill: expect.objectContaining({ motion: 'waves', speed: 2 }),
+    });
+  });
+});

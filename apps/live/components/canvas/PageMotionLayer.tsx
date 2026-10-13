@@ -24,7 +24,7 @@ export function PageMotionLayer({
   height,
 }: {
   motion: PageMotion;
-  fill: { from: string; to: string };
+  fill: { from: string; to: string; speed?: number };
   // The sheet's size in its own px.
   width: number;
   height: number;
@@ -36,7 +36,7 @@ export function PageMotionLayer({
       aria-hidden
       data-page-motion={motion}
       className="pointer-events-none absolute inset-0 overflow-hidden"
-      style={{ opacity: paint.strength }}
+      style={{ opacity: paint.strength, '--pm-rate': fill.speed ?? 1 } as Vars}
     >
       {MOTIONS[motion](size, paint)}
     </div>
@@ -56,6 +56,12 @@ const MOTIONS: Record<PageMotion, (s: Size, p: MotionPaint) => ReactNode> = {
   waves: Waves,
   spotlight: Spotlight,
   beams: Beams,
+  sunburst: Sunburst,
+  fireflies: Fireflies,
+  snowfall: Snowfall,
+  lava: Lava,
+  'dot-wave': DotWave,
+  clouds: Clouds,
 };
 
 // A colour at an alpha, for gradients: `color-mix` keeps any hex as it is.
@@ -501,6 +507,175 @@ function Beams({ w, h }: Size, p: MotionPaint) {
           '--pm-d': `${dur}s`,
           '--pm-dl': `${-motionSeed(i, 23) * dur}s`,
           '--pm-x': `${w + bw * 4}px`,
+        }}
+      />
+    );
+  });
+}
+
+// ── Sunburst: rays from below the slide turning slowly, fading out toward the edges. ───────────
+function Sunburst({ w, h }: Size, p: MotionPaint) {
+  const d = Math.hypot(w, h) * 2;
+  return (
+    <div
+      className="absolute inset-0"
+      style={{
+        maskImage: 'radial-gradient(circle at 50% 100%, #000 0%, #000 35%, transparent 95%)',
+        WebkitMaskImage: 'radial-gradient(circle at 50% 100%, #000 0%, #000 35%, transparent 95%)',
+      }}
+    >
+      <Part
+        className="pm-turn"
+        style={{
+          left: w / 2 - d / 2,
+          top: h - d / 2,
+          width: d,
+          height: d,
+          background: `repeating-conic-gradient(from 0deg, ${alpha(p.hi, 0.3)} 0deg 5deg, transparent 5deg 12deg)`,
+          '--pm-d': '80s',
+        }}
+      />
+    </div>
+  );
+}
+
+// ── Fireflies: small warm lights drifting on their own, glowing and fading. ────────────────────
+function Fireflies({ w, h }: Size, p: MotionPaint) {
+  const unit = Math.min(w, h);
+  return Array.from({ length: 24 }, (_, i) => {
+    const d = unit * (0.012 + motionSeed(i, 30) * 0.012);
+    const dur = 7 + motionSeed(i, 31) * 9;
+    const c = i % 3 === 0 ? p.warm : p.hi;
+    return (
+      <Part
+        key={i}
+        className="pm-float"
+        style={{
+          left: motionSeed(i, 32) * w,
+          top: motionSeed(i, 33) * h,
+          width: d,
+          height: d,
+          borderRadius: '50%',
+          background: c,
+          boxShadow: `0 0 ${d * 3}px ${d}px ${alpha(c, 0.55)}`,
+          '--pm-d': `${dur}s`,
+          '--pm-dl': `${-motionSeed(i, 34) * dur}s`,
+          '--pm-x': `${(motionSeed(i, 35) - 0.5) * w * 0.12}px`,
+          '--pm-y': `${(motionSeed(i, 36) - 0.5) * h * 0.16}px`,
+        }}
+      />
+    );
+  });
+}
+
+// ── Snowfall: flakes of three sizes falling and drifting a little sideways. ────────────────────
+function Snowfall({ w, h }: Size, p: MotionPaint) {
+  const unit = Math.min(w, h);
+  return Array.from({ length: 48 }, (_, i) => {
+    const near = motionSeed(i, 40);
+    const d = unit * (0.006 + near * 0.014);
+    const dur = 18 - near * 10;
+    return (
+      <Part
+        key={i}
+        className="pm-fall"
+        style={{
+          left: motionSeed(i, 41) * w,
+          top: -d * 2,
+          width: d,
+          height: d,
+          borderRadius: '50%',
+          background: alpha(p.hi, 0.5 + near * 0.45),
+          '--pm-d': `${dur}s`,
+          '--pm-dl': `${-motionSeed(i, 42) * dur}s`,
+          '--pm-x': `${(motionSeed(i, 43) - 0.5) * w * 0.1}px`,
+          '--pm-y': `${h + d * 4}px`,
+        }}
+      />
+    );
+  });
+}
+
+// ── Lava: big soft blobs of the page's colours rising and sinking slowly. ──────────────────────
+function Lava({ w, h }: Size, p: MotionPaint) {
+  const unit = Math.max(w, h);
+  const blobs = [
+    { c: p.warm, x: 0.15, y: 0.7, s: 0.55 },
+    { c: p.cool, x: 0.7, y: 0.25, s: 0.6 },
+    { c: p.b, x: 0.45, y: 0.55, s: 0.5 },
+    { c: p.hi, x: 0.85, y: 0.8, s: 0.35 },
+    { c: p.warm, x: 0.3, y: 0.15, s: 0.4 },
+  ];
+  return blobs.map((b, i) => (
+    <Part
+      key={i}
+      className="pm-float"
+      style={{
+        left: w * b.x - (unit * b.s) / 2,
+        top: h * b.y - (unit * b.s) / 2,
+        width: unit * b.s,
+        height: unit * b.s,
+        background: glow(b.c, 0.7),
+        '--pm-d': `${22 + i * 5}s`,
+        '--pm-dl': `${-i * 4}s`,
+        '--pm-x': `${(i % 2 ? -1 : 1) * w * 0.12}px`,
+        '--pm-y': `${(i % 2 ? 1 : -1) * h * 0.3}px`,
+      }}
+    />
+  ));
+}
+
+// ── Dot Wave: a grid of dots swelling in a wave that runs corner to corner. ────────────────────
+function DotWave({ w, h }: Size, p: MotionPaint) {
+  const cols = 14;
+  const rows = Math.max(5, Math.round((cols * h) / w));
+  const sx = w / cols;
+  const sy = h / rows;
+  const d = Math.min(sx, sy) * 0.22;
+  const dots: ReactNode[] = [];
+  for (let r = 0; r < rows; r += 1) {
+    for (let c = 0; c < cols; c += 1) {
+      dots.push(
+        <Part
+          key={`${r}-${c}`}
+          className="pm-pulse"
+          style={{
+            left: c * sx + sx / 2 - d / 2,
+            top: r * sy + sy / 2 - d / 2,
+            width: d,
+            height: d,
+            borderRadius: '50%',
+            background: alpha(p.hi, 0.6),
+            '--pm-d': '5s',
+            // The wave: each dot a beat behind the one up and to its left.
+            '--pm-dl': `${-((c + r) % 10) * 0.5}s`,
+          }}
+        />,
+      );
+    }
+  }
+  return dots;
+}
+
+// ── Clouds: soft wide clouds drifting across, the nearer ones faster. ──────────────────────────
+function Clouds({ w, h }: Size, p: MotionPaint) {
+  return Array.from({ length: 5 }, (_, i) => {
+    const cw = w * (0.35 + motionSeed(i, 50) * 0.3);
+    const ch = cw * 0.32;
+    const dur = 50 - i * 6;
+    return (
+      <Part
+        key={i}
+        className="pm-slide-x"
+        style={{
+          left: -cw,
+          top: h * (0.05 + motionSeed(i, 51) * 0.6),
+          width: cw,
+          height: ch,
+          background: `radial-gradient(closest-side, ${alpha(p.hi, 0.42)}, transparent)`,
+          '--pm-d': `${dur}s`,
+          '--pm-dl': `${-motionSeed(i, 52) * dur}s`,
+          '--pm-x': `${w + cw}px`,
         }}
       />
     );

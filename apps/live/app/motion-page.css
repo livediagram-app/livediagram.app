@@ -6,45 +6,85 @@
  * Every loop moves its part by transform and opacity alone, so the compositor runs it without a
  * repaint. Each part sets its own pace through custom properties: --pm-d (the loop's length),
  * --pm-dl (where in the loop it starts, negative so a slide opens mid-motion), --pm-x and --pm-y
- * (how far it travels).
+ * (how far it travels). The layer's --pm-rate (the slide's chosen speed) divides every length and
+ * start, so one setting speeds or slows the whole motion.
  */
+
+.pm-fall {
+  animation: pm-fall calc(var(--pm-d) / var(--pm-rate, 1)) linear
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
+}
+.pm-pulse {
+  animation: pm-pulse calc(var(--pm-d) / var(--pm-rate, 1)) ease-in-out
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
+}
+@keyframes pm-fall {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(var(--pm-x, 0px), var(--pm-y));
+  }
+}
+@keyframes pm-pulse {
+  0%,
+  100% {
+    transform: scale(0.55);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
 
 .pm-slide-x,
 .pm-slide-x-neg {
-  animation: pm-slide-x var(--pm-d) linear var(--pm-dl, 0s) infinite;
+  animation: pm-slide-x calc(var(--pm-d) / var(--pm-rate, 1)) linear
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
 }
 .pm-slide-x-back {
-  animation: pm-slide-x-back var(--pm-d) linear var(--pm-dl, 0s) infinite;
+  animation: pm-slide-x-back calc(var(--pm-d) / var(--pm-rate, 1)) linear
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
 }
 .pm-slide-y {
-  animation: pm-slide-y var(--pm-d) linear var(--pm-dl, 0s) infinite;
+  animation: pm-slide-y calc(var(--pm-d) / var(--pm-rate, 1)) linear
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
 }
 .pm-rise {
   opacity: 0;
-  animation: pm-rise var(--pm-d) linear var(--pm-dl, 0s) infinite;
+  animation: pm-rise calc(var(--pm-d) / var(--pm-rate, 1)) linear
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
 }
 .pm-wander {
-  animation: pm-wander var(--pm-d) ease-in-out var(--pm-dl, 0s) infinite;
+  animation: pm-wander calc(var(--pm-d) / var(--pm-rate, 1)) ease-in-out
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
 }
 .pm-spread {
   opacity: 0;
-  animation: pm-spread var(--pm-d) cubic-bezier(0.2, 0.6, 0.4, 1) var(--pm-dl, 0s) infinite;
+  animation: pm-spread calc(var(--pm-d) / var(--pm-rate, 1)) cubic-bezier(0.2, 0.6, 0.4, 1)
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
 }
 .pm-turn {
-  animation: pm-turn var(--pm-d) linear var(--pm-dl, 0s) infinite;
+  animation: pm-turn calc(var(--pm-d) / var(--pm-rate, 1)) linear
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
 }
 .pm-twinkle {
-  animation: pm-twinkle var(--pm-d) ease-in-out var(--pm-dl, 0s) infinite;
+  animation: pm-twinkle calc(var(--pm-d) / var(--pm-rate, 1)) ease-in-out
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
 }
 .pm-float {
-  animation: pm-float var(--pm-d) ease-in-out var(--pm-dl, 0s) infinite;
+  animation: pm-float calc(var(--pm-d) / var(--pm-rate, 1)) ease-in-out
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
 }
 .pm-sweep {
-  animation: pm-sweep var(--pm-d) ease-in-out var(--pm-dl, 0s) infinite alternate;
+  animation: pm-sweep calc(var(--pm-d) / var(--pm-rate, 1)) ease-in-out
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite alternate;
 }
 .pm-glide {
   transform: rotate(18deg);
-  animation: pm-glide var(--pm-d) linear var(--pm-dl, 0s) infinite;
+  animation: pm-glide calc(var(--pm-d) / var(--pm-rate, 1)) linear
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
 }
 
 @keyframes pm-slide-x {

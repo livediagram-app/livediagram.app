@@ -83,3 +83,29 @@ describe('animated backgrounds', () => {
     expect(motionSeed(3, 7)).toBeLessThan(1);
   });
 });
+
+describe('animated background speed', () => {
+  const read = (speed: unknown) =>
+    illustratePagesOf({
+      pages: [
+        {
+          id: 'p',
+          orientation: 'landscape',
+          background: { fill: { ...motionFill(theme, 'waves', 'deep'), speed } },
+        },
+      ],
+    })[0]!.background!.fill;
+
+  it('keeps a speed in range through a reload, and drops one out of it or the default', () => {
+    expect(read(2)).toMatchObject({ speed: 2 });
+    expect(read(0.1)).not.toHaveProperty('speed');
+    expect(read(9)).not.toHaveProperty('speed');
+    expect(read(1)).not.toHaveProperty('speed');
+  });
+
+  it('tells two speeds of the same motion apart', () => {
+    const f = motionFill(theme, 'waves', 'deep');
+    expect(sameFill(f, { ...f, speed: 2 } as PageFill)).toBe(false);
+    expect(sameFill(f, { ...f, speed: 1 } as PageFill)).toBe(true);
+  });
+});

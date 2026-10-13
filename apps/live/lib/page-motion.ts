@@ -88,6 +88,37 @@ export const PAGE_MOTION_CATALOGUE: readonly PageMotionEntry[] = [
     description: 'Ribbons of colour flowing sideways',
     colouring: 'soft',
   },
+  {
+    id: 'sunburst',
+    label: 'Sunburst',
+    description: 'Rays turning slowly from below',
+    colouring: 'vivid',
+  },
+  {
+    id: 'fireflies',
+    label: 'Fireflies',
+    description: 'Small lights drifting and glowing',
+    colouring: 'night',
+  },
+  { id: 'snowfall', label: 'Snowfall', description: 'Snow falling softly past', colouring: 'deep' },
+  {
+    id: 'lava',
+    label: 'Lava',
+    description: 'Big soft blobs rising and sinking',
+    colouring: 'vivid',
+  },
+  {
+    id: 'dot-wave',
+    label: 'Dot Wave',
+    description: 'A grid of dots swelling in a wave',
+    colouring: 'deep',
+  },
+  {
+    id: 'clouds',
+    label: 'Clouds',
+    description: 'Soft clouds drifting across',
+    colouring: 'bright',
+  },
 ];
 
 export type PageMotionColouringId = 'deep' | 'night' | 'bright' | 'vivid' | 'soft' | 'mist';

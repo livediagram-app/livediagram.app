@@ -1,11 +1,19 @@
 'use client';
 
 // The Background section's Animated category, on a slide page (docs/specs/007-editor/
-// illustrate-pages.md "Animated backgrounds"): a tile per motion, each playing in the tab theme's
-// colours, then the theme colourings the chosen motion comes in. A hover previews on the slide,
-// a press sets it, as the other categories do.
+// illustrate-pages.md "Animated backgrounds"): a carousel of motions, six to a page (two rows of
+// three), each tile playing in the tab theme's colours; then the theme colourings the chosen
+// motion comes in, and its speed. A hover previews on the slide, a press sets it, as the other
+// categories do; the speed previews as it is dragged and is set once, on letting go.
 import { useState } from 'react';
-import { type PageFill, type PageMotion } from '@livediagram/document';
+import {
+  PAGE_MOTION_SPEED_MAX,
+  PAGE_MOTION_SPEED_MIN,
+  type PageFill,
+  type PageMotion,
+} from '@livediagram/document';
+import { PagedCarousel } from '@/components/primitives/PagedCarousel';
+import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 import { CheckIcon, Tooltip } from '@livediagram/ui';
 import { fillCss, type ThemeBackgroundPreset } from '@/lib/illustrate-page-paint';
 import {
@@ -54,16 +62,42 @@ export function AnimatedBackgroundChoices({
   // The colouring the page's motion is in; once picked, it carries to the next motion chosen.
   const [chosen, setChosen] = useState<PageMotionColouringId | null>(null);
   const current = colouringOf(theme, fill) ?? chosen ?? undefined;
+  // The page's speed carries to whatever motion or colouring is picked next.
+  const speed = fill?.kind === 'gradient' ? (fill.speed ?? 1) : 1;
+  const [dragSpeed, setDragSpeed] = useState<number | null>(null);
+  const withSpeed = (f: PageFill, s: number): PageFill =>
+    f.kind === 'gradient' && s !== 1 ? { ...f, speed: s } : f;
   const fillFor = (id: PageMotion, colouring?: PageMotionColouringId) =>
-    motionFill(
-      theme,
-      id,
-      colouring ?? current ?? PAGE_MOTION_CATALOGUE.find((m) => m.id === id)!.colouring,
+    withSpeed(
+      motionFill(
+        theme,
+        id,
+        colouring ?? current ?? PAGE_MOTION_CATALOGUE.find((m) => m.id === id)!.colouring,
+      ),
+      speed,
     );
+  const shownSpeed = dragSpeed ?? speed;
+  const commitSpeed = () => {
+    if (dragSpeed === null || fill?.kind !== 'gradient' || !fill.motion) return;
+    const { speed: _old, ...rest } = fill;
+    onPick(withSpeed(rest, dragSpeed));
+    track('Tab', 'Changed', 'PageBackgroundAnimatedSpeed');
+    setDragSpeed(null);
+  };
   return (
     <div data-page-background-animated="">
-      <div role="radiogroup" aria-label="Animated background" className="grid grid-cols-3 gap-1.5">
-        {PAGE_MOTION_CATALOGUE.map((m) => {
+      <PagedCarousel
+        items={PAGE_MOTION_CATALOGUE}
+        perPage={6}
+        label="Animated backgrounds"
+        heading={
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Motion
+          </span>
+        }
+        gridClass="grid grid-cols-3 gap-1.5"
+        initialIndex={PAGE_MOTION_CATALOGUE.findIndex((m) => m.id === motion)}
+        renderItem={(m) => {
           const f = fillFor(m.id);
           const on = motion === m.id;
           return (
@@ -96,8 +130,8 @@ export function AnimatedBackgroundChoices({
               </button>
             </Tooltip>
           );
-        })}
-      </div>
+        }}
+      />
       <p
         aria-hidden
         className="mb-1.5 mt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
@@ -133,6 +167,38 @@ export function AnimatedBackgroundChoices({
           );
         })}
       </div>
+      {motion ? (
+        <div className="mt-3 flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Speed
+            </p>
+            <span className="text-[10px] font-medium tabular-nums text-slate-500 dark:text-slate-300">
+              {Math.round(shownSpeed * 100)}%
+            </span>
+          </div>
+          <input
+            type="range"
+            aria-label="Animation speed"
+            min={PAGE_MOTION_SPEED_MIN}
+            max={PAGE_MOTION_SPEED_MAX}
+            step={0.25}
+            value={shownSpeed}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value);
+              setDragSpeed(v);
+              if (fill?.kind === 'gradient') {
+                const { speed: _old, ...rest } = fill;
+                onPreview(withSpeed(rest, v));
+              }
+            }}
+            onPointerUp={commitSpeed}
+            onKeyUp={commitSpeed}
+            onBlur={commitSpeed}
+            className={RANGE_SLIDER}
+          />
+        </div>
+      ) : null}
       <p className="mt-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
         Moves on screen and while presenting; still in exports and with Reduce Motion on.
       </p>
