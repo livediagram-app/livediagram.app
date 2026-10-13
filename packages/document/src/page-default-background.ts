@@ -19,7 +19,7 @@ const isHex = (c: string | null | undefined): c is string => !!c && /^#[0-9a-f]{
 
 /** The tab theme's accent: its element stroke, else its first palette colour, else the brand blue.
  *  What theme backgrounds and a document's accent are drawn from. */
-export function themeAccent(theme: Pick<ThemeDefinition, 'elementStroke' | 'palette'>): string {
+export function themeAccent(theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>): string {
   return isHex(theme.elementStroke)
     ? theme.elementStroke
     : isHex(theme.palette?.[0]?.stroke)
@@ -30,7 +30,7 @@ export function themeAccent(theme: Pick<ThemeDefinition, 'elementStroke' | 'pale
 /** The theme's second and third colours (a multi-colour theme's next branches, else the accent
  *  deepened), for the theme gradients. */
 export function themeSecondaries(
-  theme: Pick<ThemeDefinition, 'elementStroke' | 'palette'>,
+  theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
 ): [string, string] {
   const a = themeAccent(theme);
   const b = isHex(theme.palette?.[1]?.stroke) ? theme.palette![1]!.stroke : shade(a, 0.25);
@@ -40,7 +40,7 @@ export function themeSecondaries(
 
 /** A new infographic page's background: the theme's Mist gradient. */
 export function defaultPageBackground(
-  theme: Pick<ThemeDefinition, 'elementStroke' | 'palette'>,
+  theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
 ): PageBackground {
   const a = themeAccent(theme);
   return {
@@ -57,7 +57,7 @@ export function defaultPageBackground(
  *  default, when `ids` names it (the pages just made); the same tab when none changes. */
 export function withDefaultPageBackgrounds<T extends Partial<Pick<Tab, 'pages'>>>(
   tab: T,
-  theme: Pick<ThemeDefinition, 'elementStroke' | 'palette'>,
+  theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
   ids?: ReadonlySet<string>,
 ): T {
   const pages = illustratePagesOf(tab as Pick<Tab, 'pages'>);

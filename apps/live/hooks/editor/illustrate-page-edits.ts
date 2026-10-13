@@ -171,7 +171,7 @@ export function illustratePageEdits({
   toastInfo?: (message: string) => void;
   // The tab's theme: a new infographic page starts on its Mist gradient (defaultPageBackground).
   // Absent, a new page starts on the plain paper.
-  theme?: Pick<ThemeDefinition, 'elementStroke' | 'palette'>;
+  theme?: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>;
 }): IllustratePageEdits {
   // A new infographic page (by id) on the theme's default background, unless it carried one over.
   const themed = (t: Tab | null, id: string): Tab | null =>

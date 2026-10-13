@@ -364,6 +364,42 @@ drawing only, never stored:
   it shows. A page export also draws its charts in the tab theme's ramp, as the canvas does.
 - The axis lines keep their fixed faint greys: they are guides, not data.
 
+### Animated backgrounds
+
+A slide page's Background has a fourth category, **Animated**, after Solid, Gradient and Image (the
+four share the category control's width, each a quarter). It offers twelve **motions**, each a tile
+playing in the tab theme's colours, 16:9 like the slide: **Aurora** (soft lights wandering, in the
+theme's colour and two companion hues turned either way round the colour wheel), **Mesh** (the
+page's colours turning slowly into each other), **Starfield** (stars twinkling on their own beats
+as the sky drifts), **Retro Grid** (a neon grid rolling toward a glowing horizon), **Bokeh**
+(out-of-focus lights floating and breathing), **Waves** (three layers rolling along the bottom),
+**Spotlight** (a stage light sweeping across, answered by a softer one), **Beams** (shafts of
+light gliding past at a slant), **Flow**, **Drift**, **Ripple** and **Ribbons** (with Aurora, the
+animated canvas styles' five, made for a slide). Under them, **Colours** offers six theme
+colourings (Theme Deep, Night, Vivid, Bright, Soft and Mist, each a pair of stops drawn from the
+theme's accent and its second colour); a press recolours the chosen motion, and the colouring
+carries to the next motion picked. Each motion starts in its own colouring (most Deep; Starfield,
+Retro Grid and Spotlight Night; Mesh and Drift Bright; Ripple and Ribbons Soft). Hovering a tile
+or a colouring previews it on the slide; a press sets it (`Tab · Changed ·
+PageBackgroundAnimated`).
+
+- **What is stored**: the gradient (its two stops, at the presets' angle) with its `motion`. So
+  everything that reads a gradient reads it unchanged: re-inking measures its tones, exports and
+  thumbnails draw the still gradient, AI tools see a gradient. A motion the editor does not know
+  is dropped on reading, leaving the gradient.
+- **Where it moves**: on the slide on screen and while presenting, its moving parts over the
+  gradient and under everything on the slide. In an export, a thumbnail and with Reduce Motion on
+  it is still: under Reduce Motion each part rests where it stands, a finished background in
+  itself.
+- **Cost**: every part moves by transform and opacity alone, so the compositor runs it with no
+  repaint; soft edges are radial gradients, never blur filters; each motion has at most about
+  fifty parts; loops run from 4 to 90 seconds, calm rather than busy. Positions come from fixed
+  seeds, so a slide looks the same wherever it is opened.
+- **Legibility**: the moving parts are faint on a light colouring (70% strength) and lights on a
+  dark one; what sits on the slide is re-inked against the gradient as with any gradient.
+- Infographic, article and logo pages offer no Animated category.
+- **Share roles**: as any background, an Editor's alone.
+
 ### Image backgrounds
 
 An infographic, slide or article page can be painted with a picture:

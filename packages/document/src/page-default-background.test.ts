@@ -47,7 +47,7 @@ describe("a new infographic page's background", () => {
           id: 'p3',
           orientation: 'landscape' as const,
           kind: 'slide' as const,
-          size: '16:9' as const,
+          size: 'slide' as const,
         },
       ],
     };

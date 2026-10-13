@@ -155,8 +155,31 @@ export function isPageSizeId(v: unknown): v is PageSizeId {
 // (absent is the paper: a colour, a gradient or a picture, "Image backgrounds") and a pattern over it.
 export type PageFill =
   | { kind: 'solid'; color: string }
-  | { kind: 'gradient'; from: string; to: string; angle: number }
+  | { kind: 'gradient'; from: string; to: string; angle: number; motion?: PageMotion }
   | PageImageFill;
+
+// A slide's animated background (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds"):
+// a gradient with a motion drawn over it, moving on screen and while presenting, still in exports
+// (which draw the gradient) and under reduced motion. The first five are the animated canvas
+// styles'; the rest are the slide's own.
+export const PAGE_MOTIONS = [
+  'flow',
+  'drift',
+  'aurora',
+  'ripple',
+  'ribbons',
+  'mesh',
+  'starfield',
+  'retro-grid',
+  'bokeh',
+  'waves',
+  'spotlight',
+  'beams',
+] as const;
+export type PageMotion = (typeof PAGE_MOTIONS)[number];
+export function isPageMotion(v: unknown): v is PageMotion {
+  return typeof v === 'string' && (PAGE_MOTIONS as readonly string[]).includes(v);
+}
 export type PagePattern = 'dots' | 'grid' | 'lines';
 export const PAGE_PATTERNS: readonly PagePattern[] = ['dots', 'grid', 'lines'];
 export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
@@ -224,6 +247,7 @@ function parseFill(v: unknown): PageFill | undefined {
       from: f.from,
       to: f.to,
       angle: ((Math.round(raw) % 360) + 360) % 360,
+      ...(isPageMotion(f.motion) ? { motion: f.motion } : {}),
     };
   }
   if (f.kind === 'image') return parsePageImageFill(f);

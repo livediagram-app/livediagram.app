@@ -53,7 +53,7 @@ export function blankPageTemplateOverrides(kind: TemplateKind): Partial<Tab> | u
 export function withBlankPageThemed<T extends Partial<Pick<Tab, 'pages'>>>(
   tab: T,
   kind: TemplateKind,
-  theme: Pick<ThemeDefinition, 'elementStroke' | 'palette'>,
+  theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
 ): T {
   return kind === 'blank-infographic' ? withDefaultPageBackgrounds(tab, theme) : tab;
 }

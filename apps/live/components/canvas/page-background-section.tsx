@@ -2,7 +2,8 @@
 
 // The page panel's Background section (docs/specs/007-editor/illustrate-pages.md "Backgrounds"), for
 // every page kind: a category control (Solid, Gradient, and Image but on a logo page,
-// page-background-image) over that category's choices: Solid is the
+// page-background-image, and Animated on a slide page, page-background-animated) over that
+// category's choices: Solid is the
 // one colour picker (docs/specs/004-interface-design/colour-picker.md), Paper leading the theme's
 // colours, then the soft and the strong standard colours and Custom colours with +; Gradient is the
 // theme's gradients, then the gradient presets, ending in a custom one,
@@ -37,6 +38,7 @@ import {
 } from '@/lib/illustrate-page-paint';
 import { PanelSection, tileClass } from './illustrate-page-panel-sections';
 import { CustomGradientEditor, PAGE_COLOUR_GROUPS } from './page-background-custom';
+import { AnimatedBackgroundChoices } from './page-background-animated';
 import { ImageBackgroundChoices } from './page-background-image';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { noColour, type ColourOption } from '@/components/colour/colour-options';
@@ -136,6 +138,7 @@ const CATEGORY_LABEL: Record<BackgroundCategory, string> = {
   solid: 'Solid',
   gradient: 'Gradient',
   image: 'Image',
+  animated: 'Animated',
 };
 
 // Solid, Gradient: the shared segmented control, its highlight sliding between them.
@@ -195,8 +198,14 @@ export function BackgroundSection({
   const fill = page.background?.fill;
   const pattern = page.background?.pattern;
   // A logo page takes no picture (docs/specs/007-editor/logo-pages.md "A logo page").
+  // A slide page alone moves (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
+  const kind = pageKindOf(page);
   const categories: BackgroundCategory[] =
-    pageKindOf(page) === 'logo' ? ['solid', 'gradient'] : ['solid', 'gradient', 'image'];
+    kind === 'logo'
+      ? ['solid', 'gradient']
+      : kind === 'slide'
+        ? ['solid', 'gradient', 'image', 'animated']
+        : ['solid', 'gradient', 'image'];
   // Opens on the current fill's category; choosing another changes nothing on the page.
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
   const opened = backgroundCategoryOf(fill);
@@ -246,7 +255,14 @@ export function BackgroundSection({
             setChosen(c);
           }}
         />
-        {category === 'image' ? (
+        {category === 'animated' ? (
+          <AnimatedBackgroundChoices
+            fill={fill}
+            themePresets={themePresets}
+            onPick={pick}
+            onPreview={preview}
+          />
+        ) : category === 'image' ? (
           <ImageBackgroundChoices
             page={page}
             accent={themePresetAccent(themePresets)}

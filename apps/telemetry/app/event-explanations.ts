@@ -791,6 +791,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageLandscape': 'Someone turned an Illustrate page to landscape.',
   'Tab|Changed|PageSize': 'Someone changed an Illustrate page to another size.',
   'Tab|Changed|PageBackground': "Someone changed an Illustrate page's background colour.",
+  'Tab|Changed|PageBackgroundAnimated':
+    'Someone gave a slide an animated background (aurora, starfield, waves and the like).',
   'Tab|Changed|PageBackgroundImage':
     'Someone put a picture behind an Illustrate page, searched or uploaded, under an overlay.',
   'Tab|Changed|PagePattern': "Someone changed an Illustrate page's background pattern.",

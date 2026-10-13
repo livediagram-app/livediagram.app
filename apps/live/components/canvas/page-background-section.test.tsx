@@ -226,3 +226,52 @@ describe('BackgroundSection', () => {
     expect(screen.queryByRole('dialog', { name: 'Gradient to colour' })).toBeNull();
   });
 });
+
+describe('the Animated category', () => {
+  const slide = (fill?: PageFill) => {
+    const page = {
+      id: 's',
+      orientation: 'landscape',
+      kind: 'slide',
+      ...(fill ? { background: { fill } } : {}),
+    };
+    const onBackground = vi.fn();
+    onPreview = vi.fn();
+    render(
+      <BackgroundSection
+        page={page as IllustratePage}
+        themePresets={theme}
+        onBackground={onBackground}
+        onPreview={onPreview}
+      />,
+    );
+    return onBackground;
+  };
+
+  it('is offered on a slide page alone', () => {
+    show();
+    expect(screen.queryByRole('radio', { name: 'Animated' })).toBeNull();
+    cleanup();
+    slide();
+    expect(radio('Animated')).toBeTruthy();
+  });
+
+  it('previews a motion on hover and sets it on a press, as a gradient with its motion', () => {
+    const onBackground = slide();
+    fireEvent.click(radio('Animated'));
+    fireEvent.pointerEnter(radio('Starfield'));
+    expect(onPreview).toHaveBeenLastCalledWith({
+      fill: expect.objectContaining({ kind: 'gradient', motion: 'starfield' }),
+    });
+    fireEvent.click(radio('Aurora'));
+    expect(onBackground).toHaveBeenLastCalledWith({
+      fill: expect.objectContaining({ kind: 'gradient', motion: 'aurora' }),
+    });
+  });
+
+  it('opens on Animated for a slide that has one, the motion marked', () => {
+    slide({ kind: 'gradient', from: '#0b1020', to: '#123456', angle: 160, motion: 'waves' });
+    expect(radio('Animated').getAttribute('aria-checked')).toBe('true');
+    expect(radio('Waves').getAttribute('aria-checked')).toBe('true');
+  });
+});

@@ -14,6 +14,7 @@ import { LogoTitleBar } from './LogoTitleBar';
 import { PageLockButton } from './PageLockButton';
 import { PageBackgroundButton } from './PageBackgroundButton';
 import { PageLayoutsButton } from './PageLayoutsButton';
+import { PageMotionLayer } from './PageMotionLayer';
 import { PageNotesButton } from './PageNotesButton';
 import { PageTidyUpButton } from './PageTidyUpButton';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
@@ -306,6 +307,15 @@ export function IllustratePages({
               ...pageSheetStyle(background, rulingOf(page), pictureOf),
             }}
           >
+            {/* A slide's animated background, over its gradient and under all on it. */}
+            {background?.fill?.kind === 'gradient' && background.fill.motion ? (
+              <PageMotionLayer
+                motion={background.fill.motion}
+                fill={background.fill}
+                width={page.rect.width}
+                height={page.rect.height}
+              />
+            ) : null}
             {/* An empty logo page's guides, under its own cards (LogoPageGuides draws them over
                 the artwork once the page has some). */}
             {page.kind === 'logo' &&

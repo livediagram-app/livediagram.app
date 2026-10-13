@@ -354,6 +354,7 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
       'PageRenamed',
       'PageBackground',
       'PageBackgroundImage',
+      'PageBackgroundAnimated',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',

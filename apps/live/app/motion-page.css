@@ -1,0 +1,184 @@
+/*
+ * A slide's animated backgrounds (docs/specs/007-editor/illustrate-pages.md "Animated
+ * backgrounds"), drawn by components/canvas/PageMotionLayer.tsx. Canvas motion, not chrome: the
+ * chrome motion budget does not read this file (apps/live/motion-budget.test.ts lists it).
+ *
+ * Every loop moves its part by transform and opacity alone, so the compositor runs it without a
+ * repaint. Each part sets its own pace through custom properties: --pm-d (the loop's length),
+ * --pm-dl (where in the loop it starts, negative so a slide opens mid-motion), --pm-x and --pm-y
+ * (how far it travels).
+ */
+
+.pm-slide-x,
+.pm-slide-x-neg {
+  animation: pm-slide-x var(--pm-d) linear var(--pm-dl, 0s) infinite;
+}
+.pm-slide-x-back {
+  animation: pm-slide-x-back var(--pm-d) linear var(--pm-dl, 0s) infinite;
+}
+.pm-slide-y {
+  animation: pm-slide-y var(--pm-d) linear var(--pm-dl, 0s) infinite;
+}
+.pm-rise {
+  opacity: 0;
+  animation: pm-rise var(--pm-d) linear var(--pm-dl, 0s) infinite;
+}
+.pm-wander {
+  animation: pm-wander var(--pm-d) ease-in-out var(--pm-dl, 0s) infinite;
+}
+.pm-spread {
+  opacity: 0;
+  animation: pm-spread var(--pm-d) cubic-bezier(0.2, 0.6, 0.4, 1) var(--pm-dl, 0s) infinite;
+}
+.pm-turn {
+  animation: pm-turn var(--pm-d) linear var(--pm-dl, 0s) infinite;
+}
+.pm-twinkle {
+  animation: pm-twinkle var(--pm-d) ease-in-out var(--pm-dl, 0s) infinite;
+}
+.pm-float {
+  animation: pm-float var(--pm-d) ease-in-out var(--pm-dl, 0s) infinite;
+}
+.pm-sweep {
+  animation: pm-sweep var(--pm-d) ease-in-out var(--pm-dl, 0s) infinite alternate;
+}
+.pm-glide {
+  transform: rotate(18deg);
+  animation: pm-glide var(--pm-d) linear var(--pm-dl, 0s) infinite;
+}
+
+@keyframes pm-slide-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--pm-x));
+  }
+}
+@keyframes pm-slide-x-back {
+  from {
+    transform: translateX(var(--pm-x));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes pm-slide-y {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--pm-y));
+  }
+}
+@keyframes pm-rise {
+  0% {
+    transform: translateY(0) scale(0.8);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(var(--pm-y)) scale(1.1);
+    opacity: 0;
+  }
+}
+@keyframes pm-wander {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(var(--pm-x), calc(var(--pm-y) * -1));
+  }
+  50% {
+    transform: translate(calc(var(--pm-x) * 0.4), var(--pm-y));
+  }
+  75% {
+    transform: translate(calc(var(--pm-x) * -0.8), calc(var(--pm-y) * 0.3));
+  }
+}
+@keyframes pm-spread {
+  0% {
+    transform: scale(0.05);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+@keyframes pm-turn {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pm-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes pm-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate(var(--pm-x), var(--pm-y)) scale(1.12);
+    opacity: 1;
+  }
+}
+@keyframes pm-sweep {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--pm-x));
+  }
+}
+@keyframes pm-glide {
+  from {
+    transform: translateX(0) rotate(18deg);
+  }
+  to {
+    transform: translateX(var(--pm-x)) rotate(18deg);
+  }
+}
+
+/* Reduced motion stops every part where it rests: a still that is a finished background, not a
+   frozen mid-step (the global collapse would jump each loop to its last frame). */
+@media (prefers-reduced-motion: reduce) {
+  [data-page-motion] * {
+    animation: none !important;
+  }
+  [data-page-motion] .pm-rise,
+  [data-page-motion] .pm-spread {
+    opacity: 0.6;
+    transform: scale(var(--pm-rest, 1));
+  }
+}
+:root.reduce-motion [data-page-motion] * {
+  animation: none !important;
+}
+:root.reduce-motion [data-page-motion] .pm-rise,
+:root.reduce-motion [data-page-motion] .pm-spread {
+  opacity: 0.6;
+  transform: scale(var(--pm-rest, 1));
+}

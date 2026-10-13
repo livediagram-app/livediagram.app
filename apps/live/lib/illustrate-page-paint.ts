@@ -223,12 +223,14 @@ export function themePresetAccent(presets: readonly ThemeBackgroundPreset[]): st
 }
 
 /** The Background section's categories (docs/specs/007-editor/illustrate-pages.md "Backgrounds"). */
-export type BackgroundCategory = 'solid' | 'gradient' | 'image';
+export type BackgroundCategory = 'solid' | 'gradient' | 'image' | 'animated';
 
-/** The category a page's fill belongs to: Gradient for any gradient (a theme's, a preset or a
- *  custom one), Image for a picture, else Solid (the paper and every solid colour). */
+/** The category a page's fill belongs to: Animated for a gradient with a motion, Gradient for any
+ *  other gradient (a theme's, a preset or a custom one), Image for a picture, else Solid (the paper
+ *  and every solid colour). */
 export function backgroundCategoryOf(fill: PageFill | undefined): BackgroundCategory {
-  return fill?.kind === 'gradient' ? 'gradient' : fill?.kind === 'image' ? 'image' : 'solid';
+  if (fill?.kind === 'gradient') return fill.motion ? 'animated' : 'gradient';
+  return fill?.kind === 'image' ? 'image' : 'solid';
 }
 
 /** Whether the fill is a gradient no preset (of the catalogue or the theme) names: a custom one. */
@@ -238,6 +240,7 @@ export function isCustomGradient(
 ): boolean {
   return (
     fill?.kind === 'gradient' &&
+    !fill.motion &&
     !PAGE_GRADIENT_PRESETS.some((g) => sameFill(fill, gradientFill(g))) &&
     !themePresets.some((t) => sameFill(fill, t.fill))
   );
