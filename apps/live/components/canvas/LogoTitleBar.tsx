@@ -14,6 +14,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MirrorAxisGlyph } from './logo-glyphs';
 import { LogoMirrorButton } from './LogoMirrorPopover';
 import { LogoGuidesButton } from './LogoGuidesPopover';
+import { titleButtonClass } from './TitlePopoverButton';
 
 const GuidesIcon = lucideGlyph(lucideGrid3x3, 14);
 const TidyUpIcon = lucideGlyph(lucideWandSparkles, 14);
@@ -27,17 +28,6 @@ const LABELLED_ROOM = 72;
 export function logoTitleBarRoom(tidyUp: boolean, labelled: boolean): number {
   const each = labelled ? LABELLED_ROOM : BUTTON_ROOM;
   return (tidyUp ? each : 0) + 2 * each;
-}
-
-// The controls' look: the cog's size, named beside the icon when `labelled`, tinted while on.
-function titleButtonClass(on: boolean | undefined, labelled: boolean): string {
-  return `flex h-6 items-center justify-center rounded-md transition ${
-    labelled ? 'gap-1 px-1.5 text-[11px] font-medium' : 'w-6'
-  } focus-visible:outline-2 focus-visible:outline-brand-600 ${
-    on
-      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-      : 'text-slate-500 hover:bg-white hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-  }`;
 }
 
 function TitleButton({

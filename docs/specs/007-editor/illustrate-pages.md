@@ -238,6 +238,20 @@ the swatches below, then, on Gradient, its **custom** choice last.
 - The page background is a page's, never the tab's: the surround (the tab's own canvas) is
   untouched.
 
+### Beside the cog
+
+An infographic or slide page's title bar holds a **Background** button before its lock and cog,
+the cog's size with a tooltip, for someone who may edit (an Editor; a Participant or Viewer sees
+no title-bar controls), as a logo page holds its Guides ([Logo pages](logo-pages.md) "Beside the
+cog"). It opens a popover anchored to it holding the same **Background** and **Pattern** sections
+as the panel's Background tab, with the same hover previews; a press commits, one edit, and the
+popover stays open for another pick. Leaving the popover, or closing it (an outside press, Escape,
+the button again), drops any preview. It is tinted while its popover is open. On a desktop it
+names itself beside its icon (**Background**); a phone shows the icon alone. A locked page shows
+no Background button (its panel says it is locked). The page label truncates before it. Article
+and logo pages keep their background in the panel only. Opening it is tracked as
+`UI / Opened / PageBackgroundButton`.
+
 ## Layouts
 
 A **layout** is placed onto one page from its panel's **Layouts** tab, by category.

@@ -12,6 +12,7 @@ import { PageDeckButton } from './PageDeckButton';
 import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
 import { LogoTitleBar, logoTitleBarRoom } from './LogoTitleBar';
 import { PageLockButton, pageLockRoom } from './PageLockButton';
+import { PageBackgroundButton, pageBackgroundRoom } from './PageBackgroundButton';
 import { track } from '@/lib/telemetry';
 import { isArticleLocked } from '@/lib/article/article-lock';
 import { PageNavigator } from './PageNavigator';
@@ -22,6 +23,7 @@ import {
   articleTopMarginPx,
   ILLUSTRATE_PAGE_GAP,
   pageIsDark,
+  pageKindOf,
   pageLabel,
   pageUnits,
   resolveArticleStyle,
@@ -235,12 +237,16 @@ export function IllustratePages({
           !mobile &&
           (page.kind === 'slide' || !!view.deck.slideOf(page.id));
         const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
+        // An infographic or slide page's Background beside its cog; a locked page offers none.
+        const backgroundButton =
+          !!edit && !locked && !page.flow && pageKindOf(page) !== 'article' && page.kind !== 'logo';
         // The title bar's fixed buttons (the cog, the lock, the deck button, a logo page's own):
         // the invite and the label share what they leave.
         const fixedRoom =
           (edit ? COG_ROOM + pageLockRoom(locked, !mobile) : 0) +
           (deckButton ? DECK_ROOM : 0) +
-          (logoButtons ? logoTitleBarRoom(true, !mobile) : 0);
+          (logoButtons ? logoTitleBarRoom(true, !mobile) : 0) +
+          (backgroundButton ? pageBackgroundRoom(!mobile) : 0);
         const invite =
           !empty || choosing
             ? null
@@ -334,6 +340,16 @@ export function IllustratePages({
                 {/* A logo page's Tidy Up, Mirror and Guides (LogoTitleBar). */}
                 {logoButtons && view.logo ? (
                   <LogoTitleBar pageId={page.id} tools={view.logo} />
+                ) : null}
+                {/* An infographic or slide page's Background (PageBackgroundButton). */}
+                {backgroundButton ? (
+                  <PageBackgroundButton
+                    page={page}
+                    labelled={!mobile}
+                    themePresets={view.themeBackgrounds}
+                    onBackground={(patch) => edit.setBackground(page.id, patch)}
+                    onPreview={(patch) => setPreview(patch ? { pageId: page.id, patch } : null)}
+                  />
                 ) : null}
                 {/* The page's lock, before the cog (PageLockButton). */}
                 {edit ? (
