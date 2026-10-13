@@ -111,8 +111,10 @@ Every write takes what a person would say, and stores the ids:
 - **`change_card_types`** (MCP; the CLI's `type` verbs) changes the catalogue in order, each change one of:
   - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, excludedStatuses? }`: a new type. Fields are
     built-in field names (`assignee`, `due`...) added after Title and Status (Description and Assignee when none
-    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, onCard? }]`
-    (kinds `text`, `longtext`, `number`, `date`, `checkbox`, `link`, `choice`, `card`). Colour and glyph default
+    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, currency?, onCard? }]`
+    (kinds `text`, `longtext`, `number`, `currency`, `date`, `checkbox`, `link`, `email`, `choice`, `card`; a
+    `currency` field's code, GBP when absent). A Currency value is written as a number, an Email value as the
+    address; `editCustom` also takes `currency`. Colour and glyph default
     as the type editor's Add Type does.
   - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, editCustom?, removeCustom?,
 defaultStatus?, excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes
