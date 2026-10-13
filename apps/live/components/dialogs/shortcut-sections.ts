@@ -88,6 +88,9 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['Tab'], label: 'On a mind node: add a child' },
       { keys: ['Enter'], label: 'On a mind node: add a sibling' },
       { keys: ['⇧', 'Enter'], label: 'In a mind node’s label: new line' },
+      // A flowchart step grows the same way (docs/specs/009-elements/flowchart.md).
+      { keys: ['Tab'], label: 'On a flowchart step: add the next step' },
+      { keys: ['Enter'], label: 'On a flowchart step: add a parallel step' },
       { keys: ['Arrow'], label: 'Nudge selection 1 px  (Shift: 10 px)' },
       { keys: ['Shift', 'Click'], label: 'Toggle element in multi-selection' },
       { keys: ['Shift', 'drag'], label: 'Drop a duplicate (original stays put)' },
