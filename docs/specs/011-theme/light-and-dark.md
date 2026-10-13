@@ -22,6 +22,11 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   `packages/document/src/theme-halves-contrast.test.ts` checks every theme in both halves, and
   `apps/live/lib/tab-looks-contrast.test.ts` every look as a light- and a dark-mode viewer sees it (box text, outline
   and arrow).
+- **Style presets meet the same floor.** Every shape preset's label reads on its fill at 4.5:1 or more in both halves
+  of every theme, and every table preset's header title on its band. Bold stays white text, so its fill darkens until
+  white reads on it; any other short label (Solid's white on a mid accent, the Border tier's accent on white) is walked
+  away from its fill. A preset that already read is unchanged. The shared walk lives in
+  `packages/document/src/readable-colour.ts`; `packages/document/src/theme-presets.test.ts` checks every preset.
 - **Custom themes** derive their other half the same way. A viewer who cannot resolve someone else's custom theme
   ([Custom themes](custom-themes.md)) sees it as stored.
 
@@ -30,6 +35,15 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
 - Nothing stored changes when someone looks at a tab. The canvas and each element are **drawn** in the viewer's half:
   a stored colour that is one of the theme's colours, in either half, is drawn as the same role in the viewer's half;
   any other colour is a choice someone made and is drawn as it is.
+- **A box's text and fill are drawn as a pair.** Each colour is redrawn on its own, so a box whose fill is one of the
+  theme's colours but whose text is someone's choice (a template's white box with slate text) would get the half's
+  fill under the stored text. Where that would put the text on its fill below 4.5:1, and read worse than the stored
+  pair does, the box keeps its stored fill and text instead (its outline still follows the half). `packages/document/src/theme-halves.test.ts` covers the rule, and
+  `apps/live/lib/template-theme-contrast.test.ts` every template under every theme, for a light- and a dark-mode
+  viewer.
+- **A shape styled with an earlier preset follows too.** A shape styled before presets met the floor stores the
+  colours they had then; those are read as the same preset, so the box is drawn as today's version of it (a stored
+  Bold of white on a mid-tone fill is drawn with the darker fill).
 - Writing follows the writer: a new element takes the writer's half of the theme, and everyone else sees it in theirs.
   Picking a theme or a look applies it in the picker's half.
 - Everything that draws a tab for a person follows their half: the canvas, the Map, layer and slide thumbnails,
