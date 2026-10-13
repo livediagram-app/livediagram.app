@@ -230,7 +230,8 @@ rule under it, gridlines off), **Plain** (no fills, colours or borders; bold and
 ### Toolbar
 
 One row, shown for someone who may edit, in Plan mode: on its left a **category switcher** (the palette's own
-category dropdown, in its toolbar style, a tile grid), and to its right the chosen category's buttons only:
+category dropdown, in its toolbar style, a tile grid; in a header band it fills the card's height, flush to its
+inset, as the menu box's mode tile does), and to its right the chosen category's buttons only:
 
 | Category  | Buttons                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -485,7 +486,7 @@ view gets the header and **Copy** alone.
   fill colour, font (one of the editor's [fonts](../004-interface-design/fonts.md), by id; unset, the tab's font; the
   toolbar's **Font** is a button naming the active cell's font in its own face, left of Font Size, opening a menu of
   **Default** then every font, each named in its own face, the active cell's ticked; an id the editor no longer
-  offers draws in the tab's font), font size (any whole size from 6 to 96 points, 10 by default; the toolbar's Font Size is a number between − and +
+  offers draws in the tab's font), font size (any whole size from 6 to 96 points, 10 by default; the toolbar's Font Size is a number between − and +, worn in the Sheet's own colours as the Font button beside it is
   that step through 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 36, 48 and 72, and takes a typed size, kept within the
   limits; folded into More it is a menu of those sizes), horizontal alignment, vertical alignment (top, middle,
   bottom; middle when unset), wrap (overflow, wrap, clip), a border on each side (thin, medium, thick, dashed or dotted, in a colour) and,

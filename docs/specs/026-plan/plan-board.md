@@ -654,6 +654,10 @@ for a moment at most ([Maximised board](#maximised-board)).
   move between tabs; the board sits clear of them. It appears at once (no grow). There is no Maximise/Restore, no
   Focus and no Add to Slides, and Escape restores nothing. Presses, wheel and right-click on it stay on the board,
   so the canvas under it is never selected, panned, zoomed or menu'd; the board's settings are its cog.
+- **Never seen small first.** A new Board or Sheet tab (Start Planning) is covered from its first frame: while the
+  board's or Sheet's view is still loading, the canvas area wears its own opaque backdrop in the cover's place, so the
+  element is never drawn small and selected on the canvas before it fills the tab. Start Planning fetches those views
+  while it is open, so the backdrop is rarely seen for more than a frame or two.
 - **Two boards (or Sheets) on one Board tab** (an agent's or a collaborator's write, a paste): the first in canvas
   order (element order) fills it; the others stay under it, unseen.
 - **Elements added to a Board tab** (a collaborator or their agent, a paste) are **hidden, not blocked**: kept in the

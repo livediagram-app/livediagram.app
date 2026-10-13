@@ -231,7 +231,15 @@ export function SheetToolbar({
       onPointerDown={stop}
       onDoubleClick={stop}
     >
-      <div ref={switcher} className={`flex shrink-0 items-center ${phone ? 'pr-1' : 'pr-1.5'}`}>
+      {/* In a header band the switcher fills the card's height, flush to its inset as the menu box's mode tile is
+          (that box is drawn at the toolbar's UI scale, so a fixed 36 px tile here sat short of it, gaps above and
+          below). */}
+      <div
+        ref={switcher}
+        className={`flex shrink-0 items-center ${phone ? 'pr-1' : 'pr-1.5'}${
+          inBand ? ' self-stretch [&>div>button]:h-full [&>div]:h-full' : ''
+        }`}
+      >
         <PaletteDropdown
           ariaLabel="Toolbar category"
           value={category.id}
