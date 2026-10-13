@@ -64,8 +64,22 @@ function SlidesTourArt() {
       {[18, 40, 62].map((y, i) => (
         <g key={y}>
           <rect x="200" y={y} width="34" height="18" rx="2" className={ART.paper} />
-          <rect x={i === 1 ? 204 : 218} y={y + 4} width="12" height="10" rx="1" className={ART.faint} />
-          <rect x={i === 1 ? 220 : 204} y={y + 5} width="10" height="2" rx="1" className={ART.ink} />
+          <rect
+            x={i === 1 ? 204 : 218}
+            y={y + 4}
+            width="12"
+            height="10"
+            rx="1"
+            className={ART.faint}
+          />
+          <rect
+            x={i === 1 ? 220 : 204}
+            y={y + 5}
+            width="10"
+            height="2"
+            rx="1"
+            className={ART.ink}
+          />
         </g>
       ))}
       <rect
@@ -117,17 +131,52 @@ function InfographicTourArt() {
   return (
     <TourArtFrame css={INFOGRAPHIC_CSS}>
       <rect x="92" y="8" width="120" height="88" rx="3" className={ART.paper} strokeWidth="1.5" />
-      <rect x="92" y="8" width="120" height="16" rx="3" className={`tour-art-el info-art-band ${ART.accent}`} />
+      <rect
+        x="92"
+        y="8"
+        width="120"
+        height="16"
+        rx="3"
+        className={`tour-art-el info-art-band ${ART.accent}`}
+      />
       <g className="tour-art-el info-art-head">
         <rect x="100" y="32" width="56" height="5" rx="2" className={ART.ink} />
         <rect x="100" y="41" width="36" height="3" rx="1.5" className={ART.faint} />
       </g>
       <path d="M100 86 H148" strokeWidth="1.5" className={ART.line} />
-      <rect x="104" y="66" width="8" height="20" rx="1" className="tour-art-el info-art-bar fill-sky-400" />
-      <rect x="118" y="56" width="8" height="30" rx="1" className="tour-art-el info-art-bar fill-brand-400" />
-      <rect x="132" y="62" width="8" height="24" rx="1" className="tour-art-el info-art-bar fill-rose-400" />
+      <rect
+        x="104"
+        y="66"
+        width="8"
+        height="20"
+        rx="1"
+        className="tour-art-el info-art-bar fill-sky-400"
+      />
+      <rect
+        x="118"
+        y="56"
+        width="8"
+        height="30"
+        rx="1"
+        className="tour-art-el info-art-bar fill-brand-400"
+      />
+      <rect
+        x="132"
+        y="62"
+        width="8"
+        height="24"
+        rx="1"
+        className="tour-art-el info-art-bar fill-rose-400"
+      />
       {/* A ring chart, three-quarters drawn. */}
-      <circle cx="180" cy="68" r="18" fill="none" strokeWidth="6" className="stroke-slate-200 dark:stroke-slate-600" />
+      <circle
+        cx="180"
+        cy="68"
+        r="18"
+        fill="none"
+        strokeWidth="6"
+        className="stroke-slate-200 dark:stroke-slate-600"
+      />
       <circle
         cx="180"
         cy="68"
@@ -227,7 +276,12 @@ function LogoTourArt() {
     <TourArtFrame css={LOGO_CSS}>
       <rect x="92" y="8" width="120" height="88" rx="3" className={ART.paper} strokeWidth="1.5" />
       {/* The guides: the page's centre lines. */}
-      <path d="M152 12 V92 M96 44 H208" strokeWidth="1" strokeDasharray="3 3" className="stroke-brand-300 dark:stroke-brand-500/60" />
+      <path
+        d="M152 12 V92 M96 44 H208"
+        strokeWidth="1"
+        strokeDasharray="3 3"
+        className="stroke-brand-300 dark:stroke-brand-500/60"
+      />
       <circle cx="144" cy="44" r="16" className="tour-art-el logo-art-left fill-brand-500/80" />
       <rect
         x="146"

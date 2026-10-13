@@ -27,7 +27,15 @@ function Card({ x, y }: { x: number; y: number }) {
 function MovingCard({ x, y }: { x: number; y: number }) {
   return (
     <g className="tour-art-el plan-art-card">
-      <rect x={x} y={y} width="52" height="18" rx="3" className={ART.accentSoft} strokeWidth="1.5" />
+      <rect
+        x={x}
+        y={y}
+        width="52"
+        height="18"
+        rx="3"
+        className={ART.accentSoft}
+        strokeWidth="1.5"
+      />
       <rect x={x} y={y} width="3" height="18" rx="1.5" className={ART.accent} />
     </g>
   );
@@ -40,7 +48,14 @@ export function BoardsTourArt() {
       {BOARD_COLUMNS.map((x, i) => (
         <g key={x}>
           <rect x={x} y="14" width="68" height="78" rx="6" className={ART.well} />
-          <rect x={x + 8} y="21" width={i === 1 ? 30 : 24} height="4" rx="2" className={ART.faint} />
+          <rect
+            x={x + 8}
+            y="21"
+            width={i === 1 ? 30 : 24}
+            height="4"
+            rx="2"
+            className={ART.faint}
+          />
         </g>
       ))}
       <Card x={52} y={58} />
