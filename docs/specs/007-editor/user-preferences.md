@@ -271,6 +271,10 @@ type UserPreferences = {
   // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Illustrate Tour" (inverted). Missing / undefined === not seen.
   illustrateTourSeen?: boolean;
+  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
+  // read through lib/presentation-config. Surfaced in Settings as Editor › Presenting. Missing === what this
+  // browser kept before they followed the account, else the defaults.
+  presentation?: Record<string, unknown>;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
@@ -584,7 +588,8 @@ and the dialog stays as the one complete, browsable index of them.
   readout nested under it while the mode is on; with the sub-categories
   **Draw** (dock position, Top or Bottom) and **Illustrate** (a **Logo Pages**
   section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
-  nested under it)), **Appearance** (theme, then an **Interface** section:
+  nested under it) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
+  [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity; with the

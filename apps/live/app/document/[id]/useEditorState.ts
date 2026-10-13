@@ -1537,6 +1537,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Set by the pages' hook (below): a page slide's row frames its page once its tab is open.
   const framePageRef = useRef<((pageId: string) => void) | null>(null);
   const slideDeck = useSlideDeck({
+    prefs: userPreferences,
+    // Built on this render's preferences: moved onto the freshest before the whole blob is written.
+    commitPrefs: (next) =>
+      setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id)),
     tabs,
     framePage: (_tabId, pageId) => framePageRef.current?.(pageId),
     plan: slideThumbnailPlan,
