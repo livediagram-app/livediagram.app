@@ -229,4 +229,34 @@ export function ProductNav({
   );
 }
 
+// The same surfaces as a row of links, for a host that carries no menu (the editor's Explorer footer,
+// docs/specs/013-workspace/explorer-structure.md "Layout"): each icon and label, `current` left out. Asks whether
+// the Community is on as it mounts, since a host shows it only once someone opens it.
+export function ProductNavLinks({
+  current,
+  className = '',
+}: {
+  current: ProductNavKey;
+  className?: string;
+}) {
+  const communityOn = useCommunityEnabled(undefined, true);
+  const items = ITEMS.filter((i) => i.key !== current && (communityOn || i.key !== 'community'));
+  return (
+    <nav aria-label="Go to" className={`flex items-center gap-0.5 ${className}`}>
+      {items.map((item) => (
+        <a
+          key={item.key}
+          href={item.href}
+          className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 pointer-coarse:h-11 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+        >
+          <span aria-hidden className="flex opacity-80">
+            {ICONS[item.key]()}
+          </span>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
 export type { ProductNavKey };

@@ -152,13 +152,12 @@ test.describe('Power user mode', () => {
     await expect(layersTitle).toHaveCount(1);
     await expect(page.getByRole('link', { name: /learn about layers/i })).toHaveCount(0);
     // A panel without a ⋯ menu just drops its help; the help centre stays in
-    // the header's Editor menu.
+    // the Explorer's footer links.
     await page.keyboard.press('Escape');
-    await page.getByRole('button', { name: /^Switch section, currently Editor$/ }).click();
-    await expect(page.getByRole('menuitem', { name: /^Help/ })).toHaveAttribute(
-      'href',
-      /\/help\/?$/,
-    );
+    await page.getByRole('button', { name: 'Explorer', exact: true }).click();
+    await expect(
+      page.getByRole('navigation', { name: 'Go to' }).getByRole('link', { name: 'Help' }),
+    ).toHaveAttribute('href', /\/help\/?$/);
     expectNoPageErrors(pageErrors);
   });
 

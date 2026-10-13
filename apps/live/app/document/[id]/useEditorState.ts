@@ -3764,6 +3764,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Re-sweep the team libraries after a team-folder mutation made from
     // the Explorer panel (docs/specs/013-workspace/team-shared-documents.md), and the confirm dialog its delete uses.
     refreshTeamLibraries,
+    // Refetch the reader's own document list: the Explorer panel's Trash restored or deleted one.
+    refreshOwnDocuments: () => refreshDocumentList(selfParticipant.id),
     confirm,
     // Clipboard copy, also exposed to the event-storming note menu (docs/specs/021-event-storming/event-storming.md),
     // plus paste + its enabled flag for the canvas menu's Paste row.

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState, type HTMLAttributes } from 'react';
+import { createPortal } from 'react-dom';
 import { Chip } from '@livediagram/ui';
 import { SHARE_STATE_META, STATE_CHIP_HEIGHT_PX, StateDot, type ShareState } from './share-states';
 import { VisibilityLegend } from './VisibilityLegend';
@@ -43,7 +44,11 @@ export function SharedBadge({
   offline,
   community,
   onManage,
+  portal = false,
 }: {
+  // Its legend opens over everything, right-aligned under the pill (the Explorer's card: the panel's scroll would
+  // clip a legend drawn inside it).
+  portal?: boolean;
   // Opens Share: the pill becomes a button and its legend offers Change Who Can See This. Absent where the
   // reader may not change who can see the document.
   onManage?: () => void;
@@ -76,6 +81,13 @@ export function SharedBadge({
     closeTimer.current = window.setTimeout(() => setOpen(false), LEGEND_CLOSE_GRACE_MS);
   };
   useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const [at, setAt] = useState<{ top: number; right: number } | null>(null);
+  useEffect(() => {
+    if (!portal || !open) return;
+    const r = anchorRef.current?.getBoundingClientRect();
+    if (r) setAt({ top: r.bottom, right: window.innerWidth - r.right });
+  }, [portal, open]);
   const manage = onManage
     ? () => {
         setOpen(false);
@@ -84,6 +96,7 @@ export function SharedBadge({
     : undefined;
   return (
     <span
+      ref={anchorRef}
       className="relative inline-flex"
       onMouseEnter={show}
       onMouseLeave={hide}
@@ -118,7 +131,20 @@ export function SharedBadge({
           creates its own stacking context and doesn't clip overflow (the
           AuthControls menu relies on the same), so no portal is needed. */}
       {/* Every visibility state with its meaning, the current one marked (VisibilityLegend). */}
-      {open ? <VisibilityLegend current={state} onManage={manage} /> : null}
+      {open && !portal ? <VisibilityLegend current={state} onManage={manage} /> : null}
+      {open && portal && at
+        ? createPortal(
+            <div
+              className="fixed z-[var(--z-popover)]"
+              style={{ top: at.top, right: at.right }}
+              onMouseEnter={show}
+              onMouseLeave={hide}
+            >
+              <VisibilityLegend current={state} onManage={manage} align="floating" />
+            </div>,
+            document.body,
+          )
+        : null}
     </span>
   );
 }

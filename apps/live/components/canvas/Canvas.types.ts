@@ -571,6 +571,8 @@ export type CanvasProps = {
   explorerMenuActions?: import('@/components/panels/Explorer.types').ExplorerMenuActions;
   onRenameCurrent: (name: string) => void;
   onDeleteDocument: (id: string) => void;
+  // The Explorer panel's Trash restored or deleted a document: refetch the lists.
+  onLibraryChanged?: () => void;
   onDuplicateDocument: (id: string) => void;
   onCreateFolder: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
   onRenameFolder: (id: string, name: string) => void;

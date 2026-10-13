@@ -55,7 +55,7 @@ export function StartAgainTray({
   if (!strip)
     return (
       <div
-        className="pointer-events-none fixed inset-x-0 z-[var(--z-chrome)] flex justify-center px-4"
+        className="pointer-events-none fixed inset-x-0 z-[var(--z-chrome)] flex justify-center px-4 [body[data-explorer-open]_&]:hidden"
         style={pillPlace(dock)}
       >
         <TopCenterBanner

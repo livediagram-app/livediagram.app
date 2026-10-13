@@ -186,6 +186,7 @@ export function EditorCanvasHost() {
     createFolder,
     deleteCurvePoint,
     deleteDocument,
+    refreshOwnDocuments,
     deleteFolder,
     deleteMultiSelected,
     deleteSelected,
@@ -974,6 +975,7 @@ export function EditorCanvasHost() {
           if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
         }}
         onDeleteDocument={deleteDocument}
+        onLibraryChanged={refreshOwnDocuments}
         onDuplicateDocument={(id) => void duplicateDocument(id)}
         onCreateFolder={createFolder}
         onRenameFolder={renameFolder}

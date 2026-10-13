@@ -2,7 +2,6 @@ import { useState, type ReactNode } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
 import {
   Brand,
-  ProductNav,
   HoverCard,
   SOLID_BRAND_DARK_CONTROL,
   Glyph,
@@ -128,7 +127,6 @@ export function EditorHeader({
           wordmarkClassName="hidden sm:inline"
           className="relative touch-target"
         />
-        <ProductNav current="editor" />
       </div>
       <div className="flex flex-1 items-center justify-start sm:justify-center">
         {hideTitle ? null : editing && !readOnly ? (
@@ -237,9 +235,10 @@ export function EditorHeader({
             </button>
           </HoverCard>
         ) : null}
-        {/* Explorer + Help used to sit here as top-right links; both now live
-            in the ProductNav apps menu next to the logo, so the header keeps
-            just its primary actions. */}
+        {/* Explorer + Help used to sit here as top-right links; the product's
+            surfaces now live in the Explorer panel's footer
+            (docs/specs/013-workspace/explorer-structure.md "Layout"), so the
+            header keeps just its primary actions. */}
         <AuthControls onOpenAccount={onOpenAccount} />
       </div>
     </header>

@@ -75,15 +75,24 @@ function kindFor(selected: SelectedNode): EmptyKind {
   return 'default';
 }
 
-export function EmptyPane({ selected }: { selected: SelectedNode }) {
+// `compact`: sized for the editor's Explorer pane, with its own CTA left out (`cta` false).
+export function EmptyPane({
+  selected,
+  compact = false,
+  cta = true,
+}: {
+  selected: SelectedNode;
+  compact?: boolean;
+  cta?: boolean;
+}) {
   const c = CONTENT[kindFor(selected)];
 
   const ctaHref =
     selected.kind === 'folder' ? `/new?folder=${encodeURIComponent(selected.id)}` : '/new';
 
   return (
-    <EmptyState icon={c.icon} title={c.title} description={c.description}>
-      {c.cta ? (
+    <EmptyState compact={compact} icon={c.icon} title={c.title} description={c.description}>
+      {c.cta && cta ? (
         <Link
           href={ctaHref}
           className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
