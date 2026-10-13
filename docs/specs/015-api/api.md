@@ -145,12 +145,12 @@ Owner-only routes require a resolved owner (see Auth above). When none resolves,
 
 **Folders (Explorer organisation — see [15-folders.md](../013-workspace/folders.md))**
 
-| Method | Path               | Auth  | Notes                                                |
-| ------ | ------------------ | ----- | ---------------------------------------------------- |
-| GET    | `/api/folders`     | owner | List the owner's folders (flat — parentId nests UI). |
-| POST   | `/api/folders`     | owner | Body `{ id, name, parentId? }`. Cycle-checked.       |
-| PUT    | `/api/folders/:id` | owner | Body `{ name?, parentId? }`. Cycle-checked.          |
-| DELETE | `/api/folders/:id` | owner | Children get promoted; documents move to the root.   |
+| Method | Path               | Auth  | Notes                                                                                        |
+| ------ | ------------------ | ----- | -------------------------------------------------------------------------------------------- |
+| GET    | `/api/folders`     | owner | List the owner's folders (flat — parentId nests UI).                                         |
+| POST   | `/api/folders`     | owner | Body `{ id, name, parentId? }`. Cycle-checked. An id already taken is `folder_exists` (409). |
+| PUT    | `/api/folders/:id` | owner | Body `{ name?, parentId? }`. Cycle-checked.                                                  |
+| DELETE | `/api/folders/:id` | owner | Children get promoted; documents move to the root.                                           |
 
 **Default folders (see [Default folders](../013-workspace/default-folders.md))**
 

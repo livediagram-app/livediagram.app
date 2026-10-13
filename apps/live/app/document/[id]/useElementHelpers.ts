@@ -200,11 +200,17 @@ export function useElementHelpers(opts: {
     if (!formatPaintsAnything(formatConfig)) return;
     const keepSource = formatConfig.mode === 'keep';
     const source = activeTab.elements.find((el) => el.id === formatSourceId);
-    const target = activeTab.elements.find((el) => el.id === targetId);
-    if (!source || !target || source.id === target.id) {
-      if (!keepSource) setFormatSourceId(null);
+    // The source is gone (deleted, or another tab): the brush holds nothing any more.
+    if (!source) {
+      setFormatSourceId(null);
       return;
     }
+    const target = activeTab.elements.find((el) => el.id === targetId);
+    // Only an apply empties a Paint once brush (or counts as a paint): a tap on the source itself, or on an
+    // element of the other kind (a shape's look onto an arrow, a no-op), leaves the brush loaded.
+    const boxedPair = !!target && isBoxed(source) && isBoxed(target);
+    const arrowPair = source.type === 'arrow' && target?.type === 'arrow';
+    if (!target || source.id === target.id || !(boxedPair || arrowPair)) return;
     track('Element', 'Changed', 'FormatPainter');
     // Field projections live in lib/format-painter.ts so the list
     // of painted fields (and the rule that future additions to

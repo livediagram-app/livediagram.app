@@ -22,6 +22,7 @@ import {
   layOutIllustratePages,
   withContentOnAPage,
   type EditorMode,
+  type Element,
   type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
@@ -62,6 +63,8 @@ export type IllustratePagesView = {
   articles?: ArticlesView | null;
   // The tab's default face, for what the pages draw themselves (a layout preview).
   tabFont?: string;
+  // The tab's elements, for the content a previewed layout carries over from its page.
+  elements?: Element[];
   // A layout previewed on a page while its tile is hovered: the page's own content is hidden
   // under it (the clip leaves the page out) so the preview never mixes with it.
   layoutPreview: { pageId: string; layout: PageLayoutId } | null;
@@ -261,6 +264,7 @@ export function useIllustratePages(deps: {
     themeBackgrounds,
     themeAccent: themeAccent(theme),
     tabFont,
+    elements: activeTab.elements,
     layoutPreview,
     setLayoutPreview,
   };

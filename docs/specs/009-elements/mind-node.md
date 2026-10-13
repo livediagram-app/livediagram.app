@@ -522,7 +522,8 @@ is read forgivingly, so a list pasted from elsewhere works:
   theirs, and bullets under a heading nest one level below it.
 - An indentation deeper than one level below the line above is read as one level below it, so a
   line can never skip a level. A second line at the root's level is read as a child of the root
-  (a map has one root).
+  (a map has one root); for a heading, the deeper headings after it then read against it, so under a
+  `#` root, a `#` section's `##` lines are that section's children.
 - Bold (`**bold**` or `__bold__`), italic (`_italic_` or `*italic*`) and underline
   (`<u>underline</u>`) become the node's formatting. Other inline Markdown is stripped, keeping
   its text: `` `code` ``, links and task boxes (`[ ]`, `[x]`).

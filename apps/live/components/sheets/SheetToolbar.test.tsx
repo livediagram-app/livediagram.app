@@ -580,6 +580,30 @@ describe('the sheet toolbar', () => {
     }
   });
 
+  it("fills a header band card's height with the category switcher, as the menu box's mode tile does", () => {
+    renderSheet(h, ({ actions }) => <SheetToolbar actions={actions} inBand />);
+    const wrap = screen.getByRole('button', { name: 'Toolbar category' }).parentElement!
+      .parentElement!;
+    expect(wrap.className).toContain('self-stretch');
+    expect(wrap.className).toContain('[&>div>button]:h-full');
+  });
+
+  it('keeps the switcher its own size on the canvas', () => {
+    show(h);
+    const wrap = screen.getByRole('button', { name: 'Toolbar category' }).parentElement!
+      .parentElement!;
+    expect(wrap.className).not.toContain('self-stretch');
+  });
+
+  it("wears the Sheet's colours on Font and Font Size", () => {
+    show(h);
+    pickCategory('Text');
+    const font = screen.getByRole('button', { name: /^Font: / });
+    expect(font.style.borderColor).not.toBe('');
+    const size = screen.getByLabelText('Font Size');
+    expect((size as HTMLElement).style.color).not.toBe('');
+  });
+
   it('opens Search as a menu', () => {
     show(h);
     expect(screen.getByRole('button', { name: 'Search' }).getAttribute('aria-haspopup')).toBe(

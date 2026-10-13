@@ -81,8 +81,12 @@ export function useElementLinks(deps: ElementLinksDeps) {
     );
     // Link-card unfurl (docs/specs/009-elements/link-cards.md): when a URL lands on a link-card, fetch its
     // preview ONCE here (the setter) and cache it on the element; peers get
-    // it via the normal tab sync. Fails soft — the card shows the bare URL.
-    if (link?.kind === 'url') {
+    // it via the normal tab sync. Fails soft — the card shows the bare URL. Only a link card draws a preview,
+    // so a URL linked from any other element is never sent to the unfurl endpoint.
+    const linksACard =
+      link?.kind === 'url' &&
+      tabs.some((t) => t.elements.some((el) => ids.has(el.id) && el.type === 'link-card'));
+    if (link?.kind === 'url' && linksACard) {
       const url = link.url;
       void apiUnfurl(url).then((meta) => {
         if (!meta) return;
