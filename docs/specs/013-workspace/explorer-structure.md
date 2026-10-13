@@ -214,7 +214,8 @@ aside: the panel reaches under the strip and they would cover its header.
 ### The rail
 
 The rail is the sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
-Shared with me; My documents and each team; This browser, Library and Trash. Entries carry the sidebar's badges. No
+Shared with me; My documents and each team; This browser, Library and Trash. Shared with me and This browser carry
+their counts (the panel reads no other feed until its section is shown). No
 Invites, New team or sign-in nudge: those are the Explorer page's.
 
 - **Every entry is a mode of the pane.** Picking one shows it in the pane; none leaves the editor. The picked entry is
