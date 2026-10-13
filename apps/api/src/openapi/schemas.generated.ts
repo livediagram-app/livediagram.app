@@ -9693,6 +9693,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "const": "gradient",
             "type": "string"
           },
+          "motion": {
+            "$ref": "#/components/schemas/PageMotion"
+          },
+          "speed": {
+            "type": "number"
+          },
           "to": {
             "type": "string"
           }
@@ -9783,6 +9789,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "article",
       "slide",
       "logo"
+    ],
+    "type": "string"
+  },
+  "PageMotion": {
+    "enum": [
+      "flow",
+      "drift",
+      "aurora",
+      "ripple",
+      "ribbons",
+      "mesh",
+      "starfield",
+      "retro-grid",
+      "bokeh",
+      "waves",
+      "spotlight",
+      "beams",
+      "sunburst",
+      "fireflies",
+      "snowfall",
+      "lava",
+      "dot-wave",
+      "clouds"
     ],
     "type": "string"
   },

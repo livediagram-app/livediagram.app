@@ -5,6 +5,7 @@
 // popover and the first page's own choice.
 import type { PageKind } from '@livediagram/document';
 import type { KeyboardEvent, Ref } from 'react';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 export type PageKindChoice = { kind: PageKind; name: string; line: string };
 
@@ -84,7 +85,9 @@ export function PageKindCard({
       }`}
     >
       {suggested ? (
-        <span className="absolute right-2 top-2 z-10 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-brand-500">
+        <span
+          className={`absolute right-2 top-2 z-10 rounded-full bg-brand-700 px-2 py-0.5 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK_CONTROL}`}
+        >
           Same as last page
         </span>
       ) : null}
