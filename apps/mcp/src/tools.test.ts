@@ -216,7 +216,7 @@ const AUTHED = { authInfo: { token: 'tok_test' } };
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('registerTools', () => {
-  it('registers the twenty-two documented tools, each with a description', () => {
+  it('registers the twenty-three documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -239,6 +239,7 @@ describe('registerTools', () => {
       'read_sheet',
       'rename_document',
       'restore_document',
+      'search_icons',
       'share_document',
       'update_document',
       'write_article',
@@ -280,7 +281,8 @@ describe('registerTools', () => {
     // labelled with the tool it came from via registerTool's scope.
     const { registered, emitted } = harness('down');
     for (const tool of registered) {
-      if (tool.name === 'list_templates') continue; // needs no api, cannot fail here
+      // These need no api, so cannot fail here.
+      if (tool.name === 'list_templates' || tool.name === 'search_icons') continue;
       await tool.handler(ARGS, AUTHED).catch(() => undefined);
     }
     await flush();
@@ -334,6 +336,7 @@ describe('tool annotations', () => {
     find_documents: 'read',
     read_document: 'read',
     list_templates: 'read',
+    search_icons: 'read',
     create_document: 'write',
     add_tab: 'write',
     share_document: 'write',
@@ -405,6 +408,7 @@ describe('tool annotations', () => {
       'list_trash',
       'read_document',
       'read_sheet',
+      'search_icons',
     ]);
 
     // Destructive is only meaningful on a writer, and MCP defaults it to TRUE

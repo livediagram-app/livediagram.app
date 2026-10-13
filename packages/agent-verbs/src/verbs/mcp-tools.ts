@@ -18,6 +18,7 @@ import {
   deleteDocumentOutput,
   findDocumentsOutput,
   listTemplatesOutput,
+  searchIconsOutput,
   listTrashOutput,
   readDocumentOutput,
   renameDocumentOutput,
@@ -34,6 +35,7 @@ import {
   readDocumentShape,
   renameDocumentShape,
   restoreDocumentShape,
+  searchIconsShape,
   shareDocumentShape,
   updateDocumentShape,
 } from '../mcp/schema';
@@ -136,6 +138,17 @@ export const mcpListTemplates = mcpTool('list_templates', {
     'update_document.',
   inputSchema: {},
   outputSchema: listTemplatesOutput,
+});
+
+export const mcpSearchIcons = mcpTool('search_icons', {
+  behaviour: 'read',
+  title: 'Search icons',
+  description:
+    'Find icons by what they show, best match first: the line-art set and the Technology set ' +
+    '(brand, cloud and database marks such as aws-lambda, postgresql, kafka). Each hit\u2019s id is ' +
+    'what an element\u2019s "iconId" takes; an iconId that names no icon is refused.',
+  inputSchema: searchIconsShape,
+  outputSchema: searchIconsOutput,
 });
 
 export const mcpCreateDocument = mcpTool('create_document', {
@@ -386,6 +399,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpFindDocuments,
   mcpReadDocument,
   mcpListTemplates,
+  mcpSearchIcons,
   mcpCreateDocument,
   mcpAddTab,
   mcpUpdateDocument,

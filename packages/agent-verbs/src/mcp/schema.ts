@@ -404,6 +404,16 @@ const mermaidField = z
       'applies. Provide one of graph, mermaid, elements or template.',
   );
 
+// Icon search (docs/specs/015-api/mcp-server.md §4.5a): the ids "iconId" takes, found by what they show.
+export const searchIconsShape = {
+  query: z
+    .string()
+    .min(1)
+    .max(60)
+    .describe('What the icon shows, in plain words ("database", "load balancer", "aws lambda").'),
+  limit: z.number().int().min(1).max(50).optional().describe('At most this many (default 20).'),
+};
+
 export const findDocumentsShape = {
   query: z.string().optional().describe('Only documents whose name contains this text.'),
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),

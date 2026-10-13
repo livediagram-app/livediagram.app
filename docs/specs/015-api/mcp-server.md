@@ -175,10 +175,11 @@ browser. A token minted for the CLI is named "livediagram CLI".
 
 ## 4. Tools
 
-Twenty-two tools: eleven for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
+Twenty-three tools: twelve for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
 ([§4.9c](#49c-the-sheet-tools)) and two for Illustrate pages and articles ([§4.9d](#49d-the-illustrate-tools)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
-list_templates exposes the template catalogue ([§4.5](#45-list_templates));
+list_templates exposes the template catalogue ([§4.5](#45-list_templates)) and search_icons the icon catalogue
+([§4.5a](#45a-search_icons));
 share, rename, and delete complete the CRUD verbs, with list_trash and
 restore_document as the way back from a delete
 ([§4.8](#48-share_document), [§4.9](#49-rename_document-and-delete_document), [§4.9a](#49a-list_trash-and-restore_document)).
@@ -324,6 +325,13 @@ mode and on a new tab only the elements sent. An end that names nothing there, o
 the call, naming the arrow and its side (`arrow "a1": "to" is pinned to "4aeb", which is no element on the tab or
 in this call`); an arrow to nowhere is never stored.
 
+**Values checked.** A whole element the model sends (on `create_document`, `add_tab`, `replace` and an ops `add`)
+is checked as an edit operation's `set` checks a field: a field its type does not have is refused with the fields
+like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition`), a `textSize` off the scale
+(`sm`, `md`, `lg`, `scale`) is refused, and an `iconId` that names no icon is refused with the icons like it and a
+pointer to `search_icons`. Each of these was once stored and drawn wrong in silence. The check passes every element
+of every template, so a tab read back as JSON writes again unchanged.
+
 ### 4.5 `list_templates`
 
 Browse the template library — the same hand-tuned catalogue the editor's
@@ -338,6 +346,14 @@ metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit — or accidentally mangle — a curated layout.
 The recommended flow for "make me a kanban board"-style asks: `list_templates`
 → create with `template` → `update_document` (`ops`) to fill in real content.
+
+### 4.5a `search_icons`
+
+Finds icons by what they show, best match first, across the line-art set and the Technology set (brand, cloud and
+database marks): `{ query, limit? }` (20 by default, at most 50) answers `{ icons: [{ id, label, set }], more }`. An
+id is what an element's `iconId` takes. The catalogue is bundled with the worker (`@livediagram/icons`'s
+`searchIcons`, the api's `/icons` route and the CLI's `icon search` use the same ranking), so the search makes no
+api call. Read-only.
 
 ### 4.6 Schema resource (not a tool)
 
@@ -728,7 +744,7 @@ Three behaviours cover the twenty tools, and each is a preset in
 
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                           |
 | --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`                    |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`    |
 | **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet` |
 | **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`                                       |
 

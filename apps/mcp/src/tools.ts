@@ -52,6 +52,8 @@ import {
 } from './tool-helpers';
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
+import { elementsIssue } from './element-values';
+import { searchIcons } from '@livediagram/icons/search';
 import { imageResult } from './image-result';
 import {
   baseFor,
@@ -75,6 +77,7 @@ import {
   mcpReadDocument,
   mcpRenameDocument,
   mcpRestoreDocument,
+  mcpSearchIcons,
   mcpShareDocument,
   mcpUpdateDocument,
 } from '@livediagram/agent-verbs/mcp';
@@ -106,6 +109,12 @@ export function registerTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpListTemplates, async (_args, extra) => {
     requireToken(extra as Extra);
     return textResult(templateCatalogue());
+  });
+
+  // The icon catalogue is bundled, so a search needs no api call (docs/specs/015-api/mcp-server.md §4.5a).
+  registerTool(server, env, mcpSearchIcons, async (args, extra) => {
+    requireToken(extra as Extra);
+    return textResult(searchIcons(args.query, args.limit ?? 20));
   });
 
   registerTool(server, env, mcpCreateDocument, async (args, extra) => {
@@ -154,6 +163,8 @@ export function registerTools(server: McpServer, env: Env): void {
         tabs.push(buildGraphTab(tabId, t.name, input.graph, args.theme));
         continue;
       }
+      const valueIssue = elementsIssue(t.elements ?? []);
+      if (valueIssue) return errorResult(`Tab "${t.name}": ${valueIssue}`);
       const ended = resolveArrowEnds(t.elements ?? [], idsOf(t.elements ?? []));
       if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
       const candidate: unknown = {
@@ -231,6 +242,8 @@ export function registerTools(server: McpServer, env: Env): void {
           'from list_templates. Check the livediagram://schema/elements resource.',
       );
     }
+    const valueIssue = args.elements ? elementsIssue(args.elements) : null;
+    if (valueIssue) return errorResult(valueIssue);
     const ended = args.elements ? resolveArrowEnds(args.elements, idsOf(args.elements)) : null;
     if (ended && 'error' in ended) return errorResult(ended.error);
     // Default the new tab's theme to the document's existing one so it matches the other tabs
@@ -305,6 +318,8 @@ export function registerTools(server: McpServer, env: Env): void {
       if (!input.graph && !args.elements) {
         return errorResult('replace mode requires "graph", "mermaid" or "elements".');
       }
+      const valueIssue = args.elements ? elementsIssue(args.elements) : null;
+      if (valueIssue) return errorResult(valueIssue);
       // The new elements are the whole tab, so an arrow end may name only them.
       const ended = args.elements ? resolveArrowEnds(args.elements, idsOf(args.elements)) : null;
       if (ended && 'error' in ended) return errorResult(ended.error);

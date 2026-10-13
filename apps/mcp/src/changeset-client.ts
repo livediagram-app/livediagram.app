@@ -19,6 +19,7 @@ import {
 } from '@livediagram/document';
 import { ApiError, apiJson } from './api';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
+import { elementsIssue } from './element-values';
 import type { Env } from './env';
 
 export async function submitChangeset(
@@ -84,6 +85,8 @@ export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unk
     const n = i + 1;
     if (op.op === 'add') {
       if (!op.element) return `ops[${n}]: add needs "element"`;
+      const valueIssue = elementsIssue([op.element]);
+      if (valueIssue) return `ops[${n}]: ${valueIssue}`;
       const element = withEnds(op.element);
       if (typeof element === 'string') return `ops[${n}]: ${element}`;
       out.push({ op: 'add', element });
