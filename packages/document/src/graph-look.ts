@@ -14,9 +14,11 @@ import { rectGrid, type RectGrid } from './auto-layout-route-grid';
 import { anchorPosition, endpointPosition } from './geometry';
 import type { GraphEdge, GraphNode } from './graph-authoring';
 import {
+  ROUTER_BUDGET,
   routeOrthogonal,
   runsOf,
   type Pt as RoutePt,
+  type RouterBudget,
   type Run,
   type Side,
 } from './orthogonal-router';
@@ -236,6 +238,8 @@ export function routeLoops(
   const ordered = [...loops].sort((p, q) => length(p) - length(q));
   const tracks: { lo: number; hi: number; at: number; dir: 1 | -1 }[] = [];
   const taken: Run[] = [];
+  // Every route of this layout draws on one budget: spent, the rest take their outside tracks.
+  const budget: RouterBudget = { left: ROUTER_BUDGET };
   let next = elements;
   for (const loop of ordered) {
     const src = boxes.get(pinnedId(loop.from)!)!;
@@ -245,7 +249,14 @@ export function routeLoops(
     // sides. Its ends sit exactly on the sides' midpoints, so the corners it finds are the ones drawn.
     const found =
       solid.length <= ROUTER_MAX_BOXES
-        ? bestRoute(src, dst, solid, taken, anchorsInUse(next.filter((el) => el.id !== loop.id)))
+        ? bestRoute(
+            src,
+            dst,
+            solid,
+            taken,
+            anchorsInUse(next.filter((el) => el.id !== loop.id)),
+            budget,
+          )
         : null;
     if (found) {
       const routed: ArrowElement = {
@@ -332,6 +343,7 @@ function bestRoute(
   solid: readonly BoxedElement[],
   taken: readonly Run[],
   used: ReadonlyMap<string, ReadonlySet<Anchor>>,
+  budget: RouterBudget,
 ): { fromAnchor: Anchor; toAnchor: Anchor; from: RoutePt; to: RoutePt; corners: RoutePt[] } | null {
   // The anchors free on a side: its middle when free, else its free quarters (the middle when none is free).
   const freeOn = (b: BoxedElement, side: Side): readonly Anchor[] => {
@@ -353,7 +365,7 @@ function bestRoute(
         for (const toAnchor of freeOn(dst, toSide)) {
           const from = anchorPosition(src, fromAnchor);
           const to = anchorPosition(dst, toAnchor);
-          const route = routeOrthogonal(from, fromSide, to, toSide, solid, taken);
+          const route = routeOrthogonal(from, fromSide, to, toSide, solid, taken, budget);
           if (route && (!best || route.cost < best.cost))
             best = { fromAnchor, toAnchor, from, to, corners: route.corners, cost: route.cost };
         }
@@ -383,33 +395,27 @@ function crossesABox(arrow: ArrowElement, elements: Element[], solid: RectGrid):
 // Whether the segment a→b passes through `box` shrunk by `inset` (positive: grazing is not hitting; negative: the
 // box grown, a clearance).
 function segmentHitsBox(a: Pt, b: Pt, box: BoxedElement, inset = 4): boolean {
-  const [x0, x1, y0, y1] = [
-    box.x + inset,
-    box.x + box.width - inset,
-    box.y + inset,
-    box.y + box.height - inset,
-  ];
+  const x0 = box.x + inset;
+  const x1 = box.x + box.width - inset;
+  const y0 = box.y + inset;
+  const y1 = box.y + box.height - inset;
+  // Most boxes lie wholly off the segment's own bounds: rejected before any clipping. A hot path (every routed arrow
+  // against every box), so no arrays are made per call.
+  if (Math.max(a.x, b.x) < x0 || Math.min(a.x, b.x) > x1) return false;
+  if (Math.max(a.y, b.y) < y0 || Math.min(a.y, b.y) > y1) return false;
   // Liang-Barsky clip of the segment against the inset rectangle.
-  let t0 = 0;
-  let t1 = 1;
   const dx = b.x - a.x;
   const dy = b.y - a.y;
-  for (const [p, q] of [
-    [-dx, a.x - x0],
-    [dx, x1 - a.x],
-    [-dy, a.y - y0],
-    [dy, y1 - a.y],
-  ] as const) {
-    if (p === 0) {
-      if (q < 0) return false;
-      continue;
-    }
+  let t0 = 0;
+  let t1 = 1;
+  const clip = (p: number, q: number): boolean => {
+    if (p === 0) return q >= 0;
     const r = q / p;
     if (p < 0) t0 = Math.max(t0, r);
     else t1 = Math.min(t1, r);
-    if (t0 > t1) return false;
-  }
-  return true;
+    return t0 <= t1;
+  };
+  return clip(-dx, a.x - x0) && clip(dx, x1 - a.x) && clip(-dy, a.y - y0) && clip(dy, y1 - a.y);
 }
 
 // A frame or lane is a backdrop the loop may cross; it never pushes the track out.
@@ -418,6 +424,21 @@ const isBackdrop = (b: BoxedElement) =>
 
 // The one-bend route for a loop whose source sits clear beyond its target's outer side, or null: up (TB) from the
 // source's top to the target's middle, then into the target's outer side. Null when a box stands on either leg.
+// The elements a fan at `a` or `b` depends on: those two boxes, every arrow pinned to either, and the elements at
+// those arrows' far ends; in their drawing order, so the fan is the one the whole drawing gives.
+export function fanNeighbourhood(elements: Element[], a: string, b: string): Element[] {
+  const ids = new Set([a, b]);
+  for (const el of elements) {
+    if (el.type !== 'arrow') continue;
+    const [f, t] = [pinnedId(el.from), pinnedId(el.to)];
+    if (f !== a && f !== b && t !== a && t !== b) continue;
+    ids.add(el.id);
+    if (f) ids.add(f);
+    if (t) ids.add(t);
+  }
+  return elements.filter((el) => ids.has(el.id));
+}
+
 function singleBend(
   arrow: ArrowElement,
   src: BoxedElement,
@@ -435,9 +456,16 @@ function singleBend(
     exactStart: true,
     exactEnd: false,
   };
-  const withTurned = elements.map((el) => (el.id === arrow.id ? turned : el));
-  const from = endAt(turned, 'from', withTurned);
-  const to = endAt(turned, 'to', withTurned);
+  // A fanned end moves only with the arrows pinned to its own box, so the ends are worked out on just those boxes,
+  // the arrows touching them and the boxes at their far ends, in drawing order: the same fan, without fanning the
+  // whole drawing once for every loop tried.
+  const near = fanNeighbourhood(
+    elements.map((el) => (el.id === arrow.id ? turned : el)),
+    src.id,
+    dst.id,
+  );
+  const from = endAt(turned, 'from', near);
+  const to = endAt(turned, 'to', near);
   const corner = axis === 'TB' ? { x: from.x, y: to.y } : { x: to.x, y: from.y };
   const hits = (a: Pt, b: Pt) =>
     boxes.some((box) => {

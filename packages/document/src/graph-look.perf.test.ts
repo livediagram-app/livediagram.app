@@ -48,6 +48,16 @@ describe('graph look cost', () => {
     expect(fastest(graph)).toBeLessThan(1000);
   }, 60_000);
 
+  // A dense graph small enough for the orthogonal router (up to ROUTER_MAX_BOXES boxes) searches for its loops; its
+  // budget (ROUTER_BUDGET) bounds that search. Before it, 60 boxes and 140 edges took 10 s and 120 boxes 197 s.
+  it('lays out dense graphs the router searches in under a second of CPU', () => {
+    for (const [nodes, edges] of [
+      [60, 140],
+      [120, 300],
+    ] as const)
+      expect(fastest(randomGraph(nodes, edges)), `${nodes}/${edges}`).toBeLessThan(1000);
+  }, 60_000);
+
   it('lays a 150-node graph out both ways for auto direction in under 250 ms of CPU', () => {
     const graph = randomGraph(150, 250);
     expect(fastest(graph)).toBeLessThan(250);

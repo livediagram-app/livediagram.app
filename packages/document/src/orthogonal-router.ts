@@ -16,6 +16,13 @@ export const ROUTER_MARGIN = 18;
 export const ROUTER_BEND_COST = 80;
 export const ROUTER_SHARE_COST = 400;
 export const ROUTER_MAX_GRID = 40_000;
+// The most work the router does for one layout, every route together, in grid crossings laid out plus search steps
+// taken: past it a route gives up (null) and the caller keeps its own (an outside track), so a dense graph never
+// searches for seconds. A small flow's few loops use a fraction of it.
+export const ROUTER_BUDGET = 600_000;
+
+// What the router may still spend for one layout, shared by every route of it.
+export type RouterBudget = { left: number };
 
 const STEP: Readonly<Record<Side, Pt>> = {
   n: { x: 0, y: -1 },
@@ -30,25 +37,41 @@ export type Run = { horizontal: boolean; at: number; lo: number; hi: number };
 const inside = (p: Pt, r: Rect) =>
   p.x > r.x && p.x < r.x + r.width && p.y > r.y && p.y < r.y + r.height;
 
-// Whether an axis-aligned run a→b passes through the inside of a rect.
-function runHits(a: Pt, b: Pt, r: Rect): boolean {
-  if (a.y === b.y) {
-    if (a.y <= r.y || a.y >= r.y + r.height) return false;
-    return Math.max(a.x, b.x) > r.x && Math.min(a.x, b.x) < r.x + r.width;
+// Earlier runs bucketed by axis and whole-pixel position, so a step looks only at the runs near its own line.
+const runKey = (horizontal: boolean, at: number) => Math.floor(at) * 2 + (horizontal ? 1 : 0);
+
+function runIndex(runs: readonly Run[]): Map<number, Run[]> {
+  const out = new Map<number, Run[]>();
+  for (const r of runs) {
+    const k = runKey(r.horizontal, r.at);
+    (out.get(k) ?? out.set(k, []).get(k)!).push(r);
   }
-  if (a.x <= r.x || a.x >= r.x + r.width) return false;
-  return Math.max(a.y, b.y) > r.y && Math.min(a.y, b.y) < r.y + r.height;
+  return out;
 }
 
-function sharesRun(a: Pt, b: Pt, runs: readonly Run[]): boolean {
+function sharesRun(a: Pt, b: Pt, runs: ReadonlyMap<number, readonly Run[]>): boolean {
+  if (runs.size === 0) return false;
   const horizontal = a.y === b.y;
   const at = horizontal ? a.y : a.x;
   const [lo, hi] = horizontal
     ? [Math.min(a.x, b.x), Math.max(a.x, b.x)]
     : [Math.min(a.y, b.y), Math.max(a.y, b.y)];
-  return runs.some(
-    (r) => r.horizontal === horizontal && Math.abs(r.at - at) < 2 && r.hi > lo + 1 && r.lo < hi - 1,
-  );
+  // Within 2 px of `at`: the buckets either side of it are enough.
+  for (let k = Math.floor(at) - 2; k <= Math.floor(at) + 2; k++)
+    for (const r of runs.get(runKey(horizontal, k)) ?? [])
+      if (Math.abs(r.at - at) < 2 && r.hi > lo + 1 && r.lo < hi - 1) return true;
+  return false;
+}
+
+// The first index of sorted `xs` greater than `v`.
+function firstAbove(xs: readonly number[], v: number): number {
+  let [lo, hi] = [0, xs.length];
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (xs[mid]! > v) hi = mid;
+    else lo = mid + 1;
+  }
+  return lo;
 }
 
 // The corners of the route from `from` (leaving by `fromSide`) to `to` (entering by `toSide`), or null when none
@@ -60,7 +83,9 @@ export function routeOrthogonal(
   toSide: Side,
   boxes: readonly Rect[],
   runs: readonly Run[] = [],
+  budget: RouterBudget = { left: Infinity },
 ): { corners: Pt[]; cost: number } | null {
+  if (budget.left <= 0) return null;
   const m = ROUTER_MARGIN;
   const start = { x: from.x + STEP[fromSide].x * m, y: from.y + STEP[fromSide].y * m };
   const goal = { x: to.x + STEP[toSide].x * m, y: to.y + STEP[toSide].y * m };
@@ -75,14 +100,35 @@ export function routeOrthogonal(
   const ys = [...new Set([start.y, goal.y, ...grown.flatMap((r) => [r.y, r.y + r.height])])].sort(
     (a, b) => a - b,
   );
-  if (xs.length * ys.length > ROUTER_MAX_GRID) return null;
+  // Laying the grid out costs a step per crossing, charged to the same budget as the search (a grid past the cap is
+  // charged the cap: working out that it is too big costs too).
+  budget.left -= Math.min(xs.length * ys.length, ROUTER_MAX_GRID);
+  if (xs.length * ys.length > ROUTER_MAX_GRID || budget.left <= 0) return null;
   const xi = new Map(xs.map((x, i) => [x, i]));
   const yi = new Map(ys.map((y, i) => [y, i]));
-  const free = (i: number, j: number) => !grown.some((r) => inside({ x: xs[i]!, y: ys[j]! }, r));
+  // Each box rasterised onto the grid once: the crossings strictly inside it, and the unit steps through its inside
+  // (every box edge is a grid line, so a step between neighbouring lines is inside or out whole).
+  const [nx, ny] = [xs.length, ys.length];
+  const pointIn = new Uint8Array(nx * ny);
+  const stepX = new Uint8Array(nx * ny); // (i, j) → (i + 1, j)
+  const stepY = new Uint8Array(nx * ny); // (i, j) → (i, j + 1)
+  for (const r of grown) {
+    const [x0, x1] = [xi.get(r.x)!, xi.get(r.x + r.width)!];
+    const [y0, y1] = [yi.get(r.y)!, yi.get(r.y + r.height)!];
+    const [ix0, iy0] = [firstAbove(xs, r.x), firstAbove(ys, r.y)];
+    for (let i = ix0; i < x1; i++) for (let j = iy0; j < y1; j++) pointIn[i * ny + j] = 1;
+    for (let j = iy0; j < y1; j++) for (let i = x0; i < x1; i++) stepX[i * ny + j] = 1;
+    for (let i = ix0; i < x1; i++) for (let j = y0; j < y1; j++) stepY[i * ny + j] = 1;
+  }
+  const free = (i: number, j: number) => pointIn[i * ny + j] === 0;
+  const crosses = (i: number, j: number, ni: number, nj: number) =>
+    ni !== i ? stepX[Math.min(i, ni) * ny + j] === 1 : stepY[i * ny + Math.min(j, nj)] === 1;
+  const taken = runIndex(runs);
   const dirs: Side[] = ['n', 'e', 's', 'w'];
   const key = (i: number, j: number, d: number) => (i * ys.length + j) * 4 + d;
-  const best = new Map<number, number>();
-  const came = new Map<number, number>();
+  // The cheapest cost found to each (crossing, heading), and where it came from (-1: nowhere yet).
+  const best = new Float64Array(nx * ny * 4).fill(Infinity);
+  const came = new Int32Array(nx * ny * 4).fill(-1);
   // A binary heap of [cost + estimate, cost, i, j, heading].
   const heap: [number, number, number, number, number][] = [];
   const push = (e: [number, number, number, number, number]) => {
@@ -121,14 +167,15 @@ export function routeOrthogonal(
   const goalDir = dirs.indexOf(
     toSide === 'n' ? 's' : toSide === 's' ? 'n' : toSide === 'e' ? 'w' : 'e',
   );
-  best.set(key(si, sj, startDir), 0);
+  best[key(si, sj, startDir)] = 0;
   push([estimate(si, sj), 0, si, sj, startDir]);
   let found = -1;
   let foundCost = Infinity;
   while (heap.length) {
+    if (budget.left-- <= 0) return null;
     const [, cost, i, j, d] = pop();
     const k = key(i, j, d);
-    if (cost > (best.get(k) ?? Infinity)) continue;
+    if (cost > best[k]!) continue;
     if (i === gi && j === gj) {
       const total = cost + (d === goalDir ? 0 : ROUTER_BEND_COST);
       if (total < foundCost) [found, foundCost] = [k, total];
@@ -144,23 +191,23 @@ export function routeOrthogonal(
       const a = { x: xs[i]!, y: ys[j]! };
       const b = { x: xs[ni]!, y: ys[nj]! };
       if (!(ni === gi && nj === gj) && !free(ni, nj)) continue;
-      if (grown.some((r) => runHits(a, b, r))) continue;
+      if (crosses(i, j, ni, nj)) continue;
       const len = Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
       const next =
         cost +
         len +
         (nd === d ? 0 : ROUTER_BEND_COST) +
-        (sharesRun(a, b, runs) ? ROUTER_SHARE_COST : 0);
+        (sharesRun(a, b, taken) ? ROUTER_SHARE_COST : 0);
       const nk = key(ni, nj, nd);
-      if (next >= (best.get(nk) ?? Infinity)) continue;
-      best.set(nk, next);
-      came.set(nk, k);
+      if (next >= best[nk]!) continue;
+      best[nk] = next;
+      came[nk] = k;
       push([next + estimate(ni, nj), next, ni, nj, nd]);
     }
   }
   if (found < 0) return null;
   const path: Pt[] = [];
-  for (let k: number | undefined = found; k !== undefined; k = came.get(k)) {
+  for (let k = found; k >= 0; k = came[k]!) {
     const cell = Math.floor(k / 4);
     path.push({ x: xs[Math.floor(cell / ys.length)]!, y: ys[cell % ys.length]! });
   }
