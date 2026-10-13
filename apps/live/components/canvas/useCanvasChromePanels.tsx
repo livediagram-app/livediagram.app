@@ -427,11 +427,11 @@ export function useCanvasChromePanels({
     () => visibleLayerElements(elements, props.tabLayers),
     [elements, props.tabLayers],
   );
+  // The Map is Diagram, Draw and Facilitate's: Illustrate has Contents for its pages, and a Plan
+  // board is a list, not a space to find your way round.
+  const mapMode = !props.illustratePages && props.editorMode !== 'plan';
   const minimapEl =
-    !chromeHidden &&
-    !isMobile &&
-    mapEnabled &&
-    (elements.length >= 4 || (props.illustratePages?.pages.length ?? 0) > 0) ? (
+    !chromeHidden && !isMobile && mapEnabled && mapMode && elements.length >= 4 ? (
       <ViewMinimap
         elements={mapElements}
         pages={props.illustratePages?.pages}
