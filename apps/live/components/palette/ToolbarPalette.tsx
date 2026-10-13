@@ -81,6 +81,8 @@ type Props = Pick<
     leading?: ReactNode;
     // Illustrate mode: a + at the strip's end adds a page (AddPageStripButton).
     onAddPage?: (kind: PageKind) => void;
+    // The last page's kind, offered first in Add a Page.
+    lastPageKind?: PageKind;
     // The active tab's elements: Search lists their element types before anything is typed.
     tabElements?: readonly Element[];
     // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, its selection
@@ -534,7 +536,7 @@ export function ToolbarPalette(props: Props) {
                   {props.onAddPage && !isMobile ? (
                     <>
                       <Divider />
-                      <AddPageStripButton onAdd={props.onAddPage} />
+                      <AddPageStripButton onAdd={props.onAddPage} suggested={props.lastPageKind} />
                     </>
                   ) : null}
                   {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md

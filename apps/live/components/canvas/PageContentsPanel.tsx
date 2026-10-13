@@ -5,7 +5,7 @@
 // from its footer. A popover over its cluster button on a desktop (it stays open so a reader can
 // hop from page to page), a bottom sheet on a phone (it closes so the page shows).
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { MAX_ILLUSTRATE_PAGES, type PageKind } from '@livediagram/document';
+import { MAX_ILLUSTRATE_PAGES, pageKindOf, type PageKind } from '@livediagram/document';
 import {
   lucideFileText,
   lucideLock,
@@ -141,6 +141,8 @@ export function PageContentsPanel({
     buttons.current.get(order[to]!)?.focus();
   };
   const full = pages.length >= MAX_ILLUSTRATE_PAGES;
+  // The last page's kind leads the footer, highlighted: the next page is most often the same.
+  const lastKind = pages.length ? pageKindOf(pages[pages.length - 1]!) : undefined;
   const add = (kind: PageKind) => {
     if (!view.edit?.addPage || full) return;
     setAdded(pages.length);
@@ -280,7 +282,13 @@ export function PageContentsPanel({
             Add Page
           </p>
           <div className="grid grid-cols-4 gap-1.5">
-            {ADD_KINDS.map(({ kind, name, icon }) => (
+            {(lastKind
+              ? [
+                  ...ADD_KINDS.filter((k) => k.kind === lastKind),
+                  ...ADD_KINDS.filter((k) => k.kind !== lastKind),
+                ]
+              : ADD_KINDS
+            ).map(({ kind, name, icon }) => (
               <Tooltip
                 key={kind}
                 label={
@@ -292,7 +300,11 @@ export function PageContentsPanel({
                   disabled={full}
                   aria-label={`Add a ${name} page`}
                   onClick={() => add(kind)}
-                  className="flex flex-col items-center gap-1 rounded-lg border border-slate-200 bg-white px-1 py-2 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100"
+                  className={`flex flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[11px] font-medium transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-40 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100 ${
+                    kind === lastKind
+                      ? 'border-brand-400 bg-brand-50 text-brand-700 ring-2 ring-brand-400/30 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
+                      : 'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'
+                  }`}
                 >
                   {icon()}
                   {name}

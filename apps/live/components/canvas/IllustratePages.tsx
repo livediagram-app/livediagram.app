@@ -467,6 +467,7 @@ export function IllustratePages({
           lastMiddle={last.rect.y + last.rect.height / 2}
           zoom={zoom}
           onAdd={edit.addPage}
+          suggested={pageKindOf(last)}
         />
       ) : null}
       {previewed && view.layoutPreview ? (

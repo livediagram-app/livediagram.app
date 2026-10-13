@@ -65,7 +65,10 @@ rather than bare; its default dark ink reads on it at 7:1 or better on every bui
 slide, article or logo page starts on the plain paper as before, and a template that comes with
 content keeps the paper it was designed on. Every path that makes a page lands the same: adding
 one, choosing the first page's kind, the template picker and an AI tool's template. The popover is the same on
-a phone (a bottom sheet). The **+** is named **Add Page** and shows the popover open as pressed. The Toolbar
+a phone (a bottom sheet). **The last page's kind comes first**: the card for the kind of the last page
+leads, ringed in the accent and tagged "Same as last page", and takes focus, so Enter adds another
+of the same, the most likely next page; with no page yet the usual order (Infographic, Article,
+Slide, Logo) stands. Contents' Add Page row leads with it too, highlighted. The **+** is named **Add Page** and shows the popover open as pressed. The Toolbar
 strip ends, after a divider, with the same **+** (Add Page), opening the same
 popover, while in Illustrate mode; not on a phone, where the strip has no room to spare and the
 row's own **+** adds a page.
