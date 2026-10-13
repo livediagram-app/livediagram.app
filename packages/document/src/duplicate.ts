@@ -183,6 +183,16 @@ export function duplicateElements(
   // A reference to something OUTSIDE the copied set is left alone: copying one
   // child of a mind map and pasting it back should still hang off that parent.
   // Only references whose target was itself copied follow the copy.
+  // A copied chart is a new chart (docs/specs/009-elements/flowchart.md, blueprint D172): each source
+  // chart maps to ONE fresh id, the copy of its first step when that was copied, else the first copy's
+  // id. Leaving the old id would graft the copies onto the original, unconnected, and its next layout
+  // would rake them into a column beside it.
+  const chartIds = new Map<string, string>();
+  for (const el of newBoxed) {
+    if (el.type !== 'shape' || el.flowchartId === undefined || chartIds.has(el.flowchartId))
+      continue;
+    chartIds.set(el.flowchartId, idMap.get(el.flowchartId) ?? el.id);
+  }
   const rewired = newBoxed.map((el) => {
     let next = { ...el };
     // mindParentId (docs/specs/009-elements/mind-node.md) and portalTarget (docs/specs/009-elements/portal-element.md) live on the shape
@@ -196,6 +206,14 @@ export function duplicateElements(
       if (shape.portalTarget !== undefined) {
         const mapped = idMap.get(shape.portalTarget);
         if (mapped !== undefined) shape.portalTarget = mapped;
+      }
+      if (shape.flowchartId !== undefined) shape.flowchartId = chartIds.get(shape.flowchartId)!;
+      // The lane follows the copy when it was copied too; otherwise the copy is in no lane of its
+      // new chart.
+      if (shape.flowLaneId !== undefined) {
+        const lane = idMap.get(shape.flowLaneId);
+        if (lane !== undefined) shape.flowLaneId = lane;
+        else delete shape.flowLaneId;
       }
       next = shape;
     }
@@ -249,11 +267,16 @@ export function remapElementRefs<E extends Element>(
     if (el.type !== 'shape') return el;
     const parent = el.mindParentId !== undefined ? idMap.get(el.mindParentId) : undefined;
     const portal = el.portalTarget !== undefined ? idMap.get(el.portalTarget) : undefined;
-    if (!parent && !portal) return el;
+    // A flowchart's id is its first step's, so it renames with it; so does a step's lane.
+    const chart = el.flowchartId !== undefined ? idMap.get(el.flowchartId) : undefined;
+    const lane = el.flowLaneId !== undefined ? idMap.get(el.flowLaneId) : undefined;
+    if (!parent && !portal && !chart && !lane) return el;
     return {
       ...el,
       ...(parent ? { mindParentId: parent } : {}),
       ...(portal ? { portalTarget: portal } : {}),
+      ...(chart ? { flowchartId: chart } : {}),
+      ...(lane ? { flowLaneId: lane } : {}),
     };
   });
 }

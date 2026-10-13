@@ -30,7 +30,9 @@ export type Option = {
     | 'add-row'
     | 'add-column'
     | 'mind-child'
-    | 'mind-sibling';
+    | 'mind-sibling'
+    | 'flowchart-next'
+    | 'flowchart-parallel';
   label: string;
   description: string;
   icon: ReactNode;
@@ -88,6 +90,22 @@ export const MIND_SIBLING_OPTION: Option = {
   description:
     'Add a node beside this one, under the same parent. Shortcut: Enter. While typing a label, Shift+Enter starts a new line.',
   icon: <MindSiblingIcon />,
+};
+
+// Flowchart growth (docs/specs/009-elements/flowchart.md), offered on a step's ring and toolbar: the
+// same two keys as a mind node, named for what they make in a flowchart.
+export const FLOWCHART_NEXT_OPTION: Option = {
+  kind: 'flowchart-next',
+  label: 'Add Step',
+  description: 'Add the next step after this one. Shortcut: Tab.',
+  icon: <FlowchartNextIcon />,
+};
+export const FLOWCHART_PARALLEL_OPTION: Option = {
+  kind: 'flowchart-parallel',
+  label: 'Add Branch',
+  description:
+    'Add a step beside this one, from the step it came from. Shortcut: Enter. While typing a label, Shift+Enter starts a new line.',
+  icon: <FlowchartParallelIcon />,
 };
 
 // Listed order matches the spec; they fan across the arc in this order.
@@ -175,6 +193,29 @@ function AddColumnIcon() {
 // to the right; a sibling lands below, at the same level under the same parent.
 
 // This node (solid) with a new node branching off to its right.
+// This step (solid) with the next one below it, joined by an arrow.
+function FlowchartNextIcon() {
+  return (
+    <Glyph size={OPTION_ICON_SIZE} units={16}>
+      <rect x="4" y="1" width="8" height="4" rx="1" fill="currentColor" />
+      <path d="M8 5v3.5M6.5 7.25 8 8.75l1.5-1.5" />
+      <rect x="4" y="10" width="8" height="5" rx="1" />
+    </Glyph>
+  );
+}
+
+// One step forking to two side by side, the new one outlined.
+function FlowchartParallelIcon() {
+  return (
+    <Glyph size={OPTION_ICON_SIZE} units={16}>
+      <rect x="5" y="1" width="6" height="3.5" rx="1" fill="currentColor" />
+      <path d="M8 4.5v2M3.5 6.5h9M3.5 6.5v3M12.5 6.5v3" />
+      <rect x="1" y="9.5" width="5" height="5" rx="1" fill="currentColor" />
+      <rect x="10" y="9.5" width="5" height="5" rx="1" />
+    </Glyph>
+  );
+}
+
 function MindChildIcon() {
   return (
     <Glyph size={OPTION_ICON_SIZE} units={16}>

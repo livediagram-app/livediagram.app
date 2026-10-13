@@ -436,6 +436,9 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Page',
     // Mind node (docs/specs/009-elements/mind-node.md).
     'MindNode',
+    // Flowchart (docs/specs/009-elements/flowchart.md): the palette's Start, and every grown step.
+    'Flowchart',
+    'FlowchartStep',
     // Lane (docs/specs/009-elements/lane.md).
     'Lane',
     // Entity (docs/specs/009-elements/entity.md).

@@ -93,7 +93,7 @@ export function flowDirectionOf(elements: readonly Element[]): LayoutDirection {
 // deepest predecessor. Cycles are broken by ignoring back edges (relax only
 // along the topological order; remaining cycle nodes are appended in input
 // order so the result is deterministic).
-function layerComponent(ids: ElementId[], edges: Edge[]): Map<ElementId, number> {
+export function layerComponent(ids: ElementId[], edges: Edge[]): Map<ElementId, number> {
   const idset = new Set(ids);
   const out = new Map<ElementId, ElementId[]>(ids.map((id) => [id, []]));
   const indeg = new Map<ElementId, number>(ids.map((id) => [id, 0]));

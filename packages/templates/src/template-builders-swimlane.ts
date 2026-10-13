@@ -7,10 +7,12 @@ import {
   createPinnedArrow,
   createShape,
   createText,
-  type Anchor,
+  type ArrowElement,
   type Element,
+  type ShapeElement,
   type ShapeKind,
 } from '@livediagram/document';
+import { liveFlowchart } from './template-flowchart-live';
 import { swimlaneKey, type LaneHue } from './template-swimlane-kit';
 
 const MUTED = '#64748b';
@@ -71,12 +73,9 @@ const ROLES: Role[] = [
 // glyph beneath; every step is outlined in its lane's hue, so whose desk a
 // step is on reads before its words do.
 //
-// Every step sits on a shared column grid, one column per step, so each
-// hand-off is either a straight run inside a lane or an angled run that
-// drops or climbs through EMPTY columns: no diagonal cuts across a lane and
-// no arrow passes behind a step. The lanes stand apart with a gap, so a
-// label on a line that changes lanes sits in open canvas between them, never
-// on a border.
+// It is a live flowchart (docs/specs/009-elements/flowchart.md "Templates"): the lanes and steps are
+// one chart flowing right, laid out by the flowchart layout, so each step sits in its lane's band, a
+// column of steps lines up through every lane, and Tab and Enter grow it in place.
 //
 // The flow demonstrates every swimlane idiom: hand-off (the order drops into
 // Sales), branch (In stock?), detour + rejoin (Restock back into Pick &
@@ -84,89 +83,40 @@ const ROLES: Role[] = [
 // trip (the delivery climbing back to the lane the process started in).
 export function buildSwimlane(cx: number, cy: number): Element[] {
   const gutter = 176;
-  const cols = 8;
-  const colW = 172;
   const stepW = 148;
   const stepH = 60;
-  const pad = 24;
-  const laneW = gutter + pad * 2 + (cols - 1) * colW + stepW;
-  const laneH = 120;
-  const laneGap = 36;
   const titleH = 44;
   const captionH = 28;
   const headGap = 24;
   const keyGap = 28;
   const keyH = 28;
-  const lanesH = ROLES.length * laneH + (ROLES.length - 1) * laneGap;
-  const totalH = titleH + captionH + headGap + lanesH + keyGap + keyH;
-  const left = cx - laneW / 2;
-  const top = cy - totalH / 2;
-  const lanesTop = top + titleH + captionH + headGap;
-  const laneTop = (i: number) => lanesTop + i * (laneH + laneGap);
-  const laneCY = (i: number) => laneTop(i) + laneH / 2;
-  const colX = (col: number) => left + gutter + pad + stepW / 2 + col * colW;
 
-  const els: Element[] = [
-    {
-      ...createText(left, top),
-      width: laneW,
-      height: titleH,
-      label: 'FreshBox · one order, click to doorstep',
-      textSize: 'lg',
-      textBold: true,
-      textAlignX: 'left',
-    },
-    {
-      ...createText(left, top + titleH),
-      width: laneW,
-      height: captionH,
-      label:
-        'One lane per team. Read left to right; a line that changes lanes is a hand-off, and every hand-off is where orders get stuck.',
-      textSize: 'sm',
-      textColor: MUTED,
-      textAlignX: 'left',
-    },
-  ];
-  ROLES.forEach((role, i) => {
-    const y = laneTop(i);
-    els.push(
-      {
-        ...createShape('lane', left, y),
-        width: laneW,
-        height: laneH,
-        label: role.name,
-        textSize: 'md',
-        textBold: true,
-        textColor: role.ink,
-        textAlignX: 'left',
-        textAlignY: 'top',
-        fillColor: role.band,
-        strokeColor: role.line,
-        headerFill: role.header,
-        headerSize: gutter,
-      },
-      {
-        ...createText(left + 26, y + 50),
-        width: gutter - 40,
-        height: 24,
-        label: role.blurb,
-        textSize: 'sm',
-        textColor: MUTED,
-        textAlignX: 'left',
-      },
-      {
-        ...createShape('icon', left + 26, y + laneH - 40),
-        width: 22,
-        height: 22,
-        iconId: role.icon,
-        strokeColor: role.ink,
-      },
-    );
-  });
+  // Seed positions: a lane per row, a column per step. They fix the order the layout reads; it
+  // places everything.
+  const seedLaneH = 160;
+  const lanes: ShapeElement[] = ROLES.map((role, i) => ({
+    ...createShape('lane', 0, i * seedLaneH),
+    width: 1200,
+    height: seedLaneH,
+    label: role.name,
+    textSize: 'md',
+    textBold: true,
+    textColor: role.ink,
+    textAlignX: 'left',
+    textAlignY: 'top',
+    fillColor: role.band,
+    strokeColor: role.line,
+    headerFill: role.header,
+    headerSize: gutter,
+  }));
 
-  type Step = Extract<Element, { type: 'shape' }>;
-  const step = (label: string, col: number, lane: number, look: Partial<Step> = {}): Step => ({
-    ...createShape('square' as ShapeKind, colX(col) - stepW / 2, laneCY(lane) - stepH / 2),
+  const step = (
+    label: string,
+    col: number,
+    lane: number,
+    look: Partial<ShapeElement> = {},
+  ): ShapeElement => ({
+    ...createShape('square' as ShapeKind, gutter + col * 172, lane * seedLaneH + 50),
     width: stepW,
     height: stepH,
     label,
@@ -174,6 +124,7 @@ export function buildSwimlane(cx: number, cy: number): Element[] {
     fillColor: '#ffffff',
     strokeColor: ROLES[lane]!.node,
     textColor: INK,
+    flowLaneId: lanes[lane]!.id,
     ...look,
   });
   const customer = ROLES[0]!;
@@ -188,13 +139,11 @@ export function buildSwimlane(cx: number, cy: number): Element[] {
   const check = step('Check payment', 1, 1);
   const inStock = step('In stock?', 2, 1, {
     shape: 'diamond',
-    x: colX(2) - 75,
-    y: laneCY(1) - 44,
     width: 150,
     height: 88,
     fillColor: ROLES[1]!.tint,
   });
-  // The detour sits directly below the gate: dashed, it is the exception.
+  // The detour: dashed, it is the exception.
   const restock = step('Restock item', 2, 2, { strokeStyle: 'dashed' });
   const pick = step('Pick & pack', 3, 2);
   const book = step('Book courier', 4, 2);
@@ -206,61 +155,103 @@ export function buildSwimlane(cx: number, cy: number): Element[] {
     fillColor: customer.tint,
     textBold: true,
   });
+  const steps = [order, check, inStock, restock, pick, book, collect, deliver, track, received];
 
   const link = (
-    from: Step,
-    fa: Anchor,
-    to: Step,
-    ta: Anchor,
-    extra: Partial<Extract<Element, { type: 'arrow' }>> = {},
-  ): Element => ({ ...createPinnedArrow(from.id, fa, to.id, ta), ...extra });
+    from: ShapeElement,
+    to: ShapeElement,
+    extra: Partial<ArrowElement> = {},
+  ): ArrowElement => ({
+    ...createPinnedArrow(from.id, 'e', to.id, 'w'),
+    arrowStyle: 'angled',
+    ...extra,
+  });
   const inLane = (i: number) => ({ textColor: ROLES[i]!.ink, labelFill: ROLES[i]!.band });
-  const arrows: Element[] = [
-    // Down into Sales, then across into the check.
-    link(order, 's', check, 'w', { arrowStyle: 'angled' }),
-    link(check, 'e', inStock, 'w'),
-    link(inStock, 'e', pick, 'n', {
-      arrowStyle: 'angled',
-      label: 'Yes',
-      ...inLane(1),
-      labelOffset: { t: 0.22, offset: 12 },
-    }),
-    // The No drops through the gap between the lanes, where its label sits.
-    link(inStock, 's', restock, 'n', { label: 'No' }),
-    link(restock, 'e', pick, 'w'),
-    link(pick, 'e', book, 'w'),
-    link(book, 'e', collect, 'n', { arrowStyle: 'angled' }),
-    link(collect, 'e', deliver, 'w'),
-    // Booking the courier texts the customer a tracking link: the line climbs
-    // straight up through Sales' empty column. Crossing a lane it has no end
-    // in, it stays drawn over it.
-    link(book, 'n', track, 's', {
+  const connectors: ArrowElement[] = [
+    link(order, check),
+    link(check, inStock),
+    link(inStock, pick, { label: 'Yes', ...inLane(1) }),
+    link(inStock, restock, { label: 'No', ...inLane(2) }),
+    link(restock, pick),
+    link(pick, book),
+    link(book, collect),
+    link(collect, deliver),
+    // Booking the courier texts the customer a tracking link. Crossing lanes it has no end in, it
+    // stays drawn over them.
+    link(book, track, {
       label: 'Tracking text',
       ...inLane(1),
       strokeStyle: 'dashed',
       routeBehind: false,
-      labelOffset: { t: 0.5, offset: 0 },
     }),
-    link(track, 'e', received, 'w'),
+    link(track, received),
     // The round trip: the delivery climbs back to the lane it started in.
-    link(deliver, 'e', received, 's', { arrowStyle: 'angled', routeBehind: false }),
+    link(deliver, received, { routeBehind: false }),
   ];
 
-  const keyY = lanesTop + lanesH + keyGap;
-  els.push(...swimlaneKey(left, keyY, keyH));
+  // Laid out once to learn its size, then placed so the whole composition centres on (cx, cy).
+  const probe = liveFlowchart(steps, connectors, {
+    direction: 'right',
+    lanes,
+    left: 0,
+    top: 0,
+  }).bounds;
+  const totalH = titleH + captionH + headGap + probe.height + keyGap + keyH;
+  const left = Math.round(cx - probe.width / 2);
+  const top = Math.round(cy - totalH / 2);
+  const lanesTop = top + titleH + captionH + headGap;
+  const chart = liveFlowchart(steps, connectors, {
+    direction: 'right',
+    lanes,
+    left,
+    top: lanesTop,
+  });
 
-  return [
-    ...els,
-    ...arrows,
-    order,
-    check,
-    inStock,
-    restock,
-    pick,
-    book,
-    collect,
-    deliver,
-    track,
-    received,
+  const els: Element[] = [
+    {
+      ...createText(left, top),
+      width: probe.width,
+      height: titleH,
+      label: 'FreshBox · one order, click to doorstep',
+      textSize: 'lg',
+      textBold: true,
+      textAlignX: 'left',
+    },
+    {
+      ...createText(left, top + titleH),
+      width: probe.width,
+      height: captionH,
+      label:
+        'One lane per team. Read left to right; a line that changes lanes is a hand-off, and every hand-off is where orders get stuck.',
+      textSize: 'sm',
+      textColor: MUTED,
+      textAlignX: 'left',
+    },
   ];
+
+  // Each lane's gutter: what the role does, under its name, and the role's glyph at the foot.
+  const gutterBits: Element[] = ROLES.flatMap((role, i) => {
+    const lane = chart.elements.find((e) => e.id === lanes[i]!.id) as ShapeElement;
+    return [
+      {
+        ...createText(lane.x + 26, lane.y + 50),
+        width: gutter - 40,
+        height: 24,
+        label: role.blurb,
+        textSize: 'sm' as const,
+        textColor: MUTED,
+        textAlignX: 'left' as const,
+      },
+      {
+        ...createShape('icon', lane.x + 26, lane.y + lane.height - 40),
+        width: 22,
+        height: 22,
+        iconId: role.icon,
+        strokeColor: role.ink,
+      },
+    ];
+  });
+
+  const keyY = lanesTop + probe.height + keyGap;
+  return [...els, ...chart.elements, ...gutterBits, ...swimlaneKey(left, keyY, keyH)];
 }

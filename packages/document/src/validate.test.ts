@@ -551,3 +551,21 @@ describe('elementValidationIssue', () => {
     for (const el of cases) expect(isValidElement(el)).toBe(elementValidationIssue(el) === null);
   });
 });
+
+describe('flowchart step validation (docs/specs/009-elements/flowchart.md)', () => {
+  const step = { id: 's1', type: 'shape', shape: 'diamond', x: 0, y: 0, width: 200, height: 120 };
+
+  it('accepts a step with its chart, direction and lane', () => {
+    expect(
+      isValidElement({ ...step, flowchartId: 's1', flowDirection: 'right', flowLaneId: 'l1' }),
+    ).toBe(true);
+    expect(isValidElement({ ...step, flowDirection: 'down' })).toBe(true);
+  });
+
+  it('rejects an empty chart or lane id and an unknown direction', () => {
+    expect(isValidElement({ ...step, flowchartId: '' })).toBe(false);
+    expect(isValidElement({ ...step, flowLaneId: '' })).toBe(false);
+    expect(isValidElement({ ...step, flowDirection: 'up' })).toBe(false);
+    expect(isValidElement({ ...step, flowchartId: 7 })).toBe(false);
+  });
+});

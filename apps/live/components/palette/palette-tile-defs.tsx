@@ -478,6 +478,28 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // Flowchart (docs/specs/009-elements/flowchart.md): drops a Start that IS a chart; the steps grow
+    // from it and the chart lays itself out.
+    id: 'tools:flowchart',
+    blurb: 'Tab adds the next step',
+    caption: 'Flowchart',
+    section: 'build',
+    label: 'Add Flowchart',
+    description:
+      'A flowchart that lays itself out. With a step selected, Tab adds the next step and Enter a parallel one; change any step to a Decision, Input / Output and more.',
+    action: { type: 'component', kind: 'flowchart' },
+    icon: (
+      <Glyph size={18} units={24}>
+        {/* A start, a decision and two exits: the picture IS the behaviour. */}
+        <rect x="7" y="1.5" width="10" height="4.5" rx="2.25" />
+        <path d="M12 9.5l4 3.5-4 3.5-4-3.5z" />
+        <path d="M12 6v3.5M8 13H4.5v4.5M16 13h3.5v4.5" />
+        <rect x="1.5" y="17.5" width="6" height="5" rx="0.5" />
+        <rect x="16.5" y="17.5" width="6" height="5" rx="0.5" />
+      </Glyph>
+    ),
+  },
+  {
     // Page (docs/specs/009-elements/page-element.md). Sits first in Write: it is the largest writing
     // surface, and the group reads shortest-to-longest from there. Called
     // Page, not Document, so the palette and the selection toolbar agree —

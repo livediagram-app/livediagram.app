@@ -178,7 +178,7 @@ describe('flowchart template', () => {
     expect(node('Email receipt').shape).toBe('document');
   });
 
-  it('runs the happy path straight down one column', () => {
+  it('runs the happy path down the page, one rank per step', () => {
     const spine = [
       'Checkout',
       'Enter card details',
@@ -188,11 +188,10 @@ describe('flowchart template', () => {
       'Email receipt',
       'Order placed',
     ].map(node);
-    const cx = spine[0]!.x + spine[0]!.width / 2;
-    for (let i = 0; i < spine.length; i++) {
-      expect(spine[i]!.x + spine[i]!.width / 2).toBe(cx);
-      if (i > 0) expect(spine[i]!.y).toBeGreaterThan(spine[i - 1]!.y + spine[i - 1]!.height);
-    }
+    // The flowchart layout ranks the steps; a Yes sits left of its No, so the column steps aside at each
+    // decision (docs/specs/009-elements/flowchart.md "The layout").
+    for (let i = 1; i < spine.length; i++)
+      expect(spine[i]!.y).toBeGreaterThan(spine[i - 1]!.y + spine[i - 1]!.height);
   });
 
   it('labels both exits of every decision Yes / No', () => {
@@ -246,12 +245,30 @@ describe('decision tree template', () => {
     expect(diamonds.map((d) => d.colorPreset)).toEqual(['bold', 'soft', 'soft']);
   });
 
-  it('sends No out of the left corner and Yes out of the right, as elbows', () => {
+  it('branches No to the left and Yes to the right, as elbows out of a corner or the bottom', () => {
     const branches = arrows(els);
     expect(branches).toHaveLength(6);
+    const centreX = (id: string | undefined) => {
+      const s = els.find((el) => el.id === id) as Shape;
+      return s.x + s.width / 2;
+    };
     for (const a of branches) {
       expect(a.arrowStyle).toBe('angled');
-      expect(a.from.kind === 'pinned' && a.from.anchor).toBe(a.label === 'Yes' ? 'e' : 'w');
+      // A Decision's exit leaves by the side corner its step lies beyond, else by the bottom.
+      expect(['s', a.label === 'Yes' ? 'e' : 'w']).toContain(
+        a.from.kind === 'pinned' && a.from.anchor,
+      );
+    }
+    for (const d of diamonds) {
+      const out = branches.filter((a) => pinnedTo(a, 'from') === d.id);
+      const target = (label: string) =>
+        centreX(
+          pinnedTo(
+            out.find((a) => a.label === label)!,
+            'to',
+          ),
+        );
+      expect(target('No')).toBeLessThan(target('Yes'));
     }
   });
 
