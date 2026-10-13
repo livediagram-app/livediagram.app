@@ -174,7 +174,22 @@ export function MindMapGrowth() {
 }
 
 /** A tiny map in one flow: the root (solid) and its branches, as the flow tile draws it. */
-function FlowGlyph({ flow }: { flow: 'tree' | 'balanced' | 'downward' | 'bubble' }) {
+type Flow = 'tree' | 'leftward' | 'balanced' | 'downward' | 'upward' | 'bubble';
+
+function FlowGlyph({ flow }: { flow: Flow }) {
+  // The mirrored flows are their originals flipped, as the menu draws them.
+  if (flow === 'leftward')
+    return (
+      <g transform="scale(-1 1)">
+        <FlowGlyph flow="tree" />
+      </g>
+    );
+  if (flow === 'upward')
+    return (
+      <g transform="scale(1 -1)">
+        <FlowGlyph flow="downward" />
+      </g>
+    );
   const st = { className: 'stroke-slate-500', strokeWidth: 1.4, fill: 'none' } as const;
   const leaf = 'fill-white stroke-slate-500';
   const root = 'fill-brand-500';
@@ -247,75 +262,117 @@ function FlowGlyph({ flow }: { flow: 'tree' | 'balanced' | 'downward' | 'bubble'
 /** The node menu's Mind Map section: the four flows (Tree current), the current flow's hint,
  *  Tidy Map, and, on a root, Edit Outline. */
 export function MindMapFlows() {
-  const flows = [
-    { id: 'tree', label: 'Tree' },
-    { id: 'balanced', label: 'Balanced' },
-    { id: 'downward', label: 'Downward' },
-    { id: 'bubble', label: 'Bubble' },
-  ] as const;
+  // The Mind Map section as the menu draws it: three headed groups, each a bordered list with one
+  // full-width row per choice, its glyph at the left (docs/specs/009-elements/mind-node.md "The Mind Map menu").
+  const ROW = 24;
+  const X = 70;
+  const W = 280;
+  type Row = { label: string; glyph?: ReactNode; on?: boolean };
+  const groups: { title: string; rows: Row[] }[] = [
+    {
+      title: 'OUTLINE',
+      rows: ['Edit Outline', 'Tidy Map', 'Select Branch', 'Select Whole Map'].map((label) => ({
+        label,
+      })),
+    },
+    {
+      title: 'BRANCHING',
+      rows: (
+        [
+          ['tree', 'Tree'],
+          ['leftward', 'Leftward'],
+          ['balanced', 'Balanced'],
+          ['downward', 'Downward'],
+          ['upward', 'Upward'],
+          ['bubble', 'Bubble'],
+        ] as const
+      ).map(([id, label]) => ({
+        label,
+        glyph: <FlowGlyph flow={id} />,
+        on: id === 'tree',
+      })),
+    },
+    {
+      title: 'SPACING',
+      rows: ['Tight', 'Compact', 'Comfortable', 'Wide'].map((label) => ({
+        label,
+        on: label === 'Comfortable',
+      })),
+    },
+  ];
+  let y = 40;
+  const drawn = groups.map((g) => {
+    const top = y + 14;
+    y = top + g.rows.length * ROW + 14;
+    return { ...g, top };
+  });
   return (
-    <Scene w={420} h={270} bg="plain">
+    <Scene w={420} h={y + 10} bg="plain">
       <rect
-        x={70}
-        y={14}
-        width={280}
-        height={246}
+        x={X - 14}
+        y={10}
+        width={W + 28}
+        height={y - 6}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={84} y={32} size={11} weight={700} tone="strong">
+      <Label x={X} y={28} size={11} weight={700} tone="strong">
         Mind Map
       </Label>
-      <Label x={84} y={52} size={10} tone="muted">
-        Branches to the right, siblings stacked down
-      </Label>
-      {/* Two per row, as the menu lays them out (MenuTileGrid cols={2}) */}
-      {flows.map((f, i) => {
-        const tx = 84 + (i % 2) * 128;
-        const ty = 64 + Math.floor(i / 2) * 60;
-        const on = i === 0;
-        return (
-          <g key={f.id}>
-            <rect
-              x={tx}
-              y={ty}
-              width={122}
-              height={54}
-              rx={8}
-              className={on ? 'fill-brand-50 stroke-brand-300' : 'fill-slate-50 stroke-slate-200'}
-              strokeWidth={1.5}
-            />
-            <g transform={`translate(${tx + 61} ${ty + 20})`}>
-              <FlowGlyph flow={f.id} />
-            </g>
-            <Label
-              x={tx + 61}
-              y={ty + 44}
-              size={10}
-              anchor="middle"
-              weight={on ? 700 : 500}
-              tone={on ? 'accent' : 'body'}
-            >
-              {f.label}
-            </Label>
-          </g>
-        );
-      })}
-      {['Tidy Map', 'Edit Outline'].map((t, i) => (
-        <g key={t}>
-          <rect
-            x={84}
-            y={190 + i * 32}
-            width={250}
-            height={26}
-            rx={6}
-            className="fill-slate-50 stroke-slate-200"
-            strokeWidth={1.5}
-          />
-          <Label x={209} y={204 + i * 32} size={11} weight={600} anchor="middle" tone="body">
-            {t}
+      {drawn.map((g) => (
+        <g key={g.title}>
+          <Label x={X} y={g.top - 4} size={9} weight={700} tone="muted">
+            {g.title}
           </Label>
+          <rect
+            x={X}
+            y={g.top}
+            width={W}
+            height={g.rows.length * ROW}
+            rx={7}
+            className="fill-white stroke-slate-200"
+            strokeWidth={1.2}
+          />
+          {g.rows.map((r, i) => {
+            const ry = g.top + i * ROW;
+            return (
+              <g key={r.label}>
+                {r.on ? (
+                  <rect
+                    x={X + 1}
+                    y={ry + 1}
+                    width={W - 2}
+                    height={ROW - 2}
+                    className="fill-brand-50"
+                  />
+                ) : null}
+                {i > 0 ? (
+                  <path d={`M${X} ${ry} H${X + W}`} className="stroke-slate-100" strokeWidth={1} />
+                ) : null}
+                {r.glyph ? (
+                  <g transform={`translate(${X + 22} ${ry + ROW / 2})`}>{r.glyph}</g>
+                ) : null}
+                <Label
+                  x={X + (r.glyph ? 46 : 14)}
+                  y={ry + ROW / 2 + 4}
+                  size={10.5}
+                  weight={r.on ? 700 : 500}
+                  tone={r.on ? 'accent' : 'body'}
+                >
+                  {r.label}
+                </Label>
+                {r.on ? (
+                  <path
+                    d={`M${X + W - 22} ${ry + 12} l3 3 l6 -6`}
+                    className="stroke-brand-600"
+                    strokeWidth={1.6}
+                    fill="none"
+                  />
+                ) : null}
+              </g>
+            );
+          })}
         </g>
       ))}
     </Scene>

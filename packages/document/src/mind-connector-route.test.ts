@@ -139,6 +139,36 @@ describe('finishMindConnectorRoute', () => {
     ]);
   });
 
+  it('mirrors the bracket for the leftward flow, the trunk west of the root', () => {
+    const els: Element[] = [
+      node('root', 0, 0, undefined, 'leftward'),
+      node('a', -314, -49, 'root'),
+      node('b', -314, 49, 'root'),
+      connector('ra', 'root', 'w', 'a', 'e'),
+      connector('rb', 'root', 'w', 'b', 'e'),
+    ];
+    // Root's west face at x 0, children's east faces at -64: trunk x -32.
+    expect(finishMindConnectorRoute(arrowOf(els, 'ra'), els, 'professional')!.corners).toEqual([
+      { x: -32, y: 40 },
+      { x: -32, y: -9 },
+    ]);
+  });
+
+  it('mirrors the bus for the upward flow, rising into each child’s bottom', () => {
+    const els: Element[] = [
+      node('root', 0, 0, undefined, 'upward'),
+      node('a', -134, -130, 'root'),
+      node('b', 134, -130, 'root'),
+      connector('ra', 'root', 'n', 'a', 's'),
+      connector('rb', 'root', 'n', 'b', 's'),
+    ];
+    // Root top at y 0, children's bottoms at -50: bus y -25.
+    expect(finishMindConnectorRoute(arrowOf(els, 'rb'), els, 'professional')!.corners).toEqual([
+      { x: 125, y: -25 },
+      { x: 259, y: -25 },
+    ]);
+  });
+
   it('draws the bubble flow as straight spokes', () => {
     const els: Element[] = [
       node('root', 0, 0, undefined, 'bubble'),

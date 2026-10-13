@@ -113,7 +113,7 @@ node of that map. **Tidy Map** in the Mind Map menu section puts it back, and
 from then on it stays tidy again.
 
 Order is read from the map as drawn: siblings are ordered along the flow's
-stacking axis (top to bottom for a tree, left to right for a downward map,
+stacking axis (top to bottom for a tree or a leftward map, left to right for a downward or upward map,
 clockwise from the west around a bubble map's root, and clockwise from the
 side facing away from its parent around a deeper node). A new **sibling** goes **directly after** the node Enter
 was pressed on, the way an outliner inserts the next line, not at the end of
@@ -191,8 +191,8 @@ The faces a connector joins are the **flow's**, not the nearest pair: a tree
 leaves the parent's east face and enters the child's west face however far down
 the column the child is. The nearest-pair chooser would pick the parent's south
 face for a third child, and the connector would then run behind the second
-child to reach it. A balanced map uses east or west by the side the child is on, a
-downward map south to north, and only the bubble flow, which fans in every
+child to reach it. A leftward map leaves west and enters east, a balanced map uses east or west by the side
+the child is on, a downward map south to north (an upward map north to south), and only the bubble flow, which fans in every
 direction, asks the shared chooser (`bestAnchorTowards`). A re-layout
 (tidy growth, Tidy Map, a flow change) re-anchors the map's connectors by the
 same rule.
@@ -201,14 +201,15 @@ same rule.
 
 The Professional finish ([Finish](../008-canvas/finish.md)) draws a map's connectors right-angled, and neat:
 
-- **Tree and balanced:** every connector off one parent leaves the same point on the parent's side face,
+- **Tree, leftward and balanced:** every connector off one parent leaves the same point on the parent's side face,
   runs out to one shared **trunk** halfway across the gap between the parent and its nearest child on that
   side, runs along the trunk, and turns once more straight into the child's facing side. A column of siblings
   reads as one bracket, with no jogs at the card edges and no diagonals. A child level with its parent is
   one straight run. A child dragged further out still turns on the trunk, so the bracket holds.
 - **Downward:** every connector leaves the middle of the parent's bottom, drops to one horizontal **bus**
   halfway down the gap to the nearest child, runs along it, and drops straight into the middle of each
-  child's top. A child directly below is one straight drop.
+  child's top. A child directly below is one straight drop. **Upward** is the same bus mirrored: up from
+  the parent's top into each child's bottom.
 - **Bubble:** straight spokes from face to face. A bubble map fans every way, so a right angle there would
   cross its own branches; a straight spoke is the neat line.
 
