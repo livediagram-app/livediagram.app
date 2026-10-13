@@ -76,7 +76,8 @@ board of the template shows some, and every plan view on its Dashboard has somet
   - **Agents**: the MCP's `create_document` and the api's seeded create (the CLI's `--template`) add all the
     template's tabs where the template is named; the first takes the name given, the rest the template's names.
     A name given that is one of the template's later tabs (an agent naming the tab it wanted) leaves the first its
-    template name instead, so no two tabs share a name.
+    template name instead, so no two tabs share a name; with no name given the first takes its template name (Tab 1
+    for a template of one tab). One rule (`templateTabName`) serves the MCP and the api.
     A **replace** (the MCP's `add_tab`, the CLI's `replace --template`) fills its one tab with the template's
     first tab.
 - A template of one tab keeps the name the tab would have had (Tab 1 in the wizard).

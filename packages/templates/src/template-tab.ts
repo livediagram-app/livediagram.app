@@ -43,6 +43,17 @@ export function buildTemplateTab(
 // Every tab a template makes (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"):
 // the first takes `first`'s id and name, the rest a fresh id each and the template's names. A template of
 // one tab makes exactly buildTemplateTab's.
+// The name a template's first tab takes where an agent or the api makes it (docs/specs/026-plan/plan-templates.md "How a
+// template with tabs is made"): the name given, unless it is one of the template's later tabs (the agent naming the
+// tab it wanted, which the template makes anyway), when the first keeps its template name, so no two tabs share one.
+// With no name given, the template's own first name, else Tab 1.
+export function templateTabName(given: string | undefined, kind: TemplateKind): string {
+  const [first, ...later] = templateTabs(kind).map((d) => d.name);
+  if (given === undefined || !given.trim()) return first ?? 'Tab 1';
+  const key = given.trim().toLowerCase();
+  return first && later.some((n) => n?.trim().toLowerCase() === key) ? first : given;
+}
+
 export function buildTemplateTabs(
   first: { id: string; name: string },
   kind: TemplateKind,

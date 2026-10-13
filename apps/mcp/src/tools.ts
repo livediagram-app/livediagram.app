@@ -21,6 +21,7 @@ import {
 } from '@livediagram/document';
 import {
   buildTemplateTabs,
+  templateTabName,
   resolveTemplate,
   templateCatalogue,
   templateFamilyOf,
@@ -131,8 +132,14 @@ export function registerTools(server: McpServer, env: Env): void {
     // Every template tab's elements: their Plan boards bring their card types
     // (docs/specs/026-plan/plan-templates.md "Card types a template uses").
     const templateElements: Tab['elements'] = [];
-    for (const t of inputTabs) {
+    for (const [index, given] of inputTabs.entries()) {
       const tabId = crypto.randomUUID();
+      // A template tab's name follows the templates' rule; any other unnamed tab is "Tab n".
+      const kindOf = given.template ? resolveTemplate(given.template) : null;
+      const t = {
+        ...given,
+        name: kindOf ? templateTabName(given.name, kindOf) : (given.name ?? `Tab ${index + 1}`),
+      };
       // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
       // instead of expecting elements.
       if (t.template) {

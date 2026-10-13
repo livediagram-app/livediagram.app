@@ -10,7 +10,7 @@ import {
   buildTemplateTabs,
   isTemplateKind,
   templateFamilyOf,
-  templateTabs,
+  templateTabName,
 } from '@livediagram/templates';
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
@@ -34,14 +34,11 @@ function sourceOf(tab: Record<string, unknown>): ReplaceBody | null {
   return { [key]: tab[key] } as ReplaceBody;
 }
 
-// The first tab's name: the one given, unless it names one of the template's later tabs (an agent naming the tab it
-// wanted, which the template makes anyway), when the first keeps the template's own name, so no two tabs share one
-// (docs/specs/026-plan/plan-templates.md "How a template with tabs is made").
+// The first tab's name, by the templates' own rule (templateTabName); any other tab takes the name given.
 export function seededTabName(given: string, template: unknown): string {
-  if (typeof template !== 'string' || !isTemplateKind(template)) return given;
-  const [first, ...later] = templateTabs(template).map((d) => d.name);
-  const key = given.trim().toLowerCase();
-  return first && later.some((n) => n?.trim().toLowerCase() === key) ? first : given;
+  return typeof template === 'string' && isTemplateKind(template)
+    ? templateTabName(given, template)
+    : given;
 }
 
 export function compileSeededTabs(tabs: readonly unknown[], documentId: string): CompiledSeed {

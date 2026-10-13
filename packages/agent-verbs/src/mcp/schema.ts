@@ -573,7 +573,9 @@ const nameField = (what: string, schema: z.ZodString = z.string()) =>
     .transform(truncateName);
 
 const tabShape = z.object({
-  name: nameField('Name of the tab.'),
+  name: nameField(
+    'Name of the tab. Optional with a template (its own first tab name is used); otherwise "Tab n".',
+  ).optional(),
   graph: graphField,
   mermaid: mermaidField,
   elements: elementArray.optional(),
