@@ -193,7 +193,7 @@ describe('applyReplace refusals', () => {
 
   it('needs exactly one source', () => {
     expect(refusal({}).details).toEqual([
-      'replace takes exactly one of graph, mermaid, template, elements',
+      'replace takes exactly one of graph, mermaid, template, dashboard, elements',
     ]);
     expect(refusal({ graph, mermaid: 'x' }).code).toBe('invalid_value');
   });

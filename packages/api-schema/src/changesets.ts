@@ -181,6 +181,8 @@ export type ChangesetReplaceBody = {
   graph?: unknown;
   mermaid?: string;
   template?: string;
+  // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard").
+  dashboard?: Record<string, unknown>;
   elements?: unknown[];
   layout?: 'auto' | 'preserve';
   theme?: string;

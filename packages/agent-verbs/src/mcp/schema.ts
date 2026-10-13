@@ -10,6 +10,7 @@
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
 import { z } from 'zod';
+import { METRIC_KINDS, PLAN_VISUALISATIONS } from '@livediagram/items';
 import {
   FIND_QUERY_MAX_LENGTH,
   REF_INPUT_MAX_LENGTH,
@@ -272,6 +273,61 @@ const layoutField = z
 // (@livediagram/templates) rather than a z.enum, so a new template is one
 // catalogue entry with no schema churn; list_templates is the discovery
 // surface.
+// A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard"), everything named as people name it.
+const dashboardField = z
+  .object({
+    tabs: z
+      .union([z.array(z.string()), z.literal('every')])
+      .optional()
+      .describe(
+        'The Board and Sheet tabs it shows, by name (in create_document, other tabs of the same call), or "every"; ' +
+          'two to a row.',
+      ),
+    metrics: z
+      .array(z.enum(METRIC_KINDS))
+      .optional()
+      .describe(
+        'Metric tiles, four to a row: count (cards), progress (percent done), people, types, priorities, due ' +
+          '(overdue and due soon), unassigned, points (estimates), top-voted, stale.',
+      ),
+    charts: z
+      .array(
+        z.object({
+          view: z
+            .enum(PLAN_VISUALISATIONS)
+            .exclude(['status-mix'])
+            .describe(
+              'gantt, calendar (by due date), start-calendar, workload (cards by a field), priority-matrix ' +
+                '(priority by status), search.',
+            ),
+          groupBy: z
+            .string()
+            .optional()
+            .describe(
+              'workload only: assignee (default), type, priority, status, or a field by name.',
+            ),
+          types: z.array(z.string()).optional().describe('Only these card types, by name.'),
+        }),
+      )
+      .optional()
+      .describe('Charts, two to a row; a Gantt takes a row of its own.'),
+    notes: z
+      .array(
+        z.object({
+          title: z.string().describe('The note’s heading.'),
+          text: z.string().describe('Its text; a line each.'),
+        }),
+      )
+      .optional()
+      .describe('Notes, three to a row.'),
+  })
+  .optional()
+  .describe(
+    'Make the tab a Plan Dashboard instead of a canvas: rows of the tabs it shows, then metrics, Gantts, other ' +
+      'charts and notes, each drawn live from the cards; up to 12 rows. Give it in place of graph, mermaid, ' +
+      'elements or template.',
+  );
+
 const templateField = z
   .string()
   .optional()
@@ -580,6 +636,7 @@ const tabShape = z.object({
   mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
+  dashboard: dashboardField,
 });
 
 export const createDocumentShape = {
@@ -620,6 +677,7 @@ export const addTabShape = {
   mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
+  dashboard: dashboardField,
   layout: layoutField,
   theme: themeField,
   finish: finishField,

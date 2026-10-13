@@ -13,6 +13,7 @@ import {
   type EditOperation,
   type ReplaceBody,
 } from '@livediagram/edit-operations';
+import type { DashboardSpec } from '@livediagram/templates';
 import {
   isFinish,
   isRecord,
@@ -39,7 +40,7 @@ export type Refusal = { status: number; body: Record<string, unknown> };
 
 export type ParseResult = { ok: true; value: ParsedChangeset } | { ok: false; refusal: Refusal };
 
-const REPLACE_SOURCES = ['graph', 'mermaid', 'template', 'elements'] as const;
+const REPLACE_SOURCES = ['graph', 'mermaid', 'template', 'dashboard', 'elements'] as const;
 const FINGERPRINT = new RegExp(`^[0-9a-f]{${ELEMENT_FINGERPRINT_LENGTH}}$`);
 
 const refuse = (status: number, body: Record<string, unknown>): ParseResult => ({
@@ -147,7 +148,7 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
   if (!isRecord(raw)) return bad('"replace" must be an object');
   const sources = REPLACE_SOURCES.filter((s) => raw[s] !== undefined);
   if (sources.length !== 1)
-    return bad('"replace" takes exactly one of graph, mermaid, template or elements');
+    return bad('"replace" takes exactly one of graph, mermaid, template, dashboard or elements');
   if (raw.layout !== undefined && raw.layout !== 'auto' && raw.layout !== 'preserve') {
     return bad('"replace.layout" is "auto" or "preserve"');
   }
@@ -182,6 +183,9 @@ function replaceBodyOf(
       return typeof raw.mermaid === 'string' ? { mermaid: raw.mermaid } : null;
     case 'template':
       return typeof raw.template === 'string' ? { template: raw.template } : null;
+    // Checked whole by the engine (dashboard-body.ts), which names each problem.
+    case 'dashboard':
+      return isRecord(raw.dashboard) ? { dashboard: raw.dashboard as DashboardSpec } : null;
     case 'elements':
       return Array.isArray(raw.elements)
         ? { elements: raw.elements, ...(layout ? { layout } : {}) }

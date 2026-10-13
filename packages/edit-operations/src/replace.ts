@@ -22,18 +22,28 @@ import {
   type GraphInput,
   type Tab,
 } from '@livediagram/document';
-import { buildTemplateTab, resolveTemplate, validTemplateKinds } from '@livediagram/templates';
+import {
+  buildDashboardTab,
+  buildTemplateTab,
+  resolveTemplate,
+  validTemplateKinds,
+} from '@livediagram/templates';
+import { dashboardSpecIssue } from './dashboard-body';
 import { tabRejection } from './finalise';
 import { graphBodyIssue } from './graph-body';
 import { invalidResult, tabLocked } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
+import type { DashboardSpec } from '@livediagram/templates';
 
-type Source = 'graph' | 'mermaid' | 'template' | 'elements';
-const SOURCES: readonly Source[] = ['graph', 'mermaid', 'template', 'elements'];
+type Source = 'graph' | 'mermaid' | 'template' | 'dashboard' | 'elements';
+const SOURCES: readonly Source[] = ['graph', 'mermaid', 'template', 'dashboard', 'elements'];
 
 // What one source builds: the new elements, and for a tab that does not exist yet, the whole tab.
-type Built = { elements: Element[]; tab: (tabId: string, name: string) => Tab } | EditRejection;
+// `newOnly`: the source makes a tab of its own kind (a Dashboard), never elements onto an existing tab.
+type Built =
+  | { elements: Element[]; tab: (tabId: string, name: string) => Tab; newOnly?: true }
+  | EditRejection;
 
 const invalidBody = (detail: string, hint?: string): EditRejection => ({
   code: 'invalid_value',
@@ -100,6 +110,14 @@ function build(body: ReplaceBody, source: Source, themeId: string | undefined): 
       const tabOf = (tabId: string, name: string) => buildTemplateTab(tabId, name, kind, themeId);
       return { elements: tabOf('template', 'template').elements, tab: tabOf };
     }
+    case 'dashboard': {
+      const { dashboard } = body as { dashboard: unknown };
+      const issue = dashboardSpecIssue(dashboard);
+      if (issue) return invalidBody(issue);
+      const tabOf = (tabId: string, name: string) =>
+        buildDashboardTab(tabId, name, dashboard as DashboardSpec, themeId).tab;
+      return { elements: [], tab: tabOf, newOnly: true };
+    }
     case 'elements': {
       const { elements, layout } = body as { elements: unknown; layout?: 'auto' | 'preserve' };
       return fromElements(elements, layout, themeId);
@@ -148,6 +166,13 @@ export function applyReplace(
   if (themeId !== undefined && !isBuiltInTheme(themeId)) log('[edit-ops] theme-fallback', {});
   const built = build(body, source, themeId);
   if ('code' in built) return refuse(built);
+  if (tab && built.newOnly)
+    return refuse(
+      invalidBody(
+        'dashboard: a Dashboard makes a new tab',
+        'add it with add_tab, or in create_document',
+      ),
+    );
   const next = nextTab(tab, built, options);
   if (!isValidTab(next)) return refuse(tabRejection(next));
   log('[edit-ops] replace', { source, elements: next.elements.length });

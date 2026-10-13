@@ -20,6 +20,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import {
+  buildDashboardTab,
   buildTemplateTabs,
   templateTabName,
   resolveTemplate,
@@ -40,8 +41,16 @@ import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from './env';
-import { bringBoardCardTypes, fetchTeamLibraries, matchDocuments } from '@livediagram/agent-verbs';
-import { catalogueWithBoardTypes } from '@livediagram/items';
+import {
+  bringBoardCardTypes,
+  fetchTeamLibraries,
+  matchDocuments,
+  readPlanState,
+  resolveDashboardInput,
+  type DashboardInput,
+} from '@livediagram/agent-verbs';
+import { ITEM_TYPES, catalogueWithBoardTypes, typesOf } from '@livediagram/items';
+import { dashboardTabKind, documentTabRefs } from './dashboard-tabs';
 import {
   deepLink,
   errorResult,
@@ -127,6 +136,7 @@ export function registerTools(server: McpServer, env: Env): void {
       return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
     }
     const tabs: Tab[] = [];
+    const dashboards: { at: number; tabId: string; name: string; input: DashboardInput }[] = [];
     // The template the first tab is made from, for the creation intent.
     let firstTemplate: TemplateKind | null = null;
     // Every template tab's elements: their Plan boards bring their card types
@@ -163,6 +173,12 @@ export function registerTools(server: McpServer, env: Env): void {
         for (const m of made) templateElements.push(...m.elements);
         continue;
       }
+      // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): made once every other tab is, so it
+      // can show them by name.
+      if (t.dashboard) {
+        dashboards.push({ at: tabs.length, tabId, name: t.name, input: t.dashboard });
+        continue;
+      }
       // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
       // and arrows from a node/edge graph, or the same graph as Mermaid.
       const input = resolveGraphInput(t);
@@ -191,6 +207,16 @@ export function registerTools(server: McpServer, env: Env): void {
         );
       }
       tabs.push(buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, args.theme));
+    }
+    // Each Dashboard, showing the call's other tabs by name, in its place among them.
+    if (dashboards.length) {
+      const refs = tabs.map((t) => ({ id: t.id, name: t.name, of: dashboardTabKind(t) }));
+      const types = typesOf(catalogueWithBoardTypes(null, templateElements));
+      for (const [n, d] of dashboards.entries()) {
+        const resolved = resolveDashboardInput(d.input, refs, types);
+        if (!resolved.ok) return errorResult(`Tab "${d.name}": ${resolved.message}`);
+        tabs.splice(d.at + n, 0, buildDashboardTab(d.tabId, d.name, resolved.spec, args.theme).tab);
+      }
     }
     // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
     if (args.finish) for (const t of tabs) t.finish = args.finish;
@@ -246,7 +272,20 @@ export function registerTools(server: McpServer, env: Env): void {
     }
     const input = resolveGraphInput(args);
     if (input.error) return errorResult(input.error);
-    if (!args.template && !input.graph && !args.elements) {
+    // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): the document's tabs and card types by name.
+    let dashboard: Record<string, unknown> | undefined;
+    if (args.dashboard) {
+      const [refs, types] = await Promise.all([
+        documentTabRefs(env, token, args.documentId),
+        readPlanState(clientFor(env, token), args.documentId)
+          .then((s) => s.plan.types)
+          .catch(() => ITEM_TYPES),
+      ]);
+      const resolved = resolveDashboardInput(args.dashboard, refs, types);
+      if (!resolved.ok) return errorResult(resolved.message);
+      dashboard = resolved.spec as Record<string, unknown>;
+    }
+    if (!args.template && !input.graph && !args.elements && !dashboard) {
       return errorResult(
         'Invalid input. Provide a "graph" (nodes + edges), "mermaid", "elements", or a "template" kind ' +
           'from list_templates. Check the livediagram://schema/elements resource.',
@@ -274,6 +313,7 @@ export function registerTools(server: McpServer, env: Env): void {
         replace: replaceBodyFrom({
           ...(input.graph ? { graph: input.graph } : {}),
           ...(args.template ? { template: args.template } : {}),
+          ...(dashboard ? { dashboard } : {}),
           ...(ended ? { elements: ended.elements } : {}),
           ...(args.layout ? { layout: args.layout } : {}),
           ...(themeId ? { theme: themeId } : {}),

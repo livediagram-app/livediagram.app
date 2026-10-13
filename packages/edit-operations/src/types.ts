@@ -12,6 +12,7 @@ import type {
   ThemeDefinition,
 } from '@livediagram/document';
 import type { PlacementRelation } from './vocabulary';
+import type { DashboardSpec } from '@livediagram/templates';
 
 // A ref, a quoted label, or `key:value` terms joined by spaces, all of which must match.
 export type Selector = string;
@@ -140,6 +141,8 @@ export type ReplaceBody =
   | { graph: GraphInput }
   | { mermaid: string }
   | { template: string }
+  // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard"); never onto an existing tab.
+  | { dashboard: DashboardSpec }
   | { elements: unknown[]; layout?: 'auto' | 'preserve' };
 
 export type ApplySuccess = {
