@@ -51,6 +51,7 @@ function GetStartedContent() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState(() => searchParams.get('email')?.trim() ?? '');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [codeDigits, setCodeDigits] = useState<string[]>(['', '', '', '', '', '']);
@@ -199,11 +200,12 @@ function GetStartedContent() {
   const handleResendCode = async () => {
     if (!clerkSignUp) return;
     setError('');
+    setNotice('');
     setLoading(true);
     setCodeDigits(['', '', '', '', '', '']);
     try {
       await clerkSignUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-      setError('A new code has been sent. Check your email.');
+      setNotice('A new code has been sent. Check your email.');
       codeInputRefs.current[0]?.focus();
     } catch (err: unknown) {
       setError(messageOf(err, 'Failed to resend code'));
@@ -224,6 +226,7 @@ function GetStartedContent() {
           : 'Check your email'
       }
       error={error}
+      notice={notice}
       footer={
         <>
           Already have an account?{' '}
@@ -301,6 +304,7 @@ function GetStartedContent() {
           onBack={() => {
             setPhase(1);
             setError('');
+            setNotice('');
             setCodeDigits(['', '', '', '', '', '']);
           }}
         />

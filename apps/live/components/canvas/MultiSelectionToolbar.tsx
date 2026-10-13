@@ -15,11 +15,8 @@ import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useMinimalChrome, usePowerUser } from '@/components/providers/minimal-chrome';
 
 type MultiSelectionToolbarProps = {
-  // True if at least one member of the multi-selection is locked. The
-  // Lock button toggles them all to the inverse state — if anything is
-  // unlocked, the click locks everything; otherwise it unlocks.
-  anyLocked: boolean;
-  // True when EVERY member is locked. Delete protects locked members and
+  // True when EVERY member is locked. The Lock button reads as Unlock only then, since a click unlocks only a
+  // fully locked selection (anything unlocked, and it locks them all). Delete protects locked members and
   // removes the rest, so it only goes fully dead when nothing's deletable.
   allLocked: boolean;
   // The elements in the multi-selection — drives the Filter Selection menu's
@@ -45,7 +42,6 @@ type MultiSelectionToolbarProps = {
 // caller can host them in a FloatingToolbar that floats over the selection
 // with a title; the shell + count live there.
 export function MultiSelectionToolbar({
-  anyLocked,
   allLocked,
   selectedElements,
   onDuplicate,
@@ -125,17 +121,17 @@ export function MultiSelectionToolbar({
       </HoverCard>
       <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
       <HoverCard
-        title={anyLocked ? 'Unlock' : 'Lock'}
-        description={anyLocked ? 'Unlock so they move again.' : "Lock so they can't move."}
+        title={allLocked ? 'Unlock' : 'Lock'}
+        description={allLocked ? 'Unlock so they move again.' : "Lock so they can't move."}
       >
         <button
           type="button"
           onClick={onToggleLock}
-          aria-label={anyLocked ? 'Unlock selected elements' : 'Lock selected elements'}
-          aria-pressed={anyLocked}
-          className={anyLocked ? TOOLBAR_BTN_ON : TOOLBAR_BTN}
+          aria-label={allLocked ? 'Unlock selected elements' : 'Lock selected elements'}
+          aria-pressed={allLocked}
+          className={allLocked ? TOOLBAR_BTN_ON : TOOLBAR_BTN}
         >
-          <LockIcon closed={anyLocked} size={14} />
+          <LockIcon closed={allLocked} size={14} />
         </button>
       </HoverCard>
       {showDelete ? (

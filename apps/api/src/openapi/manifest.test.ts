@@ -313,3 +313,13 @@ describe('document name fields', () => {
     expect(nameOf(method, path)?.description).toMatch(/At most 60 characters/);
   });
 });
+
+// docs/specs/015-api/public-api-and-tokens.md §3.4: a token can GET the teams surface (its teams, a team, a
+// team's library), so the doc marks those reads x-token-usable; every team mutation stays session-only.
+describe('OpenAPI teams surface', () => {
+  it('marks the team reads token-usable and no team write', () => {
+    const teams = ROUTE_MANIFEST.filter((r) => r.segment === 'teams');
+    const usable = teams.filter((r) => r.tokenUsable).map((r) => `${r.method} ${r.path}`);
+    expect(usable).toEqual(['GET /teams', 'GET /teams/{id}', 'GET /teams/{id}/library']);
+  });
+});

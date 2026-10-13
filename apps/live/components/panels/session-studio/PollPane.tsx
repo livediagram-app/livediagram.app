@@ -237,8 +237,8 @@ export function PollComposerBody({
         {missing ?? 'Ask everyone'}
       </StudioButton>
       <p className="text-center text-[10px] leading-snug text-slate-400">
-        Everyone here is asked, view-only visitors included. Answers are anonymous and nothing is
-        saved to the document.
+        Everyone here who can take part is asked; view-only visitors are not. Answers are anonymous
+        and nothing is saved to the document.
       </p>
     </div>
   );

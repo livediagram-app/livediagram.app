@@ -1,6 +1,7 @@
 'use client';
 
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
+import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
@@ -956,12 +957,7 @@ export function EditorCanvasHost() {
             setExportScope('tab');
             setExportOpen(true);
           },
-          onSearch: () => {
-            setSearchOpen(true);
-            // Same prefetch as the bottom bar's Search: element matches
-            // cover tabs not yet visited (docs/specs/008-canvas/canvas-and-palette.md).
-            void loadAllTabs();
-          },
+          onSearch: () => openSearchWithPrefetch(setSearchOpen, loadAllTabs),
           onOpenSettings: () => {
             setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');

@@ -85,11 +85,6 @@ export type EditorDragDeps = {
   // element id) does not show the card's type or the type leaves the status out. 'refused' sends the card back to
   // where the drag started, with no undo step. Omitted when edits are blocked.
   onPlanCardDroppedOnBoard?: (card: Element, status: string, boardId?: string) => 'refused' | void;
-  // An annotation marker was pressed + released without moving (a click,
-  // not a drag): open its note editor (docs/specs/009-elements/annotations.md). Distinguished from a drag
-  // by the same DRAG_ENGAGE_PX travel test the icon-fold uses. Omitted when
-  // note edits are blocked (read-only / locked tab).
-  onAnnotationClicked?: (id: string) => void;
   // Per-user preference (docs/specs/007-editor/user-preferences.md) controlling whether connected
   // arrows re-pin to the most-natural face as a box is dragged.
   // Defaults to true; setting `false` keeps anchors frozen at

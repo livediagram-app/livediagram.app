@@ -1233,7 +1233,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Roll Call',
     caption: 'Roll Call',
     description:
-      'Press Take roll and it records everyone in the room at that moment, and keeps them after they leave.',
+      'Press Take Roll and it records everyone in the room at that moment, and keeps them after they leave.',
     filled: true,
     action: { type: 'shape', kind: 'roll-call' },
     icon: <RollCallIcon size={TILE_GLYPH_PX} />,
@@ -1435,7 +1435,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // which is the distinction the row order now carries.
     toolGroup: 'write',
     label: 'Add Annotation',
-    description: 'Annotation. A note marker: hover to read it, click to edit.',
+    description: 'Annotation. A note marker: hover to read it, double-click to edit.',
     filled: true,
     action: { type: 'annotation' },
     icon: (
