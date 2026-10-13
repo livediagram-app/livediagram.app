@@ -30,6 +30,12 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
 - Nothing stored changes when someone looks at a tab. The canvas and each element are **drawn** in the viewer's half:
   a stored colour that is one of the theme's colours, in either half, is drawn as the same role in the viewer's half;
   any other colour is a choice someone made and is drawn as it is.
+- **A box's text and fill are drawn as a pair.** Each colour is redrawn on its own, so a box whose fill is one of the
+  theme's colours but whose text is someone's choice (a template's white box with slate text) would get the half's
+  fill under the stored text. Where that would put the text on its fill below 4.5:1, and read worse than the stored
+  pair does, the box keeps its stored fill and text instead (its outline still follows the half). `packages/document/src/theme-halves.test.ts` covers the rule, and
+  `apps/live/lib/template-theme-contrast.test.ts` every template under every theme, for a light- and a dark-mode
+  viewer.
 - Writing follows the writer: a new element takes the writer's half of the theme, and everyone else sees it in theirs.
   Picking a theme or a look applies it in the picker's half.
 - Everything that draws a tab for a person follows their half: the canvas, the Map, layer and slide thumbnails,

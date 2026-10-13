@@ -197,7 +197,40 @@ export function viewElementInTheme<T extends object>(el: T, map: ReadonlyMap<str
     const to = map.get(value.toLowerCase());
     if (to && to !== value) (patch ??= {})[field] = to;
   }
+  if (patch && breaksTextPair(el as Record<string, unknown>, patch)) {
+    delete patch.fillColor;
+    delete patch.textColor;
+    if (Object.keys(patch).length === 0) patch = null;
+  }
   return patch ? { ...el, ...patch } : el;
+}
+
+// A box's text and fill are drawn as a pair (docs/specs/011-theme/light-and-dark.md "What a viewer sees"): redrawing
+// only one of them (a template's white box under its own slate text) can sink the text into its fill. True when the
+// view would put the text on its fill below the floor and read worse than the stored pair; the box then keeps both.
+function breaksTextPair(el: Record<string, unknown>, patch: Record<string, string>): boolean {
+  if (!('fillColor' in patch) && !('textColor' in patch)) return false;
+  const fill = el.fillColor;
+  const text = el.textColor;
+  if (typeof fill !== 'string' || typeof text !== 'string') return false;
+  const viewed = pairContrast(patch.textColor ?? text, patch.fillColor ?? fill);
+  return viewed < THEME_TEXT_CONTRAST && viewed < pairContrast(text, fill);
+}
+
+/** How many text-on-fill ratios the canvas keeps: a tab's boxes repeat a handful of pairs, so a small cache answers
+ *  nearly every draw (5,000 boxes: 70 ms of luminance maths uncached). Cleared whole when full; safe range 64..4096. */
+const PAIR_CONTRAST_CACHE_SIZE = 512;
+const PAIR_CONTRAST = new Map<string, number>();
+
+function pairContrast(text: string, fill: string): number {
+  const key = `${text}|${fill}`;
+  let ratio = PAIR_CONTRAST.get(key);
+  if (ratio === undefined) {
+    if (PAIR_CONTRAST.size >= PAIR_CONTRAST_CACHE_SIZE) PAIR_CONTRAST.clear();
+    ratio = contrastRatio(text, fill);
+    PAIR_CONTRAST.set(key, ratio);
+  }
+  return ratio;
 }
 
 /** A stored backdrop drawn in a theme half: a canvas or pattern colour the theme painted, in either half, becomes the
