@@ -8,11 +8,13 @@ import {
   type DashboardContent,
   type PlanPalette,
 } from '@livediagram/document';
-import { relativeSince } from '@/lib/relative-time';
-import { keyDateCount } from '@/components/plan/dashboard/DashboardKeyDateCard';
-import { labelOf } from '@/components/plan/dashboard/DashboardLinksCard';
-import { SHEET_METRIC_NAMES } from '@/components/palette/palette-dashboard-tiles';
-import type { SheetMetricShown } from '@/components/plan/dashboard/sheet-metric-shown';
+import { relativeSince } from '@livediagram/ui/relative-time';
+import {
+  SHEET_METRIC_NAMES,
+  keyDateCount,
+  linkLabelOf as labelOf,
+  type SheetMetricShown,
+} from './dashboard-card-values';
 import { box, dot, line, type Rect } from './plan-art-kit';
 
 const PAD = 16;

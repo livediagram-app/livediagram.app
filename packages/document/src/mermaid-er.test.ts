@@ -17,11 +17,17 @@ describe('parseMermaid: ER diagrams', () => {
     expect(r.graph.nodes.map((n) => n.id)).toEqual(['CUSTOMER', 'ORDER', 'INVOICE', 'PRODUCT']);
     expect(r.graph.edges).toEqual([
       // one-to-many: crow's foot at the ORDER end.
-      { from: 'CUSTOMER', to: 'ORDER', label: 'places', ends: 'to', head: 'cross' },
+      { from: 'CUSTOMER', to: 'ORDER', label: 'places · 1 : 0..*', ends: 'to', head: 'cross' },
       // one-to-one: headless.
-      { from: 'ORDER', to: 'INVOICE', label: 'billed as', ends: 'none' },
+      { from: 'ORDER', to: 'INVOICE', label: 'billed as · 1 : 1', ends: 'none' },
       // many-to-many: both ends.
-      { from: 'CUSTOMER', to: 'PRODUCT', label: 'browses', ends: 'both', head: 'cross' },
+      {
+        from: 'CUSTOMER',
+        to: 'PRODUCT',
+        label: 'browses · 0..* : 0..*',
+        ends: 'both',
+        head: 'cross',
+      },
     ]);
   });
 
@@ -29,7 +35,18 @@ describe('parseMermaid: ER diagrams', () => {
     const r = parseMermaid('erDiagram\n  ORDER }|--|| CUSTOMER : belongs_to');
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.graph.edges[0]).toMatchObject({ ends: 'from', head: 'cross' });
+    expect(r.graph.edges[0]).toMatchObject({
+      ends: 'from',
+      head: 'cross',
+      label: 'belongs_to · 1..* : 1',
+    });
+  });
+
+  it('writes the multiplicity alone when the relationship has no verb, optional sides as 0..1', () => {
+    const r = parseMermaid('erDiagram\n  PERSON |o--o| PASSPORT : ""');
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.edges[0]!.label).toBe('0..1 : 0..1');
   });
 
   it('renders non-identifying (dotted) relationships dashed', () => {

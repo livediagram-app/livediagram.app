@@ -5,6 +5,8 @@
 import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
 import {
+  CURRENCY_CODE,
+  CURRENCY_DEFAULT,
   CUSTOM_FIELD_KINDS,
   FALLBACK_ITEM_TYPE,
   ITEM_TYPES,
@@ -262,6 +264,11 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     const linkType = input['linkType'];
     if (typeof linkType !== 'string' || !ITEM_TYPE_PATTERN.test(linkType)) return `${at}.linkType`;
     field.linkType = linkType;
+  }
+  if (kind === 'currency' && input['currency'] !== undefined) {
+    const code = input['currency'];
+    if (typeof code !== 'string' || !CURRENCY_CODE.test(code)) return `${at}.currency`;
+    if (code !== CURRENCY_DEFAULT) field.currency = code;
   }
   if (input['onCard'] === true) field.onCard = true;
   return field;

@@ -10,11 +10,11 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import {
-  PLAN_VISUALISATION_LABELS,
   PRIORITY_LABELS,
   STATUS_PHASES,
   STATUS_PHASE_LABELS,
   breakdownGroupingOf,
+  breakdownTitle,
   breakdownModel,
   cardsInStatuses,
   itemTitle,
@@ -32,9 +32,9 @@ import {
   type PlanViewId,
   type StatusPhase,
 } from '@livediagram/items';
-import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
-import { metricModel } from '@/components/plan/views/metric-tile-model';
-import { PHASE_COLOURS } from '@/components/plan/views/phase-colours';
+import { BOARD_WIDGET_INFO } from './board-widget-info';
+import { metricModel } from './metric-tile-model';
+import { PHASE_COLOURS } from './phase-colours';
 import { PRIORITY_COLOURS } from '@livediagram/document';
 import { mixHex } from '@livediagram/document';
 import {
@@ -136,8 +136,14 @@ function workloadArt({ rect, p, items, data, settings, title }: ViewArtInput): s
     { by, field },
     data.types,
     data.statusNames,
+    data.items,
   );
-  const frame = viewFrame(rect, p, titled(PLAN_VISUALISATION_LABELS.workload, title), model.total);
+  const frame = viewFrame(
+    rect,
+    p,
+    titled(breakdownTitle({ by, field }, data.types), title),
+    model.total,
+  );
   if (model.total === 0) return frame.markup + emptyBody(frame.body, p, 'No cards yet.');
   const body = frame.body;
   const top = body.y + 32;

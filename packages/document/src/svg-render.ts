@@ -27,7 +27,8 @@ import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from './border-style';
 import { finishCornerFallbackPx, finishWobblesArt, resolveFinish, type Finish } from './finish';
 import { SKETCH_ART_FILTER_ID, svgSketchArtDefs, svgSketchedBody } from './svg-render-sketch';
 import { sketchBackdropIds } from './sketch-backdrop';
-import { canvasSurface } from './colors';
+import { acceptsInlineIcon, canvasSurface } from './colors';
+import { inlineIconLayout } from './svg-render-inline-icon';
 import { svgIconShape, svgImageShape } from './svg-render-image-icon';
 import { DIAMOND_POINTS } from './shape-geometry';
 import { svgTableShape } from './svg-render-table';
@@ -112,6 +113,7 @@ import {
   type BoxedExportOptions,
   type ResolveIconArt,
   type ResolveImageHref,
+  type ResolvePlanArt,
   type ResolveStickerArt,
 } from './svg-render-describe';
 // Typefaces (docs/specs/004-interface-design/fonts.md): an export paints the face the canvas painted, and
@@ -161,7 +163,8 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   const surface = opts.surface ?? 'light';
   // A stock colour stored by name is drawn in its version for this page.
   const el = resolveStockColours(source, surface);
-  const { opacity, shape, label } = describeBoxedExport(el, opts);
+  const { opacity, shape, label: described } = describeBoxedExport(el, opts);
+  let label = described;
   // What a self-drawing element writes its own text in: the label's resolved
   // colour and face, so a chart's key and a rail's captions read like every
   // other label on the canvas.
@@ -366,6 +369,21 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
     (shape.kind === 'icon' || shape.kind === 'sticker')
   )
     shapeStr = `<g filter="url(#${SKETCH_ART_FILTER_ID})">${shapeStr}</g>`;
+  // An inline icon beside the label, as the canvas lays it out (svg-render-inline-icon); it moves the label aside.
+  const iconArt =
+    el.type === 'shape' &&
+    acceptsInlineIcon(el) &&
+    el.iconId &&
+    (shape.kind === 'rect' || shape.kind === 'ellipse' || shape.kind === 'diamond') &&
+    !selfLabelled(el)
+      ? opts.resolveIconArt?.(el.iconId)
+      : undefined;
+  const inline =
+    iconArt && el.type === 'shape'
+      ? inlineIconLayout(el, label, iconArt, labelColor, el.textSize ?? 'scale')
+      : null;
+  if (inline) label = inline.label;
+  if (inline) shapeStr += inline.icon;
   // A self-drawing element renders NO standard label on the canvas (its own
   // content is what it shows), so the export must not print one either: a
   // chart came out with "pie-chart" centred in the middle of it.
@@ -472,6 +490,9 @@ export function boxedNeedsSvgRaster(
   if (el.type === 'shape' && shapeHasBespokeBody(el.shape)) return true;
   if (el.type === 'shape' && el.shape === 'icon' && el.iconId && resolveIconArt?.(el.iconId))
     return true;
+  // An inline icon beside a label (svg-render-inline-icon) is drawn by the SVG alone.
+  if (el.type === 'shape' && acceptsInlineIcon(el) && el.iconId && resolveIconArt?.(el.iconId))
+    return true;
   // A sticker is drawn art (plate + shadow + emoji or badge text) with no
   // canvas-drawer equivalent, so it always rasterises through its SVG.
   if (
@@ -505,6 +526,9 @@ export function renderElementsToSvg(
     // Each Sheet element's window of cells (docs/specs/029-sheets/sheet.md "Exports and images"), by sheet id,
     // worked out by the caller with the sheets engine. Without one a sheet draws its frame and headers.
     sheets?: ReadonlyMap<string, SheetRenderModel>;
+    // A plan view's or placeholder's picture (a Dashboard laid out, @livediagram/plan-art); its labelled box when
+    // absent or answering nothing.
+    resolvePlanArt?: ResolvePlanArt;
   } = {},
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
@@ -564,6 +588,7 @@ export function renderElementsToSvg(
             items: opts.items,
             itemTypes: opts.itemTypes,
             sheets: opts.sheets,
+            resolvePlanArt: opts.resolvePlanArt,
           }),
     );
     const opacity = layerOpacityOf(band.layer);

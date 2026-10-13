@@ -36,6 +36,14 @@ editor views.
   `svgPlanCard(el, items, surface, itemTypes)`. `renderElementsToSvg`'s options carry `items?: ReadonlyMap<string, Item>`
   and `itemTypes?`. Without items, columns draw
   with names and empty bodies; a card draws "Item".
+- Card faces: `svg-render-plan-card.ts` `planCardFace(item, x, y, w, ctx, measureOnly)` draws from `typeCardLayout` at
+  the board's `cardSize` (slots lead/trail, lead/row/trail, head/headEnd/body/foot/footEnd), gating built-ins by
+  `cardFieldsAt(size, cardFields)`; custom fields as `Label: value` pills via `customFieldText`; the title wraps to 2
+  (Minimal, Compact) or 3 (Detailed) lines; returns `{ svg, height }`. `ctx.height` pins a Plan card element's frame.
+  Card values (`dayLabel`, `customFieldText`, `checklistProgress`) live in `@livediagram/items` `card-text.ts`.
+- Board layout: `plan-board-layout.ts` `planBoardLayout(el, items, types, cardHeight?)` stacks cards at
+  `cardHeight(item, width)` (absent: `PLAN_CARD_H`) and, with swimlanes, returns `lanes: PlanLaneSlot[]`, each a
+  `PLAN_LANE_HEAD_H` header row plus its fullest column.
 - `edit-operations` `SHAPE_KIND_FIELDS`: `plan-board` → `planBoard`, `plan-card` → `planCard`.
 - `document-views` `content-summary` / `find`: board → title + column names; card → item id.
 

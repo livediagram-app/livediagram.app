@@ -155,6 +155,8 @@ export const ICON_CATEGORIES: IconCategory[] = [
       'wifi',
       'monitor',
       'smartphone',
+      'browser',
+      'router',
       'globe',
       'layers',
       'box',

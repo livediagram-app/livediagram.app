@@ -29,6 +29,16 @@ describe('set', () => {
     ]);
   });
 
+  it('refuses a value off a closed vocabulary, naming the values the field takes', () => {
+    const rejection = refused(run([set('n3', { textSize: 'xl' })]));
+    expect(rejection).toMatchObject({ code: 'invalid_value' });
+    expect(JSON.stringify(rejection)).toContain('sm, md, lg, scale');
+    expect(refused(run([set('n3', { textAlignX: 'middle' })]))).toMatchObject({
+      code: 'invalid_value',
+    });
+    expect(lines(run([set('n3', { textAlignX: 'left' })]))).toEqual(['~ n3  textAlignX →left']);
+  });
+
   it('unsets a field given null', () => {
     const tab = checkoutFlow();
     tab.elements[3] = { ...tab.elements[3]!, note: 'Ask for SSO' } as (typeof tab.elements)[number];

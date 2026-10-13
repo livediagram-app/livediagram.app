@@ -117,16 +117,48 @@ const CHAR_PX = 7.4;
 // all-caps name ("TEAM_MEMBER", an ER table) was sized short and wrapped
 // mid-word. Text length in average-glyph units.
 const CAPS_WIDTH = 1.3;
+// How wide `text` sets at `px`, estimated (no DOM here): what a header measures its caption with.
+export const glyphWidth = (text: string, px: number) => glyphUnits(text) * px * GLYPH_EM;
 const glyphUnits = (text: string) =>
   [...text].reduce((sum, ch) => sum + (ch >= 'A' && ch <= 'Z' ? CAPS_WIDTH : 1), 0);
 const LINE_PX = 19;
 const PAD_PX = 40;
 const MAX_BOX_W = 240;
 
+// The template look graph input wears (docs/specs/015-api/mcp-server.md §4.7 "The graph look"): boxes at the
+// flowchart template's proportions, never the palette's 120×120 square, and one text size for every node, picked by
+// the caller from how many nodes there are. The editor's own Mermaid import keeps the plain sizing.
+export type GraphLook = { textSize: 'sm' | 'md' };
+
+// The smallest box per kind in the template look: wide and short like the template's steps. A kind not listed keeps
+// its palette size (an actor is a figure with its name under it, a device a device).
+const LOOK_FLOOR: Readonly<Partial<Record<string, { width: number; height: number }>>> = {
+  square: { width: 180, height: 64 },
+  stadium: { width: 180, height: 60 },
+  diamond: { width: 180, height: 104 },
+  parallelogram: { width: 200, height: 64 },
+  hexagon: { width: 180, height: 72 },
+  document: { width: 180, height: 80 },
+  cylinder: { width: 140, height: 96 },
+  cloud: { width: 180, height: 100 },
+  trapezoid: { width: 180, height: 72 },
+  circle: { width: 96, height: 96 },
+};
+// The widest a box grows before its label wraps, per text size: about eighteen characters a line.
+const LOOK_MAX_W: Readonly<Record<GraphLook['textSize'], number>> = { sm: 240, md: 300 };
+// Average glyph width and line height as fractions of the font size (Inter at its label weight); CHAR_PX below is
+// this at 14px.
+const GLYPH_EM = 0.53;
+const LINE_EM = 1.35;
+const LOOK_FONT_PX: Readonly<Record<GraphLook['textSize'], number>> = { sm: 14, md: 22 };
+
 export function labelBoxSize(
   label: string | undefined,
   shape: string,
+  look?: GraphLook,
+  hasIcon = false,
 ): { width: number; height: number } {
+  if (look) return lookBoxSize(label, coerceShapeKind(shape), look, hasIcon);
   const base = SHAPE_DEFAULT_SIZE[coerceShapeKind(shape)];
   const text = (label ?? '').trim();
   if (!text) return { width: base.width, height: base.height };
@@ -136,6 +168,39 @@ export function labelBoxSize(
   const width = Math.round(Math.min(MAX_BOX_W * roomy, Math.max(base.width, oneLine)));
   const lines = Math.max(1, Math.ceil((units * CHAR_PX * roomy) / (width - PAD_PX)));
   const height = Math.round(Math.max(base.height, lines * LINE_PX + 28) * (lines > 1 ? roomy : 1));
+  return { width, height };
+}
+
+// A box in the template look: the kind's floor, wider for a longer label up to the cap, then taller by a line for
+// each wrap. A circle stays round and a diamond's text gets the room its inner half leaves.
+function lookBoxSize(
+  label: string | undefined,
+  kind: string,
+  look: GraphLook,
+  hasIcon: boolean,
+): { width: number; height: number } {
+  const base = SHAPE_DEFAULT_SIZE[kind as keyof typeof SHAPE_DEFAULT_SIZE];
+  const floor = LOOK_FLOOR[kind] ?? base;
+  const text = (label ?? '').trim();
+  if (!text) return { ...floor };
+  const px = LOOK_FONT_PX[look.textSize];
+  // An inline icon beside the label takes its glyph and gap (inlineIconMetrics: about 1.6 × the font, a third
+  // of that again between).
+  const iconRoom = hasIcon ? Math.round(px * 1.6 * 1.32) : 0;
+  const roomy =
+    kind === 'diamond' ? 1.5 : kind === 'parallelogram' || kind === 'hexagon' ? 1.15 : 1;
+  const textW = glyphUnits(text) * px * GLYPH_EM * roomy + iconRoom;
+  const pad = 48;
+  const width = Math.round(
+    Math.min(LOOK_MAX_W[look.textSize] * roomy, Math.max(floor.width, textW + pad)),
+  );
+  const lines = Math.max(1, Math.ceil(textW / (width - pad)));
+  const textH = lines * px * LINE_EM + 28;
+  const height = Math.round(Math.max(floor.height, kind === 'diamond' ? textH * 1.6 : textH));
+  if (kind === 'circle') {
+    const side = Math.max(width, height);
+    return { width: side, height: side };
+  }
   return { width, height };
 }
 
@@ -171,6 +236,7 @@ function entityNode(n: GraphNode, raw: EntityField[]): Element {
 export function graphToElements(
   graph: DiagramGraph,
   makeEdgeId: () => string = () => crypto.randomUUID(),
+  look?: GraphLook,
 ): Element[] {
   const nodeIds = new Set(graph.nodes.map((n) => n.id));
 
@@ -194,7 +260,7 @@ export function graphToElements(
         ...(n.note ? { note: n.note } : {}),
       };
     }
-    const { width, height } = labelBoxSize(n.label, shape);
+    const { width, height } = labelBoxSize(n.label, shape, look, !!(n as { icon?: string }).icon);
     return {
       id: n.id,
       type: 'shape' as const,
@@ -206,7 +272,7 @@ export function graphToElements(
       // One fixed size for every node's text, the size labelBoxSize measures
       // against. The default 'scale' fills each box, so a short heading came
       // out huge beside a long one set small.
-      textSize: 'sm' as const,
+      textSize: look?.textSize ?? ('sm' as const),
       ...(n.label !== undefined ? { label: n.label } : {}),
       ...(n.link !== undefined ? { link: { kind: 'url' as const, url: n.link } } : {}),
       ...(n.note ? { note: n.note } : {}),

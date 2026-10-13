@@ -21,7 +21,7 @@ describe('parseCompareDimensions', () => {
 });
 
 describe('compareGraphLayouts', () => {
-  it("measures the research's architecture: tier groups cross, no groups is clean and best", () => {
+  it("measures the research's architecture: tier groups cross, no groups is best", () => {
     const rows = compareGraphLayouts(shopArchitecture(), ['groups'], { log: quiet });
     expect(
       rows.map((r) => [
@@ -32,8 +32,8 @@ describe('compareGraphLayouts', () => {
         r.best,
       ]),
     ).toEqual([
-      ['groups', 5, 2, { width: 1317, height: 1196 }, false],
-      ['no-groups', 0, 0, { width: 1319, height: 789 }, true],
+      ['groups', 5, 3, { width: 1516, height: 948 }, false],
+      ['no-groups', 0, 1, { width: 1530, height: 596 }, true],
     ]);
   });
 
@@ -74,9 +74,9 @@ describe('compareGraphLayouts', () => {
       compareGraphLayouts(shopArchitecture(), ['groups'], { log: quiet }),
     );
     expect(text.split('\n')).toEqual([
-      'variant    crossings  behind  overlaps  extent     ratio  verdict',
-      expect.stringMatching(/^groups {5}5 {10}2 {7}0 {9}1317×1196 {2}1\.1 {4}/),
-      'no-groups  0          0       0         1319×789   1.7    clean  ← best',
+      'variant    crossings  behind  overlaps  extent    ratio  verdict',
+      expect.stringMatching(/^groups {5}5 {10}3 {7}0 {9}1516×948 {2}1\.6 {4}/),
+      'no-groups  0          1       0         1530×596  2.6    1 warning  ← best',
     ]);
   });
 

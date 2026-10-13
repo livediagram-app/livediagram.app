@@ -1919,6 +1919,7 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   SaveDocumentMeta: "saving a document's name or other details",
   SaveSelf: "saving a visitor's own profile details",
   SaveTab: "saving a tab's contents",
+  SearchIcons: 'searching the icon catalogue by name, from an AI tool connected over MCP',
   SendEmail: 'sending a transactional or lifecycle email',
   SetFolder: 'moving a document into, or out of, a folder',
   SetSharePassword: 'setting a password on a share link',

@@ -32,3 +32,5 @@ export const LINT_LABEL_QUOTE_MAX = 40;
 export const LINT_MESSAGE_COLUMN_MAX = 48;
 // CPU for 300 boxes and 300 arrows with the label pass (LN35).
 export const LINT_BUDGET_CPU_MS = 50;
+// A hub's ring (node-isolated): how far any connected box may stray from their mean distance to it, as a share.
+export const LINT_RING_SPREAD = 0.35;

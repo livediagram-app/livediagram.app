@@ -43,3 +43,25 @@ describe('icon ids', () => {
     expect(iconsLike('qqqqzz')).toEqual([]);
   });
 });
+
+describe('searchIcons, several words and spacing', () => {
+  const ids = (q: string) => searchIcons(q, 5).icons.map((i) => i.id);
+  it('finds an icon holding every word of a several-word query', () => {
+    expect(ids('credit card')[0]).toBe('credit-card');
+    expect(ids('shopping cart')[0]).toBe('cart');
+    expect(ids('mobile phone')).toContain('smartphone');
+  });
+  it('reads a word only where a word starts: lock is not clock, load not download', () => {
+    expect(ids('lock auth')).not.toContain('clock');
+    expect(ids('load balancer')).not.toContain('download');
+  });
+  it('matches spacing aside', () => {
+    expect(ids('route53')[0]).toBe('aws-route53');
+  });
+  it('finds the services architecture diagrams reach for', () => {
+    expect(ids('elasticache')[0]).toBe('aws-elasticache');
+    expect(ids('fargate')[0]).toBe('aws-fargate');
+    expect(ids('application load balancer')).toContain('aws-elb');
+    expect(ids('browser')[0]).toBe('browser');
+  });
+});

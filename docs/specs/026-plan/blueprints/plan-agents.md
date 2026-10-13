@@ -32,6 +32,19 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   type editor); `delete` names the type for its cards to go to the Trash; `add_default_types` (and its
   older name `restore_built_ins`) appends `defaultTypesToAdd(types)`, and a document whose card types were not
   chosen, given nothing but those, stays null. The whole result goes through `validateItemTypeCatalogue`.
+  `add` and `set` apply `display`, `tabs` and `detailsLabel` last (`withFace`), through
+  `packages/items/src/type-change-face.ts`: `displayFrom` maps `DISPLAY_SLOT_NAMES` (minimal beforeTitle/afterTitle →
+  lead/trail; compact besideTitle/belowTitle/bottomRight → lead/row/trail; detailed header/headerEnd/underTitle/
+  footer/bottomRight → head/headEnd/body/foot/footEnd) and field names (`CARD_FIELD_LABELS`, "Number"/"#" → key,
+  else `fieldKeyOf`) into a layout per given size, checked by `typeOffersCardField` and `cardSlotFits`, stored
+  through `readCardDisplay` (defaults dropped); a refusal is `display_invalid`. `tabsFrom` builds whole tabs (≤
+  `ITEM_TYPE_TABS_MAX`), refusing Title, Votes, a field the type lacks or one in two tabs, keeping a same-named tab's
+  id (else `newTabId`). `detailsLabelFrom` stores nothing for "Details". `set.editCustom` (`editedCustom`) renames,
+  replaces a Choice field's options, sets or clears `onCard`. `typeNamed` resolves a type by its current name, else
+  a name it had earlier in the batch (`formerNames`).
+- `listedType(t, statuses)` / `listedTypes`: id, name, color, glyph, built-in fields, custom (with `onCard`), the
+  Default State by column name, `display` per size by slot and field name (`namedDisplay` over `typeCardLayout`),
+  `tabs` by name (`tabsOf`), `detailsLabel` (`detailsLabelOf`).
 - `bringBoardCardTypes(api, documentId, elements, known?)`: nothing read or written when no Plan board is among the
   elements; else `catalogueWithBoardTypes(stored, elements, hasCards)` from the document's `itemTypes` and whether it
   has any item (`known` when the caller has read them, as `addBoard` has), PUT only when it changes.

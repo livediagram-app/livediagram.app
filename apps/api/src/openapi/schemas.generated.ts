@@ -2110,6 +2110,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ChangesetReplaceBody": {
     "additionalProperties": false,
     "properties": {
+      "dashboard": {
+        "additionalProperties": {},
+        "type": "object"
+      },
       "elements": {
         "items": {},
         "type": "array"
@@ -3210,6 +3214,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CustomFieldDef": {
     "additionalProperties": false,
     "properties": {
+      "currency": {
+        "type": "string"
+      },
       "id": {
         "type": "string"
       },
@@ -3244,9 +3251,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "text",
       "longtext",
       "number",
+      "currency",
       "date",
       "checkbox",
       "link",
+      "email",
       "choice",
       "card"
     ],
@@ -6358,6 +6367,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "boolean"
       },
       "textUnderline": {
+        "type": "boolean"
+      },
+      "themeLockFill": {
         "type": "boolean"
       },
       "type": {

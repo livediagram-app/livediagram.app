@@ -11,7 +11,7 @@ describe('insert', () => {
     );
     expect(lines(outcome)).toEqual([
       '~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160',
-      '+ verify  square "Verify email" @45,300 131×120',
+      '+ verify  square "Verify email" @40,300 140×120',
       '~ f2  taller 200→360',
       '~ a3  to n4→verify',
       '+ arrow  verify→n4 (style of a3)',

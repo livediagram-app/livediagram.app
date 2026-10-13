@@ -83,7 +83,7 @@ describe('a chart filling its Visualisation tab', () => {
     fillTab();
     const plan = planWith({}, [card({ title: 'a', status: 'todo' })]);
     draw('workload', plan);
-    fireEvent.doubleClick(screen.getByText('Cards by Field'));
+    fireEvent.doubleClick(screen.getByText('Cards by Assignee'));
     const field = screen.getByLabelText('Chart name') as HTMLInputElement;
     fireEvent.change(field, { target: { value: 'Load' } });
     fireEvent.keyDown(field, { key: 'Enter' });
@@ -100,7 +100,7 @@ describe('a chart filling its Visualisation tab', () => {
       card({ title: 'a', status: 'todo' }),
     ]);
     draw('workload', plan);
-    fireEvent.doubleClick(screen.getByText('Cards by Field'));
+    fireEvent.doubleClick(screen.getByText('Cards by Assignee'));
     expect(screen.queryByLabelText('Chart name')).toBeNull();
     expect(plan.updateView).not.toHaveBeenCalled();
   });

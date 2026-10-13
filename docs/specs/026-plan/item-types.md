@@ -120,12 +120,23 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     (sent with `undo: true`, which the editor's undo and redo always set).
 - A type holds up to **24 fields** and up to **12 custom fields**, Parent not counted (it was a built-in field, so a
   type already at 12 keeps reading and saving once it gains Parent). A catalogue holds up to **32 types**.
-- **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Date, Checkbox, Link (an `https://`
-  URL), Choice (one of up to 20 named options) and Card (a link to one card of another type, below). Every value
-  is a plain string, number or true/false, which the
-  item store keeps for any field. People are assigned with the built-in Assignee field, so there is no custom
-  person kind. Their values are ordinary entries in the item's `fields`, under the custom
-  field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
+- **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Date, Checkbox, Link (an
+  `https://` URL), Email, Choice (one of up to 20 named options) and Card (a link to one card of another type,
+  below).
+  - **Currency** is an amount in the one currency its field names (`currency`, an ISO 4217 code such as GBP, USD or
+    EUR, chosen when the field is made and changeable later; GBP when none is given). Its value is a number with up to
+    two decimals; it reads, on the card and in the panel, as the person's locale formats that currency ("£12,500",
+    "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers.
+  - On a card a value reads short: a Number grouped as the reader's locale groups digits ("82,000"), a Link as its
+    site and its last path step ("sentry.io/…/4521", the site alone for a bare address), a Long Text its first line.
+  - **Email** is one email address (up to 254 characters, something@domain), kept as typed less surrounding spaces.
+    The panel shows it as a mailto link; the card shows the address. A value that is not an address is refused, as
+    a Link that is not `https://` is.
+    Every value
+    is a plain string, number or true/false, which the
+    item store keeps for any field. People are assigned with the built-in Assignee field, so there is no custom
+    person kind. Their values are ordinary entries in the item's `fields`, under the custom
+    field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
 - **Card fields** link a card to one other card, of the card type the field names (`linkType`): an Objective's
   **Owner** links to a Person. The value is that card's id. **Parent** is one of them: Task (and the Bug and Story
   [ready-made types](plan-templates.md#ready-made-card-types)) carries a Card field named **Parent**, linking to Projects, under the one custom id
@@ -320,8 +331,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     first, then the tabs) and **Remove** (absent for a field the type always keeps). Title has no menu.
   - Each group ends with **Add Field**, a full-width dashed row (as **Add Type** in the panel), which opens a
     popover anchored to it (24 rem wide, over the editor, so it is never squeezed by the Details column), which offers the built-in fields the type lacks as chips, and **New
-    Custom Field**: a name, then its kind as a grid of eight icon tiles, four to a row (Text, Long Text, Number,
-    Date, Checkbox, Link, Choice, **Link to Card**; one radio group), then the options, one a line, for Choice, or for
+    Custom Field**: a name, then its kind as a grid of ten icon tiles, five to a row (Text, Long Text, Number,
+    Currency, Date, Checkbox, Link, Email, Choice, **Link to Card**; one radio group), then the options, one a line,
+    for Choice, its **Currency** (a select of the common codes, GBP first) for Currency, or for
     Link to Card **Links To** a card type (required), and a **Preview** of the field as the card's panel will show it:
     its name as typed ("Field name" until then) beside a sample value of its kind (Choice shows its first option,
     Link to Card the linked type's name). The field lands in that group

@@ -1058,6 +1058,8 @@ export type FreehandElement = {
   font?: string;
   textColor?: string;
   fillColor?: string;
+  // Keep this fill through a theme change (themeColourFields), as a shape may: a drawn scene's colours.
+  themeLockFill?: boolean;
   strokeColor?: string;
   strokeWidth?: BorderStroke;
   strokeStyle?: BorderStyle;

@@ -7,6 +7,7 @@ import type { BoardWidgetKind } from './board-widgets';
 import {
   isArchived,
   isTrashed,
+  laneFieldOf,
   normaliseBoardSetup,
   projectBoard,
   SWIMLANE_BY,
@@ -194,6 +195,25 @@ export function breakdownGroupingOf(settings: {
   const by =
     settings.swimlaneBy && settings.swimlaneBy !== 'none' ? settings.swimlaneBy : 'assignee';
   return { by, field: by === 'field' ? settings.swimlaneField : undefined };
+}
+
+// Cards by Field's heading, naming what it groups by ("Cards by Assignee", "Cards by Severity"), so a view never reads
+// as the generic "Cards by Field" (docs/specs/026-plan/plan-views.md "Cards by Field").
+const GROUPING_NAMES: Partial<Record<SwimlaneBy, string>> = {
+  assignee: 'Assignee',
+  type: 'Type',
+  priority: 'Priority',
+  status: 'Status',
+};
+export function breakdownTitle(
+  grouping: { by: SwimlaneBy; field: string | undefined },
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
+): string {
+  const name =
+    grouping.by === 'field'
+      ? (laneFieldOf(grouping.field, types)?.label ?? 'Field')
+      : (GROUPING_NAMES[grouping.by] ?? 'Field');
+  return `Cards by ${name}`;
 }
 
 // The metric a view is, or null for a visualisation.

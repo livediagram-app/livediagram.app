@@ -8,3 +8,4 @@ export * from './card-types';
 export * from './add-board';
 export * from './brought-types';
 export * from './change-board';
+export * from './dashboard-input';

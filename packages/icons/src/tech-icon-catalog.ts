@@ -165,6 +165,67 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     glyph:
       '<circle cx="12" cy="7.17" r="2"/><circle cx="7" cy="17.17" r="2"/><circle cx="17" cy="17.17" r="2"/><path d="M11.1 8.97 7.9 15.37M12.9 8.97l3.2 6.4M9 17.17h6"/>',
   },
+  {
+    id: 'aws-elb',
+    label: 'Elastic Load Balancing',
+    short: 'Load Balancer',
+    provider: 'aws',
+    keywords: 'amazon load balancer alb nlb elb traffic distribute',
+    color: '#8C4FFF',
+    glyph: '<circle cx="7.5" cy="12" r="2"/><path d="M9.5 12h2.5M12 12l5-5M12 12l5 5M12 12h6.5"/>',
+  },
+  {
+    id: 'aws-elasticache',
+    label: 'ElastiCache',
+    provider: 'aws',
+    keywords: 'amazon cache redis memcached valkey in-memory',
+    color: '#3B48CC',
+    glyph:
+      '<ellipse cx="12" cy="7.5" rx="5" ry="1.8"/><path d="M7 7.5v9c0 1 2.2 1.8 5 1.8s5-.8 5-1.8v-9"/><path d="M12.8 9.8 10.9 13h2.3l-1.9 3.2"/>',
+  },
+  {
+    id: 'aws-fargate',
+    label: 'Fargate',
+    provider: 'aws',
+    keywords: 'amazon serverless containers compute tasks',
+    color: '#ED7100',
+    glyph:
+      '<rect x="6" y="6" width="12" height="3.6" rx=".8"/><rect x="6" y="10.2" width="12" height="3.6" rx=".8"/><rect x="6" y="14.4" width="12" height="3.6" rx=".8"/>',
+  },
+  {
+    id: 'aws-cognito',
+    label: 'Cognito',
+    provider: 'aws',
+    keywords: 'amazon authentication sign in users identity auth',
+    color: '#DD344C',
+    glyph: '<circle cx="12" cy="9" r="2.6"/><path d="M7 18c.6-2.8 2.6-4.3 5-4.3s4.4 1.5 5 4.3"/>',
+  },
+  {
+    id: 'aws-kinesis',
+    label: 'Kinesis',
+    provider: 'aws',
+    keywords: 'amazon streaming data streams firehose analytics events',
+    color: '#8C4FFF',
+    glyph:
+      '<path d="M6 8.5c2-1.5 4-1.5 6 0s4 1.5 6 0M6 12c2-1.5 4-1.5 6 0s4 1.5 6 0M6 15.5c2-1.5 4-1.5 6 0s4 1.5 6 0"/>',
+  },
+  {
+    id: 'aws-step-functions',
+    label: 'Step Functions',
+    provider: 'aws',
+    keywords: 'amazon workflow state machine orchestration',
+    color: '#E7157B',
+    glyph:
+      '<rect x="10" y="5.5" width="4" height="3" rx=".6"/><rect x="5.5" y="15.5" width="4" height="3" rx=".6"/><rect x="14.5" y="15.5" width="4" height="3" rx=".6"/><path d="M12 8.5v3.5M7.5 15.5V12h9v3.5"/>',
+  },
+  {
+    id: 'aws-secrets-manager',
+    label: 'Secrets Manager',
+    provider: 'aws',
+    keywords: 'amazon secrets credentials keys vault security',
+    color: '#DD344C',
+    glyph: '<circle cx="9" cy="12" r="3"/><path d="M12 12h6M16 12v2.5M18 12v1.8"/>',
+  },
   // ---- Azure --------------------------------------------------------------
   {
     id: 'azure-vm',

@@ -3,16 +3,21 @@
 // status, so its cards show here too; any other column starts empty under a status of its own. Placed to the right
 // of what the tab already holds, so it never covers anything.
 import {
+  CARD_FIELDS,
   planBoardHeightFor,
   planBoardWidthFor,
+  type CardField,
+  type CardSize,
   type PlanBoardSetup,
   type PlanColumn,
+  type SwimlaneBy,
 } from './board';
 import { PLAN_COLUMN_NAME_MAX, PLAN_COLUMNS_MAX, PLAN_TITLE_MAX } from './limits';
 import type { PlanStatusName } from './plan-outline';
 import { freshBoardSetup, isPlanBoardPresetId, PLAN_BOARD_PRESET_IDS } from './presets';
 import { statusKey, statusNamed } from './status-names';
 import { slugOf } from './type-catalogue';
+import { CARD_FIELD_LABELS } from './card-display';
 
 // A placed board's width (blueprints/DEFAULTS.md D5; wider when its columns need it; its height is
 // planBoardHeightFor) and its gap from what the tab holds.
@@ -150,9 +155,28 @@ export interface BoardChange {
   // Every column, by name, left to right: a name the board has keeps its column (status, WIP limit, colour); a name
   // the document's other boards use shares their status; any other is a new, empty column.
   columns?: readonly string[];
+  // Columns renamed in place, old name to new: each keeps its status, WIP limit, colour and cards. Applied before
+  // `columns`, which may name them by their new names.
+  renameColumns?: Readonly<Record<string, string>>;
   // The card types it shows and takes, by id (resolved by the caller); null shows every type again, and an empty
   // list takes none, as the editor's last type turned off does.
   types?: readonly string[] | null;
+  // How much of each card it draws; Detailed draws every field the board shows.
+  cardSize?: CardSize;
+  // Its swimlanes: none, by a built-in grouping, or by a field (its id, resolved by the caller).
+  swimlanes?: { by: SwimlaneBy; field?: string };
+  // The column whose cards count as done (Completion, the phases charts read), by name; null for none.
+  doneColumn?: string | null;
+  // The built-in fields its cards show, by name ("Number", "Due Date") or id, whole; a type's Display places them.
+  cardFields?: readonly string[];
+}
+
+// A built-in card field by its name or id ("Due Date", "due"), case and spaces aside.
+function builtInCardFieldOf(name: string): CardField | null {
+  const k = statusKey(name);
+  if (k === 'number' || k === '#') return 'key';
+  for (const f of CARD_FIELDS) if (k === f || k === statusKey(CARD_FIELD_LABELS[f])) return f;
+  return null;
 }
 
 // Column ids made unique after a reshape: a kept column keeps its id (its done mark and the editor's references
@@ -191,19 +215,89 @@ export function reshapeBoard(
       };
     next = { ...next, title };
   }
+  if (change.renameColumns) {
+    let columns = next.columns;
+    for (const [from, to] of Object.entries(change.renameColumns)) {
+      const column = columns.find((c) => statusKey(c.name) === statusKey(from));
+      if (!column)
+        return {
+          ok: false,
+          code: 'board_invalid',
+          message: `"${next.title}" has no column "${from}". Columns: ${columns.map((c) => c.name).join(', ')}.`,
+        };
+      const name = to.trim();
+      if (!name || name.length > PLAN_COLUMN_NAME_MAX)
+        return {
+          ok: false,
+          code: 'board_invalid',
+          message: `A column name is 1 to ${PLAN_COLUMN_NAME_MAX} characters.`,
+        };
+      if (columns.some((c) => c !== column && statusKey(c.name) === statusKey(name)))
+        return {
+          ok: false,
+          code: 'board_invalid',
+          message: `"${next.title}" already has a column "${name}".`,
+        };
+      columns = columns.map((c) => (c === column ? { ...c, name } : c));
+    }
+    next = { ...next, columns };
+  }
   if (change.columns) {
+    const base = next;
     const suffix = Array.from({ length: 4 }, () => Math.floor(random() * 36).toString(36)).join('');
-    const own = setup.columns.map((c) => ({ status: c.status, name: c.name }));
+    const own = base.columns.map((c) => ({ status: c.status, name: c.name }));
     const others = existing.filter((s) => !own.some((o) => o.status === s.status));
     const made = namedColumns(change.columns, [...own, ...others], suffix);
     if (typeof made === 'string') return { ok: false, code: 'board_invalid', message: made };
     const columns = uniqueColumnIds(
-      made.map((c) => setup.columns.find((o) => o.status === c.status) ?? c),
-      new Set(setup.columns),
+      made.map((c) => base.columns.find((o) => o.status === c.status) ?? c),
+      new Set(base.columns),
     );
     const done = columns.some((c) => c.id === setup.doneColumnId) ? setup.doneColumnId : undefined;
     const { doneColumnId: _done, ...rest } = next;
     next = { ...rest, columns, ...(done ? { doneColumnId: done } : {}) };
+  }
+  if (change.swimlanes) {
+    const { swimlaneField: _field, ...rest } = next;
+    next = {
+      ...rest,
+      swimlaneBy: change.swimlanes.by,
+      ...(change.swimlanes.by === 'field' && change.swimlanes.field
+        ? { swimlaneField: change.swimlanes.field }
+        : {}),
+    };
+  }
+  if (change.doneColumn !== undefined) {
+    const { doneColumnId: _done, ...rest } = next;
+    if (change.doneColumn === null) next = rest;
+    else {
+      const column = next.columns.find((c) => statusKey(c.name) === statusKey(change.doneColumn!));
+      if (!column)
+        return {
+          ok: false,
+          code: 'board_invalid',
+          message: `"${next.title}" has no column "${change.doneColumn}". Columns: ${next.columns.map((c) => c.name).join(', ')}.`,
+        };
+      next = { ...rest, doneColumnId: column.id };
+    }
+  }
+  if (change.cardSize) {
+    const { cardSize: _size, ...rest } = next;
+    next = change.cardSize === 'detailed' ? rest : { ...rest, cardSize: change.cardSize };
+  }
+  if (change.cardFields) {
+    const picked = new Set<CardField>();
+    for (const name of change.cardFields) {
+      const f = builtInCardFieldOf(name);
+      if (!f)
+        return {
+          ok: false,
+          code: 'board_invalid',
+          message: `"${name}" is not a card field. Card fields: ${CARD_FIELDS.map((c) => CARD_FIELD_LABELS[c]).join(', ')}.`,
+        };
+      picked.add(f);
+    }
+    next = { ...next, cardFields: CARD_FIELDS.filter((f) => picked.has(f)) };
   }
   if (change.types !== undefined) {
     const { addTypes: _types, ...rest } = next;

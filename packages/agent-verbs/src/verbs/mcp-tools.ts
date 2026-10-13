@@ -18,6 +18,7 @@ import {
   deleteDocumentOutput,
   findDocumentsOutput,
   listTemplatesOutput,
+  searchIconsOutput,
   listTrashOutput,
   readDocumentOutput,
   renameDocumentOutput,
@@ -34,6 +35,7 @@ import {
   readDocumentShape,
   renameDocumentShape,
   restoreDocumentShape,
+  searchIconsShape,
   shareDocumentShape,
   updateDocumentShape,
 } from '../mcp/schema';
@@ -138,12 +140,24 @@ export const mcpListTemplates = mcpTool('list_templates', {
   outputSchema: listTemplatesOutput,
 });
 
+export const mcpSearchIcons = mcpTool('search_icons', {
+  behaviour: 'read',
+  title: 'Search icons',
+  description:
+    'Find icons by what they show, best match first: the line-art set and the Technology set ' +
+    '(brand, cloud and database marks such as aws-lambda, postgresql, kafka). Each hit\u2019s id is ' +
+    'what an element\u2019s "iconId" takes; an iconId that names no icon is refused.',
+  inputSchema: searchIconsShape,
+  outputSchema: searchIconsOutput,
+});
+
 export const mcpCreateDocument = mcpTool('create_document', {
   behaviour: 'write',
   title: 'Create a document',
   description:
-    'Create a new document from diagram elements you produce. The full element format is ' +
-    'documented inline on the "tabs" argument below. ' +
+    'Create a new document. Each tab takes a "graph" (nodes and edges, laid out in the template look: ' +
+    'sizes, elbows, side exits, loops round the outside, title and key), "mermaid", raw "elements" (the full ' +
+    'format is documented inline on the "tabs" argument below) or a "template". ' +
     'Pass one tab, or several to build a multi-tab document in one call (an ' +
     'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
     'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
@@ -174,7 +188,9 @@ export const mcpUpdateDocument = mcpTool('update_document', {
   description:
     'Edit an existing tab. mode "replace" swaps the whole tab’s elements (validated + ' +
     'auto-laid-out); mode "ops" applies an ordered list of add/update/remove against ' +
-    'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout). On an event-storming tab, ' +
+    'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or ' +
+    'takes "edits": edit operations as text (insert between, wrap in a frame, connect, layout a selection, ' +
+    'place beside another element), the form each lint finding\u2019s fix is written in. On an event-storming tab, ' +
     'event-storming notes you add or move land on the board’s horizontal lanes (240px apart, ' +
     'lane 0 centred at y=100). Returns an inline PNG.',
   inputSchema: updateDocumentShape,
@@ -289,10 +305,15 @@ export const mcpChangeCardTypes = mcpTool('change_card_types', {
   description:
     'Add, edit or delete a document’s card types (the kinds of card its boards hold, like Task ' +
     'or Bug), with custom fields by name: add {name, color, glyph, fields, custom, defaultStatus, ' +
-    'excludedStatuses}, set {type, ...}, delete {type} (its cards go to the Trash), add_default_types ' +
+    'excludedStatuses, display, tabs, detailsLabel}, set {type, ...; editCustom renames a field or replaces a ' +
+    'choice field’s options in place}, delete {type} (its cards go to the Trash), add_default_types ' +
     '(any of Project, Task, Note, Idea and Action it lacks). ' +
-    'Checked and saved together; answers the ids it made. A board shows a new type only once it takes it: ' +
-    'see change_board.',
+    'A type is a name, a colour, a glyph, built-in fields (Title and Status always), up to 12 custom fields, ' +
+    'a card face per size (display: Minimal is one line, Compact a title over one row, Detailed a header, the ' +
+    'title, what sits under it and a footer; a board picks its size) and its item panel’s tabs. Up to 32 types ' +
+    'and 24 fields each. A type renamed earlier in the same call still answers to its former name. ' +
+    'Checked and saved together; answers the ids it made and each type as list_items lists it. A board shows ' +
+    'a new type only once it takes it: see change_board.',
   inputSchema: changeCardTypesShape,
   outputSchema: changeCardTypesOutput,
 });
@@ -387,6 +408,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpFindDocuments,
   mcpReadDocument,
   mcpListTemplates,
+  mcpSearchIcons,
   mcpCreateDocument,
   mcpAddTab,
   mcpUpdateDocument,

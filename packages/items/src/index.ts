@@ -2,6 +2,7 @@
 // Plan board projection (docs/specs/026-plan/). Pure: no DOM, no dependencies.
 
 export * from './item';
+export * from './card-text';
 export * from './item-types';
 export * from './glyphs';
 export * from './type-catalogue';
@@ -33,6 +34,7 @@ export * from './status-names';
 export * from './plan-outline';
 export * from './plan-names';
 export * from './type-changes';
+export * from './type-change-face';
 export * from './board-place';
 export * from './board-csv';
 export * from './status-title-case';

@@ -15,6 +15,7 @@ import {
   graphToElements,
   type DiagramGraph,
   type GraphCluster,
+  type GraphLook,
 } from './graph-authoring';
 import { unionRects, type Rect } from './geometry-primitives';
 import { bowReciprocalEdges } from './arrow-reciprocal';
@@ -28,6 +29,10 @@ export const FRAME_TOP = 64;
 export type ClusteredLayoutOptions = {
   direction?: LayoutDirection;
   makeEdgeId?: () => string;
+  // The template look graph input wears (graph-authoring.ts); absent for the editor's Mermaid import.
+  look?: GraphLook;
+  // Side steps level with their decision (auto-layout.ts `flatEdges`).
+  flatEdges?: ReadonlySet<string>;
 };
 
 // Every caller passes a non-empty block (placed nodes, or a cluster's
@@ -116,7 +121,7 @@ export function layoutClusteredGraph(
   opts: ClusteredLayoutOptions = {},
 ): Element[] {
   const makeEdgeId = opts.makeEdgeId ?? (() => crypto.randomUUID());
-  const direction = opts.direction;
+  const { direction, look, flatEdges } = opts;
   const clusters = sanitizeClusters(graph);
 
   // Every node arrives sized to its own label (graphToElements), so the
@@ -127,7 +132,11 @@ export function layoutClusteredGraph(
   if (clusters.length === 0) {
     return bowReciprocalEdges(
       sweepEdgelessNodes(
-        autoLayoutElements(graphToElements(graph, makeEdgeId), { direction, fixedSizeIds: sized }),
+        autoLayoutElements(graphToElements(graph, makeEdgeId, look), {
+          direction,
+          fixedSizeIds: sized,
+          ...(flatEdges ? { flatEdges } : {}),
+        }),
       ),
     );
   }
@@ -145,8 +154,8 @@ export function layoutClusteredGraph(
     };
     const laid = lineUpLoose(
       autoLayoutElements(
-        graphToElements(induced, () => `tmp-${makeEdgeId()}`),
-        { direction, fixedSizeIds: sized },
+        graphToElements(induced, () => `tmp-${makeEdgeId()}`, look),
+        { direction, fixedSizeIds: sized, ...(flatEdges ? { flatEdges } : {}) },
       ).filter(isBoxed),
       new Set(induced.edges.flatMap((e) => [e.from, e.to])),
       direction ?? 'TB',
@@ -172,7 +181,7 @@ export function layoutClusteredGraph(
       // the frame, a giant word across its members (docs/specs/020-import-export/mermaid.md).
       textAlignY: 'top' as const,
       textAlignX: 'left' as const,
-      textSize: 'sm' as const,
+      textSize: look?.textSize ?? ('sm' as const),
       textBold: true,
       padding: 'lg' as const,
     };
@@ -180,6 +189,7 @@ export function layoutClusteredGraph(
   const freeNodes = graphToElements(
     { nodes: graph.nodes.filter((n) => !clusterOf.has(n.id)), edges: [] },
     makeEdgeId,
+    look,
   ).filter(isBoxed);
 
   const frameIds = new Set(frames.map((f) => f.id));

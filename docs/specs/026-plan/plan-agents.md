@@ -27,6 +27,9 @@ never told a change worked when it shows on no board.
     editor's rule, [Plan templates](plan-templates.md) "Hand-offs");
   - **types**: the document's card types (its catalogue; none while not chosen), each with its id, name and fields,
     custom fields by id, name and kind (and a Choice's options).
+- A card link (Parent, a Card field) reads as its card's number and title (`"#12 Fix login"`); writes take that form
+  back, by the number.
+- A person named for the first time gets a colour no one on the document has yet, while colours remain.
 - Each board's card types are part of what it shows: a card is on a board only when its column is there and the
   board takes its card type ([Plan board](plan-board.md#the-board-set-up)).
 - **`list_items`** answers the plan with the items: each board with its columns in order, each column with its
@@ -84,10 +87,46 @@ Every write takes what a person would say, and stores the ids:
   empty column. A column left out takes nothing with it: its cards keep their status and wait off this board.
   Every column keeps an id of its own: a kept column keeps its id, and a new one whose name would give it a kept
   column's id ("Doing" beside a kept "In Progress" whose id is `doing`) takes the next free one (`doing-2`).
+- `renameColumns` (`{ "To Do": "Backlog" }`) renames columns in place, before `columns` is read: each keeps its
+  status, WIP limit, colour, done mark and cards. A name the board lacks, an empty name or one another column has is
+  refused.
+- `cardSize` (minimal, compact, detailed) and `cardFields` (the built-in fields its cards show, by the names the
+  Cards menu gives them, whole) set what each card draws, as the board's element menu does; each card type's
+  display places them, and custom fields follow the display alone. The answer names both.
+- `swimlanes` sets its rows as the board's menu does: none, assignee, type, priority, status (or "column"), or a field
+  by name ("Severity"), any field a row can group by; anything else is refused naming those there are.
+  `doneColumn` names the column whose cards count as done (Completion, and the Done phase the charts read), or null
+  for none.
+- A built-in field shows on a card only when both the board's `cardFields` and the card type's display have it; the
+  tool descriptions say so.
 - Card types are named as everywhere; `"every type"` (the CLI's `all`) shows every type again, and an empty list
   takes none, as turning a board's last type off does in the editor. `add_board` reads an empty list the same way.
 - It is one changeset on the board element, based on the element as read, so a person's change since is kept
   except on the set-up; the board widens when its columns need it.
+
+## Making a dashboard
+
+- A **Dashboard tab** ([Plan tabs](plan-tabs.md)) is made where a tab is made: `create_document`'s tabs and `add_tab`
+  take `dashboard` in place of a graph, Mermaid, elements or a template, and the tab is made as a template's
+  Dashboard is (the same row builder, `buildDashboardTab`):
+  - `tabs`: the document's Board and Sheet tabs it shows, by name (in `create_document`, the other tabs of the same
+    call), or `"every"` for each Board and Sheet tab in order; two to a row.
+  - `metrics`: metric tiles, four to a row: `count` (cards), `progress` (percent done), `people`, `types`,
+    `priorities`, `due` (overdue and due soon), `unassigned`, `points` (estimates), `top-voted`, `stale`.
+  - `charts`: `{ view, groupBy?, types? }`, two to a row and a Gantt a row of its own: `gantt`, `calendar` (by due
+    date), `start-calendar`, `workload` (Cards by a field: `groupBy` assignee, type, priority, status or a field by
+    name), `priority-matrix` (Priority by Status), `search`; `types` narrows a chart to card types by name.
+  - `notes`: `{ title, text }`, three to a row.
+  - Rows run in that order (tabs, metrics, Gantts, other charts, notes), up to the Dashboard's 12 rows; anything past
+    them is left off and the answer says so.
+- A name or view the document lacks is refused naming those there are.
+- `update_document` in replace mode takes `dashboard` on a Dashboard tab and rebuilds it whole, the tab keeping its
+  id, name and theme. On any other tab it is refused (`invalid_value`), pointing at `add_tab`.
+- A tab of another kind that holds a board or a Sheet (a Blank Plan tab given a board by `add_board`) can be shown;
+  a Dashboard draws it as its canvas.
+- A Cards by Field chart grouped by a Card field names each linked card, of whatever type.
+- A Board tab's preview grows its board to every card it holds, as the board scrolls on its tab, rather than cutting
+  lower rows off.
 
 ## What a change says
 
@@ -102,11 +141,29 @@ Every write takes what a person would say, and stores the ids:
 - **`change_card_types`** (MCP; the CLI's `type` verbs) changes the catalogue in order, each change one of:
   - `add` `{ name, color?, glyph?, fields?, custom?, defaultStatus?, excludedStatuses? }`: a new type. Fields are
     built-in field names (`assignee`, `due`...) added after Title and Status (Description and Assignee when none
-    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, onCard? }]`
-    (kinds `text`, `longtext`, `number`, `date`, `checkbox`, `link`, `choice`, `card`). Colour and glyph default
+    are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, currency?, onCard? }]`
+    (kinds `text`, `longtext`, `number`, `currency`, `date`, `checkbox`, `link`, `email`, `choice`, `card`; a
+    `currency` field's code, GBP when absent). A Currency value is written as a number, an Email value as the
+    address; `editCustom` also takes `currency`. Colour and glyph default
     as the type editor's Add Type does.
-  - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, removeCustom?, defaultStatus?,
-excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes values.
+  - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, editCustom?, removeCustom?,
+defaultStatus?, excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes
+    values. `editCustom` `[{ field, name?, options?, onCard? }]` edits a custom field in place, as the type editor's
+    field form does: a new name, a Choice field's options replaced whole (any other kind is refused), drawn on the
+    card or not; values on cards stay.
+  - A type renamed earlier in the same call still answers to its former name, so a later change can name it either
+    way.
+  - `add` and `set` also take the type's **card face and panel**, as the type editor's Display and Configuration
+    tabs set them, every field named as people say it:
+    - `display`: per card size, which fields sit in which slot, in order: `{ minimal: { beforeTitle, afterTitle },
+compact: { besideTitle, belowTitle, bottomRight }, detailed: { header, headerEnd, underTitle, footer,
+bottomRight } }`, each a list of card fields (Number, Type, Assignee, Priority, Labels, Estimate, Start, Due,
+      Votes, Checklist, Comments, Description, or a custom field by name). A size given replaces that size's layout;
+      a size left out keeps its own. A field a size cannot draw (Minimal draws Number, Priority, Due and Assignee;
+      Compact also Type, Start, Votes and Comments; Detailed every field) or the type lacks is refused naming what
+      the size draws (`display_invalid`).
+    - `tabs`: the item panel's tabs, `[{ name, fields }]`, up to 6, fields by name (Title never, it heads the
+      panel); `detailsLabel`: what the panel calls Details. `set` replaces them whole when given.
   - `delete` `{ type }`: as the type editor's Delete Type: the type goes and its cards (out of the Trash) move to the
     Trash; the answer says how many. The catalogue's last type can go too, leaving none.
   - `add_default_types`: as Add Default Types: any of Project, Task, Note, Idea and Action the document lacks, after
@@ -119,6 +176,14 @@ excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a 
   changed the card types in between, it reads them again and applies its changes to theirs (a board an agent adds
   brings its types the same way), so neither change is lost. After three tries it refuses (`item_types_stale`).
 - Only someone who may edit the whole document changes card types (a tab-scoped grant may not), as in the editor.
+
+### What a card type is made of, as facts
+
+The tool's descriptions carry what an agent needs to design a type well, as facts (never instructions,
+[MCP server](../015-api/mcp-server.md) §4.15): the built-in fields and what each holds, the custom field kinds and what
+each stores, every Plan glyph id, the card sizes with the slots each draws and the fields it can draw, the panel's
+tabs, and the limits (24 fields, 12 custom, 20 choice options, 6 tabs, 32 types). `list_items` lists each type with
+its Default State, its display per size and its tabs, so a change can build on what is there.
 
 ## Errors that teach
 

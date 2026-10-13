@@ -645,6 +645,16 @@ export * from './tab-builders';
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
+export {
+  isSequenceDiagram,
+  parseSequenceDiagram,
+  SEQUENCE_MAX_ITEMS,
+  SEQUENCE_MAX_PARTICIPANTS,
+  type SequenceDiagram,
+} from './mermaid-sequence';
+export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
+export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './mind-template';
+export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export * from './svg-render-plan-sheet';
 export * from './svg-render-table';
 // The marks the editor's Plan tab images draw with (docs/specs/026-plan/plan-tabs.md "Export"): text, line fitting,
@@ -655,7 +665,6 @@ export {
   text as svgText,
   wrapLines as svgWrapLines,
 } from './svg-render-face-kit';
-export { svgCardFace } from './svg-render-plan';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
@@ -770,3 +779,4 @@ export * from './dashboard';
 export * from './dashboard-cards';
 export * from './dashboard-card-style';
 export * from './tab-names';
+export { planBoardFitHeight } from './svg-render-plan';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getBuiltInTheme, labelBoxSize, type Element, type Tab } from '@livediagram/document';
+import { getBuiltInTheme, type Element, type Tab } from '@livediagram/document';
 import { applyEditOperations } from '../apply';
 import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
@@ -18,7 +18,7 @@ const added = (text: string, tab?: Tab) => {
 };
 
 describe('add <kind>', () => {
-  it('sizes a shape for its label, gives it a slug id, places it and lists it', () => {
+  it('sizes a shape like its siblings, gives it a slug id, places it and lists it', () => {
     const outcome = run('add square label="Verify email" below:n3');
     const { tab, createdIds, targets } = applied(outcome);
     const el = tab.elements.find((e) => e.id === 'verify-email')!;
@@ -28,10 +28,12 @@ describe('add <kind>', () => {
       type: 'shape',
       shape: 'square',
       textSize: 'sm',
-      ...labelBoxSize('Verify email', 'square'),
+      // The checkout flow's squares are 140×120: the new one matches them.
+      width: 140,
+      height: 120,
     });
     expect(lines(outcome)[0]).toMatch(
-      /^\+ verify-email {2}square "Verify email" @\d+,\d+ 131×120$/,
+      /^\+ verify-email {2}square "Verify email" @\d+,\d+ 140×120$/,
     );
   });
 
@@ -77,6 +79,19 @@ describe('add <kind>', () => {
     expect(el).toMatchObject({ fillColor: theme.elementFill, strokeColor: theme.elementStroke });
   });
 
+  it('grows the frame of the box it is placed beside, so it joins it instead of landing outside', () => {
+    const outcome = run('add square label="Gift wrap" right-of:n4');
+    const lineFor = lines(outcome).find((l) => l.startsWith('~ f2'));
+    expect(lineFor).toMatch(/widened/);
+    expect(lines(outcome)).toContain('f2  +gift-wrap');
+  });
+
+  it('takes the template proportions on a tab with no sibling of its shape', () => {
+    const empty: Tab = { id: 't', name: 'T', elements: [] };
+    const { tab } = applied(run('add square label=Pay', empty));
+    expect(tab.elements[0]).toMatchObject({ width: 180, height: 64 });
+  });
+
   it('goes beside the last element the changeset added, then right of the content', () => {
     const outcome = run('add square label=One\nadd square label=Two');
     const { tab } = applied(outcome);
@@ -84,7 +99,7 @@ describe('add <kind>', () => {
       (id) => tab.elements.find((e) => e.id === id) as Element & { x: number },
     );
     expect(one!.x).toBe(310 + PLACEMENT_GAP);
-    expect(two!.x).toBe(one!.x + 120 + PLACEMENT_GAP);
+    expect(two!.x).toBe(one!.x + 140 + PLACEMENT_GAP);
   });
 
   it('takes the layer of its placement reference, or the active one when that is locked', () => {
@@ -136,5 +151,47 @@ describe('add <kind>', () => {
     expect(refused(applyEditOperations(tab, [op], { makeId: fixedIds() })).code).toBe(
       'element_locked',
     );
+  });
+
+  it('keeps a given md text size on a tab with no sibling, and reads a size the template sizes for', () => {
+    const empty: Tab = { id: 't', name: 'T', elements: [] };
+    expect(applied(run('add square label=Pay text=md', empty)).tab.elements[0]).toMatchObject({
+      textSize: 'md',
+    });
+    expect(applied(run('add square label=Pay text=lg', empty)).tab.elements[0]).toMatchObject({
+      textSize: 'lg',
+    });
+  });
+
+  it('matches the size most siblings use when they differ', () => {
+    const tab = checkoutFlow();
+    const mixed: Tab = {
+      ...tab,
+      elements: tab.elements.map((el) => (el.id === 'n2' ? { ...el, textSize: 'md' } : el)),
+    };
+    const { tab: next } = applied(run('add square label="Gift wrap" below:n8', mixed));
+    expect(next.elements.find((e) => e.id === 'gift-wrap')).toMatchObject({ textSize: 'sm' });
+  });
+
+  it('leaves frames alone when placed by coordinates or beside an arrow', () => {
+    for (const op of ['add square label=Far x=4000 y=4000', 'add square label=Near below:a3']) {
+      const outcome = run(op);
+      if ('errors' in outcome) continue;
+      expect(lines(outcome).some((l) => l.startsWith('~ f2'))).toBe(false);
+    }
+  });
+
+  it('widens a frame without making it taller when the new box fits its height', () => {
+    const outcome = run('add square label=Side right-of:n4 height=30');
+    const grown = lines(outcome).find((l) => l.startsWith('~ f2'));
+    expect(grown).toMatch(/widened/);
+    expect(grown).not.toMatch(/taller/);
+  });
+
+  it('makes a frame taller without widening it when the new box fits its width', () => {
+    const outcome = run('add square label=Below below:n5 width=100');
+    const grown = lines(outcome).find((l) => l.startsWith('~ f2'));
+    expect(grown).toMatch(/taller/);
+    expect(grown).not.toMatch(/widened/);
   });
 });

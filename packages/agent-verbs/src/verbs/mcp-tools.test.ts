@@ -22,6 +22,7 @@ describe('the MCP tool verbs', () => {
       'find_documents',
       'read_document',
       'list_templates',
+      'search_icons',
       'create_document',
       'add_tab',
       'update_document',
@@ -57,6 +58,7 @@ describe('the MCP tool verbs', () => {
       'find_documents',
       'read_document',
       'list_templates',
+      'search_icons',
       'list_trash',
     ]);
   });

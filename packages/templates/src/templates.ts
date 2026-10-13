@@ -381,7 +381,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'project-planner',
     title: 'Project Planner',
     description:
-      'Four tabs: a Now, Next, Later Roadmap with a Gantt chart of your projects, a Backlog of tasks by project, the Sprint board and a Daily Standup.',
+      'Five tabs: a Now, Next, Later Roadmap with a Gantt chart of your projects, a Backlog of tasks by project, the Sprint board, a Daily Standup and an Overview dashboard.',
     extra: true,
   },
   {
@@ -395,7 +395,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'team-retro',
     title: 'Team Retro',
     description:
-      'Three tabs: a Retro where notes stay hidden until you reveal and vote, the Actions you agree, and an Archive of past retros.',
+      'Four tabs: a Retro where notes stay hidden until you reveal and vote, the Actions you agree, an Archive of past retros and an Overview dashboard.',
     extra: true,
   },
   {
@@ -416,28 +416,28 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'hiring-pipeline',
     title: 'Hiring Pipeline',
     description:
-      'Three tabs: open Roles on a timeline, the candidate Pipeline a row per role, and Onboarding for each new starter.',
+      'Four tabs: open Roles on a timeline, the candidate Pipeline a row per role, Onboarding for each new starter and an Overview dashboard.',
     extra: true,
   },
   {
     kind: 'okrs',
     title: 'OKRs',
     description:
-      'Two tabs: Objectives on a timeline, and their Key Results by objective, on track, at risk or off track.',
+      'Three tabs: Objectives on a timeline, their Key Results by objective (on track, at risk or off track) and an Overview dashboard.',
     extra: true,
   },
   {
     kind: 'product-launch',
     title: 'Product Launch',
     description:
-      'Three tabs: workstreams on a Timeline, a Checklist per workstream, and the Launch Day go / no-go.',
+      'Four tabs: workstreams on a Timeline, a Checklist per workstream, the Launch Day go / no-go and an Overview dashboard.',
     extra: true,
   },
   {
     kind: 'feedback-board',
     title: 'Feedback Board',
     description:
-      'Two tabs: Feedback from users, voted on and reviewed, and Delivery for what you plan, through to shipped.',
+      'Three tabs: Feedback from users, voted on and reviewed, Delivery for what you plan through to shipped, and an Overview dashboard.',
     extra: true,
   },
   // Spreadsheet templates (docs/specs/026-plan/plan-templates.md "Spreadsheet templates").

@@ -346,6 +346,7 @@ export const ELEMENT_FIELD_NAMES = {
     'font',
     'textColor',
     'fillColor',
+    'themeLockFill',
     'strokeColor',
     'strokeWidth',
     'strokeStyle',

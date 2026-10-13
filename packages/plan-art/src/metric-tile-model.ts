@@ -12,7 +12,7 @@ import {
   type MetricKind,
   type PlanBoardSetup,
 } from '@livediagram/items';
-import { PRIORITY_COLOURS } from '../plan-palette';
+import { PRIORITY_COLOURS } from '@livediagram/document';
 import { OVERDUE_RED, PHASE_COLOURS } from './phase-colours';
 import {
   STALE_DAYS,
@@ -23,7 +23,7 @@ import {
   staleCount,
   topVoted,
   unassignedCount,
-} from '../widgets/widget-stats';
+} from './widget-stats';
 
 export const DUE_SOON_AMBER = '#d97706';
 

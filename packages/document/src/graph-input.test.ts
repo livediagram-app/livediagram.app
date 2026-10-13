@@ -88,7 +88,7 @@ describe('layoutGraph', () => {
     expect(byId(down, 'b').y).toBeGreaterThan(byId(down, 'a').y);
   });
 
-  it('routes arrows per style: angled for a tree, curved for a mind map, or as asked', () => {
+  it('routes arrows per style: angled for flow and tree, curved for a mind map, or as asked', () => {
     const arrows = (els: ReturnType<typeof layoutGraph>) =>
       els.filter((e) => e.type === 'arrow') as { arrowStyle?: string }[];
     // A branch, so the children sit off to each side (a lined-up angled
@@ -106,8 +106,10 @@ describe('layoutGraph', () => {
     };
     expect(arrows(layoutGraph({ ...branch, style: 'tree' }))[0]!.arrowStyle).toBe('angled');
     expect(arrows(layoutGraph({ ...branch, style: 'mindmap' }))[0]!.arrowStyle).toBe('curved');
-    expect(arrows(layoutGraph(branch))[0]!.arrowStyle ?? 'straight').toBe('straight');
-    expect(arrows(layoutGraph({ ...branch, lines: 'angled' }))[0]!.arrowStyle).toBe('angled');
+    expect(arrows(layoutGraph(branch))[0]!.arrowStyle).toBe('angled');
+    expect(arrows(layoutGraph({ ...branch, lines: 'straight' }))[0]!.arrowStyle ?? 'straight').toBe(
+      'straight',
+    );
     expect(arrows(layoutGraph({ ...chain, lines: 'angled' }))[0]!.arrowStyle).toBe('straight');
   });
 
@@ -162,8 +164,20 @@ describe('Mermaid', () => {
   });
 
   it('names what it supports when it cannot read a dialect', () => {
-    const r = resolveGraphInput({ mermaid: 'sequenceDiagram\n  A->>B: hi' });
+    const r = resolveGraphInput({ mermaid: 'pie\n  "A": 1' });
     expect(r.error).toMatch(/flowcharts/);
+  });
+
+  it("heads the diagram with Mermaid front matter's title", () => {
+    const r = resolveGraphInput({ mermaid: '---\ntitle: Checkout\n---\nflowchart TD\n  A --> B' });
+    expect(r.graph?.title).toBe('Checkout');
+    expect(r.graph?.nodes.map((n) => n.id)).toEqual(['A', 'B']);
+  });
+
+  it('reads a sequence diagram as a sequence graph', () => {
+    const r = resolveGraphInput({ mermaid: 'sequenceDiagram\n  A->>B: hi' });
+    expect(r.graph?.style).toBe('sequence');
+    expect(r.graph?.sequence?.participants.map((p) => p.id)).toEqual(['A', 'B']);
   });
 
   it('prefers graph over mermaid, and gives nothing for neither', () => {

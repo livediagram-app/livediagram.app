@@ -175,10 +175,11 @@ browser. A token minted for the CLI is named "livediagram CLI".
 
 ## 4. Tools
 
-Twenty-two tools: eleven for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
+Twenty-three tools: twelve for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
 ([§4.9c](#49c-the-sheet-tools)) and two for Illustrate pages and articles ([§4.9d](#49d-the-illustrate-tools)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
-list_templates exposes the template catalogue ([§4.5](#45-list_templates));
+list_templates exposes the template catalogue ([§4.5](#45-list_templates)) and search_icons the icon catalogue
+([§4.5a](#45a-search_icons));
 share, rename, and delete complete the CRUD verbs, with list_trash and
 restore_document as the way back from a delete
 ([§4.8](#48-share_document), [§4.9](#49-rename_document-and-delete_document), [§4.9a](#49a-list_trash-and-restore_document)).
@@ -317,6 +318,31 @@ refused as held. Both return the changeset's result lines, its [lint](../024-age
 the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
 tweak → `ops`.
 
+**Edits.** `ops` mode takes `edits` instead of `ops`: [edit operations](../024-agents/edit-operations.md) in the line
+form, one a line, sent as the changeset's operations text for the api to parse and apply all or nothing. They reach
+what JSON ops cannot say in one step (`insert … between a b` making room, `wrap … in frame`, `connect a -> b`, `layout`
+of a selection, placement beside another element), and they are the language each [lint](../024-agents/diagram-lint.md)
+finding's fix is written in, so a finding in a write's result can be applied as printed. The base is the revision the
+model read (else the tab as loaded) and every element's fingerprint as loaded, since the text may name any of them.
+Coordinates in edits are relative to the content origin, as views print them. `ops` and `edits` together are refused.
+The tool's `edits` description carries the vocabulary, selectors, placements and keys in brief.
+
+**Arrow ends by ref.** A pinned arrow end the model writes (on `create_document`, `add_tab` and both modes here)
+may name its element by id or by the ref `read_document` prints, as an op's `elementId` may. Each end is resolved
+among the ids the result will hold: in `ops` mode the tab's elements and every element the call adds; in `replace`
+mode and on a new tab only the elements sent. An end that names nothing there, or more than one element, refuses
+the call, naming the arrow and its side (`arrow "a1": "to" is pinned to "4aeb", which is no element on the tab or
+in this call`); an arrow to nowhere is never stored.
+
+**Values checked.** A whole element the model sends (on `create_document`, `add_tab`, `replace` and an ops `add`)
+is checked as an edit operation's `set` checks a field: a field its type does not have is refused with the fields
+like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition`), a value off a closed vocabulary
+(`textSize` `sm`, `md`, `lg`, `scale`; the alignments, arrow styles, ends and heads, border styles and radii: the
+same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
+and an `iconId` that names no icon is refused with the icons like it and a
+pointer to `search_icons`. Each of these was once stored and drawn wrong in silence. The check passes every element
+of every template, so a tab read back as JSON writes again unchanged.
+
 ### 4.5 `list_templates`
 
 Browse the template library — the same hand-tuned catalogue the editor's
@@ -331,6 +357,14 @@ metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit — or accidentally mangle — a curated layout.
 The recommended flow for "make me a kanban board"-style asks: `list_templates`
 → create with `template` → `update_document` (`ops`) to fill in real content.
+
+### 4.5a `search_icons`
+
+Finds icons by what they show, best match first, across the line-art set and the Technology set (brand, cloud and
+database marks): `{ query, limit? }` (20 by default, at most 50) answers `{ icons: [{ id, label, set }], more }`. An
+id is what an element's `iconId` takes. The catalogue is bundled with the worker (`@livediagram/icons`'s
+`searchIcons`, the api's `/icons` route and the CLI's `icon search` use the same ranking), so the search makes no
+api call. Read-only.
 
 ### 4.6 Schema resource (not a tool)
 
@@ -359,11 +393,12 @@ or the same thing written as **`mermaid`**:
 
 ```
 graph: {
-  nodes:  [{ id, label?, shape?, note?, group? }],
-  edges:  [{ from, to, label? }],
+  title?: string, subtitle?: string, key?: boolean,
+  nodes:  [{ id, label?, shape?, note?, group?, icon?, tone? }],
+  edges:  [{ from, to, label?, line? }],
   groups?: [{ id, label?, members?: [nodeId, ...] }],
   direction?: 'down' | 'right',
-  style?:  'flow' | 'tree' | 'mindmap',
+  style?:  'flow' | 'tree' | 'mindmap' | 'lanes' | 'cycle',
   lines?:  'straight' | 'angled' | 'curved',
 }
 mermaid: "flowchart LR\n  A[Idea] --> B{Worth it?} ..."
@@ -405,18 +440,56 @@ every box ("CTO" drawn as wide as "Platform and site reliability"). An
 unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.md)
 "Node boxes and text").
 
+**The graph look** (what makes graph input read like a template, the flowchart template being the yardstick):
+
+- **Boxes are template-sized.** A box is at least 180×64 (a diamond 180×104, wider than tall; a circle stays round),
+  wider for a longer label, never the 120×120 square the editor's palette starts a square at. Every node's text is
+  one size: `md` for a graph of up to 12 nodes (the template's size), `sm` beyond, so a large system still fits.
+- **Roles by notation.** In a flowchart (a graph with a diamond or a stadium) the first stadium a flow starts from is
+  `bold` and a stadium it ends on `soft`; a diamond is `soft`. A node's `tone` overrides: `strong` (bold), `soft`,
+  `muted` (outlined and dashed, the exception idiom) or `plain`. `icon` puts an icon (an id from `search_icons`) on
+  the box; an id that names none is refused.
+- **Flow lines are elbows.** `lines` defaults to `angled` for flow, lanes and tree; every edge to a later rank bends
+  twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus; a labelled
+  arrow keeps its own ends, and its label sits on a run no other labelled arrow shares (the drop into its target,
+  else the leg out of its source, else its longest run), one line wide.
+- **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
+  the spine (the one labelled yes / ok / true / pass, else the one leading furthest) and lays each other exit whose
+  target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.
+- **Loops go round the outside.** An edge back to an earlier rank (a retry, a loop) leaves its source by the side
+  away from the spine, runs outside every box between, and enters its target from that side: an elbow that never
+  crosses the spine. Several loops take separate tracks.
+- **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
+  aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
+  what that shape means, in the diagram's own tones. `true` names them by default: in a flowchart by ISO 5807
+  (stadium "Start or end", square "Step", diamond "Decision", parallelogram "Input or output", document "Document",
+  hexagon "Preparation"), otherwise as a diagram of systems reads them (stadium "Entry point", square "Component",
+  hexagon "Hub or bus", circle "Node"; cylinder "Data store", cloud "External system", actor "Person" in both). An
+  object names them by shape (`{"hexagon": "Event bus"}`), the rest by default.
+
 **Layout choices** (defaults in brackets):
 
-- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right).
+- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right). Auto is `down` for a flowchart (it
+  reads down the page, as the template does) and for a graph of more than 150 nodes; any other flow is laid out
+  both ways and keeps the one whose aspect is nearer a landscape page (3:2).
 - `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
-  chart, a hierarchy), `mindmap` the radial layout around the first node.
+  chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column
+  under it, indented, joined by a bus down its lower-left quarter, the compact org chart), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab
+  and Enter, laid out balanced: the root is the first node nothing enters, a bold round centre; each first-level
+  branch tinted in its own hue with its icon; leaves white and edged in their branch's hue; curved connectors in
+  the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group
+  a lane, one under another, its label in the lane's header strip; the flow runs left to right across the lanes and
+  a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a
+  node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
+  edge a curved arrow following the ring's arc, a node with no edge at all at the ring's centre, a node given no
+  shape a circle).
 - `groups`: named clusters drawn as frames around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
   may point at a group id. With groups, `style` is flow. A node may name its
   group itself (`group`), the shape a model reaches for first; it joins that
   group's members, and a group id nothing declares is created with the id as its
   label. `members` is then optional.
-- `lines` (`straight` for flow, `angled` for tree, `curved` for mindmap): the
+- `lines` (`angled` for flow, lanes and tree, `curved` for mindmap and cycle): the
   arrows' routing, from the editor's own arrow styles. Angled lines **bend
   twice** along the flow (down, across at half height, down into the child's
   top), the org-chart shape; one whose ends already line up runs straight
@@ -433,9 +506,12 @@ unrelated box passes behind it with a gap, on the canvas and in the preview
 ([Arrows pass behind intervening boxes](../008-canvas/arrow-route-behind.md)).
 
 **`mermaid`** is parsed by the editor's own importer (`parseMermaid`:
-flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-import-export/mermaid.md)) into the same
+flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-import-export/mermaid.md)), or for a
+`sequenceDiagram` by the agents' sequence reader ([Sequence diagrams](../020-import-export/mermaid.md#sequence-diagrams-agents),
+drawn with lifelines, activation bars, notes and fragments as `style: "sequence"`), into the same
 graph, its direction and subgraphs becoming `direction` and `groups`, and then
-takes the same path, label cap included. A dialect it cannot read comes back as
+takes the same path, label cap included. Mermaid's front matter title (`---` / `title: Checkout` / `---`) heads the
+diagram as `title` does on a graph, in every dialect. A dialect it cannot read comes back as
 an error naming what is supported.
 
 The translation (`graphToElements`, the sizing, the clustered layout) is pure
@@ -448,7 +524,7 @@ person typed.
 The **prompts** (§4.10) are messages the user sends, not tool descriptions, so
 they do ask for it outright: short headings, detail in the note, related nodes
 grouped, a direction and style that fit the subject. Nodes are set in one fixed
-text size (`sm`, what the sizing measures against), not the shape default that
+text size (`md` up to 12 nodes, else `sm`; what the sizing measures against), not the shape default that
 scales text to fill each box.
 
 ### 4.7a Content-carrying element kinds
@@ -511,6 +587,12 @@ wrongly:
   carries its points as one `packedPoints` block, and a model that writes
   `points` instead gets them packed, as the api's own writes would. In an
   update, sent `points` replace the stroke's block (`mergeElementUpdate`).
+
+**Style fields.** The element format names the style fields a box or arrow takes beyond its geometry, as facts:
+every closed vocabulary from `ELEMENT_FIELD_VALUES` (text size and alignment, icon position, arrow style, ends and
+heads, border style and radius) with its values, bold and italic, `colorPreset` with the theme's preset looks,
+`iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
+an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
 
 ### 4.8 `share_document`
 
@@ -721,7 +803,7 @@ Three behaviours cover the twenty tools, and each is a preset in
 
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                           |
 | --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`                    |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`    |
 | **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet` |
 | **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`                                       |
 
@@ -887,6 +969,12 @@ Worker (no DOM, no React).
   consumed by **both** the existing in-app export (dedup — the editor stops
   carrying its own copy) and the MCP worker. This is the reuse rule applied: one
   renderer, two callers.
+- **A Plan tab as the editor exports it.** A Board, Sheet or Dashboard tab previews as the editor's image export draws
+  it ([Plan tabs](../026-plan/plan-tabs.md) "Export", `@livediagram/plan-art` `planImageOf`): a Board tab its board
+  alone, a Dashboard its page laid out row by row, each metric, chart and card drawn from the document's cards
+  (`resolvePlanArt`), each tab slot that tab's board or Sheet. A Dashboard's preview reads the document's other tabs
+  (up to `PLAN_PREVIEW_TABS_MAX`, 20) and its plan's column names; any read that fails draws as the editor draws it
+  missing.
 - **Rasterise in the worker.** Convert the SVG to PNG with
   [`@resvg/resvg-wasm`](https://github.com/yisibl/resvg-js) (runs in the Workers
   runtime), return it as base64 MCP image content (`image/png`) — broadest client

@@ -35,7 +35,7 @@ import {
   boardTypeCounts,
   dueCounts,
   overWipColumns,
-} from './widget-stats';
+} from '@livediagram/plan-art';
 import { OVERDUE_RED, PHASE_COLOURS } from '../views/view-frame';
 import { CountBadge } from '@livediagram/ui';
 

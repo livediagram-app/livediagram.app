@@ -1557,6 +1557,31 @@ hundred small notes.
 <photo>` with the author's own key (a flash-class vision model) or a local
   one, tiled for small notes, writing the same draft through the API.
 
+## Agents
+
+An agent builds a board through the MCP's graph input with `style: "storm"` ([MCP server](../015-api/mcp-server.md)
+§4.7), saying only what the wall holds and what leads to what; the server leaves it as a facilitator would.
+
+- **Nodes are notes.** Each node is a workshop note of its `esKind` (one of the eight kinds above; default
+  `domain-event`), real stationery: the kind's fill and silhouette, fixed size, text fitted and kept whole (a
+  sticky's label is its content, so the 40-character heading cap does not apply), a slight hand-placed tilt
+  within `ES_MAX_TILT_DEG`, on the board's one layer.
+- **Edges place, they do not draw.** An edge says one note leads to another (an actor issues a command, a command
+  makes an event, an event triggers a policy, a policy issues the next command). The board carries no arrows:
+  adjacency is the notation.
+- **Time runs left to right**, one column per domain event in the order the edges imply (a topological order, cycles
+  cut where they close). A command, actor, read model, aggregate or external system joins the column of the event
+  it leads to; a policy or hotspot the column of the event it follows; a note no event touches takes its own column.
+  Notes sharing a lane and column sit side by side, a gutter apart; columns stand three gutters apart.
+- **One lane per kind used**, top to bottom in the method's reading order: actor, read model, command, aggregate,
+  external system, domain event, policy, hotspot. Every note sits on its lane's centre line, so the board is settled.
+  Each lane is named to the left of the wall ("Domain events", muted text, right aligned): plain text, not a workshop
+  note, so the lanes neither hold nor move it, and a reader new to the notation can still read the board.
+- **A title and subtitle**, when given, head the wall as on every graph (graph-header.ts).
+- **A new tab is a board.** `create_document` and `add_tab` with a storm graph make an event-storming tab (`kind`
+  `event-storming`, born settled, the board layer), the same as the template. A `replace` onto an existing board
+  lands the notes on its lanes as any arrival does; onto an ordinary tab the notes arrive but the tab stays ordinary.
+
 ## Domain learnings (session log)
 
 One-liners captured as they were learned — product truths for this tab

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import {
   assignedPeople,
+  choiceOption,
   personNamed,
   resolveFields,
   resolveItem,
@@ -140,6 +141,33 @@ describe('resolveFields', () => {
       code: 'item_unknown',
     });
     expect(resolveFields({ parent: '#99' }, bug, naming)).toMatchObject({ code: 'field_unknown' });
+  });
+
+  it('reads "#12 Title", as list_items shows a card link, by its number', () => {
+    const items = [item({ title: 'Login' }, { id: 'abc1', key: 12 })];
+    expect(resolveItem('#12 Login', items)).toMatchObject({ ok: true, item: { id: 'abc1' } });
+    expect(resolveItem('#12 Anything else', items)).toMatchObject({ ok: true });
+  });
+
+  it('gives a new person a colour no one on the document has, while colours remain', () => {
+    const first = personNamed('Sam', []);
+    const people = [first];
+    for (const name of ['Alex', 'Priya', 'Jo', 'Kim', 'Lee'])
+      people.push(personNamed(name, people));
+    expect(new Set(people.map((p) => p.color)).size).toBe(people.length);
+    // The same name, with no one else around, is the same person and colour.
+    expect(personNamed('Sam', [])).toEqual(first);
+  });
+
+  it('matches a Choice option exactly before loosely, never by symbols alone', () => {
+    const stars = ['★', '★★', '★★★'];
+    expect(choiceOption(stars, '★★')).toBe('★★');
+    expect(choiceOption(stars, '★★★★')).toBeUndefined();
+    expect(choiceOption(['In Progress', 'Done'], 'in progress')).toBe('In Progress');
+    expect(choiceOption(['In Progress', 'Done'], 'in-progress')).toBe('In Progress');
+    // Two options one key apart are told apart only exactly.
+    expect(choiceOption(['A-1', 'A 1'], 'a1')).toBeUndefined();
+    expect(choiceOption(['A-1', 'A 1'], 'A 1')).toBe('A 1');
   });
 
   it('names an ambiguous item', () => {

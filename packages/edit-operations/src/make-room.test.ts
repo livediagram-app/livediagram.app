@@ -8,7 +8,7 @@ describe('make room', () => {
   it("shifts within b's container, and grows it so nothing leaves", () => {
     const outcome = run('insert square between n4 n5');
     expect(lines(outcome)).toEqual([
-      '+ square  square @50,400 120×120',
+      '+ square  square @40,400 140×120',
       '~ f2  taller 200→360',
       '~ a4  to n5→square',
       '+ arrow  square→n5 (style of a4)',
@@ -19,7 +19,7 @@ describe('make room', () => {
 
   it("without a container, shifts b's connected group and the containers in it, whole", () => {
     expect(lines(run('insert diamond between n2 n3'))).toEqual([
-      '+ diamond  diamond @50,200 120×120',
+      '+ diamond  diamond @40,200 140×120',
       '~ a2  to n3→diamond',
       '+ arrow  diamond→n3 (style of a2)',
       '» f2 n3 n4 n5 n6 n7 n8  +0,+160 (make room)',

@@ -18,9 +18,9 @@ Derived from [Board widgets](../board-widgets.md).
 packages/items/src/board-widgets.ts      kinds, default set, readBoardWidgets, widgetsOf, placeWidget,
                                          nudgeWidget, removeWidget (pure)
 packages/items/src/board.ts              PlanBoardSetup.widgets; normaliseBoardSetup keeps it via readBoardWidgets
-apps/live/components/plan/board-widget-catalogue.ts   BOARD_WIDGET_INFO (label, description)
+packages/plan-art/src/board-widget-info.ts            BOARD_WIDGET_INFO (label, description)
 apps/live/components/plan/plan-tile-art.tsx           BoardWidgetArt (one Glyph per kind)
-apps/live/components/plan/widgets/widget-stats.ts     boardItems, boardPeople, boardTypeCounts, overWipColumns,
+packages/plan-art/src/widget-stats.ts                 boardItems, boardPeople, boardTypeCounts, overWipColumns,
                                                       dueCounts (pure)
 apps/live/components/plan/widgets/BoardWidgetView.tsx one pill per kind (WIDGET_PILL, 28 px)
 apps/live/components/plan/widgets/BoardWidgetZone.tsx the zone: order, reorder drag, keys, ×, the + and its picker
@@ -106,7 +106,7 @@ apps/live/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the widg
 | Rule                                              | Test                                                       |
 | ------------------------------------------------- | ---------------------------------------------------------- |
 | Known kinds once, default set, place/nudge/remove | packages/items/src/board-widgets.test.ts                   |
-| Counts behind People, Types, WIP, Due             | apps/live/components/plan/widgets/widget-stats.test.ts     |
+| Counts behind People, Types, WIP, Due             | packages/plan-art/src/widget-stats.test.ts                 |
 | Slot math, the + picker offering only the missing | apps/live/components/plan/widgets/BoardWidgetZone.test.tsx |
 
 ## Constants and configuration

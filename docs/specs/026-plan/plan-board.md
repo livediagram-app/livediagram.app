@@ -811,4 +811,14 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 - Both are general-tab elements: they exist in every mode and in exports, and only input differs by mode.
 - In exports, thumbnails and api or MCP images the board draws its header, columns and card faces from the
   document's items, without the interactive controls.
+  - Each card face follows its type's Display at the board's card size, as the canvas does
+    ([Item types](item-types.md) "Card display"): Minimal one line, Compact a title over one row, Detailed a header,
+    the title on up to three lines, what sits under it and a footer. A built-in field shows only when the board's card
+    fields list it; a custom field shows as its name and value ("Severity: S1"). A field with no value is left out.
+  - Each card is as tall as its face needs, so cards in a column stack at their own heights. A column whose cards do
+    not all fit the board's height ends in a muted "+3 more" line, never dropping them silently.
+  - Every bit of a card face stays inside the card: a pill too wide for the room left ends in an ellipsis.
+  - A swimlane board draws its lanes as rows across every column, each with its name (and colour dot) above its
+    cards, each lane as tall as its fullest column.
+  - A Plan card element draws the same face, Detailed, inside its own bounds.
 - Read-only visitors see the board and open items read-only; they cannot drag, add or change set-up.

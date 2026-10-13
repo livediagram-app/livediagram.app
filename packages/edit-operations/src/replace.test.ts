@@ -52,6 +52,21 @@ describe('applyReplace on an existing tab', () => {
     expect(results.filter((line) => line.mark === '-')).toHaveLength(tab.elements.length);
   });
 
+  it("keeps a graph's tones: the presets resolve with the tab's theme, as on a new tab", () => {
+    const toned = {
+      nodes: [
+        { id: 'go', label: 'Go', shape: 'stadium', tone: 'strong' as const },
+        { id: 'end', label: 'Stop', shape: 'stadium' },
+      ],
+      edges: [{ from: 'go', to: 'end' }],
+    };
+    const { tab: next } = applied(applyReplace(themed('ocean'), { graph: toned }, options));
+    const go = next.elements.find((el) => el.id === 'go') as { fillColor?: string };
+    const end = next.elements.find((el) => el.id === 'end') as { fillColor?: string };
+    expect(go.fillColor).toBeDefined();
+    expect(go.fillColor).not.toBe(end.fillColor);
+  });
+
   it('round trips through its element ops and their inverse', () => {
     const tab = checkoutFlow();
     const { tab: next, elementOps, inverse } = applied(applyReplace(tab, { graph }, options));
@@ -178,7 +193,7 @@ describe('applyReplace refusals', () => {
 
   it('needs exactly one source', () => {
     expect(refusal({}).details).toEqual([
-      'replace takes exactly one of graph, mermaid, template, elements',
+      'replace takes exactly one of graph, mermaid, template, dashboard, elements',
     ]);
     expect(refusal({ graph, mermaid: 'x' }).code).toBe('invalid_value');
   });

@@ -21,14 +21,8 @@ export const DUE_SOON_DAYS = 2;
 export const tint = (colour: string, pct = 14) =>
   `color-mix(in srgb, ${colour} ${pct}%, transparent)`;
 
-export function checklistProgress(item: Item): { done: number; total: number } | null {
-  const rows = item.fields['checklist'];
-  if (!Array.isArray(rows) || rows.length === 0) return null;
-  const done = rows.filter(
-    (r) => !!r && typeof r === 'object' && (r as { done?: unknown }).done === true,
-  ).length;
-  return { done, total: rows.length };
-}
+// A card's checklist as done of total (shared with every export, @livediagram/items card-text.ts).
+export { checklistProgress } from '@livediagram/items';
 
 // Where a due date stands: past (and not done), within DUE_SOON_DAYS, or neither.
 export function dueState(due: string, done: boolean): 'late' | 'soon' | 'later' {

@@ -12,17 +12,10 @@ import {
 } from '@livediagram/sheets';
 import type { SheetMetricContent } from '@livediagram/document';
 import type { SheetRead } from './useSheetReader';
+import type { SheetMetricShown } from '@livediagram/plan-art';
 
-export type SheetMetricShown = {
-  label: string;
-  hero: string;
-  line: string;
-  // A bar toward a target: its share (0 to 1, capped), and whether it is met.
-  progress?: { share: number; met: boolean; of: string };
-  // A trend's move.
-  change?: { text: string; dir: 'up' | 'down' | 'flat' };
-  spark?: number[];
-};
+// Its shape is shared with the figure's picture in an image export.
+export type { SheetMetricShown };
 
 // What the card shows of its source now, or why it shows nothing.
 export function sheetMetricShown(

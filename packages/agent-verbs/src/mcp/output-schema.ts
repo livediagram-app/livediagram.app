@@ -51,6 +51,19 @@ export const readDocumentOutput = {
   url,
 };
 
+export const searchIconsOutput = {
+  icons: z
+    .array(
+      z.object({
+        id: z.string().describe('The id, as "iconId" takes it.'),
+        label: z.string().describe('What the icon shows.'),
+        set: z.string().describe('Its catalogue: line-art, or Technology (brand and cloud marks).'),
+      }),
+    )
+    .describe('The best matches first.'),
+  more: z.number().describe('How many more matched beyond the limit.'),
+};
+
 export const listTemplatesOutput = {
   categories: z
     .array(

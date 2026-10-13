@@ -10,8 +10,10 @@ import {
   TEXT_PX_MAX,
   TEXT_PX_MIN,
   ELEMENT_FIELD_NAMES,
+  ELEMENT_FIELD_VALUES,
   LIVE_ELEMENT_FIELDS,
   coerceShapeKind,
+  fieldValueIssue,
   isElementFieldName,
   mergeElementUpdate,
   themeColourFields,
@@ -148,6 +150,15 @@ export function writeFieldsOnto<T extends Element>(
     }
     if (!isElementFieldName(el.type, key) && !(FORMER_FIELDS[el.type]?.includes(key) ?? false))
       return unknownField(operation, kindOf(el), key, stored, aliases);
+    // A closed vocabulary's value off its list is refused with the list (element-field-values.ts).
+    if (fieldValueIssue(key, value))
+      return invalidValue(
+        operation,
+        key,
+        value,
+        'is not a value it takes',
+        `${key} takes ${ELEMENT_FIELD_VALUES[key]!.join(', ')}.`,
+      );
     if (RAW_COLOURS.has(key) && el.type !== 'sticky' && isHexColour(value))
       warnings.push(overridesTheme(ref, key, value));
     // An icon id that names no icon draws a question mark: refused, with the icons like it.
