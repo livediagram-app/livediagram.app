@@ -4,6 +4,7 @@
 
 import {
   ELEMENT_FIELD_NAMES,
+  FLOWCHART_STEP_KIND,
   LIVE_ELEMENT_FIELDS,
   SHAPE_KINDS,
   STICKY_PRESETS,
@@ -158,6 +159,15 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'site-header': ['navLinks'],
   page: ['pageTitle', 'pageSubtitle'],
   'mind-node': ['mindParentId', 'mindFlow', 'mindSpacing'],
+  // docs/specs/009-elements/flowchart.md: any of the step-type kinds is a step once it carries a chart; a lane
+  // joins a chart the same way.
+  ...Object.fromEntries(
+    Object.values(FLOWCHART_STEP_KIND).map((k) => [
+      k,
+      ['flowchartId', 'flowDirection', 'flowLaneId'],
+    ]),
+  ),
+  lane: ['flowchartId'],
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
   estimate: ['estimateScale'],

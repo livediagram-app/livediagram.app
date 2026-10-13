@@ -17,6 +17,7 @@ import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
 import type { MindFlow, MindSpacing } from './mind-flow';
+import type { FlowchartDirection } from './flowchart';
 import type { ChartPaletteId } from './chart-palettes';
 import type { ChartVariant } from './chart-types';
 import type {
@@ -416,6 +417,14 @@ export type ShapeElement = {
   // How far apart the map's nodes sit (docs/specs/009-elements/mind-node.md "Spacing"). Read off the ROOT like
   // `mindFlow`; absent = 'comfortable', the gaps every map had before, so no map moves.
   mindSpacing?: MindSpacing;
+  // Flowchart (docs/specs/009-elements/flowchart.md): the chart this step or lane belongs to, minted as the
+  // id of its first step. The ONLY thing that makes a shape a step: a diamond without it is a diamond.
+  flowchartId?: string;
+  // Which way the chart flows, written to every step together so no single delete loses it. Absent =
+  // down, or right once the chart has lanes.
+  flowDirection?: FlowchartDirection;
+  // The chart's lane this step sits in. Absent, or naming a lane that is gone, reads as the first lane.
+  flowLaneId?: ElementId;
   // Page masthead (docs/specs/009-elements/page-element.md): the fixed heading + subtitle above the body.
   // Meaningful on the 'page' kind, and reused by two web components
   // (docs/specs/009-elements/web-components-and-no-groups.md) for the same job — a single-line heading beside the

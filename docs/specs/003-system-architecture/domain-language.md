@@ -104,6 +104,18 @@ The words for how elements are drawn, apart from their colours ([Finish](../008-
 | **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional or Sketch | tone, look, style, render mode |
 | **Follow Tab** | An element with no finish of its own, drawn in its tab's                                | inherit, default               |
 
+## Flowcharts
+
+The words for a grown flowchart ([The flowchart](../009-elements/flowchart.md)).
+
+| Term          | Means                                                                     | Never called        |
+| ------------- | ------------------------------------------------------------------------- | ------------------- |
+| **flowchart** | Steps sharing a `flowchartId`, joined by connectors and laid out together | flow, diagram       |
+| **step**      | One shape of a flowchart                                                  | node, box           |
+| **step type** | What a step is (Process, Decision, ...), which is its shape kind          | node type, symbol   |
+| **lane**      | A swimlane of a flowchart: a Lane element carrying the chart's id         | swimlane (in code)  |
+| **direction** | Which way a flowchart flows: Down or Right                                | orientation, layout |
+
 ## Repositories and workbenches
 
 The words for diagrams living beside code ([Repositories](../027-repositories/README.md),
