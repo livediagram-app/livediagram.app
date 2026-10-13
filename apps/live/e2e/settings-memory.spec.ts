@@ -66,7 +66,9 @@ test('Settings reopens on the last category and row, across a resize', async ({
   pageErrors,
 }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.setViewportSize({ width: 1280, height: 720 });
+  // Short, so the pane's scroll range runs past the category's first row (a tall one) whatever the
+  // font: at 720px CI's Linux metrics left the end of the range inside it.
+  await page.setViewportSize({ width: 1280, height: 520 });
   // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
   await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor();
@@ -83,7 +85,10 @@ test('Settings reopens on the last category and row, across a resize', async ({
   const leftAt = await topRow(scroller);
   // Below the first row, so rows above it reflow and a pixel offset would drift.
   expect(leftAt.key).not.toBe('');
-  expect(leftAt.key).not.toBe('quickAddOnHover');
+  const firstRow = await scroller.evaluate(
+    (pane) => pane.querySelector<HTMLElement>('[data-settings-row]')?.dataset.settingsRow ?? '',
+  );
+  expect(leftAt.key).not.toBe(firstRow);
   const leftScrollTop = await scroller.evaluate((el) => el.scrollTop);
   await page.keyboard.press('Escape');
   await expect(dialog(page)).toBeHidden();

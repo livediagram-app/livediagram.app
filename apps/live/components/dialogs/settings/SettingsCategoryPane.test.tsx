@@ -123,25 +123,28 @@ describe('SettingsCategoryPane link rows', () => {
   });
 });
 
-// Onboarding Tutorials (docs/specs/007-editor/user-preferences.md "Onboarding Tutorials"): each switch in the group writes its
-// own preference and sends its own token, as its own row used to.
-describe('SettingsCategoryPane toggle group', () => {
-  const ACCESSIBILITY = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
+// Tours (docs/specs/007-editor/user-preferences.md "Tours"): each switch writes its own preference,
+// inverted, and sends its own token.
+describe('SettingsCategoryPane tours', () => {
+  const TOURS = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
 
   it('turns the Plan tour back on: planTourSeen false, PlanTourSeenOff', () => {
     const onChange = vi.fn();
     render(
       <SettingsCategoryPane
-        category={ACCESSIBILITY}
+        category={TOURS}
         settings={{ tourSeen: true, planTourSeen: true }}
         onChange={onChange}
       />,
     );
-    const plan = screen.getByRole('switch', { name: 'Plan' });
+    const plan = screen.getByRole('switch', { name: 'Plan Tour' });
     expect(plan.getAttribute('aria-checked')).toBe('false');
-    expect(screen.getByRole('switch', { name: 'Facilitate' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
+    expect(
+      screen.getByRole('switch', { name: 'Facilitate Tour' }).getAttribute('aria-checked'),
+    ).toBe('true');
+    // The shared explanation sits once, under the section heading.
+    expect(screen.getByRole('heading', { name: 'Offer Again' })).toBeTruthy();
+    expect(screen.getAllByText(/Each tour offers itself once/)).toHaveLength(1);
     fireEvent.click(plan);
     expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'PlanTourSeenOff');
     expect(onChange).toHaveBeenCalledWith({ tourSeen: true, planTourSeen: false });

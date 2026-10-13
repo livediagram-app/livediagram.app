@@ -254,7 +254,7 @@ whoever saved first.
 ## Phase 6 (shipped): a Plan board's set-up travels as deltas
 
 A [Plan board](../026-plan/plan-board.md) keeps its whole set-up (title, columns, rows, card fields,
-widgets, voting) in one element field, `planBoard`, and its column cogs and Board flyout edit it
+widgets, voting) in one element field, `planBoard`, and its column cogs and its menu's board rows edit it
 WITHOUT selecting the board, so the selection lock never heads off a collision. Two people setting
 up one board at once, say one renaming To do while the other renames Review, each sent a
 whole-element `update`, each receiver took the other's copy, and the two screens ended up holding

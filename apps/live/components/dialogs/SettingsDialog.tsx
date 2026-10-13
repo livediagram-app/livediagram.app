@@ -173,7 +173,7 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   };
 
-  // Onboarding Tutorials › "Diagram" (docs/specs/007-editor/editor-tour.md). The row is ON when the tour has not been
+  // Tours › "Diagram Tour" (docs/specs/007-editor/editor-tour.md). The row is ON when the tour has not been
   // resolved, and promises it will be offered, so closing the dialog has to
   // MAKE that true. `tourSeen !== true` alone never was: TourHost also needs
   // the per-tab pending flag, which only /new sets for a brand-new user. A
@@ -185,17 +185,17 @@ export function SettingsDialog({
   // in place, which is the "run it again" case the row's copy describes.
   const tourSeen = settings.tourSeen === true;
   const tourSeenAtOpen = useRef(tourSeen);
-  // Onboarding Tutorials › "Plan" (docs/specs/026-plan/plan-tour.md): no handoff flag to arm, as the Plan tour offers
+  // Tours › "Plan Tour" (docs/specs/026-plan/plan-tour.md): no handoff flag to arm, as the Plan tour offers
   // itself on entering Plan; turning the row on from off reruns it in place.
   const planTourSeen = settings.planTourSeen === true;
   const planTourSeenAtOpen = useRef(planTourSeen);
-  // Onboarding Tutorials › "Facilitate" (docs/specs/012-collaboration/facilitate-tour.md): as Plan Tour.
+  // Tours › "Facilitate Tour" (docs/specs/012-collaboration/facilitate-tour.md): as Plan Tour.
   const facilitateTourSeen = settings.facilitateTourSeen === true;
   const facilitateTourSeenAtOpen = useRef(facilitateTourSeen);
-  // Onboarding Tutorials › "Draw" (docs/specs/023-draw-mode/draw-tour.md): as Plan Tour.
+  // Tours › "Draw Tour" (docs/specs/023-draw-mode/draw-tour.md): as Plan Tour.
   const drawTourSeen = settings.drawTourSeen === true;
   const drawTourSeenAtOpen = useRef(drawTourSeen);
-  // Onboarding Tutorials › "Illustrate" (docs/specs/007-editor/illustrate-tour.md): as Plan Tour.
+  // Tours › "Illustrate Tour" (docs/specs/007-editor/illustrate-tour.md): as Plan Tour.
   const illustrateTourSeen = settings.illustrateTourSeen === true;
   const illustrateTourSeenAtOpen = useRef(illustrateTourSeen);
   const close = () => {

@@ -1,6 +1,7 @@
 // The Settings dialog (docs/specs/007-editor/user-preferences.md), drawn once for every help
 // article that shows it: the shared frame (title, search, the category list, the open pane), the
-// on/off `Switch` every settings-style row in the help art uses, and the Editor and Panels panes.
+// on/off `Switch` every settings-style row in the help art uses, and the Editor and Panels panes,
+// each section one grouped card as the dialog draws it.
 // Categories, row labels, order and defaults are lifted from
 // apps/live/components/dialogs/settings/settings-catalogue.ts; sub-categories (Draw under Editor,
 // Layers / Map / Collaborate / Quick Style under Panels) stay folded, as the dialog opens them.
@@ -43,6 +44,7 @@ const CATEGORIES = [
   'Keyboard',
   'Panels',
   'Accessibility',
+  'Tours',
   'AI Tools',
   'Documents',
   'Account',
@@ -55,12 +57,12 @@ export type SettingsCategory = (typeof CATEGORIES)[number];
  *  the open pane headed by its name. Children draw the pane's rows (x from 152). */
 function SettingsFrame({ active, children }: { active: SettingsCategory; children: ReactNode }) {
   return (
-    <Scene w={420} h={236} bg="plain">
+    <Scene w={420} h={268} bg="plain">
       <rect
         x={12}
         y={10}
         width={396}
-        height={216}
+        height={248}
         rx={12}
         className="fill-white stroke-slate-200"
         strokeWidth={2}
@@ -93,7 +95,7 @@ function SettingsFrame({ active, children }: { active: SettingsCategory; childre
           </g>
         );
       })}
-      <line x1={144} y1={46} x2={144} y2={226} className="stroke-slate-200" strokeWidth={1.5} />
+      <line x1={144} y1={46} x2={144} y2={258} className="stroke-slate-200" strokeWidth={1.5} />
       <Label x={158} y={64} size={12} weight={700} tone="strong">
         {active}
       </Label>
@@ -104,7 +106,7 @@ function SettingsFrame({ active, children }: { active: SettingsCategory; childre
 
 /** A soft highlight behind the row a section is about. */
 function RowHighlight({ y, h }: { y: number; h: number }) {
-  return <rect x={152} y={y} width={246} height={h} rx={7} className="fill-brand-50" />;
+  return <rect x={154} y={y} width={242} height={h} rx={5} className="fill-brand-50" />;
 }
 
 /** A row's label, accented when it is the highlighted one. */
@@ -118,54 +120,65 @@ function RowLabel({ y, hot, children }: { y: number; hot?: boolean; children: st
 
 export type EditorRowKey = 'quick-add' | 'guides' | 'auto-attach';
 
-// The Editor pane's toggles, at their defaults. Element Indicators (a choice) sits second.
-const EDITOR_TOGGLES: { key: EditorRowKey | 'middle-pan'; label: string; on: boolean }[] = [
-  { key: 'quick-add', label: 'Quick-Add on Hover', on: false },
-  { key: 'guides', label: 'Alignment Guides', on: true },
-  { key: 'auto-attach', label: 'Auto-Attach Arrows', on: true },
-  { key: 'middle-pan', label: 'Middle-Mouse Pan', on: true },
+type EditorRow =
+  | { key: EditorRowKey | 'middle-pan' | 'power-user'; label: string; on: boolean }
+  | { key: 'indicators'; label: string };
+
+// The Editor pane's sections in catalogue order, each one grouped card, every row at its default.
+const EDITOR_SECTIONS: { heading: string; rows: EditorRow[] }[] = [
+  {
+    heading: 'CANVAS',
+    rows: [
+      { key: 'guides', label: 'Alignment Guides', on: true },
+      { key: 'auto-attach', label: 'Auto-Attach Arrows', on: true },
+      { key: 'indicators', label: 'Element Indicators' },
+    ],
+  },
+  {
+    heading: 'MOUSE',
+    rows: [
+      { key: 'quick-add', label: 'Quick-Add on Hover', on: false },
+      { key: 'middle-pan', label: 'Middle-Mouse Pan', on: true },
+    ],
+  },
+  { heading: 'POWER USER', rows: [{ key: 'power-user', label: 'Power User Mode', on: false }] },
 ];
 
-const ROW_GAP = 22;
-const FIRST_ROW = 88;
+const ROW_H = 20;
+const SECTION_GAP = 14;
+const HEADING_H = 12;
+const FIRST_HEADING = 84;
 
-/** The Editor pane's rows: the four switches with Element Indicators second, then the Power User
- *  section. */
-function EditorRows({ highlight }: { highlight?: EditorRowKey }) {
-  // Catalogue order: Quick-Add, Element Indicators, then the remaining switches.
-  const toggleY = (i: number) => FIRST_ROW + (i === 0 ? 0 : i + 1) * ROW_GAP;
-  const indicatorsY = FIRST_ROW + ROW_GAP;
-  const sectionY = FIRST_ROW + 5 * ROW_GAP;
+// Where each section's heading sits: each starts below the card above it.
+const SECTION_TOPS = EDITOR_SECTIONS.reduce<number[]>(
+  (tops, _section, i) =>
+    i === 0
+      ? [FIRST_HEADING]
+      : [
+          ...tops,
+          tops[i - 1]! + HEADING_H - 4 + EDITOR_SECTIONS[i - 1]!.rows.length * ROW_H + SECTION_GAP,
+        ],
+  [],
+);
+
+/** Element Indicators' segmented Top / Footer / Off, Top picked. */
+function IndicatorChoice({ y }: { y: number }) {
   return (
     <>
-      {EDITOR_TOGGLES.map((r, i) => {
-        const y = toggleY(i);
-        const hot = r.key === highlight;
-        return (
-          <g key={r.key}>
-            {hot && <RowHighlight y={y - 12} h={24} />}
-            <RowLabel y={y} hot={hot}>
-              {r.label}
-            </RowLabel>
-            <Switch x={364} y={y - 7.5} on={r.on} />
-          </g>
-        );
-      })}
-      <RowLabel y={indicatorsY}>Element Indicators</RowLabel>
       <rect
         x={292}
-        y={indicatorsY - 9}
+        y={y - 8}
         width={98}
-        height={18}
+        height={16}
         rx={5}
         className="fill-slate-100 stroke-slate-200"
         strokeWidth={1}
       />
       <rect
         x={294}
-        y={indicatorsY - 7}
+        y={y - 6}
         width={30}
-        height={14}
+        height={12}
         rx={4}
         className="fill-white stroke-slate-200"
       />
@@ -173,8 +186,8 @@ function EditorRows({ highlight }: { highlight?: EditorRowKey }) {
         <Label
           key={c}
           x={309 + j * 33}
-          y={indicatorsY + 0.5}
-          size={10}
+          y={y + 0.5}
+          size={9}
           anchor="middle"
           weight={j === 0 ? 700 : 500}
           tone={j === 0 ? 'accent' : 'muted'}
@@ -182,11 +195,67 @@ function EditorRows({ highlight }: { highlight?: EditorRowKey }) {
           {c}
         </Label>
       ))}
-      <Label x={162} y={sectionY - 2} size={10} weight={700} tone="muted">
-        POWER USER
-      </Label>
-      <RowLabel y={sectionY + 16}>Power User Mode</RowLabel>
-      <Switch x={364} y={sectionY + 8.5} on={false} />
+    </>
+  );
+}
+
+/** The Editor pane: a heading over one card per section, its rows split by hairlines. */
+function EditorRows({ highlight }: { highlight?: EditorRowKey }) {
+  return (
+    <>
+      {EDITOR_SECTIONS.map((section, s) => {
+        const headingY = SECTION_TOPS[s]!;
+        const cardY = headingY + HEADING_H - 4;
+        const cardH = section.rows.length * ROW_H;
+        return (
+          <g key={section.heading}>
+            <Label x={158} y={headingY} size={8} weight={700} tone="muted">
+              {section.heading}
+            </Label>
+            <rect
+              x={152}
+              y={cardY}
+              width={246}
+              height={cardH}
+              rx={7}
+              className="fill-white stroke-slate-200"
+              strokeWidth={1.2}
+            />
+            {section.rows.map((r, i) => {
+              const y = cardY + i * ROW_H + ROW_H / 2;
+              const hot = r.key === highlight;
+              return (
+                <g key={r.key}>
+                  {i > 0 && (
+                    <line
+                      x1={152}
+                      x2={398}
+                      y1={cardY + i * ROW_H}
+                      y2={cardY + i * ROW_H}
+                      className="stroke-slate-100"
+                      strokeWidth={1}
+                    />
+                  )}
+                  {hot && (
+                    <rect
+                      x={154}
+                      y={cardY + i * ROW_H + 2}
+                      width={242}
+                      height={ROW_H - 4}
+                      rx={5}
+                      className="fill-brand-50"
+                    />
+                  )}
+                  <RowLabel y={y} hot={hot}>
+                    {r.label}
+                  </RowLabel>
+                  {'on' in r ? <Switch x={364} y={y - 7.5} on={r.on} /> : <IndicatorChoice y={y} />}
+                </g>
+              );
+            })}
+          </g>
+        );
+      })}
     </>
   );
 }
@@ -213,7 +282,16 @@ export function SettingsEditorPane({ highlight }: { highlight?: EditorRowKey }) 
 export function SettingsPanelsPane({ highlight }: { highlight?: 'panel-opacity' }) {
   return (
     <SettingsFrame active="Panels">
-      {highlight === 'panel-opacity' && <RowHighlight y={68} h={40} />}
+      <rect
+        x={152}
+        y={74}
+        width={246}
+        height={28}
+        rx={7}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.2}
+      />
+      {highlight === 'panel-opacity' && <RowHighlight y={76} h={24} />}
       <RowLabel y={88} hot={highlight === 'panel-opacity'}>
         Panel Opacity
       </RowLabel>

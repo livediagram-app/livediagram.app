@@ -42,6 +42,7 @@ export function SettingsChoiceRow({
       onIllustrationChoose={onChange}
       illustrationDisabled={options.filter((o) => o.disabled).map((o) => o.id)}
       notice={notice}
+      dimmed={options.length > 0 && options.every((o) => o.disabled)}
       control={
         <span
           role="radiogroup"

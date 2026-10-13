@@ -11,11 +11,11 @@ proved the better introduction.
 
 ## Domain language
 
-| Term             | Means                                                                                            |
-| ---------------- | ------------------------------------------------------------------------------------------------ |
-| **Diagram tour** | This tour. In the interface: **Diagram Tour**, and **Diagram** in Settings' Onboarding Tutorials |
-| **welcome tour** | Its name until October 2026; kept only in code identifiers and telemetry tokens                  |
-| **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)         |
+| Term             | Means                                                                                           |
+| ---------------- | ----------------------------------------------------------------------------------------------- |
+| **Diagram tour** | This tour. In the interface: **Diagram Tour**, and **Diagram Tour** in Settings' Tours category |
+| **welcome tour** | Its name until October 2026; kept only in code identifiers and telemetry tokens                 |
+| **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)        |
 
 ## Where it appears
 
@@ -37,8 +37,8 @@ proved the better introduction.
   must never read as nagging, and answering it once covers every device the user signs in from (guests get
   the same via their owner-keyed preference row + the localStorage warm cache). The preference keeps the
   welcome tour's name, so an answer given to the welcome tour still holds for this one.
-- **Replayable from Settings.** The Settings dialog's Accessibility category has a **Onboarding Tutorials** control whose
-  **Diagram** switch surfaces `tourSeen` (inverted: on means not seen). Turning a previously-off switch on and
+- **Replayable from Settings.** The Settings dialog's **Tours** category has a
+  **Diagram Tour** switch that surfaces `tourSeen` (inverted: on means not seen). Turning a previously-off switch on and
   closing Settings relaunches the tour from the top when the open tab is in Diagram, and otherwise offers it
   the next time the person is on a Diagram tab. The welcome card is always step 1, on a rerun too. Finishing
   the rerun turns it off again.

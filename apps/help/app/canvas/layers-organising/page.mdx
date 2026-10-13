@@ -24,12 +24,12 @@ Layers also **name themselves**: while a layer still has its default name ("Laye
 
 Layers paint bottom to top, and the panel lists them top first. To restack:
 
-- **Drag a row** up or down and drop it on the row whose place it should take. The drag starts from anywhere on the row; a plain click still just activates the layer.
-- Use **Bring to Top** or **Send to Back** in the layer's menu to jump a layer straight to either end of the stack.
+- **Drag a row** up or down and drop it on the row whose place it should take; a line shows where it will land. The drag starts from anywhere on the row; a plain click still just activates the layer.
+- Use **Bring to Top** or **Send to Bottom** in the layer's menu to jump a layer straight to either end of the stack.
 
 The layer's menu opens when you right-click its row or click its ellipsis, hung to the left of the panel so the rows stay in view. Right-clicking a row also makes it the active layer, so every verb in the menu acts on the layer you clicked.
 
-<Figure caption="A layer's menu beside the Layers panel: Rename and Delete, then the Layer category with its opacity, Bring to Top, Send to Back and Hide Others.">
+<Figure caption="A layer's menu beside the Layers panel: the layer's name and preview, its opacity, then every action as a row: hide, lock, restack, merge, rename, clear and delete.">
   <LayerRowMenuScene />
 </Figure>
 
@@ -41,7 +41,7 @@ Select any elements, right-click, and open the **Layer** category. The **Move to
 
 ## Merging Layers
 
-**Merge Up** and **Merge Down** (footer buttons, bottom-left) fold the active layer into its neighbour; in a layer's menu the same two are **With Layer Above** and **With Layer Below** under **Merge**:
+**Merge Up** and **Merge Down** (footer buttons, bottom-left) fold the active layer into its neighbour; in a layer's menu the same two are **Merge With Layer Above** and **Merge With Layer Below**:
 
 - The neighbour survives, keeping its name, visibility, lock, and opacity, and becomes the active layer.
 - The merged elements keep their visual position: merging down places them on top of the lower layer's content, merging up tucks them beneath the upper layer's content.
@@ -49,9 +49,9 @@ Select any elements, right-click, and open the **Layer** category. The **Move to
 
 ## Clearing and Deleting
 
-- **Clear** (in the layer menu's **Content** category, with a confirmation) deletes everything on the layer but keeps the layer itself, ready to be refilled.
-- **Delete** (the trash in the footer, or **Delete** at the top of the layer's menu) removes the layer and everything on it. A populated layer asks first, quoting how many elements will go ("Delete “Sketch” and its 12 elements?"); an empty one goes at once, and the last remaining layer can't be deleted. Undo brings the layer and its contents back together.
-- Layers with nothing on them wear a small **Empty** tag, so stale ones are easy to spot and prune.
+- **Clear Layer** (in the layer's menu, with a confirmation) deletes everything on the layer but keeps the layer itself, ready to be refilled.
+- **Delete** (in the footer, or **Delete Layer** at the bottom of the layer's menu) removes the layer and everything on it. A populated layer asks first, quoting how many elements will go ("Delete “Sketch” and its 12 elements?"); an empty one goes at once, and the last remaining layer can't be deleted. Undo brings the layer and its contents back together.
+- Layers with nothing on them read **Empty** under their name and show a dashed preview, so stale ones are easy to spot and prune.
 
 <Note>
   Every operation on this page is a normal edit: it syncs live to collaborators and undoes with
