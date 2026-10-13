@@ -43,6 +43,10 @@ export type QuickSwatchValue = 0 | QuickSwatchSlot;
 // "One look"): stored by name, drawn in its version for the canvas.
 export const QUICK_INK = INK_PEN_COLOUR;
 export type QuickColourValue = QuickSwatchValue | typeof QUICK_INK;
+// The Background row's Transparent (docs/specs/008-canvas/quick-style-panel.md "Background"): no
+// fill at all, so what is behind the shape shows through.
+export const QUICK_TRANSPARENT = 'transparent';
+export type QuickFillValue = QuickSwatchValue | typeof QUICK_TRANSPARENT;
 export type QuickWidth = 'thin' | 'medium' | 'thick';
 export type QuickStrokeStyle = 'solid' | 'dashed' | 'dotted' | 'flowing';
 export type QuickIconAlign = 'left' | 'above' | 'right';
@@ -61,7 +65,7 @@ export type QuickStyleView = {
   sections: {
     // `ink`: the Ink swatch's colour for the canvas, after the theme's.
     stroke?: { value: QuickColourValue | null; swatches: ShownSwatch[]; ink: string };
-    background?: { value: QuickSwatchValue | null; swatches: ShownSwatch[] };
+    background?: { value: QuickFillValue | null; swatches: ShownSwatch[] };
     textColour?: { value: QuickColourValue | null; swatches: ShownSwatch[]; ink: string };
     width?: { value: QuickWidth | null };
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
@@ -239,7 +243,9 @@ export function quickStyleView(
       swatches,
       // A fill stores no name, so it is never Ink.
       value: shared(
-        background.map((el) => {
+        background.map((el): QuickFillValue | null => {
+          if ((el as { fillColor?: string }).fillColor === QUICK_TRANSPARENT)
+            return QUICK_TRANSPARENT;
           const v = swatchValue(el, theme, 'fill', swatches);
           return v === QUICK_INK ? null : v;
         }),
@@ -325,7 +331,7 @@ function strokePick(
 export function applyQuickFill(
   el: Element,
   theme: ThemeDefinition,
-  slot: QuickSwatchValue,
+  slot: QuickFillValue,
   overrides: SwatchOverrides = {},
 ): Element {
   if (
@@ -334,6 +340,12 @@ export function applyQuickFill(
     !supportsQuickSection(el, 'background')
   )
     return el;
+  if (slot === QUICK_TRANSPARENT) {
+    const { fillSwatch: _bound, ...rest } = el as typeof el & { fillSwatch?: unknown };
+    return el.type === 'path'
+      ? ({ ...rest, fillColor: QUICK_TRANSPARENT } as Element)
+      : ({ ...rest, fillColor: QUICK_TRANSPARENT, colorPreset: undefined } as Element);
+  }
   const { colour, bind } = pickFor(theme, 'fill', slot, overrides);
   return el.type === 'path'
     ? { ...el, fillColor: colour, fillSwatch: bind }

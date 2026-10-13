@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { HoverCard } from '@livediagram/ui';
 import { CLUSTER_STRIP, CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 
 // A bottom-right cluster button that opens a panel as a popover hanging ABOVE it, as the Layers
 // button does, and shows pressed while it is open: Slides in Illustrate mode, Card Types in Plan
@@ -25,6 +26,9 @@ type SegmentProps = {
   dataTourId?: string;
   // A segment after the first in a strip: a hairline parts it from the one before.
   divided?: boolean;
+  // Its name beside its icon on a desktop (Contents, Slides, Timer, Vote, Poll); a phone shows the
+  // icon alone. Absent, the button is its icon on every screen.
+  name?: string;
 };
 
 // The frame a cluster button (or a strip of them) sits in.
@@ -61,7 +65,10 @@ export function ClusterPopoverSegment({
   buttonRef,
   dataTourId,
   divided = false,
+  name,
 }: SegmentProps) {
+  const mobile = useIsMobileViewport();
+  const named = !!name && !mobile;
   const button = (
     <button
       ref={buttonRef}
@@ -71,15 +78,16 @@ export function ClusterPopoverSegment({
       onClick={(e) => onTogglePopover(e.currentTarget)}
       aria-label={label}
       aria-expanded={popoverOpen}
-      className={`flex h-11 w-11 items-center justify-center transition ${
-        divided ? 'border-l border-slate-100 dark:border-slate-800' : ''
-      } ${
+      className={`flex h-11 items-center justify-center transition ${
+        named ? 'gap-2 px-3.5 text-sm font-medium' : 'w-11'
+      } ${divided ? 'border-l border-slate-100 dark:border-slate-800' : ''} ${
         popoverOpen
           ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
           : CLUSTER_CONTROL_REST
       }`}
     >
       {icon}
+      {named ? <span aria-hidden>{name}</span> : null}
     </button>
   );
   // No hover card while open: it would sit over the panel it names.

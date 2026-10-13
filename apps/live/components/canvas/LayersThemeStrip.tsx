@@ -5,6 +5,7 @@ import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
 import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
 import { ThemeLookIcon } from '@/components/palette/palette-icons';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 
 // Layers and the Theme & canvas button, one strip in the bottom-right cluster
 // (docs/specs/007-editor/live-app.md): both shape how the tab looks rather than what is on it, so
@@ -28,6 +29,7 @@ export function LayersThemeStrip({
   // The Theme & canvas button. Absent, the strip has none.
   onOpenTheme?: (() => void) | undefined;
 }) {
+  const mobile = useIsMobileViewport();
   if (!tidyUp && !layers && !onOpenTheme) return null;
   return (
     <ClusterStrip>
@@ -64,11 +66,13 @@ export function LayersThemeStrip({
             onPointerDown={(e) => e.stopPropagation()}
             onClick={onOpenTheme}
             aria-label="Theme and canvas"
-            className={`flex h-11 w-11 items-center justify-center transition ${
-              layers || tidyUp ? 'border-l border-slate-100 dark:border-slate-800' : ''
-            } ${CLUSTER_CONTROL_REST}`}
+            className={`flex h-11 items-center justify-center transition ${
+              mobile ? 'w-11' : 'gap-2 px-3.5 text-sm font-medium'
+            } ${layers || tidyUp ? 'border-l border-slate-100 dark:border-slate-800' : ''} ${CLUSTER_CONTROL_REST}`}
           >
             <ThemeLookIcon />
+            {/* Named on a desktop, as the cluster's Contents, Slides and Session buttons are. */}
+            {mobile ? null : <span aria-hidden>Style</span>}
           </button>
         </HoverCard>
       ) : null}
