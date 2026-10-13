@@ -6,7 +6,13 @@
 // controls.
 
 import type { ReactNode } from 'react';
-import { FONTS, type BackgroundPattern, type Finish, type TextSize } from '@livediagram/document';
+import {
+  FONTS,
+  type BackgroundPattern,
+  type Finish,
+  type TextSize,
+  type TextSizePreset,
+} from '@livediagram/document';
 import { Glyph, lucideGlyph } from '@livediagram/ui';
 import { lucideChevronRight } from '@livediagram/icons/lucide';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
@@ -19,12 +25,16 @@ import { LooksCarousel } from './LooksCarousel';
 /** The panels a Fine-tune row opens. */
 export type LookPanel = 'theme' | 'finish' | 'font' | 'canvas';
 
-const SIZE_LABELS: Record<TextSize, string> = {
+const SIZE_LABELS: Record<TextSizePreset, string> = {
   scale: 'scaled',
   sm: 'small',
   md: 'medium',
   lg: 'large',
 };
+
+// An exact size from the Text Size slider reads as its px.
+const sizeLabel = (size: TextSize | undefined): string =>
+  typeof size === 'number' ? `${size}px` : SIZE_LABELS[size ?? 'md'];
 
 const sectionLabel =
   'text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400';
@@ -84,7 +94,7 @@ export function LooksHome({
           />
           <FineTuneRow
             label="Text"
-            value={`${fontLabel}, ${SIZE_LABELS[defaultTextSize ?? 'md']}`}
+            value={`${fontLabel}, ${sizeLabel(defaultTextSize)}`}
             icon={<span className="text-[15px] font-semibold">Aa</span>}
             onOpen={() => onOpenPanel('font')}
           />

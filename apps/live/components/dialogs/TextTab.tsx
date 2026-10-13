@@ -2,12 +2,13 @@
 
 // The Tab Style dialog's Text panel (docs/specs/011-theme/canvas-and-theme-dialog.md "Text panel"): a preview of the
 // sample diagram lettered in the tab's font at the size new text takes, the typefaces as specimen cards ("Aa" in each
-// face, its name and style) paged nine to a carousel, the size of new text as four tiles showing that size, and Apply
-// to All Elements.
+// face, its name and style) paged nine to a carousel, the size of new text on the one Text Size control (Scale, or a
+// px from the slider, which the preview follows as it moves), and Apply to All Elements.
 
+import { useState } from 'react';
 import { FONTS, type Finish, type TextSize } from '@livediagram/document';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
-import { ScaleIcon } from '@/components/palette/palette-icons';
+import { TextSizeControl } from '@/components/palette/TextSizeControl';
 import { TabStylePreview } from './TabStylePreview';
 
 const sectionLabel =
@@ -22,14 +23,6 @@ type FontOption = { id: string | null; label: string; kind: string; stack: strin
 const FONT_OPTIONS: readonly FontOption[] = [
   { id: null, label: 'Editor default', kind: 'System', stack: undefined },
   ...FONTS.map((f) => ({ id: f.id, label: f.label, kind: f.kind, stack: f.stack })),
-];
-
-// The four sizes new text can take, each tile drawing a letter at roughly that size.
-const SIZES: readonly { size: TextSize; label: string; letterPx: number | null }[] = [
-  { size: 'sm', label: 'Small', letterPx: 13 },
-  { size: 'md', label: 'Medium', letterPx: 17 },
-  { size: 'lg', label: 'Large', letterPx: 22 },
-  { size: 'scale', label: 'Scale', letterPx: null },
 ];
 
 export function TextTab({
@@ -52,6 +45,8 @@ export function TextTab({
   themeId: string;
 }) {
   const size = defaultTextSize ?? 'md';
+  // The slider's size while it is dragged or Scale is hovered, so the preview shows it before it is set.
+  const [previewSize, setPreviewSize] = useState<TextSize | null>(null);
   const fontLabel = FONT_OPTIONS.find((o) => o.id === font)?.label ?? 'Editor default';
   return (
     <div className="flex flex-col gap-4">
@@ -60,7 +55,7 @@ export function TextTab({
         canvasBackground={canvasBackground}
         themeId={themeId}
         font={font}
-        textSize={size}
+        textSize={previewSize ?? size}
         label={`A sample diagram lettered in ${fontLabel}`}
       />
 
@@ -83,15 +78,16 @@ export function TextTab({
 
       <div className="flex flex-col gap-2">
         <h3 className={sectionLabel}>Size of New Text</h3>
-        <div role="radiogroup" aria-label="Size of new text" className="grid grid-cols-4 gap-2">
-          {SIZES.map((s) => (
-            <SizeTile
-              key={s.size}
-              option={s}
-              active={size === s.size}
-              onPick={() => onSetDefaultTextSize(s.size)}
-            />
-          ))}
+        <div className="-mx-3">
+          <TextSizeControl
+            current={size}
+            onSet={(next) => {
+              setPreviewSize(null);
+              onSetDefaultTextSize(next);
+            }}
+            onPreview={setPreviewSize}
+            onPreviewEnd={() => setPreviewSize(null)}
+          />
         </div>
       </div>
     </div>
@@ -133,39 +129,6 @@ function TypefaceCard({
         {option.label}
       </span>
       <span className="text-[11px] text-slate-500 dark:text-slate-400">{option.kind}</span>
-    </button>
-  );
-}
-
-function SizeTile({
-  option,
-  active,
-  onPick,
-}: {
-  option: (typeof SIZES)[number];
-  active: boolean;
-  onPick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={active}
-      onClick={onPick}
-      className={`flex h-16 flex-col items-center justify-center gap-1 rounded-lg border transition ${
-        active
-          ? 'border-brand-500 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
-          : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60'
-      }`}
-    >
-      <span
-        aria-hidden
-        className="flex h-7 items-end font-semibold leading-none"
-        style={option.letterPx ? { fontSize: option.letterPx } : undefined}
-      >
-        {option.letterPx ? 'A' : <ScaleIcon />}
-      </span>
-      <span className="text-[11px] font-medium">{option.label}</span>
     </button>
   );
 }

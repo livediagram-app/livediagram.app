@@ -40,7 +40,8 @@ self-host that opts out). The editor never depends on the fonts loading.
   menu was slimmed to actions), holding:
   - **Font** — sets `Tab.font`: the default for **every** text element on
     the tab that hasn't set its own. "Default" clears it.
-  - **Default size for new elements** — sets `Tab.defaultTextSize`, which
+  - **Default size for new elements** — sets `Tab.defaultTextSize` (Scale or a px, on the
+    [Text Size](#text-size) control), which
     is seeded onto each element added from the palette next (a create-time
     copy onto the element's own `textSize`, not a render-time resolve — so
     changing it later never resizes existing elements). Unset = the
@@ -53,6 +54,44 @@ tab's `font` and `defaultTextSize` (the same way it inherits the theme),
 falling back to small when the active tab has no explicit size — so tabs in
 one document stay consistent and a brand-new tab still defaults to small
 rather than the `md` factory baseline.
+
+## Text size
+
+A label's size (`textSize`) is **Scale** or an **exact px**. It is chosen on one control, the
+**Text Size** slider (`TextSizeControl`), everywhere a label's size is set:
+
+- an element's **Text** flyout, single and multi selection (Typography → Size);
+- an arrow's **Caption** and a table's **Text** category, single and multi selection;
+- a table cell's context menu;
+- a chart's key, a Legend card and a Sankey's labels (no Scale: a key has nothing to fit);
+- the Tab Style dialog's **Size of New Text** ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)).
+
+The control:
+
+- **Scale** is a toggle at the end of the control's label row, pressed while the size is Scale.
+  It keeps its meaning per surface: a note fills its box, a table cell tracks the row height, a
+  single-line label draws at a middling fixed px.
+- **The slider** runs **6 to 30 px in whole px** (`TEXT_PX_MIN` / `TEXT_PX_MAX`), with labelled
+  breakpoints at **6, 12, 18, 24 and 30** under the track. It previews as it moves (where the
+  surface has a preview) and commits **once, when let go**, so a drag is one undo step; letting go
+  where it began commits nothing. The arrow keys step it one px at a time.
+- **The readout** beside the slider says the px (`18px`), **Scale**, or **Mixed** for a
+  multi-selection whose sizes differ.
+
+An exact px **draws at that px on every surface**: a shape label, a note, an arrow caption, a table
+cell, a chart key and a Sankey's labels alike, on the canvas and in every export. Earlier documents
+and templates still carry the named presets **Small / Medium / Large** (`sm` / `md` / `lg`); they
+render exactly as before, each on its surface's own scale (a label's Large is 32px, a note's 22px).
+The slider shows a preset at the px it draws at on that surface, the thumb clamped to the range
+and the readout unclamped (a label's Large reads `32px` with the thumb at 30). Touching the slider
+replaces the preset with a px; nothing converts presets on load.
+
+Agents write the same values through the `text` alias: `sm`, `md`, `lg`, `scale`, or a whole px
+from 6 to 30 (`text=18`). Anything else is refused with that list.
+
+A **marker's** size (`markerSize`) is not a text size: it stays the four presets (Scale / Small /
+Medium / Large dots), since a marker is a glyph and not a line of type
+([Shape markers](../009-elements/shape-markers.md)).
 
 Resolution order for any text: `element.font → notation font → tab.font →
 editor default` (the system sans stack). `resolveFontStack` maps a stored id

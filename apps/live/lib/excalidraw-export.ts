@@ -23,6 +23,7 @@ import {
   type BoxedElement,
   type Tab,
   type TabPlanData,
+  type TextSize,
 } from '@livediagram/document';
 import { planBoardParts, planCardLabel, type PlanPart } from './excalidraw-export-plan';
 
@@ -64,6 +65,9 @@ const STROKE_WIDTH_PX = { none: 1, thin: 1, medium: 2, thick: 4, 'extra-thick': 
 const strokeStyleOut = (s: string | undefined): string =>
   s === 'dotted' ? 'dotted' : s && s !== 'solid' ? 'dashed' : 'solid';
 const FONT_SIZE_PX = { scale: 20, sm: 16, md: 20, lg: 28 } as const;
+// An exact size from the Size slider exports at its own px; a preset at Excalidraw's nearest.
+const fontSizePx = (size: TextSize | undefined): number =>
+  typeof size === 'number' ? size : FONT_SIZE_PX[size ?? 'md'];
 const ARROWHEAD_OUT: Record<ArrowheadShape, string> = {
   triangle: 'triangle',
   'triangle-hollow': 'triangle_outline',
@@ -89,7 +93,7 @@ export function tabToExcalidrawText(tab: Tab, plan?: TabPlanData): string {
     box: { x: number; y: number; width: number; height: number },
     color: string,
   ): ExcalidrawOut => {
-    const fontSize = FONT_SIZE_PX[('textSize' in host && host.textSize) || 'md'];
+    const fontSize = fontSizePx(('textSize' in host && host.textSize) || undefined);
     return chassis(host, seq++, {
       id: `${host.id}-label`,
       type: 'text',
@@ -197,7 +201,7 @@ export function tabToExcalidrawText(tab: Tab, plan?: TabPlanData): string {
 
     if (el.type === 'text') {
       const color = el.textColor ?? defaultTextColor(el);
-      const fontSize = FONT_SIZE_PX[el.textSize ?? 'md'];
+      const fontSize = fontSizePx(el.textSize);
       out.push(
         chassis(el, seq++, {
           ...base,

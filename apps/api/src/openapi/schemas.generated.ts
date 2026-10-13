@@ -11859,7 +11859,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/ShapeMarker"
       },
       "markerSize": {
-        "$ref": "#/components/schemas/TextSize"
+        "$ref": "#/components/schemas/TextSizePreset"
       },
       "mindFlow": {
         "$ref": "#/components/schemas/MindFlow"
@@ -14787,6 +14787,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "TextSize": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/TextSizePreset"
+      },
+      {
+        "type": "number"
+      }
+    ]
+  },
+  "TextSizePreset": {
     "enum": [
       "scale",
       "sm",

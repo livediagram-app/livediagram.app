@@ -3,12 +3,14 @@
 // catalogue's fonts, alignment and styles carry over.
 import {
   LABEL_FONT_PX,
+  labelFontPx,
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
   type PenColourName,
   type TextAlignX,
   type TextAlignY,
   type TextSize,
+  type TextSizePreset,
 } from '@livediagram/document';
 import { normaliseHex, sceneOklch, textColourFields } from './colour';
 import type { LandContext } from './context';
@@ -26,11 +28,11 @@ export const SCENE_FONTS: Readonly<Record<SceneText['family'], string | undefine
   sans: undefined,
 };
 
-const PRESETS: readonly TextSize[] = ['sm', 'md', 'lg'];
+const PRESETS: readonly TextSizePreset[] = ['sm', 'md', 'lg'];
 
 /** The size preset nearest a font px, by ratio; ties go to the larger. */
-export function textPreset(fontPx: number): TextSize {
-  let best: TextSize = 'md';
+export function textPreset(fontPx: number): TextSizePreset {
+  let best: TextSizePreset = 'md';
   let bestDistance = Infinity;
   for (const size of PRESETS) {
     const d = Math.abs(Math.log(fontPx / LABEL_FONT_PX[size]));
@@ -104,7 +106,7 @@ function exactColour(t: SceneText, ctx: LandContext): { textColor?: string } {
 /** A text box's fields: the label's, with the scale that keeps the font px exact. */
 export function textBoxFields(t: SceneText, ctx: LandContext): SceneTextFields {
   const fields = labelFields(t, ctx);
-  const raw = fontPxOf(t) / LABEL_FONT_PX[fields.textSize];
+  const raw = fontPxOf(t) / labelFontPx(fields.textSize);
   const scale = Math.min(TEXT_SCALE_MAX, Math.max(TEXT_SCALE_MIN, raw));
   return Math.abs(scale - 1) > TEXT_SCALE_EPSILON ? { ...fields, textScale: scale } : fields;
 }

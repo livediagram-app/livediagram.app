@@ -51,9 +51,9 @@ import {
   MarkersMenuGlyph,
   MarkerTiles,
   MenuToggleRow,
-  TextSizeTiles,
   TextToggle,
 } from '@/components/palette/context-menu-rows';
+import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { TypographySections } from './TypographySections';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import {
@@ -299,6 +299,7 @@ export function MultiSelectionContextMenu({
                   <TypographySections
                     currentFont={(alignSrc as { font?: string }).font ?? null}
                     currentSize={(alignSrc as { textSize?: TextSize }).textSize ?? 'sm'}
+                    presetPx={presetPxFor(alignSrc.type)}
                     padding={
                       (alignSrc as { padding?: Padding }).padding ??
                       defaultPadding(alignSrc as BoxedElement)
@@ -439,11 +440,9 @@ export function MultiSelectionContextMenu({
                     <StrikethroughIcon />
                   </TextToggle>
                 </div>
-                <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                  Size
-                </p>
-                <TextSizeTiles
+                <TextSizeControl
                   current={contentTextSrc.textSize ?? 'sm'}
+                  presetPx={presetPxFor(contentTextSrc.type)}
                   onSet={props.onSetTextSize}
                   onPreview={props.onPreviewTextSize}
                   onPreviewEnd={props.onPreviewStyleEnd}

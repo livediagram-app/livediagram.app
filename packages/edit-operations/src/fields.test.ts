@@ -212,11 +212,22 @@ describe('writeFieldsOnto', () => {
         'fill=chartreuse: a theme colour or a hex',
         'allowed: theme red orange yellow green blue violet',
       ],
-      ['text="huge": one of sm md lg scale'],
+      ['text="huge": one of sm md lg scale or a px from 6 to 30'],
       ['line="wavy": one of straight angled curved'],
     ]);
     expect(nextOf(write(arrow, { line: 'angled' })).arrowStyle).toBe('angled');
     expect(nextOf(write(arrow, { line: null }))).not.toHaveProperty('arrowStyle');
+  });
+
+  it('writes an exact text px from the Size slider range, as a number or a numeric string', () => {
+    expect(nextOf(write(square, { text: 18 })).textSize).toBe(18);
+    expect(nextOf(write(square, { text: '6' })).textSize).toBe(6);
+    expect(nextOf(write(square, { text: 30 })).textSize).toBe(30);
+    expect(refusal(square, { text: 5 }).details).toEqual([
+      'text=5: one of sm md lg scale or a px from 6 to 30',
+    ]);
+    expect(refusal(square, { text: 31 }).details).toHaveLength(1);
+    expect(refusal(square, { text: 12.5 }).details).toHaveLength(1);
   });
 
   it("writes a stroke's former point fields", () => {

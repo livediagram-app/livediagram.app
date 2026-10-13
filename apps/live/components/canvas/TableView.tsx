@@ -6,6 +6,7 @@ import {
   defaultStrokeColor,
   defaultTextColor,
   PADDING_PX,
+  tableCellFontPx,
   type ElementLink,
   type TableCellStyle,
   type TableElement,
@@ -17,12 +18,7 @@ import {
   TableAxisTriggers,
   TableResizeDividers,
 } from '@/components/canvas/TableAxisControls';
-import {
-  CELL_FONT_PX,
-  scaleCellFontPx,
-  TableCellView,
-  type TableCellCtx,
-} from '@/components/canvas/TableCellView';
+import { TableCellView, type TableCellCtx } from '@/components/canvas/TableCellView';
 import { TableCellMenu } from '@/components/canvas/TableCellMenu';
 import { useTableStructure } from '@/components/canvas/useTableStructure';
 import { useTableEditing } from '@/components/canvas/useTableEditing';
@@ -241,10 +237,7 @@ export function TableView({
   // it grows / shrinks as the table is resized. Fixed presets use a
   // constant px.
   const rowH = rows > 0 ? element.height / rows : element.height;
-  const fontPx =
-    element.textSize === 'scale'
-      ? scaleCellFontPx(rowH)
-      : (CELL_FONT_PX[element.textSize ?? 'md'] ?? 13);
+  const fontPx = tableCellFontPx(element.textSize, rowH);
   const cellPad = PADDING_PX[element.padding ?? 'sm'];
   // Header band: an OPAQUE tint of the grid stroke over the cells' own fill,
   // else over the paper this table sits on, and an ink that reads on it at
