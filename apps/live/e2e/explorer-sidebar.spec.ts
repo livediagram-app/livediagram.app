@@ -225,8 +225,10 @@ test.describe('editor Explorer panel', () => {
       'true',
     );
     await rail.getByRole('button', { name: 'My documents' }).click();
-    await expect(page.getByRole('button', { name: 'Another', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Open one', exact: true })).toHaveAttribute(
+    // The pane's list (the header's title is a button of the same name).
+    const list = page.getByRole('list', { name: 'My documents' });
+    await expect(list.getByRole('button', { name: 'Another', exact: true })).toBeVisible();
+    await expect(list.getByRole('button', { name: 'Open one', exact: true })).toHaveAttribute(
       'aria-current',
       'true',
     );
