@@ -3,7 +3,7 @@
 // card face and every export, so a board reads the same on the canvas and in its picture.
 
 import { linkText } from './card-links';
-import type { CustomFieldDef } from './item-types';
+import { CURRENCY_DEFAULT, type CustomFieldDef } from './item-types';
 import type { Item, ItemFieldValue } from './item';
 
 const FORMATS = {
@@ -58,10 +58,30 @@ export function customFieldText(
     }
     case 'link':
       return typeof value === 'string' ? linkHost(value) : null;
+    case 'currency':
+      return typeof value === 'number' ? currencyText(value, field.currency) : null;
+    case 'email':
+      return typeof value === 'string' ? value : null;
     case 'card':
       return linkText(items, value);
     default:
       return typeof value === 'string' ? value.split('\n')[0]! : null;
+  }
+}
+
+// An amount in its currency as the reader's locale writes it ("£12,500", "$1,200.50"): whole amounts without
+// pence, any other with two places.
+export function currencyText(value: number, code: string = CURRENCY_DEFAULT): string {
+  const whole = Number.isInteger(value);
+  try {
+    return value.toLocaleString(undefined, {
+      style: 'currency',
+      currency: code,
+      minimumFractionDigits: whole ? 0 : 2,
+      maximumFractionDigits: whole ? 0 : 2,
+    });
+  } catch {
+    return `${code} ${value.toLocaleString()}`;
   }
 }
 

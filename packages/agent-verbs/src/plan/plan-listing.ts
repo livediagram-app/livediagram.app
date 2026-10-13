@@ -12,6 +12,7 @@ import {
   resolveType,
   statusKey,
   TRASH_STATUS,
+  CURRENCY_DEFAULT,
   detailsLabelOf,
   isCustomCardField,
   namedDisplay,
@@ -67,6 +68,7 @@ export interface ListedType {
     kind: string;
     options?: readonly string[];
     linkType?: string;
+    currency?: string;
     onCard?: boolean;
   }[];
   // The column a new card of it starts in, by name.
@@ -181,6 +183,7 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
       kind: f.kind,
       ...(f.options ? { options: f.options } : {}),
       ...(f.linkType ? { linkType: f.linkType } : {}),
+      ...(f.kind === 'currency' ? { currency: f.currency ?? CURRENCY_DEFAULT } : {}),
       ...(f.onCard ? { onCard: true } : {}),
     })),
     ...(status ? { defaultStatus: statuses.find((s) => s.status === status)?.name ?? status } : {}),

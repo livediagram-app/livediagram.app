@@ -37,14 +37,39 @@ export const CUSTOM_FIELD_KINDS = [
   'text',
   'longtext',
   'number',
+  // An amount in the field's own currency (`currency`), read as the locale formats it.
+  'currency',
   'date',
   'checkbox',
   'link',
+  // One email address.
+  'email',
   'choice',
   // A link to one other card, of the type `linkType` names (docs/specs/026-plan/item-types.md "Card fields").
   'card',
 ] as const;
 export type CustomFieldKind = (typeof CUSTOM_FIELD_KINDS)[number];
+
+// The currencies a Currency field offers first, and the one it takes when none is given (docs/specs/026-plan/
+// item-types.md "Custom field kinds"); any other ISO 4217 code is kept too.
+export const COMMON_CURRENCIES = [
+  'GBP',
+  'USD',
+  'EUR',
+  'JPY',
+  'CAD',
+  'AUD',
+  'CHF',
+  'INR',
+  'CNY',
+  'SEK',
+] as const;
+export const CURRENCY_DEFAULT = 'GBP';
+export const CURRENCY_CODE = /^[A-Z]{3}$/;
+// An email address as a field keeps it: something@domain.tld, no spaces, up to 254 characters.
+export const EMAIL_MAX = 254;
+export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const isEmailAddress = (v: string) => v.length <= EMAIL_MAX && EMAIL_PATTERN.test(v);
 
 export interface CustomFieldDef {
   id: string;
@@ -54,6 +79,8 @@ export interface CustomFieldDef {
   options?: readonly string[];
   // A Card field's target card type id: its value is the id of one card of that type.
   linkType?: string;
+  // A Currency field's ISO 4217 code ("GBP"); CURRENCY_DEFAULT when absent.
+  currency?: string;
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
 }

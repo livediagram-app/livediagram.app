@@ -2,7 +2,7 @@
 // writes ("In Progress", "Bug", "Severity", "Sam", "#12") resolved to what items store (a status id, a type id, a
 // custom field id, a person, an item id). Unknown names are refused with what is there, never stored.
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
-import type { ItemTypeDef } from './item-types';
+import { isEmailAddress, type ItemTypeDef } from './item-types';
 import { PRIORITIES } from './fields';
 import type { PlanStatusName } from './plan-outline';
 import { resolveItemRef } from './refs';
@@ -11,7 +11,12 @@ import { isBuiltInFieldId, PLAN_TYPE_COLOURS, slugOf } from './type-catalogue';
 import { itemSummary } from './views';
 
 export type NameRefusalCode =
-  'status_unknown' | 'type_unknown' | 'field_unknown' | 'choice_unknown' | 'item_unknown';
+  | 'status_unknown'
+  | 'type_unknown'
+  | 'field_unknown'
+  | 'choice_unknown'
+  | 'item_unknown'
+  | 'value_invalid';
 
 export interface NameRefusal {
   code: NameRefusalCode;
@@ -193,6 +198,22 @@ export function resolveFields(
           `"${value}" is not a ${field.label} option. Options: ${list(field.options ?? [])}.`,
         );
       out[key] = option;
+    } else if (field.kind === 'currency' && typeof value === 'string') {
+      // "£12,500" or "1200.50": the amount, its symbols and grouping aside.
+      const amount = Number(value.replace(/[^\d.-]/g, ''));
+      if (!/\d/.test(value) || !Number.isFinite(amount))
+        return refuse(
+          'value_invalid',
+          `"${value}" is not an amount for ${field.label}: give a number.`,
+        );
+      out[key] = Math.round(amount * 100) / 100;
+    } else if (field.kind === 'currency' && typeof value === 'number') {
+      out[key] = Math.round(value * 100) / 100;
+    } else if (field.kind === 'email' && typeof value === 'string') {
+      const address = value.trim();
+      if (!isEmailAddress(address))
+        return refuse('value_invalid', `"${value}" is not an email address for ${field.label}.`);
+      out[key] = address;
     } else if (field.kind === 'card' && typeof value === 'string') {
       const linked = resolveItem(value, naming.items);
       if (!linked.ok) return linked;

@@ -4,6 +4,9 @@
 import { HEX_COLOUR } from './validate';
 import { PLAN_GLYPH_IDS } from './glyphs';
 import {
+  COMMON_CURRENCIES,
+  CURRENCY_CODE,
+  CURRENCY_DEFAULT,
   CUSTOM_FIELD_KINDS,
   type CustomFieldDef,
   type CustomFieldKind,
@@ -50,6 +53,8 @@ export interface CustomFieldInput {
   options?: readonly string[];
   // A Card field's target card type, by id or name.
   linkType?: string;
+  // A Currency field's ISO 4217 code; GBP when absent.
+  currency?: string;
   onCard?: boolean;
 }
 
@@ -59,6 +64,7 @@ export interface CustomFieldEdit {
   field: string;
   name?: string;
   options?: readonly string[];
+  currency?: string;
   onCard?: boolean;
 }
 
@@ -165,6 +171,15 @@ function editedCustom(type: ItemTypeDef, edit: CustomFieldEdit): ItemTypeDef {
       throw invalid(`"${field.label}" is a ${field.kind} field: only a choice field has options.`);
     next.options = edit.options.map((o) => o.trim());
   }
+  if (edit.currency) {
+    if (field.kind !== 'currency')
+      throw invalid(
+        `"${field.label}" is a ${field.kind} field: only a currency field has a currency.`,
+      );
+    const code = currencyOf(edit.currency);
+    if (code === CURRENCY_DEFAULT) delete next.currency;
+    else next.currency = code;
+  }
   if (edit.onCard === true) next.onCard = true;
   if (edit.onCard === false) delete next.onCard;
   return { ...type, custom: (type.custom ?? []).map((f) => (f.id === key ? next : f)) };
@@ -180,6 +195,14 @@ function colourOf(input: string): string {
   if (HEX_COLOUR.test(hex)) return hex;
   throw invalid(
     `"${input}" is not a colour. Give a #rrggbb colour, for example ${PLAN_TYPE_COLOURS.join(', ')}.`,
+  );
+}
+
+function currencyOf(input: string): string {
+  const code = input.trim().toUpperCase();
+  if (CURRENCY_CODE.test(code)) return code;
+  throw invalid(
+    `"${input}" is not a currency code. Give an ISO 4217 code, for example ${COMMON_CURRENCIES.join(', ')}.`,
   );
 }
 
@@ -221,6 +244,10 @@ function customOf(
     if (!input.linkType)
       throw invalid(`The Card field "${name}" needs linkType: the card type it links to.`);
     field.linkType = must(resolveType(input.linkType, types)).type.id;
+  }
+  if (known === 'currency' && input.currency) {
+    const code = currencyOf(input.currency);
+    if (code !== CURRENCY_DEFAULT) field.currency = code;
   }
   if (input.onCard) field.onCard = true;
   return field;
