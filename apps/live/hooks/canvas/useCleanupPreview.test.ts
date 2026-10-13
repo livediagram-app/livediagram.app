@@ -5,10 +5,16 @@
 // restores the tab it snapshotted and no other.
 
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { createPinnedArrow, createShape, type Element, type Tab } from '@livediagram/document';
 import { cleanupElements } from '@/lib/tab-cleanup';
 import { useCleanupPreview } from './useCleanupPreview';
+import { loadTidyEngine } from '@/lib/tidy-engine';
+
+// The tidiers load on demand (lib/tidy-engine.ts); these tests start with them loaded.
+beforeAll(async () => {
+  await loadTidyEngine();
+});
 
 const at = (id: string, x: number, y: number): Element =>
   ({ ...createShape('square', x, y), id, width: 120, height: 60 }) as Element;

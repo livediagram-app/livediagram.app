@@ -8,6 +8,7 @@ const actions: TidyUpActions = {
   run: () => {},
   preview: () => {},
   endPreview: () => {},
+  assess: () => ({ kind: 'ok' }),
   blocked: false,
 };
 const base = { actions, editorMode: 'diagram' as const, zenMode: false };

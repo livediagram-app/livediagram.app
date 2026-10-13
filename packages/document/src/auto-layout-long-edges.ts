@@ -16,6 +16,9 @@ import type { Edge } from './auto-layout-shared';
 // enough that a node beside it clears the line.
 export const LANE_WIDTH = 32;
 
+// The lane for edge `i` (its index in the edges split) in rank `r`.
+export const laneId = (i: number, r: number): ElementId => `\u0000lane-${i}-${r}`;
+
 export type SplitGraph = {
   ids: ElementId[];
   edges: Edge[];
@@ -43,7 +46,7 @@ export function splitLongEdges(
     }
     let prev = e.from;
     for (let r = a + 1; r < b; r++) {
-      const lane = `\u0000lane-${i}-${r}`;
+      const lane = laneId(i, r);
       lanes.add(lane);
       outIds.push(lane);
       outLayer.set(lane, r);

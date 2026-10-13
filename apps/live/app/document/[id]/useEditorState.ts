@@ -2640,6 +2640,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setBackgroundPatternScale,
     setBackgroundAnimationSpeed,
   } = useTabCanvas({
+    notify: (message) => toast.info(message),
     editsBlocked: structureBlocked,
     activeId,
     activeTab,
@@ -3316,7 +3317,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // The same idea one level up (docs/specs/008-canvas/layout-cleanup.md "Hover to see it first"):
   // hovering a Tidy Up tile lays the whole tab out behind the popover, and it only sticks on press.
-  const { previewCleanup, endCleanupPreview } = useCleanupPreview({
+  const { previewCleanup, endCleanupPreview, assessCleanupKind } = useCleanupPreview({
     editsBlocked: structureBlocked,
     activeId,
     tabsRef,
@@ -3877,6 +3878,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     autoLayoutTab,
     previewCleanup,
     endCleanupPreview,
+    assessCleanupKind,
     // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running this session.
     facilitator,
     setTabFinish,

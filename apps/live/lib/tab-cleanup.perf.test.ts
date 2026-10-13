@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createPinnedArrow, createShape, type Element } from '@livediagram/document';
 import { cleanupElements, type CleanupKind } from './tab-cleanup';
 
@@ -39,13 +40,8 @@ describe('Tidy Up hover budget', () => {
   ] as CleanupKind[]) {
     it(`${kind} lays out ${TIDY_PREVIEW_WORST_CASE_NODES} nodes inside ${TIDY_PREVIEW_BUDGET_MS} ms`, () => {
       cleanupElements(els, kind);
-      const runs: number[] = [];
-      for (let r = 0; r < 3; r++) {
-        const t = performance.now();
-        cleanupElements(els, kind);
-        runs.push(performance.now() - t);
-      }
-      const best = Math.min(...runs);
+      // CPU time, not wall time: the parallel suite starves a wall-clock budget (#586).
+      const best = Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void cleanupElements(els, kind))));
       expect(best).toBeLessThan(TIDY_PREVIEW_BUDGET_MS);
     });
   }
