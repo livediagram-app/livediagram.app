@@ -88,6 +88,7 @@ export function ExplorerRail({
     const badge = badges[key];
     const dropProps = s.kind === 'mine' && onDropToMyDocuments ? drop.handlers : undefined;
     const highlighted = s.kind === 'mine' && drop.isDragOver;
+    const icon = ICONS[s.kind]();
     return (
       <li key={key} className={phone ? 'shrink-0' : ''}>
         <button
@@ -110,13 +111,15 @@ export function ExplorerRail({
           } ${highlighted ? 'ring-2 ring-brand-400' : ''}`}
         >
           <span aria-hidden className="flex shrink-0 items-center opacity-80">
-            {ICONS[s.kind]()}
+            {icon}
           </span>
-          <span className={phone ? '' : 'min-w-0 flex-1 truncate'}>{label}</span>
+          <span className={`text-optical-centre ${phone ? '' : 'min-w-0 flex-1 truncate'}`}>
+            {label}
+          </span>
           {badge ? (
             <span
               aria-hidden
-              className="rounded-full bg-slate-200/70 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 dark:bg-slate-700 dark:text-slate-200"
+              className="text-optical-centre rounded-full bg-slate-200/70 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 dark:bg-slate-700 dark:text-slate-200"
             >
               {badge}
             </span>
