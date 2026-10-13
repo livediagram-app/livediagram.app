@@ -465,7 +465,7 @@ export function useSlideDeck({
       setPresentingAt(Math.max(0, from));
       track('UI', 'Started', 'Presentation');
     },
-    [loadAllTabs, runnable.length, setMultiSelectedIds, setPresentingAt, setSelectedId],
+    [loadAllTabs, runnable, setMultiSelectedIds, setPresentingAt, setSelectedId],
   );
 
   const exitPresentation = useCallback(() => {
