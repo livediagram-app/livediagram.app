@@ -775,7 +775,7 @@ export const SLIDES_ADDED = chart(
   'Added',
   'Slides Added',
   'A slide added to a deck: from a selection, an Illustrate page, a Plan card or a whole Plan board as a slide.',
-  { types: ['Slide', 'PageSlide', 'ItemSlide', 'BoardSlide'] },
+  { types: ['Slide', 'PageSlide', 'ItemSlide', 'BoardSlide', 'AllPageSlides'] },
 );
 
 export const SLIDES_REMOVED = chart(

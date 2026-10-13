@@ -17,6 +17,8 @@ const POPOVER_WIDTH = 256;
 // A popover wider than the rest, so its placement keeps all of it on the canvas.
 export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
+  // The Slide Deck popover's `w-[420px]` (docs/specs/012-collaboration/presentation-mode.md).
+  slides: 420,
   // The Contents popover's `w-[380px]` (docs/specs/007-editor/illustrate-pages.md "Contents").
   contents: 380,
   // CardFinderPanel's `sm:w-[44rem]`: wide enough for each row's state, priority, due date and assignee.

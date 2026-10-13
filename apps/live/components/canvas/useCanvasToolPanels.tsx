@@ -211,6 +211,7 @@ export function useCanvasToolPanels({
         pages={props.illustratePages?.pages.map((p) => ({
           id: p.id,
           label: pageLabel(p, p.index, Math.max(2, props.illustratePages!.pages.length)),
+          slide: p.kind === 'slide',
         }))}
         position={slideDeckWiring.position}
         onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}

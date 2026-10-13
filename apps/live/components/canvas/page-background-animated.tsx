@@ -178,12 +178,12 @@ export function AnimatedBackgroundChoices({
           );
         })}
         {motion ? (
-          <Tooltip label="Custom colours">
+          <Tooltip label="Custom Colours">
             <button
               type="button"
               role="radio"
               aria-checked={!!custom}
-              aria-label="Custom colours"
+              aria-label="Custom Colours"
               onClick={() => setCustomOpen(true)}
               className={`flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
                 custom ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''

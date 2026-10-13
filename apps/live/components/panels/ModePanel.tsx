@@ -45,7 +45,14 @@ export function ModePanel({
   asPopover,
   dismissOnOutside,
   onPopoverClose,
-}: ModePanelProps & ModePanelExtras & { title: string; children: ReactNode }) {
+  popoverWidth,
+}: ModePanelProps &
+  ModePanelExtras & {
+    title: string;
+    children: ReactNode;
+    // The popover's width, where its content wants more room than the corner panel's.
+    popoverWidth?: string;
+  }) {
   return (
     <MovablePanel
       title={title}
@@ -65,6 +72,7 @@ export function ModePanel({
       asPopover={asPopover}
       dismissOnOutside={dismissOnOutside}
       onPopoverClose={onPopoverClose}
+      {...(popoverWidth ? { popoverWidth } : {})}
       collapsible
     >
       {children}

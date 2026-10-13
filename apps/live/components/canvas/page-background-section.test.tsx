@@ -342,7 +342,7 @@ describe('Animated custom colours', () => {
 
   it('marks Custom for colours that are not the theme’s, and keeps them through a motion change', () => {
     const onBackground = slideWith(customFill as PageFill);
-    expect(radio('Custom colours').getAttribute('aria-checked')).toBe('true');
+    expect(radio('Custom Colours').getAttribute('aria-checked')).toBe('true');
     fireEvent.click(radio('Aurora'));
     expect(onBackground).toHaveBeenLastCalledWith({
       fill: expect.objectContaining({ from: '#ff0066', to: '#330099', motion: 'aurora', speed: 2 }),
