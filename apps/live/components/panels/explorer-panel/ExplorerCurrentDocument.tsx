@@ -86,7 +86,7 @@ export function ExplorerCurrentDocument({
             </span>
             <span
               aria-hidden
-              className="shrink-0 text-slate-400 opacity-0 transition group-hover/name:opacity-100 group-focus-visible/name:opacity-100 dark:text-slate-500"
+              className="shrink-0 text-slate-400 opacity-0 transition group-hover/name:opacity-100 group-focus-visible/name:opacity-100 dark:text-slate-400"
             >
               <PencilIcon size={12} />
             </span>
