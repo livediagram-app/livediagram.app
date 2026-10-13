@@ -1093,7 +1093,7 @@ export const articles: Article[] = [
     slug: 'build',
     title: 'Build Elements',
     description:
-      'Mind nodes, lanes, frames, timelines, tables and Sankey diagrams: the elements you lay a diagram out with.',
+      'Mind nodes, flowcharts, lanes, frames, timelines, tables and Sankey diagrams: the elements you lay a diagram out with.',
     keywords:
       'build structure layout container holds frame lane timeline table mind node sankey flow arrange scaffold group section band track grid organise',
     category: 'Palette',
