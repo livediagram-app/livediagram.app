@@ -2657,10 +2657,12 @@ describe('DocumentRoom keepalive', () => {
 
   it('asks the runtime to answer ping with pong', () => {
     class Pair {
-      constructor(
-        readonly request: string,
-        readonly response: string,
-      ) {}
+      request: string;
+      response: string;
+      constructor(request: string, response: string) {
+        this.request = request;
+        this.response = response;
+      }
     }
     vi.stubGlobal('WebSocketRequestResponsePair', Pair);
     const state = makeState();

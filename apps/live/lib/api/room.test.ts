@@ -521,7 +521,9 @@ describe('connectRoom keepalive', () => {
     sent: string[] = [];
     closed = false;
     private listeners: Record<string, ((e: { data?: string; code?: number }) => void)[]> = {};
-    constructor(readonly url = '') {
+    url: string;
+    constructor(url = '') {
+      this.url = url;
       Socket.all.push(this);
     }
     addEventListener(type: string, fn: (e: { data?: string }) => void) {
