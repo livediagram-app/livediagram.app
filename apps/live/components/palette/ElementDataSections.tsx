@@ -257,7 +257,7 @@ export function ElementDataSections({
       {shapeTarget?.shape === 'plan-sheet' ? (
         <SheetMenuSection
           element={shapeTarget}
-          flyoutProps={flyoutProps('plan-sheet')}
+          flyoutProps={flyoutProps}
           onClose={props.onClose}
         />
       ) : null}
