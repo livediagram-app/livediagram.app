@@ -10,8 +10,9 @@ Scope, by file:
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `packages/document/src/flowchart.ts`                        | Step types, sizes, membership, edges, anchor, lanes, direction, `decisionExitLabel`, `createFlowchartStart`                    |
 | `packages/document/src/flowchart-layout.ts`                 | `layoutFlowchart`, `applyFlowchartLayout`: the unlaned and laned layouts                                                       |
+| `packages/document/src/flowchart-spread.ts`                 | `spreadDecisionExits`, `FLOWCHART_CORNER_CLEARANCE`: a Decision's steps beyond its corners                                     |
 | `packages/document/src/flowchart-grow.ts`                   | `planFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`, `addFlowchartLane`, `moveStepToLane`, `relayoutFlowchart` |
-| `packages/document/src/auto-layout.ts`                      | Exports `layoutFlowGraph` (the layered positioning with fixed sizes) and `layerComponent`                                      |
+| `packages/document/src/auto-layout.ts`                      | `autoLayoutElements` takes `fixedSizeIds` (the layered positioning with sizes kept); exports `layerComponent`                  |
 | `packages/document/src/element-types.ts`                    | `flowchartId`, `flowDirection`, `flowLaneId` on `ShapeElement`                                                                 |
 | `packages/document/src/element-fields.ts`                   | The three fields in the shape's field list                                                                                     |
 | `packages/document/src/validate-shape.ts`                   | The three fields validated                                                                                                     |
@@ -82,8 +83,8 @@ connectors: ArrowElement[] }`, holding only what changes.
    graph nodes and keep their place; connectors touching them are not edges.
 2. Edges: `{from, to}` per connector, in array order, de-duplicated.
 3. **Unlaned** (no lanes):
-   - `layoutFlowGraph(nodes, edges, sizes, centres, dir)` from auto-layout.ts: the layered layout of
-     the connected steps with every size fixed. Components side by side as Auto Layout does.
+   - `autoLayoutElements(steps + forward connectors, { style: 'flow', direction, fixedSizeIds })` from
+     auto-layout.ts: the layered layout of the connected steps with every size kept. Components side by side as Auto Layout does.
    - Translate so the anchor keeps its top-left. If the anchor has no connector, translate so the
      connected block's earliest step (smallest `(y, x)` before layout) keeps its top-left instead.
    - Unconnected steps other than the anchor: stacked after the block along the cross axis, starting
