@@ -91,3 +91,20 @@ describe('layoutView (R17)', () => {
     expect(coarse.text.split('\n').at(-1)).toMatch(/^… \d containers? hidden: view --budget \d+$/);
   });
 });
+
+describe('the layout header origin', () => {
+  it('says the origin only when content does not start at 0,0', () => {
+    const atZero = buildViewModel(
+      { id: 't', name: 'T', elements: [shapeAt('square', 'a', 0, 0)] },
+      { rev: 3 },
+    );
+    expect(layoutView(atZero).text.split('\n')[0]).not.toContain('origin');
+    const offset = buildViewModel(
+      { id: 't', name: 'T', elements: [shapeAt('square', 'a', 40, 20)] },
+      { rev: 3 },
+    );
+    expect(layoutView(offset).text.split('\n')[0]).toContain(
+      'origin 40,20: stored = shown + origin · rev 3',
+    );
+  });
+});
