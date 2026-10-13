@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import { slideHeadline, SLIDE_HEADLINE_MAX } from './slide-headline';
+import { presentedSlideName, slideHeadline, SLIDE_HEADLINE_MAX } from './slide-headline';
 
 // docs/specs/012-collaboration/presentation-mode.md "The Slide Deck panel": a slide nobody named
 // is called by its largest text.
@@ -46,5 +46,25 @@ describe('slideHeadline', () => {
     const h = slideHeadline(slide(['a']), tab([text('a', 0, long)]))!;
     expect(h.length).toBe(SLIDE_HEADLINE_MAX);
     expect(h.endsWith('…')).toBe(true);
+  });
+});
+
+// presentation-mode.md "Jump to a slide": the deck's list and the HUD name a slide as the talk does.
+describe('presentedSlideName', () => {
+  const t = tab([text('a', 0, 'Quarterly results', { textSize: 'xl' })]);
+  it("prefers the slide's own name", () => {
+    expect(presentedSlideName({ ...slide(['a']), name: ' Intro ' }, t, 0)).toBe('Intro');
+  });
+  it("then an item slide's card", () => {
+    expect(presentedSlideName(slide([]), t, 0, 'Fix login')).toBe('Fix login');
+  });
+  it('then the headline on it', () => {
+    expect(presentedSlideName(slide(['a']), t, 0)).toBe('Quarterly results');
+  });
+  it('then the tab it comes from', () => {
+    expect(presentedSlideName(slide([]), tab([]), 2)).toBe('T');
+  });
+  it('and only then its place', () => {
+    expect(presentedSlideName(slide([]), undefined, 2)).toBe('Slide 3');
   });
 });
