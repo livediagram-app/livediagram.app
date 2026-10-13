@@ -81,27 +81,27 @@ export function needsReveal(selector: string | null): boolean {
   return r.left < 0 || r.top < 0 || r.right > window.innerWidth || r.bottom > window.innerHeight;
 }
 
-const WELCOME_TITLE = 'Welcome to Plan';
 const NEVER_CHANGES = 'We will only point things out, never change anything.';
 
+// Each welcome card names the track it offers, never the mode: a board's, a sheet's, or both on a choice card.
 const WELCOMES: Record<PlanTourOffer, PlanTourStep> = {
   boards: {
     id: 'welcome',
     card: 'welcome',
-    title: WELCOME_TITLE,
-    body: `Plan runs work on boards of cards. Want a quick look around your board? ${NEVER_CHANGES}`,
+    title: 'Getting started with boards?',
+    body: `Want a quick look around your board: its columns, cards and the card panel? ${NEVER_CHANGES}`,
   },
   sheets: {
     id: 'welcome',
     card: 'welcome',
-    title: WELCOME_TITLE,
-    body: `Plan runs work on boards and spreadsheets. Want a quick look around your sheet? ${NEVER_CHANGES}`,
+    title: 'Getting started with sheets?',
+    body: `Want a quick look around your sheet: its cells, formulas and toolbar? ${NEVER_CHANGES}`,
   },
   choice: {
     id: 'welcome',
     card: 'welcome',
-    title: WELCOME_TITLE,
-    body: `This tab has a board and a spreadsheet. Which would you like a quick look at? ${NEVER_CHANGES}`,
+    title: 'Getting started with boards and sheets?',
+    body: `This tab has a board and a sheet. Which would you like a quick look at? ${NEVER_CHANGES}`,
   },
 };
 
@@ -113,14 +113,16 @@ const BOARD_STEPS: PlanTourStep[] = [
     id: 'board',
     title: 'Your Board',
     body: 'Columns are the stages work moves through, left to right. Cards move along them as the work gets done.',
-    selector: (api) => onBoard(api.boardId()),
+    // A card on its own, no ring: one round the whole board would light most of the screen. It still brings the
+    // board on screen for the steps after it.
     prepare: (api) => api.reveal('boards'),
   },
   {
     id: 'add-cards',
     title: 'Add Cards',
     body: 'Each column ends in Add card, which adds a card of any type the board takes.',
-    selector: (api) => onBoard(api.boardId(), ' [data-plan-status]'),
+    // The first column's Add card, not the column: a ring round a column runs the board's height.
+    selector: (api) => onBoard(api.boardId(), ' [data-add-card-trigger]'),
   },
   {
     id: 'move-card',
@@ -165,14 +167,16 @@ const SHEET_STEPS: PlanTourStep[] = [
     id: 'sheet',
     title: 'Your Sheet',
     body: 'A sheet is a spreadsheet in your document: cells, formulas and charts, worked on together.',
-    selector: (api) => onSheet(api.sheetElementId()),
+    // A card on its own, no ring: one round the whole sheet would light most of the screen. It still brings the
+    // sheet on screen for the steps after it.
     prepare: (api) => api.reveal('sheets'),
   },
   {
     id: 'cells',
     title: 'Type Into Cells',
     body: 'Click a cell and type. Enter moves down and Tab moves across; numbers, dates and percentages are read as you type them.',
-    selector: (api) => onSheet(api.sheetElementId(), ' [role="grid"]'),
+    // Cell A1 alone, not the grid (SheetCells marks it); scrolled out of view, the step is skipped.
+    selector: (api) => onSheet(api.sheetElementId(), ' [data-sheet-a1]'),
   },
   {
     id: 'formulas',

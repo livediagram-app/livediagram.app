@@ -14,23 +14,24 @@ Derived from [Plan tour](../plan-tour.md). The engine, popover and DOM helpers a
 | tour subject  | `Subject` (`{ boardId, sheetId }`, element ids) in `PlanTourHost`, fixed at offer by `visiblePlanWork` |
 | plan work     | `plan-board` / `plan-sheet` shape elements on `activeTab.elements` (`isBoard`, `isSheet`)              |
 | leftovers     | `PlanTourContent` and its leftover record, swept by `usePlanTourLeftovers` (old tour only)             |
-| seen guard    | `UserPreferences.planTourSeen`                                                                         |
+| seen guard    | `UserPreferences.planTourTracks` (the answered tracks), read by `planTrackSeen` / `planTourOwed`       |
 
 ## Files
 
-| File                                           | Holds                                                                                                                                                                  |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/live/components/tour/tour-step.ts`       | `TourStepOf<Api>` (the shared step shape), `hasAnchor`, `stepTelemetryType(prefix, id)`                                                                                |
-| `apps/live/components/tour/useTourEngine.ts`   | The shared step runner: step index, direction, target rect, prepare / wait / heal                                                                                      |
-| `apps/live/components/tour/TourStage.tsx`      | The shared overlay: card backdrop, highlight ring, `TourPopover`                                                                                                       |
-| `apps/live/components/tour/TourPopover.tsx`    | `copy` (`TourCardCopy`), `welcomeArt` and `welcomeChoices` (`TourWelcomeChoice[]`, replacing accept)                                                                   |
-| `apps/live/components/tour/TourHost.tsx`       | The Diagram tour on the engine; publishes itself to `tour-active`                                                                                                      |
-| `apps/live/components/tour/plan-tour-steps.ts` | `planTourSteps`, `PLAN_TOUR_STEPS` (Boards), `PlanTourApi`, `PlanTourOffer`, `boardRoot`, `sheetRoot`, `firstCardOn`, `visiblePlanWork`, `needsReveal`, telemetry type |
-| `apps/live/components/tour/PlanTourHost.tsx`   | Offer, subject, relaunch, end; builds `PlanTourApi`                                                                                                                    |
-| `apps/live/components/tour/PlanTourArt.tsx`    | The welcome card's illustration                                                                                                                                        |
-| `apps/live/lib/tour-active.ts`                 | Which tour is on screen (`'welcome' \| 'plan' \| 'facilitate' \| null`), a module store                                                                                |
-| `apps/live/lib/plan-tour.ts`                   | Relaunch event, tracks, and the old tour's `PlanTourContent` leftover record                                                                                           |
-| `apps/live/hooks/plan/usePlanTourLeftovers.ts` | The sweep of an old tour's leftover record; nothing new is placed (see Leftovers)                                                                                      |
+| File                                              | Holds                                                                                                                                                                  |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/live/components/tour/tour-step.ts`          | `TourStepOf<Api>` (the shared step shape), `hasAnchor`, `stepTelemetryType(prefix, id)`                                                                                |
+| `apps/live/components/tour/useTourEngine.ts`      | The shared step runner: step index, direction, target rect, prepare / wait / heal                                                                                      |
+| `apps/live/components/tour/TourStage.tsx`         | The shared overlay: card backdrop, highlight ring, `TourPopover`                                                                                                       |
+| `apps/live/components/tour/TourPopover.tsx`       | `copy` (`TourCardCopy`), `welcomeArt` and `welcomeChoices` (`TourWelcomeChoice[]`, replacing accept)                                                                   |
+| `apps/live/components/tour/TourHost.tsx`          | The Diagram tour on the engine; publishes itself to `tour-active`                                                                                                      |
+| `apps/live/components/tour/plan-tour-steps.ts`    | `planTourSteps`, `PLAN_TOUR_STEPS` (Boards), `PlanTourApi`, `PlanTourOffer`, `boardRoot`, `sheetRoot`, `firstCardOn`, `visiblePlanWork`, `needsReveal`, telemetry type |
+| `apps/live/components/tour/PlanTourHost.tsx`      | Offer, subject, relaunch, end; builds `PlanTourApi`                                                                                                                    |
+| `apps/live/components/tour/art/plan-tour-art.tsx` | The welcome cards' illustrations: `BoardsTourArt`, `SheetsTourArt`, `PlanChoiceTourArt` (in `apps/live/components/tour/art/TourArtFrame.tsx`)                          |
+| `apps/live/lib/tour-tracks.ts`                    | `tourTrackSeen`, `withTracksAnswered`: a tour of several tracks, each offered once                                                                                     |
+| `apps/live/lib/tour-active.ts`                    | Which tour is on screen (`'welcome' \| 'plan' \| 'facilitate' \| null`), a module store                                                                                |
+| `apps/live/lib/plan-tour.ts`                      | Relaunch event, tracks, `planTrackSeen` / `planTourOwed` / `markPlanTracksSeen`, the old tour's `PlanTourContent` record                                               |
+| `apps/live/hooks/plan/usePlanTourLeftovers.ts`    | The sweep of an old tour's leftover record; nothing new is placed (see Leftovers)                                                                                      |
 
 Also touched: `ClusterPopoverButton` (a `dataTourId` prop; Card Types passes `card-types`), the Settings catalogue
 and dialog, `power-user-mode.ts`, `help-articles.ts`, the help article
@@ -73,16 +74,18 @@ an anchor when either is set.
 | ------- | --------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------- |
 | idle    | mode becomes `plan` (or mounts in `plan`)                             | none                                                         | `armed = true`                                                          |
 | idle    | mode leaves `plan`                                                    | none                                                         | `armed = false`                                                         |
-| idle    | armed, `planTourSeen === true`                                        | none                                                         | `armed = false`                                                         |
+| idle    | armed, every track seen (`owed` empty)                                | none                                                         | `armed = false`                                                         |
+| idle    | an owed track's plan work arrives (`offerKey` changes)                | in `plan`, has plan work                                     | `armed = true`                                                          |
 | idle    | armed for `OFFER_DELAY_MS`                                            | usable, can edit, tab unlocked, no other tour, has plan work | fix the subject, pick the offer, `start()`, `Opened` · `PlanTourOffer`  |
 | idle    | relaunch event                                                        | in `plan`                                                    | `armed = true` (offers by the row above, so it too waits for plan work) |
-| idle    | relaunch event                                                        | not in `plan`                                                | none (`planTourSeen` is already cleared, so entering Plan arms it)      |
+| idle    | relaunch event                                                        | not in `plan`                                                | none (the answered tracks are cleared, so entering Plan arms it)        |
 | running | edit rights lost / mode leaves `plan` / another tab / subject deleted | none                                                         | `stop()`, end as skipped                                                |
 | running | `onFinish(outcome)`                                                   | none                                                         | end (below)                                                             |
 
 "Usable": `hydrated && !anyWelcomeOpen && !isReadOnly && !embedMode`. "No other tour": `activeTour()` is null or
-`'plan'`. "Has plan work": a `plan-board` or `plan-sheet` shape on `activeTab.elements` (`boardId` / `sheetId`, the
-first of each). The guard is re-read whenever `activeTour` or the tab's elements change, so the Plan tour offers
+`'plan'`. "Owed": `PLAN_TOUR_TRACKS` less those `planTrackSeen` (in `planTourTracks`, or every track when
+`planTourSeen` and Power user mode are both on). "Has plan work": a `plan-board` shape while Boards is owed, or a
+`plan-sheet` shape while Sheets is owed, on `activeTab.elements`; `offerKey` is which of the two the tab has. The guard is re-read whenever `activeTour` or the tab's elements change, so the Plan tour offers
 right after another tour ends, or as soon as a board or Sheet appears. It no longer reads `hasTourPending()`: the
 Diagram tour never runs in Plan.
 
@@ -92,7 +95,8 @@ first whose box meets the window, else the first); `offer = 'choice'` with both,
 `tourTrack` = `'sheets'` for a sheet offer, else `'boards'`; `hasCards = firstCardOn(boardId) !== null`.
 "Subject deleted": `subject[tourTrack]` no longer among `activeTab.elements`.
 
-End: close the item panel, write `planTourSeen: true` (as `TourHost` writes `tourSeen`), and send `Closed` ·
+End: close the item panel, write `markPlanTracksSeen(prefs, answered)` (rebased onto the freshest preferences):
+`answered` is both tracks for a declined choice card, else `[tourTrack]`; then send `Closed` ·
 `PlanTourOffer`, `Ended` · `PlanTourCompleted` or `Ended` · `PlanTourSkipped`. Nothing to remove.
 
 ### Tracks
@@ -107,14 +111,15 @@ calls `engine.next()`. The outro's help link follows the track (`/help/canvas/pl
 `/help/canvas/plan-mode/sheets/`).
 
 Boards steps, each scoped to the board's drawn body `[data-plan-board="<board>"]` (`boardRoot`; never its
-`data-element-id` canvas node, hidden under a maximised or tab-filling body): `board` (the body; prepare
+`data-element-id` canvas node, hidden under a maximised or tab-filling body): `board` (no anchor, a centred card; prepare
 `reveal('boards')`), `add-cards`
-(`[data-plan-status]`, the first column), `move-card` (`[data-plan-card="<first card>"]`), `card-panel`
+(`[data-add-card-trigger]`, the first column's Add card), `move-card` (`[data-plan-card="<first card>"]`), `card-panel`
 (`[role="dialog"][aria-label^="Item #"]`; prepare `openCard`, cleanup `closeCard`), `board-header`
 (`[data-board-header]`; prepare `closeCard`), `card-types` (data-tour-id `card-types`), `outro`.
 
 Sheets steps, each scoped to the Sheet's drawn body `[data-plan-sheet="<sheet>"]` (`sheetRoot`, on
-`PlanSheetView`'s body root): `sheet` (the body; prepare `reveal('sheets')`), `cells` (`[role="grid"]`),
+`PlanSheetView`'s body root): `sheet` (no anchor, a centred card; prepare `reveal('sheets')`), `cells` (`[data-sheet-a1]`,
+the A1 cell box `SheetCells` marks; skipped when A1 is not drawn),
 `formulas` (`[data-sheet-formula-bar]`), `sheet-toolbar` (`[role="toolbar"]`), `sheet-settings`
 (`button[aria-label="Sheet Settings"]`), `outro`. No other Sheets step prepares anything.
 
@@ -139,19 +144,22 @@ another document is kept. Nothing writes a record any more.
 
 ## Interfaces and contracts
 
-- `UserPreferences.planTourSeen?: boolean`; missing = not seen. No migration (free-form preferences blob).
+- `UserPreferences.planTourTracks?: PlanTourTrack[]`; missing = none answered. `planTourSeen?: boolean` counts every
+  track only while `powerUserMode` is on. No migration (free-form preferences blob).
 - `PLAN_TOUR_RELAUNCH_EVENT = 'livediagram:plan-tour-relaunch'`, dispatched by `requestPlanTourRelaunch()`.
 - Leftover record (read only): `localStorage['livediagram:v2:plan-tour-content']` = JSON `PlanTourContent`; a
   malformed value is dropped, never thrown. A record from before the Sheets track (`boardId`) reads as its
   `elementId`.
-- Settings switch: `planTourSeen`, label **Plan Tour**, second toggle row in the Tours category, inverted read / write, help article
+- Settings switch: `planTourSeen` (`tourTracksSwitch`), label **Plan Tour**, second toggle row in the Tours category; reads on while
+  `planTourOwed`, writes off as `{ planTourSeen: true, planTourTracks: ['boards', 'sheets'] }` and on as
+  `planTourSeen: false` with `planTourTracks` removed; help article
   `planTour`, event `{ on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' }`. `SettingsDialog`'s close relaunches
-  when the row is on and was off at open.
+  when the row is on (`planTourOwed`) and was off at open.
 - `POWER_USER_PRESET.planTourSeen = { planTourSeen: true }`.
 
 ## Data and persistence
 
-- `planTourSeen`: synced preference, per person.
+- `planTourTracks` and `planTourSeen`: synced preferences, per person.
 - The tour writes no document data: no element, item, cell or history entry. The subject is held in component
   state for the run only.
 - The leftover record in `localStorage` is only read and cleared (the old tour's).
@@ -189,9 +197,11 @@ The tour writes nothing, so nothing crosses a trust boundary. A Participant and 
 
 ## Presentation and UX
 
-As the Diagram tour. The welcome card's eyebrow is **Plan tour** and its art `PlanTourArt` (a card sliding
-from one column to the next on a small board, the welcome art's recipe: inline SVG, Tailwind classes for
-light and dark, looping with `infinite`, still under reduced motion). The outro reuses `TourHelpArt`, with
+As the Diagram tour. The welcome card names its offer: eyebrow **Boards tour**, **Sheets tour** or **Boards and
+Sheets tour** (`ariaPrefix` the same, the chosen track's after a pick), with `BoardsTourArt` (a card sliding from
+one column to the next), `SheetsTourArt` (A1 typed into, the selection stepping across and down) or
+`PlanChoiceTourArt` (a two-column board beside a small sheet), all in `TourArtFrame`'s recipe: inline SVG, Tailwind
+classes for light and dark, looping with `infinite`, still under reduced motion. The outro reuses `TourHelpArt`, with
 **Visit Help Centre** linking `/help/canvas/plan-mode` and **Start Planning**.
 
 ## Accessibility

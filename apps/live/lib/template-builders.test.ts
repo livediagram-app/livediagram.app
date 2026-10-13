@@ -269,9 +269,9 @@ describe('templates on pages', () => {
     },
   );
 
-  it('keeps the slide deck’s speaker notes on each slide’s headline', () => {
+  it('leaves the slide deck’s elements without notes', () => {
     const notes = buildTemplate('slide-deck', 0, 0).filter((el) => 'note' in el && el.note);
-    expect(notes).toHaveLength(6);
+    expect(notes).toHaveLength(0);
   });
 
   it('keeps the group card a card the team signs: seven signed notes and an open slot', () => {

@@ -26,8 +26,6 @@ type DeckSlide = {
   layout: PageLayoutId;
   // The layout's text, in the order it writes it (the same count: layout-decks.test.ts pins it).
   labels: readonly string[];
-  // What to say over it, kept on its headline as the element's note.
-  notes: string;
 };
 
 type LayoutDeck = {
@@ -63,7 +61,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Notes that find you, before you go looking',
           'Priya Shah · Lumen Launch Event · March 2027',
         ],
-        notes: 'Let the logo sit for a beat. Then: "Raise your hand if you lost a note this week."',
       },
       {
         name: 'The Hook',
@@ -73,7 +70,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'How much of what you wrote down last month could you find right now?',
           'Most people say less than a third. We think that is the real problem.',
         ],
-        notes: 'Wait for answers. Repeat one back.',
       },
       {
         name: 'What It Does',
@@ -87,7 +83,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Together',
           'Share a notebook and see edits land live.',
         ],
-        notes: 'Demo Recall here if the Wi-Fi holds.',
       },
       {
         name: 'The Beta',
@@ -105,7 +100,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'if it went away tomorrow',
           'Source: Lumen beta analytics, September 2026 to February 2027.',
         ],
-        notes: 'Lead with the 92%. That is the one that matters.',
       },
       {
         name: 'Launch Plan',
@@ -122,7 +116,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Week 8',
           'Lumen 2.0 in every app store.',
         ],
-        notes: 'Keep it brisk: dates, not features.',
       },
       {
         name: 'The Ask',
@@ -133,7 +126,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Get Lumen 2.0',
           'lumen.example.com',
         ],
-        notes: 'Stop talking. Put the link up. Smile.',
       },
     ],
   },
@@ -153,7 +145,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Faster answers, happier customers, a smaller backlog',
           'Support Leadership · Monthly All-Hands · October 2026',
         ],
-        notes: 'Thank the team first. Three of them closed the big backlog.',
       },
       {
         name: 'Agenda',
@@ -173,7 +164,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Your questions',
           '10 min',
         ],
-        notes: 'Ask people to hold questions to the end.',
       },
       {
         name: 'The Quarter',
@@ -185,7 +175,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'tickets solved in September than in April',
           'Source: help desk reports, April to September 2026.',
         ],
-        notes: 'The jump in June is the new queue. Say so.',
       },
       {
         name: 'Goals',
@@ -203,7 +192,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           '4.5 of a 5.0 target',
           'Source: support dashboard, figures to 30 September 2026.',
         ],
-        notes: 'Self-serve is behind. Own it, then show the plan on the next slide.',
       },
       {
         name: 'Next Quarter',
@@ -223,13 +211,11 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'A community forum',
           'A status page',
         ],
-        notes: 'Now is funded. Next needs a yes today.',
       },
       {
         name: 'Questions',
         layout: 'slide-questions',
         labels: ['Questions?', 'Or ask later in #support-leads'],
-        notes: 'Repeat each question before you answer it.',
       },
     ],
   },
@@ -249,7 +235,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Everything you need for a great first week, in six slides',
           'People Team · Onboarding · Week One',
         ],
-        notes: 'Say their name. Mean it.',
       },
       {
         name: 'Your Manager',
@@ -262,7 +247,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Runs a 1:1 with you every Tuesday',
           'Ask about the time the coffee machine flooded',
         ],
-        notes: 'Swap in the real photo and three true facts.',
       },
       {
         name: 'Your First Week',
@@ -280,7 +264,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Found your way round',
           'The codebase, the tools, and where the good lunch is.',
         ],
-        notes: 'The point of 1 is confidence, not the change.',
       },
       {
         name: 'How We Work',
@@ -296,7 +279,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Celebrate',
           'Wins go in #shout-outs, every Friday.',
         ],
-        notes: 'Give a real example of each.',
       },
       {
         name: 'Our Story',
@@ -314,7 +296,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           '2026',
           'You joined',
         ],
-        notes: 'End on "You joined". Pause there.',
       },
       {
         name: 'Who To Ask',
@@ -327,7 +308,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'example.com/handbook',
           '#help-new-joiners',
         ],
-        notes: 'Introduce the buddy in person if they are in the room.',
       },
     ],
   },
@@ -347,7 +327,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'One morning to turn twelve complaints into three ideas we can test',
           'Facilitated by Lee Park · Studio B · 9:30 to 13:00',
         ],
-        notes: 'Start on time. Latecomers catch up in the first exercise.',
       },
       {
         name: 'Outcomes',
@@ -365,7 +344,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'A test plan',
           'Who we ask, what we show them, by when.',
         ],
-        notes: 'Read these out. Ask: anything missing?',
       },
       {
         name: 'Agenda',
@@ -385,7 +363,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Plan the tests',
           '30 min',
         ],
-        notes: 'Break after 02. Coffee is outside.',
       },
       {
         name: 'How It Runs',
@@ -402,7 +379,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Decide',
           'The owner of the problem has the last word.',
         ],
-        notes: 'This is the slide people forget. Leave it up during round one.',
       },
       {
         name: 'Ground Rules',
@@ -415,7 +391,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Laptops closed unless we are looking something up',
           'Build on ideas: "yes, and"',
         ],
-        notes: 'Say the rule twice.',
       },
       {
         name: 'Close',
@@ -426,7 +401,6 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Sign up to a test',
           'example.com/checkout-tests',
         ],
-        notes: 'Thank everyone. Photos of the wall go in the channel.',
       },
     ],
   },
@@ -441,8 +415,7 @@ export function layoutDeckPages(kind: LayoutDeckKind): IllustratePage[] {
   );
 }
 
-/** A deck's elements: each slide's layout on its page, its text the deck's own, its notes on its
- *  headline (the first text the layout writes). */
+/** A deck's elements: each slide's layout on its page, its text the deck's own. */
 export function buildLayoutDeck(kind: LayoutDeckKind): Element[] {
   const deck = LAYOUT_DECKS[kind];
   const declared = layoutDeckPages(kind);
@@ -452,13 +425,9 @@ export function buildLayoutDeck(kind: LayoutDeckKind): Element[] {
     let at = 0;
     return buildPageLayout(slide.layout, page).map((el) => {
       const own = el as Element & { label?: string };
-      const out = { ...el } as Element & {
-        label?: string;
-        note?: string;
-      };
+      const out = { ...el } as Element & { label?: string };
       if (typeof own.label === 'string' && own.label.length > 0) {
         if (at < slide.labels.length) out.label = slide.labels[at]!;
-        if (at === 0) out.note = slide.notes;
         at += 1;
       }
       return out as Element;

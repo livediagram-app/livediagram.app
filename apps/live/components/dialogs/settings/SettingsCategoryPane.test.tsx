@@ -133,7 +133,7 @@ describe('SettingsCategoryPane tours', () => {
     render(
       <SettingsCategoryPane
         category={TOURS}
-        settings={{ tourSeen: true, planTourSeen: true }}
+        settings={{ tourSeen: true, planTourSeen: true, planTourTracks: ['boards', 'sheets'] }}
         onChange={onChange}
       />,
     );

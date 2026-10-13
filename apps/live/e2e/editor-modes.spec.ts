@@ -47,10 +47,16 @@ async function openBlank(page: Page) {
     const key = 'livediagram:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (prefs.planTourSeen !== true || prefs.facilitateTourSeen !== true)
+      // The Plan tour offers each track once (lib/tour-tracks.ts): both answered.
+      if (!Array.isArray(prefs.planTourTracks) || prefs.facilitateTourSeen !== true)
         localStorage.setItem(
           key,
-          JSON.stringify({ ...prefs, planTourSeen: true, facilitateTourSeen: true }),
+          JSON.stringify({
+            ...prefs,
+            planTourSeen: true,
+            planTourTracks: ['boards', 'sheets'],
+            facilitateTourSeen: true,
+          }),
         );
     } catch {
       // No storage: nothing to mark.

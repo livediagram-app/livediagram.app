@@ -17,47 +17,40 @@ import { pageKits, templateSlidePage } from './template-page-kit';
 // from the element that suits it (pain rows beside the one number that hurts, a three-step
 // process, a KPI row over a growth chart, the founders, the milestone and the use of funds) and a
 // footer with the page number. The title slide sits on a dark gradient and the ask on a light one,
-// so the deck opens and closes on a colour. What to SAY rides each headline as its note, the part
-// a deck outline usually forgets. The footers are the "Frames" scaffold; everything else is
+// so the deck opens and closes on a colour. The footers are the "Frames" scaffold; everything else is
 // "Content". Element colours stay theme-owned.
-type Slide = { name: string; kicker: string; headline: string; notes: string };
+type Slide = { name: string; kicker: string; headline: string };
 
 const SLIDES: Slide[] = [
   {
     name: 'Title',
     kicker: 'Seed round · March 2027',
     headline: 'Relay: shift swaps in one tap',
-    notes: 'Open with Amara’s night shift: 40 minutes on WhatsApp to swap one Saturday.',
   },
   {
     name: 'Problem',
     kicker: 'The problem',
     headline: 'Swapping one shift takes 14 messages and two days',
-    notes: 'Pause on the 14 messages. Everyone in the room has sent one of them.',
   },
   {
     name: 'Solution',
     kicker: 'The solution',
     headline: 'Post a shift, and Relay finds cover in minutes',
-    notes: 'Demo it live if the Wi-Fi holds; the screenshots are in the appendix.',
   },
   {
     name: 'Traction',
     kicker: 'Traction',
     headline: 'Live on 38 wards in nine months',
-    notes: 'Lead with the 94%: it is the number matrons repeat back to us.',
   },
   {
     name: 'Team',
     kicker: 'The team',
     headline: 'Built by people who worked the rotas',
-    notes: 'Thirty seconds, no more. Why us: we lived the problem.',
   },
   {
     name: 'The Ask',
     kicker: 'The ask',
     headline: 'Raising £1.5m to reach 40 hospitals by 2028',
-    notes: 'Say the number, then stop talking and wait for the first question.',
   },
 ];
 
@@ -97,7 +90,7 @@ const avatar = (k: Kit, x: number, y: number, d: number): Element => ({
   aspectLocked: true,
 });
 
-// A content slide's kicker and headline (carrying the speaker notes), and its footer.
+// A content slide's kicker and headline, and its footer.
 function chrome(k: Kit, i: number): Element[] {
   const { width: W, height: H } = k.box;
   const { u } = k;
@@ -108,7 +101,7 @@ function chrome(k: Kit, i: number): Element[] {
       ...slideType(k, KICKER_UNITS),
       textBold: true,
     }),
-    { ...k.title(0, u * 6, W * 0.92, u * 13, s.headline), note: s.notes },
+    k.title(0, u * 6, W * 0.92, u * 13, s.headline),
     k.text(0, H - u * FOOTER_H, W * 0.5, u * FOOTER_H, 'Relay · Seed pitch', {
       ...scaffold,
       ...slideType(k, FOOTER_UNITS),
@@ -145,14 +138,11 @@ const SLIDE_BODIES: ((k: Kit, top: number, bottom: number) => Element[])[] = [
         ...slideType(k, KICKER_UNITS),
         textBold: true,
       }),
-      {
-        // Narrow enough that the headline breaks after "swaps", never leaving one word behind.
-        ...k.text(0, y + u * 7, W * 0.47, headlineH, s.headline, {
-          ...slideType(k, 10),
-          textBold: true,
-        }),
-        note: s.notes,
-      },
+      // Narrow enough that the headline breaks after "swaps", never leaving one word behind.
+      k.text(0, y + u * 7, W * 0.47, headlineH, s.headline, {
+        ...slideType(k, 10),
+        textBold: true,
+      }),
       k.text(
         0,
         y + u * 9 + headlineH,

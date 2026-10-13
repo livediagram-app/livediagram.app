@@ -1071,6 +1071,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
   'UI|Ended|LogoTourCompleted': "Someone reached the end of a logo page's Show Me tour.",
   'UI|Ended|LogoTourSkipped': "Someone left a logo page's Show Me tour before its end.",
+  'UI|Ended|SlideTourCompleted': "Someone reached the end of a slide page's Show Me tour.",
+  'UI|Ended|SlideTourSkipped': "Someone left a slide page's Show Me tour before its end.",
+  'UI|Ended|InfographicTourCompleted':
+    "Someone reached the end of an infographic page's Show Me tour.",
+  'UI|Ended|InfographicTourSkipped':
+    "Someone left an infographic page's Show Me tour before its end.",
+  'UI|Ended|ArticleTourCompleted': "Someone reached the end of an article page's Show Me tour.",
+  'UI|Ended|ArticleTourSkipped': "Someone left an article page's Show Me tour before its end.",
   'UI|Ended|TabStyleTourCompleted':
     "Someone reached the end of the Tab Style dialog's Show Me tour.",
   'UI|Ended|TabStyleTourSkipped':
@@ -1248,6 +1256,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
   'UI|Started|DashboardTour':
     'Someone pressed Show Me in Dashboard Settings, starting its tour of arranging and filling a dashboard.',
+  'UI|Started|SlideTour':
+    "Someone pressed Show Me in a slide page's panel, starting its tour of layouts, backgrounds, the deck and presenting.",
+  'UI|Started|InfographicTour':
+    "Someone pressed Show Me in an infographic page's panel, starting its tour of layouts, backgrounds and page size.",
+  'UI|Started|ArticleTour':
+    "Someone pressed Show Me in an article page's panel, starting its tour of writing and article style.",
   'UI|Started|LogoTour':
     "Someone pressed Show Me in a logo page's panel, starting its tour of the logo tools.",
   'UI|Started|PhotoReviewTour':
@@ -1440,6 +1454,52 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Illustrate tour reached its "Slides" step, on the Slides button in the bottom-right cluster.',
   'UI|View|IllustrateTourStepOutro':
     'The Illustrate tour reached its closing "You\'re ready to illustrate" card.',
+  'UI|View|IllustrateTourStepSlideLayouts':
+    'The Illustrate tour\'s slides track reached its "Choose a Layout" step, with the slide\'s Layout popover open.',
+  'UI|View|IllustrateTourStepSlideBackground':
+    'The Illustrate tour\'s slides track reached its "Change the Background" step, with the slide\'s Background popover open.',
+  'UI|View|IllustrateTourStepSlideDeck':
+    'The Illustrate tour\'s slides track reached its "Add It to the Deck" step, on the slide\'s deck button.',
+  'UI|View|IllustrateTourStepSlideAddPage':
+    'The Illustrate tour\'s slides track reached its "Add Another Slide" step, on the + after the last page.',
+  'UI|View|IllustrateTourStepSlidePresent':
+    'The Illustrate tour\'s slides track reached its "Present" step, with the Slide Deck open.',
+  'UI|View|IllustrateTourStepSlideOutro':
+    'The Illustrate tour\'s slides track reached its closing "You\'re ready to present" card.',
+  'UI|View|IllustrateTourStepInfographicPageName':
+    'The Illustrate tour\'s infographic track reached its "Your Page" step, on the page\'s name.',
+  'UI|View|IllustrateTourStepInfographicLayouts':
+    'The Illustrate tour\'s infographic track reached its "Start From a Layout" step, with the page\'s Layout popover open.',
+  'UI|View|IllustrateTourStepInfographicBackground':
+    'The Illustrate tour\'s infographic track reached its "Change the Background" step, with the page\'s Background popover open.',
+  'UI|View|IllustrateTourStepInfographicPageSize':
+    'The Illustrate tour\'s infographic track reached its "Page Size" step, with the page\'s settings open.',
+  'UI|View|IllustrateTourStepInfographicAddPage':
+    'The Illustrate tour\'s infographic track reached its "Add a Page" step, on the + after the last page.',
+  'UI|View|IllustrateTourStepInfographicPresent':
+    'The Illustrate tour\'s infographic track reached its "Present It" step, with the Slide Deck open.',
+  'UI|View|IllustrateTourStepInfographicOutro':
+    'The Illustrate tour\'s infographic track reached its closing "You\'re ready to illustrate" card.',
+  'UI|View|IllustrateTourStepArticleWrite':
+    'The Illustrate tour\'s article track reached its "Write on the Page" step, on the article page.',
+  'UI|View|IllustrateTourStepArticleToolbar':
+    'The Illustrate tour\'s article track reached its "The Page Toolbar" step.',
+  'UI|View|IllustrateTourStepArticleStyle':
+    'The Illustrate tour\'s article track reached its "Article Style" step, with the page\'s Style settings open.',
+  'UI|View|IllustrateTourStepArticleText':
+    'The Illustrate tour\'s article track reached its "Fonts and Spacing" step, with the page\'s Text settings open.',
+  'UI|View|IllustrateTourStepArticleOutro':
+    'The Illustrate tour\'s article track reached its closing "You\'re ready to write" card.',
+  'UI|View|IllustrateTourStepLogoLayouts':
+    'The Illustrate tour\'s logo track reached its "Start From a Logo Layout" step, with the page\'s Layouts open.',
+  'UI|View|IllustrateTourStepLogoGuides':
+    'The Illustrate tour\'s logo track reached its "Draw on Guides" step, on the Guides button.',
+  'UI|View|IllustrateTourStepLogoMirror':
+    'The Illustrate tour\'s logo track reached its "Mirror As You Draw" step, on the Mirror button.',
+  'UI|View|IllustrateTourStepLogoCombine':
+    'The Illustrate tour\'s logo track reached its "Combine Shapes" step.',
+  'UI|View|IllustrateTourStepLogoOutro':
+    'The Illustrate tour\'s logo track reached its closing "That Is a Logo Page" card.',
   'UI|View|DrawTourStepDrawingTools':
     'The Draw tour reached its "Pens and Tools" step, on the dock\'s Drawing tools group.',
   'UI|View|DrawTourStepQuickStyle':

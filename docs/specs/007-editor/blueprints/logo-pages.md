@@ -23,7 +23,7 @@ changes.
 | contour              | `PathElement.nodes` (the first) and each of `PathElement.subpaths`; `pathContours(el)`                   |
 | logo kit             | `exportLogoKit`; `LOGO_KIT_PNG_SIZES`; `encodeIco`; Export dialog format `'logo-kit'` (`LogoKitPanel`)   |
 | guide preferences    | `UserPreferences.logoGuides` (absent is on), `.logoGuidesHidden`, `.logoGuideStrength`                   |
-| Show Me (logo)       | `useLogoTour`, `LogoShowMeButton`, `LogoTourStage`; `logoTourSteps`; `LogoTourApi`                       |
+| Show Me (logo)       | `usePageTour`, `PageShowMeButton`, `PageTourStage`; `logoTourSteps`; `PageTourApi`                       |
 
 No synonyms: the UI says **Logo**, **Guides**, **Mirror**, **Combine** (Unite, Subtract, Intersect,
 Exclude), **Wordmark**, **Logo Kit**.
@@ -208,17 +208,18 @@ DashedAddButton.tsx`, shared with `AddCardTypeButton`) labelled **Start From Scr
   `edit.startBlank(pageId)`, which sets `IllustratePage.startedBlank: true` (refused on a locked
   page); `showsLayoutCard` skips a page with it. Hide stays the session-only `layoutsHidden`.
 
-### Show Me (`apps/live/components/tour/LogoTour.tsx`, `logo-tour-steps.ts`)
+### Show Me (`apps/live/components/tour/PageTour.tsx`, `logo-tour-steps.ts`)
 
-- `IllustratePages` calls `useLogoTour({ openLayouts, closePanel })` and hands the panel of a logo
-  page `showMe={<LogoShowMeButton tour onStart={() => freeze(pageId)} />}`, which
-  `IllustratePagePanel` heads beside the labelled `HelpArticleLink` (`logoPages`); `LogoTourStage`
-  (`article="logoPages"`, `helpLabel="Logo Pages Help"`, overlay layer) is mounted once.
-- `freeze(pageId)` imports `logo-tour-steps` at the press and fixes `logoTourSteps(combineShowing)`
-  (`combineShowing`: `[aria-label="Combine shapes"]` is in the DOM): `layouts` (rings
-  `[data-page-panel]`, `prepare` reopens the panel on Layouts, `cleanup` closes it), `guides` and
-  `mirror` (the page's `[data-logo-title-bar]` buttons by name), `combine` (the Combine button, else
-  an unanchored card), `outro`.
+- A logo page's Show Me is one of the page Show Mes ([Illustrate tour](../illustrate-tour.md)):
+  `IllustratePages` calls `usePageTour(editable)` and hands every page's panel
+  `showMe={{ button: <PageShowMeButton tour kind onStart={() => freeze(pageId, kind)} />, article }}`, which
+  `IllustratePagePanel` heads beside the labelled `HelpArticleLink` (`PAGE_TOUR_HELP.logo`: `logoPages`, "Logo Pages
+  Help"); `PageTourStage` (overlay layer) is mounted once.
+- `freeze(pageId, 'logo')` imports `page-tour-steps` at the press and fixes `logoTourSteps(combineShowing)`
+  (`combineShowing`: `[aria-label="Combine shapes"]` is in the DOM): `layouts` (rings `[data-page-panel]`, `requires`
+  the page's cog, `prepare` opens the panel on Layouts through `requestPagePanel`, `cleanup` closes it), `guides` and
+  `mirror` (the page's `[data-logo-title-bar]` buttons by name), `combine` (the Combine button, else an unanchored
+  card), `outro`. The same steps follow `LOGO_WELCOME` as the Illustrate tour's Logo track.
 - `UI · Started · LogoTour` on the press; `UI · Ended · LogoTourCompleted` / `LogoTourSkipped` on
   finish.
 
@@ -556,7 +557,7 @@ Measured (vitest on this branch):
 | The palette follows the page                      | `apps/live/hooks/canvas/useLogoPaletteSwitch.test.tsx`                                                                         |
 | Layout tiles rendered                             | `apps/live/components/canvas/layout-render-thumb.test.tsx`                                                                     |
 | No quick-connect pluses                           | `apps/live/components/canvas/LayerSelectionChrome.test.ts`                                                                     |
-| Show Me                                           | `apps/live/components/tour/LogoTour.test.tsx`                                                                                  |
+| Show Me                                           | `apps/live/components/tour/PageTour.test.tsx`                                                                                  |
 
 ## Assets and external resources
 

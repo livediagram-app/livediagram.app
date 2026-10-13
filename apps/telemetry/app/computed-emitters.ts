@@ -195,20 +195,22 @@ export const DRAW_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Illustrate tour's steps, as illustrateTourStepTelemetryType makes them (apps/live
-// illustrate-tour-steps.ts, docs/specs/007-editor/illustrate-tour.md). The welcome card sends no step view.
-export const ILLUSTRATE_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/illustrate-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `IllustrateTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
+// The Illustrate tour's steps, as illustrateTourStepTelemetryType makes them (apps/live IllustrateTourHost.tsx,
+// docs/specs/007-editor/illustrate-tour.md): each page kind's track names its kind before the step. The welcome card
+// sends no step view.
+const camel = (id: string) =>
+  id
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+export const ILLUSTRATE_TOUR_STEP_SOURCE: string[] = (
+  ['slide', 'infographic', 'article', 'logo'] as const
+).flatMap((kind) =>
+  [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
+    .map((m) => m[1]!)
+    .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
+    .map((id) => `IllustrateTourStep${camel(`${kind}-${id}`)}`),
+);
 
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
 const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
