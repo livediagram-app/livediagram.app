@@ -15,6 +15,8 @@ const tabs = [{ id: 't', name: 'Tab', elements: [] }] as unknown as Tab[];
 function deck(isReadOnly: boolean) {
   return renderHook(() =>
     useSlideDeck({
+      prefs: {},
+      commitPrefs: () => {},
       tabs,
       activeTabId: 't',
       setActiveId: () => {},

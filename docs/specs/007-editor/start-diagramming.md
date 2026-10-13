@@ -20,7 +20,10 @@ draws them.
   mode's groups, each with its glyph and count; long names wrap beside the glyph on a wide rail. Below a further
   hairline, **Something Else** opens the Quick Start on every mode.
 - **Cards:** each template's preview on a soft plate, its name and its description in full. Choosing a card lands
-  the template on the tab at once (`chooseTemplate`), as the Quick Start does.
+  the template on the tab at once (`chooseTemplate`), as the Quick Start does, painted in the **tab's theme**: the
+  panel picks no theme, so the scaffold takes the colours the tab already wears (its own theme, or the one a new
+  tab inherited from the tab it was added beside) rather than the template's built-in ones. The tab's backdrop is
+  left as it is; only the Quick Start's theme pick switches it.
 - **Search:** the catalogue's own search (`templateMatchesQuery`, as the Quick Start and the marketing gallery),
   across the mode's templates; matches are grouped under their group, each once, in rail order. Escape clears a
   search first. No match offers **Browse More Templates** (the Quick Start).

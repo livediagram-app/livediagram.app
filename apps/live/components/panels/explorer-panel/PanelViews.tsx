@@ -24,7 +24,7 @@ import {
   locationLabel,
   summarySentence,
 } from '@/app/explorer/home/home-copy';
-import { dayHeading, groupsByDay } from '@/app/explorer/home/home-model';
+import { dayHeading, groupsByDay, paneJumpBackIn } from '@/app/explorer/home/home-model';
 import { TIMELINE_RENDERERS } from '@/app/explorer/timeline/renderers';
 import { useTrash } from '@/hooks/persistence/useTrash';
 import { useToast } from '@/hooks/ui/useToast';
@@ -62,13 +62,11 @@ const DeleteGlyph = lucideGlyph(lucideTrash2, 16);
 function JumpBackInCard({
   item,
   ownerId,
-  current,
   onOpen,
   now,
 }: {
   item: JumpBackInItem;
   ownerId: string;
-  current: boolean;
   onOpen: () => void;
   now: number;
 }) {
@@ -94,7 +92,6 @@ function JumpBackInCard({
           <span className="truncate">Opened {relativeSince(item.lastUsedAt, now)}</span>
         </span>
       }
-      current={current}
       onActivate={onOpen}
       rowProps={{ onContextMenu: menu.onContextMenu }}
       trailing={menu.trailing}
@@ -185,10 +182,7 @@ export function HomeSection({
   if (home.status === 'error')
     return <PaneFailed message={HOME_COPY.readFailed} onRetry={home.retry} />;
   if (home.status === 'loading') return <PaneSkeleton rows={6} />;
-  const seen = new Set<string>();
-  const recent = [...home.jumpBackIn.mostUsed, ...home.jumpBackIn.recent]
-    .filter((d) => (seen.has(d.documentId) ? false : (seen.add(d.documentId), true)))
-    .slice(0, JUMP_BACK_IN_ROWS);
+  const recent = paneJumpBackIn(home.jumpBackIn, currentDocumentId, JUMP_BACK_IN_ROWS);
   return (
     <div className="flex flex-col gap-6">
       <PaneSection
@@ -207,7 +201,6 @@ export function HomeSection({
                 item={d}
                 ownerId={ownerId}
                 now={now}
-                current={d.documentId === currentDocumentId}
                 onOpen={() => onOpenDocument(d.documentId, d.shareCode ?? undefined)}
               />
             ))}

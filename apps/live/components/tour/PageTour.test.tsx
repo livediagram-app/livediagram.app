@@ -103,6 +103,8 @@ function Page({ of, deleted = false }: { of: IllustratePage; deleted?: boolean }
           </button>
           <TitlePopover name="Layout" />
           <TitlePopover name="Background" />
+          <TitlePopover name="Style" />
+          <TitlePopover name="Text" />
           <button type="button" data-page-deck-button="add" aria-label="Add to Slides" />
           <button type="button" data-tour-id="page-cog" aria-label="Page settings" />
           <div data-logo-title-bar={of.id}>
@@ -125,7 +127,6 @@ function Page({ of, deleted = false }: { of: IllustratePage; deleted?: boolean }
           onPreview={vi.fn()}
           onLayoutPreview={vi.fn()}
           onClose={() => setOpened(null)}
-          articleStyle={(part) => <p>{part} section</p>}
           showMe={{
             button: (
               <PageShowMeButton tour={tour} kind={ofKind} onStart={() => freeze(of.id, ofKind)} />
@@ -237,7 +238,7 @@ describe('an infographic’s Show Me', () => {
 });
 
 describe('an article’s Show Me', () => {
-  it('holds the page toolbar up on its step, then opens Style and Text', async () => {
+  it('holds the page toolbar up on its step, then opens Style and Text beside the cog', async () => {
     render(<Page of={page('article')} />);
     // The toolbar as PageToolbar draws it; the step pins it to the tour page (it shows on hover otherwise).
     const bar = document.createElement('div');
@@ -253,12 +254,17 @@ describe('an article’s Show Me', () => {
     await shows(() => expect(readPinnedPageToolbar()).toBeNull());
     bar.remove();
     await shows(() => expect(stepDialog(/Article Style/)).toBeTruthy());
-    expect(screen.getByText('style section')).toBeTruthy();
+    expect(document.querySelector('[role="dialog"][aria-label="Style"]')).not.toBeNull();
     await next();
     await shows(() => expect(stepDialog(/Fonts and Spacing/)).toBeTruthy());
-    expect(screen.getByText('text section')).toBeTruthy();
+    await shows(() =>
+      expect(document.querySelector('[role="dialog"][aria-label="Style"]')).toBeNull(),
+    );
+    expect(document.querySelector('[role="dialog"][aria-label="Text"]')).not.toBeNull();
     await next();
-    await shows(() => expect(document.querySelector('[data-page-panel]')).toBeNull());
+    await shows(() =>
+      expect(document.querySelector('[role="dialog"][aria-label="Text"]')).toBeNull(),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'ArticleTourCompleted');
   });

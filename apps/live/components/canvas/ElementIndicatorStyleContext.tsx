@@ -28,6 +28,11 @@ export function SuppressElementIndicators({
   );
 }
 
+/** Whether this surface draws no on-element chrome at all (an embed, a presented slide): the lock badge reads it. */
+export function useElementIndicatorsSuppressed(): boolean {
+  return useContext(ElementIndicatorsSuppressedContext);
+}
+
 export function ElementIndicatorStyleProvider({
   style,
   children,

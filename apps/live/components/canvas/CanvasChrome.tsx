@@ -29,7 +29,7 @@ import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
-import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
+import { showsSlidesButton, SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
 import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
 import { SessionClusterStrip, sessionStripTools } from '@/components/canvas/SessionClusterStrip';
@@ -724,8 +724,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Slides (docs/specs/007-editor/illustrate-pages.md "Slides"): in Illustrate mode, where
                 Layers would be, the deck one press away. */}
             {/* Desktop only, as the Slide Deck itself is; an Editor's, since building and presenting a deck
-                runs the session (docs/specs/013-workspace/share-roles.md). */}
-            {!zenMode && !isMobile && !readOnly && props.illustratePages && props.slideDeck ? (
+                runs the session (docs/specs/013-workspace/share-roles.md). Only once a page is a slide: before
+                that the deck has nothing to hold. */}
+            {!zenMode &&
+            !isMobile &&
+            !readOnly &&
+            props.illustratePages &&
+            showsSlidesButton(props.illustratePages.pages) &&
+            props.slideDeck ? (
               <SlidesClusterButton
                 popoverOpen={activeDockPanel === 'slides'}
                 onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}

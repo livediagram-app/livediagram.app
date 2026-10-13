@@ -3,8 +3,8 @@
 // A page's panel (docs/specs/007-editor/illustrate-pages.md "page panel"): opened from the cog
 // above the page's top-right corner, in screen space so it reads at one size whatever the zoom.
 // Its name, then its tabs: Page (size, orientation; absent where the page has neither), Background
-// (every hover over a swatch previews on the page itself) and the kind's own (Layouts, or an
-// article's Style and Text); then the page's actions. It closes on an outside press, Escape, or the canvas
+// (every hover over a swatch previews on the page itself) and a logo page's Layouts; then the page's
+// actions. An article page's Style, Text and Background sit beside its cog (PageArticleButtons). It closes on an outside press, Escape, or the canvas
 // panning or zooming under it (it would no longer sit by its cog).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
@@ -47,20 +47,18 @@ const GAP = 6;
 const PAGE_EASE_MS = 200;
 
 export type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
-export type PagePanelTab = 'page' | 'background' | 'layouts' | 'style' | 'text';
+export type PagePanelTab = 'page' | 'background' | 'layouts';
 
 const TAB_LABEL: Record<PagePanelTab, string> = {
   page: 'Page',
   background: 'Background',
   layouts: 'Layouts',
-  style: 'Style',
-  text: 'Text',
 };
 
 // The page's tabs: Page while it has a size or orientation to choose (a logo page has neither),
-// Background (not on an infographic page, whose Background sits beside its cog), then the kind's
-// own (an article's Style and Text, a logo page's Layouts; an infographic or slide page's Layouts
-// sit beside its cog).
+// Background (not on an infographic or article page, whose Background sits beside its cog), then a
+// logo page's Layouts (an infographic or slide page's Layouts, and an article's Style and Text, sit
+// beside its cog).
 export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
   const hasPage = pageSizeChoices(page).length > 1 || pageHasOrientation(page);
   // An infographic page's Background, and an infographic or slide page's Layouts, are beside its
@@ -68,8 +66,8 @@ export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
   const kind = pageKindOf(page);
   return [
     ...(hasPage ? (['page'] as const) : []),
-    ...(kind !== 'infographic' ? (['background'] as const) : []),
-    ...(page.flow ? (['style', 'text'] as const) : kind === 'logo' ? (['layouts'] as const) : []),
+    ...(kind !== 'infographic' && !page.flow ? (['background'] as const) : []),
+    ...(kind === 'logo' ? (['layouts'] as const) : []),
   ];
 }
 
@@ -84,15 +82,12 @@ export function IllustratePagePanel({
   onPreview,
   onLayoutPreview,
   onClose,
-  articleStyle,
   showMe,
 }: {
   page: LaidOutPage;
   // The page's Show Me, which heads the panel beside Help on its kind's article (docs/specs/007-editor/show-me.md,
   // illustrate-tour.md "Where it appears").
   showMe?: { button: ReactNode; article: HelpArticleKey } | undefined;
-  // An article page's Style and Text tabs (docs/specs/007-editor/article-pages.md "Article style").
-  articleStyle?: (part: 'style' | 'text') => ReactNode;
   count: number;
   // Another page of this page's article is locked (isArticleLocked): its shared edits are held.
   heldByLock?: boolean;
@@ -254,9 +249,7 @@ export function IllustratePagePanel({
             }}
             onPreview={preview}
           />
-        ) : tab === 'style' || tab === 'text' ? (
-          (articleStyle?.(tab) ?? null)
-        ) : (
+        ) : tab === 'layouts' ? (
           <LayoutsSection
             page={page}
             onApply={(layout) => {
@@ -266,7 +259,7 @@ export function IllustratePagePanel({
             }}
             onPreview={onLayoutPreview}
           />
-        )}
+        ) : null}
       </div>
       <PageActions page={page} locked={locked} edit={edit} onClose={() => onClose(false)} />
     </>

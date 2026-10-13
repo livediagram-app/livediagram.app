@@ -99,17 +99,16 @@ describe('the Image category', () => {
     expect(screen.queryByRole('radio', { name: 'Image' })).toBeNull();
   });
 
-  it('opens on a page with a picture, and asks the search for the page’s shape, large', () => {
+  it('opens on a page with a picture, and asks the search for the page’s shape (never large: its thumbnails fail)', () => {
     show({ fill: picture });
     expect(radio('Image').getAttribute('aria-checked')).toBe('true');
     // The search waits behind Replace Image while the page has a picture.
     expect(screen.queryByTestId('search-pane')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Replace Image' }));
-    expect(pane.props!.filters).toEqual({ aspectRatio: 'tall', size: 'large' });
+    expect(pane.props!.filters).toEqual({ aspectRatio: 'tall' });
     expect(pane.props!.columns).toBe(3);
     expect(pageImageFilters({ id: 'p', orientation: 'landscape' })).toEqual({
       aspectRatio: 'wide',
-      size: 'large',
     });
     expect(pageImageFilters({ id: 'p', orientation: 'portrait', size: 'square' }).aspectRatio).toBe(
       'square',

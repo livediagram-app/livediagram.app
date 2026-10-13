@@ -153,7 +153,7 @@ describe('a chart’s settings cog', () => {
     it('says so when no card has a status', () => {
       show({ view: 'priority-matrix' }, [card('x', 'task')]);
       fireEvent.click(section('Statuses')!);
-      expect(screen.getByText('No card has a status yet.')).toBeTruthy();
+      expect(screen.getByText('No statuses yet').closest('[data-empty-state]')).toBeTruthy();
     });
   });
 });

@@ -265,6 +265,10 @@ export type UserPreferences = {
   // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
   // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
   drawPattern?: 'blank' | 'grid' | 'graph';
+  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): transition, speed,
+  // playback and display, as one object. Read through lib/presentation-config, which trusts it only once parsed.
+  // Missing === what this browser kept before they followed the account, else the defaults.
+  presentation?: Record<string, unknown>;
   // Skip the New Document wizard's Location step (docs/specs/013-workspace/default-folders.md
   // "Skipping the Location step"): where every new document is saved. Read through
   // lib/skip-location-step, which parses it. Missing or null === off; Turn Off writes null.

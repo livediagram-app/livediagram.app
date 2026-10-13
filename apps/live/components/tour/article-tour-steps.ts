@@ -1,8 +1,8 @@
 // The Article track of the Illustrate tour (docs/specs/007-editor/illustrate-tour.md "Article track"): on the person's
-// own article page, where to write, its page toolbar, and its style and type in the page's panel.
+// own article page, where to write, its page toolbar, and its Style and Text beside the cog (PageArticleButtons).
 import { pinPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import type { PageTourStep } from './page-tour-api';
-import { pageCog } from './page-tour-dom';
+import { closeTitlePopover, openTitlePopover, pageButton, pageOrPopover } from './page-tour-dom';
 
 export const ARTICLE_WELCOME: PageTourStep = {
   id: 'welcome',
@@ -35,19 +35,19 @@ export function articleTourSteps(): PageTourStep[] {
       id: 'style',
       title: 'Article Style',
       body: 'Pick a look (Clean, Classic, Report, Notebook or Bold), an accent colour, margins and page numbers. Every page of the article follows.',
-      selector: () => '[data-page-panel]',
-      requires: (api) => pageCog(api.pageId),
-      prepare: (api) => api.openPanel(api.pageId, 'style'),
-      cleanup: (api) => api.closePanel(),
+      selector: (api) => pageOrPopover(api.pageId, 'Style'),
+      requires: (api) => pageButton(api.pageId, 'Style'),
+      prepare: (api) => openTitlePopover(api.pageId, 'Style'),
+      cleanup: (api) => closeTitlePopover(api.pageId, 'Style'),
     },
     {
       id: 'text',
       title: 'Fonts and Spacing',
       body: 'Choose the heading and body fonts, the text size, and the space between lines and paragraphs.',
-      selector: () => '[data-page-panel]',
-      requires: (api) => pageCog(api.pageId),
-      prepare: (api) => api.openPanel(api.pageId, 'text'),
-      cleanup: (api) => api.closePanel(),
+      selector: (api) => pageOrPopover(api.pageId, 'Text'),
+      requires: (api) => pageButton(api.pageId, 'Text'),
+      prepare: (api) => openTitlePopover(api.pageId, 'Text'),
+      cleanup: (api) => closeTitlePopover(api.pageId, 'Text'),
     },
     {
       id: 'outro',

@@ -101,7 +101,7 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
   alone on an infographic page, with no tab switch (its Layout, Background and Tidy are the
   buttons beside the cog, "Beside the cog" below); a slide page: **Page** and **Background** (its
   Layout is the button beside the cog); an article page:
-  **Page**, **Background**, **Style** and **Text**, [Article pages](article-pages.md) "Article style";
+  **Page** alone (its Style, Text and Background are the buttons beside the cog, [Article pages](article-pages.md) "Article style");
   a logo page: **Background** and **Layouts**, its Layouts the logo layouts, [Logo pages](logo-pages.md)
   "The page panel"; Page is there only while the page has a size or orientation to choose), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
   with tooltips. **Page** holds the **Size** tiles (each drawn to scale) and **Orientation**
@@ -432,16 +432,19 @@ An infographic, slide or article page can be painted with a picture:
 Image category: a logo goes over other things, so its artboard stays a colour or the paper.
 
 - **The Image category**, while the page has no picture: a search field and its results (the image
-  picker's Search, [Image search](../009-elements/image-search.md), three tiles across) and under
-  them **Upload an Image** (a file, as the picker's Upload takes one: the same types and size
-  limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
+  picker's Search, [Image search](../009-elements/image-search.md), three tiles across), under
+  them **Choose From My Images** (the person's own gallery, three tiles across, in a popover that
+  opens beside the panel so the panel stays in view; one press picks and closes it; an offline
+  document embeds the picture as the picker's Gallery does) and **Upload an Image** (a file, as
+  the picker's Upload takes one: the same types and size limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
   one edit), its **Credit** line when it came from a search (the image element's Credit row: the
   text, **Source** and **Licence**), then **Overlay**, **Strength** and **Position**, then the
-  search and Upload again under **Replace Image**.
+  search, Choose From My Images and Upload again under **Replace Image**.
 - **The search suits a page.** It asks Openverse only for pictures of the page's shape
   (`aspect_ratio`: `tall` for a portrait page, `wide` for a landscape one and every slide,
-  `square` for a square page) and large ones (`size=large`), so a result covers the page without
-  a blurry or lopsided crop. Everything else is the picker's search: the licences, no mature
+  `square` for a square page), so a result covers the page without a lopsided crop. It does not
+  ask for large ones (`size=large`): Openverse cannot render thumbnails for most of those, so every
+  result drew broken. Everything else is the picker's search: the licences, no mature
   results, Load more, the loading, error and empty states, the footer credit.
 - **Hover previews**: hovering or focusing a result paints its Openverse thumbnail on the page
   under the overlay a pick would get; leaving the results puts the page back. A press downloads
@@ -496,7 +499,10 @@ the lock, a logo page's Mirror and Guides; Tidy is always its icon alone) name t
 the page is wide enough on screen to hold them named and still leave the label its least room
 (40 px); zoomed out further, they all drop to their icons (with their tooltips), as on a phone.
 
-An infographic or slide page's title bar holds a **Background** button before its lock and cog,
+An article page's title bar holds **Style** and **Text** before its Background
+([Article pages](article-pages.md) "Article style").
+
+An infographic, slide or article page's title bar holds a **Background** button before its lock and cog,
 the cog's size with a tooltip, for someone who may edit (an Editor; a Participant or Viewer sees
 no title-bar controls), as a logo page holds its Guides ([Logo pages](logo-pages.md) "Beside the
 cog"). It opens a popover anchored to it holding the **Background** and **Pattern** sections (a
@@ -1328,8 +1334,9 @@ SlideShown`).
 - **Slides button**: in the bottom-right cluster, where Layers sits in the other modes (left of
   the brush), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an
   outside press closes it; the button shows pressed while open). An infographic is likely to be
-  presented, so its deck is one press away. Desktop only, as the Slide Deck itself is.
-  Telemetry: `UI · Opened · SlideDeck`.
+  presented, so its deck is one press away. Desktop only, as the Slide Deck itself is. Shown only
+  while **at least one page is a slide**: until then the deck has nothing to hold, and the
+  Illustrate tour skips its Slides step. Telemetry: `UI · Opened · SlideDeck`.
 - **No Layers**: the Layers button and panel are not offered (a page is arranged by its pages, not
   layers); the tab's layers are untouched and come back in the other modes.
 

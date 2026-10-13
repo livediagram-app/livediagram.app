@@ -1,22 +1,16 @@
 'use client';
 
-// The presenter's settings, opened from the cog in the HUD (docs/specs/012-collaboration/presentation-mode.md).
+// The presenter's settings, opened from the cog in the HUD (docs/specs/012-collaboration/presentation-mode.md
+// "Settings"): only what is changed in front of the room, Transition and Speed, then the two pacing clocks. Every
+// other presenter setting is set before the talk, in Settings > Presenting. This popover opens ON a projector, so
+// everything here is a segmented control or a switch, decided in one glance and undone in one more.
 //
-// Grouped into Transition, Playback and Display, because the list grew past
-// the point where a flat one reads as a list. Each entry still has to be a
-// decision the presenter can make in one glance and undo in one more — this
-// popover opens ON a projector, in front of a room — so everything here is a
-// segmented control or a switch, and nothing needs typing or dragging.
-//
-// Device-local (lib/presentation-config): how YOU drive a deck on THIS
-// machine, not a property of the document.
+// The person's own (lib/presentation-config), following their account, not a property of the document.
 
 import { HoverCard } from '@livediagram/ui';
 import {
-  AUTO_ADVANCE_CHOICES,
   SLIDE_SPEEDS,
   SLIDE_TRANSITIONS,
-  SLIDE_ZOOMS,
   type PresentationConfig,
 } from '@/lib/presentation-config';
 
@@ -143,71 +137,26 @@ export function PresentationSettings({
 
       <div className="my-1 border-t border-white/10" />
 
-      <Group title="Playback">
-        {/* Auto-advance pairs with Loop: together they are the whole
-            "leave it running on the wall" setup. */}
-        <Segmented
-          options={AUTO_ADVANCE_CHOICES.map((c) => ({
-            id: c.seconds,
-            label: c.label,
-            hint: c.seconds === 0 ? 'Only move when you say so' : `Advance every ${c.seconds}s`,
-          }))}
-          value={config.autoAdvanceSeconds}
-          onPick={(seconds) => onChange({ autoAdvanceSeconds: seconds })}
-        />
+      {/* The clocks: pacing is read in front of the room, so it is switched there too. */}
+      <Group title="Pacing">
         <Toggle
-          label="Click to advance"
-          hint="Off if you'd rather only the keys and buttons move the deck"
-          on={config.advanceOnClick}
-          onChange={(next) => onChange({ advanceOnClick: next })}
-        />
-        <Toggle
-          label="Loop the deck"
-          hint="After the last slide, start again rather than ending"
-          on={config.loop}
-          onChange={(next) => onChange({ loop: next })}
-        />
-      </Group>
-
-      <div className="my-1 border-t border-white/10" />
-
-      <Group title="Display">
-        <Segmented
-          options={SLIDE_ZOOMS}
-          value={config.zoom}
-          onPick={(id) => onChange({ zoom: id })}
-        />
-        <Toggle
-          label="Show position"
-          hint="The 7 / 23 counter and the slide's name"
-          on={config.showPosition}
-          onChange={(next) => onChange({ showPosition: next })}
-        />
-        <Toggle
-          label="Keep controls visible"
-          hint="Stop them fading out when the pointer rests"
-          on={config.keepControls}
-          onChange={(next) => onChange({ keepControls: next })}
-        />
-        <Toggle
-          label="Hide the pointer"
-          hint="A still cursor left on a projector is a distraction"
-          on={config.hidePointer}
-          onChange={(next) => onChange({ hidePointer: next })}
-        />
-        <Toggle
-          label="Show elapsed time"
+          label="Show Elapsed Time"
           hint="A clock counting from the moment you started"
           on={config.showElapsed}
           onChange={(next) => onChange({ showElapsed: next })}
         />
         <Toggle
-          label="Show slide budget"
+          label="Show Slide Budget"
           hint="Time on this slide against the minutes it was given"
           on={config.showBudget}
           onChange={(next) => onChange({ showBudget: next })}
         />
       </Group>
+
+      {/* Everything else is set before the talk (docs/specs/012-collaboration/presentation-mode.md "Settings"). */}
+      <p className="px-2 pb-1 pt-2 text-[11px] leading-snug text-white/60">
+        Playback, slide size and what shows while presenting are in Settings, under Presenting.
+      </p>
     </div>
   );
 }

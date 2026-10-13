@@ -104,9 +104,9 @@ Layouts) and closes it on leaving.
 1. **Write on the Page** (a centred card, no ring): click to write, `/` for blocks; full pages flow onto the next.
 2. **The Page Toolbar** (the article's page toolbar, held up on the tour page through the step: it otherwise shows
    only while a page is hovered or written on).
-3. **Article Style** (the page's panel, opened on Style): looks, accent, margins, page numbers, for every page of
+3. **Article Style** (the Style popover beside the cog, opened by its button, [Article pages](article-pages.md) "Article style"): looks, accent, margins, page numbers, for every page of
    the article.
-4. **Fonts and Spacing** (the panel, opened on Text).
+4. **Fonts and Spacing** (the Text popover beside it).
 5. **You're ready to write** (outro).
 
 ### Logo track

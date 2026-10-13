@@ -102,14 +102,14 @@ export function SlideDeckSettingsPopover({
             />
           ) : null}
           <ChoiceRow
-            label="Auto-advance"
+            label="Auto-Advance"
             hint="Move on by itself. With Loop, this runs a deck unattended."
             options={AUTO_ADVANCE_CHOICES.map((c) => ({ id: c.seconds, label: c.label }))}
             value={config.autoAdvanceSeconds}
             onPick={(seconds) => onChange({ autoAdvanceSeconds: seconds })}
           />
           <ChoiceRow
-            label="Slide size"
+            label="Slide Size"
             options={SLIDE_ZOOMS}
             value={config.zoom}
             onPick={(id) => onChange({ zoom: id })}
@@ -117,31 +117,31 @@ export function SlideDeckSettingsPopover({
           <SettingsToggleRow
             checked={config.advanceOnClick}
             onToggle={() => onChange({ advanceOnClick: !config.advanceOnClick })}
-            label="Click to advance"
+            label="Click to Advance"
             hint="Off if you'd rather only the keys and buttons move the deck."
           />
           <SettingsToggleRow
             checked={config.loop}
             onToggle={() => onChange({ loop: !config.loop })}
-            label="Loop the deck"
+            label="Loop the Deck"
             hint="After the last slide, start again rather than ending."
           />
           <SettingsToggleRow
             checked={config.showPosition}
             onToggle={() => onChange({ showPosition: !config.showPosition })}
-            label="Show position"
+            label="Show Position"
             hint="The 7 / 23 counter and the slide's name, while presenting."
           />
           <SettingsToggleRow
             checked={config.keepControls}
             onToggle={() => onChange({ keepControls: !config.keepControls })}
-            label="Keep controls visible"
+            label="Keep Controls Visible"
             hint="Stop them fading out when the pointer rests."
           />
           <SettingsToggleRow
             checked={config.hidePointer}
             onToggle={() => onChange({ hidePointer: !config.hidePointer })}
-            label="Hide the pointer"
+            label="Hide the Pointer"
             hint="A still cursor left on a projector is a distraction."
           />
           <SettingsPopoverResetRow

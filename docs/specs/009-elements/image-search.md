@@ -60,7 +60,8 @@ The user's search terms and IP address reach Openverse. The hosted service's
   sun and hills) while a glint rolls across them tile by tile, under a line with a circling lens:
   "Searching Openverse for “<query>”…"; the button is disabled. Load more adds a row of the same
   placeholders under the results, with "Loading more…". A result's tile is a placeholder photo until its
-  thumbnail arrives. Under reduced motion the placeholders hold still.
+  thumbnail arrives; a thumbnail Openverse cannot render falls back to the picture itself, once,
+  rather than drawing a broken image. Under reduced motion the placeholders hold still.
 - **Results.** A 4-column grid of square thumbnails, 20 per page. Each tile names its creator and
   licence on hover and focus. **Load more** under the grid fetches the next page and appends it, until
   Openverse reports no more pages.
@@ -143,6 +144,7 @@ Never the query, a title, a creator or a URL.
 - **Filters.** No licence, colour, orientation or source pickers; the commercial-and-modification
   filter is fixed. The one exception is a page's Image background
   ([Illustrate pages](../007-editor/illustrate-pages.md) "Image backgrounds"), whose search passes
-  the page's shape (`aspect_ratio`) and `size=large` for it; the picker never does.
+  the page's shape (`aspect_ratio`); the picker never does. Never `size=large`: Openverse cannot
+  render thumbnails for most of those (its thumbnail service answers 424), so every tile drew broken.
 - **Other providers.** Openverse only. A keyed provider (Unsplash, Pexels) would need the api worker
   as a proxy and is not planned.

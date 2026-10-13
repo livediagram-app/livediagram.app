@@ -88,6 +88,8 @@ export function closeSlideDeck(): void {
 export function tidyPageTour(pageId: string): void {
   closeTitlePopover(pageId, 'Layout');
   closeTitlePopover(pageId, 'Background');
+  closeTitlePopover(pageId, 'Style');
+  closeTitlePopover(pageId, 'Text');
   closeSlideDeck();
   pinPageToolbar(null);
 }

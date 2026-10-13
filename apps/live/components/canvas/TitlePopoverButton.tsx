@@ -34,6 +34,7 @@ export function TitlePopoverButton({
   width,
   padded = true,
   onOpen,
+  openRequest = 0,
   children,
 }: {
   // The control's name: its label, tooltip ("<name>: on" while on) and the popover's name.
@@ -50,11 +51,18 @@ export function TitlePopoverButton({
   padded?: boolean;
   // Called as the popover opens (its telemetry).
   onOpen?: () => void;
+  // Opens the popover from elsewhere each time it changes (an article toolbar's Style command); 0 never does.
+  openRequest?: number;
   // The popover's body, or a function of its close (a body that closes itself, Layouts).
   children: ReactNode | ((close: () => void) => ReactNode);
 }) {
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
+  const [seenRequest, setSeenRequest] = useState(openRequest);
+  if (openRequest !== seenRequest) {
+    setSeenRequest(openRequest);
+    if (openRequest) setOpen(true);
+  }
   const mobile = useIsMobileViewport();
   const close = () => setOpen(false);
   const body = typeof children === 'function' ? children(close) : children;

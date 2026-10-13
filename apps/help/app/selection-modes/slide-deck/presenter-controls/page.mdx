@@ -6,13 +6,13 @@ import { PresenterHud } from '@/components/illustrations/presentation';
 export const metadata = helpMetadata({
   title: "The Presenter's Controls",
   description:
-    'Run a slide deck from the presenter strip: position, elapsed clock, per-slide budget, jump to any slide, presenter notes and the eleven presenter settings.',
+    'Run a slide deck from the presenter strip: position, elapsed clock, per-slide budget, jump to any slide, presenter notes and the presenter settings.',
   path: '/help/selection-modes/slide-deck/presenter-controls/',
 });
 
 <ArticleLayout
   title="The Presenter's Controls"
-  description="The strip in the corner of a running deck, and the settings behind its cog."
+  description="The strip in the corner of a running deck, its cog, and the presenter settings."
   categoryTitle="Selection Modes"
   categorySlug="selection-modes"
   parentArticle={{ title: 'Slide Deck', slug: 'slide-deck' }}
@@ -63,31 +63,32 @@ Slides with no budget simply show nothing, so turning it on doesn't clutter the 
 
 ## Presenter settings
 
-The cog opens eleven settings in three groups. The cog in the Slide Deck panel's header opens the same settings, apart from the two pacing readouts, so you can set them before you start. They are meant to be decisions you can make in one glance and undo in one more, because this popover opens on a projector in front of a room.
+The presenter settings live in **Settings**, under **Editor** then **Presenting**, so you set them before the talk. The cog in the Slide Deck panel's header opens them too. The cog on screen while you present keeps only what you might change in front of the room: the **Transition** and its speed, and the two pacing readouts.
 
-**Transition**
+**Slides**
 
 - **Slide** (the default, the whole screen travelling), **Fade** (one slide dissolving into the next), or **None** (a straight cut).
 - A **speed**, **Quick**, **Normal** or **Slow**, which disappears when the transition is **None** rather than sitting there greyed out.
 
+- **Slide Size**: **Fill Screen** (a small slide is blown up) or **Actual Size** (never past 100%), for authors whose slides are already the size they meant.
+
 **Playback**
 
-- Auto-advance, a row of **Off**, **5s**, **10s**, **30s** and **60s**: how often the deck moves on by itself. It pauses while a popover is open, so something you are reading is never swept away by a timer you had forgotten about.
-- **Click to advance** (on to start): turn it off if you gesture at the screen with the mouse and would rather drive from the keys and buttons alone.
-- **Loop the deck**: after the last slide, start again instead of ending. With auto-advance, that is the whole "leave it running on the wall" setup.
+- **Auto-Advance**, a row of **Off**, **5s**, **10s**, **30s** and **60s**: how often the deck moves on by itself. It pauses while a popover is open, so something you are reading is never swept away by a timer you had forgotten about.
+- **Click to Advance** (on to start): turn it off if you gesture at the screen with the mouse and would rather drive from the keys and buttons alone.
+- **Loop the Deck**: after the last slide, start again instead of ending. With auto-advance, that is the whole "leave it running on the wall" setup.
 
-**Display**
+**While Presenting**
 
-- **Fill screen** (a small slide is blown up) or **Actual size** (never past 100%), for authors whose slides are already the size they meant.
-- **Show position** (on to start): turn the counter and slide name off for a clean screen.
-- **Keep controls visible**: stop the strip fading when the pointer rests.
-- **Hide the pointer** (on to start): a still cursor left on a projector is a distraction. It goes and comes back with the controls, so a hidden pointer is never a trap (and with Keep controls visible on, the pointer stays too).
-- **Show elapsed time** and **Show slide budget**: the two pacing readouts above.
+- **Show Position** (on to start): turn the counter and slide name off for a clean screen.
+- **Keep Controls Visible**: stop the strip fading when the pointer rests.
+- **Hide the Pointer** (on to start): a still cursor left on a projector is a distraction. It goes and comes back with the controls, so a hidden pointer is never a trap (and with Keep Controls Visible on, the pointer stays too).
+- **Show Elapsed Time** and **Show Slide Budget**: the two pacing readouts above, also on the cog while you present.
 
 <Note>
-  These settings are **yours and this device's**, like the eraser's brush or the laser's pen. They
-  are how you drive a deck on this machine, not part of the document, so a colleague presenting the
-  same deck gets their own.
+  These settings are **yours**: they follow your account to every device you sign in on (a guest
+  keeps them in this browser). They are how you drive a deck, not part of the document, so a
+  colleague presenting the same deck gets their own.
 </Note>
 
 </ArticleLayout>

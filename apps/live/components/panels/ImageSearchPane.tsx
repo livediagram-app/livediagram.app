@@ -191,6 +191,8 @@ function SearchTile({
   const licence = licenceLabel(result.license, result.licenseVersion);
   // Until its thumbnail arrives the tile is a placeholder photo, glinting like the search's own.
   const [loaded, setLoaded] = useState(false);
+  // Openverse cannot render every thumbnail (a 424 for some large originals): the picture itself stands in, once.
+  const [src, setSrc] = useState(result.thumbnail);
   return (
     <li>
       <button
@@ -210,14 +212,17 @@ function SearchTile({
         }`}
       >
         <img
-          src={result.thumbnail}
+          src={src}
           alt=""
           loading="lazy"
           decoding="async"
           referrerPolicy="no-referrer"
           draggable={false}
           onLoad={() => setLoaded(true)}
-          onError={() => setLoaded(true)}
+          onError={() => {
+            if (src !== result.url && result.url) setSrc(result.url);
+            else setLoaded(true);
+          }}
           className={`relative h-full w-full object-cover transition ${
             !loaded ? 'opacity-0' : disabled && !picking ? 'opacity-40 grayscale-[60%]' : ''
           }`}

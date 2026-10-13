@@ -224,7 +224,9 @@ describe('settings catalogue', () => {
       const changed = Object.keys({ ...before, ...after }).filter(
         (k) => before[k as keyof UserPreferences] !== after[k as keyof UserPreferences],
       );
-      expect(changed, row.key).toEqual(own[row.key] ?? [row.key]);
+      // A presenter switch writes the one `presentation` object (lib/presentation-config).
+      const presenting = row.key.startsWith('presentation-') ? ['presentation'] : undefined;
+      expect(changed, row.key).toEqual(own[row.key] ?? presenting ?? [row.key]);
     }
   });
 
@@ -403,10 +405,10 @@ describe('settings catalogue', () => {
 
 // Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests one sub-category per mode with settings of its own under Editor: Draw, and no Diagram yet', () => {
+  it('nests one sub-category per mode with settings of its own under Editor (Draw, Illustrate; no Diagram yet), then Presenting', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['draw', 'illustrate']);
+    expect(children).toEqual(['draw', 'illustrate', 'presenting']);
     const at = ids.indexOf('editor');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });

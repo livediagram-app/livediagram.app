@@ -17,6 +17,7 @@ import { PageLayoutsButton } from './PageLayoutsButton';
 import { PageMotionLayer } from './PageMotionLayer';
 import { PageNotesButton } from './PageNotesButton';
 import { PageTidyUpButton } from './PageTidyUpButton';
+import { PageArticleButtons } from './PageArticleButtons';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
 import { track } from '@/lib/telemetry';
 import { isArticleLocked } from '@/lib/article/article-lock';
@@ -188,12 +189,9 @@ export function IllustratePages({
   useFollowPagePanelRequests(setOpened);
   // The page toolbar's Article Style button opens the page's panel on Style.
   const styleRequest = useStylePanelRequest();
-  const [seenStyleRequest, setSeenStyleRequest] = useState(styleRequest.seq);
-  if (styleRequest.seq !== seenStyleRequest) {
-    setSeenStyleRequest(styleRequest.seq);
-    if (styleRequest.pageId)
-      setOpened({ id: styleRequest.pageId, tab: 'style', seq: styleRequest.seq });
-  }
+  // The article toolbar's Style command opens the Style beside that page's cog (PageArticleButtons).
+  const styleRequestFor = (pageId: string) =>
+    styleRequest.pageId === pageId ? styleRequest.seq : 0;
   // The empty page's own invitation opens its panel on Layouts.
   const openLayouts = (id: string) => setOpened({ id, tab: 'layouts' });
   // The pages whose in-page layout card was hidden, until the tab is next opened.
@@ -217,6 +215,17 @@ export function IllustratePages({
   const previewed = view.layoutPreview
     ? pages.find((p) => p.id === view.layoutPreview!.pageId)
     : undefined;
+  // An article's Style or Text sections (ArticleStyleSection), for the buttons beside an article page's cog.
+  const articleSection = (flow: string, part: 'style' | 'text') =>
+    articles?.flows[flow] ? (
+      <ArticleStyleSection
+        part={part}
+        style={articles.flows[flow]!.style}
+        themeAccent={view.themeAccent}
+        onChange={(change) => articles.setStyle(flow, change)}
+        onPreview={(style) => articles.setStylePreview(style ? { flow, style } : null)}
+      />
+    ) : null;
   const anchorOf = useCallback((id: string) => cogs.current.get(id), []);
   return (
     <>
@@ -242,6 +251,9 @@ export function IllustratePages({
         // An infographic or slide page's Tidy, left of its Background, shown only while it would
         // change something.
         const tidyButton = pageButtons && edit.canTidy?.(page.id) === true;
+        // An article page's Style, Text and Background sit beside its cog (PageArticleButtons); a locked page
+        // offers none.
+        const articleButtons = !!edit && !locked && !!page.flow && !!articles?.flows[page.flow];
         // A logo page's empty artboard invites its layouts (its panel's Layouts tab).
         const empty = !!edit && !locked && page.kind === 'logo' && edit.contentCount(page.id) === 0;
         // The first page, unchosen and empty, offers its kind first (FirstPageChoice).
@@ -269,6 +281,7 @@ export function IllustratePages({
           notes: notesButton,
           logo: logoButtons,
           page: pageButtons,
+          article: articleButtons,
           tidy: tidyButton,
         };
         // The buttons name themselves on a desktop while the page is wide enough on screen to hold
@@ -389,6 +402,14 @@ export function IllustratePages({
                 {notesButton && view.deck ? (
                   <PageNotesButton pageId={page.id} deck={view.deck} labelled={labelled} />
                 ) : null}
+                {/* An article page's Style and Text (PageArticleButtons), then its Background. */}
+                {articleButtons && page.flow ? (
+                  <PageArticleButtons
+                    labelled={labelled}
+                    styleRequest={styleRequestFor(page.id)}
+                    section={(part) => articleSection(page.flow!, part)}
+                  />
+                ) : null}
                 {/* An infographic or slide page's Layouts (PageLayoutsButton). */}
                 {pageButtons ? (
                   <PageLayoutsButton
@@ -401,8 +422,8 @@ export function IllustratePages({
                     }
                   />
                 ) : null}
-                {/* An infographic or slide page's Background (PageBackgroundButton). */}
-                {pageButtons ? (
+                {/* An infographic, slide or article page's Background (PageBackgroundButton). */}
+                {pageButtons || articleButtons ? (
                   <PageBackgroundButton
                     page={page}
                     labelled={labelled}
@@ -549,19 +570,6 @@ export function IllustratePages({
                   ),
                   article: PAGE_TOUR_HELP[pageKindOf(open)].article,
                 }
-          }
-          articleStyle={(part) =>
-            open.flow && articles?.flows[open.flow] ? (
-              <ArticleStyleSection
-                part={part}
-                style={articles.flows[open.flow]!.style}
-                themeAccent={view.themeAccent}
-                onChange={(change) => articles.setStyle(open.flow!, change)}
-                onPreview={(style) =>
-                  articles.setStylePreview(style ? { flow: open.flow!, style } : null)
-                }
-              />
-            ) : null
           }
         />
       ) : null}

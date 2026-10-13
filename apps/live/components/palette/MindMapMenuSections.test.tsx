@@ -1,15 +1,24 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MindMapMenuGroups } from './MindMapMenuGroups';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { stubResizeObserver } from '@/components/sheets/sheet-ui-test-utils';
+import { MindMapMenuSections } from './MindMapMenuSections';
 
-// docs/specs/009-elements/mind-node.md "The Mind Map menu": Outline, Branching and Spacing, each a list of
-// full-width rows.
+// docs/specs/009-elements/mind-node.md "The Mind Map menu": a Mind Map flyout row holding Outline, Branching and
+// Spacing, each a closed category around a list of full-width rows.
 
+// The flyout panel tracks its own size, which jsdom cannot.
+beforeAll(stubResizeObserver);
 afterEach(cleanup);
 
-function renderMenu(over: Partial<Parameters<typeof MindMapMenuGroups>[0]> = {}) {
+function renderMenu(
+  over: Partial<Parameters<typeof MindMapMenuSections>[0]> = {},
+  // Every category open by default, so a case can reach its rows; the first case closes them.
+  open = true,
+) {
   const props = {
+    sectionProps: () => ({ open, onToggle: vi.fn() }),
+    flyoutProps: {},
     flow: 'tree' as const,
     spacing: 'comfortable' as const,
     onSetFlow: vi.fn(),
@@ -20,15 +29,36 @@ function renderMenu(over: Partial<Parameters<typeof MindMapMenuGroups>[0]> = {})
     onSelectMap: vi.fn(),
     ...over,
   };
-  render(<MindMapMenuGroups {...props} />);
+  render(<MindMapMenuSections {...props} />);
+  // The Mind Map row opens its flyout of categories.
+  fireEvent.click(screen.getByRole('button', { name: /Mind Map/ }));
   return props;
 }
 
-describe('MindMapMenuGroups', () => {
-  it('shows the three groups under their headings', () => {
-    renderMenu();
-    for (const heading of ['Outline', 'Branching', 'Spacing'])
-      expect(screen.getByRole('heading', { name: heading })).toBeTruthy();
+describe('MindMapMenuSections', () => {
+  it('opens a flyout of three closed categories', () => {
+    renderMenu({}, false);
+    for (const title of ['Outline', 'Branching', 'Spacing'])
+      expect(screen.getByRole('button', { name: title }).getAttribute('aria-expanded')).toBe(
+        'false',
+      );
+  });
+
+  it('opens each category on its own', () => {
+    const sectionProps = vi.fn((id: string) => ({
+      open: id === 'mind-branching',
+      onToggle: vi.fn(),
+    }));
+    renderMenu({ sectionProps });
+    expect(sectionProps.mock.calls.map(([id]) => id)).toEqual(
+      expect.arrayContaining(['mind-outline', 'mind-branching', 'mind-spacing']),
+    );
+    expect(screen.getByRole('button', { name: 'Branching' }).getAttribute('aria-expanded')).toBe(
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'Spacing' }).getAttribute('aria-expanded')).toBe(
+      'false',
+    );
   });
 
   it('runs each Outline action', () => {

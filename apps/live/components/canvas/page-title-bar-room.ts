@@ -2,6 +2,7 @@
 // cog", "The label fits its page"): its fixed buttons, named or as icons, and whether they can be
 // named at all, so the page's label and an empty logo page's invite share what is left.
 import { logoTitleBarRoom } from './LogoTitleBar';
+import { pageArticleRoom } from './PageArticleButtons';
 import { pageBackgroundRoom } from './PageBackgroundButton';
 import { pageLayoutsRoom } from './PageLayoutsButton';
 import { pageDeckRoom } from './PageDeckButton';
@@ -23,6 +24,8 @@ export type TitleBarButtons = {
   logo: boolean;
   // An infographic or slide page's Layout and Background.
   page: boolean;
+  // An article page's Style, Text and Background.
+  article?: boolean;
   tidy: boolean;
 };
 
@@ -34,6 +37,7 @@ export function titleBarFixedRoom(b: TitleBarButtons, named: boolean): number {
     (b.notes ? pageNotesRoom(named) : 0) +
     (b.logo ? logoTitleBarRoom(true, named) : 0) +
     (b.page ? pageLayoutsRoom(named) + pageBackgroundRoom(named) : 0) +
+    (b.article ? pageArticleRoom(named) + pageBackgroundRoom(named) : 0) +
     (b.tidy ? pageTidyUpRoom() : 0)
   );
 }
