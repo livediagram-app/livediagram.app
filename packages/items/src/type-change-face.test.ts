@@ -131,6 +131,25 @@ describe('tabs and detailsLabel', () => {
     expect(again.detailsLabel).toBeUndefined();
   });
 
+  it('gives each new tab an id of its own beside the tabs the type already has', () => {
+    const bug = typeIn(
+      run([
+        { ...BUG, tabs: [{ name: 'Triage', fields: [] }] },
+        {
+          op: 'set',
+          type: 'Bug',
+          tabs: [
+            { name: 'One', fields: [] },
+            { name: 'Two', fields: [] },
+          ],
+        },
+      ]),
+      'Bug',
+    );
+    expect(bug.tabs!.map((t) => t.label)).toEqual(['One', 'Two']);
+    expect(new Set(bug.tabs!.map((t) => t.id)).size).toBe(2);
+  });
+
   it('refuses the title, votes, a field in two tabs, a missing field and too many tabs', () => {
     const cases = [
       [{ name: 'A', fields: ['title'] }],
