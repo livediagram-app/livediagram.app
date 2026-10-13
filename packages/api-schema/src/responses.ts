@@ -5,13 +5,18 @@
 // call site, where a renamed key would drift silently.
 
 import type { LiveDoc, DocumentSummary, Folder, ShareLink, TabRecord, TeamListItem } from './index';
+import type { TeamRecentDocument } from './recent-diagrams';
 
 // GET / PUT /api/documents/:id, POST /api/documents (+ copy).
 export type DocumentResponse = { document: LiveDoc };
 // GET /api/documents/:id/tabs/:tabId.
 export type TabResponse = { tab: TabRecord };
-// GET /api/documents: the caller's personal library.
-export type DocumentListResponse = { documents: DocumentSummary[] };
+// GET /api/documents: the caller's personal library. With `?include=team-recent` it also carries the
+// newest documents of the teams they have joined (docs/specs/019-marketing/returning-visitor.md).
+export type DocumentListResponse = {
+  documents: DocumentSummary[];
+  teamRecent?: TeamRecentDocument[];
+};
 // POST /api/documents/:id/share (+ extend).
 export type ShareLinkResponse = { link: ShareLink };
 // GET /api/teams: the teams the caller belongs to (docs/specs/013-workspace/teams.md).

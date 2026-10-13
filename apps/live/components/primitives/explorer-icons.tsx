@@ -28,7 +28,6 @@ import {
   lucideShapes,
   lucideShare2,
   lucideStar,
-  lucideUsers,
 } from '@livediagram/icons/lucide';
 
 // The one glyph set for both Explorer surfaces: the full-page /explorer
@@ -171,7 +170,8 @@ export const PaletteIcon = lucideGlyph(lucidePalette, 13);
 // Three shapes: the Shape libraries section (docs/specs/013-workspace/shape-libraries.md).
 export const ShapesIcon = lucideGlyph(lucideShapes, 13);
 export const KeyIcon = lucideGlyph(lucideKey, 13);
-export const TeamIcon = lucideGlyph(lucideUsers, 13);
+// A team: one drawing, shared with the landing page (@livediagram/ui).
+export { TeamIcon } from '@livediagram/ui';
 export const InviteIcon = lucideGlyph(lucideMail, 13);
 // The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My
 // documents (a root folder), Library, and This browser (a browser window).
