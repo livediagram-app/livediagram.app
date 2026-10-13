@@ -74,7 +74,7 @@ Layouts) and closes it on leaving.
    pictures, a pattern on top; hover to preview, press to keep it.
 3. **Add It to the Deck** (the slide's deck button): Add to Slides puts it in the deck; once in, the eye hides or
    shows it, and Notes beside it holds what to say.
-4. **Add Another Slide** (the + after the last page).
+4. **Add Another Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).
 5. **Present** (the Slide Deck, opened from the Slides button): the deck's order, then **Present** for full screen.
 6. **You're ready to present** (outro).
 
@@ -109,7 +109,7 @@ logos?**: **Start From a Logo Layout** (the panel, opened on Layouts), **Draw on
 ### Filtering
 
 - A step whose control is not on screen when the tour starts (a slide's deck button and the Slides button on a
-  phone, the + on a surface without it) is left out up front, so the count stays honest; one that goes before its
+  phone; the + when neither the one after the last page nor the Toolbar strip's is in the window) is left out up front, so the count stays honest; one that goes before its
   turn is skipped, as in the Diagram tour.
 - If the tour can no longer run where it started (the person's edit rights go, they leave Illustrate, they open
   another tab, or the tour page is deleted or locked) it ends as skipped, closing whatever it opened.

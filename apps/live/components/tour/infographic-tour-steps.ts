@@ -3,6 +3,7 @@
 // and the Slide Deck. Each control stays live, so a pick made while its step is up is kept.
 import type { PageTourStep } from './page-tour-api';
 import {
+  addPageAnchor,
   closeSlideDeck,
   closeTitlePopover,
   openSlideDeck,
@@ -61,7 +62,7 @@ export function infographicTourSteps(): PageTourStep[] {
       id: 'add-page',
       title: 'Add a Page',
       body: 'The + adds another page after the last: an infographic, an article, a slide or a logo.',
-      target: 'add-page',
+      selector: addPageAnchor,
     },
     {
       id: 'present',

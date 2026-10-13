@@ -3,6 +3,7 @@
 // Deck, where the deck is presented. Each control stays live, so a pick made while its step is up is kept.
 import type { PageTourStep } from './page-tour-api';
 import {
+  addPageAnchor,
   closeSlideDeck,
   closeTitlePopover,
   openSlideDeck,
@@ -51,7 +52,7 @@ export function slideTourSteps(): PageTourStep[] {
       id: 'add-page',
       title: 'Add Another Slide',
       body: 'The + adds the next page. Slide comes first in its list, so Enter adds another slide straight away.',
-      target: 'add-page',
+      selector: addPageAnchor,
     },
     {
       id: 'present',
@@ -66,7 +67,7 @@ export function slideTourSteps(): PageTourStep[] {
       id: 'outro',
       card: 'outro',
       title: "You're ready to present",
-      body: 'Make the next slide, then press Present. The help centre has more on slide pages.',
+      body: 'Make the next slide, and the deck is ready when you are. The help centre has more on slide pages and presenting.',
     },
   ];
 }

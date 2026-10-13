@@ -83,10 +83,15 @@ beforeEach(() => {
   track.mockReset();
   dom.hidden = [];
   dom.page = { pageId: 'p1', kind: 'slide' };
+  // The + after the last page, read from the document for where the Add step points.
+  const plus = document.createElement('button');
+  plus.dataset.tourId = 'add-page';
+  document.body.append(plus);
   stage.engine = null;
 });
 afterEach(() => {
   cleanup();
+  document.body.innerHTML = '';
   vi.clearAllMocks();
   vi.useRealTimers();
   setActiveTour('welcome', false);

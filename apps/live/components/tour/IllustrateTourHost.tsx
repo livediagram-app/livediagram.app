@@ -27,6 +27,9 @@ import { helpArticleHref } from '@/lib/help-articles';
 
 // The settle delay before the offer, as the Diagram and Plan tours'.
 export const OFFER_DELAY_MS = 800;
+// How many times the offer looks for a tour page, one settle delay apart, before it waits for the next arming:
+// about ten seconds for a tab's pages to draw.
+export const OFFER_LOOKS = 12;
 
 // The telemetry `type` of a step view, naming its track: ('slide', 'add-page') → 'IllustrateTourStepSlideAddPage'.
 export function illustrateTourStepTelemetryType(kind: PageKind, stepId: string): string {
@@ -133,13 +136,23 @@ export function IllustrateTourHost() {
     if (!armed || active || !anyUnseen) return;
     if (!inIllustrate || !canWork || otherTour) return;
     let cancelled = false;
-    const t = setTimeout(() => {
+    let tries = 0;
+    let t: ReturnType<typeof setTimeout>;
+    // The pages draw a moment after the editor is usable (a template's tab arriving): look again, a bounded number
+    // of times, before letting the offer go until the next arming.
+    const look = () => {
       if (document.querySelector('[data-first-page-choice]')) return;
-      setArmed(false);
       const page = pickTourPage((kind) => !illustrateKindSeen(prefsRef.current, kind));
-      if (!page) return;
+      if (!page) {
+        tries += 1;
+        if (tries < OFFER_LOOKS) t = setTimeout(look, OFFER_DELAY_MS);
+        else setArmed(false);
+        return;
+      }
+      // Disarmed once the steps are in: disarming first would re-run this effect and drop the load in flight.
       void import('./page-tour-steps').then(({ illustrateTourSteps }) => {
         if (cancelled) return;
+        setArmed(false);
         debugLog('[illustrate-tour] offer', { kind: page.kind });
         resetPageTour();
         setSubject(page);
@@ -154,7 +167,8 @@ export function IllustrateTourHost() {
         engineRef.current.start();
         track('UI', 'Opened', 'IllustrateTourOffer');
       });
-    }, OFFER_DELAY_MS);
+    };
+    t = setTimeout(look, OFFER_DELAY_MS);
     return () => {
       cancelled = true;
       clearTimeout(t);

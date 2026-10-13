@@ -17,6 +17,24 @@ export const pageCog = (pageId: string) => `${pageSheet(pageId)} [data-tour-id="
 export const titlePopover = (name: string) =>
   `[role="dialog"][aria-label="${name}"]:is([data-anchored-popover], [data-bottom-sheet])`;
 
+// Whether an element sits wholly in the window.
+function inWindow(el: Element): boolean {
+  const r = el.getBoundingClientRect();
+  return (
+    r.left >= 0 && r.top >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight
+  );
+}
+
+/** The + that adds a page: the one after the last page while it is in the window, else the Toolbar strip's (a long
+ *  row of pages runs the first off screen). Neither in the window (a phone has no strip +): none, and the step is
+ *  left out. */
+export function addPageAnchor(): string | null {
+  const row = document.querySelector('[data-tour-id="add-page"]');
+  if (row && inWindow(row)) return '[data-tour-id="add-page"]';
+  const strip = document.querySelector('[data-tour-id="add-page-strip"]');
+  return strip && inWindow(strip) ? '[data-tour-id="add-page-strip"]' : null;
+}
+
 // The popovers a step has opened while it is up: opened once on entering, so one closed by a pick stays closed and
 // the ring moves to the page instead (pageOrPopover).
 const opened = new Set<string>();
