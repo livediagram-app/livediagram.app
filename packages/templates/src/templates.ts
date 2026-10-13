@@ -4,6 +4,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { articleTemplateOverrides } from './article-template';
+import { blankPageTemplateOverrides } from './blank-page-templates';
 import { templatePages } from './template-pages';
 import { templateEditorMode } from './template-modes';
 import { titleCase } from '@livediagram/api-schema';
@@ -177,6 +178,12 @@ export type TemplateKind =
   // in Illustrate on one empty page, which asks what it is for. A quick-pick beside the other two
   // blanks, never inside a category grid.
   | 'blank-illustration'
+  // The blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): one empty page
+  // whose kind is already chosen (blank-page-templates.ts), so it never asks what it is for.
+  | 'blank-slide-deck'
+  | 'blank-article'
+  | 'blank-infographic'
+  | 'blank-logo'
   // Draw templates (docs/specs/007-editor/templates-by-mode.md "Draw templates"): boards drawn with
   // freehand strokes, stickies, text and stickers, opening in Draw mode.
   | 'sketchnote'
@@ -266,6 +273,30 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-illustration',
     title: 'Blank Illustration',
     description: 'An empty page for an infographic, an article, a slide or a logo.',
+    extra: true,
+  },
+  {
+    kind: 'blank-slide-deck',
+    title: 'Blank Slide Deck',
+    description: 'One empty 16:9 slide, ready for your first idea.',
+    extra: true,
+  },
+  {
+    kind: 'blank-article',
+    title: 'Blank Article',
+    description: 'One empty article page: a title and a first paragraph to write.',
+    extra: true,
+  },
+  {
+    kind: 'blank-infographic',
+    title: 'Blank Infographic',
+    description: 'One empty A4 infographic page: lay it out yourself or start from a layout.',
+    extra: true,
+  },
+  {
+    kind: 'blank-logo',
+    title: 'Blank Logo',
+    description: 'One empty square artboard for a mark, a wordmark or a lockup.',
     extra: true,
   },
   {
@@ -1132,6 +1163,10 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   article: 'blank',
   // The other Illustrate templates: their pages are the paper.
   'blank-illustration': 'blank',
+  'blank-slide-deck': 'blank',
+  'blank-article': 'blank',
+  'blank-infographic': 'blank',
+  'blank-logo': 'blank',
   'event-poster': 'blank',
   'year-in-review': 'blank',
   resume: 'blank',
@@ -1200,6 +1235,9 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   if (mode !== 'diagram') overrides.opensIn = mode;
   // The Article opens in Illustrate on its one article page (docs/specs/007-editor/article-pages.md).
   if (kind === 'article') Object.assign(overrides, articleTemplateOverrides());
+  // A blank of a page kind opens in Illustrate on its one page, its kind already chosen (blank-page-templates.ts).
+  const blankPage = blankPageTemplateOverrides(kind);
+  if (blankPage) Object.assign(overrides, blankPage);
   // The Slide deck, Logo design and Group card open in Illustrate on their own pages
   // (canvas-and-palette.md "Templates on pages"); their builders place every element on them.
   const pages = templatePages(kind);

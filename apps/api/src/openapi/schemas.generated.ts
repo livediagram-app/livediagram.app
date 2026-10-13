@@ -9704,8 +9704,78 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "angle"
         ],
         "type": "object"
+      },
+      {
+        "$ref": "#/components/schemas/PageImageFill"
       }
     ]
+  },
+  "PageImageFill": {
+    "additionalProperties": false,
+    "properties": {
+      "credit": {
+        "$ref": "#/components/schemas/ImageCredit"
+      },
+      "imageId": {
+        "type": "string"
+      },
+      "kind": {
+        "const": "image",
+        "type": "string"
+      },
+      "overlay": {
+        "$ref": "#/components/schemas/PageImageOverlay"
+      },
+      "position": {
+        "$ref": "#/components/schemas/PageImagePosition"
+      },
+      "preview": {
+        "type": "string"
+      },
+      "tone": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "imageId"
+    ],
+    "type": "object"
+  },
+  "PageImageOverlay": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/PageImageOverlayKind"
+      },
+      "strength": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "kind",
+      "strength"
+    ],
+    "type": "object"
+  },
+  "PageImageOverlayKind": {
+    "enum": [
+      "light",
+      "dark",
+      "tint",
+      "fade"
+    ],
+    "type": "string"
+  },
+  "PageImagePosition": {
+    "enum": [
+      "top",
+      "bottom"
+    ],
+    "type": "string"
   },
   "PageKind": {
     "enum": [

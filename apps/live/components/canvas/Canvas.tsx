@@ -47,6 +47,7 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
+import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
 import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
 import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { usePreviewedElements } from '@/hooks/canvas/usePreviewedElements';
@@ -806,16 +807,19 @@ function CanvasView(props: CanvasProps) {
             {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
             {/* Illustrate mode's A4 pages, under every element (IllustratePages). */}
             {props.illustratePages ? (
-              <IllustratePages
-                // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
-                // tab's own: page ids repeat across tabs.
-                key={props.activeTabId}
-                view={props.illustratePages}
-                zoom={viewportZoom}
-                // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
-                // layout invites or add button.
-                bare={props.zenMode === true || canvasTool === 'isometric'}
-              />
+              // The image store's access, for the pages' pictures (page-image-access).
+              <PageImageAccessProvider access={props.imageContext}>
+                <IllustratePages
+                  // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
+                  // tab's own: page ids repeat across tabs.
+                  key={props.activeTabId}
+                  view={props.illustratePages}
+                  zoom={viewportZoom}
+                  // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
+                  // layout invites or add button.
+                  bare={props.zenMode === true || canvasTool === 'isometric'}
+                />
+              </PageImageAccessProvider>
             ) : null}
             {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
             zone's elements sit in the room the writing leaves them. */}

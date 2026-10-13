@@ -763,6 +763,27 @@
     stroke-dashoffset: 0;
   }
 }
+/* The bar's split percentage label (docs/specs/009-elements/progress.md "The percentage stays
+ * legible"): each copy's clip grows with the fill, from the empty / full clip to its resting
+ * inline clip-path, on the fill's own timing, so the ink changes where the fill's edge is. */
+@keyframes lvd-prog-ink-fill {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+@keyframes lvd-prog-ink-track {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.lvd-prog-ink-fill {
+  animation: lvd-prog-ink-fill calc(1.8s * var(--lvd-prog-speed, 1)) ease-out
+    var(--lvd-prog-iter, 1) forwards;
+}
+.lvd-prog-ink-track {
+  animation: lvd-prog-ink-track calc(1.8s * var(--lvd-prog-speed, 1)) ease-out
+    var(--lvd-prog-iter, 1) forwards;
+}
 .lvd-prog-ring-grow {
   animation: lvd-prog-ring-grow calc(1.8s * var(--lvd-prog-speed, 1)) ease-out
     var(--lvd-prog-iter, 1) forwards;
@@ -1008,6 +1029,8 @@
   .lvd-icon-swing,
   .lvd-icon-float,
   .lvd-prog-grow,
+  .lvd-prog-ink-fill,
+  .lvd-prog-ink-track,
   .lvd-prog-pulse,
   .lvd-prog-stripes,
   .lvd-prog-ring-grow,

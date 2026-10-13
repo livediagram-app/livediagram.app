@@ -78,8 +78,9 @@ changes before it would have done.
   orientation; turning one is refused (`no_orientation`).
 - **Backgrounds**: `{ color }` (a hex) is a solid fill, `{ gradient: [from, to], angle? }` a two-stop gradient
   (angle in degrees, default 160, the panel's), `pattern` one of `dots`, `grid`, `lines` or `none`, `{ paper: true }` back to the
-  plain paper. A logo page takes no pattern (`pattern_not_offered`). A new fill re-inks the page's own-coloured
-  content as the panel does (`withPageInkFor`).
+  plain paper. A logo page takes no pattern (`pattern_not_offered`). A new fill re-inks what is on the page as the panel does
+  (`pageInkFor`, [Re-inking](../007-editor/illustrate-pages.md#re-inking)), from the colours as they are (the
+  editor's session memory is the editor's).
 - **Layouts**: a layout id the page's kind offers (`layoutCatalogueFor`); any other is refused (`layout_unknown`)
   naming the kind's layouts. Laid out in the page's content box, in the tab's theme.
 - **Locks**: a locked page refuses every change but `set { locked: false }` (`page_locked`); on an article any

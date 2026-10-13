@@ -3,7 +3,7 @@
 // export paints the same background onto its own canvas (export-page).
 import {
   PAGE_GRADIENT_ANGLE,
-  isLightColor,
+  pageImageTone,
   pageIsDark,
   shade,
   tint,
@@ -14,6 +14,12 @@ import {
   type PagePattern,
 } from '@livediagram/document';
 import type { CSSProperties } from 'react';
+import {
+  pageImageCssUrl,
+  pageImageOverlayCss,
+  pageImagePositionCss,
+  pageImageSrc,
+} from './page-image-paint';
 
 // The background edit itself is the document's, shared with the agents' page changes.
 export { PAGE_GRADIENT_ANGLE, sameFill, withBackgroundPatch } from '@livediagram/document';
@@ -22,11 +28,18 @@ export type GradientPreset = { id: string; label: string; from: string; to: stri
 
 export const PAGE_GRADIENT_PRESETS: readonly GradientPreset[] = [
   { id: 'sunrise', label: 'Sunrise', from: '#fde68a', to: '#fca5a5' },
+  { id: 'peach', label: 'Peach', from: '#fed7aa', to: '#fecdd3' },
+  { id: 'rose', label: 'Rose', from: '#ffe4e6', to: '#fbcfe8' },
+  { id: 'lavender', label: 'Lavender', from: '#e9d5ff', to: '#fbcfe8' },
   { id: 'ocean', label: 'Ocean', from: '#bae6fd', to: '#c7d2fe' },
   { id: 'meadow', label: 'Meadow', from: '#bbf7d0', to: '#a5f3fc' },
-  { id: 'peach', label: 'Peach', from: '#fed7aa', to: '#fecdd3' },
+  { id: 'mint', label: 'Mint', from: '#ccfbf1', to: '#d9f99d' },
+  { id: 'sand', label: 'Sand', from: '#fef3c7', to: '#e7e5e4' },
+  { id: 'steel', label: 'Steel', from: '#f1f5f9', to: '#cbd5e1' },
   { id: 'dusk', label: 'Dusk', from: '#1e1b4b', to: '#4c1d95' },
   { id: 'night', label: 'Night', from: '#0f172a', to: '#1e3a8a' },
+  { id: 'forest', label: 'Forest', from: '#052e16', to: '#115e59' },
+  { id: 'ember', label: 'Ember', from: '#7c2d12', to: '#be123c' },
 ];
 
 export const PAGE_PATTERN_LABEL: Record<PagePattern | 'none', string> = {
@@ -46,11 +59,12 @@ export const gradientFill = (p: Pick<GradientPreset, 'from' | 'to'>): PageFill =
   angle: PAGE_GRADIENT_ANGLE,
 });
 
-/** The CSS `background` of a fill: a colour, or a linear gradient. */
+/** The CSS `background` of a fill: a colour, a linear gradient, or a picture's tone under its
+ *  overlay (a swatch's stand-in for it). */
 export function fillCss(fill: PageFill): string {
-  return fill.kind === 'solid'
-    ? fill.color
-    : `linear-gradient(${fill.angle}deg, ${fill.from}, ${fill.to})`;
+  if (fill.kind === 'solid') return fill.color;
+  if (fill.kind === 'image') return pageImageTone(fill);
+  return `linear-gradient(${fill.angle}deg, ${fill.from}, ${fill.to})`;
 }
 
 // The pattern's layers, drawn in `currentColor` so the sheet's `color` sets the ink.
@@ -79,50 +93,69 @@ function patternLayers(pattern: PagePattern): { image: string; size: string } {
 /**
  * A sheet's inline style for its background: the fill (absent leaves the paper to the sheet's own
  * classes, white or slate in dark chrome) and the pattern over it, inked faintly in the page's ink.
- * `color` is that ink, so the pattern reads on any fill.
+ * `color` is that ink, so the pattern reads on any fill. A picture paints from the source
+ * `resolveImage` gives its gallery id (its fetched blob URL), over its tone until it has one, under
+ * its overlay ("Image backgrounds").
  */
 export function pageSheetStyle(
   background: PageBackground | undefined,
   // An article page's ruling (docs/specs/007-editor/article-pages.md "Article style"): its Lines
   // drawn at its body line pitch inside its margins, on the writing's baselines.
   ruling?: { pitch: number; inset: number; top: number },
+  resolveImage?: (imageId: string) => string | undefined,
 ): CSSProperties {
   const fill = background?.fill;
   const style: CSSProperties = {};
   const images: string[] = [];
   const sizes: string[] = [];
   const clips: string[] = [];
+  const positions: string[] = [];
+  const repeats: string[] = [];
+  const layer = (
+    image: string,
+    size: string,
+    clip: string,
+    position = '0 0',
+    repeat = 'repeat',
+  ) => {
+    images.push(image);
+    sizes.push(size);
+    clips.push(clip);
+    positions.push(position);
+    repeats.push(repeat);
+  };
   if (background?.pattern) {
-    const layer = patternLayers(background.pattern);
-    images.push(layer.image);
+    const pattern = patternLayers(background.pattern);
     if (ruling && background.pattern === 'lines') {
-      sizes.push(`100% ${ruling.pitch}px`);
-      clips.push('content-box');
+      layer(pattern.image, `100% ${ruling.pitch}px`, 'content-box');
       style.padding = `${ruling.top}px ${ruling.inset}px ${ruling.inset}px`;
       style.backgroundOrigin = 'content-box';
     } else {
-      sizes.push(layer.size);
-      clips.push('border-box');
+      layer(pattern.image, pattern.size, 'border-box');
     }
   }
   if (fill?.kind === 'gradient') {
-    images.push(fillCss(fill));
-    sizes.push('100% 100%');
-    clips.push('border-box');
+    layer(fillCss(fill), '100% 100%', 'border-box');
   } else if (fill?.kind === 'solid') {
     style.backgroundColor = fill.color;
+  } else if (fill?.kind === 'image') {
+    if (fill.overlay) layer(pageImageOverlayCss(fill.overlay), '100% 100%', 'border-box');
+    const src = pageImageSrc(fill, resolveImage);
+    const url = src ? pageImageCssUrl(src) : null;
+    if (url) layer(url, 'cover', 'border-box', pageImagePositionCss(fill.position), 'no-repeat');
+    // The picture's own tone under it, while it loads (and where it cannot).
+    style.backgroundColor = pageImageTone({ tone: fill.tone });
   }
   if (images.length) {
     // The colour paints under the last layer's clip: a clear last layer keeps it to the border.
     if (clips[clips.length - 1] === 'content-box') {
-      images.push('linear-gradient(transparent, transparent)');
-      sizes.push('100% 100%');
-      clips.push('border-box');
+      layer('linear-gradient(transparent, transparent)', '100% 100%', 'border-box');
     }
     style.backgroundImage = images.join(', ');
     style.backgroundSize = sizes.join(', ');
     style.backgroundClip = clips.join(', ');
-    style.backgroundRepeat = 'repeat';
+    style.backgroundRepeat = repeats.every((r) => r === 'repeat') ? 'repeat' : repeats.join(', ');
+    if (positions.some((p) => p !== '0 0')) style.backgroundPosition = positions.join(', ');
   }
   if (fill) style.color = pagePatternInk(background);
   return style;
@@ -151,57 +184,54 @@ export function themeAccent(theme: Pick<ThemeDefinition, 'elementStroke' | 'pale
 }
 
 /**
- * Backgrounds drawn from the tab's theme (docs/specs/007-editor/illustrate-pages.md
- * "Backgrounds"), offered first: two pale tints of its accent, its own element fill (when it has
- * a light one of its own), a deep shade, and a light and a dark gradient running to its second
- * colour (a multi-colour theme's next branch, else a deeper accent). Pure: theme in, presets out.
+ * Gradients drawn from the tab's theme (docs/specs/007-editor/illustrate-pages.md "Backgrounds"),
+ * the Gradient category's Theme row: fourteen, seven light then seven bold and deep, from its
+ * accent, its second colour and its third (a multi-colour theme's next branches, else the accent
+ * deepened). Its solid colours are the Solid category's Theme Palette. Pure: theme in, presets out.
  */
 export function themeBackgroundPresets(
-  theme: Pick<ThemeDefinition, 'elementStroke' | 'elementFill' | 'palette'>,
+  theme: Pick<ThemeDefinition, 'elementStroke' | 'palette'>,
 ): ThemeBackgroundPreset[] {
-  const accent = themeAccent(theme);
-  const second = isHex(theme.palette?.[1]?.stroke)
-    ? theme.palette![1]!.stroke
-    : shade(accent, 0.25);
-  const solid = (color: string): PageFill => ({ kind: 'solid', color });
-  const out: ThemeBackgroundPreset[] = [
-    { id: 'theme-wash', label: 'Theme wash', fill: solid(tint(accent, 0.93)) },
-    { id: 'theme-tint', label: 'Theme tint', fill: solid(tint(accent, 0.8)) },
+  const a = themeAccent(theme);
+  const b = isHex(theme.palette?.[1]?.stroke) ? theme.palette![1]!.stroke : shade(a, 0.25);
+  const c = isHex(theme.palette?.[2]?.stroke) ? theme.palette![2]!.stroke : shade(a, 0.45);
+  const g = (id: string, label: string, from: string, to: string): ThemeBackgroundPreset => ({
+    id: `theme-${id}`,
+    label: `Theme ${label}`,
+    fill: gradientFill({ from, to }),
+  });
+  return [
+    g('dawn', 'dawn', '#ffffff', tint(a, 0.8)),
+    g('mist', 'mist', tint(a, 0.95), tint(a, 0.72)),
+    g('glow', 'glow', tint(a, 0.85), tint(b, 0.7)),
+    g('haze', 'haze', tint(b, 0.92), tint(a, 0.8)),
+    g('sorbet', 'sorbet', tint(b, 0.85), tint(c, 0.75)),
+    g('pastel', 'pastel', tint(c, 0.9), tint(a, 0.78)),
+    g('bloom', 'bloom', tint(a, 0.7), tint(b, 0.5)),
+    g('bright', 'bright', a, b),
+    g('vivid', 'vivid', tint(a, 0.15), shade(a, 0.35)),
+    g('aurora', 'aurora', shade(a, 0.3), shade(b, 0.1)),
+    g('ember', 'ember', b, shade(c, 0.5)),
+    g('dusk', 'dusk', shade(a, 0.65), shade(b, 0.4)),
+    g('twilight', 'twilight', shade(b, 0.6), shade(a, 0.8)),
+    g('ink', 'ink', shade(a, 0.75), '#0f172a'),
   ];
-  if (isHex(theme.elementFill) && isLightColor(theme.elementFill)) {
-    out.push({
-      id: 'theme-fill',
-      label: 'Theme fill',
-      fill: solid(theme.elementFill.toLowerCase()),
-    });
-  }
-  out.push(
-    { id: 'theme-deep', label: 'Theme deep', fill: solid(shade(accent, 0.6)) },
-    {
-      id: 'theme-glow',
-      label: 'Theme glow',
-      fill: gradientFill({ from: tint(accent, 0.85), to: tint(second, 0.7) }),
-    },
-    {
-      id: 'theme-dusk',
-      label: 'Theme dusk',
-      fill: gradientFill({ from: shade(accent, 0.65), to: shade(second, 0.4) }),
-    },
-  );
-  return out;
+}
+
+/** The theme accent the theme's gradients were drawn from (Theme bright runs from it): a page
+ *  picture's Tint, where only the presets are at hand. */
+export function themePresetAccent(presets: readonly ThemeBackgroundPreset[]): string {
+  const bright = presets.find((p) => p.id === 'theme-bright')?.fill;
+  return bright?.kind === 'gradient' && isHex(bright.from) ? bright.from : FALLBACK_ACCENT;
 }
 
 /** The Background section's categories (docs/specs/007-editor/illustrate-pages.md "Backgrounds"). */
-export type BackgroundCategory = 'theme' | 'solid' | 'gradient';
+export type BackgroundCategory = 'solid' | 'gradient' | 'image';
 
-/** The category a page's fill belongs to: a theme preset's Theme, any other gradient's Gradient,
- *  else Solid (the paper and every solid colour). */
-export function backgroundCategoryOf(
-  fill: PageFill | undefined,
-  themePresets: readonly ThemeBackgroundPreset[],
-): BackgroundCategory {
-  if (fill && themePresets.some((t) => sameFill(fill, t.fill))) return 'theme';
-  return fill?.kind === 'gradient' ? 'gradient' : 'solid';
+/** The category a page's fill belongs to: Gradient for any gradient (a theme's, a preset or a
+ *  custom one), Image for a picture, else Solid (the paper and every solid colour). */
+export function backgroundCategoryOf(fill: PageFill | undefined): BackgroundCategory {
+  return fill?.kind === 'gradient' ? 'gradient' : fill?.kind === 'image' ? 'image' : 'solid';
 }
 
 /** Whether the fill is a gradient no preset (of the catalogue or the theme) names: a custom one. */

@@ -47,8 +47,8 @@ exact strings live in `apps/live/components/tour/illustrate-tour-steps.ts`.
    slides, then **No** and **Yes**.
 1. **Your Pages** (`page-name`): a page's name above its top-left corner. Pressing it fits that page to the screen;
    dragging it reorders the pages.
-2. **Page Settings** (`page-cog`): the cog above its top-right corner, opening the page's settings: its size, its
-   background and a layout to start from.
+2. **Page Settings** (`page-cog`): the cog above its top-right corner, opening the page's settings, such as its size;
+   beside it, Layout starts the page from a ready-made design, Tidy Up straightens it and Background paints it.
 3. **Add a Page** (`add-page`): the + after the last page, adding an infographic, article, slide or logo page.
 4. **Slides** (`slides`): the Slides button in the bottom-right cluster, where a slide deck is built from the pages
    and presented.

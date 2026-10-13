@@ -18,13 +18,16 @@ export function BarChartView({
   fontFamily,
   textColor,
   palette,
+  ground,
 }: {
   element: ShapeElement;
   fontFamily?: string;
   textColor: string;
   palette?: readonly string[];
+  // What the chart sits on (chartPageGrounds): its series drawn adapted to it.
+  ground?: readonly string[];
 }) {
-  const { w, h, data, colorAt, area, legend } = chartFrame(element, palette);
+  const { w, h, data, colorAt, area, legend } = chartFrame(element, palette, ground);
   const { hover, markProps } = useChartHover<number>();
   // Upright columns, or (the Bar chart type) bars to the right; laid out by the marks the export draws too.
   const { baseline, bars, origin } = barMarks(area, data, chartTypeOf(element) === 'bar');

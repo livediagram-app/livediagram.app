@@ -273,12 +273,18 @@ describe('slide page edits', () => {
     });
   });
 
-  it('never turns an infographic page in the slide size', () => {
+  it('never gives an infographic page a slide size, nor turns one still on it', () => {
     const h = harness(slideTab());
     h.edits().setSize('page-1', 'slide');
-    h.commitTabs.mockClear();
-    h.edits().setOrientation('page-1', 'landscape');
-    expect(h.commitTabs).not.toHaveBeenCalled();
+    expect(illustratePagesOf(h.tab())[0]).toMatchObject({ size: 'social' });
+    const old = harness({
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [{ id: 'page-1', orientation: 'portrait', size: 'slide', kind: 'infographic' }],
+    } as unknown as Tab);
+    old.edits().setOrientation('page-1', 'landscape');
+    expect(old.commitTabs).not.toHaveBeenCalled();
   });
 
   it('chooses Slide for the only, empty page', async () => {

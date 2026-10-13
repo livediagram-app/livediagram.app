@@ -271,6 +271,7 @@ export function useIllustratePages(deps: {
       tabId,
       current,
       elements: activeTab.elements,
+      layers: activeTab.layers,
       commitTabs,
       onGoTo: setGoTo,
       onArticleCreated: deps.onArticleCreated,

@@ -2,15 +2,15 @@ import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import { newTabOpening, newTabSeed } from './new-tab-seed';
 
-// docs/specs/007-editor/editor-modes.md: a tab added from Plan opens in Plan with no Quick Start.
+// docs/specs/007-editor/editor-modes.md "A new tab opens in the mode it was made from", with no Quick Start.
 describe('newTabOpening', () => {
-  it('opens a tab added from Plan in Plan, with no Quick Start', () => {
-    expect(newTabOpening('plan')).toEqual({ opensIn: 'plan', quickStart: false });
+  it('opens a tab added from any mode but Diagram in that mode, with no Quick Start', () => {
+    for (const mode of ['draw', 'facilitate', 'illustrate', 'plan'] as const)
+      expect(newTabOpening(mode)).toEqual({ opensIn: mode, quickStart: false });
   });
 
-  it('opens a tab added from any other mode in Diagram, on Start Diagramming, with no Quick Start', () => {
-    for (const mode of ['diagram', 'draw', 'illustrate'] as const)
-      expect(newTabOpening(mode)).toEqual({ quickStart: false });
+  it('opens a tab added from Diagram in Diagram, on Start Diagramming, writing no opening mode', () => {
+    expect(newTabOpening('diagram')).toEqual({ quickStart: false });
   });
 
   it('opens a tab asked for in a mode in that mode, on its own start, never the Quick Start', () => {
@@ -48,8 +48,8 @@ describe('newTabSeed', () => {
     });
   });
 
-  // docs/specs/007-editor/editor-modes.md "Where the mode lives": a new tab opens in Diagram,
-  // whatever mode its creator is in.
+  // docs/specs/007-editor/editor-modes.md "Where the mode lives": the look is the seed's, the mode
+  // newTabOpening's (the creator's mode), never the source's stored field.
   it('never carries an opening mode, even from a tab that opens in Draw', () => {
     expect(newTabSeed({ ...source, opensIn: 'draw' }).opensIn).toBeUndefined();
   });

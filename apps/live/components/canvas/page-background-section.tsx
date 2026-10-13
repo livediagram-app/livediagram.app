@@ -1,10 +1,11 @@
 'use client';
 
 // The page panel's Background section (docs/specs/007-editor/illustrate-pages.md "Backgrounds"), for
-// every page kind: a category control (Theme while the tab's theme offers backgrounds, Solid,
-// Gradient) over that category's choices: Solid is the one colour picker
-// (docs/specs/004-interface-design/colour-picker.md), Paper first, then the soft and the strong
-// standard colours and Custom colours with +; Gradient is the gradient presets ending in a custom one,
+// every page kind: a category control (Solid, Gradient, and Image but on a logo page,
+// page-background-image) over that category's choices: Solid is the
+// one colour picker (docs/specs/004-interface-design/colour-picker.md), Paper leading the theme's
+// colours, then the soft and the strong standard colours and Custom colours with +; Gradient is the
+// theme's gradients, then the gradient presets, ending in a custom one,
 // whose editor (From, To, Angle, Swap) shows while the page's fill is one; then the Pattern (not on
 // a logo page). Each hover previews on the page itself (`onPreview`), and a press commits; leaving
 // the section drops the preview.
@@ -30,19 +31,30 @@ import {
   PAGE_PATTERN_LABEL,
   pageSheetStyle,
   sameFill,
+  themePresetAccent,
   type BackgroundCategory,
   type ThemeBackgroundPreset,
 } from '@/lib/illustrate-page-paint';
 import { PanelSection, tileClass } from './illustrate-page-panel-sections';
 import { CustomGradientEditor, PAGE_COLOUR_GROUPS } from './page-background-custom';
+import { ImageBackgroundChoices } from './page-background-image';
 import { ColourPicker } from '@/components/colour/ColourPicker';
-import { noColour } from '@/components/colour/colour-options';
+import { noColour, type ColourOption } from '@/components/colour/colour-options';
+import { useThemeColours } from '@/components/colour/useThemeColours';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
 // Paper, the page's own default: no fill stored.
 const PAPER = 'paper';
 const solidOf = (id: string): PageFill | undefined =>
   id === PAPER ? undefined : { kind: 'solid', color: id };
+
+// A row of swatches: the Light and Dark rows' ten. The Theme Palette row leads with Paper, so it
+// keeps nine of the theme's colours, never its white (Paper is the page's white already).
+const ROW = 10;
+const WHITE = /^#?f{3}(?:f{3})?$/i;
+export function pageThemeColours(theme: readonly ColourOption[]): ColourOption[] {
+  return theme.filter((o) => !WHITE.test(o.colour)).slice(0, ROW - 1);
+}
 
 // The custom choices' swatch until one is the page's fill.
 const RAINBOW = 'conic-gradient(#f87171, #fbbf24, #4ade80, #22d3ee, #818cf8, #e879f9, #f87171)';
@@ -88,6 +100,31 @@ function SwatchCheck({ fill }: { fill: PageFill | undefined }) {
   return <CheckIcon className={`h-3.5 w-3.5 ${dark ? 'text-white' : 'text-slate-800'}`} />;
 }
 
+// A labelled group of gradient swatches, seven across, headed as the colour picker heads its rows.
+function GradientGroup({
+  heading,
+  label,
+  children,
+}: {
+  heading: string;
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="mb-2 last:mb-0">
+      <p
+        aria-hidden
+        className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+      >
+        {heading}
+      </p>
+      <div role="radiogroup" aria-label={label} className="grid grid-cols-7 gap-1.5">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 const PATTERN_PREVIEW: Record<PagePattern | 'none', PageBackground> = {
   none: {},
   dots: { pattern: 'dots' },
@@ -96,12 +133,12 @@ const PATTERN_PREVIEW: Record<PagePattern | 'none', PageBackground> = {
 };
 
 const CATEGORY_LABEL: Record<BackgroundCategory, string> = {
-  theme: 'Theme',
   solid: 'Solid',
   gradient: 'Gradient',
+  image: 'Image',
 };
 
-// Theme, Solid, Gradient: the shared segmented control, its highlight sliding between them.
+// Solid, Gradient: the shared segmented control, its highlight sliding between them.
 function CategoryControl({
   categories,
   value,
@@ -150,21 +187,22 @@ export function BackgroundSection({
   onPreview,
 }: {
   page: IllustratePage;
-  // The tab theme's own backgrounds (themeBackgroundPresets), offered first.
+  // The tab theme's own gradients (themeBackgroundPresets), offered first among the gradients.
   themePresets: readonly ThemeBackgroundPreset[];
   onBackground: (patch: Partial<PageBackground>) => void;
   onPreview: (patch: Partial<PageBackground> | null) => void;
 }) {
   const fill = page.background?.fill;
   const pattern = page.background?.pattern;
-  const categories: BackgroundCategory[] = themePresets.length
-    ? ['theme', 'solid', 'gradient']
-    : ['solid', 'gradient'];
+  // A logo page takes no picture (docs/specs/007-editor/logo-pages.md "A logo page").
+  const categories: BackgroundCategory[] =
+    pageKindOf(page) === 'logo' ? ['solid', 'gradient'] : ['solid', 'gradient', 'image'];
   // Opens on the current fill's category; choosing another changes nothing on the page.
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
-  const opened = backgroundCategoryOf(fill, themePresets);
+  const opened = backgroundCategoryOf(fill);
   const category = chosen && categories.includes(chosen) ? chosen : opened;
   const yours = useDocumentColours();
+  const themeColours = pageThemeColours(useThemeColours());
   // The custom gradient's editor shows for a gradient no preset names, or once Custom gradient is
   // pressed on a preset one (its colours are where the custom one starts; editing makes it custom).
   const [customOpen, setCustomOpen] = useState(false);
@@ -172,6 +210,25 @@ export function BackgroundSection({
     fill?.kind === 'gradient' && (customOpen || isCustomGradient(fill, themePresets)) ? fill : null;
   const pick = (f: PageFill | undefined) => onBackground({ fill: f });
   const preview = (f: PageFill | undefined) => onPreview({ fill: f });
+  // A theme or preset gradient's swatch, ticked while it is the page's fill (and no custom one is).
+  const gradientSwatch = (id: string, label: string, gFill: PageFill) => {
+    const on = !customGradient && sameFill(fill, gFill);
+    return (
+      <Swatch
+        key={id}
+        label={label}
+        background={fillCss(gFill)}
+        active={on}
+        onPick={() => {
+          setCustomOpen(false);
+          pick(gFill);
+        }}
+        onPreview={() => preview(gFill)}
+      >
+        {on ? <SwatchCheck fill={gFill} /> : null}
+      </Swatch>
+    );
+  };
   return (
     <div
       onPointerLeave={() => onPreview(null)}
@@ -189,33 +246,19 @@ export function BackgroundSection({
             setChosen(c);
           }}
         />
-        {category === 'theme' ? (
-          <div
-            role="radiogroup"
-            aria-label="Theme backgrounds"
-            className="grid grid-cols-7 gap-1.5"
-          >
-            {themePresets.map((t) => {
-              const on = sameFill(fill, t.fill);
-              return (
-                <Swatch
-                  key={t.id}
-                  label={t.label}
-                  background={fillCss(t.fill)}
-                  active={on}
-                  onPick={() => pick(t.fill)}
-                  onPreview={() => preview(t.fill)}
-                >
-                  {on ? <SwatchCheck fill={t.fill} /> : null}
-                </Swatch>
-              );
-            })}
-          </div>
+        {category === 'image' ? (
+          <ImageBackgroundChoices
+            page={page}
+            accent={themePresetAccent(themePresets)}
+            onPick={pick}
+            onPreview={(f) => (f === null ? onPreview(null) : preview(f))}
+          />
         ) : category === 'solid' ? (
           <ColourPicker
             label="Background colour"
             value={fill === undefined ? PAPER : fill.kind === 'solid' ? fill.color : null}
             leading={[noColour(PAPER, 'Paper')]}
+            theme={themeColours}
             standard={PAGE_COLOUR_GROUPS}
             yours={yours}
             onPick={(id) => pick(solidOf(id))}
@@ -224,30 +267,13 @@ export function BackgroundSection({
           />
         ) : (
           <>
-            <div
-              role="radiogroup"
-              aria-label="Background gradient"
-              className="grid grid-cols-7 gap-1.5"
-            >
-              {PAGE_GRADIENT_PRESETS.map((g) => {
-                const gFill = gradientFill(g);
-                const on = !customGradient && sameFill(fill, gFill);
-                return (
-                  <Swatch
-                    key={g.id}
-                    label={g.label}
-                    background={fillCss(gFill)}
-                    active={on}
-                    onPick={() => {
-                      setCustomOpen(false);
-                      pick(gFill);
-                    }}
-                    onPreview={() => preview(gFill)}
-                  >
-                    {on ? <SwatchCheck fill={gFill} /> : null}
-                  </Swatch>
-                );
-              })}
+            {themePresets.length > 0 ? (
+              <GradientGroup heading="Theme" label="Theme gradients">
+                {themePresets.map((g) => gradientSwatch(g.id, g.label, g.fill))}
+              </GradientGroup>
+            ) : null}
+            <GradientGroup heading="Gradients" label="Background gradient">
+              {PAGE_GRADIENT_PRESETS.map((g) => gradientSwatch(g.id, g.label, gradientFill(g)))}
               <Swatch
                 label="Custom gradient"
                 background={customGradient ? fillCss(customGradient) : RAINBOW}
@@ -260,7 +286,7 @@ export function BackgroundSection({
               >
                 {customGradient ? <SwatchCheck fill={customGradient} /> : null}
               </Swatch>
-            </div>
+            </GradientGroup>
             {customGradient ? (
               <CustomGradientEditor
                 fill={customGradient}

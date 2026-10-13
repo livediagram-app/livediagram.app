@@ -810,7 +810,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/illustrate/infographic-layouts/',
         title: 'Start a page from a layout',
         description:
-          'Thirty-one ready-made pages in six categories, from a title page and key stats to a feature matrix, a funnel and a save-the-date. Hover one to preview it on your page, press it to place it, then make it yours.',
+          'Ninety-two ready-made pages in eight categories, from a magazine cover and a gig poster to a KPI dashboard, a SWOT and a cheat sheet. Hover one to preview it on your page, press it to place it, then make it yours.',
       },
       {
         art: <IllustrateBackgroundsArt />,

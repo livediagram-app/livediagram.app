@@ -623,6 +623,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             // A page under a layout preview shows only the preview.
             hiddenPageId={props.illustratePages?.layoutPreview?.pageId ?? null}
             elements={elements}
+            layers={tabLayers}
           >
             {shownOrder.map(({ element, layerOpacity }, isoDepth) => {
               // Shift-duplicate ghost (docs/specs/008-canvas/shift-drag-duplicate.md): the dragged set renders

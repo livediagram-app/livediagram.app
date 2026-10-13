@@ -15,12 +15,16 @@ import {
   isCustomGradient,
   type ThemeBackgroundPreset,
 } from '@/lib/illustrate-page-paint';
-import { BackgroundSection } from './page-background-section';
+import { BackgroundSection, pageThemeColours } from './page-background-section';
 
 afterEach(() => cleanup());
 
 const theme: ThemeBackgroundPreset[] = [
-  { id: 'theme-wash', label: 'Theme wash', fill: { kind: 'solid', color: '#eef2ff' } },
+  {
+    id: 'theme-glow',
+    label: 'Theme glow',
+    fill: { kind: 'gradient', from: '#eef2ff', to: '#ddd6fe', angle: 160 },
+  },
 ];
 const custom: PageFill = { kind: 'gradient', from: '#123456', to: '#abcdef', angle: 90 };
 
@@ -42,11 +46,13 @@ function show(fill?: PageFill, presets: ThemeBackgroundPreset[] = theme) {
 const radio = (name: string) => screen.getByRole('radio', { name });
 
 describe('background categories', () => {
-  it('names a fill’s category: a theme preset, a gradient, else solid', () => {
-    expect(backgroundCategoryOf(undefined, theme)).toBe('solid');
-    expect(backgroundCategoryOf(theme[0]!.fill, theme)).toBe('theme');
-    expect(backgroundCategoryOf(custom, theme)).toBe('gradient');
+  it('names a fill’s category: any gradient, else solid', () => {
+    expect(backgroundCategoryOf(undefined)).toBe('solid');
+    expect(backgroundCategoryOf({ kind: 'solid', color: '#eef2ff' })).toBe('solid');
+    expect(backgroundCategoryOf(theme[0]!.fill)).toBe('gradient');
+    expect(backgroundCategoryOf(custom)).toBe('gradient');
     expect(isCustomGradient(custom, theme)).toBe(true);
+    expect(isCustomGradient(theme[0]!.fill, theme)).toBe(false);
     expect(isCustomGradient(undefined, theme)).toBe(false);
   });
 
@@ -69,9 +75,37 @@ describe('BackgroundSection', () => {
     expect(screen.getByRole('group', { name: 'Background colour' })).toBeTruthy();
   });
 
-  it('offers Theme only while the theme has backgrounds', () => {
-    show(undefined, []);
+  it('offers Solid and Gradient, the theme’s gradients in their own row', () => {
+    show();
     expect(screen.queryByRole('radio', { name: 'Theme' })).toBeNull();
+    fireEvent.click(radio('Gradient'));
+    const names = (group: string) =>
+      within(screen.getByRole('radiogroup', { name: group }))
+        .getAllByRole('radio')
+        .map((r) => r.getAttribute('aria-label'));
+    expect(names('Theme gradients')).toEqual(['Theme glow']);
+    expect(names('Background gradient')).toHaveLength(14);
+    expect(names('Background gradient').at(-1)).toBe('Custom gradient');
+  });
+
+  it('keeps the Solid theme row to one row of ten, never the theme white', () => {
+    const row = (hexes: string[]) =>
+      pageThemeColours(hexes.map((h) => ({ id: h, colour: h, label: h })));
+    const ten = [
+      '#111111',
+      '#222222',
+      '#ffffff',
+      '#333333',
+      '#444444',
+      '#555555',
+      '#666666',
+      '#777777',
+      '#888888',
+      '#999999',
+    ];
+    expect(row(ten).map((o) => o.colour)).not.toContain('#ffffff');
+    expect(row(ten)).toHaveLength(9);
+    expect(row([...ten, '#aaaaaa', '#bbbbbb'])).toHaveLength(9);
   });
 
   it('makes a custom gradient from the custom swatch, and edits it', () => {

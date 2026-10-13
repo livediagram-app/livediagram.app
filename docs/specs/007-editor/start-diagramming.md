@@ -38,7 +38,10 @@ first**, less **Timeline**, which is left to its group. The groups (`components/
   (Flowcharts, Org Charts, Timelines and so on).
 - **Draw**, whose templates are drawn, by what each is for: **Visual Notes**, **Workshops**, **Prototypes**.
 - **Facilitate**, whose templates nearly all share one category, by the session each runs: **Retrospectives**, **Meetings**, **Workshops** and **Decisions** (the boards with a dot vote).
-- **Illustrate**, likewise, by what each makes: **Slides**, **Infographics**, **Documents**, **Posters**, **Logos**.
+- **Illustrate**, likewise, by what each makes: **Slides**, **Infographics**, **Articles**, **Posters**, **Logos**.
+  Slides, Infographics, Articles and Logos each lead with their blank of that page kind (Blank Slide Deck, Blank
+  Infographic, Blank Article, Blank Logo: [Templates by mode](templates-by-mode.md#blanks-of-a-page-kind)), one empty
+  page of the kind meant.
 
 A template of the mode in none of its groups is placed in the last group, so every listed template is reachable.
 The blank appears only in Recommended. Choosing the blank closes the panel, as the × does, since it leaves the tab
@@ -97,7 +100,8 @@ content swaps at once.
 The tab's first page is drawn only once the start is done: while Start Illustrating is open there is no page behind
 it (`EditorCanvasHost` passes no pages), so nothing waits under the panel. Picking a template lands its pages;
 closing the panel, or choosing **Blank Illustration**, shows the first page with its own **What Is This Page For?**
-([Illustrate pages](illustrate-pages.md)).
+([Illustrate pages](illustrate-pages.md)). A blank of a page kind (Blank Slide Deck, Blank Article, Blank Infographic,
+Blank Logo) lands one page of that kind, already chosen, so it asks nothing and the start does not come back over it.
 
 **The last page can be deleted.** Deleting it (or the last article) clears the tab, its pages, its writing and its
 elements, as one edit that Undo puts back, and brings Start Illustrating back even if it was closed. The agents'

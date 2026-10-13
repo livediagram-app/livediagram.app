@@ -1,4 +1,5 @@
 import {
+  chartTextInk,
   finishIconWeight,
   finishWobblesArt,
   actorFigureRect,
@@ -20,6 +21,7 @@ import {
   isChartShape,
   isProgressShape,
   isRailShape,
+  progressTrackColour,
   isRatingShape,
   type ShapeKind,
 } from '@livediagram/document';
@@ -43,7 +45,7 @@ import { BarChartView } from '@/components/canvas/BarChartView';
 import { LineChartView } from '@/components/canvas/LineChartView';
 import { DataChartView } from '@/components/canvas/DataChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useChartGround, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
@@ -153,8 +155,13 @@ export function ShapeContentRouter({
   svgAnim,
   artAnimClass,
 }: ShapeContentRouterProps) {
-  // The paper under this shape, for colours it doesn't carry (docs/specs/007-editor/live-app.md).
-  const surface = useCanvasSurface();
+  // The paper under this shape, for colours it doesn't carry (docs/specs/007-editor/live-app.md): its
+  // Illustrate page's where that page has a fill, else the canvas's.
+  const surface = useElementSurface(element.id);
+  // A chart on a filled page is drawn adapted to what it sits on (docs/specs/007-editor/
+  // illustrate-pages.md "Charts adapt as they are drawn"): its series in its view, its text here.
+  const chartGround = useChartGround(element.id);
+  const chartText = chartTextInk(textColor, chartGround);
   // A sketched silhouette is the SketchOverlay's (docs/specs/008-canvas/finish.md); Professional thins an
   // unset border.
   const finish = useElementFinish((element as { finish?: unknown }).finish);
@@ -220,11 +227,11 @@ export function ShapeContentRouter({
     )
   ) : element.type === 'shape' && isProgressShape(element.shape) ? (
     // Progress elements (docs/specs/009-elements/progress.md): a bar / donut showing element.progress.
-    // The fill takes the stroke accent; the track takes the fill colour.
+    // The fill takes the stroke accent; the track takes the fill colour, else the paper's default.
     <ProgressView
       element={element}
       accent={accent}
-      track={element.fillColor ?? '#e2e8f0'}
+      track={progressTrackColour(element, surface)}
       textColor={textColor}
     />
   ) : element.type === 'shape' && isRailShape(element.shape) ? (
@@ -250,8 +257,9 @@ export function ShapeContentRouter({
           <DataChartView
             element={el}
             fontFamily={fontFamily}
-            textColor={textColor}
+            textColor={chartText}
             palette={chartPalette}
+            ground={chartGround}
           />
         )}
       </SheetLinkedChart>
@@ -261,16 +269,18 @@ export function ShapeContentRouter({
     <PieChartView
       element={element}
       fontFamily={fontFamily}
-      textColor={textColor}
+      textColor={chartText}
       palette={chartPalette}
+      ground={chartGround}
     />
   ) : element.type === 'shape' && isBarShape(element.shape) ? (
     // Bar chart (docs/specs/009-elements/pie-chart.md): bars sized by value + a legend.
     <BarChartView
       element={element}
       fontFamily={fontFamily}
-      textColor={textColor}
+      textColor={chartText}
       palette={chartPalette}
+      ground={chartGround}
     />
   ) : element.type === 'shape' && isCodeBlockShape(element.shape) ? (
     // Code block (docs/specs/009-elements/code-block.md): the fixed dark editor card. Deliberately takes
@@ -322,8 +332,9 @@ export function ShapeContentRouter({
     <SankeyView
       element={element}
       fontFamily={fontFamily}
-      textColor={textColor}
+      textColor={chartText}
       palette={chartPalette}
+      ground={chartGround}
       editable={!readOnly && !isLocked}
     />
   ) : element.type === 'shape' && isLineShape(element.shape) ? (
@@ -331,8 +342,9 @@ export function ShapeContentRouter({
     <LineChartView
       element={element}
       fontFamily={fontFamily}
-      textColor={textColor}
+      textColor={chartText}
       palette={chartPalette}
+      ground={chartGround}
     />
   ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && finish !== 'sketch' ? (
     <ShapeSvgOverlay

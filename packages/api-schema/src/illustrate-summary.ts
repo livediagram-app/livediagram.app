@@ -19,7 +19,12 @@ import type { ArticleSummary, PageSummary } from './illustrate';
 
 export type PagesTab = Pick<Tab, 'elements' | 'pages' | 'articles'> & { pageOrientation?: unknown };
 
-/** A background in words: `#0f172a`, `gradient #fde68a → #fca5a5`, `dots`, or null for the paper. */
+// A picture's overlay in words: "light 60%", or "no overlay".
+const overlayWords = (o: { kind: string; strength: number } | undefined) =>
+  o ? `${o.kind} ${Math.round(o.strength * 100)}%` : 'no overlay';
+
+/** A background in words: `#0f172a`, `gradient #fde68a → #fca5a5`, `image, light 60%`, `dots`, or
+ *  null for the paper. */
 export function describeBackground(b: PageBackground | undefined): string | null {
   if (!b) return null;
   const fill =
@@ -27,7 +32,9 @@ export function describeBackground(b: PageBackground | undefined): string | null
       ? b.fill.color
       : b.fill?.kind === 'gradient'
         ? `gradient ${b.fill.from} → ${b.fill.to}`
-        : null;
+        : b.fill?.kind === 'image'
+          ? `image, ${overlayWords(b.fill.overlay)}`
+          : null;
   return [fill, b.pattern ? `${b.pattern} pattern` : null].filter(Boolean).join(', ') || null;
 }
 

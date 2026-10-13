@@ -1,0 +1,92 @@
+'use client';
+
+// An infographic page's Tidy Up, left of its Background in the title bar
+// (docs/specs/007-editor/illustrate-pages.md "Tidy Up"): a press aligns and spaces what is on the
+// page, one edit (illustratePageEdits.tidyPage, the pure lib/page-tidy.ts). On a desktop pointer,
+// hovering it shows the tidied page in place; leaving it puts the page back. An Editor's alone: the
+// title bar shows controls only to someone who may edit, and the button checks the session's
+// `can` itself.
+import { useContext, useEffect, useRef } from 'react';
+import { lucideBrushCleaning } from '@livediagram/icons/lucide';
+import { lucideGlyph, Tooltip } from '@livediagram/ui';
+import { EditorContext } from '@/app/document/[id]/EditorContext';
+import type { IllustratePageEdits } from '@/hooks/editor/illustrate-page-edits';
+import { titleButtonClass } from './TitlePopoverButton';
+
+const TidyUpIcon = lucideGlyph(lucideBrushCleaning, 14);
+
+// The title-bar room it takes (24 px and the gap, or named beside its icon), so the page's label
+// truncates first.
+const TIDY_UP_ROOM = 28;
+const TIDY_UP_LABELLED_ROOM = 72;
+
+export const PAGE_TIDY_UP_TOOLTIP = 'Tidy Up: align and space what is on this page';
+
+/** The room the button takes in the title bar: named on a desktop, its icon alone on a phone. */
+export function pageTidyUpRoom(labelled: boolean): number {
+  return labelled ? TIDY_UP_LABELLED_ROOM : TIDY_UP_ROOM;
+}
+
+export function PageTidyUpButton({
+  pageId,
+  labelled,
+  edit,
+}: {
+  pageId: string;
+  // Named beside its icon (a desktop).
+  labelled: boolean;
+  // The pages view's edits (absent ones render nothing).
+  edit: Pick<IllustratePageEdits, 'tidyPage' | 'previewTidy'>;
+}) {
+  const editor = useContext(EditorContext);
+  const { tidyPage, previewTidy } = edit;
+  // Leaving mid-hover (the button going: the page locked, the mode left) drops the preview.
+  const previewing = useRef(false);
+  const clear = useRef(previewTidy);
+  useEffect(() => {
+    clear.current = previewTidy;
+  });
+  useEffect(
+    () => () => {
+      if (previewing.current) clear.current?.(null);
+    },
+    [],
+  );
+  // Editors only: a Participant and a Viewer never reshape a page.
+  if (editor?.can.level !== 'edit' || !tidyPage) return null;
+  return (
+    <div
+      // The title bar takes no pointer events: the button opts back in, and a press on it is its
+      // own, never the canvas's (no marquee, no deselect, no draw).
+      className="pointer-events-auto flex items-center"
+      onPointerDown={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
+    >
+      <Tooltip label={PAGE_TIDY_UP_TOOLTIP}>
+        <button
+          type="button"
+          aria-label={PAGE_TIDY_UP_TOOLTIP}
+          data-page-tidy-up={pageId}
+          onPointerEnter={(e) => {
+            if (e.pointerType !== 'mouse' || !previewTidy) return;
+            previewing.current = true;
+            previewTidy(pageId);
+          }}
+          onPointerLeave={() => {
+            if (!previewing.current) return;
+            previewing.current = false;
+            previewTidy?.(null);
+          }}
+          onClick={() => {
+            previewing.current = false;
+            tidyPage(pageId);
+          }}
+          className={titleButtonClass(false, labelled)}
+        >
+          <TidyUpIcon />
+          {labelled ? <span aria-hidden>Tidy Up</span> : null}
+        </button>
+      </Tooltip>
+    </div>
+  );
+}

@@ -15,6 +15,7 @@ import {
   svgArrow,
   sketchBackdropIds,
   svgBoxed,
+  chartPageGrounds,
   type CanvasSurface,
   type Deck,
   type Tab,
@@ -109,6 +110,8 @@ export function useSlideThumbnails(
       }
       // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
       const backdrops = sketchBackdropIds(elements, tab.finish);
+      // Charts on a filled page drawn adapted to what they sit on, as on the canvas.
+      const chartGrounds = page ? chartPageGrounds(tab.elements, [page], tab.layers) : undefined;
       for (const el of elements) {
         if (el.type !== 'arrow') {
           parts.push(
@@ -118,6 +121,7 @@ export function useSlideThumbnails(
               tabFinish: tab.finish,
               sketchBackdrop: backdrops.has(el.id),
               surface,
+              chartGrounds,
               ...(items ? { items } : {}),
               ...(itemTypes ? { itemTypes } : {}),
             }),

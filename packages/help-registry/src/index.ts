@@ -1350,7 +1350,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'starter kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
+      'starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1526,9 +1526,9 @@ export const articles: Article[] = [
     slug: 'illustrate',
     title: 'Illustrate Mode',
     description:
-      'Work on a tab as pages: sizes for print and social, backgrounds, layouts, then export or present.',
+      'Work on a tab as pages: sizes for print and social, layouts, colour and photo backgrounds, then export or present.',
     keywords:
-      'illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient',
+      'illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in templates blank illustration leave lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image stock photo openverse title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1536,9 +1536,9 @@ export const articles: Article[] = [
     slug: 'infographic-layouts',
     title: 'Infographic Layouts',
     description:
-      'Thirty-one ready-made pages in six categories, previewed on your page as you hover.',
+      'Ninety-two ready-made pages in eight categories, previewed on your page as you hover.',
     keywords:
-      'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster',
+      'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster layout button replace undo covers posters data explainers cover report cover annual report magazine book cover proposal case study newsletter contents certificate award gig concert research poster academic coming soon movie film exhibition travel workshop hiring job sale discount notice warning motivational kpi dashboard metrics trend market share pie doughnut stat mosaic staircase customer journey project plan gantt decision flow flowchart how-to recipe versus vs pricing price plans tiers swot effort impact matrix quadrant scorecard rating spectrum venn options org chart organisation organization testimonials reviews speakers spotlight employee values idea board brainstorm persona user persona shout-outs kudos thank you social media carousel instagram tip of the day milestone followers behind the scenes countdown product launch giveaway contest welcome onboarding webinar how it works anatomy diagram key concepts cheat sheet shortcuts glossary definitions myths facts fact file lesson summary quiz formula equation explainer education',
     category: 'Canvas',
     categorySlug: 'canvas/illustrate',
     parentSlug: 'illustrate',
@@ -2531,7 +2531,8 @@ export const articles: Article[] = [
     slug: 'changing-theme',
     title: 'Changing the Theme',
     description: 'Open the Tab Style dialog and browse themes by category.',
-    keywords: 'apply browse switch restyle colours colors dialog pick paintbrush look feel',
+    keywords:
+      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch spectrum',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',

@@ -67,6 +67,7 @@ import {
 import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
 import { EXPORT_PAPER, pageExportFrame } from './export-page';
 import type { ExportImageMap } from './export-tab-images';
+import { exportChartInk } from './export-chart-ink';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
 // the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
@@ -221,11 +222,13 @@ export async function renderTabToCanvas(
     ? pageExportFrame(opts.page, {
         ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
+        imageHref: (id) => opts.images?.get(id)?.href,
       })
     : null;
   // An article page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const clips = exportZoneClips(tab, opts.page);
+  const chartInk = exportChartInk(tab, opts.page);
   const reaches = (el: Element) =>
     !isArticleNoteMarker(el) && (!frame || frame.reaches(el, tab.elements));
   // Hidden layers drop out of the export (bounds included) unless the
@@ -372,6 +375,7 @@ export async function renderTabToCanvas(
         tabFinish: tab.finish,
         sketchBackdrop: backdrops.has(el.id),
         surface,
+        ...chartInk,
         items: opts.items,
         itemTypes: opts.itemTypes,
         sheets: opts.sheets,
@@ -518,10 +522,12 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     ? pageExportFrame(opts.page, {
         ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
+        imageHref: (id) => opts.images?.get(id)?.href,
       })
     : null;
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const clips = exportZoneClips(tab, opts.page);
+  const chartInk = exportChartInk(tab, opts.page);
   const reaches = (el: Element) =>
     !isArticleNoteMarker(el) && (!frame || frame.reaches(el, tab.elements));
   const els = (
@@ -619,6 +625,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
               tabFinish: tab.finish,
               sketchBackdrop: backdrops.has(el.id),
               surface,
+              ...chartInk,
               items: opts.items,
               itemTypes: opts.itemTypes,
               sheets: opts.sheets,

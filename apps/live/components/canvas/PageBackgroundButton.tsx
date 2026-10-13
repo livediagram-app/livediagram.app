@@ -76,21 +76,29 @@ export function PageBackgroundButton({
   onPreview: (patch: Partial<PageBackground> | null) => void;
 }) {
   return (
-    <TitlePopoverButton
-      name="Background"
-      labelled={labelled}
-      className={titleButtonClass}
-      icon={<BackgroundIcon />}
-      width={POPOVER_WIDTH}
-      padded={false}
-      onOpen={() => track('UI', 'Opened', 'PageBackgroundButton')}
+    <div
+      // The title bar takes no pointer events: the button opts back in, and a press on it is its
+      // own, never the canvas's (no marquee, no deselect, no draw).
+      className="pointer-events-auto flex items-center"
+      onPointerDown={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
     >
-      <Body
-        page={page}
-        themePresets={themePresets}
-        onBackground={onBackground}
-        onPreview={onPreview}
-      />
-    </TitlePopoverButton>
+      <TitlePopoverButton
+        name="Background"
+        labelled={labelled}
+        className={titleButtonClass}
+        icon={<BackgroundIcon />}
+        width={POPOVER_WIDTH}
+        padded={false}
+        onOpen={() => track('UI', 'Opened', 'PageBackgroundButton')}
+      >
+        <Body
+          page={page}
+          themePresets={themePresets}
+          onBackground={onBackground}
+          onPreview={onPreview}
+        />
+      </TitlePopoverButton>
+    </div>
   );
 }

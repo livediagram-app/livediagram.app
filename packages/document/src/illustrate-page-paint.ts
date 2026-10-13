@@ -3,6 +3,7 @@
 // page panel's gradients run at. Pure, shared by the page panel and the agents' page changes
 // (docs/specs/024-agents/illustrate-for-agents.md); how a sheet is painted stays with the editor.
 import type { IllustratePage, PageBackground, PageFill } from './illustrate-page';
+import { samePageImage } from './illustrate-page-image';
 
 // CSS degrees: 180 runs top to bottom, so 160 leans the run toward the bottom right.
 export const PAGE_GRADIENT_ANGLE = 160;
@@ -15,6 +16,7 @@ export function sameFill(a: PageFill | undefined, b: PageFill | undefined): bool
   if (a.kind === 'gradient' && b.kind === 'gradient') {
     return a.from === b.from && a.to === b.to && a.angle === b.angle;
   }
+  if (a.kind === 'image' && b.kind === 'image') return samePageImage(a, b);
   return false;
 }
 

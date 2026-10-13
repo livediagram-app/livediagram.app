@@ -3,7 +3,12 @@
 import { useState } from 'react';
 import { Button, NoMatches, TextInput } from '@livediagram/ui';
 import { useImageSearch } from '@/hooks/ui/useImageSearch';
-import { licenceLabel, tileLabelFor, type OpenverseImage } from '@/lib/image-search/openverse';
+import {
+  licenceLabel,
+  tileLabelFor,
+  type OpenverseFilters,
+  type OpenverseImage,
+} from '@/lib/image-search/openverse';
 import type { PickedImage } from '@/lib/upload-image';
 import type { PickStage } from '@/lib/image-search/pick';
 import {
@@ -19,7 +24,9 @@ import {
 
 // The image picker's Search tab (docs/specs/009-elements/image-search.md "The
 // Search tab"): openly licensed pictures from Openverse, searched from the
-// browser on submit, picked into the gallery through the import pipeline.
+// browser on submit, picked into the gallery through the import pipeline. A page's Image
+// background (docs/specs/007-editor/illustrate-pages.md "Image backgrounds") shows the same pane,
+// narrower, asking for its page's shape and previewing a hovered result on the page.
 
 const SEARCH_ERROR_COPY = {
   'rate-limited': 'Too many searches for now. Wait a minute and try again.',
@@ -29,17 +36,31 @@ const SEARCH_ERROR_COPY = {
 const ERROR_BOX =
   'rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/15 dark:text-rose-300';
 
+// The grid's columns: four in the picker, three in a page's narrower Background.
+const GRID_COLUMNS = { 3: 'grid-cols-3', 4: 'grid-cols-4' } as const;
+
 export function ImageSearchPane({
   ownerId,
   documentId,
   onPicked,
+  filters,
+  onPreview,
+  columns = 4,
+  autoFocus = true,
 }: {
   ownerId: string;
   documentId: string;
-  onPicked: (image: PickedImage) => void;
+  onPicked: (image: PickedImage, result: OpenverseImage) => void;
+  // Openverse's shape and size filters; the picker passes none.
+  filters?: OpenverseFilters;
+  // Told the result hovered or focused, and null once the pointer leaves the grid.
+  onPreview?: (result: OpenverseImage | null) => void;
+  columns?: keyof typeof GRID_COLUMNS;
+  autoFocus?: boolean;
 }) {
   const [draft, setDraft] = useState('');
-  const search = useImageSearch({ ownerId, documentId, onPicked });
+  const search = useImageSearch({ ownerId, documentId, onPicked, filters });
+  const grid = GRID_COLUMNS[columns];
   const loading = search.status === 'loading';
   // A new search swaps the grid for placeholders; a further page adds a row of them under it.
   const searching = loading && !search.loadingMore;
@@ -61,7 +82,7 @@ export function ImageSearchPane({
         <TextInput
           id="image-search-query"
           type="search"
-          autoFocus
+          autoFocus={autoFocus}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Search openly licensed images"
@@ -92,13 +113,14 @@ export function ImageSearchPane({
       </div>
 
       {searching ? (
-        <ul aria-busy className="grid max-h-72 grid-cols-4 gap-2 overflow-hidden">
+        <ul aria-busy className={`grid max-h-72 ${grid} gap-2 overflow-hidden`}>
           <SkeletonTiles count={SKELETON_TILES_FIRST} />
         </ul>
       ) : search.results.length > 0 ? (
         <ul
           aria-busy={loading || picking}
-          className="grid max-h-72 grid-cols-4 gap-2 overflow-y-auto p-0.5"
+          className={`grid max-h-72 ${grid} gap-2 overflow-y-auto p-0.5`}
+          onPointerLeave={onPreview ? () => onPreview(null) : undefined}
         >
           {search.results.map((result, i) => (
             <SearchTile
@@ -109,6 +131,7 @@ export function ImageSearchPane({
               stage={search.pickStage}
               disabled={picking}
               onPick={() => search.pick(result)}
+              onPreview={onPreview ? () => onPreview(result) : undefined}
             />
           ))}
           {search.loadingMore ? (
@@ -155,6 +178,7 @@ function SearchTile({
   stage,
   disabled,
   onPick,
+  onPreview,
 }: {
   index: number;
   result: OpenverseImage;
@@ -162,6 +186,7 @@ function SearchTile({
   stage: PickStage;
   disabled: boolean;
   onPick: () => void;
+  onPreview?: () => void;
 }) {
   const licence = licenceLabel(result.license, result.licenseVersion);
   // Until its thumbnail arrives the tile is a placeholder photo, glinting like the search's own.
@@ -171,6 +196,8 @@ function SearchTile({
       <button
         type="button"
         onClick={onPick}
+        onPointerEnter={onPreview}
+        onFocus={onPreview}
         disabled={disabled}
         aria-label={tileLabelFor(result)}
         aria-busy={picking || undefined}

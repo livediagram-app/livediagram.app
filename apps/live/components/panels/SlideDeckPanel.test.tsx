@@ -49,7 +49,7 @@ const tabs = [
   { id: 'a', name: 'Here' },
   { id: 'b', name: 'There' },
 ];
-const pages = [{ id: 'p1', label: 'Page 1 · A4 · Portrait · Infographic' }];
+const pages = [{ id: 'p1', label: 'Page 1 · A4 · Portrait' }];
 
 function panel(deck: Deck, labels?: Map<string, string | null>, withPages = true) {
   return render(

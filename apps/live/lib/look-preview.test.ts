@@ -22,7 +22,7 @@ describe('lookPreviewSvg', () => {
   });
 
   it('shows two palette colours on a multi-colour look, the arrow still on its pins', () => {
-    for (const id of ['carnival', 'doodle', 'daydream', 'lagoon', 'poster', 'textbook']) {
+    for (const id of ['spectrum', 'doodle', 'daydream', 'lagoon', 'poster', 'textbook']) {
       const els = lookPreviewTab(tabLookById(id)!).elements as Array<
         Element & { fillColor?: string }
       >;
@@ -40,7 +40,7 @@ describe('lookPreviewSvg', () => {
         .slice(0, 2)
         .map((el) => el.fillColor);
     const palette = (id: string) => resolveTheme(id)!.palette!.map((p) => p.fill);
-    expect(fills('carnival')).toEqual([palette('rainbow')[0], palette('rainbow')[3]]);
+    expect(fills('spectrum')).toEqual([palette('rainbow')[0], palette('rainbow')[3]]);
     expect(fills('lagoon')).toEqual([palette('tropical')[0], palette('tropical')[3]]);
   });
 

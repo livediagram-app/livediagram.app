@@ -263,10 +263,10 @@ export function tabWriteStatements(
     ...collabIndexStatements(env, id, tab.elements),
     // The image reference index (docs/specs/009-elements/images.md, "Reference index"): a reference
     // this batch missed is an image the retention sweep reaps.
-    ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements)),
+    ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements, tab.pages)),
     // Placement grants (docs/specs/009-elements/images.md, "Placement grants"), after the
     // document_tabs upsert above, which they read.
-    ...imageGrantPlacementStatements(env, id, imageRefIds(tab.elements), now),
+    ...imageGrantPlacementStatements(env, id, imageRefIds(tab.elements, tab.pages), now),
     // The sheet reference index (docs/specs/029-sheets/sheet-store.md "Deleting a sheet"), after the tabs and
     // document_tabs upserts, which the rows' FK and the settling triggers (migration 0079) read. A write whose
     // references are unchanged touches no row, so the triggers cost it nothing.
@@ -380,8 +380,10 @@ export async function seedTabs(
   // copy from a share link can carry actions and threads in on create.
   for (const tab of capped) {
     stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
-    stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements)));
-    stmts.push(...imageGrantPlacementStatements(env, tab.id, imageRefIds(tab.elements), now));
+    stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements, tab.pages)));
+    stmts.push(
+      ...imageGrantPlacementStatements(env, tab.id, imageRefIds(tab.elements, tab.pages), now),
+    );
     // A seed's sheets come after its tabs (routes/documents.ts), so they find these references on create.
     stmts.push(...sheetRefReplaceStatements(env, tab.id, sheetRefIds(tab.elements)));
   }

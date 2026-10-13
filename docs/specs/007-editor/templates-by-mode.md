@@ -14,7 +14,8 @@ its own start ([Template starts](start-diagramming.md)).
   canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
   the mode the tab opens in can never disagree.
 - Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
-- Illustrate templates: Blank Illustration, Article, Slide deck, Logo design, Group card and the
+- Illustrate templates: Blank Illustration, the four [blanks of a page kind](#blanks-of-a-page-kind), Article,
+  Slide deck, Logo design, Group card and the
   eight [Illustrate templates](#illustrate-templates) below.
 - Plan templates: Blank Plan and the twenty-two [Plan templates](../026-plan/plan-templates.md), Kanban Board
   among them. Plan templates open on a worked example of cards: each but Blank Plan sets up a way of working across
@@ -86,6 +87,35 @@ charts and no setup to await ([Sheet store](../029-sheets/sheet-store.md#templat
 not what the New Document wizard creates; the editor's Popular lists are unchanged (the Quick Start finds it by
 search), and Start Planning, which has its own Empty Sheet, does not offer it. The landing page's **Blank Slate**
 shelf lists it after Blank Plan ([Marketing site](../019-marketing/marketing-site.md)).
+
+### Blanks of a page kind
+
+Blank Illustration's one page asks what it is for. Four more Illustrate blanks have already answered, for someone
+who knows they are making a deck, an article, an infographic or a logo (`EXTRA_BLANK_TEMPLATES`, beside Blank
+Spreadsheet):
+
+| Template          | Kind id             | What it makes                                                     |
+| ----------------- | ------------------- | ----------------------------------------------------------------- |
+| Blank Slide Deck  | `blank-slide-deck`  | One empty 16:9 slide page.                                        |
+| Blank Article     | `blank-article`     | One empty article page, its writing an empty Title and paragraph. |
+| Blank Infographic | `blank-infographic` | One empty A4 portrait infographic page.                           |
+| Blank Logo        | `blank-logo`        | One empty logo page (the 1024 artboard).                          |
+
+- **Exactly one page and nothing else**: no elements, the page's kind already chosen. The page is made the way the
+  first page's **What Is This Page For?** makes it (`withPageKindChosen` on an unchosen page, through
+  `blankPageTemplateOverrides`), so a blank of a kind and a chosen Blank Illustration are the same page.
+- **No kind choice.** The page has a kind, so it never asks What Is This Page For? and Start Illustrating does not
+  show over it ([Template starts](start-diagramming.md) "When it shows").
+- **Its layouts are offered as usual.** The empty slide, infographic or logo page shows its in-page **Start From a
+  Layout** card with its own kind's layouts (slide layouts on a slide, logo layouts on a logo page), as any empty
+  page of that kind does ([Illustrate pages](illustrate-pages.md)); an article page never shows one.
+- **Blanks like the others** (`isBlankTemplate`): in no category and on no category shelf, the tab keeps its name, a
+  `/new?template=` link to one opens with the start closed. None is a mode's blank, so none leads Recommended or is
+  what the wizard creates; the editor's Popular lists are unchanged (the Quick Start finds them by search).
+- **Each leads its group in Start Illustrating**: Blank Slide Deck first in **Slides**, Blank Infographic in
+  **Infographics**, Blank Article in **Articles**, Blank Logo in **Logos** ([Template starts](start-diagramming.md)).
+- The landing page's **Blank Slate** shelf lists them after Blank Illustration, in that order (Slide Deck, Article,
+  Infographic, Logo).
 
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.

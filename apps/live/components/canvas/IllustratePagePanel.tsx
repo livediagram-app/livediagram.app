@@ -10,6 +10,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import {
   PAGE_NAME_MAX,
   pageHasOrientation,
+  pageKindOf,
   pageSizeChoices,
   type LaidOutPage,
   type PageBackground,
@@ -56,13 +57,18 @@ const TAB_LABEL: Record<PagePanelTab, string> = {
 };
 
 // The page's tabs: Page while it has a size or orientation to choose (a logo page has neither),
-// Background, then the kind's own (an article's Style and Text, any other page's Layouts).
+// Background (not on an infographic page, whose Background sits beside its cog), then the kind's
+// own (an article's Style and Text, a logo page's Layouts; an infographic or slide page's Layouts
+// sit beside its cog).
 export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
   const hasPage = pageSizeChoices(page).length > 1 || pageHasOrientation(page);
+  // An infographic page's Background, and an infographic or slide page's Layouts, are beside its
+  // cog (PageBackgroundButton, PageLayoutsButton), so not here too.
+  const kind = pageKindOf(page);
   return [
     ...(hasPage ? (['page'] as const) : []),
-    'background',
-    ...(page.flow ? (['style', 'text'] as const) : (['layouts'] as const)),
+    ...(kind !== 'infographic' ? (['background'] as const) : []),
+    ...(page.flow ? (['style', 'text'] as const) : kind === 'logo' ? (['layouts'] as const) : []),
   ];
 }
 
@@ -213,17 +219,20 @@ export function IllustratePagePanel({
         />
       </div>
       <div inert={locked} className={locked ? 'opacity-50' : undefined}>
-        <PanelTabs
-          tab={tab}
-          tabs={tabs}
-          onTab={(next) => {
-            // Leaving Layouts takes its preview (a pending Replace's too) off the page.
-            if (next !== 'layouts') onLayoutPreview(null);
-            // Leaving Background takes a hovered swatch's preview off the page.
-            if (next !== 'background') onPreview(null);
-            setTab(next);
-          }}
-        />
+        {/* One tab (an infographic page's Page) needs no switch. */}
+        {tabs.length > 1 ? (
+          <PanelTabs
+            tab={tab}
+            tabs={tabs}
+            onTab={(next) => {
+              // Leaving Layouts takes its preview (a pending Replace's too) off the page.
+              if (next !== 'layouts') onLayoutPreview(null);
+              // Leaving Background takes a hovered swatch's preview off the page.
+              if (next !== 'background') onPreview(null);
+              setTab(next);
+            }}
+          />
+        ) : null}
         {tab === 'page' ? (
           <>
             <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />
@@ -247,7 +256,6 @@ export function IllustratePagePanel({
         ) : (
           <LayoutsSection
             page={page}
-            contentCount={edit.contentCount(page.id)}
             onApply={(layout) => {
               onLayoutPreview(null);
               edit.applyLayout(page.id, layout);

@@ -13,6 +13,7 @@ import {
   svgArrow,
   sketchBackdropIds,
   svgBoxed,
+  chartPageGrounds,
   svgShadowDefs,
   elementPageSurfaces,
   type Element,
@@ -196,6 +197,8 @@ export function Minimap({
     }
     // Each element inked for the page it is on, as the canvas inks it.
     const pageSurfaces = pages ? elementPageSurfaces(drawn, pages) : null;
+    // And each chart on a filled page adapted to what it sits on.
+    const chartGrounds = pages ? chartPageGrounds(drawn, pages) : undefined;
     // The resolvers find nothing until the catalogue chunk lands, which
     // re-runs the build with the glyphs.
     const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
@@ -218,6 +221,7 @@ export function Minimap({
           tabFinish,
           sketchBackdrop: backdrops.has(el.id),
           surface: pageSurfaces?.get(el.id) ?? surface,
+          chartGrounds,
         }),
       );
       corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });

@@ -70,13 +70,7 @@ export function EmptyPageLayouts({
         </div>
         {/* A long category scrolls inside the card rather than running off the page. */}
         <div className="-mr-1 max-h-[380px] overflow-y-auto pr-1">
-          <LayoutBrowser
-            page={page}
-            contentCount={0}
-            onApply={onApply}
-            onPreview={() => {}}
-            wide={wide}
-          />
+          <LayoutBrowser page={page} onApply={onApply} onPreview={() => {}} wide={wide} />
         </div>
         {/* A logo page can start from nothing: the card goes for good on that page, its layouts
             still in its panel (docs/specs/007-editor/logo-pages.md "Logo layouts"). */}

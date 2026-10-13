@@ -150,18 +150,25 @@ first element closes the line again. A Board, Sheet or Dashboard tab keeps its k
 - **Nothing is remembered per person.** A mode chosen before this change and kept in a browser
   (`livediagram:v2:editor-mode:<tab>`) is no longer read: the tab's own mode wins. The keys are
   left in place and ignored.
-- **New documents and new tabs open in Diagram.** Whatever mode its creator
-  is in, a new document or a tab added from the tab bar (or Quick Start)
-  opens in Diagram, **except from Plan**: a tab added while its maker is in Plan mode opens in Plan
-  (its mode is Plan, for everyone), showing Plan's own **Start Planning**
-  ([Plan mode](../026-plan/plan-mode.md#starting-a-board)). A new tab never opens the Quick Start: it opens on its
-  mode's start (Start Diagramming in Diagram, [Template starts](start-diagramming.md); `newTabOpening` in
-  `apps/live/lib/new-tab-seed.ts`), whose **Something Else** brings the Quick Start for another
-  kind of tab. Only the template chosen for it changes that: every template opens in its own mode
-  ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw, Blank in Diagram, and an
-  **Event Storming** board is always Diagram. A new document's Mode step on `/new` picks its mode's
-  blank, so the document opens in that mode ([New document route](new-document-route.md)). An
-  import that sets its own mode wins.
+- **A new tab opens in the mode it was made from.** A tab added from the tab bar's **+** or the command palette's
+  **Create New Tab** opens in the mode of the tab its maker was on (the active tab's mode, for everyone on the new
+  tab): made from an Illustrate tab it is an Illustrate tab, from a Draw tab a Draw tab, from a Plan tab (a Board,
+  Sheet or Dashboard tab included) a Plan tab, and from an event-storming board, always Diagram, a Diagram tab. The
+  **+** makes the tab straight away, with no picker: it is a general tab (never the source's kind) carrying the
+  source's look ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Selecting & adding"), and only its mode
+  follows. A tab asked for in a mode (**New <Mode> Tab**, "Plan stands apart") opens in that mode instead. A new tab
+  never opens the Quick Start: it opens empty on its mode's own start (Start Diagramming, Start Drawing, Start
+  Facilitating, Start Illustrating, Start Planning: [Template starts](start-diagramming.md), [Plan
+  mode](../026-plan/plan-mode.md#starting-a-board); `newTabOpening` in `apps/live/lib/new-tab-seed.ts`), whose
+  **Something Else** brings the Quick Start for another kind of tab. Only the template chosen for it changes that:
+  every template opens in its own mode ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw,
+  Blank in Diagram, and an **Event Storming** board is always Diagram. **Duplicate** is not a new tab: the copy
+  keeps the original's mode. Adding a tab is an Editor's alone: a Participant, a Viewer and any tab-scoped link add
+  no tab ([Share roles](../013-workspace/share-roles.md), [Tab-scoped share
+  links](../013-workspace/tab-scoped-share-links.md)), so who may add one is unchanged by the mode it opens in.
+- **A new document opens in Diagram** unless its maker chose otherwise: a new document's Mode step on `/new` picks
+  its mode's blank, so the document opens in that mode ([New document route](new-document-route.md)). An import that
+  sets its own mode wins.
 - **Mode in the tab menu:** the tab menu holds a **Mode** group of full-width rows for editors (straight in the menu,
   not behind a submenu), listing every editor mode beside the tab's own (Diagram, Draw, Facilitate, Illustrate; Plan
   alone on a Plan tab, so no rows there: "Plan stands apart") as a radio choice with the tab's mode checked, each its
@@ -387,7 +394,7 @@ actions, snapping, export, putting content onto a page, page slides) is
 - **The surround** is the tab's own canvas: its colour, and every canvas setting, apply behind the pages exactly
   as in Diagram mode. Its pattern is **plain** while the tab keeps its theme's pattern (see One look, "Each mode's
   default canvas"); a pattern someone picked shows as it does in Diagram mode.
-- **Each page's label** sits above its top-left corner (**A4 · Portrait · Infographic**, or
+- **Each page's label** sits above its top-left corner (**A4 · Portrait** on an infographic page, or
   **Page 2 · A4 · Landscape · Article** once there is more than one, or its name), and
   **its settings cog** above its top-right, both held at one screen size at any
   zoom. The cog (tooltip **Page settings**, or **Page 2 settings**) opens the

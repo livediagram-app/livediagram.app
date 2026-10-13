@@ -101,6 +101,10 @@ const ALL_KINDS = [
   'whiteboard',
   'article',
   'blank-illustration',
+  'blank-slide-deck',
+  'blank-article',
+  'blank-infographic',
+  'blank-logo',
   'sketchnote',
   'rich-picture',
   'comic-strip',
@@ -300,6 +304,11 @@ describe('buildTemplate translation invariance', () => {
         k !== 'whiteboard' &&
         k !== 'article' &&
         k !== 'blank-illustration' &&
+        // One empty page of a chosen kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind").
+        k !== 'blank-slide-deck' &&
+        k !== 'blank-article' &&
+        k !== 'blank-infographic' &&
+        k !== 'blank-logo' &&
         // An empty Plan tab: it opens on Start Planning (docs/specs/026-plan/plan-templates.md).
         k !== 'blank-plan' &&
         // An empty session tab (docs/specs/012-collaboration/facilitate-mode.md "Templates").

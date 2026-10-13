@@ -111,12 +111,16 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
   .sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }))
   .map(({ id, label, description }) => ({ id, label, description }));
 
-// The blanks: in no category, reached only from Popular (docs/specs/007-editor/templates-by-mode.md "The blanks").
+// The blanks: in no category, reached from Popular or by search (docs/specs/007-editor/templates-by-mode.md "The blanks").
 // Mirrors isBlankTemplate (BLANK_TEMPLATE_FOR_MODE and EXTRA_BLANK_TEMPLATES); the categories test pins them together.
 type BlankKind =
   | 'blank'
   | 'whiteboard'
   | 'blank-illustration'
+  | 'blank-slide-deck'
+  | 'blank-article'
+  | 'blank-infographic'
+  | 'blank-logo'
   | 'blank-plan'
   | 'blank-spreadsheet'
   | 'blank-session';
@@ -280,7 +284,7 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'data-flow': ['technical'],
 };
 
-/** A template's primary category; null for the five blanks, which are in none. */
+/** A template's primary category; null for the blanks, which are in none. */
 export function templateCategory(kind: TemplateKind): TemplateCategory | null {
   return (TEMPLATE_CATEGORY as Partial<Record<TemplateKind, TemplateCategory>>)[kind] ?? null;
 }

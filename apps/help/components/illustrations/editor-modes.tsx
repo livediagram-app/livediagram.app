@@ -162,7 +162,7 @@ export function LeaveIllustrateScene() {
       <rect x={362} y={102} width={52} height={5} rx={2.5} className="fill-slate-300" />
       <rect x={362} y={114} width={38} height={5} rx={2.5} className="fill-slate-300" />
       <Label x={390} y={170} size={10} tone="muted" anchor="middle">
-        A4 · Portrait · Infographic
+        A4 · Portrait
       </Label>
       {/* The card, pointing up at the switch */}
       <rect

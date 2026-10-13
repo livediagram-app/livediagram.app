@@ -1,7 +1,7 @@
 // What sits on an Illustrate page, and the page edits that touch it
 // (docs/specs/007-editor/illustrate-pages.md): duplicating a page with everything on it, and
 // replacing a page's content with a layout. Plus the page's own surface, so elements with no colour
-// of their own are inked for a dark page. Pure: tab in, tab out, one tab edit each.
+// of their own are inked for a dark page (re-inking colours of their own is page-ink.ts). Pure: tab in, tab out, one tab edit each.
 import {
   canvasSurface,
   contrastRatio,
@@ -23,6 +23,8 @@ import {
   type LaidOutPage,
   type PageFill,
 } from './illustrate-page';
+import { pageImageTone } from './illustrate-page-image';
+import { PAGE_INK_CONTRAST, PAGE_INK_FLOOR } from './page-ink-rules';
 import { isBoxed, type Element, type Endpoint, type ShapeElement, type Tab } from './index';
 
 type Point = { x: number; y: number };
@@ -152,9 +154,11 @@ export function withPageContentReplaced<T extends Pick<Tab, 'elements'>>(
   return { ...tab, elements: [...kept, ...placed] };
 }
 
-/** The colour a page's fill reads as: a solid's colour, a gradient's two stops averaged. */
+/** The colour a page's fill reads as: a solid's colour, a gradient's two stops averaged, a
+ *  picture's tone under its overlay. */
 export function pageFillTone(fill: PageFill): string {
   if (fill.kind === 'solid') return fill.color;
+  if (fill.kind === 'image') return pageImageTone(fill);
   const rgb = (hex: string) => {
     const h = hex.length === 4 ? hex.replace(/^#(.)(.)(.)$/, '#$1$1$2$2$3$3') : hex;
     return [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -227,64 +231,19 @@ export function illustratePageSnapBoxes(pages: readonly LaidOutPage[]): ShapeEle
   });
 }
 
-// The least contrast a re-inked colour reaches against its page (WCAG AA for text).
-const PAGE_INK_CONTRAST = 4.5;
-// Below this contrast a colour of its own is re-inked: a colour that still reads is kept as chosen.
-const PAGE_INK_FLOOR = 3;
-
 /** A colour that reads on `tone`: the same hue lightened on a dark tone or darkened on a light one,
- *  stepwise until it reaches AA contrast; unchanged while it already clears the floor. */
-export function legibleOn(color: string, tone: string): string {
+ *  stepwise until it reaches AA contrast (or `floor`, where that is higher); unchanged while it
+ *  already clears `floor` (3:1 by default: a colour of its own that still reads is kept). */
+export function legibleOn(color: string, tone: string, floor: number = PAGE_INK_FLOOR): string {
   const ratio = contrastRatio(color, tone);
-  if (Number.isNaN(ratio) || ratio >= PAGE_INK_FLOOR) return color;
+  if (Number.isNaN(ratio) || ratio >= floor) return color;
+  const target = Math.max(PAGE_INK_CONTRAST, floor);
   const lighten = !isLightColor(tone);
   for (let amount = 0.2; amount <= 1.0001; amount += 0.1) {
     const next = lighten ? tint(color, amount) : shade(color, amount);
-    if (contrastRatio(next, tone) >= PAGE_INK_CONTRAST) return next;
+    if (contrastRatio(next, tone) >= target) return next;
   }
   return lighten ? '#ffffff' : '#0f172a';
-}
-
-/**
- * The tab with the colours of its own that sit straight on a page re-inked to read on the page's
- * new background (docs/specs/007-editor/illustrate-pages.md "A dark page has light ink"): a text
- * element's text, an arrow's line, an icon's glyph. Anything on a fill of its own (a card, a
- * shape) reads against that fill and is left alone, as is every element with no colour of its own
- * (the page's surface inks those). `background` is the page's background after the change.
- */
-export function withPageInkFor<T extends Pick<Tab, 'elements'>>(
-  tab: T & { pages?: unknown; pageOrientation?: unknown },
-  pageId: string,
-  background: IllustratePage['background'],
-): T {
-  const pages = layOutIllustratePages(illustratePagesOf(tab));
-  const on = elementIdsOnPage(tab.elements, pages, pageId);
-  const tone = background?.fill ? pageFillTone(background.fill) : '#ffffff';
-  let changed = false;
-  const elements = tab.elements.map((el) => {
-    if (!on.has(el.id)) return el;
-    if (el.type === 'arrow') {
-      if (!el.strokeColor) return el;
-      const next = legibleOn(el.strokeColor, tone);
-      if (next === el.strokeColor) return el;
-      changed = true;
-      return { ...el, strokeColor: next };
-    }
-    if (el.type === 'text' && el.textColor) {
-      const next = legibleOn(el.textColor, tone);
-      if (next === el.textColor) return el;
-      changed = true;
-      return { ...el, textColor: next };
-    }
-    if (el.type === 'shape' && el.shape === 'icon' && el.strokeColor) {
-      const next = legibleOn(el.strokeColor, tone);
-      if (next === el.strokeColor) return el;
-      changed = true;
-      return { ...el, strokeColor: next };
-    }
-    return el;
-  });
-  return changed ? { ...tab, elements } : tab;
 }
 
 /**

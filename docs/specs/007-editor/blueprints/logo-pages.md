@@ -193,8 +193,8 @@ Exclude), **Wordmark**, **Logo Kit**.
   dimmed while off. All three show their names beside the icon unless
   `useIsMobileViewport()`. `logoTitleBarRoom(true, !mobile)` (room for Tidy Up always kept: 72 px
   each named, or 28 px each icon-only, three times) is reserved from the label.
-- Layout tiles: `LayoutThumb` hands a logo page's tile to `LogoLayoutThumb`
-  (`components/canvas/logo-layout-thumb.tsx`) when `EditorContext` has an `activeTab` (else the
+- Layout tiles: `LayoutThumb` hands a logo page's tile to `LayoutRenderThumb`
+  (`components/canvas/layout-render-thumb.tsx`) when `EditorContext` has an `activeTab` (else the
   wireframe): `logoLayoutSvg(tab, page, layout)` = `renderTabToSvg({ ...tab, elements:
 buildPageLayout(layout, page) }, { page })`, memoised on the layout, the page's rect and
   background, the tab's theme and font, and `useIconCatalogs()`; set as the markup of a div of the
@@ -552,7 +552,7 @@ Measured (vitest on this branch):
 | Mirror merge                                      | `apps/live/lib/mirror-merge.test.ts`                                                                                           |
 | The Logo palette and its markers                  | `apps/live/components/palette/PaletteLogoTab.test.tsx`, `apps/live/components/palette/MarkerPaletteTile.test.tsx`              |
 | The palette follows the page                      | `apps/live/hooks/canvas/useLogoPaletteSwitch.test.tsx`                                                                         |
-| Layout tiles rendered                             | `apps/live/components/canvas/logo-layout-thumb.test.tsx`                                                                       |
+| Layout tiles rendered                             | `apps/live/components/canvas/layout-render-thumb.test.tsx`                                                                     |
 | No quick-connect pluses                           | `apps/live/components/canvas/LayerSelectionChrome.test.ts`                                                                     |
 | Show Me                                           | `apps/live/components/tour/LogoTour.test.tsx`                                                                                  |
 

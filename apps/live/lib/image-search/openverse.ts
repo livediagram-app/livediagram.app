@@ -51,7 +51,18 @@ export class OpenverseSearchError extends Error {
   }
 }
 
-export function openverseSearchUrl(query: string, page: number): string {
+// Openverse's own shape and size filters. The picker never passes them; a page's Image background
+// asks for pictures of the page's shape, large (docs/specs/007-editor/illustrate-pages.md "Image
+// backgrounds").
+export type OpenverseAspectRatio = 'tall' | 'wide' | 'square';
+export type OpenverseSize = 'small' | 'medium' | 'large';
+export type OpenverseFilters = { aspectRatio?: OpenverseAspectRatio; size?: OpenverseSize };
+
+export function openverseSearchUrl(
+  query: string,
+  page: number,
+  filters: OpenverseFilters = {},
+): string {
   const params = new URLSearchParams({
     q: query,
     page: String(page),
@@ -59,6 +70,8 @@ export function openverseSearchUrl(query: string, page: number): string {
     license_type: OPENVERSE_LICENSE_TYPE,
     mature: 'false',
   });
+  if (filters.aspectRatio) params.set('aspect_ratio', filters.aspectRatio);
+  if (filters.size) params.set('size', filters.size);
   return `${OPENVERSE_API_BASE}/images/?${params.toString()}`;
 }
 

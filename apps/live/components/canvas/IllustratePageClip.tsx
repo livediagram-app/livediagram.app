@@ -1,8 +1,14 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { elementPageSurfaces, type Element, type LaidOutPage } from '@livediagram/document';
-import { PageSurfacesProvider } from './CanvasSurfaceContext';
+import {
+  chartPageGrounds,
+  elementPageSurfaces,
+  type Element,
+  type LaidOutPage,
+  type Layer,
+} from '@livediagram/document';
+import { ChartGroundsProvider, PageSurfacesProvider } from './CanvasSurfaceContext';
 import { usePageBackgroundPreview, withPreviewedBackgrounds } from '@/lib/page-background-preview';
 
 // Illustrate mode cuts elements off at the page edges (docs/specs/007-editor/editor-modes.md "The
@@ -26,12 +32,15 @@ export function pagesClipPath(pages: readonly LaidOutPage[]): string {
 export function IllustratePageClip({
   pages,
   elements,
+  layers,
   hiddenPageId = null,
   children,
 }: {
   // Absent outside Illustrate mode, where nothing is clipped.
   pages: readonly LaidOutPage[] | null;
   elements: Element[];
+  // The tab's layers, for the paint order a chart's ground is found in (what is drawn under it).
+  layers?: Layer[];
   // A page whose content is hidden (left out of the clip): one under a layout preview.
   hiddenPageId?: string | null;
   children: ReactNode;
@@ -39,17 +48,18 @@ export function IllustratePageClip({
   // A background hovered in a page's panel inks the page's elements as the press would.
   const preview = usePageBackgroundPreview();
   if (!pages) return <>{children}</>;
+  const shown = withPreviewedBackgrounds(pages, preview);
   return (
-    <PageSurfacesProvider
-      surfaces={elementPageSurfaces(elements, withPreviewedBackgrounds(pages, preview))}
-    >
-      <div
-        data-page-clip=""
-        className="absolute inset-0 transition-[clip-path] duration-200 ease-out motion-reduce:transition-none"
-        style={{ clipPath: pagesClipPath(pages.filter((p) => p.id !== hiddenPageId)) }}
-      >
-        {children}
-      </div>
+    <PageSurfacesProvider surfaces={elementPageSurfaces(elements, shown)}>
+      <ChartGroundsProvider grounds={chartPageGrounds(elements, shown, layers)}>
+        <div
+          data-page-clip=""
+          className="absolute inset-0 transition-[clip-path] duration-200 ease-out motion-reduce:transition-none"
+          style={{ clipPath: pagesClipPath(pages.filter((p) => p.id !== hiddenPageId)) }}
+        >
+          {children}
+        </div>
+      </ChartGroundsProvider>
     </PageSurfacesProvider>
   );
 }

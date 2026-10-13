@@ -30,15 +30,13 @@ import {
   svgTimelineRail,
 } from './svg-render-data';
 import { svgPageMasthead } from './svg-render-page';
+import { progressTrackColour } from './progress-colours';
 import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgFace } from './svg-render-faces';
 import { svgCollabFace } from './svg-render-collab-faces';
 import { svgWebComponent } from './svg-render-web';
 import { isWebComponentShape } from './web-components';
 import type { BoxedElement, ShapeKind } from './index';
 import type { CanvasSurface } from './colors';
-
-// The canvas's progress track when an element sets no fill of its own.
-const PROGRESS_TRACK_DEFAULT = '#e2e8f0';
 
 /** The kinds whose body these emitters draw, rather than it being a box with a
  *  label. See the module comment: the PNG path reads this. */
@@ -72,6 +70,8 @@ export function svgElementBody(
     fill: string;
     /** The tab theme's categorical ramp, for the charts. */
     chartPalette?: readonly string[];
+    /** What a chart sits on, where a page's fill makes it matter (chartPageGrounds). */
+    chartGround?: readonly string[];
     /** The element's label text, for the faces that write their own title. */
     label: string;
     /** The paper under the element, for the faces whose base follows it. */
@@ -79,17 +79,18 @@ export function svgElementBody(
   },
 ): string {
   if (el.type !== 'shape') return '';
-  const { labelColor, fontFamily, stroke, fill, chartPalette, label } = o;
-  if (isPieShape(el.shape)) return svgPieChart(el, labelColor, chartPalette, fontFamily);
-  if (isBarShape(el.shape)) return svgBarChart(el, labelColor, chartPalette, fontFamily);
-  if (isLineShape(el.shape)) return svgLineChart(el, labelColor, chartPalette, fontFamily);
-  if (isSankeyShape(el.shape)) return svgSankey(el, labelColor, chartPalette, fontFamily);
-  // The empty track is the element's OWN fill, else a fixed slate on light
-  // paper (ShapeContentRouter), not the theme's card fill a resolved `fill`
-  // carries. On dark paper the canvas keeps that light slate, which leaves the
-  // white percentage unreadable; the export keeps the themed dark track there
-  // rather than copy that (reported as a canvas bug).
-  const track = el.fillColor ?? (o.surface === 'dark' ? fill : PROGRESS_TRACK_DEFAULT);
+  const { labelColor, fontFamily, stroke, fill, chartPalette, chartGround, label } = o;
+  if (isPieShape(el.shape))
+    return svgPieChart(el, labelColor, chartPalette, fontFamily, chartGround);
+  if (isBarShape(el.shape))
+    return svgBarChart(el, labelColor, chartPalette, fontFamily, chartGround);
+  if (isLineShape(el.shape))
+    return svgLineChart(el, labelColor, chartPalette, fontFamily, chartGround);
+  if (isSankeyShape(el.shape))
+    return svgSankey(el, labelColor, chartPalette, fontFamily, chartGround);
+  // The empty track is the element's OWN fill, else the paper's default track,
+  // the one the canvas's ProgressView draws (docs/specs/009-elements/progress.md).
+  const track = progressTrackColour(el, o.surface);
   if (el.shape === 'progress-bar') return svgProgressBar(el, stroke, track, labelColor, fontFamily);
   if (el.shape === 'progress-ring')
     return svgProgressRing(el, stroke, track, labelColor, fontFamily);

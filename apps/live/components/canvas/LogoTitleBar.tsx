@@ -83,9 +83,19 @@ function TidyUpButton({
   ) : null;
 }
 
-export function LogoTitleBar({ pageId, tools }: { pageId: string; tools: LogoToolsView }) {
-  // Mirror and Guides name themselves on a desktop; a phone keeps them icon-only.
-  const labelled = !useIsMobileViewport();
+export function LogoTitleBar({
+  pageId,
+  tools,
+  labelled: named,
+}: {
+  pageId: string;
+  tools: LogoToolsView;
+  // Whether the title bar has room to name them (IllustratePages); absent, a desktop does.
+  labelled?: boolean;
+}) {
+  // Mirror and Guides name themselves on a desktop with room; a phone keeps them icon-only.
+  const desktop = !useIsMobileViewport();
+  const labelled = named ?? desktop;
   const editor = useContext(EditorContext);
   const selection = useHasSelectionStore();
   return (

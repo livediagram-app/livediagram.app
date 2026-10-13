@@ -310,8 +310,9 @@ export function CanvasThemeDialog({
   );
 }
 
-// The paintbrush's place: how far the panel's right edge and bottom sit from the window's, so its corner is just above
-// the brush, right edges aligned. Null without a brush on screen, or on a phone (below 640 px), where it stays a dialog.
+// The paintbrush's place: how far the panel's right edge and bottom sit from the window's, so it sits just above the
+// brush with its right edge on the bottom-right cluster's (the screen's right-hand side), keeping as much of the work
+// as it can in view. Null without a brush on screen, or on a phone (below 640 px), where it stays a dialog.
 const BRUSH_GAP_PX = 8;
 function useBrushAnchor(): { right: number; bottom: number } | null {
   // Read once as it opens (the dialog is client-only, loaded with ssr off): the brush does not move while it is open.
@@ -320,8 +321,13 @@ function useBrushAnchor(): { right: number; bottom: number } | null {
     const brush = document.querySelector<HTMLElement>('[data-tour-id="canvas-theme"]');
     const box = brush?.getBoundingClientRect();
     if (!box || box.width === 0) return null;
+    // The cluster's right edge (the zoom controls end it), else the brush's own.
+    const cluster = document
+      .querySelector<HTMLElement>('[data-zoom-cluster]')
+      ?.getBoundingClientRect();
+    const edge = cluster && cluster.width > 0 ? Math.max(cluster.right, box.right) : box.right;
     return {
-      right: Math.max(8, Math.round(window.innerWidth - box.right)),
+      right: Math.max(8, Math.round(window.innerWidth - edge)),
       bottom: Math.round(window.innerHeight - box.top + BRUSH_GAP_PX),
     };
   });

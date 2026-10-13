@@ -211,6 +211,24 @@ describe('adding', () => {
     });
   });
 
+  it('carries the last page’s background onto a new page of any kind, a logo without pattern', () => {
+    const fill = { kind: 'gradient' as const, from: '#fde68a', to: '#fca5a5', angle: 160 };
+    const tab = tabOf([a4('p', { background: { fill, pattern: 'dots' } })]);
+    for (const kind of ['infographic', 'slide', 'article'] as const) {
+      expect(illustratePagesOf(ok(pageAdded(tab, kind, 'n', 'f')))[1]!.background).toEqual({
+        fill,
+        pattern: 'dots',
+      });
+    }
+    expect(illustratePagesOf(ok(pageAdded(tab, 'logo', 'n', 'f')))[1]!.background).toEqual({
+      fill,
+    });
+    // The paper carries nothing over.
+    expect(pagesAfter(pageAdded(tabOf([a4('p')]), 'slide', 'n', 'f'))[1]!.background).toBe(
+      undefined,
+    );
+  });
+
   it('adds a slide in the last slide size, and a logo artboard', () => {
     const tab = tabOf([
       a4('s', { kind: 'slide', size: 'slide-classic', orientation: 'landscape' }),

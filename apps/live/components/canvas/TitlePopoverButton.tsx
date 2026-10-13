@@ -2,12 +2,14 @@
 
 // A page's title-bar control that opens a popover: a logo page's Guides and Mirror
 // (docs/specs/007-editor/logo-pages.md "Beside the cog") and an infographic or slide page's
-// Background (illustrate-pages.md "Beside the cog"). Pressed while its tool is on for the page (or,
-// with no `on`, tinted while its popover is open), named beside its icon on a desktop, the popover
-// anchored under it.
-import { useState, type ReactNode } from 'react';
-import { Tooltip } from '@livediagram/ui';
+// Background and Layouts (illustrate-pages.md "Beside the cog"). Pressed while its tool is on for
+// the page (or, with no `on`, tinted while its popover is open), named beside its icon on a
+// desktop, the popover anchored under it; on a phone it opens as a bottom sheet instead.
+import { useRef, useState, type ReactNode } from 'react';
+import { Tooltip, useClickOutside, useEscape } from '@livediagram/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { BottomSheet } from '@/components/primitives/BottomSheet';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 
 /** The title-bar controls' look: the cog's size, named beside the icon when `labelled`, tinted while on. */
 export function titleButtonClass(on: boolean | undefined, labelled: boolean): string {
@@ -45,11 +47,14 @@ export function TitlePopoverButton({
   padded?: boolean;
   // Called as the popover opens (its telemetry).
   onOpen?: () => void;
-  // The popover's body.
-  children: ReactNode;
+  // The popover's body, or a function of its close (a body that closes itself, Layouts).
+  children: ReactNode | ((close: () => void) => ReactNode);
 }) {
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
+  const mobile = useIsMobileViewport();
+  const close = () => setOpen(false);
+  const body = typeof children === 'function' ? children(close) : children;
   return (
     <>
       <Tooltip label={on ? `${name}: on` : name}>
@@ -58,6 +63,7 @@ export function TitlePopoverButton({
           type="button"
           aria-label={name}
           aria-haspopup="dialog"
+          data-title-popover-trigger=""
           aria-expanded={open}
           {...(on === undefined ? {} : { 'aria-pressed': on })}
           onClick={() => {
@@ -70,17 +76,54 @@ export function TitlePopoverButton({
           {labelled ? <span aria-hidden>{name}</span> : null}
         </button>
       </Tooltip>
-      {open && anchor ? (
-        <AnchoredPopover anchor={anchor} name={name} width={width} onClose={() => setOpen(false)}>
+      {open && mobile ? (
+        <TitleSheet name={name} onClose={close}>
+          {body}
+        </TitleSheet>
+      ) : open && anchor ? (
+        <AnchoredPopover anchor={anchor} name={name} width={width} onClose={close}>
           <div
             className={`rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900 ${
               padded ? 'p-3' : 'py-1'
             }`}
           >
-            {children}
+            {body}
           </div>
         </AnchoredPopover>
       ) : null}
     </>
+  );
+}
+
+// On a phone: the body in a bottom sheet, named, closed by a swipe down, an outside press or
+// Escape (a colour popover it opens is its own).
+function TitleSheet({
+  name,
+  onClose,
+  children,
+}: {
+  name: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const sheet = useRef<HTMLDivElement>(null);
+  // Its own button toggles it, so a press there is not an outside one.
+  useClickOutside(sheet, onClose, true, '[data-anchored-popover], [data-title-popover-trigger]');
+  useEscape(onClose, { capture: true, stopPropagation: true });
+  return (
+    <BottomSheet
+      ref={sheet}
+      role="dialog"
+      aria-label={name}
+      data-article-keep-active=""
+      onClose={onClose}
+      zClassName="z-[var(--z-overlay)]"
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <p className="px-4 pb-1 pt-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
+        {name}
+      </p>
+      <div className="pb-2">{children}</div>
+    </BottomSheet>
   );
 }

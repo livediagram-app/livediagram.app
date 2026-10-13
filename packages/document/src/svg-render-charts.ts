@@ -12,6 +12,7 @@
 // and have no meaning in a still image.
 
 import { chartFrame, type ChartLegendRect } from './chart-frame';
+import { chartTextInk } from './chart-ink';
 import { AREA_FILL_OPACITY, barMarks, lineMarks, pieMarks } from './chart-marks';
 import { chartTypeOf, lineVariantOf } from './chart-types';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
@@ -93,11 +94,14 @@ function svgChartLegend(
 /** A pie chart (or doughnut): wedges clockwise from twelve o'clock, plus the key. */
 export function svgPieChart(
   el: Chart,
-  textColor: string,
+  labelColor: string,
   palette?: readonly string[],
   fontFamily?: string,
+  // What the chart sits on (chartPageGrounds): its series and text drawn adapted to it.
+  ground?: readonly string[],
 ): string {
-  const { data, colorAt, area, legend } = chartFrame(el as ShapeElement, palette);
+  const textColor = chartTextInk(labelColor, ground);
+  const { data, colorAt, area, legend } = chartFrame(el as ShapeElement, palette, ground);
   const doughnut = chartTypeOf(el) === 'doughnut';
   const { cx, cy, rad, wedges } = pieMarks(area, data, doughnut, el.x, el.y);
   const marks = wedges
@@ -115,11 +119,14 @@ export function svgPieChart(
 /** A column chart (or, horizontal, a bar chart): a baseline and one bar per value, plus the key. */
 export function svgBarChart(
   el: Chart,
-  textColor: string,
+  labelColor: string,
   palette?: readonly string[],
   fontFamily?: string,
+  // What the chart sits on (chartPageGrounds): its series and text drawn adapted to it.
+  ground?: readonly string[],
 ): string {
-  const { data, colorAt, area, legend } = chartFrame(el as ShapeElement, palette);
+  const textColor = chartTextInk(labelColor, ground);
+  const { data, colorAt, area, legend } = chartFrame(el as ShapeElement, palette, ground);
   const { baseline: b, bars } = barMarks(area, data, chartTypeOf(el) === 'bar', el.x, el.y);
   const baseline = `<path d="M ${r2(b.x1)} ${r2(b.y1)} L ${r2(b.x2)} ${r2(b.y2)}" stroke="${AXIS}" stroke-width="1"/>`;
   const rects = bars
@@ -134,11 +141,14 @@ export function svgBarChart(
 /** A line, area or scatter chart: axes, its marks per series, the x labels, the key. */
 export function svgLineChart(
   el: Chart,
-  textColor: string,
+  labelColor: string,
   palette?: readonly string[],
   fontFamily?: string,
+  // What the chart sits on (chartPageGrounds): its series and text drawn adapted to it.
+  ground?: readonly string[],
 ): string {
-  const { colorAt, area, legend } = chartFrame(el as ShapeElement, palette);
+  const textColor = chartTextInk(labelColor, ground);
+  const { colorAt, area, legend } = chartFrame(el as ShapeElement, palette, ground);
   const categories =
     el.lineCategories && el.lineCategories.length > 0 ? el.lineCategories : LINE_DEFAULT_CATEGORIES;
   const series = el.lineSeries && el.lineSeries.length > 0 ? el.lineSeries : LINE_DEFAULT_SERIES;

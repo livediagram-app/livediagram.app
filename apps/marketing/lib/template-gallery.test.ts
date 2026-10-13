@@ -13,13 +13,13 @@ import {
 } from './template-gallery';
 
 describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => {
-  it('has one category card for every listed template but the three blanks', () => {
+  it('has one category card for every listed template but the blanks', () => {
     const kinds = galleryTemplates().map((t) => t.kind);
     const expected = TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(
       (t) => t.kind,
     );
     expect(kinds).toEqual(expected);
-    for (const blank of ['blank', 'whiteboard', 'blank-illustration']) {
+    for (const blank of ['blank', 'whiteboard', 'blank-illustration', 'blank-slide-deck']) {
       expect(kinds).not.toContain(blank);
     }
     expect(new Set(kinds).size).toBe(kinds.length);
@@ -103,6 +103,9 @@ describe('the shelves, as the template step lays them out', () => {
       'whiteboard',
       'blank-session',
       'blank-illustration',
+      'blank-slide-deck',
+      'blank-article',
+      'blank-logo',
       'blank-plan',
       'blank-spreadsheet',
     ]);
@@ -128,7 +131,10 @@ describe('the shelves, as the template step lays them out', () => {
     expect(counts.diagram + counts.draw + counts.illustrate + counts.plan + counts.facilitate).toBe(
       counts.all,
     );
-    expect(counts.all).toBe(TEMPLATES.filter((t) => !t.hidden).length);
+    // Every listed template, less the blank shown by another name (Blank Infographic).
+    expect(counts.all).toBe(
+      TEMPLATES.filter((t) => !t.hidden && t.kind !== 'blank-infographic').length,
+    );
     expect(counts.draw).toBe(byMode(galleryTemplates(), 'draw').length + 1);
   });
 
@@ -169,7 +175,12 @@ describe('Blank Slate under a mode', () => {
   it("holds only that mode's blanks", () => {
     expect(popularFor('diagram').map((t) => t.kind)).toEqual(['blank']);
     expect(popularFor('draw').map((t) => t.kind)).toEqual(['whiteboard']);
-    expect(popularFor('illustrate').map((t) => t.kind)).toEqual(['blank-illustration']);
+    expect(popularFor('illustrate').map((t) => t.kind)).toEqual([
+      'blank-illustration',
+      'blank-slide-deck',
+      'blank-article',
+      'blank-logo',
+    ]);
     expect(popularFor('facilitate').map((t) => t.kind)).toEqual(['blank-session']);
     expect(popularFor('plan').map((t) => t.kind)).toEqual(['blank-plan', 'blank-spreadsheet']);
   });

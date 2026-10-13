@@ -253,9 +253,14 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'blank-session':
       return [];
     // An article's writing and page are tab data (templateCanvasOverrides), not elements; a blank
-    // illustration is its one empty page, which asks what it is for.
+    // illustration is its one empty page, which asks what it is for, and a blank of a page kind its one
+    // empty page of that kind (blank-page-templates.ts).
     case 'article':
     case 'blank-illustration':
+    case 'blank-slide-deck':
+    case 'blank-article':
+    case 'blank-infographic':
+    case 'blank-logo':
       return [];
     case 'sketchnote':
       return buildSketchnote(cx, cy);

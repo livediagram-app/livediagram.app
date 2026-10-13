@@ -40,6 +40,14 @@ describe('openverseSearchUrl', () => {
     expect(url.searchParams.get('page_size')).toBe('20');
     expect(url.searchParams.get('license_type')).toBe('commercial,modification');
     expect(url.searchParams.get('mature')).toBe('false');
+    expect(url.searchParams.has('aspect_ratio')).toBe(false);
+    expect(url.searchParams.has('size')).toBe(false);
+  });
+
+  it('passes a page background’s shape and size filters', () => {
+    const url = new URL(openverseSearchUrl('sea', 1, { aspectRatio: 'tall', size: 'large' }));
+    expect(url.searchParams.get('aspect_ratio')).toBe('tall');
+    expect(url.searchParams.get('size')).toBe('large');
   });
 });
 

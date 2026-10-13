@@ -28,6 +28,7 @@ export function PagedCarousel<T>({
   initialIndex,
   renderItem,
   navTourId,
+  controls,
 }: {
   items: readonly T[];
   perPage: number;
@@ -42,6 +43,8 @@ export function PagedCarousel<T>({
   renderItem: (item: T) => ReactNode;
   // A Show Me target on the page controls.
   navTourId?: string;
+  // Controls of the section's own, left of the page controls (the Looks' Finish filter).
+  controls?: ReactNode;
 }) {
   const pages: T[][] = [];
   for (let i = 0; i < items.length; i += perPage) pages.push(items.slice(i, i + perPage));
@@ -71,46 +74,49 @@ export function PagedCarousel<T>({
       {/* px-1 lines the heading up with the tiles, which sit inside their page's p-1. */}
       <div className="flex min-h-8 items-center justify-between gap-2 px-1">
         {heading}
-        {pages.length > 1 ? (
-          <div className="flex items-center gap-1" data-tour-id={navTourId}>
-            <button
-              type="button"
-              aria-label={`Previous ${lower}`}
-              disabled={page === 0}
-              onClick={() => goTo(page - 1)}
-              className={NAV_BUTTON}
-            >
-              <PrevIcon />
-            </button>
-            <div className="flex items-center gap-1.5 px-1">
-              {pages.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  aria-label={`${label} page ${i + 1} of ${pages.length}`}
-                  aria-current={i === page ? 'true' : undefined}
-                  onClick={() => goTo(i)}
-                  className="flex h-6 w-4 items-center justify-center"
-                >
-                  <span
-                    className={`block h-1.5 rounded-full transition-all motion-reduce:transition-none ${
-                      i === page ? 'w-4 bg-brand-500' : 'w-1.5 bg-slate-300 dark:bg-slate-600'
-                    }`}
-                  />
-                </button>
-              ))}
+        <div className="flex items-center gap-2">
+          {controls}
+          {pages.length > 1 ? (
+            <div className="flex items-center gap-1" data-tour-id={navTourId}>
+              <button
+                type="button"
+                aria-label={`Previous ${lower}`}
+                disabled={page === 0}
+                onClick={() => goTo(page - 1)}
+                className={NAV_BUTTON}
+              >
+                <PrevIcon />
+              </button>
+              <div className="flex items-center gap-1.5 px-1">
+                {pages.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-label={`${label} page ${i + 1} of ${pages.length}`}
+                    aria-current={i === page ? 'true' : undefined}
+                    onClick={() => goTo(i)}
+                    className="flex h-6 w-4 items-center justify-center"
+                  >
+                    <span
+                      className={`block h-1.5 rounded-full transition-all motion-reduce:transition-none ${
+                        i === page ? 'w-4 bg-brand-500' : 'w-1.5 bg-slate-300 dark:bg-slate-600'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                aria-label={`Next ${lower}`}
+                disabled={page === pages.length - 1}
+                onClick={() => goTo(page + 1)}
+                className={NAV_BUTTON}
+              >
+                <NextIcon />
+              </button>
             </div>
-            <button
-              type="button"
-              aria-label={`Next ${lower}`}
-              disabled={page === pages.length - 1}
-              onClick={() => goTo(page + 1)}
-              className={NAV_BUTTON}
-            >
-              <NextIcon />
-            </button>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
       {/* The strip scrolls sideways, so it clips anything drawn past a tile; each page's `p-1` keeps a selected
           tile's ring and border inside it. The strip stays inside its column: pulled out (a negative margin), a

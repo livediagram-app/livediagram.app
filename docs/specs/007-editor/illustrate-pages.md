@@ -8,16 +8,16 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 
 ## Domain language
 
-| Term                | Means                                                                                                     |
-| ------------------- | --------------------------------------------------------------------------------------------------------- |
-| **page**            | One sheet of a tab in Illustrate mode (`IllustratePage`), stored in `Tab.pages` in row order.             |
-| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article**, **slide** or **logo** page.   |
-| **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.   |
-| **row anchor**      | Where the row of pages sits on the canvas (`IllustratePage.rowAt`): the first page's centre.              |
-| **orientation**     | Portrait (the long side upright) or landscape. A square page, and a slide size, has none.                 |
-| **page background** | What the sheet is painted with (`PageBackground`): a solid colour or a two-stop gradient, plus a pattern. |
-| **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.     |
-| **page panel**      | The page's settings, opened from the cog above its top-right corner.                                      |
+| Term                | Means                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **page**            | One sheet of a tab in Illustrate mode (`IllustratePage`), stored in `Tab.pages` in row order.                                         |
+| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article**, **slide** or **logo** page.                               |
+| **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                               |
+| **row anchor**      | Where the row of pages sits on the canvas (`IllustratePage.rowAt`): the first page's centre.                                          |
+| **orientation**     | Portrait (the long side upright) or landscape. A square page, and a slide size, has none.                                             |
+| **page background** | What the sheet is painted with (`PageBackground`): a solid colour, a two-stop gradient or a picture under an overlay, plus a pattern. |
+| **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.                                 |
+| **page panel**      | The page's settings, opened from the cog above its top-right corner.                                                                  |
 
 ## Page kinds
 
@@ -52,7 +52,10 @@ Arrow keys move between them (here and in the first page's choice below), Enter 
 infographic page takes the last infographic page's size and orientation (else A4 portrait; A4 in
 its orientation after a Fit to Content page, whose sides are that page's alone); a new
 article is as [Article pages](article-pages.md) "An article" says; a new slide takes the last
-slide's size (else 16:9), landscape; a new logo page is the 1024 x 1024 artboard. The popover is the same on
+slide's size (else 16:9), landscape; a new logo page is the 1024 x 1024 artboard. Whatever its
+kind, a new page **carries over the background** of the page before it (the last page): its fill
+and pattern, a logo page taking the fill alone (it takes no pattern); after the plain paper it is
+plain paper too. It is the new page's own from then on. The popover is the same on
 a phone (a bottom sheet). The **+** is named **Add Page** and shows the popover open as pressed. The Toolbar
 strip ends, after a divider, with the same **+** (Add Page), opening the same
 popover, while in Illustrate mode; not on a phone, where the strip has no room to spare and the
@@ -80,15 +83,17 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
   no room there, it opens under the cog. Screen-space, one size at any zoom; it scrolls when taller
   than the window.
 - Top to bottom: on a logo page, **Show Me** and **Help** ([Logo pages](logo-pages.md) "Show Me"); the **name** field (placeholder `Page n`, or `Untitled page` while there is one
-  page; renamed on Enter, on leaving the field, or on closing the panel), then its tabs, **Page**,
-  **Background** and **Layouts** (a slide page's Layouts are the slide layouts; an article page:
+  page; renamed on Enter, on leaving the field, or on closing the panel), then its tabs: **Page**
+  alone on an infographic page, with no tab switch (its Layout, Tidy Up and Background are the
+  buttons beside the cog, "Beside the cog" below); a slide page: **Page** and **Background** (its
+  Layout is the button beside the cog); an article page:
   **Page**, **Background**, **Style** and **Text**, [Article pages](article-pages.md) "Article style";
   a logo page: **Background** and **Layouts**, its Layouts the logo layouts, [Logo pages](logo-pages.md)
   "The page panel"; Page is there only while the page has a size or orientation to choose), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
   with tooltips. **Page** holds the **Size** tiles (each drawn to scale) and **Orientation**
   (Portrait / Landscape, absent for a page with no orientation); **Background** holds the
-  **Background** swatches and the **Pattern** tiles; **Layouts** holds the layouts by category. The
-  cog opens it on its first tab; the layout invite opens it on Layouts. The tabs, and Portrait /
+  **Background** swatches and the **Pattern** tiles; a logo page's **Layouts** holds its layouts by
+  category. The cog opens it on its first tab; a logo page's layout invite opens it on Layouts. The tabs, and Portrait /
   Landscape, are the shared
   segmented control, its highlight sliding between the choices.
 - **Hover previews**: hovering (or focusing) a background swatch or pattern paints it on the page
@@ -139,30 +144,31 @@ a page slide of a deleted page stays empty rather than finding a new page under 
 
 ## Sizes
 
-| Size id         | Label (portrait / landscape)               | Short x long side (px) | For                      |
-| --------------- | ------------------------------------------ | ---------------------- | ------------------------ |
-| `a4`            | A4                                         | 794 x 1123             | Print, the default       |
-| `letter`        | US Letter                                  | 816 x 1056             | Print in North America   |
-| `a3`            | A3                                         | 1123 x 1587            | Posters                  |
-| `square`        | Square                                     | 1080 x 1080            | Social posts             |
-| `social`        | Portrait post (4:5) / Landscape post (5:4) | 1080 x 1350            | Instagram and LinkedIn   |
-| `wide`          | Story (9:16) / Slide (16:9)                | 1080 x 1920            | Stories, and slides wide |
-| `slide`         | Slide (16:9)                               | 1080 x 1920            | Slides, landscape only   |
-| `slide-classic` | Classic slide (4:3)                        | 1080 x 1440            | Slides for 4:3 screens   |
-| `logo`          | 1024 x 1024                                | 1024 x 1024            | Logos, logo pages only   |
-| `fit`           | Fit to Content                             | its own (`fit`)        | A board put onto a page  |
+| Size id         | Label (portrait / landscape)               | Short x long side (px) | For                       |
+| --------------- | ------------------------------------------ | ---------------------- | ------------------------- |
+| `a4`            | A4                                         | 794 x 1123             | Print, the default        |
+| `letter`        | US Letter                                  | 816 x 1056             | Print in North America    |
+| `a3`            | A3                                         | 1123 x 1587            | Posters                   |
+| `square`        | Square                                     | 1080 x 1080            | Social posts              |
+| `social`        | Portrait post (4:5) / Landscape post (5:4) | 1080 x 1350            | Instagram and LinkedIn    |
+| `wide`          | Story (9:16) / Widescreen (16:9)           | 1080 x 1920            | Stories, and screens wide |
+| `slide`         | Slide (16:9)                               | 1080 x 1920            | Slides, landscape only    |
+| `slide-classic` | Classic slide (4:3)                        | 1080 x 1440            | Slides for 4:3 screens    |
+| `logo`          | 1024 x 1024                                | 1024 x 1024            | Logos, logo pages only    |
+| `fit`           | Fit to Content                             | its own (`fit`)        | A board put onto a page   |
 
-- **Which sizes a page offers** depends on its kind. An **infographic** page: A4, US Letter, A3,
-  Square, Post, Story and **Slide** (16:9). An **article** page: the first six. A **slide** page:
+- **Which sizes a page offers** depends on its kind. An **infographic** or **article** page: A4,
+  US Letter, A3, Square, Post and Story (never a slide size: a deck is made of slide pages; an
+  infographic page already on the Slide size keeps that tile until it moves off it). A **slide** page:
   **Slide** (16:9) and **Classic** (4:3) only. A **logo** page: the `logo` size only, and no Size
   section ([Logo pages](logo-pages.md)).
 - The **slide sizes** (`slide`, `slide-classic`) are **landscape only**: like a square they show no
   Portrait / Landscape choice, a page in one is always drawn landscape, and a turn is refused. An
-  infographic page keeps whatever orientation it had, so turning it back to a paper size restores
-  it; a slide page's is always landscape.
-- The size tiles sit four to a row, and no two are the same shape: turned landscape, the Story
-  (9:16) is the 16:9 Slide, so a landscape infographic page offers the **Slide** tile in its place
-  (or keeps **Story** while the page is in it, without Slide).
+  infographic page left on one keeps whatever orientation it had, so turning it back to a paper
+  size restores it; a slide page's is always landscape.
+- The size tiles sit four to a row. Turned landscape, the Story (9:16) reads **Widescreen
+  (16:9)**; a landscape page still on the Slide size shows its Slide tile in Widescreen's place,
+  never two tiles of one shape.
 - A page is only ever given a size its kind offers; any other is refused.
 - **Fit to Content** (`fit`) is the page made around a board that does not fit a paper size ("Into
   pages"): its sides are its own (`IllustratePage.fit`), the content's bounds plus the page margin
@@ -183,36 +189,46 @@ a page slide of a deleted page stays empty rather than finding a new page under 
   one, about the page's centre, until it does: text elements' text scales with it (`textScale`)
   and arrows' bends with their lines; a shape's own label keeps its size. Nothing is cut off. The
   pages after it move along. One edit, one undo.
-- The page label reads `<name or Page n> · <size label> · <Portrait|Landscape> · <Infographic|Article|Slide|Logo>`.
+- The page label reads `<name or Page n> · <size label> · <Portrait|Landscape> · <Article|Slide|Logo>`.
   Only the paper sizes (A4, US Letter, A3) add the orientation: a square and Fit to Content have none, and the post,
-  story and slide labels already say which way they face. The kind always ends it. No `Page n`
+  story and slide labels already say which way they face. The kind ends it, but for an infographic
+  page, the plain page, which leaves the kind off so its title bar keeps the room for its
+  controls. No `Page n`
   while there is one page and no name.
 
 ## Backgrounds
 
 Every page kind (infographic, article, slide and logo) is painted the same way, except that a logo
-page takes no pattern ([Logo pages](logo-pages.md) "A logo page"). The page panel's
-**Background** section sorts its fills into **categories**, a segmented control at its top:
-**Theme** (shown while the tab's theme offers backgrounds), **Solid** and **Gradient**. It opens on
-the category of the page's current fill (a theme preset's on Theme, any other gradient's on
-Gradient, else Solid); moving between categories changes nothing on the page. Each category is
-the swatches below, then, on Gradient, its **custom** choice last.
+page takes no pattern and no picture ([Logo pages](logo-pages.md) "A logo page"). The page panel's
+**Background** section sorts its fills into three **categories**, a segmented control at its top:
+**Solid**, **Gradient** and **Image** (the tab theme's own colours lead the first two, so no
+separate Theme category; a logo page shows Solid and Gradient only). It opens on the category of
+the page's current fill (any gradient's on Gradient, a picture's on Image, else Solid); moving
+between categories changes nothing on the page.
 
 - **Solid**: one colour, from the one colour picker drawn in the panel
   ([Colour picker](../004-interface-design/colour-picker.md)): **Paper** (the default, no
-  `background` stored), then the soft standard colours ("Light") and the strong ones ("Dark"), for
-  light paper, then Custom colours and **Add a custom colour** (four coloured dots). A page holding an earlier preset (Cream, Mist, Midnight
-  and so on) keeps it; it shows as the custom colour in force.
-- **From the theme**, offered first in their own row: drawn from the tab's theme accent (its
-  element stroke, else its first palette colour, else the brand blue) and a second colour (a
-  multi-colour theme's next palette colour, else the accent deepened): **Theme wash** (accent
-  tinted 93%), **Theme tint** (80%), **Theme fill** (the theme's own element fill, when it has a
-  light one), **Theme deep** (accent shaded 60%), **Theme glow** (a gradient of the two, light) and
-  **Theme dusk** (the same, dark). A theme change offers new ones; a page keeps the colour it took.
+  `background` stored) leading the tab theme's colours (**Theme Palette**, at most nine of them and
+  never its white, so Paper and the theme fill one row of ten), then the soft standard colours
+  ("Light") and the strong ones ("Dark"), for light paper, then Custom colours and **Add a custom
+  colour** (four coloured dots). A page holding an earlier preset (Cream, Mist, Midnight, or a
+  retired theme solid such as Theme wash) keeps it; it shows as the custom colour in force.
 - **Gradient**: two colours and an angle (`from`, `to`, `angle` in CSS degrees, 0 to 359: 180 runs
-  top to bottom). Six presets: **Sunrise** (`#fde68a` to `#fca5a5`), **Ocean** (`#bae6fd` to
-  `#c7d2fe`), **Meadow** (`#bbf7d0` to `#a5f3fc`), **Peach** (`#fed7aa` to `#fecdd3`), **Dusk**
-  (`#1e1b4b` to `#4c1d95`), **Night** (`#0f172a` to `#1e3a8a`), all at 160°.
+  top to bottom), all at 160°, in two headed groups of seven across:
+  - **Theme**: fourteen gradients drawn from the tab's theme, two rows of seven, the light ones
+    first, then the bold and deep: from its accent (its element stroke, else its first palette
+    colour, else the brand blue), a second colour and a third (a multi-colour theme's next palette
+    colours, else the accent deepened 25% and 45%): **Theme dawn**, **Theme mist**, **Theme glow**,
+    **Theme haze**, **Theme sorbet**, **Theme pastel**, **Theme bloom**, **Theme bright**, **Theme
+    vivid**, **Theme aurora**, **Theme ember**, **Theme dusk**, **Theme twilight**, **Theme ink**.
+    A theme change offers new ones; a page keeps the gradient it took.
+  - **Gradients**: thirteen presets, then **Custom gradient**, two rows of seven: **Sunrise**
+    (`#fde68a` to `#fca5a5`), **Peach** (`#fed7aa` to `#fecdd3`), **Rose** (`#ffe4e6` to
+    `#fbcfe8`), **Lavender** (`#e9d5ff` to `#fbcfe8`), **Ocean** (`#bae6fd` to `#c7d2fe`),
+    **Meadow** (`#bbf7d0` to `#a5f3fc`), **Mint** (`#ccfbf1` to `#d9f99d`), **Sand** (`#fef3c7` to
+    `#e7e5e4`), **Steel** (`#f1f5f9` to `#cbd5e1`), **Dusk** (`#1e1b4b` to `#4c1d95`), **Night**
+    (`#0f172a` to `#1e3a8a`), **Forest** (`#052e16` to `#115e59`), **Ember** (`#7c2d12` to
+    `#be123c`).
 - **Custom gradient**: the Gradient category's last swatch, a rainbow ring until a custom gradient
   is the page's fill, then that gradient. Pressing it makes the page's fill a custom gradient
   (starting from the page's current gradient, or its current solid colour to a deepened version
@@ -226,25 +242,193 @@ the swatches below, then, on Gradient, its **custom** choice last.
   popover closes the popover only, dropping its preview, and never the panel.
 - **Pattern**, over either: **None** (default), **Dots**, **Grid** or **Lines** (horizontal ruled
   lines), drawn faintly in the page's ink at 24 px pitch.
+- **Image**: a picture covering the page, under an overlay that keeps what is on it readable
+  ("Image backgrounds" below).
 - **A dark page has light ink.** A page is dark when its background (a gradient's mean of its two
-  stops) is dark by the canvas's own rule (`canvasSurface`). Every element whose centre lies on a
+  stops, a picture's tone under its overlay) is dark by the canvas's own rule (`canvasSurface`). Every element whose centre lies on a
   dark page and that carries no colour of its own is drawn as on a dark canvas, on screen and in
   exports, so text and shapes stay readable on Midnight or Dusk.
-- **Colours of their own are re-inked** when a page's fill changes: a text element's text, an
-  arrow's line and an icon's glyph that sit straight on the page and fall under 3:1 contrast with
-  it are lightened (on a dark fill) or darkened (on a light one), keeping their hue, until they
-  reach 4.5:1. Anything on a fill of its own (a card, a shape) is left alone. Same edit, one undo.
-- Re-inking against the plain **paper** measures it as white, the paper as printed and exported.
+- **Colours of their own are re-inked** when a page's fill changes, so nothing on it becomes hard
+  to read ("Re-inking" below). Same edit, one undo.
 - The page background is a page's, never the tab's: the surround (the tab's own canvas) is
   untouched.
 
+### Re-inking
+
+When a page's fill changes (any page kind: infographic, article, slide, logo), every colour of its
+own on the page is measured against what it now sits on, and only a colour that falls under its
+**floor** is changed: lightened or darkened, keeping its hue, by the least amount that reaches its
+**target**, whichever way (lighter or darker) needs the smaller change. A colour that still reads
+is kept as chosen. The re-inking is part of the fill's edit (one undo step, synced to everyone),
+and the panel's hover preview draws it exactly as the press would write it. Re-inking the same
+fill twice changes nothing the second time.
+
+- **What an element sits on** (its ground): the topmost card under its centre (a filled shape, a
+  closed filled path or sketch, a sticky note or a link card drawn below it) in that card's fill,
+  as re-inked in the same pass; else the page. A page is measured as: a solid's colour; the plain
+  paper as white, the paper as printed and exported; a picture's tone under its overlay ("Image
+  backgrounds"); a gradient, for text and lines, at its **worst point under the element** (the
+  colours the gradient runs through across the element's span along its angle), because every
+  glyph must read where it sits, and, for a card's fill, at its mean under the element, because an
+  area is seen as a whole. An element over a picture, a video or a widget that paints its own
+  surface has no known ground and is left as it is.
+- **Floors and targets** (contrast ratios, WCAG 2.2):
+
+  | What                                                                                                                                                                                                                             | Measured against                        | Floor  | Target |
+  | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------ | ------ |
+  | **Text**: a text element's text, a shape's, table's, chart's or icon's label, a stat row's figures and captions (on its cards), a process's captions, an arrow's label (its line's colour when it has no text colour of its own) | its card's fill, else the page          | 3:1    | 4.5:1  |
+  | **Lines and glyphs**: an arrow's line and head, an outlined (unfilled) shape's border, a sketch's or path's line, an icon's glyph, a progress, rail or rating accent, a process's discs, a table's grid                          | its ground                              | 3:1    | 3:1    |
+  | **Marks**: the fill of a filled shape, closed path or sketch that holds nothing (no label, nothing on it): a dot, a bar, a rule, a logo's shape                                                                                  | its ground                              | 3:1    | 3:1    |
+  | **Cards**: the fill of a filled shape, closed path or sketch with a label or something on it, and a stat row's cards                                                                                                             | its ground (a gradient's mean under it) | 1.25:1 | 1.4:1  |
+
+  Text between 3:1 and 4.5:1 is kept (a large heading in a soft colour is the author's choice);
+  under 3:1 it goes to AA. Lines, glyphs and marks go to 3:1, WCAG's non-text floor, and no
+  further. A card is a container: its text carries its content and is held to 4.5:1 against the
+  card's fill as re-inked, so the card itself needs only to separate from the page; 1.25:1 is
+  where a white card on a near-white page stops reading as a card. A card or mark whose border is
+  drawn and already reaches its floor against the ground keeps its fill: the outline separates it.
+  The fill is nudged rather than a border added, so the element keeps its design (its border
+  width, its corners) and only its tone moves.
+
+- **Left as they are**, their colours being what they are, and their text sitting on their own
+  surface: sticky notes, images, videos, link cards, stickers, code blocks, Plan elements,
+  Collaborate widgets, device frames, legends, checklists, the accent-bar web components (banner,
+  header), whose text sits on their own bar, Technology (brand) icons and emoji, highlighter strokes, a chart's series colours
+  (they adapt as they are drawn instead, below), a table's per-cell styles and fills, and a whiteboard pen colour (it follows the board already).
+  A status colour (a green tick, a rose cross) is ink like any other: re-inked keeping its hue, so
+  a tick stays green.
+- **Elements with no colour of their own** follow the page ("A dark page has light ink") and are
+  not written, with one exception: one sitting on a card of the other lightness (a pale card of
+  its own colour on a dark page, a dark one on a light page), whose page ink would vanish on it.
+  When that ink is under its floor against the card, it is given the ink a card of that lightness
+  takes, re-inked if needed, as a colour of its own; going back to a fill its page ink reads on, it
+  has no colour of its own again (the memory below). This covers a stat card's caption, a label
+  with no colour on a coloured box, an icon in a disc. The same holds straight on a page with a
+  fill: the page's ink is made for a near-white or near-black paper, so on a mid-tone fill (a
+  slate glyph on teal, a sky progress bar on yellow) it can fall under its floor, and then it is
+  given that ink re-inked as a colour of its own. On the plain paper and a white fill it is never
+  judged: the design's own pairing is kept there. An article's writing follows its page when
+  drawn, so it is not re-inked.
+- **Locks**: a locked page takes no new fill, so nothing on it is re-inked. A locked element and an
+  element on a locked layer are re-inked: a lock holds where an element is and how big, not how it
+  looks, as with the tab's theme.
+- **Going back**: the editor remembers, for the session, each colour re-inking replaced and what
+  it wrote in its place. On the page's next fill change, a colour still as re-inking left it is
+  judged from the author's own colour: restored when that reads on the new fill, else re-inked
+  from it. So Midnight and back to the paper returns every colour as it was, and two fills in turn
+  never drift. A colour changed since (by anyone) is the author's new choice, and its memory goes.
+  The memory is not stored in the document: it would go stale the moment an element is recoloured,
+  and every reader (the api, the AI tools, the exports) would have to carry it; Undo restores
+  exactly in any case. A fill set by an AI tool re-inks from the colours as they are.
+- **Theme**: a re-inked colour is no longer the theme's, so a later theme switch keeps it as the
+  author's (the theme switch's own rule).
+- **Share roles**: re-inking is part of a background change, which only an Editor makes; a
+  Participant or a Viewer never re-inks anything.
+- **Telemetry**: none of its own; it rides on the fill's `PageBackground` event.
+
+#### Charts adapt as they are drawn
+
+A chart's series colours (its lines, bars, wedges and Sankey nodes) come from a palette, not from
+the element: the tab theme's ramp, the chart's own palette, a slice's or series' own colour. Re-
+inking writes none of them, so a page's fill could leave a series unreadable (the Boardroom look's
+dark slate line on a dark page). Instead, every time a chart on a page with a fill of its own is
+drawn, each colour it draws is measured against what the chart sits on and adapted for that
+drawing only, never stored:
+
+- **Its ground** is found as re-inking finds one: the topmost card drawn under the chart's centre
+  (a filled box, a closed filled path, a filled table, a sticky note or a link card, in its fill as
+  drawn), else the page under the chart's box (a solid's colour, a picture's tone under its
+  overlay, a gradient's every tone across the box). A chart over a surface of unknown tone (a
+  picture, a widget, a Sheet) and a chart on the plain paper or on no page are drawn as they are:
+  the palettes are made for the paper.
+- **Series** (a line, its points and its area, a bar, a wedge, a Sankey node and the bands it
+  colours) under **3:1** against the ground (at its worst tone) are lightened or darkened, keeping
+  their hue, by the least that reaches 3:1, whichever way needs the smaller change. A colour that
+  already reaches 3:1 is drawn exactly as it is.
+- **The chart's own text** (its axis labels, its key, a Sankey's node names) is held to **4.5:1**
+  the same way: it is small text, so it gets AA rather than the 3:1 a large label keeps.
+- **Everywhere it is drawn alike**: the canvas, the image exports of a page (SVG, PNG, PDF), the
+  slide thumbnails and the minimap use the same adaptation (`chart-ink.ts`), so a chart exports as
+  it shows. A page export also draws its charts in the tab theme's ramp, as the canvas does.
+- The axis lines keep their fixed faint greys: they are guides, not data.
+
+### Image backgrounds
+
+An infographic, slide or article page can be painted with a picture:
+`PageFill` `{ kind: 'image', imageId, tone?, overlay?, position?, credit? }`. A logo page offers no
+Image category: a logo goes over other things, so its artboard stays a colour or the paper.
+
+- **The Image category**, while the page has no picture: a search field and its results (the image
+  picker's Search, [Image search](../009-elements/image-search.md), three tiles across) and under
+  them **Upload an Image** (a file, as the picker's Upload takes one: the same types and size
+  limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
+  one edit), its **Credit** line when it came from a search (the image element's Credit row: the
+  text, **Source** and **Licence**), then **Overlay**, **Strength** and **Position**, then the
+  search and Upload again under **Replace Image**.
+- **The search suits a page.** It asks Openverse only for pictures of the page's shape
+  (`aspect_ratio`: `tall` for a portrait page, `wide` for a landscape one and every slide,
+  `square` for a square page) and large ones (`size=large`), so a result covers the page without
+  a blurry or lopsided crop. Everything else is the picker's search: the licences, no mature
+  results, Load more, the loading, error and empty states, the footer credit.
+- **Hover previews**: hovering or focusing a result paints its Openverse thumbnail on the page
+  under the overlay a pick would get; leaving the results puts the page back. A press downloads
+  and stores the picture as the picker's pick does (into the gallery, or embedded in an
+  [Offline Mode](../006-document/offline-mode.md) document), with the same stages and failure
+  copy, then commits **one edit**: the fill with its credit and tone, and the overlay. An upload
+  commits the same way, with no credit.
+- **Fit**: the picture **covers** the sheet, cropped and never stretched, centred across.
+  **Position** (**Top**, **Centre**, **Bottom**) keeps that band of a taller picture when it is
+  cropped; Centre is the default and is not stored.
+- **Overlay**, over the picture and under the pattern and everything on the page: **None**,
+  **Light** (a white wash), **Dark** (a slate-900, `#0f172a`, wash), **Tint** (the tab theme's
+  accent, taken when chosen and stored as a hex, so a theme change leaves it), **Fade** (white,
+  clear at the top and at its strength at the bottom). **Strength** is a slider, 0% to 90% in
+  steps of 5, previewed while dragged and one edit on release; it is hidden for None. An overlay
+  tile previews on hover and commits on a press.
+- **A picture is readable by default.** A new picture takes **Light 60%** on a light canvas and
+  **Dark 60%** on a dark one; replacing a picture keeps the overlay in force.
+- **Tone and ink.** `tone` is the picture's average colour, sampled once when it is picked (drawn
+  down to 16 x 16 px) and stored as a hex. The page's tone, what "A dark page has light ink" and
+  the re-inking read, is that tone mixed toward the overlay's colour by its strength (a Fade by
+  half its strength). A picture whose tone could not be sampled reads as mid grey (`#808080`). So a
+  Dark wash makes a dark page with light ink, a Light wash a light page with dark ink.
+- **On the canvas** the sheet paints the picture as CSS background layers (the pattern, the
+  overlay, the picture, and its tone under them while it loads). Its bytes are fetched once per
+  picture while the editor is open, never per frame, pan or zoom.
+- **Exports** (PNG, PDF, SVG) embed the picture, cropped the same way, under its overlay. The Map,
+  slide thumbnails and layout previews paint the page in its tone: a picture at their size is a
+  smudge, and they draw without the image store.
+- **Stored like an image element's picture**, never as a web address: `imageId` is a gallery id
+  (1 to 128 letters, digits, `-` or `_`) or an Offline Mode document's base64 PNG, JPEG, GIF or WebP
+  data URI. A fill with anything else, or an overlay or position it does not know, is dropped on
+  read (the overlay's strength is clamped to 0 to 0.9). A page background counts as a reference in
+  the image reference index ([Images](../009-elements/images.md) "Reference index"), so retention
+  keeps its bytes and a share visitor can load it; Take Offline embeds it and Sync Document uploads
+  it, as for image elements. A new page carries it over with the rest of the background.
+- **The credit** stays on the fill while its picture does; replacing or removing the picture
+  replaces or drops it. Exports do not print it, as for image elements.
+- **Share roles**: an Editor sets, changes and removes it, as every background; a Participant or a
+  Viewer sees the picture and no controls.
+- **Agents** read it on `change_pages` as `image` with its overlay ("image, light 60%") and can
+  replace it with a colour, a gradient or the paper; they cannot set one (they have no way to put a
+  picture in the gallery).
+- **Telemetry**: `Tab · Changed · PageBackgroundImage` when a picked or uploaded picture lands
+  (beside the background's own `PageBackground`); a search counts as the picker's
+  `Element · Searched · Image`, and a failed search or pick as its `ImageSearch.*` warnings.
+
 ### Beside the cog
+
+**Named while there is room.** On a desktop the title bar's buttons (Layout, Tidy Up, Background,
+the lock, a logo page's Tidy Up, Mirror and Guides) name themselves beside their icons only while
+the page is wide enough on screen to hold them named and still leave the label its least room
+(40 px); zoomed out further, they all drop to their icons (with their tooltips), as on a phone.
 
 An infographic or slide page's title bar holds a **Background** button before its lock and cog,
 the cog's size with a tooltip, for someone who may edit (an Editor; a Participant or Viewer sees
 no title-bar controls), as a logo page holds its Guides ([Logo pages](logo-pages.md) "Beside the
-cog"). It opens a popover anchored to it holding the same **Background** and **Pattern** sections
-as the panel's Background tab, with the same hover previews; a press commits, one edit, and the
+cog"). It opens a popover anchored to it holding the **Background** and **Pattern** sections (a
+slide page's panel holds them on its Background tab too; an infographic page's panel has no
+Background tab, this is its one place), with the same hover previews; a press commits, one edit, and the
 popover stays open for another pick. Leaving the popover, or closing it (an outside press, Escape,
 the button again), drops any preview. It is tinted while its popover is open. On a desktop it
 names itself beside its icon (**Background**); a phone shows the icon alone. A locked page shows
@@ -252,11 +436,63 @@ no Background button (its panel says it is locked). The page label truncates bef
 and logo pages keep their background in the panel only. Opening it is tracked as
 `UI / Opened / PageBackgroundButton`.
 
+### Tidy Up
+
+An infographic page's title bar holds a **Tidy Up** button left of its Background button, the
+cog's size with a tooltip ("Tidy Up: align and space what is on this page"), its glyph the
+diagram Tidy Up's broom. On a desktop it names itself beside its icon (**Tidy Up**); a phone shows
+the icon alone. It is Diagram mode's Tidy Up ([Layout cleanup](../008-canvas/layout-cleanup.md#the-tidy-up-button))
+for a page: where the diagram one lays shapes out from their arrows, a page has no graph, so this
+one keeps the author's layout and straightens it.
+
+- **Runs at once.** One tidier, so no popover: a press tidies the page, one edit, one undo. On a
+  desktop pointer, hovering the button shows the tidied page in place (nothing written), as the
+  diagram Tidy Up's tiles do; leaving the button puts it back. A page already tidy says so in a
+  toast ("This page is already tidy.") and writes nothing.
+- **What it tidies**: the elements on the page (centre on the page, as everywhere else), as
+  **blocks**: an element with others wholly inside it (a card and its text, a background and
+  everything on it) carries them, and what is inside a block is tidied inside it the same way.
+  Blocks of one size (the cards of a grid, the columns of a comparison) have what is inside them
+  lined up together, so every card's icon, figure and caption sit in the same place in it.
+- **What it does**, in order, each a small move that keeps the layout the author made:
+  1. **Inside the margins**: a block poking out of the page's content box (the page less its
+     margins) is nudged back in, never scaled. A block bigger than the box on a side (a full-bleed
+     background, a banner) is left where it is on that side.
+  2. **Shared lines**: left edges that nearly line up are put on one line, as are right edges and
+     centres; across, tops, bottoms and middles. "Nearly" is within 1.2% of the page's short side
+     (about 10 px on A4), or a run of many copies of one line each a little off. A line that near
+     a margin, or the page's centre, goes on it; else the line most of them already share, else
+     the middle one's, so the fewest things move. A block already on a shared line stays on it.
+  3. **Even gaps**: three or more blocks of a similar size side by side in a row (or stacked in a
+     column), on one line, whose gaps are already close (within a quarter of their mean) get one
+     gap: the first and last stay, the ones between are spaced evenly.
+  4. **A fine grid**: what lines up with nothing sits on a 4 px grid from the content box's corner
+     (inside a block, from the block's corner);
+     a shape's or sticky's size rounds to it too (not a square shape's, an aspect-locked one's, an
+     image's or text's, so nothing is distorted or rewraps).
+- **What it never does**: it never makes two blocks overlap that did not, never takes a block out
+  of the block it sat in, never moves anything far (only within the nearly-lined-up distance, or
+  back inside the margins), never changes the paint order, and never moves a locked element, a
+  turned (rotated) one or anything on a locked layer ([Layout cleanup](../008-canvas/layout-cleanup.md#locked-elements-stay-put)),
+  which stays where it is and is kept clear of like any other block. Arrows pinned to what moves
+  follow their ends; a free arrow end stays. Running it twice changes nothing the second time.
+- **Where it shows**: infographic pages only (a slide page lays out from its own layouts, a logo
+  page has its own Tidy Up for drawn lines, an article flows its writing). A locked page shows no
+  Tidy Up, like its Background.
+
+| Role        | Tidy Up                                                                                 |
+| ----------- | --------------------------------------------------------------------------------------- |
+| Editor      | Sees the button and uses it.                                                            |
+| Participant | No button: a tidy moves every element on the page, and a Participant never reshapes it. |
+| Viewer      | No button.                                                                              |
+
+Pressing it is tracked as `Tab / Aligned / PageTidyUp`, beside the diagram tidiers' events.
+
 ## Layouts
 
 A **layout** is placed onto one page from its panel's **Layouts** tab, by category.
 
-- **Thirty-one layouts**, each a complete, editable starting point in the tab's theme. Most open with
+- **Ninety-two layouts**, each a complete, editable starting point in the tab's theme. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
   **wide** one sets things side by side:
   1. **Title Page**: an eyebrow line, a large title over a short accent rule, a subtitle, an image
@@ -315,14 +551,279 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
       arrows that close the loop.
   31. **Funnel**: four stages narrowing down the page, each a band with its name and count, and the
       conversion between them.
-- **Categories**: the picker groups the layouts as /new groups templates, one category at a time:
-  **Covers** (Title Page, Quote, Event, Section Divider, Poster), **Data** (Big Number, Key Stats,
-  Chart Story, Facts Grid, Survey Results, Progress Report, Pictogram, Ranking), **Steps and
-  Time** (Process, Timeline, Checklist, Roadmap, Agenda, Cycle, Funnel), **Compare** (Comparison,
-  Pros and Cons, Before and After, Feature Matrix), **People and Ideas** (Top Tips, Team,
-  Questions and Answers, Profile) and **Social** (Announcement, Did You Know?, Save the Date). The Layouts tab opens on the categories, each a card fronted
-  by its first two layouts fanned, with its count; a card opens its layouts, with an **All
-  layouts / <category>** row to go back.
+  32. **Report Cover**: the organisation and "Annual report" in tracked capitals over an accent
+      rule, the year set huge, a title, a lead, a picture where the page has room, three headline
+      figures split by hairlines, and a footnote saying what period the figures cover. Tall:
+      everything stacks, the year above the title. Wide: the title, lead and figures on the left;
+      the year and picture on the right.
+  33. **Magazine Cover**: a tracked masthead, an issue strip between hairlines (issue and price),
+      cover lines (an accent rule, a bold lead and a line each) and the cover story. Tall: three
+      cover lines beside the picture (two on a square), the cover story across the foot. Wide: the
+      cover story on the left, the picture in the middle, the cover lines on the right.
+  34. **Book Cover**: inside a double rule, the author in tracked capitals, the title centred, a
+      star ornament between hairlines, "A novel" in italics, round artwork, a blurb and the
+      publisher. Tall: everything centred down the page; where there is no room for the artwork, the
+      words centre above the blurb. Wide: the artwork on the left, the words on the right.
+  35. **Proposal Cover**: a logo placeholder, the studio's name and a Confidential badge; a
+      "Proposal" kicker, the title and a lead beside an accent bar; and labelled details (Prepared
+      for, Prepared by, Date, Reference), each a hairline, a label, a bold value and a note. Tall:
+      the title block centred above the details set two by two; a page not much taller than wide
+      keeps one row (Prepared for and Date). Wide: the title block on the left, the four details
+      stacked in a tinted panel on the right.
+  36. **Case Study**: a "Case study" badge and a sector line, an outcome headline, a picture, a
+      client quote with attribution, three results split by hairlines, and a source line. Tall:
+      everything stacks, and the quote shows only where it leaves room for the picture. Wide: the
+      headline and quote on the left, the picture over the results on the right.
+  37. **Newsletter**: volume and date in tracked capitals, a masthead band in the accent colour
+      (name and tagline), the lead story (kicker, headline, standfirst, picture), and "In this
+      issue" in a tinted panel listing four page-numbered stories. Tall: stacked, with the stories
+      two by two; the standfirst and picture drop where there is no room. Wide: the headline and
+      standfirst, then the picture, then "In this issue" as a column on the right.
+  38. **Contents**: "Inside this report", a "Contents" title, an accent rule and an intro line, then
+      six chapters, each a hairline, a big number, a bold name, a note and its page number on the
+      right. Notes drop where rows are short. Tall: the chapters run down the page. Wide: the title
+      block and a picture on the left, the chapters on the right.
+  39. **Certificate**: inside a double rule, the heading, "This is proudly presented to", the name
+      set large over an accent rule, the reason, and two signature lines (name, then Date) around an
+      award seal. Pages up to 1.3 times taller than wide (including square) set one line of tracked
+      capitals with the seal between the signatures. Taller pages set "CERTIFICATE" large over "of
+      achievement", with the seal above the two signatures.
+  40. **Gig Poster**: a letter-spaced venue line, the band's name huge over two lines, the support
+      acts, a photo, a ticket-stub row (date, doors, price between hairlines) and a "Tickets on sale
+      now" banner. Tall: stacked and centred. Square or wide: the words down the left, the photo
+      full height on the right.
+  41. **Research Poster**: a two-line title set at one size, the authors and their school, a logo
+      slot and a rule. Under it are sections, each a tinted heading bar over its body: Introduction,
+      Methods, Results (a captioned bar chart with its legend and a source line), a Key Finding card
+      with its figure set large, Conclusions and References with a slot for a code. Three columns on
+      a page about as wide as tall or wider, two on a tall one.
+  42. **Coming Soon**: a key image, "This winter", the title huge over two lines, a tagline in
+      italics, an accent rule, the release date set large, where to watch and a billing block of
+      credits. Tall: the image on top. Square or wide: the image down the left, the words centred on
+      the right.
+  43. **Exhibition**: the gallery and "Free entry" over a hairline, then "Form" and "Colour" set
+      huge with "and" inside a big disc between them, and a subtitle. Below come an artwork image
+      with its caption and a three-column grid of Dates, Open and Where, each under a hairline.
+      Square or wide: the title down the left, the image, caption and grid down the right.
+  44. **Travel**: "Visit", the destination set huge, a line on it, a big photo with a round "Fly
+      from" fare stamp over its corner, three facts (an icon beside a figure and a caption) and a
+      foot of where and by when to book. Tall: stacked. Square or wide: the name across the top, the
+      photo down the left, the facts stacked down the right.
+  45. **Workshop**: an eyebrow, a two-line title, a lead, a photo beside three ticked points and a
+      when / how many / how much stat row. Along the foot is a tear-off strip of dashed tabs, each
+      with the class and a phone number running up it. Square or wide: the words and stat row on the
+      left, the photo and points on the right, the strip across the foot.
+  46. **We're Hiring**: the company line, "We're hiring." set huge beside an icon disc, a lead,
+      three open-role cards (role, team and terms, an arrow), three perks with icons and an "Apply
+      by" banner. Tall: stacked. Square or wide: the pitch, perks and banner on the left, an "Open
+      roles" column of cards on the right.
+  47. **Big Sale**: "Summer sale", "Up to 50% off" set inside a big disc with two stars on its edge,
+      a headline, the dates, department pills and an "In store and online" banner. Tall: stacked and
+      centred. Square or wide: the disc on the left, the rest centred down the right, the pills two
+      by two in a narrow column.
+  48. **Notice**: a tinted Caution band with a warning icon at each end, a big shield disc, the rule
+      over two lines at one size, three ticked dos and a contact footer. Tall: stacked and centred.
+      Square or wide: the band across the top, the disc on the left, the words on the right.
+  49. **Motivational**: a framed, type-only poster with three words set huge (START, USE, DO), each
+      over its phrase, an accent rule and who said it. Tall or square: stacked and centred. Wide:
+      the three pairs side by side at one size.
+  50. **KPI Dashboard**: four metric cards, each a name, a big figure, its change against last
+      quarter with a trend icon (green when good, rose when bad) and a six-month area sparkline,
+      with a source line. A wide page sets the cards four across, a long page (a story) one per row,
+      and other pages two by two. A card much wider than tall sets its figure beside the sparkline.
+      Every card's figure is the same size.
+  51. **Trend Story**: a headline and lead on the left and the period's one figure set big on the
+      right, then a two-series line chart (this year against last) over twelve months, and three
+      moments, each a disc holding its month, a name and a note, with a source line. A wide page
+      sets the moments in a column beside the chart, a long page stacks them under it, and other
+      pages run them three across under it.
+  52. **Market Share**: a doughnut of five shares with its key, the leader's share set in the hole,
+      a table of each share and the points it moved (green up, rose down, the leader's row bold),
+      and a source line. A wide page sets the doughnut on the left with the table and a "The story"
+      callout on the right. A tall page stacks the doughnut over the table.
+  53. **Stat Mosaic**: six tiles of mixed sizes on a grid: a hero figure with an icon, an icon
+      figure, a score with five stars, a progress ring and its caption, a day-by-day area chart, and
+      a second icon figure, with a source line. A wide page, or one not much taller than wide, uses
+      a four by three grid with the hero and chart two by two each. A tall page uses three by four,
+      and a long page two by six with the hero and chart across the page. A page that is not much
+      taller than wide drops the lead line.
+  54. **Staircase**: five levels, each a number, a name and a note. Not clearly taller than wide:
+      five columns standing on the page's foot, each taller than the last, the level's number, name
+      and note inside each, and the lead line in the room the low steps leave above them. Taller:
+      five cards climbing from the bottom left to the top right, each a numbered disc, a name and a
+      note, joined by arrows, with a pin beside the first and a flag beside the last.
+  55. **Customer Journey**: five stages, each an icon and a name, what the customer does, where it
+      happens, how it feels as an emoji face, and what to fix next. Not clearly taller than wide:
+      stages as columns and the journey's lanes (Doing, Touchpoints, Feeling, Fix next) as rows
+      under them, a persona photo heading the lane names, and the faces plotted at the height of
+      their mood and joined by arrows. Taller: stages as rows (a stage card, what happens and
+      where), and a Feeling column from Low to High where each face sits further right the better
+      the stage feels, joined down the page by arrows; a long page adds each stage's fix.
+  56. **Project Plan**: six dated weeks across the top, five workstreams (a name and an owner each)
+      as progress bars spanning their weeks, a Launch row ending in a milestone diamond, a Today
+      line through the rows with a tag under it, and faint gridlines. Not clearly taller than wide:
+      a progress ring of how much is done, "Done so far" and two figures beside the chart. Taller: a
+      stat row of three figures under it.
+  57. **Decision Flow**: a New idea start, three numbered question diamonds and a Build it end,
+      joined by arrows labelled Yes, each question's No arrow ending in its own outcome card. Not
+      clearly taller than wide: the flow runs across the middle, each question above its diamond and
+      its outcome below, with a line under each end. Taller: it runs down the middle, each question
+      to the left of its diamond and its outcome to the right.
+  58. **How-To**: a title, three facts as icon rows (time, servings, difficulty), then six steps,
+      each a photo with a numbered disc in its corner over the step's name and a note. One row of
+      six on a clearly wide page, otherwise three across in two rows.
+  59. **Versus**: two contenders, each an icon in a large disc, a name and a line, with a VS badge
+      between them; four stats, each a name over a pair of bars (left and right contender); and a
+      source line. Tall: the contenders face to face across the top, the stats under them. Not
+      clearly taller than wide: the contenders out at either side, the badge and stats between them,
+      no lead line.
+  60. **Pricing Tiers**: three plan cards side by side, each a name, a line on who it is for
+      (dropped where the card is short), the price set large, what it is per, an accent rule, four
+      ticked features and a button. The middle plan is drawn heavier and badged "Most popular". A
+      wide page drops the lead line.
+  61. **SWOT**: Strengths, Weaknesses, Opportunities and Threats, each a card with its letter set
+      large, its name at one shared size, an icon where there is room, a rule and three points. Two
+      by two with Helpful / Harmful column heads and a "Top row: inside the business" foot line.
+      Four in a row under "Inside the business" / "Outside it" on a wide page. Stacked on a page
+      over 1.6 times taller than wide. Lead line only when clearly taller than wide.
+  62. **Effort vs Impact**: four quadrants (Quick wins outlined, Big bets, Fill-ins, Money pits),
+      each named with a hint at its outer edge, inside an Impact axis up the left and an Effort axis
+      along the foot, each ending in an arrow. Seven numbered ideas sit at their effort and impact,
+      kept clear of the quadrant names. A numbered key sits beside the plot, or under it in two
+      columns on a page clearly taller than wide.
+  63. **Scorecard**: three options, each a card with its name, its overall score set large over "out
+      of 5", and star ratings on four criteria. The top scorer is drawn heavier and badged "Top
+      score". A source line ends the page. Three cards down the page (score at the left, a rule, the
+      criteria two by two) where it is clearly taller than wide; three across otherwise (score over
+      a rule, criteria down the card).
+  64. **Spectrum**: a rail across the page with five options placed on it at their positions from
+      simple to powerful. Each option is an icon disc, with its name and note above and below the
+      rail in turn. The pick is drawn heavier and badged "Our pick", and the two ends are named
+      under the rail with arrows. A tall page with room adds three trade-off rows (what changes from
+      one end to the other); with less room it closes on a "Why the middle" callout.
+  65. **Venn**: two overlapping translucent circles, side by side or one over the other (whichever
+      lets them grow larger). Each set's name is set large over its three traits in its own part,
+      and "Both" with the three shared traits sits in the overlap.
+  66. **Three Options**: three option cards, each a lettered disc, a name, its cost and time, an
+      image placeholder, two ticked points for (green) and one cross against (rose). One is drawn
+      heavier and badged "Recommended". Three across where the page is at least 0.8 times as wide as
+      tall; otherwise three cards down the page, each with the image and cost at the left and the
+      letter, name and points beside them.
+  67. **Org Chart**: a lead's card (round photo, name, role) joined by thin lines to three crew
+      cards. Each crew card has its lead's photo, name and role, a short rule and its members, one
+      per line (two to a line in a wide card). A page much taller than wide closes on a stat row of
+      the team's numbers.
+  68. **Testimonials**: three customer quotes, each with a star rating, a round photo, a name and a
+      role, and a source line. Not much taller than wide: three cards side by side, the rating at
+      the top and the attribution at the foot (under the photo in a narrow card). Taller: three
+      cards down the page, the photo and rating beside each quote.
+  69. **Meet the Speakers**: the event in the lead line, four speakers each a photo with a time
+      badge, a name, a role and the talk's title, and a "Book your seat" banner. Four across on a
+      wide page, two by two on a tall one; a cell much wider than tall puts the photo beside the
+      words.
+  70. **Spotlight**: an "Employee Spotlight" eyebrow, the colleague's name and role, three quick
+      facts as icon rows and three interview questions in bold, each answered. Wide or not much
+      taller than wide: the photo down the left, the words beside it. Tall: the photo beside the
+      name and facts, the interview under them. A story: the photo across the top.
+  71. **Our Values**: six values, each an icon in a disc, a name, a short accent rule and a line,
+      centred in their cells. Three across (two on a page much taller than wide).
+  72. **Idea Board**: a "How might we" question, six sticky notes slightly turned, each with its
+      vote count in a disc on its corner, and a Next step callout. Three across (two on a tall
+      page).
+  73. **Persona**: a "User Persona" eyebrow, a round photo, a name and a line of facts, a quote in a
+      speech bubble, Goals (green ticks) and Frustrations (rose warnings) side by side, and two
+      trait bars. Wide or not much taller than wide: the person and quote down the left, the lists
+      and traits beside them. Tall: the photo beside who she is, then the quote, the lists and the
+      traits.
+  74. **Shout-outs**: a Colleague of the Month card (round photo with an award badge, name, role and
+      why) and three thank-you cards, each a heart, who it is to and from, and the message. Wide or
+      not much taller than wide: the colleague of the month on the left, the notes beside. Tall:
+      that card across the top (photo beside the words), the notes under it.
+  75. **Carousel Cover**: the account's handle and a "1 / 7" slide count, a "Save this for later"
+      kicker, a hook stacked over four lines at one size (three lines on a page not much taller than
+      wide), an accent rule, a teaser line and "Swipe for all 7" beside an arrow disc at the foot; a
+      wide page sets the hook on the left and a large arrow disc with "Swipe" on the right.
+  76. **Tip of the Day**: a "Tip of the day" pill and a large "#12", the tip stacked over three
+      lines as large as the page allows, an accent rule, three reasons (an icon beside a line each)
+      and the handle row with "Save for later"; a wide page puts the reasons on a card to the right
+      of the tip.
+  77. **Milestone**: "We just hit", the figure ("10,000") set as wide as the page, what it counts, a
+      thank-you line, the follower climb as a line chart with a caption naming its source, and the
+      handle row; a square page has no room for the chart and sets the figure larger instead; a wide
+      page centres the words on the left with the chart on the right.
+  78. **Behind the Scenes**: a "Behind the scenes" pill, a two-line title, a line, and a mosaic of
+      three photos (one across the top, two below), each with its step named on a chip, then the
+      handle row; a square page drops the line so the photos keep their room; a wide page sets the
+      title on the left and the mosaic on the right (one tall photo, two stacked).
+  79. **Countdown**: "The countdown is on", the event's name, three tiles (days, hours, minutes,
+      each a large number over its unit), the date and time, a "Turn on reminders" button and the
+      handle row; a wide page sets the words on the left and the tiles in a row on the right.
+  80. **Product Spotlight**: the product photo as large as the page allows with a round price badge
+      on its lower edge, "New in", the product's name, a five-star rating with its review count, one
+      line, and a "Shop now" button beside "Link in bio"; a wide page fills the left with the photo,
+      the badge on its edge, and centres the words on the right.
+  81. **Giveaway**: "Giveaway" set across the page, the prize, its photo with a "WIN" star on it,
+      "How to enter" with three numbered steps across, and the small print; a wide page lists the
+      steps down the left and sets the photo on the right.
+  82. **Welcome Aboard**: a "Please welcome" pill, a large round photo, the name, the role, three
+      facts across (an icon over a line each) and the handle row with "Say hi below"; a wide page
+      sets the photo on the left and the name, role and facts (as icon rows) on the right.
+  83. **Webinar**: a "Free live webinar" pill, the talk's title over two lines, when, how long and
+      where (an icon row each), the host on a card (round photo, "Your host", name and role; a
+      square page drops the "Your host" line) and a full-width "Save your seat" button; a wide page
+      sets the talk on the left and the host's portrait, name and role on the right.
+  84. **How It Works**: an image with four numbered hotspots on it, a key giving each step's name
+      and note, and the one figure that sells it ("3x") over its source line. Wide, square and 4:5
+      pages set the image over the figure on the left and the key down the right; a taller page puts
+      the image across the top, the key two by two under it, and the figure at the foot.
+  85. **Anatomy**: an image down the middle and six named parts, three either side, each joined to a
+      spot on the image by a leader line with no arrowhead. Every page keeps the three columns; a
+      wide page sets the image square-ish and the names in larger type, a tall page keeps the image
+      narrow like a phone screen.
+  86. **Key Concepts**: one big idea in a hub circle and the six ideas behind it, each an icon disc
+      with a name and note, an arrow from the hub to each. A wide page sets three ideas down each
+      side on an arc, words reading away from the hub; a taller page sets three above and three
+      below, the group centred down the page; a square keeps the discs and notes compact.
+  87. **Cheat Sheet**: four groups of four shortcuts, each group an icon and name over an accent
+      rule, each shortcut a keycap beside what it does, with a line at the foot for the Mac keys.
+      Two columns of groups, one on a story; a page clearly taller than wide adds a Pro Tip callout.
+  88. **Glossary**: eight terms A to Z, each under its letter tile with a plain-words definition,
+      the term set as large as its column allows. Two columns reading down, one on a story.
+  89. **Myths and Facts**: four myths in dashed cards, each joined by an arrow to the fact that
+      corrects it in a solid card, under a red-cross Myth and green-tick Fact header, over a source
+      line. Side by side on every page but a story, which sets each myth over its fact with an arrow
+      down and a cross or tick beside each card.
+  90. **Fact File**: an image, a table of six key facts with the names in a header column, a "Did
+      you know?" callout and the source line. Wide, square and 4:5 pages set the image down the left
+      beside the table and callout; a taller page stacks image, table and callout.
+  91. **Lesson Summary**: what you can now do (three ticked lines), three numbered key points, four
+      key-word pills, and a question with four answers A to D, the answer at the foot. Two columns
+      (what was learnt left, words and quiz right) on every page but a story, which stacks the four
+      sections; the answers sit one under another where the column has the height, else two by two.
+  92. **Formula Explained**: a rule set large across a band, each term on a tile and the exponent
+      raised, each term's meaning under a symbol disc, a worked example and a bar chart of the
+      result over time. Wide, square and 4:5 pages set the four meanings in a row, each linked to
+      its term, with the example beside the chart below; a taller page sets the meanings two by two
+      with no lines, then the chart, then the example at the foot.
+- **Categories**: the picker groups the layouts as /new groups templates, one category at a time,
+  at most twelve to a category: **Covers** (Title Page, Quote, Event, Section Divider, Report Cover,
+  Magazine Cover, Book Cover, Proposal Cover, Case Study, Newsletter, Contents, Certificate),
+  **Posters** (Poster, Gig Poster, Research Poster, Coming Soon, Exhibition, Travel, Workshop, We're
+  Hiring, Big Sale, Notice, Motivational), **Data** (Big Number, Key Stats, Chart Story, Facts Grid,
+  Survey Results, Progress Report, Pictogram, Ranking, KPI Dashboard, Trend Story, Market Share,
+  Stat Mosaic), **Steps and Time** (Process, Timeline, Checklist, Roadmap, Agenda, Cycle, Funnel,
+  Staircase, Customer Journey, Project Plan, Decision Flow, How-To), **Compare** (Comparison, Pros
+  and Cons, Before and After, Feature Matrix, Versus, Pricing Tiers, SWOT, Effort vs Impact,
+  Scorecard, Spectrum, Venn, Three Options), **People and Ideas** (Top Tips, Team, Questions and
+  Answers, Profile, Org Chart, Testimonials, Meet the Speakers, Spotlight, Our Values, Idea Board,
+  Persona, Shout-outs), **Social** (Announcement, Did You Know?, Save the Date, Carousel Cover, Tip
+  of the Day, Milestone, Behind the Scenes, Countdown, Product Spotlight, Giveaway, Welcome Aboard,
+  Webinar) and **Explainers** (How It Works, Anatomy, Key Concepts, Cheat Sheet, Glossary, Myths and
+  Facts, Fact File, Lesson Summary, Formula Explained). A category with no layouts is not offered. The Layouts tab opens on the categories, each a card fronted
+  by its first two layouts fanned, with its count; a card opens its layouts, under the shared back bar (**All layouts**, the
+  category named in its chip, as the import and export screens browse) to go back. Each move
+  slides: a category's layouts in from the right, the categories back in from the left (the
+  template wizard's slide; none under reduced motion).
 - **Body type** is the page-sized medium and large text sizes, never the small one. Headlines
   are large text scaled to their box (`textScale`), so they read the same on the canvas and in
   every export.
@@ -332,48 +833,54 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
   share their column down to the verdict.
 - **Fitted to the page**: a layout is laid out in proportions of the page's content box (the page
   less margins of 7% of its short side), so it fits any size and orientation.
-- **Onto an empty page** a layout is placed straight away. **Onto a page with content** the picker
-  asks first, inline: **Replace this page's content?** with **Replace** and **Cancel**. Replace
-  removes every element whose centre is on the page (and arrows pinned to one, and in turn arrows
-  riding a removed arrow), then places the
-  layout. Either way it is one change: one undo step.
+- **A press places the layout straight away**, never asking first, empty page or not: onto a page
+  with content it removes every element whose centre is on the page (and arrows pinned to one,
+  and in turn arrows riding a removed arrow), then places the layout. It is one change, one undo
+  step, so Undo brings the page's content back.
 - Placed elements are ordinary elements. The selection is cleared (nothing replaced stays
   selected) and the panel closes, so the finished page reads clean.
-- **An empty page invites a layout**: a "Start from a layout" button sits in the page's title bar
-  beside the cog, only while the page is empty, and opens the panel on Layouts (the cog opens it on
-  Page). It shows its words on a wide screen when the title bar has room for them beside its other
-  buttons (the lock, the deck button, a logo page's own) and the label, else just its icon (and its
-  tooltip); when the page is too small on screen even for that, it hides, as the label does. The
-  panel's Layouts tab is headed **Start From a Layout**, as the in-page card is.
+- **The Layout button**: an infographic or slide page's title bar always holds a **Layout**
+  button (an icon and its name on a desktop, the icon alone on a phone, tooltip **Layout**) before
+  its Background button, for an Editor, on any page that is not locked, empty or not. It opens the
+  page's layouts (a slide page's the slide layouts) in a popover anchored to it, four tiles across
+  (560 px), with the categories first; on a phone it opens as a bottom sheet, two across. Hovering
+  a tile previews it on the page; pressing one places it (over anything there, at once) and closes
+  the popover; closing it takes any preview away. Opening it is tracked as
+  `UI / Opened / PageLayoutsButton`. These pages' panels hold no Layouts tab: the button is their
+  one way in, besides an empty page's own card. A **logo** page keeps its Layouts tab, and its
+  empty artboard still invites them: a "Start From a Layout" button beside the cog, only while the
+  page is empty, opening the panel on Layouts, with its words while the title bar has room for
+  them beside its other buttons and the label, else just its icon, else hidden.
 - **An empty infographic page shows its layouts inside itself**: while an infographic page is
   empty, on a tab the viewer can edit, a **Start From a Layout** card sits centred on the page,
   held at one screen size like the first page's kind choice, with the panel's Layouts in it: the
-  categories (Covers, Data, Steps and Time, Compare, People and Ideas, Social, each with its count), then a
+  categories (Covers, Posters, Data, Steps and Time, Compare, People and Ideas, Social, Explainers, each with its count), then a
   category's layouts with a way back. Pressing a layout places it (the page is empty, so at once,
   as one undo step); there is no hover preview here, since drawn over the page it would cover the
   card's own tiles. The card goes as
   soon as anything lands on the page, and **Hide** (in its corner) puts it away for that page until
-  the tab is next opened; the title bar's "Start from a layout" button still opens the panel. It
+  the tab is next opened; the title bar's Layout button still opens the layouts. It
   never shows while the first page offers its kind, while the page's panel is open, when presenting
   or in zen, or when the page is too small on screen to hold it.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
   that layout as it would land, drawn over the whole sheet in the page's background, and the
   page's own content is hidden meanwhile (left out of the page clip), so the two never mix. It is
   a picture only: nothing is placed and nothing enters the history; leaving the tiles (or closing
-  the panel) takes it away. While Replace is being asked, that layout stays
-  previewed.
+  the panel) takes it away.
 - **Tiles are the real layout**: each tile draws the layout as built for this page's size and
-  orientation, as a wireframe (text as bars, images shaded, icons as dots). A logo page's tiles
-  are the layout itself, rendered as it lands (see Logo pages).
+  orientation and rendered as it lands: in the tab's theme and font, its placeholder words, icons
+  and charts, on the page's own background, through the same renderer the exports use. Only
+  outside the editor (no tab to paint with) is a tile a wireframe (text as bars, images shaded,
+  icons as dots).
 - **The in-page card's width**: four across (560 px) wherever the page on screen has room for it,
   so a category's layouts show without scrolling; else two across (340 px). The panel's Layouts
   tab is always two across.
 
 ## Slide layouts
 
-A **slide** page's Layouts tab, and its in-page **Start From a Layout** card, offer the **slide
+A **slide** page's **Layout** button, and its in-page **Start From a Layout** card, offer the **slide
 layouts** in place of the infographic ones, in the same browser (categories first, then a
-category's layouts, the same Replace question, hover previews and wireframe tiles). They are
+category's layouts, placed at once, hover previews and rendered tiles). They are
 built for a landscape slide's content box (16:9 or 4:3), in the tab's theme, with type sized to
 be read across a room:
 
@@ -475,7 +982,7 @@ is while the rest of the tab is worked on.
 - **A page's label zooms to it**: a press on the label fits that page in the view, as entering the
   mode fits the first: the page itself fills the view (below the Toolbar strip), whatever its
   shape, not a square around it.
-- **The Map shows the pages**: each page's sheet in its own background with a crisp outline,
+- **The Map shows the pages**: each page's sheet in its own background (a picture as its tone) with a crisp outline,
   under the content, counted in the Map's bounds (so a tab of empty pages still has a Map), and
   each element inked for its page.
 - **Drag a page's label to reorder**: once the press travels 6 screen px sideways it is a drag (an
@@ -519,7 +1026,7 @@ In Illustrate mode the Export dialog exports **pages**, not the tab's content bo
 - The download is named `<document> - <tab>` (`.pdf`, `.zip`), or with ` - <page label>` for one
   page.
 - The preview shows the chosen page, or with All pages a page picked to preview.
-- Each page exports **exactly its sheet**: its size, its background and pattern, and the elements on
+- Each page exports **exactly its sheet**: its size, its background (a picture embedded under its overlay) and pattern, and the elements on
   it clipped to its edges, as the canvas shows them. The surround is not exported. The plain paper
   exports white (a logo page's is transparent in PNG and SVG, [Logo pages](logo-pages.md) "Export",
   which also adds the Logo Kit format); elements are inked for the page's own surface. An element (an arrow by its
@@ -542,14 +1049,15 @@ are diagram formats and are not offered.
 ## Telemetry
 
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
-`PageBackground`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
+`PageBackground`, `PageBackgroundImage`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
 `PageLocked`, `PageUnlocked`,
 `PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`
 (and `ArticleAdded`, `LogoPageAdded`, the other kinds' adds), `PageKindInfographic` / `PageKindArticle` / `PageKindSlide` /
 `PageKindLogo` (the first page's own choice);
 `Document · Exported · IllustratePNG / IllustrateSVG / IllustratePDF` (one page) and
 `IllustratePNGPages / IllustrateSVGPages / IllustratePDFPages` (all pages);
-`UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Closed · EmptyPageLayouts` (the in-page
+`UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `Tab · Aligned · PageTidyUp` (an infographic
+page's Tidy Up); `UI · Closed · EmptyPageLayouts` (the in-page
 **Start From a Layout** card's Hide). Never a colour, name or layout content.
 A logo page's own events are in [Logo pages](logo-pages.md) "Telemetry".
 
@@ -656,6 +1164,5 @@ SlideShown`).
 
 ## Non-goals
 
-- Image backgrounds (an image element sent to the back does the job).
 - Per-page themes or fonts: the tab's theme and font apply to every page.
 - Master pages or shared headers and footers.
