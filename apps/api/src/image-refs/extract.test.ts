@@ -50,6 +50,9 @@ describe('imageRefIds', () => {
       page({ kind: 'image', imageId: 'data:image/png;base64,AA' }),
       page({ kind: 'solid', color: '#fff', imageId: 'no' }),
       { id: 'q' },
+      // A background with a pattern alone (no fill), and one whose fill is not an object.
+      { id: 'r', background: { pattern: 'dots' } },
+      page(null),
       null,
     ];
     expect(imageRefIds([image('a')], pages)).toEqual(['a', 'bg']);
