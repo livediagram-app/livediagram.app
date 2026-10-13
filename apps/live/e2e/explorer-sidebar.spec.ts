@@ -219,15 +219,15 @@ test.describe('editor Explorer panel', () => {
     const rail = page.getByRole('navigation', { name: 'Explorer sections' });
     await expect(rail.getByRole('button', { name: 'Home' })).toBeVisible({ timeout: 30_000 });
     await expect(rail.getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);
-    // Opens on the space holding the open document: My documents, its documents in the pane.
-    await expect(rail.getByRole('button', { name: 'My documents' })).toHaveAttribute(
+    // Opens on Home; My documents lists its documents as rows, the open one current.
+    await expect(rail.getByRole('button', { name: 'Home' })).toHaveAttribute(
       'aria-current',
       'true',
     );
-    const pane = page.getByRole('navigation', { name: 'Explorer', exact: true });
-    await expect(pane.getByRole('treeitem', { name: 'Another' })).toBeVisible();
-    await expect(pane.getByRole('treeitem', { name: 'Open one' })).toHaveAttribute(
-      'aria-selected',
+    await rail.getByRole('button', { name: 'My documents' }).click();
+    await expect(page.getByRole('button', { name: 'Another', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Open one', exact: true })).toHaveAttribute(
+      'aria-current',
       'true',
     );
     // The keyboard walks the rail; a pick shows the section in the pane, never leaving the editor.
@@ -235,6 +235,7 @@ test.describe('editor Explorer panel', () => {
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
+    // Timeline, now current.
     await expect(page.getByRole('heading', { name: 'Timeline', exact: true })).toBeVisible();
     await expect(page).toHaveURL(new RegExp(`/document/${id}`));
     // The product's links live in the panel's footer, not the header.
