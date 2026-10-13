@@ -66,16 +66,17 @@ function PromptShell({
   body: string;
   action?: React.ReactNode;
   onDismiss: () => void;
-  // One line at the foot of a pane (the editor's Explorer): the title as a lead-in, the action, the dismiss.
+  // One quiet line (the editor's Explorer, under its Current Document card): the title as a lead-in, the action, the
+  // dismiss.
   bar?: boolean;
 }) {
   if (bar)
     return (
       <div
         data-signin-bar=""
-        className="flex items-center gap-3 border-t border-slate-200 bg-slate-50/80 py-2 pl-4 pr-2 text-xs dark:border-slate-700/70 dark:bg-slate-800/40"
+        className="flex items-center gap-3 rounded-lg bg-amber-50/70 py-1.5 pl-3 pr-1.5 text-xs ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:ring-amber-400/25"
       >
-        <p className="min-w-0 flex-1 leading-snug text-slate-500 dark:text-slate-300">
+        <p className="min-w-0 flex-1 leading-snug text-slate-600 dark:text-slate-300">
           <span className="font-semibold text-slate-800 dark:text-white">{title}.</span> {body}
         </p>
         {action}
@@ -114,7 +115,7 @@ function PromptShell({
 // for dismissed guests. While Clerk / the dismissal read are still
 // loading we render nothing, so the fallback doesn't flash in before the
 // prompt has a chance to claim the slot.
-// `bar`: the one-line form for the foot of a pane.
+// `bar`: the one-line form (the editor's Explorer, under its Current Document card).
 type SignInPromptProps = { fallback?: React.ReactNode; bar?: boolean };
 
 function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {

@@ -6,7 +6,7 @@ import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { FolderActionsMenu } from '@/app/explorer/folder-actions-menu';
-import { PaneRow, PaneTile } from '../explorer-panel/pane-parts';
+import { FolderPreview, PaneCard } from '../explorer-panel/pane-parts';
 import { trackSidebar } from '@/app/explorer/sidebar/sidebar-telemetry';
 import type { PaneDocument } from '@/app/explorer/views';
 import { useDocumentDropTarget } from '../useDocumentDropTarget';
@@ -93,12 +93,8 @@ export function PanelFolderItem({
     .filter(Boolean)
     .join(' · ');
   return (
-    <PaneRow
-      leading={
-        <PaneTile tone="brand">
-          <FolderSolidIcon />
-        </PaneTile>
-      }
+    <PaneCard
+      preview={<FolderPreview icon={<FolderSolidIcon />} count={count} />}
       title={
         editing ? (
           <InlineRenameInput
@@ -112,7 +108,7 @@ export function PanelFolderItem({
         )
       }
       label={folder.name}
-      meta={markerWords ? `${count} · ${markerWords}` : count}
+      meta={markerWords || undefined}
       onActivate={editing ? undefined : open}
       rowProps={{ onContextMenu: menu.onContextMenu, ...(fileHere ? drop.handlers : {}) }}
       highlighted={drop.isDragOver}

@@ -1,10 +1,7 @@
 'use client';
 
-import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { LocalOnlyPill, LOCAL_ONLY_DESCRIPTION } from '@/components/primitives/LocalOnlyPill';
 import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
-import { useRowMenu } from '@/components/primitives/useRowMenu';
-import { DocumentActionsMenu } from '@/app/explorer/document-row-shared';
 import { FavouriteMarker } from '@/app/explorer/document-badges';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
@@ -14,6 +11,7 @@ import type { PaneDocument } from '@/app/explorer/views';
 import { isLocalOnly } from '@/lib/document-space';
 import { startDocumentDrag } from '../explorer-drag-mime';
 import { usePanelTree } from './PanelTreeContext';
+import { usePaneDocumentMenu } from './usePaneDocumentMenu';
 
 // A document row of the editor's Explorer pane (docs/specs/013-workspace/explorer-structure.md "The pane"): its
 // thumbnail, name and last save; activating it opens the document; it carries the one document menu (⋯,
@@ -29,12 +27,10 @@ export function PanelDocumentItem({
   draggable?: boolean;
 }) {
   const tree = usePanelTree();
-  const menu = useRowMenu();
+  const menu = usePaneDocumentMenu(doc);
   const name = doc.name || 'Untitled document';
   const local = isLocalOnly(doc);
-  const team = doc.team;
   const shareCode = doc.shared?.shareCode;
-  const shared = shareCode !== undefined;
   const favourite = tree.favouriteIds?.has(doc.id) === true;
   const open = () => tree.onOpenDocument(doc.id, shareCode);
   const now = useRelativeNow();
@@ -77,58 +73,7 @@ export function PanelDocumentItem({
         <>
           {local ? <LocalOnlyPill tabbable={false} /> : null}
           {isMadeByAi(doc) ? <MadeByAiPill compact /> : null}
-          <EllipsisTriggerButton
-            {...menu.triggerProps}
-            size="md"
-            reveal
-            label={`Menu for ${name}`}
-          />
-          {menu.open ? (
-            <DocumentActionsMenu
-              document={doc}
-              anchor={menu.triggerRef.current}
-              ownerId={tree.ownerId}
-              onClose={menu.close}
-              isOpen={doc.id === tree.currentDocumentId}
-              onOpen={open}
-              onDismiss={
-                shared && tree.onDismissShared ? () => tree.onDismissShared?.(doc.id) : undefined
-              }
-              onDuplicate={
-                !shared && tree.onDuplicateDocument
-                  ? () => tree.onDuplicateDocument?.(doc.id)
-                  : undefined
-              }
-              onMove={
-                shared
-                  ? undefined
-                  : team
-                    ? tree.onMoveTeamDocumentRequest
-                      ? () => tree.onMoveTeamDocumentRequest?.(doc.id, team.id)
-                      : undefined
-                    : tree.onMoveDocumentRequest
-                      ? () => tree.onMoveDocumentRequest?.(doc.id)
-                      : undefined
-              }
-              onDelete={
-                !shared && tree.onDeleteDocument
-                  ? () => tree.onDeleteDocument?.(doc.id, menu.triggerRef.current)
-                  : undefined
-              }
-              favourite={shared ? undefined : favourite}
-              onToggleFavourite={
-                !shared && tree.onToggleFavourite
-                  ? () => tree.onToggleFavourite?.(doc.id)
-                  : undefined
-              }
-              recentExcluded={tree.recentExcludedIds?.includes(doc.id) === true}
-              onToggleRecentExclusion={
-                tree.onToggleRecentExclusion
-                  ? () => tree.onToggleRecentExclusion?.(doc.id)
-                  : undefined
-              }
-            />
-          ) : null}
+          {menu.trailing}
         </>
       }
     />

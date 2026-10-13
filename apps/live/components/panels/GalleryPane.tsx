@@ -112,7 +112,7 @@ export function GalleryPane({
         uploading={uploading}
         error={uploadError}
         prompt="Drop, paste, or click to upload an image"
-        {...(compact ? { heightClass: 'h-20' } : {})}
+        {...(compact ? { heightClass: 'h-28', gapClass: 'gap-1.5' } : {})}
       />
 
       <div className="mt-4">

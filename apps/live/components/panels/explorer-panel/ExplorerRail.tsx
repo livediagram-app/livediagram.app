@@ -15,6 +15,7 @@ import {
   TimelineIcon,
   TrashIcon,
   TeamIcon,
+  PlusIcon,
 } from '@/components/primitives/explorer-icons';
 import {
   SIDEBAR_GROUP_TITLES,
@@ -49,7 +50,10 @@ export function ExplorerRail({
   divider,
   phone,
   onDropToMyDocuments,
+  onNewDocument,
 }: {
+  // One click to a new document, first in the rail.
+  onNewDocument?: () => void;
   groups: PanelSectionGroup[];
   selected: PanelSection;
   onPick: (s: PanelSection) => void;
@@ -60,6 +64,20 @@ export function ExplorerRail({
   phone: boolean;
   onDropToMyDocuments?: (documentId: string) => void;
 }) {
+  const newDocument = onNewDocument ? (
+    <button
+      type="button"
+      onClick={onNewDocument}
+      className={`flex cursor-pointer items-center justify-center gap-1.5 bg-brand-700 font-semibold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:bg-brand-600 dark:hover:bg-brand-500 ${
+        phone
+          ? 'h-11 shrink-0 whitespace-nowrap rounded-full px-4 text-[13px]'
+          : 'mb-3 h-9 w-full rounded-lg text-xs'
+      }`}
+    >
+      <PlusIcon size={13} />
+      <span className={phone ? 'text-optical-centre' : ''}>{phone ? 'New' : 'New Document'}</span>
+    </button>
+  ) : null;
   const navRef = useRef<HTMLElement>(null);
   const drop = useDocumentDropTarget(onDropToMyDocuments);
   const onKeyDown = (e: KeyboardEvent) => {
@@ -143,27 +161,33 @@ export function ExplorerRail({
       }
     >
       {phone ? (
-        <ul className="flex gap-2">{groups.flatMap((g) => g.sections).map(entry)}</ul>
+        <ul className="flex gap-2">
+          {newDocument ? <li className="shrink-0">{newDocument}</li> : null}
+          {groups.flatMap((g) => g.sections).map(entry)}
+        </ul>
       ) : (
-        groups.map((g, i) =>
-          g.sections.length ? (
-            <section key={g.id} aria-label={SIDEBAR_GROUP_TITLES[g.id]}>
-              {divider === 'titles' ? (
-                <h3
-                  className={`px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 ${i ? 'mt-4' : ''}`}
-                >
-                  {SIDEBAR_GROUP_TITLES[g.id]}
-                </h3>
-              ) : i ? (
-                <span
-                  aria-hidden
-                  className="mx-2 my-2.5 block h-px bg-slate-200 dark:bg-slate-700"
-                />
-              ) : null}
-              <ul className="flex flex-col gap-0.5">{g.sections.map(entry)}</ul>
-            </section>
-          ) : null,
-        )
+        <>
+          {newDocument}
+          {groups.map((g, i) =>
+            g.sections.length ? (
+              <section key={g.id} aria-label={SIDEBAR_GROUP_TITLES[g.id]}>
+                {divider === 'titles' ? (
+                  <h3
+                    className={`px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 ${i ? 'mt-4' : ''}`}
+                  >
+                    {SIDEBAR_GROUP_TITLES[g.id]}
+                  </h3>
+                ) : i ? (
+                  <span
+                    aria-hidden
+                    className="mx-2 my-2.5 block h-px bg-slate-200 dark:bg-slate-700"
+                  />
+                ) : null}
+                <ul className="flex flex-col gap-0.5">{g.sections.map(entry)}</ul>
+              </section>
+            ) : null,
+          )}
+        </>
       )}
     </nav>
   );

@@ -101,16 +101,17 @@ afterEach(() => {
 });
 
 describe('PanelExplorerTree', () => {
-  it('shows My documents as its folders, then its documents, a folder opening in place under a breadcrumb', () => {
+  it('shows My documents as its folders, then its documents, a folder opening in place under the back bar', () => {
     render(<Harness section={{ kind: 'mine' }} />);
     expect(rows()).toEqual(['Projects', 'Loose notes']);
     expect(screen.queryByText('Unsorted')).toBeNull();
     fireEvent.click(row('Projects'));
     expect(rows()).toEqual(['Plan']);
     expect(row('Plan').getAttribute('aria-current')).toBe('true');
-    const path = screen.getByRole('navigation', { name: 'Folder path' });
-    expect(path.textContent).toBe('My documents›Projects');
-    fireEvent.click(screen.getByRole('button', { name: 'My documents' }));
+    // The import and export screens' back bar: back to the root, the folder as its chip.
+    const back = screen.getByRole('button', { name: /^My documents/ });
+    expect(back.textContent).toContain('Projects');
+    fireEvent.click(back);
     expect(rows()).toEqual(['Projects', 'Loose notes']);
     expect(assign).not.toHaveBeenCalled();
   });

@@ -4,11 +4,13 @@
 // Open Page to its Explorer page and its own action, over its content. Sections with documents are the tree's rows;
 // the others are the Explorer page's own views, each loaded only when its section is first shown.
 import dynamic from 'next/dynamic';
+import { useState } from 'react';
+import type { LibraryKind } from './PanelViews';
 import type { ReactNode } from 'react';
 import { explorerPathFor } from '@/app/explorer/routes';
 import { PaneSkeleton } from './pane-parts';
 import { OpenIcon, PlusIcon } from '@/components/primitives/explorer-icons';
-import { sectionLabel, sectionPage, type PanelSection } from './panel-sections';
+import { sectionKey, sectionLabel, sectionPage, type PanelSection } from './panel-sections';
 
 const load = () => import('./PanelViews');
 const HomeSection = dynamic(() => load().then((m) => m.HomeSection), {
@@ -64,6 +66,8 @@ export function ExplorerPanelPane({
   footer?: ReactNode;
 }) {
   const title = sectionLabel(section, teamName);
+  // The Library's tab, held here so Open Page goes to the page shown.
+  const [libraryTab, setLibraryTab] = useState<LibraryKind>('gallery');
   const body =
     section.kind === 'home' ? (
       ownerId ? (
@@ -88,7 +92,7 @@ export function ExplorerPanelPane({
       ) : null
     ) : section.kind === 'library' ? (
       ownerId ? (
-        <LibrarySection ownerId={ownerId} />
+        <LibrarySection ownerId={ownerId} tab={libraryTab} setTab={setLibraryTab} />
       ) : null
     ) : (
       tree
@@ -106,7 +110,12 @@ export function ExplorerPanelPane({
             <span className="max-sm:sr-only">New Folder</span>
           </button>
         ) : null}
-        <a href={explorerPathFor(sectionPage(section))} className={HEADER_BUTTON}>
+        <a
+          href={explorerPathFor(
+            section.kind === 'library' ? { kind: libraryTab } : sectionPage(section),
+          )}
+          className={HEADER_BUTTON}
+        >
           <span className="max-sm:sr-only">Open Page</span>
           <OpenIcon />
         </a>
@@ -116,7 +125,11 @@ export function ExplorerPanelPane({
         data-explorer-pane=""
         className="scrollbar-slim min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-5 pt-1"
       >
-        {body}
+        {/* Keyed by section: a pick slides the new section in (animate-view-forward: a fade alone under reduced
+            motion). */}
+        <div key={sectionKey(section)} className="animate-view-forward">
+          {body}
+        </div>
       </div>
       {footer}
     </div>

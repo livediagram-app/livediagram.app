@@ -5,9 +5,10 @@ import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus
 import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
 import { sharedToPaneDocument, type PaneDocument, type SelectedNode } from '@/app/explorer/views';
 import { EmptyPane } from '@/app/explorer/ExplorerEmptyState';
+import { BackBar } from '@/components/primitives/BackBar';
 import { groupDocumentsByFolder, indexFolders } from '@/lib/folder-tree';
 import type { PanelSection } from '../explorer-panel/panel-sections';
-import { PaneList, PaneSkeleton } from '../explorer-panel/pane-parts';
+import { PaneGrid, PaneList, PaneSkeleton } from '../explorer-panel/pane-parts';
 import { PanelFolderItem, type PanelFolder, type PanelFolderIndex } from './PanelFolderItem';
 import { PanelDocumentItem } from './PanelDocumentItem';
 import { PanelTreeProvider, type PanelTree } from './PanelTreeContext';
@@ -110,55 +111,39 @@ export function PanelExplorerTree({
     const docs = index.documentsByFolder.get(here) ?? [];
     const empty: SelectedNode = here ? { kind: 'folder', id: here } : { kind: 'all' };
     body = (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
+        {/* The import and export screens' back bar: back to the folder above (or the space's root), the folder open
+            here as its chip. */}
         {trail.length ? (
-          <nav
-            aria-label="Folder path"
-            className="flex min-w-0 flex-wrap items-center gap-1 px-2 text-xs"
-          >
-            {[{ id: null as string | null, name: rootLabel }, ...trail].map((step, i, all) => {
-              const last = i === all.length - 1;
-              return (
-                <span key={step.id ?? 'root'} className="flex min-w-0 items-center gap-1">
-                  {last ? (
-                    <span
-                      aria-current="location"
-                      className="truncate font-semibold text-slate-800 dark:text-slate-100"
-                    >
-                      {step.name}
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setFolderId(step.id)}
-                      className="cursor-pointer truncate rounded text-slate-500 transition hover:text-slate-900 hover:underline focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-slate-400 dark:hover:text-white"
-                    >
-                      {step.name}
-                    </button>
-                  )}
-                  {last ? null : (
-                    <span aria-hidden className="text-slate-300 dark:text-slate-600">
-                      ›
-                    </span>
-                  )}
-                </span>
-              );
-            })}
-          </nav>
+          <BackBar
+            gap="tight"
+            label={trail.at(-2)?.name ?? rootLabel}
+            current={trail.at(-1)!.name}
+            onClick={() => setFolderId(trail.at(-2)?.id ?? null)}
+          />
         ) : null}
         {folders.length + docs.length ? (
-          <PaneList label={trail.at(-1)?.name ?? rootLabel}>
-            {folders.map((f) => (
-              <PanelFolderItem key={f.id} folder={f} index={index} team={team} />
-            ))}
-            {docs.map((d) => (
-              <PanelDocumentItem
-                key={d.id}
-                document={team ? { ...d, team } : d}
-                draggable={!team && draggable}
-              />
-            ))}
-          </PaneList>
+          // Keyed by the folder open, so opening one slides its contents in.
+          <div key={here ?? 'root'} className="flex animate-view-forward flex-col gap-3">
+            {folders.length ? (
+              <PaneGrid label={`Folders in ${trail.at(-1)?.name ?? rootLabel}`}>
+                {folders.map((f) => (
+                  <PanelFolderItem key={f.id} folder={f} index={index} team={team} />
+                ))}
+              </PaneGrid>
+            ) : null}
+            {docs.length ? (
+              <PaneList label={trail.at(-1)?.name ?? rootLabel}>
+                {docs.map((d) => (
+                  <PanelDocumentItem
+                    key={d.id}
+                    document={team ? { ...d, team } : d}
+                    draggable={!team && draggable}
+                  />
+                ))}
+              </PaneList>
+            ) : null}
+          </div>
         ) : (
           <EmptyPane compact cta={false} selected={empty} />
         )}

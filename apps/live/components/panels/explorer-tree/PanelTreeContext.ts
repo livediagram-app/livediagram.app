@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from 'react';
 import type { TeamFolderHandlers } from '../Explorer.types';
+import type { PaneDocument } from '@/app/explorer/views';
 import type { DefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 
 // What every row of the floating Explorer panel's tree can reach
@@ -16,6 +17,8 @@ export type PanelTree = {
   exitingDocumentIds: Set<string>;
   expanded: Record<string, boolean>;
   onToggle: (key: string) => void;
+  // Any document the reader can reach, by id: the pane's views (Home, the Timeline) give it its menu.
+  documentById?: (id: string) => PaneDocument | undefined;
   // Opens a folder in the pane (its subfolders, then its documents, under a breadcrumb).
   onOpenFolder?: (folderId: string) => void;
   onOpenDocument: (id: string, shareCode?: string) => void;

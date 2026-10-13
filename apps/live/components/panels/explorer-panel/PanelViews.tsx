@@ -35,15 +35,133 @@ import { daysLeftLabel, trashGroups, trashedOnLabel, type TrashGroup } from '@/l
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import {
   PANE_LINK,
-  PANE_THUMB_BOX,
+  PANE_PREVIEW_BOX,
+  PaneCard,
   PaneEmpty,
   PaneFailed,
+  PaneGrid,
+  PaneIconButton,
   PaneList,
   PaneRow,
   PaneSection,
   PaneSkeleton,
   PaneTile,
+  type PaneTone,
 } from './pane-parts';
+import { usePaneDocumentMenu } from '../explorer-tree/usePaneDocumentMenu';
+import { usePanelTree } from '../explorer-tree/PanelTreeContext';
+import type { JumpBackInItem } from '@/app/explorer/home/home-model';
+import type { HomeGroup, TimelineEvent } from '@livediagram/api-schema';
+import { lucideGlyph } from '@livediagram/ui';
+import { lucideRotateCcw, lucideTrash2 } from '@livediagram/icons/lucide';
+
+const RestoreGlyph = lucideGlyph(lucideRotateCcw, 16);
+const DeleteGlyph = lucideGlyph(lucideTrash2, 16);
+
+// One of Jump back in's documents as a preview card, with the document menu when the reader can reach it.
+function JumpBackInCard({
+  item,
+  ownerId,
+  current,
+  onOpen,
+  now,
+}: {
+  item: JumpBackInItem;
+  ownerId: string;
+  current: boolean;
+  onOpen: () => void;
+  now: number;
+}) {
+  const doc = usePanelTree().documentById?.(item.documentId);
+  const menu = usePaneDocumentMenu(doc);
+  return (
+    <PaneCard
+      preview={
+        <DocumentThumbnail
+          ownerId={ownerId}
+          documentId={item.documentId}
+          version={item.savedAt}
+          empty={item.empty}
+          shareCode={item.shareCode}
+          offline={item.localOnly}
+          className={PANE_PREVIEW_BOX}
+        />
+      }
+      title={item.name || 'Untitled document'}
+      meta={
+        <span className="flex items-center gap-1.5">
+          {item.localOnly ? <LocalOnlyPill tabbable={false} /> : null}
+          <span className="truncate">Opened {relativeSince(item.lastUsedAt, now)}</span>
+        </span>
+      }
+      current={current}
+      onActivate={onOpen}
+      rowProps={{ onContextMenu: menu.onContextMenu }}
+      trailing={menu.trailing}
+    />
+  );
+}
+
+// One of What happened's groups: the people, what they did and where, with the document's menu.
+function WhatHappenedRow({ group, onOpen }: { group: HomeGroup; onOpen: () => void }) {
+  const doc = usePanelTree().documentById?.(group.documentId);
+  const menu = usePaneDocumentMenu(doc);
+  const s = summarySentence(group);
+  const sentence = `${s.people} ${s.verbs}${s.preposition ? ` ${s.preposition}` : ''} ${s.document}`;
+  return (
+    <PaneRow
+      leading={
+        <span className="flex w-[60px] justify-center">
+          <AvatarStack people={group.people} size={28} />
+        </span>
+      }
+      title={
+        <span className="font-normal text-slate-600 dark:text-slate-300">
+          <span className="font-semibold text-slate-800 dark:text-slate-100">{s.people}</span>{' '}
+          {s.verbs}
+          {s.preposition ? ` ${s.preposition}` : ''}{' '}
+          <span className="font-semibold text-slate-800 dark:text-slate-100">{s.document}</span>
+        </span>
+      }
+      label={sentence}
+      meta={`${clockTime(group.latestAt)} · ${locationLabel(group)}`}
+      onActivate={onOpen}
+      rowProps={{ onContextMenu: menu.onContextMenu }}
+      trailing={menu.trailing}
+    />
+  );
+}
+
+// An event's tile colour, by what happened: made, talked about, shared, moved, removed, or changed.
+function eventTone(e: TimelineEvent): PaneTone {
+  const t = e.eventType;
+  if (/created|joined|accepted/.test(t)) return 'emerald';
+  if (/comment|mention|reply/.test(t)) return 'sky';
+  if (/share|invite|link|role/.test(t)) return 'violet';
+  if (/moved|folder|renamed/.test(t)) return 'amber';
+  if (/deleted|removed|trash|left|declined/.test(t)) return 'rose';
+  return 'brand';
+}
+
+function TimelineRow({ event, ownerId }: { event: TimelineEvent; ownerId: string }) {
+  const r = pickRenderer(event, TIMELINE_RENDERERS)(event, { viewerId: ownerId });
+  const doc = usePanelTree().documentById?.(event.sourceType === 'document' ? event.sourceId : '');
+  const menu = usePaneDocumentMenu(event.sourceType === 'document' ? doc : undefined);
+  return (
+    <PaneRow
+      leading={<PaneTile tone={eventTone(event)}>{r.icon}</PaneTile>}
+      title={r.subject ?? event.title}
+      meta={
+        <>
+          {r.label ?? event.title} · {timeLabel(event.occurredAt)}
+        </>
+      }
+      onActivate={r.onClick}
+      rowProps={{ onContextMenu: menu.onContextMenu }}
+      trailing={menu.trailing}
+    />
+  );
+}
 
 type Open = (id: string, shareCode?: string) => void;
 
@@ -82,29 +200,18 @@ export function HomeSection({
         }
       >
         {recent.length ? (
-          <PaneList label={HOME_COPY.jumpBackIn}>
+          <PaneGrid label={HOME_COPY.jumpBackIn}>
             {recent.map((d) => (
-              <PaneRow
+              <JumpBackInCard
                 key={d.documentId}
-                leading={
-                  <DocumentThumbnail
-                    ownerId={ownerId}
-                    documentId={d.documentId}
-                    version={d.savedAt}
-                    empty={d.empty}
-                    shareCode={d.shareCode}
-                    offline={d.localOnly}
-                    className={PANE_THUMB_BOX}
-                  />
-                }
-                title={d.name || 'Untitled document'}
-                meta={`Opened ${relativeSince(d.lastUsedAt, now)}`}
+                item={d}
+                ownerId={ownerId}
+                now={now}
                 current={d.documentId === currentDocumentId}
-                onActivate={() => onOpenDocument(d.documentId, d.shareCode ?? undefined)}
-                trailing={d.localOnly ? <LocalOnlyPill tabbable={false} /> : null}
+                onOpen={() => onOpenDocument(d.documentId, d.shareCode ?? undefined)}
               />
             ))}
-          </PaneList>
+          </PaneGrid>
         ) : (
           <PaneEmpty
             icon={<ClockIcon />}
@@ -130,35 +237,13 @@ export function HomeSection({
                   {day.label}
                 </p>
                 <PaneList label={day.label}>
-                  {day.groups.map((g) => {
-                    const s = summarySentence(g);
-                    const sentence = `${s.people} ${s.verbs}${s.preposition ? ` ${s.preposition}` : ''} ${s.document}`;
-                    return (
-                      <PaneRow
-                        key={g.id}
-                        leading={
-                          <span className="flex w-12 justify-center">
-                            <AvatarStack people={g.people} size={26} />
-                          </span>
-                        }
-                        title={
-                          <span className="font-normal text-slate-600 dark:text-slate-300">
-                            <span className="font-semibold text-slate-800 dark:text-slate-100">
-                              {s.people}
-                            </span>{' '}
-                            {s.verbs}
-                            {s.preposition ? ` ${s.preposition}` : ''}{' '}
-                            <span className="font-semibold text-slate-800 dark:text-slate-100">
-                              {s.document}
-                            </span>
-                          </span>
-                        }
-                        label={sentence}
-                        meta={`${clockTime(g.latestAt)} · ${locationLabel(g)}`}
-                        onActivate={() => onOpenDocument(g.documentId, g.shareCode ?? undefined)}
-                      />
-                    );
-                  })}
+                  {day.groups.map((g) => (
+                    <WhatHappenedRow
+                      key={g.id}
+                      group={g}
+                      onOpen={() => onOpenDocument(g.documentId, g.shareCode ?? undefined)}
+                    />
+                  ))}
                 </PaneList>
               </div>
             ))}
@@ -200,22 +285,9 @@ export function TimelineSection({ ownerId }: { ownerId: string }) {
       {days.map(({ day, events }) => (
         <PaneSection key={day} title={dayHeading(day, now)}>
           <PaneList label={dayHeading(day, now)}>
-            {events.map((e) => {
-              const r = pickRenderer(e, TIMELINE_RENDERERS)(e, { viewerId: ownerId });
-              return (
-                <PaneRow
-                  key={e.id}
-                  leading={<PaneTile tone="brand">{r.icon}</PaneTile>}
-                  title={r.subject ?? e.title}
-                  meta={
-                    <>
-                      {r.label ?? e.title} · {timeLabel(e.occurredAt)}
-                    </>
-                  }
-                  onActivate={r.onClick}
-                />
-              );
-            })}
+            {events.map((e) => (
+              <TimelineRow key={e.id} event={e} ownerId={ownerId} />
+            ))}
           </PaneList>
         </PaneSection>
       ))}
@@ -261,8 +333,6 @@ export function TrashSection({
         description="Delete a document and it is kept here for 30 days, so you can restore it."
       />
     );
-  const button =
-    'cursor-pointer rounded-md px-2 py-1 text-[11px] font-medium transition focus-visible:outline-2 focus-visible:outline-brand-500';
   return (
     <div className="flex flex-col gap-5">
       <p className="px-2 text-[11px] leading-4 text-slate-500 dark:text-slate-400">
@@ -276,7 +346,7 @@ export function TrashSection({
                 <PaneRow
                   key={row.id}
                   leading={
-                    <PaneTile>
+                    <PaneTile tone="rose">
                       <DocumentIcon />
                     </PaneTile>
                   }
@@ -284,16 +354,15 @@ export function TrashSection({
                   meta={`${trashedOnLabel(row)} · ${daysLeftLabel(row.trashedAt, now)}`}
                   trailing={
                     <>
-                      <button
-                        type="button"
+                      <PaneIconButton
+                        label="Restore"
                         onClick={() => void trash.restore(row.id, group)}
-                        className={`${button} text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15`}
                       >
-                        Restore
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={`Delete ${row.name || 'Untitled document'} for good`}
+                        <RestoreGlyph />
+                      </PaneIconButton>
+                      <PaneIconButton
+                        label="Delete for Good"
+                        tone="danger"
                         onClick={(e) =>
                           setConfirming({
                             id: row.id,
@@ -302,10 +371,9 @@ export function TrashSection({
                             anchor: e.currentTarget,
                           })
                         }
-                        className={`${button} text-slate-500 hover:bg-rose-50 hover:text-rose-700 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300`}
                       >
-                        Delete
-                      </button>
+                        <DeleteGlyph />
+                      </PaneIconButton>
                     </>
                   }
                 />
@@ -330,11 +398,19 @@ export function TrashSection({
   );
 }
 
-type LibraryKind = (typeof LIBRARY_PAGES)[number]['kind'];
+export type LibraryKind = (typeof LIBRARY_PAGES)[number]['kind'];
 
-// The Library's three pages as tabs over one view (Image gallery first), each drawn for the pane.
-export function LibrarySection({ ownerId }: { ownerId: string }) {
-  const [tab, setTab] = useState<LibraryKind>('gallery');
+// The Library's three pages as tabs over one view (Image gallery first), each drawn for the pane. The pane holds the
+// tab, so its Open Page goes to the page shown.
+export function LibrarySection({
+  ownerId,
+  tab,
+  setTab,
+}: {
+  ownerId: string;
+  tab: LibraryKind;
+  setTab: (tab: LibraryKind) => void;
+}) {
   return (
     <div className="flex flex-col gap-4">
       <div

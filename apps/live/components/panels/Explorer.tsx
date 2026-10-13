@@ -16,7 +16,11 @@ import {
   isTreeSection,
   PanelExplorerTree,
 } from '@/components/panels/explorer-tree/PanelExplorerTree';
-import type { PanelTree } from '@/components/panels/explorer-tree/PanelTreeContext';
+import {
+  PanelTreeProvider,
+  type PanelTree,
+} from '@/components/panels/explorer-tree/PanelTreeContext';
+import { sharedToPaneDocument, type PaneDocument } from '@/app/explorer/views';
 import { ExplorerRail } from '@/components/panels/explorer-panel/ExplorerRail';
 import { ExplorerPanelPane } from '@/components/panels/explorer-panel/ExplorerPanelPane';
 import { ExplorerCurrentDocument } from '@/components/panels/explorer-panel/ExplorerCurrentDocument';
@@ -208,6 +212,16 @@ function ExplorerImpl({
     onCreateTeamChild: (teamId, parentId) => void handleCreateTeamChild(teamId, parentId),
   };
 
+  // Every document the reader can reach, by id: Home's and the Timeline's rows carry its menu.
+  const documentsById = useMemo(() => {
+    const byId = new Map<string, PaneDocument>();
+    for (const d of liveDocs) byId.set(d.id, d);
+    for (const d of teamDocuments) byId.set(d.id, d);
+    for (const s of shared) if (!byId.has(s.id)) byId.set(s.id, sharedToPaneDocument(s));
+    return byId;
+  }, [liveDocs, teamDocuments, shared]);
+  const paneTree: PanelTree = { ...tree, documentById: (id) => documentsById.get(id) };
+
   // The rail's sections, and the one shown: remembered, else the space holding the open document.
   const divider = sidebarDivider(minimalChrome);
   const groups = useMemo(
@@ -313,7 +327,12 @@ function ExplorerImpl({
       collapsible
     >
       <div className="flex min-h-0 flex-col">
-        {currentCard ? <div className="px-2.5 pb-2.5 pt-1">{currentCard}</div> : null}
+        {/* The card, then the sign-in note under it (an onboarding notice: Minimal chrome drops it,
+            docs/specs/007-editor/power-user-mode.md). */}
+        <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1 empty:hidden">
+          {currentCard}
+          {minimalChrome ? null : <SignInPrompt bar />}
+        </div>
 
         {/* The rail and the pane (docs/specs/013-workspace/explorer-structure.md "The editor's Explorer"): side by side
             on a desktop, the rail a row of section chips over the pane on a phone. */}
@@ -331,41 +350,41 @@ function ExplorerImpl({
             teamName={teamName}
             divider={divider}
             phone={isMobile}
+            onNewDocument={onNewDocument}
             onDropToMyDocuments={
               onMoveDocumentToFolder ? (id) => onMoveDocumentToFolder(id, null) : undefined
             }
           />
-          <ExplorerPanelPane
-            section={section}
-            teamName={teamName}
-            ownerId={ownerId}
-            currentDocumentId={currentDocumentId}
-            onOpenDocument={onOpenDocument}
-            onPick={pick}
-            onNewFolder={newFolder}
-            onLibraryChanged={onLibraryChanged ?? NOOP}
-            tree={
-              isTreeSection(section) ? (
-                <PanelExplorerTree
-                  // A new section opens at its root.
-                  key={sectionKey(section)}
-                  section={section}
-                  rootLabel={sectionLabel(section, teamName)}
-                  tree={tree}
-                  busy={loading}
-                  shared={shared}
-                  ownIndex={{ foldersByParent, documentsByFolder }}
-                  offlineDocuments={offlineDocuments}
-                  teams={teams}
-                  foldersByTeam={foldersByTeam}
-                  documentsByTeam={documentsByTeam}
-                />
-              ) : null
-            }
-            // Sign-in prompt for signed-out guests; an onboarding notice, so Minimal chrome drops it
-            // (docs/specs/007-editor/power-user-mode.md).
-            footer={minimalChrome ? null : <SignInPrompt bar />}
-          />
+          <PanelTreeProvider value={paneTree}>
+            <ExplorerPanelPane
+              section={section}
+              teamName={teamName}
+              ownerId={ownerId}
+              currentDocumentId={currentDocumentId}
+              onOpenDocument={onOpenDocument}
+              onPick={pick}
+              onNewFolder={newFolder}
+              onLibraryChanged={onLibraryChanged ?? NOOP}
+              tree={
+                isTreeSection(section) ? (
+                  <PanelExplorerTree
+                    // A new section opens at its root.
+                    key={sectionKey(section)}
+                    section={section}
+                    rootLabel={sectionLabel(section, teamName)}
+                    tree={tree}
+                    busy={loading}
+                    shared={shared}
+                    ownIndex={{ foldersByParent, documentsByFolder }}
+                    offlineDocuments={offlineDocuments}
+                    teams={teams}
+                    foldersByTeam={foldersByTeam}
+                    documentsByTeam={documentsByTeam}
+                  />
+                ) : null
+              }
+            />
+          </PanelTreeProvider>
         </div>
 
         {/* The product's surfaces, which the editor header no longer carries as a menu. */}
