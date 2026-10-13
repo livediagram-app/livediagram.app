@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { rederiveTablePresetForTheme, STICKY_PRESETS, tableColorPresets } from './theme-presets';
+import {
+  legacyShapeColorPresets,
+  rederiveTablePresetForTheme,
+  shapeColorPresets,
+  STICKY_PRESETS,
+  tableColorPresets,
+} from './theme-presets';
 import { THEMES } from './themes-data';
+import { themeHalf } from './theme-halves';
+import { THEME_TEXT_CONTRAST } from './readable-colour';
 import type { TableElement } from './element-types';
 import type { Element } from './index';
-import { isLightColor } from './colors';
+import { contrastRatio, isLightColor } from './colors';
 
 const DEFAULT_THEME = THEMES[0]!;
 
@@ -38,10 +46,13 @@ describe('tableColorPresets', () => {
   // on is worse than the default.
   const presets = tableColorPresets(DEFAULT_THEME);
 
-  it('gives every header band a readable title on it', () => {
-    for (const p of presets) {
-      if (p.headerFill === 'transparent') continue;
-      expect(isLightColor(p.headerFill)).toBe(!isLightColor(p.headerText));
+  it('gives every header band a readable title on it, under every theme', () => {
+    for (const theme of THEMES) {
+      for (const p of tableColorPresets(theme)) {
+        if (p.headerFill === 'transparent') continue;
+        const ratio = contrastRatio(p.headerText, p.headerFill);
+        expect(ratio, `${theme.id} ${p.id}`).toBeGreaterThanOrEqual(THEME_TEXT_CONTRAST);
+      }
     }
   });
 
@@ -113,5 +124,53 @@ describe('rederiveTablePresetForTheme', () => {
       height: 10,
     };
     expect(rederiveTablePresetForTheme(shape, other)).toBe(shape);
+  });
+});
+
+describe('shapeColorPresets', () => {
+  // docs/specs/010-palette/style-presets.md: every preset's label reads on its fill, in both halves of every
+  // theme. Bold's dark half once put white on a mid-tone fill (2.9:1 on Pine), Solid white on the brand sky blue.
+  it('gives every preset a label that meets the text floor, in both halves of every theme', () => {
+    for (const theme of THEMES) {
+      for (const appearance of ['light', 'dark'] as const) {
+        for (const p of shapeColorPresets(themeHalf(theme, appearance))) {
+          const ratio = contrastRatio(p.text, p.fill);
+          expect(ratio, `${theme.id}/${appearance} ${p.id}`).toBeGreaterThanOrEqual(
+            THEME_TEXT_CONTRAST,
+          );
+        }
+      }
+    }
+  });
+
+  it('keeps Bold white on a fill darker than its accent, with an edge darker still', () => {
+    for (const theme of THEMES) {
+      const half = themeHalf(theme, 'dark');
+      const bold = shapeColorPresets(half).find((p) => p.id === 'bold')!;
+      expect(bold.text, theme.id).toBe('#ffffff');
+      expect(contrastRatio(bold.stroke, '#ffffff')).toBeGreaterThan(
+        contrastRatio(bold.fill, '#ffffff'),
+      );
+    }
+  });
+
+  it('keeps the same tiles: every id is still offered', () => {
+    for (const theme of THEMES) {
+      const ids = (presets: { id: string }[]) => presets.map((p) => p.id);
+      expect(ids(shapeColorPresets(theme))).toEqual(ids(legacyShapeColorPresets(theme)));
+    }
+  });
+
+  it('leaves a preset that already read exactly as it was', () => {
+    // Only short labels move, so a document styled with a readable preset keeps its colours.
+    for (const theme of THEMES) {
+      const legacy = new Map(legacyShapeColorPresets(theme).map((p) => [p.id, p]));
+      for (const p of shapeColorPresets(theme)) {
+        const was = legacy.get(p.id)!;
+        if (contrastRatio(was.text, was.fill) >= THEME_TEXT_CONTRAST) {
+          expect(p, `${theme.id} ${p.id}`).toEqual(was);
+        }
+      }
+    }
   });
 });

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
-import { themeColourMap, viewElementInTheme } from './theme-halves';
+import { themeColourMap, themeHalf, viewElementInTheme } from './theme-halves';
 import { THEMES } from './themes';
+import { legacyShapeColorPresets, shapeColorPresets } from './theme-presets';
+import { contrastRatio } from './colors';
 
 // docs/specs/011-theme/light-and-dark.md "What a viewer sees": a box's text and fill are drawn as a pair.
 const map = new Map([
@@ -45,6 +47,23 @@ describe('viewElementInTheme', () => {
   it('leaves text-only and fill-only elements to the per-colour rule', () => {
     expect(viewElementInTheme({ textColor: '#0c4a6e' }, map)).toEqual({ textColor: '#e0f2fe' });
     expect(viewElementInTheme({ fillColor: '#ffffff' }, map)).toEqual({ fillColor: '#1e293b' });
+  });
+});
+
+describe('themeColourMap and stored preset colours', () => {
+  // A shape styled with Bold before every label met the text floor stores white on a mid-tone fill. The map reads
+  // those colours too, so the box is drawn as today's Bold in the viewer's half.
+  it('draws a box stored with the old Bold as the new Bold', () => {
+    const pine = THEMES.find((t) => t.id === 'pine')!;
+    const half = themeHalf(pine, 'dark');
+    const was = legacyShapeColorPresets(half).find((p) => p.id === 'bold')!;
+    const now = shapeColorPresets(half).find((p) => p.id === 'bold')!;
+    expect(contrastRatio(was.text, was.fill)).toBeLessThan(4.5);
+    const el = { fillColor: was.fill, strokeColor: was.stroke, textColor: was.text };
+    const drawn = viewElementInTheme(el, themeColourMap(pine, 'dark'));
+    expect(drawn.fillColor).toBe(now.fill);
+    expect(drawn.strokeColor).toBe(now.stroke);
+    expect(contrastRatio(drawn.textColor, drawn.fillColor)).toBeGreaterThanOrEqual(4.5);
   });
 });
 
