@@ -150,7 +150,7 @@ apps/live/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread
   rows in the chart's order. `GanttView` lays rows and lane headers out in one pass (`ganttLayout`: each entry's
   top), drawing `GanttLaneHead` and `GanttNameRow` (gantt-rows.tsx). Lane collapse is per person, component state keyed by lane key. Set from `PlanViewMenuSection` (a View
   flyout for a gantt plan view holding two `MenuAccordionSection`s, Card Types and Swimlanes, each with the
-  scaffold's `sectionProps` id; the Board flyout's Swimlanes grid), tracking `('Plan', 'Changed', 'GanttSwimlanes')`.
+  scaffold's `sectionProps` id; the board menu's Swimlanes grid), tracking `('Plan', 'Changed', 'GanttSwimlanes')`.
 - Gantt row order: `planView.rowOrder` (card ids), validated by `isPlanViewSettings` (an array of `isValidItemId`
   strings, none repeated, at most `GANTT_ROW_ORDER_MAX` (2000)). `ganttOrderRows(rows, order)` (gantt-row-order.ts)
   puts named rows first in the order's sequence and the rest after in their date order (stable). `ganttReorder(

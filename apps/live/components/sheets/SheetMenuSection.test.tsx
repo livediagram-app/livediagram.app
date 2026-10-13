@@ -24,16 +24,24 @@ const element = (id: string) => ({ id, type: 'shape', shape: 'plan-sheet' }) as 
 
 beforeAll(stubResizeObserver);
 
-describe('the Sheet flyout', () => {
+describe('the Sheet’s menu rows', () => {
   it('is nothing for a Sheet not drawn', () => {
-    const { container } = render(<SheetMenuSection element={element('nope')} flyoutProps={{}} />);
+    const { container } = render(
+      <SheetMenuSection element={element('nope')} flyoutProps={() => ({})} />,
+    );
     expect(container.textContent).toBe('');
   });
 
-  it('holds the cog’s sections for a drawn Sheet, acting on it', async () => {
+  // One less click: the cog's sections are rows of the menu itself, with no Sheet parent row.
+  it('lists the cog’s sections as its own rows for a drawn Sheet, acting on it', async () => {
     const h = await makeSheet();
     renderSheet(h, ({ actions }) => <Publisher actions={actions} />);
-    render(<SheetMenuSection element={element('el1')} flyoutProps={{ open: true }} />);
+    render(
+      <SheetMenuSection
+        element={element('el1')}
+        flyoutProps={(id) => ({ open: id === 'plan-sheet-view', onToggle: () => {} })}
+      />,
+    );
     for (const name of [
       'Sheet Setup',
       'Sheet Options',
@@ -42,10 +50,8 @@ describe('the Sheet flyout', () => {
       'Calculations',
       'Named Ranges',
     ])
-      expect(
-        screen.getAllByRole('button', { name: new RegExp(`^${name}`) }).length,
-      ).toBeGreaterThan(0);
-    fireEvent.click(screen.getByRole('button', { name: /^Sheet Options/ }));
+      expect(screen.getByRole('button', { name: new RegExp(`^${name}`) })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Sheet$/ })).toBeNull();
     fireEvent.click(screen.getByRole('switch', { name: /Gridlines/ }));
     expect(h.ctl().sheet.layout.showGrid).toBe(false);
   });

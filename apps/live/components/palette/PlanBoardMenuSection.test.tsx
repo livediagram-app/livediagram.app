@@ -55,17 +55,15 @@ function show(overrides: Record<string, unknown>) {
 }
 
 describe('PlanBoardMenuSections', () => {
-  it('is one Board flyout holding Board Setup, Columns, Swimlanes, Supported Cards and Card Layout', () => {
+  // One less click: the sections are rows of the menu itself, not of a Board flyout inside it.
+  it('puts Board Setup, Columns, Swimlanes, Supported Cards and Card Layout in the menu, no Board parent', () => {
     show({ types: ITEM_TYPES });
     expect(
       [...document.querySelectorAll('[data-flyout]')].map((f) => f.getAttribute('data-flyout')),
-    ).toEqual(['Board']);
-    expect(
-      screen
-        .getAllByRole('button', { expanded: true })
-        .concat(screen.getAllByRole('button', { expanded: false }))
-        .map((b) => b.textContent),
     ).toEqual(['Board Setup', 'Columns', 'Swimlanes', 'Supported Cards', 'Card Layout']);
+    expect(document.querySelector('[data-flyout="Board"]')).toBeNull();
+    // Set apart from Style above them.
+    expect(document.querySelector('[role="separator"]')).toBeTruthy();
   });
 
   it('keeps Add to Slides off the title (it is in the board’s own ⋯ menu)', () => {
@@ -193,7 +191,7 @@ describe('the board menu’s sections', () => {
     for (const k of Object.keys(plan)) delete plan[k];
     Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), announce: vi.fn(), types: [] });
     render(<PlanBoardMenuSections element={board} flyoutProps={() => ({}) as never} />);
-    for (const title of ['Board'])
+    for (const title of ['Board Setup', 'Columns', 'Swimlanes', 'Card Layout'])
       expect(document.querySelector(`[data-flyout="${title}"]`)?.getAttribute('data-panel')).toBe(
         'yes',
       );

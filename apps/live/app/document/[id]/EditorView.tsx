@@ -157,6 +157,7 @@ export function EditorView() {
   useEffect(() => registerUnsavedWork(hasUnsavedChanges), [hasUnsavedChanges]);
   const {
     pasteFromClipboard,
+    slideDeck,
     hasClipboard,
     boardSceneInsert,
     activeId,
@@ -252,9 +253,10 @@ export function EditorView() {
   // While a Settings slider is dragged its patch wins, so the chrome resizes
   // as you go; the preference is written once, on release.
   const uiScalePreview = useUiScalePreview();
+  const isMobileViewport = useIsMobileViewport();
   const uiScales = resolveUiScales(
     uiScalePreview === null ? userPreferences : { ...userPreferences, ...uiScalePreview },
-    { mobile: useIsMobileViewport() },
+    { mobile: isMobileViewport },
   );
   const role = useRoleIndicator();
 
@@ -379,6 +381,20 @@ export function EditorView() {
           renameNonce={renameDocumentNonce}
           // Minimal chrome moves the pill to an icon in the status bar.
           rolePill={minimalChrome ? undefined : <RolePill {...role} />}
+          // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
+          // while the deck has a slide to show, on a desktop, once the document is up. Every role.
+          present={
+            hydrated && !anyWelcomeOpen && !isMobileViewport && slideDeck.runnable.length > 0
+              ? {
+                  slideCount: slideDeck.runnable.length,
+                  starting: slideDeck.startingDeck,
+                  onPresent: () => {
+                    track('UI', 'Opened', 'HeaderPresent');
+                    void slideDeck.start();
+                  },
+                }
+              : undefined
+          }
           brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
           onOpenAccount={() => openSettingsOn('account')}
           onOpenShare={() => {
