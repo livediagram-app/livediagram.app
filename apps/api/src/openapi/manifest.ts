@@ -2035,6 +2035,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Teams',
     summary: "List the caller's teams.",
     auth: 'clerk',
+    tokenUsable: true,
     responseSchema: listOf('teams', 'TeamListItem'),
     statuses: [200, 401],
   },
@@ -2093,6 +2094,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Teams',
     summary: 'Get a team with its members and (for admins) its invite link.',
     auth: 'clerk',
+    tokenUsable: true,
     responseSchema: { type: 'object' },
     statuses: [200, 401, 404],
   },
@@ -2252,6 +2254,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Teams',
     summary: "Get a team's shared folder tree and documents (joined member).",
     auth: 'clerk',
+    tokenUsable: true,
     responseSchema: {
       type: 'object',
       properties: {
