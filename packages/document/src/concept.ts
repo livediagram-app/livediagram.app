@@ -344,13 +344,20 @@ export function chevronLayout(w: number, h: number, n: number, notes: boolean): 
       { x: x0, y: ch },
       ...(i > 0 ? [{ x: x0 + p, y: ch / 2 }] : []),
     ];
-    const lx0 = x0 + (i > 0 ? p : 0) + 4;
+    const notch = i > 0 ? p : 0;
+    const lx0 = x0 + notch + 4;
     const lx1 = x0 + sw - p - 4;
     return {
       points,
       label: { x: lx0, y: 0, width: Math.max(0, lx1 - lx0), height: ch },
+      // Under its stage's body, notch to point, so a note centres under its label.
       note: notes
-        ? { x: x0, y: ch + 8, width: Math.max(0, sw - p), height: Math.max(0, h - ch - 8) }
+        ? {
+            x: x0 + notch,
+            y: ch + 8,
+            width: Math.max(0, sw - p - notch),
+            height: Math.max(0, h - ch - 8),
+          }
         : null,
     };
   });

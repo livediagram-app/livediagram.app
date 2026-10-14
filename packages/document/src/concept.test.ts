@@ -198,6 +198,9 @@ describe('hub, onion and chevrons (round 2)', () => {
     expect(tip).toBeGreaterThan(Math.min(...l.stages[1]!.points.map((p) => p.x)));
     expect(l.stages[0]!.note!.y).toBeGreaterThan(l.stages[0]!.label.height);
     expect(chevronLayout(600, 150, 4, false).stages[0]!.note).toBeNull();
+    // Every note centres under its own label, the notched stages' included.
+    for (const s of l.stages)
+      expect(s.note!.x + s.note!.width / 2).toBeCloseTo(s.label.x + s.label.width / 2, 5);
   });
 
   it('exports the hub with its centre and satellites, the onion rings and the stage notes', () => {

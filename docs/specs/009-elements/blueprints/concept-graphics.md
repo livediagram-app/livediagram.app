@@ -79,7 +79,7 @@ for every row.
   `p = min(ch * 0.35, w / n / 3)`; stage width `sw = (w + (n - 1) * (p - 4)) / n`; stage `i` from `x0 = i * (sw - p + 4)`;
   points: top-left, `(x0 + sw - p, 0)`, the point `(x0 + sw, ch / 2)`, `(x0 + sw - p, ch)`, bottom-left, and for `i > 0`
   the notch `(x0 + p, ch / 2)`; label rect from `x0 + (i > 0 ? p : 0) + 4` to `x0 + sw - p - 4`, the full height; note
-  rect from `x0` to `x0 + sw - p`, `y = ch + 8` to `h`; label px `round(clamp(ch * 0.24, 10, 18))`, note px
+  rect from `x0 + (i > 0 ? p : 0)` to `x0 + sw - p` (centred under the label), `y = ch + 8` to `h`; label px `round(clamp(ch * 0.24, 10, 18))`, note px
   `round(clamp(labelPx * 0.8, 10, 14))`.
 
 ### Writes
