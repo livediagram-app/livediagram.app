@@ -124,6 +124,24 @@ describe('settleChips', () => {
     const out = settleChips([one], [one, fresh]);
     expect(byId(out, 's2')).toMatchObject({ label: '2', textSize: 30 });
   });
+
+  it('leaves a locked badge where it is when its host moves', () => {
+    const h = host();
+    const b = { ...badge({ attachedTo: 'h', attachAt: 'top-left' }), locked: true } as ShapeElement;
+    const settled = settleChips([], [h, b]);
+    const at = byId(settled, 'b');
+    // Placed new, it lands on its point all the same.
+    expect(centre(at)).toEqual({ x: 100, y: 100 });
+    const moved = settleChips(settled, [{ ...h, x: h.x + 300 }, at]);
+    expect(byId(moved, 'b')).toMatchObject({ x: at.x, y: at.y, attachedTo: 'h' });
+  });
+
+  it('numbers several new steps in one write in turn', () => {
+    const step = (id: string, x: number) =>
+      ({ ...(createShape('step', 0, 0) as ShapeElement), id, x, label: '' }) as ShapeElement;
+    const out = settleChips([], [step('a', 0), step('b', 100), step('c', 200)]);
+    expect(['a', 'b', 'c'].map((id) => byId(out, id).label)).toEqual(['1', '2', '3']);
+  });
 });
 
 describe('withAttached', () => {

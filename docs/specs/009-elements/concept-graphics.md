@@ -162,4 +162,5 @@ a Viewer.
 ## Agents
 
 The MCP server and the REST API take the six kinds with `conceptRows`, `pyramidVariant`, `hubSpokes` and the
-animation fields.
+animation fields. Rows are kept to the kind's own range, as the menu keeps them: past the most, the rest are dropped,
+and short of the fewest, rows named as Add names them ("Step 3") are added, so every later edit takes.

@@ -10,6 +10,8 @@ import {
   type Element,
   type IconPosition,
   isContainerKind,
+  isChipShape,
+  isConceptShape,
 } from '@livediagram/document';
 
 // Which side of a boxed element a screen point sits nearest, normalised by
@@ -60,6 +62,20 @@ export function inheritedSizeFor(
   if (
     base.type === 'shape' &&
     (base.shape === 'portal' || base.shape === 'reveal' || isFixedSizeShape(base.shape))
+  ) {
+    return { width: base.width, height: base.height };
+  }
+  // And the kinds drawn to their own proportions or placed around other things: a step number (a disc), a container
+  // (a boundary, a stack: a box to put things in), a concept graphic, a sequence diagram, a Diagram key and a tab
+  // window. A step tapped while a 300 x 150 card is selected came out a 300 x 150 "disc".
+  if (
+    base.type === 'shape' &&
+    (isChipShape(base.shape) ||
+      isContainerKind(base.shape) ||
+      isConceptShape(base.shape) ||
+      base.shape === 'sequence' ||
+      base.shape === 'diagram-key' ||
+      base.shape === 'tab-window')
   ) {
     return { width: base.width, height: base.height };
   }

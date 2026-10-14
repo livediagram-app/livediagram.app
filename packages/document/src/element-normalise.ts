@@ -32,6 +32,7 @@ import {
   SANKEY_VALUE_MAX,
 } from './sankey-model';
 import { readSankeyNumber } from './sankey-text';
+import { CONCEPT_ROWS, isConceptShape, type ConceptShape } from './concept';
 
 type Raw = Record<string, unknown>;
 
@@ -162,7 +163,16 @@ export function normaliseElement(el: unknown): unknown {
   const [current] = migrateStoredElementsUnsettled([
     el,
   ] as unknown as DocElement[]) as unknown as Raw[];
-  return normaliseContent(withFactoryDefaults(current!));
+  return normaliseContent(withFactoryDefaults(withTextLabel(current!)));
+}
+
+// A label is text. An agent's number or yes/no (a step labelled 5) is written as its text; anything else is left for
+// validation to refuse.
+function withTextLabel(el: Raw): Raw {
+  const label = el.label;
+  return typeof label === 'number' || typeof label === 'boolean'
+    ? { ...el, label: String(label) }
+    : el;
 }
 
 // A new element of this kind, as the editor's own factory makes it, one per
@@ -216,8 +226,20 @@ function normaliseContent(el: Raw): unknown {
     case 'sankey':
       return normaliseSankey(el);
     default:
-      return el;
+      return typeof el.shape === 'string' && isConceptShape(el.shape) ? normaliseConcept(el) : el;
   }
+}
+
+// A concept graphic's rows within its own kind's range (docs/specs/009-elements/concept-graphics.md): validation
+// takes any 0 to 8, but every edit keeps a kind to its range and drops one outside it, so an agent's pyramid of 8
+// would lose two tiers at its first edit, and a cycle of 2 could never be edited. Past the most, the rest are dropped;
+// short of the fewest, rows named as the menu's Add names them ("Step 3") fill the gap.
+function normaliseConcept(el: Raw): Raw {
+  if (!Array.isArray(el.conceptRows)) return el;
+  const { min, max, noun } = CONCEPT_ROWS[el.shape as ConceptShape];
+  const rows = el.conceptRows.slice(0, max);
+  while (rows.length < min) rows.push({ label: `${noun} ${rows.length + 1}` });
+  return rows.length === el.conceptRows.length ? el : { ...el, conceptRows: rows };
 }
 
 const isLane = (el: unknown) => isRecord(el) && el.type === 'shape' && el.shape === 'lane';
@@ -249,7 +271,13 @@ export function normaliseElements<T>(elements: T): T {
   // An agent's badges and step numbers land fitted, numbered and on their hosts' points, as the editor's commits
   // keep them (docs/specs/009-elements/badge.md "Agents").
   const normalised = lanesToFront(elements.map(normaliseElement));
-  // Only a list of element records is settled; anything else is left for validation to refuse.
+  // Only a list of element records is settled; anything else is left for validation to refuse. The records are not
+  // validated yet (an agent's step with a label of 5), so one that settling cannot read is left as it came, for
+  // validation to refuse by name rather than the request failing whole.
   if (!normalised.every(isRecord)) return normalised as T;
-  return settleChips([], normalised as DocElement[]) as T;
+  try {
+    return settleChips([], normalised as DocElement[]) as T;
+  } catch {
+    return normalised as T;
+  }
 }
