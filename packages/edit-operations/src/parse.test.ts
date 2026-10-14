@@ -263,7 +263,7 @@ describe('parseEditOperations: refusals', () => {
       'line 1, column 4: expected a kind: square, text, sticky, …',
       'line 1, column 5: expected a kind: square, text, sticky, …',
       'line 1, column 12: expected key=value or a placement',
-      'line 1, column 21: expected one placement',
+      'line 1, column 21: expected one placement (or inside: with a side)',
       'line 1, column 12: expected at:x,y with two numbers',
       'line 1, column 12: expected gap: with a side, after or align placement',
       'line 1, column 19: expected gap: with a side, after or align placement',

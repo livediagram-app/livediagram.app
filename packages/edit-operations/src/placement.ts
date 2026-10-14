@@ -287,6 +287,19 @@ export function resolvePlacement(
   });
   if (!refBox) return refusal('is an arrow; place against a box');
   if (moving.has(ref.id)) return refusal('moves with it');
+  // `inside:<frame> right-of:<x>`: x must be inside that frame or lane, at any depth.
+  if (placement.within !== undefined) {
+    const holder = resolveOne(state, placement.within, operation);
+    if ('rejection' in holder) return holder;
+    if (!isContainer(holder.el))
+      return refusal(`is placed inside ${placement.within}, which is not a frame or lane`);
+    const holders = holdersOf(state);
+    const inside = (id: ElementId): boolean => {
+      const h = holders.get(id);
+      return h === holder.el.id || (!!h && inside(h));
+    };
+    if (!inside(ref.id)) return refusal(`is not inside ${placement.within}`);
+  }
   const gap = placement.gap ?? PLACEMENT_GAP;
   const taken = occupiers(state, moving);
   switch (placement.rel) {

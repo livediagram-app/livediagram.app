@@ -352,7 +352,7 @@ export function layoutGraph(
 // and subgraphs become `direction` and `groups`.
 export function graphFromMermaid(
   text: string,
-): { ok: true; graph: GraphInput } | { ok: false; error: string } {
+): { ok: true; graph: GraphInput; notes?: string[] } | { ok: false; error: string } {
   if (isSequenceDiagram(text)) {
     const read = parseSequenceDiagram(text);
     return read.ok
@@ -379,6 +379,14 @@ export function graphFromMermaid(
       groups: parsed.graph.clusters,
       direction: parsed.direction === 'LR' ? 'right' : 'down',
     },
+    // Said, not dropped: what the drawing cannot keep of what the Mermaid asked.
+    ...(parsed.folded
+      ? {
+          notes: [
+            `${parsed.folded} nested subgraph${parsed.folded === 1 ? '' : 's'} folded into their outer group: groups draw one level deep`,
+          ],
+        }
+      : {}),
   };
 }
 
@@ -426,6 +434,8 @@ export function graphShapeError(graph: GraphInput): string | undefined {
 export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }): {
   graph?: GraphInput;
   error?: string;
+  // What the drawing could not keep, to say back (a Mermaid subgraph nested in another).
+  notes?: string[];
 } {
   if (args.graph) {
     // The MCP schema caps these too; this holds for every caller (graph-limits.ts).
@@ -436,6 +446,6 @@ export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }
   if (args.mermaid === undefined) return {};
   const parsed = graphFromMermaid(args.mermaid);
   return parsed.ok
-    ? { graph: parsed.graph }
+    ? { graph: parsed.graph, ...(parsed.notes ? { notes: parsed.notes } : {}) }
     : { error: `Could not read the Mermaid: ${parsed.error}` };
 }

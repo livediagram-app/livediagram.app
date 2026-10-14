@@ -85,7 +85,8 @@ only the sweep direction differs).
   A node belongs to the subgraph where it was **first defined** (matching
   Mermaid). Edges may reference a subgraph id — the arrow pins to the frame.
   Nested subgraphs fold into their top-level ancestor (frames import one
-  level deep). On export, each frame becomes a `subgraph` block containing
+  level deep); through the MCP the reply says so (`notes`: "2 nested subgraphs folded into their outer group:
+  groups draw one level deep"), rather than dropping the nesting silently. On export, each frame becomes a `subgraph` block containing
   the boxed nodes whose centre sits inside it (a node inside several frames
   belongs to the smallest).
 - **Click links**: `click A "https://…"` (and the `click A href "https://…"`

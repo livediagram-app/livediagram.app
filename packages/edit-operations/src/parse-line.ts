@@ -137,7 +137,23 @@ function collect(name: EditOperationName, words: readonly Word[]): Collected | L
         out.gap = word;
         continue;
       }
-      if (out.place) return { column: word.column, expected: 'one placement' };
+      // `inside:<frame>` with a side: beside the reference, which must be inside that frame.
+      if (out.place) {
+        const prior = out.place as { rel: string; ref?: string };
+        const pair =
+          prior.rel === 'inside' && placement.key !== 'inside' && placement.key !== 'at'
+            ? { rel: placement.key, ref: placement.text, within: prior.ref }
+            : placement.key === 'inside' &&
+                prior.rel !== 'inside' &&
+                prior.rel !== 'at' &&
+                !('within' in prior)
+              ? { ...prior, within: placement.text }
+              : null;
+        if (!pair)
+          return { column: word.column, expected: 'one placement (or inside: with a side)' };
+        out.place = pair;
+        continue;
+      }
       if (placement.key === 'at') {
         const at = numbers(placement.text);
         if (!at) return { column: word.column, expected: 'at:x,y with two numbers' };
