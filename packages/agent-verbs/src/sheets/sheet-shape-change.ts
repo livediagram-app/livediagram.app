@@ -163,6 +163,10 @@ export function buildShapeChange(wb: Workbook, sheetId: string, change: SheetSha
         s: change.style ?? 'solid',
         c: color,
       })!;
+      // A range wholly past the sheet is clamped to nothing: refused, as a merge or a filter there is, rather
+      // than reported as drawn.
+      if ((write as { cells: readonly CellChange[] }).cells.length === 0)
+        return refuse('range_invalid', `${formatRange(range)} is past the sheet.`);
       return {
         ok: true,
         writes: [write],

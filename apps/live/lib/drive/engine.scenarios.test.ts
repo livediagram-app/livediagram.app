@@ -289,6 +289,48 @@ describe('idle states', () => {
   });
 });
 
+describe('never connected', () => {
+  // docs/specs/022-drive-mirror/drive-mirror.md "Disconnecting": the broker answers 404 without a connection, and
+  // every such answer was an error report from someone who never connected Drive.
+  it('asks for no token on arrival, focus, hide or write, and finds a connection made elsewhere', async () => {
+    const w = world();
+    w.ld.connection = null;
+    let asked = 0;
+    const tokens = createBrokerTokenSource({
+      fetchToken: async () => {
+        asked++;
+        if (!w.ld.connection) throw new ApiError('drive token', 404, 'drive_not_connected');
+        return { accessToken: w.google.issueAccessToken(OWNER), expiresAt: w.clock.now + 60 * MIN };
+      },
+      now: () => w.clock.now,
+    });
+    const { engine, statuses } = makeEngine({ ...w, tokens });
+    await engine.start();
+    w.clock.tick(DRIVE_FOCUS_POLL_MIN_GAP_MS + 1);
+    await engine.onVisible();
+    await engine.onHidden();
+    await engine.flush();
+    engine.noteWrite();
+    expect(asked).toBe(0);
+    expect(statuses.at(-1)!.state).toBe('disconnected');
+
+    // Connected on another device: the next focus finds it and syncs.
+    w.ld.connection = {
+      status: 'connected',
+      hasRefreshToken: true,
+      rootFolderId: null,
+      pageToken: null,
+      pageTokenSavedAt: null,
+      connectedAt: w.clock.now,
+      pendingAccountSwitch: null,
+    };
+    w.clock.tick(DRIVE_FOCUS_POLL_MIN_GAP_MS + 1);
+    await engine.onVisible();
+    expect(asked).toBeGreaterThan(0);
+    expect(statuses.at(-1)!.state).toBe('idle');
+  });
+});
+
 describe('the api token limiter', () => {
   it('is treated like a Google rate limit: status says so and the poll backs off', async () => {
     const w = world();
