@@ -1975,6 +1975,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitTabs,
     activeId,
     switchActive: editorMode.setMode,
+    newTabIn: isStructureReadOnly ? undefined : (mode) => newTabInRef.current?.(mode),
   });
   // Illustrate mode's pages: their edits, and the view centred on them.
   // Set once the documents' hook exists (below): a new document's title takes the caret.

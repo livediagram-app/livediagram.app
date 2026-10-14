@@ -18,7 +18,7 @@ import {
   type EditorModeSwitchProps,
 } from './editor-mode-copy';
 import { ModeMenu } from './ModeMenu';
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useLockedModePick } from './useLockedModePick';
 
 // The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip
 // showing the current mode's glyph and a chevron (icon only in the top chrome, named on a start
@@ -41,21 +41,8 @@ export function ModeMenuChip({
   crossPlan = false,
   labelled = false,
 }: EditorModeSwitchProps & { labelled?: boolean }) {
-  const confirm = useConfirm();
   // On a tab that keeps its mode, another mode is a new tab in it, asked first (docs/specs/026-plan/plan-tabs.md).
-  const pickLocked = async (next: EditorModeSwitchProps['mode']) => {
-    const name = editorModeLabel(next);
-    // Plan stands apart (crossesPlan): a tab never switches into or out of it.
-    const why =
-      lockedReason ??
-      (mode === 'plan' ? 'A Plan tab stays in Plan.' : 'Plan works in tabs of its own.');
-    const ok = await confirm({
-      title: `Open a New ${name} Tab?`,
-      message: `${why} Its mode can’t change, but you can carry on in a new ${name} tab.`,
-      confirmLabel: `New ${name} Tab`,
-    });
-    if (ok) newTabIn?.(next);
-  };
+  const pickLocked = useLockedModePick({ mode, lockedReason, newTabIn });
   const {
     open,
     close,

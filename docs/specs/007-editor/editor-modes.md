@@ -112,8 +112,8 @@ Facilitating, Start Illustrating or Start Drawing (a pen in hand) ([Template sta
 Start Planning for Plan, with no Quick Start over any of them. A session that cannot add
 tabs (a tab-scoped link, docs/specs/013-workspace/tab-scoped-share-links.md) is offered no new tab: those rows show,
 inert (`aria-disabled`), and ask nothing. **Shift+D** steps only through the modes beside the tab's
-own (Diagram, Draw, Facilitate, Illustrate; on a Plan tab it does nothing), and the tab menu's Mode lists only those
-(none on a Plan tab).
+own (Diagram, Draw, Facilitate, Illustrate; on a Plan tab it does nothing). The tab menu's Mode lists all five, as
+the switch does, a mode across Plan's line asking for a new tab the same way.
 
 **Except on an empty tab.** A general tab with no elements has nothing either side's tools could not hold, so it
 crosses the line freely, into Plan and out of it, as one plain switch (`crossPlan` on `useEditorMode`): the mode
@@ -169,12 +169,13 @@ first element closes the line again. A Board, Sheet or Dashboard tab keeps its k
 - **A new document opens in Diagram** unless its maker chose otherwise: a new document's Mode step on `/new` picks
   its mode's blank, so the document opens in that mode ([New document route](new-document-route.md)). An import that
   sets its own mode wins.
-- **Mode in the tab menu:** the tab menu holds a **Mode** group of full-width rows for editors (straight in the menu,
-  not behind a submenu), listing every editor mode beside the tab's own (Diagram, Draw, Facilitate, Illustrate; Plan
-  alone on a Plan tab, so no rows there: "Plan stands apart") as a radio choice with the tab's mode checked, each its
-  glyph and name only (no description line, so the menu stays short).
-  Choosing one switches the tab, exactly as the switch does (one tab edit, one undo step).
-  Choosing the checked mode does nothing. It is a phone's way to switch. The submenu lists modes
+- **Mode in the tab menu:** the tab menu holds a **Mode** section for editors, closed until opened as every menu
+  section is (on a desktop and a phone), listing **every** editor mode as a radio choice with the tab's mode checked,
+  each its glyph and name only (no description line, so the menu stays short). Choosing one beside the tab's own
+  switches the tab, exactly as the switch does (one tab edit, one undo step). Choosing one across Plan's line ("Plan
+  stands apart": Plan from another mode, or another mode from a Plan tab) asks the switch's question, "Open a New
+  Plan Tab?", and opens one if confirmed; with no new tab to offer the row shows, inert. Choosing the checked mode
+  does nothing. It is a phone's way to switch. The submenu lists modes
   from one catalogue, so a further mode joins it as one entry. Not offered on event-storming
   boards, to a visitor, or on a locked tab.
 - **The tab pill shows the tab's mode.** Each tab pill leads with the icon of its mode (the same
@@ -464,9 +465,9 @@ something on it asks first:
 ## Every mode, always offered
 
 Every mode of the catalogue is offered to everyone: the mode switch and the template picker's
-mode filter always list all five, and a tab always opens in its stored mode. The tab menu's Mode
-and Shift+D keep to the modes beside the tab's own ("Plan stands apart"), all five on an empty
-tab for Shift+D.
+mode filter always list all five, and a tab always opens in its stored mode. Shift+D keeps to the modes
+beside the tab's own ("Plan stands apart"), all five on an empty tab; the tab menu's Mode lists all five, a mode
+across the line offering a new tab.
 
 Illustrate and Plan each had a switch in **Settings › Experimental** while they
 were new. Both graduated on 2026-10-06, and the **Experimental** category went
