@@ -91,7 +91,7 @@ export function gifTimeline({
       if (still) break;
     }
     starts.forEach(({ k, frame }, i) => {
-      const end = i + 1 < starts.length ? frameCs(starts[i + 1].k) : holdCs;
+      const end = i + 1 < starts.length ? frameCs(starts[i + 1]!.k) : holdCs;
       frames.push({ ...frame, delayCs: end - frameCs(k) });
     });
   }

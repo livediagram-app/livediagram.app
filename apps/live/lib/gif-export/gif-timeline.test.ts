@@ -28,7 +28,7 @@ describe('the GIF timeline', () => {
     expect(totalCs(frames.filter((f) => f.page === 0))).toBe(300);
     // 7, 6, 7 centiseconds: 15 fps exactly over every three frames.
     expect(frames.slice(0, 3).map((f) => f.delayCs)).toEqual([7, 6, 7]);
-    expect(frames[1].t).toBe(67);
+    expect(frames[1]!.t).toBe(67);
   });
 
   it('starts each page’s clock at zero as it comes in', () => {
@@ -51,21 +51,21 @@ describe('the GIF timeline', () => {
     // 0, 67, ..., 333 ms are under 380 ms: six frames.
     expect(into1).toHaveLength(6);
     expect(into1[0]).toMatchObject({ t: 0, from: { page: 0, t: 3000 }, mix: 0 });
-    expect(into1[5].from).toEqual({ page: 0, t: 3333 });
+    expect(into1[5]!.from).toEqual({ page: 0, t: 3333 });
     const mixes = into1.map((f) => f.mix);
     expect([...mixes].sort((a, b) => a - b)).toEqual(mixes);
-    expect(mixes[5]).toBeLessThan(1);
+    expect(mixes[5]!).toBeLessThan(1);
     expect(frames.find((f) => f.page === 1 && !f.from)?.mix).toBe(1);
   });
 
   it('comes back round from the last page to the first, with no seam', () => {
     const frames = gifTimeline({ ...base, transition: 'slide' });
-    expect(frames[0].from).toEqual({ page: 1, t: 3000 });
+    expect(frames[0]!.from).toEqual({ page: 1, t: 3000 });
   });
 
   it('eases a slide as presenting does', () => {
-    const fade = gifTimeline({ ...base, transition: 'fade' })[2].mix;
-    const slide = gifTimeline({ ...base, transition: 'slide' })[2].mix;
+    const fade = gifTimeline({ ...base, transition: 'fade' })[2]!.mix;
+    const slide = gifTimeline({ ...base, transition: 'slide' })[2]!.mix;
     expect(slide).not.toBeCloseTo(fade, 3);
   });
 
