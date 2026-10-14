@@ -19,22 +19,27 @@ anywhere an image does (a chat message, an email, a README, a social post), whic
 
 ## The options
 
-The GIF card opens an options-and-download panel, like PNG's, with the shared back bar.
+The GIF card opens an options-and-download panel, like PNG's, with the shared back bar. The dialog's subtitle reads
+"Set how the pages play, then download the GIF."
 
 - **Pages**: the **All pages** / **One page** control every page format uses, starting on **All pages**. With One
-  page, which page, by its label.
+  page, which page, by its label. The line under it says what the download is: "One GIF of the 3 pages in turn,
+  looping." (All pages with two or more), otherwise "One GIF of the page, looping."
 - **Each page holds**: one slider for every page, **1 to 20 seconds** in half-second steps, reading its value
   ("3 s"). It starts at the deck's **Auto-advance** interval when that is on (clamped to the range), otherwise
   **3 seconds**. The hold is the page's whole time in the GIF, its transition included.
 - **Size**: a segmented control, **Small**, **Medium**, **Large**: the page's longer side at **480**, **960** or
   **1440** px, the other side in proportion. Starts on **Medium**.
 - **Between pages** (All pages with two or more pages): a one-line note naming the deck's transition and speed, as
-  the Slide Deck settings hold them ("Fade, Normal, from the Slide Deck settings"), so the GIF moves between pages
-  as presenting does. It is not changed here.
+  the Slide Deck settings hold them ("Between pages: Fade, Normal, from the Slide Deck settings."; with None, "Between
+  pages: None, from the Slide Deck settings."), so the GIF moves between pages as presenting does. It is not changed
+  here.
 - **Estimated size**: "About 3.4 MB", worked out from a sample frame of the chosen pages at the chosen size, and
-  updated as the options change. Above **15 MB** it adds "Large for chat and email: try Small or a shorter hold."
-- The **preview** shows the chosen page (with All pages, the page picked to preview) as it opens, still.
-- **Download GIF** makes the file. While it is made the button reads **Making GIF… 42%** over a progress bar, a
+  updated as the options change. Above **15 MB** it goes on "About 20.0 MB. Large for chat and email: try Small or a
+  shorter hold."
+- The **preview** shows the chosen page (with All pages, the page picked to preview) as it opens, still, drawn the
+  way the GIF's frames are (on white). "Preparing preview…" shows until it is ready.
+- **Download GIF** makes the file. While it is made the button reads **Making GIF… 42%** beside a progress bar, a
   **Cancel** button stops it, and the dialog's options are disabled. The download is named
   `<document> - <tab>.gif`, or with ` - <page label>` for One page.
 
