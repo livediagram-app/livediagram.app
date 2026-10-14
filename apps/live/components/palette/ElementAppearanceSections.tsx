@@ -33,6 +33,7 @@ import {
   supportsTextAlign,
   supportsBorderControls,
   supportsColours,
+  supportsShadow,
   type IconSize,
   type IconWeight,
   DEFAULT_ICON_WEIGHT,
@@ -184,7 +185,10 @@ export function ElementAppearanceSections({
     target.type === 'sticky' ||
     target.type === 'arrow' ||
     (boxed && supportsColours(target) && !isChart && !isSankey) ||
-    (borderable && !isChart);
+    (borderable && !isChart) ||
+    // An image has no colours, border or looks, only a Shadow (docs/specs/008-canvas/element-shadows.md),
+    // which sits in this flyout: without this it was never reachable on one.
+    supportsShadow(target);
   return (
     <>
       {showAppearanceGroup && afterGroup ? <MenuGroupSeparator /> : null}
