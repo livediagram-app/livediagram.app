@@ -1098,7 +1098,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     tileGroup: 'record',
     label: 'Add Comment Panel',
     description:
-      'A marker that carries a comment thread. Drop it on any spot and click it to talk about that spot, rather than attaching the remark to whichever shape happens to be nearest.',
+      'A card that carries a whole comment thread, read and answered where it sits. Drop it on any spot to talk about that spot, rather than attaching the remark to whichever shape happens to be nearest.',
     filled: true,
     action: { type: 'shape', kind: 'comment-pin' },
     icon: (
@@ -1112,7 +1112,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // Action panel (docs/specs/012-collaboration/action-panel.md): one assigned action as a card on the canvas, the
     // Comment panel's sibling.
     id: 'collab:action-card',
-    blurb: 'An assigned action as a card on the canvas',
+    blurb: 'Assigned actions as a card on the canvas',
     caption: 'Action',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -1316,7 +1316,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Vimeo Embed',
     description:
-      'Embeds a Vimeo link on the canvas. Double-click it to set the link; it loads when you press play.',
+      'Embeds a Vimeo link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'vimeo' },
     icon: <VimeoTileArt />,
   },
@@ -1328,7 +1328,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Loom Embed',
     description:
-      'Embeds a Loom link on the canvas. Double-click it to set the link; it loads when you press play.',
+      'Embeds a Loom link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'loom' },
     icon: <LoomTileArt />,
   },
@@ -1340,7 +1340,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Figma Embed',
     description:
-      'Embeds a Figma link on the canvas. Double-click it to set the link; it loads when you press play.',
+      'Embeds a Figma link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'figma' },
     icon: <FigmaTileArt />,
   },
@@ -1352,7 +1352,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Google Docs Embed',
     description:
-      'Embeds a Google Docs link on the canvas. Double-click it to set the link; it loads when you press play.',
+      'Embeds a Google Docs link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'gdocs' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
@@ -1368,7 +1368,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Website Embed',
     description:
-      'Embeds any website on the canvas. Double-click it to set the address; it loads when you press play. Some sites refuse to be framed and will come up blank.',
+      'Embeds any website on the canvas. Double-click it to set the address; it loads when you press Load embed. Some sites refuse to be framed and will come up blank.',
     dividerAfter: true,
     action: { type: 'video', provider: 'website' },
     icon: (
