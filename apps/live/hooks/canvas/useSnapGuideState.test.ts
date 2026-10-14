@@ -1,6 +1,8 @@
+// @vitest-environment jsdom
+import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { AlignmentGuide } from '@livediagram/document';
-import { createSnapGuideStore } from './useSnapGuideState';
+import { createSnapGuideStore, useSnapGuideState, useSnapGuides } from './useSnapGuideState';
 
 // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved": the drag's snap guides
 // live in a store that only the chrome drawing them reads, and it tells that chrome only on a change.
@@ -43,5 +45,27 @@ describe('the snap guide store', () => {
     store.subscribe(told)();
     store.set({ snapGuides: [guide(1)] });
     expect(told).not.toHaveBeenCalled();
+  });
+});
+
+describe('scheduling guides', () => {
+  it('lands only the latest set, once a frame, for the chrome reading the store', () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => {
+      frames[id - 1] = () => {};
+    });
+    const { result } = renderHook(() => useSnapGuideState());
+    const read = renderHook(() => useSnapGuides(result.current.snapGuideStore));
+    act(() => {
+      result.current.scheduleGuides([guide(1)]);
+      result.current.scheduleGuides([guide(2)]);
+      result.current.scheduleSnapTargets([{ x: 1, y: 1, active: false }]);
+    });
+    expect(read.result.current.snapGuides).toEqual([]);
+    act(() => frames.forEach((f) => f(0)));
+    expect(read.result.current.snapGuides).toEqual([guide(2)]);
+    expect(read.result.current.snapTargets).toEqual([{ x: 1, y: 1, active: false }]);
+    vi.unstubAllGlobals();
   });
 });

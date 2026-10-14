@@ -147,3 +147,32 @@ describe('the layer preview store', () => {
     expect(told).not.toHaveBeenCalled();
   });
 });
+
+describe('a previewed arrow with a label', () => {
+  it('lays its label out against the board as the preview shows it, keeping the others it cuts', () => {
+    const labelled = { ...ab, label: 'Yes' } as Element;
+    const board = [a, b, c, labelled];
+    const kept = { x: 0, y: 0, width: 1, height: 1 };
+    const own = { x: 5, y: 5, width: 2, height: 2 };
+    const placed = { x: 9, y: 9, width: 3, height: 3 };
+    const draftLayout = vi.fn(() => ({ knockout: placed }));
+    const store = createLayerPreviewStore();
+    const movedA = { ...a, y: 40 };
+    setLocalPreview('t', [movedA, b, c, labelled], board);
+    store.update(
+      inputs({
+        ordered: board.map((element) => ({ element, layerOpacity: 1 })),
+        drawnElements: board,
+        elementIndex: new Map(board.map((el) => [el.id, el])),
+        arrowLinks: buildArrowLinks(board),
+        arrowLabels: {
+          renderOf: () => ({ layout: { knockout: own }, knockouts: [kept, own] }),
+          labelRectOf: () => null,
+          draftLayout,
+        } as unknown as LayerPreviewInputs['arrowLabels'],
+      }),
+    );
+    expect(draftLayout).toHaveBeenCalledWith(labelled, 'Yes', [movedA, b, c, labelled]);
+    expect(store.entryOf(ab.id)?.label?.knockouts).toEqual([kept, placed]);
+  });
+});
