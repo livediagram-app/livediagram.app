@@ -406,7 +406,8 @@ function ExplorerImpl({
         {/* The product's surfaces, which the editor header no longer carries as a menu. */}
         <ProductNavLinks
           current="editor"
-          className="overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70"
+          // A phone's sheet spreads the links across its width.
+          className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
         />
       </div>
 

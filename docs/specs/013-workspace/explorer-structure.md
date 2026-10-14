@@ -280,7 +280,7 @@ and it **opens on Home every time** (a pick lasts while it is open and is not re
 section chips** under the Current Document card, scrolling sideways, the picked chip filled and scrolled into view;
 the chips are squared (rounded corners, not pills), 36 px to the eye with a 44 px tap. The pane fills the rest of the
 sheet's height above its footer, its header tight under the chips, its header actions their glyph alone, and the
-footer links scroll sideways. Every row and link is at least 44 px tall.
+footer links spread across its width (scrolling sideways should they not fit). Every row and link is at least 44 px tall.
 
 ### Keyboard and ARIA
 
