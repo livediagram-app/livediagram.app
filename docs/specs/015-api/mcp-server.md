@@ -476,6 +476,12 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   D2 "publish events" bus). An edge between two nodes outside a group is routed round the frame, never through the
   gaps between its members. A line into a group's first members lands clear of its heading: down the page, a frame
   whose first member would take a line through the heading's text is widened on the left until it does not.
+- **Lanes stay compact and their decisions branch.** In a `lanes` graph a hand-off to the next lane up or down that is
+  its step's only way out and its next step's only way in drops straight into that lane, in the same column, rather
+  than taking a column of its own, so a chain of hand-offs climbs or descends a staircase instead of stretching across
+  the page. A decision with two or more exits keeps the one whose next step sits most nearly level with it on its
+  point toward the flow; each other exit leaves from its top or bottom, toward its next step's lane, and bends once
+  into that step's side, so no two exits leave as parallel stubs.
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
   what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted. `true` names them by default: in a flowchart by ISO 5807
