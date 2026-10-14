@@ -57,6 +57,7 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'town-hall',
     'lean-coffee',
     'crazy-eights',
+    'pub-quiz',
   ],
 };
 

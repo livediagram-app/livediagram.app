@@ -16,7 +16,7 @@ import { TEMPLATES, type TemplateKind } from './templates';
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the twelve job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
+  it('are the thirteen job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Brainstorm',
       'Design',
@@ -25,6 +25,7 @@ describe('template categories', () => {
       'Org Charts',
       'Planning',
       'Presentations',
+      'Quizzes & Games',
       'Spreadsheets',
       'Strategy',
       'Technical',
@@ -69,6 +70,7 @@ describe('template categories', () => {
       design: 11,
       presentations: 17,
       technical: 8,
+      games: 5,
     });
   });
 
@@ -84,6 +86,7 @@ describe('template categories', () => {
     expect(isInTemplateCategory('invoice', 'spreadsheets')).toBe(true);
     expect(isInTemplateCategory('funnel', 'finance')).toBe(true);
     expect(isInTemplateCategory('team-retro', 'planning')).toBe(true);
+    expect(isInTemplateCategory('doodle-warmup', 'games')).toBe(true);
     expect(isInTemplateCategory('blank', 'flowcharts')).toBe(false);
   });
 

@@ -51,6 +51,12 @@ import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
 import { buildLeanCoffee, buildTownHall } from './template-builders-sessions';
+import { buildIcebreakerQuestions, buildPubQuiz } from './template-builders-quiz-games';
+import {
+  buildPeopleBingo,
+  buildTwoTruthsAndALie,
+  buildWouldYouRather,
+} from './template-builders-party-games';
 import { buildBrainstorm, buildWorkshopBoard } from './template-builders-workshop-boards';
 import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
 import { buildFunnel } from './template-builders-funnel';
@@ -227,6 +233,16 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildWorkshopBoard(cx, cy);
     case 'town-hall':
       return buildTownHall(cx, cy);
+    case 'pub-quiz':
+      return buildPubQuiz(cx, cy);
+    case 'icebreaker-questions':
+      return buildIcebreakerQuestions(cx, cy);
+    case 'two-truths-and-a-lie':
+      return buildTwoTruthsAndALie(cx, cy);
+    case 'would-you-rather':
+      return buildWouldYouRather(cx, cy);
+    case 'people-bingo':
+      return buildPeopleBingo(cx, cy);
     case 'business-model-canvas':
       return buildBusinessModelCanvas(cx, cy);
     case 'empathy-map':

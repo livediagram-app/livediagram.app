@@ -87,6 +87,13 @@ export type TemplateKind =
   // Town Hall Q&A (docs/specs/012-collaboration/qa-board.md): an audience Q&A board beside the panel, a
   // run-of-show agenda, a facilitator kit and a follow-ups checklist.
   | 'town-hall'
+  // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): a pub quiz on Quiz cards with a
+  // scoreboard, icebreakers spun on Pickers, and three party games run on polls, timers and reaction pads.
+  | 'pub-quiz'
+  | 'icebreaker-questions'
+  | 'two-truths-and-a-lie'
+  | 'would-you-rather'
+  | 'people-bingo'
   // The classic nine-block Business Model Canvas, coloured by area,
   // numbered in fill order and seeded with worked sticky notes.
   | 'business-model-canvas'
@@ -710,6 +717,41 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'town-hall',
     title: 'Town Hall Q&A',
     description: 'An upvoted audience Q&A beside the panel, a run of show and a facilitator kit.',
+    extra: true,
+  },
+  {
+    kind: 'pub-quiz',
+    title: 'Pub Quiz',
+    description:
+      'Three rounds of timed quiz questions, a team scoreboard, a quizmaster kit and a tie-breaker under a cover.',
+    extra: true,
+  },
+  {
+    kind: 'icebreaker-questions',
+    title: 'Icebreaker Questions',
+    description:
+      'Spin a question and a person, two minutes each on the clock, then everyone says hello on the wall.',
+    extra: true,
+  },
+  {
+    kind: 'two-truths-and-a-lie',
+    title: 'Two Truths and a Lie',
+    description:
+      'Each player writes three statements, one of them false, and the room votes on the lie in a live poll.',
+    extra: true,
+  },
+  {
+    kind: 'would-you-rather',
+    title: 'Would You Rather',
+    description:
+      'Six light dilemmas, each with a ready-made poll, so the room picks a side and argues its case.',
+    extra: true,
+  },
+  {
+    kind: 'people-bingo',
+    title: 'Find Someone Who Bingo',
+    description:
+      'A 4 by 4 bingo card of things to find in a teammate, a ten-minute timer and a Bingo! button.',
     extra: true,
   },
   {
