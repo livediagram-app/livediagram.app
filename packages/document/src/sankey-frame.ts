@@ -3,10 +3,10 @@
 // function both renderers call, so the canvas view and the exporter differ only in the markup they emit.
 
 import { chartMarkInk } from './chart-ink';
-import { chartPaletteColors } from './chart-palettes';
+import { chartRamp } from './chart-palettes';
 import { isLightColor } from './colors';
-import { PIE_PALETTE } from './data-shapes';
 import type { ShapeElement, TextSize, TextSizePreset } from './index';
+import { readTextSize } from './label-font';
 import {
   sankeyLayout,
   type SankeyLayout,
@@ -49,10 +49,11 @@ export function sankeyLabelHalo(textColor: string): string {
   return isLightColor(textColor) ? '#0f172a' : '#ffffff';
 }
 
-export function sankeyLabelPx(textSize: TextSize | undefined): number {
+export function sankeyLabelPx(stored: TextSize | undefined): number {
+  const textSize = readTextSize(stored);
   // An exact size from the slider draws at that px, as every other label does.
   if (typeof textSize === 'number') return textSize;
-  return SANKEY_LABEL_PX[textSize ?? 'md'];
+  return SANKEY_LABEL_PX[textSize];
 }
 
 export type SankeyBandPaint =
@@ -123,9 +124,7 @@ export function sankeyFrame(
   const written = new Set(sankeyNodeNames(element.sankeyFlows));
   // The chart colour ladder (docs/specs/009-elements/pie-chart.md "Chart palettes"): a node's own colour,
   // then the diagram's palette, then the tab theme's ramp, then the built-in one; by first appearance.
-  const ramp =
-    chartPaletteColors(element.chartPalette) ??
-    (palette && palette.length > 0 ? palette : PIE_PALETTE);
+  const ramp = chartRamp(element.chartPalette, palette);
   const colors = layout.nodes.map((n) =>
     chartMarkInk(
       sankeyNodeColor(element.sankeyNodes, n.name) ??

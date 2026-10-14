@@ -94,6 +94,7 @@ export function applyArrowDragMove(args: ArrowDragMoveArgs): void {
       dx,
       dy,
       pointIndex,
+      noSnap,
     });
     scheduleGuides(guidesOn ? guides : []);
     tick((els) =>
@@ -126,6 +127,7 @@ export function applyArrowDragMove(args: ArrowDragMoveArgs): void {
       dx,
       dy,
       pointIndex: null,
+      noSnap,
     });
     scheduleGuides(guidesOn ? guides : []);
     tick((els) =>

@@ -458,3 +458,31 @@ describe('combine commands', () => {
     expect(h.combine).toHaveBeenCalledWith('subtract');
   });
 });
+
+// docs/specs/008-canvas/canvas-and-palette.md "Locking": a locked tab refuses every element edit, so search
+// offers none; docs/specs/026-plan/plan-mode.md: Plan mode has no Eraser or Format, in search as in the dropdown.
+describe('buildEditorCommands — locked tab and Plan mode', () => {
+  it('offers no element edits, layout cleanup, Eraser or Format on a locked tab', () => {
+    const got = ids({ ...base, tabLocked: true, selectionCount: 1, singleIsBoxed: true });
+    expect(got).not.toContain('delete');
+    expect(got).not.toContain('duplicate');
+    expect(got.some((id) => id.startsWith('auto-layout'))).toBe(false);
+    expect(got).not.toContain('auto-align');
+    expect(got).not.toContain('tool:eraser');
+    expect(got).not.toContain('tool:format');
+    // The document and the view stay workable.
+    expect(got).toEqual(expect.arrayContaining(['create-tab', 'rename-document', 'fit-to-screen']));
+  });
+
+  it('keeps them on an unlocked tab', () => {
+    const got = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
+    expect(got).toEqual(expect.arrayContaining(['auto-align', 'tool:eraser', 'tool:format']));
+  });
+
+  it('leaves Eraser and Format out in Plan mode', () => {
+    const got = ids({ ...base, planMode: true });
+    expect(got).not.toContain('tool:eraser');
+    expect(got).not.toContain('tool:format');
+    expect(got).toContain('tool:laser');
+  });
+});

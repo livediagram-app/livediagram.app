@@ -15,6 +15,7 @@ import {
   isUserCode,
   newUserCode,
   normaliseUserCode,
+  objectOrEmpty,
 } from '@livediagram/api-schema';
 import type { Context, Hono } from 'hono';
 import type { Env } from './env';
@@ -160,7 +161,7 @@ export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
     // A user code is guessable only slowly: the same budget as a lookup, shared with it and with Deny.
     if (await overLimit(c.env, 'device-lookup', ipOf(c), LOOKUP_LIMIT))
       return c.json({ error: 'rate_limited' }, 429);
-    const body = (await c.req.json().catch(() => ({}))) as {
+    const body = objectOrEmpty(await c.req.json().catch(() => null)) as {
       userCode?: unknown;
       token?: unknown;
       expiresAt?: unknown;
@@ -183,7 +184,7 @@ export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
   app.post('/oauth/device/deny', async (c) => {
     if (await overLimit(c.env, 'device-lookup', ipOf(c), LOOKUP_LIMIT))
       return c.json({ error: 'rate_limited' }, 429);
-    const body = (await c.req.json().catch(() => ({}))) as { userCode?: unknown };
+    const body = objectOrEmpty(await c.req.json().catch(() => null)) as { userCode?: unknown };
     const found = await pendingByUserCode(c.env, body.userCode);
     if (!found) return c.json({ error: 'invalid_code' }, 400);
     await save(c.env, found.deviceCode, { ...found.record, status: 'denied' });

@@ -81,6 +81,7 @@ type FakeState = {
     list: (opts: { prefix: string }) => Promise<Map<string, unknown>>;
     setAlarm: (when: number) => Promise<void>;
     deleteAlarm: () => Promise<void>;
+    deleteAll: () => Promise<void>;
   };
   blockConcurrencyWhile: (fn: () => Promise<void>) => Promise<void>;
   waitUntil: (promise: Promise<unknown>) => void;
@@ -129,6 +130,10 @@ function makeState(store: Map<string, unknown> = new Map()): FakeState {
       },
       deleteAlarm: () => {
         state.alarms.push(null);
+        return Promise.resolve();
+      },
+      deleteAll: () => {
+        store.clear();
         return Promise.resolve();
       },
     },
@@ -2669,5 +2674,26 @@ describe('DocumentRoom keepalive', () => {
     const setWebSocketAutoResponse = vi.fn();
     new DocumentRoom({ ...state, setWebSocketAutoResponse } as unknown as DurableObjectState);
     expect(setWebSocketAutoResponse).toHaveBeenCalledWith(new Pair('ping', 'pong'));
+  });
+});
+
+// docs/specs/015-api/api.md "Purging a room": a document removed for good leaves nothing in its room.
+describe('DocumentRoom /purge', () => {
+  it('ends every session and drops everything stored, the ledger included', async () => {
+    const { room, state } = newRoom();
+    const ws = makeSocket() as FakeSocket & { closed?: [number, string] };
+    (ws as unknown as { close: (code: number, reason: string) => void }).close = (code, reason) => {
+      ws.closed = [code, reason];
+    };
+    seedSession(state, ws, presence('p-a', 'edit'));
+    state.store.set('ledger:t1:el-1', { comments: [{ id: 'c1', text: 'private words' }] });
+    expect(state.store.size).toBeGreaterThan(0);
+
+    const res = await room.fetch(new Request('https://room/purge', { method: 'POST' }));
+
+    expect(res.status).toBe(204);
+    expect(ws.closed).toEqual([4004, 'document-purged']);
+    expect(state.store.size).toBe(0);
+    expect(state.alarms.at(-1)).toBeNull();
   });
 });

@@ -115,6 +115,18 @@ A guest's `X-Owner-Id` is a bearer value that **leaks**: it rides in document DT
 - **An interrupted upgrade resumes; it never mints again.** The bootstrap records the pending upgrade (the old id, the minted id and its signature, under `livediagram:v2:pending-signed-id`) **before** it asks the worker to move the data, and adopts the new id only once the move has succeeded. A reload or a closed tab can land between the two: the worker has already moved the data while the browser still holds the old id. The next load finds the pending record and repeats the move for that same pair (a second move of already-moved data changes nothing), then adopts the recorded id. Minting a fresh id instead would strand the data under the one the browser never kept, and every later save of that document would answer 403. The record is cleared once adopted, and ignored when it no longer starts from the id this browser holds. The row the move writes for the new id is stamped with the time of the move, never the legacy date: a new id that inherited it would itself count as legacy and could be moved by anyone holding it, without its signature.
 - **One tab upgrades at a time.** Two tabs opened together on a legacy id would each mint a signed id and each move the data, and the tab whose identity lands in storage last could hold an id the data no longer sits under. The bootstrap therefore runs under the Web Lock `livediagram-guest-upgrade` (`apps/live/lib/guest-identity.ts`) and reads storage only once it holds the lock, so the second tab adopts the signed identity the first one wrote instead of minting its own. A browser without `navigator.locks` resolves unserialised, as before.
 
+## Deleting an account
+
+Settings > Account > Delete Account removes everything in three steps, in this order, and the order is the point:
+
+1. **Confirm identity.** A strict step-up reverification (`confirmIdentity`, Clerk's modal when the session has
+   no recent verification). Cancelled or failed, the dialog says nothing was deleted and stops there.
+2. **Delete the server data** (`DELETE /api/account`, [API](../015-api/api.md)).
+3. **Delete the Clerk account** (`user.delete()`), which the confirmation in step 1 has already satisfied.
+
+Confirming last let a cancelled prompt leave an account with no data in it. Deleting at Clerk first would risk the
+opposite, rows nobody can reach once the account is gone, so the server data still goes before the account.
+
 ## Guest documents start local
 
 A guest's new document is **Local only** by default ([Offline Mode](../006-document/offline-mode.md), [Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)): saved in this browser, never sent to the server until the guest asks for it.

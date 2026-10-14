@@ -521,8 +521,8 @@ export type CanvasProps = {
   // Whether the local participant started the running vote — the only
   // one who may end / reveal / clear it or move the results focus.
   isVoteHost: boolean;
-  // Everyone in the room right now (remote presence + you), the turnout
-  // denominator.
+  // Everyone in the room right now who can cast (remote presence + you, one per person, no Viewers or agents),
+  // the turnout denominator.
   participantCount: number;
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).

@@ -1,4 +1,4 @@
-import type { WorkbenchRole } from '@livediagram/api-schema';
+import { objectOrEmpty, type WorkbenchRole } from '@livediagram/api-schema';
 // Shared per-request context for the route handlers. The worker's
 // `fetch` entry (src/index.ts) builds one of these after resolving the
 // caller's identity + running the cross-cutting gates (CORS, write
@@ -341,6 +341,13 @@ export async function deniedParticipate(
   if (grant)
     console.info('[access-levels] participation refused', { documentId: liveDoc.id, tabId });
   return forbidden();
+}
+
+// A body whose every field is optional: the JSON object, or `{}` for an empty, unparseable or non-object body
+// (`null`, a string, an array), so reading a field off it never throws. An absent body is the documented
+// default on these routes, so anything that is not an object reads the same way.
+export async function readOptionalBody(request: Request): Promise<Record<string, unknown>> {
+  return objectOrEmpty(await request.json().catch(() => null));
 }
 
 // The request's JSON body as an object, or the 400 to return: `invalid json` when it doesn't

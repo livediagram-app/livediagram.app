@@ -532,6 +532,7 @@ export {
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { headlineCase, titleCase } from './title-case';
+export { objectOrEmpty } from './request-body';
 // The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';
 // The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
@@ -549,6 +550,11 @@ export {
 export type AiMode = 'clean' | 'ask';
 
 export type AiConversationTurn = { role: 'user' | 'assistant'; content: string };
+
+// The bounds POST /api/ai holds a request to (docs/specs/007-editor/ai-assistance.md), shared so the panel can
+// keep within them rather than meet a bare 400.
+export const AI_MAX_PROMPT_CHARS = 1000;
+export const AI_MAX_ELEMENTS = 200;
 
 // Request body for POST /api/ai.
 export type AiRequest = {

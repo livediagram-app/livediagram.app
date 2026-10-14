@@ -29,29 +29,48 @@ import {
 // A copy is also nobody's addition (docs/specs/013-workspace/share-roles.md): `addedBy` never rides along, so an
 // Editor's copy of a Participant's sticky is not that Participant's to delete. A Participant's own copy is stamped
 // afresh by the room.
+// What belongs to the original rather than to the shape, so no copy carries it: a comment thread is a conversation
+// about that element, `responses` were cast in a session (docs/specs/012-collaboration/participant-responses.md),
+// and an assigned action is work handed to a person under its own id (docs/specs/012-collaboration/assigned-actions.md
+// "A copy doesn't carry the action"): a duplicate under the same id is a second action nobody assigned, which the
+// timeline never sees added. A Sheet's cell threads go the same way (docs/specs/029-sheets/sheet.md "Cell comments").
+// The clipboard strips the same list on the way out (stripIdentity in apps/live).
+export const ORIGINAL_ONLY_FIELDS = [
+  'commentThread',
+  'cellComments',
+  'responses',
+  'action',
+  'actions',
+] as const;
+
 export function freshCopyFields(el: Element): {
   rotation?: number;
   planSheet?: PlanSheetRef;
   addedBy?: undefined;
+  commentThread?: undefined;
   cellComments?: undefined;
+  responses?: undefined;
+  action?: undefined;
+  actions?: undefined;
 } {
-  const unowned = 'addedBy' in el ? { addedBy: undefined } : {};
-  if (el.type === 'sticky' && el.fixedSize) return { ...unowned, rotation: eventStormingTilt() };
-  // A copied Sheet is a new sheet: the conversations about the original's cells stay with it
-  // (docs/specs/029-sheets/sheet.md "Cell comments").
-  const threadless = 'cellComments' in el ? { cellComments: undefined } : {};
+  const fresh: { addedBy?: undefined } & {
+    [K in (typeof ORIGINAL_ONLY_FIELDS)[number]]?: undefined;
+  } = {};
+  if ('addedBy' in el) fresh.addedBy = undefined;
+  for (const field of ORIGINAL_ONLY_FIELDS) if (field in el) fresh[field] = undefined;
+  if (el.type === 'sticky' && el.fixedSize) return { ...fresh, rotation: eventStormingTilt() };
   // A copied Sheet frames a new sheet, made from the original's when it is first drawn
   // (docs/specs/029-sheets/sheet.md "Copying a Sheet element"). A copy of a copy not yet made copies the original.
   // A template's Sheet not yet made (sheet-store.md "Template starts") has nothing to copy yet: the copy is made from
   // the same start.
   if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.start)
-    return { ...threadless, planSheet: { sheetId: newPlanSheetId(), start: el.planSheet.start } };
+    return { ...fresh, planSheet: { sheetId: newPlanSheetId(), start: el.planSheet.start } };
   if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.sheetId)
     return {
-      ...threadless,
+      ...fresh,
       planSheet: { sheetId: newPlanSheetId(), copyOf: el.planSheet.copyOf ?? el.planSheet.sheetId },
     };
-  return { ...unowned, ...threadless };
+  return fresh;
 }
 
 // Duplicate every element whose id is in `ids`:

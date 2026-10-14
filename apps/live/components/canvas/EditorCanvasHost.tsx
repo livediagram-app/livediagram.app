@@ -11,13 +11,14 @@ import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
 import { isVoteHost } from '@livediagram/document';
+import { pollHostFor } from '@/hooks/collab/useLivePoll';
 import { presentedPages } from '@/lib/presented-pages';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
 import { useSheetChartMenuSelection } from '@/hooks/sheets/useSheetChartMenuSelection';
 import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
-import { participantKey } from '@/lib/identity';
+import { answeringKeys, participantKey } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
@@ -385,6 +386,13 @@ export function EditorCanvasHost() {
   // below fall away for everybody else, exactly as they do on a read-only
   // surface; the responses beside them stay, because answering is the point.
   const runBlocked = facilitator.sessionToolsBlocked;
+  // Who may end the poll: its starter or the facilitator (pollHostFor).
+  const pollHost = pollHostFor({
+    started: livePoll.isHost,
+    open: !!livePoll.poll,
+    sessionToolsBlocked: runBlocked,
+    facilitating: facilitator.isFacilitator,
+  });
   // The Session strip's tools (docs/specs/012-collaboration/session-tools.md "The Session strip").
   const sessionTools = useSessionTools();
   // The facilitator's menu on an element somebody else is holding (docs/specs/007-editor/live-app.md).
@@ -821,11 +829,11 @@ export function EditorCanvasHost() {
             // Results are for the host and for anyone who has responded
             // (docs/specs/012-collaboration/live-poll.md) — answering is what buys you the tally. A local
             // Dismiss hides it without ending the poll for everyone.
-            livePoll.poll && !livePoll.dismissed && (livePoll.isHost || livePoll.myAnswer)
+            livePoll.poll && !livePoll.dismissed && (pollHost || livePoll.myAnswer)
               ? {
                   poll: livePoll.poll,
                   answers: livePoll.answers,
-                  isHost: livePoll.isHost,
+                  isHost: pollHost,
                   onEnd: livePoll.endPoll,
                   // docs/specs/012-collaboration/poll-result-capture.md: drops the tallies so far onto the canvas without
                   // ending the poll. Read-only visitors never see it — they are
@@ -880,13 +888,14 @@ export function EditorCanvasHost() {
           onResetAvatarPanel={() => setAvatarPanelPosition(null)}
           voteResults={voteResults}
           onJumpToVoteResult={jumpToVoteResult}
-          isVoteHost={isVoteHost(
-            activeTab.vote,
-            participantKey(selfParticipant),
-            facilitator.isFacilitator,
-          )}
-          // +1 for the local participant: livePresence is the REMOTE roster.
-          participantCount={livePresence.length + 1}
+          // A vote's starter is not its host while somebody else facilitates: every control would be refused.
+          isVoteHost={
+            !runBlocked &&
+            isVoteHost(activeTab.vote, participantKey(selfParticipant), facilitator.isFacilitator)
+          }
+          // Who can cast, ourselves included (livePresence is the REMOTE roster): one per person, never a
+          // view-link guest or an agent row (answeringKeys), so turnout never waits on someone who cannot vote.
+          participantCount={answeringKeys([selfParticipant, ...livePresence]).length}
           // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
           // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
           onOpenCanvasTheme={

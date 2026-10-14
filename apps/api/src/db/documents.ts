@@ -22,6 +22,7 @@ import { imageGrantCopyStatements, imageGrantOwnerChangeStatement } from './imag
 import { imageRefAddStatements } from './image-refs';
 import { sheetRefCopyStatement } from './sheet-refs';
 import { documentRemovalStatements } from './document-removal';
+import { purgeRooms } from '../room-purge-client';
 import { firstTabCountSql, isEmptyCount } from './tabs';
 import {
   documentStatsSql,
@@ -456,6 +457,8 @@ export async function upgradeDocumentSharePassword(
 // still holds survives either.
 export async function deleteDocument(env: Env, id: string): Promise<void> {
   await env.DB.batch(documentRemovalStatements(env, { column: 'id', value: id }));
+  // The room's storage too: an Offline document keeps nothing on the server. Best effort.
+  await purgeRooms(env, [id]);
   // Drop the cached SVG snapshot (docs/specs/006-document/document-snapshots.md) alongside the row so a
   // deleted document doesn't leave an orphaned R2 object behind. Best
   // effort: a missing binding or a missing object is a no-op, and a

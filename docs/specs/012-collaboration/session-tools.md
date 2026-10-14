@@ -220,7 +220,10 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   secondary until results are shown).
 - **Votable targets** (`isVotable`): shapes, sticky notes, and images — **not**
   the `frame` shape (a section backdrop) and not text / freehand / table /
-  arrow / annotation.
+  arrow / annotation. Nor the controls: the Behaviour elements and the
+  collaboration panels (estimate, temperature, done check, idea box, Q&A, agenda,
+  roll call, decision, quiz), whose own presses answer them, so a dot would give
+  one tap two meanings.
 - **Casting**: while `vote.active`, pressing a votable element places one of
   your dots (`BoxedElementView` intercepts the pointer-down before
   select/drag); your budget (`votesPerPerson`), and the one-per-item rule when it is on, are enforced by `canCastVote`, the one check the cast handler and the stepper's plus both read.
@@ -330,7 +333,9 @@ on the tab. Two phases, one panel:
   winning" but never "is everyone done", which is the question that decides
   when to press End vote. It deliberately counts **people, not just dots**:
   "8 of 12 dots" reads as nearly finished when one person holds all four
-  remaining, which is exactly when you shouldn't call it.
+  remaining, which is exactly when you shouldn't call it. The people are those
+  who can cast: one per person however many tabs they have open, never a
+  view-link guest or an agent row (the [Participant responses](participant-responses.md) "Who counts" rule).
 - **Once results are revealed — the ranked list.** Every voted element, most
   dots first, each row clickable to **jump the results walkthrough** straight
   to that element (`jumpToVoteResult`, the same clamped setter Previous /

@@ -84,7 +84,7 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID, isVoteHost, opensInOf, settleFlowcharts } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID, opensInOf, settleFlowcharts } from '@livediagram/document';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { useArticles } from '@/hooks/editor/useArticles';
@@ -1813,7 +1813,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     remoteAvatars,
     localLaserTrail,
     selfLaserConfig: laserPen.config,
-    cursorsHidden: voteCursorsHidden,
+    // A presenter sees nobody else's cursor, laser or character: it is their screen on a projector
+    // (docs/specs/012-collaboration/presentation-mode.md). Inbound only; our own laser still broadcasts.
+    cursorsHidden: voteCursorsHidden || presenting,
   });
   // Everyone in the document, as poll candidates (docs/specs/012-collaboration/live-poll.md). Self first, then
   // whoever is present on any tab — the order the Collaborators modal uses, so
@@ -3268,6 +3270,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tabs,
     activeId,
     setSelectedId,
+    sessionToolsBlocked: facilitator.sessionToolsBlocked,
   });
 
   // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on
@@ -3453,12 +3456,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   // Ending a vote adds its Plan cards' dots to the cards (docs/specs/026-plan/items.md "Tally"): the host's editor,
-  // once, after the end lands. Undo does not take it back.
+  // once, after the end lands. Undo does not take it back. Only when endVote really ended it: a vote's starter
+  // while somebody else facilitates is refused there, and tallying anyway counted the cards twice.
   const endVoteAndTally = () => {
     const vote = activeTab.vote;
-    const ending = !!vote?.active && isVoteHost(vote, voteSelfId, facilitator.isFacilitator);
-    endVote();
-    if (!ending || !vote) return;
+    if (!endVote() || !vote) return;
     void voteTallies(vote).then((tallies) => {
       if (tallies.length) void planItems.writeQuiet({ kind: 'tally', tallies });
     });

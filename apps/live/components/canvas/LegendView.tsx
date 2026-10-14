@@ -1,9 +1,4 @@
-import {
-  chartPaletteColors,
-  legendFontPx,
-  PIE_PALETTE,
-  type ShapeElement,
-} from '@livediagram/document';
+import { chartRamp, legendFontPx, type ShapeElement } from '@livediagram/document';
 
 // The legend's canvas view (docs/specs/009-elements/pie-chart.md): a themed card of colour-coded rows, one
 // dot and one label each. A key, not a chart, so nothing here is clickable:
@@ -19,15 +14,18 @@ export function LegendView({
   fill,
   textColor,
   fontFamily,
+  palette,
 }: {
   element: ShapeElement;
   accent: string;
   fill: string;
   textColor: string;
   fontFamily?: string;
+  // The tab theme's chart ramp, so a legend matches the chart beside it (chartRamp).
+  palette?: readonly string[];
 }) {
   const items = element.legendItems ?? [];
-  const colors = chartPaletteColors(element.chartPalette) ?? PIE_PALETTE;
+  const colors = chartRamp(element.chartPalette, palette);
   // Text Size (docs/specs/009-elements/pie-chart.md) scales the rows, and the dot keeps its proportion to
   // the words beside it.
   const fontPx = legendFontPx(element.textSize);

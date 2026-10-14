@@ -147,11 +147,12 @@ setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
 - **Export:** `revealCover` draws the base, both glows, the border, the lock disc, the label and
   "Double-click to reveal" (an export has no pointer), on the wrapper's `REVEAL_RADIUS_PX`
   corners; the sweep is motion and stays out.
-- **Menu:** accordion **Reveal**, hint "Anyone can click the cover to peek for themselves. This
-  takes it off for everyone." [QF14], tiles **Reveal for All** / **Hide for All** [QF14].
+- **Menu:** accordion **Reveal**, hint "Anyone can double-click the cover to peek for themselves. This
+  takes it off for everyone.", tiles **Reveal for All** / **Hide for All**. While somebody else
+  holds the baton ([Facilitator](../../012-collaboration/facilitator.md)) the section is absent and the setter refuses.
 - **Palette:** tile `tools:reveal` ("Add Reveal Zone") in the **Tools** accordion
-  (`tileGroup: 'facilitate'`); blurb "Double-click to look underneath"; its hover card reads "Click
-  it to uncover it just for you" although a single click never uncovers [QF14].
+  (`tileGroup: 'facilitate'`); blurb "Double-click to look underneath"; its hover card reads
+  "Double-click it to uncover it just for you, or reveal it for everyone from the menu."
 - **Telemetry:** placing emits `Element·Added·Reveal`; both menu tiles emit
   `Element·Changed·Reveal`; a local lift emits nothing.
 

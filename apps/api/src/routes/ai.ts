@@ -3,10 +3,12 @@ import { aiGate } from './ai-gate';
 import { chatCompletions, providerOf } from '../ai-client';
 import { buildSystemPrompt, diagramTypeHint, extractExistingStyle } from '../ai-prompt';
 import type { RouteContext } from './context';
-import type { AiRequest } from '@livediagram/api-schema';
+import {
+  AI_MAX_ELEMENTS as MAX_ELEMENTS,
+  AI_MAX_PROMPT_CHARS as MAX_PROMPT_CHARS,
+  type AiRequest,
+} from '@livediagram/api-schema';
 
-const MAX_PROMPT_CHARS = 1000;
-const MAX_ELEMENTS = 200;
 const MAX_TOKENS_MUTATE = 8000;
 const MAX_TOKENS_REVIEW = 400;
 const MAX_HISTORY_TURNS = 6;

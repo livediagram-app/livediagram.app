@@ -76,8 +76,9 @@ permission: anyone with edit access can complete, edit, or delete an action,
 the same way they can edit any element content.
 
 **A copy doesn't carry the action.** Copy / paste (both the OS clipboard and
-the in-app fallback buffer) strips `action` along with comment threads and poll
-responses: an action is work somebody handed to a person, with its own id in
+the in-app fallback buffer) and every Duplicate (`freshCopyFields`, one list,
+`ORIGINAL_ONLY_FIELDS`) strip `action` and `actions` along with comment threads
+and poll responses: an action is work somebody handed to a person, with its own id in
 the Activity index, not a property of the shape, so a pasted copy would be a
 second action under the same id that nobody assigned.
 

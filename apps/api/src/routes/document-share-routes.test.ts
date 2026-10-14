@@ -196,6 +196,17 @@ describe('POST /api/documents/:id/share — minting a link', () => {
     expect(db.createShareLink).toHaveBeenCalledWith({}, 'd_1', 'CODE1234', 'edit', 'never', null);
   });
 
+  // A body that parses to something other than an object (`null`, a string) read a field off it and threw: a 500.
+  it('treats a null or non-object body like an empty one, minting the default link', async () => {
+    for (const body of [null, 'edit', [1]]) {
+      db.createShareLink.mockClear();
+      const { ctx } = ctxFor('POST', '/api/documents/d_1/share', { body });
+      const res = await handleDocumentShareRoutes(ctx);
+      expect(res!.status, JSON.stringify(body)).toBe(201);
+      expect(db.createShareLink).toHaveBeenCalledWith({}, 'd_1', 'CODE1234', 'edit', 'never', null);
+    }
+  });
+
   it('honours an explicit view role', async () => {
     const { ctx } = ctxFor('POST', '/api/documents/d_1/share', { body: { role: 'view' } });
     await handleDocumentShareRoutes(ctx);

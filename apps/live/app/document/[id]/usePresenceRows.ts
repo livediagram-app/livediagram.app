@@ -53,6 +53,7 @@ type PresenceRowsDeps = {
   // laser trail still shows, and presence / selection badges are untouched
   // — the selection lock needs to keep naming who holds an element.
   // useEditorBroadcast applies the matching gate on the outbound side.
+  // Presenting sets it too, inbound only (docs/specs/012-collaboration/presentation-mode.md).
   cursorsHidden: boolean;
 };
 

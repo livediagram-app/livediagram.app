@@ -57,6 +57,15 @@ describe('discovery', () => {
 });
 
 describe('dynamic client registration', () => {
+  // A body of `null` parses as JSON; reading a field off it threw, a 500 for a malformed client's request.
+  it('refuses a null body with a 400, not a crash', async () => {
+    const res = await app.request(
+      '/oauth/register',
+      { method: 'POST', body: 'null', headers: { 'Content-Type': 'application/json' } },
+      env,
+    );
+    expect(res.status).toBe(400);
+  });
   it('rejects a non-https redirect uri', async () => {
     const res = await app.request(
       '/oauth/register',

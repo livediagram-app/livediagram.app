@@ -19,7 +19,7 @@ import {
   noContent,
   notFound,
 } from '../responses';
-import { type RouteContext } from './context';
+import { readOptionalBody, type RouteContext } from './context';
 import {
   getParticipant,
   listApiTokensByOwner,
@@ -45,7 +45,7 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
       return json({ tokens: await listApiTokensByOwner(env, owner) });
     }
     if (request.method === 'POST') {
-      const body = (await request.json().catch(() => ({}))) as { name?: string };
+      const body = await readOptionalBody(request);
       const name = typeof body.name === 'string' ? body.name.trim() : '';
       if (name.length > MAX_NAME_LEN) return badRequest('name too long');
       const minted = await mintApiToken(env, { ownerId: owner, name: name || null });

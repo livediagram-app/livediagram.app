@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element } from '@livediagram/document';
 import {
+  AVATAR_SPAWN_GAP,
+  avatarSpawnFromButton,
   AVATAR_HEIGHT,
   AVATAR_JUMP_VELOCITY,
   AVATAR_SPEED,
@@ -249,5 +251,22 @@ describe('peerPushTarget', () => {
     // one's 20px.
     expect(peerPushTarget([small], { x: 25, y: -10 }, null)).toBeNull();
     expect(peerPushTarget([{ ...small, scale: 1.5 }], { x: 25, y: -10 }, null)).not.toBeNull();
+  });
+});
+
+// docs/specs/008-canvas/avatar-mode.md "Entering from a button"
+describe('avatarSpawnFromButton', () => {
+  const button = { x: 100, y: 50, width: 40, height: 20 };
+
+  it('stands the character just below an Avatar button that enters the mode', () => {
+    expect(avatarSpawnFromButton(button, 'avatar', 'select')).toEqual({
+      x: 120,
+      y: 70 + AVATAR_SPAWN_GAP,
+    });
+  });
+
+  it('sets nothing for a press that leaves Avatar mode, or a button of another mode', () => {
+    expect(avatarSpawnFromButton(button, 'avatar', 'avatar')).toBeNull();
+    expect(avatarSpawnFromButton(button, 'laser', 'select')).toBeNull();
   });
 });

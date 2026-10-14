@@ -69,7 +69,11 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   the OSS self-host story where Clerk is optional. Combined with the origin allow-list,
   this is the spend-DoS defence on a public deployment: a third-party site can no longer
   drain the operator's OpenAI budget by minting fresh `X-Owner-Id` UUIDs.
-- Prompt capped at 1 000 characters server-side; element payload capped at 200 elements.
+- Prompt capped at 1 000 characters server-side; element payload capped at 200 elements
+  (`AI_MAX_PROMPT_CHARS` / `AI_MAX_ELEMENTS` in `@livediagram/api-schema`, shared with the panel). The
+  prompt box holds no more than the cap. The panel sends the whole tab as context while it is within the
+  element cap; past it, the selection alone (`aiContextElements`), and with no selection, or one itself
+  over the cap, it says so ("Select up to 200 and try again") rather than sending a request the api refuses.
   Both prevent runaway token costs and context-window stuffing.
 - System prompt explicitly instructs the model to refuse any request unrelated to diagram
   creation/editing and to return a structured error rather than comply.

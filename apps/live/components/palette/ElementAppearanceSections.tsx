@@ -33,6 +33,7 @@ import {
   supportsTextAlign,
   supportsBorderControls,
   supportsColours,
+  supportsShadow,
   type IconSize,
   type IconWeight,
   DEFAULT_ICON_WEIGHT,
@@ -136,8 +137,10 @@ export function ElementAppearanceSections({
   // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
   const isPortal = target.type === 'shape' && target.shape === 'portal';
   // The other Behaviour kinds with settings (docs/specs/012-collaboration/session-button.md, /106, /107).
-  const isSessionButton = target.type === 'shape' && target.shape === 'session-button';
-  const isReveal = target.type === 'shape' && target.shape === 'reveal';
+  // Both are the facilitator's while somebody holds the baton (docs/specs/012-collaboration/facilitator.md): no handler, no section.
+  const isSessionButton =
+    target.type === 'shape' && target.shape === 'session-button' && !!props.onSetSession;
+  const isReveal = target.type === 'shape' && target.shape === 'reveal' && !!props.onSetRevealed;
   const isPicker = target.type === 'shape' && target.shape === 'picker';
   const isReactionPad = target.type === 'shape' && target.shape === 'reaction-pad';
   // The collaboration elements that carry settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
@@ -182,7 +185,10 @@ export function ElementAppearanceSections({
     target.type === 'sticky' ||
     target.type === 'arrow' ||
     (boxed && supportsColours(target) && !isChart && !isSankey) ||
-    (borderable && !isChart);
+    (borderable && !isChart) ||
+    // An image has no colours, border or looks, only a Shadow (docs/specs/008-canvas/element-shadows.md),
+    // which sits in this flyout: without this it was never reachable on one.
+    supportsShadow(target);
   return (
     <>
       {showAppearanceGroup && afterGroup ? <MenuGroupSeparator /> : null}

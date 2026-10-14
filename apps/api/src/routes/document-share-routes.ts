@@ -30,7 +30,7 @@ import { hashSharePassword } from '../auth/share-password-hash';
 import { closeShareCodeSessions } from '../room-access-client';
 import { broadcastShareOp } from '../room-client';
 import { recordShareLinkCreated } from '../timeline';
-import { requireOwnedDocument, type RouteContext } from './context';
+import { readOptionalBody, requireOwnedDocument, type RouteContext } from './context';
 
 // Returns null when the request isn't a share route.
 export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -53,7 +53,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       return json({ links, passwordSet });
     }
     if (request.method === 'POST') {
-      const body = (await request.json().catch(() => ({}))) as {
+      const body = (await readOptionalBody(request)) as {
         role?: unknown;
         expiry?: ShareLinkExpiry;
         tabId?: unknown;
@@ -117,7 +117,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
     if (access instanceof Response) return access;
 
     if (request.method === 'PUT') {
-      const body = (await request.json().catch(() => ({}))) as { password?: string | null };
+      const body = (await readOptionalBody(request)) as { password?: string | null };
       const password = typeof body.password === 'string' ? body.password : null;
       if (password !== null && password.length > MAX_PASSWORD_LEN) {
         return badRequest('password too long');
@@ -183,7 +183,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       if (!existing || existing.documentId !== id || existing.purpose === 'community') {
         return notFound();
       }
-      const body = (await request.json().catch(() => ({}))) as { tabId?: unknown };
+      const body = await readOptionalBody(request);
       if (!('tabId' in body)) return badRequest('invalid tab');
       const tabId = parseScope(body.tabId, access.tabs);
       if (tabId === INVALID_SCOPE) return badRequest('invalid tab');

@@ -99,7 +99,7 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 
 ## Entering from a button
 
-A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops the character **just below that button** rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. The spawn point is one-shot — entering from the palette still spawns centre-screen, and a quick detour to Select still returns you to where you left the character.
+A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops the character **just below that button** rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. The spawn point is one-shot — entering from the palette still spawns centre-screen, and a quick detour to Select still returns you to where you left the character. Only a press that enters the mode sets it: pressing the button while already in Avatar mode leaves the mode and leaves no spawn point behind (`avatarSpawnFromButton`).
 
 ## Implementation shape
 
