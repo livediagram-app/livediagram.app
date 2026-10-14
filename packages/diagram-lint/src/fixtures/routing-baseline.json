@@ -176,7 +176,7 @@
     "kinks": 0,
     "crossings": 1,
     "behind": 0,
-    "collisions": 1,
+    "collisions": 0,
     "extent": "794×642"
   },
   "mermaid-sequencediagram-1": {

@@ -777,8 +777,9 @@ export function placeElbowLabels(elements: Element[]): Element[] {
     (el): el is ArrowElement =>
       el.type === 'arrow' &&
       !!el.label &&
-      el.arrowStyle === 'angled' &&
-      (el.curvePoints?.length ?? 0) > 0,
+      ((el.arrowStyle === 'angled' && (el.curvePoints?.length ?? 0) > 0) ||
+        // A straight line too (an elbow whose ends lined up, a staircase hand-off): one run, its middle tried first.
+        (el.arrowStyle === 'straight' && el.from.kind === 'pinned' && el.to.kind === 'pinned')),
   );
   if (labelled.length === 0) return elements;
   // The route as it is drawn (the renderer's own points, bends squared onto the line), which the label's `t` measures.
@@ -838,35 +839,61 @@ export function placeElbowLabels(elements: Element[]): Element[] {
     // run is long enough for it; on an upright one, that nothing stands beside it. A 126 px caption centred on a
     // 45 px drop into its target sat over the target.
     const width = labelWidth(a.label!);
-    const holds = (i: number) => {
+    // Where along run i its label's plate, centred on the run, touches no box and straddles no frame or lane border:
+    // its middle first, then a quarter or a third of the way from either end (a short drop between two lanes is
+    // clear inside one of them, not across the gap). On a level run that also means the run is long enough; on an
+    // upright one, that nothing stands beside it. Null when no point of the run holds it.
+    const spot = (i: number): number | null => {
       const level = Math.abs(pts[i]!.y - pts[i + 1]!.y) < 1;
       if (lens[i]! < (level ? width + LABEL_RUN_MARGIN : LABEL_CLEAR + LABEL_RUN_MARGIN))
-        return false;
-      const cx = (pts[i]!.x + pts[i + 1]!.x) / 2;
-      const cy = (pts[i]!.y + pts[i + 1]!.y) / 2;
-      const plate = { x: cx - width / 2, y: cy - LABEL_CLEAR / 2, width, height: LABEL_CLEAR };
-      return (
-        !boxes.some(
-          (b) =>
-            Math.abs(cx - (b.x + b.width / 2)) < (width + b.width) / 2 &&
-            Math.abs(cy - (b.y + b.height / 2)) < (LABEL_CLEAR + b.height) / 2,
-        ) &&
-        !holders.some(
-          ({ rect, heading }) =>
-            (rectsMeet(plate, rect) && !rectWithin(plate, rect)) ||
-            (heading !== null && rectsMeet(plate, heading)),
-        )
-      );
+        return null;
+      // An upright run also tries the spots just clear of either end, a label tucked under its source or over its
+      // target, inside that end's lane when the run's middle crosses into the next.
+      const tucked = (LABEL_CLEAR / 2 + LABEL_TUCK) / lens[i]!;
+      // And the middle of each gap between two frames or lanes it crosses, where a label touches neither border.
+      const [y0, y1] = [pts[i]!.y, pts[i + 1]!.y];
+      const edges = holders
+        .flatMap(({ rect }) => [rect.y, rect.y + rect.height])
+        .filter((y) => y > Math.min(y0, y1) && y < Math.max(y0, y1))
+        .sort((p, q) => p - q);
+      const gaps = edges
+        .slice(1)
+        .map((y, k) => [edges[k]!, y] as const)
+        .filter(([top, bottom]) => bottom - top >= LABEL_CLEAR)
+        .map(([top, bottom]) => ((top + bottom) / 2 - y0) / (y1 - y0));
+      const spots = level ? LABEL_SPOTS : [...LABEL_SPOTS, ...gaps, tucked, 1 - tucked];
+      for (const f of spots) {
+        const cx = pts[i]!.x + (pts[i + 1]!.x - pts[i]!.x) * f;
+        const cy = pts[i]!.y + (pts[i + 1]!.y - pts[i]!.y) * f;
+        // Off the middle, a level run must still hold the whole plate.
+        if (level && Math.min(f, 1 - f) * lens[i]! < width / 2 + LABEL_RUN_MARGIN / 2) continue;
+        const plate = { x: cx - width / 2, y: cy - LABEL_CLEAR / 2, width, height: LABEL_CLEAR };
+        const clear =
+          !boxes.some(
+            (b) =>
+              Math.abs(cx - (b.x + b.width / 2)) < (width + b.width) / 2 &&
+              Math.abs(cy - (b.y + b.height / 2)) < (LABEL_CLEAR + b.height) / 2,
+          ) &&
+          !holders.some(
+            ({ rect, heading }) =>
+              (rectsMeet(plate, rect) && !rectWithin(plate, rect)) ||
+              (heading !== null && rectsMeet(plate, heading)),
+          );
+        if (clear) return f;
+      }
+      return null;
     };
+    const holds = (i: number) => spot(i) !== null;
     const seg =
       [last, 0, ...byLength].find((i) => holds(i) && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
       // Beside another labelled line is better than over a box.
       byLength.find(holds) ??
       byLength[0]!;
     const before = lens.slice(0, seg).reduce((s, l) => s + l, 0);
+    const along = (spot(seg) ?? 0.5) * lens[seg]!;
     placed.set(a.id, {
       ...a,
-      labelOffset: { t: Number(((before + lens[seg]! / 2) / total).toFixed(4)), offset: 0 },
+      labelOffset: { t: Number(((before + along) / total).toFixed(4)), offset: 0 },
       labelMaxWidth: Math.ceil(width),
     });
   }
@@ -881,6 +908,11 @@ const rectWithin = (a: Rect, b: Rect) =>
 
 // How close two runs may be before a label on one would sit on the other: a label's height and some.
 const LABEL_CLEAR = 22;
+// The points along a run a label is tried at, as fractions of it: the middle, then a quarter and a third in from
+// either end.
+const LABEL_SPOTS = [0.5, 0.25, 0.75, 1 / 3, 2 / 3] as const;
+// The gap a tucked label keeps from the box at its run's end.
+const LABEL_TUCK = 4;
 // Room a run keeps beyond its label, so the label clears the boxes at the run's ends.
 const LABEL_RUN_MARGIN = 16;
 

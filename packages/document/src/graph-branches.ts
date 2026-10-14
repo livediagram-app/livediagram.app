@@ -9,23 +9,34 @@ const pinned = (end: ArrowElement['from']) => (end.kind === 'pinned' ? end.eleme
 const saying = (a: ArrowElement) => `${a.label?.trim().toLowerCase() ?? ''}|${a.strokeStyle ?? ''}`;
 
 // Arrows leaving one node share one trunk, and arrows into one node one bus, the org-chart shape: each end sits exactly
-// on its anchor, so siblings' bends at the same height merge into one line. A labelled arrow keeps its own ends, as a
-// label on a shared line could not say which line it names, unless the arrows meeting there all say the same thing in
-// the same line (services that each "publish" to one bus): those merge, and each label sits on its own leg.
+// on its anchor, so siblings' bends at the same height merge into one line. Only lines drawn alike merge: where solid
+// and dashed meet at one end of a node, the style most of them have (solid on a tie) shares it and the rest keep their
+// own ends, so a dashed event line never rides a solid call's trunk. A labelled arrow keeps its own ends, as a label on
+// a shared line could not say which line it names, unless the arrows meeting there all say the same thing in the same
+// line (services that each "publish" to one bus): those merge, and each label sits on its own leg.
 export function withExactEnds(elements: Element[]): Element[] {
-  const count = new Map<string, number>();
-  const key = (side: 'from' | 'to', a: ArrowElement) => `${side}:${pinned(a[side])}:${saying(a)}`;
-  for (const el of elements)
-    if (el.type === 'arrow' && el.label?.trim())
-      for (const side of ['from', 'to'] as const)
-        count.set(key(side, el), (count.get(key(side, el)) ?? 0) + 1);
+  const arrows = elements.filter((el): el is ArrowElement => el.type === 'arrow');
+  const line = (a: ArrowElement) => a.strokeStyle ?? 'solid';
+  const said = new Map<string, number>();
+  const styles = new Map<string, Map<string, number>>();
+  const at = (side: 'from' | 'to', a: ArrowElement) => `${side}:${pinned(a[side])}`;
+  for (const a of arrows)
+    for (const side of ['from', 'to'] as const) {
+      if (a.label?.trim())
+        said.set(`${at(side, a)}:${saying(a)}`, (said.get(`${at(side, a)}:${saying(a)}`) ?? 0) + 1);
+      const m = styles.get(at(side, a)) ?? styles.set(at(side, a), new Map()).get(at(side, a))!;
+      m.set(line(a), (m.get(line(a)) ?? 0) + 1);
+    }
+  const dominant = (key: string) =>
+    [...styles.get(key)!].sort(
+      ([p, n], [q, k]) => k - n || (p === 'solid' ? -1 : q === 'solid' ? 1 : p < q ? -1 : 1),
+    )[0]![0];
+  const exact = (side: 'from' | 'to', a: ArrowElement) =>
+    line(a) === dominant(at(side, a)) &&
+    (!a.label?.trim() || (said.get(`${at(side, a)}:${saying(a)}`) ?? 0) > 1);
   return elements.map((el) => {
     if (el.type !== 'arrow') return el;
-    if (!el.label) return { ...el, exactStart: true, exactEnd: true };
-    const [start, end] = [
-      (count.get(key('from', el)) ?? 0) > 1,
-      (count.get(key('to', el)) ?? 0) > 1,
-    ];
+    const [start, end] = [exact('from', el), exact('to', el)];
     if (!start && !end) return el;
     return { ...el, ...(start ? { exactStart: true } : {}), ...(end ? { exactEnd: true } : {}) };
   });

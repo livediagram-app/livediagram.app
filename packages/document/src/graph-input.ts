@@ -315,11 +315,10 @@ export function layoutGraph(
   // rank then go round the outside instead.
   const axis = style === 'lanes' ? 'LR' : flowDir;
   if (lines === 'angled') {
-    // Trunks and buses (graph-branches.ts); then, down a flow, a step's labelled exits that keep their own start
+    // Trunks and buses (graph-branches.ts); then, down a flow, a step's exits that keep their own start
     // leave by different sides.
     laid = withExactEnds(laid);
-    if (style === 'flow')
-      laid = branchExits(laid, { axis, eligible: (a) => !!a.label?.trim() && !a.exactStart });
+    if (style === 'flow') laid = branchExits(laid, { axis, eligible: (a) => !a.exactStart });
     laid = spreadChannels(withOrthogonalBends(laid, axis), axis);
     // Anchors first, every pass; then each routed arrow's bends from its final, fanned ends.
     const routes: Routes = new Map();

@@ -454,13 +454,16 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   `muted` (outlined and dashed, the exception idiom) or `plain`. `icon` puts an icon (an id from `search_icons`) on
   the box; an id that names none is refused.
 - **Flow lines are elbows.** `lines` defaults to `angled` for flow, lanes and tree; every edge to a later rank bends
-  twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus; a labelled
+  twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus, as long as
+  they are drawn alike: where solid and dashed lines meet at one end of a node, the lines of the style most of them
+  have share it and the rest keep their own ends, so a dashed event line never rides a solid call's trunk; a labelled
   arrow keeps its own ends, unless arrows into one node (or out of one) say the same thing in the same line: those
   join one bus too, each label on its own leg (several services that each "publish" to one event bus), and its label
   sits on a run no other labelled arrow shares (the drop into its target,
   else the leg out of its source, else its longest run), one line wide. Runs are read as drawn, those on one line
   as one, and a run takes the label only when its plate there touches no box: long enough along it, clear beside it,
-  and off every frame's and lane's border and heading.
+  and off every frame's and lane's border and heading; where the middle of a run is not clear, a point a quarter or a
+  third of the way along it is tried before the next run.
   The gap between two ranks fits the widest label crossing it, as Tidy Up's does (its width left to right, its line
   height either side of the jog top to bottom), so a caption is never longer than its edge.
 - **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
@@ -485,8 +488,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   the page. A step with two or more exits (a decision, or any step that branches) keeps the one whose next step sits
   most nearly level with it on its point toward the flow; each other exit leaves from its top or bottom, toward its
   next step's lane, and bends once into that step's side, so no two exits leave as parallel stubs. A flow down the
-  page does the same across: of a step's labelled exits leaving its bottom, one whose next step lies clearly to its
-  left or right leaves that side instead.
+  page does the same across: of a step's exits leaving its bottom on their own ends (labelled, or drawn unlike the
+  trunk), one whose next step lies clearly to its left or right leaves that side instead.
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
   what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted. `true` names them by default: in a flowchart by ISO 5807

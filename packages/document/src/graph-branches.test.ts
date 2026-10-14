@@ -57,6 +57,28 @@ describe('withExactEnds', () => {
   });
 });
 
+describe('withExactEnds by line', () => {
+  it('lets only the style most lines at an end have share it, solid on a tie', () => {
+    const els = withExactEnds([
+      arrow('db', 'orders', 'ordersdb'),
+      arrow('ev', 'orders', 'kafka', { strokeStyle: 'dashed' }),
+      arrow('ev2', 'pay', 'kafka', { strokeStyle: 'dashed' }),
+      arrow('st', 'pay', 'stripe'),
+      arrow('ev3', 'cat', 'kafka', { strokeStyle: 'dashed' }),
+      arrow('d1', 'cat', 'x', { strokeStyle: 'dotted' }),
+      arrow('d2', 'cat', 'y', { strokeStyle: 'dotted' }),
+    ]);
+    // Out of orders: one solid, one dashed, a tie: the solid keeps the trunk.
+    expect(byId(els, 'db').exactStart).toBe(true);
+    expect(byId(els, 'ev').exactStart).toBeUndefined();
+    // Into kafka every line is dashed: one bus.
+    for (const id of ['ev', 'ev2', 'ev3']) expect(byId(els, id).exactEnd).toBe(true);
+    // Out of cat two dotted outnumber one dashed.
+    expect(byId(els, 'd1').exactStart).toBe(true);
+    expect(byId(els, 'ev3').exactStart).toBeUndefined();
+  });
+});
+
 describe('branchExits', () => {
   it('sends a flow exit whose next step lies clearly aside out of that side', () => {
     const els: Element[] = [
@@ -206,6 +228,59 @@ describe('labels off frames', () => {
         plate.y0 < heading.y + heading.height &&
         plate.y1 > heading.y;
       expect(onHeading).toBe(false);
+    }
+  });
+});
+
+describe('labels slide along their run', () => {
+  it('keeps a label on a drop between two lanes off both lane borders', () => {
+    const els = layoutGraph(
+      {
+        style: 'lanes',
+        nodes: [
+          { id: 'phone', label: 'Phone interview', group: 'hm' },
+          { id: 'onsite', label: 'Onsite interviews', group: 'panel' },
+          { id: 'debrief', label: 'Debrief', group: 'hm' },
+        ],
+        groups: [
+          { id: 'hm', label: 'Hiring manager' },
+          { id: 'panel', label: 'Panel' },
+        ],
+        edges: [
+          { from: 'phone', to: 'onsite', label: 'invite onsite' },
+          { from: 'onsite', to: 'debrief', label: 'feedback' },
+        ],
+      },
+      {
+        makeEdgeId: (() => {
+          let i = 0;
+          return () => `e${i++}`;
+        })(),
+      },
+    );
+    const lanes = els.filter((e): e is BoxedElement => e.type === 'shape' && e.shape === 'lane');
+    for (const a of els.filter((e): e is ArrowElement => e.type === 'arrow' && !!e.label)) {
+      const pts = arrowRoutePoints(a, els);
+      const lens = pts.slice(1).map((p, i) => Math.hypot(p.x - pts[i]!.x, p.y - pts[i]!.y));
+      let left = (a.labelOffset?.t ?? 0.5) * lens.reduce((s, l) => s + l, 0);
+      let c = pts[0]!;
+      for (let i = 0; i < lens.length; i++) {
+        if (left <= lens[i]!) {
+          const f = lens[i]! ? left / lens[i]! : 0;
+          c = {
+            x: pts[i]!.x + (pts[i + 1]!.x - pts[i]!.x) * f,
+            y: pts[i]!.y + (pts[i + 1]!.y - pts[i]!.y) * f,
+          };
+          break;
+        }
+        left -= lens[i]!;
+      }
+      const straddles = lanes.some(
+        (l) =>
+          (c.y - 11 < l.y && c.y + 11 > l.y) ||
+          (c.y - 11 < l.y + l.height && c.y + 11 > l.y + l.height),
+      );
+      expect(straddles, `${a.label} sits across a lane border`).toBe(false);
     }
   });
 });
