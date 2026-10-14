@@ -20,6 +20,13 @@ describe('buildViewModel', () => {
     ],
   };
 
+  it('carries the mode when it is not Diagram, and the finish when one is set', () => {
+    expect(buildViewModel(tab).facts).not.toHaveProperty('mode');
+    expect(buildViewModel(tab).facts).not.toHaveProperty('finish');
+    const drawn = buildViewModel({ ...tab, opensIn: 'draw', finish: 'sketch' } as Tab).facts;
+    expect([drawn.mode, drawn.finish]).toEqual(['draw', 'sketch']);
+  });
+
   it('counts printed, hidden and unknown elements and carries the revision', () => {
     const model = buildViewModel(tab, { rev: 7 });
     expect(model.facts).toMatchObject({

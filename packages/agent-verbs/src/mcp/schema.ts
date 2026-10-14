@@ -130,8 +130,9 @@ const ELEMENT_SCHEMA_HINT =
   'close and fill the shape, and "penColour" (' +
   `${[INK_PEN_COLOUR, GREY_PEN_COLOUR, ...PEN_COLOUR_NAMES].join(', ')}` +
   '). A hand-drawn board starts from the "whiteboard" template, a tab in Draw mode: underline a ' +
-  'heading, ring a word, draw an arrow or a doodle with a few strokes, a point every 10 to 20 px ' +
-  'along a curve. Any box may carry "rotation" in degrees, a small tilt (-4 to 4) reading as ' +
+  'heading, ring a word or draw a doodle with a few strokes, a point every 10 to 20 px along a ' +
+  'curve; an arrow between boxes stays a pinned "arrow", which a "sketch" finish draws by hand and ' +
+  'which stays attached. Any box may carry "rotation" in degrees, a small tilt (-4 to 4) reading as ' +
   'placed by hand. type "arrow" needs "from" and "to" endpoints, each ' +
   'either { "kind": "pinned", "elementId", "anchor" } (anchors: ' +
   `${anchors}; preferred, so arrows track their shapes) or ` +

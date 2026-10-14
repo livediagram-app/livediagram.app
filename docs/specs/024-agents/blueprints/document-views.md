@@ -278,7 +278,8 @@ Invariants:
 
 ```text
 header      := "tab" SP tabRef SP jsonString(name) " · " total " element" ["s"] [": " buckets]
-               [" · kind=" tabKind] [" · " hidden " hidden"] [" · " unknown " unknown"]
+               [" · kind=" tabKind] [" · mode=" editorMode] [" · finish=" finish]
+               [" · " hidden " hidden"] [" · " unknown " unknown"]
                [" · threads " open " open/" threadTotal] [" · rev " rev]
 buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, frames, lanes, arrows)
 bucket      := count SP ("box" | "boxes" | "frame" | "frames" | "lane" | "lanes" | "arrow" | "arrows")
@@ -294,7 +295,9 @@ style       := "~" (strokeStyle | "none" | "both" | "from")
 attribute   := key "=" attrValue | flag
 ```
 
-`kind=` prints only for a tab whose `tabKindOf` is not `diagram`; `threads` only when the tab has a thread; `rev`
+`kind=` prints only for a tab whose `tabKindOf` is not `diagram`; `mode=` only for a tab whose `opensInOf` is not
+`diagram` and that is not in Illustrate (whose pages segment already says so); `finish=` only when the tab sets one;
+`threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 
 **Buckets** (`VW9`): `frames` and `lanes` are those shapes; `arrows` are arrows; `boxes` is every other printed
