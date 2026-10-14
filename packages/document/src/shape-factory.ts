@@ -405,7 +405,9 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (isOfficeShape(kind)) {
     return {
       ...base,
-      ...(kind === 'meeting-table' ? { textSize: 'sm' as const, textAlignY: 'bottom' as const } : {}),
+      ...(kind === 'meeting-table'
+        ? { textSize: 'sm' as const, textAlignY: 'bottom' as const }
+        : {}),
       aspectLocked: true,
     };
   }
