@@ -113,7 +113,11 @@ export function SequenceParticipantStrip({
     const ids = new Set(participants.map((p) => p.id));
     let n = participants.length + 1;
     while (ids.has(`p${n}`)) n++;
-    const label = `Participant ${participants.length + 1}`;
+    // A name no other participant has, so the From and To pickers and the Text tab tell them apart.
+    const labels = new Set(participants.map((p) => p.label.toLowerCase()));
+    let k = participants.length + 1;
+    while (labels.has(`participant ${k}`)) k++;
+    const label = `Participant ${k}`;
     onChange([...participants, { id: `p${n}`, label }]);
     selectOnOpen.current = true;
     setDraft(label);

@@ -60,10 +60,13 @@ Banned: "lifeline" for the element (it is one participant's line), "Mermaid" in 
   into the draft unless it names fewer than two participants (then the draft is kept and the note says so); leaving
   it stores the draft.
 - `sequenceToText(participants, messages)`: a `participant` / `actor` line each, a blank line, then `From <arrow> To:
-words` per message (`->`, `~>`, `-->`).
+words` per message (`->`, `~>`, `-->`). A participant's name is its label (its id when blank); a name already written
+  (case-insensitively) takes the first free ` <n>` suffix from 2, so every written name reads back as its own participant.
 - `parseSequenceText(text, known)`: per line (trimmed; empty and `//` skipped; past `SEQ_TEXT_LINE_MAX` unread):
   `participant|actor <name>` declares; otherwise the first arrow found scanning left to right (longest token at a
-  position: `-->>`, `-->`, `->>`, `->`, `~>`, `-)`) splits From and the rest, the first `:` splits To and the words.
+  position: `-->>`, `-->`, `->>`, `->`, `~>`, `-)`) splits From and the rest; To is the longest participant named so
+  far whose name the rest starts with, followed by `:` or the line's end, else the rest up to its first `:`; the words
+  follow the `:`.
   Names match case-insensitively; a known name keeps its id, a new one takes the next free `p<n>`. Past 12
   participants or 60 messages the line is unread.
 
@@ -152,7 +155,8 @@ Layout is O(messages) ≤ 60; the picture is built once per change of the rows (
   Done.
 - Chips: 32 px pills with the look glyph; the open chip ringed in brand; the editor row holds the name box, a
   Box / Actor radio pair, Move Left, Move Right and Remove (rose on hover; disabled at two, tooltip says why, or how
-  many messages go with it). Add Participant is a dashed pill.
+  many messages go with it). Add Participant is a dashed pill; it adds `{ id: first free p<n>, label: Participant <k> }`,
+  `k` the first number from the count plus one that no label uses (case-insensitively).
 - Message rows: grid `[1.25rem 6.5rem 2.5rem 6.5rem 1fr auto]` on a wide screen; on a phone From, kind, To and the
   actions share the first line and the words the second. The kind button draws `KindArrow` (brand tint for Call and
   Async, plain for Reply). Move Up / Down show on hover or focus, always on a touch screen. Add Message is a dashed

@@ -48,7 +48,7 @@ The **Sequence** section (Tools flyout), closed until opened: a one-line summary
   box, or a stick figure for an actor). Clicking one opens it in place: its name, **Actor** on / off, **Move Left**,
   **Move Right** and **Remove** (which takes its messages with it; disabled at two participants). Enter or a click
   away closes it; Escape cancels the rename, not the dialog. A dashed **Add Participant** chip ends the strip
-  (disabled at 12) and opens the new one, named, for renaming.
+  (disabled at 12) and opens the new one, named with a name no other participant has, for renaming.
 - **Messages** (the first tab): a numbered row per message, top to bottom:
   - **From** and **To**, picked from the participants; the same participant twice is a self-call.
   - The **kind**, one button between them drawn as the arrow it makes (a solid line with a filled head for **Call**,
@@ -70,7 +70,10 @@ The **Sequence** section (Tools flyout), closed until opened: a one-line summary
   - lines starting with `//` are notes and are skipped;
   - lines it cannot read are named (`Line 4 was not read.`), and nothing else is lost.
     The common arrows other tools write (`->>`, `-->>`, `-)`) are read too. Participants keep their identity across a
-    round trip by name, so their messages stay theirs.
+    round trip by name, so their messages stay theirs. Two participants sharing a name are written apart (the second
+    `API 2`), so editing the text never merges them, and a declared name holding a colon (`DB: Postgres`) is read
+    whole after an arrow, its words after it.
+  - Add Participant names the new one `Participant <n>` with the first number no other participant uses.
 - A **preview** of the diagram sits beside the rows on a wide screen (above them on a narrow one), drawn on white
   whatever the appearance, from the draft as you type.
 - The footer holds **Numbered** on the left and **Done** on the right.

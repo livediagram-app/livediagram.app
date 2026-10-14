@@ -33,6 +33,50 @@ describe('sequence text', () => {
     expect(back.unread).toEqual([]);
   });
 
+  it('writes two participants sharing a name apart, so the text never merges them', () => {
+    const ps = [
+      { id: 'a', label: 'API' },
+      { id: 'b', label: 'api' },
+      { id: 'c', label: 'API 2' },
+    ];
+    const ms = [
+      { from: 'a', to: 'b', label: 'One', kind: 'call' as const },
+      { from: 'b', to: 'c', label: 'Two', kind: 'call' as const },
+    ];
+    const text = sequenceToText(ps, ms);
+    expect(text.split('\n').slice(0, 3)).toEqual([
+      'participant API',
+      'participant api 2',
+      'participant API 2 2',
+    ]);
+    const back = parseSequenceText(text, ps);
+    expect(back.participants.map((p) => p.id)).toEqual(['a', 'b', 'c']);
+    expect(back.messages.map((m) => [m.from, m.to, m.label])).toEqual([
+      ['a', 'b', 'One'],
+      ['b', 'c', 'Two'],
+    ]);
+  });
+
+  it('reads a declared name holding a colon whole after an arrow', () => {
+    const ps = [
+      { id: 'app', label: 'App' },
+      { id: 'db', label: 'DB: Postgres' },
+    ];
+    const ms = [
+      { from: 'app', to: 'db', label: 'Query: users', kind: 'call' as const },
+      { from: 'db', to: 'app', label: '', kind: 'reply' as const },
+    ];
+    const back = parseSequenceText(sequenceToText(ps, ms), ps);
+    expect(back.participants).toEqual(ps);
+    expect(back.messages).toEqual(ms);
+    // A name not declared still ends at the first colon; a longer declared name wins over a shorter one.
+    const r = parseSequenceText('participant A\nparticipant AB\nA -> AB: hi\nA -> C: D: e');
+    expect(r.messages.map((m) => [m.to, m.label])).toEqual([
+      ['p2', 'hi'],
+      ['p3', 'D: e'],
+    ]);
+  });
+
   it('reads the three arrows, actors, notes and names it has not met', () => {
     const r = parseSequenceText(
       [

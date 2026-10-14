@@ -83,6 +83,21 @@ describe('SequenceDialog', () => {
     );
   });
 
+  it('Add Participant picks a name no other participant has', () => {
+    const { stored } = open();
+    fireEvent.click(screen.getByRole('button', { name: 'Database' }));
+    const name = screen.getByRole('textbox', { name: 'Participant name' });
+    fireEvent.change(name, { target: { value: 'Participant 4' } });
+    fireEvent.keyDown(name, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: 'Add Participant' }));
+    expect(stored()!.participants.map((p) => p.label)).toEqual([
+      'Browser',
+      'API',
+      'Participant 4',
+      'Participant 5',
+    ]);
+  });
+
   it('renames a participant on Enter and makes one an actor', () => {
     const { stored } = open();
     fireEvent.click(screen.getByRole('button', { name: 'Browser' }));
