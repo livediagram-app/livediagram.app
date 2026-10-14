@@ -148,8 +148,12 @@ export function SequenceDialog({
       sequenceMessages: keepKnown(participants, messages),
       sequenceAnim: undefined,
     } as ShapeElement;
-    const box = /viewBox="[^"]*?([\d.]+) ([\d.]+)"/.exec(sequenceDrawing(el, PREVIEW_PAPER));
-    return { el, ratio: box ? `${box[1]} / ${box[2]}` : '16 / 10' };
+    // The drawing's own width and height: the last two numbers of its viewBox (a linear match, as svgSequencePicture
+    // reads it).
+    const drawing = sequenceDrawing(el, PREVIEW_PAPER);
+    const box = /viewBox="([^"]+)"/.exec(drawing.slice(0, drawing.indexOf('>')))?.[1]?.split(' ');
+    const [w, h] = box && box.length === 4 ? box.slice(2) : [];
+    return { el, ratio: w && h ? `${w} / ${h}` : '16 / 10' };
   }, [element, participants, messages]);
 
   return (
