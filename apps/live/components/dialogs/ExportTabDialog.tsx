@@ -312,7 +312,11 @@ export function ExportTabDialog({
   // The Logo Kit card shows while the tab has a logo page (docs/specs/007-editor/logo-pages.md).
   const hasLogoPage = !!pages?.some((p) => p.kind === 'logo');
   const cards = pages
-    ? [...ILLUSTRATE_FORMATS, ...(hasLogoPage ? (['logo-kit'] as const) : [])].map((kind) => {
+    ? [
+        // A GIF animates the pages, so an Illustrate tab with none yet (First Page Choice) offers no GIF.
+        ...ILLUSTRATE_FORMATS.filter((kind) => kind !== 'gif' || pages.length > 0),
+        ...(hasLogoPage ? (['logo-kit'] as const) : []),
+      ].map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: ILLUSTRATE_CARD_COPY[kind] ?? card.description };
       })
