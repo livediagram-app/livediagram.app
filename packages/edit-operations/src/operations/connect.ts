@@ -144,6 +144,8 @@ function prevailingLine(
   const [style] = [...counts.entries()].sort((p, q) => q[1] - p[1])[0] ?? ['straight'];
   if (style === 'curved') return { ...arrow, arrowStyle: 'curved' };
   if (style !== 'angled') return null;
+  const joined = joinTrunk(state, arrow, a, b);
+  if (joined) return joined;
   const [ca, cb] = [centreOf(a), centreOf(b)];
   const down = Math.abs(cb.y - ca.y) >= Math.abs(cb.x - ca.x);
   const turned: ArrowElement = {
@@ -162,6 +164,78 @@ function prevailingLine(
   };
   const bends = orthogonalBends(turned, [...currentElements(state), turned], down ? 'TB' : 'LR');
   return bends ? { ...turned, curvePoints: bends } : { ...turned, arrowStyle: 'straight' };
+}
+
+// The side of `a` that faces all of `b`, past its edge: a box below a gateway faces its south side.
+const OPPOSITE = { n: 's', s: 'n', e: 'w', w: 'e' } as const;
+const facesAll = (side: 'n' | 's' | 'e' | 'w', a: BoxedElement, b: BoxedElement) =>
+  side === 's'
+    ? b.y >= a.y + a.height
+    : side === 'n'
+      ? b.y + b.height <= a.y
+      : side === 'e'
+        ? b.x >= a.x + a.width
+        : b.x + b.width <= a.x;
+
+// An angled arrow from a box that already sends a trunk (an exact-started angled arrow, its two bends on one cross
+// line) out of the side facing `b` leaves from that point too and bends in the trunk's channel, into `b`'s facing side
+// (docs/specs/024-agents/edit-operations.md "Layout on edit"); null when there is no such trunk or its channel does
+// not lie between the two boxes.
+function joinTrunk(
+  state: EditState,
+  arrow: ArrowElement,
+  a: BoxedElement,
+  b: BoxedElement,
+): ArrowElement | null {
+  const trunk = currentElements(state).find(
+    (el): el is ArrowElement =>
+      el.type === 'arrow' &&
+      el.arrowStyle === 'angled' &&
+      el.exactStart === true &&
+      el.curvePoints?.length === 2 &&
+      el.from.kind === 'pinned' &&
+      el.from.elementId === a.id &&
+      (el.from.anchor === 'n' ||
+        el.from.anchor === 's' ||
+        el.from.anchor === 'e' ||
+        el.from.anchor === 'w') &&
+      facesAll(el.from.anchor, a, b),
+  );
+  if (!trunk || trunk.from.kind !== 'pinned') return null;
+  const side = trunk.from.anchor as 'n' | 's' | 'e' | 'w';
+  const down = side === 'n' || side === 's';
+  // The trunk's channel: its bends' position along the flow, from the midpoint its curvePoints are measured from.
+  const [p0, p1] = [
+    endpointPosition(trunk.from, state.byId),
+    endpointPosition(trunk.to, state.byId),
+  ];
+  const bend = trunk.curvePoints![0]!;
+  const channel = down ? (p0.y + p1.y) / 2 + bend.dy : (p0.x + p1.x) / 2 + bend.dx;
+  const joined: ArrowElement = {
+    ...arrow,
+    arrowStyle: 'angled',
+    exactStart: true,
+    exactEnd: true,
+    from: { kind: 'pinned', elementId: a.id, anchor: side },
+    to: { kind: 'pinned', elementId: b.id, anchor: OPPOSITE[side] },
+  };
+  const [from, to] = [
+    endpointPosition(joined.from, state.byId),
+    endpointPosition(joined.to, state.byId),
+  ];
+  const [lo, hi] = down ? [from.y, to.y] : [from.x, to.x];
+  if (!(Math.min(lo, hi) < channel && channel < Math.max(lo, hi))) return null;
+  const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+  const points = down
+    ? [
+        { x: from.x, y: channel },
+        { x: to.x, y: channel },
+      ]
+    : [
+        { x: channel, y: from.y },
+        { x: channel, y: to.y },
+      ];
+  return { ...joined, curvePoints: points.map((p) => ({ dx: p.x - mid.x, dy: p.y - mid.y })) };
 }
 
 export function applyRewire(

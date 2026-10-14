@@ -120,7 +120,10 @@ The layout an agent did not ask to change stays put:
   taken in. A box `inside:` a container that holds something grows it the same way.
 - **A new arrow takes the tab's line.** `connect` with no `line=` draws with the line most of the tab's pinned arrows
   use: angled (anchors along the axis the two boxes lie on, bent twice as graph input bends an elbow) or curved; a
-  given `line=` wins.
+  given `line=` wins. **An angled arrow joins its source's trunk**: where the source already sends an exact-ended
+  angled arrow out of the side that faces the new target (a gateway fanning down to its services), the new arrow
+  leaves from that point too and bends in the trunk's channel, into the target's facing side, so a service added
+  to the row hangs off the gateway's bar like its siblings rather than running sideways behind them.
 - `insert` places the node at the midpoint and **makes room**: everything beyond it along the flow, within the same
   frame or lane, or outside them within b's connected group along arrows, shifts by the node's size and the gap
   (reported as moves), whatever room there already was. A frame or lane holding shifted members grows with them.
