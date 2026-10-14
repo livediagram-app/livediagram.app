@@ -79,6 +79,52 @@ describe('withExactEnds by line', () => {
   });
 });
 
+describe('ends beside a trunk', () => {
+  it('moves an end that keeps its place off a trunk anchor to the quarter toward its other end', () => {
+    const els = withExactEnds([
+      box('orders', 0, 0),
+      box('db', -200, 200),
+      box('kafka', 400, 200),
+      box('ahead', 0, 400),
+      arrow('t', 'orders', 'db'),
+      arrow('e', 'orders', 'kafka', { label: 'publish', strokeStyle: 'dashed' }),
+      arrow('s', 'orders', 'ahead', { label: 'audit' }),
+      arrow('w', 'db', 'orders', {}, ['e', 'w']),
+    ]);
+    expect(byId(els, 't')).toMatchObject({ exactStart: true, from: { anchor: 's' } });
+    expect(byId(els, 'e').from).toMatchObject({ anchor: 'sse' });
+    // Straight ahead, it stays on the middle.
+    expect(byId(els, 's').from).toMatchObject({ anchor: 's' });
+    const left = withExactEnds([
+      box('a', 0, 0),
+      box('b', 0, 200),
+      box('c', -400, 200),
+      arrow('t', 'a', 'b'),
+      arrow('x', 'a', 'c', { label: 'x' }),
+    ]);
+    expect(byId(left, 'x').from).toMatchObject({ anchor: 'ssw' });
+  });
+
+  it('leaves ends where no trunk sits, and an end into a bus too', () => {
+    const els = withExactEnds([
+      box('a', 0, 0),
+      box('b', 300, 200),
+      arrow('x', 'a', 'b', { label: 'one' }),
+      arrow('y', 'a', 'b', { label: 'two' }),
+    ]);
+    expect(byId(els, 'x').from).toMatchObject({ anchor: 's' });
+    const bus = withExactEnds([
+      box('p', 0, 0),
+      box('q', 200, 0),
+      box('k', 600, 300),
+      arrow('p1', 'p', 'k'),
+      arrow('q1', 'q', 'k'),
+      arrow('ev', 'q', 'k', { label: 'events', strokeStyle: 'dashed' }),
+    ]);
+    expect(byId(bus, 'ev').to).toMatchObject({ anchor: 'nnw' });
+  });
+});
+
 describe('branchExits', () => {
   it('sends a flow exit whose next step lies clearly aside out of that side', () => {
     const els: Element[] = [

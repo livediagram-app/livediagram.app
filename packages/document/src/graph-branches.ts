@@ -34,11 +34,64 @@ export function withExactEnds(elements: Element[]): Element[] {
   const exact = (side: 'from' | 'to', a: ArrowElement) =>
     line(a) === dominant(at(side, a)) &&
     (!a.label?.trim() || (said.get(`${at(side, a)}:${saying(a)}`) ?? 0) > 1);
-  return elements.map((el) => {
+  const merged = elements.map((el) => {
     if (el.type !== 'arrow') return el;
     const [start, end] = [exact('from', el), exact('to', el)];
     if (!start && !end) return el;
     return { ...el, ...(start ? { exactStart: true } : {}), ...(end ? { exactEnd: true } : {}) };
+  });
+  return besideTrunks(merged);
+}
+
+// A side's quarters, the one before its middle and the one after (left to right, top to bottom).
+const QUARTERS: Partial<Record<Anchor, readonly [Anchor, Anchor]>> = {
+  n: ['nnw', 'nne'],
+  s: ['ssw', 'sse'],
+  e: ['ene', 'ese'],
+  w: ['wnw', 'wsw'],
+};
+
+// An end that keeps its own place where a trunk or bus sits exactly on the same middle anchor would leave from the
+// trunk's very point (it fans only among the ends that fan) and ride it: it moves to that side's quarter toward its
+// other end, beside the trunk, unless that other end lies straight ahead.
+function besideTrunks(elements: Element[]): Element[] {
+  const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b as BoxedElement] as const));
+  const trunks = new Set<string>();
+  for (const el of elements)
+    if (el.type === 'arrow')
+      for (const [side, isExact] of [
+        ['from', el.exactStart],
+        ['to', el.exactEnd],
+      ] as const) {
+        const end = el[side];
+        if (isExact && end.kind === 'pinned') trunks.add(`${end.elementId}:${end.anchor}`);
+      }
+  if (trunks.size === 0) return elements;
+  const centre = (id: string | null) => {
+    const b = id ? boxes.get(id) : undefined;
+    return b ? { x: b.x + b.width / 2, y: b.y + b.height / 2 } : null;
+  };
+  return elements.map((el) => {
+    if (el.type !== 'arrow') return el;
+    let next = el;
+    for (const [side, isExact] of [
+      ['from', el.exactStart],
+      ['to', el.exactEnd],
+    ] as const) {
+      const end = el[side];
+      if (isExact || end.kind !== 'pinned' || !trunks.has(`${end.elementId}:${end.anchor}`))
+        continue;
+      const quarters = QUARTERS[end.anchor];
+      const here = centre(end.elementId);
+      const there = centre(pinned(el[side === 'from' ? 'to' : 'from']));
+      if (!quarters || !here || !there) continue;
+      const level = end.anchor === 'n' || end.anchor === 's';
+      const along = level ? there.x - here.x : there.y - here.y;
+      // Its other end straight ahead: it runs straight, left where it is.
+      if (Math.abs(along) < 1) continue;
+      next = { ...next, [side]: { ...end, anchor: quarters[along < 0 ? 0 : 1] } };
+    }
+    return next;
   });
 }
 
