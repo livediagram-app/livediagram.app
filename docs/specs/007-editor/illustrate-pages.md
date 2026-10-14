@@ -511,7 +511,8 @@ its speed, or a picture with its overlay and position) and its pattern. Its size
 content, name and lock stay its own. A deck or a set of pages often wears one background, so it is
 given in one go rather than page by page.
 
-- **Apply to All**: at the foot of a page's **Background** tab, **Apply to All Slides** (on a slide;
+- **Apply to All**: at the foot of a page's **Background** (the button beside its cog, and the page
+  panel's Background tab), **Apply to All Slides** (on a slide;
   **Apply to All Infographic Pages**, **Article Pages** or **Logo Pages** on the other kinds) gives
   every other page of the same kind this page's background, under a line saying how many it reaches
   and that a locked one keeps its own. Shown only while there is another page of the kind (an
@@ -1059,6 +1060,15 @@ bottom sheet on a phone), the way round a big document:
   and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
   on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to
   the first and last; the list scrolls the marked page into view when it opens.
+- **Reordering**: an Editor drags a row to move its page: a caret shows where it will land and
+  the move commits on release, one edit (one undo), the page's content with it, exactly as
+  dragging its label along the pages row does. A page moves with its unit, so an article's pages
+  move together, and a drop beside any of an article's pages is a drop beside the whole article.
+  A mouse or pen drags the whole row; a finger drags the row's grip (at its right, shown on a
+  phone and on hover on a desktop), so the list still scrolls by touch. The release is not a press
+  of the row: it does not glide there, but marks the moved page as here. While Find a Page narrows
+  the list there is no reordering (the rows shown are not the whole order). A Participant and a
+  Viewer see no grip and cannot drag. The drag is the Slide Deck's (`useRowReorderDrag`).
 - **Adding**: an Editor's footer holds **Add Page** with the four kinds as compact buttons
   (Infographic, Slide, Article, Logo, each its glyph and name); a press adds a page of that kind
   after the last, exactly as the row's **+** does (carrying the background, theme's Mist for a
@@ -1069,7 +1079,7 @@ bottom sheet on a phone), the way round a big document:
   or pages change while it is open, arrow labels laid out once for the tab rather than once a
   page; nothing is drawn while it is closed.
 - **Telemetry**: `UI · Opened · PageContents` on opening; `UI · Used · PageContentsJump` on going
-  to a page; adding a page counts as the row's + does.
+  to a page; `UI · Used · PageContentsReorder` on moving one; adding a page counts as the row's + does.
 
 ## Slide layouts
 

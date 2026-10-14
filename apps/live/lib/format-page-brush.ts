@@ -37,3 +37,23 @@ export function pagePaintPress(
   if (!from || from === pageId) return { next: sourceId, paint: null };
   return { next: keep ? sourceId : null, paint: { from, to: pageId } };
 }
+
+/** A page brush as the Format Panel's preview shows it: the page's name, its fill's colour (a
+ *  gradient's first stop, a picture's tone) and what a paint copies. */
+export function pageBrushPreview(page: {
+  name?: string;
+  index: number;
+  background?: { fill?: { kind: string; color?: string; from?: string; tone?: string } };
+}): { name: string; fill: string; summary: string } {
+  const fill = page.background?.fill;
+  const colour =
+    (fill?.kind === 'solid' && fill.color) ||
+    (fill?.kind === 'gradient' && fill.from) ||
+    (fill?.kind === 'image' && fill.tone) ||
+    '#ffffff';
+  return {
+    name: `${page.name?.trim() || `Page ${page.index + 1}`} background`,
+    fill: colour,
+    summary: 'Copies: background and pattern',
+  };
+}

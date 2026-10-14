@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { brushPageId, formatBannerMessage, pageBrush, pagePaintPress } from './format-page-brush';
+import {
+  brushPageId,
+  formatBannerMessage,
+  pageBrush,
+  pageBrushPreview,
+  pagePaintPress,
+} from './format-page-brush';
 
 // docs/specs/007-editor/illustrate-pages.md "Copying a background": the Format tool's page brush.
 
@@ -47,5 +53,25 @@ describe('formatBannerMessage', () => {
     expect(formatBannerMessage(pageBrush('p1'), true)).toBe(
       'Tap pages to paint this background onto them',
     );
+  });
+});
+
+describe('pageBrushPreview', () => {
+  it('names the page and draws its fill', () => {
+    expect(
+      pageBrushPreview({ index: 3, background: { fill: { kind: 'solid', color: '#15803d' } } }),
+    ).toEqual({
+      name: 'Page 4 background',
+      fill: '#15803d',
+      summary: 'Copies: background and pattern',
+    });
+    expect(
+      pageBrushPreview({
+        index: 0,
+        name: 'The Beta',
+        background: { fill: { kind: 'gradient', from: '#1e1b4b' } },
+      }).name,
+    ).toBe('The Beta background');
+    expect(pageBrushPreview({ index: 0 }).fill).toBe('#ffffff');
   });
 });

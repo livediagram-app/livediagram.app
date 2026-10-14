@@ -430,6 +430,10 @@ export function IllustratePages({
                     themePresets={view.themeBackgrounds}
                     onBackground={(patch) => edit.setBackground(page.id, patch)}
                     onPreview={(patch) => setPreview(patch ? { pageId: page.id, patch } : null)}
+                    applyToAll={{
+                      reach: edit.applyToAllReach(page.id),
+                      onApply: () => edit.applyBackgroundToAll(page.id),
+                    }}
                   />
                 ) : null}
                 {/* An infographic or slide page's Tidy, its icon alone, left of the lock and cog

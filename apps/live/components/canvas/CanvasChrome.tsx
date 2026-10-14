@@ -174,12 +174,7 @@ type ChromeExtras = {
   formatConfig?: import('@/lib/format-config').FormatConfig;
   onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
   onSetFormatMode?: (mode: import('@/lib/format-config').FormatMode) => void;
-  formatBrushSource?: {
-    name: string;
-    fill?: string;
-    stroke?: string;
-    textColor?: string;
-  } | null;
+  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;
   onResetFormatPanel?: () => void;
