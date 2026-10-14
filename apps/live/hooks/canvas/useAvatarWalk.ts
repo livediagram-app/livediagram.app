@@ -12,7 +12,7 @@
 
 import { useEffect, useEffectEvent, useInsertionEffect, useMemo, useRef, useState } from 'react';
 import { isSeatingShape, type Element } from '@livediagram/document';
-import { fenceSegments, fenceStep, FENCE_STALL } from '@/lib/avatar-fence';
+import { fenceSegments, fenceStalled, fenceStep } from '@/lib/avatar-fence';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '@/lib/avatar-reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from '@/hooks/canvas/useAvatarKeys';
@@ -413,7 +413,10 @@ export function useAvatarWalk({
         fenced.blocked &&
         !held &&
         targetRef.current &&
-        Math.hypot(next.x - from.x, next.y - from.y) < FENCE_STALL
+        fenceStalled(
+          Math.hypot(next.x - from.x, next.y - from.y),
+          Math.hypot(wanted.x - from.x, wanted.y - from.y),
+        )
       ) {
         targetRef.current = null;
         arriveRef.current = null;

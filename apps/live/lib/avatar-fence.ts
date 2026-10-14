@@ -13,8 +13,17 @@ import { fenceLine, type Element, type FencePoint } from '@livediagram/document'
 // half-width, so a character stops AT a fence rather than standing in it.
 export const FENCE_REACH = 12;
 
-// A step shorter than this (canvas px) is no progress: a click-walk pressed against a fence stops.
-export const FENCE_STALL = 0.25;
+// Progress smaller than this share of the frame's own step is no progress: a click-walk pressed
+// against a fence stops, and a step meeting a fence this close to head-on does not slide. A share of
+// the step, not a distance, so a display's refresh rate (a 4.3 px step a frame at 60 Hz, 1.1 px at
+// 240 Hz) never decides whether a walk slides. 0.06 is the 0.25 px of a 60 Hz step it replaced: about
+// 3.4 degrees off head-on.
+export const FENCE_STALL_SHARE = 0.06;
+
+/** Whether a frame that moved `moved` px of a wanted `step` px made no progress. */
+export function fenceStalled(moved: number, step: number): boolean {
+  return moved < FENCE_STALL_SHARE * step;
+}
 
 export type FenceSegment = { a: FencePoint; b: FencePoint };
 
@@ -73,8 +82,9 @@ export function segmentDistance(p: FenceSegment, q: FenceSegment): number {
 
 /**
  * Whether one fence refuses a step. From outside its reach: any step that comes within the reach.
- * From inside it (a fence dropped on top of a character): only a step that crosses the line or
- * closes in on it, so the character can always step away.
+ * From inside it (a fence dropped on top of a character): only a step that crosses the line, ending
+ * strictly on its far side, or closes in on it, so the character can always step away, even one
+ * standing exactly on the line (where every step touches it, and would otherwise be refused).
  */
 export function fenceRefuses(
   from: FencePoint,
@@ -84,7 +94,10 @@ export function fenceRefuses(
 ): boolean {
   const before = pointSegmentDistance(from, fence);
   if (before >= reach) return segmentDistance({ a: from, b: to }, fence) < reach;
-  return segmentsIntersect({ a: from, b: to }, fence) || pointSegmentDistance(to, fence) < before;
+  const crosses =
+    cross(fence.a, fence.b, from) * cross(fence.a, fence.b, to) < 0 &&
+    segmentsIntersect({ a: from, b: to }, fence);
+  return crosses || pointSegmentDistance(to, fence) < before;
 }
 
 function firstRefusal(
@@ -118,7 +131,8 @@ export function fenceStep(
     const uy = fy / len;
     const along = (to.x - from.x) * ux + (to.y - from.y) * uy;
     const slid = { x: from.x + ux * along, y: from.y + uy * along };
-    if (Math.abs(along) >= FENCE_STALL && !firstRefusal(from, slid, fences, reach)) {
+    const step = Math.hypot(to.x - from.x, to.y - from.y);
+    if (!fenceStalled(Math.abs(along), step) && !firstRefusal(from, slid, fences, reach)) {
       return { pos: slid, blocked: true };
     }
   }

@@ -12,6 +12,7 @@ import {
   isAnimatedPattern,
   isBoxed,
   type ShapeElement,
+  visibleLayerElements,
 } from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
@@ -374,11 +375,16 @@ function CanvasView(props: CanvasProps) {
   // a pad's (docs/specs/009-elements/reaction-pad.md): nothing is stored and nothing is replayed.
   const [avatarBurst, setAvatarBurst] = useState<{ reaction: Reaction; seed: number } | null>(null);
   const avatarBurstSeq = useRef(0);
+  // A character walks among what is drawn: a hidden layer's fences, portals and seats are not there.
+  const walkElements = useMemo(
+    () => visibleLayerElements(elements, tabLayers),
+    [elements, tabLayers],
+  );
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
     config: avatarLook.config,
     onToggleGender: avatarLook.toggleGender,
-    elements,
+    elements: walkElements,
     mainRef,
     wrapperRef,
     viewportOffset,

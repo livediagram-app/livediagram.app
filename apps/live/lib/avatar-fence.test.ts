@@ -73,6 +73,15 @@ describe('fenceRefuses', () => {
     expect(fenceRefuses({ x: 100, y: 4 }, { x: 100, y: -4 }, across)).toBe(true);
     expect(fenceRefuses({ x: 100, y: 4 }, { x: 100, y: 2 }, across)).toBe(true);
   });
+
+  it('lets a character standing exactly on the line step off it, either way', () => {
+    // A fence dropped onto a character on a whole-pixel point: every step touches the line.
+    const on = { x: 120, y: 0 };
+    expect(fenceRefuses(on, { x: 120, y: 4 }, across)).toBe(false);
+    expect(fenceRefuses(on, { x: 120, y: -4 }, across)).toBe(false);
+    expect(fenceRefuses(on, { x: 124, y: 0 }, across)).toBe(false);
+    expect(fenceStep(on, { x: 120, y: 4 }, [across]).pos).toEqual({ x: 120, y: 4 });
+  });
 });
 
 describe('fenceStep', () => {
@@ -93,6 +102,17 @@ describe('fenceStep', () => {
     const { pos, blocked } = fenceStep({ x: 100, y: 40 }, { x: 100, y: -40 }, [across]);
     expect(blocked).toBe(true);
     expect(pos.y).toBeGreaterThanOrEqual(FENCE_REACH);
+  });
+
+  it('slides at a shallow angle whatever the display’s frame rate', () => {
+    // 10 degrees off head-on, at a 60 Hz step (4.33 px) and a 240 Hz one (1.08 px).
+    const tilt = (10 * Math.PI) / 180;
+    for (const step of [4.33, 1.08]) {
+      const from = { x: 100, y: FENCE_REACH + 0.01 };
+      const to = { x: from.x + step * Math.sin(tilt), y: from.y - step * Math.cos(tilt) };
+      const { pos } = fenceStep(from, to, [across]);
+      expect(pos.x - from.x, `${step} px step`).toBeCloseTo(step * Math.sin(tilt), 6);
+    }
   });
 
   it('slides along a fence walked into at an angle', () => {
