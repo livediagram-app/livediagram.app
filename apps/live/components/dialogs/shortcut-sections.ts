@@ -61,8 +61,9 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
   {
     heading: 'Add elements',
     rows: [
-      { keys: ['R'], label: 'Rectangle' },
-      { keys: ['O'], label: 'Oval' },
+      // Named as each mode's palette names them: the Diagram tiles, then Draw's toolbar.
+      { keys: ['R'], label: 'Square (Rectangle in Draw)' },
+      { keys: ['O'], label: 'Circle (Ellipse in Draw)' },
       { keys: ['D'], label: 'Diamond' },
       { keys: ['C'], label: 'Cylinder' },
       { keys: ['G'], label: 'Parallelogram' },
