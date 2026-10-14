@@ -7,7 +7,7 @@ Derived from [The sequence diagram](../sequence-diagram.md). Defaults in [DEFAUL
 | `packages/document/src/sequence-element.ts`                 | Fields, bounds, writes, the diagram it describes          |
 | `packages/document/src/svg-render-sequence.ts`              | The picture: `layoutSequence` drawn and fitted to the box |
 | `apps/live/components/canvas/SequenceFace.tsx`              | Canvas face (the same picture), the Play wipe             |
-| `apps/live/components/palette/SequenceMenuSection.tsx`      | Summary, Edit Sequence, Numbered, Play                    |
+| `apps/live/components/palette/SequenceMenuSection.tsx`      | Summary, Edit Sequence, Numbered                          |
 | `packages/document/src/sequence-text.ts`                    | The Text tab: rows as lines and back                      |
 | `apps/live/components/dialogs/SequenceDialog.tsx`           | The dialog: tabs, draft, preview, footer                  |
 | `apps/live/components/dialogs/SequenceParticipantStrip.tsx` | Participant chips and the open chip's editor              |
@@ -156,7 +156,8 @@ under coverage, 281 ms on CI).
   (call, API → API), `Insert order` (call, API → Database), `Order id` (reply, Database → API), `201 Created` (reply,
   API → Browser).
 - The Sequence section: `N participants · M messages`, Edit Sequence (secondary, full width; only with
-  `onEditSequence`), Numbered, the Animation tiles (None, Play) and Speed / Repeat once Play is picked.
+  `onEditSequence`), Numbered. Play is the Animation row's Sequence section (`ElementAnimationTiles.tsx` `SequenceAnimTiles`: None, Play,
+  then Speed / Repeat); a sequence diagram takes no Shape set (`animation-membership.ts` `hasOwnBodySet`).
 - The dialog: size `3xl`, `phoneSheet`, `max-h-[90vh]`; header title "Sequence Diagram" and its line, labelled Help
   (`sequenceDiagram` → `palette/sequence-diagrams`), close. Tabs Messages / Text (`DialogTabs`). Body: rows column and
   a 280 px preview (white paper, `max-h-[360px]`, 160 px on a phone, above the rows there). Footer: Numbered switch,
@@ -190,7 +191,7 @@ dialog, `useSequenceSetters`), `SequenceNumbered`, `SequenceAnim`.
 | ------------------------- | ----------------------------------------------------------- |
 | Writes, bounds (I1), next | `packages/document/src/sequence-element.test.ts`            |
 | Picture and export (I2)   | same                                                        |
-| Menu: summary, Edit, Play | `apps/live/components/palette/SequenceMenuSection.test.tsx` |
+| Menu: summary, Edit       | `apps/live/components/palette/SequenceMenuSection.test.tsx` |
 | Dialog: rows, text, close | `apps/live/components/dialogs/SequenceDialog.test.tsx`      |
 | Text read and written     | `packages/document/src/sequence-text.test.ts`               |
 | Dialog writes             | `apps/live/hooks/canvas/useSequenceSetters.test.ts`         |

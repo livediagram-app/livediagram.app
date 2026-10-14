@@ -1,0 +1,206 @@
+{
+  "graph": {
+    "style": "mindmap",
+    "title": "Coffee Subscription Launch",
+    "subtitle": "Brainstorm: five areas to plan, with the ideas for each.",
+    "nodes": [
+      {
+        "id": "root",
+        "label": "Coffee subscription launch",
+        "tone": "strong",
+        "icon": "coffee"
+      },
+      {
+        "id": "mk",
+        "label": "Marketing",
+        "tone": "soft"
+      },
+      {
+        "id": "mk1",
+        "label": "Instagram brewing reels"
+      },
+      {
+        "id": "mk2",
+        "label": "Coffee creator partnerships"
+      },
+      {
+        "id": "mk3",
+        "label": "Refer a friend, free bag"
+      },
+      {
+        "id": "mk4",
+        "label": "Launch waitlist email series"
+      },
+      {
+        "id": "pr",
+        "label": "Pricing",
+        "tone": "soft"
+      },
+      {
+        "id": "pr1",
+        "label": "Three tiers by bag size"
+      },
+      {
+        "id": "pr2",
+        "label": "First box half price"
+      },
+      {
+        "id": "pr3",
+        "label": "Annual plan, 2 months free"
+      },
+      {
+        "id": "lg",
+        "label": "Logistics",
+        "tone": "soft"
+      },
+      {
+        "id": "lg1",
+        "label": "Letterbox-friendly packaging"
+      },
+      {
+        "id": "lg2",
+        "label": "Roast-to-door in 48 hours"
+      },
+      {
+        "id": "lg3",
+        "label": "Skip or pause any month"
+      },
+      {
+        "id": "lg4",
+        "label": "Compostable bags"
+      },
+      {
+        "id": "pt",
+        "label": "Partnerships",
+        "tone": "soft"
+      },
+      {
+        "id": "pt1",
+        "label": "Local independent roasters"
+      },
+      {
+        "id": "pt2",
+        "label": "Office coffee perks"
+      },
+      {
+        "id": "pt3",
+        "label": "Grinder brand bundle"
+      },
+      {
+        "id": "ev",
+        "label": "Launch event",
+        "tone": "soft"
+      },
+      {
+        "id": "ev1",
+        "label": "Pop-up cupping bar"
+      },
+      {
+        "id": "ev2",
+        "label": "Live latte art contest"
+      },
+      {
+        "id": "ev3",
+        "label": "Meet the farmers stream"
+      },
+      {
+        "id": "ev4",
+        "label": "Founding member gift"
+      }
+    ],
+    "edges": [
+      {
+        "from": "root",
+        "to": "mk"
+      },
+      {
+        "from": "root",
+        "to": "pr"
+      },
+      {
+        "from": "root",
+        "to": "lg"
+      },
+      {
+        "from": "root",
+        "to": "pt"
+      },
+      {
+        "from": "root",
+        "to": "ev"
+      },
+      {
+        "from": "mk",
+        "to": "mk1"
+      },
+      {
+        "from": "mk",
+        "to": "mk2"
+      },
+      {
+        "from": "mk",
+        "to": "mk3"
+      },
+      {
+        "from": "mk",
+        "to": "mk4"
+      },
+      {
+        "from": "pr",
+        "to": "pr1"
+      },
+      {
+        "from": "pr",
+        "to": "pr2"
+      },
+      {
+        "from": "pr",
+        "to": "pr3"
+      },
+      {
+        "from": "lg",
+        "to": "lg1"
+      },
+      {
+        "from": "lg",
+        "to": "lg2"
+      },
+      {
+        "from": "lg",
+        "to": "lg3"
+      },
+      {
+        "from": "lg",
+        "to": "lg4"
+      },
+      {
+        "from": "pt",
+        "to": "pt1"
+      },
+      {
+        "from": "pt",
+        "to": "pt2"
+      },
+      {
+        "from": "pt",
+        "to": "pt3"
+      },
+      {
+        "from": "ev",
+        "to": "ev1"
+      },
+      {
+        "from": "ev",
+        "to": "ev2"
+      },
+      {
+        "from": "ev",
+        "to": "ev3"
+      },
+      {
+        "from": "ev",
+        "to": "ev4"
+      }
+    ]
+  }
+}

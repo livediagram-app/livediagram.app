@@ -47,3 +47,29 @@ describe('SiteHeader', () => {
     expect(html).not.toMatch(/just draw/i);
   });
 });
+
+// docs/specs/019-marketing/build-with-ai.md "Entry points".
+describe('SiteHeader: Build with AI', () => {
+  it('shows no Build with AI link unless the surface asks for it', () => {
+    const plain = renderToStaticMarkup(<SiteHeader ctaSurface="Home" shareRail={false} />);
+    expect(plain).not.toContain('Build with AI');
+  });
+
+  it('puts the link to /ai left of Start Blank, desktop only', () => {
+    const html = renderToStaticMarkup(
+      <SiteHeader ctaSurface="Home" buildWithAi="link" shareRail={false} />,
+    );
+    const link = html.match(/<a [^>]*href="\/ai"[^>]*>/)?.[0];
+    expect(link).toContain('max-lg:hidden');
+    expect(link).not.toContain('aria-current');
+    expect(html.indexOf('href="/ai"')).toBeLessThan(html.indexOf('Start Blank'));
+  });
+
+  it('marks it current on /ai itself', () => {
+    const html = renderToStaticMarkup(
+      <SiteHeader ctaSurface="Ai" buildWithAi="current" shareRail={false} />,
+    );
+    expect(html).toMatch(/<a [^>]*href="\/ai"[^>]*aria-current="page"/);
+    expect(html).toContain('href="/new?via=Ai.Header"');
+  });
+});

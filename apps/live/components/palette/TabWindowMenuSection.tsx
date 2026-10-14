@@ -3,7 +3,7 @@
 // A tab window's section (docs/specs/009-elements/tab-window.md "The menu"): Shows (the tabs it may show, an
 // Editor's to change) and Open <name> (everyone's who sees the tab). Read from the editor itself: the menu renders
 // outside the canvas, so the windows' own context is not here.
-import type { ShapeElement } from '@livediagram/document';
+import { tabWindowMayShow, type ShapeElement } from '@livediagram/document';
 import { lucideAppWindow, lucideArrowUpRight } from '@livediagram/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 import { MenuAccordionSection, MenuActionRow } from '@/components/primitives/PortalMenu';
@@ -25,10 +25,14 @@ export function TabWindowMenuSection({
   ops: ElementStyleOps;
   sectionProps: (id: string) => { open: boolean; onToggle: () => void; flush: boolean };
 }) {
-  const { tabs, activeTab, can, activeTabLocked } = useEditorContext();
+  const { tabs: allTabs, activeTab, can, activeTabLocked, isOutOfScope } = useEditorContext();
   const selectTab = useSelectTab();
-  const shown = target.windowTabId ? tabs.find((t) => t.id === target.windowTabId) : undefined;
-  const mayChoose = can.level === 'edit' && !activeTabLocked;
+  // As the windows see them (tab-window-context): a tab outside a tab-scoped link is never named or offered, and one
+  // the window may not show (its own, a Plan tab) has no Open.
+  const tabs = allTabs.filter((t) => !isOutOfScope(t.id));
+  const found = target.windowTabId ? tabs.find((t) => t.id === target.windowTabId) : undefined;
+  const shown = found && tabWindowMayShow(found, activeTab.id) ? found : undefined;
+  const mayChoose = can.level === 'edit' && !activeTabLocked && target.locked !== true;
   return (
     <MenuAccordionSection title="Tab Window" icon={<WindowIcon />} {...sectionProps('tab-window')}>
       {mayChoose ? (

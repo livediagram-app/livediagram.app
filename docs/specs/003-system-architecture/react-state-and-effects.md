@@ -48,6 +48,13 @@ editor carried 247 findings and 73 suppressions; at zero they are errors, so no 
   once. Nothing reads `Date.now()` while rendering.
 - **Effect dependencies are complete.** A dependency that must not retrigger the effect is read through
   an effect event, not omitted.
+- **A handler decides before it commits.** A state updater (the function a commit or a `setX` takes) may
+  run after the call returns: React runs it at once only when nothing else is queued on that component,
+  and a menu closing first is enough to queue something. So what a handler does next (a toast, a
+  selection, a go-to, a telemetry event) is worked out from the state as the handler sees it, never from
+  a variable the updater writes. Where the result is costly or names things afresh (random ids), the
+  handler commits the result it worked out when the state is unchanged, `(t) => (t === tab ? out :
+recompute(t))`. `apps/live/commit-updater-flags.test.ts` fails a new one.
 
 ## The React Compiler
 

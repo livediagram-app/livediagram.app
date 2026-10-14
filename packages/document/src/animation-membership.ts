@@ -5,6 +5,7 @@
 import type { AnimationSetId, BodyAnimationSet } from './animation-sets';
 import { isChartShape, isProgressShape, isRatingShape } from './data-shapes';
 import { isSankeyShape } from './sankey-model';
+import { isConceptShape } from './concept';
 import { takesTypedLabel } from './element-types';
 import type { Element } from './index';
 import { selfLabelled } from './svg-render-describe';
@@ -21,6 +22,12 @@ function hasOwnShapeSet(el: Element): boolean {
   );
 }
 
+// Shapes whose rows are what moves, not the box (Concept, Sequence), so they take their own set instead of Shape. Their
+// words still take the Text set, unlike hasOwnShapeSet's.
+function hasOwnBodySet(el: Element): boolean {
+  return el.type === 'shape' && (isConceptShape(el.shape) || el.shape === 'sequence');
+}
+
 /** The body set that animates the element itself, or undefined when it takes none of these. */
 export function bodyAnimationSetOf(el: Element): BodyAnimationSet | undefined {
   switch (el.type) {
@@ -35,7 +42,7 @@ export function bodyAnimationSetOf(el: Element): BodyAnimationSet | undefined {
     case 'table':
       return 'table';
     case 'shape':
-      return hasOwnShapeSet(el) ? undefined : 'shape';
+      return hasOwnShapeSet(el) || hasOwnBodySet(el) ? undefined : 'shape';
     case 'annotation':
     case 'link-card':
       return 'shape';

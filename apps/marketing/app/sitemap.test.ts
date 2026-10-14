@@ -8,3 +8,10 @@ describe('sitemap', () => {
     expect(entry).toMatchObject({ changeFrequency: 'monthly', priority: 0.2 });
   });
 });
+
+describe('sitemap: Build with AI', () => {
+  it('lists /ai (docs/specs/019-marketing/build-with-ai.md "Metadata")', () => {
+    const entry = sitemap().find((e) => e.url === 'https://livediagram.app/ai');
+    expect(entry).toMatchObject({ changeFrequency: 'monthly', priority: 0.8 });
+  });
+});

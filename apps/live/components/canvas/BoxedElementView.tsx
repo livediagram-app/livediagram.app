@@ -25,6 +25,7 @@ import {
   type ShapeMarker,
   type TextSize,
   withTagAccent,
+  rotationOf,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
@@ -187,7 +188,7 @@ function BoxedElementViewImpl({
   // into the element's own frame and anchors the opposite side, it just
   // skips the axis-aligned snap. `isRotated` drives the wrapper transform and
   // the zone clip below.
-  const rotation = element.rotation ?? 0;
+  const rotation = rotationOf(element);
   const isRotated = rotation % 360 !== 0;
   // In an article's drawing zone: cut off at the zone's edge (a turned element is left whole).
   const zoneClip = useZoneClip(element.id);

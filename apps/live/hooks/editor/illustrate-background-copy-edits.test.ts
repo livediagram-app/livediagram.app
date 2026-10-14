@@ -32,6 +32,7 @@ function harness(pages: IllustratePage[], tabId = 'deck', mayEdit = () => true) 
   const edits = () =>
     illustratePageEdits({
       tabId,
+      tab: tabs[0]!,
       current: illustratePagesOf(tabs[0]!),
       elements: tabs[0]!.elements,
       commitTabs,
