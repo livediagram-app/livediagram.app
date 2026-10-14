@@ -41,7 +41,15 @@ import {
 import { sessionButtonText } from './session-button-text';
 import { borderOf } from './svg-render-border';
 import { REVEAL_COVER_BASE, type CanvasSurface } from './colors';
-import { collabAccent, glow, pill, text, type Face } from './svg-render-face-kit';
+import {
+  collabAccent,
+  fitLine,
+  glow,
+  pill,
+  text,
+  wrapLines,
+  type Face,
+} from './svg-render-face-kit';
 import { svgActionPanel, svgCommentPanel } from './svg-render-panel-faces';
 import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@livediagram/icons';
 import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
@@ -150,17 +158,19 @@ export function svgBehaviourFace(
           : text(cx, cy + 27, title, { size: 12, weight: 600, color, anchor: 'middle' }))
       );
     }
-    case 'session-button':
+    case 'session-button': {
+      // The tool as the canvas reads it, through its plan: a missing or unknown tool is the timer, and a poll not
+      // set up yet is still a poll.
+      const tool =
+        sessionButtonPlan(el.session)?.tool ?? (el.session?.tool === 'poll' ? 'poll' : 'timer');
       // A timer reads as the canvas's idle dial (SessionTimerFace): ticks
       // along the top edge, the kicker and the configured length. The Start
       // control is editor chrome and stays out of the image.
-      if (el.session?.tool === 'timer') return timerFace(el, cx, cy, color);
+      if (tool === 'timer') return timerFace(el, cx, cy, color);
       // The other tools: the tool's glyph (SessionButtonFace's), over its label or, with none, what pressing it does
       // ("Start vote" over "3 dots each").
-      return (
-        sessionToolGlyph(el.session?.tool, cx, cy - 12, color) +
-        sessionWords(el, title, cx, cy, color)
-      );
+      return sessionToolGlyph(tool, cx, cy - 12, color) + sessionWords(el, title, cx, cy, color);
+    }
     case 'reveal':
       return el.revealed === true ? '' : revealCover(el, cx, cy, title, color, stroke, surface);
     case 'picker':
@@ -436,23 +446,38 @@ function sessionToolGlyph(tool: string | undefined, x: number, y: number, color:
 
 // A Session button's words: its own label, or what pressing it does, as the editor's face says it.
 function sessionWords(
-  el: { session?: SessionButtonConfig },
+  el: { session?: SessionButtonConfig; width: number },
   title: string,
   cx: number,
   cy: number,
   color: string,
 ): string {
-  if (title) return text(cx, cy + 16, title, { size: 12, weight: 600, color, anchor: 'middle' });
+  // Within the button, as the canvas's face clamps them: the kicker on one line, the action on at most two (a poll's
+  // question can run to a sentence).
+  const room = Math.max(24, el.width - 16);
+  if (title)
+    return text(cx, cy + 16, fitLine(title, room, 12), {
+      size: 12,
+      weight: 600,
+      color,
+      anchor: 'middle',
+    });
   const { kicker, action } = sessionButtonText(sessionButtonPlan(el.session));
+  const lines = wrapLines(action, room, 12, 2);
   return (
-    text(cx, cy + 12, kicker, {
+    text(cx, cy + 12, fitLine(kicker, room, 9, 0.75), {
       size: 9,
       weight: 500,
       color,
       anchor: 'middle',
       opacity: 0.7,
       uppercase: true,
-    }) + text(cx, cy + 27, action, { size: 12, weight: 600, color, anchor: 'middle' })
+    }) +
+    lines
+      .map((line, i) =>
+        text(cx, cy + 27 + i * 14, line, { size: 12, weight: 600, color, anchor: 'middle' }),
+      )
+      .join('')
   );
 }
 
