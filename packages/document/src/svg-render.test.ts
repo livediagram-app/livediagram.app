@@ -709,20 +709,20 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('text-anchor="start"');
     });
 
-    it('keeps a middle-aligned caption above the glyph band (docs/specs/010-palette/technology-icons.md caption band)', () => {
+    it('puts a middle-centre label on the glyph (docs/specs/010-palette/technology-icons.md "Middle-centre puts the label on the glyph")', () => {
       const art = () => ({ markup: '<circle/>', colored: true });
       const svg = renderElementsToSvg(
         tab([icon({ width: 100, height: 100, label: 'EC2', textAlignY: 'middle' })]),
         { resolveIconArt: art },
       );
-      // The mark takes the bottom band (36..94), centred: y = 36 + (58-48)/2.
-      expect(svg).toContain('y="41" width="48" height="48"');
-      // The caption anchors to its band's bottom edge (the 36% line), NOT the
-      // box's vertical centre — y = 36 - 22 (font size), clear of the mark.
-      // It used to render at h/2 = 50, on top of the art.
-      const m = svg.match(/<text[^<>]*y="([0-9.]+)"/);
-      expect(m).not.toBeNull();
-      expect(parseFloat(m![1]!)).toBe(14);
+      // The mark keeps the whole box, as if unlabelled: centred, y = (100 - 48) / 2.
+      expect(svg).toContain('y="26" width="48" height="48"');
+      // The label centres over it, drawn after the art so it sits on top. It used to
+      // sit in the top band at y = 14, clear of the art.
+      const text = textTagBefore(svg, 'EC2');
+      expect(text?.['dominant-baseline']).toBe('central');
+      expect(parseFloat(text!.y!)).toBe(50);
+      expect(svg.indexOf('<text')).toBeGreaterThan(svg.indexOf('<circle/>'));
     });
 
     it('centres a side caption on the glyph row and wraps it at its half (docs/specs/010-palette/technology-icons.md)', () => {

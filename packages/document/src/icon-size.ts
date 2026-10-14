@@ -27,13 +27,24 @@ function iconSizePx(size: IconSize | undefined, maxW: number, maxH: number): num
 // The glyph BAND inside an icon element: the region of the box the glyph
 // may occupy. The band sits OPPOSITE the caption (docs/specs/010-palette/technology-icons.md), so moving the
 // text never stacks it over the glyph: a horizontally-centred caption flips
-// the glyph vertically (bottom caption → top band, top/middle → bottom
-// band); a left/right caption flips it horizontally instead (left caption →
-// right half, right → left half) and keeps the glyph on the caption's row
-// (top / middle / bottom of the box) so the two line up side by side. No
-// label = the whole box. Shared by BOTH icon kinds: Technology marks centre
+// the glyph vertically (bottom caption → top band, top → bottom band); a
+// left/right caption flips it horizontally instead (left caption → right half,
+// right → left half) and keeps the glyph on the caption's row (top / middle /
+// bottom of the box) so the two line up side by side. No label, or a label on
+// the glyph (middle-centre, isOnGlyphLabel) = the whole box. Shared by BOTH icon kinds: Technology marks centre
 // their fixed-size tile in it (techIconMarkBounds below) and line-art
 // glyphs scale to fill it (svgIconShape / IconGlyph).
+// Middle-centre is the one alignment with no side to sit on, so it puts the label ON the glyph
+// (docs/specs/010-palette/technology-icons.md "Middle-centre puts the label on the glyph"): the glyph
+// keeps the whole box and the label centres over it. Unset alignment is the icon default
+// (centre / bottom), a caption.
+export function isOnGlyphLabel(el: {
+  textAlignX?: 'left' | 'center' | 'right';
+  textAlignY?: 'top' | 'middle' | 'bottom';
+}): boolean {
+  return (el.textAlignX ?? 'center') === 'center' && el.textAlignY === 'middle';
+}
+
 export function iconBandBounds(el: {
   x: number;
   y: number;
@@ -43,7 +54,8 @@ export function iconBandBounds(el: {
   textAlignX?: 'left' | 'center' | 'right';
   textAlignY?: 'top' | 'middle' | 'bottom';
 }): { x: number; y: number; width: number; height: number } {
-  const hasLabel = !!el.label;
+  // A label on the glyph leaves it the whole box, like no label at all.
+  const hasLabel = !!el.label && !isOnGlyphLabel(el);
   const ax = el.textAlignX ?? 'center';
   const ay = el.textAlignY ?? 'bottom';
   let bandX = el.x;
@@ -78,8 +90,8 @@ export function iconBandBounds(el: {
 //
 // - Centre captions keep the full width and take the vertical band the glyph
 //   doesn't: top → the top 36% (top-anchored), bottom → the bottom 36%
-//   (bottom-anchored), middle → the top 36% bottom-anchored, so the text sits
-//   directly above the glyph band instead of overlapping it.
+//   (bottom-anchored). Middle-centre is no caption: the label sits on the
+//   glyph, over the whole box (isOnGlyphLabel).
 // - Left/right captions get their half of the box (text wraps at the half,
 //   never under the glyph) and centre vertically on the glyph's row — the
 //   same 6–64% / full-height / 36–94% row iconBandBounds uses — so the
@@ -98,6 +110,10 @@ export function iconCaptionBand(el: {
   height: number;
   valign: 'top' | 'middle' | 'bottom';
 } {
+  if (isOnGlyphLabel(el)) {
+    // On the glyph: the whole box, centred.
+    return { x: el.x, y: el.y, width: el.width, height: el.height, valign: 'middle' };
+  }
   const ax = el.textAlignX ?? 'center';
   const ay = el.textAlignY ?? 'bottom';
   if (ax === 'center') {
