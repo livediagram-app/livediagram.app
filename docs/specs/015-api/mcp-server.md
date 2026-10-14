@@ -470,7 +470,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   neighbour's drop struck a label through); where the middle of a run is not clear, a point a quarter or a
   third of the way along it is tried before the next run. Where no run holds the label on its line, it sits beside
   one, just off the line on either side, where it touches no box, border, heading or line (a wide label on a drop
-  beside a neighbour's drop), before it is ever laid over another line.
+  beside a neighbour's drop), before it is ever laid over another line. Each label keeps off the labels placed
+  before it (two "publish" labels off one bus stood over each other).
   The gap between two ranks fits the widest label crossing it, as Tidy Up's does (its width left to right, its line
   height either side of the jog top to bottom), so a caption is never longer than its edge.
 - **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
