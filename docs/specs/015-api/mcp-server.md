@@ -1011,6 +1011,12 @@ Worker (no DOM, no React).
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
   preview it can't self-check against. A diagram's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.
+- **Fonts.** The faces a tab uses beyond Inter (its elements', its own, a sheet's cells', its articles' heading and
+  body faces) are read from the Google Fonts stylesheet the editor loads (`fonts.ts`' `google` specs), whose answer
+  to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`):
+  at most `PREVIEW_FONTS_MAX` (4) families, whatever arrives within `PREVIEW_FONTS_TIMEOUT_MS` (2.5 s), each kept in
+  the isolate and the Cache API. A face that cannot be fetched draws in Inter, as before; nothing is sent but the
+  family names.
 - **No scaled strokes.** resvg ignores `vector-effect="non-scaling-stroke"`, so
   the renderer never relies on it: stretched silhouettes (frames, cylinders,
   device frames) are mapped into the element box point by point

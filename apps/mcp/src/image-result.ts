@@ -17,7 +17,10 @@ import {
 import { embedTabImages } from '@livediagram/api-schema';
 import {
   canvasSurface,
+  articlesOf,
+  exportFontIds,
   laidOutPagesOf,
+  resolveArticleStyle,
   planBoardFitHeight,
   renderElementsToSvg,
   renderPageToSvg,
@@ -36,6 +39,7 @@ import {
 } from '@livediagram/icons/resolve';
 import { chartsReadLive } from '@livediagram/agent-verbs';
 import { svgToPngBase64 } from './render';
+import { previewFonts } from './preview-fonts';
 import { planPreviewFor } from './plan-preview';
 import { apiFetch, apiJson } from './api';
 import type { Env } from './env';
@@ -157,8 +161,11 @@ export async function tabPreview(
   if (laidOutPagesOf(tab).length > 0) {
     const resolveImageHref = auth ? await buildImageResolver(auth.env, auth.token, tab) : undefined;
     const drawWith = { resolveImageHref, resolveIconArt: resolveIconExportArt, resolveStickerArt };
-    const svg = page ? renderPageToSvg(tab, page, drawWith) : renderPagesToSvg(tab, drawWith)!;
-    return { type: 'image', data: await svgToPngBase64(svg), mimeType: 'image/png' };
+    const [svg, fonts] = [
+      page ? renderPageToSvg(tab, page, drawWith) : renderPagesToSvg(tab, drawWith)!,
+      await previewFonts(tabFontIds(tab)),
+    ];
+    return { type: 'image', data: await svgToPngBase64(svg, fonts), mimeType: 'image/png' };
   }
   // A Plan tab as the editor exports it: a Dashboard laid out, its pictures drawn from the cards.
   const plain = (shown: Tab) =>
@@ -202,8 +209,19 @@ export async function tabPreview(
       ...drawWith,
       ...(laidOut ? { resolvePlanArt: laidOut.artWith(content) } : {}),
     }),
+    await previewFonts(tabFontIds(live, drawWith.sheets)),
   );
   return { type: 'image', data: png, mimeType: 'image/png' };
+}
+
+// The editor's font ids a tab draws in: its elements' and its own, a sheet's cells', and its articles' heading and body
+// faces (the fonts a preview fetches beyond Inter).
+export function tabFontIds(tab: Tab, sheets?: ReadonlyMap<string, SheetRenderModel>): string[] {
+  const articles = Object.values(articlesOf(tab)).flatMap((doc) => {
+    const style = resolveArticleStyle(doc.style);
+    return [style.headingFont, style.bodyFont];
+  });
+  return [...exportFontIds(tab.elements, tab.font, sheets, tab.finish), ...articles];
 }
 
 // `notes` are short text blocks after the structured result, such as the lint summary line.

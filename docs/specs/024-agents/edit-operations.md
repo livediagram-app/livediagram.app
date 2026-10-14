@@ -47,7 +47,7 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   [view](document-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
   writes back unchanged.
 - **Closed vocabularies.** A stored field with a closed list of values (`textSize`, `textAlignX`, `textAlignY`,
-  `iconPosition`, `arrowStyle`, `arrowEnds`, `arrowheadShape`, `strokeStyle`, `borderRadius`, `font` (the editor's
+  `iconPosition`, `arrowStyle`, `arrowEnds`, `arrowheadShape`, `strokeStyle`, `borderRadius`, `iconWeight`, `font` (the editor's
   faces: a family name such as "serif" drew in the tab's font in silence);
   `ELEMENT_FIELD_VALUES` in `@livediagram/document`) refuses a value off it as `invalid_value`, naming the values it
   takes, as the MCP's whole-element check does: `textSize=xl` used to be stored and drawn as tiny overlapping text.
