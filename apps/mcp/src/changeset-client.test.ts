@@ -44,6 +44,41 @@ describe('mcpOpsToEditOperations', () => {
     elements: [box('4aeb12f0-aaaa'), box('9c11aa00-bbbb')],
   };
 
+  it('packs a stroke’s new points with its new box, and refuses points it cannot draw', () => {
+    const stroke = {
+      id: 'ring',
+      type: 'freehand',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      closed: true,
+      packedPoints: 'AQA=',
+    } as unknown as Element;
+    const tab: Tab = { id: 't3', name: 'T', elements: [stroke] };
+    const points = [
+      [100, 50],
+      [140, 90],
+      [100, 130],
+    ];
+    const ops = mcpOpsToEditOperations(
+      [{ op: 'update', elementId: 'ring', element: { points, penColour: 'red' } }],
+      tab,
+    ) as { fields: Record<string, unknown> }[];
+    expect(ops[0]!.fields).toMatchObject({
+      x: 100,
+      y: 50,
+      width: 40,
+      height: 80,
+      penColour: 'red',
+    });
+    expect(ops[0]!.fields.points).toBeUndefined();
+    expect(ops[0]!.fields.packedPoints).not.toBe('AQA=');
+    expect(
+      mcpOpsToEditOperations([{ op: 'update', elementId: 'ring', element: { points: [] } }], tab),
+    ).toMatch(/^ops\[1\]: element 1: "points" takes 1 to/);
+  });
+
   it('pins an added arrow by the refs read_document prints, and to an element added in the same call', () => {
     const ops = mcpOpsToEditOperations(
       [

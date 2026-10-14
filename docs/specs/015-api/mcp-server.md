@@ -609,7 +609,7 @@ so starter questions go on stickies beside them. An agenda written with segments
 drawing order, `closed` to close and fill it, and a `penColour` (ink, grey or a hued pen). The stored form is a box
 with the points packed inside it ([Stroke points](../006-document/stroke-points.md)), which no model can write, so
 the MCP takes the box from the points and packs them through the stored-tab migration, before the element is
-checked, on every element path (`freehand-points.ts`). Points it cannot draw (none, more than
+checked, on every element path (`freehand-points.ts`), and an ops update giving a stroke new `points` sets its new box and block together, where a bare `points` field would have emptied the stroke. Points it cannot draw (none, more than
 `MAX_FREEHAND_POINTS`, or not number pairs) are refused naming the element. The format says a hand-drawn board
 starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
 

@@ -103,12 +103,19 @@ export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unk
     } else if (op.op === 'update') {
       if (!op.elementId || !op.element) return `ops[${n}]: update needs "elementId" and "element"`;
       const stored = named(op.elementId);
-      const ended = withEnds(
-        stored?.type === 'arrow' ? { type: 'arrow', ...op.element } : op.element,
-      );
+      // New points for a stroke are packed as an added one's are: its box and its block, together.
+      let given = op.element;
+      if (stored?.type === 'freehand' && given.points !== undefined) {
+        const drawn = packFreehandPoints([{ ...given, type: 'freehand' }]);
+        if ('error' in drawn) return `ops[${n}]: ${drawn.error}`;
+        const { x, y, width, height, packedPoints } = drawn.elements[0] as Record<string, unknown>;
+        const { points: _points, ...rest } = given;
+        given = { ...rest, x, y, width, height, packedPoints };
+      }
+      const ended = withEnds(stored?.type === 'arrow' ? { type: 'arrow', ...given } : given);
       if (typeof ended === 'string') return `ops[${n}]: ${ended}`;
       const fields = { ...ended };
-      if (stored?.type === 'arrow' && op.element.type === undefined) delete fields.type;
+      if (stored?.type === 'arrow' && given.type === undefined) delete fields.type;
       if (stored && fields.id === stored.id) delete fields.id;
       if (stored && fields.type === stored.type) delete fields.type;
       out.push({ op: 'set', target: targetOf(op.elementId, stored), fields });
