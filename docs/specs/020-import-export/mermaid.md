@@ -151,7 +151,8 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
   diagram. `rect` blocks, `box` groupings, links and styling are read and skipped, never an error.
 - **Activations without markers**: a call to another participant activates it from that message until it replies
   to its caller; one never closed ends after the participant's last message. A self-call nests an activation,
-  stepped right. Nested activations step right by half a bar.
+  stepped right. Nested activations step right by half a bar. A diagram that activates anything itself (`activate`, `deactivate`, `+`, `-`) draws
+  only those bars: answered calls add none, so an author's bars are never doubled.
 - **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, the
   pitch wide enough for the longest message between neighbours; messages a row each, edge to edge of the activation
   bars, labels above their line; a self-call loops out of the bar and back into its nested one; a note is a sticky

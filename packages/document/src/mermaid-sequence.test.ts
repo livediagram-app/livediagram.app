@@ -124,6 +124,25 @@ describe('layoutSequence', () => {
     expect(bars.length).toBe(2);
   });
 
+  it('draws only the bars a diagram activates itself, none stacked on its answered calls', () => {
+    const g = graphFromMermaid(
+      [
+        'sequenceDiagram',
+        'participant A',
+        'participant B',
+        'A->>B: request',
+        'activate B',
+        'B-->>A: response',
+        'deactivate B',
+      ].join('\n'),
+    );
+    if (!g.ok) throw new Error(g.error);
+    const bars = layoutGraph(g.graph).filter(
+      (e) => e.type === 'shape' && e.shape === 'square' && e.width === 14,
+    );
+    expect(bars.length).toBe(1);
+  });
+
   it('draws a sequence from a graph: nodes the participants, edges the messages, dashed a reply', () => {
     const els = layoutGraph({
       style: 'sequence',

@@ -91,6 +91,14 @@ export function layoutSequence(
       }
     }
   });
+  // A diagram that activates anything itself (`activate`, `+`, `-`) draws its bars as told, as Mermaid does: answered
+  // calls add none of their own, which would stack a second bar on each the author drew.
+  const explicit = items.some(
+    (it) =>
+      it.kind === 'activate' ||
+      it.kind === 'deactivate' ||
+      (it.kind === 'message' && (!!it.activate || !!it.deactivate)),
+  );
   // The calls still waiting on a reply, so a reply ends the activation its call began.
   const waiting: { caller: string; callee: string; auto: boolean }[] = [];
   const messages: {
@@ -126,7 +134,12 @@ export function layoutSequence(
       const self = it.from === it.to;
       // A plain call to another participant that is answered activates it until the answer.
       const auto =
-        !self && it.style === 'call' && !it.activate && !it.deactivate && answered.has(i);
+        !explicit &&
+        !self &&
+        it.style === 'call' &&
+        !it.activate &&
+        !it.deactivate &&
+        answered.has(i);
       if (it.style === 'reply' && !it.deactivate) {
         const w = [...waiting].reverse().find((c) => c.callee === it.from && c.caller === it.to);
         if (w) {
