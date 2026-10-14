@@ -56,3 +56,11 @@ describe('captions beside the glyph are unchanged', () => {
     expect(iconCaptionBand(el)).toEqual({ x: 60, y: 20, width: 50, height: 50, valign: 'middle' });
   });
 });
+
+// The canvas gives the glyph the whole box for a label of only spaces (iconMakesRoomForLabel), so the
+// export does too: the two pictures of one icon never differ.
+describe('a blank label', () => {
+  it('is no caption', () => {
+    expect(iconBandBounds({ ...box, label: '   ' })).toEqual(whole);
+  });
+});
