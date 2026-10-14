@@ -8,6 +8,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import {
   exportFontIds,
   tabWindowMayShow,
+  tabWindowNames,
   type ResolveTabWindow,
   type Tab,
   type TabWindowArt,
@@ -38,10 +39,7 @@ export function tabWindowArts(
   images: ReadonlyMap<string, ExportImageMap>,
   items?: Pick<Parameters<typeof renderTabToSvg>[1] & object, 'items' | 'itemTypes'>,
 ): Map<string, TabWindowArt> {
-  const names: ResolveTabWindow = (el) => {
-    const t = el.windowTabId ? tabs.find((x) => x.id === el.windowTabId) : undefined;
-    return t ? { name: t.name || 'Untitled tab' } : undefined;
-  };
+  const names = tabWindowNames(tabs);
   const arts = new Map<string, TabWindowArt>();
   for (const id of targets) {
     const t = tabs.find((x) => x.id === id);

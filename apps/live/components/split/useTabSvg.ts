@@ -1,7 +1,7 @@
 'use client';
 
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import type { Tab } from '@livediagram/document';
+import { tabWindowNames, type Tab } from '@livediagram/document';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
@@ -28,7 +28,12 @@ export type TabSvg = {
 // tab's photos. Re-rendered when the tab changes (an edit, a collaborator's op) at a deferred
 // priority, so a burst of remote edits never competes with the editor beside it.
 export function useTabSvg(tab: Tab | undefined): TabSvg | null {
-  const { imageContext } = useEditorContext();
+  const { imageContext, tabs } = useEditorContext();
+  // A window inside this tab is named for the tab it shows, as the export names it. Keyed on the tabs' names, not the
+  // tabs, so an edit anywhere in the document does not redraw this one.
+  const nameKey = tabs.map((t) => `${t.id}\u0000${t.name}`).join('\u0001');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const windowNames = useMemo(() => tabWindowNames(tabs), [nameKey]);
   const plan = usePlan();
   const { appearance } = useAppearance();
   const deferredTab = useDeferredValue(tab);
@@ -65,6 +70,7 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
     const markup = renderTabToSvg(seen, {
       pattern: false,
       images: images?.map,
+      resolveTabWindow: windowNames,
       ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
     });
     return {
@@ -72,5 +78,5 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
       ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
-  }, [deferredTab, appearance, images, plan, iconsReady]);
+  }, [deferredTab, appearance, images, plan, iconsReady, windowNames]);
 }
