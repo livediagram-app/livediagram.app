@@ -17,6 +17,7 @@ import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditSequence } from '@/lib/sequence-edit';
 import { getTheme, themeChartPalette } from '@/lib/themes';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 
 const LinkPickerDialog = dynamic(
   () => import('@/components/dialogs/LinkPickerDialog').then((m) => m.LinkPickerDialog),
@@ -89,6 +90,15 @@ export function EditorElementDialogs() {
     workbenchMode,
     can,
   } = useEditorContext();
+
+  useCloseVanishedDialogs(activeTab.elements, [
+    [linkPickerOpenForId, () => setLinkPickerOpenForId(null)],
+    [lineDataOpenForId, () => setLineDataOpenForId(null)],
+    [codeEditOpenForId, () => setCodeEditOpenForId(null)],
+    [sankeyFlowsOpenForId, () => setSankeyFlowsOpenForId(null)],
+    [sequenceOpenForId, () => setSequenceOpenForId(null)],
+    [mindOutline.openForId, mindOutline.close],
+  ]);
 
   // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
   // only, validated as a YouTube link. Every other element keeps the full
