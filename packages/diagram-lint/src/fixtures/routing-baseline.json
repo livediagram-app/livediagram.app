@@ -60,44 +60,44 @@
     "extent": "2761×280"
   },
   "graph-lanes-12": {
-    "shared": 12,
+    "shared": 0,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 2,
     "behind": 0,
     "collisions": 0,
-    "extent": "3188×1059"
+    "extent": "3188×1140"
   },
   "graph-lanes-13": {
-    "shared": 24,
+    "shared": 12,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 9,
     "behind": 0,
-    "collisions": 2,
-    "extent": "2755×901"
+    "collisions": 0,
+    "extent": "2755×974"
   },
   "graph-lanes-14": {
-    "shared": 186,
+    "shared": 174,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 1,
     "behind": 0,
     "collisions": 0,
-    "extent": "3518×919"
+    "extent": "3518×986"
   },
   "graph-lanes-15": {
-    "shared": 12,
+    "shared": 0,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 4,
     "behind": 0,
     "collisions": 0,
-    "extent": "2965×901"
+    "extent": "2965×974"
   },
   "graph-mindmap-24": {
     "shared": 0,

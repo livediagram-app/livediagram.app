@@ -407,6 +407,36 @@ describe('lanes', () => {
     expect(anchor('o')).not.toBe('s');
   });
 
+  it("spreads a decision's stacked next steps so its exits branch from the top and the point", () => {
+    const els = lay({
+      style: 'lanes',
+      nodes: [
+        { id: 'offer', label: 'Make offer', group: 'rec' },
+        { id: 'd', label: 'Accept offer?', shape: 'diamond', group: 'cand' },
+        { id: 'yes', label: 'Accept', group: 'cand' },
+        { id: 'no', label: 'Decline', group: 'cand' },
+      ],
+      groups: [
+        { id: 'cand', label: 'Candidate' },
+        { id: 'rec', label: 'Recruiter' },
+      ],
+      edges: [
+        { from: 'offer', to: 'd' },
+        { from: 'd', to: 'yes', label: 'yes' },
+        { from: 'd', to: 'no', label: 'no' },
+      ],
+    });
+    const [d, a, b] = ['d', 'yes', 'no'].map((id) => box(els, id));
+    // Each next step clears the decision's points by more than the branch threshold.
+    expect(midY(d!) - midY(a!)).toBeGreaterThan(d!.height / 2 + 24);
+    expect(midY(b!) - midY(d!)).toBeGreaterThan(d!.height / 2 + 24);
+    const anchors = ['yes', 'no'].map((to) => {
+      const arr = arrowTo(els, 'd', to);
+      return arr.from.kind === 'pinned' ? arr.from.anchor : null;
+    });
+    expect(new Set(anchors).size).toBe(2);
+  });
+
   it('gives nodes outside every group an unnamed lane of their own', () => {
     const els = lay({
       style: 'lanes',

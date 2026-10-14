@@ -27,4 +27,20 @@ describe('label-collision', () => {
       of(lint(tabOf(box('a', 0, 0), box('b', 160, 0), arrow('y', 'a', 'b'))), 'label-collision'),
     ).toEqual([]);
   });
+
+  it("fires when two arrows' labels overlap each other, once per pair", () => {
+    // Two lines on one route with their labels on the same spot.
+    const a = arrow('y', 'd', 'p', ['e', 'w'], {
+      label: 'Accept',
+      labelOffset: { t: 0.5, offset: 0 },
+    });
+    const b = arrow('n', 'd', 'p', ['e', 'w'], {
+      label: 'Decline',
+      labelOffset: { t: 0.5, offset: 0 },
+    });
+    const found = of(lint(tabOf(box('d', 0, 100), box('p', 600, 100), a, b)), 'label-collision');
+    expect(found).toHaveLength(1);
+    expect(found[0]!.refs).toEqual(['y', 'n']);
+    expect(found[0]!.message).toMatch(/label overlaps .*'s label/);
+  });
 });

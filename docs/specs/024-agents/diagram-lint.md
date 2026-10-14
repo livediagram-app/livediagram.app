@@ -19,7 +19,7 @@ Each **lint finding** has a code, a severity, the refs involved and a fix phrase
 | `arrow-dangling`    | error    | An arrow pinned to a missing element                                                                                                                               |
 | `arrow-behind-box`  | warning  | An arrow passes through a box it does not connect (not one drawn over boxes by choice, `routeBehind: false`)                                                       |
 | `edge-crossings`    | warning  | More crossing arrow pairs than `LINT_CROSSINGS_PER_ARROW` × arrows (a line drawn over by choice, `routeBehind: false`, crosses by design and is not counted)       |
-| `label-collision`   | warning  | An arrow label overlaps a box; its fix says how many characters fit on the edge's longest run                                                                      |
+| `label-collision`   | warning  | An arrow label overlaps a box or another arrow's label; its fix says how many characters fit on the edge's longest run                                             |
 | `label-overflow`    | warning  | A label needs more lines than its box holds                                                                                                                        |
 | `node-isolated`     | warning  | A labelled shape with no arrows on a tab that is otherwise a graph (an unlabelled one is decoration: a key's sample, a card)                                       |
 | `group-escape`      | warning  | A member lies outside its frame                                                                                                                                    |

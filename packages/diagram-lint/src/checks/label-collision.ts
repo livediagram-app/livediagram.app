@@ -28,25 +28,39 @@ function fits(
   return Math.max(3, Math.floor((longest - 2 * LINT_LABEL_RUN_PAD) / Math.max(1, perChar)));
 }
 
+const plateOf = (layout: { center: { x: number; y: number }; width: number; height: number }) => ({
+  x: layout.center.x - layout.width / 2,
+  y: layout.center.y - layout.height / 2,
+  width: layout.width,
+  height: layout.height,
+});
+
 export const labelCollision: Check = (ctx) =>
-  ctx.drawable.flatMap((d) => {
+  ctx.drawable.flatMap((d, i) => {
     const layout = ctx.labels.layouts.get(d.arrow.id);
     if (!layout) return [];
-    const plate = {
-      x: layout.center.x - layout.width / 2,
-      y: layout.center.y - layout.height / 2,
-      width: layout.width,
-      height: layout.height,
-    };
+    const plate = plateOf(layout);
     const hit = queryElementGrid(ctx.grid, padded(ctx, plate))
       .filter(isLintBox)
       .filter((box) => overlaps(plate, boxBounds(box)));
-    if (hit.length === 0) return [];
-    const boxes = hit.map((box) => refOf(ctx, box.id));
+    // Another arrow's label over this one (two exits' "Yes" and "No" stacked on one point): each pair once.
+    const labels = ctx.drawable.slice(i + 1).filter((o) => {
+      const other = ctx.labels.layouts.get(o.arrow.id);
+      return !!other && overlaps(plate, plateOf(other));
+    });
+    if (hit.length === 0 && labels.length === 0) return [];
+    const boxes = [
+      ...hit.map((box) => refOf(ctx, box.id)),
+      ...labels.map((o) => `${arrowName(ctx, o.arrow)}'s label`),
+    ];
     return [
       {
         code: 'label-collision' as const,
-        refs: [refOf(ctx, d.arrow.id), ...boxes],
+        refs: [
+          refOf(ctx, d.arrow.id),
+          ...hit.map((box) => refOf(ctx, box.id)),
+          ...labels.map((o) => refOf(ctx, o.arrow.id)),
+        ],
         message: `${arrowName(ctx, d.arrow)} label overlaps ${boxes.join(', ')}`,
         fix: fixes.labelCollision(
           ctx.source,

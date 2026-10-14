@@ -487,7 +487,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - **Lanes stay compact and their decisions branch.** In a `lanes` graph a hand-off to the next lane up or down that is
   its step's only way out and its next step's only way in drops straight into that lane, in the same column, rather
   than taking a column of its own, so a chain of hand-offs climbs or descends a staircase instead of stretching across
-  the page. A step with two or more exits (a decision, or any step that branches) keeps the one whose next step sits
+  the page. Next steps one step of the same lane feeds, stacked in one column, spread until each clears that step's
+  points, so its exits can branch. A step with two or more exits (a decision, or any step that branches) keeps the one whose next step sits
   most nearly level with it on its point toward the flow; each other exit leaves from its top or bottom, toward its
   next step's lane, and bends once into that step's side, so no two exits leave as parallel stubs. A flow down the
   page does the same across: of a step's exits leaving its bottom on their own ends (labelled, or drawn unlike the
