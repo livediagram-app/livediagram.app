@@ -11,7 +11,7 @@ import {
 import { pageBackgroundSet } from './illustrate-edits';
 import { worstContrast } from './page-ink-contrast';
 import { pageGroundUnder } from './page-ink-ground';
-import { pageInkFor, withPageInkFor, type InkMemory } from './page-ink';
+import { pageInkFor, pagesInkFor, withPageInkFor, type InkMemory } from './page-ink';
 
 // docs/specs/007-editor/illustrate-pages.md "Re-inking": nothing on a page becomes hard to read
 // when its fill changes, and only what falls under its floor moves.
@@ -624,6 +624,48 @@ describe('going back', () => {
       dark.memory,
     );
     expect(gone.memory.size).toBe(0);
+  });
+});
+
+describe('several pages in one walk', () => {
+  const pages = [{ ...PAGE }, { id: 'q', orientation: 'portrait' as const }];
+  const second = layOutIllustratePages(pages)[1]!.rect;
+  const onSecond = {
+    ...createText(second.x + 20, second.y + 20),
+    id: 'q-text',
+    width: 120,
+    height: 30,
+    label: 'Hi',
+    textColor: '#1e293b',
+  } as Element;
+  const tab = { elements: [text('t', 20, 20, '#1e293b'), onSecond], pages };
+
+  it('inks each page as pageInkFor would, one after the other, with one memory', () => {
+    const one = pageInkFor(tab, 'p', { fill: FILLS.dark! });
+    const both = pageInkFor(one.tab, 'q', { fill: FILLS.steep! }, one.memory);
+    const walk = pagesInkFor(tab, [
+      { pageId: 'p', background: { fill: FILLS.dark! } },
+      { pageId: 'q', background: { fill: FILLS.steep! } },
+    ]);
+    expect(walk.tab.elements).toEqual(both.tab.elements);
+    expect([...walk.memory]).toEqual([...both.memory]);
+  });
+
+  it('is the same tab for no pages, a missing page, or a page with nothing on it', () => {
+    expect(pagesInkFor(tab, []).tab).toBe(tab);
+    const missing = pagesInkFor(tab, [{ pageId: 'missing', background: { fill: FILLS.dark! } }]);
+    expect(missing.tab).toBe(tab);
+    const bare = { elements: [], pages };
+    expect(pagesInkFor(bare, [{ pageId: 'q', background: { fill: FILLS.dark! } }]).tab).toBe(bare);
+  });
+
+  it('judges a page named twice from what its first pass left', () => {
+    const twice = pagesInkFor(tab, [
+      { pageId: 'p', background: { fill: FILLS.dark! } },
+      { pageId: 'p', background: undefined },
+    ]);
+    // Back on the paper, the author's colour returns.
+    expect(byId(twice.tab.elements, 't').textColor).toBe('#1e293b');
   });
 });
 

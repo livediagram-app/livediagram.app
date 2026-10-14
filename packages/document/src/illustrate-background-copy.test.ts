@@ -191,9 +191,10 @@ describe('backgroundPatchFor', () => {
   });
 });
 
-// Performance: a deck at the page cap, every page full, takes one press. Measured 136 ms on an
-// M-series Mac (O(pages x elements): each page is re-inked against the tab); the budget is loose
-// for slower runners, there to catch a slide into worse than that.
+// Performance: a deck at the page cap, every page full, takes one press. Measured 130 ms CPU on an
+// M-series Mac, 175 ms under coverage: the pages are re-inked in one walk (pagesInkFor), where
+// page by page cost 251 ms and 706 ms, and went over this budget on a loaded CI runner. The budget is
+// loose for slower runners, there to catch a slide back into re-reading the tab for every page.
 describe('pageBackgroundSpread at the page cap', () => {
   it('gives 99 full slides one background within its budget', () => {
     const pages = Array.from({ length: 100 }, (_, i) =>

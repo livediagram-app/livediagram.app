@@ -5,7 +5,7 @@
 // Content on a page whose fill changed is re-inked for it, as any fill change re-inks. Pure.
 import {
   illustratePagesOf,
-  pageInkFor,
+  pagesInkFor,
   sameFill,
   withIllustratePages,
   type PageFill,
@@ -54,10 +54,10 @@ export function withPageBackgroundsFollowingTheme(tab: Tab, prev: Theme, next: T
     return { ...p, background: { ...p.background, fill: to } };
   });
   if (moved.length === 0) return tab;
-  let out = withIllustratePages(tab, nextPages) as Tab;
-  for (const id of moved) {
-    const background = nextPages.find((p) => p.id === id)!.background;
-    out = pageInkFor(out, id, background).tab;
-  }
-  return out;
+  // Every moved page inked in one walk: a theme change on a full deck moves them all.
+  const inks = moved.map((id) => ({
+    pageId: id,
+    background: nextPages.find((p) => p.id === id)!.background,
+  }));
+  return pagesInkFor(withIllustratePages(tab, nextPages) as Tab, inks).tab;
 }

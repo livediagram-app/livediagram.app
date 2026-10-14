@@ -12,11 +12,12 @@ import {
 } from './illustrate-page';
 import {
   pageBackgroundSet,
+  pageBackgroundStored,
   pageLockRefuses,
   pagesSharing,
   type PageEdit,
 } from './illustrate-edits';
-import type { InkMemory } from './page-ink';
+import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
 
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
@@ -84,20 +85,24 @@ export function pageBackgroundSpread<T extends PagesTab>(
   const own = pagesSharing(pages, pageId);
   const targets = pages.filter((p) => pageKindOf(p) === kind && !own.has(p.id));
   if (targets.length === 0) return { refused: 'no_other_pages' };
+  // Every page's background written first, then all of them re-inked in one walk (pagesInkFor):
+  // inking page by page re-reads the whole tab for each, O(pages x elements) at the page cap.
   let out = tab;
-  let recall = memory;
+  const inks: PageInk[] = [];
   let applied = 0;
   let skipped = 0;
   for (const target of targets) {
     const patch = backgroundPatchFor(target, source.background);
-    const edit = patch ? pageBackgroundSet(out, target.id, patch, recall) : null;
+    const edit = patch ? pageBackgroundStored(out, target.id, patch) : null;
     if (!edit || 'refused' in edit) {
       skipped += 1;
       continue;
     }
     out = edit.tab;
-    recall = edit.memory ?? recall;
+    inks.push(...edit.inks);
     applied += 1;
   }
-  return { tab: out, ...(recall ? { memory: recall } : {}), applied, skipped };
+  const inked = pagesInkFor(out, inks, memory);
+  const recall = inks.length > 0 ? inked.memory : memory;
+  return { tab: inked.tab, ...(recall ? { memory: recall } : {}), applied, skipped };
 }
