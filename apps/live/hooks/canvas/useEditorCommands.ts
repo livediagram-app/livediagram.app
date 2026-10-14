@@ -79,6 +79,7 @@ export function useEditorCommands(open: boolean): {
   );
   // Draw mode (docs/specs/007-editor/editor-modes.md) has no format painter.
   const whiteboard = ctx.editorMode.mode === 'draw';
+  const planMode = ctx.editorMode.mode === 'plan';
   const {
     isReadOnly,
     isOwner,
@@ -160,6 +161,7 @@ export function useEditorCommands(open: boolean): {
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
   // visitors keep the view-safe subset, editors get the full catalogue.
   const canvasEmpty = activeTab.elements.length === 0;
+  const tabLocked = activeTab.locked === true;
   const cmdCtx = useMemo<CommandContext>(
     () => ({
       isReadOnly,
@@ -186,6 +188,8 @@ export function useEditorCommands(open: boolean): {
       isMobile,
       esBoard,
       whiteboard,
+      planMode,
+      tabLocked,
       photoImportAvailable,
     }),
     [
@@ -210,6 +214,8 @@ export function useEditorCommands(open: boolean): {
       isMobile,
       esBoard,
       whiteboard,
+      planMode,
+      tabLocked,
       photoImportAvailable,
     ],
   );
