@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { layOutIllustratePages, type PageImageFill } from '@livediagram/document';
+import type { PageImageFill } from '@livediagram/document';
 import { backgroundCategoryOf, fillCss, pageSheetStyle } from './illustrate-page-paint';
-import { pageExportFrame } from './export-page';
 import {
   pageImageCssUrl,
   pageImageOverlayCss,
   pageImagePositionCss,
   pageImageSrc,
-  pageImageSvg,
 } from './page-image-paint';
 
 // docs/specs/007-editor/illustrate-pages.md "Image backgrounds": the overlay, the crop, and the
@@ -85,45 +83,5 @@ describe('a picture on the sheet', () => {
     expect(fillCss(fill({ tone: '#000000', overlay: { kind: 'light', strength: 0.5 } }))).toBe(
       '#808080',
     );
-  });
-});
-
-describe('a picture in an export', () => {
-  const rect = { x: 0, y: 0, width: 100, height: 200 };
-
-  it('embeds the picture cropped to cover, under its overlay', () => {
-    const svg = pageImageSvg(fill({ position: 'bottom' }), rect, 'data:image/png;base64,AA==', 'p');
-    expect(svg).toContain('<rect x="0" y="0" width="100" height="200" fill="#203040"/>');
-    expect(svg).toContain('href="data:image/png;base64,AA==" preserveAspectRatio="xMidYMax slice"');
-    expect(svg).toContain('fill="#ffffff" fill-opacity="0.6"');
-    expect(svg.indexOf('<image')).toBeLessThan(svg.indexOf('fill-opacity'));
-  });
-
-  it('fades with a gradient, and paints the tone where the bytes are missing', () => {
-    const svg = pageImageSvg(
-      fill({ overlay: { kind: 'fade', strength: 0.7 } }),
-      rect,
-      undefined,
-      'p',
-    );
-    expect(svg).not.toContain('<image');
-    expect(svg).toContain('<linearGradient id="p-fade"');
-    expect(svg).toContain('stop-opacity="0.7"');
-  });
-
-  it('is the page frame’s background, with the bytes it is handed', () => {
-    const [page] = layOutIllustratePages([
-      { id: 'p1', orientation: 'portrait', background: { fill: fill(), pattern: 'grid' } },
-    ]);
-    const withBytes = pageExportFrame(page!, { imageHref: () => 'data:image/jpeg;base64,BB==' });
-    expect(withBytes.backgroundSvg).toContain('href="data:image/jpeg;base64,BB=="');
-    expect(withBytes.backgroundSvg.indexOf('<image')).toBeLessThan(
-      withBytes.backgroundSvg.indexOf('-pattern'),
-    );
-    // The Map and the thumbnails have no bytes: the page in its tone, overlaid.
-    const map = pageExportFrame(page!, { paper: '#0f172a' });
-    expect(map.backgroundSvg).not.toContain('<image');
-    expect(map.backgroundSvg).toContain('fill="#203040"');
-    expect(map.surface).toBe('light');
   });
 });

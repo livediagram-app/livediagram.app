@@ -782,3 +782,5 @@ export * from './dashboard-card-style';
 export * from './tab-names';
 export { planBoardFitHeight } from './svg-render-plan';
 export * from './svg-render-pages';
+export * from './article-draw-ops';
+export * from './article-layout-estimate';
