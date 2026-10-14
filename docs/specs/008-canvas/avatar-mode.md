@@ -102,7 +102,7 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 ## Status
 
 Your character can say **how you are** without a word: a status set from the Avatar panel, shown to everyone on
-the tab while you are in the mode. It is what makes a [virtual office](../009-elements/office.md) read at a glance:
+the tab while you are in the mode. It is what makes a virtual office read at a glance:
 who is free to talk, who is heads-down, who has stepped away.
 
 | Status           | Token       | How it shows                                                   |
