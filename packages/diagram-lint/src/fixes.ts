@@ -10,10 +10,17 @@ export const fixes = {
   boxOverlap: (s: LintSource, a: string, b: string) =>
     pick(s, `move ${b} right-of:${a}`, 'graph lint --compare direction,groups'),
   arrowDangling: (s: LintSource, arrow: string) => pick(s, `rm ${arrow}`, 'remove the edge'),
-  arrowBehindBox: (s: LintSource, arrow: string, angled: boolean) =>
+  // A style whose route clears every box, else advice: a style suggested blind passed behind another box, and the
+  // next lint suggested the style back.
+  arrowBehindBox: (
+    s: LintSource,
+    arrow: string,
+    style: string | null,
+    move: { box: string; by: { dx: number; dy: number } },
+  ) =>
     pick(
       s,
-      `set ${arrow} line=${angled ? 'curved' : 'angled'}`,
+      style ? `set ${arrow} line=${style}` : `move ${move.box} by=${move.by.dx},${move.by.dy}`,
       'drop the groups, or lines: angled',
     ),
   // `layout` lays out shapes alone, so on a tab with frames or lanes it would leave them behind: there the fix

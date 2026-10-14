@@ -37,3 +37,6 @@ export const LINT_RING_SPREAD = 0.35;
 
 // Room a label keeps either end of its run (graph input's LABEL_RUN_MARGIN), for the characters a run holds.
 export const LINT_LABEL_RUN_PAD = 16;
+
+// How far clear of a line arrow-behind-box's move puts the box (a label plate's height and some).
+export const LINT_MOVE_CLEAR = 16;
