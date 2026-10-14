@@ -225,12 +225,19 @@ describe('key samples', () => {
     edges: tones.map((_, i) => ({ from: `s${i}`, to: 'step' })),
     key: true,
   });
-  it('shows a kind in its ordinary look, not the muted exception among it', () => {
+  it('shows a kind in its ordinary look, and the muted exception in a row of its own', () => {
     const els = lay(kinds(['soft', 'soft', 'muted']));
     const keyed = els.filter(
       (e) => e.type === 'shape' && e.shape === 'stadium' && e.width < 100,
     ) as { colorPreset?: string }[];
-    expect(keyed.map((k) => k.colorPreset)).toEqual(['soft']);
+    expect(keyed.map((k) => k.colorPreset)).toEqual(['soft', 'outline']);
+    const labels = els.filter((e) => e.type === 'text').map((e) => (e as { label?: string }).label);
+    expect(labels).toContain('Exception or optional');
+    // Named like a shape, through the key object.
+    const named = lay({ ...kinds(['soft', 'muted']), key: { muted: 'Error path' } });
+    expect(
+      named.some((e) => e.type === 'text' && (e as { label?: string }).label === 'Error path'),
+    ).toBe(true);
   });
 
   it('shows the muted look when every one of the kind is muted', () => {

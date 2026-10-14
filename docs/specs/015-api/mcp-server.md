@@ -508,7 +508,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
   an edit, as one: one miniature per shape kind the graph uses, with
-  what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted. `true` names them by default: in a flowchart by ISO 5807
+  what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted;
+  those exceptions then get a row of their own, "Exception or optional" (`{"muted": "Error path"}` renames it), so a
+  dashed step never goes unexplained. `true` names them by default: in a flowchart by ISO 5807
   (stadium "Start or end", square "Step", diamond "Decision", parallelogram "Input or output", document "Document",
   hexagon "Preparation"), otherwise as a diagram of systems reads them (stadium "Entry point", square "Component",
   hexagon "Hub or bus", circle "Node"; cylinder "Data store", cloud "External system", actor "Person" in both). An
