@@ -4,6 +4,7 @@
 // arrives only when opened or fetched) with its photos, then drawn once and fitted inside the window, as on screen.
 // A window inside a shown tab draws as its frame named for its tab, so nothing recurses.
 import { useEffect, useMemo, useState } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 import {
   exportFontIds,
   tabWindowMayShow,
@@ -13,7 +14,7 @@ import {
 } from '@livediagram/document';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
-import type { ExportImageMap } from '@/lib/export-tab-images';
+import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
 import { svgFrameOf } from '@/lib/svg-frame';
 
 type ImageContext = { ownerId: string; documentId: string; shareCode: string | null };
@@ -111,18 +112,25 @@ export function useTabWindowExport({
     () => (fetched === key ? targets.flatMap((id) => tabs.filter((t) => t.id === id)) : []),
     [fetched, key, targets, tabs],
   );
+  // Keyed on the shown tabs' photo ids, not on the tabs: an edit to any tab (a collaborator's, say)
+  // makes new tab objects, and refetching every photo on each would keep the export from settling.
+  const photoKey = `${key}|${shown.map((t) => `${t.id}:${tabImageKey(t)}`).join(';')}`;
+  const shownNow = useLatest(shown);
   useEffect(() => {
-    if (!imageContext || shown.length === 0) return;
+    const now = shownNow.current;
+    if (!imageContext || now.length === 0) return;
     let live = true;
     void Promise.all(
-      shown.map(async (t) => [t.id, await loadTabImages(t, imageContext)] as const),
-    ).then((pairs) => live && setImages({ key, map: new Map(pairs) }));
+      now.map(async (t) => [t.id, await loadTabImages(t, imageContext)] as const),
+    ).then((pairs) => live && setImages({ key: photoKey, map: new Map(pairs) }));
     return () => {
       live = false;
     };
-  }, [shown, imageContext, key]);
-  // Drawn once everything has arrived: the content, and the photos where there is a way to fetch them.
-  const settled = fetched === key && (!imageContext || images.key === key);
+  }, [photoKey, imageContext, shownNow]);
+  // Drawn once everything has arrived: the content, and the photos where there is a way to fetch
+  // them. A window whose tab is gone (deleted) shows no tab, so it waits for no photos.
+  const settled =
+    fetched === key && (!imageContext || shown.length === 0 || images.key === photoKey);
   return useMemo(() => {
     if (targets.length === 0) return { ready: true };
     if (!settled) return { ready: false };
