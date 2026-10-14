@@ -22,7 +22,7 @@ All in `lib/gif-export/gif-timeline.ts`.
 
 | Constant             | Value                                      | Provenance / safe range                                                    |
 | -------------------- | ------------------------------------------ | -------------------------------------------------------------------------- |
-| `GIF_FPS`            | 15                                         | Spec. GIF delays are centiseconds: 15 fps is exact over 3 frames (7, 7, 6) |
+| `GIF_FPS`            | 15                                         | Spec. GIF delays are centiseconds: 15 fps is exact over 3 frames (7, 6, 7) |
 | `GIF_HOLD_MIN_S`     | 1                                          | Spec                                                                       |
 | `GIF_HOLD_MAX_S`     | 20                                         | Spec                                                                       |
 | `GIF_HOLD_STEP_S`    | 0.5                                        | Spec                                                                       |
