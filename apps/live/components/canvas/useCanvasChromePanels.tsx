@@ -1,5 +1,6 @@
 'use client';
 
+import { isTypingTarget } from '@/lib/typing-target';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
@@ -297,6 +298,20 @@ export function useCanvasChromePanels({
   useEffect(() => {
     if (activeDockPanel === 'avatar' && !avatarMode) closeDockPanel();
   }, [activeDockPanel, avatarMode, closeDockPanel]);
+  // Escape closes the Avatar panel and nothing else (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"):
+  // caught ahead of the editor's shortcuts, where Escape would otherwise leave Avatar mode altogether. A typing
+  // field in the panel (the message view) handles its own Escape first.
+  useEffect(() => {
+    if (!avatarOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented || isTypingTarget(e.target)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      closeDockPanel();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [avatarOpen, closeDockPanel]);
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
