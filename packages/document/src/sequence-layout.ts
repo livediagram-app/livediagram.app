@@ -168,7 +168,9 @@ export function layoutSequence(
       const toX = self ? fromX : edge(it.to, right);
       if (it.deactivate) deactivate(it.from, y);
       if (!self && it.style === 'call')
-        waiting.push({ caller: it.from, callee: it.to, auto: auto || !!it.activate });
+        // Only an activation the layout opened itself closes at the reply; one the author opened (`+`) stays open
+        // until its `-`, as Mermaid draws it.
+        waiting.push({ caller: it.from, callee: it.to, auto });
       messages.push({ item: { ...it, label }, y, fromX, toX, right });
       if (self) {
         activate(it.from, y + SELF_DROP);

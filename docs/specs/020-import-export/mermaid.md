@@ -146,7 +146,8 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
   head), `A-)B: text` (async: solid, open head), `A-->>B: text` and `A-->B: text` (a reply: dashed, open head),
   `A->B` and `A-xB` (calls); `A->>A` is a self-call. `+` and `-` after the arrow (`A->>+B`, `B-->>-A`) and
   `activate B` / `deactivate B` start and end activations at the message the line follows; a message into B that
-  `activate B` follows ends on the bar it starts, not on B's lifeline inside it. `Note over A,B: text`, `Note right of A: text`,
+  `activate B` follows ends on the bar it starts, not on B's lifeline inside it. An activation the author opened (`+`,
+  `activate`) stays open until its `-` or `deactivate`; a reply on the way does not close it. `Note over A,B: text`, `Note right of A: text`,
   `Note left of A: text`. Fragments `loop`, `alt` (with `else`), `opt`, `par` (with `and`), `critical`, `break`,
   each closed by `end`. `autonumber` numbers the messages; `title Text` (or front matter `title:`) heads the
   diagram. `rect` blocks, `box` groupings, links and styling are read and skipped, never an error.

@@ -266,3 +266,29 @@ describe('late activations and notes', () => {
     expect(note).toMatchObject({ textAlignX: 'center', textAlignY: 'middle' });
   });
 });
+
+describe('author activations', () => {
+  it('keeps a + activation open past a reply, until its -', () => {
+    const g = graphFromMermaid(`sequenceDiagram
+  participant B
+  participant A
+  B->>+A: Authorise
+  A-->>B: Redirect
+  B->>A: Exchange code
+  A-->>-B: Tokens`);
+    if (!g.ok) throw new Error(g.error);
+    let n = 0;
+    const els = layoutGraph(g.graph, { makeEdgeId: () => `z${n++}` });
+    const bars = els.filter((e) => e.type === 'shape' && (e as { width: number }).width === 14) as {
+      y: number;
+      height: number;
+    }[];
+    expect(bars).toHaveLength(1);
+    const message = (label: string) =>
+      els.find((e): e is ArrowElement => e.type === 'arrow' && e.label === label)!;
+    const yOf = (a: ArrowElement) => (a.from.kind === 'free' ? a.from.y : 0);
+    // One bar from the authorise call to the tokens reply, the exchange on it.
+    expect(bars[0]!.y).toBeLessThanOrEqual(yOf(message('Authorise')));
+    expect(bars[0]!.y + bars[0]!.height).toBeGreaterThanOrEqual(yOf(message('Tokens')));
+  });
+});
