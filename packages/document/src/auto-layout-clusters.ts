@@ -20,6 +20,7 @@ import {
 import { unionRects, type Rect } from './geometry-primitives';
 import { bowReciprocalEdges } from './arrow-reciprocal';
 import { faceGroupEdges, headingLead, seatByMembers } from './auto-layout-cluster-seats';
+import { lineUpStackedFrames } from './auto-layout-cluster-stack';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // Space between a frame's border and its members: the top band is deeper so
@@ -242,6 +243,15 @@ export function layoutClusteredGraph(
   orderMembersByNeighbours(clusters, placedNodes, placedFrames, graph, direction ?? 'TB');
   // 3c. Each node outside the groups that members link to sits by those members, not by the group's middle.
   seatByMembers(placedNodes, placedFrames, clusterOf, graph, direction ?? 'TB');
+  // 3d. Groups stacked down the flow share one width, so a pipeline's stages read as one column.
+  lineUpStackedFrames(
+    placedFrames,
+    placedNodes,
+    clusterOf,
+    soleEntries(clusters, graph),
+    FRAME_PAD,
+    direction ?? 'TB',
+  );
 
   // 4. Real arrows over the final geometry: every edge whose endpoints name
   // a node or a frame, re-anchored to the sides that face. Self-loops are
@@ -269,6 +279,19 @@ export function layoutClusteredGraph(
   return bowReciprocalEdges(
     sweepEdgelessNodes([...placedFrames, ...placedNodes, ...faced], deliberate),
   );
+}
+
+// Each group's one member a line from outside reaches, for a group that has exactly one.
+function soleEntries(clusters: GraphCluster[], graph: DiagramGraph): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const c of clusters) {
+    const inside = new Set(c.members);
+    const entered = new Set(
+      graph.edges.filter((e) => inside.has(e.to) && !inside.has(e.from)).map((e) => e.to),
+    );
+    if (entered.size === 1) out.set(c.id, [...entered][0]!);
+  }
+  return out;
 }
 
 // A group's members that no arrow inside the group touches (the usual case: a

@@ -484,6 +484,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   D2 "publish events" bus). An edge between two nodes outside a group is routed round the frame, never through the
   gaps between its members. A line into a group's first members lands clear of its heading: down the page, a frame
   whose first member would take a line through the heading's text is widened on the left until it does not.
+- **Stacked groups line up.** Groups that follow one another down the flow, no two side by side (a pipeline's
+  stages), share one width: each frame spans the union of theirs across the flow, so the stages read as one column
+  rather than boxes of four widths off the spine. Skipped when a widened frame would take in a node outside it.
 - **Lanes stay compact and their decisions branch.** In a `lanes` graph a hand-off to the next lane up or down that is
   its step's only way out and its next step's only way in drops straight into that lane, in the same column, rather
   than taking a column of its own, so a chain of hand-offs climbs or descends a staircase instead of stretching across

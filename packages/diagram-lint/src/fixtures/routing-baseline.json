@@ -27,7 +27,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1836×1018"
+    "extent": "1854×1018"
   },
   "graph-flow-15": {
     "shared": 2934,
@@ -37,10 +37,10 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1992×1018"
+    "extent": "2010×1018"
   },
   "graph-flow-17": {
-    "shared": 314,
+    "shared": 312,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
