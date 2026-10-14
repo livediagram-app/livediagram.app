@@ -121,6 +121,9 @@ function movedBoxes(before: ReadonlyMap<ElementId, Element>, next: Element[]): S
   return moved;
 }
 
+// The fields that are an arrow's route.
+const ROUTE_FIELDS = ['curvePoints', 'curveOffset', 'elbowOffset'] as const;
+
 // An arrow the rebind re-anchored with one end's box moved and the other still is drawn afresh (EO31): kept, its
 // route ran from the new anchor through the moved box. Both ends moved, the arrow moved whole and its route holds.
 function rerouteRebound(
@@ -129,15 +132,15 @@ function rerouteRebound(
   moved: ReadonlySet<ElementId>,
 ): Element[] {
   if (rebound === landed) return rebound;
-  const anchorOf = (end: Endpoint) => (end.kind === 'pinned' ? end.anchor : null);
+  const anchorOf = (end: Endpoint) => (end as { anchor?: string }).anchor;
   const endsMoved = (a: ArrowElement) =>
     [a.from, a.to].filter((end) => end.kind === 'pinned' && moved.has(end.elementId)).length;
   return rebound.map((el, i) => {
     const was = landed[i];
     if (el.type !== 'arrow' || !was || was === el || was.type !== 'arrow') return el;
-    const reanchored =
-      anchorOf(el.from) !== anchorOf(was.from) || anchorOf(el.to) !== anchorOf(was.to);
-    const routed = el.curvePoints || el.curveOffset || el.elbowOffset;
+    const ends = (a: ArrowElement) => `${anchorOf(a.from)}>${anchorOf(a.to)}`;
+    const reanchored = ends(el) !== ends(was);
+    const routed = ROUTE_FIELDS.some((k) => el[k] !== undefined);
     return reanchored && routed && endsMoved(el) === 1 ? rerouted(el, rebound) : el;
   });
 }

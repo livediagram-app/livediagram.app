@@ -175,7 +175,8 @@ function collect(name: EditOperationName, words: readonly Word[]): Collected | L
       }
       // Placements combine after the loop: a side or `after` with an `inside:` and an `align:`.
       if (out.place || out.pending) {
-        (out.pending ??= out.place ? [out.placeWord!] : []).push({ word, ...placement });
+        // Nothing pending yet means the one placement so far is `out.place`.
+        (out.pending ??= [out.placeWord!]).push({ word, ...placement });
         out.place = undefined;
         continue;
       }

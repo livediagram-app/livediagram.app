@@ -25,13 +25,13 @@ const overlaps = (a: Rect, b: Rect) =>
 function fits(
   polyline: readonly { x: number; y: number }[],
   plateWidth: number,
-  label?: string,
+  label: string,
 ): number {
   const longest = Math.max(
     0,
     ...polyline.slice(1).map((p, i) => Math.hypot(p.x - polyline[i]!.x, p.y - polyline[i]!.y)),
   );
-  const perChar = plateWidth / Math.max(1, (label ?? '').trim().length);
+  const perChar = plateWidth / Math.max(1, label.trim().length);
   return Math.max(3, Math.floor((longest - 2 * LINT_LABEL_RUN_PAD) / Math.max(1, perChar)));
 }
 
@@ -69,21 +69,17 @@ const onTrack = (a: Point, b: Point, c: Point, axis: 'level' | 'upright' | null)
       ? Math.abs(a.x - b.x) < 1 && Math.abs(a.x - c.x) < 1
       : false;
 
-// The point a fraction of the way along a polyline, by length.
+// The point a fraction of the way along a polyline (two points or more), by length.
 function pointAt(pts: readonly Point[], t: number): Point {
   const lens = pts.slice(1).map((p, i) => Math.hypot(p.x - pts[i]!.x, p.y - pts[i]!.y));
   let left = t * lens.reduce((s, l) => s + l, 0);
-  for (let i = 0; i < lens.length; i++) {
-    if (left <= lens[i]! || i === lens.length - 1) {
-      const f = lens[i]! > 0 ? Math.min(1, left / lens[i]!) : 0;
-      return {
-        x: pts[i]!.x + (pts[i + 1]!.x - pts[i]!.x) * f,
-        y: pts[i]!.y + (pts[i + 1]!.y - pts[i]!.y) * f,
-      };
-    }
-    left -= lens[i]!;
-  }
-  return pts[0]!;
+  let i = 0;
+  while (i < lens.length - 1 && left > lens[i]!) left -= lens[i++]!;
+  const f = Math.min(1, left / Math.max(lens[i]!, 1e-9));
+  return {
+    x: pts[i]!.x + (pts[i + 1]!.x - pts[i]!.x) * f,
+    y: pts[i]!.y + (pts[i + 1]!.y - pts[i]!.y) * f,
+  };
 }
 
 // Where along its own line a struck label sits clear: the first of these fractions whose plate meets no box and no
@@ -169,7 +165,7 @@ export const labelCollision: Check = (ctx) =>
               : fixes.labelCollision(
                   ctx.source,
                   arrowSelector(ctx, d.arrow),
-                  fits(d.polyline, layout.width, d.arrow.label),
+                  fits(d.polyline, layout.width, d.arrow.label!),
                 ),
           at: d.polyline[0]!,
         },
@@ -191,7 +187,7 @@ export const labelCollision: Check = (ctx) =>
         fix: fixes.labelCollision(
           ctx.source,
           arrowSelector(ctx, d.arrow),
-          fits(d.polyline, layout.width, d.arrow.label),
+          fits(d.polyline, layout.width, d.arrow.label!),
         ),
         at: d.polyline[0]!,
       },

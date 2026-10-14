@@ -48,6 +48,48 @@ describe('label-collision', () => {
     expect(of(lint(bus), 'label-collision')).toEqual([]);
   });
 
+  it('names both a box and another label a plate overlaps, and fixes it by length', () => {
+    const tab = tabOf(
+      box('a', 0, 0),
+      box('b', 160, 0),
+      box('c', 0, 12),
+      box('d', 160, 12),
+      arrow('x', 'a', 'b', ['e', 'w'], {
+        label: 'A long label that will not fit',
+        labelOffset: { t: 0.5, offset: 0 },
+      }),
+      arrow('y', 'c', 'd', ['e', 'w'], {
+        label: 'Another long one',
+        labelOffset: { t: 0.5, offset: 0 },
+      }),
+    );
+    const [f] = of(lint(tab), 'label-collision');
+    expect(f!.message).toMatch(/^a→b label overlaps .*c→d's label/);
+    expect(f!.refs).toEqual(expect.arrayContaining(['x', 'y']));
+    expect(f!.fix).toMatch(/label="<at most \d+ characters>"/);
+  });
+
+  it('shortens a struck label when no spot along its line is clear', () => {
+    // Lines drop across a→b every 100 px: wherever its wide plate sits, one strikes it.
+    const drops = [150, 250, 350, 450, 550, 650].flatMap((x, i) => [
+      box(`t${i}`, x - 60, -300),
+      box(`u${i}`, x - 60, 300),
+      arrow(`v${i}`, `t${i}`, `u${i}`, ['s', 'n']),
+    ]);
+    const tab = tabOf(
+      box('a', 0, 0),
+      box('b', 800, 0),
+      arrow('x', 'a', 'b', ['e', 'w'], {
+        label: 'a long label of many words across',
+        labelOffset: { t: 0.5, offset: 0 },
+      }),
+      ...drops,
+    );
+    const [f] = of(lint(tab), 'label-collision').filter((x) => x.refs[0] === 'x');
+    expect(f!.message).toMatch(/^a→b label struck by/);
+    expect(f!.fix).toMatch(/label="<at most \d+ characters>"/);
+  });
+
   it('moves a label off another label along its own line, rather than shortening it', () => {
     // Two long level arrows a few pixels apart, each label placed at its middle (as the graph look places them): the
     // plates overlap.

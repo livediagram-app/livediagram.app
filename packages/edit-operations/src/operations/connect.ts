@@ -179,16 +179,28 @@ function prevailingLine(
   return bends ? { ...turned, curvePoints: bends } : { ...turned, arrowStyle: 'straight' };
 }
 
-// The side of `a` that faces all of `b`, past its edge: a box below a gateway faces its south side.
+// Each side's way out, and its opposite.
+const OUT = {
+  n: { x: 0, y: -1 },
+  s: { x: 0, y: 1 },
+  e: { x: 1, y: 0 },
+  w: { x: -1, y: 0 },
+} as const;
 const OPPOSITE = { n: 's', s: 'n', e: 'w', w: 'e' } as const;
-const facesAll = (side: 'n' | 's' | 'e' | 'w', a: BoxedElement, b: BoxedElement) =>
-  side === 's'
-    ? b.y >= a.y + a.height
-    : side === 'n'
-      ? b.y + b.height <= a.y
-      : side === 'e'
-        ? b.x >= a.x + a.width
-        : b.x + b.width <= a.x;
+type Side = keyof typeof OUT;
+const isSide = (anchor: string): anchor is Side => anchor in OUT;
+
+// Whether `b` lies wholly past `a`'s `side` (a box below a gateway faces its south side): along the side's way out,
+// the gap between their centres is at least their two half-extents.
+function facesAll(side: Side, a: BoxedElement, b: BoxedElement): boolean {
+  const d = OUT[side];
+  const along =
+    d.x * (b.x + b.width / 2 - (a.x + a.width / 2)) +
+    d.y * (b.y + b.height / 2 - (a.y + a.height / 2));
+  const reach =
+    (Math.abs(d.x) * (a.width + b.width)) / 2 + (Math.abs(d.y) * (a.height + b.height)) / 2;
+  return along >= reach;
+}
 
 // An angled arrow from a box that already sends a trunk (an exact-started angled arrow, its two bends on one cross
 // line) out of the side facing `b` leaves from that point too and bends in the trunk's channel, into `b`'s facing side
@@ -200,22 +212,21 @@ function joinTrunk(
   a: BoxedElement,
   b: BoxedElement,
 ): ArrowElement | null {
-  const trunk = currentElements(state).find(
-    (el): el is ArrowElement =>
-      el.type === 'arrow' &&
-      el.arrowStyle === 'angled' &&
-      el.exactStart === true &&
-      el.curvePoints?.length === 2 &&
-      el.from.kind === 'pinned' &&
-      el.from.elementId === a.id &&
-      (el.from.anchor === 'n' ||
-        el.from.anchor === 's' ||
-        el.from.anchor === 'e' ||
-        el.from.anchor === 'w') &&
-      facesAll(el.from.anchor, a, b),
-  );
-  if (!trunk || trunk.from.kind !== 'pinned') return null;
-  const side = trunk.from.anchor as 'n' | 's' | 'e' | 'w';
+  const sideOf = (el: Element): Side | null =>
+    el.type === 'arrow' &&
+    el.arrowStyle === 'angled' &&
+    el.exactStart === true &&
+    el.curvePoints?.length === 2 &&
+    el.from.kind === 'pinned' &&
+    el.from.elementId === a.id &&
+    isSide(el.from.anchor) &&
+    facesAll(el.from.anchor, a, b)
+      ? el.from.anchor
+      : null;
+  const trunk = currentElements(state).find((el) => sideOf(el) !== null) as
+    ArrowElement | undefined;
+  if (!trunk) return null;
+  const side = sideOf(trunk)!;
   const down = side === 'n' || side === 's';
   // The trunk's channel: its bends' position along the flow, from the midpoint its curvePoints are measured from.
   const [p0, p1] = [

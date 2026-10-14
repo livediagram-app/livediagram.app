@@ -106,12 +106,12 @@ function giveBackRoom(
   goneId: ElementId,
   operation: number,
 ): void {
-  const holder = state.byId.get(holderId);
-  if (!holder || holder.type === 'arrow' || state.locked.has(holder.id)) return;
+  // A holder is a frame or lane, always a box.
+  if (state.locked.has(holderId)) return;
+  const c = state.byId.get(holderId) as BoxedElement;
   const holders = holdersOf(state);
   const stays = boundsOf(currentElements(state).filter((el) => holders.get(el.id) === holderId));
   if (!stays) return;
-  const c = holder as BoxedElement;
   const [right, bottom] = [c.x + c.width, c.y + c.height];
   const reached = {
     left: gone.x < stays.x,

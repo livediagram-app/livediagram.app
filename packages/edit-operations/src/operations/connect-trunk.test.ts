@@ -7,19 +7,20 @@ import {
   elementIndexFor,
   resolveGraphInput,
   type ArrowElement,
+  type BoxedElement,
   type Tab,
 } from '@livediagram/document';
 import { applied } from '../fixtures/outcomes';
 import { run } from '../fixtures/run';
 
-const gateway = (): Tab =>
+const gateway = (direction: 'down' | 'right' = 'down'): Tab =>
   buildGraphTab(
     't',
     'T',
     resolveGraphInput({
       graph: {
         style: 'flow',
-        direction: 'down',
+        direction,
         nodes: [
           { id: 'gw', label: 'Gateway' },
           { id: 'a', label: 'Service A' },
@@ -57,5 +58,30 @@ describe('connect joins a trunk', () => {
     const index = elementIndexFor(tab.elements);
     const bendY = (a: ArrowElement) => arrowPolyline(a, index)[1]!.y;
     expect(Math.abs(bendY(made) - bendY(sibling))).toBeLessThan(0.5);
+  });
+
+  it('joins a trunk across the page too, out of the side the flow leaves by', () => {
+    const { tab } = applied(
+      run('add square id=d label="Service D" below:c\nconnect gw -> d', gateway('right')),
+    );
+    const made = arrowTo(tab, 'd');
+    const sibling = arrowTo(tab, 'c');
+    expect(made).toMatchObject({ exactStart: true, to: { elementId: 'd', anchor: 'w' } });
+    const index = elementIndexFor(tab.elements);
+    const bendX = (a: ArrowElement) => arrowPolyline(a, index)[1]!.x;
+    expect(Math.abs(bendX(made) - bendX(sibling))).toBeLessThan(0.5);
+  });
+
+  it("draws its own line when the target sits before the trunk's channel", () => {
+    const start = gateway();
+    const gw = start.elements.find((e) => e.id === 'gw') as BoxedElement;
+    // Just below the gateway, above where the trunk bends: no channel between them to join.
+    const { tab } = applied(
+      run(
+        `add square id=z label=Z x=${gw.x + 400} y=${gw.y + gw.height + 4}\nconnect gw -> z`,
+        start,
+      ),
+    );
+    expect(arrowTo(tab, 'z').exactStart).toBeUndefined();
   });
 });

@@ -60,6 +60,23 @@ describe('group-split-edges', () => {
     expect(of(stage([40, 600]), 'group-split-edges')).toEqual([]);
     // Drained to the side instead: split, not passed through.
     expect(of(stage([400, 300]), 'group-split-edges')).toHaveLength(1);
+    // An arrow from a member to a loose point has no box beyond the frame: not passed through either.
+    const loose = lint(
+      tabOf(
+        ...core(),
+        box('p', 40, -200),
+        arrow('1', 'p', 'a', ['s', 'n']),
+        arrow('2', 'p', 'b', ['s', 'n']),
+        arrow('3', 'a', 'b', ['s', 'n']),
+        {
+          id: '4',
+          type: 'arrow',
+          from: { kind: 'pinned', elementId: 'b', anchor: 's' },
+          to: { kind: 'free', x: 100, y: 700 },
+        } as never,
+      ),
+    );
+    expect(of(loose, 'group-split-edges')).toHaveLength(1);
   });
 
   it('stays quiet under three arrows, when most stay inside, and for a lane', () => {

@@ -61,7 +61,8 @@ function clearShift(
     .slice(1)
     .map((p, i) => [route[i]!, p] as const)
     .find(([a, b]) => pathPassesThrough([a, b], box as never));
-  const [a, b] = run ?? [route[0]!, route.at(-1)!];
+  // The finding exists because the route passes behind the box, so one of its runs does.
+  const [a, b] = run!;
   const level = Math.abs(a.y - b.y) <= Math.abs(a.x - b.x);
   const at = level ? (a.y + b.y) / 2 : (a.x + b.x) / 2;
   const [lo, size] = level ? [box.y, box.height] : [box.x, box.width];
