@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { encodeStrokePoints, type Element, type Tab } from '@livediagram/document';
 import { applyEditOperations } from '../apply';
+import { parseEditOperations } from '../parse';
 import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
 import type { EditOperation } from '../types';
@@ -300,5 +301,18 @@ describe('set: an arrow given new ends', () => {
       { dx: 10, dy: 10 },
     ]);
     expect(after({ label: 'Go' }).curvePoints).toEqual([{ dx: 40, dy: 0 }]);
+  });
+});
+
+describe('set: a label over lines', () => {
+  it('keeps the line break written with \\n', () => {
+    const parsed = parseEditOperations('set n3 label="App tasks\\nECS Fargate"');
+    if ('errors' in parsed) throw new Error('parse');
+    const n3 = applied(run(parsed.operations)).tab.elements.find(
+      (e) => e.id === 'n3',
+    ) as Element & {
+      label?: string;
+    };
+    expect(n3.label).toBe('App tasks\nECS Fargate');
   });
 });

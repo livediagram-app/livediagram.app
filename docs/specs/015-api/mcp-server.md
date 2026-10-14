@@ -421,7 +421,8 @@ a layout no one could read.
 **A label is a heading; detail goes in the note.** A node's `label` is the text
 in the box and is capped at **40 characters** (`GRAPH_LABEL_MAX`). The cap is a
 plain fact in the tool's description, not an instruction (§4.15), and the server
-enforces it rather than rejecting the call. A longer label becomes a heading:
+enforces it rather than rejecting the call. A label that fits keeps the line breaks written into it
+("App tasks\nECS Fargate" is two lines, measured line by line), other runs of space made one. A longer label becomes a heading:
 bracketed asides go first ("Web client (React SPA served from the CDN)" becomes
 "Web client"); then the noun phrase before its first clause word when there is
 one ("Orders service which creates orders" becomes "Orders service", "Message

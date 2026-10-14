@@ -121,8 +121,16 @@ function firstChars(s: string, k: number): string {
 // the regular expressions these replace backtracked quadratically over a long run of spaces,
 // brackets or punctuation.
 export function capLabel(text: string, max = GRAPH_LABEL_MAX): { label: string; cut: boolean } {
+  // A label that fits keeps the line breaks it was written with ("App tasks\nECS Fargate"), runs of other space
+  // made one; one that is cut is read as one line.
+  const lines = text
+    .replace(/[^\S\n]+/g, ' ')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .join('\n');
+  if (fitsIn(lines, max)) return { label: lines, cut: false };
   const whole = text.replace(/\s+/g, ' ').trim();
-  if (fitsIn(whole, max)) return { label: whole, cut: false };
   const clean = withoutAsides(whole).trim() || whole;
   if (fitsIn(clean, max)) return { label: clean, cut: true };
   const clause = CLAUSE_START.exec(clean);

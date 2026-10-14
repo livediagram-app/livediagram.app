@@ -195,6 +195,17 @@ describe('one size per kind', () => {
   });
 });
 
+describe('a label over two lines', () => {
+  it('is measured line by line: narrower than one line holding both, and taller', () => {
+    const one = labelBoxSize('App tasks on ECS Fargate in two zones', 'square', { textSize: 'md' });
+    const two = labelBoxSize('App tasks on ECS\nFargate in two zones', 'square', {
+      textSize: 'md',
+    });
+    expect(two.width).toBeLessThan(one.width);
+    expect(two.height).toBeGreaterThanOrEqual(one.height);
+  });
+});
+
 describe('key samples', () => {
   const kinds = (tones: ('muted' | 'soft')[]): GraphInput => ({
     nodes: [

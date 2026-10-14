@@ -192,12 +192,17 @@ function lookBoxSize(
   const iconRoom = hasIcon ? Math.round(px * 1.6 * 1.32) : 0;
   const roomy =
     kind === 'diamond' ? 1.5 : kind === 'parallelogram' || kind === 'hexagon' ? 1.15 : 1;
-  const textW = glyphUnits(text) * px * GLYPH_EM * roomy + iconRoom;
+  // A label written over several lines is measured line by line: its widest line sets the width, and each wraps on its own.
+  const lineW = text.split('\n').map((l) => glyphUnits(l) * px * GLYPH_EM * roomy);
+  const textW = Math.max(...lineW) + iconRoom;
   const pad = 48;
   const width = Math.round(
     Math.min(LOOK_MAX_W[look.textSize] * roomy, Math.max(floor.width, textW + pad)),
   );
-  const lines = Math.max(1, Math.ceil(textW / (width - pad)));
+  const lines = lineW.reduce(
+    (n, w, i) => n + Math.max(1, Math.ceil((w + (i === 0 ? iconRoom : 0)) / (width - pad))),
+    0,
+  );
   const textH = lines * px * LINE_EM + 28;
   const height = Math.round(Math.max(floor.height, kind === 'diamond' ? textH * 1.6 : textH));
   if (kind === 'circle') {

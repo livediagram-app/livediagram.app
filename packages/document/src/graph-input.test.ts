@@ -17,6 +17,11 @@ const byId = (els: ReturnType<typeof layoutGraph>, id: string) =>
 describe('label cap', () => {
   it('keeps a short label as it is', () => {
     expect(capLabel('Checkout service')).toEqual({ label: 'Checkout service', cut: false });
+    // Line breaks written into a label that fits are kept; other runs of space become one.
+    expect(capLabel('App tasks \n  ECS   Fargate\n')).toEqual({
+      label: 'App tasks\nECS Fargate',
+      cut: false,
+    });
   });
 
   it('counts an emoji as one character and never cuts one in half', () => {
