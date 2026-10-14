@@ -7,6 +7,7 @@
 
 import { ICON_CATALOG_1 } from './icon-catalog-1';
 import { ICON_CATALOG_2 } from './icon-catalog-2';
+import { ICON_CATALOG_3 } from './icon-catalog-3';
 import { iconPrimsMarkup, techIconArtMarkup, type IconExportArt } from './markup';
 import { STICKER_CATALOG } from './sticker-catalog';
 import { stickerArt, type StickerArt } from './sticker-markup';
@@ -14,7 +15,9 @@ import { TECH_ICON_CATALOG } from './tech-icon-catalog';
 
 const stickerById = new Map(STICKER_CATALOG.map((s) => [s.id, s]));
 const techById = new Map(TECH_ICON_CATALOG.map((i) => [i.id, i]));
-const lineById = new Map([...ICON_CATALOG_1, ...ICON_CATALOG_2].map((i) => [i.id, i]));
+const lineById = new Map(
+  [...ICON_CATALOG_1, ...ICON_CATALOG_2, ...ICON_CATALOG_3].map((i) => [i.id, i]),
+);
 
 // Resolve an element's `iconId` to renderable art, or undefined for an
 // unknown id (the renderer then falls back to its box-with-label output).

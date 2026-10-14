@@ -206,7 +206,11 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     carrier: 'livediagram source (icons)',
     homepage: 'https://feathericons.com',
     trigger: {
-      sources: ['packages/icons/src/icon-catalog-1.ts', 'packages/icons/src/icon-catalog-2.ts'],
+      sources: [
+        'packages/icons/src/icon-catalog-1.ts',
+        'packages/icons/src/icon-catalog-2.ts',
+        'packages/icons/src/icon-catalog-3.ts',
+      ],
     },
     texts: text('feather-4.29.2-LICENSE.txt'),
   },

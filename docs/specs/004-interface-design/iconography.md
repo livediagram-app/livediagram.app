@@ -51,6 +51,11 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 - A placed canvas icon has an **icon weight**: `thin`, `regular` or `bold`, picked in the icon's context menu. `regular` is the default and matches the chrome weight. The stroke is non-scaling, so the weight holds at any element size and zoom.
 - Floor-plan furniture is drawn top-down, and no two pieces share a silhouette.
 
+- The Icons catalogue holds, besides the editor's general glyphs (people, devices, files, actions, furniture),
+  subjects: food and drink, shops and money, travel, nature and weather, people and pets, learning, health, media and
+  work (`icon-catalog-3.ts`), each Lucide's glyph vendored through the manifest, so a page or diagram about a bakery, a
+  startup or a trip has an icon of its subject in the line-art set rather than an emoji.
+
 ## Technology tiles
 
 - Tiles keep generic glyphs; vendor trademarks are not used. Vercel's mark is replaced by a generic glyph for the same reason.

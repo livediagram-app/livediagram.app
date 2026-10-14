@@ -36,8 +36,9 @@ describe('searchIcons', () => {
 describe('icon ids', () => {
   it('knows the catalogues’ ids and suggests icons like one that is not', () => {
     expect(isIconId('clock')).toBe(true);
-    expect(isIconId('flame')).toBe(false);
-    expect(iconsLike('flame').map((i) => i.id)).toContain('emoji-fire');
+    expect(isIconId('flame')).toBe(true);
+    expect(isIconId('fire')).toBe(false);
+    expect(iconsLike('fire').map((i) => i.id)).toContain('flame');
     expect(iconsLike('alarm-clock', 2)).toHaveLength(2);
     expect(iconsLike('---')).toEqual([]);
     expect(iconsLike('qqqqzz')).toEqual([]);
