@@ -64,6 +64,8 @@ type SelectionPopoverProps = {
   // is how view-role visitors get the comments-only toolbar (no
   // edit affordances next to it).
   onOpenComments?: () => void;
+  // Someone who may comment adds one; a Viewer only reads the thread there is (docs/specs/013-workspace/share-roles.md).
+  commentsReadOnly?: boolean;
   // Open the same context menu that a right-click on the element
   // would open, anchored under the ellipsis button. Surfaces the
   // full action list on touch devices that can't right-click.
@@ -103,6 +105,7 @@ export function SelectionPopover({
   onBringToFront,
   onSendToBack,
   onOpenComments,
+  commentsReadOnly = false,
   onOpenContextMenu,
   compact = false,
   suspended = false,
@@ -262,8 +265,12 @@ export function SelectionPopover({
           beats a two-click context menu open + click. */}
       {onOpenComments ? (
         <PopoverButton
-          label="Add Comment"
-          description="Open the comment thread for this element."
+          label={commentsReadOnly ? 'Show Comments' : 'Add Comment'}
+          description={
+            commentsReadOnly
+              ? 'Read the comments on this element.'
+              : 'Open the comment thread for this element.'
+          }
           onClick={onOpenComments}
         >
           <CommentIcon />
