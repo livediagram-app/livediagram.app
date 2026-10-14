@@ -14,6 +14,9 @@ import {
   type EditState,
 } from './state';
 
+// Room a frame or lane leaves around what it holds.
+export const HOLD_PAD = 32;
+
 // How far inside a container's old edge a neighbour may start and still count as lying past it: a box drawn flush
 // against the frame.
 const PAST_EDGE_TOLERANCE = 2;

@@ -306,7 +306,12 @@ means `newElementId` ([Ids](#ids)).
   those ends become `free` at their current `endpointPosition` instead, warning `arrows_freed`. A locked arrow in
   that cascade is `element_locked` (EO47). A `mindParentId` naming a removed element is removed (EO30).
 - **`move <selector> <placement> | by=dx,dy [all]`.** As [Placement](#placement). Pinned arrows follow by
-  construction; `rebindArrowAnchorsAfterMove` runs in finalise.
+  construction; `rebindArrowAnchorsAfterMove` runs in finalise. A target whose container (`holdersOf`, the
+  container itself not moving) no longer holds it after the move gives the room back (`giveBackRoom`): on the left,
+  right and bottom, where the target's old box reached past the bounds of what the container still holds, that edge
+  comes in to those bounds plus `HOLD_PAD` (32, shared with growing to hold), never past where it was, through
+  `growContainer`, so what lay past the edge moves back; reported as `narrower` / `shorter`. A container left
+  empty, or a locked one, is left as it is.
 - **`connect <a> -> <b> [id=] [label=…] [line=…] [again]`.** `a` and `b` are words resolving to boxed elements.
   An existing arrow from a to b (pinned `from` a, pinned `to` b) without `again` is `arrow_exists`, naming it; an
   arrow from b to a does not count; `a` equal to `b` is `invalid_value`. Otherwise a new arrow
