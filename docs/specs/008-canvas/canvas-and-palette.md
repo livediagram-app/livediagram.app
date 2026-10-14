@@ -1181,6 +1181,7 @@ The painter is the **Format** canvas tool in the palette tool dropdown (next to 
 - **Done** on the banner, **clicking the empty canvas**, pressing **Escape**, or switching to any other tool exits; leaving the tool **disarms** the source and **restores the tool that was active before Format** (falling back to Select). Clicking the source itself is a no-op but keeps the mode going.
 - The cursor is the copy cursor in both phases, on boxed elements and arrows alike.
 - Mechanically the click handler routes through `useEditorDrag` (`formatToolActive`) for boxed elements and through `selectElement` (`useSelectionEditing`) for arrows (arrows have no drag starter in format mode, their clicks land as selections), and both call the same `applyFormatFromSource`, which reads the Format Panel's mode to decide whether the source survives the apply.
+- **Illustrate pages** are painted too: in Illustrate mode a press on a page's paper arms its background, and later presses on other pages paint it ([Copying a background](../007-editor/illustrate-pages.md#copying-a-background)).
 - **Arrows work in both phases**: an arrow can be the **source** (copying its line + label look) and the **target** of another arrow's style. A cross-kind tap (arrow base → boxed target or vice versa) is a no-op that keeps the base armed: the two kinds share almost no formattable fields.
 
 ### Properties copied

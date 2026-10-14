@@ -110,6 +110,16 @@ const pageChange = z
       .object({ op: z.literal('duplicate').describe('Copy a page.'), page: pageRef })
       .describe('A copy after it, content and all (an article: the whole article).'),
     z
+      .object({
+        op: z
+          .literal('apply_background_to_all')
+          .describe("Give every other page of this page's kind its background."),
+        page: pageRef,
+      })
+      .describe(
+        'Every other page of the same kind (every slide, say) takes this page’s background and pattern, as the Background tab’s Apply to All; a locked page keeps its own.',
+      ),
+    z
       .object({ op: z.literal('delete').describe('Delete a page.'), page: pageRef })
       .describe(
         'Delete a page and what is on it (an article page: the whole article). Never the last.',

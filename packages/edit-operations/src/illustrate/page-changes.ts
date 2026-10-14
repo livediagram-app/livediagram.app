@@ -13,6 +13,7 @@ import {
   pageAdded,
   PAGE_GRADIENT_ANGLE,
   pageBackgroundSet,
+  pageBackgroundSpread,
   pageDuplicated,
   pageKindOf,
   pageLaidOut,
@@ -241,6 +242,24 @@ export function applyPageChanges(
             page.flow
               ? `Duplicated the article on page ${placeOf(page.id)} (${made.length} pages, from page ${placeOf(made[0]!.id)}).`
               : `Duplicated page ${placeOf(page.id)} as page ${placeOf(made[0]!.id)}.`,
+          );
+          return;
+        }
+        case 'apply_background_to_all': {
+          const page = pageOf(change);
+          const out = pageBackgroundSpread(current, page.id);
+          if ('refused' in out)
+            stop(
+              out.refused === 'no_other_pages' ? 'no_other_pages' : 'page_unknown',
+              out.refused === 'no_other_pages'
+                ? `Page ${placeOf(page.id)} is the only ${pageKindOf(page)} page (or article): there is no other to give its background.`
+                : `No page "${String(change.page)}". Pages: ${listPages(current)}.`,
+            );
+          const done = out as Extract<typeof out, { tab: Tab }>;
+          current = done.tab;
+          const kept = done.skipped ? `; ${done.skipped} locked kept their own` : '';
+          lines.push(
+            `Gave ${done.applied} other ${pageKindOf(page)} page${done.applied === 1 ? '' : 's'} the background of page ${placeOf(page.id)}${kept}.`,
           );
           return;
         }

@@ -56,8 +56,9 @@ import { track } from '@/lib/telemetry';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { startClosedKey } from '@/components/start/start-closed-key';
+import { backgroundCopyEdits, type BackgroundCopyEdits } from './illustrate-background-copy-edits';
 
-export type IllustratePageEdits = {
+export type IllustratePageEdits = BackgroundCopyEdits & {
   setOrientation: (pageId: string, next: PageOrientation) => void;
   setSize: (pageId: string, size: PageSizeId) => void;
   // Empty clears the name.
@@ -559,6 +560,9 @@ export function illustratePageEdits({
 
   const room = current.length < MAX_ILLUSTRATE_PAGES;
   return {
+    // Apply to All and the page format painter (docs/specs/007-editor/illustrate-pages.md
+    // "Copying a background").
+    ...backgroundCopyEdits({ tabId, current, commitTab, toastInfo }),
     tidyPage,
     canTidy,
     previewTidy,

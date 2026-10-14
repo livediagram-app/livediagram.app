@@ -55,7 +55,9 @@ export type PageChange =
   | { op: 'layout'; page: PageRef; layout: string }
   | { op: 'move'; page: PageRef; to: number }
   | { op: 'duplicate'; page: PageRef }
-  | { op: 'delete'; page: PageRef };
+  | { op: 'delete'; page: PageRef }
+  // Every other page of the page's kind takes its background, as the Background tab's Apply to All.
+  | { op: 'apply_background_to_all'; page: PageRef };
 
 export type PageChangeOp = PageChange['op'];
 export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
@@ -65,6 +67,7 @@ export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
   'move',
   'duplicate',
   'delete',
+  'apply_background_to_all',
 ];
 
 export type ArticleWriteMode = 'replace' | 'append';
@@ -136,6 +139,7 @@ export const ILLUSTRATE_REFUSAL_CODES = [
   'size_not_offered',
   'no_orientation',
   'pattern_not_offered',
+  'no_other_pages',
   'layout_unknown',
   'page_locked',
   'page_limit',

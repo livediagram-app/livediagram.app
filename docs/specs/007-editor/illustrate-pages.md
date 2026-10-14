@@ -504,6 +504,41 @@ Image category: a logo goes over other things, so its artboard stays a colour or
   (beside the background's own `PageBackground`); a search counts as the picker's
   `Element · Searched · Image`, and a failed search or pick as its `ImageSearch.*` warnings.
 
+### Copying a background
+
+A page's **format** is its background: its fill (a colour, a gradient, an animated background with
+its speed, or a picture with its overlay and position) and its pattern. Its size, orientation,
+content, name and lock stay its own. A deck or a set of pages often wears one background, so it is
+given in one go rather than page by page.
+
+- **Apply to All**: at the foot of a page's **Background** tab, **Apply to All Slides** (on a slide;
+  **Apply to All Infographic Pages**, **Article Pages** or **Logo Pages** on the other kinds) gives
+  every other page of the same kind this page's background, under a line saying how many it reaches
+  and that a locked one keeps its own. Shown only while there is another page of the kind (an
+  article's own pages already share one background). One edit, one undo, each page re-inked for
+  its new fill ("Re-inking"). A notice says what it did: "Background applied to 35 slides.", adding
+  "2 locked slides kept their own." when it skipped any. A locked page is skipped, never refused
+  whole; a logo page's pattern is never touched.
+- **The Format tool paints pages**: in Illustrate mode, with the [Format
+  tool](../008-canvas/canvas-and-palette.md#format-painter), a press on a page's paper (anywhere on
+  the page but on an element) arms that page's background as the brush, and each press on another
+  page paints it there, one edit each, re-inked. The banner reads "Select a base element or page to
+  copy its style", then "Tap pages to paint this background onto them". **Keep the brush** and
+  **Paint once** work as for elements; the Format Panel's groups (Fill, Border, Text, Effects, Size)
+  are an element's and do not narrow a page's paint. A press on the source page, an element pressed
+  under a page brush, or a page pressed under an element's brush is a no-op that keeps the brush
+  (as a shape's look onto an arrow is). Painting crosses kinds (a slide's background onto an
+  infographic page), except a picture onto a logo page ("A logo page takes no picture background.");
+  a locked target says so ("That page is locked. Unlock it to change its background.") and is left
+  as it is. A press off every page still ends the tool.
+- **Agents** give every page of a kind one background with `change_pages`'s
+  `apply_background_to_all` ([Illustrate for agents](../024-agents/illustrate-for-agents.md)).
+- **Share roles**: as any background, an Editor's alone. A Participant's or a Viewer's press on a
+  page with the Format tool is an empty-canvas press, and they see no Apply to All.
+- The pure edits are `pageBackgroundSpread` and `pageBackgroundCopied`
+  (`packages/document/src/illustrate-background-copy.ts`), shared by the panel, the Format tool and
+  the agents.
+
 ### Beside the cog
 
 **Named while there is room.** On a desktop the title bar's buttons (Layout, Background,
@@ -1234,7 +1269,8 @@ are diagram formats and are not offered.
 ## Telemetry
 
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
-`PageBackground`, `PageBackgroundImage`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
+`PageBackground`, `PageBackgroundImage`, `PagePattern`, `PageBackgroundAppliedToAll` (Apply to All),
+`PageBackgroundPainted` (the Format tool, page onto page), `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
 `PageLocked`, `PageUnlocked`,
 `PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`
 (and `ArticleAdded`, `LogoPageAdded`, the other kinds' adds), `PageKindInfographic` / `PageKindArticle` / `PageKindSlide` /

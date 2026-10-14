@@ -347,7 +347,7 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
   'Tab',
   'Changed',
   'Illustrate Pages Set Up',
-  "An Illustrate page's size, name, background or pattern changed from its panel, or a page locked or unlocked.",
+  "An Illustrate page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), or a page locked or unlocked.",
   {
     types: [
       'PageSize',
@@ -356,6 +356,8 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
       'PageBackgroundImage',
       'PageBackgroundAnimated',
       'PageBackgroundAnimatedSpeed',
+      'PageBackgroundAppliedToAll',
+      'PageBackgroundPainted',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',

@@ -105,7 +105,7 @@ import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { loadArticleFlows, loadIllustratePages } from '@/lib/editor-deferred-code';
-import { pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
+import { pageIdAtPress, pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
 
 // Illustrate's pages and their writing draw only on a tab that has pages, so their code loads on demand
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
@@ -578,6 +578,15 @@ function CanvasView(props: CanvasProps) {
     // A logo page's shown guides take a click near them (docs/specs/007-editor/logo-pages.md).
     snapPoint: (p) => props.illustratePages?.logo?.snapPoint?.(p, viewportZoom) ?? null,
   });
+  // The Format tool's press on a page's paper arms or paints its background (docs/specs/007-editor/
+  // illustrate-pages.md "Copying a background"); off every page it stays an empty-canvas press.
+  const formatPagePress = (e: React.PointerEvent): boolean => {
+    if (canvasTool !== 'format' || e.button !== 0 || !props.onFormatPagePress) return false;
+    const pageId = pageIdAtPress(props.illustratePages, e, wrapperRef, viewportZoom);
+    if (!pageId) return false;
+    props.onFormatPagePress(pageId);
+    return true;
+  };
   // In Illustrate mode a press off the page is claimed and dropped: nothing is made there.
   const offPage = (e: { clientX: number; clientY: number }) =>
     pressIsOffPage(props.illustratePages, e, wrapperRef, viewportZoom);
@@ -605,7 +614,7 @@ function CanvasView(props: CanvasProps) {
     onPushPeer: props.onAvatarPush,
     isoCamera,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
-    interceptPress: pathTool.beginEditPress,
+    interceptPress: (e) => formatPagePress(e) || pathTool.beginEditPress(e),
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
     onDeselect,

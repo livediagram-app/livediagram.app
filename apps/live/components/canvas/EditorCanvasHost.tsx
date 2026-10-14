@@ -37,6 +37,7 @@ import { useStableCollab } from '@/components/canvas/element-layer-props';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
+import { pagePaintPress } from '@/lib/format-page-brush';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -753,6 +754,22 @@ export function EditorCanvasHost() {
           editingId={editingId}
           editCursorAtEnd={editCursorAtEnd}
           formatSourceId={formatSourceId}
+          onFormatPagePress={
+            canvasTool === 'format' && illustratePages?.edit
+              ? (pageId) => {
+                  // A page's background as the brush, painted page to page (docs/specs/007-editor/
+                  // illustrate-pages.md "Copying a background").
+                  const press = pagePaintPress(
+                    formatSourceId,
+                    pageId,
+                    formatConfig.mode === 'keep',
+                  );
+                  if (press.paint)
+                    illustratePages.edit?.copyBackground(press.paint.from, press.paint.to);
+                  if (press.next !== formatSourceId) setFormatSourceId(press.next);
+                }
+              : undefined
+          }
           canUndo={canUndo && !activeTabLocked}
           canRedo={canRedo && !activeTabLocked}
           onAddShape={addShape}
