@@ -302,11 +302,14 @@ export function ToolbarPalette(props: Props) {
     setOpenGroup(null);
     more.openFrom(button);
   };
+  // More's own popover, not a group's.
+  const moreShown = moreOpen && openGroup === null;
   const toggleGroup = (id: string, anchor: HTMLElement) => {
     if (moreOpen && openGroup === id) return setMoreOpen(false);
     track('UI', 'Opened', 'ToolbarMore');
     setOpenGroup(id);
-    more.openFrom(anchor);
+    // Centred under its tile (More hangs from its own button's right edge).
+    more.openFrom(anchor, 'centre');
   };
   // Opening the Search starts a new choice: a tile armed to place (its "Tap to drop" banner) is let go first.
   const beforeSearch = () => {
@@ -340,13 +343,13 @@ export function ToolbarPalette(props: Props) {
       type="button"
       data-toolbar-more-button=""
       aria-label={`More ${category?.label ?? ''}`.trim()}
-      aria-expanded={moreOpen}
+      aria-expanded={moreShown}
       onClick={(e) => {
-        if (moreOpen) setMoreOpen(false);
+        if (moreShown) setMoreOpen(false);
         else openMore(e.currentTarget);
       }}
       className={`flex h-9 items-center gap-1 rounded-md px-2 transition ${
-        moreOpen
+        moreShown
           ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
           : TOOLBAR_TRIGGER_TONE
       }`}
@@ -355,7 +358,7 @@ export function ToolbarPalette(props: Props) {
           it, and a glyph sits with the icon tiles instead of reading as a
           stray label among them. */}
       <EllipsisIcon />
-      <ChevronDownIcon className={`transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
+      <ChevronDownIcon className={`transition-transform ${moreShown ? 'rotate-180' : ''}`} />
     </button>
   );
 
@@ -494,7 +497,6 @@ export function ToolbarPalette(props: Props) {
                               key={g.id}
                               group={g}
                               open={moreOpen && openGroup === g.id}
-                              noTint={category?.id === 'technology'}
                               onToggle={(anchor) => toggleGroup(g.id, anchor)}
                             />
                           ))
@@ -553,7 +555,7 @@ export function ToolbarPalette(props: Props) {
                   {showMore ? (
                     <>
                       <Divider />
-                      {moreOpen ? (
+                      {moreShown ? (
                         moreButton
                       ) : (
                         <HoverCard

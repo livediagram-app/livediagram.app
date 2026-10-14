@@ -101,7 +101,7 @@ export function PaletteTray({
   return createPortal(
     <div
       // Steps aside while the Explorer is open: its panel reaches under the strip (explorer-structure.md "Layout").
-      className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center [body[data-explorer-open]_&]:hidden"
+      className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center [body[data-explorer-open]_&]:hidden [body[data-strip-popover-open]_&]:hidden"
       // Up a pixel, so the tray covers the strip's bottom border where they meet and the two read as one.
       style={{ left: box.left, width: box.width, top: box.bottom - 1 }}
     >

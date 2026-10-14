@@ -145,8 +145,9 @@ animated tile rail, so it rides the rail's width change.
 
 **Icons, Stickers and Technology show their groups**, on a desktop and on a phone: the strip's tiles
 for one of them are its browse groups (the Icons groups, the Sticker groups, the Technology providers),
-each drawn as its first entry with the group's name on its hover card, in the browse's own order. Pressing one
-opens a popover under it, hung from that tile as More hangs from its button, showing **that group's
+each drawn as an opener rather than a tile (its first entry with a chevron, as the strip's pickers are, so it reads
+as a group to open rather than an icon to drag) with the group's name on its hover card, in the browse's own order. Pressing one
+opens a popover centred under that tile (on a phone it spans the screen, as More's does), showing **that group's
 entries alone**, headed with the group's name: no search and no breadcrumb, since the strip is the way between
 groups (More, on a desktop, keeps the whole browse with its search). Pressing the open group's tile again closes it. Picking an entry
 closes it, as More's does. The groups and their entries are the browse's
@@ -303,6 +304,8 @@ their bottom-row buttons. What changes to fit the width:
     Templates**, which opens the start again, until the first element lands
     ([Template starts](start-diagramming.md) "Bringing it back").
   - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
+  - While one of the strip's popovers is open (More, a catalogue group, Search) the tray steps aside, as it does
+    for the Explorer: it would cover the popover's top.
   - Without a strip (Draw mode's dock, zen, read-only, the welcome flow) the messages stay the
     top-centre pills they are elsewhere.
 - Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the strip's pickers, and the strip shows the notation's tiles, led by

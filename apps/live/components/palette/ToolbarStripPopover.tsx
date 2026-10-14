@@ -9,6 +9,9 @@ import { uiUnscaleStyle } from '@/lib/ui-scale';
 // Clicks inside these don't count as "outside" a strip popover: the icon
 // filter's portalled dropdown menus, and any dialog a category body opens
 // (closing the popover would unmount it mid-edit).
+// The popover's width on a desktop (the card's w-[26rem]), at design size.
+const STRIP_POPOVER_PX = 416;
+
 const INSIDE_SELECTOR = '[data-palette-dropdown-menu], [role="dialog"], [data-tour-popover]';
 
 /** One strip popover's open state and where it hangs. `ownSelector` matches the popover and its
@@ -21,6 +24,13 @@ export function useStripPopover(rootRef: RefObject<HTMLElement | null>, ownSelec
   // offset stays right.
   const [right, setRight] = useState(0);
   const close = useEffectEvent(() => setOpen(false));
+  // While open, the trays hanging from the strip step aside (PaletteTray), as they do for the Explorer: they would
+  // cover the popover's top.
+  useEffect(() => {
+    if (!open) return;
+    document.body.setAttribute('data-strip-popover-open', '');
+    return () => document.body.removeAttribute('data-strip-popover-open');
+  }, [open]);
   useEffect(() => {
     if (!open) return;
     // Capture phase: the strip stops pointerdown from reaching the canvas.
@@ -40,9 +50,20 @@ export function useStripPopover(rootRef: RefObject<HTMLElement | null>, ownSelec
       document.removeEventListener('keydown', onKey);
     };
   }, [open, ownSelector]);
-  const openFrom = (button: HTMLElement) => {
+  // `centre` hangs it centred under the button (a strip group's popover) rather than from its right edge, kept
+  // inside the row.
+  const openFrom = (button: HTMLElement, align: 'right' | 'centre' = 'right') => {
     const root = rootRef.current?.getBoundingClientRect();
-    if (root) setRight(root.right - button.getBoundingClientRect().right);
+    const box = button.getBoundingClientRect();
+    if (root)
+      setRight(
+        align === 'centre'
+          ? Math.min(
+              Math.max(0, root.right - (box.left + box.width / 2) - STRIP_POPOVER_PX / 2),
+              Math.max(0, root.width - STRIP_POPOVER_PX),
+            )
+          : root.right - box.right,
+      );
     setOpen(true);
   };
   return { open, right, openFrom, setOpen };
