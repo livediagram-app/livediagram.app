@@ -19,6 +19,7 @@ import {
   type BoxedElement,
   type Element,
   type Tab,
+  detachChip,
 } from '@livediagram/document';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { PASTE_OFFSET } from '@/lib/paste-placement';
@@ -107,14 +108,16 @@ export function useElementDuplication(deps: {
     }
     if (isBoxed(source)) {
       const { dx, dy, lanes } = duplicateOffset(activeTab, new Set([source.id]));
-      const copy: BoxedElement = {
+      // A copy of a badge, step number or pointer note on its own is let go of the host (detachChip), as a copy made
+      // with others is: still attached, settling would centre it straight back over the original.
+      const copy: BoxedElement = detachChip({
         ...source,
         id: crypto.randomUUID(),
         x: source.x + dx,
         y: source.y + dy,
         // Whatever a copy regenerates rather than inherits (docs/specs/021-event-storming/event-storming.md tilt).
         ...freshCopyFields(source),
-      };
+      });
       commit((els) => landCopies(els, [copy], lanes));
       trackDuplicated([copy]);
       setSelectedId(copy.id);
