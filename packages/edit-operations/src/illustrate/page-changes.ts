@@ -248,12 +248,11 @@ export function applyPageChanges(
         case 'apply_background_to_all': {
           const page = pageOf(change);
           const out = pageBackgroundSpread(current, page.id);
+          // The page was found above, so the one refusal left is a page with no other of its kind.
           if ('refused' in out)
             stop(
-              out.refused === 'no_other_pages' ? 'no_other_pages' : 'page_unknown',
-              out.refused === 'no_other_pages'
-                ? `Page ${placeOf(page.id)} is the only ${pageKindOf(page)} page (or article): there is no other to give its background.`
-                : `No page "${String(change.page)}". Pages: ${listPages(current)}.`,
+              'no_other_pages',
+              `Page ${placeOf(page.id)} is the only ${pageKindOf(page)} page (or article): there is no other to give its background.`,
             );
           const done = out as Extract<typeof out, { tab: Tab }>;
           current = done.tab;
