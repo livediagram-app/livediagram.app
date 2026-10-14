@@ -137,6 +137,12 @@ describe('contentSummaryOf (R14)', () => {
         }),
       ),
     ).toBe('participants=Browser|API messages=1');
+    // A participant with no label reads as `?`, as a concept row does.
+    expect(
+      contentSummaryOf(
+        shape('sequence', { sequenceParticipants: [{ id: 'a' }], sequenceMessages: [] }),
+      ),
+    ).toBe('participants=? messages=0');
     expect(contentSummaryOf(shape('stack', {}))).toBe('direction=row');
   });
 });
