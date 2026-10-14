@@ -411,6 +411,7 @@ export * from './tag-colours';
 export * from './diagram-key';
 export * from './stack';
 export * from './sequence-element';
+export * from './sequence-text';
 export { sequenceDrawing } from './svg-render-sequence';
 export * from './person-node';
 export * from './boundary';

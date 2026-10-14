@@ -34,7 +34,7 @@ const rowButton =
 const removeButton =
   'flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800';
 
-export function move<T>(list: T[], from: number, to: number): T[] {
+function move<T>(list: T[], from: number, to: number): T[] {
   if (to < 0 || to >= list.length) return list;
   const next = [...list];
   const [item] = next.splice(from, 1);
@@ -43,7 +43,7 @@ export function move<T>(list: T[], from: number, to: number): T[] {
 }
 
 // Up / down / remove for one row.
-export function RowControls({
+function RowControls({
   index,
   count,
   min,

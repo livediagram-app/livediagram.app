@@ -21,10 +21,13 @@ export function migrateStoredTab<
   if (!Array.isArray(schemed.elements)) return schemed;
   // Element links from before the document rename (./legacy-links) are upgraded here too.
   // A diagram key's rows are re-derived from the tab (docs/specs/009-elements/diagram-key.md), its tag colours included.
-  // Stacks are laid out first (docs/specs/009-elements/stack.md), so the badges and keys settle on where things are.
-  const elements = settleDiagramKeys(
-    upgradeLegacyLinks(migrateStoredElements(settleStacks(schemed.elements))),
-    tagColoursOf(schemed as { tagColours?: unknown }),
+  // Keys settle before stacks lay out (docs/specs/009-elements/stack.md): a key's rows come from the arrows and tag
+  // colours, not from where anything is, and a key a stack holds must have its height before the stack lays it out.
+  const elements = settleStacks(
+    settleDiagramKeys(
+      upgradeLegacyLinks(migrateStoredElements(schemed.elements)),
+      tagColoursOf(schemed as { tagColours?: unknown }),
+    ),
   );
   return elements === schemed.elements ? schemed : { ...schemed, elements };
 }

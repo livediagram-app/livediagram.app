@@ -6,7 +6,7 @@ Derived from [The diagram key](../diagram-key.md). Defaults in [DEFAULTS.md](DEF
 | ------------------------------------------------- | --------------------------------------------------- |
 | `packages/document/src/diagram-key.ts`            | Rows derived from a tab, settling, meanings, layout |
 | `packages/document/src/svg-render-diagram-key.ts` | Headless body                                       |
-| `apps/live/lib/settle-tabs.ts`                    | Settles keys with the chips, per changed tab        |
+| `apps/live/lib/settle-tabs.ts`                    | Settles keys first (before stacks), per changed tab |
 | `packages/document/src/stored-tab.ts`             | Settles keys on read                                |
 | `apps/live/components/canvas/DiagramKeyFace.tsx`  | Canvas face, meanings edited in place               |
 

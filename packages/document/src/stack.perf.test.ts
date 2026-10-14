@@ -57,6 +57,29 @@ describe('settleStacks budget', () => {
     expect(best).toBeLessThan(60);
   });
 
+  it('settles the same board within 60 ms when a child is added, the stack growing (two passes)', () => {
+    const settled = board();
+    const added = [
+      ...settled,
+      {
+        ...(createShape('square', 0, 0) as ShapeElement),
+        id: 'new',
+        x: 40,
+        y: 3 * 200 + 40,
+        width: 80,
+        height: 60,
+      },
+    ];
+    for (let p = 0; p < WARM_UP_PASSES; p++) settleStacks(added);
+    let best = Infinity;
+    for (let p = 0; p < PASSES; p++)
+      best = Math.min(
+        best,
+        cpuMsOf(() => settleStacks(added)),
+      );
+    expect(best).toBeLessThan(60);
+  });
+
   it('returns at once for a board with no stack', () => {
     const els = board().filter((e) => !(e.type === 'shape' && e.shape === 'stack'));
     expect(settleStacks(els)).toBe(els);

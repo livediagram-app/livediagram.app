@@ -18,6 +18,7 @@
 // Keeping that policy in one file makes it auditable.
 
 import { useSankeySetters } from '@/hooks/canvas/useSankeySetters';
+import { useSequenceSetters } from '@/hooks/canvas/useSequenceSetters';
 import type { Selection } from '@/lib/selection-store';
 import {
   bringElementsToFrontLayer,
@@ -178,6 +179,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
 
   // The Sankey diagram's writes (docs/specs/009-elements/sankey.md), kept together as one object.
   const sankey = useSankeySetters({ currentSelectionIds, commit });
+  // The sequence diagram dialog's writes (docs/specs/009-elements/sequence-diagram.md).
+  const sequence = useSequenceSetters({ commit });
 
   const {
     setTextSizeSelected,
@@ -361,6 +364,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
 
   return {
     sankey,
+    sequence,
     toggleLockSelected,
     toggleAspectLockSelected,
     bringSelectedToFront,

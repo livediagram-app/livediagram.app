@@ -16,10 +16,11 @@ export function settleChipsInTabs(before: readonly Tab[], after: Tab[]): Tab[] {
     const prev = before.find((p) => p.id === t.id);
     if (prev === t) return t;
     // And every diagram key's rows, from the tab's arrows and tag colours (docs/specs/009-elements/diagram-key.md).
-    // Stacks lay out first (docs/specs/009-elements/stack.md), so attached marks and keys settle on the result.
-    const settled = settleDiagramKeys(
-      settleChips(prev?.elements ?? [], settleStacks(t.elements)),
-      tagColoursOf(t),
+    // Keys first, as they depend on no position, so a key a stack holds is laid out at its new height; then stacks
+    // (docs/specs/009-elements/stack.md), so attached marks settle on where things end up.
+    const settled = settleChips(
+      prev?.elements ?? [],
+      settleStacks(settleDiagramKeys(t.elements, tagColoursOf(t))),
     );
     if (settled === t.elements) return t;
     changed = true;

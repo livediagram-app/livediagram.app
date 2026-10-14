@@ -68,6 +68,9 @@ export function useEditorUiState(
   // Which Sankey's Flows dialog is open (docs/specs/009-elements/sankey.md "The Flows dialog"), or null.
   // Opened by double-click on the diagram and by the menu's Edit Flows.
   const [sankeyFlowsOpenForId, setSankeyFlowsOpenForId] = useState<string | null>(null);
+  // Which sequence diagram's dialog is open (docs/specs/009-elements/sequence-diagram.md "The Sequence dialog"), or
+  // null. Opened by double-click on the diagram and by the menu's Edit Sequence.
+  const [sequenceOpenForId, setSequenceOpenForId] = useState<string | null>(null);
 
   return {
     selectionStore,
@@ -90,5 +93,7 @@ export function useEditorUiState(
     setCodeEditOpenForId,
     sankeyFlowsOpenForId,
     setSankeyFlowsOpenForId,
+    sequenceOpenForId,
+    setSequenceOpenForId,
   };
 }
