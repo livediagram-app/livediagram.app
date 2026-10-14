@@ -102,7 +102,7 @@ function layoutOnce(w: number, h: number, s: CardSlots): CardLayout {
   let media: LayoutRect | null = null;
   let title: LayoutRect | null = null;
   let meta: LayoutRect | null = null;
-  let bodyTop = pad;
+  let bodyTop: number;
   let bodyX = pad;
 
   if (s.header) {

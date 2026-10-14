@@ -9,6 +9,7 @@ import {
   type AccentEdge,
   type Element,
 } from '@livediagram/document';
+import { Glyph } from '@livediagram/ui';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { ColourRow } from '@/components/palette/context-menu-input-rows';
@@ -28,8 +29,8 @@ const EDGE_LABEL: Record<AccentEdge | 'none', string> = {
 // A square outline with the chosen edge drawn thick; None is the plain outline.
 function AccentEdgeIcon({ edge }: { edge: AccentEdge | null }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden fill="none">
-      <rect x="3" y="3" width="12" height="12" rx="2.5" stroke="currentColor" strokeWidth="1.25" />
+    <Glyph size={18} units={18}>
+      <rect x="3" y="3" width="12" height="12" rx="2.5" />
       {edge === 'left' ? (
         <rect x="3" y="3" width="3" height="12" rx="1" fill="currentColor" />
       ) : null}
@@ -39,7 +40,7 @@ function AccentEdgeIcon({ edge }: { edge: AccentEdge | null }) {
       {edge === 'bottom' ? (
         <rect x="3" y="12" width="12" height="3" rx="1" fill="currentColor" />
       ) : null}
-    </svg>
+    </Glyph>
   );
 }
 

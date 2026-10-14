@@ -9,6 +9,7 @@ import {
   type CardMedia,
   type ShapeElement,
 } from '@livediagram/document';
+import { Glyph } from '@livediagram/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';
@@ -25,8 +26,8 @@ const MEDIA_LABEL: Record<CardMedia | 'none', string> = {
 
 function MediaIcon({ media }: { media: CardMedia | null }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden fill="none" stroke="currentColor">
-      {media === null ? <path d="M4 14 14 4" strokeWidth="1.25" /> : null}
+    <Glyph size={18} units={18}>
+      {media === null ? <path d="M4 14 14 4" /> : null}
       {media === 'badge' ? (
         <circle cx="9" cy="9" r="5.5" fill="currentColor" stroke="none" />
       ) : null}
@@ -35,11 +36,11 @@ function MediaIcon({ media }: { media: CardMedia | null }) {
       ) : null}
       {media === 'initial' ? (
         <>
-          <circle cx="9" cy="9" r="5.5" strokeWidth="1.25" />
-          <path d="M7 12V6h3" strokeWidth="1.5" />
+          <circle cx="9" cy="9" r="5.5" />
+          <path d="M7 12V6h3" />
         </>
       ) : null}
-    </svg>
+    </Glyph>
   );
 }
 

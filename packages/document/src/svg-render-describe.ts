@@ -325,6 +325,7 @@ export function describeBoxedExport(
         size: run.size ? runFontPx(run.size, multiline) * textScale : baseSize,
         bold: run.bold ?? !!el.textBold,
         italic: run.italic ?? !!el.textItalic,
+        ...(run.muted ? { muted: true } : {}),
       }))
     : undefined;
   // Mirror the editor's label layout: alignment defaults per element type

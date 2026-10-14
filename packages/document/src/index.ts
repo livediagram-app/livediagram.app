@@ -402,6 +402,7 @@ export {
 export * from './accent-edge';
 export * from './card';
 export * from './shape-variants';
+export * from './title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
 export * from './illustrate-page';

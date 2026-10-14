@@ -24,6 +24,7 @@ import {
   EXPORT_IMAGE_STROKE,
   LABEL_LINE_HEIGHT,
   wrapExportRuns,
+  MUTED_RUN_OPACITY,
   wrapLabel,
   type ExportRun,
   type ExportShape,
@@ -214,7 +215,10 @@ export function drawBoxed(
         for (const run of line) {
           ctx.font = fontFor(run);
           ctx.fillStyle = run.color;
+          // A muted run (a caption) draws at the same reduced opacity as the SVG's fill-opacity.
+          ctx.globalAlpha = run.muted ? MUTED_RUN_OPACITY : 1;
           ctx.fillText(run.text, x, ly);
+          ctx.globalAlpha = 1;
           x += ctx.measureText(run.text).width;
         }
         ly += lineH;

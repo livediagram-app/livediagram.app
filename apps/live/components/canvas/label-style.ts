@@ -4,7 +4,13 @@
 // tables + per-run style resolution without an import cycle through
 // element-labels.tsx (which imports the editor).
 
-import { LABEL_FONT_PX, NOTE_FONT_PX, RUN_XS_PX, labelFontPx } from '@livediagram/document';
+import {
+  LABEL_FONT_PX,
+  NOTE_FONT_PX,
+  RUN_XS_PX,
+  labelFontPx,
+  MUTED_RUN_OPACITY,
+} from '@livediagram/document';
 import type {
   BoxedElement,
   RunSize,
@@ -175,6 +181,8 @@ export function effectiveRunStyle(
   });
   if (run.color) css.color = run.color;
   if (run.size) css.fontSize = `${runSizePx[run.size]}px`;
+  // A caption (docs/specs/009-elements/block-type-picker.md "Title and Caption"): the run's own colour, quieter.
+  if (run.muted) css.opacity = MUTED_RUN_OPACITY;
   // Headings (docs/specs/009-elements/block-type-picker.md). Expressed as `em` rather than px so a heading scales
   // with whatever base size the element carries — a label, a sticky and a
   // page all have different bases, and pinning heading px like the note
