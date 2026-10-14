@@ -65,6 +65,7 @@ import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import {
   AgendaMenuSection,
   ChairMenuSection,
+  RoomMenuSection,
   DecisionMenuSection,
   EstimateMenuSection,
 } from '@/components/palette/CollabMenuSections';
@@ -254,6 +255,7 @@ export function ElementDataSections({
     isAgenda ||
     isDecision ||
     isChair ||
+    shapeTarget?.shape === 'room' ||
     !!props.flowchart;
   return (
     <>
@@ -406,6 +408,13 @@ export function ElementDataSections({
               onSetStatus={props.onSetDecisionStatus}
               onSetDate={props.onSetDecisionDate}
               onSetDrivers={props.onSetDecisionDrivers}
+            />
+          ) : null}
+          {shapeTarget?.shape === 'room' ? (
+            <RoomMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onSetDoor={props.onSetRoomDoor}
             />
           ) : null}
           {isChair ? (

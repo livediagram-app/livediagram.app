@@ -87,6 +87,7 @@ export const ELEMENT_FIELD_NAMES = {
     'pickerOptions',
     'pickerResult',
     'chairFacing',
+    'roomDoor',
     'responses',
     'responsesRevealed',
     'estimateScale',

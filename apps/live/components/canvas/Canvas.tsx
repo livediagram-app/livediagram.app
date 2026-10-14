@@ -92,6 +92,7 @@ import {
   CHAIR_SITTER_FACING,
   isSeatingShape,
   nearestSeat,
+  drinkFrom,
   seatingFacing,
 } from '@livediagram/document';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
@@ -419,11 +420,22 @@ function CanvasView(props: CanvasProps) {
     onWalkIntoChair: (element, feet) => {
       if (!isSeatingShape(element.shape)) return;
       const seating = { ...element, shape: element.shape };
+      // A meeting table's seats each face the table (docs/specs/009-elements/office.md "Meeting Table").
+      const seat = nearestSeat(seating, feet);
       avatarRef.current?.sitOn(
         element.id,
-        nearestSeat(seating, feet),
-        CHAIR_SITTER_FACING[seatingFacing(seating)],
+        seat,
+        seat.facing ?? CHAIR_SITTER_FACING[seatingFacing(seating)],
       );
+    },
+    // A water cooler or a coffee machine (docs/specs/009-elements/office.md "Using it"): a drink in the hand,
+    // and the machine answers on your screen.
+    onWalkIntoDrink: (element) => {
+      const drink = drinkFrom(element.shape);
+      if (!drink) return;
+      avatarRef.current?.giveDrink(drink);
+      setMachineAnswer((prev) => ({ id: element.id, seq: (prev?.seq ?? 0) + 1 }));
+      track('Canvas', 'Used', drink === 'water' ? 'WaterCooler' : 'CoffeeMachine');
     },
     // Reaction pad (docs/specs/009-elements/reaction-pad.md): walking onto one is the same act as pressing
     // it, so it runs the same handler.
@@ -433,6 +445,12 @@ function CanvasView(props: CanvasProps) {
   // goes through a ref — declared above, repointed here, read at arrival time.
   // Same shape as `enterPortalRef` below, for the same reason.
   const avatarRef = useLatest<ReturnType<typeof useAvatarWalk> | null>(avatar);
+  // The machine that last gave you a drink, bumped each time, so it answers (FurnitureView's MachineAnswer).
+  const [machineAnswer, setMachineAnswer] = useState<{ id: string; seq: number } | null>(null);
+  const machineAnsweredOf = useCallback(
+    (elementId: string) => (machineAnswer?.id === elementId ? machineAnswer.seq : 0),
+    [machineAnswer],
+  );
   // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): an Editor or a Participant says
   // something above their character's head; everyone on the tab sees it float away.
   const speech = useAvatarSpeech({
@@ -906,6 +924,7 @@ function CanvasView(props: CanvasProps) {
                           // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
                           // lives, rather than threaded from the page.
                           chairSitters={sittersOf}
+                          machineAnswered={machineAnsweredOf}
                           // Pressing a Selection Mode button that hands out Avatar mode drops
                           // the character at THAT button (see avatarSpawn), not the viewport
                           // centre: you pressed a thing on the canvas, so the character should
@@ -977,6 +996,12 @@ function CanvasView(props: CanvasProps) {
                   lift={peer.avatar.lift}
                   wave={peer.avatar.wave}
                   seated={!!peer.avatar.seatedOn}
+                  // Parsed, not trusted: anything but the two drinks draws an empty hand.
+                  holding={
+                    peer.avatar.holding === 'water' || peer.avatar.holding === 'coffee'
+                      ? peer.avatar.holding
+                      : null
+                  }
                   status={parseAvatarStatus(peer.avatar.status)}
                   // Replayed locally from the kind + elapsed time in their packet, by
                   // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
@@ -1022,6 +1047,7 @@ function CanvasView(props: CanvasProps) {
                   wave={avatar.wave}
                   pose={avatar.pose}
                   seated={avatar.seatedOn !== null}
+                  holding={avatar.holding}
                   status={avatarStatus}
                   shirt={props.selfParticipant.color}
                   standingOn={avatarStandingOn}

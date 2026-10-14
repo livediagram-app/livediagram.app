@@ -355,6 +355,76 @@ export function SofaIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
+// The virtual office (docs/specs/009-elements/office.md): line glyphs in the palette's 24-unit style.
+export function RoomIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M3 4h18v16h-6M9 20H3V4" />
+      <path d="M3 8h18" />
+      <path d="M10 20h4" strokeDasharray="1.5 1.5" />
+    </Glyph>
+  );
+}
+
+export function MeetingTableIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="5" y="9" width="14" height="6" rx="1.5" />
+      <path d="M8 6h3M13 6h3M8 18h3M13 18h3M2.5 10.5v3M21.5 10.5v3" />
+    </Glyph>
+  );
+}
+
+export function PlantIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M12 15C9 11 9 6 12 2c3 4 3 9 0 13z" />
+      <path d="M11.5 15C7 14 4.5 11 4.5 7c3.5 1 6 4 7 8zM12.5 15c4.5-1 7-4 7-8-3.5 1-6 4-7 8z" />
+      <path d="M7 15h10l-1.5 7h-7z" />
+    </Glyph>
+  );
+}
+
+export function BookshelfIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="3" y="2" width="18" height="20" rx="1.5" />
+      <path d="M3 9h18M3 16h18M7 5v4M10 4v5M14 12v4M17 11v5M7 19v-1M11 19v-1" />
+    </Glyph>
+  );
+}
+
+export function WaterCoolerIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="8" y="2" width="8" height="7" rx="2.5" />
+      <path d="M11 9v2h2V9" />
+      <rect x="6.5" y="11" width="11" height="11" rx="1.5" />
+      <path d="M9.5 14.5h1.5M13 14.5h1.5" />
+    </Glyph>
+  );
+}
+
+export function CoffeeMachineIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="5" y="2" width="14" height="13" rx="2" />
+      <path d="M8 5.5h8M10.5 9h3" />
+      <path d="M9 15v-3h6v3" />
+      <path d="M3 15h18v6H3z" />
+    </Glyph>
+  );
+}
+
+export function RugIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <ellipse cx="12" cy="12" rx="10" ry="6.5" />
+      <ellipse cx="12" cy="12" rx="6" ry="3.5" />
+    </Glyph>
+  );
+}
+
 export function FenceIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>

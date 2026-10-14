@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { prefersReducedMotion } from '@/lib/motion-preference';
 import {
   chairSeatFill,
   FURNITURE_ART,
@@ -14,10 +16,19 @@ import {
   furnitureFrame,
   furnitureParts,
   furnitureRing,
+  isSeatingShape,
+  OFFICE_ART,
+  OFFICE_TONES,
+  RUG_FILL,
   seatingFacing,
   type FurniturePart,
+  type OfficeKind,
+  type SeatingKind,
   type ShapeElement,
 } from '@livediagram/document';
+
+// How long a machine answers a drink.
+const MACHINE_ANSWER_MS = 1500;
 
 // A chair, a desk or a two-seater sofa (docs/specs/009-elements/chair.md "Facing", "Desk and sofa"):
 // furniture an Avatar-mode character sits down in. Drawn from the shared FURNITURE_ART table the headless
@@ -31,27 +42,54 @@ import {
 
 export type ChairSitter = { name: string; color: string };
 
-const NOUN = { chair: 'Chair', desk: 'Desk', sofa: 'Sofa' } as const;
+// The plant, the bookshelf, the machines, the meeting table and the rug (docs/specs/009-elements/office.md) are
+// drawn the same way, from OFFICE_ART: one drawing for every side.
+
+const NOUN: Record<SeatingKind | Exclude<OfficeKind, 'room'>, string> = {
+  chair: 'Chair',
+  desk: 'Desk',
+  sofa: 'Sofa',
+  'meeting-table': 'Meeting table',
+  plant: 'Plant',
+  bookshelf: 'Bookshelf',
+  'water-cooler': 'Water cooler',
+  'coffee-machine': 'Coffee machine',
+  rug: 'Rug',
+};
+
+/** Whether FurnitureView draws this kind: seating, and every office piece but the room (RoomView). */
+export function isFurnitureViewShape(kind: string): kind is keyof typeof NOUN {
+  return kind in NOUN;
+}
+
 export function FurnitureView({
   element,
   stroke,
+  fill,
   sitters,
+  answered,
   animClass,
 }: {
   element: ShapeElement;
   stroke: string;
+  // The element's fill: a rug's colour (seating and the rest take their seat wash from it).
+  fill?: string;
   sitters: ChairSitter[];
+  // Bumped each time your own character gets a drink here, so the machine answers
+  // (docs/specs/009-elements/office.md "Using it").
+  answered?: number;
   animClass?: string;
 }) {
-  if (element.shape !== 'chair' && element.shape !== 'desk' && element.shape !== 'sofa')
-    return null;
-  const art = FURNITURE_ART[element.shape];
-  const facing = seatingFacing({ shape: element.shape, chairFacing: element.chairFacing });
+  const kind = element.shape;
+  if (!isFurnitureViewShape(kind)) return null;
+  const seating = isSeatingShape(kind);
+  const art = seating ? FURNITURE_ART[kind] : OFFICE_ART[kind as Exclude<OfficeKind, 'room'>];
+  const facing = seating ? seatingFacing({ shape: kind, chairFacing: element.chairFacing }) : 'n';
   const frame = furnitureFrame(art, facing);
-  const seat = chairSeatFill(element.fillColor, stroke);
-  const occupied = sitters.length > 0;
+  const seat = kind === 'rug' ? (fill ?? RUG_FILL) : chairSeatFill(element.fillColor, stroke);
+  const occupied = seating && sitters.length > 0;
   const ringColor = sitters[0]?.color ?? stroke;
-  const noun = NOUN[element.shape];
+  const noun = NOUN[kind];
   const ring = furnitureRing(art, facing);
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
@@ -60,9 +98,11 @@ export function FurnitureView({
         className="absolute inset-0 h-full w-full overflow-visible"
         role="img"
         aria-label={
-          occupied
-            ? `${noun}, ${sitters.map((s) => s.name).join(' and ')} sitting`
-            : `Empty ${noun.toLowerCase()}`
+          !seating
+            ? noun
+            : occupied
+              ? `${noun}, ${sitters.map((s) => s.name).join(' and ')} sitting`
+              : `Empty ${noun.toLowerCase()}`
         }
       >
         <g transform={frame.transform || undefined}>
@@ -70,8 +110,12 @@ export function FurnitureView({
             <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />
           ))}
         </g>
-        {occupied ? (
-          // A soft ring in the first sitter's colour, under the seats.
+        {kind === 'water-cooler' || kind === 'coffee-machine' ? (
+          <MachineAnswer kind={kind} answered={answered ?? 0} />
+        ) : null}
+        {occupied && kind !== 'meeting-table' ? (
+          // A soft ring in the first sitter's colour, under the seats. A meeting table names its sitters
+          // without a ring: which seat a peer took is not in their presence.
           <ellipse {...ring} fill="none" stroke={ringColor} strokeWidth="3" opacity="0.85" />
         ) : null}
       </svg>
@@ -84,6 +128,53 @@ export function FurnitureView({
         </span>
       ) : null}
     </div>
+  );
+}
+
+// The machine answering a drink (docs/specs/009-elements/office.md "Using it"): bubbles rising in the cooler's
+// bottle, or coffee dripping into the carafe, for a moment. Played with the Web Animations API on each bump of
+// `answered`, so it costs nothing until somebody gets a drink, and not at all under reduced motion.
+function MachineAnswer({
+  kind,
+  answered,
+}: {
+  kind: 'water-cooler' | 'coffee-machine';
+  answered: number;
+}) {
+  const ref = useRef<SVGGElement>(null);
+  useEffect(() => {
+    const g = ref.current;
+    if (!g || answered === 0 || prefersReducedMotion()) return;
+    const anims = [...g.children].map((child, i) =>
+      (child as SVGElement).animate(
+        kind === 'water-cooler'
+          ? [
+              { transform: 'translateY(0)', opacity: 0 },
+              { transform: 'translateY(-4px)', opacity: 0.9, offset: 0.2 },
+              { transform: 'translateY(-22px)', opacity: 0 },
+            ]
+          : [
+              { transform: 'translateY(0)', opacity: 0 },
+              { transform: 'translateY(2px)', opacity: 1, offset: 0.3 },
+              { transform: 'translateY(9px)', opacity: 0 },
+            ],
+        { duration: MACHINE_ANSWER_MS / 2, delay: i * 180, iterations: 2, easing: 'ease-out' },
+      ),
+    );
+    return () => anims.forEach((a) => a.cancel());
+  }, [answered, kind]);
+  return kind === 'water-cooler' ? (
+    <g ref={ref} aria-hidden>
+      {[20, 28, 35].map((x, i) => (
+        <circle key={x} cx={x} cy={30 - i * 2} r={2 + (i % 2)} fill="#ffffff" opacity={0} />
+      ))}
+    </g>
+  ) : (
+    <g ref={ref} aria-hidden>
+      {[0, 1, 2].map((i) => (
+        <ellipse key={i} cx={36} cy={38} rx={1.4} ry={2.2} fill={OFFICE_TONES.coffee} opacity={0} />
+      ))}
+    </g>
   );
 }
 
@@ -102,7 +193,9 @@ function FurniturePartView({
         return { fill: FURNITURE_SHADOW.fill, opacity: FURNITURE_SHADOW.opacity };
       case 'panel':
       case 'face':
-        return { fill: seat, stroke, strokeWidth: FURNITURE_PANEL_STROKE };
+        return { fill: part.fill ?? seat, stroke, strokeWidth: FURNITURE_PANEL_STROKE };
+      case 'floor':
+        return { fill: seat };
       case 'line':
         return {
           fill: 'none',

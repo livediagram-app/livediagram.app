@@ -239,6 +239,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 10.5h18M3 15.5h18" />
     </Glyph>
   ),
+  // A room's walls with a doorway, a little table and a plant: an office floor plan.
+  'virtual-office': (
+    <Glyph>
+      <path d="M10 21H3V3h18v18h-7" />
+      <rect x="7" y="8" width="7" height="4" rx="1" />
+      <path d="M17.5 13v-3M16 10h3" />
+    </Glyph>
+  ),
   lanes: (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />

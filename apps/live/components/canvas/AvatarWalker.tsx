@@ -7,6 +7,7 @@
 // same component draws PEERS' characters (from their presence snapshot), which
 // is why every animation input is a prop rather than read from the walk hook.
 
+import type { DrinkKind } from '@livediagram/document';
 import { avatarStatusColour, avatarStatusLabel, type AvatarStatus } from '@/lib/avatar-status';
 import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
@@ -38,6 +39,7 @@ export function AvatarWalker({
   wave = null,
   pose = null,
   seated = false,
+  holding = null,
   shirt,
   standingOn,
   name,
@@ -60,6 +62,8 @@ export function AvatarWalker({
   pose?: import('@/lib/avatar-reactions').ReactionPose | null;
   // Chair (docs/specs/009-elements/chair.md): this character is sitting on one, so it draws seated.
   seated?: boolean;
+  // A drink in the hand (docs/specs/009-elements/office.md "Using it"), or none.
+  holding?: DrinkKind | null;
   // Shirt colour — the participant's presence colour, so your character on a
   // shared document matches your cursor / name chip. Falls back to the brand
   // cyan inside the sprite when undefined.
@@ -162,6 +166,7 @@ export function AvatarWalker({
             wave={wave}
             pose={pose}
             seated={seated}
+            holding={holding}
             shirt={shirt}
             scale={scale}
           />

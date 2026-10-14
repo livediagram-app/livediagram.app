@@ -2,6 +2,7 @@
 // rails, and the closed sets and bounded rows of the content-carrying and collaborative kinds. Each
 // check names its field and rule, so a refusal says which value to fix.
 
+import { isRoomDoor } from './office';
 import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
 import { isPlanSheetRef } from './element-types';
 import { isFlowchartDirection } from './flowchart';
@@ -411,6 +412,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: arrayRule(NAV_LINKS_MAX, `strings of ${WEB_TEXT_MAX} characters`),
   },
   { field: 'chairFacing', valid: isChairFacing, rule: 'a chair facing' },
+  { field: 'roomDoor', valid: isRoomDoor, rule: 'a room doorway (n, e, s, w or none)' },
   {
     field: 'responses',
     valid: rowsOf(RESPONSES_MAX, isResponse),
