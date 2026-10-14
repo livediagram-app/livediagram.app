@@ -78,6 +78,10 @@ const SHAPE_TOKENS: Record<string, string> = {
   step: 'Step',
   // Boundary (docs/specs/009-elements/boundary.md).
   boundary: 'Boundary',
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md).
+  'layer-stack': 'LayerStack',
+  pyramid: 'Pyramid',
+  cycle: 'Cycle',
   'stat-row': 'StatRow',
   process: 'ProcessSteps',
   'site-header': 'Header',

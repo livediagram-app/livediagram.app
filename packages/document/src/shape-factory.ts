@@ -224,6 +224,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   step: { width: 28, height: 28 },
   // Boundary (docs/specs/009-elements/boundary.md): room for a few nodes inside.
   boundary: { width: 480, height: 300 },
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md).
+  'layer-stack': { width: 360, height: 260 },
+  pyramid: { width: 320, height: 260 },
+  cycle: { width: 300, height: 300 },
   // Three 150px cards and two 16px gaps.
   'stat-row': { width: 482, height: 96 },
   process: { width: 420, height: 110 },
@@ -600,6 +604,36 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       borderRadius: 'lg',
     };
   }
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): rows to start from, so the first one reads as
+  // what it is.
+  if (kind === 'layer-stack')
+    return {
+      ...base,
+      conceptRows: [
+        { label: 'Presentation', note: 'Next.js' },
+        { label: 'API', note: 'Workers' },
+        { label: 'Domain', note: 'packages/document' },
+        { label: 'Storage', note: 'D1' },
+      ],
+    };
+  if (kind === 'pyramid')
+    return {
+      ...base,
+      conceptRows: [
+        { label: 'Vision' },
+        { label: 'Strategy' },
+        { label: 'Objectives' },
+        { label: 'Daily work' },
+      ],
+    };
+  if (kind === 'cycle')
+    return {
+      ...base,
+      label: 'Weekly loop',
+      textSize: 'sm',
+      aspectLocked: true,
+      conceptRows: [{ label: 'Plan' }, { label: 'Do' }, { label: 'Check' }, { label: 'Act' }],
+    };
   // Boundary (docs/specs/009-elements/boundary.md): a titled, dashed container.
   if (kind === 'boundary')
     return {

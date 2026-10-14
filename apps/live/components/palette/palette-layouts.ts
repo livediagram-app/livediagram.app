@@ -117,6 +117,8 @@ const DIAGRAM: PaletteLayout = {
       id: 'build',
       tiles: [...tilesForCategory('build').map((t) => t.id), ...DIAGRAM_BUILD_EXTRAS],
     },
+    // Concept graphics (docs/specs/009-elements/concept-graphics.md).
+    { id: 'concepts' },
     { id: 'event-storming', boardOnly: true },
     { id: 'icons' },
     { id: 'technology' },
@@ -179,6 +181,7 @@ const ILLUSTRATE: PaletteLayout = {
         'tools:boundary',
       ),
     },
+    { id: 'concepts' },
     // The web blocks, without the data-model Entity.
     { id: 'components', tiles: tilesExcept('components', 'tools:entity') },
     { id: 'devices' },
@@ -233,6 +236,8 @@ const FACILITATE: PaletteLayout = {
       ],
     },
     { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
+    // A session reads results and runs retros in cycles (docs/specs/009-elements/concept-graphics.md).
+    { id: 'concepts' },
     { id: 'icons' },
     { id: 'stickers' },
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },

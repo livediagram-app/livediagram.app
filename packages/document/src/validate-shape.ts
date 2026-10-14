@@ -46,6 +46,7 @@ import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
 import { isChipLook } from './chip';
 import { isAttachPoint } from './attachment';
 import { isBoundaryStyle } from './boundary';
+import { isPyramidVariant } from './concept';
 import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow, isMindSpacing } from './mind-flow';
 import {
@@ -276,6 +277,18 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   flag('stepSequence'),
   // Boundary (docs/specs/009-elements/boundary.md).
   { field: 'boundaryStyle', valid: isBoundaryStyle, rule: oneOfRule(['tab', 'inset', 'c4']) },
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows are content; the animation is
+  // cosmetic and lenient, like every element animation.
+  {
+    field: 'conceptRows',
+    valid: rowsOf(8, (r) => isRecord(r) && isStrUpTo(60)(r.label) && isOptionalStrUpTo(r.note, 40)),
+    rule: 'an array of at most 8 { label, note? } rows (60 and 40 characters)',
+  },
+  {
+    field: 'pyramidVariant',
+    valid: isPyramidVariant,
+    rule: oneOfRule(['pyramid', 'inverted', 'funnel']),
+  },
   {
     field: 'tags',
     valid: rowsOf(CARD_TAGS_MAX, isStrUpTo(CARD_TAG_MAX)),

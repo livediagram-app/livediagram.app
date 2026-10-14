@@ -12,6 +12,13 @@ const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: strin
   process: { label: 'Add Step', description: 'Add another step to the end of the process.' },
   'site-header': { label: 'Add Link', description: 'Add another link to the header.' },
   card: { label: 'Add Tag', description: 'Add a tag chip along the bottom of the card.' },
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md).
+  'layer-stack': {
+    label: 'Add Layer',
+    description: 'Add another layer to the bottom of the stack.',
+  },
+  pyramid: { label: 'Add Tier', description: 'Add another tier to the pyramid.' },
+  cycle: { label: 'Add Step', description: 'Add another step to the cycle.' },
 };
 
 // The four quick-connect "+" buttons around a single selected element (docs/specs/008-canvas/canvas-and-palette.md),

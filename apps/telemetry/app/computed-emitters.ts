@@ -616,6 +616,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'ChipLook',
       'ChipDetach',
       'BoundaryStyle',
+      'PyramidVariant',
+      'ConceptAnim',
     ],
   },
   // The element menu's whole-tab writes (apps/live/lib/element-style-ops.ts `commitTab`).

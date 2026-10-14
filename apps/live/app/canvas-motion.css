@@ -1001,6 +1001,81 @@
     var(--lvd-sankey-iter, 1) both;
 }
 
+/* Concept graphics (docs/specs/009-elements/concept-graphics.md "Animation"): each row carries its place in
+ * reading order as --lvd-cg-i (a plain value, never animated) and the face its row count as --lvd-cg-n, speed
+ * and iteration as --lvd-concept-*. Build brings the rows in one after another, once; with Repeat it builds,
+ * holds and clears on a steady cycle (every row the same length, so the stagger survives each loop). Pulse
+ * lights each row in turn and rests after the last, looping. Flow marches dashes along a cycle's arcs. Opacity,
+ * transform and filter only, except Flow's dash offset on a handful of arcs. */
+@keyframes lvd-concept-build {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lvd-concept-build-loop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  14%,
+  82% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+.lvd-concept-build .lvd-cg-row {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lvd-concept-build calc(0.45s * var(--lvd-concept-speed, 1))
+    cubic-bezier(0.22, 1, 0.36, 1) calc(var(--lvd-cg-i, 0) * 0.18s * var(--lvd-concept-speed, 1)) 1
+    both;
+}
+.lvd-concept-build-loop .lvd-cg-row {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lvd-concept-build-loop calc(4s * var(--lvd-concept-speed, 1)) ease-out
+    calc(var(--lvd-cg-i, 0) * 0.18s * var(--lvd-concept-speed, 1)) infinite both;
+}
+@keyframes lvd-concept-pulse {
+  0%,
+  16%,
+  100% {
+    filter: none;
+    transform: none;
+  }
+  8% {
+    filter: brightness(1.18);
+    transform: scale(1.03);
+  }
+}
+.lvd-concept-pulse .lvd-cg-row {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lvd-concept-pulse
+    calc((var(--lvd-cg-n, 4) * 0.6s + 0.8s) * var(--lvd-concept-speed, 1)) ease-in-out
+    calc(var(--lvd-cg-i, 0) * 0.6s * var(--lvd-concept-speed, 1)) var(--lvd-concept-iter, infinite)
+    both;
+}
+@keyframes lvd-concept-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+.lvd-concept-flow .lvd-cg-arc {
+  stroke-dasharray: 6 6;
+  animation: lvd-concept-flow calc(1.2s * var(--lvd-concept-speed, 1)) linear
+    var(--lvd-concept-iter, infinite);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lvd-anim-text-glow,
   .lvd-anim-text-pulse,
@@ -1051,8 +1126,16 @@
   .lvd-sankey-pulse .lvd-sk-band,
   .lvd-sankey-rise .lvd-sk-node,
   .lvd-sankey-rise .lvd-sk-band,
-  .lvd-sankey-rise .lvd-sk-label {
+  .lvd-sankey-rise .lvd-sk-label,
+  .lvd-concept-build .lvd-cg-row,
+  .lvd-concept-build-loop .lvd-cg-row,
+  .lvd-concept-pulse .lvd-cg-row,
+  .lvd-concept-flow .lvd-cg-arc {
     animation: none;
+  }
+  /* A still Flow is the rest frame: solid arcs. */
+  .lvd-concept-flow .lvd-cg-arc {
+    stroke-dasharray: none;
   }
 }
 

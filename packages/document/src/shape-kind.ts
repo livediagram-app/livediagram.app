@@ -45,6 +45,11 @@ export type ShapeKind =
   | 'step'
   // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
   | 'boundary'
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): one element laying out its own rows
+  // (`conceptRows`): a stack of layers, a pyramid (or inverted, or a funnel), a cycle of steps.
+  | 'layer-stack'
+  | 'pyramid'
+  | 'cycle'
   // Stat row: KPI cards, a big value over a caption each, in `stats`.
   | 'stat-row'
   // Process steps: numbered circles joined by arrows, captions in

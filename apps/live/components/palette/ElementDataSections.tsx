@@ -17,8 +17,12 @@ import dynamic from 'next/dynamic';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
+import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import {
   isChipShape,
+  isConceptShape,
+  type ConceptShape,
+  type ShapeElement,
   animLoops,
   DEFAULT_ANIMATION_SPEED,
   LINE_DEFAULT_SERIES,
@@ -227,6 +231,7 @@ export function ElementDataSections({
     hasWebRowsSection(target) ||
     isChip ||
     shapeTarget?.shape === 'boundary' ||
+    (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isProgress ||
     isRail ||
     isRating ||
@@ -433,6 +438,14 @@ export function ElementDataSections({
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
             steps, a header's links: add / remove / reorder. */}
+          {/* A concept graphic's variant and animation (docs/specs/009-elements/concept-graphics.md). */}
+          {shapeTarget && isConceptShape(shapeTarget.shape) ? (
+            <ConceptMenuSection
+              target={shapeTarget as ShapeElement & { shape: ConceptShape }}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
           {/* A boundary's style (docs/specs/009-elements/boundary.md). */}
           {shapeTarget?.shape === 'boundary' ? (
             <BoundaryMenuSection

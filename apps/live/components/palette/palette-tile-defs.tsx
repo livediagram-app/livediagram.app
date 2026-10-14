@@ -126,6 +126,8 @@ export type PaletteTileSection =
   // They are now Collaborate elements, offered as six categories: see COLLABORATE_CATEGORY_GROUPS.
   | 'media'
   | 'components'
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md).
+  | 'concepts'
   | 'devices'
   | 'stickers'
   | 'icons'
@@ -1520,6 +1522,74 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <rect x="3" y="6" width="18" height="15" rx="2" strokeDasharray="3 2.5" />
         <rect x="5" y="3.5" width="9" height="5" rx="1.5" />
+      </Glyph>
+    ),
+  },
+  // --- Concepts (docs/specs/009-elements/concept-graphics.md) --------------------------------------
+  {
+    id: 'concepts:layer-stack',
+    blurb: 'Stacked layers with side notes',
+    caption: 'Layer Stack',
+    section: 'concepts',
+    label: 'Add Layer Stack',
+    description:
+      'Layer stack. Horizontal bands for a tech stack, the OSI model or architecture tiers.',
+    action: { type: 'shape', kind: 'layer-stack' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="3" y="3.5" width="18" height="4.5" rx="1.2" />
+        <rect x="3" y="9.75" width="18" height="4.5" rx="1.2" />
+        <rect x="3" y="16" width="18" height="4.5" rx="1.2" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:pyramid',
+    blurb: 'Tiers in a triangle',
+    caption: 'Pyramid',
+    section: 'concepts',
+    label: 'Add Pyramid',
+    description: 'Pyramid. Tiers cut from one triangle: a hierarchy, a strategy stack, needs.',
+    action: { type: 'shape', kind: 'pyramid' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M12 3 15.4 9H8.6Z" />
+        <path d="M7.7 10.6h8.6l2.9 5H4.8Z" />
+        <path d="M3.9 17.2h16.2l1.4 3.3h-19Z" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:funnel',
+    blurb: 'Narrowing bands with values',
+    caption: 'Funnel',
+    section: 'concepts',
+    label: 'Add Funnel',
+    description: 'Funnel. Bands narrowing downward, each with a value: a conversion story.',
+    action: { type: 'shape', kind: 'pyramid', variant: 'funnel' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M3 4h18l-2.2 4.5H5.2Z" />
+        <path d="M6 10.5h12l-2 4H8Z" />
+        <path d="M8.8 16.5h6.4l-1.2 3.5h-4Z" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:cycle',
+    blurb: 'Steps round a loop',
+    caption: 'Cycle',
+    section: 'concepts',
+    label: 'Add Cycle',
+    description: 'Cycle. Steps round a ring joined by arrows: PDCA, a flywheel, a release loop.',
+    action: { type: 'shape', kind: 'cycle' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <circle cx="12" cy="4.5" r="2.3" />
+        <circle cx="19.5" cy="12" r="2.3" />
+        <circle cx="12" cy="19.5" r="2.3" />
+        <circle cx="4.5" cy="12" r="2.3" />
+        <path d="M15 5.5a8 8 0 0 1 3.5 3.5M18.5 15a8 8 0 0 1-3.5 3.5M9 18.5A8 8 0 0 1 5.5 15M5.5 9A8 8 0 0 1 9 5.5" />
       </Glyph>
     ),
   },

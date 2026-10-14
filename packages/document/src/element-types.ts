@@ -18,6 +18,7 @@ import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
 import type { AttachPoint } from './attachment';
 import type { BoundaryStyle } from './boundary';
+import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
@@ -463,6 +464,13 @@ export type ShapeElement = {
   stepSequence?: boolean;
   // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
   boundaryStyle?: BoundaryStyle;
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows (a layer, tier or step each, with an
+  // optional note), a pyramid's variant (absent = pyramid) and the Concept animation with its speed and repeat.
+  conceptRows?: ConceptRow[];
+  pyramidVariant?: PyramidVariant;
+  conceptAnim?: ConceptAnim;
+  conceptAnimSpeed?: AnimationSpeed;
+  conceptAnimRepeat?: boolean;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), bounded in validate.ts: a stat row's KPI
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.

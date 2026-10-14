@@ -507,6 +507,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Badge',
     'Step',
   ],
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): the Concepts category.
+  concepts: ['LayerStack', 'Pyramid', 'Cycle'],
   devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Foldable', 'Smartwatch'],
   icons: ['Icon', 'TechIcon', 'Sticker'],
 } as const satisfies Record<string, readonly string[]>;

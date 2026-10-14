@@ -25,5 +25,20 @@ function calloutCard(el: ShapeElement): ShapeElement {
 export function applyShapeVariant(el: ShapeElement, variant: string | undefined): ShapeElement {
   if (!variant) return el;
   if (el.shape === 'card' && variant === 'callout') return calloutCard(el);
+  // The pyramid's variants (docs/specs/009-elements/concept-graphics.md): a Funnel starts from a conversion story.
+  if (el.shape === 'pyramid' && variant === 'funnel')
+    return {
+      ...el,
+      width: 340,
+      pyramidVariant: 'funnel',
+      conceptRows: [
+        { label: 'Visited', note: '12,400' },
+        { label: 'Signed up', note: '3,100' },
+        { label: 'Activated', note: '820' },
+        { label: 'Retained', note: '210' },
+      ],
+    };
+  if (el.shape === 'pyramid' && variant === 'inverted')
+    return { ...el, pyramidVariant: 'inverted' };
   return el;
 }

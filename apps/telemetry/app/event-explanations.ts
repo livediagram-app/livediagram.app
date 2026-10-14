@@ -240,6 +240,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone let a badge or step number go from the element it was attached to.',
   'Element|Changed|BoundaryStyle':
     "Someone changed where a boundary shows its title: in a tab on its edge, inside its corner, or C4's bottom-left.",
+  'Element|Changed|ConceptRows':
+    'Someone added, removed, reordered or renamed the layers, tiers or steps of a layer stack, pyramid or cycle.',
+  'Element|Changed|PyramidVariant':
+    'Someone switched a pyramid between pointing up, pointing down and a funnel.',
+  'Element|Changed|ConceptAnim':
+    "Someone set or cleared a layer stack's, pyramid's or cycle's animation (Build, Pulse or Flow), or its speed or repeat.",
   'Element|Changed|RenumberSteps':
     'Someone renumbered every step number on a tab in reading order.',
   'Element|Changed|StepSequence':

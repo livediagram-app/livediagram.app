@@ -33,3 +33,4 @@ Follow the references below only as needed; never upfront.
 - ./card.md - when implementing or changing the card, its slots, layout, menu or the callout migration
 - ./badge.md - when implementing or changing the badge, the step number, attachment and settling, or step numbering
 - ./boundary.md - when implementing or changing the boundary, its styles, depth tint, containment or paint order
+- ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations

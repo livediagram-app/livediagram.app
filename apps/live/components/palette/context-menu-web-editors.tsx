@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 import {
+  CONCEPT_LABEL_MAX,
+  CONCEPT_NOTE_MAX,
+  CONCEPT_ROWS,
+  conceptDrawsNotes,
+  isConceptShape,
+  type ConceptRow,
   CARD_TAG_MAX,
   CARD_TAGS_MAX,
   NAV_LINKS_MAX,
@@ -199,6 +205,74 @@ export function TextRowsEditor({
   );
 }
 
+// A concept graphic's rows (docs/specs/009-elements/concept-graphics.md): a label each, and a note where the kind
+// draws one (a layer's side note, a funnel tier's value). Same row controls as the web components'.
+export function ConceptRowsEditor({
+  rows: initial,
+  min,
+  max,
+  noun,
+  notes,
+  onChange,
+}: {
+  rows: ConceptRow[];
+  min: number;
+  max: number;
+  noun: string;
+  notes: boolean;
+  onChange: (rows: ConceptRow[]) => void;
+}) {
+  const [rows, setRows] = useState<ConceptRow[]>(initial);
+  const set = (i: number, patch: Partial<ConceptRow>) =>
+    setRows((r) => r.map((row, j) => (j === i ? { ...row, ...patch } : row)));
+  return (
+    <div className="px-2 py-1.5">
+      <div className="flex flex-col gap-1">
+        {rows.map((row, i) => (
+          <div key={i} className="flex items-center gap-1">
+            <input
+              className={`${MENU_CELL_INPUT} flex-1`}
+              value={row.label}
+              placeholder={noun}
+              aria-label={`${noun} ${i + 1}`}
+              maxLength={CONCEPT_LABEL_MAX}
+              onChange={(e) => set(i, { label: e.target.value })}
+              onBlur={() => onChange(rows)}
+            />
+            {notes ? (
+              <input
+                className={`${MENU_CELL_INPUT} w-[4.5rem]`}
+                value={row.note ?? ''}
+                placeholder="note"
+                aria-label={`${noun} ${i + 1} note`}
+                maxLength={CONCEPT_NOTE_MAX}
+                onChange={(e) => set(i, { note: e.target.value })}
+                onBlur={() => onChange(rows)}
+              />
+            ) : null}
+            <RowControls
+              index={i}
+              count={rows.length}
+              min={min}
+              noun={noun.toLowerCase()}
+              onMove={(to) => onChange(move(rows, i, to))}
+              onRemove={() => onChange(rows.filter((_, j) => j !== i))}
+            />
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        disabled={rows.length >= max}
+        onClick={() => onChange([...rows, { label: `${noun} ${rows.length + 1}` }])}
+        className={MENU_ADD_ROW_BUTTON}
+      >
+        Add {noun}
+      </button>
+    </div>
+  );
+}
+
 // The one section a row-carrying web component shows, or nothing for any
 // other element.
 export function WebRowsMenuSection({
@@ -255,6 +329,22 @@ export function WebRowsMenuSection({
       </MenuAccordionSection>
     );
   }
+  if (isConceptShape(target.shape)) {
+    const bounds = CONCEPT_ROWS[target.shape];
+    return (
+      <MenuAccordionSection title="Rows" icon={<DataMenuGlyph />} {...sectionProps('concept-rows')}>
+        <ConceptRowsEditor
+          key={JSON.stringify(target.conceptRows ?? [])}
+          rows={target.conceptRows ?? []}
+          min={bounds.min}
+          max={bounds.max}
+          noun={bounds.noun}
+          notes={conceptDrawsNotes(target)}
+          onChange={(conceptRows) => onSetRows({ conceptRows })}
+        />
+      </MenuAccordionSection>
+    );
+  }
   if (target.shape === 'card') {
     return (
       <MenuAccordionSection title="Tags" icon={<DataMenuGlyph />} {...sectionProps('tags')}>
@@ -282,6 +372,7 @@ export function hasWebRowsSection(target: { type: string; shape?: string }): boo
     (target.shape === 'stat-row' ||
       target.shape === 'process' ||
       target.shape === 'site-header' ||
-      target.shape === 'card')
+      target.shape === 'card' ||
+      isConceptShape(target.shape ?? ''))
   );
 }

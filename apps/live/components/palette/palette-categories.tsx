@@ -12,6 +12,7 @@ import { PlanViewArt } from '@/components/plan/plan-view-art';
 import {
   BehaviourTabIcon,
   BuildTabIcon,
+  ConceptsTabIcon,
   ComponentsTabIcon,
   DataTabIcon,
   DevicesTabIcon,
@@ -213,6 +214,15 @@ export const PALETTE_CATEGORIES: {
     description:
       'The structural elements: mind nodes, flowcharts, lanes, frames, timelines, tables, and Sankey diagrams.',
     icon: <BuildTabIcon />,
+  },
+  {
+    // Concept graphics (docs/specs/009-elements/concept-graphics.md): the shapes ideas come in, as single elements.
+    id: 'concepts',
+    label: 'Concepts',
+    group: 1,
+    description:
+      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel and a cycle. Add, reorder and retitle rows in place.',
+    icon: <ConceptsTabIcon />,
   },
   {
     id: 'components',

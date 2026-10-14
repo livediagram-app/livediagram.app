@@ -14,6 +14,7 @@
 import { clamp, type Rect } from './geometry-primitives';
 import type { ShapeKind } from './index';
 import { CARD_TAGS_MAX, clampCardTag } from './card';
+import { CONCEPT_ROWS, boundConceptRows, isConceptShape, type ConceptRow } from './concept';
 
 // --- Vocabulary -------------------------------------------------------------
 
@@ -256,9 +257,12 @@ export type WebRows = {
   navLinks?: string[];
   // A card's tag chips (docs/specs/009-elements/card.md).
   tags?: string[];
+  // A concept graphic's rows (docs/specs/009-elements/concept-graphics.md).
+  conceptRows?: ConceptRow[];
 };
 
-const ROW_KIND: Record<keyof WebRows, ShapeKind> = {
+// The kind each single-kind row field lands on; concept rows land on any of the three concept graphics.
+const ROW_KIND: Record<Exclude<keyof WebRows, 'conceptRows'>, ShapeKind> = {
   stats: 'stat-row',
   processSteps: 'process',
   navLinks: 'site-header',
@@ -293,6 +297,10 @@ export function withWebRows<T extends { shape: ShapeKind }>(el: T, rows: WebRows
     }
     patch.tags = next;
   }
+  if (rows.conceptRows && isConceptShape(el.shape)) {
+    const next = boundConceptRows(el.shape, rows.conceptRows);
+    if (next) patch.conceptRows = next;
+  }
   return Object.keys(patch).length > 0 ? { ...el, ...patch } : el;
 }
 
@@ -312,6 +320,12 @@ export function appendWebRow<T extends { shape: ShapeKind } & WebRows>(el: T): T
     return withWebRows(el, { navLinks: [...(el.navLinks ?? []), 'Link'] });
   }
   if (el.shape === 'card') return withWebRows(el, { tags: [...(el.tags ?? []), 'Tag'] });
+  if (isConceptShape(el.shape)) {
+    const rows = (el as { conceptRows?: ConceptRow[] }).conceptRows ?? [];
+    const label = `${CONCEPT_ROWS[el.shape].noun} ${rows.length + 1}`;
+    // Appending is the one write that may start below the minimum, one row at a time.
+    return { ...el, conceptRows: [...rows, { label }] };
+  }
   return el;
 }
 
@@ -320,5 +334,9 @@ export function canAppendWebRow(el: { shape: ShapeKind } & WebRows): boolean {
   if (el.shape === 'process') return (el.processSteps?.length ?? 0) < PROCESS_MAX_STEPS;
   if (el.shape === 'site-header') return (el.navLinks?.length ?? 0) < NAV_LINKS_MAX;
   if (el.shape === 'card') return (el.tags?.length ?? 0) < CARD_TAGS_MAX;
+  if (isConceptShape(el.shape))
+    return (
+      ((el as { conceptRows?: ConceptRow[] }).conceptRows?.length ?? 0) < CONCEPT_ROWS[el.shape].max
+    );
   return false;
 }

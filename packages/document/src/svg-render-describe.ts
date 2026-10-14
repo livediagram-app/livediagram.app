@@ -430,7 +430,9 @@ export function selfLabelled(el: BoxedElement): boolean {
     (BEHAVIOUR_FACE_SHAPES.has(el.shape) && el.shape !== 'chair') ||
     isWebComponentShape(el.shape) ||
     // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
-    el.shape === 'boundary'
+    el.shape === 'boundary' ||
+    // A cycle writes its centre label itself (docs/specs/009-elements/concept-graphics.md).
+    el.shape === 'cycle'
   );
 }
 
