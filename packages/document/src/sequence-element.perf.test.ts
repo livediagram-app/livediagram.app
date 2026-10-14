@@ -18,7 +18,7 @@ function worst(n: number): ShapeElement {
     from: `p${i % 12}`,
     to: `p${(i * 5 + 3) % 12}`,
     label: `${n} ${'a fairly long message label '.repeat(2)}`.slice(0, 80),
-    kind: (['call', 'async', 'reply'] as const)[i % 3],
+    kind: (['call', 'async', 'reply'] as const)[i % 3]!,
   }));
   return {
     ...(createShape('sequence', 0, 0) as ShapeElement),
