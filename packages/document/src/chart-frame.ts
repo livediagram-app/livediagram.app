@@ -8,8 +8,8 @@
 // happen to agree.
 
 import { chartMarkInk } from './chart-ink';
-import { chartPaletteColors } from './chart-palettes';
-import { PIE_DEFAULT_SLICES, PIE_PALETTE, type PieSlice } from './data-shapes';
+import { chartRamp } from './chart-palettes';
+import { PIE_DEFAULT_SLICES, type PieSlice } from './data-shapes';
 import type { ShapeElement } from './index';
 
 export type ChartRect = { x: number; y: number; w: number; h: number };
@@ -28,8 +28,7 @@ export function chartFrame(
   // Three rungs, narrowest first (docs/specs/009-elements/pie-chart.md): the chart's own palette if it has
   // been given one, then the tab theme's, then the built-in ramp. A per-datum
   // colour beats all three, in `colorAt` below.
-  const chosen = chartPaletteColors(element.chartPalette);
-  const colors = chosen ?? (palette && palette.length > 0 ? palette : PIE_PALETTE);
+  const colors = chartRamp(element.chartPalette, palette);
   const w = Math.max(1, element.width);
   const h = Math.max(1, element.height);
   const data: readonly PieSlice[] =

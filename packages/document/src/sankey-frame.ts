@@ -3,9 +3,8 @@
 // function both renderers call, so the canvas view and the exporter differ only in the markup they emit.
 
 import { chartMarkInk } from './chart-ink';
-import { chartPaletteColors } from './chart-palettes';
+import { chartRamp } from './chart-palettes';
 import { isLightColor } from './colors';
-import { PIE_PALETTE } from './data-shapes';
 import type { ShapeElement, TextSize, TextSizePreset } from './index';
 import {
   sankeyLayout,
@@ -123,9 +122,7 @@ export function sankeyFrame(
   const written = new Set(sankeyNodeNames(element.sankeyFlows));
   // The chart colour ladder (docs/specs/009-elements/pie-chart.md "Chart palettes"): a node's own colour,
   // then the diagram's palette, then the tab theme's ramp, then the built-in one; by first appearance.
-  const ramp =
-    chartPaletteColors(element.chartPalette) ??
-    (palette && palette.length > 0 ? palette : PIE_PALETTE);
+  const ramp = chartRamp(element.chartPalette, palette);
   const colors = layout.nodes.map((n) =>
     chartMarkInk(
       sankeyNodeColor(element.sankeyNodes, n.name) ??

@@ -1,7 +1,6 @@
 import {
-  chartPaletteColors,
+  chartRamp,
   legendFontPx,
-  PIE_PALETTE,
   type ShapeElement,
 } from '@livediagram/document';
 
@@ -19,15 +18,18 @@ export function LegendView({
   fill,
   textColor,
   fontFamily,
+  palette,
 }: {
   element: ShapeElement;
   accent: string;
   fill: string;
   textColor: string;
   fontFamily?: string;
+  // The tab theme's chart ramp, so a legend matches the chart beside it (chartRamp).
+  palette?: readonly string[];
 }) {
   const items = element.legendItems ?? [];
-  const colors = chartPaletteColors(element.chartPalette) ?? PIE_PALETTE;
+  const colors = chartRamp(element.chartPalette, palette);
   // Text Size (docs/specs/009-elements/pie-chart.md) scales the rows, and the dot keeps its proportion to
   // the words beside it.
   const fontPx = legendFontPx(element.textSize);

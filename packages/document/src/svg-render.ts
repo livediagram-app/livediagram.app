@@ -215,6 +215,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       shape.fill,
       shape.stroke,
       el.textColor ?? '#1e293b',
+      opts.chartPalette,
     )}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'plan-sheet') {

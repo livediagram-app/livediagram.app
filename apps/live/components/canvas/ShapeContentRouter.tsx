@@ -299,6 +299,7 @@ export function ShapeContentRouter({
       fill={element.fillColor ?? defaultFillColor(element, surface)}
       textColor={textColor}
       fontFamily={fontFamily}
+      palette={chartPalette}
     />
   ) : element.type === 'shape' && element.shape === 'plan-board' ? (
     // Plan board (docs/specs/026-plan/plan-board.md): columns of cards drawn from the document's

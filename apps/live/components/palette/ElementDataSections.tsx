@@ -18,10 +18,9 @@ import {
   animLoops,
   DEFAULT_ANIMATION_SPEED,
   LINE_DEFAULT_SERIES,
-  chartPaletteColors,
+  chartRamp,
   chartTypeOf,
   PIE_DEFAULT_SLICES,
-  PIE_PALETTE,
   PROGRESS_LOOPING_ANIMS,
   RAIL_DEFAULT_POINTS,
   RATING_DEFAULT,
@@ -210,9 +209,8 @@ export function ElementDataSections({
   const shapeTarget = target.type === 'shape' ? target : null;
   const covering = useCoversCanvas(target.id);
   // What an uncoloured slice / series shows as, so the swatches in the data
-  // rows match the chart. The chart's own palette when it has one (docs/specs/009-elements/pie-chart.md);
-  // otherwise the built-in ramp, which is what these rows have always used.
-  const chartFallbackPalette = chartPaletteColors(shapeTarget?.chartPalette) ?? PIE_PALETTE;
+  // rows match the chart: the ladder the canvas draws with (chartRamp, docs/specs/009-elements/pie-chart.md).
+  const chartFallbackPalette = chartRamp(shapeTarget?.chartPalette, props.chartThemeRamp);
   // The Tools flyout (docs/specs/008-canvas/canvas-and-palette.md): the data-shape-specific controls —
   // Progress (bar / ring), Timeline rail, Rating, and the chart Data +
   // Chart sections — fold behind one "Tools" row, the same side-flyout

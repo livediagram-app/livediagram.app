@@ -16,9 +16,8 @@ import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { codeTheme } from './code-themes';
-import { chartPaletteColors } from './chart-palettes';
+import { chartRamp } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
-import { PIE_PALETTE } from './data-shapes';
 import { legendFontPx } from './label-font';
 import {
   BROWSER_CHROME,
@@ -327,12 +326,14 @@ export function svgLegendShape(
   fill: string,
   stroke: string,
   textColor: string,
+  // The tab theme's chart ramp, the rung a chart beside it uses (chartRamp).
+  themeRamp?: readonly string[],
 ): string {
   const card =
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
     ` rx="8" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
   const items = el.legendItems ?? [];
-  const colors = chartPaletteColors(el.chartPalette) ?? PIE_PALETTE;
+  const colors = chartRamp(el.chartPalette, themeRamp);
   // Text Size (docs/specs/009-elements/pie-chart.md): the row pitch and the dot scale with the words, the
   // way LegendView's do.
   const fontPx = legendFontPx(el.textSize);

@@ -14,6 +14,8 @@
 //
 // The ids are stored, so they are permanent: rename a `name`, never an `id`.
 
+import { PIE_PALETTE } from './data-shapes';
+
 export type ChartPaletteId =
   'vivid' | 'ocean' | 'forest' | 'sunset' | 'berry' | 'earth' | 'grey' | 'contrast';
 
@@ -158,6 +160,16 @@ const BY_ID = new Map(CHART_PALETTES.map((p) => [p.id, p]));
  *  the caller falls through to the theme's palette exactly as before. */
 export function chartPaletteColors(id: string | undefined): readonly string[] | undefined {
   return id ? BY_ID.get(id as ChartPaletteId)?.colors : undefined;
+}
+
+/** The ramp a chart's uncoloured marks take, by index: its own palette, then the tab theme's ramp, then the
+ *  built-in one. One ladder for every chart kind, the legend element and the menu swatches beside them, so a
+ *  legend dropped beside a chart matches it whatever the theme. */
+export function chartRamp(
+  id: string | undefined,
+  themeRamp: readonly string[] | undefined,
+): readonly string[] {
+  return chartPaletteColors(id) ?? (themeRamp && themeRamp.length > 0 ? themeRamp : PIE_PALETTE);
 }
 
 export function isChartPaletteId(id: string | undefined): id is ChartPaletteId {

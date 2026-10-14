@@ -5,9 +5,8 @@
 // written in full until they join a group. Pure, so the table only renders it.
 
 import {
-  chartPaletteColors,
+  chartRamp,
   cleanSankeyName,
-  PIE_PALETTE,
   sankeyColumns,
   sankeyGraph,
   sankeyNodeColor,
@@ -76,8 +75,7 @@ export function flowNodeColors(
   palette: readonly string[] | undefined,
   chartPalette: ChartPaletteId | undefined,
 ): Map<string, string> {
-  const ramp =
-    chartPaletteColors(chartPalette) ?? (palette && palette.length > 0 ? palette : PIE_PALETTE);
+  const ramp = chartRamp(chartPalette, palette);
   return new Map(
     graph.nodes.map((n) => [
       n.name,

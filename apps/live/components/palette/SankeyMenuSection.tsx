@@ -8,8 +8,7 @@
 import { useMemo, type ComponentProps } from 'react';
 import { Button } from '@livediagram/ui';
 import {
-  chartPaletteColors,
-  PIE_PALETTE,
+  chartRamp,
   SANKEY_ALIGN_LABELS,
   SANKEY_ALIGNS,
   SANKEY_LINK_COLOR_LABELS,
@@ -100,8 +99,7 @@ export function SankeyMenuSections({
   onPreviewEnd: () => void;
 }) {
   const graph = useMemo(() => sankeyGraph(target.sankeyFlows), [target.sankeyFlows]);
-  const ramp =
-    chartPaletteColors(target.chartPalette) ?? (h.palette.length > 0 ? h.palette : PIE_PALETTE);
+  const ramp = chartRamp(target.chartPalette, h.palette);
   const flows = target.sankeyFlows?.length ?? 0;
   const hidden = graph.skipped.length;
   const summary = [

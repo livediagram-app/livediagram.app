@@ -425,6 +425,7 @@ export function EditorContextMenuHost() {
       onSetCodeWrap={setCodeWrapSelected}
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
+      chartThemeRamp={themeChartPalette(getTheme(activeTab.theme))}
       flowchart={flowchartMenu}
       mindFlow={menuMindFlow}
       onSetMindFlow={setMindFlowSelected}

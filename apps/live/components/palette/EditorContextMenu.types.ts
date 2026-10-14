@@ -202,6 +202,9 @@ export type EditorContextMenuProps = {
   // Sankey diagram (docs/specs/009-elements/sankey.md): its edits, present only when this session may make
   // them (an Editor, on an unlocked diagram), so the menu shows no Sankey section otherwise.
   sankey?: import('./SankeyMenuSection').SankeyMenuHandlers;
+  // The tab theme's chart ramp (themeChartPalette), so a chart or legend's data-row swatches show the colours the
+  // canvas draws (chartRamp). Absent falls back to the built-in ramp.
+  chartThemeRamp?: readonly string[];
   // Flowchart (docs/specs/009-elements/flowchart.md): present only for an Editor on an unlocked step or
   // chart lane, so the menu shows no Flowchart section otherwise.
   flowchart?: import('@/components/flowchart/FlowchartMenuSections').FlowchartMenuHandlers;
