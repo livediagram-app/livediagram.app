@@ -116,6 +116,8 @@ export function applyPageChanges(
   // The pages a delete in this change took, an article's whole flow among them: a later delete naming one by id is
   // already done, never a missing page that undoes the change.
   const removed = new Set<string>();
+  // The pages an add in this change made or filled: never filled again by a later add in it.
+  const added = new Set<string>();
   try {
     changes.forEach((change, i) => {
       const stop = (code: IllustrateRefusal['code'], message: string): never => {
@@ -199,6 +201,7 @@ export function applyPageChanges(
             page = pages()[0]!;
           } else if (
             ps.length === 1 &&
+            !added.has(first.id) &&
             first.kind === change.kind &&
             !first.locked &&
             !first.name &&
@@ -215,6 +218,7 @@ export function applyPageChanges(
             current = take(pageAdded(current, change.kind as PageKind, id, newFlowId()));
             page = pages().find((p) => p.id === id)!;
           }
+          added.add(page.id);
           const said = setFields(page, change);
           if (change.at !== undefined)
             current = take(pageMovedTo(current, page.id, unitAt(change.at)), page);
