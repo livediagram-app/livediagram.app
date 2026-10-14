@@ -260,10 +260,10 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
   origin (EO26). `align:` on `add` aligns that default spot.
 - **Nudge.** For the four sides, `after` and the default, while the box overlaps an occupying element, it moves
   along the placement axis (outward; the default moves right) to the occupier's far edge plus the gap. Occupying
-  elements are boxed, not containers, not the moving set itself, on any layer. For the four sides against an
-  element in an unlocked container, the occupiers are only what that container holds at any depth
-  (`frameOccupiers`): what lies outside is moved on by the container's growth. The loop ends: each step passes one
-  occupier.
+  elements are boxed, not containers, not the moving set itself, on any layer. For an `add` on the four sides
+  against an element in an unlocked container, the occupiers are only what that container holds at any depth
+  (`frameOccupiers`): what lies outside is moved on by the container's growth. A `move` grows nothing, so it keeps
+  clear of every occupier on the tab. The loop ends: each step passes one occupier.
 - **Growing to hold.** A box placed beside a container's member, or `inside:` it, grows the container to hold it with
   `HOLD_PAD` (`growContainer`, `grow-container.ts`). On each side it grows, the units of the container's own scope
   that lay past its old edge (within `PAST_EDGE_TOLERANCE`, 2 px) and within its span on the other axis move on by

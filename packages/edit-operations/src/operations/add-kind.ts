@@ -220,7 +220,9 @@ export function applyAddKind(
   index: number,
 ): EditRejection | null {
   const place = (size: { width: number; height: number }) =>
-    resolvePlacement(state, operation.place, size, new Set(), index);
+    resolvePlacement(state, operation.place, size, new Set(), index, undefined, {
+      growsFrame: true,
+    });
   const made = createKind(state, operation, index, place);
   if ('rejection' in made) return made.rejection;
   const refused = commitNew(state, made, 'add', index);
