@@ -5,24 +5,25 @@ and from [Avatar tour](../avatar-tour.md).
 
 ## Files
 
-| File                                                   | Role                                                                               |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| `packages/api-schema/src/avatar-say.ts`                | `AvatarSayOp`, the limits, `parseAvatarSay`, `countWords`, `clampSayText`          |
-| `packages/api-schema/src/room-messages.ts`             | `avatar-say` in `PRESENCE_OP_KINDS`                                                |
-| `apps/api/src/document-room.ts`                        | Drops a Viewer's `avatar-say`, and one `parseAvatarSay` refuses                    |
-| `apps/live/lib/avatar-speech.ts`                       | Pure: `flightMs`, `bubbleMotion`, `admitBubble`, `headPoint`, `SeenIds`            |
-| `apps/live/hooks/canvas/useAvatarSpeech.ts`            | Composer state, cooldown, the floating bubbles, send and receive                   |
-| `apps/live/components/canvas/AvatarSpeechLayer.tsx`    | The composer and the bubbles, in canvas space at reading size; the live region     |
-| `apps/live/components/canvas/AvatarSpeechBubble.tsx`   | One bubble's look (tail, name, text), shared by the composer and a floating bubble |
-| `apps/live/components/canvas/AvatarClusterButton.tsx`  | The Avatar button in the bottom-right cluster                                      |
-| `apps/live/components/panels/AvatarPanel.tsx`          | The panel, now a popover, with Send a Message                                      |
-| `apps/live/components/panels/AvatarMessagePopover.tsx` | The panel's message popover                                                        |
-| `apps/live/hooks/collab/useEditorBroadcast.ts`         | `broadcastAvatarSay`                                                               |
-| `apps/live/app/document/[id]/useRoomConnection.ts`     | Routes a received `avatar-say` to the speech hook                                  |
-| `apps/live/components/tour/avatar-tour-steps.ts`       | The tour's steps                                                                   |
-| `apps/live/components/tour/AvatarTourHost.tsx`         | Orchestrates the tour, as `DrawTourHost`                                           |
-| `apps/live/components/tour/AvatarTourArt.tsx`          | The welcome card's illustration                                                    |
-| `apps/live/lib/avatar-tour.ts`                         | The relaunch event                                                                 |
+| File                                                   | Role                                                                                              |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/avatar-say.ts`                | `AvatarSayOp`, the limits, `parseAvatarSay`, `countWords`, `clampSayText`                         |
+| `packages/api-schema/src/room-messages.ts`             | `avatar-say` in `PRESENCE_OP_KINDS`                                                               |
+| `apps/api/src/document-room.ts`                        | Drops a Viewer's `avatar-say`, and one `parseAvatarSay` refuses                                   |
+| `apps/live/lib/avatar-speech.ts`                       | Pure: `flightMs`, `bubbleMotion`, `admitBubble`, `headPoint`, `SeenIds`                           |
+| `apps/live/lib/avatar-speech-store.ts`                 | The bubbles on screen: `addOwnBubble`, `receivePeerSay`, `useSpeechBubbles`, `resetSpeechBubbles` |
+| `apps/live/hooks/canvas/useAvatarSpeech.ts`            | Composer state, cooldown, the floating bubbles, send and receive                                  |
+| `apps/live/components/canvas/AvatarSpeechLayer.tsx`    | The composer and the bubbles, in canvas space at reading size; the live region                    |
+| `apps/live/components/canvas/AvatarSpeechBubble.tsx`   | One bubble's look (tail, name, text), shared by the composer and a floating bubble                |
+| `apps/live/components/canvas/AvatarClusterButton.tsx`  | The Avatar button in the bottom-right cluster                                                     |
+| `apps/live/components/panels/AvatarPanel.tsx`          | The panel, now a popover, with Send a Message                                                     |
+| `apps/live/components/panels/AvatarMessagePopover.tsx` | The panel's message popover                                                                       |
+| `apps/live/hooks/collab/useEditorBroadcast.ts`         | `broadcastAvatarSay`                                                                              |
+| `apps/live/app/document/[id]/useRoomConnection.ts`     | Routes a received `avatar-say` to the speech hook                                                 |
+| `apps/live/components/tour/avatar-tour-steps.ts`       | The tour's steps                                                                                  |
+| `apps/live/components/tour/AvatarTourHost.tsx`         | Orchestrates the tour, as `DrawTourHost`                                                          |
+| `apps/live/components/tour/AvatarTourArt.tsx`          | The welcome card's illustration                                                                   |
+| `apps/live/lib/avatar-tour.ts`                         | The relaunch event                                                                                |
 
 ## Domain and naming
 
@@ -73,15 +74,20 @@ closes the composer, tracks `Canvas · Used · AvatarMessage` or `AvatarMessageP
   - `opacity`: 1 until `flightMs · (1 − SPEECH_FADE_FRACTION)`, then linear to 0 at `flightMs`.
   - `scale` (the pop): `reduced ? 1 :` ease-out-back from 0.6 to 1 over `SPEECH_POP_MS`.
   - `tail`: 1 → 0 over `SPEECH_TAIL_FADE_MS` (the bubble detaching).
-- One `requestAnimationFrame` loop in `AvatarSpeechLayer` runs while any bubble exists and writes each bubble's
-  `transform` and `opacity` straight to its node by ref; it stops when the list empties. No React state per frame.
-- Bubbles draw only for the active tab (`bubble.tabId === activeTabId`), and none while cursors are hidden.
+- One `requestAnimationFrame` loop in `AvatarSpeechLayer`, started in a layout effect that writes the first frame
+  before paint, runs while any bubble is shown and writes each bubble's `transform` and `opacity` straight to its
+  node (kept by callback refs); it stops when the list empties. A bubble renders at `opacity: 0` until the loop
+  places it. No React state per frame.
+- Bubbles draw only for the active tab (`bubble.tabId === activeTabId`). A peer's bubble draws only when its speaker's
+  character is on this tab when it arrives (`peers`, empty under a hide-cursors vote): name and colour are captured
+  then, in state adjusted during render, and kept if the speaker walks off.
 
 ### Receiving
 
-`receive(from, rawOp)`: `parseAvatarSay(rawOp)` (null → drop); `SeenIds.has(id)` → drop; then a bubble with the
-sender's name and colour from presence (`Someone` and the brand colour when unknown), `bornAt = now`, and an
-announcement for the live region. A sender who leaves keeps their bubbles until they fade.
+`receivePeerSay(from, rawOp)` (the store, called by `useRoomConnection`): `parseAvatarSay(rawOp)` (null → drop);
+`SeenIds.add(id)` false → drop; then a bubble with `bornAt = now`. The layer resolves its speaker and announces it
+(above). A sender who leaves keeps their bubbles until they fade. Leaving the document empties the store
+(`resetSpeechBubbles`).
 
 ### Panel and button
 
@@ -132,20 +138,20 @@ the one new stored value, a synced user preference.
 
 ## Errors and edge cases
 
-| #   | Case                                    | Handling                                                      |
-| --- | --------------------------------------- | ------------------------------------------------------------- |
-| E1  | Enter while typing in a field elsewhere | Ignored (`isTypingTarget`)                                    |
-| E2  | Enter with a dialog open                | Ignored (`anyModalOpen`)                                      |
-| E3  | Paste of 2,000 characters               | Clamped to the limits                                         |
-| E4  | Send during the cooldown                | Held, "One moment…"                                           |
-| E5  | Composer open, mode left / tab switched | Closed, draft dropped                                         |
-| E6  | Peer op for another tab                 | Kept but not drawn (draws if you switch there before it ends) |
-| E7  | Same id twice                           | Second dropped (`SeenIds`, capped at 200)                     |
-| E8  | Peer floods ops                         | Room op-rate cap, then three bubbles per person on screen     |
-| E9  | Viewer sends by a modified client       | Room drops it                                                 |
-| E10 | Markup in the text                      | Rendered as text                                              |
-| E11 | Not in a shared room (no share link)    | Own bubble only; nothing sent                                 |
-| E12 | Hide-cursors vote                       | Nothing sent, nothing drawn                                   |
+| #   | Case                                    | Handling                                                  |
+| --- | --------------------------------------- | --------------------------------------------------------- |
+| E1  | Enter while typing in a field elsewhere | Ignored (`isTypingTarget`)                                |
+| E2  | Enter with a dialog open                | Ignored (`anyModalOpen`)                                  |
+| E3  | Paste of 2,000 characters               | Clamped to the limits                                     |
+| E4  | Send during the cooldown                | Held, "One moment…"                                       |
+| E5  | Composer open, mode left / tab switched | Closed, draft dropped                                     |
+| E6  | Peer op for another tab                 | Not drawn: its speaker is not on this tab when it arrives |
+| E7  | Same id twice                           | Second dropped (`SeenIds`, capped at 200)                 |
+| E8  | Peer floods ops                         | Room op-rate cap, then three bubbles per person on screen |
+| E9  | Viewer sends by a modified client       | Room drops it                                             |
+| E10 | Markup in the text                      | Rendered as text                                          |
+| E11 | Not in a shared room (no share link)    | Own bubble only; nothing sent                             |
+| E12 | Hide-cursors vote                       | Nothing sent, nothing drawn                               |
 
 ## Security and trust
 
@@ -165,6 +171,8 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
 - Bubble: white (slate-900 dark) card, `rounded-2xl`, 1.5px border and tail in the speaker's avatar colour (the brand
   when there is none), shadow, max width 240px, 13px text, padding 8px 12px, a 10px tail centred at the bottom. The
   speaker's name, yours included, sits under the text: 10px semibold in the same colour.
+- Send button: the speaker's colour through `IDENTITY_FILL` + `identityVars` (never an inline background, so dark
+  mode deepens it under the white glyph), slate while it cannot send.
 - Composer: the same card with an auto-growing textarea (one line to start, up to 5), placeholder "Say
   something…", a 28px round send button with the paper-plane glyph, in your colour while it can send; a single line is padded to the
   button's height so the text sits level with it, and the counter `43 / 50` (amber at 50) under
@@ -186,8 +194,9 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
 
 ## Web Experience
 
-The layer, the button and the popover load with the tool panels (`loadToolPanels`) or after the mode is first
-entered: nothing joins the first-load script. No layout shift: everything is absolutely positioned over the
+The layer loads (`next/dynamic`) the first time a bubble or the composer is needed, the panel with the tool panels
+(`loadToolPanels`), the tour host once Avatar mode is first entered. The first-load script gains only the op wiring,
+the store and the hook. No layout shift: everything is absolutely positioned over the
 canvas. INP: Enter opens the composer in one render.
 
 ## Observability
