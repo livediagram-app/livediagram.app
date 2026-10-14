@@ -307,6 +307,18 @@ export function layoutGraph(
   if (style === 'flow' && !g.groups?.length)
     laid = straightenSpine(laid, g.nodes, g.edges, flat, flowDir);
   laid = withTones(laid, g.nodes, g.edges);
+  // A tree shows belonging, not flow: its lines carry no heads, as the org-chart template's do, unless an edge asks.
+  if (style === 'tree') {
+    const asked = new Set(g.edges.filter((e) => e.ends).map((e) => `${e.from}->${e.to}`));
+    laid = laid.map((el) =>
+      el.type === 'arrow' &&
+      el.from.kind === 'pinned' &&
+      el.to.kind === 'pinned' &&
+      !asked.has(`${el.from.elementId}->${el.to.elementId}`)
+        ? { ...el, arrowEnds: 'none' as const }
+        : el,
+    );
+  }
   const lines = g.lines ?? DEFAULT_LINES[style];
   // A mind map and a cycle draw their own connectors.
   if (lines !== 'straight' && style !== 'cycle' && style !== 'mindmap')

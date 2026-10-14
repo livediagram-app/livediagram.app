@@ -492,6 +492,24 @@ describe('tree', () => {
     expect(bus.from.kind === 'pinned' && bus.from.anchor).toBe('ssw');
     expect(bus.to.kind === 'pinned' && bus.to.anchor).toBe('w');
   });
+
+  it('draws its lines without heads, as the org-chart template does, unless an edge asks', () => {
+    const els = lay({
+      style: 'tree',
+      nodes: [{ id: 'ceo' }, { id: 'cto' }, { id: 'coo' }],
+      edges: [
+        { from: 'ceo', to: 'cto' },
+        { from: 'ceo', to: 'coo', ends: 'to' },
+      ],
+    });
+    expect(arrowTo(els, 'ceo', 'cto').arrowEnds).toBe('none');
+    expect(arrowTo(els, 'ceo', 'coo').arrowEnds).not.toBe('none');
+  });
+
+  it('keeps the heads of a flow', () => {
+    const els = lay({ nodes: [{ id: 'a' }, { id: 'b' }], edges: [{ from: 'a', to: 'b' }] });
+    expect(arrowTo(els, 'a', 'b').arrowEnds).not.toBe('none');
+  });
 });
 
 describe('storm', () => {

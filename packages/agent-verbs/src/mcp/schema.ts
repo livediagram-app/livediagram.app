@@ -510,6 +510,13 @@ const graphField = z
             .describe(
               'The stroke: solid (default), dashed (an event, a reply, an optional path) or thick.',
             ),
+          ends: z
+            .enum(['to', 'none', 'both', 'from'])
+            .optional()
+            .describe(
+              'Which ends carry an arrowhead. Default: "to", except in a tree, whose lines show belonging and ' +
+                'carry none.',
+            ),
         }),
       )
       .max(GRAPH_LAYOUT_MAX_EDGES)
