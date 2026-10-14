@@ -8,19 +8,23 @@ const CheckIcon = lucideGlyph(lucideCheck, 14);
 
 // The Build with AI page's copy button (docs/specs/019-marketing/build-with-ai.md "Behaviour"): writes `text`,
 // flashes "Copied" for two seconds and announces it politely. A blocked clipboard leaves it as it was (the
-// text beside it is always selectable). `tone="dark"` sits on the dark code panels.
+// text beside it is always selectable). `tone="dark"` sits on the dark code panels, `size="xs"` in their header.
+// Its name starts with the words it shows (WCAG 2.5.3, so "click Copy prompt" works by voice) and stays put; the
+// "Copied" announcement is a live region beside the button, as a button's own children are not read as a region.
 export function CopyButton({
   text,
   label = 'Copy',
   what,
   tone = 'light',
+  size = 'sm',
   className = '',
 }: {
   text: string;
   label?: string;
-  /** What is copied, for the accessible name ("Copy the address"). */
+  /** What is copied, after the label in the accessible name ("Copy the address", "Copy prompt: Map a codebase"). */
   what: string;
   tone?: 'light' | 'dark' | 'brand';
+  size?: 'sm' | 'xs';
   className?: string;
 }) {
   const { copied, flash } = useCopiedFlash(2000);
@@ -42,18 +46,22 @@ export function CopyButton({
       'bg-brand-700 text-white shadow-sm hover:bg-brand-800 dark:bg-brand-500 dark:text-slate-950 dark:hover:bg-brand-400',
   } as const;
 
+  const sizes = { sm: 'py-1.5 text-sm', xs: 'py-1 text-xs' } as const;
+
   return (
-    <button
-      type="button"
-      onClick={copy}
-      aria-label={copied ? `Copied ${what}` : `Copy ${what}`}
-      className={`inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 touch-target-y relative ${tones[tone]} ${className}`}
-    >
-      {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
-      <span className="text-optical-line">{copied ? 'Copied' : label}</span>
+    <>
+      <button
+        type="button"
+        onClick={copy}
+        aria-label={label === 'Copy' ? `Copy ${what}` : `${label}: ${what}`}
+        className={`inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md px-3 font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 touch-target-y relative ${sizes[size]} ${tones[tone]} ${className}`}
+      >
+        {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
+        <span className="text-optical-line">{copied ? 'Copied' : label}</span>
+      </button>
       <span role="status" aria-live="polite" className="sr-only">
         {copied ? `Copied ${what}` : ''}
       </span>
-    </button>
+    </>
   );
 }

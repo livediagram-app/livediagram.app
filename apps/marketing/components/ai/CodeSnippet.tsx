@@ -10,19 +10,16 @@ export function CodeSnippet({ code, lang, label }: { code: string; lang: string;
         <span className="font-mono text-xs text-slate-400">
           {label ?? (lang === 'bash' ? 'Terminal' : lang)}
         </span>
-        <CopyButton text={code} what={`the ${kind}`} tone="dark" className="py-1 text-xs" />
+        <CopyButton text={code} what={`the ${kind}`} tone="dark" size="xs" />
       </div>
-      <pre className="overflow-x-auto px-4 py-3 font-mono text-[13px] leading-relaxed text-slate-100 select-all">
-        {lang === 'bash' ? (
-          <>
-            <span aria-hidden className="text-slate-500 select-none">
-              ${' '}
-            </span>
-            {code}
-          </>
-        ) : (
-          code
-        )}
+      {/* A command's `$ ` is drawn by CSS, so no selection or copy of the block can take it along: pasted into a
+          shell it would fail as "$: command not found". */}
+      <pre className="overflow-x-auto px-4 py-3 font-mono text-[13px] leading-relaxed text-slate-100">
+        <code
+          className={`select-all ${lang === 'bash' ? "before:text-slate-500 before:content-['$_']" : ''}`}
+        >
+          {code}
+        </code>
       </pre>
     </div>
   );
