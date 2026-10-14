@@ -74,6 +74,15 @@ follows) and `scenarios.md` (the scenario bank, ids stable across runs). `token.
 
 ## Gotchas
 
+- A token saved in an earlier session's scratchpad belongs to that session's D1 copy: after copying main's state, the
+  api refuses it ("the token is not accepted"). Mint one into the copy instead: insert an `api_tokens` row (id,
+  `owner_id` of the account that holds the other local tokens, `token_hash` the sha256 hex of `lvd_<base64url of 32
+random bytes>`, `created_at` and `expires_at` in ms, `read_only` 0) with `wrangler d1 execute DB --local
+--persist-to .wrangler/state`, and save the plain token in `token.env`.
+- Scores swing a point between runs of one scenario, mostly on whether the evaluator hand-fixes the first render
+  (re-anchoring, a replace) or keeps it. Judge a fix by the pictures and by measures on the evaluator's own input
+  (the graph is in `calls.jsonl`), not by one score; re-lay out that input against the old and new code to compare.
+
 - Subagents cannot write files in this harness; they return the report as their final message.
 - The preview is the server's own render (`renderElementsToSvg` through resvg), not the editor. A defect only the
   preview shows is still a defect: it is what the assistant sees and what it judges its work by.

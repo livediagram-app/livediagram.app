@@ -1,0 +1,75 @@
+{
+  "graph": {
+    "style": "cycle",
+    "nodes": [
+      {
+        "id": "discover",
+        "label": "Discover",
+        "note": "Research users, markets and problems"
+      },
+      {
+        "id": "define",
+        "label": "Define",
+        "note": "Frame the problem and set goals"
+      },
+      {
+        "id": "design",
+        "label": "Design",
+        "note": "Explore and prototype solutions"
+      },
+      {
+        "id": "build",
+        "label": "Build",
+        "note": "Engineer and test the product"
+      },
+      {
+        "id": "launch",
+        "label": "Launch",
+        "note": "Release to customers"
+      },
+      {
+        "id": "measure",
+        "label": "Measure",
+        "note": "Track usage and outcomes"
+      },
+      {
+        "id": "learn",
+        "label": "Learn",
+        "note": "Turn insights into the next bet"
+      }
+    ],
+    "edges": [
+      {
+        "from": "discover",
+        "to": "define"
+      },
+      {
+        "from": "define",
+        "to": "design"
+      },
+      {
+        "from": "design",
+        "to": "build"
+      },
+      {
+        "from": "build",
+        "to": "launch"
+      },
+      {
+        "from": "launch",
+        "to": "measure"
+      },
+      {
+        "from": "measure",
+        "to": "learn"
+      },
+      {
+        "from": "learn",
+        "to": "discover",
+        "label": "back to discover"
+      }
+    ],
+    "title": "Product development lifecycle",
+    "subtitle": "A continuous loop: what we learn feeds the next round of discovery"
+  }
+}

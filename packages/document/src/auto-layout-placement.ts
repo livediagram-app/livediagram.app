@@ -38,7 +38,7 @@ function edgeWeight(a: ElementId, b: ElementId, lanes: Set<ElementId>): number {
 
 // Where each node of `rank` sits, packed tight from the first, with `gap` between neighbouring
 // boxes of cross size `size`. Fixed for a rank, so it is worked out once, not on every sweep.
-function rankOffsets(
+export function rankOffsets(
   rank: ElementId[],
   size: (id: ElementId) => number,
   gap: (a: ElementId, b: ElementId) => number,
@@ -53,7 +53,7 @@ function rankOffsets(
 
 // Closest positions to `want` (least squares) that keep `rank` in order with at least the
 // spacing `offset` (rankOffsets) holds between neighbours.
-function legalise(
+export function legalise(
   rank: ElementId[],
   want: Map<ElementId, number>,
   offset: number[],

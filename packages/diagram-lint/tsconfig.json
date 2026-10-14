@@ -2,6 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM"],
+    // Explicit, because TypeScript 6 no longer auto-includes @types/node: the routing fixtures test reads its JSON
+    // fixtures with `node:fs`. The source never touches the filesystem; only that test does.
+    "types": ["node"],
     "noEmit": true
   },
   "include": ["src/**/*.ts"],

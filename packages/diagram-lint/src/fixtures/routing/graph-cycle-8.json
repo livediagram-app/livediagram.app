@@ -1,0 +1,87 @@
+{
+  "graph": {
+    "style": "cycle",
+    "title": "Product development lifecycle",
+    "subtitle": "A continuous loop: what we learn from each release feeds the next round of discovery.",
+    "nodes": [
+      {
+        "id": "discover",
+        "label": "Discover",
+        "icon": "search",
+        "note": "Research users, problems and opportunities."
+      },
+      {
+        "id": "define",
+        "label": "Define",
+        "icon": "target",
+        "note": "Frame the problem, goals and success metrics."
+      },
+      {
+        "id": "design",
+        "label": "Design",
+        "icon": "pencil",
+        "note": "Explore solutions, prototype and test with users."
+      },
+      {
+        "id": "build",
+        "label": "Build",
+        "icon": "code",
+        "note": "Engineer, test and harden the solution."
+      },
+      {
+        "id": "launch",
+        "label": "Launch",
+        "icon": "rocket",
+        "note": "Release to customers and support adoption."
+      },
+      {
+        "id": "measure",
+        "label": "Measure",
+        "icon": "bar-chart",
+        "note": "Track usage, outcomes and the success metrics."
+      },
+      {
+        "id": "learn",
+        "label": "Learn",
+        "icon": "lightbulb",
+        "note": "Turn results into insights for the next cycle."
+      },
+      {
+        "id": "hub",
+        "label": "Customer value",
+        "tone": "strong",
+        "note": "Every stage serves the same goal."
+      }
+    ],
+    "edges": [
+      {
+        "from": "discover",
+        "to": "define"
+      },
+      {
+        "from": "define",
+        "to": "design"
+      },
+      {
+        "from": "design",
+        "to": "build"
+      },
+      {
+        "from": "build",
+        "to": "launch"
+      },
+      {
+        "from": "launch",
+        "to": "measure"
+      },
+      {
+        "from": "measure",
+        "to": "learn"
+      },
+      {
+        "from": "learn",
+        "to": "discover"
+      }
+    ]
+  }
+}

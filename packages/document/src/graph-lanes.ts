@@ -6,6 +6,7 @@
 
 import { edgeToArrow, graphToElements, type DiagramGraph, type GraphLook } from './graph-authoring';
 import { reanchorArrow, type Pt } from './auto-layout-shared';
+import { branchExits } from './graph-branches';
 import { isBoxed, type BoxedElement, type Element } from './index';
 
 // The swimlane template's grid: header strip, padding inside a lane, gaps between columns and lanes.
@@ -16,8 +17,13 @@ const LANE_GAP = 36;
 const STACK_GAP = 24;
 const LANE_MIN_H = 120;
 
-// Each node's column: its longest path from a node nothing enters, cycles cut where they close (input order).
-function columnsOf(ids: string[], edges: { from: string; to: string }[]): Map<string, number> {
+// Each node's column: its longest path from a node nothing enters, cycles cut where they close (input order). An edge
+// `level` names (a staircase hand-off) keeps its target in its source's column.
+function columnsOf(
+  ids: string[],
+  edges: { from: string; to: string }[],
+  level: ReadonlySet<string> = new Set(),
+): Map<string, number> {
   const known = new Set(ids);
   const out = new Map(ids.map((id) => [id, [] as string[]]));
   const indeg = new Map(ids.map((id) => [id, 0]));
@@ -42,7 +48,8 @@ function columnsOf(ids: string[], edges: { from: string; to: string }[]): Map<st
   const col = new Map(ids.map((id) => [id, 0]));
   for (const u of order)
     for (const v of out.get(u)!)
-      if (at.get(u)! < at.get(v)!) col.set(v, Math.max(col.get(v)!, col.get(u)! + 1));
+      if (at.get(u)! < at.get(v)!)
+        col.set(v, Math.max(col.get(v)!, col.get(u)! + (level.has(`${u}->${v}`) ? 0 : 1)));
   return col;
 }
 
@@ -67,10 +74,7 @@ export function layoutLanes(
     isBoxed,
   );
   const byId = new Map(boxes.map((b) => [b.id, b]));
-  const col = columnsOf(
-    graph.nodes.map((n) => n.id),
-    graph.edges,
-  );
+  const col = stairColumns(graph, laneOf);
   const columns = Math.max(0, ...col.values()) + 1;
   const colW = Array.from({ length: columns }, (_, c) =>
     Math.max(0, ...boxes.filter((b) => col.get(b.id) === c).map((b) => b.width)),
@@ -131,7 +135,50 @@ export function layoutLanes(
   const arrows = graph.edges
     .filter((e) => centers.has(e.from) && centers.has(e.to))
     .map((e) => reanchorArrow(edgeToArrow(e, makeEdgeId()), centers, 'LR'));
-  return [...laneEls, ...placed, ...arrows];
+  // A step's exits leave by different sides (graph-branches.ts): a decision's, or any step's that branches.
+  return branchExits([...laneEls, ...placed, ...arrows], { axis: 'LR' });
+}
+
+// Columns with the staircase (docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):
+// a hand-off to the next lane that is its step's only way out and its next step's only way in keeps its column. One
+// whose step, or next step, then shares that column with another node of its lane takes a column after all, so the
+// drop never runs over a box; settled in a few rounds, as each round only ever gives a hand-off its column back.
+const STAIR_ROUNDS = 4;
+function stairColumns(
+  graph: DiagramGraph,
+  laneOf: ReadonlyMap<string, number>,
+): Map<string, number> {
+  const ids = graph.nodes.map((n) => n.id);
+  const real = graph.edges.filter((e) => e.from !== e.to && laneOf.has(e.from) && laneOf.has(e.to));
+  const count = (key: 'from' | 'to') => {
+    const m = new Map<string, number>();
+    for (const e of real) m.set(e[key], (m.get(e[key]) ?? 0) + 1);
+    return m;
+  };
+  const [outs, ins] = [count('from'), count('to')];
+  const level = new Set(
+    real
+      .filter(
+        (e) =>
+          Math.abs(laneOf.get(e.from)! - laneOf.get(e.to)!) === 1 &&
+          outs.get(e.from) === 1 &&
+          ins.get(e.to) === 1,
+      )
+      .map((e) => `${e.from}->${e.to}`),
+  );
+  let col = columnsOf(ids, graph.edges, level);
+  for (let round = 0; round < STAIR_ROUNDS && level.size; round++) {
+    const crowded = (id: string) =>
+      ids.some((o) => o !== id && laneOf.get(o) === laneOf.get(id) && col.get(o) === col.get(id));
+    const back = [...level].filter((k) => {
+      const [from, to] = k.split('->') as [string, string];
+      return col.get(from) !== col.get(to) || crowded(from) || crowded(to);
+    });
+    if (back.length === 0) break;
+    back.forEach((k) => level.delete(k));
+    col = columnsOf(ids, graph.edges, level);
+  }
+  return col;
 }
 
 // An id for the unnamed lane that no node or group already holds.

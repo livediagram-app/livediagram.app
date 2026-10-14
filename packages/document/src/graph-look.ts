@@ -11,6 +11,8 @@
 import { isContainerKind } from './containment';
 import { edgeKey } from './auto-layout';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
+import { arrowRoutePoints } from './arrow-label-layout';
+import { frameHeadingRect } from './auto-layout-cluster-seats';
 import { rectGrid, type RectGrid } from './auto-layout-route-grid';
 import { anchorPosition, endpointPosition } from './geometry';
 import type { GraphEdge, GraphNode } from './graph-authoring';
@@ -199,6 +201,18 @@ export function routeLoops(
   const solid = [...boxes.values()].filter((b) => !isBackdrop(b));
   // The solid boxes by place, so each arrow is tested against the boxes near its path, not every box.
   const solidGrid = rectGrid(solid, 0);
+  // A group's frame is a wall to a route between two nodes outside it: threaded through the gaps between its
+  // members, the line read as one of the group's own (docs/specs/015-api/mcp-server.md "Groups keep their lines
+  // clear").
+  const frames = [...boxes.values()].filter((b) => b.type === 'shape' && b.shape === 'frame');
+  const holds = (f: BoxedElement, b: BoxedElement) =>
+    f.id === b.id ||
+    (b.x >= f.x &&
+      b.y >= f.y &&
+      b.x + b.width <= f.x + f.width &&
+      b.y + b.height <= f.y + f.height);
+  const wallsFor = (src: BoxedElement, dst: BoxedElement) =>
+    frames.filter((f) => !holds(f, src) && !holds(f, dst));
   const main = (b: BoxedElement) => (axis === 'TB' ? b.y + b.height / 2 : b.x + b.width / 2);
   const spanOf = (b: BoxedElement): [number, number] =>
     axis === 'TB' ? [b.y, b.y + b.height] : [b.x, b.x + b.width];
@@ -238,7 +252,13 @@ export function routeLoops(
   // Shortest loops innermost: each takes a track further out than any loop it overlaps on its side.
   const ordered = [...loops].sort((p, q) => length(p) - length(q));
   const tracks: { lo: number; hi: number; at: number; dir: 1 | -1 }[] = [];
-  const taken: Run[] = [];
+  // The runs already drawn: every line this pass leaves alone, as it is drawn. A detour that ran along one (a long
+  // "no" climbing the very line a "yes" climbs into its step) read as that line's; the router prices sharing them.
+  const routing = new Set(loops.map((l) => l.id));
+  const round = (p: Pt) => ({ x: Math.round(p.x), y: Math.round(p.y) });
+  const taken: Run[] = elements
+    .filter((el): el is ArrowElement => el.type === 'arrow' && !routing.has(el.id))
+    .flatMap((a) => runsOf(arrowRoutePoints(a, elements).map(round)));
   // Every route of this layout draws on one budget: spent, the rest take their outside tracks.
   const budget: RouterBudget = { left: ROUTER_BUDGET };
   let next = elements;
@@ -246,6 +266,7 @@ export function routeLoops(
     const src = boxes.get(pinnedId(loop.from)!)!;
     const dst = boxes.get(pinnedId(loop.to)!)!;
     const current = next.find((el) => el.id === loop.id) as ArrowElement;
+    const obstacles = [...solid, ...wallsFor(src, dst)];
     // The router first, when the drawing is small enough to search: the cheapest clean path over every pair of
     // sides. Its ends sit exactly on the sides' midpoints, so the corners it finds are the ones drawn.
     const found =
@@ -253,7 +274,7 @@ export function routeLoops(
         ? bestRoute(
             src,
             dst,
-            solid,
+            obstacles,
             taken,
             anchorsInUse(next.filter((el) => el.id !== loop.id)),
             budget,
@@ -292,7 +313,7 @@ export function routeLoops(
       Math.min(spanOf(dst)[0], spanOf(src)[0]),
       Math.max(spanOf(dst)[1], spanOf(src)[1]),
     ];
-    const between = solid.filter((b) => {
+    const between = obstacles.filter((b) => {
       const [s0, s1] = spanOf(b);
       return s1 >= lo && s0 <= hi;
     });
@@ -762,17 +783,34 @@ export function placeElbowLabels(elements: Element[]): Element[] {
     (el): el is ArrowElement =>
       el.type === 'arrow' &&
       !!el.label &&
-      el.arrowStyle === 'angled' &&
-      (el.curvePoints?.length ?? 0) > 0,
+      ((el.arrowStyle === 'angled' && (el.curvePoints?.length ?? 0) > 0) ||
+        // A straight line too (an elbow whose ends lined up, a staircase hand-off): one run, its middle tried first.
+        (el.arrowStyle === 'straight' && el.from.kind === 'pinned' && el.to.kind === 'pinned')),
   );
   if (labelled.length === 0) return elements;
-  const pathOf = (a: ArrowElement): Pt[] => {
-    const from = endAt(a, 'from', elements);
-    const to = endAt(a, 'to', elements);
-    const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
-    return [from, ...a.curvePoints!.map((p) => ({ x: mid.x + p.dx, y: mid.y + p.dy })), to];
-  };
+  // The route as it is drawn (the renderer's own points, bends squared onto the line), which the label's `t` measures.
+  const pathOf = (a: ArrowElement): Pt[] => arrowRoutePoints(a, elements);
   const paths = new Map(labelled.map((a) => [a.id, pathOf(a)]));
+  // The boxes a label must clear: every boxed element but the frames and lanes that hold them.
+  const isHolder = (el: Element) =>
+    el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
+  const boxes = elements.filter((el): el is BoxedElement => isBoxed(el) && !isHolder(el));
+  // The frames and lanes a label must not straddle, and the heading each reads by: a frame's title at its top left,
+  // a lane's header strip down its left.
+  const holders = elements
+    .filter((el): el is BoxedElement => isBoxed(el) && isHolder(el))
+    .map((h) => ({
+      rect: h as Rect,
+      heading:
+        h.type === 'shape' && h.shape === 'lane'
+          ? {
+              x: h.x,
+              y: h.y,
+              width: (h as { headerSize?: number }).headerSize ?? 0,
+              height: h.height,
+            }
+          : frameHeadingRect(h as { x: number; y: number; label?: string }),
+    }));
   const overlap = (p0: number, p1: number, q0: number, q1: number) =>
     Math.min(Math.max(p0, p1), Math.max(q0, q1)) > Math.max(Math.min(p0, p1), Math.min(q0, q1));
   // Whether a run (a to b) lies along a run of another labelled arrow: the same line within LABEL_CLEAR, overlapping.
@@ -791,27 +829,103 @@ export function placeElbowLabels(elements: Element[]): Element[] {
     });
   const placed = new Map<string, ArrowElement>();
   for (const a of labelled) {
-    const pts = paths.get(a.id)!;
+    // Runs on one line are one run: an elbow whose bends fall on its line draws straight, and a label needs the
+    // whole of it, not either half.
+    const pts = paths
+      .get(a.id)!
+      .filter(
+        (p, i, all) => i === 0 || i === all.length - 1 || !collinear(all[i - 1]!, p, all[i + 1]!),
+      );
     const lens = pts.slice(1).map((p, i) => Math.hypot(p.x - pts[i]!.x, p.y - pts[i]!.y));
     const total = lens.reduce((s, l) => s + l, 0);
     if (total <= 0) continue;
     const last = lens.length - 1;
     const byLength = lens.map((_, i) => i).sort((p, q) => lens[q]! - lens[p]!);
+    // A run holds the label when its plate, centred on the run, touches no box: on a level run that also means the
+    // run is long enough for it; on an upright one, that nothing stands beside it. A 126 px caption centred on a
+    // 45 px drop into its target sat over the target.
+    const width = labelWidth(a.label!);
+    // Where along run i its label's plate, centred on the run, touches no box and straddles no frame or lane border:
+    // its middle first, then a quarter or a third of the way from either end (a short drop between two lanes is
+    // clear inside one of them, not across the gap). On a level run that also means the run is long enough; on an
+    // upright one, that nothing stands beside it. Null when no point of the run holds it.
+    const spot = (i: number): number | null => {
+      const level = Math.abs(pts[i]!.y - pts[i + 1]!.y) < 1;
+      if (lens[i]! < (level ? width + LABEL_RUN_MARGIN : LABEL_CLEAR + LABEL_RUN_MARGIN))
+        return null;
+      // An upright run also tries the spots just clear of either end, a label tucked under its source or over its
+      // target, inside that end's lane when the run's middle crosses into the next.
+      const tucked = (LABEL_CLEAR / 2 + LABEL_TUCK) / lens[i]!;
+      // And the middle of each gap between two frames or lanes it crosses, where a label touches neither border.
+      const [y0, y1] = [pts[i]!.y, pts[i + 1]!.y];
+      const edges = holders
+        .flatMap(({ rect }) => [rect.y, rect.y + rect.height])
+        .filter((y) => y > Math.min(y0, y1) && y < Math.max(y0, y1))
+        .sort((p, q) => p - q);
+      const gaps = edges
+        .slice(1)
+        .map((y, k) => [edges[k]!, y] as const)
+        .filter(([top, bottom]) => bottom - top >= LABEL_CLEAR)
+        .map(([top, bottom]) => ((top + bottom) / 2 - y0) / (y1 - y0));
+      const spots = level ? LABEL_SPOTS : [...LABEL_SPOTS, ...gaps, tucked, 1 - tucked];
+      for (const f of spots) {
+        const cx = pts[i]!.x + (pts[i + 1]!.x - pts[i]!.x) * f;
+        const cy = pts[i]!.y + (pts[i + 1]!.y - pts[i]!.y) * f;
+        // Off the middle, a level run must still hold the whole plate.
+        if (level && Math.min(f, 1 - f) * lens[i]! < width / 2 + LABEL_RUN_MARGIN / 2) continue;
+        const plate = { x: cx - width / 2, y: cy - LABEL_CLEAR / 2, width, height: LABEL_CLEAR };
+        const clear =
+          !boxes.some(
+            (b) =>
+              Math.abs(cx - (b.x + b.width / 2)) < (width + b.width) / 2 &&
+              Math.abs(cy - (b.y + b.height / 2)) < (LABEL_CLEAR + b.height) / 2,
+          ) &&
+          !holders.some(
+            ({ rect, heading }) =>
+              (rectsMeet(plate, rect) && !rectWithin(plate, rect)) ||
+              (heading !== null && rectsMeet(plate, heading)),
+          );
+        if (clear) return f;
+      }
+      return null;
+    };
+    const holds = (i: number) => spot(i) !== null;
     const seg =
-      [last, 0, ...byLength].find((i) => lens[i]! > 30 && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
+      [last, 0, ...byLength].find((i) => holds(i) && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
+      // Beside another labelled line is better than over a box.
+      byLength.find(holds) ??
       byLength[0]!;
     const before = lens.slice(0, seg).reduce((s, l) => s + l, 0);
+    const along = (spot(seg) ?? 0.5) * lens[seg]!;
     placed.set(a.id, {
       ...a,
-      labelOffset: { t: Number(((before + lens[seg]! / 2) / total).toFixed(4)), offset: 0 },
-      labelMaxWidth: Math.ceil(labelWidth(a.label!)),
+      labelOffset: { t: Number(((before + along) / total).toFixed(4)), offset: 0 },
+      labelMaxWidth: Math.ceil(width),
     });
   }
   return elements.map((el) => placed.get(el.id) ?? el);
 }
 
+type Rect = { x: number; y: number; width: number; height: number };
+const rectsMeet = (a: Rect, b: Rect) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+const rectWithin = (a: Rect, b: Rect) =>
+  a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height;
+
 // How close two runs may be before a label on one would sit on the other: a label's height and some.
 const LABEL_CLEAR = 22;
+// The points along a run a label is tried at, as fractions of it: the middle, then a quarter and a third in from
+// either end.
+const LABEL_SPOTS = [0.5, 0.25, 0.75, 1 / 3, 2 / 3] as const;
+// The gap a tucked label keeps from the box at its run's end.
+const LABEL_TUCK = 4;
+// Room a run keeps beyond its label, so the label clears the boxes at the run's ends.
+const LABEL_RUN_MARGIN = 16;
+
+// Whether b lies on the line from a to c: the same row or the same column within a pixel.
+const collinear = (a: Pt, b: Pt, c: Pt) =>
+  (Math.abs(a.y - b.y) < 1 && Math.abs(b.y - c.y) < 1) ||
+  (Math.abs(a.x - b.x) < 1 && Math.abs(b.x - c.x) < 1);
 
 // A caption's one-line width at the arrow label's default size, with room for its plate.
 const labelWidth = (label: string) => Math.min(260, label.length * 12 * 0.56 + 18);

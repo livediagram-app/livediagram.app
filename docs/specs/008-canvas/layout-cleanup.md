@@ -123,8 +123,12 @@ graph input (the MCP's `graph` / `mermaid`, [MCP server](../015-api/mcp-server.m
 gives each angled arrow two bends through `curvePoints` (down to half height,
 across, down into the child), the shape an org chart is read in; one whose ends
 already line up runs straight rather than drawing a zero-length elbow with a
-sideways head (`arrow-orthogonal.ts`). The bends are ordinary curve points, so
-the author can drag them like any other.
+sideways head (`arrow-orthogonal.ts`). An arrow with one end on a side across
+the flow and the other along it (a group's edge leaving its frame's side, a
+decision's exit from its top or bottom in a swimlane) bends once instead: out of
+that side first, then along the flow into the other end, so it meets each end
+square. The bends are ordinary curve points, so the author can drag them like any
+other.
 
 ### Two-way edges bow apart
 
