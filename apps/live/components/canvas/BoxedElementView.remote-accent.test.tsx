@@ -5,7 +5,7 @@ import { createShape, type BoxedElement } from '@livediagram/document';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import type { RemoteSelector } from '@/lib/presence-rows';
 
-// A collaborator's selection shows as the element's outline in their colour (docs/specs/012-collaboration/presence.md);
+// A collaborator's selection shows as the element's outline in their colour (docs/specs/007-editor/live-app.md "Concurrent-selection lock");
 // it never recolours a face whose accent paints its content. A card being dragged by someone else turned its header
 // band, media and tags into the selector's colour.
 
