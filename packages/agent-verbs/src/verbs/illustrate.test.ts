@@ -245,6 +245,10 @@ describe('page ls and page set', () => {
         { op: 'duplicate', page: 'Cover' },
       ],
       [
+        { page: '1', backgroundToAll: true },
+        { op: 'apply_background_to_all', page: 1 },
+      ],
+      [
         { page: '2', move: 1 },
         { op: 'move', page: 2, to: 1 },
       ],

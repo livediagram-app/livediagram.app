@@ -10005,6 +10005,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "page"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "apply_background_to_all",
+            "type": "string"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageRef"
+          }
+        },
+        "required": [
+          "op",
+          "page"
+        ],
+        "type": "object"
       }
     ]
   },

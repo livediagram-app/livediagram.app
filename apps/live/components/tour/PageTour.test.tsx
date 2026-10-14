@@ -40,6 +40,9 @@ const edits = (): IllustratePageEdits =>
   ({
     rename: vi.fn(),
     setBackground: vi.fn(),
+    applyToAllReach: vi.fn(() => 0),
+    applyBackgroundToAll: vi.fn(),
+    copyBackground: vi.fn(() => false),
     setSize: vi.fn(),
     setOrientation: vi.fn(),
     canDuplicate: () => true,

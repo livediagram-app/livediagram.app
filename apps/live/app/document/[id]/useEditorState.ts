@@ -1513,6 +1513,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     viewportOffsetRef,
     canvasMainRef,
     getViewportCenter,
+    getViewportCanvasRect,
     fitToScreen,
     fitToBounds,
     focusOn,
@@ -3591,6 +3592,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     toast,
     onPastePhoto: readPhotoFile,
     canvasPointerRef,
+    getViewportCanvasRect,
     // An Excalidraw copy or file lands through the board-scene insert below (called at paste time).
     insertBoardScene: (scene, at) => void boardSceneInsert.insertScene(scene, at),
   });

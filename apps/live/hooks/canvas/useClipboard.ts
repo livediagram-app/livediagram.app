@@ -115,6 +115,9 @@ type ClipboardDeps = {
   // board a paste holding a workshop note lands there
   // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
   canvasPointerRef?: RefObject<{ x: number; y: number } | null>;
+  // The canvas-coord rectangle on screen; a paste whose usual spot is outside
+  // it lands in its middle (docs/specs/008-canvas/canvas-and-palette.md Clipboard).
+  getViewportCanvasRect?: () => { x: number; y: number; width: number; height: number } | null;
   // Lands a board scene pasted from another tool (an Excalidraw copy or file,
   // docs/specs/020-import-export/excalidraw-import-export.md "Paste"): one undo step, selected, for
   // the tab's profile. Absent, such a paste is left alone.
@@ -140,6 +143,7 @@ export function useClipboard(deps: ClipboardDeps) {
     toast,
     onPastePhoto,
     canvasPointerRef,
+    getViewportCanvasRect,
     insertBoardScene,
   } = deps;
 
@@ -237,7 +241,12 @@ export function useClipboard(deps: ClipboardDeps) {
     if (!pasting || pasting.length === 0) return;
     if (refuseCreate()) return;
     const pointer = at !== undefined ? at : (canvasPointerRef?.current ?? null);
-    const { dx, dy, atPointer } = pasteTranslation(pasting, activeTab, pointer);
+    const { dx, dy, atPointer } = pasteTranslation(
+      pasting,
+      activeTab,
+      pointer,
+      getViewportCanvasRect?.() ?? null,
+    );
     const clipIds = new Set(pasting.map((el) => el.id));
     // Clipboard ids may not exist in the current tab (the source
     // was deleted, the user pasted into a different tab, etc.).

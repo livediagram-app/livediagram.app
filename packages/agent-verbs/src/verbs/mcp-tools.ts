@@ -383,7 +383,8 @@ export const mcpChangePages = mcpTool('change_pages', {
     'Build a slide deck or presentation, an infographic or a logo: change the pages of a tab in Illustrate mode, in ' +
     'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} an ' +
     'infographic, slide or logo page, set {page, name, size, orientation, background, locked}, layout ' +
-    '{page, layout}, move {page, to}, duplicate {page}, delete {page}. A tab in another mode, named by tabId, ' +
+    '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
+    "other page of its kind, every slide say, takes that page's background). A tab in another mode, named by tabId, " +
     'is switched into Illustrate. The answer gives every page with its rectangle in canvas coordinates, the ' +
     "same as an element's x and y in update_document (the layout view prints positions from the content's " +
     'corner instead). A layout fills a page with sample text: read_document view "pages" lists it, with each ' +

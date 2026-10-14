@@ -17,6 +17,7 @@ import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
 import {
   computeFitToScreen,
   FIT_TO_SCREEN_PADDING,
+  computeViewportCanvasRect,
   computeViewportCenter,
   topChromeInset,
 } from '@/lib/viewport';
@@ -77,6 +78,9 @@ type EditorViewportApi = {
   // Canvas-coord position of the viewport centre, used as the drop
   // point for "add a shape from the palette".
   getViewportCenter: () => { x: number; y: number };
+  // Canvas-coord rectangle on screen now; null before the canvas mounts. A paste
+  // whose usual spot is off-screen lands in the middle of it.
+  getViewportCanvasRect: () => { x: number; y: number; width: number; height: number } | null;
   // Re-fit every boxed element on the active tab into the
   // viewport. Idempotent (the lastFittedTabRef gate in
   // editor-page.tsx still controls WHEN this runs).
@@ -150,6 +154,13 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     const rect = canvasMainRef.current?.getBoundingClientRect();
     if (!rect) return { x: 0, y: 0 };
     return computeViewportCenter(rect, viewport.get().offset);
+  }, [viewport]);
+
+  const getViewportCanvasRect = useCallback(() => {
+    const rect = canvasMainRef.current?.getBoundingClientRect();
+    if (!rect || rect.width === 0 || rect.height === 0) return null;
+    const { offset, zoom } = viewport.get();
+    return computeViewportCanvasRect(rect, offset, zoom);
   }, [viewport]);
 
   // Smoothly bring an element (plus toolbar room) fully on-screen. If it
@@ -456,6 +467,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     viewportOffsetRef,
     canvasMainRef,
     getViewportCenter,
+    getViewportCanvasRect,
     fitToScreen,
     fitToBounds,
     centreOn,

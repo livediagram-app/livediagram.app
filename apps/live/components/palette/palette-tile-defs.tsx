@@ -1,6 +1,7 @@
 import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
+import { BadgePresetGlyph } from './BadgePresetGlyph';
 import { headlineCase } from '@livediagram/api-schema';
-import type { PenColour } from '@livediagram/document';
+import { badgePresetFace, type PenColour } from '@livediagram/document';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/document';
@@ -1497,16 +1498,12 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Badge',
     description:
       'Badge. A small pill like "Beta" or "v2". Drop it on a corner or edge of a node and it stays there as the node moves.',
-    filled: true,
+    // Drawn as the badge it drops (a New pill), so untinted: the glyph carries the theme's colours itself.
+    noTint: true,
     action: { type: 'shape', kind: 'badge' },
     variants: BADGE_PRESET_TILES,
     variantsHint: 'Start from a preset, then change its text, look or colour.',
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="3" y="8" width="18" height="8" rx="4" />
-        <path d="M7.5 12h9" />
-      </Glyph>
-    ),
+    icon: <BadgePresetGlyph {...badgePresetFace(undefined)} />,
   },
   {
     // The step number (docs/specs/009-elements/step-number.md): numbers itself as it lands.

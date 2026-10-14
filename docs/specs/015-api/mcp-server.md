@@ -768,7 +768,8 @@ not, and reach open editors at once.
 - **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
   `add` `{ kind, size, orientation, name, background, layout, at }` (infographic, slide or logo), `set`
   `{ page, name, size, orientation, background, locked }`, `layout` `{ page, layout }`, `move` `{ page, to }`,
-  `duplicate` `{ page }` and `delete` `{ page }`, written as one edit; a refusal writes nothing and names the
+  `duplicate` `{ page }`, `delete` `{ page }` and `apply_background_to_all` `{ page }` (every other page of its kind
+  takes its background), written as one edit; a refusal writes nothing and names the
   change. The answer lists each page with its rectangle on the canvas, where `update_document` puts elements.
 - **`write_article`** (destructive, as a replace drops the old text): an article's text from Markdown (front
   matter `title:` / `subtitle:`, headings, lists, to-dos, quotes, code, dividers, `\pagebreak`), `replace` or

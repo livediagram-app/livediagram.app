@@ -347,7 +347,7 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
   'Tab',
   'Changed',
   'Illustrate Pages Set Up',
-  "An Illustrate page's size, name, background or pattern changed from its panel, or a page locked or unlocked.",
+  "An Illustrate page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), or a page locked or unlocked.",
   {
     types: [
       'PageSize',
@@ -356,6 +356,8 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
       'PageBackgroundImage',
       'PageBackgroundAnimated',
       'PageBackgroundAnimatedSpeed',
+      'PageBackgroundAppliedToAll',
+      'PageBackgroundPainted',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',
@@ -364,13 +366,13 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
 );
 
 // Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): a press on a page in the list,
-// going there.
+// going there, or a page dragged to a new place in it.
 export const PAGE_CONTENTS_JUMPS = chart(
   'UI',
   'Used',
-  'Contents Jumps',
-  "A page pressed in Illustrate's Contents list, the canvas gliding to it.",
-  { types: ['PageContentsJump'], rising: 'neutral' },
+  'Contents Jumps and Reorders',
+  "A page pressed in Illustrate's Contents list (the canvas gliding to it), or dragged to a new place there.",
+  { types: ['PageContentsJump', 'PageContentsReorder'], rising: 'neutral' },
 );
 
 // Building Illustrate pages: a layout placed, a page duplicated or moved.

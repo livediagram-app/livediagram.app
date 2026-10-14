@@ -122,6 +122,7 @@ export const pageSet = defineVerb({
     layout: z.string().optional().describe('Lay the page out (a layout id from page ls)'),
     move: z.coerce.number().int().min(1).optional().describe('Move the page to this place'),
     duplicate: z.boolean().optional().describe('Copy the page'),
+    backgroundToAll: z.boolean().optional().describe('Its background onto every page of its kind'),
     delete: z.boolean().optional().describe('Delete the page and what is on it'),
   }),
   output: doneOutput,
@@ -183,6 +184,7 @@ type ChangeFlags = {
   layout?: string;
   move?: number;
   duplicate?: boolean;
+  backgroundToAll?: boolean;
   delete?: boolean;
 };
 
@@ -210,6 +212,7 @@ function changeFrom(flags: ChangeFlags): PageChange {
   const page = /^\d+$/.test(flags.page) ? Number(flags.page) : flags.page;
   if (flags.delete) return { op: 'delete', page };
   if (flags.duplicate) return { op: 'duplicate', page };
+  if (flags.backgroundToAll) return { op: 'apply_background_to_all', page };
   if (flags.move !== undefined) return { op: 'move', page, to: flags.move };
   if (flags.layout) return { op: 'layout', page, layout: flags.layout };
   if (Object.keys(fields).length) return { op: 'set', page, ...fields };

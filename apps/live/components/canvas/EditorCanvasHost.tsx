@@ -39,6 +39,7 @@ import { useStableCollab } from '@/components/canvas/element-layer-props';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
+import { brushPageId, pageBrushPreview, pagePaintPress } from '@/lib/format-page-brush';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -501,6 +502,8 @@ export function EditorCanvasHost() {
   // The element the format brush is loaded from (docs/specs/010-palette/stickers.md), for the panel's
   // preview. Resolved here rather than in the panel so the panel stays a
   // renderer and never reaches into the tab.
+  // A page's background in the brush (docs/specs/007-editor/illustrate-pages.md "Copying a background").
+  const brushedPage = illustratePages?.pages.find((pg) => pg.id === brushPageId(formatSourceId));
   const formatSource = formatSourceId
     ? (activeTab.elements.find((el) => el.id === formatSourceId) ?? null)
     : null;
@@ -760,6 +763,22 @@ export function EditorCanvasHost() {
             editingId={editingId}
             editCursorAtEnd={editCursorAtEnd}
             formatSourceId={formatSourceId}
+            onFormatPagePress={
+              canvasTool === 'format' && illustratePages?.edit
+                ? (pageId) => {
+                    // A page's background as the brush, painted page to page (docs/specs/007-editor/
+                    // illustrate-pages.md "Copying a background").
+                    const press = pagePaintPress(
+                      formatSourceId,
+                      pageId,
+                      formatConfig.mode === 'keep',
+                    );
+                    if (press.paint)
+                      illustratePages.edit?.copyBackground(press.paint.from, press.paint.to);
+                    if (press.next !== formatSourceId) setFormatSourceId(press.next);
+                  }
+                : undefined
+            }
             canUndo={canUndo && !activeTabLocked}
             canRedo={canRedo && !activeTabLocked}
             onAddShape={addShape}
@@ -863,14 +882,16 @@ export function EditorCanvasHost() {
             // What the brush holds, described for the panel's preview (docs/specs/010-palette/stickers.md):
             // the loaded element's name and the three colours the swatch draws.
             formatBrushSource={
-              formatSource
-                ? {
-                    name: describeOne(formatSource),
-                    fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
-                    stroke: 'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
-                    textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
-                  }
-                : null
+              brushedPage
+                ? pageBrushPreview(brushedPage)
+                : formatSource
+                  ? {
+                      name: describeOne(formatSource),
+                      fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
+                      stroke: 'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
+                      textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
+                    }
+                  : null
             }
             formatPanelPosition={formatPanelPosition}
             onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}

@@ -168,7 +168,7 @@ export type PageFill =
 
 // A slide's animated background (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds"):
 // a gradient with a motion drawn over it, moving on screen and while presenting, still in exports
-// (which draw the gradient) and under reduced motion. The first five are the animated canvas
+// (which draw its first frame) and under reduced motion. The first five are the animated canvas
 // styles'; the rest are the slide's own.
 export const PAGE_MOTIONS = [
   'flow',
