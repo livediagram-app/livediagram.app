@@ -1,66 +1,63 @@
-// Stacked groups line up (docs/specs/015-api/mcp-server.md "Stacked groups line up"). Each group's frame is sized to
-// its own members, so a pipeline's stages came out as frames of four widths, each centred on its own members and
-// off the spine. Groups that follow one another down the flow, no two side by side, share one extent across it.
+// Stacked groups line up (docs/specs/015-api/mcp-server.md "Stacked groups line up"). Each group is laid out on its
+// own and centred on its own members, so a pipeline stage whose branch sat to one side (a rollback beside the
+// decision) pulled its entry off the spine, and the line into it jogged. Groups that follow one another down the flow,
+// no two side by side, move so each one-entry group's entry sits on the line of what feeds it. Frames keep their own
+// width: stretched to one width, a stage of two boxes stood mostly empty.
 
 import type { LayoutDirection } from './auto-layout';
+import type { DiagramGraph } from './graph-authoring';
 import type { BoxedElement } from './index';
 
 type Span = { lo: number; hi: number };
 
 const along = (el: BoxedElement, direction: LayoutDirection): Span =>
   direction === 'TB' ? { lo: el.y, hi: el.y + el.height } : { lo: el.x, hi: el.x + el.width };
-const across = (el: BoxedElement, direction: LayoutDirection): Span =>
-  direction === 'TB' ? { lo: el.x, hi: el.x + el.width } : { lo: el.y, hi: el.y + el.height };
-
-const meets = (a: Span, b: Span) => a.lo < b.hi && b.lo < a.hi;
-
+const crossOf = (el: BoxedElement, direction: LayoutDirection) =>
+  direction === 'TB' ? el.x + el.width / 2 : el.y + el.height / 2;
 const shifted = (el: BoxedElement, by: number, direction: LayoutDirection): BoxedElement =>
   direction === 'TB' ? { ...el, x: el.x + by } : { ...el, y: el.y + by };
+const overlaps = (a: BoxedElement, b: BoxedElement) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 
-// Widens `frames` in place to the union of their extents across the flow when no two share a band along it and no
-// node outside a frame would fall inside its widened rectangle. Then each frame with one entry (the one member a line
-// from outside reaches, in `entries`) moves its members so that entry sits on the column's centre line: a stage
-// whose own branch pulled its members aside otherwise took the spine on a jog. The move keeps the members' inset from
-// the frame's near side (its heading lead) and `pad` from the far side. `nodes` holds every placed node, in place.
+// Moves, in place, each one-entry group of a stack (frame and members) across the flow so its entry lines up with
+// the mean of the nodes that feed it, in flow order so a stage follows the one before it moved. A group whose moved
+// frame would cover another node or frame stays.
 export function lineUpStackedFrames(
   frames: BoxedElement[],
   nodes: BoxedElement[],
   clusterOf: ReadonlyMap<string, string>,
-  entries: ReadonlyMap<string, string>,
-  pad: number,
+  graph: DiagramGraph,
   direction: LayoutDirection,
 ): void {
   if (frames.length < 2) return;
-  const outside = nodes.filter((n) => !clusterOf.has(n.id));
-  const sorted = [...frames].sort((a, b) => along(a, direction).lo - along(b, direction).lo);
-  for (let i = 1; i < sorted.length; i++)
-    if (along(sorted[i]!, direction).lo < along(sorted[i - 1]!, direction).hi) return;
-  const lo = Math.min(...frames.map((f) => across(f, direction).lo));
-  const hi = Math.max(...frames.map((f) => across(f, direction).hi));
-  const widened = frames.map((f) =>
-    direction === 'TB' ? { ...f, x: lo, width: hi - lo } : { ...f, y: lo, height: hi - lo },
-  );
-  const takesIn = widened.some((f) =>
-    outside.some(
-      (n) =>
-        meets(along(f, direction), along(n, direction)) &&
-        meets(across(f, direction), across(n, direction)),
-    ),
-  );
-  if (takesIn) return;
-  const centre = (lo + hi) / 2;
-  frames.forEach((old, i) => {
-    const frame = widened[i]!;
-    frames[i] = frame;
-    const entry = nodes.find((n) => n.id === entries.get(frame.id));
-    if (!entry) return;
+  const order = frames
+    .map((f, i) => ({ f, i }))
+    .sort((a, b) => along(a.f, direction).lo - along(b.f, direction).lo);
+  for (let k = 1; k < order.length; k++)
+    if (along(order[k]!.f, direction).lo < along(order[k - 1]!.f, direction).hi) return;
+  const index = new Map(nodes.map((n, i) => [n.id, i]));
+  for (const { i } of order) {
+    const frame = frames[i]!;
+    const intoGroup = graph.edges.filter(
+      (e) => clusterOf.get(e.to) === frame.id && clusterOf.get(e.from) !== frame.id,
+    );
+    const entries = new Set(intoGroup.map((e) => e.to));
+    if (entries.size !== 1) continue;
+    const entry = nodes[index.get([...entries][0]!) ?? -1];
+    const feeders = intoGroup
+      .map((e) => nodes[index.get(e.from) ?? -1])
+      .filter((n): n is BoxedElement => !!n);
+    if (!entry || feeders.length === 0) continue;
+    const want = feeders.reduce((s, n) => s + crossOf(n, direction), 0) / feeders.length;
+    const by = want - crossOf(entry, direction);
+    if (Math.abs(by) < 1) continue;
+    const moved = shifted(frame, by, direction);
     const members = nodes.flatMap((n, at) => (clusterOf.get(n.id) === frame.id ? [at] : []));
-    const memberLo = Math.min(...members.map((at) => across(nodes[at]!, direction).lo));
-    const memberHi = Math.max(...members.map((at) => across(nodes[at]!, direction).hi));
-    const inset = memberLo - across(old, direction).lo;
-    const want = centre - (across(entry, direction).lo + across(entry, direction).hi) / 2;
-    const by = Math.max(lo + inset - memberLo, Math.min(hi - pad - memberHi, want));
-    if (Math.abs(by) < 1) return;
+    const covers =
+      frames.some((o, j) => j !== i && overlaps(moved, o)) ||
+      nodes.some((n) => clusterOf.get(n.id) !== frame.id && overlaps(moved, n));
+    if (covers) continue;
+    frames[i] = moved;
     for (const at of members) nodes[at] = shifted(nodes[at]!, by, direction);
-  });
+  }
 }

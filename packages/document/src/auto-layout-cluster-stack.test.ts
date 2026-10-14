@@ -48,15 +48,15 @@ describe('stacked groups', () => {
   const els = layoutClusteredGraph(pipeline, { direction: 'TB', makeEdgeId: ids() });
   const frames = ['ci', 'pkg', 'prod'].map((id) => byId(els, id));
 
-  it('share one width and one left edge', () => {
-    expect(new Set(frames.map((f) => f.x)).size).toBe(1);
-    expect(new Set(frames.map((f) => f.width)).size).toBe(1);
+  it('keep each frame its own width', () => {
+    expect(new Set(frames.map((f) => f.width)).size).toBe(3);
   });
 
-  it("put a stage's one entry on the column's centre line, its members kept inside", () => {
-    const centre = mid(frames[0]!);
-    expect(Math.abs(mid(byId(els, 'image')) - centre)).toBeLessThan(1);
-    expect(Math.abs(mid(byId(els, 'approve')) - centre)).toBeLessThan(1);
+  it("put each stage's one entry on the line of what feeds it, its members kept inside its frame", () => {
+    const feeders = ['lint', 'unit', 'build'].map((id) => mid(byId(els, id)));
+    const fed = feeders.reduce((s, x) => s + x, 0) / feeders.length;
+    expect(Math.abs(mid(byId(els, 'image')) - fed)).toBeLessThan(1);
+    expect(Math.abs(mid(byId(els, 'approve')) - mid(byId(els, 'image')))).toBeLessThan(1);
     const prod = frames[2]!;
     for (const id of ['approve', 'ok', 'roll', 'back', 'page']) {
       const m = byId(els, id);

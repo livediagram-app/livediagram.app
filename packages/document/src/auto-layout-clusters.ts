@@ -243,17 +243,17 @@ export function layoutClusteredGraph(
   // outside neighbours ended up, so edges into the group don't cross it.
   orderMembersByNeighbours(clusters, placedNodes, placedFrames, graph, direction ?? 'TB');
   // 3c. A row of members with no lines among them sits by the outside nodes they link to.
-  seatMembersByNeighbours(placedNodes, placedFrames, clusterOf, graph, direction ?? 'TB');
-  // 3d. Groups stacked down the flow share one width, so a pipeline's stages read as one column. Before 3e: it moves
-  // a stage's members, and a node seated by them first was left behind.
-  lineUpStackedFrames(
-    placedFrames,
+  seatMembersByNeighbours(
     placedNodes,
+    placedFrames,
     clusterOf,
-    soleEntries(clusters, graph),
-    FRAME_PAD,
+    graph,
     direction ?? 'TB',
+    FRAME_PAD,
   );
+  // 3d. Groups stacked down the flow keep the spine straight: a stage's one entry lines up with what feeds it. Before
+  // 3e: it moves a stage's members, and a node seated by them first was left behind.
+  lineUpStackedFrames(placedFrames, placedNodes, clusterOf, graph, direction ?? 'TB');
   // 3e. Each node outside the groups that members link to sits by those members, not by the group's middle.
   seatByMembers(placedNodes, placedFrames, clusterOf, graph, direction ?? 'TB');
 
@@ -283,19 +283,6 @@ export function layoutClusteredGraph(
   return bowReciprocalEdges(
     sweepEdgelessNodes([...placedFrames, ...placedNodes, ...faced], deliberate),
   );
-}
-
-// Each group's one member a line from outside reaches, for a group that has exactly one.
-function soleEntries(clusters: GraphCluster[], graph: DiagramGraph): Map<string, string> {
-  const out = new Map<string, string>();
-  for (const c of clusters) {
-    const inside = new Set(c.members);
-    const entered = new Set(
-      graph.edges.filter((e) => inside.has(e.to) && !inside.has(e.from)).map((e) => e.to),
-    );
-    if (entered.size === 1) out.set(c.id, [...entered][0]!);
-  }
-  return out;
 }
 
 // A group's members that no arrow inside the group touches (the usual case: a

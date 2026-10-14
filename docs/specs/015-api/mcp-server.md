@@ -489,8 +489,11 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   member by the outside nodes it links to, a database under its service, its order and gaps kept, and its frame
   refits round them; skipped when the refitted frame would cover another node or frame.
 - **Stacked groups line up.** Groups that follow one another down the flow, no two side by side (a pipeline's
-  stages), share one width: each frame spans the union of theirs across the flow, so the stages read as one column
-  rather than boxes of four widths off the spine. Skipped when a widened frame would take in a node outside it.
+  stages), keep the spine straight: a group with one entry (the one member a line from outside reaches) moves,
+  frame and members together, until that entry sits on the line of what feeds it, so the spine runs straight
+  through every stage rather than jogging where a stage's own branch pulled its members aside. Each frame keeps
+  its own width, hugging what it holds: stretched to one width, frames of two boxes stood mostly empty. Skipped
+  for a group whose moved frame would cover another node or frame.
 - **Lanes stay compact and their decisions branch.** In a `lanes` graph a hand-off to the next lane up or down that is
   its step's only way out and its next step's only way in drops straight into that lane, in the same column, rather
   than taking a column of its own, so a chain of hand-offs climbs or descends a staircase instead of stretching across

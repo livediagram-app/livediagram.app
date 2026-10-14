@@ -256,6 +256,14 @@ describe('frame headings', () => {
     );
   });
 
+  it('takes the first rank by centre, so a taller box beside it still counts as the same row', () => {
+    // A cylinder at the left, entered, and a taller cloud to its right, centred on the same line: its top sits higher.
+    const members = [box('db', 0, 10, 100, 80), box('cloud', 300, 0, 120, 100)];
+    expect(headingLead('Continuous integration', members, new Set(['db']), 32, 'TB')).toBe(
+      200 + 16 - 82,
+    );
+  });
+
   it('leads nowhere when nothing enters a first member, or across the page, or with no heading', () => {
     const members = [box('a', 0, 0), box('c', 0, 200)];
     expect(headingLead('Continuous integration', members, new Set(['c']), 32, 'TB')).toBe(0);

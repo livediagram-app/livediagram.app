@@ -201,8 +201,11 @@ export function headingLead(
   if (direction !== 'TB' || members.length === 0) return 0;
   const heading = frameHeadingRect({ x: 0, y: 0, label });
   if (!heading) return 0;
-  const top = Math.min(...members.map((m) => m.y));
-  const first = members.filter((m) => m.y - top < 1);
+  // The first rank by centre, as the layout aligns a rank: by its top, a taller box (a cloud among cylinders) stood
+  // alone as the first row.
+  const mid = (m: BoxedElement) => m.y + m.height / 2;
+  const top = Math.min(...members.map(mid));
+  const first = members.filter((m) => mid(m) - top < 1);
   const entered = first.filter((m) => enteredFromOutside.has(m.id));
   if (entered.length === 0) return 0;
   const left = Math.min(...members.map((m) => m.x));

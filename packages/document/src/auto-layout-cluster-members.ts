@@ -5,6 +5,7 @@
 
 import { SIBLING_GAP } from './auto-layout-shared';
 import { legalise, rankOffsets } from './auto-layout-placement';
+import { headingLead } from './auto-layout-cluster-seats';
 import type { LayoutDirection } from './auto-layout';
 import type { DiagramGraph } from './graph-authoring';
 import type { BoxedElement } from './index';
@@ -32,6 +33,7 @@ export function seatMembersByNeighbours(
   clusterOf: ReadonlyMap<string, string>,
   graph: DiagramGraph,
   direction: LayoutDirection,
+  pad: number,
 ): void {
   const index = new Map(nodes.map((n, i) => [n.id, i]));
   frames.forEach((frame, f) => {
@@ -78,7 +80,15 @@ export function seatMembersByNeighbours(
     const lo = (els: BoxedElement[]) => Math.min(...els.map((m) => crossLo(m, direction)));
     const hi = (els: BoxedElement[]) =>
       Math.max(...els.map((m) => crossLo(m, direction) + crossLen(m, direction)));
-    const before = lo(members) - crossLo(frame, direction);
+    // The heading's lead worked out again for the seated row: a line into a first member moved under the heading
+    // struck its text.
+    const entered = new Set(
+      graph.edges.filter((e) => inside.has(e.to) && !inside.has(e.from)).map((e) => e.to),
+    );
+    const before = Math.max(
+      lo(members) - crossLo(frame, direction),
+      pad + headingLead(frame.label, seated, entered, pad, direction),
+    );
     const after = crossLo(frame, direction) + crossLen(frame, direction) - hi(members);
     const from = lo(seated) - before;
     const len = hi(seated) + after - from;
