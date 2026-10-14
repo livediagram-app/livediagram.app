@@ -16,6 +16,8 @@ export const LINT_CODES = [
   'flow-backwards',
   'aspect-extreme',
   'colour-on-themed',
+  // An Illustrate tab only (its pages' text).
+  'text-overflow',
 ] as const;
 export type LintCode = (typeof LINT_CODES)[number];
 
@@ -37,6 +39,7 @@ export const LINT_SEVERITY: Readonly<Record<LintCode, LintSeverity>> = {
   'flow-backwards': 'info',
   'aspect-extreme': 'info',
   'colour-on-themed': 'info',
+  'text-overflow': 'warning',
 };
 
 export type LintFinding = {

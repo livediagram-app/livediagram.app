@@ -103,7 +103,10 @@ const STYLE_FIELDS =
   '; "textBold", "textItalic" (true/false); "colorPreset" (a shape\u2019s look from the theme: theme, soft, ' +
   'tinted, solid, bold, ghost, paper, muted, slate, inked, hairline, outline, dotted, dash-dot, frame, info, ' +
   'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; "note" (detail ' +
-  'shown on the element); on an arrow "label", "strokeStyle", "arrowEnds", "arrowheadShape". A field a type ' +
+  'shown on the element); on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
+  '"fontWeight" (400, 500, 700), "textCase" (upper, lower), "textArc" (bends one line along a circle, -360 to ' +
+  '360 degrees, positive bowing up: a badge\u2019s top line 180, its bottom -180); on an arrow "label", ' +
+  '"strokeStyle", "arrowEnds", "arrowheadShape". A field a type ' +
   'does not have, or a value off its list, is refused naming what it takes. ' +
   'Facilitation kinds and what they hold: "session-button" a "session" ({"tool": "timer" with "minutes", ' +
   '"stopwatch", "vote" with "dots", or "poll" with "question" and "options"}), drawn as what pressing it does ' +
@@ -633,7 +636,15 @@ export const readDocumentShape = {
   image: z
     .boolean()
     .optional()
-    .describe('Also attach a PNG preview of the tab (costs about a thousand tokens).'),
+    .describe(
+      'Also attach a PNG preview of the tab (costs about a thousand tokens). An Illustrate tab draws as its pages, each as it exports: its background, what reaches onto it, cut at its edges.',
+    ),
+  page: z
+    .union([z.string(), z.number().int().min(1)])
+    .optional()
+    .describe(
+      'With image, on an Illustrate tab: draw only this page, at its own size (its id, its place 1 first, or its name). Without it every page is drawn, in rows.',
+    ),
 };
 
 // A document or tab name (docs/specs/006-document/name-length.md). Shortened with
@@ -656,6 +667,10 @@ const tabShape = z.object({
   elements: elementArray.optional(),
   template: templateField,
   dashboard: dashboardField,
+  theme: z
+    .string()
+    .optional()
+    .describe('This tab’s theme, one of the theme ids above; the document’s theme when left out.'),
 });
 
 export const createDocumentShape = {

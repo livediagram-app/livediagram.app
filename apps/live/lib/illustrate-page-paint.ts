@@ -9,7 +9,8 @@ import {
   themeSecondaries,
   PAGE_GRADIENT_ANGLE,
   pageImageTone,
-  pageIsDark,
+  PAGE_PATTERN_PITCH,
+  pagePatternInk,
   shade,
   tint,
   type ThemeDefinition,
@@ -27,7 +28,13 @@ import {
 } from './page-image-paint';
 
 // The background edit itself is the document's, shared with the agents' page changes.
-export { PAGE_GRADIENT_ANGLE, sameFill, withBackgroundPatch } from '@livediagram/document';
+export {
+  PAGE_GRADIENT_ANGLE,
+  PAGE_PATTERN_PITCH,
+  pagePatternInk,
+  sameFill,
+  withBackgroundPatch,
+} from '@livediagram/document';
 
 export type GradientPreset = { id: string; label: string; from: string; to: string };
 
@@ -55,7 +62,6 @@ export const PAGE_PATTERN_LABEL: Record<PagePattern | 'none', string> = {
 };
 
 // The pattern's pitch in canvas px.
-export const PAGE_PATTERN_PITCH = 24;
 
 export const gradientFill = (p: Pick<GradientPreset, 'from' | 'to'>): PageFill => ({
   kind: 'gradient',
@@ -164,12 +170,6 @@ export function pageSheetStyle(
   }
   if (fill) style.color = pagePatternInk(background);
   return style;
-}
-
-/** The pattern's ink on a page: faint white on a dark fill, faint slate on a light one (and on the
- *  plain paper, whose sheet sets it by class on screen). */
-export function pagePatternInk(background: PageBackground | undefined): string {
-  return pageIsDark({ background }) ? 'rgb(255 255 255 / 0.14)' : 'rgb(15 23 42 / 0.1)';
 }
 
 export type ThemeBackgroundPreset = { id: string; label: string; fill: PageFill };

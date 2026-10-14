@@ -111,6 +111,8 @@ export type ArticleSummary = {
   pages: number[];
   blocks: number;
   words: number;
+  // About how many pages its writing reaches once laid out (an estimate, article-layout-estimate.ts).
+  estimatedPages: number;
   look: ArticleLookId | null;
 };
 

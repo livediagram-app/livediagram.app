@@ -593,7 +593,7 @@ wrongly:
 
 **Style fields.** The element format names the style fields a box or arrow takes beyond its geometry, as facts:
 every closed vocabulary from `ELEMENT_FIELD_VALUES` (text size and alignment, icon position, arrow style, ends and
-heads, border style and radius) with its values, bold and italic, `colorPreset` with the theme's preset looks,
+heads, border style and radius, font) with its values, bold and italic, `colorPreset` with the theme's preset looks,
 `iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
 an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
 
@@ -984,6 +984,17 @@ The tools named for the container were `*_diagram` / `find_diagrams` before it b
 The output literals that named the container changed with it: `renamed`, `deleted` and `restored` report `document` where they reported `diagram`.
 <!-- /legacy-names -->
 
+- **Previews**: `read_document` with `image` draws an Illustrate tab as its pages, each as the editor exports it
+  (`svg-render-pages.ts` over `illustrate-page-frame.ts`): its background, gradient, pattern or picture, the elements
+  reaching onto it cut at its edges, in rows (two slides or three tall pages to a row) with each page's place and name
+  under it; `page` (an id, place or name) draws one page alone at its own size. An article page draws its writing as
+  estimated without a browser (`article-layout-estimate.ts`: each block set as the editor's stylesheet sets it,
+  wrapped at an estimated width, flowed down the article's pages), with the pages the editor would add after its last
+  shown and labelled as such. An emoji icon or sticker, which needs a colour-emoji font a Worker lacks, draws as a disc
+  labelled emoji (`resolveIconPreviewArt`, `resolveStickerPreviewArt`).
+- Article summaries (`write_article`, `change_pages`, the `pages` view) carry `estimatedPages`, the pages the writing
+  reaches once laid out, from the same estimate.
+
 ## 5. Visualise — inline image render
 
 `create_document`, `add_tab` and `update_document` return, and `read_document` with `image: true` returns, an **inline
@@ -1019,6 +1030,12 @@ Worker (no DOM, no React).
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
   preview it can't self-check against. A diagram's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.
+- **Fonts.** The faces a tab uses beyond Inter (its elements', its own, a sheet's cells', its articles' heading and
+  body faces) are read from the Google Fonts stylesheet the editor loads (`fonts.ts`' `google` specs), whose answer
+  to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`):
+  at most `PREVIEW_FONTS_MAX` (4) families, whatever arrives within `PREVIEW_FONTS_TIMEOUT_MS` (2.5 s), each kept in
+  the isolate and the Cache API. A face that cannot be fetched draws in Inter, as before; nothing is sent but the
+  family names.
 - **No scaled strokes.** resvg ignores `vector-effect="non-scaling-stroke"`, so
   the renderer never relies on it: stretched silhouettes (frames, cylinders,
   device frames) are mapped into the element box point by point

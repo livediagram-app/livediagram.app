@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   LIVE_ELEMENT_FIELDS,
   getBuiltInTheme,
+  shapeColorPresets,
   quickSwatchColor,
   type Element,
 } from '@livediagram/document';
@@ -124,12 +125,25 @@ describe('writeFieldsOnto', () => {
     );
   });
 
+  it('dresses a shape in its preset’s colours for the theme, a colour named with it winning', () => {
+    const preset = shapeColorPresets(theme).find((p) => p.id === 'tinted')!;
+    expect(nextOf(write(square, { colorPreset: 'tinted' }))).toMatchObject({
+      colorPreset: 'tinted',
+      fillColor: preset.fill,
+      strokeColor: preset.stroke,
+    });
+    expect(nextOf(write(square, { colorPreset: 'tinted', fillColor: '#ff0000' })).fillColor).toBe(
+      '#ff0000',
+    );
+    expect(refusal(square, { colorPreset: 'sparkly' }).hint).toMatch(/^colorPreset takes .*tinted/);
+  });
+
   it('takes a known icon id and refuses one that draws a question mark, naming icons like it', () => {
     const icon = { ...square, id: 'ic', iconId: 'clock' } as Element;
     expect(nextOf(write(icon, { iconId: 'moon' })).iconId).toBe('moon');
-    const out = refusal(icon, { iconId: 'flame' });
-    expect(out.details).toEqual(['iconId="flame": is not an icon']);
-    expect(out.hint).toContain('emoji-fire');
+    const out = refusal(icon, { iconId: 'fire' });
+    expect(out.details).toEqual(['iconId="fire": is not an icon']);
+    expect(out.hint).toContain('flame');
     expect(refusal(icon, { iconId: 'qqqqzz' }).hint).toContain('plain words');
   });
 

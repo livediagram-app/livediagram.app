@@ -3,6 +3,7 @@
 
 import type { LintCode, LintReport, LintSeverity } from '@livediagram/api-schema';
 import {
+  opensInOf,
   conciseGraph,
   layoutGraph,
   type Element,
@@ -10,6 +11,8 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { LINT_CHECKS } from './checks';
+import { aspectExtreme } from './checks/aspect-extreme';
+import { textOverflow } from './checks/text-overflow';
 import { LINT_MAX_ARROWS } from './constants';
 import { prepareLintContext, type LintSource } from './context';
 import { consoleLintLogger, type LintLogger } from './log';
@@ -18,10 +21,16 @@ import { sortFindings } from './order';
 
 export type LintOptions = { source?: LintSource; flow?: 'down' | 'right'; log?: LintLogger };
 
+// The checks a tab is linted with: an Illustrate tab's pages fix its shape, so a drawing wider than tall is no finding
+// there (a deck of slides is a row of pages), and laying it out as a diagram would wreck them.
+// and its text is its content, so text that overflows its box or prints over other text is (text-overflow).
+const PAGE_CHECKS = [...LINT_CHECKS.filter((check) => check !== aspectExtreme), textOverflow];
+
 export function lintTab(
-  tab: Pick<Tab, 'elements' | 'layers' | 'theme'>,
+  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & Partial<Pick<Tab, 'opensIn' | 'kind'>>,
   options: LintOptions = {},
 ): LintReport {
+  const checks = opensInOf(tab) === 'illustrate' ? PAGE_CHECKS : LINT_CHECKS;
   const started = performance.now();
   const source = options.source ?? 'tab';
   const log = options.log ?? consoleLintLogger;
@@ -29,7 +38,7 @@ export function lintTab(
   const crossings = crossingPairs(ctx);
   if (!crossings)
     log('[lint] crossings skipped', { arrows: ctx.drawable.length, max: LINT_MAX_ARROWS });
-  const findings = sortFindings(LINT_CHECKS.flatMap((check) => check({ ...ctx, crossings, log })));
+  const findings = sortFindings(checks.flatMap((check) => check({ ...ctx, crossings, log })));
   const count = (code: LintCode) => findings.filter((f) => f.code === code).length;
   const counts: Record<LintSeverity, number> = { error: 0, warning: 0, info: 0 };
   const perCode: Record<string, number> = {};

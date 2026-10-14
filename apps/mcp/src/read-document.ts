@@ -10,6 +10,8 @@ import {
 import { ApiError, apiJson, apiText } from './api';
 import type { Env } from './env';
 import { tabPreview } from './image-result';
+import { laidOutPagesOf, type LaidOutPage, type Tab } from '@livediagram/document';
+import { resolvePage } from '@livediagram/edit-operations';
 import { READ_DOCUMENT_DEFAULT_BUDGET } from '@livediagram/agent-verbs/mcp';
 import { deepLink, errorResult, textResult, viewResult, type ToolResult } from './tool-helpers';
 
@@ -26,6 +28,8 @@ export type ReadDocumentArgs = {
   style?: boolean;
   format?: 'view' | 'json';
   image?: boolean;
+  // With image, one page of an Illustrate tab (an id, a place or a name).
+  page?: string | number;
 };
 
 // `W/"41"` → 41.
@@ -112,7 +116,9 @@ export async function readDocument(
       url: deepLink(env, document.id),
     });
     if (!args.image) return result;
-    return { ...result, content: [...result.content, await tabPreview(tab, auth)] };
+    const page = pageAsked(tab, args.page);
+    if (typeof page === 'string') return errorResult(page);
+    return { ...result, content: [...result.content, await tabPreview(tab, auth, page)] };
   }
 
   let read: { text: string; etag: string | null };
@@ -138,5 +144,25 @@ export async function readDocument(
     url: deepLink(env, document.id),
   });
   if (plain === null) return result;
-  return { ...result, content: [...result.content, await tabPreview(plain.tab, auth)] };
+  const page = pageAsked(plain.tab, args.page);
+  if (typeof page === 'string') return errorResult(page);
+  return { ...result, content: [...result.content, await tabPreview(plain.tab, auth, page)] };
+}
+
+// The page `page` names on an Illustrate tab, laid out; undefined when none is asked for; a refusal in words when the
+// tab has no pages or none by that name, naming the pages there are.
+export function pageAsked(
+  tab: Tab,
+  ref: string | number | undefined,
+): LaidOutPage | undefined | string {
+  if (ref === undefined) return undefined;
+  const pages = laidOutPagesOf(tab);
+  if (pages.length === 0)
+    return 'That tab has no pages: page draws one page of a tab in Illustrate mode.';
+  const found = resolvePage(pages, ref);
+  if (found) return pages.find((p) => p.id === found.id);
+  const named = pages
+    .map((p) => `${p.index + 1} ${p.id}${p.name ? ` "${p.name}"` : ''}`)
+    .join(', ');
+  return `No page "${ref}" on that tab. Pages: ${named}.`;
 }

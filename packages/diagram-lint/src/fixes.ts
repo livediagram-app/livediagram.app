@@ -26,6 +26,10 @@ export const fixes = {
       smaller ? `set ${a} text=sm` : `set ${a} label="<text>" note="<text>"`,
       'shorten the label; detail goes in note',
     ),
+  // A page's text: grown to hold its lines; two texts over each other moved apart.
+  textOverflow: (a: string, height: number) => `set ${a} height=${height}`,
+  textOverflowWidth: (a: string, width: number) => `set ${a} width=${width}`,
+  textOverlap: (a: string, b: string) => `move ${b} below:${a}`,
   nodeIsolated: (s: LintSource, a: string) =>
     pick(s, `connect <ref> -> ${a}`, `add an edge to ${a}, or drop it`),
   groupEscape: (s: LintSource, a: string, frame: string) =>

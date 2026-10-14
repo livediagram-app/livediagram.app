@@ -4,6 +4,7 @@
 
 import { ICON_CATALOG_1 } from './icon-catalog-1';
 import { ICON_CATALOG_2 } from './icon-catalog-2';
+import { ICON_CATALOG_3 } from './icon-catalog-3';
 import { paletteRank } from './search-rank';
 import { TECH_ICON_CATALOG } from './tech-icon-catalog';
 
@@ -14,7 +15,7 @@ export type IconSet = 'line' | 'technology';
 export type IconHit = { id: string; label: string; set: IconSet };
 
 const CATALOGUE: readonly (IconHit & { keywords: string })[] = [
-  ...[...ICON_CATALOG_1, ...ICON_CATALOG_2].map((i) => ({
+  ...[...ICON_CATALOG_1, ...ICON_CATALOG_2, ...ICON_CATALOG_3].map((i) => ({
     id: i.id,
     label: i.label,
     keywords: i.keywords,

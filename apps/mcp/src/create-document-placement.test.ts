@@ -194,3 +194,19 @@ describe('create_document lint', () => {
     vi.restoreAllMocks();
   });
 });
+
+// A tab's own theme wins over the document's (docs/specs/015-api/mcp-server.md §4.3): a theme put on a tab was dropped.
+describe('create_document themes', () => {
+  it('gives each tab its own theme, else the document’s', async () => {
+    const { run, posted } = harness({ folderId: null, teamId: null });
+    await run(
+      [
+        { name: 'Own', elements: [], theme: 'mocha' },
+        { name: 'Doc', elements: [] },
+      ],
+      { theme: 'ocean' },
+    );
+    const tabs = (posted[0]!.tabs as { theme?: string }[]).map((t) => t.theme);
+    expect(tabs).toEqual(['mocha', 'ocean']);
+  });
+});

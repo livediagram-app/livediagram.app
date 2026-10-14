@@ -5,6 +5,8 @@
 
 import { ARROWHEAD_SHAPES } from './arrow-style';
 import { BORDER_DASH_ARRAY } from './border-style';
+import { FONTS } from './fonts';
+import { ICON_WEIGHTS } from './icon-weight';
 
 export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> = {
   textSize: ['sm', 'md', 'lg', 'scale'],
@@ -16,6 +18,10 @@ export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> =
   arrowheadShape: ARROWHEAD_SHAPES,
   strokeStyle: Object.keys(BORDER_DASH_ARRAY),
   borderRadius: ['none', 'sm', 'md', 'lg', 'full'],
+  // A line-art icon's stroke (icon-weight.ts): an icon's strokeWidth is not its weight.
+  iconWeight: ICON_WEIGHTS,
+  // The editor's faces (fonts.ts): a family name ("serif", "Georgia") drew in the tab's font in silence.
+  font: FONTS.map((f) => f.id),
 };
 
 // Why a field's value is off its list, as a sentence ending in the values it takes; null when it fits or the field

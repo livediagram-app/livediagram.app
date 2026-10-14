@@ -159,6 +159,12 @@ const articleOut = z
     pages: z.array(z.number()).describe('The places of its pages.'),
     blocks: z.number().describe('How many blocks its writing has.'),
     words: z.number().describe('How many words.'),
+    estimatedPages: z
+      .number()
+      .optional()
+      .describe(
+        'About how many pages its writing reaches once laid out (an estimate): the editor grows the article to them, so more than its pages means it runs on.',
+      ),
     look: z.string().nullable().describe('Its look, or null for the default.'),
   })
   .describe('An article.');

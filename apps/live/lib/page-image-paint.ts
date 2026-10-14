@@ -3,12 +3,10 @@
 // the files paint it the same. Pure.
 import {
   pageImageOverlayColor,
-  pageImageTone,
   type PageImageFill,
   type PageImageOverlay,
   type PageImagePosition,
 } from '@livediagram/document';
-import { xmlEscape } from '@livediagram/icons';
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -48,38 +46,5 @@ export function pageImageSrc(
   return resolve?.(fill.imageId);
 }
 
-/**
- * The page's picture as SVG in canvas coordinates: its tone, the picture cropped to cover the rect
- * (when its bytes are at hand as `href`), then its overlay. Ids are prefixed with `id`.
- */
-export function pageImageSvg(
-  fill: PageImageFill,
-  rect: { x: number; y: number; width: number; height: number },
-  href: string | undefined,
-  id: string,
-): string {
-  const box = `x="${r2(rect.x)}" y="${r2(rect.y)}" width="${r2(rect.width)}" height="${r2(rect.height)}"`;
-  // Under it all, the picture's tone: what shows where its bytes cannot be read.
-  const parts = [`<rect ${box} fill="${xmlEscape(pageImageTone({ tone: fill.tone }))}"/>`];
-  if (href) {
-    const align =
-      fill.position === 'top' ? 'xMidYMin' : fill.position === 'bottom' ? 'xMidYMax' : 'xMidYMid';
-    parts.push(`<image ${box} href="${xmlEscape(href)}" preserveAspectRatio="${align} slice"/>`);
-  }
-  const o = fill.overlay;
-  if (o) {
-    const colour = xmlEscape(pageImageOverlayColor(o));
-    if (o.kind === 'fade') {
-      parts.push(
-        `<defs><linearGradient id="${id}-fade" x1="0" y1="0" x2="0" y2="1">` +
-          `<stop offset="0" stop-color="${colour}" stop-opacity="0"/>` +
-          `<stop offset="1" stop-color="${colour}" stop-opacity="${r2(o.strength)}"/>` +
-          `</linearGradient></defs>`,
-        `<rect ${box} fill="url(#${id}-fade)"/>`,
-      );
-    } else {
-      parts.push(`<rect ${box} fill="${colour}" fill-opacity="${r2(o.strength)}"/>`);
-    }
-  }
-  return parts.join('');
-}
+// The picture as SVG for the exports and previews (@livediagram/document's illustrate-page-frame.ts).
+export { pageImageSvg } from '@livediagram/document';

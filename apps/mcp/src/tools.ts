@@ -137,7 +137,13 @@ export function registerTools(server: McpServer, env: Env): void {
       return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
     }
     const tabs: Tab[] = [];
-    const dashboards: { at: number; tabId: string; name: string; input: DashboardInput }[] = [];
+    const dashboards: {
+      at: number;
+      tabId: string;
+      name: string;
+      input: DashboardInput;
+      theme: string | undefined;
+    }[] = [];
     // The template the first tab is made from, for the creation intent.
     let firstTemplate: TemplateKind | null = null;
     // Every template tab's elements: their Plan boards bring their card types
@@ -168,7 +174,7 @@ export function registerTools(server: McpServer, env: Env): void {
           { id: tabId, name: t.name },
           kind,
           () => crypto.randomUUID(),
-          args.theme,
+          t.theme ?? args.theme,
         );
         tabs.push(...made);
         for (const m of made) templateElements.push(...m.elements);
@@ -177,7 +183,13 @@ export function registerTools(server: McpServer, env: Env): void {
       // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): made once every other tab is, so it
       // can show them by name.
       if (t.dashboard) {
-        dashboards.push({ at: tabs.length, tabId, name: t.name, input: t.dashboard });
+        dashboards.push({
+          at: tabs.length,
+          tabId,
+          name: t.name,
+          input: t.dashboard,
+          theme: t.theme ?? args.theme,
+        });
         continue;
       }
       // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
@@ -187,7 +199,7 @@ export function registerTools(server: McpServer, env: Env): void {
       const iconIssue = input.graph ? graphIconIssue(input.graph.nodes) : null;
       if (iconIssue) return errorResult(`Tab "${t.name}": ${iconIssue}`);
       if (input.graph) {
-        tabs.push(buildGraphTab(tabId, t.name, input.graph, args.theme));
+        tabs.push(buildGraphTab(tabId, t.name, input.graph, t.theme ?? args.theme));
         continue;
       }
       const drawn = packFreehandPoints(t.elements ?? []);
@@ -209,7 +221,9 @@ export function registerTools(server: McpServer, env: Env): void {
             'be well-formed.',
         );
       }
-      tabs.push(buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, args.theme));
+      tabs.push(
+        buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, t.theme ?? args.theme),
+      );
     }
     // Each Dashboard, showing the call's other tabs by name, in its place among them.
     if (dashboards.length) {
@@ -218,7 +232,7 @@ export function registerTools(server: McpServer, env: Env): void {
       for (const [n, d] of dashboards.entries()) {
         const resolved = resolveDashboardInput(d.input, refs, types);
         if (!resolved.ok) return errorResult(`Tab "${d.name}": ${resolved.message}`);
-        tabs.splice(d.at + n, 0, buildDashboardTab(d.tabId, d.name, resolved.spec, args.theme).tab);
+        tabs.splice(d.at + n, 0, buildDashboardTab(d.tabId, d.name, resolved.spec, d.theme).tab);
       }
     }
     // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.

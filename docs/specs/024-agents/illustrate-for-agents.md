@@ -129,7 +129,8 @@ Writes an article's text from **Markdown**.
 
 ## Pages for the writing
 
-Where a line breaks is measured by the editor, so the server never counts an article's pages
+Where a line breaks is measured by the editor, so the server never sets an article's pages (an answer's
+`estimatedPages` and a preview's writing are estimates, `article-layout-estimate.ts`, and change nothing)
 ([Article pages](../007-editor/article-pages.md) "Flowing onto pages").
 
 - An article whose writing reaches past its last page is grown by an editor that is not its writer at two moments

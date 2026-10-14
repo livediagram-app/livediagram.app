@@ -62,14 +62,15 @@ export function ensureIconCatalogs(): Promise<void> {
     loadPromise = Promise.all([
       import('@livediagram/icons/icon-catalog-1'),
       import('@livediagram/icons/icon-catalog-2'),
+      import('@livediagram/icons/icon-catalog-3'),
       import('@livediagram/icons/tech-icon-catalog'),
       import('@livediagram/icons/sticker-catalog'),
     ])
-      .then(([part1, part2, tech, stickers]) => {
-        // Order matters for the line-art catalogue: part 1 then part 2, so
+      .then(([part1, part2, part3, tech, stickers]) => {
+        // Order matters for the line-art catalogue: part 1, part 2, then part 3, so
         // the first entry stays the default icon (same rule the old static
         // concatenation in icons.ts followed).
-        const icons = [...part1.ICON_CATALOG_1, ...part2.ICON_CATALOG_2];
+        const icons = [...part1.ICON_CATALOG_1, ...part2.ICON_CATALOG_2, ...part3.ICON_CATALOG_3];
         loaded = {
           icons,
           iconById: new Map(icons.map((i) => [i.id, i])),
