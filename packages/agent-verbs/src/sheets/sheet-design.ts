@@ -318,23 +318,6 @@ export function buildDesign(
     writes.push(w);
   };
   send(made.write);
-  if (!input.widths?.length) {
-    const cols = Array.from({ length: extent.cols }, (_, c) => c);
-    // A note runs over its empty neighbours, as a template's does, so it widens nothing.
-    const notes = new Set(
-      design.blocks.filter((b) => b.kind === 'note').map((b) => `${b.at[0]},${b.at[1]}`),
-    );
-    const ids = scratch.sheet(sheetId)!.layout.cols;
-    const changes = [...fittedWidths(scratch, sheetId, cols, (r, c) => notes.has(`${r},${c}`))].map(
-      ([c, px]) => ({
-        k: 'size' as const,
-        axis: 'c' as const,
-        ids: [ids[c]!],
-        px,
-      }),
-    );
-    if (changes.length) send({ kind: 'layout', changes });
-  }
   // Dropdown and checkbox columns: a rule over each column's body rows.
   for (const t of tables) {
     const [r0, c0] = t.at0;
@@ -364,6 +347,24 @@ export function buildDesign(
       if (!built.ok) return built;
       built.writes.forEach(send);
     }
+  }
+  // Widths last, fitted to the cells as laid out with their rules (a dropdown's chip needs room).
+  if (!input.widths?.length) {
+    const cols = Array.from({ length: extent.cols }, (_, c) => c);
+    // A note runs over its empty neighbours, as a template's does, so it widens nothing.
+    const notes = new Set(
+      design.blocks.filter((b) => b.kind === 'note').map((b) => `${b.at[0]},${b.at[1]}`),
+    );
+    const ids = scratch.sheet(sheetId)!.layout.cols;
+    const changes = [...fittedWidths(scratch, sheetId, cols, (r, c) => notes.has(`${r},${c}`))].map(
+      ([c, px]) => ({
+        k: 'size' as const,
+        axis: 'c' as const,
+        ids: [ids[c]!],
+        px,
+      }),
+    );
+    if (changes.length) send({ kind: 'layout', changes });
   }
   const charts = designCharts(scratch, sheetId, tables, accentChartPalette(design.accent));
   if ('ok' in charts) return charts;

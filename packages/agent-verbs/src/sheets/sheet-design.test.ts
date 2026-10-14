@@ -103,6 +103,8 @@ describe('a design', () => {
     expect(posRangeOf(s.layout, s.layout.merges![0]!)).toEqual({ r1: 0, c1: 0, r2: 0, c2: 5 });
     expect(s.layout.frozenRows).toBe(4);
     expect(s.layout.colSize?.[s.layout.cols[0]!]).toBeGreaterThan(56);
+    // The dropdown column leaves its chips room: "On track" and a chip's padding and arrow.
+    expect(s.layout.colSize?.[s.layout.cols[4]!]).toBe(Math.round(8 * (40 / 3) * 0.56 + 18 + 48));
     // A dropdown over the Status body, a checkbox over Paid.
     const rules = (s.layout.rules ?? []).map((r) => [r.is, posRangeOf(s.layout, r)]);
     expect(rules).toEqual([
