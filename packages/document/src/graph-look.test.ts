@@ -176,6 +176,25 @@ describe('title, subtitle and key', () => {
   });
 });
 
+describe('one size per kind', () => {
+  it('gives every box of a kind the size the largest needs, leaving other kinds their own', () => {
+    const els = lay({
+      nodes: [
+        { id: 'a', label: 'Pay' },
+        { id: 'b', label: 'Send the receipt and the order summary by email' },
+        { id: 'c', label: 'Ok?', shape: 'diamond' },
+      ],
+      edges: [
+        { from: 'a', to: 'b' },
+        { from: 'b', to: 'c' },
+      ],
+    });
+    const [a, b, c] = ['a', 'b', 'c'].map((id) => box(els, id));
+    expect([a!.width, a!.height]).toEqual([b!.width, b!.height]);
+    expect(c!.width).not.toBe(a!.width);
+  });
+});
+
 describe('key samples', () => {
   const kinds = (tones: ('muted' | 'soft')[]): GraphInput => ({
     nodes: [

@@ -443,7 +443,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 **The graph look** (what makes graph input read like a template, the flowchart template being the yardstick):
 
 - **Boxes are template-sized.** A box is at least 180×64 (a diamond 180×104, wider than tall; a circle stays round),
-  wider for a longer label, never the 120×120 square the editor's palette starts a square at. Every node's text is
+  wider for a longer label, never the 120×120 square the editor's palette starts a square at. The labelled boxes of
+  one kind share one size, the largest any of them needs, so a wrapped step does not stand taller than its
+  neighbours. Every node's text is
   one size: `md` for a graph of up to 12 nodes (the template's size), `sm` beyond, so a large system still fits.
 - **Roles by notation.** In a flowchart (a graph with a diamond or a stadium) the first stadium a flow starts from is
   `bold` and a stadium it ends on `soft`; a diamond is `soft`. A node's `tone` overrides: `strong` (bold), `soft`,

@@ -283,5 +283,23 @@ export function graphToElements(
     .filter((e) => nodeIds.has(e.from) && nodeIds.has(e.to))
     .map((e) => edgeToArrow(e, makeEdgeId()));
 
-  return [...nodes, ...arrows];
+  return [...(look ? sizedAlike(nodes) : nodes), ...arrows];
+}
+
+// In the template look, the boxes of one kind share one size, the largest any of them needs, as a template's steps
+// do: a step whose label wrapped stood taller than its neighbours, and the column read as ragged.
+function sizedAlike(nodes: Element[]): Element[] {
+  const size = new Map<string, { width: number; height: number }>();
+  for (const el of nodes) {
+    if (el.type !== 'shape' || !LOOK_FLOOR[el.shape] || !el.label) continue;
+    const was = size.get(el.shape) ?? { width: 0, height: 0 };
+    size.set(el.shape, {
+      width: Math.max(was.width, el.width),
+      height: Math.max(was.height, el.height),
+    });
+  }
+  return nodes.map((el) => {
+    const alike = el.type === 'shape' && el.label ? size.get(el.shape) : undefined;
+    return alike ? { ...el, ...alike } : el;
+  });
 }
