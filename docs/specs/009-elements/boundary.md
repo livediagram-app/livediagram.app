@@ -63,7 +63,8 @@ title takes the **Text** set.
 
 ## The menu
 
-A **Boundary** section (Tools flyout), closed until opened: the three styles as tiles.
+A **Boundary** section (Tools flyout), closed until opened: **Meta Line** on / off (on gives it "Meta line" to type
+over; clearing its text in place switches it off) and the three styles as tiles.
 
 ## Share roles
 

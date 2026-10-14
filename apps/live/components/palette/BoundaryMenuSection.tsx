@@ -3,6 +3,7 @@
 import {
   BOUNDARY_STYLES,
   boundaryStyleOf,
+  withBoundaryMeta,
   withBoundaryStyle,
   type BoundaryStyle,
   type ShapeElement,
@@ -10,7 +11,7 @@ import {
 import { Glyph } from '@livediagram/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
-import { BorderGrid } from '@/components/palette/context-menu-rows';
+import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
@@ -35,7 +36,7 @@ function StyleIcon({ style }: { style: BoundaryStyle }) {
   );
 }
 
-// A boundary's section (docs/specs/009-elements/boundary.md "The menu"): its three styles.
+// A boundary's section (docs/specs/009-elements/boundary.md "The menu"): its meta line, and its three styles.
 export function BoundaryMenuSection({
   target,
   ops,
@@ -48,6 +49,13 @@ export function BoundaryMenuSection({
   const current = boundaryStyleOf(target);
   return (
     <MenuAccordionSection title="Boundary" icon={<DataMenuGlyph />} {...sectionProps('boundary')}>
+      <MenuToggleRow
+        label="Meta Line"
+        checked={!!target.pageSubtitle}
+        onToggle={() =>
+          ops.commit((el) => withBoundaryMeta(el, !target.pageSubtitle), 'BoundaryMeta')
+        }
+      />
       <div className="px-2 pb-1">
         <BorderGrid label="Style" cols={3}>
           {BOUNDARY_STYLES.map((v) => (

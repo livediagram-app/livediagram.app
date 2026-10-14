@@ -96,6 +96,17 @@ export function boundaryLayout(
 }
 
 /** Set (or clear back to Tab, with `null`) a boundary's style. C4's long dash replaces the default dash with it. */
+/** A boundary's meta line on or off (docs/specs/009-elements/boundary.md "The menu"): on gives it starting words to
+ *  type over, off clears it. */
+export const BOUNDARY_META_DEFAULT = 'Meta line';
+export function withBoundaryMeta<T extends Element>(el: T, on: boolean): T {
+  if (el.type !== 'shape' || el.shape !== 'boundary') return el;
+  const next = { ...el } as T & { pageSubtitle?: string };
+  if (on) next.pageSubtitle = next.pageSubtitle || BOUNDARY_META_DEFAULT;
+  else delete next.pageSubtitle;
+  return next;
+}
+
 export function withBoundaryStyle<T extends Element>(el: T, style: BoundaryStyle | null): T {
   if (el.type !== 'shape' || el.shape !== 'boundary') return el;
   const next = { ...el } as T & { boundaryStyle?: BoundaryStyle; strokeStyle?: string };

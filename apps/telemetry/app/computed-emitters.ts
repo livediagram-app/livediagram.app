@@ -616,6 +616,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'ChipLook',
       'ChipDetach',
       'BoundaryStyle',
+      'BoundaryMeta',
       'PyramidVariant',
       'ConceptAnim',
     ],

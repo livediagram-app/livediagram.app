@@ -170,7 +170,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 25,
+    articleCount: 29,
     kind: 'feature',
   },
   {
@@ -1093,9 +1093,9 @@ export const articles: Article[] = [
     slug: 'build',
     title: 'Build Elements',
     description:
-      'Mind nodes, flowcharts, lanes, frames, timelines, tables and Sankey diagrams: the elements you lay a diagram out with.',
+      'Mind nodes, flowcharts, lanes, frames, boundaries, tables, Sankeys and cards: the elements you lay a diagram out with.',
     keywords:
-      'build structure layout container holds frame lane timeline table mind node sankey flow arrange scaffold group section band track grid organise',
+      'build structure layout container holds frame lane boundary timeline table mind node sankey flow arrange scaffold group section band track grid organise card badge step number',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1123,9 +1123,9 @@ export const articles: Article[] = [
   {
     slug: 'components',
     title: 'Components',
-    description: 'Web components: banners, callouts, stat rows, steps, heroes and headers.',
+    description: 'Cards, badges, step numbers and web components: banners, callouts and more.',
     keywords:
-      'banner callout stat kpi block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps illustrate mode',
+      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps illustrate mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1177,6 +1177,46 @@ export const articles: Article[] = [
     description: 'Furniture for Avatar mode: walk a character in and it sits down.',
     keywords:
       'chair chairs seat seating sit sitting sat furniture avatar character walk stand table room seating plan attendance behaviour navigate facing up',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'cards-and-callouts',
+    title: 'Cards and Callouts',
+    description: 'One node with a title, a meta line, a body, an icon and tags, plus accent edges.',
+    keywords:
+      'card cards node service component title meta line subtitle body tags chips icon badge tile initial header band callout note tip warning accent edge stripe strip colour color coded side border architecture persona title and caption',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'badges-and-step-numbers',
+    title: 'Badges and Step Numbers',
+    description: "Small marks that attach to a node's corner and travel with it.",
+    keywords:
+      'badge badges pill label tag status version new beta count step number numbers numbered disc circle walkthrough order sequence 1 2 3 attach attached corner marker renumber play in order annotate annotation',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'boundaries',
+    title: 'Boundaries',
+    description: 'Titled, tinted containers for regions, networks and systems.',
+    keywords:
+      'boundary boundaries container zone region vpc subnet network cluster trust zone group c4 system cloud aws azure gcp architecture nested nest tab tint cidr dashed',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'concept-graphics',
+    title: 'Concept Graphics',
+    description: 'Layer stacks, pyramids, funnels and cycles that lay out their own rows.',
+    keywords:
+      'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

@@ -1017,6 +1017,38 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M5 4c4 0 2 4 6 4M5 14c4 0 2 2 6 2M11 9c4 0 4-3 8-3M11 12c4 0 4 0 8 1M11 15c4 0 4 3 8 3" />
     </Glyph>
   ),
+  // A node with its slots: a tile at the top left, a title and a meta line beside it, a tag along the bottom.
+  'cards-and-callouts': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2.5" />
+      <rect x="6" y="7" width="4" height="4" rx="1" />
+      <path d="M12.5 8h5.5M12.5 10.5h3.5M6 14.5h12" />
+      <rect x="6" y="16.5" width="5" height="1.5" rx=".75" />
+    </Glyph>
+  ),
+  // A box with a numbered disc riding its top-left corner.
+  'badges-and-step-numbers': (
+    <Glyph>
+      <rect x="6" y="7" width="15" height="12" rx="2" />
+      <circle cx="6" cy="7" r="3.5" fill="currentColor" stroke="none" />
+      <path d="M11 13h7" />
+    </Glyph>
+  ),
+  // Nested dashed zones, the outer one titled in a tab on its edge.
+  boundaries: (
+    <Glyph>
+      <rect x="3" y="6" width="18" height="14" rx="2" strokeDasharray="2.5 2" />
+      <rect x="5" y="3.5" width="7" height="3.5" rx="1" fill="currentColor" stroke="none" />
+      <rect x="9" y="10" width="9" height="7" rx="1.5" strokeDasharray="2 1.8" />
+    </Glyph>
+  ),
+  // A pyramid cut into three tiers.
+  'concept-graphics': (
+    <Glyph>
+      <path d="M12 3.5L21 20H3Z" />
+      <path d="M8.2 10.5h7.6M5.9 15h12.2" />
+    </Glyph>
+  ),
   frames: (
     <Glyph>
       <path d="M3.5 7.5V6a1.5 1.5 0 011.5-1.5h4.5V7.5" />

@@ -151,14 +151,14 @@ export function ComponentsCategory() {
   const x = PX + 12;
   const rows: [string, string][] = [
     ['Banner', 'A themed title block for the top'],
-    ['Callout', 'A note box with an icon and title'],
+    ['Callout', 'A card with an icon badge and a title'],
     ['Stat Row', 'Three KPI cards side by side'],
     ['Process', 'Numbered steps joined by arrows'],
     ['Hero', 'A big image with a title card'],
     ['Header', 'A website-style nav bar'],
   ];
   return (
-    <PaletteFrame category="Components" h={318} sceneH={342}>
+    <PaletteFrame category="Components" h={408} sceneH={432}>
       <Row
         x={x}
         y={56}
@@ -176,6 +176,27 @@ export function ComponentsCategory() {
       <Row
         x={x}
         y={116}
+        name="Card"
+        blurb="A node with a title, meta line and tags"
+        glyph={<path d="M-6 -5h12v10h-12zM-4 -3h3v3h-3zM1 -2.5h3.5M-4 2.5h8" {...g} />}
+      />
+      <Row
+        x={x}
+        y={146}
+        name="Badge"
+        blurb="A small label that rides a corner"
+        glyph={<rect x={-6} y={-3} width={12} height={6} rx={3} {...g} />}
+      />
+      <Row
+        x={x}
+        y={176}
+        name="Step Number"
+        blurb="A numbered disc for walkthroughs"
+        glyph={<circle cx={0} cy={0} r={5.5} {...g} />}
+      />
+      <Row
+        x={x}
+        y={206}
         name="Web Elements"
         blurb="Themed page sections"
         open
@@ -186,7 +207,7 @@ export function ComponentsCategory() {
         <Row
           key={name}
           x={x + 14}
-          y={152 + i * 30}
+          y={242 + i * 30}
           name={name}
           blurb={blurb}
           glyph={

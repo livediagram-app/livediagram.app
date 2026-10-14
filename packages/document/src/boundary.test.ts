@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   boundaryLayout,
+  BOUNDARY_META_DEFAULT,
   BOUNDARY_TINT,
   containerContents,
   createShape,
   isValidElement,
   layerBands,
   renderElementsToSvg,
+  withBoundaryMeta,
   withBoundaryStyle,
   type Element,
   type ShapeElement,
@@ -103,5 +105,16 @@ describe('boundary (docs/specs/009-elements/boundary.md)', () => {
     } as never);
     expect(svg).toContain('>AWS<');
     expect(svg.match(/rgba\(51, 102, 153, 0\.06\)/g)).toHaveLength(2);
+  });
+
+  it('turns the meta line on with starting words, keeps typed words, and clears it off', () => {
+    const b = createShape('boundary', 0, 0);
+    expect(withBoundaryMeta(b, true).pageSubtitle).toBe(BOUNDARY_META_DEFAULT);
+    expect(withBoundaryMeta({ ...b, pageSubtitle: '10.0.0.0/16' }, true).pageSubtitle).toBe(
+      '10.0.0.0/16',
+    );
+    expect('pageSubtitle' in withBoundaryMeta({ ...b, pageSubtitle: 'x' }, false)).toBe(false);
+    const sq = createShape('square', 0, 0);
+    expect(withBoundaryMeta(sq, true)).toBe(sq);
   });
 });
