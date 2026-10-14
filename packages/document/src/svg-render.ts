@@ -123,7 +123,7 @@ import { boundsOfPoints, type Point } from './geometry-primitives';
 import { getBuiltInTheme } from './themes';
 import { themeChartPalette } from './theme-presets';
 import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
-import { svgAccentEdge } from './accent-edge';
+import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
@@ -490,6 +490,8 @@ export function boxedNeedsSvgRaster(
   // A shadow renders via an feDropShadow filter def (docs/specs/008-canvas/element-shadows.md), which the
   // PNG canvas drawers can't reproduce natively.
   if (supportsShadow(el) && el.shadow) return true;
+  // An accent edge (docs/specs/008-canvas/accent-edge.md) is a clipped bar only the SVG draws.
+  if (resolvedAccentEdge(el)) return true;
   if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return true;
   // Wordmark type (tracking, weight, case, an arc) is drawn by the SVG alone.
   if (el.type === 'text' && hasWordmarkType(el)) return true;

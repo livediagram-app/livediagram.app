@@ -6,7 +6,7 @@ import {
   supportsAccentEdge,
   svgAccentEdge,
 } from './accent-edge';
-import { createShape, svgBoxed, type ShapeElement } from './index';
+import { boxedNeedsSvgRaster, createShape, svgBoxed, type ShapeElement } from './index';
 
 const square = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   ...(createShape('square', 0, 0) as ShapeElement),
@@ -81,5 +81,12 @@ describe('accent edge writes', () => {
     expect(withAccentEdge(circle, 'left')).toBe(circle);
     expect(withAccentEdgeColor(on, '#00ff00').accentEdgeColor).toBe('#00ff00');
     expect('accentEdgeColor' in withAccentEdgeColor(on, null)).toBe(false);
+  });
+});
+
+describe('accent edge in the PNG / PDF path', () => {
+  it('rasterises through the SVG only when the element draws an edge', () => {
+    expect(boxedNeedsSvgRaster(square({ accentEdge: 'left' }))).toBe(true);
+    expect(boxedNeedsSvgRaster(square())).toBe(false);
   });
 });
