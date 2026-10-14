@@ -605,6 +605,14 @@ a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` ov
 so starter questions go on stickies beside them. An agenda written with segments grows to draw every one
 ([Agenda](../012-collaboration/agenda.md) "The face").
 
+**Hand-drawn strokes.** A `freehand` element is written with `points` as canvas coordinates, `[[x, y], ...]` in
+drawing order, `closed` to close and fill it, and a `penColour` (ink, grey or a hued pen). The stored form is a box
+with the points packed inside it ([Stroke points](../006-document/stroke-points.md)), which no model can write, so
+the MCP takes the box from the points and packs them through the stored-tab migration, before the element is
+checked, on every element path (`freehand-points.ts`). Points it cannot draw (none, more than
+`MAX_FREEHAND_POINTS`, or not number pairs) are refused naming the element. The format says a hand-drawn board
+starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
+
 **No CLI hints.** An edit's result text is the api's, less its footer's revert line: that line names the
 `livediagram changeset revert` command, which no MCP tool runs.
 

@@ -20,6 +20,7 @@ import {
 import { ApiError, apiJson } from './api';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue } from './element-values';
+import { packFreehandPoints } from './freehand-points';
 import type { Env } from './env';
 
 export async function submitChangeset(
@@ -91,9 +92,12 @@ export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unk
     const n = i + 1;
     if (op.op === 'add') {
       if (!op.element) return `ops[${n}]: add needs "element"`;
-      const valueIssue = elementsIssue([op.element]);
+      const drawn = packFreehandPoints([op.element]);
+      if ('error' in drawn) return `ops[${n}]: ${drawn.error}`;
+      const given = drawn.elements[0] as Record<string, unknown>;
+      const valueIssue = elementsIssue([given]);
       if (valueIssue) return `ops[${n}]: ${valueIssue}`;
-      const element = withEnds(op.element);
+      const element = withEnds(given);
       if (typeof element === 'string') return `ops[${n}]: ${element}`;
       out.push({ op: 'add', element });
     } else if (op.op === 'update') {

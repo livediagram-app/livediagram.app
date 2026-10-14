@@ -20,6 +20,9 @@ import {
 import {
   ANCHORS,
   ELEMENT_FIELD_VALUES,
+  GREY_PEN_COLOUR,
+  INK_PEN_COLOUR,
+  PEN_COLOUR_NAMES,
   FINISHES,
   type Finish,
   CODE_LANGUAGES,
@@ -122,7 +125,14 @@ const ELEMENT_SCHEMA_HINT =
   '"diamond" for a decision, "cylinder" for a datastore, "stadium" for start/end. ' +
   'type "text" is BARE text with no box; use it only for a title, caption, or ' +
   'legend, never for a node; it is centred in its box, so a left-aligned heading or caption sets ' +
-  '"textAlignX": "left". type "arrow" needs "from" and "to" endpoints, each ' +
+  '"textAlignX": "left". type "freehand" is a HAND-DRAWN stroke: give "points" as canvas ' +
+  'coordinates, [[x, y], ...] in drawing order (the box is taken from them), with "closed" true to ' +
+  'close and fill the shape, and "penColour" (' +
+  `${[INK_PEN_COLOUR, GREY_PEN_COLOUR, ...PEN_COLOUR_NAMES].join(', ')}` +
+  '). A hand-drawn board starts from the "whiteboard" template, a tab in Draw mode: underline a ' +
+  'heading, ring a word, draw an arrow or a doodle with a few strokes, a point every 10 to 20 px ' +
+  'along a curve. Any box may carry "rotation" in degrees, a small tilt (-4 to 4) reading as ' +
+  'placed by hand. type "arrow" needs "from" and "to" endpoints, each ' +
   'either { "kind": "pinned", "elementId", "anchor" } (anchors: ' +
   `${anchors}; preferred, so arrows track their shapes) or ` +
   '{ "kind": "free", "x", "y" }; an arrow may carry a "label". ' +
