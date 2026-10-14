@@ -160,7 +160,7 @@ export function nodeIo(): CliIo {
     openUrl,
     platform: process.platform,
     runTool,
-    // Beside the bundle: dist/ holds livediagram.mjs, resvg.wasm and Inter-Regular.ttf.
+    // Beside the bundle: dist/ holds livediagram.mjs, resvg.wasm, Inter-Regular.ttf and Inter-Bold.otf.
     readAsset: async (name) =>
       new Uint8Array(await readFile(join(dirname(fileURLToPath(import.meta.url)), name))),
     timer: (ms, handler) => {

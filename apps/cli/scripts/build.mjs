@@ -39,6 +39,7 @@ const fonts = join(repo, 'packages/render-png/fonts');
 const ASSETS = [
   { from: requireHere.resolve('@resvg/resvg-wasm/index_bg.wasm'), to: 'resvg.wasm' },
   { from: join(fonts, 'Inter-Regular.ttf'), to: 'Inter-Regular.ttf' },
+  { from: join(fonts, 'Inter-Bold.otf'), to: 'Inter-Bold.otf' },
   { from: join(fonts, 'Inter-OFL.txt'), to: 'Inter-OFL.txt' },
 ];
 for (const { from, to } of ASSETS) await copyFile(from, join(dist, to));

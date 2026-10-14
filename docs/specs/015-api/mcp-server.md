@@ -983,8 +983,9 @@ Worker (no DOM, no React).
   runtime), return it as base64 MCP image content (`image/png`) — broadest client
   support vs. raw SVG.
 - **Embedded font.** Workers have no system fonts, so the worker bundles one
-  (Inter, OFL — `packages/render-png/fonts/`, wired as a `Data` module + passed to resvg as
-  a `fontBuffer`) and renders every label in it. Without an embedded font resvg
+  (Inter, OFL — `packages/render-png/fonts/`, Regular and Bold, wired as `Data` modules + passed to resvg as
+  `fontBuffers`) and renders every label in it; a weight past 500 (a title, a sheet's header row and totals) draws
+  in Bold. Without an embedded font resvg
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
   preview it can't self-check against. A diagram's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.

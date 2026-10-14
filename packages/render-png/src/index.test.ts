@@ -8,15 +8,17 @@ import { createPngRenderer, type PngLoaders } from './index';
 const require = createRequire(import.meta.url);
 const wasmPath = require.resolve('@resvg/resvg-wasm/index_bg.wasm');
 const fontPath = new URL('../fonts/Inter-Regular.ttf', import.meta.url);
+const boldPath = new URL('../fonts/Inter-Bold.otf', import.meta.url);
 
 const loaders = (): PngLoaders => ({
   wasm: vi.fn(() => readFile(wasmPath)),
   font: vi.fn(async () => new Uint8Array(await readFile(fontPath))),
+  bold: vi.fn(async () => new Uint8Array(await readFile(boldPath))),
 });
 
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47];
-const svg = (text: string) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="80"><rect width="200" height="80" fill="#fff"/><text x="10" y="50" font-family="Comic Sans MS" font-size="32">${text}</text></svg>`;
+const svg = (text: string, weight = 400) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="80"><rect width="200" height="80" fill="#fff"/><text x="10" y="50" font-family="Comic Sans MS" font-size="32" font-weight="${weight}">${text}</text></svg>`;
 
 // resvg initialises once per process, so the tests share it: the first one starts with nothing initialised.
 
@@ -40,6 +42,16 @@ describe('createPngRenderer', () => {
     // The same white image with glyphs on it encodes larger than without.
     expect(written.png.length).toBeGreaterThan(empty.png.length + 200);
     expect(l.font).toHaveBeenCalledTimes(1);
+    expect(l.bold).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws a weight past 500 in Inter Bold, not Regular', async () => {
+    const renderer = createPngRenderer(loaders());
+    const regular = await renderer.renderPng(svg('Total'));
+    const bold = await renderer.renderPng(svg('Total', 700));
+    const semibold = await renderer.renderPng(svg('Total', 600));
+    expect(Buffer.from(bold.png).equals(Buffer.from(regular.png))).toBe(false);
+    expect(Buffer.from(semibold.png).equals(Buffer.from(bold.png))).toBe(true);
   });
 
   it('scales, and initialises the wasm once however many renderers ask', async () => {
