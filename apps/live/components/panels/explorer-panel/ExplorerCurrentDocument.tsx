@@ -63,8 +63,22 @@ export function ExplorerCurrentDocument({
         />
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Current Document
+        {/* The badge rides the label's row and the menu the date's, so the name has the card's whole width (a
+            phone's banner left it a dozen characters beside a column of both). */}
+        <span className="flex min-h-5 items-center justify-between gap-2">
+          <span className="truncate text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Current Document
+          </span>
+          {visibility ? (
+            <SharedBadge
+              shareable={visibility.shareable}
+              team={visibility.team}
+              offline={visibility.offline}
+              community={visibility.community}
+              onManage={visibility.onManage}
+              portal
+            />
+          ) : null}
         </span>
         {editing ? (
           <InlineRenameInput
@@ -101,29 +115,19 @@ export function ExplorerCurrentDocument({
             {name}
           </button>
         )}
-        <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-          Updated {relative}
+        <span className="flex min-h-5 items-center justify-between gap-2">
+          <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+            Updated {relative}
+          </span>
+          {hasMenu && !editing ? (
+            <EllipsisTriggerButton
+              {...menu.triggerProps}
+              size="md"
+              className="-my-1 shrink-0"
+              label="Document menu"
+            />
+          ) : null}
         </span>
-      </span>
-      <span className="flex shrink-0 flex-col items-end gap-1.5 self-stretch">
-        {visibility ? (
-          <SharedBadge
-            shareable={visibility.shareable}
-            team={visibility.team}
-            offline={visibility.offline}
-            community={visibility.community}
-            onManage={visibility.onManage}
-            portal
-          />
-        ) : null}
-        {hasMenu && !editing ? (
-          <EllipsisTriggerButton
-            {...menu.triggerProps}
-            size="md"
-            className="mt-auto"
-            label="Document menu"
-          />
-        ) : null}
       </span>
       {menu.open ? (
         <DocumentActionsMenu

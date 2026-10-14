@@ -100,6 +100,8 @@ function ExplorerImpl({
   // The stacked layout (section chips over the pane): on a phone, and in the corner panel that stands beside the
   // new-document wizard and the status screens, which must stay narrow or it covers their card.
   const stacked = isMobile || !asPopover;
+  // A phone's popover is a sheet down to the tab bar, which its chips and pane fill.
+  const sheet = isMobile && !!asPopover;
   // Expansion state for each row of the tree (keyed by folder or team id, or
   // a prefixed key such as `space:my-documents` for the fixed rows).
   // Team rows + team folders share this map too (ids are globally
@@ -225,15 +227,15 @@ function ExplorerImpl({
   }, [liveDocs, teamDocuments, shared]);
   const paneTree: PanelTree = { ...tree, documentById: (id) => documentsById.get(id) };
 
-  // The rail's sections, and the one shown: remembered, else the space holding the open document.
+  // The rail's sections, and the one shown: remembered (Home on each opening of a phone's sheet), else Home.
   const divider = sidebarDivider(minimalChrome);
   const groups = useMemo(
     () => panelSectionGroups({ teams, hasBrowserDocuments: offlineDocuments.length > 0 }),
     [teams, offlineDocuments.length],
   );
-  const [section, pick] = useExplorerPanelSection(groups);
   // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
   const shown = asPopover === true && popoverOpen === true;
+  const [section, pick] = useExplorerPanelSection(groups, { homeOnOpen: sheet, open: shown });
   useEffect(() => {
     if (!shown) return;
     document.body.setAttribute('data-explorer-open', '');
@@ -308,7 +310,9 @@ function ExplorerImpl({
       defaultCorner={isMobile ? 'top-banner' : 'top-left'}
       // Wide enough on a desktop for the rail beside a pane of the Explorer page's own views.
       width={isMobile ? 'w-auto' : 'w-80'}
-      popoverWidth={isMobile ? 'w-[calc(100vw-1rem)]' : 'w-[38rem]'}
+      popoverWidth="w-[38rem]"
+      // On a phone it opens as a sheet: edge to edge, down to the tab bar.
+      popoverSheet={sheet}
       onReset={onReset}
       onMoveTo={onMoveTo}
       // The ⋯ menu (docs/specs/013-workspace/folders.md): new / open, share / export, then search /
@@ -329,7 +333,7 @@ function ExplorerImpl({
       dismissOnOutside={dismissOnOutside}
       collapsible
     >
-      <div className="flex min-h-0 flex-col">
+      <div className={`flex min-h-0 flex-col ${sheet ? 'flex-1' : ''}`}>
         {/* The card, then the sign-in note under it (an onboarding notice: Minimal chrome drops it,
             docs/specs/007-editor/power-user-mode.md). */}
         <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1 empty:hidden">
@@ -341,8 +345,13 @@ function ExplorerImpl({
             on a desktop, the rail a row of section chips over the pane on a phone. */}
         <div
           className={`flex border-t border-slate-200 dark:border-slate-700/70 ${
-            // On a phone the chips and pane share what is left under the panel's top, card and footer, over the tab bar.
-            stacked ? 'max-h-[max(14rem,calc(100dvh-30rem))] flex-col' : 'h-[min(30rem,62vh)]'
+            // On a phone the chips and pane fill what is left of the sheet under its card and over its footer; a
+            // floating stacked panel shares what is left of the screen.
+            sheet
+              ? 'min-h-0 flex-1 flex-col'
+              : stacked
+                ? 'max-h-[max(14rem,calc(100dvh-30rem))] flex-col'
+                : 'h-[min(30rem,62vh)]'
           }`}
         >
           <ExplorerRail

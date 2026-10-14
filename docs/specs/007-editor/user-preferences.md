@@ -409,7 +409,9 @@ Missing key === undefined === default behaviour. Concretely:
   (snapping back to opaque on hover / focus) via the
   `--lvd-panel-opacity` custom property, on every surface: docked,
   popover (the Explorer and cluster popovers), the Map, Quick style
-  and the Toolbar strip. Buttons stay opaque. Emits
+  and the Toolbar strip. Buttons stay opaque. A touch screen (no
+  hover) keeps every panel opaque, since nothing there would bring a
+  faded panel back while it is in use. Emits
   `UI`/`Changed`/`PanelOpacity` on release ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 - `uiScale` undefined / 1 → the chrome at its design size (the default).
   Any other value in 0.8..1.2 draws the panels, the toolbar and the
