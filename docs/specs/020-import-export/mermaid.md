@@ -142,6 +142,9 @@ author]`, `a["Customer account"]`), wherever the entity is named (its block, a r
   layered layout puts the hub at the top with its neighbours round it rather than last with every line reaching
   back to it. A relationship draws an end at each table, so turning it round (its two ends swapped with it) draws
   the same thing; on the bookstore fixtures it took crossings from one to none and shared runs from 280 px to 30.
+  Only the layout sees the turn: each laid-out arrow is turned back after (its ends, heads, bends and label place
+  swapped, the line unchanged), so the stored relationship reads as written (`AUTHOR -> BOOK_AUTHOR "writes"`), never
+  "Book publishes Publisher".
 
 ## Sequence diagrams (agents)
 

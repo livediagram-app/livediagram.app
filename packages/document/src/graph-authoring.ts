@@ -67,6 +67,9 @@ export type GraphEdge = {
   // The ER ends (docs/specs/020-import-export/mermaid.md "ER diagram coverage"): each table's cardinality where the
   // line meets it, its start's and its end's. Set, they take over from `head`.
   er?: { from: ErShape; to: ErShape };
+  // Turned round for the layout only (er-hub-first.ts): the arrow it lays out is turned back after, so the stored
+  // relationship reads as written.
+  turned?: true;
 };
 
 // A named cluster of nodes (docs/specs/020-import-export/mermaid.md: a Mermaid subgraph). Rendered as a

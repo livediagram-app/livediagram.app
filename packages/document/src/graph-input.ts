@@ -46,6 +46,7 @@ import { layoutCycle } from './graph-cycle';
 import { layoutMindmapGraph } from './graph-mindmap';
 import { layoutStormGraph } from './graph-storm';
 import { parseMermaid } from './mermaid';
+import { turnBack } from './er-hub-first';
 import {
   afterWord,
   isSequenceDiagram,
@@ -341,7 +342,7 @@ export function layoutGraph(
     if (style === 'flow' || style === 'lanes') laid = routeLoops(laid, axis, flat, routes);
     laid = withoutNotches(placeElbowLabels(applyRoutes(laid, routes)));
   }
-  return withHeaderAndKey(laid, {
+  return withHeaderAndKey(turnBack(laid, g.edges), {
     ...(g.title ? { title: g.title } : {}),
     ...(g.subtitle ? { subtitle: g.subtitle } : {}),
     ...(g.key ? { key: g.key, flowchart: isFlowchart(g.nodes) } : {}),
