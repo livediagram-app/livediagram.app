@@ -108,7 +108,7 @@ export const pageSet = defineVerb({
   id: 'page.set',
   summary: "Change a tab's Illustrate pages",
   description:
-    "Adds, changes, lays out, moves, duplicates or deletes pages, or gives every page of a kind one page's background, as one edit: --changes takes a JSON list (a file, or - for stdin) of up to 50, or the flags make one. A tab in another mode, named with --tab, is switched into Illustrate.",
+    'Adds, changes, lays out, moves, duplicates or deletes pages, as one edit: --changes takes a JSON list (a file, or - for stdin) of up to 50, or the flags make one. A tab in another mode, named with --tab, is switched into Illustrate.',
   behaviour: 'destructive',
   input: z.object({
     doc: docArg,
@@ -122,10 +122,7 @@ export const pageSet = defineVerb({
     layout: z.string().optional().describe('Lay the page out (a layout id from page ls)'),
     move: z.coerce.number().int().min(1).optional().describe('Move the page to this place'),
     duplicate: z.boolean().optional().describe('Copy the page'),
-    backgroundToAll: z
-      .boolean()
-      .optional()
-      .describe("Give every other page of the page's kind its background"),
+    backgroundToAll: z.boolean().optional().describe('Its background onto every page of its kind'),
     delete: z.boolean().optional().describe('Delete the page and what is on it'),
   }),
   output: doneOutput,
