@@ -1,5 +1,6 @@
 'use client';
 
+import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { openSearchWithPrefetch } from '@/lib/open-search';
@@ -352,7 +353,10 @@ export function EditorCanvasHost() {
     previewCleanup,
     endCleanupPreview,
     assessCleanupKind,
+    commitElements,
   } = useEditorContext();
+  // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
+  const { setPointerTip } = usePointerNoteSetters(commitElements);
   // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
   const drawMode = editorMode.mode === 'draw';
@@ -1117,6 +1121,7 @@ export function EditorCanvasHost() {
           onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
           onSetPageHeading={setPageHeading}
           onSetWebRows={isReadOnly ? undefined : setWebRows}
+          onSetPointerTip={isReadOnly ? undefined : setPointerTip}
           onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
           onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
           onGrowMindNode={growMindNode}

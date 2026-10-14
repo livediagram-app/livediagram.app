@@ -48,6 +48,7 @@ import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
+import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
@@ -108,6 +109,7 @@ function BoxedElementViewImpl({
   onToggleChecklistItem,
   onSetPageHeading,
   onSetWebRows,
+  onSetPointerTip,
   onSetHeroCaptionLine,
   isoDepth,
   insertShiftX,
@@ -534,6 +536,14 @@ function BoxedElementViewImpl({
         element={element}
         stroke={own.stroke ?? defaultStrokeColor(element, surface)}
       />
+      {element.type === 'shape' && element.shape === 'pointer-note' ? (
+        <PointerNoteOverlay
+          element={element}
+          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+          editable={isSelected && !readOnly && !isLocked}
+          onSetTip={onSetPointerTip}
+        />
+      ) : null}
       <ShapeContentRouter
         element={element}
         isEditing={isEditing}

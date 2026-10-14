@@ -244,6 +244,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone added or removed the second line under a boundary's title, such as a network range.",
   'Element|Changed|ConceptRows':
     'Someone added, removed, reordered or renamed the layers, tiers or steps of a layer stack, pyramid or cycle.',
+  'Element|Changed|PointerTip':
+    'Someone moved the tip of a pointer note to a free spot on the board.',
+  'Element|Changed|PointerAttach':
+    'Someone pinned the tip of a pointer note to a corner or edge of a shape.',
+  'Element|Changed|PointerDetach':
+    'Someone let a pointer note go from the shape its tip was pinned to.',
   'Element|Changed|HubSpokes': 'Someone switched the spokes of a hub and spoke graphic on or off.',
   'Element|Changed|PyramidVariant':
     'Someone switched a pyramid between pointing up, pointing down and a funnel.',

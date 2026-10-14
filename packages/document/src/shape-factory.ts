@@ -222,6 +222,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   badge: { width: 40, height: 24 },
   // Step number (docs/specs/009-elements/step-number.md): a small disc.
   step: { width: 28, height: 28 },
+  // Pointer note (docs/specs/009-elements/pointer-note.md): a short note; its tip hangs below it (D190).
+  'pointer-note': { width: 180, height: 64 },
   // Boundary (docs/specs/009-elements/boundary.md): room for a few nodes inside.
   boundary: { width: 480, height: 300 },
   // Concept graphics (docs/specs/009-elements/concept-graphics.md).
@@ -689,6 +691,19 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // Their text is centred with no padding: the face is the pill, the label its word.
   if (kind === 'badge')
     return { ...base, label: 'New', textSize: 'sm', textBold: true, padding: 'none' };
+  if (kind === 'pointer-note')
+    return {
+      ...base,
+      label: 'Stale for 60 s after a price change',
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+      borderRadius: 'md',
+      strokeColor: '#d97706',
+      fillColor: '#fffbeb',
+      textColor: '#78350f',
+      pointerTip: { x: -24, y: 120 },
+    };
   if (kind === 'step')
     return { ...base, aspectLocked: true, textSize: 14, textBold: true, padding: 'none' };
   // Card (docs/specs/009-elements/card.md): every slot but the band on, so the first one shows what a card is made of.

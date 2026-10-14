@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { entityHeight, isValidTab } from './index';
+import { createShape, entityHeight, isValidTab } from './index';
 import {
   lanesToFront,
   mergeElementUpdate,
@@ -183,5 +183,31 @@ describe('mergeElementUpdate', () => {
     const [f] = normaliseElements([merged]) as { packedPoints: string }[];
     expect(f!.packedPoints).not.toBe(packed.packedPoints);
     expect(valid([f])).toBe(true);
+  });
+});
+
+// docs/specs/009-elements/badge.md "Agents": an agent's attached badge (or pointer note) keeps its host through the
+// per-element normalise; a lone element used to be settled on its own, find no host and come back detached.
+describe('attached elements through normaliseElements', () => {
+  it('keeps a badge and a pointer note attached to their host', () => {
+    const host = { ...createShape('square', 100, 100), id: 'host', width: 120, height: 60 };
+    const badge = {
+      ...createShape('badge', 0, 0),
+      id: 'b',
+      attachedTo: 'host',
+      attachAt: 'top-right',
+    };
+    const note = {
+      ...createShape('pointer-note', 300, 20),
+      id: 'n',
+      attachedTo: 'host',
+      attachAt: 'top-left',
+      pointerTip: { x: -200, y: 80 },
+    };
+    const out = normaliseElements([host, badge, note]) as Array<Record<string, unknown>>;
+    expect(out.find((e) => e.id === 'b')!.attachedTo).toBe('host');
+    const n = out.find((e) => e.id === 'n')!;
+    expect(n.attachedTo).toBe('host');
+    expect(n.attachAt).toBe('top-left');
   });
 });

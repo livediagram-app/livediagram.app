@@ -6,13 +6,13 @@ import { WriteRows } from '@/components/illustrations/palette-categories';
 export const metadata = helpMetadata({
   title: 'Write Elements',
   description:
-    'Pick the right element from the palette Write category: a Page for prose, a Text label, a Sticky note or an Annotation, by how much you have to say.',
+    'Pick the right Write element: a Page for prose, a Text label, a Sticky note, an Annotation or a Pointer note, by how much you have to say.',
   path: '/help/palette/write/',
 });
 
 <ArticleLayout
   title="Write Elements"
-  description="The four elements whose content is words rather than a picture."
+  description="The five elements whose content is words rather than a picture."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles('write')}
@@ -20,7 +20,7 @@ export const metadata = helpMetadata({
 
 The **Write** category (in the **Common** band of the palette's category picker) holds the elements whose content is _words_. Everywhere else in the palette you place something with a shape and then maybe label it; here the text is the point and the shape is just what carries it.
 
-They differ mostly in **how much you have to say**. A Page holds paragraphs, a Sticky note holds a thought, a Text label holds a line, and an Annotation holds a remark you have to hover to read. The Page sits first because it is the largest writing surface on the canvas.
+They differ mostly in **how much you have to say**. A Page holds paragraphs, a Sticky note holds a thought, a Text label holds a line, an Annotation holds a remark you have to hover to read, and a Pointer note holds a remark about one spot, joined to it by a line. The Page sits first because it is the largest writing surface on the canvas.
 
 ## What the category contains
 
@@ -28,6 +28,7 @@ They differ mostly in **how much you have to say**. A Page holds paragraphs, a S
 - A **Text** element is a free-standing label with no box around it: just words on the canvas. `T` drops one. Use it for titles, column headings, and anything that labels a _region_ rather than an element, since a shape's own label is the better way to name a shape. See [Text and Fonts](/help/canvas/text-and-fonts/).
 - A **Sticky note** is a coloured note card, the one that reads as somebody's contribution rather than the author's structure. `N` drops one. It is what retros, brainstorms and dot votes are made of, and it is what an [idea box](/help/palette/collaborate/idea-boxes/) scatters into. See [Sticky Notes](/help/palette/tools/sticky-notes/).
 - An **Annotation** is a small marker you drop on the canvas that holds a note. Hover it to read, double-click to edit. It is the one that keeps its text _out_ of the way: the remark lives inside the marker instead of taking up canvas. See [Annotations](/help/canvas/annotations/).
+- A **Pointer note** is a short note with a line out to a dot. Drag the dot onto a corner or edge of a shape and the note follows that shape wherever it moves: use it for "this is where it fails" remarks.
 
 ## In other editor modes
 
@@ -59,7 +60,7 @@ If the diagram is incomplete without the words, use one of the three surfaces. I
 
 ## Tiles on the strip, rows in More
 
-Most catalogue categories show a grid of pictures, because the picture is the explanation. These four are all rectangles with text in them, so at tile size they look nearly alike. On the [palette strip](/help/palette/toolbar-layout/) the four show as tiles, with a divider between the two text surfaces (Page, Text) and the two notes (Note, Annotation); hover one to read what it is. On a narrow screen, where they don't all fit, **More** lists them as rows with a one-line description each, because "a paper-shaped page for prose" against "a marker that holds a note" is what you are actually choosing between.
+Most catalogue categories show a grid of pictures, because the picture is the explanation. These five are all rectangles with text in them, so at tile size they look nearly alike. On the [palette strip](/help/palette/toolbar-layout/) the five show as tiles, with a divider between the two text surfaces (Page, Text) and the notes (Note, Annotation, Pointer note); hover one to read what it is. On a narrow screen, where they don't all fit, **More** lists them as rows with a one-line description each, because "a paper-shaped page for prose" against "a marker that holds a note" is what you are actually choosing between.
 
 <Figure caption="The Write category as rows, the way More lists it on a narrow screen: Page, Text, Note and Annotation, each with the line that tells them apart.">
   <WriteRows />

@@ -16,6 +16,7 @@
 import dynamic from 'next/dynamic';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
+import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
 import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import {
@@ -231,6 +232,7 @@ export function ElementDataSections({
     hasWebRowsSection(target) ||
     isChip ||
     shapeTarget?.shape === 'boundary' ||
+    shapeTarget?.shape === 'pointer-note' ||
     (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isProgress ||
     isRail ||
@@ -462,6 +464,14 @@ export function ElementDataSections({
               stepsInOrder={props.elements.some(
                 (el) => el.type === 'shape' && el.shape === 'step' && el.stepSequence === true,
               )}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A pointer note's Detach (docs/specs/009-elements/pointer-note.md). */}
+          {shapeTarget?.shape === 'pointer-note' ? (
+            <PointerNoteMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
               sectionProps={sectionProps}
             />
           ) : null}

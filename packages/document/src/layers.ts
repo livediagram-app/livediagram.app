@@ -73,7 +73,11 @@ function paintTier(el: Element): number {
   if (el.type === 'shape' && (el.shape === 'frame' || el.shape === 'boundary')) return 0;
   // An attached badge or step number (docs/specs/009-elements/badge.md) sits above everything in its band, so a
   // later element never covers the mark on its host.
-  if (el.type === 'shape' && el.attachedTo && (el.shape === 'badge' || el.shape === 'step'))
+  if (
+    el.type === 'shape' &&
+    el.attachedTo &&
+    (el.shape === 'badge' || el.shape === 'step' || el.shape === 'pointer-note')
+  )
     return 4;
   const kind = eventStormingKindOf(el);
   if (kind === 'actor') return 2;

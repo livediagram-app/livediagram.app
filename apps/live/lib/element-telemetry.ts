@@ -76,6 +76,7 @@ const SHAPE_TOKENS: Record<string, string> = {
   // Badge and Step number (docs/specs/009-elements/badge.md).
   badge: 'Badge',
   step: 'Step',
+  'pointer-note': 'PointerNote',
   // Boundary (docs/specs/009-elements/boundary.md).
   boundary: 'Boundary',
   // Concept graphics (docs/specs/009-elements/concept-graphics.md).

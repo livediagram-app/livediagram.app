@@ -422,6 +422,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Actor',
     'Frame',
     'Annotation',
+    // Pointer note (docs/specs/009-elements/pointer-note.md): a Write element beside Annotation.
+    'PointerNote',
     'LinkCard',
     // Every embed tile (YouTube / Vimeo / Loom / Figma / Google Docs / the
     // website embed, docs/specs/009-elements/website-embed.md) creates a `video` element, and all six report

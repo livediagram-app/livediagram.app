@@ -147,6 +147,7 @@ describe('palette layouts', () => {
     expect(tilesOf('write')).toEqual([
       'tools:text',
       'tools:sticky',
+      'tools:pointer-note',
       'tools:table',
       'tools:checklist',
       'tools:frame',
@@ -198,7 +199,11 @@ describe('palette layouts', () => {
   it('holds the same tile in different categories per mode: Page is in Write for Diagram only', () => {
     expect(tileIds('diagram', 'write')).toContain('tools:page');
     expect(tileIds('illustrate', 'write')).not.toContain('tools:page');
-    expect(tileIds('illustrate', 'write')).toEqual(['tools:text', 'tools:sticky']);
+    expect(tileIds('illustrate', 'write')).toEqual([
+      'tools:text',
+      'tools:sticky',
+      'tools:pointer-note',
+    ]);
   });
 
   it('leaves mind nodes, lanes, frames, annotations and entities out of Illustrate', () => {

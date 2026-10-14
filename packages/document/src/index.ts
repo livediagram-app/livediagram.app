@@ -403,6 +403,7 @@ export * from './accent-edge';
 export * from './card';
 export * from './chip';
 export * from './attachment';
+export * from './pointer-note';
 export * from './boundary';
 export * from './concept';
 export * from './concept-ramp';

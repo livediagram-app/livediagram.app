@@ -12,9 +12,16 @@ import { migrateLegacyTextSizing } from './legacy-text-sizing';
 import type { Element } from './index';
 
 export function migrateStoredElements(elements: Element[]): Element[] {
-  // Badges and step numbers read settled (docs/specs/009-elements/badge.md): fitted, numbered and on their hosts'
-  // points, whoever wrote them, without attaching a loose one that merely sits near a corner.
-  const migrated = stampLegacyEsKinds(
+  // Badges, step numbers and pointer notes read settled (docs/specs/009-elements/badge.md): fitted, numbered and on
+  // their hosts' points, whoever wrote them, without attaching a loose one that merely sits near a corner.
+  return settleChips([], migrateStoredElementsUnsettled(elements), { attachLoose: false });
+}
+
+/** The stored-element migrations without the settle: for ONE element at a time (normaliseElement), whose host is not
+ *  in its one-element list, so settling it alone would detach every badge, step and pointer note from its host. The
+ *  whole list is settled afterwards. */
+export function migrateStoredElementsUnsettled(elements: Element[]): Element[] {
+  return stampLegacyEsKinds(
     migrateLegacyModeButtons(
       migrateLegacyTextSizing(
         migrateLegacyStrokePoints(
@@ -23,5 +30,4 @@ export function migrateStoredElements(elements: Element[]): Element[] {
       ),
     ),
   );
-  return settleChips([], migrated, { attachLoose: false });
 }

@@ -1680,6 +1680,27 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The pointer note (docs/specs/009-elements/pointer-note.md): a note whose leader's tip pins to a point on a shape.
+    id: 'tools:pointer-note',
+    blurb: 'A note that points at a spot',
+    caption: 'Pointer Note',
+    section: 'tools',
+    toolGroup: 'write',
+    label: 'Add Pointer Note',
+    description:
+      'Pointer note. A short note with a line to a dot; drag the dot onto a corner or edge of a shape and the note follows it.',
+    filled: true,
+    action: { type: 'shape', kind: 'pointer-note' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="9" y="3" width="12.5" height="8" rx="2" />
+        <path d="M11.5 6h7.5M11.5 8.5h4.5" />
+        <path d="M9 11 4.5 18" />
+        <circle cx="4" cy="19" r="1.6" fill="currentColor" />
+      </Glyph>
+    ),
+  },
+  {
     id: 'tools:link-card',
     blurb: 'A clickable preview of a link',
     // Navigate (docs/specs/010-palette/palette-top-level-categories.md), beside Portal and Chair: the group is what an

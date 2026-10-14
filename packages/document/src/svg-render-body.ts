@@ -39,6 +39,7 @@ import { isChipShape } from './chip';
 import { svgChip } from './svg-render-chip';
 import { svgBoundary } from './svg-render-boundary';
 import { svgConcept } from './svg-render-concept';
+import { svgPointerNote } from './svg-render-pointer-note';
 import { isConceptShape } from './concept';
 import type { BoxedElement, ShapeKind } from './index';
 import { defaultTextColor, type CanvasSurface } from './colors';
@@ -54,6 +55,7 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     isWebComponentShape(kind) ||
     isChipShape(kind) ||
     kind === 'boundary' ||
+    kind === 'pointer-note' ||
     isConceptShape(kind) ||
     kind === 'entity' ||
     kind === 'page' ||
@@ -111,6 +113,8 @@ export function svgElementBody(
   // A layer stack, pyramid or cycle's rows (docs/specs/009-elements/concept-graphics.md).
   if (isConceptShape(el.shape))
     return svgConcept(el, { stroke, fill, labelColor, label, fontFamily });
+  // A pointer note's leader and tip (docs/specs/009-elements/pointer-note.md); its box and label are the usual.
+  if (el.shape === 'pointer-note') return svgPointerNote(el, { stroke });
   // A boundary's tint and title (docs/specs/009-elements/boundary.md).
   if (el.shape === 'boundary')
     return svgBoundary(el, {

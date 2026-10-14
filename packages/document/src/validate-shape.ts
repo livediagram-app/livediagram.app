@@ -45,6 +45,7 @@ import { isCodeThemeId } from './code-themes';
 import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
 import { isChipLook } from './chip';
 import { isAttachPoint } from './attachment';
+import { isPointerTip } from './pointer-note';
 import { isBoundaryStyle } from './boundary';
 import { isPyramidVariant } from './concept';
 import { isChartPaletteId } from './chart-palettes';
@@ -275,6 +276,13 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'attachedTo', valid: isNonEmptyStr, rule: 'an element id' },
   { field: 'attachAt', valid: isAttachPoint, rule: oneOfRule(ATTACH_POINTS_RULE) },
   flag('stepSequence'),
+  {
+    field: 'pointerTip',
+    // Read at call time: pointer-note.ts sits on an import cycle with attachment.ts, so it may not be loaded yet
+    // when this table is built.
+    valid: (v: unknown) => isPointerTip(v),
+    rule: 'an { x, y } of finite numbers within ±4000',
+  },
   flag('hubSpokes'),
   // Boundary (docs/specs/009-elements/boundary.md).
   { field: 'boundaryStyle', valid: isBoundaryStyle, rule: oneOfRule(['tab', 'inset', 'c4']) },

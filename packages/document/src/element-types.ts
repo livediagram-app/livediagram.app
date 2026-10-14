@@ -462,6 +462,8 @@ export type ShapeElement = {
   attachedTo?: ElementId;
   attachAt?: AttachPoint;
   stepSequence?: boolean;
+  // A pointer note's tip, relative to its top-left (docs/specs/009-elements/pointer-note.md).
+  pointerTip?: { x: number; y: number };
   // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
   boundaryStyle?: BoundaryStyle;
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows (a layer, tier or step each, with an

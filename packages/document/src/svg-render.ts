@@ -126,6 +126,7 @@ import { themeChartPalette } from './theme-presets';
 import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
 import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
+import { isPointerNote, pointerTipOf } from './pointer-note';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -148,6 +149,14 @@ export function contentBounds(
       }
     } else {
       points.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
+      // A pointer note's tip can sit well outside its box (docs/specs/009-elements/pointer-note.md).
+      if (isPointerNote(el)) {
+        const t = pointerTipOf(el);
+        points.push(
+          { x: el.x + t.x - 4, y: el.y + t.y - 4 },
+          { x: el.x + t.x + 4, y: el.y + t.y + 4 },
+        );
+      }
     }
   }
   const b = boundsOfPoints(points);

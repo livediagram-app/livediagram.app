@@ -187,7 +187,7 @@ export const PALETTE_CATEGORIES: {
     id: 'write',
     label: 'Write',
     group: 0,
-    description: 'The wordy elements: pages, text, sticky notes, and annotations.',
+    description: 'The wordy elements: pages, text, sticky notes, annotations and pointer notes.',
     icon: <WriteTabIcon />,
   },
   {

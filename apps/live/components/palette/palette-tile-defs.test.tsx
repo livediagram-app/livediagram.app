@@ -132,7 +132,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   popular: 0,
   shapes: 13,
   build: 8,
-  write: 4,
+  write: 5,
   draw: 6,
   // The Pen alone: the layout adds the Pencil and each person's markers (palette-layouts, PaletteLogoTab).
   logo: 1,

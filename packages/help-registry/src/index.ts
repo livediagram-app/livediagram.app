@@ -1072,9 +1072,10 @@ export const articles: Article[] = [
   {
     slug: 'write',
     title: 'Write Elements',
-    description: 'Page, Text, Sticky note and Annotation: the elements whose content is words.',
+    description:
+      'Page, Text, Sticky note, Annotation and Pointer note: the elements made of words.',
     keywords:
-      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose event storming domain event command actor policy read model aggregate hotspot brandolini ddd workshop notation',
+      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader event storming domain event command actor policy read model aggregate hotspot brandolini ddd workshop notation',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
