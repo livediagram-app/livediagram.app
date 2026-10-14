@@ -128,7 +128,8 @@ open would still have its element moves refused by `applyParticipantOp`.
 
 - Opening the popover costs one render of six buttons and five static SVGs; nothing is computed until a hover.
 - A hover runs `cleanupElements` once over the tab. Measured in `tab-cleanup.perf.test.ts` (D83): budget
-  `TIDY_PREVIEW_BUDGET_MS` per run at `TIDY_PREVIEW_WORST_CASE_NODES` wired nodes. Measured on an M-series Mac,
+  `TIDY_PREVIEW_BUDGET_MS` per run at `TIDY_PREVIEW_WORST_CASE_NODES` wired nodes, widened by `cpuBudgetMs` on CI
+  (whose coverage-instrumented runners measure Smart at about 100 ms, against 24 ms on an M-series Mac). Measured on an M-series Mac,
   best of three, with the tidy profile: the checkout template 0.2 to 1.4 ms per tidier; 50 nodes Smart 7 ms;
   100 nodes Smart 18 ms; 300 nodes (one pass, past `SETTLE_ELEMENT_LIMIT`) Smart about 40 ms, Tree 52 ms,
   Mindmap 5 ms, Auto-align 3.6 ms. Crossing reduction builds each node's neighbours once and buckets edges by rank

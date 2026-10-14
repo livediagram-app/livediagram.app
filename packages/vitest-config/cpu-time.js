@@ -32,3 +32,23 @@ export async function cpuMsOfAsync(fn) {
   const spent = process.cpuUsage(before);
   return (spent.user + spent.system) / 1000;
 }
+
+/**
+ * How much slower a CI runner runs the same work than a developer's machine. CI's shared
+ * two-core runners run the editor suite under v8 coverage, and measured the Tidy Up hover at
+ * 101 to 104 ms of CPU where an M-series Mac takes 24 (main, 2026-10-14): about 4x. A budget
+ * set for a person's device sits at the line there and turned main red at random.
+ */
+export const CI_CPU_HEADROOM = 3;
+
+/**
+ * A speed test's CPU budget: `ms` as written on a developer's machine, `ms x CI_CPU_HEADROOM` on
+ * CI (`CI` set, as GitHub Actions sets it). The written number stays the product's own budget and
+ * holds wherever it is meaningful; CI still fails a slide past three times it.
+ *
+ * @param {number} ms
+ * @returns {number}
+ */
+export function cpuBudgetMs(ms) {
+  return process.env.CI ? ms * CI_CPU_HEADROOM : ms;
+}
