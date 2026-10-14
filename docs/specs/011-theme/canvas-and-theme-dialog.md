@@ -242,5 +242,7 @@ the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (th
   bottom-right corner sits 8 px above the button, its right edge on the bottom-right cluster's (the right of the zoom
   controls, so it sits as far right as the cluster and covers as little of the work as it can), and it grows from that corner (the long motion
   token's `fly-up-in`; a fade alone with reduced motion), at most as tall as the room above the button. Without the
-  button on screen, or on a phone, it is the centred (phone: full-screen) dialog.
+  button on screen it is the centred dialog. On a phone it is a **bottom sheet**, as the editor's other phone sheets
+  are: the screen's width, rising from the bottom edge (`sheet-up`), at most 75% of the screen tall so the canvas stays
+  in view above it, with the shared grab handle that drags it taller or down to close.
 - The dialog follows the existing modal contract (`Portal` + `useEscape` + a full-screen click-catcher, see `SettingsDialog`) — but with **no dimming / blur backdrop**: because every control applies live, the catcher is left transparent so the user can watch the canvas background + theme update behind the dialog as they click. The catcher still closes on an outside click and swallows pointer / right-click events so an edit doesn't leak to the canvas while it's open.
