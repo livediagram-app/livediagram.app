@@ -17,6 +17,7 @@ import dynamic from 'next/dynamic';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
+import { TabWindowMenuSection } from '@/components/palette/TabWindowMenuSection';
 import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import {
   isChipShape,
@@ -442,6 +443,14 @@ export function ElementDataSections({
           {shapeTarget && isConceptShape(shapeTarget.shape) ? (
             <ConceptMenuSection
               target={shapeTarget as ShapeElement & { shape: ConceptShape }}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A tab window's tab, and opening it (docs/specs/009-elements/tab-window.md). */}
+          {shapeTarget?.shape === 'tab-window' ? (
+            <TabWindowMenuSection
+              target={shapeTarget}
               ops={props.elementStyle}
               sectionProps={sectionProps}
             />

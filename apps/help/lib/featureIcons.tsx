@@ -532,6 +532,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M10.25 10.5v6.5M7.75 14.5l2.5 2.5 2.5-2.5" />
     </Glyph>
   ),
+  // A slide with a window onto a small diagram: another tab shown live inside it.
+  'tab-windows': (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
+      <rect x="6.5" y="8" width="11" height="8" rx="1" />
+      <circle cx="9.5" cy="12" r="1.25" />
+      <circle cx="14.5" cy="12" r="1.25" />
+      <path d="M10.75 12h2.5" />
+    </Glyph>
+  ),
   'using-tabs': (
     <Glyph>
       <Prims prims={lucidePanelsTopLeft} />

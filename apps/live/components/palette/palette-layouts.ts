@@ -78,8 +78,8 @@ const WRITE_WITH_COMMENTS = [
 // The diagram-building elements Diagram's Build adds to the category's own tiles.
 const DIAGRAM_BUILD_EXTRAS = ['components:card', 'components:badge', 'components:step'];
 
-// Image and Avatar; no embedded pages.
-const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);
+// Image and Avatar; no embedded pages, and no Tab Window (an Illustrate element, docs/specs/009-elements/tab-window.md).
+const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES, 'media:tab-window');
 
 // Diagram mode: Popular, then every category but the mock-up kit (Components, Devices), the charts
 // (Data) and the session kit (Stickers, Collaborate: Facilitate's, docs/specs/012-collaboration/

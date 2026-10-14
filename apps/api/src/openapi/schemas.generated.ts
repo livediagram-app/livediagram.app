@@ -4481,6 +4481,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "tab-window": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "tablet": {
             "additionalProperties": false,
             "properties": {
@@ -12464,6 +12479,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "width": {
         "type": "number"
       },
+      "windowTabId": {
+        "type": "string"
+      },
       "x": {
         "type": "number"
       },
@@ -12509,6 +12527,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "site-header",
       "mode-button",
       "portal",
+      "tab-window",
       "session-button",
       "reveal",
       "picker",
