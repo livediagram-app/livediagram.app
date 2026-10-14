@@ -28,6 +28,7 @@ Each **lint finding** has a code, a severity, the refs involved and a fix phrase
 | `flow-backwards`    | info     | Arrows point against the flow direction (not one that closes a loop: a retry runs back by design)                                                                  |
 | `aspect-extreme`    | info     | The drawing is more than `LINT_MAX_ASPECT` times wider than tall, or the reverse                                                                                   |
 | `colour-on-themed`  | info     | A fill or stroke the tab's theme would not paint, on an element the theme colours, bound to no preset or swatch (stickies, and a mind map's branch hues, excepted) |
+| `text-overflow`     | warning  | An Illustrate tab only: a page's text needs more lines than its box holds, or two texts print over each other (text on a page is its content, not a caption)       |
 
 - The error codes judge the diagram's graph. Boxes no arrow connects are decoration (an icon on a card, a sticker,
   a Venn circle) and may overlap by design; a line with both ends free is a drawing, not a broken arrow. The

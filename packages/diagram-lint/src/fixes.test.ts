@@ -58,11 +58,36 @@ const DRAWINGS: Element[][] = [
   [box('a', 0, 0, { fillColor: '#123456', strokeColor: '#654321' })],
 ];
 
+// The codes only an Illustrate tab is linted for, each on a page's text.
+const PAGE_DRAWINGS: Element[][] = [
+  [
+    {
+      id: 'a',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 40,
+      label: 'A heading long enough to wrap onto three or more lines in its box',
+      textSize: 'lg',
+    } as Element,
+  ],
+  [
+    { id: 'a', type: 'text', x: 0, y: 0, width: 200, height: 40, label: 'One' } as Element,
+    { id: 'b', type: 'text', x: 0, y: 20, width: 200, height: 40, label: 'Two' } as Element,
+  ],
+];
+
 describe('tab fixes', () => {
-  const findings = DRAWINGS.flatMap((elements) => {
-    const tab: Tab = { id: 't', name: 'T', theme: 'ocean', elements };
-    return lint(tab).findings.map((finding) => ({ finding, tab }));
-  });
+  const findings = [
+    ...DRAWINGS.map((elements): Tab => ({ id: 't', name: 'T', theme: 'ocean', elements })),
+    ...PAGE_DRAWINGS.map((elements): Tab => ({
+      id: 't',
+      name: 'T',
+      opensIn: 'illustrate',
+      elements,
+    })),
+  ].flatMap((tab) => lint(tab).findings.map((finding) => ({ finding, tab })));
 
   it('cover every code', () => {
     expect(new Set(findings.map(({ finding }) => finding.code))).toEqual(new Set(LINT_CODES));
