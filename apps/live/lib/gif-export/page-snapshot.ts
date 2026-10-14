@@ -134,8 +134,25 @@ export async function snapshotPage(
     `<div style="position:absolute;left:0;top:0;width:${rootBox.width}px;height:${rootBox.height}px;` +
     `transform:${cropTransform(pageBox, rootBox, scale, inset)};transform-origin:0 0">${body}</div></div></foreignObject></svg>`;
   // Encoded once: a frame encodes only its pinning rules (a URL-encoding of parts is the encoding of the whole).
-  const headUrl = SVG_URL + encodeURIComponent(head);
-  const tailUrl = encodeURIComponent(tail);
+  return heldSnapshot(
+    SVG_URL + encodeURIComponent(head),
+    encodeURIComponent(tail),
+    animated,
+    width,
+    height,
+  );
+}
+
+/** The snapshot a GIF holds while its frames are drawn: the encoded markup and the animations, nothing else. Built
+ *  outside snapshotPage on purpose: a closure made in there would share its scope with the clone and the live nodes
+ *  (an engine keeps one context for every closure of a scope), and keep the whole cloned page alive per page. */
+function heldSnapshot(
+  headUrl: string,
+  tailUrl: string,
+  animated: readonly AnimatedNode[],
+  width: number,
+  height: number,
+): PageSnapshot {
   return {
     animated: animated.length > 0,
     width,
