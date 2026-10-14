@@ -166,7 +166,7 @@ export function week1Email(env: Env): RenderedEmail {
       points: [
         '<strong>Folders</strong> group related documents; drag to sort, and collapse folders you’re not using.',
         '<strong>Search and Recents</strong> jump you straight back to what you were working on.',
-        '<strong>Share or export</strong> right from the grid: a view-only or editor link, or a PDF / PNG / SVG / Markdown copy.',
+        '<strong>Share</strong> right from the grid with a view-only or editor link, and open a document to export a PDF / PNG / SVG / Markdown copy.',
       ],
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
