@@ -3,7 +3,8 @@
 Follow the references below only as needed; never upfront.
 
 - ./annotations.md - when implementing or changing the annotation marker, its hover preview or its note
-- ./chair.md - when implementing or changing the chair, its facing, seating or the Stand press
+- ./chair.md - when implementing or changing the chair, desk or sofa, their facing, seating or the Stand press
+- ./fence.md - when implementing or changing the fence, its drawing or how it blocks Avatar-mode walking
 - ./checklist.md - when implementing or changing the checklist, its ticks, row editor or render
 - ./code-block.md - when implementing or changing the code block, its schemes, tokenizer, wrap or edit dialog
 - ./data-charts.md - when implementing or changing pie / bar / line charts, chart palettes, the key or the legend element

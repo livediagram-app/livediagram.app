@@ -3746,6 +3746,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "desk": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "diagram-key": {
             "additionalProperties": false,
             "properties": {
@@ -3822,6 +3837,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "estimate": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "fence": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -4452,6 +4482,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "smartwatch": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "sofa": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -12806,6 +12851,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "action-card",
       "done-check",
       "chair",
+      "fence",
+      "desk",
+      "sofa",
       "estimate",
       "temperature",
       "idea-box",

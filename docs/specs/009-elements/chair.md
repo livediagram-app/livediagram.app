@@ -89,6 +89,32 @@ reaches D1 or undo.
 - A peer who leaves the mode, changes tab or disconnects vacates every chair
   for free, because their presence went away.
 
+## Desk and sofa
+
+Two more pieces of furniture seat a character exactly as a chair does, beside it in **Navigate**:
+
+- **Desk** (shape kind `desk`): a chair pulled up to a desk with a computer on it, the monitor's
+  screen toward the room. Whoever sits at it **faces the computer**, so a new desk is placed with
+  the desk at the back and the chair in front: `chairFacing` `'s'`, the sitter facing up the canvas
+  with their back to the room.
+- **Sofa** (shape kind `sofa`): a two-seater, a long back, two arms and two cushions. It has **two
+  seat points**, and a character walking in sits on the one **nearest where it arrived**: walk in
+  from the left, take the left cushion. A new sofa faces the reader (`'n'`).
+
+Both share the chair's rules unchanged: the same `chairFacing` field and **Desk** / **Sofa**
+menu section (the Chair section, titled for the furniture it is on), arrival seating through the
+same walk hook, the same seated guards and ways of standing, and occupancy as presence (one ring in
+the first sitter's colour, names above). Two people may share a cushion, as they may a chair.
+
+Where they differ from the chair:
+
+- **Drawn turned, not stretched.** Neither is square, so turning one a quarter (Down to Left, say)
+  **swaps its box about its centre** as well as turning the drawing, so a sofa against a side wall
+  is a tall sofa rather than a squashed one. A chair is square enough to turn in place, as before.
+- **Aspect locked** to their drawings, like the chair.
+- **One drawing, on the canvas and in an export**: the desk and the sofa are a shared table of
+  parts in `@livediagram/document` (`FURNITURE_ART`) that both renderers paint.
+
 ## Not in scope
 
 - **No walk-to-the-nearest-free-chair.** Sit where you walked.

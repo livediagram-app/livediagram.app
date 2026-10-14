@@ -232,6 +232,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8 15v5.5M16 15v5.5" />
     </Glyph>
   ),
+  // Three pointed pickets on two rails: a fence, not a grid.
+  fences: (
+    <Glyph>
+      <path d="M5 20V7l1.5-2.5L8 7v13M11 20V7l1.5-2.5L14 7v13M17 20V7l1.5-2.5L20 7v13" />
+      <path d="M3 10.5h18M3 15.5h18" />
+    </Glyph>
+  ),
   lanes: (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />

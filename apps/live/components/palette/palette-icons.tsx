@@ -333,6 +333,37 @@ export function ChairIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
+// Desk, sofa and fence (docs/specs/009-elements/chair.md, fence.md): drawn in-house on the 24-unit
+// frame, the same silhouettes the canvas draws: a monitor on a desk, a two-seat sofa, posts and rails.
+export function DeskIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="7" y="3" width="10" height="7" rx="1" />
+      <path d="M12 10v2.5M2.5 13h19M5 13v8M19 13v8" />
+      <path d="M9.5 17h5v4" />
+    </Glyph>
+  );
+}
+
+export function SofaIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M5 11V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4" />
+      <path d="M3 11a2 2 0 0 1 2 2v1h14v-1a2 2 0 1 1 2 2v3H3v-3a2 2 0 0 1 0-4z" />
+      <path d="M12 14v4M5 18v2M19 18v2" />
+    </Glyph>
+  );
+}
+
+export function FenceIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M4 6l1.5-2L7 6v14H4zM10.5 6L12 4l1.5 2v14h-3zM17 6l1.5-2L20 6v14h-3z" />
+      <path d="M2 10h20M2 15h20" />
+    </Glyph>
+  );
+}
+
 export function EstimateIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>

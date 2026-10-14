@@ -173,6 +173,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   sticker: ['stickerId'],
   estimate: ['estimateScale'],
   chair: ['chairFacing'],
+  desk: ['chairFacing'],
+  sofa: ['chairFacing'],
   portal: ['portalTarget'],
   // docs/specs/009-elements/tab-window.md: which tab the window shows.
   'tab-window': ['windowTabId'],

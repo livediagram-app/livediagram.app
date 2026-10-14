@@ -22,7 +22,6 @@ import {
   DECISION_STATUSES,
   DECISION_STATUS_COLORS,
   DECISION_STATUS_LABELS,
-  DEFAULT_CHAIR_FACING,
   DEFAULT_DECISION_STATUS,
   DEFAULT_ESTIMATE_SCALE,
   ESTIMATE_SCALES,
@@ -36,6 +35,9 @@ import {
   type DecisionStatus,
   type EstimateScale,
   type ShapeElement,
+  isSeatingShape,
+  seatingFacing,
+  type SeatingKind,
 } from '@livediagram/document';
 import { DateInput } from '@livediagram/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
@@ -325,6 +327,9 @@ export function DecisionMenuSection({
 
 const FACING_ARROW: Record<ChairFacing, string> = { n: '↓', e: '←', s: '↑', w: '→' };
 
+// The section's title and hint name the furniture it is on (docs/specs/009-elements/chair.md).
+const SEATING_NOUN: Record<SeatingKind, string> = { chair: 'Chair', desk: 'Desk', sofa: 'Sofa' };
+
 export function ChairMenuSection({
   target,
   sectionProps,
@@ -334,9 +339,11 @@ export function ChairMenuSection({
   sectionProps: (id: string) => { open: boolean; onToggle: () => void };
   onSetFacing: (facing: ChairFacing) => void;
 }) {
-  const facing = target?.chairFacing ?? DEFAULT_CHAIR_FACING;
+  const kind = target && isSeatingShape(target.shape) ? target.shape : 'chair';
+  const facing = seatingFacing({ shape: kind, chairFacing: target?.chairFacing });
+  const noun = SEATING_NOUN[kind];
   return (
-    <MenuAccordionSection title="Chair" icon={<ToolsMenuGlyph />} {...sectionProps('chair')}>
+    <MenuAccordionSection title={noun} icon={<ToolsMenuGlyph />} {...sectionProps('chair')}>
       {/* Tiles rather than a list: the arrow IS the answer here, which is the
           same test the palette applies to its own categories (docs/specs/010-palette/palette-top-level-categories.md). */}
       <MenuTileGrid cols={4}>
@@ -355,8 +362,8 @@ export function ChairMenuSection({
         ))}
       </MenuTileGrid>
       <p className="px-2 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-        Which way somebody sitting here faces. Walk an Avatar-mode character into the chair to sit
-        down.
+        Which way somebody sitting here faces. Walk an Avatar-mode character into the{' '}
+        {noun.toLowerCase()} to sit down.
       </p>
     </MenuAccordionSection>
   );

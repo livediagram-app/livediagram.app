@@ -27,6 +27,7 @@ import { iconCaptionBand } from './icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
+import { isSeatingShape } from './seating';
 import { isSelfDrawingShape } from './data-shapes';
 import { isWebComponentShape } from './web-components';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
@@ -435,7 +436,7 @@ export function selfLabelled(el: BoxedElement): boolean {
   return (
     (isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
     isCollabPanelShape(el.shape) ||
-    (BEHAVIOUR_FACE_SHAPES.has(el.shape) && el.shape !== 'chair') ||
+    (BEHAVIOUR_FACE_SHAPES.has(el.shape) && !isSeatingShape(el.shape)) ||
     isWebComponentShape(el.shape) ||
     // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
     el.shape === 'boundary' ||

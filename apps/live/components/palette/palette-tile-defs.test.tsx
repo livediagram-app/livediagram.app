@@ -152,7 +152,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-record': 5,
   'collab-react': 5,
   'collab-mode': 8,
-  'collab-navigate': 4,
+  'collab-navigate': 7,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
   // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): nine boards, one

@@ -287,6 +287,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone changed a selected element's border pattern: solid, dashed, or dotted.",
   'Element|Changed|Chair':
     'Someone changed which way a Chair element faces, on a meeting-room layout board.',
+  'Element|Changed|Desk':
+    'Someone changed which way a Desk element faces, so whoever sits at it looks another way.',
+  'Element|Changed|Sofa': 'Someone changed which way a Sofa element faces.',
   'Element|Changed|ChartAnim':
     'Someone gave a selected chart a looping reveal animation, changed its speed, or turned it off.',
   'Element|Changed|ChartData': "Someone edited a chart element's underlying data.",

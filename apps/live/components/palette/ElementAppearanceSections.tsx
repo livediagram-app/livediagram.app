@@ -42,6 +42,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
+  isSeatingShape,
 } from '@livediagram/document';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
@@ -148,7 +149,8 @@ export function ElementAppearanceSections({
   const isEstimate = target.type === 'shape' && target.shape === 'estimate';
   const isAgenda = target.type === 'shape' && target.shape === 'agenda';
   const isDecision = target.type === 'shape' && target.shape === 'decision';
-  const isChair = target.type === 'shape' && target.shape === 'chair';
+  // A desk and a sofa share the chair's facing section (docs/specs/009-elements/chair.md "Desk and sofa").
+  const isChair = target.type === 'shape' && isSeatingShape(target.shape);
   // The Text band (docs/specs/008-canvas/canvas-and-palette.md): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.

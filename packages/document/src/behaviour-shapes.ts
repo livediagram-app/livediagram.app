@@ -21,6 +21,10 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'picker',
   'reaction-pad',
   'chair',
+  // Fence (docs/specs/009-elements/fence.md): it does nothing until a character walks into it.
+  'fence',
+  'desk',
+  'sofa',
   'done-check',
   'estimate',
   // Quiz (docs/specs/012-collaboration/quiz.md).
@@ -92,6 +96,9 @@ export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
   if (
     kind === 'focus-button' ||
     kind === 'chair' ||
+    kind === 'desk' ||
+    kind === 'sofa' ||
+    kind === 'fence' ||
     kind === 'reveal' ||
     kind === 'comment-pin' ||
     kind === 'action-card'
