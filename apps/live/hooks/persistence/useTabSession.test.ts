@@ -181,7 +181,7 @@ describe('while somebody else is facilitating (docs/specs/012-collaboration/faci
   });
 
   // The Plan-card tally follows endVote's answer (docs/specs/026-plan/items.md "Tally").
-  it("says whether it ended the vote, refusing its own starter while somebody else facilitates", () => {
+  it('says whether it ended the vote, refusing its own starter while somebody else facilitates', () => {
     const started = harness();
     started.session().startVote(3);
     const blocked = harness(started.tab(), { sessionToolsBlocked: true });

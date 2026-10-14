@@ -53,8 +53,9 @@ export function freshCopyFields(el: Element): {
   action?: undefined;
   actions?: undefined;
 } {
-  const fresh: { addedBy?: undefined } & { [K in (typeof ORIGINAL_ONLY_FIELDS)[number]]?: undefined } =
-    {};
+  const fresh: { addedBy?: undefined } & {
+    [K in (typeof ORIGINAL_ONLY_FIELDS)[number]]?: undefined;
+  } = {};
   if ('addedBy' in el) fresh.addedBy = undefined;
   for (const field of ORIGINAL_ONLY_FIELDS) if (field in el) fresh[field] = undefined;
   if (el.type === 'sticky' && el.fixedSize) return { ...fresh, rotation: eventStormingTilt() };

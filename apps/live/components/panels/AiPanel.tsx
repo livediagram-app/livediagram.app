@@ -55,7 +55,12 @@ const MODES: ModeConfig[] = [
     icon: <CleanIcon />,
     // Only what Clean can do: its prompt leaves colour to the theme (apps/api/src/ai-prompt.ts), so a colour chip
     // asked for something every answer refused.
-    suggestions: ['Fix spelling', 'Align and space evenly', 'Make sizes consistent', 'Improve layout'],
+    suggestions: [
+      'Fix spelling',
+      'Align and space evenly',
+      'Make sizes consistent',
+      'Improve layout',
+    ],
   },
 ];
 
