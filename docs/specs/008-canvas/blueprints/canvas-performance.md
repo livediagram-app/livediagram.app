@@ -10,6 +10,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/lib/canvas-gesture.ts`                         | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`          |
 | `apps/live/components/canvas/CanvasZoomContext.tsx`       | `CanvasZoomProvider`, `useCanvasZoom()`, `CounterScaled` (a div reading the zoom itself) |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`     | Stable per-element props; per-arrow frame and holes; the grid                            |
+| `apps/live/components/canvas/CanvasElementList.tsx`       | Every element in paint order, memoised so an editor render that changes none skips them  |
 | `apps/live/hooks/canvas/useLayerDragPreview.ts`           | The layer's preview store: a drag frame renders each previewed element, not the layer    |
 | `apps/live/hooks/canvas/useSnapGuideState.ts`             | `SnapGuideStore`: the drag's snap guides, read only by `CanvasChrome`                    |
 | `apps/live/components/canvas/element-layer-props.ts`      | `idBound`, `useStableCollab`: identity-stable per-element objects                        |
@@ -139,8 +140,13 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   `useEditorDrag` writes it through the rAF-coalesced `scheduleGuides` / `scheduleSnapTargets`;
   the editor hands the store down as one stable prop, and only `CanvasChrome` reads it
   (`useSnapGuides`), so a new set renders that chrome alone.
+- The elements themselves are listed by `CanvasElementList`, memoised, with every prop
+  identity-stable across editor renders that change nothing it draws (`useInsertShift` returns one
+  object while its answers hold). A press or a release that renders the editor (the drag state
+  beginning or ending) renders the layer but walks none of the board's element slots.
 - Invariant: between the press and the release of a move, the editor root, `Canvas` and the element
-  layer do not render.
+  layer do not render; at the press and the release, the element list does not render unless an
+  element changed.
 
 ### The element grid
 
