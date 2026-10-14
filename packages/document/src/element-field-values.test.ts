@@ -25,5 +25,8 @@ describe('fieldValueIssue', () => {
     expect(fieldValueIssue('pyramidVariant', 'funnel')).toBeNull();
     expect(fieldValueIssue('attachAt', 'middle')).not.toBeNull();
     expect(fieldValueIssue('accentEdge', 'right')).toMatch(/left, top, bottom/);
+    expect(fieldValueIssue('stackDirection', 'grid')).toBeNull();
+    expect(fieldValueIssue('stackAlign', 'middle')).toMatch(/start, center, end/);
+    expect(fieldValueIssue('mindLook', 'avatar')).toMatch(/person/);
   });
 });

@@ -76,6 +76,10 @@ import type {
   TextSize,
   TextSizePreset,
 } from './index';
+import type { KeyRow } from './diagram-key';
+import type { MindLook } from './person-node';
+import type { SequenceElementMessage, SequenceElementParticipant } from './sequence-element';
+import type { StackAlign, StackDirection } from './stack';
 
 // Where a chart's legend sits relative to the plot (docs/specs/009-elements/pie-chart.md). 'off' is modelled
 // separately by `chartLegend: false`, so this only covers the four placements.
@@ -465,23 +469,23 @@ export type ShapeElement = {
   // A pointer note's tip, relative to its top-left (docs/specs/009-elements/pointer-note.md).
   pointerTip?: { x: number; y: number };
   // A diagram key's derived rows and the author's meaning per row id (docs/specs/009-elements/diagram-key.md).
-  keyRows?: import('./diagram-key').KeyRow[];
+  keyRows?: KeyRow[];
   keyMeanings?: Record<string, string>;
   // A stack's arrangement (docs/specs/009-elements/stack.md); each absent = its default.
-  stackDirection?: import('./stack').StackDirection;
-  stackAlign?: import('./stack').StackAlign;
+  stackDirection?: StackDirection;
+  stackAlign?: StackAlign;
   stackGap?: number;
   stackPadding?: number;
   stackColumns?: number;
   // A sequence diagram's rows, Numbered and Play (docs/specs/009-elements/sequence-diagram.md).
-  sequenceParticipants?: import('./sequence-element').SequenceElementParticipant[];
-  sequenceMessages?: import('./sequence-element').SequenceElementMessage[];
+  sequenceParticipants?: SequenceElementParticipant[];
+  sequenceMessages?: SequenceElementMessage[];
   sequenceNumbered?: boolean;
   sequenceAnim?: 'play';
   sequenceAnimSpeed?: AnimationSpeed;
   sequenceAnimRepeat?: boolean;
   // A mind node drawn as a person (docs/specs/009-elements/org-chart.md); absent = an ordinary mind node.
-  mindLook?: import('./person-node').MindLook;
+  mindLook?: MindLook;
   // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
   boundaryStyle?: BoundaryStyle;
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows (a layer, tier or step each, with an

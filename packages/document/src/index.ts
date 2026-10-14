@@ -10,6 +10,7 @@
 // Value import from the data-shapes LEAF module (it imports only types from
 // here, so no cycle at runtime) — elementSupportsText excludes the
 // self-drawing data shapes the same way the inline editor does.
+import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
@@ -316,7 +317,7 @@ export type Tab = {
   // `customColoursOf`; every picker in the document offers them as Custom Colours.
   customColours?: string[];
   // Tag colours (docs/specs/009-elements/tag-colours.md): a card tag mapped to a colour, read with `tagColoursOf`.
-  tagColours?: import('./tag-colours').TagColour[];
+  tagColours?: TagColour[];
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;

@@ -170,7 +170,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 29,
+    articleCount: 34,
     kind: 'feature',
   },
   {
@@ -1208,6 +1208,56 @@ export const articles: Article[] = [
     description: 'Titled, tinted containers for regions, networks and systems.',
     keywords:
       'boundary boundaries container zone region vpc subnet network cluster trust zone group c4 system cloud aws azure gcp architecture nested nest tab tint cidr dashed',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'pointer-notes',
+    title: 'Pointer Notes',
+    description: 'A note joined by a line to the one spot it is about.',
+    keywords:
+      'pointer note notes leader line callout remark comment annotate point spot pin pinned dot tip attach detach follow arrow label caveat',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'stacks',
+    title: 'Stacks',
+    description: 'A container that lines up what you drop in, with even gaps.',
+    keywords:
+      'stack stacks row column grid auto layout autolayout flex flexbox align distribute even gaps spacing padding container list reflow arrange',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'diagram-keys',
+    title: 'Diagram Keys and Tag Colours',
+    description: 'A legend that builds itself, and cards coloured by their tags.',
+    keywords:
+      'diagram key keys legend line styles dashed dotted solid meaning explain tag tags colour color colours colors colour code coding by team status layer card edge',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'org-charts',
+    title: 'Org Charts',
+    description: 'A tree of people with names and roles that lays itself out.',
+    keywords:
+      'org chart organisation organization chart people team hierarchy reports manager reporting line structure role initials tree ownership',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'sequence-diagrams',
+    title: 'Sequence Diagrams',
+    description: 'Who calls whom, in order, laid out from a list of messages.',
+    keywords:
+      'sequence diagram diagrams uml lifeline lifelines message messages call reply async request response interaction api participants actor activation numbered',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

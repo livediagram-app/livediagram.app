@@ -4,6 +4,7 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
+import type { TagColour } from './tag-colours';
 import { isPersonNode } from './person-node';
 import type { SheetRenderModel } from './svg-render-plan-sheet';
 import type { Item, ItemTypeDef } from '@livediagram/items';
@@ -104,7 +105,7 @@ export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLa
 export type BoxedExportOptions = {
   resolveImageHref?: ResolveImageHref;
   // The tab's tag colours (docs/specs/009-elements/tag-colours.md): a mapped card's accent edge and tinted chips.
-  tagColours?: readonly import('./tag-colours').TagColour[];
+  tagColours?: readonly TagColour[];
   resolveIconArt?: ResolveIconArt;
   resolveStickerArt?: ResolveStickerArt;
   tabFont?: string;

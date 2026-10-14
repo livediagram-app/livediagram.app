@@ -146,7 +146,7 @@ export function PopularGrid() {
   );
 }
 
-/** Write: rows, not tiles, each with the one-line blurb that tells the four apart. */
+/** Write: rows, not tiles, each with the one-line blurb that tells the five apart. */
 export function WriteRows() {
   const rows: { name: string; blurb: string; key?: string; glyph: ReactNode }[] = [
     {
@@ -171,10 +171,20 @@ export function WriteRows() {
       blurb: 'A marker that holds a note',
       glyph: <path d="M-7 -5 h14 v8 h-8 l-3 3 v-3 h-3 Z" {...g} />,
     },
+    {
+      name: 'Pointer Note',
+      blurb: 'A note with a line to one spot',
+      glyph: (
+        <path
+          d="M-7 -7 h9 v6 h-9 Z M-2 -1 L5 5 M5 5 m-1.5 0 a1.5 1.5 0 1 0 3 0 a1.5 1.5 0 1 0 -3 0"
+          {...g}
+        />
+      ),
+    },
   ];
   return (
-    <Scene w={420} h={250} bg="plain">
-      <PaletteFrame category="Write" h={230}>
+    <Scene w={420} h={290} bg="plain">
+      <PaletteFrame category="Write" h={270}>
         {rows.map((r, i) => {
           const ry = 80 + i * 40;
           return (

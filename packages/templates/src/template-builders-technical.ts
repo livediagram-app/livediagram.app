@@ -8,7 +8,8 @@
 // self-describing.
 
 import {
-  createArrow,
+  diagramKeyHeight,
+  keyRowsOf,
   createPinnedArrow,
   createShape,
   createText,
@@ -104,7 +105,8 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
   const captionH = 28;
   const headGap = 28;
   const keyGap = 32;
-  const keyH = 28;
+  // The key's two rows, solid and dashed (diagramKeyHeight).
+  const keyH = diagramKeyHeight(2);
   const laneW = gutter + 4 * colPitch + 24;
   const lanesH = TIERS.length * laneH + (TIERS.length - 1) * laneGap;
   const totalH = titleH + captionH + headGap + lanesH + keyGap + keyH;
@@ -287,37 +289,20 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
     edge(dispatch, 's', locations, 'n', 'nearest'),
   ];
 
-  // The key: one sample of each line, muted, under the lanes.
+  // The key (docs/specs/009-elements/diagram-key.md): one row per line pattern the arrows use, each with its
+  // meaning, under the lanes. Its rows are derived here as the editor would on load, so a thumbnail shows them.
   const keyY = lanesTop + lanesH + keyGap;
-  const keyLine = (x: number, dashed: boolean, label: string) => {
-    scaffold.push(
-      {
-        ...createArrow(x, keyY + keyH / 2, x + 44, keyY + keyH / 2),
-        ...(dashed ? { strokeStyle: 'dashed' as const } : {}),
-      },
-      {
-        ...createText(x + 56, keyY),
-        width: 260,
-        height: keyH,
-        label,
-        textSize: 'sm',
-        textColor: MUTED,
-        textAlignX: 'left',
-      },
-    );
-  };
+  const keyRows = keyRowsOf(arrows);
   scaffold.push({
-    ...createText(left, keyY),
-    width: 48,
-    height: keyH,
-    label: 'Key',
-    textSize: 'sm',
-    textBold: true,
-    textColor: MUTED,
-    textAlignX: 'left',
-  });
-  keyLine(left + 64, false, 'Request: waits for the reply');
-  keyLine(left + 400, true, 'Event: fire and forget');
+    ...createShape('diagram-key', left, keyY),
+    width: 360,
+    height: diagramKeyHeight(keyRows.length),
+    keyRows,
+    keyMeanings: {
+      'line:solid': 'Request: waits for the reply',
+      'line:dashed': 'Event: fire and forget',
+    },
+  } as Element);
 
   const content: Element[] = [
     customerApp,
