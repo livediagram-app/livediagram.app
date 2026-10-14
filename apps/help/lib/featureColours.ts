@@ -89,6 +89,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   annotations: '#eab308',
   // Palette → Selection Modes
   'avatar-mode': '#ec4899',
+  'avatar-tour': '#db2777',
   'walking-together': '#a855f7',
   'slide-deck': '#0ea5e9',
   select: '#0ea5e9',

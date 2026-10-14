@@ -834,11 +834,21 @@ export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
   ),
 );
 
+// Avatar-mode speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): that somebody spoke, by
+// either door, never what they said.
+export const AVATAR_MESSAGES = chart(
+  'Canvas',
+  'Used',
+  'Avatar Messages',
+  'A message said in a speech bubble in Avatar mode, typed above the character or sent from the Avatar panel.',
+  { types: ['AvatarMessage', 'AvatarMessagePanel'] },
+);
+
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, MODE_OPTIONS],
+  members: [...MODE_METRICS, AVATAR_MESSAGES, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
   seeAlso: { view: 'modes', label: 'See Each Mode on the Modes Tab' },
@@ -958,6 +968,13 @@ export const DRAW_TOUR_OFFERED = opened(
   'Draw Tour Offered',
   'The Draw tour offered, the first time someone works in Draw mode.',
   (t) => t === 'DrawTourOffer',
+);
+
+// The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
+export const AVATAR_TOUR_OFFERED = opened(
+  'Avatar Tour Offered',
+  'The Avatar tour offered, the first time someone walks as an avatar.',
+  (t) => t === 'AvatarTourOffer',
 );
 
 // The Illustrate tour's offer (docs/specs/007-editor/illustrate-tour.md); charted in its funnel on the Visitors tab.
