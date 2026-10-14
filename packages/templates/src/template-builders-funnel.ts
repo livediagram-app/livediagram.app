@@ -15,8 +15,8 @@ import {
 } from '@livediagram/document';
 
 // A funnel that tells a conversion story rather than just drawing a shape.
-// Four AIDA tiers (Awareness / Interest / Decision / Action) ramp from a pale
-// mouth to a saturated tip, so the eye falls to the customers at the bottom.
+// Four AIDA tiers (Awareness / Interest / Decision / Action) ramp from a
+// saturated mouth to a pale tip, the Funnel element's own ramp.
 // A rail on the right gives every stage its real number and what counts as
 // reaching it ("3,100 · signed up for a free account"), with the
 // stage-to-stage conversion between them as a chip. The rates are DERIVED
@@ -67,7 +67,7 @@ const LEAK_EXPERIMENTS = [
 ];
 
 const MUTED = '#64748b';
-// The funnel's ramp: a saturated tip mixing toward a pale mouth (the Pyramid ramps from its accent, row one).
+// The funnel's ramp: the accent at the mouth (row one) mixing toward a pale tip.
 const FUNNEL_TIP = '#0284c7';
 const FUNNEL_MOUTH = '#e0f2fe';
 
@@ -131,8 +131,8 @@ export function buildFunnel(cx: number, cy: number): Element[] {
   }
 
   // One Funnel element (docs/specs/009-elements/concept-graphics.md): a Pyramid in its funnel variant, its bands
-  // laid out and tapered by its own layout. Theme-locked, so the pale-mouth-to-saturated-tip ramp (the reading
-  // order) survives a theme switch.
+  // laid out and tapered by its own layout. Theme-locked, so the mouth-to-tip ramp (the reading order) survives a
+  // theme switch.
   elements.push({
     ...createShape('pyramid', x0, top),
     width: topW,

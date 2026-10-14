@@ -634,7 +634,7 @@ swipe, with no X.
       a "More soon" line.
   28. **Pictogram**: a figure set large ("7 in 10") over a grid of ten person icons, seven filled,
       and a caption.
-  29. **Ranking**: five ranked rows, each a number disc, a name and a bar sized to its value.
+  29. **Ranking**: five ranked rows, each a Step number, a name and a bar sized to its value.
   30. **Cycle**: four stages round a loop, each a disc with an icon, a name and a note, joined by
       arrows that close the loop.
   31. **Funnel**: four stages narrowing down the page, each a band with its name and count, and the
@@ -738,7 +738,7 @@ swipe, with no X.
   54. **Staircase**: five levels, each a number, a name and a note. Not clearly taller than wide:
       five columns standing on the page's foot, each taller than the last, the level's number, name
       and note inside each, and the lead line in the room the low steps leave above them. Taller:
-      five cards climbing from the bottom left to the top right, each a numbered disc, a name and a
+      five cards climbing from the bottom left to the top right, each a Step number, a name and a
       note, joined by arrows, with a pin beside the first and a flag beside the last.
   55. **Customer Journey**: five stages, each an icon and a name, what the customer does, where it
       happens, how it feels as an emoji face, and what to fix next. Not clearly taller than wide:
@@ -758,7 +758,7 @@ swipe, with no X.
       its outcome below, with a line under each end. Taller: it runs down the middle, each question
       to the left of its diamond and its outcome to the right.
   58. **How-To**: a title, three facts as icon rows (time, servings, difficulty), then six steps,
-      each a photo with a numbered disc in its corner over the step's name and a note. One row of
+      each a photo with a Step number in its corner over the step's name and a note. One row of
       six on a clearly wide page, otherwise three across in two rows.
   59. **Versus**: two contenders, each an icon in a large disc, a name and a line, with a VS badge
       between them; four stats, each a name over a pair of bars (left and right contender); and a
