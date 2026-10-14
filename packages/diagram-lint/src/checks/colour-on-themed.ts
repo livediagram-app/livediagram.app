@@ -24,6 +24,8 @@ function offTheme(theme: string | undefined, el: Element): ('fill' | 'stroke')[]
     const value: unknown = Reflect.get(el, field);
     if (!themed.has(field) || bound || typeof value !== 'string' || !HEX.test(value)) continue;
     if (Reflect.get(el, swatch) !== undefined) continue;
+    // A fill locked against the theme (themeLockFill) keeps its colour by design: a template's column hues.
+    if (field === 'fillColor' && Reflect.get(el, 'themeLockFill') === true) continue;
     const painted = themeColourSet(theme, el, field);
     if (!painted) return null;
     if (!painted.has(value.toLowerCase())) out.push(alias);
