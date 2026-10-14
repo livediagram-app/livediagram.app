@@ -23,6 +23,7 @@ Switching the mode **on** writes these values, once:
 | Plan tour            | `planTourSeen`       | seen  |
 | Facilitate tour      | `facilitateTourSeen` | seen  |
 | Draw tour            | `drawTourSeen`       | seen  |
+| Avatar tour          | `avatarTourSeen`     | seen  |
 | Illustrate tour      | `illustrateTourSeen` | seen  |
 | AI suggested prompts | `aiSuggestedPrompts` | off   |
 | Minimal chrome       | `minimalChrome`      | on    |
