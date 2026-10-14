@@ -14,20 +14,27 @@ export const ICON_QUERY_MAX = 60;
 export type IconSet = 'line' | 'technology';
 export type IconHit = { id: string; label: string; set: IconSet };
 
+// An icon is found by its id's words and, for a Technology icon, its provider too ("aws lambda" finds aws-lambda,
+// whose label is only "Lambda"), as well as its label and keywords.
+const idWords = (id: string) => id.replace(/-/g, ' ');
+
 const CATALOGUE: readonly (IconHit & { keywords: string })[] = [
   ...[...ICON_CATALOG_1, ...ICON_CATALOG_2, ...ICON_CATALOG_3].map((i) => ({
     id: i.id,
     label: i.label,
-    keywords: i.keywords,
+    keywords: `${i.keywords} ${idWords(i.id)}`,
     set: 'line' as const,
   })),
   ...TECH_ICON_CATALOG.map((i) => ({
     id: i.id,
     label: i.label,
-    keywords: i.keywords,
+    keywords: `${i.keywords} ${i.provider ?? ''} ${idWords(i.id)}`,
     set: 'technology' as const,
   })),
 ];
+
+// How far an emoji drops behind an icon of the same rank: less than the gap between two ranks.
+const EMOJI_AFTER = 0.05;
 
 // Words a query carries that say nothing about the picture.
 const FILLER = new Set(['a', 'an', 'the', 'of', 'for', 'and', 'icon', 'logo', 'symbol']);
@@ -42,7 +49,9 @@ const wordsOf = (q: string) =>
 // it (0 to 3); then spacing aside ("route53" for Route 53, 3.5); then icons holding every word of a several-word
 // query (4), then most of its words (5 to 6, by how many are missing), so "mobile phone" and "credit card" find
 // what one word would.
-function iconRank(query: string, icon: { label: string; keywords: string }): number {
+function iconRank(query: string, icon: { id: string; label: string; keywords: string }): number {
+  // The id itself, as an agent copies it from a description or an earlier result, ranks first.
+  if (query.trim().toLowerCase() === icon.id) return -1;
   const whole = paletteRank(query, { name: icon.label, keywords: icon.keywords });
   if (whole < 4) return whole;
   const hay = `${icon.label} ${icon.keywords}`.toLowerCase();
@@ -63,6 +72,8 @@ function iconRank(query: string, icon: { label: string; keywords: string }): num
 export function searchIcons(query: string, limit: number): { icons: IconHit[]; more: number } {
   const ranked = CATALOGUE.map((icon, order) => ({ icon, order, rank: iconRank(query, icon) }))
     .filter((r) => r.rank < 7)
+    // An emoji ranks after line art and Technology icons answering as well: a node's icon reads as a drawn glyph.
+    .map((r) => (r.icon.id.startsWith('emoji-') ? { ...r, rank: r.rank + EMOJI_AFTER } : r))
     .sort((a, b) => a.rank - b.rank || a.order - b.order);
   return {
     icons: ranked

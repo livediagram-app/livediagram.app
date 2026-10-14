@@ -65,4 +65,14 @@ describe('searchIcons, several words and spacing', () => {
     expect(ids('application load balancer')).toContain('aws-elb');
     expect(ids('browser')[0]).toBe('browser');
   });
+
+  it('finds a Technology icon by its provider and id words, and an id as given', () => {
+    for (const q of ['aws lambda', 'aws-lambda', 'aws rds', 'aws s3', 'aws sqs'])
+      expect(searchIcons(q, 1).icons[0]!.id).toBe(q.replace(' ', '-'));
+  });
+
+  it('puts an emoji after the line-art icon answering as well', () => {
+    const ids = searchIcons('rocket', 5).icons.map((i) => i.id);
+    expect(ids.indexOf('rocket')).toBeLessThan(ids.indexOf('emoji-rocket'));
+  });
 });
