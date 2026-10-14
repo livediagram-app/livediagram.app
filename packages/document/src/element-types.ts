@@ -15,6 +15,8 @@ import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
 import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
+import type { ChipLook } from './chip';
+import type { AttachPoint } from './attachment';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
@@ -452,6 +454,12 @@ export type ShapeElement = {
   cardMedia?: CardMedia;
   cardHeader?: boolean;
   tags?: string[];
+  // Badge and Step number (docs/specs/009-elements/badge.md): the look (absent = the kind's default), the host it is
+  // attached to and the point it sits on (both or neither), and a step's Play in Order (stored only when true).
+  chipLook?: ChipLook;
+  attachedTo?: ElementId;
+  attachAt?: AttachPoint;
+  stepSequence?: boolean;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), bounded in validate.ts: a stat row's KPI
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.

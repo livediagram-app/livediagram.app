@@ -53,7 +53,7 @@ export function useWebComponentSetters({ currentSelectionIds, commit }: WebCompo
     track(
       'Element',
       'Changed',
-      rows.stats ? 'StatRow' : rows.processSteps ? 'ProcessSteps' : 'Header',
+      rows.stats ? 'StatRow' : rows.processSteps ? 'ProcessSteps' : rows.tags ? 'Card' : 'Header',
     );
   };
 

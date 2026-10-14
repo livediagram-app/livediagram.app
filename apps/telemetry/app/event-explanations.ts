@@ -230,6 +230,18 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reset a selected shape back to its default proportions.',
   'Element|Changed|AccentEdge':
     'Someone set, moved, recoloured or removed the coloured accent edge along one side of a selected shape.',
+  'Element|Changed|CardSlots':
+    "Someone switched a card's header band, title, meta line or icon on or off, or changed how its icon is shown.",
+  'Element|Changed|Card':
+    'Someone added, removed or reordered the tags along the bottom of a card.',
+  'Element|Changed|ChipLook':
+    'Someone changed how a badge or step number looks (solid, ink, outline, tinted or quiet).',
+  'Element|Changed|ChipDetach':
+    'Someone let a badge or step number go from the element it was attached to.',
+  'Element|Changed|RenumberSteps':
+    'Someone renumbered every step number on a tab in reading order.',
+  'Element|Changed|StepSequence':
+    "Someone turned on or off playing the step numbers' animations one after another.",
   'Element|Changed|BorderRadius': "Someone changed a selected element's corner rounding.",
   'Element|Changed|BorderStroke': "Someone changed a selected element's border weight.",
   'Element|Changed|BorderStyle':

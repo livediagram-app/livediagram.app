@@ -43,6 +43,8 @@ import {
 import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web-components';
 import { isCodeThemeId } from './code-themes';
 import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
+import { isChipLook } from './chip';
+import { isAttachPoint } from './attachment';
 import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow, isMindSpacing } from './mind-flow';
 import {
@@ -106,6 +108,21 @@ export const CHART_PALETTE_IDS_RULE = [
   'earth',
   'grey',
   'contrast',
+] as const;
+
+// The chip looks and attach points a refusal lists, written out for the same reason as the chart palettes above:
+// chip.ts sits in an import cycle with this module, so its lists may be uninitialised while this one loads. A test
+// keeps the copies equal.
+export const CHIP_LOOKS_RULE = ['solid', 'ink', 'outline', 'tinted', 'quiet'] as const;
+export const ATTACH_POINTS_RULE = [
+  'top-left',
+  'top',
+  'top-right',
+  'right',
+  'bottom-right',
+  'bottom',
+  'bottom-left',
+  'left',
 ] as const;
 
 const flag = (field: string): FieldCheck => ({ field, valid: isBool, rule: 'a boolean' });
@@ -251,6 +268,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   // Card slots (docs/specs/009-elements/card.md).
   { field: 'cardMedia', valid: isCardMedia, rule: oneOfRule(['badge', 'tile', 'initial']) },
   flag('cardHeader'),
+  // Badge and Step number (docs/specs/009-elements/badge.md).
+  { field: 'chipLook', valid: isChipLook, rule: oneOfRule(CHIP_LOOKS_RULE) },
+  { field: 'attachedTo', valid: isNonEmptyStr, rule: 'an element id' },
+  { field: 'attachAt', valid: isAttachPoint, rule: oneOfRule(ATTACH_POINTS_RULE) },
+  flag('stepSequence'),
   {
     field: 'tags',
     valid: rowsOf(CARD_TAGS_MAX, isStrUpTo(CARD_TAG_MAX)),

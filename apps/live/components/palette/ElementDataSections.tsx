@@ -15,7 +15,9 @@
 
 import dynamic from 'next/dynamic';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
+import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import {
+  isChipShape,
   animLoops,
   DEFAULT_ANIMATION_SPEED,
   LINE_DEFAULT_SERIES,
@@ -219,8 +221,10 @@ export function ElementDataSections({
   // pattern as Style and Text, so a data element's menu doesn't grow a
   // band of bespoke rows. Animation stays top-level (every boxed
   // element has it).
+  const isChip = shapeTarget ? isChipShape(shapeTarget.shape) : false;
   const showTools =
     hasWebRowsSection(target) ||
+    isChip ||
     isProgress ||
     isRail ||
     isRating ||
@@ -427,6 +431,17 @@ export function ElementDataSections({
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
             steps, a header's links: add / remove / reorder. */}
+          {/* A badge's or step number's look, Detach, Renumber, Play in Order (docs/specs/009-elements/badge.md). */}
+          {shapeTarget && isChip ? (
+            <ChipMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              stepsInOrder={props.elements.some(
+                (el) => el.type === 'shape' && el.shape === 'step' && el.stepSequence === true,
+              )}
+              sectionProps={sectionProps}
+            />
+          ) : null}
           {/* The card's slots (docs/specs/009-elements/card.md): band, title, meta line, media. */}
           {shapeTarget?.shape === 'card' ? (
             <CardMenuSection

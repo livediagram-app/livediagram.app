@@ -76,7 +76,7 @@ const WRITE_WITH_COMMENTS = [
 ];
 
 // The diagram-building elements Diagram's Build adds to the category's own tiles.
-const DIAGRAM_BUILD_EXTRAS = ['components:card'];
+const DIAGRAM_BUILD_EXTRAS = ['components:card', 'components:badge', 'components:step'];
 
 // Image and Avatar; no embedded pages.
 const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);

@@ -70,6 +70,10 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 // Array order decides within a tier.
 function paintTier(el: Element): number {
   if (el.type === 'shape' && el.shape === 'frame') return 0;
+  // An attached badge or step number (docs/specs/009-elements/badge.md) sits above everything in its band, so a
+  // later element never covers the mark on its host.
+  if (el.type === 'shape' && el.attachedTo && (el.shape === 'badge' || el.shape === 'step'))
+    return 4;
   const kind = eventStormingKindOf(el);
   if (kind === 'actor') return 2;
   if (kind === 'hotspot') return 3;

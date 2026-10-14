@@ -1440,6 +1440,42 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The badge (docs/specs/009-elements/badge.md): a pill that attaches to a point on a node when dropped there.
+    id: 'components:badge',
+    blurb: 'A small tag that sits on a node',
+    caption: 'Badge',
+    section: 'components',
+    label: 'Add Badge',
+    description:
+      'Badge. A small pill like "Beta" or "v2". Drop it on a corner or edge of a node and it stays there as the node moves.',
+    filled: true,
+    action: { type: 'shape', kind: 'badge' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="3" y="8" width="18" height="8" rx="4" />
+        <path d="M7.5 12h9" />
+      </Glyph>
+    ),
+  },
+  {
+    // The step number (docs/specs/009-elements/step-number.md): numbers itself as it lands.
+    id: 'components:step',
+    blurb: 'A numbered disc for walkthroughs',
+    caption: 'Step Number',
+    section: 'components',
+    label: 'Add Step Number',
+    description:
+      'Step number. A numbered disc for walking through a diagram in order; each new one takes the next number.',
+    filled: true,
+    action: { type: 'shape', kind: 'step' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M10.5 9.5 12.5 8v8" />
+      </Glyph>
+    ),
+  },
+  {
     id: 'tools:lane',
     blurb: 'A titled band that carries its steps',
     caption: 'Lane',

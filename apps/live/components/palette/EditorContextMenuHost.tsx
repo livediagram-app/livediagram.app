@@ -172,6 +172,7 @@ export function EditorContextMenuHost() {
     previewElementStyle,
     commitElementStyle,
     burstSelectedStyle,
+    commitElements,
     resetArrowStyleSelected,
     commitSetAnimation,
     commitArrowFlow,
@@ -476,6 +477,10 @@ export function EditorContextMenuHost() {
         end: clearStylePreview,
         commit: (map, telemetryType) => commitElementStyle(map, telemetryType),
         burst: burstSelectedStyle,
+        commitTab: (map, telemetryType) => {
+          commitElements(map);
+          track('Element', 'Changed', telemetryType);
+        },
       }}
       onApplyCodeTheme={commitCodeTheme}
       onPreviewCodeTheme={previewCodeTheme}

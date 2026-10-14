@@ -401,6 +401,8 @@ export {
 } from './tab-kind';
 export * from './accent-edge';
 export * from './card';
+export * from './chip';
+export * from './attachment';
 export * from './shape-variants';
 export * from './title-caption';
 export * from './editor-mode';

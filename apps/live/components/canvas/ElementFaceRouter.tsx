@@ -16,6 +16,8 @@ import {
   ownColours,
   isSelfDrawingShape,
   isWebComponentShape,
+  isChipShape,
+  defaultTextColor,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
@@ -47,6 +49,7 @@ import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
 import { loadCollabFaceRouter, loadTableView } from '@/lib/editor-deferred-code';
 import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
+import { ChipFace } from '@/components/canvas/ChipFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -463,6 +466,15 @@ export function ElementFaceRouter({
           onLinkCell={onLinkCell}
           onFollowLink={onFollowLink}
           fontFamily={fontFamily}
+        />
+      ) : element.type === 'shape' && isChipShape(element.shape) ? (
+        // A badge or step number (docs/specs/009-elements/badge.md): its pill or disc under its own label.
+        <ChipFace
+          element={element}
+          labelNode={labelNode}
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          fill={element.fillColor ?? defaultFillColor(element, surface)}
+          ink={element.textColor ?? defaultTextColor(element, surface)}
         />
       ) : element.type === 'shape' && isWebComponentShape(element.shape) ? (
         /* The web components (docs/specs/009-elements/web-components-and-no-groups.md): each lays out its own content and

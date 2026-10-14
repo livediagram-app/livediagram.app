@@ -61,6 +61,8 @@ export const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set([
   'mode-button',
   'session-button',
   'done-check',
+  // A badge fits its text (docs/specs/009-elements/badge.md): it is never resized by hand.
+  'badge',
 ]);
 
 export function isFixedSizeShape(kind: string): boolean {

@@ -31,3 +31,4 @@ Follow the references below only as needed; never upfront.
 - ./DEFAULTS.md - when an elements blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories an elements blueprint covers
 - ./card.md - when implementing or changing the card, its slots, layout, menu or the callout migration
+- ./badge.md - when implementing or changing the badge, the step number, attachment and settling, or step numbering

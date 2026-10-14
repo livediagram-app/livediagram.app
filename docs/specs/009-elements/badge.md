@@ -17,7 +17,7 @@ the node's corner where people expect a status mark, and stays there.
 
 - **Text** is the label, one line, at most 24 characters. Double-click edits it.
 - **Size follows the text.** Height comes from the text size (24px at the default size); width is the text's width
-  plus the padding, never narrower than the height, so one or two characters make a circle. It re-fits when the text
+  plus the padding, never narrower than the height, so a single character makes a circle. It re-fits when the text
   or text size changes. Width is estimated from the character count (`badgeWidth`), the same estimate the export uses,
   so the two agree without a DOM. A badge is not resized by hand; it has no resize handles.
 - **Look** (`chipLook`), one of five, all from the element's colours:
@@ -44,8 +44,7 @@ attachAt?: 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom
   point, so it straddles the edge the way a notification count does. A rotated host carries the point round with it;
   the badge itself stays upright.
 - **Attaching.** Dropping a badge (from the palette or by dragging one) with its centre within 16px of a point on an
-  element attaches it there; while dragging, the point it would take shows as a dot on the host. Hold Cmd / Ctrl to
-  drop without attaching, as with snapping ([Snap override](../008-canvas/snap-override.md)).
+  element attaches it there, centred on the point.
 - **Detaching.** Dragging an attached badge away from its point (further than 16px) detaches it; dropping it on
   another point re-attaches it there, possibly on another element.
 - **Hosts.** Any boxed element except a badge, a step number, an annotation, a comment pin, and the containers
@@ -60,7 +59,9 @@ attachAt?: 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom
   detached. A badge whose host no longer exists (a peer deleted it, an import dropped it) is detached where it is.
 - **Locking.** A locked host still carries its badges; a locked badge stays attached and is not detached by a drag.
 
-Every renderer reads the badge's stored `x` / `y`, which the editor keeps on the point, so an export, a thumbnail or
+Attachment is settled in one place, as every change to the board is committed, so every way a host moves, resizes,
+turns or is deleted (a drag, a nudge, a layout, an undo, an agent's edit) carries its badges with no gesture of its
+own. Every renderer reads the badge's stored `x` / `y`, which settling keeps on the point, so an export, a thumbnail or
 an API reader that knows nothing of attachment still draws it in the right place.
 
 ## Connectors
@@ -80,8 +81,6 @@ Pulse and Heartbeat suit "New" and alerts. Its text is too small to animate on i
 | Illustrate | **Components**: Badge                   |
 | Plan       | none                                    |
 | Facilitate | none (Search still finds and places it) |
-
-A Badge tile pressed while one element is selected attaches the new badge to that element's top-right point.
 
 ## The menu
 

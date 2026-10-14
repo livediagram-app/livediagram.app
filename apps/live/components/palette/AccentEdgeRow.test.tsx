@@ -15,6 +15,7 @@ const ops = (): ElementStyleOps => ({
   end: vi.fn(),
   commit: vi.fn(),
   burst: vi.fn(),
+  commitTab: vi.fn(),
 });
 
 const show = (target: Element, o = ops()) => {

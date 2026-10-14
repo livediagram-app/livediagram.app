@@ -14,7 +14,13 @@ const card = (over: Partial<ShapeElement> = {}) =>
   ({ ...(createShape('card', 0, 0) as ShapeElement), ...over }) as ShapeElement;
 
 function show(target: ShapeElement) {
-  const ops: ElementStyleOps = { preview: vi.fn(), end: vi.fn(), commit: vi.fn(), burst: vi.fn() };
+  const ops: ElementStyleOps = {
+    preview: vi.fn(),
+    end: vi.fn(),
+    commit: vi.fn(),
+    burst: vi.fn(),
+    commitTab: vi.fn(),
+  };
   render(
     <CardMenuSection
       target={target}

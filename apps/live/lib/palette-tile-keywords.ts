@@ -37,6 +37,8 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   lane: 'swimlane band row track process',
   entity: 'record table uml class er schema field',
   card: 'node service component box tile persona tag title',
+  badge: 'tag pill label chip status version beta new count',
+  step: 'number numbered sequence order walkthrough marker 1 2 3',
   'mode-button': 'mode switch button press avatar',
   portal: 'teleport jump link warp travel',
   'session-button': 'timer vote poll session start',

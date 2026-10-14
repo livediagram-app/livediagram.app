@@ -218,6 +218,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   callout: { width: 380, height: 116 },
   // Card (docs/specs/009-elements/card.md): room for a title, a meta line, two body lines and a tag row.
   card: { width: 300, height: 150 },
+  // Badge (docs/specs/009-elements/badge.md): fitted to its text on every commit (badgeSize); this is "New".
+  badge: { width: 40, height: 24 },
+  // Step number (docs/specs/009-elements/step-number.md): a small disc.
+  step: { width: 28, height: 28 },
   // Three 150px cards and two 16px gaps.
   'stat-row': { width: 482, height: 96 },
   process: { width: 420, height: 110 },
@@ -594,6 +598,13 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       borderRadius: 'lg',
     };
   }
+  // Badge (docs/specs/009-elements/badge.md): a word to start from; a step takes its number when it lands
+  // (settleChips), so it starts with none.
+  // Their text is centred with no padding: the face is the pill, the label its word.
+  if (kind === 'badge')
+    return { ...base, label: 'New', textSize: 'sm', textBold: true, padding: 'none' };
+  if (kind === 'step')
+    return { ...base, aspectLocked: true, textSize: 14, textBold: true, padding: 'none' };
   // Card (docs/specs/009-elements/card.md): every slot but the band on, so the first one shows what a card is made of.
   if (kind === 'card') {
     return {

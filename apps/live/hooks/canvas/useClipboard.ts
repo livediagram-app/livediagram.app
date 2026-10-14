@@ -36,6 +36,7 @@ import {
   sheetDrawnChartIds,
   withMindBranches,
   withSheetCharts,
+  withAttached,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -177,11 +178,15 @@ export function useClipboard(deps: ClipboardDeps) {
     if (!idSet || idSet.size === 0) return;
     // A Sheet carries the charts it draws (docs/specs/029-sheets/sheet.md "Charts"): they are never selectable on
     // the canvas, so the copy takes them here, and the paste relinks them to the Sheet's copy.
-    const withCharts = withSheetCharts(
+    // A host's badges and step numbers copy with it (docs/specs/009-elements/badge.md).
+    const withCharts = withAttached(
       activeTab.elements,
-      opts?.cut === true
-        ? withMindBranches(activeTab.elements, idSet, (el) => el.locked === true)
-        : idSet,
+      withSheetCharts(
+        activeTab.elements,
+        opts?.cut === true
+          ? withMindBranches(activeTab.elements, idSet, (el) => el.locked === true)
+          : idSet,
+      ),
     );
     const snapshot = activeTab.elements
       .filter((el) => withCharts.has(el.id))

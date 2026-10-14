@@ -73,6 +73,9 @@ const SHAPE_TOKENS: Record<string, string> = {
   callout: 'Callout',
   // The card (docs/specs/009-elements/card.md); a Callout placed from its tile reports as a Card.
   card: 'Card',
+  // Badge and Step number (docs/specs/009-elements/badge.md).
+  badge: 'Badge',
+  step: 'Step',
   'stat-row': 'StatRow',
   process: 'ProcessSteps',
   'site-header': 'Header',

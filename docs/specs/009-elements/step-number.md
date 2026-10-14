@@ -35,10 +35,10 @@ it. A step takes no connectors.
 A step takes the **Shape** set for its body, along its disc. It adds one option of its own:
 
 - **Play in Order** (`stepSequence: true`), offered in the Shape animation section while the step has an animation.
-  Each step whose label is a whole number `n` starts `(n − 1)` beats after step 1, where a beat is the animation's own
-  cycle length divided by the number of steps, so a pulse walks 1, 2, 3 and comes round again. Turning it on or off
-  applies to every step on the tab (one history step), since order is a property of the set. It is CSS only: a
-  negative `animation-delay` from the stored number, no script. A step whose label is not a whole number plays
+  Each step whose label is a whole number `n` starts `(n − 1)` beats after step 1, a beat being 0.4 s at normal speed
+  (scaled by the animation's Speed), so a pulse walks 1, 2, 3 and comes round again. Turning it on or off
+  applies to every step on the tab (one history step), since order is a property of the set. It is CSS only: an
+  `animation-delay` from the stored number, no script. A step whose label is not a whole number plays
   without a delay. Reduced motion and every export show the rest frame.
 
 ## Palette
