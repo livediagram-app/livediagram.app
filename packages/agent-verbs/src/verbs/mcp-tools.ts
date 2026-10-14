@@ -146,7 +146,8 @@ export const mcpSearchIcons = mcpTool('search_icons', {
   description:
     'Find icons by what they show, best match first: the line-art set and the Technology set ' +
     '(brand, cloud and database marks such as aws-lambda, postgresql, kafka). Each hit\u2019s id is ' +
-    'what an element\u2019s "iconId" takes; an iconId that names no icon is refused.',
+    'what an element\u2019s "iconId" takes; an iconId that names no icon is refused. An emoji- id draws ' +
+    'in the viewer\u2019s colour emoji, which a PNG preview cannot draw: it shows a disc labelled emoji there.',
   inputSchema: searchIconsShape,
   outputSchema: searchIconsOutput,
 });
@@ -187,7 +188,8 @@ export const mcpUpdateDocument = mcpTool('update_document', {
   title: 'Update a document',
   description:
     'Edit an existing tab. mode "replace" swaps the whole tab’s elements (validated + ' +
-    'auto-laid-out); mode "ops" applies an ordered list of add/update/remove against ' +
+    'auto-laid-out) and paints every element in the tab’s theme, its own colours replaced (a sticky keeps its own); ' +
+    'mode "ops" keeps the colours it is given, and applies an ordered list of add/update/remove against ' +
     'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or ' +
     'takes "edits": edit operations as text (insert between, wrap in a frame, connect, layout a selection, ' +
     'place beside another element), the form each lint finding\u2019s fix is written in. On an event-storming tab, ' +
@@ -381,7 +383,8 @@ export const mcpChangePages = mcpTool('change_pages', {
     'is switched into Illustrate. The answer gives every page with its rectangle in canvas coordinates, the ' +
     "same as an element's x and y in update_document (the layout view prints positions from the content's " +
     'corner instead). A layout fills a page with sample text: read_document view "pages" lists it, with each ' +
-    "list's items, to replace. Articles are written with write_article. " +
+    "list's items, to replace. A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
+    'mocha, ocean, forest...), a page\u2019s background its own. Articles are written with write_article. ' +
     'Everyone with the document open sees it at once.',
   inputSchema: changePagesShape,
   outputSchema: changePagesOutput,

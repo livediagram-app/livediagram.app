@@ -161,6 +161,12 @@ export function subscribeDragPreview(cb: () => void): () => void {
   };
 }
 
+// The tab's merged preview for drawing `elements`, read outside React (a store deriving from it on each
+// change); null when nobody is dragging there. The same object until something changes.
+export function dragPreviewFor(tabId: string, elements: readonly Element[]): DragOverlay | null {
+  return mergedFor(tabId, elements);
+}
+
 // The tab's merged preview, for drawing `elements`; null when nobody is dragging there.
 export function useDragPreview(tabId: string, elements: readonly Element[]): DragOverlay | null {
   return useSyncExternalStore(

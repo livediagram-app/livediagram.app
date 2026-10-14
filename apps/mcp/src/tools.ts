@@ -62,6 +62,7 @@ import {
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue, graphIconIssue } from './element-values';
+import { packFreehandPoints } from './freehand-points';
 import { searchIcons } from '@livediagram/icons/search';
 import { imageResult } from './image-result';
 import {
@@ -70,6 +71,7 @@ import {
   editsBase,
   isChangesetRefusal,
   mcpOpsToEditOperations,
+  mcpResultText,
   replaceBodyFrom,
   submitChangeset,
 } from './changeset-client';
@@ -135,7 +137,13 @@ export function registerTools(server: McpServer, env: Env): void {
       return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
     }
     const tabs: Tab[] = [];
-    const dashboards: { at: number; tabId: string; name: string; input: DashboardInput }[] = [];
+    const dashboards: {
+      at: number;
+      tabId: string;
+      name: string;
+      input: DashboardInput;
+      theme: string | undefined;
+    }[] = [];
     // The template the first tab is made from, for the creation intent.
     let firstTemplate: TemplateKind | null = null;
     // Every template tab's elements: their Plan boards bring their card types
@@ -166,7 +174,7 @@ export function registerTools(server: McpServer, env: Env): void {
           { id: tabId, name: t.name },
           kind,
           () => crypto.randomUUID(),
-          args.theme,
+          t.theme ?? args.theme,
         );
         tabs.push(...made);
         for (const m of made) templateElements.push(...m.elements);
@@ -175,7 +183,13 @@ export function registerTools(server: McpServer, env: Env): void {
       // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): made once every other tab is, so it
       // can show them by name.
       if (t.dashboard) {
-        dashboards.push({ at: tabs.length, tabId, name: t.name, input: t.dashboard });
+        dashboards.push({
+          at: tabs.length,
+          tabId,
+          name: t.name,
+          input: t.dashboard,
+          theme: t.theme ?? args.theme,
+        });
         continue;
       }
       // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
@@ -185,12 +199,14 @@ export function registerTools(server: McpServer, env: Env): void {
       const iconIssue = input.graph ? graphIconIssue(input.graph.nodes) : null;
       if (iconIssue) return errorResult(`Tab "${t.name}": ${iconIssue}`);
       if (input.graph) {
-        tabs.push(buildGraphTab(tabId, t.name, input.graph, args.theme));
+        tabs.push(buildGraphTab(tabId, t.name, input.graph, t.theme ?? args.theme));
         continue;
       }
-      const valueIssue = elementsIssue(t.elements ?? []);
+      const drawn = packFreehandPoints(t.elements ?? []);
+      if ('error' in drawn) return errorResult(`Tab "${t.name}": ${drawn.error}`);
+      const valueIssue = elementsIssue(drawn.elements);
       if (valueIssue) return errorResult(`Tab "${t.name}": ${valueIssue}`);
-      const ended = resolveArrowEnds(t.elements ?? [], idsOf(t.elements ?? []));
+      const ended = resolveArrowEnds(drawn.elements, idsOf(drawn.elements));
       if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
       const candidate: unknown = {
         id: tabId,
@@ -205,7 +221,9 @@ export function registerTools(server: McpServer, env: Env): void {
             'be well-formed.',
         );
       }
-      tabs.push(buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, args.theme));
+      tabs.push(
+        buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, t.theme ?? args.theme),
+      );
     }
     // Each Dashboard, showing the call's other tabs by name, in its place among them.
     if (dashboards.length) {
@@ -214,7 +232,7 @@ export function registerTools(server: McpServer, env: Env): void {
       for (const [n, d] of dashboards.entries()) {
         const resolved = resolveDashboardInput(d.input, refs, types);
         if (!resolved.ok) return errorResult(`Tab "${d.name}": ${resolved.message}`);
-        tabs.splice(d.at + n, 0, buildDashboardTab(d.tabId, d.name, resolved.spec, args.theme).tab);
+        tabs.splice(d.at + n, 0, buildDashboardTab(d.tabId, d.name, resolved.spec, d.theme).tab);
       }
     }
     // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
@@ -284,9 +302,12 @@ export function registerTools(server: McpServer, env: Env): void {
           'from list_templates. Check the livediagram://schema/elements resource.',
       );
     }
-    const valueIssue = args.elements ? elementsIssue(args.elements) : null;
+    const drawn = args.elements ? packFreehandPoints(args.elements) : null;
+    if (drawn && 'error' in drawn) return errorResult(drawn.error);
+    const given = drawn?.elements;
+    const valueIssue = given ? elementsIssue(given) : null;
     if (valueIssue) return errorResult(valueIssue);
-    const ended = args.elements ? resolveArrowEnds(args.elements, idsOf(args.elements)) : null;
+    const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
     if (ended && 'error' in ended) return errorResult(ended.error);
     // Default the new tab's theme to the document's existing one so it matches the other tabs
     // rather than landing as a clashing brand-white tab; the model can still pass a theme.
@@ -335,7 +356,7 @@ export function registerTools(server: McpServer, env: Env): void {
         url: deepLink(env, args.documentId),
         changesetId: answer.changeset?.id ?? null,
         rev: tab.rev,
-        text: answer.text,
+        text: mcpResultText(answer.text),
         lint: lintLineOf(answer.lint),
         ...templateNote(args.template),
       },
@@ -368,10 +389,13 @@ export function registerTools(server: McpServer, env: Env): void {
       } else if (!input.graph && !args.elements) {
         return errorResult('replace mode requires "graph", "mermaid", "elements" or "dashboard".');
       } else {
-        const valueIssue = args.elements ? elementsIssue(args.elements) : null;
+        const drawn = args.elements ? packFreehandPoints(args.elements) : null;
+        if (drawn && 'error' in drawn) return errorResult(drawn.error);
+        const given = drawn?.elements;
+        const valueIssue = given ? elementsIssue(given) : null;
         if (valueIssue) return errorResult(valueIssue);
         // The new elements are the whole tab, so an arrow end may name only them.
-        const ended = args.elements ? resolveArrowEnds(args.elements, idsOf(args.elements)) : null;
+        const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
         if (ended && 'error' in ended) return errorResult(ended.error);
         body = {
           replace: replaceBodyFrom({
@@ -411,7 +435,7 @@ export function registerTools(server: McpServer, env: Env): void {
         url: deepLink(env, args.documentId),
         changesetId: answer.changeset?.id ?? null,
         rev: next.rev,
-        text: answer.text,
+        text: mcpResultText(answer.text),
         lint: lintLineOf(answer.lint),
       },
       next,

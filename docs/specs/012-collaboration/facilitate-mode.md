@@ -146,7 +146,7 @@ Session templates open in Facilitate, as the Draw templates open in Draw
 
 - the Retrospectives family's `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`
   and `sailboat` (`team-retro` stays in Plan: it is a board of cards);
-- `town-hall`, `lean-coffee`, `crazy-eights` and `meeting-agenda`;
+- `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board` and `brainstorm`;
 - the boards that ship a dot vote, `affinity-map`, `prioritization-matrix` and `risk-matrix`, since
   only a mode with a Session strip can watch, end and keep that vote;
 - the boards a team fills in together: `incident-postmortem`, `user-persona`, `objectives-planner`,

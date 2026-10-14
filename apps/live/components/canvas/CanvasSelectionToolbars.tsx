@@ -56,7 +56,7 @@ export function CanvasSelectionToolbars({
     showPlus,
     multiToolbarBounds,
     showMultiToolbar,
-  } = useCanvasSelectionView(selectionInput);
+  } = useCanvasSelectionView(selectionInput, props.activeTabId ?? '');
   const multiSelectedIds = useSelectionOf(multiOf);
   // The toolbars mirror the canvas transform, so they follow the view, but only while they show:
   // with nothing selected a zoom renders none of this (docs/specs/008-canvas/blueprints/viewport-store.md).

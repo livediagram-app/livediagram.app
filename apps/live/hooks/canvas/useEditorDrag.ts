@@ -90,8 +90,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // render layer (CanvasChrome) draws them as faint lines.
   // Cosmetic snap-guide overlay state (alignment + distribution guides,
   // arrow snap markers), coalesced through rAF. See useSnapGuideState.
-  const { snapGuides, distGuides, snapTargets, scheduleGuides, scheduleSnapTargets } =
-    useSnapGuideState();
+  const { snapGuideStore, scheduleGuides, scheduleSnapTargets } = useSnapGuideState();
   // Whether the current body drag has crossed DRAG_ENGAGE_PX. Reset at the
   // start of each gesture (in the move effect below); flipped true once the
   // pointer travels far enough that the press is unambiguously a drag.
@@ -955,9 +954,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   return {
     drag,
     shiftDupGhostIds,
-    snapGuides,
-    distGuides,
-    snapTargets,
+    snapGuideStore,
     beginDrag,
     beginAnchorDrag,
     beginArrowTranslate,

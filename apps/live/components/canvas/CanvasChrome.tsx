@@ -76,6 +76,7 @@ import { panelEnabled } from '@/lib/user-preferences';
 import { loadWhiteboardDock } from '@/lib/editor-deferred-code';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
 // Draw mode's dock shows only on a Draw tab, so its code loads on demand (lib/editor-deferred-code.ts
 // fetches it as the editor mounts).
@@ -250,9 +251,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     readOnly,
     selfParticipant,
     settings,
-    snapGuides,
-    distGuides,
-    snapTargets,
+    snapGuideStore,
     showTemplatePicker,
     tabThemeId,
     templatePickerLockedName,
@@ -312,6 +311,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     // board itself, so there is nothing to gate beyond "is this that board".
     timeline: props.esBoard === true ? ES_LANES : null,
   });
+  // The drag's snap guides, from the editor's store: a new set renders this chrome only.
+  const { snapGuides, distGuides, snapTargets } = useSnapGuides(snapGuideStore);
   // A tick as a move catches an alignment guide (Android; lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
   const { alignGuides, allSnapTargets } = computeDrawGuides({

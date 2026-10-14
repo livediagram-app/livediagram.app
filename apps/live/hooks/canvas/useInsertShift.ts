@@ -32,8 +32,14 @@ export function useInsertShift(): InsertShift {
   const movingNote = useInsertionDragInHand();
   const dragging = draggingIn || movingNote;
   const shiftedIds = useMemo(() => (slot ? new Set(slot.shiftedIds) : null), [slot]);
-  return {
-    xFor: (id: string) => (shiftedIds?.has(id) ? slot?.shiftDx : undefined),
-    animates: dragging,
-  };
+  // One object while nothing it answers changes, so the element list it is handed keeps its memo
+  // (docs/specs/008-canvas/canvas-performance.md).
+  const shiftDx = slot?.shiftDx;
+  return useMemo(
+    () => ({
+      xFor: (id: string) => (shiftedIds?.has(id) ? shiftDx : undefined),
+      animates: dragging,
+    }),
+    [shiftedIds, shiftDx, dragging],
+  );
 }

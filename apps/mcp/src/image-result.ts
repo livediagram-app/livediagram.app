@@ -17,17 +17,29 @@ import {
 import { embedTabImages } from '@livediagram/api-schema';
 import {
   canvasSurface,
+  articlesOf,
+  exportFontIds,
+  laidOutPagesOf,
+  resolveArticleStyle,
   planBoardFitHeight,
   renderElementsToSvg,
+  renderPageToSvg,
+  renderPagesToSvg,
+  type LaidOutPage,
   type SheetRenderModel,
   type Tab,
 } from '@livediagram/document';
 import { planTabKindOf } from '@livediagram/plan-art';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
-import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
+// The preview resolvers: an emoji (no emoji font in a Worker) draws as a labelled disc, not missing-glyph boxes.
+import {
+  resolveIconPreviewArt as resolveIconExportArt,
+  resolveStickerPreviewArt as resolveStickerArt,
+} from '@livediagram/icons/resolve';
 import { chartsReadLive } from '@livediagram/agent-verbs';
 import { svgToPngBase64 } from './render';
+import { previewFonts } from './preview-fonts';
 import { planPreviewFor } from './plan-preview';
 import { apiFetch, apiJson } from './api';
 import type { Env } from './env';
@@ -142,7 +154,19 @@ async function planContentFor(
 export async function tabPreview(
   tab: Tab,
   auth?: { env: Env; token: string; documentId?: string },
+  // One page of an Illustrate tab to draw alone (read_document's `page`); every page when absent.
+  page?: LaidOutPage,
 ): Promise<ImageBlock> {
+  // An Illustrate tab draws as its pages (svg-render-pages.ts), as the editor exports them.
+  if (laidOutPagesOf(tab).length > 0) {
+    const resolveImageHref = auth ? await buildImageResolver(auth.env, auth.token, tab) : undefined;
+    const drawWith = { resolveImageHref, resolveIconArt: resolveIconExportArt, resolveStickerArt };
+    const [svg, fonts] = [
+      page ? renderPageToSvg(tab, page, drawWith) : renderPagesToSvg(tab, drawWith)!,
+      await previewFonts(tabFontIds(tab)),
+    ];
+    return { type: 'image', data: await svgToPngBase64(svg, fonts), mimeType: 'image/png' };
+  }
   // A Plan tab as the editor exports it: a Dashboard laid out, its pictures drawn from the cards.
   const plain = (shown: Tab) =>
     renderElementsToSvg(shown, { resolveIconArt: resolveIconExportArt, resolveStickerArt });
@@ -185,8 +209,19 @@ export async function tabPreview(
       ...drawWith,
       ...(laidOut ? { resolvePlanArt: laidOut.artWith(content) } : {}),
     }),
+    await previewFonts(tabFontIds(live, drawWith.sheets)),
   );
   return { type: 'image', data: png, mimeType: 'image/png' };
+}
+
+// The editor's font ids a tab draws in: its elements' and its own, a sheet's cells', and its articles' heading and body
+// faces (the fonts a preview fetches beyond Inter).
+export function tabFontIds(tab: Tab, sheets?: ReadonlyMap<string, SheetRenderModel>): string[] {
+  const articles = Object.values(articlesOf(tab)).flatMap((doc) => {
+    const style = resolveArticleStyle(doc.style);
+    return [style.headingFont, style.bodyFont];
+  });
+  return [...exportFontIds(tab.elements, tab.font, sheets, tab.finish), ...articles];
 }
 
 // `notes` are short text blocks after the structured result, such as the lint summary line.

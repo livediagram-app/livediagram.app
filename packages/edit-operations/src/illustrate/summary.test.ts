@@ -95,8 +95,24 @@ describe('articles in the answer', () => {
       },
     } as unknown as Pick<Tab, 'elements' | 'pages' | 'articles'>;
     expect(articleSummaries(tab)).toEqual([
-      { flow: 'b', title: 'Untitled', pages: [2], blocks: 1, words: 2, look: null },
-      { flow: 'a', title: 'Alpha', pages: [3, 4], blocks: 1, words: 1, look: 'report' },
+      {
+        flow: 'b',
+        title: 'Untitled',
+        pages: [2],
+        blocks: 1,
+        words: 2,
+        estimatedPages: 1,
+        look: null,
+      },
+      {
+        flow: 'a',
+        title: 'Alpha',
+        pages: [3, 4],
+        blocks: 1,
+        words: 1,
+        estimatedPages: 1,
+        look: 'report',
+      },
     ]);
   });
 });

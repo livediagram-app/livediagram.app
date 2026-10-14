@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { centreOffsetPx } from './centring';
 import { ICON_CATALOG_1 } from './icon-catalog-1';
 import { ICON_CATALOG_2 } from './icon-catalog-2';
+import { ICON_CATALOG_3 } from './icon-catalog-3';
 import { iconPrimsMarkup } from './markup';
 import { ICON_STROKE_PX, strokeUnits } from './weight';
 
@@ -12,9 +13,13 @@ const TOLERANCE_PX = 0.5;
 const THUMB_PX = 24;
 
 // Glyphs asymmetric by design, each with the reason it is allowed off-centre.
-const CENTRING_EXCEPTIONS: Record<string, string> = {};
+const CENTRING_EXCEPTIONS: Record<string, string> = {
+  car: 'Lucide’s car stands on its wheels, which hang a pixel below its body’s centre.',
+  bus: 'Lucide’s bus stands on its wheels, which hang a pixel below its body’s centre.',
+  'cloud-rain': 'The rain falls below the cloud, half a pixel past the centre.',
+};
 
-const LINE_ART = [...ICON_CATALOG_1, ...ICON_CATALOG_2].filter(
+const LINE_ART = [...ICON_CATALOG_1, ...ICON_CATALOG_2, ...ICON_CATALOG_3].filter(
   (d) => !d.prims.some((p) => p.t === 'text'),
 );
 

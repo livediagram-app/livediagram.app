@@ -92,6 +92,9 @@ Built in the behaviour elements' current direction ([Participant responses](part
   but its countdown is not running, "Intro, running, 5 minutes" while it runs,
   and "Intro, not started, 5 minutes" (or done / current) for a viewer who
   cannot press it.
+- A card too short for its segments leaves the last off. So an agenda an agent writes, added with its
+  segments or given new ones, grows down to the height that draws every one (`agendaFitHeight`; it never
+  shrinks), as a label grows its box.
 - **No segments** gets the shared invitation ("No segments yet", "Add them from
   the element's menu, under Segments").
 - Motion is canvas motion, in `qa-board.css`, off under reduced motion.

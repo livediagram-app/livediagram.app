@@ -51,6 +51,17 @@ vi.mock('./selection-aware-views', async (importOriginal) => {
     }),
   };
 });
+// Each element's slot in the list: its count shows whether a layer render walked the board.
+const slotRenders = { count: 0 };
+vi.mock('./PreviewedElement', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./PreviewedElement')>();
+  return {
+    PreviewedElement: (props: Parameters<typeof real.PreviewedElement>[0]) => {
+      slotRenders.count += 1;
+      return real.PreviewedElement(props);
+    },
+  };
+});
 // The grips layer is re-created on every layer render, so its count is the layer's.
 const layerRenders = { count: 0 };
 vi.mock('@/components/canvas/SelectionGripsLayer', async (importOriginal) => {
@@ -154,6 +165,7 @@ function mount(first = layerProps()) {
   renders.arrow.clear();
   renders.frame.clear();
   layerRenders.count = 0;
+  slotRenders.count = 0;
   return view;
 }
 
@@ -168,6 +180,22 @@ describe('element views render only for their own changes', () => {
     const { rerender } = mount();
     rerender(<CanvasElementsLayer {...layerProps()} />);
     expect(counts()).toEqual({ boxed: 0, arrows: 0 });
+  });
+
+  // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved": a press or a release
+  // renders the editor (a drag begins or ends), and that must not walk the board's elements.
+  it('walks no element slot for an editor render that changes nothing they show', () => {
+    const { rerender } = mount();
+    rerender(<CanvasElementsLayer {...layerProps()} />);
+    rerender(<CanvasElementsLayer {...layerProps()} />);
+    expect(slotRenders.count).toBe(0);
+  });
+
+  it('walks the element slots again when an element changes', () => {
+    const { rerender } = mount();
+    const moved = BOARD.map((el) => (el.id === c.id ? { ...el, x: 40 } : el));
+    rerender(<CanvasElementsLayer {...layerProps({ elements: moved })} />);
+    expect(slotRenders.count).toBe(BOARD.length);
   });
 
   it('renders no element view, and no arrow frame slot, for a zoom', () => {
@@ -246,6 +274,45 @@ describe('drawing a drag preview', () => {
     expect([...renders.boxed.keys()]).toEqual([a.id]);
     expect(drawnAs.get(a.id)).toBe(movedA);
     expect([...renders.arrow.keys()]).toEqual([ab.id]);
+  });
+
+  // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved": a preview frame renders
+  // neither the layer nor any element it leaves alone.
+  it('does not render the layer itself for a preview frame', () => {
+    mount();
+    for (const y of [10, 20, 30])
+      act(() =>
+        setLocalPreview(
+          't',
+          BOARD.map((el) => (el.id === a.id ? { ...a, y } : el)),
+          BOARD,
+        ),
+      );
+    expect(layerRenders.count).toBe(0);
+    expect([...renders.boxed.keys()]).toEqual([a.id]);
+    expect(renders.boxed.get(a.id)).toBe(3);
+    expect((drawnAs.get(a.id) as { y: number } | undefined)?.y).toBe(30);
+  });
+
+  it('lists an element the preview adds, after its neighbour, and drops one it removes', () => {
+    const { container } = mount();
+    const copy = { ...c, id: 'copy-of-c', x: 80 };
+    act(() =>
+      setLocalPreview(
+        't',
+        [a, b, c, copy, ab].filter((el) => el.id !== b.id),
+        BOARD,
+      ),
+    );
+    expect(drawnAs.get(copy.id)).toBe(copy);
+    expect(renders.boxed.has(b.id)).toBe(false);
+    expect(container.querySelectorAll('[data-arrow-svg]').length).toBe(1);
+    // The copy moving on renders it alone; the list holds.
+    const before = layerRenders.count;
+    const moved = { ...copy, x: 120 };
+    act(() => setLocalPreview('t', [a, c, moved, ab], BOARD));
+    expect(layerRenders.count).toBe(before);
+    expect(drawnAs.get(copy.id)).toBe(moved);
   });
 
   it('ignores a preview for another tab', () => {

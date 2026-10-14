@@ -19,6 +19,8 @@ import {
   themeColourFields,
   type Element,
   type ThemeDefinition,
+  rederiveColorPresetForTheme,
+  shapeColorPresets,
 } from '@livediagram/document';
 import { fillValue, isHexColour, resolveColourValue } from './colours';
 import { kindOf } from './element-text';
@@ -195,9 +197,34 @@ export function writeFieldsOnto<T extends Element>(
   const set = Object.fromEntries(
     Object.entries(patch).filter(([, v]) => v !== null && v !== undefined),
   );
-  const merged = mergeElementUpdate(el, set);
+  let merged = mergeElementUpdate(el, set);
   for (const [key, v] of Object.entries(patch))
     if (v === null || v === undefined) delete merged[key];
+  // A shape's preset is its look in the tab's theme (docs/specs/010-palette/style-presets.md): its colours are the
+  // preset's, as picking it in the editor sets them, then any colour this write names itself. Stored alone, the id
+  // drew nothing of it.
+  if (typeof patch.colorPreset === 'string' && el.type === 'shape') {
+    const derived = rederiveColorPresetForTheme(merged as Element, theme) as Record<
+      string,
+      unknown
+    >;
+    if (derived === merged) {
+      const ids = shapeColorPresets(theme).map((p) => p.id);
+      return invalidValue(
+        operation,
+        'colorPreset',
+        patch.colorPreset,
+        'is not a preset of the theme',
+        `colorPreset takes ${ids.join(', ')}.`,
+      );
+    }
+    const own = Object.fromEntries(
+      ['fillColor', 'strokeColor', 'textColor'].flatMap((k) =>
+        patch[k] != null ? [[k, patch[k]]] : [],
+      ),
+    );
+    merged = { ...derived, ...own };
+  }
   // Every key was checked against the element's type above, so the element keeps its type; finalise
   // validates the values.
   return { next: merged as T, written: Object.keys(fields), warnings, capped };

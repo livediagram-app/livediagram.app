@@ -282,6 +282,28 @@ export function recolourElementForTheme(el: Element, theme: ThemeDefinition): El
   return { ...el, ...patch } as Element;
 }
 
+// A page layout's elements in its tab's theme (docs/specs/007-editor/illustrate-pages.md "Layouts"): a layout is built
+// without colours of its own where it means the theme's, so each colour an element leaves unset takes the tab's
+// built-in theme's, as any element made on the tab does; a colour the layout set (an accent, a callout's tint) is
+// kept. The default scheme and a custom theme (resolved only in the editor) leave it as built.
+export function themedForTab<E extends Element>(
+  elements: readonly E[],
+  themeId: string | undefined,
+): E[] {
+  const found =
+    themeId && themeId !== DEFAULT_SCHEME_ID ? THEMES.find((t) => t.id === themeId) : undefined;
+  if (!found) return [...elements];
+  const theme = themeHalf(found, 'light');
+  return elements.map((el) => {
+    const patch: Record<string, string> = {};
+    for (const { element, theme: key } of themeColourFields(el)) {
+      const value = theme[key];
+      if (value && (el as Record<string, unknown>)[element] === undefined) patch[element] = value;
+    }
+    return Object.keys(patch).length ? ({ ...el, ...patch } as E) : el;
+  });
+}
+
 // Soft theme switch: change the tab's theme but preserve every
 // per-element colour the user has CUSTOMISED. A field counts as
 // "still on the old theme" (and is therefore safe to replace) when

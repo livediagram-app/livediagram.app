@@ -10,6 +10,7 @@
 
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
+import { PAGE_EXPORT_PAPER, type PageExportFrame } from './illustrate-page-frame';
 import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
 import {
   hasShapeSilhouette,
@@ -544,30 +545,40 @@ export function renderElementsToSvg(
     // A plan view's or placeholder's picture (a Dashboard laid out, @livediagram/plan-art); its labelled box when
     // absent or answering nothing.
     resolvePlanArt?: ResolvePlanArt;
+    // One Illustrate page as an export draws it (illustrate-page-frame.ts, svg-render-pages.ts): the drawing is the
+    // page's rect, painted with its background, its elements inked for it; only the elements reaching it are drawn.
+    // `writingSvg` goes over the page and under every element (an article's writing).
+    frame?: PageExportFrame & { writingSvg?: string };
   } = {},
 ): string {
-  const padding = opts.padding ?? EXPORT_PADDING;
-  const visible = visibleLayerElements(tab.elements, tab.layers);
+  const frame = opts.frame;
+  const padding = frame ? 0 : (opts.padding ?? EXPORT_PADDING);
+  const visible = visibleLayerElements(tab.elements, tab.layers).filter(
+    (el) => !frame || frame.reaches(el, tab.elements),
+  );
   // Shapes something sits on keep a solid fill under Sketch (sketch-backdrop.ts), as on the canvas.
   const backdrops = sketchBackdropIds(visible, tab.finish);
   // Every caption laid out once, in document order, so labels see each other.
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
-  const bounds = contentBounds(visible, labels);
+  const bounds = frame ? frame.bounds : contentBounds(visible, labels);
   const vbX = bounds.x - padding;
   const vbY = bounds.y - padding;
   const vbW = bounds.w + padding * 2;
   const vbH = bounds.h + padding * 2;
-  const bg = opts.background ?? tab.backgroundColor ?? EXPORT_BG;
+  const bg = frame ? PAGE_EXPORT_PAPER : (opts.background ?? tab.backgroundColor ?? EXPORT_BG);
   // What you export is what you see: an element with no colours of its own is
   // drawn in the ink of the paper it is being exported onto (docs/specs/007-editor/live-app.md), so a
   // dark canvas exports dark-canvas elements rather than pale ones.
-  const surface = canvasSurface(bg);
+  const surface = frame ? frame.surface : canvasSurface(bg);
   const parts: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
-    `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
+    frame
+      ? frame.backgroundSvg
+      : `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
   ];
+  if (frame?.writingSvg) parts.push(frame.writingSvg);
   // Webfont declarations for the faces this tab uses (docs/specs/004-interface-design/fonts.md), including
   // the one the event-storming notation asks for on its notes.
   // The categorical ramp the tab's theme gives its charts (docs/specs/009-elements/pie-chart.md), which is
@@ -587,7 +598,10 @@ export function renderElementsToSvg(
   // interleave by array order, so an arrow sent behind a box stays behind it.
   // A dimmed layer wraps its band in a <g opacity>.
   for (const band of layerBands(tab.elements, tab.layers)) {
-    const inner = band.elements.map((el) =>
+    const shown = frame
+      ? band.elements.filter((el) => frame.reaches(el, tab.elements))
+      : band.elements;
+    const inner = shown.map((el) =>
       el.type === 'arrow'
         ? svgArrow(el, tab.elements, surface, tab.font, labels, undefined, visible, bg, tab.finish)
         : svgBoxed(el, {

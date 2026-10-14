@@ -9,6 +9,7 @@ import {
   type IllustratePage,
   type Tab,
 } from '@livediagram/document';
+import { getBuiltInTheme } from '@livediagram/document';
 import { layoutCatalogueFor } from '@livediagram/templates';
 import { applyPageChanges, backgroundPatch } from './page-changes';
 import { pageSummaries } from './summary';
@@ -372,5 +373,18 @@ describe('worst case', () => {
     run(tab, changes);
     // Measured 29 to 57 ms on a loaded machine (load average 50); held at 2,000 ms for CI under load.
     expect(performance.now() - started).toBeLessThan(2000);
+  });
+});
+
+// docs/specs/007-editor/illustrate-pages.md "Layouts": a layout placed on a themed tab takes the theme where it sets no
+// colour, as any element made on the tab does.
+describe('a layout on a themed tab', () => {
+  it('takes the tab’s theme', () => {
+    const out = run(tabOf({ pages: [page('p1', { kind: 'slide' })], theme: 'mocha' }), [
+      { op: 'layout', page: 1, layout: 'slide-three-points' },
+    ]);
+    const circle = out.tab.elements.find((el) => el.type === 'shape' && el.shape === 'circle') as
+      (Element & { strokeColor?: string }) | undefined;
+    expect(circle?.strokeColor).toBe(getBuiltInTheme('mocha').elementStroke);
   });
 });

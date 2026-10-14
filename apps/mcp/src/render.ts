@@ -19,7 +19,11 @@ const renderer = createPngRenderer({
 // the tool call after its write was saved. Safe range: 1024 to 4096.
 export const PREVIEW_MAX_SIDE_PX = 2048;
 
-export async function svgToPngBase64(svg: string): Promise<string> {
-  const { png } = await renderer.renderPng(svg, 1, PREVIEW_MAX_SIDE_PX);
+export async function svgToPngBase64(
+  svg: string,
+  // The faces the drawing uses beyond Inter (preview-fonts.ts), when they could be fetched.
+  fonts: readonly Uint8Array[] = [],
+): Promise<string> {
+  const { png } = await renderer.renderPng(svg, 1, PREVIEW_MAX_SIDE_PX, fonts);
   return bytesToBase64(png);
 }

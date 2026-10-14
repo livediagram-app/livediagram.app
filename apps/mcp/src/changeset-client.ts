@@ -20,6 +20,7 @@ import {
 import { ApiError, apiJson } from './api';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue } from './element-values';
+import { packFreehandPoints } from './freehand-points';
 import type { Env } from './env';
 
 export async function submitChangeset(
@@ -39,6 +40,12 @@ export async function submitChangeset(
       body: JSON.stringify(body),
     },
   );
+}
+
+// The api's result text as the model reads it: its footer's revert line names the CLI command, which no
+// MCP tool runs, so it is left off rather than sending the model to a command it cannot reach.
+export function mcpResultText(text: string): string {
+  return text.replace(/ · revert: livediagram changeset revert \S+ \S+/g, '');
 }
 
 // One op of `update_document`'s ops mode, as the model sends it.
@@ -85,20 +92,30 @@ export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unk
     const n = i + 1;
     if (op.op === 'add') {
       if (!op.element) return `ops[${n}]: add needs "element"`;
-      const valueIssue = elementsIssue([op.element]);
+      const drawn = packFreehandPoints([op.element]);
+      if ('error' in drawn) return `ops[${n}]: ${drawn.error}`;
+      const given = drawn.elements[0] as Record<string, unknown>;
+      const valueIssue = elementsIssue([given]);
       if (valueIssue) return `ops[${n}]: ${valueIssue}`;
-      const element = withEnds(op.element);
+      const element = withEnds(given);
       if (typeof element === 'string') return `ops[${n}]: ${element}`;
       out.push({ op: 'add', element });
     } else if (op.op === 'update') {
       if (!op.elementId || !op.element) return `ops[${n}]: update needs "elementId" and "element"`;
       const stored = named(op.elementId);
-      const ended = withEnds(
-        stored?.type === 'arrow' ? { type: 'arrow', ...op.element } : op.element,
-      );
+      // New points for a stroke are packed as an added one's are: its box and its block, together.
+      let given = op.element;
+      if (stored?.type === 'freehand' && given.points !== undefined) {
+        const drawn = packFreehandPoints([{ ...given, type: 'freehand' }]);
+        if ('error' in drawn) return `ops[${n}]: ${drawn.error}`;
+        const { x, y, width, height, packedPoints } = drawn.elements[0] as Record<string, unknown>;
+        const { points: _points, ...rest } = given;
+        given = { ...rest, x, y, width, height, packedPoints };
+      }
+      const ended = withEnds(stored?.type === 'arrow' ? { type: 'arrow', ...given } : given);
       if (typeof ended === 'string') return `ops[${n}]: ${ended}`;
       const fields = { ...ended };
-      if (stored?.type === 'arrow' && op.element.type === undefined) delete fields.type;
+      if (stored?.type === 'arrow' && given.type === undefined) delete fields.type;
       if (stored && fields.id === stored.id) delete fields.id;
       if (stored && fields.type === stored.type) delete fields.type;
       out.push({ op: 'set', target: targetOf(op.elementId, stored), fields });

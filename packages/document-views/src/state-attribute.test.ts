@@ -23,8 +23,13 @@ describe('stateAttributeOf (R14, VW22)', () => {
   });
 
   it('places an agenda and a quiz', () => {
-    expect(state('agenda', { agendaItems: [{}, {}, {}], agendaCurrent: 1 })).toBe('item=2/3');
-    expect(state('agenda', { agendaItems: [{}, {}], agendaCurrent: undefined })).toBe('items=2');
+    const segment = { label: 'A', minutes: 10 };
+    expect(state('agenda', { agendaItems: [segment, segment, segment], agendaCurrent: 1 })).toBe(
+      'item=2/3 minutes=30',
+    );
+    expect(state('agenda', { agendaItems: [segment, segment], agendaCurrent: undefined })).toBe(
+      'items=2 minutes=20',
+    );
     expect(state('quiz', { quizRevealed: true })).toBe('state=revealed');
     expect(state('quiz', { quizLockedAt: 5 })).toBe('state=locked');
     expect(state('quiz', { quizStartedAt: 5 })).toBe('state=open');
@@ -77,5 +82,16 @@ describe('stateAttributeOf (R14, VW22)', () => {
 
   it('gives every other kind none', () => {
     expect(state('square')).toBe('');
+  });
+
+  it('says what a session button starts', () => {
+    expect(state('session-button', { session: { tool: 'timer', minutes: 10 } })).toBe(
+      'session=timer:10m',
+    );
+    expect(state('session-button', { session: { tool: 'vote', dots: 3 } })).toBe('session=vote:3');
+    expect(
+      state('session-button', { session: { tool: 'poll', style: 'yesNo', question: 'Go?' } }),
+    ).toBe('session=poll:yesNo');
+    expect(state('session-button', { session: { tool: 'stopwatch' } })).toBe('session=stopwatch');
   });
 });

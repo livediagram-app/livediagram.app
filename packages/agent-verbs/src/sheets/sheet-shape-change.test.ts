@@ -148,6 +148,8 @@ describe('borders', () => {
     expect(b.at().cells.get(cellKey(rows[0]!, cols[0]!))?.format?.bt).toBeUndefined();
     expect(code(b, { op: 'border', range: 'A1', color: 'red' })).toBe('format_invalid');
     expect(code(b, { op: 'border', range: '??' })).toBe('range_invalid');
+    // Wholly past the sheet: refused, not reported as drawn.
+    expect(code(b, { op: 'border', range: 'ZZ900:ZZ901' })).toBe('range_invalid');
   });
 });
 

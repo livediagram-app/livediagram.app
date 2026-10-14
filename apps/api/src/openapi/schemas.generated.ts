@@ -1362,6 +1362,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "blocks": {
         "type": "number"
       },
+      "estimatedPages": {
+        "type": "number"
+      },
       "flow": {
         "type": "string"
       },
@@ -1394,6 +1397,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pages",
       "blocks",
       "words",
+      "estimatedPages",
       "look"
     ],
     "type": "object"
@@ -7171,6 +7175,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "created": {
             "type": "boolean"
           },
+          "estimatedPages": {
+            "type": "number"
+          },
           "flow": {
             "type": "string"
           },
@@ -7200,6 +7207,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "required": [
           "blocks",
           "created",
+          "estimatedPages",
           "flow",
           "look",
           "pages",
@@ -9094,7 +9102,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "duplicate-label",
       "flow-backwards",
       "aspect-extreme",
-      "colour-on-themed"
+      "colour-on-themed",
+      "text-overflow"
     ],
     "type": "string"
   },
@@ -9502,6 +9511,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "elements": {
             "type": "number"
           },
+          "finish": {
+            "$ref": "#/components/schemas/Finish"
+          },
           "hidden": {
             "type": "number"
           },
@@ -9535,6 +9547,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "kinds"
             ],
             "type": "object"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/EditorMode"
           },
           "outOfScope": {
             "const": false,
@@ -10163,6 +10178,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "blocks": {
               "type": "number"
             },
+            "estimatedPages": {
+              "type": "number"
+            },
             "flow": {
               "type": "string"
             },
@@ -10194,6 +10212,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           "required": [
             "blocks",
+            "estimatedPages",
             "flow",
             "look",
             "markdown",
@@ -15594,6 +15613,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "elements": {
         "type": "number"
       },
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
+      },
       "hidden": {
         "type": "number"
       },
@@ -15627,6 +15649,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kinds"
         ],
         "type": "object"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/EditorMode"
       },
       "rev": {
         "type": [

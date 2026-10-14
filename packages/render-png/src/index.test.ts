@@ -63,6 +63,16 @@ describe('createPngRenderer', () => {
   });
 });
 
+describe('fonts for one render', () => {
+  it('takes faces beyond its own for a render, Inter drawing whatever they lack', async () => {
+    const renderer = createPngRenderer(loaders());
+    const extra = new Uint8Array(await readFile(boldPath));
+    const plain = await renderer.renderPng(svg('Total'));
+    const withExtra = await renderer.renderPng(svg('Total'), 1, undefined, [extra]);
+    expect(withExtra).toMatchObject({ width: plain.width, height: plain.height });
+  });
+});
+
 describe('a bound on the longer side', () => {
   const big = `<svg xmlns="http://www.w3.org/2000/svg" width="8000" height="2000"><rect width="8000" height="2000" fill="#fff"/></svg>`;
 

@@ -44,7 +44,7 @@ sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 The example is abridged; a real outline prints every element.
 
 - **Header** names the tab, its counts (boxes, frames, lanes, arrows), the tab kind when it is not a diagram
-  (`kind=event-storming`), an Illustrate tab's pages (`illustrate 4 pages: 3 slide, 1 article · view pages`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
+  (`kind=event-storming`), its mode when not Diagram and its finish when set (`mode=draw · finish=sketch`), an Illustrate tab's pages (`illustrate 4 pages: 3 slide, 1 article · view pages`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
 - **Kind** is the shape for shapes (`square`, `cylinder`, `frame`, `lane`, `entity`), an event-storming note's
   notation (`domain-event`, `command`; `es:actor` so it never reads as the actor shape), else the element type
   (`text`, `sticky`, `table`, `arrow`, `image`, `freehand`).

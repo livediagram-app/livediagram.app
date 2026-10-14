@@ -153,6 +153,8 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   // Meetings and Workshops: agendas, retros, live Q&A and the boards a team runs together.
   'meeting-agenda': 'meetings',
   'lean-coffee': 'meetings',
+  brainstorm: 'meetings',
+  'workshop-board': 'meetings',
   'town-hall': 'meetings',
   retrospective: 'meetings',
   'start-stop-continue': 'meetings',

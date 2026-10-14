@@ -117,9 +117,11 @@ export const ARTICLE_LOOKS: Readonly<Record<ArticleLookId, { label: string } & L
   },
 };
 
-/** Every field of an article's style, its own or its default. */
+/** Every field of an article's style: its own, else its look's, else Clean's. */
 export function resolveArticleStyle(style: ArticleStyle | undefined): ResolvedArticleStyle {
-  const base = ARTICLE_LOOKS.clean;
+  // The look it names is the base (an agent's write names a look and sets no field), its own fields over it; Clean
+  // when it names none.
+  const base = ARTICLE_LOOKS[style?.look ?? 'clean'] ?? ARTICLE_LOOKS.clean;
   return {
     headingFont: style?.headingFont ?? base.headingFont,
     bodyFont: style?.bodyFont ?? base.bodyFont,

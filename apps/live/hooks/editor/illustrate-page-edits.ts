@@ -27,6 +27,7 @@ import {
   pageBackgroundSet,
   pageDuplicated,
   pageLaidOut,
+  themedForTab,
   pageLockRefuses,
   pageLockSet,
   pageMargin,
@@ -454,7 +455,14 @@ export function illustratePageEdits({
       const page = pages.find((p) => p.id === pageId);
       if (!page) return null;
       const previous = elementsOnPage(t.elements, pages, pageId);
-      return edited(t, pageLaidOut(t, pageId, buildPageLayoutOver(layoutId, page, previous)));
+      return edited(
+        t,
+        pageLaidOut(
+          t,
+          pageId,
+          themedForTab(buildPageLayoutOver(layoutId, page, previous), t.theme),
+        ),
+      );
     });
     onLayoutPlaced();
     debugLog('[illustrate-page] layout placed', { tabId, pageId, layout: layoutId });

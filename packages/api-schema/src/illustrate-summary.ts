@@ -7,6 +7,7 @@ import {
   articlesOf,
   articleTitleOf,
   articleWordCount,
+  estimateArticle,
   elementIdsOnPage,
   illustratePagesOf,
   layOutIllustratePages,
@@ -64,6 +65,7 @@ export function pageSummaries(tab: PagesTab): PageSummary[] {
 /** Every article as the answers list it, in row order. */
 export function articleSummaries(tab: PagesTab): ArticleSummary[] {
   const pages = illustratePagesOf(tab);
+  const laid = layOutIllustratePages(pages);
   const articles = articlesOf(tab);
   const seen: string[] = [];
   for (const p of pages)
@@ -76,6 +78,9 @@ export function articleSummaries(tab: PagesTab): ArticleSummary[] {
       pages: pages.flatMap((p, i) => (p.flow === flow ? [i + 1] : [])),
       blocks: doc.blocks.length,
       words: articleWordCount(doc),
+      // How many pages its writing reaches once laid out, estimated without a browser (the editor adds pages to
+      // hold it, and drops those it leaves empty).
+      estimatedPages: Math.max(1, estimateArticle(tab, flow, laid, '#000000').pagesUsed),
       look: doc.style?.look ?? null,
     };
   });
