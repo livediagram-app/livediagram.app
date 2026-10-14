@@ -16,6 +16,26 @@ describe('acceptsInlineIcon', () => {
     for (const kind of own) expect(acceptsInlineIcon(createShape(kind, 0, 0)), kind).toBe(false);
   });
 
+  it('refuses a face drawn whole with no place for an icon, so a dropped icon is never swallowed', () => {
+    for (const kind of [
+      'badge',
+      'step',
+      'layer-stack',
+      'pyramid',
+      'cycle',
+      'hub',
+      'onion',
+      'chevrons',
+      'sequence',
+      'diagram-key',
+      'tab-window',
+    ] as const)
+      expect(acceptsInlineIcon(createShape(kind, 0, 0)), kind).toBe(false);
+    const person = { ...createShape('mind-node', 0, 0), mindLook: 'person' } as never;
+    expect(acceptsInlineIcon(person)).toBe(false);
+    expect(acceptsInlineIcon(createShape('mind-node', 0, 0))).toBe(true);
+  });
+
   it('still folds into an ordinary shape', () => {
     expect(acceptsInlineIcon(createShape('square', 0, 0))).toBe(true);
     expect(acceptsInlineIcon(createShape('diamond', 0, 0))).toBe(true);

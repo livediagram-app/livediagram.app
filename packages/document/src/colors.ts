@@ -15,6 +15,7 @@ import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
+import { isConceptShape } from './concept';
 import { FENCE_WOOD } from './fence';
 
 // Per-type default padding bucket (was beside the Padding type).
@@ -619,10 +620,27 @@ export function positionsInlineIcon(element: Element): boolean {
   return acceptsInlineIcon(element) && !SELF_PLACED_ICON_SHAPES.has(element.shape);
 }
 
+// The kinds whose own face never draws an inline icon: a badge or step number (chip.ts, its number or text), a concept
+// graphic (its rows), a sequence diagram, a Diagram key, a tab window, and a mind node drawn as a person (its initials).
+// The chip kinds are named here rather than read from chip.ts, which imports this file.
+function drawsNoInlineIcon(element: ShapeElement): boolean {
+  return (
+    element.shape === 'badge' ||
+    element.shape === 'step' ||
+    isConceptShape(element.shape) ||
+    element.shape === 'sequence' ||
+    element.shape === 'diagram-key' ||
+    element.shape === 'tab-window' ||
+    (element.shape === 'mind-node' && element.mindLook === 'person')
+  );
+}
+
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
   return (
     element.type === 'shape' &&
     !hasOwnFace(element.shape) &&
+    // Faces drawn whole, with no place for an icon: a dropped one would vanish (docs/specs/009-elements).
+    !drawsNoInlineIcon(element) &&
     element.shape !== 'icon' &&
     element.shape !== 'sticker' &&
     element.shape !== 'frame' &&
