@@ -386,7 +386,7 @@ In Plan mode:
   **Add to Slides** (an item slide, [Presentation mode](../012-collaboration/presentation-mode.md#item-slides)),
   **Edit Card Type** (the card's type in the type editor),
   **Move to** another column of the board, and **Trash** (to the [Trash](items.md#trash), restorable there). Someone who may only view gets
-  Open alone; a face-down card has no menu. It is the shared context menu, so it opens at the pointer, stays
+  Open alone; a Participant gets Open, Duplicate, Move to and Flag (or Remove Flag), as the item panel's ⋯ menu gives it; a face-down card has no menu. It is the shared context menu, so it opens at the pointer, stays
   inside the window as it grows and is a bottom sheet on a phone, as the element menu is.
 - **Open an item**: clicking a card opens the **item panel**, a wide modal over the canvas. Every field of the
   item's type is edited in place and saved as it changes, except votes, which live on the card face only. It

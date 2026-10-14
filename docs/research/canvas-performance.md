@@ -367,6 +367,33 @@ Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main
   nothing, and nothing resizes during a drag. The 300 full-canvas arrow `<svg>` roots are relaid out
   ("Size changed") only at the press and the release, when the layer they share is relaid out.
 
+## A stroke's release, and containment
+
+Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main at `155fdefa9`.
+
+- **Containment does not help here.** `contain: layout` on every element wrapper (an injected style)
+  left a diagram stroke's release where it was (136-176 ms against 181 ms): layout was only about
+  8 ms of it.
+- **The cost was a restyle of the whole board**: 41-50 ms of style recalculation over 2,760 nodes in
+  the release. When a diagram stroke lands the tool goes back to Select, the canvas world's cursor
+  changes, and a cursor is inherited, so every element beneath it was restyled. Pinning the world's
+  cursor (an injected `!important` style) brought it to 186 nodes and 7 ms. The same change happens
+  on every tool switch and at the start and end of a pan.
+- **What shipped**: the elements sit in a `display: contents` plane with `cursor: auto`. Measured
+  interleaved (both builds served at once, runs alternating), a diagram stroke's release went from
+  142-151 ms to 111-120 ms over four pairs, its restyle from 2,760 nodes and 41-43 ms to 246 nodes
+  and 10-11 ms.
+- **Interleave A/B runs on a shared machine.** Measured one build after the other, whiteboard zoom at
+  fit read about 5 ms worse with the plane; another session's test suite was running alongside
+  (load average 17-26). Interleaved over five pairs the two builds could not be told apart, each
+  swinging with the load. Serve the second build with `E2E_LIVE_OUT` on other ports, from a folder
+  `next build` does not wipe (it empties `.next`). The
+  cursor the browser shows over bare canvas, a shape and an arrow, under Select, a draw tool, Hand
+  and a whiteboard pen, read identically on both builds, and isometric view draws the same.
+- **The isometric rule** `:root:has([data-iso]) [data-floating-panel]` makes the browser re-check the
+  root on each insertion and restyle the floating panels (ten times in one release); rewriting it
+  without `:has` saved only 3-4 ms, so it stays.
+
 ## Not tried
 
 - `contain` on element wrappers, a raster snapshot of still elements during a gesture, and fewer

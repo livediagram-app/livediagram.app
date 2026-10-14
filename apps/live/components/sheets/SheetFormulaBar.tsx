@@ -47,7 +47,8 @@ export function enterNameBox(
   const named = findRangeName(layout, text);
   const at = named && posRangeOf(layout, named);
   if (at) return actions.goTo(at);
-  if (!c.canEdit) return;
+  // Naming is a change to the sheet's layout: an Editor's (docs/specs/029-sheets/sheet.md "Who may do what").
+  if (!c.canShape) return;
   const problem = rangeNameProblem(text, layout);
   if (problem) return c.toast(problem);
   const sel = c.selection.ranges[c.selection.ranges.length - 1]!;
