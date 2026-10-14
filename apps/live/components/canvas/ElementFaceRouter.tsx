@@ -98,6 +98,7 @@ type ElementFaceRouterProps = Pick<
   | 'timerControls'
   | 'timerState'
   | 'sessionStartBlocked'
+  | 'sessionRunBy'
   | 'revealedForMe'
   | 'onCommitTable'
   | 'onEnterPortal'
@@ -157,6 +158,7 @@ export function ElementFaceRouter({
   timerControls,
   timerState,
   sessionStartBlocked,
+  sessionRunBy,
   revealedForMe,
   onCommitTable,
   onEnterPortal,
@@ -283,6 +285,7 @@ export function ElementFaceRouter({
           label={label}
           textColor={textColor}
           canStart={!!onPressSessionButton && !sessionStartBlocked}
+          runBy={sessionRunBy ?? null}
           timerState={timerState}
           onPress={onPressSessionButton ? () => onPressSessionButton(element) : undefined}
           onSetConfig={

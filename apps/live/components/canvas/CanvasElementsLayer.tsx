@@ -131,6 +131,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onPressFocusButton,
     onPressSessionButton,
     sessionStartBlocked,
+    sessionRunBy,
     timerState,
     // The tab's live timer plus the handlers that drive it, so a Timer
     // session element can BE the timer (docs/specs/012-collaboration/session-button.md) rather than a button that
@@ -399,6 +400,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onPressFocusButton: h.onPressFocusButton,
       onPressSessionButton: h.onPressSessionButton,
       sessionStartBlocked,
+      sessionRunBy,
       timerState,
       tabTimer: tabTimer ?? null,
       onSetSessionConfig: h.onSetSessionConfig,
@@ -439,6 +441,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       voteReview,
       stablePalette,
       sessionStartBlocked,
+      sessionRunBy,
       timerState,
       tabTimer,
       commentSelfId,
