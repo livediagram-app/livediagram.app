@@ -362,3 +362,13 @@ describe('a frame grown to hold a new box', () => {
     expect((after.find((e) => e.id === 'g') as Element & { y: number }).y).toBeGreaterThan(900);
   });
 });
+
+describe('add <kind> with icon=', () => {
+  it('reads icon as the stored iconId, as graph input names it', () => {
+    const el = applied(run('add square label=Search icon=search right-of:n8')).tab.elements.find(
+      (e) => e.id === 'search',
+    );
+    expect(el).toMatchObject({ iconId: 'search' });
+    expect(el).not.toHaveProperty('icon');
+  });
+});
