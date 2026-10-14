@@ -42,7 +42,7 @@ import {
 } from './data-shapes';
 import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web-components';
 import { isCodeThemeId } from './code-themes';
-import { CHART_PALETTES, isChartPaletteId } from './chart-palettes';
+import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow, isMindSpacing } from './mind-flow';
 import {
   type ElementValidationIssue,
@@ -93,6 +93,20 @@ const dataArray = (field: string): FieldCheck => ({
   valid: (v) => boundedArray(v, MAX_DATA_ARRAY),
   rule: arrayRule(MAX_DATA_ARRAY),
 });
+// The chart palette ids a refusal lists, written out: reading CHART_PALETTES while this module loads would meet it
+// before it is defined in a bundle that orders the two the other way (the api worker failed to start). A test keeps
+// the two in step.
+export const CHART_PALETTE_IDS_RULE = [
+  'vivid',
+  'ocean',
+  'forest',
+  'sunset',
+  'berry',
+  'earth',
+  'grey',
+  'contrast',
+] as const;
+
 const flag = (field: string): FieldCheck => ({ field, valid: isBool, rule: 'a boolean' });
 const finite = (field: string): FieldCheck => ({ field, valid: isNum, rule: 'a finite number' });
 
@@ -220,7 +234,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   {
     field: 'chartPalette',
     valid: (v) => isChartPaletteId(v as string),
-    rule: oneOfRule(CHART_PALETTES.map((p) => p.id)),
+    rule: oneOfRule(CHART_PALETTE_IDS_RULE),
   },
   {
     field: 'embedProvider',
