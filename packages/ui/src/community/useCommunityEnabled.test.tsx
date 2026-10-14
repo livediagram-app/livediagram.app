@@ -60,7 +60,7 @@ async function renderOpened(fetchMock: ReturnType<typeof stubCapabilities>) {
   );
   await waitFor(() => expect(fetchMock).toHaveBeenCalled());
   await new Promise((resolve) => setTimeout(resolve, 0));
-  fireEvent.click(screen.getByRole('button', { name: /Welcome/ }));
+  fireEvent.click(screen.getByRole('button', { name: /currently Home/ }));
 }
 
 describe('the apps menu and footer', () => {
@@ -87,7 +87,7 @@ describe('asking only when it matters', () => {
     render(<ProductNav current="home" />);
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(fetchMock).not.toHaveBeenCalled();
-    fireEvent.pointerEnter(screen.getByRole('button', { name: /Welcome/ }).parentElement!);
+    fireEvent.pointerEnter(screen.getByRole('button', { name: /currently Home/ }).parentElement!);
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
   });
 
