@@ -41,7 +41,7 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | _(no heading)_  | Popular, full width                                                                                                                                                                             |
 | **Common**      | Logo (Illustrate, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
-| **Structure**   | Build, Components, Devices, Event Storming (on an event-storming board only)                                                                                                                    |
+| **Structure**   | Build, Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices, Event Storming (on an event-storming board only)                                                |
 | **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                              |
 | **Dynamic**     | Data (Illustrate, Facilitate)                                                                                                                                                                   |
 | **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Facilitate](../012-collaboration/facilitate-mode.md#the-palette) only)                                                                    |
@@ -75,7 +75,7 @@ label rather than above it.
 
 ## Rows, not tiles, for most categories
 
-Write, Draw, Collaborate, Data, Components, Media and Devices render as **rows
+Write, Draw, Collaborate, Data, Components, Concepts, Media and Devices render as **rows
 with a one-line blurb**, not as the icon-over-caption grid.
 
 The rule is whether the picture explains the thing, and only four categories

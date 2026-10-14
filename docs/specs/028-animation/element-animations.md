@@ -16,19 +16,22 @@ An **animation set** is the catalogue of animations offered for one family of el
 belongs to exactly one **body set**, which animates the element itself. An element that carries words also takes the
 **Text set**, which animates its words. The two compose: a box can pulse while its label types itself in.
 
-| Set     | Menu section | Members                                                                             | Field           |
-| ------- | ------------ | ----------------------------------------------------------------------------------- | --------------- |
-| Shape   | Shape        | shapes (every shape kind without a set of its own below), annotations, link cards   | `animation`     |
-| Sticky  | Sticky       | sticky notes                                                                        | `animation`     |
-| Drawing | Drawing      | freehand strokes, paths                                                             | `animation`     |
-| Media   | Media        | images, videos                                                                      | `animation`     |
-| Table   | Table        | tables                                                                              | `animation`     |
-| Text    | Text         | the words of a text element, a shape's label, a sticky note's text, a table's cells | `textAnimation` |
+| Set       | Menu section | Members                                                                                            | Field           |
+| --------- | ------------ | -------------------------------------------------------------------------------------------------- | --------------- |
+| Shape     | Shape        | shapes (every shape kind without a set of its own below), annotations, link cards                  | `animation`     |
+| Container | Shape        | boundaries ([The boundary](../009-elements/boundary.md)): the Shape set without its moving motions | `animation`     |
+| Sticky    | Sticky       | sticky notes                                                                                       | `animation`     |
+| Drawing   | Drawing      | freehand strokes, paths                                                                            | `animation`     |
+| Media     | Media        | images, videos                                                                                     | `animation`     |
+| Table     | Table        | tables                                                                                             | `animation`     |
+| Text      | Text         | the words of a text element, a shape's label, a sticky note's text, a table's cells                | `textAnimation` |
 
 A standalone **text element** has no body set: its words are the whole element, so it shows only Text Animation.
 
 A shape **carries words** when its kind takes a label. Icons, charts, progress, rating, stickers and chairs keep
-their own sets (below) and take no Text set.
+their own sets (below) and take no Text set; nor do badges and step numbers, whose few characters are part of their
+body, or the concept graphics, which animate their rows with the Concept set. A step number's **Play in Order** offsets
+its Shape animation by its number ([The step number](../009-elements/step-number.md)).
 
 ### Sets that already exist
 
@@ -40,6 +43,7 @@ These keep their catalogues and fields unchanged; they are listed so the menu ru
 | Chart            | Chart                                                                | pie, bar and line charts         | `pieAnim`                    | [Data charts](../009-elements/pie-chart.md)                                   |
 | Arrow            | Arrow                                                                | arrows                           | `flow`                       | [Canvas and palette](../008-canvas/canvas-and-palette.md) "Animated elements" |
 | Progress, Rating | (inside their own Progress / Rating category, not the Animation row) | progress bars and rings, ratings | `progressAnim`, `ratingAnim` | [Progress](../009-elements/progress.md), [Rating](../009-elements/rating.md)  |
+| Concept          | (inside the element's Tools section, like a chart's)                 | layer stacks, pyramids, cycles   | `conceptAnim`                | [Concept graphics](../009-elements/concept-graphics.md)                       |
 
 ## The menu
 

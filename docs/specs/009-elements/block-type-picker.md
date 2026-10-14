@@ -3,7 +3,7 @@
 ## What
 
 One dropdown in the rich-text toolbar: **Paragraph, Heading 1, Heading 2,
-Heading 3, Bullet point, Numbered point**. It is the toolbar's only heading and
+Heading 3, Bullet point, Numbered point**, and in a label the **Title and Caption** preset (below). It is the toolbar's only heading and
 list control; there are no separate list buttons.
 
 ## Why one control
@@ -60,6 +60,28 @@ current line in a note ([Rich-text notes](rich-text-notes.md)).
 shared by both toolbars for the same reason: one menu behaviour (inline, not
 portalled; closes on outside pointerdown; never steals the editor's
 selection), not two copies to drift.
+
+## Title and Caption
+
+Below a divider, the label toolbar's picker has one more entry, **Title and Caption**: a whole-label preset for the
+common two-tier node ("Payments" over "Stripe, EU region").
+
+- The **first line** becomes the title: bold, the label's own size.
+- **Every later line** becomes the caption: one run size smaller (`sm`) and **muted**, drawn at 65% of its colour's
+  opacity so it reads as secondary in any theme and on any fill.
+- A label with **one line** gains a second line reading "Caption", styled, so the caption is visible to replace.
+- It applies to the whole label whatever the selection (it describes the label's layout, not a line), and clears
+  any heading or list prefix it finds, so the result is always the same two tiers.
+- It is one history step, and the picker's trigger keeps reporting the first line's block type.
+
+The note toolbar does not offer it: a note is a document, not a node.
+
+`muted` is a run attribute beside `color` (`TextRun.muted?: boolean`), so the caption keeps the label's own colour
+and follows a theme switch rather than baking a grey. Every label renderer and every export draws a muted run at
+0.65 opacity; Markdown output drops it, as it drops colour. There is no separate toolbar control for it: Title and
+Caption is how a label gets one, and clearing formatting removes it.
+
+Animation is unchanged: the Text set animates both tiers as the label's words.
 
 ## Verified
 
