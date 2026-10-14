@@ -19,7 +19,7 @@ import {
 } from './graph-authoring';
 import { unionRects, type Rect } from './geometry-primitives';
 import { bowReciprocalEdges } from './arrow-reciprocal';
-import { faceGroupEdges, seatByMembers } from './auto-layout-cluster-seats';
+import { faceGroupEdges, headingLead, seatByMembers } from './auto-layout-cluster-seats';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // Space between a frame's border and its members: the top band is deeper so
@@ -166,6 +166,20 @@ export function layoutClusteredGraph(
 
   // 2. Contract: one frame element per cluster, sized to its members' block,
   // plus the free nodes, joined by the edges projected through the clusters.
+  // A line into a group's first members lands clear of its heading: the members start that much further in.
+  // (docs/specs/015-api/mcp-server.md "Groups keep their lines clear")
+  const lead = new Map(
+    clusters.map((c) => {
+      const inside = new Set(c.members);
+      const entered = new Set(
+        graph.edges.filter((e) => inside.has(e.to) && !inside.has(e.from)).map((e) => e.to),
+      );
+      return [
+        c.id,
+        headingLead(c.label ?? c.id, memberEls.get(c.id)!, entered, FRAME_PAD, direction ?? 'TB'),
+      ] as const;
+    }),
+  );
   const frames: BoxedElement[] = clusters.map((c) => {
     const b = bbox(memberEls.get(c.id)!);
     return {
@@ -174,7 +188,8 @@ export function layoutClusteredGraph(
       shape: 'frame' as const,
       x: 0,
       y: 0,
-      width: b.width + 2 * FRAME_PAD,
+      // The lead both sides: the members stay centred in the frame, which the contracted layout lines up on.
+      width: b.width + 2 * (FRAME_PAD + lead.get(c.id)!),
       height: b.height + FRAME_TOP + FRAME_PAD,
       label: c.label ?? c.id,
       // A header in the band FRAME_TOP reserves: top-left, bold, at the nodes'
@@ -217,7 +232,7 @@ export function layoutClusteredGraph(
     placedFrames.push(frame);
     const members = memberEls.get(c.id)!;
     const b = bbox(members);
-    const dx = frame.x + FRAME_PAD - b.x;
+    const dx = frame.x + FRAME_PAD + lead.get(c.id)! - b.x;
     const dy = frame.y + FRAME_TOP - b.y;
     for (const m of members) placedNodes.push({ ...m, x: m.x + dx, y: m.y + dy });
   }

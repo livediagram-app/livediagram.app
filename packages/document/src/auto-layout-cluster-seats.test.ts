@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { layoutClusteredGraph } from './auto-layout-clusters';
-import { faceGroupEdges, seatByMembers } from './auto-layout-cluster-seats';
+import {
+  faceGroupEdges,
+  frameHeadingRect,
+  headingLead,
+  seatByMembers,
+} from './auto-layout-cluster-seats';
 import { arrowPolyline } from './arrow-path-hits';
 import { buildElementIndex } from './geometry';
 import { pathsCross } from './index';
@@ -225,5 +230,57 @@ describe('routes round a frame', () => {
       i === 0 ? [p] : [p, { x: (p.x + route[i - 1]!.x) / 2, y: (p.y + route[i - 1]!.y) / 2 }],
     );
     expect(points.filter(inside)).toEqual([]);
+  });
+});
+
+describe('frame headings', () => {
+  it('reckons a heading from its label, and none for a frame without one', () => {
+    expect(frameHeadingRect({ x: 10, y: 20, label: ' Build ' })).toEqual({
+      x: 10,
+      y: 20,
+      width: 5 * 8 + 24,
+      height: 36,
+    });
+    expect(frameHeadingRect({ x: 0, y: 0, label: '  ' })).toBeNull();
+    expect(frameHeadingRect({ x: 0, y: 0 })).toBeNull();
+  });
+
+  it('leads a frame in far enough that a line into its first member clears the heading', () => {
+    const members = [box('a', 0, 0, 100), box('b', 200, 0, 140), box('c', 0, 200)];
+    // "Continuous integration": 22 characters, a heading 200 px wide; a's centre sits 32 + 50 in.
+    const lead = headingLead('Continuous integration', members, new Set(['a']), 32, 'TB');
+    expect(lead).toBe(200 + 16 - 82);
+    // The narrowest entered first member is reckoned in the leftmost slot.
+    expect(headingLead('Continuous integration', members, new Set(['b']), 32, 'TB')).toBe(
+      200 + 16 - 102,
+    );
+  });
+
+  it('leads nowhere when nothing enters a first member, or across the page, or with no heading', () => {
+    const members = [box('a', 0, 0), box('c', 0, 200)];
+    expect(headingLead('Continuous integration', members, new Set(['c']), 32, 'TB')).toBe(0);
+    expect(headingLead('Continuous integration', members, new Set(['a']), 32, 'LR')).toBe(0);
+    expect(headingLead(undefined, members, new Set(['a']), 32, 'TB')).toBe(0);
+    expect(headingLead('Ok', members, new Set(['a']), 32, 'TB')).toBe(0);
+    expect(headingLead('Continuous integration', [], new Set(), 32, 'TB')).toBe(0);
+  });
+
+  it('keeps every line off the heading of a group a flow enters from above', () => {
+    const els = layoutClusteredGraph(
+      {
+        nodes: ['start', 'lint', 'unit', 'build'].map((id) => ({ id, label: id })),
+        edges: ['lint', 'unit', 'build'].map((to) => ({ from: 'start', to })),
+        clusters: [
+          { id: 'ci', label: 'Continuous integration', members: ['lint', 'unit', 'build'] },
+        ],
+      },
+      { direction: 'TB', makeEdgeId: ids },
+    );
+    const heading = frameHeadingRect(byId(els, 'ci'))!;
+    for (const id of ['lint', 'unit', 'build'])
+      expect(cx(byId(els, id))).toBeGreaterThan(heading.x + heading.width);
+    // Centred in its frame still, so a spine through it runs straight.
+    const frame = byId(els, 'ci');
+    expect(Math.abs(cx(byId(els, 'unit')) - cx(frame))).toBeLessThan(1);
   });
 });

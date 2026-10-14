@@ -474,7 +474,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   to or from the group itself leaves the frame facing the other end: from the side level with it when it lies under
   the frame, else from the frame's near side, so it never sweeps along the frame past its members' own drops (the
   D2 "publish events" bus). An edge between two nodes outside a group is routed round the frame, never through the
-  gaps between its members.
+  gaps between its members. A line into a group's first members lands clear of its heading: down the page, a frame
+  whose first member would take a line through the heading's text is widened on the left until it does not.
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
   what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted. `true` names them by default: in a flowchart by ISO 5807

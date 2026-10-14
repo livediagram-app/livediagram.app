@@ -163,3 +163,50 @@ export function faceGroupEdges(
     return { ...a, [end]: { kind: 'pinned', elementId: frame.id, anchor } };
   });
 }
+
+// A frame's heading as drawn at its top left: its label's estimated width, at about FRAME_HEADING_CHAR_PX a
+// character (bold, at the nodes' size) plus its padding, FRAME_HEADING_HEIGHT tall. An estimate: a heading is a
+// few words, and the lead it sets keeps FRAME_HEADING_CLEAR spare.
+export const FRAME_HEADING_CHAR_PX = 8;
+export const FRAME_HEADING_PAD = 24;
+export const FRAME_HEADING_HEIGHT = 36;
+export const FRAME_HEADING_CLEAR = 16;
+
+export function frameHeadingRect(frame: {
+  x: number;
+  y: number;
+  label?: string;
+}): { x: number; y: number; width: number; height: number } | null {
+  const text = frame.label?.trim();
+  if (!text) return null;
+  return {
+    x: frame.x,
+    y: frame.y,
+    width: text.length * FRAME_HEADING_CHAR_PX + FRAME_HEADING_PAD,
+    height: FRAME_HEADING_HEIGHT,
+  };
+}
+
+// How much further in from a frame's left edge its members start, down the page, so a line from outside into one of
+// its first members lands clear of the heading: `pad` is the frame's own left padding, `members` laid out among
+// themselves. The narrowest of those first members is reckoned in the leftmost slot, since the members are later
+// reordered by their neighbours.
+export function headingLead(
+  label: string | undefined,
+  members: readonly BoxedElement[],
+  enteredFromOutside: ReadonlySet<string>,
+  pad: number,
+  direction: LayoutDirection,
+): number {
+  if (direction !== 'TB' || members.length === 0) return 0;
+  const heading = frameHeadingRect({ x: 0, y: 0, label });
+  if (!heading) return 0;
+  const top = Math.min(...members.map((m) => m.y));
+  const first = members.filter((m) => m.y - top < 1);
+  const entered = first.filter((m) => enteredFromOutside.has(m.id));
+  if (entered.length === 0) return 0;
+  const left = Math.min(...members.map((m) => m.x));
+  const slot = Math.min(...first.map((m) => m.x)) - left;
+  const centre = pad + slot + Math.min(...entered.map((m) => m.width)) / 2;
+  return Math.max(0, Math.ceil(heading.width + FRAME_HEADING_CLEAR - centre));
+}

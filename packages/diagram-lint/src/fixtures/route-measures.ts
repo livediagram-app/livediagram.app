@@ -13,6 +13,7 @@ import {
   type Element,
   type Point,
   type Tab,
+  frameHeadingRect,
 } from '@livediagram/document';
 import { lintTab } from '../lint';
 import { prepareLintContext } from '../context';
@@ -34,10 +35,6 @@ export type RouteMeasures = {
 const SAME_LINE = 2;
 // Runs near an arrow's ends converge on a shared side by design (the endpoint spread separates the heads).
 const END_ROOM = 24;
-// A frame's heading: its label's estimated width, at about this many px a character plus its padding, this tall.
-const HEADING_CHAR_PX = 8;
-const HEADING_PAD = 24;
-const HEADING_HEIGHT = 36;
 
 type Run = { horizontal: boolean; at: number; from: number; to: number };
 
@@ -122,18 +119,11 @@ function segmentHits(a: Point, b: Point, r: Rect): boolean {
 }
 
 function headingsOf(elements: readonly Element[]): Rect[] {
-  return elements.flatMap((el) =>
-    el.type === 'shape' && el.shape === 'frame' && el.label?.trim()
-      ? [
-          {
-            x: el.x,
-            y: el.y,
-            width: el.label.trim().length * HEADING_CHAR_PX + HEADING_PAD,
-            height: HEADING_HEIGHT,
-          },
-        ]
-      : [],
-  );
+  // A frame's heading as the layout reckons it (frameHeadingRect), so the measure and the layout agree.
+  return elements.flatMap((el) => {
+    const r = el.type === 'shape' && el.shape === 'frame' ? frameHeadingRect(el) : null;
+    return r ? [r] : [];
+  });
 }
 
 export function routeMeasures(tab: Pick<Tab, 'elements' | 'layers' | 'theme'>): RouteMeasures {

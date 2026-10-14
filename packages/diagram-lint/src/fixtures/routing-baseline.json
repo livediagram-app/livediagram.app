@@ -20,34 +20,34 @@
     "extent": "1032×1115"
   },
   "graph-flow-13": {
-    "shared": 1449,
+    "shared": 1486,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1831×1018"
+    "extent": "1836×1018"
   },
   "graph-flow-15": {
-    "shared": 2934,
+    "shared": 2973,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1986×1018"
+    "extent": "1992×1018"
   },
   "graph-flow-17": {
     "shared": 314,
     "crossed": 0,
-    "strikes": 3,
+    "strikes": 0,
     "kinks": 0,
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1116×2326"
+    "extent": "1278×2326"
   },
   "graph-flow-9": {
     "shared": 83,
