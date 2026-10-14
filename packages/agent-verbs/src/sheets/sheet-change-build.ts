@@ -35,6 +35,8 @@ import {
 import type { SheetRefusal } from './sheet-state';
 import { buildRuleChange, type SheetRuleChange } from './sheet-rule-change';
 import { buildShapeChange, type SheetShapeChange } from './sheet-shape-change';
+import { buildDesign, type SheetDesignInput } from './sheet-design';
+import { buildChartChange, type SheetChartChange, type SheetChartOut } from './sheet-charts';
 import { plural } from '@livediagram/document';
 
 // How a cell looks, in words; null clears that part (false clears a flag).
@@ -70,10 +72,18 @@ export type SheetChange =
   // Validation and format rules (sheet-rule-change.ts).
   | SheetRuleChange
   // Sizes, merges, borders and the filter (sheet-shape-change.ts).
-  | SheetShapeChange;
+  | SheetShapeChange
+  // A sheet laid out as a template is (sheet-design.ts), and a chart over cells (sheet-charts.ts).
+  | { op: 'design'; design: SheetDesignInput }
+  | SheetChartChange;
 
-// What one change sends, and the line that says what it did.
-export type BuiltChange = { ok: true; writes: SheetWrite[]; line: string } | SheetRefusal;
+// What one change sends, the line that says what it did, and the charts it puts over the cells (for the caller to add
+// to the tab).
+export type BuiltChange =
+  { ok: true; writes: SheetWrite[]; line: string; charts?: SheetChartOut[] } | SheetRefusal;
+
+// What a change needs of where its sheet is drawn: whether its tab's canvas is dark (a design's tints follow it).
+export type SheetChangeContext = { dark?: boolean };
 
 const refuse = (code: string, message: string): SheetRefusal => ({ ok: false, code, message });
 
@@ -146,6 +156,7 @@ export function buildSheetChange(
   change: SheetChange,
   takenTitles: readonly string[],
   rand: Rand = Math.random,
+  context: SheetChangeContext = {},
 ): BuiltChange {
   const sheet = wb.sheet(sheetId)!;
   const rowCount = sheet.layout.rows.length;
@@ -319,6 +330,10 @@ export function buildSheetChange(
     case 'border':
     case 'filter':
       return buildShapeChange(wb, sheetId, change);
+    case 'design':
+      return buildDesign(wb, sheetId, change.design, { dark: !!context.dark }, rand);
+    case 'chart':
+      return buildChartChange(wb, sheetId, change);
     case 'freeze': {
       if (change.rows === undefined && change.cols === undefined)
         return refuse('write_invalid', 'Freeze names rows, cols or both (0 unfreezes).');

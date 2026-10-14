@@ -13,10 +13,15 @@ import {
   FONT_SIZE_MIN,
   FONT_SIZE_MAX,
   NUMBER_FORMATS,
+  SHEET_ACCENTS,
   SHEET_COLS_MAX,
+  SHEET_LOOKS,
   SHEET_ROWS_MAX,
 } from '@livediagram/sheets';
+import { CHART_TYPES } from '@livediagram/document';
 import { BORDER_COLOUR_DEFAULT } from '../sheets/sheet-shape-change';
+import { DESIGN_ACCENT_DEFAULT } from '../sheets/sheet-design';
+import { SHEET_CHART_SIZE } from '../sheets/sheet-charts';
 
 const url = z.string().describe('Link that opens the document in the livediagram editor.');
 const documentId = z.string().describe('The document (from find_documents).');
@@ -89,6 +94,148 @@ const formatArg = z
       .describe(`The currency symbol: ${CURRENCY_SYMBOLS.join(' ')}; null for the default.`),
   })
   .describe('The parts of the format to set; parts left out are kept.');
+
+const designFormat = z
+  .union([z.string(), formatArg])
+  .describe(`A number format by name (${NUMBER_FORMATS.join(', ')}), or a format in words.`);
+
+const chartType = z
+  .enum(CHART_TYPES)
+  .describe('column, bar, line, area, scatter, pie or doughnut.');
+
+const designArg = z
+  .object({
+    heading: z.string().describe('The title in A1, large and in the accent, across the sheet.'),
+    subtitle: z
+      .string()
+      .optional()
+      .describe('A quiet line under it, in A2: what the sheet is for, what to type over.'),
+    accent: z
+      .enum(SHEET_ACCENTS)
+      .optional()
+      .describe(
+        `The colour family of the header rows, title, totals and charts (default ${DESIGN_ACCENT_DEFAULT}).`,
+      ),
+    look: z
+      .enum(SHEET_LOOKS)
+      .optional()
+      .describe(
+        `banded (default: filled header, every other row tinted, ruled total), header, boxed (every cell lined), minimal (ruled, no gridlines) or plain.`,
+      ),
+    blocks: z
+      .array(
+        z.discriminatedUnion('kind', [
+          z.object({
+            kind: z.literal('table'),
+            at: z
+              .string()
+              .optional()
+              .describe('Its header row’s first cell ("A4"); stacked when left out.'),
+            head: z.array(z.string()).min(1).describe('The header row: each column’s name.'),
+            rows: rowsArg.describe('The body rows, values read as typed (a leading = a formula).'),
+            total: z
+              .array(cellValue)
+              .optional()
+              .describe(
+                'A total row under the body, bold and ruled above ("Total", null, "=SUM(C5:C12)").',
+              ),
+            formats: z
+              .record(z.string(), designFormat)
+              .optional()
+              .describe(
+                'Formats by column name over the body and total: {"Amount": "currency", "Share": "percent"}.',
+              ),
+            inputs: z
+              .array(z.string())
+              .optional()
+              .describe('Columns meant to be typed over, by name: tinted soft yellow.'),
+            dropdowns: z
+              .record(
+                z.string(),
+                z.object({
+                  options: z.array(z.string()).min(1).max(500),
+                  colors: z
+                    .array(z.string().nullable())
+                    .optional()
+                    .describe('#rrggbb per option, or null.'),
+                }),
+              )
+              .optional()
+              .describe(
+                'Dropdown columns by name, over the body rows: each value a chip in its option’s colour.',
+              ),
+            checkboxes: z
+              .array(z.string())
+              .optional()
+              .describe('Checkbox columns by name (TRUE or FALSE values).'),
+            chart: z
+              .object({
+                type: chartType,
+                columns: z
+                  .array(z.string())
+                  .optional()
+                  .describe(
+                    'The columns charted by name, the first the labels; every column when left out.',
+                  ),
+                at: z
+                  .string()
+                  .optional()
+                  .describe('The cell its top-left sits on; right of the table by default.'),
+                width: z.number().optional().describe(`px, default ${SHEET_CHART_SIZE.width}.`),
+                height: z.number().optional().describe(`px, default ${SHEET_CHART_SIZE.height}.`),
+              })
+              .optional()
+              .describe(
+                'A chart of the table’s header and body rows (never its total), live from its cells.',
+              ),
+          }),
+          z.object({
+            kind: z.literal('fields'),
+            at: z.string().optional().describe('Its first cell; stacked when left out.'),
+            heading: z.string().optional().describe('A ruled heading over them.'),
+            items: z
+              .array(
+                z.object({
+                  label: z.string().describe('In the first column, quiet.'),
+                  value: cellValue.describe('In the column right of it.'),
+                  kind: z
+                    .enum(['input', 'value', 'result'])
+                    .optional()
+                    .describe(
+                      'input: tinted to type over; result: larger, bold, in the accent; value (default).',
+                    ),
+                  format: designFormat.optional(),
+                }),
+              )
+              .min(1),
+          }),
+          z.object({
+            kind: z.literal('note'),
+            at: z.string().optional(),
+            text: z.string().describe('A quiet italic line.'),
+          }),
+        ]),
+      )
+      .min(1)
+      .describe(
+        'In order. Rows 1 to 3 are the heading, subtitle and a gap. A block without at starts on row 4 (the first) ' +
+          'or after one blank row under the block before it, in column A; a table is its header row, then its rows, then its ' +
+          'total; fields are their heading (if any), then one row per item. So formulas can name the cells their ' +
+          'blocks land on. The answer names each block’s ranges.',
+      ),
+    widths: z
+      .array(z.number())
+      .optional()
+      .describe('Column widths in px from A; each column fitted to its cells when left out.'),
+    freeze: z
+      .number()
+      .int()
+      .min(0)
+      .max(100)
+      .optional()
+      .describe('Rows frozen at the top; through the first table’s header by default.'),
+  })
+  .describe('A sheet laid out as a template is, on an empty sheet.');
 
 const sideArg = z
   .enum(['before', 'after'])
@@ -282,6 +429,35 @@ const sheetChange = z.discriminatedUnion('op', [
   }),
   z.object({
     op: z
+      .literal('design')
+      .describe(
+        'Lay an empty sheet out as a template is: its heading, tables, fields and notes, in a look and an accent, with charts.',
+      ),
+    design: designArg,
+  }),
+  z.object({
+    op: z
+      .literal('chart')
+      .describe(
+        'Put a chart over the sheet’s cells, reading a range live (it grows with rows inserted inside it).',
+      ),
+    type: chartType,
+    range: rangeArg.describe(
+      'Its header row (the series’ names) and data rows, the first column the labels: "A4:C12".',
+    ),
+    columns: z
+      .array(z.string())
+      .optional()
+      .describe('Only these columns of it, by letter (["A", "D"]), the first the labels.'),
+    at: z
+      .string()
+      .optional()
+      .describe('The cell its top-left sits on; right of the range, a column clear, by default.'),
+    width: z.number().optional().describe(`px, default ${SHEET_CHART_SIZE.width}.`),
+    height: z.number().optional().describe(`px, default ${SHEET_CHART_SIZE.height}.`),
+  }),
+  z.object({
+    op: z
       .literal('resize')
       .describe('Size columns (px, or fit to what their cells show) or rows (px).'),
     cols: z.string().optional().describe('Columns, "C" or "A:F".'),
@@ -388,6 +564,11 @@ export const addSheetShape = {
     .describe(
       'Its first cells as CSV text instead (a tab in the first line reads as TSV), from A1.',
     ),
+  design: designArg
+    .optional()
+    .describe(
+      'Or the sheet laid out as a template is (the same design change_sheet takes); the Sheet is made large enough to show it.',
+    ),
 };
 
 const listedSheet = z.object({
@@ -476,6 +657,10 @@ export const addSheetOutput = {
     .string()
     .describe('Its title, unique on the tab: what read_sheet and change_sheet take.'),
   filled: z.string().nullable().describe('The cells filled, in A1 form; null for a blank sheet.'),
+  laidOut: z
+    .string()
+    .optional()
+    .describe('What a design laid out: each block’s ranges in A1, and its charts.'),
   truncated: z
     .boolean()
     .describe('Whether the first cells were cut at the sheet’s 10,000 rows or 200 columns.'),

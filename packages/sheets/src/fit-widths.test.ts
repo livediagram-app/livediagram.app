@@ -59,7 +59,8 @@ describe('fittedWidths', () => {
         ],
       },
     });
-    expect(fittedWidths(b.wb, s.id, [0]).get(0)).toBe(Math.round(3 * (40 / 3) * 0.56 + 18 + 32));
+    expect(fittedWidths(b.wb, s.id, [0]).get(0)).toBe(Math.round(3 * (40 / 3) * 0.56 + 18 + 48));
+    expect(fittedWidths(b.wb, s.id, [0], () => true).size).toBe(0);
   });
 
   it('is nothing for a sheet the workbook lacks', () => {

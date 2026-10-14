@@ -7,9 +7,16 @@
 import type { ApiClient } from '@livediagram/api-client';
 import {
   CLIENT_HEADER,
+  type ChangesetRequest,
+  type ChangesetResponse,
   type SheetWriteRequest,
   type SheetWriteResponse,
+  type TabRecord,
+  type TabResponse,
 } from '@livediagram/api-schema';
+import { isLightColor } from '@livediagram/document';
+import { tabPath } from '../verbs/shared';
+import { sheetChartElements, type SheetChartOut } from './sheet-charts';
 import {
   applySheetWrite,
   documentCellCount,
@@ -23,7 +30,7 @@ import {
 } from '@livediagram/sheets';
 import { apiRefusalOf } from '../plan/api-refusal';
 import { SHEET_REFUSAL_WORDS } from './sheet-refusals';
-import { buildSheetChange, type SheetChange } from './sheet-change-build';
+import { buildSheetChange, type SheetChange, type SheetChangeContext } from './sheet-change-build';
 import { readSheets, resolveSheet, sheetWritesPath, workbookFor } from './sheet-state';
 
 export interface SheetChangesResult {
@@ -33,6 +40,9 @@ export interface SheetChangesResult {
   rev: number | null;
   refusal?: { code: string; message: string };
 }
+
+// What applying changes answers: the lines, the revision, a refusal, and the charts they put over the cells.
+type Applied = Omit<SheetChangesResult, 'sheetId' | 'title'> & { charts: SheetChartOut[] };
 
 // One write through the api, and the sheet after it as stored.
 export async function sendSheetWrite(
@@ -88,8 +98,10 @@ export async function applySheetChanges(
   client: 'mcp' | 'cli',
   documentCells: number,
   rand: Rand = Math.random,
-): Promise<Omit<SheetChangesResult, 'sheetId' | 'title'>> {
+  context: SheetChangeContext = {},
+): Promise<Applied> {
   const applied: string[] = [];
+  const charts: SheetChartOut[] = [];
   let rev: number | null = null;
   let cells = documentCells;
   for (const change of changes) {
@@ -98,10 +110,11 @@ export async function applySheetChanges(
       .sheetList()
       .filter((s) => s.id !== sheetId)
       .map((s) => s.title);
-    const built = buildSheetChange(wb, sheetId, change, others, rand);
-    if (!built.ok) return { applied, rev, refusal: { code: built.code, message: built.message } };
+    const built = buildSheetChange(wb, sheetId, change, others, rand, context);
+    if (!built.ok)
+      return { applied, rev, charts, refusal: { code: built.code, message: built.message } };
     const over = capsRefusal(sheet, built.writes, cells);
-    if (over) return { applied, rev, refusal: over };
+    if (over) return { applied, rev, charts, refusal: over };
     const parts = built.writes.flatMap((w) => splitWrite(w));
     let next = sheet;
     let sent = 0;
@@ -119,7 +132,7 @@ export async function applySheetChanges(
         rev = next.rev;
         applied.push(partlyLine(built.line, parts, sent));
       }
-      return { applied, rev, refusal };
+      return { applied, rev, charts, refusal };
     }
     if (next !== sheet) {
       cells += next.cells.size - sheet.cells.size;
@@ -127,8 +140,42 @@ export async function applySheetChanges(
       rev = next.rev;
     }
     applied.push(built.line);
+    charts.push(...(built.charts ?? []));
   }
-  return { applied, rev };
+  return { applied, rev, charts };
+}
+
+// The charts changes made, added to the sheet's tab over its Sheet element in one changeset, each with its first read.
+// A tab with no Sheet framing the sheet takes none, and says so.
+export async function placeSheetCharts(
+  api: ApiClient,
+  documentId: string,
+  tab: TabRecord,
+  wb: Workbook,
+  sheetId: string,
+  charts: readonly SheetChartOut[],
+  client: 'mcp' | 'cli',
+): Promise<string | null> {
+  if (charts.length === 0) return null;
+  const frame = tab.elements.find(
+    (el) =>
+      el.type === 'shape' &&
+      el.shape === 'plan-sheet' &&
+      (el as { planSheet?: { sheetId?: string } }).planSheet?.sheetId === sheetId,
+  ) as { x: number; y: number; width: number; height: number } | undefined;
+  if (!frame) return 'no Sheet on its tab frames the sheet, so its charts were not placed';
+  const elements = sheetChartElements(wb, frame, sheetId, charts);
+  const body: ChangesetRequest = {
+    operations: elements.map((element) => ({ op: 'add', element })),
+    base: { rev: tab.rev, elements: {} },
+    summary: elements.length === 1 ? 'Add a chart' : `Add ${elements.length} charts`,
+  };
+  await api.json<ChangesetResponse>(`${tabPath(documentId, tab.id)}/changesets`, {
+    method: 'POST',
+    headers: { [CLIENT_HEADER]: client },
+    body: JSON.stringify(body),
+  });
+  return elements.length === 1 ? 'placed a chart' : `placed ${elements.length} charts`;
 }
 
 export async function changeSheet(
@@ -145,7 +192,11 @@ export async function changeSheet(
   }
   const { id, tabId } = found.sheet;
   const wb = await workbookFor(api, documentId, sheets, tabId);
-  const result = await applySheetChanges(
+  // A design is tinted for its tab's canvas, and charts go on the tab: read it only when a change needs it.
+  const needsTab = input.changes.some((c) => c.op === 'design' || c.op === 'chart');
+  const tab = needsTab ? (await api.json<TabResponse>(tabPath(documentId, tabId))).tab : null;
+  const dark = !!tab?.backgroundColor && !isLightColor(tab.backgroundColor);
+  const { charts, ...result } = await applySheetChanges(
     api,
     documentId,
     wb,
@@ -153,6 +204,18 @@ export async function changeSheet(
     input.changes,
     client,
     documentCellCount(sheets),
+    Math.random,
+    { dark },
   );
+  if (tab && charts.length) {
+    try {
+      const line = await placeSheetCharts(api, documentId, tab, wb, id, charts, client);
+      if (line) result.applied.push(line);
+    } catch (err) {
+      const refusal = apiRefusalOf(err);
+      if (!refusal) throw err;
+      return { sheetId: id, title: wb.sheet(id)!.title, ...result, refusal };
+    }
+  }
   return { sheetId: id, title: wb.sheet(id)!.title, ...result };
 }
