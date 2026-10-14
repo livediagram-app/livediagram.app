@@ -181,7 +181,12 @@ Enforcement is therefore uneven, and deliberately so:
 - **Room-side for the ops that are already distinct.** `poll-start` /
   `poll-end` are their own mutation kinds, so refusing them from a non-holder
   costs a few lines and closes the one case where a second client could end
-  somebody's poll.
+  somebody's poll. The facilitator may end a poll they did not start, so a
+  baton taken mid-poll hands them its End control (`pollHostFor`) rather than
+  leaving the poll with none; the starter's falls away, as the room would
+  refuse it. A vote's starter likewise loses its host controls while somebody
+  else holds the baton, and ending a vote tallies its Plan cards only when the
+  end was not refused.
 - **Not room-side for the timer and the vote.** They are plain tab state riding
   the same `tab` / `tab-meta` ops that carry every shape move, so the room
   cannot tell "started a timer" from "dragged a box" without inspecting
