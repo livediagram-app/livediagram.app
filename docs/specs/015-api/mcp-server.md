@@ -689,15 +689,23 @@ document's Plan cards when a formula reads them.
   currency), `insert_rows` / `insert_cols` `{ at, count, side }`, `delete_rows` `{ rows }`, `delete_cols`
   `{ cols }`, `rename` `{ title }`, `sort` `{ by, range?, descending, header }`, `freeze` `{ rows, cols }`, `validate`
   `{ range, rule, reject?, help? }`, `clear_validation` `{ range }`, `conditional_format` `{ range, when + style |
-scale }` and `clear_conditional_formats` `{ range? }` ([Data validation](../029-sheets/data-validation.md#agents),
-  [Conditional formatting](../029-sheets/conditional-formatting.md#agents)). Each
+scale, first? }` and `clear_conditional_formats` `{ range? }` ([Data validation](../029-sheets/data-validation.md#agents),
+  [Conditional formatting](../029-sheets/conditional-formatting.md#agents)); `resize` `{ cols | rows, px | fit }`,
+  `merge` `{ range, across? }`, `unmerge` `{ range }`, `border` `{ range, sides, color, width, style }`, `filter`
+  `{ range | null }`, `chart` `{ type, range, columns?, at?, width?, height? }` and `design` `{ design }`
+  ([Shaping a sheet, A design](../029-sheets/sheet-store.md#agents); `sheet-shape-change.ts`, `sheet-design.ts`,
+  `sheet-charts.ts`). Inserted rows and columns take their neighbour's formats. Charts a change makes are added to
+  the sheet's tab over its Sheet element in one changeset after the writes, each with its first read. Each
   is sent through the sheet write route as the editor sends it (one write a call, split past 5,000 cells, each with
   its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`), as is a value a Reject
   validation rule does not allow (`value_invalid`, with what the rule allows); a refusal
   answers what was applied before it.
 - **`add_sheet`** (write): a new sheet on a tab (the tab named, else the first with a sheet, else the first), titled
-  uniquely on the tab, blank or filled from A1 with `rows` or `csv` (not both), then a Sheet element (960 x 560)
-  framing it placed beside what the tab holds, as `add_board` places a board, in one changeset.
+  uniquely on the tab, blank or filled from A1 with `rows`, `csv` or a `design` (one of them), then a Sheet element
+  framing it placed beside what the tab holds, as `add_board` places a board, in one changeset with a design's charts.
+  The element is 960 x 560, grown to show every filled cell (up to 1,800 x 1,400).
+- **Previews**: a Sheet tab's image grows its Sheet to its filled cells and charts (`sheetContentSize`); a chart linked
+  to a sheet draws what its cells hold now (`chartsReadLive`); a dropdown draws as the editor's chip, or its arrow.
 
 ### 4.9d The Illustrate tools
 
