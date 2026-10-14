@@ -126,7 +126,7 @@ describe('add <kind>', () => {
       expect.stringMatching(/^\+ retry {2}square "Retry" @/),
       expect.stringMatching(/^~ f2 {2}taller 200→\d+$/),
       // The steps under the frame move down by the growth rather than being taken in.
-      '» n6 n7 n8  +0,+162 (make room)',
+      '» n6 n7 n8 t1  +0,+162 (make room)',
       'f2  +retry',
     ]);
   });
@@ -193,7 +193,7 @@ describe('add <kind>', () => {
     const n5 = tab.elements.find((e) => e.id === 'n5') as Element & { y: number; height: number };
     const below = tab.elements.find((e) => e.id === 'below') as Element & { y: number };
     expect(below.y).toBe(n5.y + n5.height + PLACEMENT_GAP);
-    expect(lines(outcome)).toContain('» n6 n7 n8  +0,+222 (make room)');
+    expect(lines(outcome)).toContain('» n6 n7 n8 t1  +0,+222 (make room)');
     expect(lines(outcome)).toContain('f2  +below');
   });
 
@@ -298,5 +298,67 @@ describe('add <kind> beside template-look siblings', () => {
       (e) => e.id === 'next',
     );
     expect(el).toMatchObject({ width: 160, height: 180 });
+  });
+});
+
+describe('add <kind> beside a framed box with no arrow', () => {
+  it('grows the frame and makes room without failing (a 500 in an eval)', () => {
+    const outcome = run(
+      'add square id=zz label=Zz right-of:n4\nadd square id=yy label=Yy below:zz',
+    );
+    const { tab } = applied(outcome);
+    expect(tab.elements.some((e) => e.id === 'yy')).toBe(true);
+    expect(lines(outcome)).toContain('f2  +zz +yy');
+  });
+});
+
+describe('a frame grown to hold a new box', () => {
+  it('grows left past a member, moving what lay left of it on', () => {
+    const tab = checkoutFlow();
+    const west = {
+      id: 'west',
+      type: 'shape',
+      shape: 'square',
+      x: -260,
+      y: 320,
+      width: 100,
+      height: 60,
+      label: 'West',
+    } as Element;
+    const outcome = run('add square label=Side left-of:n4', {
+      ...tab,
+      elements: [...tab.elements, west],
+    });
+    const grown = lines(outcome).find((l) => l.startsWith('~ f2'));
+    expect(grown).toMatch(/widened/);
+    const moved = applied(outcome).tab.elements.find((e) => e.id === 'west') as Element & {
+      x: number;
+    };
+    expect(moved.x).toBeLessThan(-260);
+  });
+
+  it('keeps a locked element where it is when what holds it moves on', () => {
+    const tab = checkoutFlow();
+    const below: Element[] = [
+      { ...createShape('frame', 0, 900), id: 'g', width: 400, height: 200, label: '' } as Element,
+      {
+        id: 'pinned-note',
+        type: 'shape',
+        shape: 'square',
+        x: 40,
+        y: 940,
+        width: 100,
+        height: 60,
+        label: 'Kept',
+        locked: true,
+      } as Element,
+    ];
+    const outcome = run('add square label=Retry inside:f2', {
+      ...tab,
+      elements: [...tab.elements, ...below],
+    });
+    const after = applied(outcome).tab.elements;
+    expect((after.find((e) => e.id === 'pinned-note') as Element & { y: number }).y).toBe(940);
+    expect((after.find((e) => e.id === 'g') as Element & { y: number }).y).toBeGreaterThan(900);
   });
 });

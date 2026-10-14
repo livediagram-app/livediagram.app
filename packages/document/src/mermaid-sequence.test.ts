@@ -188,6 +188,27 @@ describe('layoutSequence', () => {
     expect(inner.x + inner.width).toBeLessThan(outer.x + outer.width);
   });
 
+  it("sets a guard right of its fragment's first lifeline, never across it", () => {
+    const g = graphFromMermaid(
+      [
+        'sequenceDiagram',
+        'participant A',
+        'participant B',
+        'A->>B: go',
+        'alt verifier valid',
+        'B-->>A: ok',
+        'end',
+      ].join('\n'),
+    );
+    if (!g.ok) throw new Error(g.error);
+    const els = layoutGraph(g.graph);
+    const guardEl = els.find(
+      (e) => e.type === 'text' && e.label === '[verifier valid]',
+    ) as Element & { x: number };
+    const life = els.find((e) => e.id.startsWith('life-A')) as Element & { from: { x: number } };
+    expect(guardEl.x).toBeGreaterThan(life.from.x);
+  });
+
   it('draws a sequence from a graph: nodes the participants, edges the messages, dashed a reply', () => {
     const els = layoutGraph({
       style: 'sequence',

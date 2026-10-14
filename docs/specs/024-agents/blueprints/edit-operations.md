@@ -263,10 +263,11 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
   element in an unlocked container, the occupiers are only what that container holds at any depth
   (`frameOccupiers`): what lies outside is moved on by the container's growth. The loop ends: each step passes one
   occupier.
-- **Growing to hold.** A box placed on one of the four sides of a container's member grows the container: on the
-  placement axis by `makeRoom` (the reach past its far edge with `HOLD_PAD`), so what sat past it shifts by the same
-  amount; across the axis and for `after`, by fitting the box with `HOLD_PAD`. `inside:` against a container holding
-  a member grows by `makeRoom` against that member; an empty one grows on its own (EO27).
+- **Growing to hold.** A box placed beside a container's member, or `inside:` it, grows the container to hold it with
+  `HOLD_PAD` (`growContainer`, `grow-container.ts`). On each side it grows, the units of the container's own scope
+  that lay past its old edge (within `PAST_EDGE_TOLERANCE`, 2 px) and within its span on the other axis move on by
+  the growth, carrying what they hold; a locked one stays. The new box itself never moves, and nothing inside the
+  container moves (EO27).
 - **Move.** `move <selector> <placement>` places the moving set's bounding box as one box and translates every
   member by the same delta; `by=dx,dy` translates by exactly that. A placement relative to an element in the
   moving set is `invalid_value`. A container in the moving set carries `containerContents` ([Carry](#carry)). Carried

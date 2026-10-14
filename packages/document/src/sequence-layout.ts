@@ -18,6 +18,8 @@ const STEP = 52;
 const SELF_DROP = 40;
 const SELF_LOOP = 56;
 const FRAGMENT_BAND = 40;
+// How far a guard sits right of its fragment's first lifeline and bar.
+const GUARD_GAP = 10;
 // How far a fragment nested in another, on the same first lifeline, sits inside it on each side.
 const FRAGMENT_INSET = 12;
 const DIVIDER_BAND = 36;
@@ -268,7 +270,9 @@ export function layoutSequence(
       textBold: true,
       textAlignX: 'left',
     });
-    if (f.label) out.push(guard(left + 64, f.top + 6, f.label, opts.makeId));
+    // A guard reads in the gap right of the fragment's first lifeline and its bar, never across a lifeline.
+    const guardX = Math.max(left + 64, px(participants[first]!.id) + BAR + GUARD_GAP);
+    if (f.label) out.push(guard(guardX, f.top + 6, f.label, opts.makeId));
     for (const d of f.dividers) {
       out.push({
         ...createArrow(left + 12, d.y, rightEdge - 12, d.y),
@@ -277,7 +281,7 @@ export function layoutSequence(
         strokeStyle: 'dashed',
         routeBehind: false,
       });
-      if (d.label) out.push(guard(left + 64, d.y + 4, d.label, opts.makeId));
+      if (d.label) out.push(guard(guardX, d.y + 4, d.label, opts.makeId));
     }
   }
 
