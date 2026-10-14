@@ -625,12 +625,14 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'StackGap',
       'StackPadding',
       'StackAlign',
-      'SequenceParticipants',
-      'SequenceMessages',
       'SequenceNumbered',
       'SequenceAnim',
       'ConceptAnim',
     ],
+  },
+  // The Sequence dialog's writes (apps/live/hooks/canvas/useSequenceSetters.ts): which part of it changed.
+  'apps/live/hooks/canvas/useSequenceSetters.ts Element·Changed': {
+    values: ['SequenceParticipants', 'SequenceMessages', 'SequenceText'],
   },
   // The element menu's whole-tab writes (apps/live/lib/element-style-ops.ts `commitTab`).
   'apps/live/components/palette/EditorContextMenuHost.tsx Element·Changed': {

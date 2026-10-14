@@ -26,6 +26,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SankeyView } from '@/components/canvas/SankeyView';
 import { SankeyFlowsTable } from '@/components/dialogs/SankeyFlowsTable';
 import { SankeyNodeStrip } from '@/components/dialogs/SankeyNodeStrip';
+import { DialogTabs } from '@/components/dialogs/DialogTabs';
 import {
   SankeyFlowsShowMeButton,
   SankeyFlowsTourStage,
@@ -177,45 +178,14 @@ export function SankeyFlowsDialog({
         <DialogCloseButton onClick={close} />
       </DialogHeader>
 
-      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-6 dark:border-slate-800">
-        <div role="tablist" aria-label="Edit flows as" className="flex gap-1">
-          {TABS.map((t) => {
-            const on = t === tab;
-            return (
-              <button
-                key={t}
-                type="button"
-                role="tab"
-                id={`sankey-tab-${t}`}
-                aria-selected={on}
-                aria-controls={`sankey-panel-${t}`}
-                tabIndex={on ? 0 : -1}
-                onClick={() => switchTab(t)}
-                onKeyDown={(e) => {
-                  const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
-                  if (!step) return;
-                  e.preventDefault();
-                  const nextTab = TABS[(TABS.indexOf(tab) + step + TABS.length) % TABS.length]!;
-                  switchTab(nextTab);
-                  document.getElementById(`sankey-tab-${nextTab}`)?.focus();
-                }}
-                className={`relative cursor-pointer px-2 py-2.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${
-                  on
-                    ? 'text-slate-900 dark:text-slate-50'
-                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
-                }`}
-              >
-                {TAB_LABEL[t]}
-                {on ? (
-                  <span
-                    aria-hidden
-                    className="absolute inset-x-1 bottom-0 h-0.5 rounded-full bg-brand-500"
-                  />
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
+      <DialogTabs
+        tabs={TABS}
+        labels={TAB_LABEL}
+        value={tab}
+        onChange={switchTab}
+        idPrefix="sankey"
+        ariaLabel="Edit flows as"
+      >
         <label
           data-tour-id="sankey-import"
           className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 focus-within:ring-2 focus-within:ring-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
@@ -232,7 +202,7 @@ export function SankeyFlowsDialog({
             }}
           />
         </label>
-      </div>
+      </DialogTabs>
 
       {/* The preview above the rows on a phone, beside them on a wide screen. By `order`, not a reversed column: a
           reversed column starts its scroll at the bottom, so the dialog would open on its last row. */}

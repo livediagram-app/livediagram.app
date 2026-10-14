@@ -107,6 +107,7 @@ export const HELP_ARTICLES = {
   explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/build/sankey-diagram',
+  sequenceDiagram: 'palette/sequence-diagrams',
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
@@ -398,6 +399,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sankeyDiagram: {
     title: 'Learn about Sankey diagrams',
     description: 'Writing flows, reading the bands, and styling nodes and labels.',
+  },
+  sequenceDiagram: {
+    title: 'Learn about sequence diagrams',
+    description: 'Writing participants and messages, and the three kinds of arrow.',
   },
   palette: {
     title: 'Learn about the Palette',

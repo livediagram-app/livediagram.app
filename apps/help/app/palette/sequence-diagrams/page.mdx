@@ -28,23 +28,33 @@ It sits in the palette's [Build](/help/palette/build/) category, after Flowchart
 
 ## Editing it
 
-Right-click the diagram and open its **Sequence** section.
+Double-click the diagram, or right-click it and choose **Edit Sequence** in its **Sequence** section. The **Sequence Diagram** dialog opens with a live preview beside the rows (above them on a phone, where the dialog rises from the bottom).
 
-**Participants** are listed left to right. Rename one, mark it as an **Actor** to draw a stick figure instead of a box, reorder with the arrows, or remove it (its messages go with it). A diagram has 2 to 12 participants.
+**Participants** run along the top, left to right. Click one to rename it, switch it between a **Box** and an **Actor** (a stick figure), move it left or right, or remove it (its messages go with it). **Add Participant** adds another. A diagram has 2 to 12 participants.
 
-**Messages** are listed top to bottom. Each has a **From**, a **To**, its words and a kind:
+**Messages** are numbered rows, top to bottom. Each has a **From**, a **To** and its words, and between From and To a button drawn as the arrow it makes. Click the arrow to change its kind:
 
 - **Call**: a solid line with a filled head.
 - **Async**: a solid line with an open head, for a message nobody waits for.
 - **Reply**: a dashed line.
 
-Press **Enter** in a message's words to add the next message under it, from that message's receiver to the next participant along, so you can type a whole conversation straight down. A message from a participant to itself loops out and back.
+Press **Enter** in a message's words to add the next message under it, from that message's receiver to the next participant along, so you can type a whole conversation straight down. **Backspace** in an empty message removes it. Pick the same participant as From and To for a message it sends itself, drawn as a loop.
 
 A call that is later answered by a reply draws an activation bar on the participant while it works.
 
+### Writing it as text
+
+The **Text** tab shows the whole diagram as lines you can edit or paste:
+
+- `participant API` or `actor Customer` sets the order (optional; any name a message uses is added).
+- `From -> To: words` is a call, `From ~> To: words` is async and `From --> To: words` is a reply.
+- Lines starting with `//` are notes.
+
+A line it can't read is named under the box, and nothing else is lost. Switch back to **Messages** to see the rows.
+
 ## Options
 
-- **Numbered** puts each message's number in front of it ("1: Place order"), so a review can say "step 4".
+- **Numbered** (in the menu, or at the foot of the dialog) puts each message's number in front of it ("1: Place order"), so a review can say "step 4".
 - **Play** reveals the diagram top to bottom, so the messages appear in the order they happen. Set its speed, and turn on **Repeat** to loop it.
 
 Resizing the diagram scales the drawing, keeping its shape.

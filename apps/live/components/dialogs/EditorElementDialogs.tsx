@@ -14,6 +14,7 @@ import {
 
 import { track } from '@/lib/telemetry';
 import { canEditSankey } from '@/lib/sankey-edit';
+import { canEditSequence } from '@/lib/sequence-edit';
 import { getTheme, themeChartPalette } from '@/lib/themes';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
@@ -31,6 +32,10 @@ const MindOutlineDialog = dynamic(
 );
 const CodeEditDialog = dynamic(
   () => import('@/components/dialogs/CodeEditDialog').then((m) => m.CodeEditDialog),
+  { ssr: false },
+);
+const SequenceDialog = dynamic(
+  () => import('@/components/dialogs/SequenceDialog').then((m) => m.SequenceDialog),
   { ssr: false },
 );
 const SankeyFlowsDialog = dynamic(
@@ -70,7 +75,10 @@ export function EditorElementDialogs() {
     setCodeEditOpenForId,
     sankeyFlowsOpenForId,
     setSankeyFlowsOpenForId,
+    sequenceOpenForId,
+    setSequenceOpenForId,
     sankey,
+    sequence,
     mindOutline,
     imagePickerOpenFor,
     selfParticipant,
@@ -241,6 +249,24 @@ export function EditorElementDialogs() {
                 palette={themeChartPalette(getTheme(activeTab.theme))}
                 onCommit={(flows, nodes) => sankey.setSankeyFlows(el.id, flows, nodes)}
                 onClose={() => setSankeyFlowsOpenForId(null)}
+              />
+            );
+          })()
+        : null}
+      {/* The Sequence dialog (docs/specs/009-elements/sequence-diagram.md "The Sequence dialog"): an Editor's, on
+          an unlocked diagram; it closes itself if the diagram goes (deleted, or the tab changed). */}
+      {sequenceOpenForId !== null
+        ? (() => {
+            const el = activeTab.elements.find((e) => e.id === sequenceOpenForId);
+            if (!el || el.type !== 'shape' || el.shape !== 'sequence' || !canEditSequence(can, el))
+              return null;
+            return (
+              <SequenceDialog
+                key={el.id}
+                element={el}
+                onCommit={(rows, type) => sequence.setSequenceRows(el.id, rows, type)}
+                onNumbered={(on) => sequence.setSequenceNumbered(el.id, on)}
+                onClose={() => setSequenceOpenForId(null)}
               />
             );
           })()

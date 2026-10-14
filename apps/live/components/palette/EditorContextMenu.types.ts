@@ -205,6 +205,9 @@ export type EditorContextMenuProps = {
   // Sankey diagram (docs/specs/009-elements/sankey.md): its edits, present only when this session may make
   // them (an Editor, on an unlocked diagram), so the menu shows no Sankey section otherwise.
   sankey?: import('./SankeyMenuSection').SankeyMenuHandlers;
+  // A sequence diagram's Edit Sequence (docs/specs/009-elements/sequence-diagram.md "The menu"): present only when this
+  // session may edit it (an Editor, on an unlocked diagram), so the section shows no button otherwise.
+  onEditSequence?: (elementId: string) => void;
   // The tab theme's chart ramp (themeChartPalette), so a chart or legend's data-row swatches show the colours the
   // canvas draws (chartRamp). Absent falls back to the built-in ramp.
   chartThemeRamp?: readonly string[];

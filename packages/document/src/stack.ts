@@ -137,11 +137,28 @@ function layoutBody(
     : { width: p * 2 + cross, height: along, at };
 }
 
+/** How many settling passes one settle may take. A stack that grows can cover a neighbour's centre, which it then
+ *  holds, so the settle runs again; each pass that repeats takes one more element in, and chains this long do not
+ *  occur on a real board. */
+export const STACK_SETTLE_PASSES_MAX = 8;
+
 /** Every stack laid out, innermost first: each child moved to its slot (with whatever it holds), each stack hugging
- *  its children. The same array when nothing moved. */
+ *  its children. Passes repeat while a stack grew, so what a grown stack now covers is laid out in the same settle and
+ *  settling again changes nothing (I3). The same array when nothing moved. */
 export function settleStacks(elements: Element[]): Element[] {
+  if (!elements.some(isStack)) return elements;
+  let current = elements;
+  for (let pass = 0; pass < STACK_SETTLE_PASSES_MAX; pass++) {
+    const { next, grew } = settlePass(current);
+    current = next;
+    if (!grew) break;
+  }
+  return current;
+}
+
+function settlePass(elements: Element[]): { next: Element[]; grew: boolean } {
   const stacks = elements.filter((el) => isStack(el) && isBoxed(el)) as (ShapeElement & Box)[];
-  if (stacks.length === 0) return elements;
+  let grew = false;
   let current = elements;
   const order = [...stacks].sort((a, b) => a.width * a.height - b.width * b.height);
   // Who holds what, derived again only after a stack moved something: settling runs at every commit,
@@ -169,6 +186,7 @@ export function settleStacks(elements: Element[]): Element[] {
       }
     });
     const resized = stack.width !== l.width || stack.height !== l.height;
+    if (l.width > stack.width || l.height > stack.height) grew = true;
     if (deltas.size === 0 && !resized) continue;
     current = current.map((el) => {
       if (el.id === stack.id) return resized ? { ...el, width: l.width, height: l.height } : el;
@@ -177,7 +195,7 @@ export function settleStacks(elements: Element[]): Element[] {
       return { ...el, x: el.x + d.dx, y: el.y + d.dy };
     });
   }
-  return current;
+  return { next: current, grew };
 }
 
 /** A stack's settings written (each bounded; a default value is stored as absent). */
