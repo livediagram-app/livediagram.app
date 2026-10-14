@@ -8,7 +8,7 @@
 // The flight runs on one requestAnimationFrame loop that writes each bubble's transform and opacity straight to
 // its node: no React render per frame, and no loop at all while nothing is flying.
 
-import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { bubbleMotion, type SpeechBubble } from '@/lib/avatar-speech';
@@ -47,7 +47,12 @@ function AtPoint({ at, zoom, children }: { at: AvatarPoint; zoom: number; childr
   );
 }
 
-function motionStyle(b: SpeechBubble, now: number, reduced: boolean): CSSProperties {
+// A bubble's place and fade at `now`, and its tail's: one motion worked out per bubble per frame.
+function motionOf(
+  b: SpeechBubble,
+  now: number,
+  reduced: boolean,
+): { transform: string; opacity: number; tail: number } {
   const m = bubbleMotion(
     now - b.bornAt,
     b.flightMs,
@@ -57,7 +62,56 @@ function motionStyle(b: SpeechBubble, now: number, reduced: boolean): CSSPropert
   return {
     transform: `translate(calc(-50% + ${m.sway}px), ${-m.rise}px) scale(${m.scale})`,
     opacity: m.opacity,
+    tail: m.tail,
   };
+}
+
+type BubbleNodes = Map<string, { card: HTMLDivElement | null; tail: HTMLSpanElement | null }>;
+
+// One flying bubble, its own component so its ref callbacks live as long as it does: new ones each render (the canvas
+// re-renders on every walk frame) would detach and reattach its nodes each time.
+function FlyingBubble({
+  bubble: b,
+  speaker,
+  zoom,
+  nodes,
+}: {
+  bubble: SpeechBubble;
+  speaker: NonNullable<Speaker>;
+  zoom: number;
+  nodes: RefObject<BubbleNodes>;
+}) {
+  const { id } = b;
+  // Plain functions: the React Compiler keeps them the same while `id` and `nodes` are.
+  const put = (part: 'card' | 'tail', el: HTMLElement | null) => {
+    const entry = nodes.current.get(id) ?? { card: null, tail: null };
+    if (part === 'card') entry.card = el as HTMLDivElement | null;
+    else entry.tail = el as HTMLSpanElement | null;
+    if (entry.card || entry.tail) nodes.current.set(id, entry);
+    else nodes.current.delete(id);
+  };
+  const cardRef = (el: HTMLDivElement | null) => put('card', el);
+  const tailRef = (el: HTMLSpanElement | null) => put('tail', el);
+  return (
+    <AtPoint at={b} zoom={zoom}>
+      <div
+        aria-hidden
+        ref={cardRef}
+        className="absolute bottom-0 left-0 w-max origin-bottom pb-[6px]"
+        // Hidden until the flight loop places it, before the first paint.
+        style={{ opacity: 0 }}
+      >
+        <SpeechCard
+          floating
+          colour={speaker.colour || undefined}
+          name={speaker.name || undefined}
+          tailRef={tailRef}
+        >
+          <p className="whitespace-pre-wrap break-words">{b.text}</p>
+        </SpeechCard>
+      </div>
+    </AtPoint>
+  );
 }
 
 function Composer({
@@ -177,17 +231,7 @@ export function AvatarSpeechLayer({
   const shown = bubbles.filter((b) => b.tabId === activeTabId && speakerOf(b) !== null);
 
   // Each bubble's nodes, kept by callback refs and read only by the flight loop below.
-  const nodes = useRef(
-    new Map<string, { card: HTMLDivElement | null; tail: HTMLSpanElement | null }>(),
-  );
-  const nodeRef = (id: string, part: 'card' | 'tail') => (el: HTMLElement | null) => {
-    const entry = nodes.current.get(id) ?? { card: null, tail: null };
-    if (part === 'card') entry.card = el as HTMLDivElement | null;
-    else entry.tail = el as HTMLSpanElement | null;
-    if (entry.card || entry.tail) nodes.current.set(id, entry);
-    else nodes.current.delete(id);
-  };
-
+  const nodes = useRef<BubbleNodes>(new Map());
   // The flight: one loop while anything is flying, its first frame written before paint so a new bubble never
   // shows a frame out of place.
   const shownRef = useLatest(shown);
@@ -195,18 +239,17 @@ export function AvatarSpeechLayer({
   useLayoutEffect(() => {
     if (!flying) return;
     let raf = 0;
+    // Read once per flight, not every frame.
+    const reduced = prefersReducedMotion();
     const tick = () => {
       const now = performance.now();
-      const reduced = prefersReducedMotion();
       for (const b of shownRef.current) {
         const n = nodes.current.get(b.id);
         if (!n?.card) continue;
-        const style = motionStyle(b, now, reduced);
-        n.card.style.transform = style.transform as string;
-        n.card.style.opacity = String(style.opacity);
-        if (n.tail) {
-          n.tail.style.opacity = String(bubbleMotion(now - b.bornAt, b.flightMs, reduced).tail);
-        }
+        const m = motionOf(b, now, reduced);
+        n.card.style.transform = m.transform;
+        n.card.style.opacity = String(m.opacity);
+        if (n.tail) n.tail.style.opacity = String(m.tail);
       }
     };
     const loop = () => {
@@ -220,29 +263,9 @@ export function AvatarSpeechLayer({
 
   return (
     <>
-      {shown.map((b) => {
-        const speaker = speakerOf(b)!;
-        return (
-          <AtPoint key={b.id} at={b} zoom={zoom}>
-            <div
-              aria-hidden
-              ref={nodeRef(b.id, 'card')}
-              className="absolute bottom-0 left-0 w-max origin-bottom pb-[6px]"
-              // Hidden until the flight loop places it, before the first paint.
-              style={{ opacity: 0 }}
-            >
-              <SpeechCard
-                floating
-                colour={speaker.colour || undefined}
-                name={speaker.name || undefined}
-                tailRef={nodeRef(b.id, 'tail')}
-              >
-                <p className="whitespace-pre-wrap break-words">{b.text}</p>
-              </SpeechCard>
-            </div>
-          </AtPoint>
-        );
-      })}
+      {shown.map((b) => (
+        <FlyingBubble key={b.id} bubble={b} speaker={speakerOf(b)!} zoom={zoom} nodes={nodes} />
+      ))}
       {composer ? <Composer {...composer} zoom={zoom} colour={self.colour} /> : null}
       <div className="sr-only" aria-live="polite">
         {announcement}

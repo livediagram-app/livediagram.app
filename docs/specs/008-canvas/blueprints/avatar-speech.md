@@ -77,7 +77,9 @@ closes the composer, tracks `Canvas · Used · AvatarMessage` or `AvatarMessageP
 - One `requestAnimationFrame` loop in `AvatarSpeechLayer`, started in a layout effect that writes the first frame
   before paint, runs while any bubble is shown and writes each bubble's `transform` and `opacity` straight to its
   node (kept by callback refs); it stops when the list empties. A bubble renders at `opacity: 0` until the loop
-  places it. No React state per frame.
+  places it. No React state per frame. Per frame and bubble the motion is worked out once (card and tail together);
+  reduced motion is read once per flight; each bubble is its own component (`FlyingBubble`), so its ref callbacks
+  stay the same across the canvas's re-renders and its nodes are never detached and reattached.
 - Bubbles draw only for the active tab (`bubble.tabId === activeTabId`). A peer's bubble draws only while its
   speaker's character has been found on this tab (`peers`, empty under a hide-cursors vote): name and colour are
   captured the first time it is, in state adjusted during render, and kept if the speaker walks off. Until then the
