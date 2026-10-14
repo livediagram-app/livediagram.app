@@ -7,7 +7,13 @@
 
 import type { EntityField } from './data-shapes';
 import type { GraphEdge, GraphNode } from './graph-authoring';
-import { cleanLine, decodeLabel, type ParseMermaidResult } from './mermaid-shared';
+import {
+  cleanLine,
+  decodeLabel,
+  directionOf,
+  type MermaidDirection,
+  type ParseMermaidResult,
+} from './mermaid-shared';
 
 const HEADER_RE = /^erDiagram$/i;
 // `CUSTOMER ||--o{ ORDER : places` — left tokens |o || }o }| , right tokens
@@ -27,6 +33,8 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
   const nodes = new Map<string, GraphNode>();
   const edges: GraphEdge[] = [];
   let block: { id: string; attrs: EntityField[] } | null = null;
+  // Mermaid's `direction` line (TB by default, the layered flow that reads best).
+  let direction: MermaidDirection = 'TB';
 
   const touch = (id: string) => {
     if (!nodes.has(id)) nodes.set(id, { id, label: id, fields: [] });
@@ -43,6 +51,11 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
     const line = cleanLine(rawLine);
     if (!line) continue;
     if (HEADER_RE.test(line)) continue;
+    const dir = !block && /^direction\s+([A-Za-z]{2})$/i.exec(line);
+    if (dir) {
+      direction = directionOf(dir[1]);
+      continue;
+    }
 
     if (block) {
       if (line === '}') {
@@ -99,8 +112,7 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
   if (nodes.size === 0) {
     return { ok: false, error: 'No entities found in the ER diagram.' };
   }
-  // ER has no direction syntax; the layered TB flow reads best.
-  return { ok: true, graph: { nodes: [...nodes.values()], edges }, direction: 'TB' };
+  return { ok: true, graph: { nodes: [...nodes.values()], edges }, direction };
 }
 
 // A cardinality token in UML multiplicity: `|o` / `o|` zero or one, `||` exactly one, `}o` / `o{` zero or more,

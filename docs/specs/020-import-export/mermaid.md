@@ -117,7 +117,7 @@ LR` line sets the layout direction (TB default).
 
 ## ER diagram coverage (import)
 
-- **Header**: `erDiagram` (no direction syntax; lays out TB).
+- **Header**: `erDiagram`; a `direction LR` (or `RL`) line lays it out left to right, otherwise top to bottom.
 - **Entities**: [Entity](../009-elements/entity.md) elements (`shape:
 'entity'`), the canvas's own record box: the entity name is the title and
   each attribute (`CUSTOMER { string name PK "comment" }`) is a field row,
