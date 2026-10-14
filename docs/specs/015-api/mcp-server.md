@@ -597,6 +597,17 @@ heads, border style and radius) with its values, bold and italic, `colorPreset` 
 `iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
 an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
 
+**Facilitation kinds.** The format also names what the session kinds hold: a `session-button`'s `session` (a timer
+with `minutes`, a stopwatch, a vote with `dots`, a poll with `question` and `options`), an agenda's `agendaItems`,
+a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
+`pageTitle` and `pageSubtitle`, and a sticker's `stickerId`. A bare `text` is centred in its box unless it sets
+`textAlignX`. The entries of a Q&A board, an idea box and a temperature check are the people's, never an edit's,
+so starter questions go on stickies beside them. An agenda written with segments grows to draw every one
+([Agenda](../012-collaboration/agenda.md) "The face").
+
+**No CLI hints.** An edit's result text is the api's, less its footer's revert line: that line names the
+`livediagram changeset revert` command, which no MCP tool runs.
+
 ### 4.8 `share_document`
 
 Create a shareable link so anyone with the URL can open a document without
