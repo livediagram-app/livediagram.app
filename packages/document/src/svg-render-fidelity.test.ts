@@ -29,6 +29,24 @@ describe('Behaviour face export', () => {
     );
   });
 
+  it('draws a vote, poll or stopwatch Session button as its tool and what pressing it does', () => {
+    const vote = svgOf(shape('session-button', { session: { tool: 'vote', dots: 3 }, label: '' }));
+    expect(vote).toContain('>START VOTE<');
+    expect(vote).toContain('>3 dots each<');
+    expect(vote.match(/<circle[^<>]*r="3"/g)).toHaveLength(3);
+    const poll = svgOf(
+      shape('session-button', {
+        session: { tool: 'poll', question: 'Ship it?', options: ['Yes', 'No'] },
+        label: '',
+      }),
+    );
+    expect(poll).toContain('>Ship it?<');
+    expect(poll).toContain('rx="1"');
+    const watch = svgOf(shape('session-button', { session: { tool: 'stopwatch' }, label: 'Lap' }));
+    expect(watch).toContain('>Lap<');
+    expect(watch).toContain('r="10"');
+  });
+
   it('names an unlabelled Mode button by its destination', () => {
     const svg = svgOf(shape('mode-button', { mode: 'laser', label: '' }));
     expect(svg).toContain('>SWITCH TO<');

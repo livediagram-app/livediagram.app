@@ -18,7 +18,13 @@ import { CHAIR_FACING_ROTATION, CHAIR_GEOMETRY, chairSeatFill } from './shape-ge
 import { REACTION_DEFAULT, REACTION_EMOJI, REACTION_HUES } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { formatTimerClock } from './session';
-import { DEFAULT_BUTTON_MODE, SELECTION_MODE_LABEL } from './selection-mode';
+import {
+  DEFAULT_BUTTON_MODE,
+  SELECTION_MODE_LABEL,
+  sessionButtonPlan,
+  type SessionButtonConfig,
+} from './selection-mode';
+import { sessionButtonText } from './session-button-text';
 import { borderOf } from './svg-render-border';
 import { REVEAL_COVER_BASE, type CanvasSurface } from './colors';
 import { collabAccent, glow, pill, text, type Face } from './svg-render-face-kit';
@@ -132,11 +138,11 @@ export function svgBehaviourFace(
       // along the top edge, the kicker and the configured length. The Start
       // control is editor chrome and stays out of the image.
       if (el.session?.tool === 'timer') return timerFace(el, cx, cy, color);
-      // The other tools: a stopwatch over the tool's name.
+      // The other tools: the tool's glyph (SessionButtonFace's), over its label or, with none, what pressing it does
+      // ("Start vote" over "3 dots each").
       return (
-        `<circle cx="${r2(cx)}" cy="${r2(cy - 12)}" r="10" fill="none" stroke="${xmlEscape(color)}" stroke-width="1.5"/>` +
-        `<path d="M ${r2(cx)} ${r2(cy - 18)} L ${r2(cx)} ${r2(cy - 12)} L ${r2(cx + 5)} ${r2(cy - 9)}" fill="none" stroke="${xmlEscape(color)}" stroke-width="1.5" stroke-linecap="round"/>` +
-        text(cx, cy + 16, title || 'Session', { size: 12, weight: 600, color, anchor: 'middle' })
+        sessionToolGlyph(el.session?.tool, cx, cy - 12, color) +
+        sessionWords(el, title, cx, cy, color)
       );
     case 'reveal':
       return el.revealed === true ? '' : revealCover(el, cx, cy, title, color, stroke, surface);
@@ -405,5 +411,51 @@ function picker(
     text(cx, nameY + 16, result ?? '—', { size: 17, weight: 600, color, anchor: 'middle' }) +
     pill(cx - buttonW / 2, nameY + 27, buttonW, 24.5, color, surface === 'dark' ? 0.1 : 0.06) +
     text(cx, nameY + 43, action, { size: 11, weight: 600, color, anchor: 'middle' })
+  );
+}
+
+// A Session tool's glyph, 20 px, centred at (x, y): a stopwatch, three vote dots, or a poll's bars.
+function sessionToolGlyph(tool: string | undefined, x: number, y: number, color: string): string {
+  const ink = xmlEscape(color);
+  if (tool === 'vote')
+    return [-7, 0, 7]
+      .map((dx) => `<circle cx="${r2(x + dx)}" cy="${r2(y)}" r="3" fill="${ink}"/>`)
+      .join('');
+  if (tool === 'poll')
+    return [
+      [-6, 4],
+      [0, -2],
+      [6, 1],
+    ]
+      .map(
+        ([dx, top]) =>
+          `<rect x="${r2(x + dx! - 2)}" y="${r2(y + top!)}" width="4" height="${r2(8 - top!)}" rx="1" fill="${ink}"/>`,
+      )
+      .join('');
+  return (
+    `<circle cx="${r2(x)}" cy="${r2(y)}" r="10" fill="none" stroke="${ink}" stroke-width="1.5"/>` +
+    `<path d="M ${r2(x)} ${r2(y - 6)} L ${r2(x)} ${r2(y)} L ${r2(x + 5)} ${r2(y + 3)}" fill="none" stroke="${ink}" stroke-width="1.5" stroke-linecap="round"/>`
+  );
+}
+
+// A Session button's words: its own label, or what pressing it does, as the editor's face says it.
+function sessionWords(
+  el: { session?: SessionButtonConfig },
+  title: string,
+  cx: number,
+  cy: number,
+  color: string,
+): string {
+  if (title) return text(cx, cy + 16, title, { size: 12, weight: 600, color, anchor: 'middle' });
+  const { kicker, action } = sessionButtonText(sessionButtonPlan(el.session));
+  return (
+    text(cx, cy + 12, kicker, {
+      size: 9,
+      weight: 500,
+      color,
+      anchor: 'middle',
+      opacity: 0.7,
+      uppercase: true,
+    }) + text(cx, cy + 27, action, { size: 12, weight: 600, color, anchor: 'middle' })
   );
 }
