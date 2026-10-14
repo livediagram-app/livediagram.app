@@ -1,6 +1,7 @@
 import { ctaHref, type CtaSurface } from '@livediagram/api-schema';
 import type { ReactNode } from 'react';
 import { Brand } from './Brand';
+import { BuildWithAiLink } from './BuildWithAiLink';
 import { ButtonContent, buttonClassName } from './Button';
 import { ProductNav, type ProductNavKey } from './ProductNav';
 import { ShareRail } from './ShareRail';
@@ -34,11 +35,15 @@ import { StartBlankMenu } from './StartBlankMenu';
 // pair's hrefs carry `via=<surface>.Header` / `.HeaderDraw` so the editor can
 // count which page's header brought somebody in. A surface passing its own
 // `actions` tags those links itself.
+//
+// `buildWithAi` adds the Build with AI link (desktop only) left of Start Blank: 'link' on a marketing page,
+// 'current' on /ai itself (docs/specs/019-marketing/build-with-ai.md "Entry points").
 export function SiteHeader({
   productNav,
   ctaSurface,
   center,
   actions,
+  buildWithAi,
   shareRail = true,
   wide = false,
 }: {
@@ -46,6 +51,7 @@ export function SiteHeader({
   ctaSurface?: CtaSurface;
   center?: ReactNode;
   actions?: ReactNode;
+  buildWithAi?: 'link' | 'current';
   shareRail?: boolean;
   wide?: boolean;
 }) {
@@ -75,6 +81,7 @@ export function SiteHeader({
             </div>
           ) : null}
           <div className="flex shrink-0 items-center gap-2">
+            {buildWithAi ? <BuildWithAiLink current={buildWithAi === 'current'} /> : null}
             {actions ?? <DefaultActions ctaSurface={ctaSurface} roomy={!center} />}
           </div>
         </div>
