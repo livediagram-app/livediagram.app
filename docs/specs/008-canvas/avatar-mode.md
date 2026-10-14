@@ -134,7 +134,7 @@ A character can **say something**: a short message appears in a speech bubble ab
 
 ### Typing a message (the composer)
 
-- **Enter**, in Avatar mode and with nothing else holding the keyboard, opens the **composer**: a speech bubble above your own character's head with a text box in it, focused, its tail pointing at the head. It pops open with a small bounce.
+- **Enter**, in Avatar mode and with nothing else holding the keyboard, opens the **composer**. A focused control Enter acts on itself keeps it: a button or link, a menu row, a tab, a switch, anything in a popover or the tour's card. The composer is a speech bubble above your own character's head with a text box in it, focused, its tail pointing at the head. It pops open with a small bounce.
 - The composer **follows your character**: walking by click keeps it above the head. While you type, the keyboard is the composer's: arrow keys move the caret and Space types a space, so neither walks nor hops.
 - **Up to 50 words**, and at most 300 characters. A word counter appears once you pass 40 words (`43 / 50`) and turns amber at 50; typing past either limit is refused rather than cut, so nothing you wrote vanishes. A pasted message is trimmed to the limit. Newlines become spaces: a bubble is one thought.
 - **Enter sends.** So does the small send button (a paper plane) at the bubble's right edge. Sending an empty or all-space message just closes the composer.

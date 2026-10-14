@@ -13,3 +13,28 @@ export function isTypingTarget(
     (target instanceof HTMLElement && target.isContentEditable === true)
   );
 }
+
+// Controls Enter acts on itself: a button or link, a widget role, and anything inside a menu, a popover or the tour's
+// card. A shortcut claiming Enter stands aside for these, or the control under the focus would never fire.
+const ENTER_ACTIVATED = [
+  'button',
+  'a[href]',
+  'summary',
+  '[role="button"]',
+  '[role="link"]',
+  '[role="menuitem"]',
+  '[role="menuitemradio"]',
+  '[role="menuitemcheckbox"]',
+  '[role="option"]',
+  '[role="tab"]',
+  '[role="radio"]',
+  '[role="checkbox"]',
+  '[role="switch"]',
+  '[data-menu-surface]',
+  '[data-anchored-popover]',
+  '[data-tour-popover]',
+].join(',');
+
+export function isEnterActivatedTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(ENTER_ACTIVATED) !== null;
+}
