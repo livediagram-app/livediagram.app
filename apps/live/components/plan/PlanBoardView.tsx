@@ -281,6 +281,8 @@ export function PlanBoardView({
         ?.focus();
     } else if (action.kind === 'open') plan.openItem(item.id);
     else if (action.kind === 'trash') {
+      // Focus goes on to a neighbour rather than falling to the page with the card.
+      focusNextRef.current = action.focusAfter;
       plan.trashItem(item.id);
       plan.announce(`#${item.key} moved to the Trash`);
     } else if (action.kind === 'add') setAdding({ status: action.status, laneKey: action.laneKey });

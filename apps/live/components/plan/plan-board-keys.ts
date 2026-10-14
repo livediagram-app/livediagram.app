@@ -7,7 +7,9 @@ export type PlanKeyAction =
   | { kind: 'focus'; itemId: string }
   | { kind: 'move'; move: ItemMove; announce: string }
   | { kind: 'open' }
-  | { kind: 'trash' }
+  // `focusAfter`: the card that takes keyboard focus once this one has gone, the next in its cell, else the one
+  // before it, so a run of Deletes works down a column; null when the cell is left empty.
+  | { kind: 'trash'; focusAfter: string | null }
   | { kind: 'add'; status: string; laneKey: string };
 
 type Cell = { col: number; lane: number; index: number };
@@ -37,7 +39,11 @@ export function planBoardKey(
   const item = items[at.index]!;
   const title = `#${item.key} ${itemTitle(item)}`;
   if (key === 'Enter' || key === ' ') return { kind: 'open' };
-  if ((key === 'Delete' || key === 'Backspace') && canEdit) return { kind: 'trash' };
+  if ((key === 'Delete' || key === 'Backspace') && canEdit)
+    return {
+      kind: 'trash',
+      focusAfter: (items[at.index + 1] ?? items[at.index - 1])?.id ?? null,
+    };
   if ((key === 'n' || key === 'N') && !shift && canEdit) {
     const column = p.columns[at.col]!;
     return { kind: 'add', status: column.column.status, laneKey: column.lanes[at.lane]!.laneKey };
