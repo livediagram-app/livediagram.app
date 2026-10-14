@@ -258,5 +258,11 @@ function growToHold(
     bottom === holder.y + holder.height
   )
     return;
-  growContainer(state, holder, { x, y, width: right - x, height: bottom - y }, el.id, operation);
+  growContainer(
+    state,
+    holder,
+    { x, y, width: Math.round(right - x), height: Math.round(bottom - y) },
+    el.id,
+    operation,
+  );
 }

@@ -53,7 +53,8 @@ export function mcpResultText(
   const plain = text.replace(/ · revert: livediagram changeset revert \S+ \S+/g, '');
   const [ox, oy] = [Math.round(origin.x), Math.round(origin.y)];
   if ((ox === 0 && oy === 0) || !/@-?\d+,-?\d+/.test(plain)) return plain;
-  return `${plain}\n@x,y above are from the content's top-left: an element's x, y = @x + ${ox}, @y + ${oy}.`;
+  const plus = (n: number) => (n < 0 ? `- ${-n}` : `+ ${n}`);
+  return `${plain}\n@x,y above are from the content's top-left: an element's x, y = @x ${plus(ox)}, @y ${plus(oy)}.`;
 }
 
 // One op of `update_document`'s ops mode, as the model sends it.

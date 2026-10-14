@@ -344,6 +344,7 @@ describe('mcpResultText', () => {
       `${text}\n@x,y above are from the content's top-left: an element's x, y = @x + 120, @y + 76.`,
     );
     expect(mcpResultText(text, { x: 0, y: 0 })).toBe(text);
+    expect(mcpResultText(text, { x: 0, y: -104 })).toMatch(/x, y = @x \+ 0, @y - 104\.$/);
     expect(mcpResultText('rev 1→2 · cs_1 · lint clean', { x: 5, y: 5 })).toBe(
       'rev 1→2 · cs_1 · lint clean',
     );
