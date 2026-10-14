@@ -147,8 +147,8 @@ animated tile rail, so it rides the rail's width change.
 for one of them are its browse groups (the Icons groups, the Sticker groups, the Technology providers),
 each drawn as its first entry with the group's name on its hover card, in the browse's own order. Pressing one
 opens a popover under it, hung from that tile as More hangs from its button, showing **that group's
-entries** under the browse's breadcrumb (back to every group, and its search across them all): the
-category's own body, opened on the group. Pressing the open group's tile again closes it. Picking an entry
+entries alone**, headed with the group's name: no search and no breadcrumb, since the strip is the way between
+groups (More, on a desktop, keeps the whole browse with its search). Pressing the open group's tile again closes it. Picking an entry
 closes it, as More's does. The groups and their entries are the browse's
 ([Palette category browse](../010-palette/palette-category-browse.md)), so the strip and the More body never
 disagree.

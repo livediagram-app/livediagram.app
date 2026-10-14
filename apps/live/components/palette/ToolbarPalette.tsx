@@ -600,10 +600,11 @@ export function ToolbarPalette(props: Props) {
               right={more.right}
               isMobile={isMobile}
               scale={scale}
-              label={category.label}
+              // A group's popover is that group alone, so it names it; More's is the whole category.
+              label={allGroups?.find((g) => g.id === openGroup)?.label ?? category.label}
               dataAttr="data-toolbar-more"
             >
-              <BrowseStartGroup.Provider value={openGroup}>
+              <BrowseStartGroup.Provider value={openGroup ? { id: openGroup, bare: true } : null}>
                 {/* Keyed on the group, so another group's tile opens the browse afresh on it. */}
                 <Fragment key={openGroup ?? ''}>{category.content}</Fragment>
               </BrowseStartGroup.Provider>

@@ -69,9 +69,23 @@ describe('BrowseStartGroup', () => {
   );
 
   it('opens the browse on the group it names', () => {
-    render(<BrowseStartGroup.Provider value="b">{browse}</BrowseStartGroup.Provider>);
+    render(
+      <BrowseStartGroup.Provider value={{ id: 'b', bare: false }}>
+        {browse}
+      </BrowseStartGroup.Provider>,
+    );
     expect(screen.getByText('two')).toBeTruthy();
     expect(screen.queryByText('one')).toBeNull();
+    expect(screen.getByLabelText('Search')).toBeTruthy();
+  });
+
+  it('shows the group alone, without search or breadcrumb, when bare (a strip group’s popover)', () => {
+    const { container } = render(
+      <BrowseStartGroup.Provider value={{ id: 'b', bare: true }}>
+        {browse}
+      </BrowseStartGroup.Provider>,
+    );
+    expect(container.textContent).toBe('two');
   });
 
   it('opens the group grid without one', () => {

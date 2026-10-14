@@ -25,8 +25,9 @@ export type BrowserCategory<T> = ToolsCategory & { items: T[] };
 
 // The group a browse opens on, when its host opened it from one: the Toolbar strip's group tiles for Icons, Stickers
 // and Technology (docs/specs/007-editor/toolbar-layout.md "More"). Null opens the group grid. Read as the browse mounts,
-// so a host shows another group by remounting it.
-export const BrowseStartGroup = createContext<string | null>(null);
+// so a host shows another group by remounting it. `bare` shows the group's entries alone, without the search or the
+// breadcrumb: the strip's group popover, where the strip itself is the way between groups.
+export const BrowseStartGroup = createContext<{ id: string; bare: boolean } | null>(null);
 
 type Props<T> = {
   // Breadcrumb root — the tab's own name, so "Icons › People" reads true.
@@ -79,13 +80,14 @@ export function PaletteCategoryBrowser<T>({
   // null = the category grid. Opening the tab starts there, so you see every
   // category at once rather than one arbitrary group's contents; a strip's group tile opens on its group.
   const startGroup = useContext(BrowseStartGroup);
-  const [openId, setOpenId] = useState<string | null>(startGroup);
+  const [openId, setOpenId] = useState<string | null>(startGroup?.id ?? null);
   // One 'Searched' event per mount, on the first keystroke — the same
   // engagement-signal pattern as the editor's Search panel.
   const searchedRef = useRef(false);
   const q = query.trim();
   const matches = q ? search(q) : null;
   const openCategory = categories.find((c) => c.id === openId) ?? null;
+  if (startGroup?.bare && openCategory) return <>{renderItems(openCategory.items)}</>;
   return (
     <div className="flex flex-col">
       <div className="mb-2 flex items-center">
