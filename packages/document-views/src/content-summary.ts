@@ -61,6 +61,14 @@ function sankeySummary(el: Element): string {
   return `flows=${flows.length} nodes=${names.size}`;
 }
 
+// A concept graphic (docs/specs/009-elements/concept-graphics.md): its rows in order, and a pyramid's variant when set.
+function conceptSummary(el: Element): string {
+  const rows = arrayField(el, 'conceptRows').filter(isObject);
+  const labels = rows.map((r) => cellText(stringField(r, 'label') ?? '?')).join('|');
+  const variant = stringField(el, 'pyramidVariant');
+  return `rows=${labels}${variant ? ` variant=${cellText(variant)}` : ''}`;
+}
+
 export function contentSummaryOf(el: Element): string | null {
   switch (shapeKindOf(el)) {
     case 'entity':
@@ -78,6 +86,10 @@ export function contentSummaryOf(el: Element): string | null {
       return checklistSummary(el);
     case 'sankey':
       return sankeySummary(el);
+    case 'layer-stack':
+    case 'pyramid':
+    case 'cycle':
+      return conceptSummary(el);
     case 'plan-board':
       return planBoardSummary(el);
     case 'plan-card': {

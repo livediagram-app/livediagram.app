@@ -337,7 +337,8 @@ in this call`); an arrow to nowhere is never stored.
 **Values checked.** A whole element the model sends (on `create_document`, `add_tab`, `replace` and an ops `add`)
 is checked as an edit operation's `set` checks a field: a field its type does not have is refused with the fields
 like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition`), a value off a closed vocabulary
-(`textSize` `sm`, `md`, `lg`, `scale`; the alignments, arrow styles, ends and heads, border styles and radii: the
+(`textSize` `sm`, `md`, `lg`, `scale` or a pixel number; the alignments, arrow styles, ends and heads, border styles
+and radii, and the diagram-building kinds' looks, media, attach points, boundary styles and pyramid variants: the
 same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
 and an `iconId` that names no icon is refused with the icons like it and a
 pointer to `search_icons`. Each of these was once stored and drawn wrong in silence. The check passes every element

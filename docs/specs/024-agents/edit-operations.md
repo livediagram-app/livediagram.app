@@ -47,9 +47,10 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   [view](document-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
   writes back unchanged.
 - **Closed vocabularies.** A stored field with a closed list of values (`textSize`, `textAlignX`, `textAlignY`,
-  `iconPosition`, `arrowStyle`, `arrowEnds`, `arrowheadShape`, `strokeStyle`, `borderRadius`;
+  `iconPosition`, `arrowStyle`, `arrowEnds`, `arrowheadShape`, `strokeStyle`, `borderRadius`, and the
+  diagram-building kinds' `accentEdge`, `cardMedia`, `chipLook`, `attachAt`, `boundaryStyle`, `pyramidVariant`;
   `ELEMENT_FIELD_VALUES` in `@livediagram/document`) refuses a value off it as `invalid_value`, naming the values it
-  takes, as the MCP's whole-element check does: `textSize=xl` used to be stored and drawn as tiny overlapping text.
+  takes (a `textSize` may also be a pixel number, as a Step number stores one), as the MCP's whole-element check does: `textSize=xl` used to be stored and drawn as tiny overlapping text.
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
 

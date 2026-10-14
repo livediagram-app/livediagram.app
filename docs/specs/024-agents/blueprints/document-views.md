@@ -317,19 +317,20 @@ are escaped as `\;` and `\}` too.
 
 **Content summaries** (`contentSummaryOf`), printed after the label:
 
-| Element                  | Summary                                                                                     | Ledger |
-| ------------------------ | ------------------------------------------------------------------------------------------- | ------ |
-| `entity`                 | `{` first `ENTITY_FIELDS_SHOWN` fields as `name[ type]`, joined `; ` (`; +N` when more) `}` | `VW19` |
-| `table`                  | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                    | `VW18` |
-| `code-block`             | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                          | `VW20` |
-| `pie-chart`, `bar-chart` | `slices=<pieSlices.length>`                                                                 | `VW21` |
-| `line-chart`             | `series=<lineSeries.length> x=<lineCategories.length>`                                      | `VW21` |
-| `checklist`              | `done=<done>/<total>`                                                                       |        |
-| `sankey`                 | `flows=<sankeyFlows.length> nodes=<distinct from / to names, trimmed and space-collapsed>`  |        |
-| `plan-board`             | `columns=` then each column's `name` (`?` when it has none) as `cellText`, joined `\|`      |        |
-| `plan-card`              | `item=<planCard.itemId as cellText>`, `item=none` when absent or empty                      |        |
-| `plan-view`              | `view=<planView.view as cellText>`, `view=none` when absent                                 |        |
-| `plan-sheet`             | `sheet=<planSheet.sheetId as cellText>`, `sheet=none` when absent or empty                  |        |
+| Element                           | Summary                                                                                                                      | Ledger |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `entity`                          | `{` first `ENTITY_FIELDS_SHOWN` fields as `name[ type]`, joined `; ` (`; +N` when more) `}`                                  | `VW19` |
+| `table`                           | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                                                     | `VW18` |
+| `code-block`                      | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                                                           | `VW20` |
+| `pie-chart`, `bar-chart`          | `slices=<pieSlices.length>`                                                                                                  | `VW21` |
+| `line-chart`                      | `series=<lineSeries.length> x=<lineCategories.length>`                                                                       | `VW21` |
+| `checklist`                       | `done=<done>/<total>`                                                                                                        |        |
+| `sankey`                          | `flows=<sankeyFlows.length> nodes=<distinct from / to names, trimmed and space-collapsed>`                                   |        |
+| `layer-stack`, `pyramid`, `cycle` | `rows=` then each row's `label` (`?` when it has none) as `cellText`, joined `\|`; then ` variant=<pyramidVariant>` when set |        |
+| `plan-board`                      | `columns=` then each column's `name` (`?` when it has none) as `cellText`, joined `\|`                                       |        |
+| `plan-card`                       | `item=<planCard.itemId as cellText>`, `item=none` when absent or empty                                                       |        |
+| `plan-view`                       | `view=<planView.view as cellText>`, `view=none` when absent                                                                  |        |
+| `plan-sheet`                      | `sheet=<planSheet.sheetId as cellText>`, `sheet=none` when absent or empty                                                   |        |
 
 The table line prints its label first when it has one. Every text a summary prints from the document goes through
 `cellText` (JSON escapes, `|` escaped), so a newline in a column name can never forge a line of the view.
@@ -356,7 +357,8 @@ The table line prints its label first when it has one. Every text a summary prin
 | `rating`                | `rating=<rating>/5`                                                       |
 | `progress-bar`, `-ring` | `progress=<progress, else 50>`                                            |
 | `timeline-rail`         | `points=<railCount>`                                                      |
-| `page`                  | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                |
+| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                |
+| `badge`, `step`         | `attached` when `attachedTo` is set                                       |
 
 Every other kind has no state attribute; `show` has its content.
 

@@ -5,6 +5,14 @@
 import type { ComponentSchemas } from './types';
 
 export const COMPONENT_SCHEMAS: ComponentSchemas = {
+  "AccentEdge": {
+    "enum": [
+      "left",
+      "top",
+      "bottom"
+    ],
+    "type": "string"
+  },
   "AccessLevel": {
     "enum": [
       "view",
@@ -1522,6 +1530,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "AttachPoint": {
+    "enum": [
+      "top-left",
+      "top",
+      "top-right",
+      "right",
+      "bottom-right",
+      "bottom",
+      "bottom-left",
+      "left"
+    ],
+    "type": "string"
+  },
   "Axis": {
     "enum": [
       "r",
@@ -1625,6 +1646,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "dash-dot",
       "long-dash",
       "dash-dot-dot"
+    ],
+    "type": "string"
+  },
+  "BoundaryStyle": {
+    "enum": [
+      "tab",
+      "inset",
+      "c4"
     ],
     "type": "string"
   },
@@ -1761,6 +1790,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/CustomCardField"
       }
     ]
+  },
+  "CardMedia": {
+    "enum": [
+      "badge",
+      "tile",
+      "initial"
+    ],
+    "type": "string"
   },
   "CardSearchFilter": {
     "additionalProperties": false,
@@ -2395,6 +2432,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "done"
     ],
     "type": "object"
+  },
+  "ChipLook": {
+    "enum": [
+      "solid",
+      "ink",
+      "outline",
+      "tinted",
+      "quiet"
+    ],
+    "type": "string"
   },
   "CodeLanguage": {
     "enum": [
@@ -3134,6 +3181,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ConceptAnim": {
+    "enum": [
+      "build",
+      "pulse",
+      "flow"
+    ],
+    "type": "string"
+  },
+  "ConceptRow": {
+    "additionalProperties": false,
+    "properties": {
+      "label": {
+        "type": "string"
+      },
+      "note": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "label"
+    ],
+    "type": "object"
+  },
   "ConditionOp": {
     "enum": [
       "empty",
@@ -3417,6 +3487,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "badge": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "banner": {
             "additionalProperties": false,
             "properties": {
@@ -3447,6 +3532,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "boundary": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "browser": {
             "additionalProperties": false,
             "properties": {
@@ -3463,6 +3563,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "callout": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "card": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3553,6 +3668,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "comment-pin": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "cycle": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3778,6 +3908,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "laptop": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "layer-stack": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -4062,6 +4207,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "pyramid": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "qa-board": {
             "additionalProperties": false,
             "properties": {
@@ -4273,6 +4433,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "stat-row": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "step": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -10940,6 +11115,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "PyramidVariant": {
+    "enum": [
+      "pyramid",
+      "inverted",
+      "funnel"
+    ],
+    "type": "string"
+  },
   "QaNote": {
     "additionalProperties": false,
     "properties": {
@@ -11676,6 +11859,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ShapeElement": {
     "additionalProperties": false,
     "properties": {
+      "accentEdge": {
+        "$ref": "#/components/schemas/AccentEdge"
+      },
+      "accentEdgeColor": {
+        "type": "string"
+      },
       "action": {
         "$ref": "#/components/schemas/ElementAction"
       },
@@ -11709,8 +11898,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aspectLocked": {
         "type": "boolean"
       },
+      "attachAt": {
+        "$ref": "#/components/schemas/AttachPoint"
+      },
+      "attachedTo": {
+        "$ref": "#/components/schemas/ElementId"
+      },
       "borderRadius": {
         "$ref": "#/components/schemas/BorderRadius"
+      },
+      "boundaryStyle": {
+        "$ref": "#/components/schemas/BoundaryStyle"
+      },
+      "cardHeader": {
+        "type": "boolean"
+      },
+      "cardMedia": {
+        "$ref": "#/components/schemas/CardMedia"
       },
       "cellComments": {
         "$ref": "#/components/schemas/CellCommentThreads"
@@ -11739,6 +11943,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "chipLook": {
+        "$ref": "#/components/schemas/ChipLook"
+      },
       "code": {
         "type": "string"
       },
@@ -11759,6 +11966,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "conceptAnim": {
+        "$ref": "#/components/schemas/ConceptAnim"
+      },
+      "conceptAnimRepeat": {
+        "type": "boolean"
+      },
+      "conceptAnimSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "conceptRows": {
+        "items": {
+          "$ref": "#/components/schemas/ConceptRow"
+        },
+        "type": "array"
       },
       "decisionDate": {
         "type": "string"
@@ -11994,6 +12216,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "progressAnimSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
+      "pyramidVariant": {
+        "$ref": "#/components/schemas/PyramidVariant"
+      },
       "qaNotes": {
         "items": {
           "$ref": "#/components/schemas/QaNote"
@@ -12132,6 +12357,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "stepSequence": {
+        "type": "boolean"
+      },
       "stickerId": {
         "type": "string"
       },
@@ -12146,6 +12374,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "strokeWidth": {
         "$ref": "#/components/schemas/BorderStroke"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "textAlignX": {
         "$ref": "#/components/schemas/TextAlignX"
@@ -12227,6 +12461,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "entity",
       "banner",
       "callout",
+      "card",
+      "badge",
+      "step",
+      "boundary",
+      "layer-stack",
+      "pyramid",
+      "cycle",
       "stat-row",
       "process",
       "site-header",
@@ -14795,6 +15036,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "link": {
         "type": "string"
+      },
+      "muted": {
+        "type": "boolean"
       },
       "size": {
         "$ref": "#/components/schemas/RunSize"

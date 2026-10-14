@@ -110,4 +110,15 @@ describe('contentSummaryOf (R14)', () => {
       ),
     ).toBe('flows=3 nodes=3');
   });
+
+  it("lists a concept graphic's rows in order, and a pyramid's variant (docs/specs/009-elements/concept-graphics.md)", () => {
+    const rows = [{ label: 'Visited', note: '12,400' }, { label: 'Signed up' }, { label: 'a|b' }];
+    expect(
+      contentSummaryOf(shape('pyramid', { conceptRows: rows, pyramidVariant: 'funnel' })),
+    ).toBe('rows=Visited|Signed up|a\\|b variant=funnel');
+    expect(contentSummaryOf(shape('cycle', { conceptRows: [{ label: 'Plan' }, {}] }))).toBe(
+      'rows=Plan|?',
+    );
+    expect(contentSummaryOf(shape('layer-stack', { conceptRows: undefined }))).toBe('rows=');
+  });
 });

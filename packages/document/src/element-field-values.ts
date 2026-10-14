@@ -3,8 +3,14 @@
 // edit operation's `set` and the MCP's whole-element check refuse the same values the same way. A value off its list
 // used to be stored and drawn wrong in silence (`textSize: "xl"` drew tiny overlapping text).
 
+import { ACCENT_EDGES } from './accent-edge';
 import { ARROWHEAD_SHAPES } from './arrow-style';
+import { ATTACH_POINTS } from './attachment';
 import { BORDER_DASH_ARRAY } from './border-style';
+import { BOUNDARY_STYLES } from './boundary';
+import { CARD_MEDIA } from './card';
+import { CHIP_LOOKS } from './chip';
+import { PYRAMID_VARIANTS } from './concept';
 
 export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> = {
   textSize: ['sm', 'md', 'lg', 'scale'],
@@ -16,6 +22,13 @@ export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> =
   arrowheadShape: ARROWHEAD_SHAPES,
   strokeStyle: Object.keys(BORDER_DASH_ARRAY),
   borderRadius: ['none', 'sm', 'md', 'lg', 'full'],
+  // The diagram-building kinds (docs/specs/009-elements/): accent edge, card, badge / step, boundary, pyramid.
+  accentEdge: ACCENT_EDGES,
+  cardMedia: CARD_MEDIA,
+  chipLook: CHIP_LOOKS,
+  attachAt: ATTACH_POINTS,
+  boundaryStyle: BOUNDARY_STYLES,
+  pyramidVariant: PYRAMID_VARIANTS,
 };
 
 // Why a field's value is off its list, as a sentence ending in the values it takes; null when it fits or the field
@@ -24,5 +37,8 @@ export function fieldValueIssue(key: string, value: unknown): string | null {
   const values = Object.hasOwn(ELEMENT_FIELD_VALUES, key) ? ELEMENT_FIELD_VALUES[key]! : null;
   if (!values || value === undefined || value === null || values.includes(value as string))
     return null;
+  // A text size may also be a pixel number (a custom size, or the one a Step number derives from its disc); the
+  // renderer clamps it, so any finite number fits.
+  if (key === 'textSize' && typeof value === 'number' && Number.isFinite(value)) return null;
   return `${key} ${JSON.stringify(value)} is not one of ${values.join(', ')}`;
 }
