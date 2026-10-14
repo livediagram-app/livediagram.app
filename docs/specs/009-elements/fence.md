@@ -42,14 +42,17 @@ fence**, from either side.
 
 - The blocking line is the fence's run: the centre line along its longer side, from end to end,
   turned with the element's rotation.
-- A character keeps a small **reach** (its feet's width) away from the line, so it stops at the
-  fence rather than standing in it. Two fences whose ends are closer together than a character is
+- A character keeps a small **reach** (its feet's width, so a Tall character's is wider than a
+  Small one's) away from the line, so it stops at the fence rather than standing in it. Two fences whose ends are closer together than a character is
   wide leave no gap to squeeze through, so fences joined by hand need not meet exactly.
 - **Walking into a fence slides along it.** A diagonal walk that meets a fence keeps the part of
   its movement that runs along the fence, so a character steered into a fence skims along it the
-  way people walk along a wall. A click-walk that can make no progress stops where it is.
+  way people walk along a wall. A click-walk that can make no progress stops where it is. Whether a
+  walk slides or stops depends on its angle alone, never on the display's frame rate.
 - **A character already inside a fence's reach** (a fence dropped on top of one) may step away
-  from it, never across it.
+  from it, never across it; one standing exactly on the line may step off it to either side.
+- **A hidden layer's fences block nothing**, as its portals and chairs do nothing: a character walks
+  among what is drawn.
 - **What does not walk is not blocked.** A portal still carries a character through a fence (a
   portal is a gate), sitting snaps a character onto its chair, and a new character appears where
   the mode puts it. A character that starts inside a fenced area stays inside until it takes a
