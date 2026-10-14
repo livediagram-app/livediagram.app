@@ -638,7 +638,9 @@ export function PlanBoardView({
           menu={menu}
           plan={plan}
           setup={setup}
-          canEdit={canEdit}
+          // A Participant works on cards (duplicates, moves, flags) and never retires them, as in the item panel.
+          canEdit={canEditCards}
+          canRetire={canEdit}
           onClose={() => setMenu(null)}
         />
       ) : null}
