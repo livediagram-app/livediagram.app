@@ -445,6 +445,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Lane',
     // Boundary (docs/specs/009-elements/boundary.md): a Build container beside Frame and Lane.
     'Boundary',
+    // Diagram key (docs/specs/009-elements/diagram-key.md): a Build element after Boundary.
+    'DiagramKey',
     // Entity (docs/specs/009-elements/entity.md).
     'Entity',
     'Checklist',

@@ -179,6 +179,7 @@ const ILLUSTRATE: PaletteLayout = {
         'tools:lane',
         'tools:frame',
         'tools:boundary',
+        'tools:diagram-key',
       ),
     },
     { id: 'concepts' },

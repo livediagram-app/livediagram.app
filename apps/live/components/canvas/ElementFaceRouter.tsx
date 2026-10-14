@@ -53,6 +53,7 @@ import { loadCollabFaceRouter, loadTableView } from '@/lib/editor-deferred-code'
 import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
 import { ChipFace } from '@/components/canvas/ChipFace';
+import { DiagramKeyFace } from '@/components/canvas/DiagramKeyFace';
 import { BoundaryFace } from '@/components/canvas/BoundaryFace';
 import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
@@ -479,6 +480,17 @@ export function ElementFaceRouter({
           labelNode={labelNode}
           accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
           fill={element.fillColor ?? defaultFillColor(element, surface)}
+          ink={textColor}
+          fontFamily={fontFamily}
+          editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
+          onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
+        />
+      ) : element.type === 'shape' && element.shape === 'diagram-key' ? (
+        // A diagram key (docs/specs/009-elements/diagram-key.md): its title, swatches and meanings.
+        <DiagramKeyFace
+          element={element}
+          labelNode={labelNode}
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
           ink={textColor}
           fontFamily={fontFamily}
           editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}

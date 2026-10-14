@@ -283,6 +283,29 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v: unknown) => isPointerTip(v),
     rule: 'an { x, y } of finite numbers within ±4000',
   },
+  // A diagram key (docs/specs/009-elements/diagram-key.md): derived rows, and the author's meanings.
+  {
+    field: 'keyRows',
+    valid: rowsOf(
+      12,
+      (r) =>
+        isRecord(r) &&
+        isStrUpTo(48)(r.id) &&
+        (r.kind === 'line' || r.kind === 'tag') &&
+        isOptionalStrUpTo(r.style, 40) &&
+        isOptionalStrUpTo(r.tag, 40) &&
+        isOptionalStrUpTo(r.color, 40),
+    ),
+    rule: 'an array of at most 12 { id, kind: line | tag, style?, tag?, color? } rows',
+  },
+  {
+    field: 'keyMeanings',
+    valid: (v: unknown) =>
+      isRecord(v) &&
+      Object.keys(v).length <= 24 &&
+      Object.entries(v).every(([k, t]) => k.length <= 48 && isStrUpTo(60)(t)),
+    rule: 'at most 24 row meanings of at most 60 characters',
+  },
   flag('hubSpokes'),
   // Boundary (docs/specs/009-elements/boundary.md).
   { field: 'boundaryStyle', valid: isBoundaryStyle, rule: oneOfRule(['tab', 'inset', 'c4']) },

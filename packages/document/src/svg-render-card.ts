@@ -6,6 +6,7 @@ import { cardLayout, cardMediaOf, cardSlotsOf } from './card';
 import { colorWash } from './color-wash';
 import { borderOf } from './svg-render-border';
 import { labelOn } from './readable-colour';
+import { TAG_CHIP_WASH, tagColourOf, type TagColour } from './tag-colours';
 import type { BoxedElement } from './index';
 import type { ExportIconArt, ResolveIconArt } from './svg-render-describe';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -41,6 +42,8 @@ export function svgCard(
     label: string;
     fontFamily?: string;
     resolveIconArt?: ResolveIconArt;
+    // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
+    tagColours?: readonly TagColour[];
   },
 ): string {
   const { stroke, label: text, fontFamily } = o;
@@ -114,11 +117,17 @@ export function svgCard(
   out += webLabel(el, text, l.body, ink, fontFamily);
 
   for (const t of l.tags) {
+    // A mapped tag's chip in its colour (docs/specs/009-elements/tag-colours.md), as the canvas tints it.
+    const tagged = tagColourOf(o.tagColours, t.text);
+    const wash = tagged ? colorWash(tagged, TAG_CHIP_WASH) : colorWash(stroke, 0.1);
     out +=
       `<rect x="${r2(el.x + t.rect.x)}" y="${r2(el.y + t.rect.y)}" width="${r2(t.rect.width)}" height="${r2(t.rect.height)}"` +
-      ` rx="${r2(t.rect.height / 2)}" fill="${xmlEscape(colorWash(stroke, 0.1))}"` +
-      ` stroke="${xmlEscape(colorWash(stroke, 0.35))}" stroke-width="1"/>` +
-      webLine(el, t.text, t.rect, l.tagPx, ink, { fontFamily, opacity: 0.85 });
+      ` rx="${r2(t.rect.height / 2)}" fill="${xmlEscape(wash)}"` +
+      ` stroke="${xmlEscape(tagged ?? colorWash(stroke, 0.35))}" stroke-width="1"/>` +
+      webLine(el, t.text, t.rect, l.tagPx, tagged ?? ink, {
+        fontFamily,
+        opacity: tagged ? 1 : 0.85,
+      });
   }
   return out;
 }

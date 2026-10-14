@@ -7,6 +7,8 @@ import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 import { migrateRetiredScheme } from './retired-schemes';
 import { migrateRetiredTheme } from './retired-themes';
 import { migrateStoredElements } from './stored-elements';
+import { settleDiagramKeys } from './diagram-key';
+import { tagColoursOf } from './tag-colours';
 import type { Element, Tab } from './index';
 import { isRecord } from './is-record';
 
@@ -17,7 +19,11 @@ export function migrateStoredTab<
   const schemed = migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(tab)));
   if (!Array.isArray(schemed.elements)) return schemed;
   // Element links from before the document rename (./legacy-links) are upgraded here too.
-  const elements = upgradeLegacyLinks(migrateStoredElements(schemed.elements));
+  // A diagram key's rows are re-derived from the tab (docs/specs/009-elements/diagram-key.md), its tag colours included.
+  const elements = settleDiagramKeys(
+    upgradeLegacyLinks(migrateStoredElements(schemed.elements)),
+    tagColoursOf(schemed as { tagColours?: unknown }),
+  );
   return elements === schemed.elements ? schemed : { ...schemed, elements };
 }
 

@@ -250,6 +250,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pinned the tip of a pointer note to a corner or edge of a shape.',
   'Element|Changed|PointerDetach':
     'Someone let a pointer note go from the shape its tip was pinned to.',
+  'Element|Changed|TagColour':
+    'Someone gave a card tag a colour for the whole tab, so every card with that tag shows it.',
+  'Element|Changed|TagColourCleared': 'Someone removed the colour a card tag had across the tab.',
   'Element|Changed|HubSpokes': 'Someone switched the spokes of a hub and spoke graphic on or off.',
   'Element|Changed|PyramidVariant':
     'Someone switched a pyramid between pointing up, pointing down and a funnel.',

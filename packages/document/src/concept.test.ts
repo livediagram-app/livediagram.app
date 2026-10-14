@@ -186,6 +186,8 @@ describe('hub, onion and chevrons (round 2)', () => {
   it('exports the hub with its centre and satellites, the onion rings and the stage notes', () => {
     const hub = svgBoxed(make('hub'));
     for (const t of ['>Orders<', 'Payments', 'Support']) expect(hub).toContain(t);
+    // Its centre label is written once, by the hub, not again as an ordinary label.
+    expect(hub.match(/>Orders</g)).toHaveLength(1);
     expect(hub).toContain('<line');
     expect(svgBoxed(withHubSpokes(make('hub'), false))).not.toContain('<line');
     const onion = svgBoxed(make('onion'));

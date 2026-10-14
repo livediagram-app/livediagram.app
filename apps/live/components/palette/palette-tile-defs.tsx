@@ -1535,6 +1535,26 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </Glyph>
     ),
   },
+  {
+    // The diagram key (docs/specs/009-elements/diagram-key.md): a legend of the tab's line patterns and tag colours.
+    id: 'tools:diagram-key',
+    blurb: 'A legend that fills itself in',
+    caption: 'Diagram Key',
+    section: 'build',
+    label: 'Add Diagram Key',
+    description:
+      'Diagram key. Lists the line styles and tag colours this tab uses, each with a meaning you type.',
+    filled: true,
+    action: { type: 'shape', kind: 'diagram-key' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
+        <path d="M5.5 9h5M15 9h3.5" />
+        <path d="M5.5 14h1.5M9 14h1.5M15 14h3.5" />
+        <path d="M5.5 17.5h5" strokeOpacity={0.5} />
+      </Glyph>
+    ),
+  },
   // --- Concepts (docs/specs/009-elements/concept-graphics.md) --------------------------------------
   {
     id: 'concepts:layer-stack',

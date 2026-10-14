@@ -45,6 +45,8 @@ export type ShapeKind =
   | 'step'
   // Pointer note (docs/specs/009-elements/pointer-note.md): a note with a leader to a tip that may attach to a point.
   | 'pointer-note'
+  // Diagram key (docs/specs/009-elements/diagram-key.md): a legend of the tab's line patterns and tag colours.
+  | 'diagram-key'
   // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
   | 'boundary'
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): one element laying out its own rows

@@ -39,7 +39,9 @@ import { isChipShape } from './chip';
 import { svgChip } from './svg-render-chip';
 import { svgBoundary } from './svg-render-boundary';
 import { svgConcept } from './svg-render-concept';
+import type { TagColour } from './tag-colours';
 import { svgPointerNote } from './svg-render-pointer-note';
+import { svgDiagramKey } from './svg-render-diagram-key';
 import { isConceptShape } from './concept';
 import type { BoxedElement, ShapeKind } from './index';
 import { defaultTextColor, type CanvasSurface } from './colors';
@@ -56,6 +58,7 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     isChipShape(kind) ||
     kind === 'boundary' ||
     kind === 'pointer-note' ||
+    kind === 'diagram-key' ||
     isConceptShape(kind) ||
     kind === 'entity' ||
     kind === 'page' ||
@@ -89,6 +92,8 @@ export function svgElementBody(
     surface?: CanvasSurface;
     /** Resolves an icon id to its art, for a card's media glyph. */
     resolveIconArt?: ResolveIconArt;
+    // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
+    tagColours?: readonly TagColour[];
   },
 ): string {
   if (el.type !== 'shape') return '';
@@ -115,6 +120,9 @@ export function svgElementBody(
     return svgConcept(el, { stroke, fill, labelColor, label, fontFamily });
   // A pointer note's leader and tip (docs/specs/009-elements/pointer-note.md); its box and label are the usual.
   if (el.shape === 'pointer-note') return svgPointerNote(el, { stroke });
+  // A diagram key's title and rows (docs/specs/009-elements/diagram-key.md); its box is the usual.
+  if (el.shape === 'diagram-key')
+    return svgDiagramKey(el, { stroke, labelColor, label, fontFamily });
   // A boundary's tint and title (docs/specs/009-elements/boundary.md).
   if (el.shape === 'boundary')
     return svgBoundary(el, {
@@ -136,6 +144,7 @@ export function svgElementBody(
       label,
       fontFamily,
       resolveIconArt: o.resolveIconArt,
+      tagColours: o.tagColours,
     });
   if (el.shape === 'page')
     return svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily);

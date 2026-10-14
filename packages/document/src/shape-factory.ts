@@ -224,6 +224,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   step: { width: 28, height: 28 },
   // Pointer note (docs/specs/009-elements/pointer-note.md): a short note; its tip hangs below it (D190).
   'pointer-note': { width: 180, height: 64 },
+  // Diagram key (docs/specs/009-elements/diagram-key.md): one row's height until it settles (D191).
+  'diagram-key': { width: 260, height: 68 },
   // Boundary (docs/specs/009-elements/boundary.md): room for a few nodes inside.
   boundary: { width: 480, height: 300 },
   // Concept graphics (docs/specs/009-elements/concept-graphics.md).
@@ -691,6 +693,17 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // Their text is centred with no padding: the face is the pill, the label its word.
   if (kind === 'badge')
     return { ...base, label: 'New', textSize: 'sm', textBold: true, padding: 'none' };
+  if (kind === 'diagram-key')
+    return {
+      ...base,
+      label: 'Key',
+      textSize: 'sm',
+      textBold: true,
+      textAlignX: 'left',
+      textAlignY: 'top',
+      borderRadius: 'md',
+      strokeWidth: 'thin',
+    };
   if (kind === 'pointer-note')
     return {
       ...base,

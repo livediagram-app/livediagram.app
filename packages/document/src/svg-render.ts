@@ -127,6 +127,7 @@ import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
 import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
 import { isPointerNote, pointerTipOf } from './pointer-note';
+import { tagColoursOf, withTagAccent } from './tag-colours';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -173,7 +174,8 @@ export { svgIconShape } from './svg-render-image-icon';
 export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): string {
   const surface = opts.surface ?? 'light';
   // A stock colour stored by name is drawn in its version for this page.
-  const el = resolveStockColours(source, surface);
+  // A card under the tab's tag colours renders their accent edge (docs/specs/009-elements/tag-colours.md).
+  const el = resolveStockColours(withTagAccent(source, opts.tagColours), surface);
   const { opacity, shape, label: described } = describeBoxedExport(el, opts);
   let label = described;
   // What a self-drawing element writes its own text in: the label's resolved
@@ -324,6 +326,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       label: label?.text ?? el.label ?? '',
       surface,
       resolveIconArt: opts.resolveIconArt,
+      tagColours: opts.tagColours,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the
@@ -606,6 +609,8 @@ export function renderElementsToSvg(
   // Per band, in the canvas's paint order (docs/specs/006-document/layers.md): arrows and boxes
   // interleave by array order, so an arrow sent behind a box stays behind it.
   // A dimmed layer wraps its band in a <g opacity>.
+  // The tab's tag colours (docs/specs/009-elements/tag-colours.md): a mapped card's edge and chips.
+  const tagColours = tagColoursOf(tab);
   for (const band of layerBands(tab.elements, tab.layers)) {
     const shown = frame
       ? band.elements.filter((el) => frame.reaches(el, tab.elements))
@@ -627,6 +632,7 @@ export function renderElementsToSvg(
             itemTypes: opts.itemTypes,
             sheets: opts.sheets,
             resolvePlanArt: opts.resolvePlanArt,
+            tagColours,
           }),
     );
     const opacity = layerOpacityOf(band.layer);

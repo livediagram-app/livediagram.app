@@ -24,6 +24,7 @@ import {
   voteKeyOf,
   type ShapeMarker,
   type TextSize,
+  withTagAccent,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
@@ -49,6 +50,7 @@ import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
+import { useTagColours } from '@/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
@@ -284,6 +286,8 @@ function BoxedElementViewImpl({
   // border / stroke colour is overridden with the first remote selector's
   // colour so the realtime "X is here" signal is glanceable from anywhere
   // on the canvas — not just from the small initial-badge.
+  // The tab's tag colours, for a card's accent edge (docs/specs/009-elements/tag-colours.md).
+  const tagColours = useTagColours();
   const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
   // Accent for the data-element fills (progress bar / ring, rail line, rating
   // stars): a remote selector colour wins, else the element's own stroke, else
@@ -533,7 +537,7 @@ function BoxedElementViewImpl({
         />
       ) : null}
       <AccentEdgeOverlay
-        element={element}
+        element={withTagAccent(element, tagColours)}
         stroke={own.stroke ?? defaultStrokeColor(element, surface)}
       />
       {element.type === 'shape' && element.shape === 'pointer-note' ? (

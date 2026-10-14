@@ -19,6 +19,7 @@ import {
   flowchartStepTypeOf,
   isFlowchartLane,
   isFlowchartStep,
+  tagColoursOf,
 } from '@livediagram/document';
 import type { FlowchartMenuHandlers } from '@/components/flowchart/FlowchartMenuSections';
 import { track } from '@/lib/telemetry';
@@ -47,6 +48,7 @@ export function EditorContextMenuHost() {
     userPreferences,
     activeTab,
     isReadOnly,
+    setTagColour,
     editingId,
     closeContextMenu,
     openLinkPicker,
@@ -538,6 +540,8 @@ export function EditorContextMenuHost() {
       onResetAspectRatio={resetAspectRatioSelected}
       onSetSize={setSizeSelected}
       colourPalette={swatches}
+      tagColours={tagColoursOf(activeTab)}
+      onSetTagColour={setTagColour}
       onToggleTableHeaderRow={setTableHeaderRowSelected}
       onToggleTableHeaderColumn={setTableHeaderColumnSelected}
       onToggleTableZebra={setTableZebraSelected}

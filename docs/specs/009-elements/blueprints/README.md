@@ -33,5 +33,7 @@ Follow the references below only as needed; never upfront.
 - ./card.md - when implementing or changing the card, its slots, layout, menu or the callout migration
 - ./badge.md - when implementing or changing the badge, the step number, attachment and settling, or step numbering
 - ./pointer-note.md - when implementing or changing the pointer note, its tip, its leader or how it settles on a host
+- ./tag-colours.md - when implementing or changing tag colours, the tab map or how cards render it
+- ./diagram-key.md - when implementing or changing the diagram key, its derived rows or its meanings
 - ./boundary.md - when implementing or changing the boundary, its styles, depth tint, containment or paint order
 - ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations

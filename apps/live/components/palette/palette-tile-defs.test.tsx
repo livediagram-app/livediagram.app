@@ -131,7 +131,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  build: 8,
+  build: 9,
   write: 5,
   draw: 6,
   // The Pen alone: the layout adds the Pencil and each person's markers (palette-layouts, PaletteLogoTab).

@@ -115,6 +115,7 @@ export const SHAPE_KINDS = new Set<string>([
   'badge',
   'step',
   'pointer-note',
+  'diagram-key',
   'boundary',
   'layer-stack',
   'pyramid',

@@ -160,6 +160,8 @@ export const ELEMENT_FIELD_NAMES = {
     'attachAt',
     'stepSequence',
     'pointerTip',
+    'keyRows',
+    'keyMeanings',
     'boundaryStyle',
     'conceptRows',
     'pyramidVariant',

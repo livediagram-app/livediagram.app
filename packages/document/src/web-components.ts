@@ -12,9 +12,10 @@
 // without walking the index cycle.
 
 import { clamp, type Rect } from './geometry-primitives';
-import type { ShapeKind } from './index';
+import type { Element, ShapeKind } from './index';
 import { CARD_TAGS_MAX, clampCardTag } from './card';
 import { CONCEPT_ROWS, boundConceptRows, isConceptShape, type ConceptRow } from './concept';
+import { withKeyMeaning } from './diagram-key';
 
 // --- Vocabulary -------------------------------------------------------------
 
@@ -259,10 +260,12 @@ export type WebRows = {
   tags?: string[];
   // A concept graphic's rows (docs/specs/009-elements/concept-graphics.md).
   conceptRows?: ConceptRow[];
+  // One diagram key row's meaning (docs/specs/009-elements/diagram-key.md).
+  keyMeaning?: { rowId: string; text: string };
 };
 
 // The kind each single-kind row field lands on; concept rows land on any of the three concept graphics.
-const ROW_KIND: Record<Exclude<keyof WebRows, 'conceptRows'>, ShapeKind> = {
+const ROW_KIND: Record<Exclude<keyof WebRows, 'conceptRows' | 'keyMeaning'>, ShapeKind> = {
   stats: 'stat-row',
   processSteps: 'process',
   navLinks: 'site-header',
@@ -296,6 +299,13 @@ export function withWebRows<T extends { shape: ShapeKind }>(el: T, rows: WebRows
       return rest as T;
     }
     patch.tags = next;
+  }
+  if (rows.keyMeaning && el.shape === 'diagram-key') {
+    return withKeyMeaning(
+      el as unknown as Element,
+      rows.keyMeaning.rowId,
+      rows.keyMeaning.text,
+    ) as unknown as T;
   }
   if (rows.conceptRows && isConceptShape(el.shape)) {
     const next = boundConceptRows(el.shape, rows.conceptRows);

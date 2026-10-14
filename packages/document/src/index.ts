@@ -315,6 +315,8 @@ export type Tab = {
   // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
   // `customColoursOf`; every picker in the document offers them as Custom Colours.
   customColours?: string[];
+  // Tag colours (docs/specs/009-elements/tag-colours.md): a card tag mapped to a colour, read with `tagColoursOf`.
+  tagColours?: import('./tag-colours').TagColour[];
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
@@ -404,6 +406,8 @@ export * from './card';
 export * from './chip';
 export * from './attachment';
 export * from './pointer-note';
+export * from './tag-colours';
+export * from './diagram-key';
 export * from './boundary';
 export * from './concept';
 export * from './concept-ramp';

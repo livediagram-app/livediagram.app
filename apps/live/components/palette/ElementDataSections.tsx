@@ -17,6 +17,7 @@ import dynamic from 'next/dynamic';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
+import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
 import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import {
@@ -481,6 +482,16 @@ export function ElementDataSections({
               target={shapeTarget}
               ops={props.elementStyle}
               sectionProps={sectionProps}
+              tagColours={
+                props.onSetTagColour ? (
+                  <TagColoursBlock
+                    target={shapeTarget}
+                    tagColours={props.tagColours}
+                    colourPalette={props.colourPalette}
+                    onSetTagColour={props.onSetTagColour}
+                  />
+                ) : null
+              }
             />
           ) : null}
           {shapeTarget && hasWebRowsSection(shapeTarget) ? (

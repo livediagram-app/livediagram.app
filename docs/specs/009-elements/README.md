@@ -35,5 +35,7 @@ Follow the references below only as needed; never upfront.
 - ./badge.md - when working on The badge or attachment: A small text pill in five looks that stands alone or attaches to one of eight points on a host, follows it through moves, resizes, deletes and copies, and draws above it; attachment is shared with the step number
 - ./step-number.md - when working on The step number: A numbered disc for walkthroughs; new steps take the next number, Renumber Steps orders them by reading order, attaches like a badge, and Play in Order staggers its animation by number
 - ./pointer-note.md - when working on The pointer note: A short note joined by a leader line to a tip that attaches to a point on another element, so the note travels with what it is about
+- ./tag-colours.md - when working on Tag colours: A tab-level map from a card tag to a colour; mapped cards take it as their accent edge and their tag chips are tinted
+- ./diagram-key.md - when working on The diagram key: A legend that lists the tab's line styles and tag colours by itself, with a meaning typed per row
 - ./boundary.md - when working on The boundary: A titled, tinted, dashed container (Tab / Inset / C4 styles, icon, meta line) whose tint deepens with nesting; a container like frame and lane, animated without moving motions
 - ./concept-graphics.md - when working on Concept graphics: Layer stack, Pyramid (pyramid / inverted / funnel) and Cycle as single elements laying out `conceptRows`, an accent ramp, in-place row editing, and the Concept animation set (build / pulse / flow)
