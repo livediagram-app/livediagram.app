@@ -53,7 +53,8 @@ A Participant changes the board's **content**, never its **shape**.
   An element an Editor added, or one added before this level existed, belongs to nobody a Participant can claim.
 - **Stickies and images are the content**, so a Participant arranges them whoever added them: moves and resizes
   them. Shapes, frames, connectors and someone else's text boxes (which often label the structure) stay where
-  their author put them; a text box that sizes to its words still follows them when a Participant writes on it.
+  their author put them; a text box that sizes to its words still follows them when a Participant writes on it,
+  and a mind node grows to fit the label a Participant writes on it (taller only, in the same change).
 - **Nothing offers what a session cannot do.** A Participant or Viewer sees no Slides button or Slide Deck command,
   no timer controls on a timer element, and an inert face on a mode button set to the Eraser or Format Painter; a
   Participant sees no Sheet toolbar, row, column, merge or settings controls (cells only). Empty states describe

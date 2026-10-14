@@ -236,6 +236,12 @@ function mergeOthers(tab: Tab, stored: Element, incoming: Element): Element {
     for (const field of PARTICIPANT_MIND_FIELDS) {
       if (typeof inc[field] === 'number' && Number.isFinite(inc[field])) next[field] = inc[field];
     }
+    // A node grows to fit its label (docs/specs/009-elements/mind-node.md), so writing on it may make it taller in
+    // the same change, as a text box that sizes to its words follows them; never shorter.
+    const wrote = PARTICIPANT_TEXT_FIELDS.some((f) => !sameValue(s[f], inc[f]));
+    if (wrote && isPositive(inc.height) && inc.height > (s.height as number)) {
+      next.height = inc.height;
+    }
   }
   if (isFlowchartStep(stored)) {
     for (const field of PARTICIPANT_STEP_FIELDS) {

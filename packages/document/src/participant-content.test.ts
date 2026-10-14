@@ -596,6 +596,23 @@ describe('mind maps and images (docs/specs/013-workspace/share-roles.md)', () =>
     expect((t.tab.elements[2] as { to: Endpoint }).to).toEqual(arrow.to);
   });
 
+  // docs/specs/009-elements/mind-node.md "A node grows to fit its label": writing a longer label on anyone's node
+  // grows it in the same change, which must land whole; a taller node with no new words is still a resize.
+  it("writes on anyone's mind node and lets it grow to fit, never resizing it otherwise", () => {
+    const before = tabOf(map());
+    const c1 = map()[1] as Element & { height: number };
+    const relabelled = { ...c1, label: 'A much longer idea', height: c1.height + 24 } as Element;
+    const allowed = participantTabChange(before, tabOf([map()[0]!, relabelled, map()[2]!]), ME);
+    expect(allowed?.elements[1]).toMatchObject({
+      label: 'A much longer idea',
+      height: c1.height + 24,
+    });
+    const stretched = { ...c1, height: c1.height + 24 } as Element;
+    expect(participantTabChange(before, tabOf([map()[0]!, stretched, map()[2]!]), ME)).toBeNull();
+    const shrunk = { ...c1, label: 'x', height: c1.height - 10 } as Element;
+    expect(participantTabChange(before, tabOf([map()[0]!, shrunk, map()[2]!]), ME)).toBeNull();
+  });
+
   it('keeps what it added addable: its connector stays on the map, its node stays one', () => {
     const own = { ...createPinnedArrow('root', 'e', 'c1', 'w'), id: 'a2', addedBy: ME };
     const tab = tabOf([...map(), sticky('s1'), own as Element]);
