@@ -7,7 +7,7 @@
 //     with tiny symmetric bends draws a nearly straight line with a notch in it);
 //   - crossings, behind, collisions: the lint's own counts; extent: the drawing's size.
 
-import type { Element, Point, Tab } from '@livediagram/document';
+import { arrowStyleOf, type Element, type Point, type Tab } from '@livediagram/document';
 import { lintTab } from '../lint';
 import { prepareLintContext } from '../context';
 
@@ -141,7 +141,9 @@ export function routeMeasures(tab: Pick<Tab, 'elements' | 'layers' | 'theme'>): 
     shared: Math.round(shared),
     crossed: Math.round(crossed),
     strikes,
-    kinks: routes.filter(kinked).length,
+    // A curve is drawn as many short runs, all of them bends by design: only square and straight routes kink.
+    kinks: ctx.drawable.filter((d) => arrowStyleOf(d.arrow) !== 'curved' && kinked(d.polyline))
+      .length,
     // Null when the pair check was skipped: none counted.
     crossings: Number(report.measures.crossings),
     behind: report.measures.behind,
