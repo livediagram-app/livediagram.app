@@ -70,3 +70,26 @@ describe('the Avatar button', () => {
     expect(onToggle).toHaveBeenCalled();
   });
 });
+
+describe('the Avatar panel’s Status (docs/specs/008-canvas/avatar-mode.md "Status")', () => {
+  it('sets a status, and None clears it', () => {
+    const onSetStatus = vi.fn();
+    render(
+      <AvatarPanel
+        config={DEFAULT_AVATAR_CONFIG}
+        onChange={() => {}}
+        onRandomise={() => {}}
+        onReaction={() => {}}
+        status={null}
+        onSetStatus={onSetStatus}
+        position={null}
+        onMoveTo={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Status/ }));
+    fireEvent.click(screen.getByRole('radio', { name: /Focusing/ }));
+    expect(onSetStatus).toHaveBeenLastCalledWith('focus');
+    fireEvent.click(screen.getByRole('radio', { name: /None/ }));
+    expect(onSetStatus).toHaveBeenLastCalledWith(null);
+  });
+});

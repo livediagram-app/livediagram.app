@@ -99,6 +99,29 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 - **You can push each other.** Clicking a peer's character (in Avatar mode) walks yours over to them and, on arrival, sends an `avatar-push` op naming them plus a unit direction. Only that participant acts on it, by sliding their own character a short way (70 canvas px) along the direction — so a push is a **request to the owner**, never a remote write, and someone who has already left the mode simply ignores it. Same presence trust level as `avatar`: unordered, any role, never logged, never replayed. It is not throttled, because it is an event rather than a sample.
 - A **hide-cursors vote ([Session tools (timer + voting)](../012-collaboration/session-tools.md)) hides avatars too**, on both the outbound and render halves. A walking character is a position on the canvas, so showing it while cursors are hidden would leak exactly what the vote exists to hide.
 
+## Status
+
+Your character can say **how you are** without a word: a status set from the Avatar panel, shown to everyone on
+the tab while you are in the mode. It is what makes a virtual office read at a glance:
+who is free to talk, who is heads-down, who has stepped away.
+
+| Status           | Token       | How it shows                                                   |
+| ---------------- | ----------- | -------------------------------------------------------------- |
+| **Available**    | `available` | A green dot above the head                                     |
+| **Focusing**     | `focus`     | Headphones on the character (violet ear cups) and a violet dot |
+| **In a Meeting** | `meeting`   | A red dot above the head                                       |
+| **Away**         | `away`      | The character fades to half and a slow "Zz" rises above it     |
+
+- **Set from the panel**: a **Status** row, closed until opened like the rest, with the five choices (**None** and
+  the four), its current value in the collapsed header. Every role may set it: it is presence, like the character.
+- **Peers see it**: the status rides the avatar presence (`status`), parsed field by field; anything else is no
+  status. A peer's dot sits at the start of their name chip; yours sits above your head, where your chip would be.
+- **For the session only**: it is never stored, so an "In a Meeting" set yesterday does not greet anyone today.
+  Leaving the mode clears it, like the character itself.
+- A screen reader hears a peer's status with their name ("Sam, Focusing"), and your own on its own.
+- Under reduced motion the "Zz" holds still.
+- Telemetry: `UI · Changed · AvatarStatus` on a change, never which.
+
 ## Speech bubbles
 
 A character can **say something**: a short message appears in a speech bubble above its head, then floats up and away for everyone on the tab to see. It is the lightest possible way to talk on the canvas: a "hello!", a "follow me", a "nice one" while somebody presents, without a chat panel or anything left behind.

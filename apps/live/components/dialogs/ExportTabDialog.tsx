@@ -123,6 +123,8 @@ type ExportTabDialogProps = {
   documentTabs?: readonly Tab[];
   // Fetch tabs' content (a tab window's tab, which arrives only when opened or fetched); resolves to the failures.
   loadTabs?: (only: readonly string[]) => Promise<string[]>;
+  // Empty the canvas selection: the GIF draws the canvas as it stands, rings and all.
+  onClearSelection?: () => void;
   // The tabs whose content has arrived, so the export waits for a tab still being fetched elsewhere.
   loadedTabIds?: ReadonlySet<string>;
 };
@@ -267,6 +269,7 @@ export function ExportTabDialog({
   pages,
   documentTabs,
   loadTabs,
+  onClearSelection,
   loadedTabIds,
 }: ExportTabDialogProps) {
   // A Board, Sheet or Dashboard tab offers only its formats and exports as laid out; a plan view anywhere draws as its
@@ -312,7 +315,11 @@ export function ExportTabDialog({
   // The Logo Kit card shows while the tab has a logo page (docs/specs/007-editor/logo-pages.md).
   const hasLogoPage = !!pages?.some((p) => p.kind === 'logo');
   const cards = pages
-    ? [...ILLUSTRATE_FORMATS, ...(hasLogoPage ? (['logo-kit'] as const) : [])].map((kind) => {
+    ? [
+        // A GIF animates the pages, so an Illustrate tab with none yet (First Page Choice) offers no GIF.
+        ...ILLUSTRATE_FORMATS.filter((kind) => kind !== 'gif' || pages.length > 0),
+        ...(hasLogoPage ? (['logo-kit'] as const) : []),
+      ].map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: ILLUSTRATE_CARD_COPY[kind] ?? card.description };
       })
@@ -537,6 +544,7 @@ export function ExportTabDialog({
               onPick={setPageIndex}
               onDone={onClose}
               onBack={() => setActive(null)}
+              onClearSelection={onClearSelection}
             />
           </Suspense>
         ) : active ? (

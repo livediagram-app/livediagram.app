@@ -6,22 +6,11 @@ import { colorWash } from './color-wash';
 import { labelOn } from './readable-colour';
 import type { BoxedElement } from './index';
 import { borderOf } from './svg-render-border';
-import type { ExportIconArt, ResolveIconArt } from './svg-render-describe';
-import { r2, xmlEscape } from './svg-render-primitives';
+import type { ResolveIconArt } from './svg-render-describe';
+import { r2, svgIconGlyph as glyph, xmlEscape } from './svg-render-primitives';
 import { line as webLine } from './svg-render-web';
-import type { LayoutRect } from './web-components';
 
 type Shape = BoxedElement & { type: 'shape' };
-
-function glyph(el: Shape, art: ExportIconArt, r: LayoutRect, colour: string): string {
-  const attrs = art.colored
-    ? ''
-    : ` fill="none" stroke="${xmlEscape(colour)}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
-  return (
-    `<svg x="${r2(el.x + r.x)}" y="${r2(el.y + r.y)}" width="${r2(r.width)}" height="${r2(r.height)}"` +
-    ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible"${attrs}>${art.markup}</svg>`
-  );
-}
 
 export function svgBoundary(
   el: Shape,

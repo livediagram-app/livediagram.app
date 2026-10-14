@@ -3,6 +3,7 @@ import {
   faceUrlsOf,
   previewFonts,
   PREVIEW_FONTS_MAX,
+  PREVIEW_FONTS_PENDING_MAX_MS,
   PREVIEW_FONTS_TIMEOUT_MS,
 } from './preview-fonts';
 
@@ -68,5 +69,34 @@ describe('preview fonts', () => {
     await vi.advanceTimersByTimeAsync(PREVIEW_FONTS_TIMEOUT_MS + 1);
     expect(await pending).toEqual([]);
     vi.useRealTimers();
+  });
+
+  it('draws in Inter when a face’s body fails part way, and fetches it again next time', async () => {
+    const broken = vi.fn(async (url: string) => {
+      if (url.includes('css2')) return new Response(css('robotoslab'));
+      return {
+        ok: true,
+        clone: () => ({}),
+        arrayBuffer: () => Promise.reject(new Error('cut short')),
+      } as never;
+    });
+    await expect(previewFonts(['roboto-slab'], broken)).resolves.toEqual([]);
+    const ok = fetcher();
+    expect(await previewFonts(['roboto-slab'], ok.fn)).toHaveLength(2);
+  });
+
+  it('starts a fetch of its own once another has hung past its limit', async () => {
+    vi.useFakeTimers();
+    try {
+      const never = vi.fn(() => new Promise<Response>(() => {}));
+      const first = previewFonts(['permanent-marker'], never);
+      await vi.advanceTimersByTimeAsync(PREVIEW_FONTS_TIMEOUT_MS + 1);
+      expect(await first).toEqual([]);
+      await vi.advanceTimersByTimeAsync(PREVIEW_FONTS_PENDING_MAX_MS);
+      const ok = fetcher();
+      expect(await previewFonts(['permanent-marker'], ok.fn)).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -28,6 +28,7 @@ import {
   pageDuplicated,
   pageLaidOut,
   themedForTab,
+  pageIsDark,
   pageLockRefuses,
   pageLockSet,
   pageMargin,
@@ -463,7 +464,9 @@ export function illustratePageEdits({
         pageLaidOut(
           t,
           pageId,
-          themedForTab(buildPageLayoutOver(layoutId, page, previous), t.theme),
+          themedForTab(buildPageLayoutOver(layoutId, page, previous), t.theme, {
+            dark: pageIsDark(page),
+          }),
         ),
       );
     });

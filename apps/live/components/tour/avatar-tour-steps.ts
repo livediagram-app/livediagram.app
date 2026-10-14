@@ -48,7 +48,7 @@ export const AVATAR_TOUR_STEPS: AvatarTourStep[] = [
   {
     id: 'character',
     title: 'Make It Yours',
-    body: 'Pick a gender, outfit, hair and size, or roll the dice for a whole new look. Right-click your character to swap gender. The shirt is always your colour, so people know which one is you.',
+    body: 'Pick a gender, outfit, hair and size, or roll the dice for a whole new look, and set a status so people know if you are free. The shirt is always your colour, so people know which one is you.',
     target: 'avatar-character',
     prepare: openPanel,
   },

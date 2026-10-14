@@ -168,6 +168,58 @@ describe('the GIF panel', () => {
     expect(h.download).not.toHaveBeenCalled();
   });
 
+  it('clears the canvas selection as it opens, so no frame shows a selection ring', () => {
+    const onClearSelection = vi.fn();
+    render(
+      <GifExportPanel
+        tab={tab}
+        pages={pages}
+        page={pages[0]!}
+        baseName="Doc - Deck"
+        onPick={vi.fn()}
+        onDone={vi.fn()}
+        onBack={vi.fn()}
+        onClearSelection={onClearSelection}
+      />,
+    );
+    expect(onClearSelection).toHaveBeenCalledTimes(1);
+  });
+
+  it('settles its estimate though the editor re-renders it with a fresh tab all the while', async () => {
+    const props = {
+      pages,
+      page: pages[0]!,
+      baseName: 'Doc - Deck',
+      onPick: vi.fn(),
+      onDone: vi.fn(),
+      onBack: vi.fn(),
+    };
+    const { rerender } = render(<GifExportPanel tab={{ ...tab }} {...props} />);
+    // A collaborator typing: a new tab object every 100 ms, quicker than the estimate's rest.
+    for (let i = 0; i < 6; i++) {
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 100));
+      });
+      rerender(<GifExportPanel tab={{ ...tab }} {...props} />);
+    }
+    expect(h.snapshot).toHaveBeenCalled();
+  });
+
+  it('keeps a failed Download’s message up, though the preview’s estimate succeeds after it', async () => {
+    h.encoder.finish.mockRejectedValue(new Error('out of memory'));
+    open();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
+    });
+    expect((await screen.findByRole('alert')).textContent).toBe(GIF_ERROR_COPY.failed);
+    // The estimate runs again once the make ends; its success must not wipe the error.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 800));
+    });
+    expect(screen.getByRole('alert').textContent).toBe(GIF_ERROR_COPY.failed);
+    expect(h.download).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['page-missing', new GifExportError('page-missing')],
     ['tainted', new GifExportError('tainted')],
