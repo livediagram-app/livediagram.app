@@ -82,6 +82,31 @@ describe('ExportTabDialog, Illustrate', () => {
   });
 });
 
+describe('the GIF card (docs/specs/020-import-export/animated-gif-export.md "Where it is offered")', () => {
+  it('comes after SVG and before JSON in Illustrate, with its copy', () => {
+    open();
+    const buttons = screen.getAllByRole('button');
+    const at = (name: RegExp) => buttons.indexOf(screen.getByRole('button', { name }));
+    expect(at(/^SVG/)).toBeLessThan(at(/^GIF/));
+    expect(at(/^GIF/)).toBeLessThan(at(/JSON/));
+    expect(
+      screen.getByText('An animated image of the pages, moving as they move on the canvas.'),
+    ).toBeTruthy();
+  });
+
+  it('is never offered outside Illustrate', () => {
+    open(false);
+    expect(screen.queryByRole('button', { name: /^GIF/ })).toBeNull();
+  });
+
+  it('opens the GIF options', async () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: /^GIF/ }));
+    expect(await screen.findByText('Each page holds')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Download GIF' })).toBeTruthy();
+  });
+});
+
 describe('LogoKitPanel', () => {
   it('names each logo page by its full label', () => {
     open();

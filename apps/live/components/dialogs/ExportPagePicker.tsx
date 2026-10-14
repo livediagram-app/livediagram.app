@@ -14,7 +14,11 @@ const SCOPES: [PageScope, string][] = [
   ['one', 'One page'],
 ];
 
-function outcome(scope: PageScope, format: PageExportFormat, count: number): string {
+function outcome(scope: PageScope, format: PageExportFormat | 'gif', count: number): string {
+  if (format === 'gif')
+    return scope === 'one' || count === 1
+      ? 'One GIF of the page, looping.'
+      : `One GIF of the ${count} pages in turn, looping.`;
   if (scope === 'one') return format === 'pdf' ? 'A one-page PDF.' : `One ${format.toUpperCase()}.`;
   if (format === 'pdf') return count === 1 ? 'The page, as a PDF.' : `${count} pages, one PDF.`;
   return `A .zip of ${count} ${format.toUpperCase()} files, one per page.`;
@@ -31,7 +35,8 @@ export function ExportPagePicker({
   pages: readonly LaidOutPage[];
   page: LaidOutPage;
   scope: PageScope;
-  format: PageExportFormat;
+  // The animated GIF's pages make one file either way.
+  format: PageExportFormat | 'gif';
   onScope: (scope: PageScope) => void;
   onPick: (index: number) => void;
 }) {

@@ -1,6 +1,6 @@
 import { usePlan } from '@/components/plan/PlanContext';
 import { tabCsvText } from '@/lib/export-plan/tab-csv';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
@@ -41,6 +41,10 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { usePlanImageExport } from './usePlanImageExport';
 import type { ExportFormatKey } from '@livediagram/plan-art';
 
+// The animated GIF's panel and its capture, loaded only when the GIF card opens
+// (docs/specs/020-import-export/blueprints/animated-gif-export.md "Performance and limits").
+const GifExportPanel = lazy(() => import('./gif/GifExportPanel'));
+
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
 const EXPORT_LABEL: Record<Format, string> = {
@@ -52,6 +56,7 @@ const EXPORT_LABEL: Record<Format, string> = {
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
+  gif: 'GIF',
   'logo-kit': 'LogoKit',
 };
 
@@ -79,7 +84,7 @@ const ILLUSTRATE_PAGES_EXPORT_LABEL: Record<ImageFormat, string> = {
 
 // The formats Illustrate mode exports to (docs/specs/007-editor/illustrate-pages.md "Export"):
 // its pages, and the tab itself as JSON. Diagram-tool formats are not offered.
-const ILLUSTRATE_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'file'];
+const ILLUSTRATE_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'gif', 'file'];
 // The page formats' card copy in Illustrate mode, which speaks of pages rather than the tab.
 const ILLUSTRATE_CARD_COPY: Partial<Record<Format, string>> = {
   pdf: 'Every page in one PDF, or a single page, ready to print or share.',
@@ -171,6 +176,12 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'pdf',
     title: 'PDF',
     description: 'A single-page PDF of this tab, ready to print or share.',
+  },
+  {
+    // Illustrate mode only (docs/specs/020-import-export/animated-gif-export.md "Where it is offered").
+    kind: 'gif',
+    title: 'GIF',
+    description: 'An animated image of the pages, moving as they move on the canvas.',
   },
   {
     kind: 'logo-kit',
@@ -295,9 +306,12 @@ export function ExportTabDialog({
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: ILLUSTRATE_CARD_COPY[kind] ?? card.description };
       })
-    : // Off Illustrate there are no pages, so no logo page: never the Logo Kit. A Plan tab offers its own formats.
+    : // Off Illustrate there are no pages, so no logo page and no GIF: never the Logo Kit or GIF. A Plan tab offers
+      // its own formats.
       CARDS.filter((c) =>
-        planImage.formats ? planImage.formats.includes(c.kind) : c.kind !== 'logo-kit',
+        planImage.formats
+          ? planImage.formats.includes(c.kind)
+          : c.kind !== 'logo-kit' && c.kind !== 'gif',
       );
 
   const isSelection = scope === 'selection';
@@ -321,7 +335,7 @@ export function ExportTabDialog({
   // When an image format is picked, load the icon catalogues + image bitmaps
   // so the preview (and export) renders the real glyphs, not placeholders.
   useEffect(() => {
-    if (!active || isTextFormat(active)) return;
+    if (!active || isTextFormat(active) || active === 'gif') return;
     let cancelled = false;
     void (async () => {
       await ensureIconCatalogs();
@@ -431,9 +445,11 @@ export function ExportTabDialog({
   const subtitle = activeCard
     ? active === 'logo-kit'
       ? 'Download a logo page as an SVG, PNGs and a favicon.'
-      : isTextFormat(active!)
-        ? `Copy this tab as ${activeCard.title}, or download a file.`
-        : `Set the image options for ${activeCard.title}, then download.`
+      : active === 'gif'
+        ? 'Set how the pages play, then download the GIF.'
+        : isTextFormat(active!)
+          ? `Copy this tab as ${activeCard.title}, or download a file.`
+          : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
       : pages
@@ -478,6 +494,18 @@ export function ExportTabDialog({
             onDone={onClose}
             onBack={() => setActive(null)}
           />
+        ) : active === 'gif' && pages && page ? (
+          <Suspense fallback={<p className="text-xs text-slate-400">Preparing the GIF options…</p>}>
+            <GifExportPanel
+              tab={tab}
+              pages={pages}
+              page={page}
+              baseName={baseName}
+              onPick={setPageIndex}
+              onDone={onClose}
+              onBack={() => setActive(null)}
+            />
+          </Suspense>
         ) : active ? (
           <ImageExportPanel
             pagePicker={
