@@ -143,6 +143,45 @@ describe('layoutSequence', () => {
     expect(bars.length).toBe(1);
   });
 
+  it('spans a fragment across the lifelines it involves, a nested one inside it', () => {
+    const g = graphFromMermaid(
+      [
+        'sequenceDiagram',
+        'participant A',
+        'participant B',
+        'participant C',
+        'participant D',
+        'A->>B: start',
+        'alt ok',
+        'B->>C: check',
+        'opt cached',
+        'B->>C: reuse',
+        'end',
+        'else failed',
+        'C-->>B: error',
+        'end',
+        'B-->>A: done',
+        'C->>D: log',
+      ].join('\n'),
+    );
+    if (!g.ok) throw new Error(g.error);
+    const els = layoutGraph(g.graph);
+    const frames = els.filter(
+      (e): e is Element & { x: number; width: number } => e.type === 'shape' && e.shape === 'frame',
+    );
+    const head = (id: string) =>
+      els.find((e) => e.id === id) as Element & { x: number; width: number };
+    const [outer, inner] = [
+      frames.find((f) => f.label === 'alt')!,
+      frames.find((f) => f.label === 'opt')!,
+    ];
+    // Across B and C, not A or D.
+    expect(outer.x).toBeGreaterThan(head('A').x + head('A').width);
+    expect(outer.x + outer.width).toBeLessThan(head('D').x);
+    expect(inner.x).toBeGreaterThan(outer.x);
+    expect(inner.x + inner.width).toBeLessThan(outer.x + outer.width);
+  });
+
   it('draws a sequence from a graph: nodes the participants, edges the messages, dashed a reply', () => {
     const els = layoutGraph({
       style: 'sequence',

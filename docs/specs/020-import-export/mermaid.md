@@ -156,7 +156,8 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
 - **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, the
   pitch wide enough for the longest message between neighbours; messages a row each, edge to edge of the activation
   bars, labels above their line; a self-call loops out of the bar and back into its nested one; a note is a sticky
-  over or beside its participants; a fragment is a frame across every lifeline with its operator as its label and
+  over or beside its participants; a fragment is a frame across the lifelines its messages and notes involve (every lifeline when they
+  involve none; one nested on the same first lifeline sits a step inside) with its operator as its label and
   each guard in muted text, operands split by a dashed divider.
 - **Limits**: at most 30 participants and 300 messages, notes and fragment lines; past them the parser refuses
   naming the limit.

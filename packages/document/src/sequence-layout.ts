@@ -18,6 +18,8 @@ const STEP = 52;
 const SELF_DROP = 40;
 const SELF_LOOP = 56;
 const FRAGMENT_BAND = 40;
+// How far a fragment nested in another, on the same first lifeline, sits inside it on each side.
+const FRAGMENT_INSET = 12;
 const DIVIDER_BAND = 36;
 const FRAGMENT_END = 24;
 const NOTE_LINE = 18;
@@ -107,11 +109,13 @@ export function layoutSequence(
     fromX: number;
     toX: number;
   }[] = [];
+  // Each fragment's participants: those its messages and notes touch, so its frame spans their lifelines alone.
   const fragments: {
     op: string;
     label: string;
     top: number;
     dividers: { y: number; label: string }[];
+    who: Set<string>;
   }[] = [];
   const closed: {
     op: string;
@@ -119,7 +123,11 @@ export function layoutSequence(
     top: number;
     bottom: number;
     dividers: { y: number; label: string }[];
+    who: Set<string>;
   }[] = [];
+  const involve = (...who: string[]) => {
+    for (const f of fragments) for (const w of who) f.who.add(w);
+  };
   const notes: { item: Extract<SequenceItem, { kind: 'note' }>; y: number; h: number }[] = [];
   // Where a message meets a lifeline: the near edge of its outermost open bar, or the lifeline itself.
   const edge = (who: string, towardRight: boolean) => {
@@ -160,6 +168,7 @@ export function layoutSequence(
         deactivate(it.from, y + SELF_DROP + 20);
       }
       for (const who of [it.from, it.to]) lastRow.set(who, y);
+      involve(it.from, it.to);
       y += self ? SELF_DROP + 36 : STEP;
     } else if (it.kind === 'activate') activate(it.who, y - STEP / 2);
     else if (it.kind === 'deactivate') deactivate(it.who, y - STEP / 2);
@@ -168,9 +177,10 @@ export function layoutSequence(
       const lines = Math.max(1, Math.ceil(glyphWidth(it.text, 13) / Math.max(40, width - 28)));
       const h = Math.max(56, lines * NOTE_LINE + 30);
       notes.push({ item: it, y: y - 14, h });
+      involve(...it.who);
       y += h + 16;
     } else if (it.kind === 'fragment') {
-      fragments.push({ op: it.op, label: it.label, top: y - 22, dividers: [] });
+      fragments.push({ op: it.op, label: it.label, top: y - 22, dividers: [], who: new Set() });
       y += FRAGMENT_BAND;
     } else if (it.kind === 'else') {
       const frag = fragments.at(-1);
@@ -231,10 +241,19 @@ export function layoutSequence(
     });
   }
 
-  // Fragments behind everything that happens in them.
-  const left = -40;
-  const rightEdge = (participants.length - 1) * pitch + headW + 40;
+  // Fragments behind everything that happens in them, across the lifelines of the participants they involve (every
+  // lifeline when they involve none), nested ones a step inside those they sit in.
+  const columns = (f: { who: Set<string> }): [number, number] => {
+    const cols = [...f.who].flatMap((w) => (index.has(w) ? [index.get(w)!] : []));
+    return cols.length ? [Math.min(...cols), Math.max(...cols)] : [0, participants.length - 1];
+  };
   for (const f of closed) {
+    const [first, last] = columns(f);
+    const depth = closed.filter(
+      (o) => o !== f && o.top < f.top && o.bottom > f.bottom && columns(o)[0] === first,
+    ).length;
+    const left = first * pitch - 40 + depth * FRAGMENT_INSET;
+    const rightEdge = last * pitch + headW + 40 - depth * FRAGMENT_INSET;
     out.push({
       ...createShape('frame', left, f.top),
       id: freshId('fragment', opts.makeId),
