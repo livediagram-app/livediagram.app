@@ -157,8 +157,9 @@ Layout is O(messages) ≤ 60; the picture is built once per change of the rows (
   Box / Actor radio pair, Move Left, Move Right and Remove (rose on hover; disabled at two, tooltip says why, or how
   many messages go with it). Add Participant is a dashed pill; it adds `{ id: first free p<n>, label: Participant <k> }`,
   `k` the first number from the count plus one that no label uses (case-insensitively).
-- Message rows: grid `[1.25rem 6.5rem 2.5rem 6.5rem 1fr auto]` on a wide screen; on a phone From, kind, To and the
-  actions share the first line and the words the second. The kind button draws `KindArrow` (brand tint for Call and
+- Message rows: grid `[1.25rem 6.5rem 2.5rem 6.5rem 1fr auto]` on a wide screen; on a phone `[1.25rem 1fr 2.5rem 1fr]`,
+  From, kind and To on the first line (From and To equal), the words (columns 2 to 3) and the actions (column 4) on
+  the second. The kind button draws `KindArrow` (brand tint for Call and
   Async, plain for Reply). Move Up / Down show on hover or focus, always on a touch screen. Add Message is a dashed
   row ending in `n of 60`. No messages: `CompactEmptyState` "No messages yet".
 - A sequence opens no inline label editor (`opensInlineLabelEditor` is false), so a click never starts one and a
