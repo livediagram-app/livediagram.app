@@ -259,11 +259,12 @@ describe('ToolbarPalette', () => {
   });
 
   // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
-  it('offers Stickers and the Collaborate categories in Facilitate, not in Diagram, and Icons in both', () => {
+  it('offers Stickers, Data and the Collaborate categories in Facilitate, not in Diagram, and Icons in both', () => {
     show();
     fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
     expect(document.querySelector('[data-option-id="collab-ask"]')).toBeNull();
     expect(document.querySelector('[data-option-id="stickers"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="data"]')).toBeNull();
     expect(document.querySelector('[data-option-id="icons"]')).not.toBeNull();
     expect(document.querySelector('[data-option-id="technology"]')).not.toBeNull();
     cleanup();
@@ -273,7 +274,8 @@ describe('ToolbarPalette', () => {
       expect(document.querySelector(`[data-option-id="${id}"]`), id).not.toBeNull();
     }
     expect(screen.getByText('Collaborate')).toBeTruthy();
-    expect(screen.queryByText('Dynamic')).toBeNull();
+    // Dynamic holds the charts here; the session kit is under Collaborate, never Dynamic.
+    expect(document.querySelector('[data-option-id="data"]')).not.toBeNull();
     expect(document.querySelector('[data-option-id="stickers"]')).not.toBeNull();
     expect(document.querySelector('[data-option-id="icons"]')).not.toBeNull();
     expect(document.querySelector('[data-option-id="technology"]')).toBeNull();

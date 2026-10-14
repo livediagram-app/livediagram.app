@@ -43,7 +43,7 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 | **Common**      | Logo (Illustrate, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
 | **Structure**   | Build, Components, Devices, Event Storming (on an event-storming board only)                                                                                                                    |
 | **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                              |
-| **Dynamic**     | Data (Illustrate)                                                                                                                                                                               |
+| **Dynamic**     | Data (Illustrate, Facilitate)                                                                                                                                                                   |
 | **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Facilitate](../012-collaboration/facilitate-mode.md#the-palette) only)                                                                    |
 
 ## Why flatten

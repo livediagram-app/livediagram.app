@@ -85,13 +85,14 @@ Facilitate's layout, in order:
 | _(none)_    | Popular                                                       |
 | Common      | Shapes, My shapes (with a shape library), Write & Build, Draw |
 | Decorate    | Icons, Stickers, Media                                        |
+| Dynamic     | Data                                                          |
 | Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate           |
 
 - **Popular** (the landing category), fixed: Square, Sticky note, Text, Frame, Arrow, Image, then behind a divider **Ask**,
   **Tools**, **Record** and **React** as openers ([Editor modes](../007-editor/editor-modes.md) "Popular"): each draws its category's glyph
   with a chevron and opens that category's tiles in a popover under it, on a desktop and a phone.
 - **Write & Build and Draw hold what a session uses, not what a diagram or a page does.** Write & Build is Write
-  and Build as one category (Write's place and glyph): Text and Sticky note, then behind a divider Table and Frame
+  and Build as one category (Write's place and glyph): Text and Sticky note, then behind a divider Table, Checklist and Frame
   (no Page, no Annotation, no Mind node, no Flowchart, no Lane, no Timeline, no Sankey); Draw is Pencil,
   Highlighter, Arrow and Line (no Shape Pen, no Polygon). Search still finds those left out and places them, as it
   does any other mode's tile.
