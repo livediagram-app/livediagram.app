@@ -3,7 +3,14 @@
 // custom field id, a person, an item id). Unknown names are refused with what is there, never stored.
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
 import { isEmailAddress, type ItemTypeDef } from './item-types';
-import { PRIORITIES } from './fields';
+import { knownFieldKind, PRIORITIES, validateFields } from './fields';
+import {
+  ITEM_CHECKLIST_MAX,
+  ITEM_LABEL_MAX,
+  ITEM_LABELS_MAX,
+  ITEM_NUMBER_MAX,
+  ITEM_TITLE_MAX,
+} from './limits';
 import type { PlanStatusName } from './plan-outline';
 import { resolveItemRef } from './refs';
 import { statusKey } from './status-names';
@@ -186,7 +193,9 @@ export function resolveFields(
     if (isBuiltInFieldId(key)) {
       const v = builtInValue(key, value, naming);
       if (!v.ok) return v;
-      out[key] = v.value;
+      const checked = checkedBuiltIn(key, v.value);
+      if (!checked.ok) return checked;
+      out[key] = checked.value;
       continue;
     }
     const field = type.custom!.find((f) => f.id === key)!;
@@ -249,4 +258,38 @@ function builtInValue(key: string, value: unknown, naming: FieldNaming): Named<{
         .filter(Boolean),
     };
   return { ok: true, value };
+}
+
+// A built-in field's value held to the rules the server holds it to (validateFields), so a card table row or an
+// agent's change is refused here, naming the field and what it takes, rather than as a bare `field_value_invalid`
+// from the api (the production Error·Api·Http400.ItemChange.FieldValueInvalid). A number given as text ("5") is
+// read as the number.
+function checkedBuiltIn(key: string, value: unknown): Named<{ value: unknown }> {
+  const kind = knownFieldKind(key);
+  if (!kind) return { ok: true, value };
+  const given =
+    kind === 'number' &&
+    typeof value === 'string' &&
+    value.trim() !== '' &&
+    Number.isFinite(Number(value))
+      ? Number(value)
+      : value;
+  const result = validateFields({ [key]: given }, 'patch');
+  if (result.ok) return { ok: true, value: result.fields[key] };
+  const label = key.charAt(0).toUpperCase() + key.slice(1);
+  const shown = typeof value === 'string' ? `"${value}"` : JSON.stringify(value);
+  const takes: Partial<Record<string, string>> = {
+    number: `a number from 0 to ${ITEM_NUMBER_MAX}`,
+    date: 'a date, such as 2026-10-14',
+    priority: `one of ${list(PRIORITIES.map((p) => p.charAt(0).toUpperCase() + p.slice(1)))}`,
+    flag: 'TRUE, or nothing to leave it off',
+    colour: 'a colour as #rrggbb',
+    labels: `up to ${ITEM_LABELS_MAX} labels of up to ${ITEM_LABEL_MAX} characters`,
+    checklist: `up to ${ITEM_CHECKLIST_MAX} rows`,
+    text: `up to ${ITEM_TITLE_MAX} characters`,
+  };
+  return refuse(
+    'value_invalid',
+    `${shown} is not ${/^[aeiou]/i.test(label) ? 'an' : 'a'} ${label}: give ${takes[kind] ?? 'a value it can hold'}.`,
+  );
 }

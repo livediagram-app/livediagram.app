@@ -1410,7 +1410,7 @@ export const articles: Article[] = [
     description:
       'Run a session on any tab: retros, town halls and workshops, with timers, votes, polls and reveals.',
     keywords:
-      'facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective town hall all hands lean coffee crazy eights icebreaker q&a questions agenda timer countdown stopwatch vote dot vote voting poll survey pulse check reveal hide estimate planning poker quiz temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
+      'facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective town hall all hands lean coffee crazy eights brainstorm board workshop board kickoff ground rules icebreaker q&a questions agenda timer countdown stopwatch vote dot vote voting poll survey pulse check reveal hide estimate planning poker quiz temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

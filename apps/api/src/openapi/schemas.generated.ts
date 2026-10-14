@@ -9336,6 +9336,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "elements": {
             "type": "number"
           },
+          "finish": {
+            "$ref": "#/components/schemas/Finish"
+          },
           "hidden": {
             "type": "number"
           },
@@ -9369,6 +9372,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "kinds"
             ],
             "type": "object"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/EditorMode"
           },
           "outOfScope": {
             "const": false,
@@ -15363,6 +15369,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "elements": {
         "type": "number"
       },
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
+      },
       "hidden": {
         "type": "number"
       },
@@ -15396,6 +15405,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kinds"
         ],
         "type": "object"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/EditorMode"
       },
       "rev": {
         "type": [

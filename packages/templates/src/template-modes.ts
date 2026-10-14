@@ -77,6 +77,8 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   sailboat: 'facilitate',
   'town-hall': 'facilitate',
   'lean-coffee': 'facilitate',
+  brainstorm: 'facilitate',
+  'workshop-board': 'facilitate',
   'crazy-eights': 'facilitate',
   'meeting-agenda': 'facilitate',
   // Boards that ship a dot vote: only Facilitate's Session strip can watch, end and keep a vote.

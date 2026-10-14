@@ -72,6 +72,8 @@ const ALL_KINDS = [
   'user-story-map',
   'affinity-map',
   'lean-coffee',
+  'brainstorm',
+  'workshop-board',
   'town-hall',
   'business-model-canvas',
   'empathy-map',

@@ -82,13 +82,13 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       id: 'meetings',
       name: 'Meetings',
       line: 'Agendas, Q&A and open discussion with the room.',
-      kinds: ['meeting-agenda', 'town-hall', 'lean-coffee'],
+      kinds: ['meeting-agenda', 'workshop-board', 'town-hall', 'lean-coffee'],
     },
     {
       id: 'workshops',
       name: 'Workshops',
       line: 'Hands-on formats for ideas and design work.',
-      kinds: ['crazy-eights', 'affinity-map', 'user-persona'],
+      kinds: ['brainstorm', 'crazy-eights', 'affinity-map', 'user-persona'],
     },
     {
       id: 'planning',

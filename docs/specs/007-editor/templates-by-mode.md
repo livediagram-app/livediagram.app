@@ -209,7 +209,8 @@ unchanged; only the mode they open in moved from Diagram.
   (`start-stop-continue`), **Mad, Sad, Glad** (`mad-sad-glad`), **4Ls** (`four-ls`) and **Sailboat**
   (`sailboat`). **Team Retro** (`team-retro`) stays in Plan: it is a board of cards.
 - **Town Hall Q&A** (`town-hall`), **Lean Coffee** (`lean-coffee`), **Crazy Eights**
-  (`crazy-eights`) and **Meeting Agenda** (`meeting-agenda`).
+  (`crazy-eights`), **Meeting Agenda** (`meeting-agenda`), **Workshop Board** (`workshop-board`) and
+  **Brainstorm Board** (`brainstorm`).
 - The boards that ship a dot vote: **Affinity map** (`affinity-map`), **Prioritization matrix**
   (`prioritization-matrix`) and **Risk matrix** (`risk-matrix`). Diagram has no Session strip, so a
   vote on a Diagram tab could be started but not watched, ended or kept; every template carrying a

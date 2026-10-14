@@ -676,8 +676,9 @@ whole Sheet.
   (State or Status, Assignee, Owner or Assigned To, Due or Due Date, and so on). A new row (directly under a linked row, a draft row or the header) becomes a card: its type from its
   Type cell or the table's, its State from its State cell or the table's first card's, its title from its Title cell
   (else the type's new-card title); its Number fills in. A row directly under a draft row joins the table too,
-  so a block of rows pasted under the table becomes a block of new rows, each a draft. A value the plan does not know ("No column 'Doing'") is
-  refused with a toast and the row stays a draft. The draft ends only once the card write lands: a write the plan
+  so a block of rows pasted under the table becomes a block of new rows, each a draft. A value the plan does not know ("No column 'Doing'"), or one
+  its field cannot hold ("1000 is not an Estimate: give a number from 0 to 999", checked by `resolveFields` against
+  the api's own field rules), is refused with a toast and the row stays a draft. The draft ends only once the card write lands: a write the plan
   store refuses keeps the row a draft ("That row could not be saved to its card. Its edits are kept: try Save
   again."), and a second Save while one is on its way does nothing. **Cancel** puts a card's row back as its card is, and empties a
   new row.

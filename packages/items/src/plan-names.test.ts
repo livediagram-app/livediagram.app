@@ -108,9 +108,31 @@ describe('resolveFields', () => {
     });
   });
 
-  it('keeps a person object and an unknown priority as given (the api checks them)', () => {
-    const r = resolveFields({ assignee: ALI, priority: 'whenever' }, ITEM_TYPES[1], naming);
-    expect(r).toEqual({ ok: true, fields: { assignee: ALI, priority: 'whenever' } });
+  it('keeps a person object as given', () => {
+    const r = resolveFields({ assignee: ALI }, ITEM_TYPES[1], naming);
+    expect(r).toEqual({ ok: true, fields: { assignee: ALI } });
+  });
+
+  // The api refused these with a bare field_value_invalid (production Error·Api·Http400.ItemChange); they are
+  // refused here, saying what the field takes.
+  it('refuses a built-in value the api would, naming what the field takes', () => {
+    const refusal = (fields: Record<string, unknown>) => {
+      const r = resolveFields(fields, ITEM_TYPES[1], naming);
+      return r.ok ? null : r;
+    };
+    expect(refusal({ priority: 'whenever' })).toMatchObject({
+      code: 'value_invalid',
+      message: '"whenever" is not a Priority: give one of Urgent, High, Medium, Low.',
+    });
+    expect(refusal({ estimate: 1000 })?.message).toBe(
+      '1000 is not an Estimate: give a number from 0 to 999.',
+    );
+    expect(refusal({ due: 'tomorrow' })?.message).toContain('give a date');
+    // A number written as text is read as the number.
+    expect(resolveFields({ estimate: '5' }, ITEM_TYPES[1], naming)).toEqual({
+      ok: true,
+      fields: { estimate: 5 },
+    });
   });
 
   it('resolves custom fields by name, Choice options and Card links', () => {

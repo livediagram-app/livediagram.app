@@ -784,3 +784,5 @@ export { planBoardFitHeight } from './svg-render-plan';
 export * from './svg-render-pages';
 export * from './article-draw-ops';
 export * from './article-layout-estimate';
+export { agendaFitHeight } from './svg-render-agenda';
+export * from './session-button-text';

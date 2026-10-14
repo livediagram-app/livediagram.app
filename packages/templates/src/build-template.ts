@@ -51,6 +51,7 @@ import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
 import { buildLeanCoffee, buildTownHall } from './template-builders-sessions';
+import { buildBrainstorm, buildWorkshopBoard } from './template-builders-workshop-boards';
 import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
 import { buildFunnel } from './template-builders-funnel';
 import { buildSankey } from './template-builders-sankey';
@@ -220,6 +221,10 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildAffinityMap(cx, cy);
     case 'lean-coffee':
       return buildLeanCoffee(cx, cy);
+    case 'brainstorm':
+      return buildBrainstorm(cx, cy);
+    case 'workshop-board':
+      return buildWorkshopBoard(cx, cy);
     case 'town-hall':
       return buildTownHall(cx, cy);
     case 'business-model-canvas':
