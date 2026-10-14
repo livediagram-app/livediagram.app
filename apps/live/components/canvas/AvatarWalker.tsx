@@ -9,7 +9,7 @@
 
 import { avatarStatusColour, avatarStatusLabel, type AvatarStatus } from '@/lib/avatar-status';
 import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
-import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
+import { AVATAR_FALLBACK_COLOUR, avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import type { AvatarFacing } from '@/lib/avatar-walk';
 import { AVATAR_HEIGHT, avatarBox } from '@/lib/avatar-walk';
 import { AvatarSprite } from '@/components/canvas/avatar-sprite';
@@ -120,7 +120,7 @@ export function AvatarWalker({
             // Pinned just above the HEAD, not the (headroom-extended) box, and
             // tracking the size choice so it hugs a small character too.
             style={{
-              ...identityVars(shirt ?? '#0ea5e9'),
+              ...identityVars(shirt ?? AVATAR_FALLBACK_COLOUR),
               top: box.offsetY - AVATAR_HEIGHT * scale - 16,
             }}
             aria-label={status ? `${name}, ${avatarStatusLabel(status)}` : undefined}

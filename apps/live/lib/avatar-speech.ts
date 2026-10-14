@@ -3,7 +3,7 @@
 // at a moment of its flight, which bubbles stay on screen, and where above a character one starts. No React, no
 // DOM, so every rule here is unit-tested.
 
-import { clampSayText, countWords, withinSayLimits } from '@livediagram/api-schema';
+import { clampSayText, countWords, sayOneLine, withinSayLimits } from '@livediagram/api-schema';
 import { AVATAR_HEIGHT, type AvatarPoint } from '@/lib/avatar-walk';
 
 // Flight time: 4 s up to two words, 0.15 s more for each further word, at most 10 s.
@@ -38,10 +38,6 @@ export type SpeechBubble = {
   // Presence id of the speaker; 'self' for your own.
   from: string;
   own: boolean;
-  // Shown above a peer's text; absent on your own.
-  name?: string;
-  // The speaker's presence colour (border, tail, name).
-  colour: string;
   text: string;
   tabId: string;
   // The canvas point the bubble rises from.
@@ -59,7 +55,7 @@ export type SpeechBubble = {
  * paste, a drop, an autocorrection, composed text) is clamped.
  */
 export function nextDraft(prev: string, value: string, atOnce: boolean): string {
-  const cleaned = value.replace(/[\r\n\t]+/g, ' ');
+  const cleaned = sayOneLine(value);
   if (withinSayLimits(cleaned)) return cleaned;
   return atOnce ? clampSayText(cleaned) : prev;
 }

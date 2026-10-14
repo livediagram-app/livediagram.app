@@ -31,7 +31,7 @@ and from [Avatar tour](../avatar-tour.md).
 | -------------- | -------------------- | -------------------------------------------------------------------------- |
 | Message        | `text`               | What someone typed, after `clampSayText`                                   |
 | Composer       | `composer`           | The open text box above your own head (`{ open: boolean; draft: string }`) |
-| Bubble         | `SpeechBubble`       | `{ id, from, name, colour, text, x, y, tabId, bornAt, flightMs, own }`     |
+| Bubble         | `SpeechBubble`       | `{ id, from, text, x, y, tabId, bornAt, flightMs, own }`; speaker resolved |
 | Speaking       | `canSpeak`           | The session `can` speak: an Editor or a Participant, in Avatar mode        |
 | Say op         | `AvatarSayOp`        | `{ kind: 'avatar-say', tabId, id, text, x, y }`                            |
 | Head point     | `headPoint`          | Where a bubble starts: above the speaker's head, in canvas coordinates     |

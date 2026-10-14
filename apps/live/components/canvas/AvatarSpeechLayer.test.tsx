@@ -10,7 +10,6 @@ const bubble = (over: Partial<SpeechBubble> = {}): SpeechBubble => ({
   id: 'b1',
   from: 'peer',
   own: false,
-  colour: '',
   text: 'hello <b>there</b>',
   tabId: 't1',
   x: 10,
@@ -117,7 +116,10 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
     const box = screen.getByRole('textbox', { name: 'Message' }) as HTMLTextAreaElement;
     const put = (value: string, inputType: string) => {
       // Through the native setter, as a browser writes it, so React sees the change.
-      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(box, value);
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(
+        box,
+        value,
+      );
       box.dispatchEvent(new InputEvent('input', { bubbles: true, inputType }));
     };
     const fifty = Array.from({ length: 50 }, (_, i) => `w${i}`).join(' ');

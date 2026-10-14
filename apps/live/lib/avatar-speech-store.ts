@@ -11,6 +11,7 @@ import {
   admitBubble,
   bubbleEndsAt,
   flightMs,
+  liveBubbles,
   SeenIds,
   type SpeechBubble,
 } from '@/lib/avatar-speech';
@@ -28,7 +29,7 @@ function emit() {
 
 function prune() {
   const at = now();
-  const next = bubbles.filter((b) => bubbleEndsAt(b) > at);
+  const next = liveBubbles(bubbles, at);
   if (next.length === bubbles.length) return;
   bubbles = next;
   emit();
@@ -69,7 +70,6 @@ export function addOwnBubble(say: {
     ...say,
     from: 'self',
     own: true,
-    colour: '',
     bornAt: now(),
     flightMs: flightMs(say.text),
   });
@@ -90,7 +90,7 @@ export function receivePeerSay(from: string, op: unknown): void {
     return;
   }
   debugLog('[avatar-say] receive', { from });
-  add({ ...say, from, own: false, colour: '', bornAt: now(), flightMs: flightMs(say.text) });
+  add({ ...say, from, own: false, bornAt: now(), flightMs: flightMs(say.text) });
 }
 
 function subscribe(l: () => void) {

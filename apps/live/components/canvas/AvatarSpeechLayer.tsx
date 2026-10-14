@@ -13,11 +13,11 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { bubbleMotion, type SpeechBubble } from '@/lib/avatar-speech';
 import type { AvatarPoint } from '@/lib/avatar-walk';
+import { AVATAR_FALLBACK_COLOUR } from '@/lib/avatar-config';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { SendIcon, SpeechCard, SpeechCounter, SpeechDraftField } from './AvatarSpeechBubble';
 
 // The brand cyan a character falls back to with no presence colour (AvatarWalker's).
-const BRAND_FALLBACK = '#0ea5e9';
 
 type Peer = { id: string; name: string; color: string };
 type Speaker = { name: string; colour: string } | null;
@@ -159,7 +159,7 @@ function Composer({
                 onClick={submit}
                 // Your colour, like the border, while it can send: through the identity fill, so dark mode deepens it
                 // under the white glyph as it does every name chip.
-                style={canSend ? identityVars(colour || BRAND_FALLBACK) : undefined}
+                style={canSend ? identityVars(colour || AVATAR_FALLBACK_COLOUR) : undefined}
                 className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition ${
                   canSend
                     ? `text-white ${IDENTITY_FILL}`

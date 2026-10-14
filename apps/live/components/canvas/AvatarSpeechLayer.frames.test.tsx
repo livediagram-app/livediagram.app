@@ -17,7 +17,6 @@ const bubble: SpeechBubble = {
   id: 'b1',
   from: 'self',
   own: true,
-  colour: '',
   text: 'hello',
   tabId: 't1',
   x: 0,
