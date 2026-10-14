@@ -69,13 +69,16 @@ export function svgCard(
 
   if (l.media && media) {
     const m = l.media;
+    // On the header band the accent is the ground, so the media takes the band's text colour instead.
+    const stroke = l.band ? bandText : o.stroke;
+    const badgeInk = l.band ? (el.headerFill ?? o.stroke) : ACCENT_BAR_TEXT;
     const cx = el.x + m.x + m.width / 2;
     const cy = el.y + m.y + m.height / 2;
     if (media === 'badge') {
       out += `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r2(m.width / 2)}" fill="${xmlEscape(stroke)}"/>`;
       out += art
-        ? glyph(el, art, inset(m, 0.22), ACCENT_BAR_TEXT)
-        : webLine(el, 'i', m, Math.round(m.width / 2), ACCENT_BAR_TEXT, {
+        ? glyph(el, art, inset(m, 0.22), badgeInk)
+        : webLine(el, 'i', m, Math.round(m.width / 2), badgeInk, {
             bold: true,
             fontFamily,
             onCapBand: true,

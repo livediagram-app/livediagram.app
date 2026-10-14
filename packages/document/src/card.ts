@@ -31,6 +31,8 @@ export type CardSlots = {
   media: boolean;
   title: boolean;
   meta: boolean;
+  // The meta line's length, so a header band gives the title the room a short meta line leaves.
+  metaChars?: number;
   // Badge media lines the body up under the title, as the Callout did; the other media sit above a full-width body.
   badge: boolean;
   tags: readonly string[];
@@ -65,6 +67,7 @@ export function cardSlotsOf(el: ShapeElement): CardSlots {
     media: isCardMedia(media),
     title: !!el.pageTitle,
     meta: !!el.pageSubtitle,
+    metaChars: el.pageSubtitle?.length ?? 0,
     badge: media === 'badge',
     tags: el.tags ?? [],
   };
@@ -116,9 +119,10 @@ function layoutOnce(w: number, h: number, s: CardSlots): CardLayout {
     }
     let titleRight = right;
     if (s.meta) {
+      // As wide as its words (a character estimate, as the header's links), never more than 45% of the band.
       const metaW = Math.min(
         (w - pad * 2) * 0.45,
-        Math.ceil(metaPx * 0.56 * 24) + metaPx, // room for about two dozen characters
+        Math.ceil((s.metaChars ?? 24) * metaPx * 0.6) + 4,
       );
       meta = { x: right - metaW, y: 0, width: metaW, height: bandH };
       titleRight = right - metaW - 8;

@@ -25,6 +25,7 @@ function CardMediaArt({
   rect,
   iconId,
   accent,
+  badgeInk,
   title,
   fontFamily,
 }: {
@@ -32,6 +33,8 @@ function CardMediaArt({
   rect: LayoutRect;
   iconId: string | undefined;
   accent: string;
+  // What a badge's glyph is drawn in: white on the accent disc, the band's colour on a band.
+  badgeInk: string;
   title: string;
   fontFamily: string | undefined;
 }) {
@@ -80,14 +83,14 @@ function CardMediaArt({
       style={{
         ...at,
         backgroundColor: badge ? accent : colorWash(accent, 0.16),
-        color: badge ? ACCENT_BAR_TEXT : accent,
+        color: badge ? badgeInk : accent,
         fontSize: badge ? d / 2 : d * 0.42,
         fontFamily,
       }}
     >
       {badge && iconId ? (
         <span className="relative" style={{ width: d * 0.56, height: d * 0.56 }}>
-          <IconGlyph iconId={iconId} stroke={ACCENT_BAR_TEXT} />
+          <IconGlyph iconId={iconId} stroke={badgeInk} />
         </span>
       ) : badge ? (
         'i'
@@ -142,7 +145,9 @@ export function CardFace({
           media={media}
           rect={l.media}
           iconId={element.iconId}
-          accent={accent}
+          // On the header band the accent is the ground, so the media takes the band's text colour instead.
+          accent={l.band ? bandText : accent}
+          badgeInk={l.band ? (element.headerFill ?? accent) : ACCENT_BAR_TEXT}
           title={element.pageTitle ?? ''}
           fontFamily={fontFamily}
         />
