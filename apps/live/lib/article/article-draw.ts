@@ -4,6 +4,24 @@ import type { ArticleDrawOp } from './article-snapshot';
 
 export { articleOpsToSvg } from '@livediagram/document';
 
+// A line of several styles: each stretch after the one before, measured in its own font, the whole set at its anchor.
+function drawRuns(ctx: CanvasRenderingContext2D, op: Extract<ArticleDrawOp, { k: 'text' }>): void {
+  const fontOf = (r: { weight: string; style: string }) =>
+    `${r.style} ${r.weight} ${op.size}px ${op.family}`;
+  const widths = op.runs!.map((r) => {
+    ctx.font = fontOf(r);
+    return ctx.measureText(r.text).width;
+  });
+  const total = widths.reduce((a, w) => a + w, 0);
+  let x = op.anchor === 'end' ? op.x - total : op.anchor === 'middle' ? op.x - total / 2 : op.x;
+  ctx.textAlign = 'left';
+  op.runs!.forEach((r, i) => {
+    ctx.font = fontOf(r);
+    ctx.fillText(r.text, x, op.y);
+    x += widths[i]!;
+  });
+}
+
 /** The operations painted onto a canvas already set to canvas coordinates. */
 export function drawArticleOps(ctx: CanvasRenderingContext2D, ops: readonly ArticleDrawOp[]): void {
   ctx.save();
@@ -48,7 +66,8 @@ export function drawArticleOps(ctx: CanvasRenderingContext2D, ops: readonly Arti
       ctx.fillStyle = op.color;
       ctx.textBaseline = 'alphabetic';
       ctx.textAlign = op.anchor === 'end' ? 'right' : op.anchor === 'middle' ? 'center' : 'left';
-      ctx.fillText(op.text, op.x, op.y);
+      if (op.runs) drawRuns(ctx, op);
+      else ctx.fillText(op.text, op.x, op.y);
       if (op.underline || op.strike) {
         const w = ctx.measureText(op.text).width;
         const x0 = op.anchor === 'end' ? op.x - w : op.anchor === 'middle' ? op.x - w / 2 : op.x;

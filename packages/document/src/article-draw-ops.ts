@@ -20,6 +20,9 @@ export type ArticleDrawOp =
       underline?: boolean;
       strike?: boolean;
       anchor?: 'start' | 'middle' | 'end';
+      // A line in more than one style (a bold lead-in): its stretches in order, each its own weight and style, `text`
+      // their whole; drawn as one text whose stretches follow each other, so the renderer spaces them.
+      runs?: { text: string; weight: string; style: string }[];
     }
   | { k: 'rect'; x: number; y: number; w: number; h: number; fill: string; r?: number }
   | { k: 'line'; x1: number; y1: number; x2: number; y2: number; stroke: string; width: number }
@@ -51,7 +54,16 @@ export function articleOpsToSvg(ops: readonly ArticleDrawOp[]): string {
         .filter(Boolean)
         .join(' ');
       out.push(
-        `<text x="${r2(op.x)}" y="${r2(op.y)}" font-family="${xmlEscape(op.family)}" font-size="${r2(op.size)}" font-weight="${xmlEscape(op.weight)}"${op.style !== 'normal' ? ` font-style="${xmlEscape(op.style)}"` : ''} fill="${xmlEscape(op.color)}"${deco ? ` text-decoration="${deco}"` : ''}${op.anchor && op.anchor !== 'start' ? ` text-anchor="${op.anchor}"` : ''} xml:space="preserve">${xmlEscape(op.text)}</text>`,
+        `<text x="${r2(op.x)}" y="${r2(op.y)}" font-family="${xmlEscape(op.family)}" font-size="${r2(op.size)}" font-weight="${xmlEscape(op.weight)}"${op.style !== 'normal' ? ` font-style="${xmlEscape(op.style)}"` : ''} fill="${xmlEscape(op.color)}"${deco ? ` text-decoration="${deco}"` : ''}${op.anchor && op.anchor !== 'start' ? ` text-anchor="${op.anchor}"` : ''} xml:space="preserve">${
+          op.runs
+            ? op.runs
+                .map(
+                  (r) =>
+                    `<tspan font-weight="${xmlEscape(r.weight)}"${r.style !== 'normal' ? ` font-style="${xmlEscape(r.style)}"` : ''}>${xmlEscape(r.text)}</tspan>`,
+                )
+                .join('')
+            : xmlEscape(op.text)
+        }</text>`,
       );
     }
   }

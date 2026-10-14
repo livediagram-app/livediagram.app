@@ -28,6 +28,7 @@ export const fixes = {
     ),
   // A page's text: grown to hold its lines; two texts over each other moved apart.
   textOverflow: (a: string, height: number) => `set ${a} height=${height}`,
+  textOverflowWidth: (a: string, width: number) => `set ${a} width=${width}`,
   textOverlap: (a: string, b: string) => `move ${b} below:${a}`,
   nodeIsolated: (s: LintSource, a: string) =>
     pick(s, `connect <ref> -> ${a}`, `add an edge to ${a}, or drop it`),

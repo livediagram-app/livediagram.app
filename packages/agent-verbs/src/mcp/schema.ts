@@ -645,6 +645,10 @@ const tabShape = z.object({
   elements: elementArray.optional(),
   template: templateField,
   dashboard: dashboardField,
+  theme: z
+    .string()
+    .optional()
+    .describe('This tab’s theme, one of the theme ids above; the document’s theme when left out.'),
 });
 
 export const createDocumentShape = {

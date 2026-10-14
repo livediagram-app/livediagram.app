@@ -115,11 +115,9 @@ function setOf(b: ArticleBlock, para: number, rules: 'none' | 'title' | 'heading
 
 const runsText = (runs: readonly ArticleRun[]) => runs.map((r) => r.text).join('');
 
-// A stretch of a line in one style, and the estimated advance of text in it.
+// A stretch of a line in one style.
 type Style = { b: boolean; i: boolean };
 type Segment = Style & { text: string };
-const advanceOf = (text: string, px: number, bold: boolean) =>
-  text.length * px * CHAR_EM * (bold ? BOLD_EM : 1);
 
 // Each character's style, from the runs it is in (a block set bold, a heading, bolds every character).
 function charStyles(runs: readonly ArticleRun[], bold: boolean, italic: boolean): Style[] {
@@ -331,6 +329,9 @@ export function estimateArticle(
         fill: ink.code,
         r: 6,
       });
+    // A heading keeps with what follows it (the stylesheet's break-after: avoid): with no room for it and a line
+    // after it, it starts the next page.
+    if (set.heading && !room(lines.length * lh + set.below * line + line)) break;
     const codePad = b.type === 'code' ? 10 : 0;
     lines.forEach((t, i) => {
       if (!room(lh) || overflows) return;
@@ -361,27 +362,32 @@ export function estimateArticle(
             anchor: 'end',
           });
       }
-      // The line in its runs' styles, each stretch where the ones before it end (a centred or right-aligned line
-      // set from where its estimated width puts its start).
+      // The line in its runs' styles: one text, its stretches following each other, so the renderer spaces them.
       const cut = segmentsOf(text, styles, t, cursor);
       cursor = cut.end;
-      const lineWidth = cut.segments.reduce((w, sg) => w + advanceOf(sg.text, px, sg.b), 0);
-      let sx = anchor === 'middle' ? x - lineWidth / 2 : anchor === 'end' ? x - lineWidth : x;
-      for (const sg of cut.segments) {
-        push({
-          k: 'text',
-          x: sx,
-          y: baseline,
-          text: sg.text,
-          family: b.type === 'code' ? MONO : set.heading ? headingFace : body,
-          size: px,
-          weight: sg.b ? (set.weight === '400' ? '700' : set.weight) : '400',
-          style: sg.i ? 'italic' : 'normal',
-          color: b.type === 'paragraph' && b.style === 'quote' ? ink.text : color,
-          anchor: 'start',
-        });
-        sx += advanceOf(sg.text, px, sg.b);
-      }
+      const weightOf = (sg: Style) => (sg.b ? (set.weight === '400' ? '700' : set.weight) : '400');
+      const one = cut.segments.length <= 1 ? (cut.segments[0] ?? { b: false, i: false }) : null;
+      push({
+        k: 'text',
+        x,
+        y: baseline,
+        text: t,
+        family: b.type === 'code' ? MONO : set.heading ? headingFace : body,
+        size: px,
+        weight: one ? weightOf(one) : '400',
+        style: one?.i ? 'italic' : 'normal',
+        color: b.type === 'paragraph' && b.style === 'quote' ? ink.text : color,
+        anchor,
+        ...(one
+          ? {}
+          : {
+              runs: cut.segments.map((sg) => ({
+                text: sg.text,
+                weight: weightOf(sg),
+                style: sg.i ? 'italic' : 'normal',
+              })),
+            }),
+      });
       y += lh;
     });
     const end = page().rect.x + margin;

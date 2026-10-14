@@ -45,4 +45,27 @@ describe('the writing as SVG', () => {
     expect(svg).toContain('text-anchor="middle"');
     expect(svg.match(/<path/g)).toHaveLength(1);
   });
+
+  it('draws a line of several styles as one text of tspans', () => {
+    const svg = articleOpsToSvg([
+      {
+        k: 'text',
+        x: 0,
+        y: 10,
+        text: 'Lead: rest',
+        family: 'Inter',
+        size: 16,
+        weight: '400',
+        style: 'normal',
+        color: '#111',
+        runs: [
+          { text: 'Lead: ', weight: '700', style: 'normal' },
+          { text: 'rest', weight: '400', style: 'italic' },
+        ],
+      },
+    ]);
+    expect(svg).toContain(
+      '<tspan font-weight="700">Lead: </tspan><tspan font-weight="400" font-style="italic">rest</tspan>',
+    );
+  });
 });

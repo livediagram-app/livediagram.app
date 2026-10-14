@@ -73,6 +73,18 @@ const PAGE_DRAWINGS: Element[][] = [
     } as Element,
   ],
   [
+    {
+      id: 'a',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 70,
+      height: 120,
+      label: '£4.6bn',
+      textSize: 'lg',
+    } as Element,
+  ],
+  [
     { id: 'a', type: 'text', x: 0, y: 0, width: 200, height: 40, label: 'One' } as Element,
     { id: 'b', type: 'text', x: 0, y: 8, width: 200, height: 40, label: 'Two' } as Element,
   ],

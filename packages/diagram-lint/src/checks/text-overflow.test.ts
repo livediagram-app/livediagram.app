@@ -54,6 +54,15 @@ describe('text-overflow', () => {
     );
   });
 
+  it('names a word cut across lines, with the width that holds it', () => {
+    const stat = text('n', 0, 0, '£4.6bn', { width: 70, height: 120, textSize: 'lg' });
+    const found = of(lint(page(stat)), 'text-overflow');
+    expect(found.map((f) => f.message)).toEqual([
+      expect.stringMatching(/breaks "£4\.6bn" across lines$/),
+    ]);
+    expect(found[0]!.fix).toMatch(/^set \S+ width=\d+$/);
+  });
+
   it('leaves text on a curve out, drawn along its arc, not in its box', () => {
     const top = text('t', 0, 0, 'CRUMB AND CO.', { width: 400, height: 400, textArc: 180 });
     const bottom = text('b', 0, 0, 'ARTISAN BAKERY', { width: 400, height: 400, textArc: -180 });

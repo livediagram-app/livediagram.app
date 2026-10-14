@@ -30,7 +30,12 @@ type Ink = { x: number; y: number; width: number; height: number };
 // Where a text's lines are drawn: wrapped at its room in its size (a Shift-resized text scaled), set in its box as the
 // renderer sets them (its alignment, its padding), less a little at the top and bottom for the glyphs' own leading,
 // so lines that only touch are not counted as printed over each other. Its lines may run past its box.
-function inkOf(t: BoxedElement & { label: string }): { ink: Ink; lines: number; px: number } {
+function inkOf(t: BoxedElement & { label: string }): {
+  ink: Ink;
+  lines: number;
+  px: number;
+  measure: (s: string) => number;
+} {
   const scale = (t as { textScale?: number }).textScale ?? 1;
   const px = fontSizeFor(t.textSize) * scale;
   const measure = estimatedLabelMeasure(px);
@@ -58,6 +63,7 @@ function inkOf(t: BoxedElement & { label: string }): { ink: Ink; lines: number; 
     ink: { x, y: top + slack, width, height: Math.max(0, block - 2 * slack) },
     lines: wrapped.length,
     px,
+    measure,
   };
 }
 
@@ -78,8 +84,23 @@ export const textOverflow: Check = (ctx) => {
   for (const t of texts) {
     // A text set to scale fills its box by its size.
     if (t.textSize === 'scale') continue;
-    const { lines, px } = inks.get(t.id)!;
+    const { lines, px, measure } = inks.get(t.id)!;
     const room = labelRoom(t);
+    // A word wider than the line is cut between its letters ("£4.6b" / "n"): the box is too narrow for it.
+    const widest = t.label
+      .split(/\s+/)
+      .reduce((w, word) => (measure(word) > measure(w) ? word : w), '');
+    if (measure(widest) > room.width + 1) {
+      const ref = refOf(ctx, t.id);
+      out.push({
+        code: 'text-overflow',
+        refs: [ref],
+        message: `${ref} breaks ${JSON.stringify(widest)} across lines`,
+        fix: fixes.textOverflowWidth(ref, Math.ceil(t.width + measure(widest) - room.width)),
+        at: { x: t.x, y: t.y },
+      });
+      continue;
+    }
     const holds = Math.max(1, Math.floor((room.height + px * 0.25) / (px * LABEL_LINE_HEIGHT)));
     if (lines <= holds) continue;
     const ref = refOf(ctx, t.id);
