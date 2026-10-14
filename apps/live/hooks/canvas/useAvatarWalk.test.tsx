@@ -95,7 +95,7 @@ describe('useAvatarWalk with a status', () => {
           setViewportOffset: vi.fn(),
           onPresence,
         }),
-      { initialProps: { status: null } },
+      { initialProps: { status: null as 'focus' | 'away' | null } },
     );
     act(() => hook.result.current.teleportTo({ x: 50, y: 50 }));
     onPresence.mockClear();
