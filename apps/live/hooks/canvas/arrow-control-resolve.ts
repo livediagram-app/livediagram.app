@@ -76,6 +76,7 @@ export function resolveArrowControlFrame({
   dx,
   dy,
   pointIndex,
+  noSnap = false,
 }: {
   els: Element[];
   arrowId: string;
@@ -88,9 +89,13 @@ export function resolveArrowControlFrame({
   // The multi-bend control point slot being dragged; null for the
   // legacy single bow / the elbow handle.
   pointIndex: number | null | undefined;
+  // Cmd / Ctrl held (docs/specs/008-canvas/snap-override.md): the handle follows the pointer, no guides.
+  noSnap?: boolean;
 }): { offsetDx: number; offsetDy: number; guides: AlignmentGuide[] } {
   const raw = { x: baseX + grabDx + dx, y: baseY + grabDy + dy };
-  const { point: snapped, guides } = snapArrowControlPoint(els, arrowId, raw, pointIndex);
+  const { point: snapped, guides } = noSnap
+    ? { point: raw, guides: [] }
+    : snapArrowControlPoint(els, arrowId, raw, pointIndex);
   return { offsetDx: snapped.x - baseX, offsetDy: snapped.y - baseY, guides };
 }
 
