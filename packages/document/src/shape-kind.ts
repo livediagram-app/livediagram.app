@@ -43,6 +43,14 @@ export type ShapeKind =
   // point on a host element (`attachedTo` / `attachAt`) and travel with it.
   | 'badge'
   | 'step'
+  // Pointer note (docs/specs/009-elements/pointer-note.md): a note with a leader to a tip that may attach to a point.
+  | 'pointer-note'
+  // Diagram key (docs/specs/009-elements/diagram-key.md): a legend of the tab's line patterns and tag colours.
+  | 'diagram-key'
+  // Stack (docs/specs/009-elements/stack.md): a container that lays out what it holds in a row, column or grid.
+  | 'stack'
+  // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): participants and messages laid out as UML.
+  | 'sequence'
   // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
   | 'boundary'
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): one element laying out its own rows
@@ -50,6 +58,10 @@ export type ShapeKind =
   | 'layer-stack'
   | 'pyramid'
   | 'cycle'
+  // Round 2: satellites round a hub, concentric rings, chevron stages in a row.
+  | 'hub'
+  | 'onion'
+  | 'chevrons'
   // Stat row: KPI cards, a big value over a caption each, in `stats`.
   | 'stat-row'
   // Process steps: numbered circles joined by arrows, captions in

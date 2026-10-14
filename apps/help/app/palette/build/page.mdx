@@ -6,7 +6,7 @@ import { BuildRows } from '@/components/illustrations/palette-build-chairs';
 export const metadata = helpMetadata({
   title: 'Build Elements',
   description:
-    'The palette Build category holds the elements you lay a diagram out with: mind nodes, flowcharts, lanes, frames, boundaries, tables, Sankeys and cards.',
+    'The palette Build category holds what you lay a diagram out with: mind maps, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, keys and tables.',
   path: '/help/palette/build/',
 });
 
@@ -25,10 +25,14 @@ What the first five have in common is that **each one holds other work**. A fram
 ## What the category contains
 
 - A **Mind node** is a node that knows its parent. **Tab** adds a child to its right, **Enter** a sibling below, each one connected and selected; start typing to label it, so a whole branch is built from the keyboard. See [Mind Maps](/help/palette/mind-maps/).
+- An **Org Chart** is a mind map of people: each node shows an initials disc, a name and a role, **Tab** adds a report below and **Enter** a peer beside it, and the chart lays itself out top down. See [Org Charts](/help/palette/org-charts/).
 - A **Flowchart** starts as a **Start** step. **Tab** adds the next step and **Enter** a parallel one, and the whole chart lays itself out after every change; any step can become a Decision, an Input / Output and more, and the chart can run in swimlanes. See [Flowcharts](/help/palette/flowcharts/).
 - A **Table** is an editable grid of cells you can style, link, and fill row by row; double-click a cell to type. See [Tables](/help/palette/tools/tables/).
 - A **Lane** is a titled horizontal band for swimlane diagrams, its title down its left edge. Dragging the lane carries everything sitting in it, so a row of steps moves as one. See [Lanes](/help/palette/lanes/).
 - A **Frame** is a labelled box that groups a section of the canvas. It draws behind its contents and carries them when you move it, and a slide with one frame on it is framed by it. Press `F` to add one. See [Frames](/help/palette/build/frames/).
+- A **Sequence** diagram shows who calls whom, in order: participants side by side over dashed lifelines and a row per message. You edit it in its **Sequence** menu section, where **Enter** in a message adds the next one, and the diagram lays itself out; replies are dashed and answered calls get an activation bar. See [Sequence Diagrams](/help/palette/sequence-diagrams/).
+- A **Stack** lines up whatever you drop into it in a row, a column or a grid with even gaps, and reflows as things are added, removed or resized, so a row of cards never needs nudging into line. See [Stacks](/help/palette/stacks/).
+- A **Diagram Key** lists the line styles and tag colours the tab uses, each with a meaning you type, and keeps itself up to date as the diagram changes. See [Diagram Keys and Tag Colours](/help/palette/diagram-keys/).
 - A **Boundary** is a titled, tinted container for a cloud region, a VPC, a cluster or a C4 system. It carries what sits inside it like a frame, and boundaries nested in each other read deeper. See [Boundaries](/help/palette/boundaries/).
 - A **Timeline** is a track for sequencing events, with points above the line; add more with **Add Point** from its **+** buttons. See [Timeline Rail](/help/palette/tools/data-elements/timeline-rail/).
 - A **Sankey** diagram shows how much moves where: nodes in columns, joined by bands as wide as the amount they carry. It lays itself out from a list of flows you type, paste or import. See [Sankey Diagram](/help/palette/build/sankey-diagram/).
@@ -40,7 +44,7 @@ In Diagram mode three more tiles follow, for the nodes and marks a finished diag
 - A **Card** is one node with a title, a meta line, a body, an icon and tags, each switched on or off. See [Cards and Callouts](/help/palette/cards-and-callouts/).
 - A **Badge** is a small pill of text and a **Step Number** a numbered disc; drop either on a node's corner and it travels with the node. See [Badges and Step Numbers](/help/palette/badges-and-step-numbers/).
 
-Build is in the palette in Diagram mode. In Draw mode the palette gives way to the dock, whose shape catalogue still offers the mind node, lane, frame and timeline. In Illustrate mode it holds the Table, the Timeline and the Sankey, since mind maps, flowcharts, lanes and frames organise a diagram rather than a page, and Plan mode has no Build category.
+Build is in the palette in Diagram mode. In Draw mode the palette gives way to the dock, whose shape catalogue still offers the mind node, lane, frame and timeline. In Illustrate mode it holds the Table, the Stack, the Timeline and the Sankey, since mind maps, flowcharts, lanes and frames organise a diagram rather than a page, and Plan mode has no Build category.
 
 ## Tiles on the strip, rows in More
 

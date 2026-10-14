@@ -10,6 +10,7 @@
 // Value import from the data-shapes LEAF module (it imports only types from
 // here, so no cycle at runtime) — elementSupportsText excludes the
 // self-drawing data shapes the same way the inline editor does.
+import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
@@ -315,6 +316,8 @@ export type Tab = {
   // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
   // `customColoursOf`; every picker in the document offers them as Custom Colours.
   customColours?: string[];
+  // Tag colours (docs/specs/009-elements/tag-colours.md): a card tag mapped to a colour, read with `tagColoursOf`.
+  tagColours?: TagColour[];
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
@@ -403,6 +406,13 @@ export * from './accent-edge';
 export * from './card';
 export * from './chip';
 export * from './attachment';
+export * from './pointer-note';
+export * from './tag-colours';
+export * from './diagram-key';
+export * from './stack';
+export * from './sequence-element';
+export { sequenceDrawing } from './svg-render-sequence';
+export * from './person-node';
 export * from './boundary';
 export * from './concept';
 export * from './concept-ramp';

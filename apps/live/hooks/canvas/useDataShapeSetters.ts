@@ -222,7 +222,11 @@ export function useDataShapeSetters({
   ) => {
     commit((els) =>
       els.map((el) => {
-        if (el.id !== elementId || el.type !== 'shape' || !MASTHEAD_SHAPES.has(el.shape)) return el;
+        if (el.id !== elementId || el.type !== 'shape') return el;
+        // A person node's role is its meta line (docs/specs/009-elements/org-chart.md).
+        const personRole =
+          el.shape === 'mind-node' && el.mindLook === 'person' && field === 'pageSubtitle';
+        if (!MASTHEAD_SHAPES.has(el.shape) && !personRole) return el;
         // An empty line stores as undefined rather than '', so a page that was
         // typed into and cleared serialises the same as one never touched.
         return { ...el, [field]: value.trim() ? value : undefined };

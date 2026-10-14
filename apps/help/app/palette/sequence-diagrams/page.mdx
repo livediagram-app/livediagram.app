@@ -1,0 +1,52 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SequenceFigure } from '@/components/illustrations/palette-diagram-elements-2';
+
+export const metadata = helpMetadata({
+  title: 'Sequence Diagrams',
+  description:
+    'A sequence diagram shows who calls whom, in order. Type the participants and messages as rows and it lays itself out, with replies dashed and calls answered.',
+  path: '/help/palette/sequence-diagrams/',
+});
+
+<ArticleLayout
+  title="Sequence Diagrams"
+  description="Who calls whom, in order, laid out from a list of messages."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles('sequence-diagrams')}
+>
+
+A **Sequence Diagram** shows a conversation between parts of a system: participants side by side over dashed lifelines, and a row for each message, top to bottom in the order they happen. It is one element: you type the messages and it draws the arrows, bars and loops.
+
+It sits in the palette's [Build](/help/palette/build/) category, after Flowchart.
+
+<Figure caption="Browser, API and Database: a call, the API validating itself, a call to the database, its reply and the reply to the browser.">
+  <SequenceFigure />
+</Figure>
+
+## Editing it
+
+Right-click the diagram and open its **Sequence** section.
+
+**Participants** are listed left to right. Rename one, mark it as an **Actor** to draw a stick figure instead of a box, reorder with the arrows, or remove it (its messages go with it). A diagram has 2 to 12 participants.
+
+**Messages** are listed top to bottom. Each has a **From**, a **To**, its words and a kind:
+
+- **Call**: a solid line with a filled head.
+- **Async**: a solid line with an open head, for a message nobody waits for.
+- **Reply**: a dashed line.
+
+Press **Enter** in a message's words to add the next message under it, from that message's receiver to the next participant along, so you can type a whole conversation straight down. A message from a participant to itself loops out and back.
+
+A call that is later answered by a reply draws an activation bar on the participant while it works.
+
+## Options
+
+- **Numbered** puts each message's number in front of it ("1: Place order"), so a review can say "step 4".
+- **Play** reveals the diagram top to bottom, so the messages appear in the order they happen. Set its speed, and turn on **Repeat** to loop it.
+
+Resizing the diagram scales the drawing, keeping its shape.
+
+</ArticleLayout>

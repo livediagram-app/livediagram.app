@@ -16,12 +16,13 @@ Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.m
 
 ## Domain and naming
 
-| Term              | Identifier                                                               | Meaning                |
-| ----------------- | ------------------------------------------------------------------------ | ---------------------- |
-| Concept graphic   | `ConceptShape = 'layer-stack' \| 'pyramid' \| 'cycle'`, `isConceptShape` | The three kinds        |
-| Row               | `ConceptRow = { label: string; note?: string }`                          | A layer, tier or step  |
-| Variant           | `PyramidVariant = 'pyramid' \| 'inverted' \| 'funnel'`                   | Absent = pyramid       |
-| Concept animation | `ConceptAnim = 'build' \| 'pulse' \| 'flow'`                             | `flow` only on a Cycle |
+| Term              | Identifier                                                                                                 | Meaning                |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------- |
+| Concept graphic   | `ConceptShape = 'layer-stack' \| 'pyramid' \| 'cycle' \| 'hub' \| 'onion' \| 'chevrons'`, `isConceptShape` | The six kinds          |
+| Row               | `ConceptRow = { label: string; note?: string }`                                                            | A layer, tier or step  |
+| Variant           | `PyramidVariant = 'pyramid' \| 'inverted' \| 'funnel'`                                                     | Absent = pyramid       |
+| Concept animation | `ConceptAnim = 'build' \| 'pulse' \| 'flow'`                                                               | `flow` only on a Cycle |
+| Spokes            | `hubSpokes?: boolean`                                                                                      | Absent = on; Hub only  |
 
 Banned: "SmartArt", "tier" for a Cycle step in copy ("Step"), "layer" for the Layers feature.
 
@@ -29,11 +30,14 @@ Banned: "SmartArt", "tier" for a Cycle step in copy ("Step"), "layer" for the La
 
 ### Bounds (`CONCEPT_ROWS`)
 
-| Kind        | min | max | Notes drawn          | Add row says |
-| ----------- | --- | --- | -------------------- | ------------ |
-| layer-stack | 2   | 8   | side notes           | "Layer n"    |
-| pyramid     | 2   | 6   | values (funnel only) | "Tier n"     |
-| cycle       | 3   | 8   | none                 | "Step n"     |
+| Kind        | min | max | Notes drawn          | Add row says  |
+| ----------- | --- | --- | -------------------- | ------------- |
+| layer-stack | 2   | 8   | side notes           | "Layer n"     |
+| pyramid     | 2   | 6   | values (funnel only) | "Tier n"      |
+| cycle       | 3   | 8   | none                 | "Step n"      |
+| hub         | 3   | 8   | none                 | "Satellite n" |
+| onion       | 2   | 6   | none                 | "Ring n"      |
+| chevrons    | 2   | 8   | notes under stages   | "Stage n"     |
 
 `CONCEPT_LABEL_MAX` 60, `CONCEPT_NOTE_MAX` 40. `withWebRows(el, { conceptRows })` trims and collapses each string,
 slices the array to the kind's max and ignores a write below its min (as the web components' rows). An empty note
@@ -62,9 +66,24 @@ for every row.
   each end inset by `asin(min(1, (r + 6) / R))`; label px `round(clamp(r * 0.36, 10, 16))`; centre label rect a square
   of side `(R - r) * 1.2` about the centre.
 
+- `hubLayout(w, h, n)`: `S = min(w, h) / 2`; satellite radius `r = min(S * 0.25, S * sin(π / n) * 0.6)`; ring
+  `R = S - r - 2`; hub radius `H = max(16, min(S * 0.34, R - r - 10))`; satellite `i` at `-90° + i * 360° / n`;
+  spoke `i` from the hub's edge to the satellite's edge along their line; satellite label rect the disc's box inset 2 px each side; hub
+  label rect a square of side `H * 1.4` about the centre; label px `round(clamp(r * 0.3, 10, 14))`.
+- `onionLayout(w, h, n)`: `S = min(w, h) / 2`; ring `k` (0 = core) has radius `S * (k + 1) / n`; drawn outermost
+  first; the core's label rect `S / n * 1.9` wide and `S / n * 1.4` tall about the centre; ring `k > 0`'s label rect is centred
+  at the top of its band (`y` from `cy - R_k` to `cy - R_{k-1}`), `width = min(w, R_k * 1.1)`; label px
+  `round(clamp(S / n * 0.36, 10, 18))`.
+- `chevronLayout(w, h, n, notes)`: chevron height `ch = notes ? round(h * 0.62) : h`; gap 4; point depth
+  `p = min(ch * 0.35, w / n / 3)`; stage width `sw = (w + (n - 1) * (p - 4)) / n`; stage `i` from `x0 = i * (sw - p + 4)`;
+  points: top-left, `(x0 + sw - p, 0)`, the point `(x0 + sw, ch / 2)`, `(x0 + sw - p, ch)`, bottom-left, and for `i > 0`
+  the notch `(x0 + p, ch / 2)`; label rect from `x0 + (i > 0 ? p : 0) + 4` to `x0 + sw - p - 4`, the full height; note
+  rect from `x0` to `x0 + sw - p`, `y = ch + 8` to `h`; label px `round(clamp(ch * 0.24, 10, 18))`, note px
+  `round(clamp(labelPx * 0.8, 10, 14))`.
+
 ### Writes
 
-`withPyramidVariant(el, variant | null)`; `withConceptAnim(el, anim | null)`, `withConceptAnimSpeed`,
+`withPyramidVariant(el, variant | null)`; `withHubSpokes(el, on)` (on deletes the field, off stores `false`); `withConceptAnim(el, anim | null)`, `withConceptAnimSpeed`,
 `withConceptAnimRepeat`: through the menu's generic style ops. Telemetry: `PyramidVariant`, `ConceptAnim`; rows
 `ConceptRows` (the web rows setter).
 
@@ -78,7 +97,8 @@ Each row element carries `--i` (its index in reading order) and the face `--n` a
   brightness lift and 3% scale in the first 8%, settled by 16%.
 - `flow` (Cycle arcs): `stroke-dasharray: 6 6`, `stroke-dashoffset` to -24 over 1.2 s × speed, linear, `infinite`.
 - Build's reading order: stack top to bottom, pyramid base up (`--i` reversed), funnel and inverted top down, cycle
-  clockwise from step 1 (each arc after its step).
+  clockwise from step 1 (each arc after its step), hub: the hub first (`--i` 0) then satellite `i` at `i + 1` with its
+  spoke, onion core outward, chevrons left to right.
 - `prefers-reduced-motion: reduce` → `animation: none`. Exports draw the rest frame (no classes).
 
 ### Invariants
@@ -145,7 +165,9 @@ element is still.
 
 - Starting content (D186): stack 360 × 260 Presentation / API / Domain / Storage with notes "Next.js", "Workers",
   "packages/document", "D1"; pyramid 320 × 260 Vision / Strategy / Objectives / Daily work; funnel 340 × 260 Visited
-  12,400 / Signed up 3,100 / Activated 820 / Retained 210; cycle 300 × 300 Plan / Do / Check / Act, centre "Weekly loop".
+  12,400 / Signed up 3,100 / Activated 820 / Retained 210; cycle 300 × 300 Plan / Do / Check / Act, centre "Weekly loop". Round 2 (D188): hub 340 × 320 Payments / Stock / Email / Search / Analytics / Support,
+  centre "Orders"; onion 320 × 320 Domain / Application / Adapters / Infrastructure; chevrons 600 × 150 Commit /
+  Build / Test / Release with notes "push to main", "2 min", "8,400 tests", "manual gate".
 - Menu (Tools flyout): **Rows** (label + note per row where drawn, ↑ ↓ ×, Add Layer / Tier / Step), **Pyramid**
   variant tiles (Pyramid, Inverted, Funnel), **Animation** in a Concept section (None, Build, Pulse, Flow on a Cycle;
   Speed; Repeat).

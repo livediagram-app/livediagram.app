@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import {
   CARD_MEDIA,
   cardMediaOf,
@@ -51,10 +52,13 @@ export function CardMenuSection({
   target,
   ops,
   sectionProps,
+  tagColours,
 }: {
   target: ShapeElement;
   ops: ElementStyleOps;
   sectionProps: (id: string) => { open: boolean; onToggle: () => void; flush: boolean };
+  // The Tag Colours block (docs/specs/009-elements/tag-colours.md), last in the section; absent read-only.
+  tagColours?: ReactNode;
 }) {
   const media = cardMediaOf(target);
   const options: (CardMedia | null)[] = [null, ...CARD_MEDIA];
@@ -97,6 +101,7 @@ export function CardMenuSection({
           ))}
         </BorderGrid>
       </div>
+      {tagColours}
     </MenuAccordionSection>
   );
 }

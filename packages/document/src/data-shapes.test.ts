@@ -61,11 +61,14 @@ describe('the self-drawing shape family', () => {
     // docs/specs/009-elements/web-components-and-no-groups.md: their text is their rows, so there is no label to edit.
     fromMembers.add('stat-row');
     fromMembers.add('process');
-    // docs/specs/009-elements/concept-graphics.md: a layer stack and a pyramid draw all their own text.
+    // docs/specs/009-elements/concept-graphics.md: a layer stack, a pyramid, an onion and a chevron process draw all
+    // their own text.
     fromMembers.add('layer-stack');
     fromMembers.add('pyramid');
     // docs/specs/009-elements/tab-window.md: a tab window draws another tab and takes no label.
     fromMembers.add('tab-window');
+    fromMembers.add('onion');
+    fromMembers.add('chevrons');
     expect(kindsMatching(isSelfDrawingShape)).toEqual([...fromMembers].sort());
   });
 

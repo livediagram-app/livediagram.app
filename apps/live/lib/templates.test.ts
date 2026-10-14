@@ -454,7 +454,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Tiers: title, caption, four lanes with their blurb and glyph, and the key
     // (label plus two line samples with their words). Components: 15 nodes
     // and the 14 edges between them.
-    'system-architecture': { names: ['Tiers', 'Components'], scaffold: 19, content: 29 },
+    'system-architecture': { names: ['Tiers', 'Components'], scaffold: 15, content: 29 }, // the key is one Diagram key (docs/specs/009-elements/diagram-key.md)
     // Frames: three phones, the how-to and the Notes heading.
     'mobile-wireframe': { names: ['Frames', 'UI'], scaffold: 5, content: 75 },
     // The laptop is lid, display, base and hinge notch.

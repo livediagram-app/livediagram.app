@@ -22,6 +22,7 @@ import {
   type CommentMention,
   createElementGridTracker,
   type ElementIndex,
+  stackedElementIds,
 } from '@livediagram/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
@@ -120,6 +121,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onToggleChecklistItem,
     onSetPageHeading,
     onSetWebRows,
+    onSetPointerTip,
     onAppendWebRow,
     onSetHeroCaptionLine,
     chartPalette,
@@ -232,6 +234,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
     onSetPageHeading,
     onSetWebRows: readOnly ? undefined : onSetWebRows,
+    onSetPointerTip: readOnly ? undefined : onSetPointerTip,
     onSetHeroCaptionLine: readOnly ? undefined : onSetHeroCaptionLine,
     onFollowLink,
     onPressModeButton,
@@ -306,6 +309,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontEpoch).
   const fontEpoch = useFontEpoch();
+  // What the tab's stacks hold, for the reflow glide (docs/specs/009-elements/stack.md "Animation").
+  const stackedIds = useMemo(() => stackedElementIds(elements), [elements]);
   // The font an element following the tab letters in, resolved once (docs/specs/004-interface-design/fonts.md):
   // the tab's, or the handwriting font on a Sketch tab (docs/specs/008-canvas/finish.md).
   const tabFontStack = resolveFontStack(elementFontId({}, tabFont, tabFinish));
@@ -392,6 +397,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onToggleChecklistItem: h.onToggleChecklistItem,
       onSetPageHeading: h.onSetPageHeading,
       onSetWebRows: h.onSetWebRows,
+      onSetPointerTip: h.onSetPointerTip,
       onSetHeroCaptionLine: h.onSetHeroCaptionLine,
       chartPalette: stablePalette,
       onCancelEdit: h.onCancelEdit,
@@ -601,6 +607,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               tabFont={tabFont}
               tabFinish={tabFinish}
               fontEpoch={fontEpoch}
+              stackedIds={stackedIds}
             />
           </IllustratePageClip>
 

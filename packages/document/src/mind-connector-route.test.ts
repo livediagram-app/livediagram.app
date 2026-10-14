@@ -61,6 +61,17 @@ function tree(): Element[] {
 const arrowOf = (els: Element[], id: string) => els.find((e) => e.id === id) as ArrowElement;
 
 describe('finishMindConnectorRoute', () => {
+  it("routes an org chart's connectors as the bracket in every finish (docs/specs/009-elements/org-chart.md)", () => {
+    const person = (el: Element) =>
+      el.type === 'shape' ? ({ ...el, mindLook: 'person' } as Element) : el;
+    const org = tree().map(person);
+    expect(finishMindConnectorRoute(arrowOf(org, 'rb'), org, 'flexible')).toEqual(
+      finishMindConnectorRoute(arrowOf(tree(), 'rb'), tree(), 'professional'),
+    );
+    // An ordinary map in the same finish is drawn as stored.
+    expect(finishMindConnectorRoute(arrowOf(tree(), 'rb'), tree(), 'flexible')).toBeNull();
+  });
+
   it('leaves every finish but Professional to the stored look', () => {
     const els = tree();
     expect(finishMindConnectorRoute(arrowOf(els, 'rb'), els, 'flexible')).toBeNull();

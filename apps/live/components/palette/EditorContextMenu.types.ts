@@ -384,6 +384,10 @@ export type EditorContextMenuProps = {
   // The colour palette every ColourRow in this menu offers (docs/specs/008-canvas/canvas-and-palette.md Colours):
   // the theme's swatches plus the user's own, spread straight onto the row.
   colourPalette: ColourPalette;
+  // Tag colours (docs/specs/009-elements/tag-colours.md): the active tab's map, and setting or clearing one tag's
+  // colour across the tab. Absent where the menu cannot edit the tab.
+  tagColours?: readonly import('@livediagram/document').TagColour[];
+  onSetTagColour?: (tag: string, colour: string | null) => void;
   // Table structure toggles (header row / column, zebra) for the Table
   // category.
   onToggleTableHeaderRow: () => void;

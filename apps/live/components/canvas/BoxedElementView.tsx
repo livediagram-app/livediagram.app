@@ -24,6 +24,7 @@ import {
   voteKeyOf,
   type ShapeMarker,
   type TextSize,
+  withTagAccent,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
@@ -48,6 +49,8 @@ import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
+import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
+import { useTagColours } from '@/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
@@ -108,10 +111,12 @@ function BoxedElementViewImpl({
   onToggleChecklistItem,
   onSetPageHeading,
   onSetWebRows,
+  onSetPointerTip,
   onSetHeroCaptionLine,
   isoDepth,
   insertShiftX,
   insertShiftAnimates,
+  stackGlide,
   chartPalette,
   onCancelEdit,
   onFollowLink,
@@ -283,6 +288,8 @@ function BoxedElementViewImpl({
   // border / stroke colour is overridden with the first remote selector's
   // colour so the realtime "X is here" signal is glanceable from anywhere
   // on the canvas — not just from the small initial-badge.
+  // The tab's tag colours, for a card's accent edge (docs/specs/009-elements/tag-colours.md).
+  const tagColours = useTagColours();
   const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
   // Accent for the data-element fills (progress bar / ring, rail line, rating
   // stars): a remote selector colour wins, else the element's own stroke, else
@@ -427,6 +434,7 @@ function BoxedElementViewImpl({
       // Carries the slot's easing (globals.css) for as long as a slot COULD
       // be open, so the board eases shut as well as open.
       data-insert-shift={insertShiftAnimates ? '' : undefined}
+      data-stack-glide={stackGlide ? '' : undefined}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces.
       role="img"
@@ -532,9 +540,17 @@ function BoxedElementViewImpl({
         />
       ) : null}
       <AccentEdgeOverlay
-        element={element}
+        element={withTagAccent(element, tagColours)}
         stroke={own.stroke ?? defaultStrokeColor(element, surface)}
       />
+      {element.type === 'shape' && element.shape === 'pointer-note' ? (
+        <PointerNoteOverlay
+          element={element}
+          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+          editable={isSelected && !readOnly && !isLocked}
+          onSetTip={onSetPointerTip}
+        />
+      ) : null}
       <ShapeContentRouter
         element={element}
         isEditing={isEditing}

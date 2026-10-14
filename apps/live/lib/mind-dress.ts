@@ -11,8 +11,26 @@ import {
 import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
 import { deriveNewBoxedColours } from '@/lib/themes';
 
-/** A new mind node in the tab's theme, then in `styleFrom`'s look (null: the theme's alone). */
+/** A new mind node in the tab's theme, then in `styleFrom`'s look (null: the theme's alone); in a map whose `root` is a
+ *  person node (docs/specs/009-elements/org-chart.md), a person node itself, its role still to write. */
 export function dressMindNode(
+  node: ShapeElement,
+  styleFrom: ShapeElement | null,
+  tab: Pick<Tab, 'backgroundColor' | 'patternColor' | 'theme' | 'defaultTextSize'>,
+  root?: ShapeElement | null,
+): ShapeElement {
+  const dressed = dressLevel(node, styleFrom, tab);
+  if (root?.mindLook !== 'person') return dressed;
+  const { pageSubtitle: _role, ...rest } = dressed;
+  return {
+    ...rest,
+    mindLook: 'person',
+    // The first report of a root takes the defaults, not the root's look: give it the person node's size and text.
+    ...(styleFrom ? {} : { width: root.width, height: root.height, textAlignX: 'left' as const }),
+  };
+}
+
+function dressLevel(
   node: ShapeElement,
   styleFrom: ShapeElement | null,
   tab: Pick<Tab, 'backgroundColor' | 'patternColor' | 'theme' | 'defaultTextSize'>,
@@ -30,7 +48,8 @@ export function dressMindNode(
   return { ...themed, ...(paintableBoxedFields(styleFrom) as Partial<ShapeElement>) };
 }
 
-/** A new mind connector in `from`'s look, else the mind connector defaults. */
+/** A new mind connector in `from`'s look, else the mind connector defaults (which an org chart draws as its bracket,
+ *  mind-connector-route.ts). */
 export function dressMindConnector(arrow: ArrowElement, from: ArrowElement | null): ArrowElement {
   return { ...arrow, ...(from ? paintableArrowFields(from) : MIND_CONNECTOR_LOOK) };
 }

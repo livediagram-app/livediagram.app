@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement, type WebRows } from '@livediagram/document';
 
 import { CardFace } from './CardFace';
+import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 
 afterEach(cleanup);
 
@@ -80,5 +81,26 @@ describe('CardFace', () => {
     renderCard(card({ pageTitle: undefined, pageSubtitle: undefined, tags: undefined }));
     expect(screen.queryByRole('textbox', { name: 'Card title' })).toBeNull();
     expect(screen.queryByRole('textbox', { name: 'Tag 1' })).toBeNull();
+  });
+
+  it("tints a tag mapped in the tab's tag colours, and leaves the others (docs/specs/009-elements/tag-colours.md)", () => {
+    render(
+      <TagColoursProvider tab={{ tagColours: [{ tag: 'pci', color: '#d97706' }] }}>
+        <CardFace
+          element={card({ tags: ['PCI', 'v2'] })}
+          labelNode={<span>body</span>}
+          accent="#0284c7"
+          fill="#ffffff"
+          textColor="#0c4a6e"
+          fontFamily={undefined}
+          editable={false}
+          onSetRows={vi.fn()}
+          onSetHeading={vi.fn()}
+        />
+      </TagColoursProvider>,
+    );
+    const chips = [...document.querySelectorAll<HTMLElement>('[data-tag-colour]')];
+    expect(chips).toHaveLength(1);
+    expect(chips[0]!.style.borderColor).toBe('rgb(217, 119, 6)');
   });
 });

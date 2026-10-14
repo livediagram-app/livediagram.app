@@ -175,10 +175,13 @@ const ILLUSTRATE: PaletteLayout = {
       tiles: tilesExcept(
         'build',
         'tools:mind-node',
+        'tools:org-chart',
         'tools:flowchart',
+        'tools:sequence',
         'tools:lane',
         'tools:frame',
         'tools:boundary',
+        'tools:diagram-key',
       ),
     },
     { id: 'concepts' },

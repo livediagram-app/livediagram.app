@@ -32,6 +32,12 @@ Follow the references below only as needed; never upfront.
 - ./COMPLETENESS.md - when checking which completeness categories an elements blueprint covers
 - ./card.md - when implementing or changing the card, its slots, layout, menu or the callout migration
 - ./badge.md - when implementing or changing the badge, the step number, attachment and settling, or step numbering
+- ./pointer-note.md - when implementing or changing the pointer note, its tip, its leader or how it settles on a host
+- ./tag-colours.md - when implementing or changing tag colours, the tab map or how cards render it
+- ./diagram-key.md - when implementing or changing the diagram key, its derived rows or its meanings
+- ./stack.md - when implementing or changing the stack, its layout or how it settles
+- ./org-chart.md - when implementing or changing person nodes, the org chart variant or how they grow
+- ./sequence-diagram.md - when implementing or changing the sequence diagram element, its rows or its picture
 - ./boundary.md - when implementing or changing the boundary, its styles, depth tint, containment or paint order
 - ./tab-window.md - when implementing or changing the tab window, its states, the tab list, its context, its export drawing or the export's fetch
 - ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations
