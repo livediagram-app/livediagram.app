@@ -94,9 +94,23 @@ describe('a rich label beside its icon', () => {
       } as never,
       { resolveIconArt: () => '<path d="M0 0h1"/>' } as never,
     );
-    const lines = [...svg.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/g)].map((m) =>
-      m[1]!.replace(/<[^>]+>/g, '|').replace(/\|+/g, '|'),
-    );
+    // Each <text>'s content, its inner tags as one "|" each: a linear scan (a backtracking regex was flagged).
+    const lines = svg
+      .split('<text')
+      .slice(1)
+      .map((chunk) => {
+        const body = chunk.slice(chunk.indexOf('>') + 1, chunk.indexOf('</text>'));
+        let out = '';
+        let inTag = false;
+        for (const ch of body) {
+          if (ch === '<') {
+            inTag = true;
+            if (!out.endsWith('|')) out += '|';
+          } else if (ch === '>') inTag = false;
+          else if (!inTag) out += ch;
+        }
+        return out;
+      });
     expect(lines).toEqual(['|Grace|People Lead|', '|Jonas|Software Engineer|']);
   });
 });

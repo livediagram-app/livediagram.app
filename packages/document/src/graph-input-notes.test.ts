@@ -21,7 +21,10 @@ describe('graph input notes', () => {
       '2 nested subgraphs folded into their outer group: groups draw one level deep',
     ]);
     expect(resolveGraphInput({ mermaid: nested }).notes).toHaveLength(1);
-    const one = graphFromMermaid(nested.replace(/subgraph azb\[AZ b\][\s\S]*?end\n/, ''));
+    // The second nested subgraph cut out, from its opening line to the end that closes it.
+    const from = nested.indexOf('subgraph azb[AZ b]');
+    const to = nested.indexOf('end\n', from) + 'end\n'.length;
+    const one = graphFromMermaid(nested.slice(0, from) + nested.slice(to));
     expect(one.ok && one.notes?.[0]).toMatch(/^1 nested subgraph folded/);
   });
 
