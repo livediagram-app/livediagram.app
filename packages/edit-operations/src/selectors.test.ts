@@ -205,8 +205,6 @@ describe('cardinality', () => {
       'nearest:',
       '  n9  sticky "Pay"',
       '  n10  square "Pay" in f2',
-      '  n2  square "Cart"',
-      '  a6  arrow n6→n7 "yes"',
     ]);
     expect(resolveOne(state(), 'n3', 1)).toMatchObject({ el: { id: 'n3' } });
   });

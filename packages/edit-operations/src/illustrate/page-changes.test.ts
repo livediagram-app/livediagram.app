@@ -343,6 +343,26 @@ describe('laying out, moving, duplicating, deleting', () => {
     ]);
   });
 
+  it("fills a tab's only page when it is empty and of the kind asked for, as a blank deck's first slide", () => {
+    const blank = tabOf({ pages: [page('s1', { kind: 'slide', size: 'slide' })] });
+    const out = run(blank, [
+      { op: 'add', kind: 'slide', name: 'Title' },
+      { op: 'add', kind: 'slide', name: 'Agenda' },
+    ]);
+    expect(out.lines[0]).toMatch(/^Filled the empty page 1 \(slide/);
+    expect(illustratePagesOf(out.tab).map((p) => [p.id === 's1', p.name])).toEqual([
+      [true, 'Title'],
+      [false, 'Agenda'],
+    ]);
+    // An add with neither a layout nor a name leaves the blank page and adds after it.
+    expect(illustratePagesOf(run(blank, [{ op: 'add', kind: 'slide' }]).tab)).toHaveLength(2);
+    // A named one, or one of another kind, is kept, and the add goes after it.
+    const named = tabOf({ pages: [page('s1', { kind: 'slide', size: 'slide', name: 'Cover' })] });
+    expect(illustratePagesOf(run(named, [{ op: 'add', kind: 'slide' }]).tab)).toHaveLength(2);
+    const other = tabOf({ pages: [page('i1')] });
+    expect(illustratePagesOf(run(other, [{ op: 'add', kind: 'slide' }]).tab)).toHaveLength(2);
+  });
+
   it('stops at the first refusal and writes nothing, naming the change', () => {
     const tab = tabOf({ pages: [page('p1')] });
     const r = refusal(tab, [

@@ -42,25 +42,25 @@ export function nearestName(
   return found;
 }
 
-// Up to NEAREST_CANDIDATES_MAX elements whose id, or label ignoring case, is within
-// NEAREST_MAX_DISTANCE of the selector: nearest first, element order on a tie. A label the caller
-// quoted is compared with labels only.
+// Up to NEAREST_CANDIDATES_MAX elements whose id, or label ignoring case, is within a third of the selector's length
+// of it (at least 1, at most NEAREST_MAX_DISTANCE): nearest first, element order on a tie. A label the caller quoted
+// is compared with labels only. Three edits from a four-character ref reach almost anything, so a made-up ref offered
+// an unrelated element; a third keeps a slip in a ref or a word and drops the rest.
 export function nearestElements(
   selector: string,
   elements: readonly Element[],
   { labelsOnly = false }: { labelsOnly?: boolean } = {},
 ): Element[] {
   const query = selector.toLowerCase();
+  const max = Math.min(NEAREST_MAX_DISTANCE, Math.max(1, Math.floor(selector.length / 3)));
   const scored: { el: Element; distance: number; index: number }[] = [];
   elements.forEach((el, index) => {
     const label = (labelOf(el) ?? '').toLowerCase().slice(0, LABEL_CUT_CHARS);
     const distance = Math.min(
-      labelsOnly
-        ? NEAREST_MAX_DISTANCE + 1
-        : editDistanceWithin(selector, el.id, NEAREST_MAX_DISTANCE),
-      label ? editDistanceWithin(query, label, NEAREST_MAX_DISTANCE) : NEAREST_MAX_DISTANCE + 1,
+      labelsOnly ? max + 1 : editDistanceWithin(selector, el.id, max),
+      label ? editDistanceWithin(query, label, max) : max + 1,
     );
-    if (distance <= NEAREST_MAX_DISTANCE) scored.push({ el, distance, index });
+    if (distance <= max) scored.push({ el, distance, index });
   });
   return scored
     .sort((x, y) => x.distance - y.distance || x.index - y.index)

@@ -110,4 +110,17 @@ describe('colour-on-themed', () => {
       expect.stringMatching(/sets its stroke on a themed tab$/),
     ]);
   });
+
+  it("accepts a theme's derived half, as an agent's write stores it for a dark theme", async () => {
+    const { THEMES, themeHalf } = await import('@livediagram/document');
+    const midnight = THEMES.find((t) => t.id === 'midnight')!;
+    const light = themeHalf(midnight, 'light');
+    const els = [
+      box('a', 0, 0, { fillColor: light.elementFill, strokeColor: light.elementStroke }),
+    ];
+    expect(of(lint(themed('midnight', ...els)), 'colour-on-themed')).toEqual([]);
+    expect(
+      of(lint(themed('midnight', box('b', 0, 0, { fillColor: '#123456' }))), 'colour-on-themed'),
+    ).toHaveLength(1);
+  });
 });

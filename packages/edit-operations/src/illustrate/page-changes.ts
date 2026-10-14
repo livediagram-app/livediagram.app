@@ -192,10 +192,24 @@ export function applyPageChanges(
           const ps = pages();
           const first = ps[0]!;
           let page: IllustratePage;
+          let filled = false;
           if (offersPageKindChoice(ps, first.id, onPage(first.id))) {
             // The fresh tab's empty, unchosen first page becomes the page asked for.
             current = withPageKindChosen(current, first.id, change.kind as PageKind, newFlowId())!;
             page = pages()[0]!;
+          } else if (
+            ps.length === 1 &&
+            first.kind === change.kind &&
+            !first.locked &&
+            !first.name &&
+            onPage(first.id) === 0 &&
+            (change.layout !== undefined || change.name !== undefined)
+          ) {
+            // A tab's only page, empty, unnamed and of the kind asked for (a blank slide deck's first slide), is the
+            // page an add with a layout or a name fills, rather than one left blank before it. Filled, it no longer
+            // qualifies, so the next add goes after it.
+            page = first;
+            filled = true;
           } else {
             const id = newPageId();
             current = take(pageAdded(current, change.kind as PageKind, id, newFlowId()));
@@ -207,7 +221,7 @@ export function applyPageChanges(
           const now = pages().find((p) => p.id === page.id)!;
           const laid = change.layout ? ` from layout ${layOut(now, change.layout)}` : '';
           lines.push(
-            `Added page ${placeOf(page.id)} (${change.kind}, ${sizeLabel(now)})${laid}${said.length ? `: ${said.join(', ')}` : ''}.`,
+            `${filled ? 'Filled the empty' : 'Added'} page ${placeOf(page.id)} (${change.kind}, ${sizeLabel(now)})${laid}${said.length ? `: ${said.join(', ')}` : ''}.`,
           );
           return;
         }

@@ -632,6 +632,11 @@ them, and how to start one), `change_pages` and `write_article` say which is for
 is checked against the tab shape by the tool rather than repeating that shape (the whole element format) in the
 schema: the definition halved, from about 41 KB to 21 KB, the size of `update_document` and `add_tab`.
 
+**Themes in previews.** Each viewer sees a theme in their own light or dark half
+([Light and dark halves](../011-theme/light-and-dark.md)); an agent's write stores the light half, and the preview
+draws it, so a dark theme such as midnight previews with pale cards. The lint counts both halves as the theme's
+colours, so they are never reported as overriding it.
+
 **No CLI hints.** An edit's result text is the api's, less its footer's revert line: that line names the
 `livediagram changeset revert` command, which no MCP tool runs. Its `@x,y` positions are from the content's top-left as it was read, while an element's `x` and `y` are canvas
 coordinates; when the content does not start at 0,0, a closing line gives the offset (`x, y = @x + ox, @y + oy`),

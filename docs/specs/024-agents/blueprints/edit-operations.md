@@ -807,22 +807,22 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 
 ## Constants and configuration
 
-| Constant                   | Value                     | Provenance                                                                            | Safe range      |
-| -------------------------- | ------------------------- | ------------------------------------------------------------------------------------- | --------------- |
-| `CHANGESET_MAX_OPERATIONS` | 500                       | [Agent changesets](../agent-changesets.md), imported from `@livediagram/api-schema`   | owned there     |
-| `GRAPH_LABEL_MAX`          | 40                        | Spec; the MCP's graph input                                                           | 24 to 80        |
-| `PLACEMENT_GAP`            | `LAYER_GAP` (90)          | The layout engine's rank gap (EO23)                                                   | 16 to 200       |
-| `PLACEMENT_GAP_MAX`        | 2,000                     | Larger reads as a separate drawing (EO23)                                             | 500 to 10,000   |
-| `INSERT_MIN_GAP`           | 16                        | Below it boxes read as touching (EO32)                                                | 8 to 40         |
-| `FRAME_PAD`, `FRAME_TOP`   | 32, 64                    | The clustered layout's frame padding and header band                                  | 16 to 96        |
-| `SLUG_ID_PATTERN`          | `^[a-z][a-z0-9_-]{0,23}$` | [Document views](../document-views.md), from `@livediagram/document`                  | fixed           |
-| `REF_MIN_LENGTH`           | 4                         | [Document views](../document-views.md), from `@livediagram/document`                  | fixed           |
-| `EDIT_LINE_MAX_CHARS`      | 16,384                    | A 4,000-character code value with escapes and its other fields fits (EO3)             | 8,192 to 65,536 |
-| `EDIT_MAX_ERRORS`          | 10                        | Enough to fix a batch of typos in one round (EO7)                                     | 1 to 50         |
-| `REJECTION_CANDIDATES_MAX` | 10                        | A readable list; the rest counted (EO45)                                              | 5 to 25         |
-| `NEAREST_CANDIDATES_MAX`   | 5                         | The few worth trying (EO45)                                                           | 3 to 10         |
-| `NEAREST_MAX_DISTANCE`     | 3                         | Typos and short slips, not other words (EO45)                                         | 2 to 5          |
-| `EDIT_APPLY_BUDGET_MS`     | 50                        | A tenth of a request's patience at the 500-operation cap; a measured aim, not in code | 20 to 200       |
+| Constant                   | Value                     | Provenance                                                                                                                                                                | Safe range      |
+| -------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `CHANGESET_MAX_OPERATIONS` | 500                       | [Agent changesets](../agent-changesets.md), imported from `@livediagram/api-schema`                                                                                       | owned there     |
+| `GRAPH_LABEL_MAX`          | 40                        | Spec; the MCP's graph input                                                                                                                                               | 24 to 80        |
+| `PLACEMENT_GAP`            | `LAYER_GAP` (90)          | The layout engine's rank gap (EO23)                                                                                                                                       | 16 to 200       |
+| `PLACEMENT_GAP_MAX`        | 2,000                     | Larger reads as a separate drawing (EO23)                                                                                                                                 | 500 to 10,000   |
+| `INSERT_MIN_GAP`           | 16                        | Below it boxes read as touching (EO32)                                                                                                                                    | 8 to 40         |
+| `FRAME_PAD`, `FRAME_TOP`   | 32, 64                    | The clustered layout's frame padding and header band                                                                                                                      | 16 to 96        |
+| `SLUG_ID_PATTERN`          | `^[a-z][a-z0-9_-]{0,23}$` | [Document views](../document-views.md), from `@livediagram/document`                                                                                                      | fixed           |
+| `REF_MIN_LENGTH`           | 4                         | [Document views](../document-views.md), from `@livediagram/document`                                                                                                      | fixed           |
+| `EDIT_LINE_MAX_CHARS`      | 16,384                    | A 4,000-character code value with escapes and its other fields fits (EO3)                                                                                                 | 8,192 to 65,536 |
+| `EDIT_MAX_ERRORS`          | 10                        | Enough to fix a batch of typos in one round (EO7)                                                                                                                         | 1 to 50         |
+| `REJECTION_CANDIDATES_MAX` | 10                        | A readable list; the rest counted (EO45)                                                                                                                                  | 5 to 25         |
+| `NEAREST_CANDIDATES_MAX`   | 5                         | The few worth trying (EO45)                                                                                                                                               | 3 to 10         |
+| `NEAREST_MAX_DISTANCE`     | 3                         | Typos and short slips, not other words; a selector is allowed a third of its length, at least 1, up to this, so a made-up 4-character ref offers nothing unrelated (EO45) | 2 to 5          |
+| `EDIT_APPLY_BUDGET_MS`     | 50                        | A tenth of a request's patience at the 500-operation cap; a measured aim, not in code                                                                                     | 20 to 200       |
 
 No environment variable, binding or secret; self-hosting needs nothing new.
 

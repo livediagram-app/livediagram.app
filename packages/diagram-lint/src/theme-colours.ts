@@ -1,4 +1,4 @@
-// The colours a built-in theme paints (blueprint "The checks", LN17): its element fill or stroke (or,
+// The colours a built-in theme paints, in either half (blueprint "The checks", LN17): its element fill or stroke (or,
 // where the theme leaves that to the element, the element type's own default), every palette and root
 // entry, and every per-shape override. A custom theme is not known here: null.
 
@@ -10,6 +10,7 @@ import {
   defaultArrowStrokeColor,
   defaultFillColor,
   defaultStrokeColor,
+  themeHalf,
   type Element,
   type ThemeDefinition,
 } from '@livediagram/document';
@@ -26,7 +27,9 @@ function themesOf(themeId: string | undefined): ThemeDefinition[] | null {
   if (themeId === undefined || themeId === DEFAULT_SCHEME_ID)
     return [DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK];
   const theme = THEMES.find((t) => t.id === themeId);
-  return theme ? [theme] : null;
+  // A theme paints in both its halves (docs/specs/011-theme/light-and-dark.md): the one it is written in and the one
+  // derived from it, which is what an agent's write stores for a dark theme.
+  return theme ? [themeHalf(theme, 'light'), themeHalf(theme, 'dark')] : null;
 }
 
 const lower = (colour: string) => colour.toLowerCase();
