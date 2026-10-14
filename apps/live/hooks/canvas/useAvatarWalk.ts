@@ -12,7 +12,7 @@
 
 import { useEffect, useEffectEvent, useInsertionEffect, useMemo, useRef, useState } from 'react';
 import { isSeatingShape, type Element } from '@livediagram/document';
-import { fenceSegments, fenceStalled, fenceStep } from '@/lib/avatar-fence';
+import { fenceReachFor, fenceSegments, fenceStalled, fenceStep } from '@/lib/avatar-fence';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '@/lib/avatar-reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from '@/hooks/canvas/useAvatarKeys';
@@ -407,7 +407,7 @@ export function useAvatarWalk({
         : step!.pos;
       // Fences (docs/specs/009-elements/fence.md "Blocking"): a step into one is refused, or slides
       // along it. A click-walk that can make no progress stops rather than pressing on forever.
-      const fenced = fenceStep(from, wanted, fences);
+      const fenced = fenceStep(from, wanted, fences, fenceReachFor(avatarScale(config.size)));
       const next = fenced.pos;
       if (
         fenced.blocked &&

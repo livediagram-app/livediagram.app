@@ -42,8 +42,8 @@ fence**, from either side.
 
 - The blocking line is the fence's run: the centre line along its longer side, from end to end,
   turned with the element's rotation.
-- A character keeps a small **reach** (its feet's width) away from the line, so it stops at the
-  fence rather than standing in it. Two fences whose ends are closer together than a character is
+- A character keeps a small **reach** (its feet's width, so a Tall character's is wider than a
+  Small one's) away from the line, so it stops at the fence rather than standing in it. Two fences whose ends are closer together than a character is
   wide leave no gap to squeeze through, so fences joined by hand need not meet exactly.
 - **Walking into a fence slides along it.** A diagonal walk that meets a fence keeps the part of
   its movement that runs along the fence, so a character steered into a fence skims along it the

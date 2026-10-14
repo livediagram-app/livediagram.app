@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createShape, type Element } from '@livediagram/document';
 import {
   FENCE_REACH,
+  fenceReachFor,
   fenceRefuses,
   fenceSegments,
   fenceStep,
@@ -72,6 +73,17 @@ describe('fenceRefuses', () => {
     expect(fenceRefuses({ x: 100, y: 4 }, { x: 100, y: 10 }, across)).toBe(false);
     expect(fenceRefuses({ x: 100, y: 4 }, { x: 100, y: -4 }, across)).toBe(true);
     expect(fenceRefuses({ x: 100, y: 4 }, { x: 100, y: 2 }, across)).toBe(true);
+  });
+
+  it('keeps each character size its own feet’s width from a fence', () => {
+    expect(fenceReachFor(1.5)).toBe(FENCE_REACH);
+    expect(fenceReachFor(1.95)).toBeCloseTo(15.6, 6);
+    expect(fenceRefuses({ x: 100, y: 20 }, { x: 100, y: 14 }, across, fenceReachFor(1.95))).toBe(
+      true,
+    );
+    expect(fenceRefuses({ x: 100, y: 20 }, { x: 100, y: 14 }, across, fenceReachFor(1.5))).toBe(
+      false,
+    );
   });
 
   it('lets a character standing exactly on the line step off it, either way', () => {

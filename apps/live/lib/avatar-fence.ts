@@ -10,8 +10,15 @@
 import { fenceLine, type Element, type FencePoint } from '@livediagram/document';
 
 // How close a character's feet may come to a fence's line, in canvas px: about the feet's own
-// half-width, so a character stops AT a fence rather than standing in it.
+// half-width, so a character stops AT a fence rather than standing in it. Measured on the Regular
+// character (its sprite scale, FENCE_REACH_SCALE); a Small or Tall one keeps its own feet's width.
 export const FENCE_REACH = 12;
+export const FENCE_REACH_SCALE = 1.5;
+
+/** The reach of a character drawn at `scale` (avatarScale of its Size). */
+export function fenceReachFor(scale: number): number {
+  return (FENCE_REACH * scale) / FENCE_REACH_SCALE;
+}
 
 // Progress smaller than this share of the frame's own step is no progress: a click-walk pressed
 // against a fence stops, and a step meeting a fence this close to head-on does not slide. A share of
