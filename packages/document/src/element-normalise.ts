@@ -32,6 +32,7 @@ import {
   SANKEY_VALUE_MAX,
 } from './sankey-model';
 import { readSankeyNumber } from './sankey-text';
+import { CONCEPT_ROWS, isConceptShape, type ConceptShape } from './concept';
 
 type Raw = Record<string, unknown>;
 
@@ -225,8 +226,20 @@ function normaliseContent(el: Raw): unknown {
     case 'sankey':
       return normaliseSankey(el);
     default:
-      return el;
+      return typeof el.shape === 'string' && isConceptShape(el.shape) ? normaliseConcept(el) : el;
   }
+}
+
+// A concept graphic's rows within its own kind's range (docs/specs/009-elements/concept-graphics.md): validation
+// takes any 0 to 8, but every edit keeps a kind to its range and drops one outside it, so an agent's pyramid of 8
+// would lose two tiers at its first edit, and a cycle of 2 could never be edited. Past the most, the rest are dropped;
+// short of the fewest, rows named as the menu's Add names them ("Step 3") fill the gap.
+function normaliseConcept(el: Raw): Raw {
+  if (!Array.isArray(el.conceptRows)) return el;
+  const { min, max, noun } = CONCEPT_ROWS[el.shape as ConceptShape];
+  const rows = el.conceptRows.slice(0, max);
+  while (rows.length < min) rows.push({ label: `${noun} ${rows.length + 1}` });
+  return rows.length === el.conceptRows.length ? el : { ...el, conceptRows: rows };
 }
 
 const isLane = (el: unknown) => isRecord(el) && el.type === 'shape' && el.shape === 'lane';

@@ -245,3 +245,25 @@ describe('settling an agent’s chips', () => {
     expect(isValidElement((out as unknown[])[0] as never)).toBe(false);
   });
 });
+
+describe('an agent’s concept graphic', () => {
+  const concept = (shape: string, n: number) =>
+    normaliseElement({
+      ...createShape(shape as never, 0, 0),
+      conceptRows: Array.from({ length: n }, (_, i) => ({ label: `R${i + 1}` })),
+    }) as { conceptRows: { label: string }[] };
+
+  it('keeps its rows within its kind’s range, so every later edit takes', () => {
+    // A pyramid holds at most 6 tiers; a cycle at least 3 steps.
+    expect(concept('pyramid', 8).conceptRows.map((r) => r.label)).toEqual([
+      'R1',
+      'R2',
+      'R3',
+      'R4',
+      'R5',
+      'R6',
+    ]);
+    expect(concept('cycle', 2).conceptRows.map((r) => r.label)).toEqual(['R1', 'R2', 'Step 3']);
+    expect(concept('hub', 5).conceptRows).toHaveLength(5);
+  });
+});
