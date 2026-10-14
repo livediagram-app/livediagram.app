@@ -20,10 +20,13 @@ const HEADER_RE = /^erDiagram$/i;
 // o| || o{ |{ , line -- (identifying) or .. (non-identifying).
 // The label is `(\S.*)` rather than `(.+)`: after `\s*` the two both match a
 // space, and that overlap is what makes a failed match backtrack quadratically.
+// Each name may carry an alias in square brackets (`BOOK_AUTHOR[Book author]`), the title shown.
 const REL_RE =
-  /^([A-Za-z0-9_-]+)\s+(\|o|\|\||\}o|\}\|)(--|\.\.)(o\||\|\||o\{|\|\{)\s+([A-Za-z0-9_-]+)\s*(?::\s*(\S.*))?$/;
+  /^([A-Za-z0-9_-]+)(?:\[([^\]]*)\])?\s+(\|o|\|\||\}o|\}\|)(--|\.\.)(o\||\|\||o\{|\|\{)\s+([A-Za-z0-9_-]+)(?:\[([^\]]*)\])?\s*(?::\s*(\S.*))?$/;
 // `CUSTOMER {` opens an attribute block; `CUSTOMER {}` is an empty one.
-const BLOCK_OPEN_RE = /^([A-Za-z0-9_-]+)\s*\{\s*(\})?$/;
+const BLOCK_OPEN_RE = /^([A-Za-z0-9_-]+)(?:\[([^\]]*)\])?\s*\{\s*(\})?$/;
+// A bare entity line, with an optional alias.
+const BARE_RE = /^([A-Za-z0-9_-]+)(?:\[([^\]]*)\])?$/;
 // `string name PK, FK "comment"` — keep the type, name and key markers, drop
 // the comment.
 const ATTR_RE =
@@ -36,9 +39,20 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
   // Mermaid's `direction` line (TB by default, the layered flow that reads best).
   let direction: MermaidDirection = 'TB';
 
-  const touch = (id: string) => {
+  // An alias, quoted or not, is the title; the first one given wins.
+  const aliased = new Set<string>();
+  const touch = (id: string, alias?: string) => {
     if (!nodes.has(id)) nodes.set(id, { id, label: id, fields: [] });
-    return nodes.get(id)!;
+    const node = nodes.get(id)!;
+    const title = alias
+      ?.trim()
+      .replace(/^"(.*)"$/, '$1')
+      .trim();
+    if (title && !aliased.has(id)) {
+      node.label = decodeLabel(title);
+      aliased.add(id);
+    }
+    return node;
   };
 
   const closeBlock = () => {
@@ -72,34 +86,36 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
 
     const open = BLOCK_OPEN_RE.exec(line);
     if (open) {
+      touch(open[1]!, open[2]);
       block = { id: open[1]!, attrs: [] };
-      if (open[2]) closeBlock(); // `NAME {}` on one line
+      if (open[3]) closeBlock(); // `NAME {}` on one line
       continue;
     }
 
     const rel = REL_RE.exec(line);
     if (rel) {
-      const from = touch(rel[1]!).id;
-      const to = touch(rel[5]!).id;
+      const from = touch(rel[1]!, rel[2]).id;
+      const to = touch(rel[6]!, rel[7]).id;
       // Each table's cardinality as an ER end where the line meets it: the left token at the start, the right at
       // the end.
-      const dashed = rel[3] === '..';
+      const dashed = rel[4] === '..';
       // The verb alone: the ER ends say the multiplicity ("1 : 0..*" in words was there while the heads could only
       // say "many").
-      const said = rel[6] ? decodeLabel(rel[6]).trim() : '';
+      const said = rel[8] ? decodeLabel(rel[8]).trim() : '';
       edges.push({
         from,
         to,
         ...(said ? { label: said } : {}),
         ...(dashed ? { line: 'dashed' as const } : {}),
         ends: 'both',
-        er: { from: erEndOf(rel[2]!), to: erEndOf(rel[4]!) },
+        er: { from: erEndOf(rel[3]!), to: erEndOf(rel[5]!) },
       });
       continue;
     }
 
     // A bare entity name declares it; anything else is decoration.
-    if (/^[A-Za-z0-9_-]+$/.test(line)) touch(line);
+    const bare = BARE_RE.exec(line);
+    if (bare) touch(bare[1]!, bare[2]);
   }
   closeBlock();
 

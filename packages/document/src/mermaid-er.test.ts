@@ -151,3 +151,32 @@ describe('parseMermaid: ER diagrams', () => {
     expect(parseMermaid(text(''))).toMatchObject({ ok: true, direction: 'TB' });
   });
 });
+
+describe('ER entity aliases', () => {
+  it('titles an entity with its alias, quoted or not, wherever it is named, its id kept', () => {
+    const result = parseMermaid(
+      [
+        'erDiagram',
+        '  BOOK_AUTHOR[Book author] {',
+        '    uuid book_id PK',
+        '  }',
+        '  a["Customer account"] ||--o{ ORDER_LINE[Order line] : places',
+        '  BOOK_AUTHOR }|--|| BOOK : credits',
+        '  BOOK',
+        '  REVIEW[Review]',
+      ].join('\n'),
+    );
+    if (!result.ok) throw new Error(result.error);
+    const label = (id: string) => result.graph.nodes.find((n) => n.id === id)?.label;
+    expect(label('BOOK_AUTHOR')).toBe('Book author');
+    expect(label('a')).toBe('Customer account');
+    expect(label('ORDER_LINE')).toBe('Order line');
+    expect(label('BOOK')).toBe('BOOK');
+    expect(label('REVIEW')).toBe('Review');
+    expect(result.graph.edges.map((e) => [e.from, e.to, e.label])).toEqual([
+      ['a', 'ORDER_LINE', 'places'],
+      ['BOOK_AUTHOR', 'BOOK', 'credits'],
+    ]);
+    expect(result.graph.nodes.find((n) => n.id === 'BOOK_AUTHOR')?.fields).toHaveLength(1);
+  });
+});

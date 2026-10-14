@@ -611,7 +611,8 @@ const mermaidField = z
   .optional()
   .describe(
     'The diagram as Mermaid text: a flowchart (graph / flowchart, with subgraphs), a state ' +
-      'diagram (stateDiagram), an ER diagram (erDiagram) or a sequence diagram (sequenceDiagram: ' +
+      "diagram (stateDiagram), an ER diagram (erDiagram: crow's-foot ends from the cardinality tokens, " +
+      'an entity alias in brackets is its title, BOOK_AUTHOR[Book author]) or a sequence diagram (sequenceDiagram: ' +
       'participant / actor, ->> calls, -) async, -->> replies, +/- activations, Note over, alt/else, loop, ' +
       'opt, par, autonumber, title). Parsed into the same graph as the "graph" input: subgraphs become ' +
       'groups, the direction is kept, and the same label limit applies; a sequence diagram is drawn with ' +

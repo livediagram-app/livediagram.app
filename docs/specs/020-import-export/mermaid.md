@@ -128,7 +128,9 @@ LR` line sets the layout direction (TB default).
   each). This replaced square boxes whose label held the name and every
   attribute on its own line, which read as a paragraph and did not survive a
   label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened
-  it to "SHARE_LINK text code text document_id…").
+  it to "SHARE_LINK text code text document_id…"). An alias in square brackets after the name (`BOOK_AUTHOR[Book
+author]`, `a["Customer account"]`), wherever the entity is named (its block, a relationship, a bare line), is
+  the title shown; the name stays its id. Without one the title is the name.
 - **Relationships**: `A ||--o{ B : label` becomes an edge labelled with its verb alone (none with no verb): the
   ER ends say the multiplicity, which the label spelled out in words (`places · 1 : 0..*`) while the heads could
   only say "many".
