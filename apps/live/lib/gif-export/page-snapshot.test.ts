@@ -89,6 +89,13 @@ describe('a page snapshot', () => {
     expect(svg).toMatch(/\[data-gif-id="\d+"\]::before\{animation-delay:-500ms,-2000ms!important/);
   });
 
+  it('fits a page of another shape inside the frame, centred, never cropped', async () => {
+    canvas();
+    // p1 is 400 x 200 at (100, 50); a square 800 x 800 frame fits it at 2x, 200 px down.
+    const svg = svgOf((await snapshotPage('p1', { ...options, height: 800 })).urlAt(0));
+    expect(svg).toContain('transform:translate(-200px,100px) scale(2)');
+  });
+
   it('carries the fonts and stylesheets, and the page’s classes without Reduce Motion', async () => {
     canvas();
     const svg = svgOf((await snapshotPage('p1', options)).urlAt(0));

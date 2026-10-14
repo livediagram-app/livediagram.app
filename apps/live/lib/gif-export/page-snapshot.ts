@@ -111,7 +111,13 @@ export async function snapshotPage(
     `[gif-export] page ${pageId} ${animated.length ? 'animated' : 'still'} nodes=${animated.length}`,
   );
 
-  const scale = width / pageBox.width;
+  // Every page of a GIF shares the picked page's frame size, so a page of another shape (a 4:3 slide in a 16:9 deck,
+  // a portrait infographic) is fitted inside it and centred on the paper, never cropped.
+  const scale = Math.min(width / pageBox.width, height / pageBox.height);
+  const inset = {
+    x: (width - pageBox.width * scale) / 2,
+    y: (height - pageBox.height * scale) / 2,
+  };
   const html = doc.documentElement;
   const classes = [...html.classList].filter((c) => c !== REDUCE_MOTION_CLASS).join(' ');
   const htmlStyle = html.getAttribute('style') ?? '';
@@ -126,7 +132,7 @@ export async function snapshotPage(
     `]]></style><foreignObject x="0" y="0" width="${width}" height="${height}">` +
     `<div xmlns="${XHTML_NS}" class="${attr(classes)}" style="${attr(`${htmlStyle};${inherited}`)};position:relative;width:${width}px;height:${height}px;overflow:hidden">` +
     `<div style="position:absolute;left:0;top:0;width:${rootBox.width}px;height:${rootBox.height}px;` +
-    `transform:${cropTransform(pageBox, rootBox, scale)};transform-origin:0 0">${body}</div></div></foreignObject></svg>`;
+    `transform:${cropTransform(pageBox, rootBox, scale, inset)};transform-origin:0 0">${body}</div></div></foreignObject></svg>`;
   // Encoded once: a frame encodes only its pinning rules (a URL-encoding of parts is the encoding of the whole).
   const headUrl = SVG_URL + encodeURIComponent(head);
   const tailUrl = encodeURIComponent(tail);
@@ -138,14 +144,16 @@ export async function snapshotPage(
   };
 }
 
-/** Where the canvas's box sits in the frame: the page's top-left at the origin, scaled to the frame's size. */
+/** Where the canvas's box sits in the frame: the page's top-left at `inset` (the letterbox of a page fitted into a
+ *  frame of another shape; none by default), scaled to fit. */
 export function cropTransform(
   page: { left: number; top: number },
   root: { left: number; top: number },
   scale: number,
+  inset: { x: number; y: number } = { x: 0, y: 0 },
 ): string {
-  const x = (root.left - page.left) * scale;
-  const y = (root.top - page.top) * scale;
+  const x = (root.left - page.left) * scale + inset.x;
+  const y = (root.top - page.top) * scale + inset.y;
   return `translate(${round(x)}px,${round(y)}px) scale(${round(scale)})`;
 }
 
