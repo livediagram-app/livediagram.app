@@ -6,7 +6,8 @@
 
 import { edgeToArrow, graphToElements, type DiagramGraph, type GraphLook } from './graph-authoring';
 import { reanchorArrow, type Pt } from './auto-layout-shared';
-import { isBoxed, type Anchor, type ArrowElement, type BoxedElement, type Element } from './index';
+import { branchExits } from './graph-branches';
+import { isBoxed, type BoxedElement, type Element } from './index';
 
 // The swimlane template's grid: header strip, padding inside a lane, gaps between columns and lanes.
 export const LANES_GUTTER = 176;
@@ -134,12 +135,8 @@ export function layoutLanes(
   const arrows = graph.edges
     .filter((e) => centers.has(e.from) && centers.has(e.to))
     .map((e) => reanchorArrow(edgeToArrow(e, makeEdgeId()), centers, 'LR'));
-  const decisions = new Set(graph.nodes.filter((n) => n.shape === 'diamond').map((n) => n.id));
-  return [
-    ...laneEls,
-    ...placed,
-    ...branchDecisions(arrows, new Map(placed.map((b) => [b.id, b])), decisions),
-  ];
+  // A step's exits leave by different sides (graph-branches.ts): a decision's, or any step's that branches.
+  return branchExits([...laneEls, ...placed, ...arrows], { axis: 'LR' });
 }
 
 // Columns with the staircase (docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):
@@ -183,53 +180,6 @@ function stairColumns(
   }
   return col;
 }
-
-// A decision's exits leave by different sides: the one whose next step sits most nearly level with it keeps its
-// point toward the flow; each other leaves from the top or the bottom, toward its next step, and enters that step's
-// side (one bend, arrow-orthogonal.ts). Farthest first, an exit takes its side only when nothing else ends there (a
-// staircase hand-off arriving), its next step lies clearly beyond that point (BRANCH_CLEAR) and another exit is left
-// on the point; otherwise it stays on the point, fanned.
-const BRANCH_CLEAR = 24;
-function branchDecisions(
-  arrows: ArrowElement[],
-  boxes: ReadonlyMap<string, BoxedElement>,
-  decisions: ReadonlySet<string>,
-): ArrowElement[] {
-  const used = new Set<string>();
-  for (const a of arrows)
-    for (const end of [a.from, a.to])
-      if (end.kind === 'pinned') used.add(`${end.elementId}:${end.anchor}`);
-  const side = new Map<string, Anchor>();
-  for (const id of decisions) {
-    const d = boxes.get(id);
-    if (!d) continue;
-    const forward = arrows.filter(
-      (a) => a.from.kind === 'pinned' && a.from.elementId === id && a.from.anchor === 'e',
-    );
-    if (forward.length < 2) continue;
-    const mid = d.y + d.height / 2;
-    const dy = (a: ArrowElement) => {
-      const t = boxes.get(pinnedTo(a))!;
-      return t.y + t.height / 2 - mid;
-    };
-    let onPoint = forward.length;
-    for (const a of [...forward].sort((p, q) => Math.abs(dy(q)) - Math.abs(dy(p)))) {
-      if (onPoint < 2) break;
-      const anchor: Anchor = dy(a) < 0 ? 'n' : 's';
-      const beyond = Math.abs(dy(a)) > d.height / 2 + BRANCH_CLEAR;
-      if (!beyond || used.has(`${id}:${anchor}`)) continue;
-      side.set(a.id, anchor);
-      used.add(`${id}:${anchor}`);
-      onPoint--;
-    }
-  }
-  return arrows.map((a) => {
-    const anchor = side.get(a.id);
-    return anchor && a.from.kind === 'pinned' ? { ...a, from: { ...a.from, anchor } } : a;
-  });
-}
-
-const pinnedTo = (a: ArrowElement) => (a.to.kind === 'pinned' ? a.to.elementId : '');
 
 // An id for the unnamed lane that no node or group already holds.
 function uniqueLaneId(graph: DiagramGraph): string {

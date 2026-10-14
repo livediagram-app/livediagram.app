@@ -12,6 +12,7 @@ import { isContainerKind } from './containment';
 import { edgeKey } from './auto-layout';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { arrowRoutePoints } from './arrow-label-layout';
+import { frameHeadingRect } from './auto-layout-cluster-seats';
 import { rectGrid, type RectGrid } from './auto-layout-route-grid';
 import { anchorPosition, endpointPosition } from './geometry';
 import type { GraphEdge, GraphNode } from './graph-authoring';
@@ -784,10 +785,25 @@ export function placeElbowLabels(elements: Element[]): Element[] {
   const pathOf = (a: ArrowElement): Pt[] => arrowRoutePoints(a, elements);
   const paths = new Map(labelled.map((a) => [a.id, pathOf(a)]));
   // The boxes a label must clear: every boxed element but the frames and lanes that hold them.
-  const boxes = elements.filter(
-    (el): el is BoxedElement =>
-      isBoxed(el) && !(el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane')),
-  );
+  const isHolder = (el: Element) =>
+    el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
+  const boxes = elements.filter((el): el is BoxedElement => isBoxed(el) && !isHolder(el));
+  // The frames and lanes a label must not straddle, and the heading each reads by: a frame's title at its top left,
+  // a lane's header strip down its left.
+  const holders = elements
+    .filter((el): el is BoxedElement => isBoxed(el) && isHolder(el))
+    .map((h) => ({
+      rect: h as Rect,
+      heading:
+        h.type === 'shape' && h.shape === 'lane'
+          ? {
+              x: h.x,
+              y: h.y,
+              width: (h as { headerSize?: number }).headerSize ?? 0,
+              height: h.height,
+            }
+          : frameHeadingRect(h as { x: number; y: number; label?: string }),
+    }));
   const overlap = (p0: number, p1: number, q0: number, q1: number) =>
     Math.min(Math.max(p0, p1), Math.max(q0, q1)) > Math.max(Math.min(p0, p1), Math.min(q0, q1));
   // Whether a run (a to b) lies along a run of another labelled arrow: the same line within LABEL_CLEAR, overlapping.
@@ -828,14 +844,24 @@ export function placeElbowLabels(elements: Element[]): Element[] {
         return false;
       const cx = (pts[i]!.x + pts[i + 1]!.x) / 2;
       const cy = (pts[i]!.y + pts[i + 1]!.y) / 2;
-      return !boxes.some(
-        (b) =>
-          Math.abs(cx - (b.x + b.width / 2)) < (width + b.width) / 2 &&
-          Math.abs(cy - (b.y + b.height / 2)) < (LABEL_CLEAR + b.height) / 2,
+      const plate = { x: cx - width / 2, y: cy - LABEL_CLEAR / 2, width, height: LABEL_CLEAR };
+      return (
+        !boxes.some(
+          (b) =>
+            Math.abs(cx - (b.x + b.width / 2)) < (width + b.width) / 2 &&
+            Math.abs(cy - (b.y + b.height / 2)) < (LABEL_CLEAR + b.height) / 2,
+        ) &&
+        !holders.some(
+          ({ rect, heading }) =>
+            (rectsMeet(plate, rect) && !rectWithin(plate, rect)) ||
+            (heading !== null && rectsMeet(plate, heading)),
+        )
       );
     };
     const seg =
       [last, 0, ...byLength].find((i) => holds(i) && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
+      // Beside another labelled line is better than over a box.
+      byLength.find(holds) ??
       byLength[0]!;
     const before = lens.slice(0, seg).reduce((s, l) => s + l, 0);
     placed.set(a.id, {
@@ -846,6 +872,12 @@ export function placeElbowLabels(elements: Element[]): Element[] {
   }
   return elements.map((el) => placed.get(el.id) ?? el);
 }
+
+type Rect = { x: number; y: number; width: number; height: number };
+const rectsMeet = (a: Rect, b: Rect) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+const rectWithin = (a: Rect, b: Rect) =>
+  a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height;
 
 // How close two runs may be before a label on one would sit on the other: a label's height and some.
 const LABEL_CLEAR = 22;
