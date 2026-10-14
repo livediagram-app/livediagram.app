@@ -562,7 +562,7 @@ export function illustratePageEdits({
   return {
     // Apply to All and the page format painter (docs/specs/007-editor/illustrate-pages.md
     // "Copying a background").
-    ...backgroundCopyEdits({ tabId, current, commitTab, toastInfo }),
+    ...backgroundCopyEdits({ tabId, current, commitTab, toastInfo, mayEdit }),
     tidyPage,
     canTidy,
     previewTidy,

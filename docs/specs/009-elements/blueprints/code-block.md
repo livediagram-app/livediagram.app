@@ -151,16 +151,16 @@ Scheme ids are permanent. An unknown stored id renders as `midnight` but cannot 
 
 ## Errors and edge cases
 
-| #   | Case                            | Handling                                                                     |
-| --- | ------------------------------- | ---------------------------------------------------------------------------- |
-| E1  | Tokenizer chunk fails to load   | Plain text; `console.error` and a retry on the next mount                    |
-| E2  | Snippet over 4 000 chars        | Truncated by every writer; rejected by validation                            |
-| E3  | Unterminated block comment      | Comment to the end of the snippet                                            |
-| E4  | Unterminated backtick string    | String carries to later lines                                                |
-| E5  | Very long unbroken token        | Wrap on: broken anywhere (canvas), mid-token fallback (export) [GE8]         |
-| E6  | More lines than fit             | Clipped by the card on the canvas; export draws `floor((h - 24) / 16)` lines |
-| E7  | Block deleted while dialog open | The dialog unmounts (element lookup fails)                                   |
-| E8  | Read-only session               | No `onEditCode`, and the dialog never mounts when read-only                  |
+| #   | Case                            | Handling                                                                                  |
+| --- | ------------------------------- | ----------------------------------------------------------------------------------------- |
+| E1  | Tokenizer chunk fails to load   | Plain text; `console.error` and a retry on the next mount                                 |
+| E2  | Snippet over 4 000 chars        | Truncated by every writer; rejected by validation                                         |
+| E3  | Unterminated block comment      | Comment to the end of the snippet                                                         |
+| E4  | Unterminated backtick string    | String carries to later lines                                                             |
+| E5  | Very long unbroken token        | Wrap on: broken anywhere (canvas), mid-token fallback (export) [GE8]                      |
+| E6  | More lines than fit             | Clipped by the card on the canvas; export draws `floor((h - 24) / 16)` lines              |
+| E7  | Block deleted while dialog open | The dialog unmounts and closes (`useCloseVanishedDialogs`), so an undo does not reopen it |
+| E8  | Read-only session               | No `onEditCode`, and the dialog never mounts when read-only                               |
 
 ## Security and trust
 

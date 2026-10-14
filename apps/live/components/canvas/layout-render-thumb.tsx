@@ -15,7 +15,8 @@ import { buildPageLayout } from '@livediagram/templates';
 /** The page with `layout` placed, as SVG markup: what lands, nothing else of the tab. */
 export function layoutRenderSvg(tab: Tab, page: LaidOutPage, layout: PageLayoutId): string {
   const placed = buildPageLayout(layout, page);
-  return renderTabToSvg({ ...tab, elements: placed }, { page });
+  // A tile is a thumbnail: an animated background is drawn still (export-tab's `stillBackground`).
+  return renderTabToSvg({ ...tab, elements: placed }, { page, stillBackground: true });
 }
 
 /** The tile, drawn with `tab`'s theme and font. */

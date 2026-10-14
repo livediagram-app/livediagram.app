@@ -9,6 +9,11 @@ import { useLatest } from './useLatest';
 // (docs/specs/006-document/tab-folders.md) and this follows it, with pointer events instead of HTML5 dnd so it works
 // on touch. Each row carries `data-<slot>={index}`; the caller says what a drop means.
 
+/** How soon after a drag's release a click still counts as that release's own. A mouse or pen sends
+ *  it within the same task; a touch drag sends none, and a person's next tap comes far later than
+ *  this, so it is never mistaken for one. */
+export const DRAG_CLICK_WINDOW_MS = 250;
+
 /** Where a dropped row lands: beside the row at `index`, in the half the pointer is over. */
 export type RowDrop = { index: number; side: 'before' | 'after' };
 
@@ -39,8 +44,10 @@ export function useRowReorderDrag({
   const [dropAt, setDropAt] = useState<RowDrop | null>(null);
   const origin = useRef<{ x: number; y: number } | null>(null);
   const dragging = useRef(false);
-  // A drag's release is followed by the row's click: it is the drag's, not a press of the row.
-  const dragEnded = useRef(false);
+  // A drag's release is followed by the row's click: it is the drag's, not a press of the row. When
+  // it ended, so only the click that follows straight away is taken as its own (a touch drag sends
+  // none, and the flag must not swallow the next real tap).
+  const dragEndedAt = useRef<number | null>(null);
   const dropRef = useLatest<RowDrop | null>(dropAt);
 
   const slotUnder = (x: number, y: number): RowDrop | null => {
@@ -56,7 +63,7 @@ export function useRowReorderDrag({
     if (e.button !== 0 || disabled) return;
     origin.current = { x: e.clientX, y: e.clientY };
     dragging.current = false;
-    dragEnded.current = false;
+    dragEndedAt.current = null;
     setMoving(false);
     setDraggingId(id);
     // NOT captured here. A row carries a press target and buttons, and capturing on pointer-down
@@ -83,7 +90,7 @@ export function useRowReorderDrag({
     }
     const target = dropRef.current;
     if (dragging.current && draggingId && target) onDrop(draggingId, target);
-    dragEnded.current = dragging.current;
+    dragEndedAt.current = dragging.current ? performance.now() : null;
     setDraggingId(null);
     setMoving(false);
     setDropAt(null);
@@ -100,9 +107,9 @@ export function useRowReorderDrag({
   const caretAfterLast = moving && dropAt?.side === 'after' && dropAt.index === count - 1;
   /** True once, for the click that follows a drag's release: the row should not act on it. */
   const consumeDragClick = () => {
-    const was = dragEnded.current;
-    dragEnded.current = false;
-    return was;
+    const at = dragEndedAt.current;
+    dragEndedAt.current = null;
+    return at !== null && performance.now() - at < DRAG_CLICK_WINDOW_MS;
   };
 
   return {
