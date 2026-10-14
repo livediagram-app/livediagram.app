@@ -67,7 +67,8 @@ for every row.
   of side `(R - r) * 1.2` about the centre.
 
 - `hubLayout(w, h, n)`: `S = min(w, h) / 2`; satellite radius `r = min(S * 0.25, S * sin(π / n) * 0.6)`; ring
-  `R = S - r - 2`; hub radius `H = max(16, min(S * 0.34, R - r - 10))`; satellite `i` at `-90° + i * 360° / n`;
+  `R = S - r - 2`; hub radius `H = max(lo, min(S * 0.34, R - r - 10))` with `lo = min(16, max((R - r) / 2, R - r - 4))`, so on a small hub the
+  disc never reaches its satellites and every spoke runs outward; satellite `i` at `-90° + i * 360° / n`;
   spoke `i` from the hub's edge to the satellite's edge along their line; satellite label rect the disc's box inset 2 px each side; hub
   label rect a square of side `H * 1.4` about the centre; label px `round(clamp(r * 0.3, 10, 14))`.
 - `onionLayout(w, h, n)`: `S = min(w, h) / 2`; ring `k` (0 = core) has radius `S * (k + 1) / n`; drawn outermost
@@ -78,7 +79,7 @@ for every row.
   `p = min(ch * 0.35, w / n / 3)`; stage width `sw = (w + (n - 1) * (p - 4)) / n`; stage `i` from `x0 = i * (sw - p + 4)`;
   points: top-left, `(x0 + sw - p, 0)`, the point `(x0 + sw, ch / 2)`, `(x0 + sw - p, ch)`, bottom-left, and for `i > 0`
   the notch `(x0 + p, ch / 2)`; label rect from `x0 + (i > 0 ? p : 0) + 4` to `x0 + sw - p - 4`, the full height; note
-  rect from `x0` to `x0 + sw - p`, `y = ch + 8` to `h`; label px `round(clamp(ch * 0.24, 10, 18))`, note px
+  rect from `x0 + (i > 0 ? p : 0)` to `x0 + sw - p` (centred under the label), `y = ch + 8` to `h`; label px `round(clamp(ch * 0.24, 10, 18))`, note px
   `round(clamp(labelPx * 0.8, 10, 14))`.
 
 ### Writes
