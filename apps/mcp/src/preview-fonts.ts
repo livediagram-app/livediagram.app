@@ -12,8 +12,13 @@ export const PREVIEW_FONTS_TIMEOUT_MS = 2500;
 // The largest face kept (a variable font with every axis can run past a megabyte).
 const FACE_BYTES_MAX = 1_500_000;
 
+// How long a family's fetch may stay under way before a later preview starts its own: a request that answered at its
+// timeout can have its outstanding fetch cancelled with it, leaving a promise that never settles.
+export const PREVIEW_FONTS_PENDING_MAX_MS = 15_000;
+
 const CSS_URL = 'https://fonts.googleapis.com/css2';
-const memory = new Map<string, Promise<Uint8Array[]>>();
+// Each family's faces as they are being fetched or were fetched, with when that started and whether it has settled.
+const memory = new Map<string, { faces: Promise<Uint8Array[]>; since: number; settled: boolean }>();
 
 type Fetcher = (url: string) => Promise<Response>;
 
@@ -63,16 +68,23 @@ export async function previewFonts(
   if (specs.length === 0) return [];
   const all = Promise.all(
     specs.map((spec) => {
-      let faces = memory.get(spec);
-      if (!faces) {
-        faces = facesOf(spec, fetcher);
-        memory.set(spec, faces);
-        // A family that failed is tried again by the next preview, not remembered as having no faces.
-        void faces.then((f) => {
-          if (f.length === 0) memory.delete(spec);
-        });
-      }
-      return faces;
+      const held = memory.get(spec);
+      if (held && (held.settled || Date.now() - held.since < PREVIEW_FONTS_PENDING_MAX_MS))
+        return held.faces;
+      // A fetch that fails part way (a body cut short) is no faces, never a rejection: one bad answer must not fail
+      // every later preview in this face, nor this one.
+      const entry = {
+        faces: facesOf(spec, fetcher).catch(() => [] as Uint8Array[]),
+        since: Date.now(),
+        settled: false,
+      };
+      memory.set(spec, entry);
+      // A family that failed is tried again by the next preview, not remembered as having no faces.
+      void entry.faces.then((f) => {
+        entry.settled = true;
+        if (f.length === 0 && memory.get(spec) === entry) memory.delete(spec);
+      });
+      return entry.faces;
     }),
   ).then((sets) => sets.flat());
   let timer: ReturnType<typeof setTimeout> | undefined;

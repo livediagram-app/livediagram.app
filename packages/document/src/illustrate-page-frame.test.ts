@@ -121,6 +121,20 @@ describe('a page’s frame', () => {
     const els = [inside, outside, arrow, away];
     expect(els.filter((el) => frame.reaches(el, els)).map((el) => el.id)).toEqual(['in', 'ar']);
   });
+
+  it('never holds an article’s note marker, on the page or not', () => {
+    const r = a4!.rect;
+    const note = {
+      id: 'n',
+      type: 'annotation',
+      x: r.x + 10,
+      y: r.y + 10,
+      width: 32,
+      height: 32,
+      articleNote: { kind: 'comment' },
+    } as unknown as Element;
+    expect(pageExportFrame(a4!).reaches(note, [note])).toBe(false);
+  });
 });
 
 describe('markup over the paper', () => {

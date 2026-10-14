@@ -138,6 +138,13 @@ describe('writeFieldsOnto', () => {
     expect(refusal(square, { colorPreset: 'sparkly' }).hint).toMatch(/^colorPreset takes .*tinted/);
   });
 
+  it('keeps a border width and style named with a preset, over the preset’s own', () => {
+    // Outline brings a medium dashed border; the write asks for thick and solid.
+    expect(
+      nextOf(write(square, { colorPreset: 'outline', strokeWidth: 'thick', strokeStyle: 'solid' })),
+    ).toMatchObject({ colorPreset: 'outline', strokeWidth: 'thick', strokeStyle: 'solid' });
+  });
+
   it('takes a known icon id and refuses one that draws a question mark, naming icons like it', () => {
     const icon = { ...square, id: 'ic', iconId: 'clock' } as Element;
     expect(nextOf(write(icon, { iconId: 'moon' })).iconId).toBe('moon');

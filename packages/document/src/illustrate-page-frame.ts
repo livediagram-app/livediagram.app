@@ -175,6 +175,8 @@ export function pageExportFrame(
     backgroundSvg: parts.join(''),
     transparent,
     reaches: (el, elements) => {
+      // An article's note marker is the editor's, never part of the page: no export or preview draws it.
+      if (el.type === 'annotation' && el.articleNote) return false;
       const overlaps = (x: number, y: number, rr: number, b: number) =>
         x <= r.x + r.width && rr >= r.x && y <= r.y + r.height && b >= r.y;
       if (el.type !== 'arrow') return overlaps(el.x, el.y, el.x + el.width, el.y + el.height);
