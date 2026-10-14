@@ -835,6 +835,9 @@ export function placeElbowLabels(elements: Element[]): Element[] {
       });
     });
   const placed = new Map<string, ArrowElement>();
+  // The plates of the labels placed so far: a later label keeps off them (two "publish" labels off one bus stood
+  // over each other).
+  const plates: Rect[] = [];
   for (const a of labelled) {
     // Runs on one line are one run: an elbow whose bends fall on its line draws straight, and a label needs the
     // whole of it, not either half.
@@ -898,7 +901,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
                 l.id !== a.id &&
                 l.pts.some((p, k) => k > 0 && segmentHitsRect(l.pts[k - 1]!, p, plate)),
             ));
-        if (clear) return f;
+        if (clear && !plates.some((r) => rectsMeet(plate, r))) return f;
       }
       return null;
     };
@@ -926,7 +929,8 @@ export function placeElbowLabels(elements: Element[]): Element[] {
             !lines.some((l) =>
               l.pts.some((pt, k) => k > 0 && segmentHitsRect(l.pts[k - 1]!, pt, plate)),
             );
-          if (clear) return { f, offset: Number((reach * sign).toFixed(2)) };
+          if (clear && !plates.some((r) => rectsMeet(plate, r)))
+            return { f, offset: Number((reach * sign).toFixed(2)) };
         }
       return null;
     };
@@ -943,7 +947,26 @@ export function placeElbowLabels(elements: Element[]): Element[] {
     const seg =
       centred ?? beside?.i ?? byLength.find((i) => spot(i, false) !== null) ?? byLength[0]!;
     const before = lens.slice(0, seg).reduce((s, l) => s + l, 0);
-    const along = (beside?.at?.f ?? spot(seg) ?? spot(seg, false) ?? 0.5) * lens[seg]!;
+    const f = beside?.at?.f ?? spot(seg) ?? spot(seg, false) ?? 0.5;
+    const along = f * lens[seg]!;
+    {
+      const [p, q] = [pts[seg]!, pts[seg + 1]!];
+      const u =
+        lens[seg]! > 0
+          ? { x: (q.x - p.x) / lens[seg]!, y: (q.y - p.y) / lens[seg]! }
+          : { x: 1, y: 0 };
+      const off = beside?.at?.offset ?? 0;
+      const cx = p.x + (q.x - p.x) * f - u.y * off;
+      const cy = p.y + (q.y - p.y) * f + u.x * off;
+      // Stored at the text's own width, its clearing margin off: a later plate with its margin then keeps one margin
+      // from it, not two (two "items picked"-wide margins pushed a label off the only spot it had).
+      plates.push({
+        x: cx - width / 2 + LABEL_WIDTH_MARGIN / 2,
+        y: cy - LABEL_CLEAR / 2,
+        width: Math.max(1, width - LABEL_WIDTH_MARGIN),
+        height: LABEL_CLEAR,
+      });
+    }
     placed.set(a.id, {
       ...a,
       labelOffset: {
@@ -1016,4 +1039,6 @@ const collinear = (a: Pt, b: Pt, c: Pt) =>
   (Math.abs(a.x - b.x) < 1 && Math.abs(b.x - c.x) < 1);
 
 // A caption's one-line width at the arrow label's default size, with room for its plate.
-const labelWidth = (label: string) => Math.min(260, label.length * 12 * 0.56 + 18);
+// The room a label's plate takes beyond its text, keeping it clear of what it sits beside, in px.
+const LABEL_WIDTH_MARGIN = 18;
+const labelWidth = (label: string) => Math.min(260, label.length * 12 * 0.56 + LABEL_WIDTH_MARGIN);

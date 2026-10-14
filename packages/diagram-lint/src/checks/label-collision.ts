@@ -126,22 +126,43 @@ export const labelCollision: Check = (ctx) =>
     };
     const struck = strikesOf(plate, layout.center);
     if (hit.length === 0 && labels.length === 0 && struck.length === 0) return [];
-    if (hit.length === 0 && labels.length === 0) {
+    // No box in the way: another label or a line. The label moves along its own line to a spot clear of boxes, lines
+    // and every other label; shortening a 7-character label to "at most 51" fixed nothing.
+    if (hit.length === 0) {
+      const others = ctx.drawable
+        .filter((o) => o.arrow.id !== d.arrow.id)
+        .flatMap((o) => {
+          const l = ctx.labels.layouts.get(o.arrow.id);
+          return l ? [plateOf(l)] : [];
+        });
       const clear = CLEAR_SPOTS.find((t) => {
         const c = pointAt(d.polyline, t);
         const r = { ...plate, x: c.x - plate.width / 2, y: c.y - plate.height / 2 };
         return (
           strikesOf(r, c).length === 0 &&
+          !others.some((o) => overlaps(r, o)) &&
           !queryElementGrid(ctx.grid, padded(ctx, r))
             .filter(isLintBox)
             .some((box) => overlaps(r, boxBounds(box)))
         );
       });
+      const said = [
+        ...(labels.length > 0
+          ? [`overlaps ${labels.map((o) => `${arrowName(ctx, o.arrow)}'s label`).join(', ')}`]
+          : []),
+        ...(struck.length > 0
+          ? [`struck by ${struck.map((o) => arrowName(ctx, o.arrow)).join(', ')}`]
+          : []),
+      ];
       return [
         {
           code: 'label-collision' as const,
-          refs: [refOf(ctx, d.arrow.id), ...struck.map((o) => refOf(ctx, o.arrow.id))],
-          message: `${arrowName(ctx, d.arrow)} label struck by ${struck.map((o) => arrowName(ctx, o.arrow)).join(', ')}`,
+          refs: [
+            refOf(ctx, d.arrow.id),
+            ...labels.map((o) => refOf(ctx, o.arrow.id)),
+            ...struck.map((o) => refOf(ctx, o.arrow.id)),
+          ],
+          message: `${arrowName(ctx, d.arrow)} label ${said.join(' and ')}`,
           fix:
             clear !== undefined
               ? fixes.labelStruck(ctx.source, arrowSelector(ctx, d.arrow), clear)

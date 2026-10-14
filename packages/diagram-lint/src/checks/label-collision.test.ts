@@ -48,6 +48,22 @@ describe('label-collision', () => {
     expect(of(lint(bus), 'label-collision')).toEqual([]);
   });
 
+  it('moves a label off another label along its own line, rather than shortening it', () => {
+    // Two long level arrows a few pixels apart, each label placed at its middle (as the graph look places them): the
+    // plates overlap.
+    const tab = tabOf(
+      box('a', 0, 0),
+      box('b', 800, 0),
+      box('c', 0, 12),
+      box('d', 800, 12),
+      arrow('x', 'a', 'b', ['e', 'w'], { label: 'publish', labelOffset: { t: 0.5, offset: 0 } }),
+      arrow('y', 'c', 'd', ['e', 'w'], { label: 'consume', labelOffset: { t: 0.5, offset: 0 } }),
+    );
+    const [f] = of(lint(tab), 'label-collision');
+    expect(f!.message).toContain("label overlaps c→d's label");
+    expect(f!.fix).toMatch(/^set a->b labelOffset=\{"t":0\.\d+,"offset":0\}$/);
+  });
+
   it('stays quiet for a label clear of every box, and an arrow without one', () => {
     const labelled = arrow('x', 'a', 'b', ['e', 'w'], { label: 'ok' });
     expect(of(lint(tabOf(box('a', 0, 0), box('b', 500, 0), labelled)), 'label-collision')).toEqual(
