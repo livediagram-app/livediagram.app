@@ -42,7 +42,6 @@ import { useTextHug } from '@/components/canvas/useTextHug';
 import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
-import { ChairView } from '@/components/canvas/collab/ChairView';
 import { FenceView } from '@/components/canvas/collab/FenceView';
 import { FurnitureView } from '@/components/canvas/collab/FurnitureView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
@@ -593,17 +592,10 @@ function BoxedElementViewImpl({
       {element.type === 'shape' && element.shape === 'entity' ? (
         <EntityView element={element} textColor={textColor} fontFamily={fontFamily} />
       ) : null}
-      {/* A chair (docs/specs/009-elements/chair.md): the furniture itself, plus whoever presence says
-          is sitting in it. */}
-      {element.type === 'shape' && element.shape === 'chair' ? (
-        <ChairView
-          element={element}
-          sitters={chairSitters?.(element.id) ?? []}
-          animClass={artAnimClass}
-        />
-      ) : null}
-      {/* A desk or a sofa (docs/specs/009-elements/chair.md "Desk and sofa"): seating like the chair. */}
-      {element.type === 'shape' && (element.shape === 'desk' || element.shape === 'sofa') ? (
+      {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
+          drawn for its facing, plus whoever presence says is sitting in it. */}
+      {element.type === 'shape' &&
+      (element.shape === 'chair' || element.shape === 'desk' || element.shape === 'sofa') ? (
         <FurnitureView
           element={element}
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}

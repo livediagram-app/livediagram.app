@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { chairSeatPoint } from './collab-shapes';
 import { createShape } from './shape-factory';
 import {
   DEFAULT_SEATING_FACING,
+  CHAIR_ART,
   DESK_ART,
   facingSwapsBox,
+  facingView,
+  FURNITURE_ART,
+  furnitureRing,
   facingTurn,
   furnitureFrame,
   furnitureParts,
@@ -35,7 +38,8 @@ describe('seating kinds', () => {
       ['sofa', SOFA_ART],
     ] as const) {
       const el = createShape(kind, 0, 0);
-      expect(el.width / el.height).toBeCloseTo(art.width / art.height, 2);
+      const view = kind === 'desk' ? art.back : art.front;
+      expect(el.width / el.height).toBeCloseTo(view.width / view.height, 2);
       expect(el.aspectLocked).toBe(true);
     }
   });
@@ -44,9 +48,17 @@ describe('seating kinds', () => {
 describe('seatPoints', () => {
   const box = { x: 0, y: 0, width: 152, height: 85 };
 
-  it('gives the chair its one seat point, unchanged', () => {
-    const chair = { ...box, shape: 'chair' as const, chairFacing: 'e' as const };
-    expect(seatPoints(chair)).toEqual([chairSeatPoint(chair, 'e')]);
+  it('seats a chair sitter on the seat, never on the backrest, at every facing', () => {
+    const chair = { x: 100, y: 200, width: 80, height: 100, shape: 'chair' as const };
+    // Facing you: below the middle, on the seat in front of the back.
+    expect(seatPoints(chair)).toEqual([{ x: 140, y: 262 }]);
+    // Back to you: above the middle, beyond the backrest.
+    expect(seatPoints({ ...chair, chairFacing: 's' })[0]!.y).toBeLessThan(250);
+    // Facing left the backrest is on the right, so the seat is left of the middle; right mirrors it.
+    const [left] = seatPoints({ ...chair, chairFacing: 'e' });
+    const [right] = seatPoints({ ...chair, chairFacing: 'w' });
+    expect(left!.x).toBeLessThan(140);
+    expect(right!.x).toBeCloseTo(280 - left!.x, 6);
   });
 
   it('gives the sofa two seats, side by side', () => {
@@ -97,15 +109,50 @@ describe('turning', () => {
     expect(turnedSeatingBox(chair, 'n', 'e')).toMatchObject({ width: 76, height: 84 });
   });
 
-  it('frames the turned drawing with its sides swapped on a quarter turn', () => {
-    expect(furnitureFrame(SOFA_ART, 'n')).toEqual({ viewBox: '0 0 136 76', transform: '' });
-    expect(furnitureFrame(SOFA_ART, 'e').viewBox).toBe('0 0 76 136');
-    expect(furnitureFrame(DESK_ART, 'n').transform).toContain('rotate(180)');
+  it('shows a drawing per facing, never a rotation (docs/specs/009-elements/chair.md "Facing")', () => {
+    expect(facingView('n')).toEqual({ view: 'front', mirrored: false });
+    expect(facingView('s')).toEqual({ view: 'back', mirrored: false });
+    expect(facingView('e')).toEqual({ view: 'side', mirrored: false });
+    expect(facingView('w')).toEqual({ view: 'side', mirrored: true });
+    for (const art of Object.values(FURNITURE_ART))
+      for (const facing of ['n', 'e', 's', 'w'] as const)
+        expect(furnitureFrame(art, facing).transform).not.toMatch(/rotate/);
+    expect(furnitureFrame(SOFA_ART, 'n')).toMatchObject({ viewBox: '0 0 136 76', transform: '' });
+    expect(furnitureFrame(SOFA_ART, 'w').transform).toBe('translate(76 0) scale(-1 1)');
   });
 
-  it('drops the contact shadows from a turned piece', () => {
-    expect(furnitureParts(SOFA_ART, 'n').some((p) => p.role === 'shadow')).toBe(true);
-    expect(furnitureParts(SOFA_ART, 'e').some((p) => p.role === 'shadow')).toBe(false);
+  it('keeps every piece standing: a shadow under it in every drawing', () => {
+    for (const art of Object.values(FURNITURE_ART))
+      for (const facing of ['n', 'e', 's', 'w'] as const) {
+        const { view } = furnitureFrame(art, facing);
+        const shadows = furnitureParts(art, facing).flatMap((p) =>
+          p.role === 'shadow' && p.tag === 'ellipse' ? [p.cy] : [],
+        );
+        // The lowest shadow is in the lowest fifth of the drawing: the piece stands on it.
+        expect(Math.max(...shadows) / view.height).toBeGreaterThan(0.8);
+      }
+  });
+
+  it('gives a side view the footprint of a quarter turn, so the box swap fits it', () => {
+    for (const art of [DESK_ART, SOFA_ART]) {
+      expect(art.side.width).toBe(art.front.height);
+      expect(art.side.height).toBe(art.front.width);
+      expect([art.back.width, art.back.height]).toEqual([art.front.width, art.front.height]);
+    }
+    expect([CHAIR_ART.side.width, CHAIR_ART.side.height]).toEqual([64, 72]);
+  });
+
+  it('puts every seat inside its drawing, and the ring round it, mirrored for facing right', () => {
+    for (const art of Object.values(FURNITURE_ART))
+      for (const view of [art.front, art.back, art.side])
+        for (const { u, v } of view.seats) {
+          expect(u).toBeGreaterThan(0);
+          expect(u).toBeLessThan(1);
+          expect(v).toBeGreaterThan(0);
+          expect(v).toBeLessThan(1);
+        }
+    expect(furnitureRing(SOFA_ART, 'w').cx).toBe(76 - SOFA_ART.side.ring.cx);
+    expect(furnitureRing(SOFA_ART, 'e')).toEqual(SOFA_ART.side.ring);
   });
 
   it('reads the facing a desk was made with when none is stored', () => {
