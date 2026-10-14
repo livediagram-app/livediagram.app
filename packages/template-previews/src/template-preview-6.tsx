@@ -411,7 +411,18 @@ function WorkshopBoard() {
           <line x1="43.5" y1={ry} x2="51" y2={ry} stroke={SLATE} strokeWidth="0.6" />
         </g>
       ))}
-      <Buttons x={39.5} y={36} w={15.5} />
+      {/* The vote under the agenda; each segment starts its own timer. */}
+      <rect
+        x="39.5"
+        y="36"
+        width="15.5"
+        height="5.5"
+        rx="1"
+        fill="white"
+        stroke={SLATE}
+        strokeWidth="0.6"
+      />
+      <circle cx="47.25" cy="38.75" r="1.3" fill="none" stroke={INK} strokeWidth="0.5" />
       <Column x={59} y={4} w={18.5} h={42} hue={HUE.violet} notes={4} noteTop={12} />
       <rect x="60.5" y="6.8" width="8" height="1.6" rx="0.4" fill={HUE.violet.deep} />
     </svg>

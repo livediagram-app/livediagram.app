@@ -512,8 +512,8 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Board: the subtitle, the icebreaker's paper and heading, 3 column panels with their header, glyph
     // and hint, the Out of scope and Parking lot headings and the note under the agenda. Stickies: the
     // title, the mood check, the icebreaker and its timer, the goals, 2 out-of-scope notes, the agenda,
-    // the break timer and vote, 4 rules and a parked note.
-    'workshop-board': { names: ['Board', 'Stickies'], scaffold: 18, content: 15 },
+    // the vote, 4 rules and a parked note.
+    'workshop-board': { names: ['Board', 'Stickies'], scaffold: 18, content: 14 },
     // Report: caption, 4 section headings, 5 phase headers, the summary card,
     // the Blameless callout and 3 findings columns. Findings: title, 3 chips,
     // summary, stat row, 10 timeline cards, the impact spans, 5 whys, the

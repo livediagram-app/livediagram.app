@@ -247,7 +247,7 @@ export function buildWorkshopBoard(cx: number, cy: number): Element[] {
       width: railW - pad * 2,
       height: iceButtonY - (iceY + pad + 40) - 12,
       label: 'Two truths and a lie, about a product you love. The room guesses the lie.',
-      textSize: 'md',
+      textSize: 'sm',
       textAlignX: 'left',
       textAlignY: 'top',
       textColor: RETRO_INK,
@@ -278,14 +278,7 @@ export function buildWorkshopBoard(cx: number, cy: number): Element[] {
     ),
     actionChecklist(goalsX + pad, notesTop, inner, WORKSHOP_GOALS),
     panelHeading(goalsX + pad, scopeY, inner, 'Out of scope'),
-    ...stickyStack(
-      goalsX + pad,
-      scopeY + 44,
-      inner,
-      ruleH,
-      WORKSHOP_OUT_OF_SCOPE,
-      RETRO_HUES.slate.sticky,
-    ),
+    ...stickyStack(goalsX + pad, scopeY + 44, inner, ruleH, WORKSHOP_OUT_OF_SCOPE, goalsHue.sticky),
   );
 
   const agendaX = goalsX + colW + gap;
@@ -306,18 +299,25 @@ export function buildWorkshopBoard(cx: number, cy: number): Element[] {
       ...createShape('agenda', agendaX + pad, notesTop),
       width: inner,
       height: agendaH,
-      label: 'Discovery kickoff',
+      label: 'Run of show',
       agendaItems: WORKSHOP_AGENDA.map((item) => ({ ...item })),
       ...CONTENT,
     },
-    // Under the agenda, the two tools it does not run itself: the break, and the vote on the ideas.
-    ...sessionButtons(agendaX + pad, kitY, inner, { minutes: 10, dots: 3 }),
+    // Under the agenda, the one tool it does not run itself: the vote on the ideas (each segment, the
+    // break included, starts its own timer).
+    {
+      ...createShape('session-button', agendaX + pad, kitY),
+      width: inner,
+      height: RETRO.buttonH,
+      session: { tool: 'vote', dots: 3 },
+      ...CONTENT,
+    },
     railNote(
       agendaX + pad,
       kitY + RETRO.buttonH + 16,
       inner,
       colH - (kitY + RETRO.buttonH + 16 - top) - pad,
-      'The timer runs the break; the vote picks the two ideas to test.',
+      'In Ideas and dot vote, everyone spends three dots on the ideas worth testing.',
     ),
   );
 
@@ -343,7 +343,7 @@ export function buildWorkshopBoard(cx: number, cy: number): Element[] {
       inner,
       ruleH,
       ['Pricing questions for the sales team'],
-      RETRO_HUES.slate.sticky,
+      rulesHue.sticky,
     ),
   );
 
