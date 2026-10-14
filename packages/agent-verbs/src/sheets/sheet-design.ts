@@ -28,10 +28,10 @@ import {
   type StarterCell,
   type AgentValue,
 } from '@livediagram/sheets';
-import { isLightColor, type ChartType } from '@livediagram/document';
+import { isLightColor, type ChartPaletteId, type ChartType } from '@livediagram/document';
 import { formatPatchOf, type SheetFormatInput } from './sheet-change-build';
 import { buildRuleChange } from './sheet-rule-change';
-import { designCharts, type SheetChartOut } from './sheet-charts';
+import { designCharts, seriesNote, type SheetChartOut } from './sheet-charts';
 import type { SheetRefusal } from './sheet-state';
 
 // A column's or a value's format: a number format by name, or a format in words.
@@ -45,6 +45,8 @@ export type DesignChartInput = {
   at?: string;
   width?: number;
   height?: number;
+  // Its colours; the design's accent's family when left out.
+  palette?: ChartPaletteId;
 };
 
 export type DesignTableInput = {
@@ -371,12 +373,22 @@ export function buildDesign(
   }
   const charts = designCharts(scratch, sheetId, tables, accentChartPalette(design.accent));
   if ('ok' in charts) return charts;
+  // What a one-series chart shows of a table's several value columns.
+  const notes = tables
+    .filter((t) => t.chart)
+    .map((t) => {
+      const shown = t.chart!.columns?.length ? t.chart!.columns : t.head;
+      return seriesNote(t.chart!.type, shown.slice(1));
+    })
+    .join('');
   const lines = blockLines(design.blocks);
   return {
     ok: true,
     writes,
     line: `laid out "${input.heading}" in ${look}, ${input.accent ?? DESIGN_ACCENT_DEFAULT}: ${lines.join('; ')}${
-      charts.length ? `; ${charts.length === 1 ? 'a chart' : `${charts.length} charts`}` : ''
+      charts.length
+        ? `; ${charts.length === 1 ? 'a chart' : `${charts.length} charts`}${notes}`
+        : ''
     }`,
     charts,
   };

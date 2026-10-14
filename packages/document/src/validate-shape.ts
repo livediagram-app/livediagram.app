@@ -42,7 +42,7 @@ import {
 } from './data-shapes';
 import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web-components';
 import { isCodeThemeId } from './code-themes';
-import { isChartPaletteId } from './chart-palettes';
+import { CHART_PALETTES, isChartPaletteId } from './chart-palettes';
 import { isMindFlow, isMindSpacing } from './mind-flow';
 import {
   type ElementValidationIssue,
@@ -220,7 +220,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   {
     field: 'chartPalette',
     valid: (v) => isChartPaletteId(v as string),
-    rule: 'a chart palette id',
+    rule: oneOfRule(CHART_PALETTES.map((p) => p.id)),
   },
   {
     field: 'embedProvider',

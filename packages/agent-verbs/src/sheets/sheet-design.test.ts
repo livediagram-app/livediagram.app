@@ -163,6 +163,32 @@ describe('a design', () => {
     });
   });
 
+  it('says what a one-series chart of several value columns shows, in the palette given', () => {
+    const { wb, sheet } = blankBook();
+    const built = buildDesign(
+      wb,
+      sheet.id,
+      {
+        heading: 'Plan',
+        blocks: [
+          {
+            kind: 'table',
+            head: ['Month', 'Planned', 'Actual'],
+            rows: [['Jan', 1, 2]],
+            chart: { type: 'pie', palette: 'earth' },
+          },
+        ],
+      },
+      { dark: false },
+      rand,
+    );
+    if (!built.ok) throw new Error(built.message);
+    expect(built.line).toMatch(
+      /a chart \(a pie chart shows one series, Planned; line and area charts show all 2\)$/,
+    );
+    expect(built.charts[0]!.palette).toBe('earth');
+  });
+
   it('freezes nothing by default when its first table sits low', () => {
     const { wb, sheet } = blankBook();
     const built = buildDesign(

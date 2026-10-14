@@ -18,7 +18,7 @@ import {
   SHEET_LOOKS,
   SHEET_ROWS_MAX,
 } from '@livediagram/sheets';
-import { CHART_TYPES } from '@livediagram/document';
+import { CHART_PALETTES, CHART_TYPES, type ChartPaletteId } from '@livediagram/document';
 import { BORDER_COLOUR_DEFAULT } from '../sheets/sheet-shape-change';
 import { DESIGN_ACCENT_DEFAULT } from '../sheets/sheet-design';
 import { SHEET_CHART_SIZE } from '../sheets/sheet-charts';
@@ -97,11 +97,22 @@ const formatArg = z
 
 const designFormat = z
   .union([z.string(), formatArg])
-  .describe(`A number format by name (${NUMBER_FORMATS.join(', ')}), or a format in words.`);
+  .describe(
+    `A number format by name (${NUMBER_FORMATS.join(', ')}; number, currency and percent show 2 decimals), or a format in words ({"numberFormat": "number", "decimals": 0} for whole numbers).`,
+  );
 
 const chartType = z
   .enum(CHART_TYPES)
-  .describe('column, bar, line, area, scatter, pie or doughnut.');
+  .describe(
+    'column, bar, pie and doughnut draw one series (the first value column); line, area and scatter draw every value column.',
+  );
+
+const chartPalette = z
+  .enum(CHART_PALETTES.map((p) => p.id) as [ChartPaletteId, ...ChartPaletteId[]])
+  .optional()
+  .describe(
+    'Its colours. Left out: the family of its table’s header (a design’s accent: emerald and teal forest; sky, blue, indigo and cyan ocean; amber and orange sunset; rose, violet, purple and fuchsia berry), else vivid.',
+  );
 
 const designArg = z
   .object({
@@ -183,6 +194,7 @@ const designArg = z
                   .describe('The cell its top-left sits on; right of the table by default.'),
                 width: z.number().optional().describe(`px, default ${SHEET_CHART_SIZE.width}.`),
                 height: z.number().optional().describe(`px, default ${SHEET_CHART_SIZE.height}.`),
+                palette: chartPalette,
               })
               .optional()
               .describe(
@@ -455,6 +467,7 @@ const sheetChange = z.discriminatedUnion('op', [
       .describe('The cell its top-left sits on; right of the range, a column clear, by default.'),
     width: z.number().optional().describe(`px, default ${SHEET_CHART_SIZE.width}.`),
     height: z.number().optional().describe(`px, default ${SHEET_CHART_SIZE.height}.`),
+    palette: chartPalette,
   }),
   z.object({
     op: z

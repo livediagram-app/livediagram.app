@@ -13,7 +13,12 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import {
+  SHEET_ACCENTS,
+  accentChartPalette,
+  cellKey,
   colWidth,
+  columnLetters,
+  templateTints,
   columnIndex,
   formatRange,
   idRangeOf,
@@ -48,7 +53,35 @@ export type SheetChartChange = {
   at?: string;
   width?: number;
   height?: number;
+  palette?: ChartPaletteId;
 };
+
+// The chart types that draw one series, the first (sheet.md "Charts"); line, area and scatter draw them all.
+export const ONE_SERIES_TYPES: readonly ChartType[] = ['column', 'bar', 'pie', 'doughnut'];
+
+// What a chart of a one-series type shows of several value columns, said in its answer.
+export function seriesNote(type: ChartType, values: readonly string[]): string {
+  if (!ONE_SERIES_TYPES.includes(type) || values.length < 2) return '';
+  return ` (a ${type} chart shows one series, ${values[0]}; line and area charts show all ${values.length})`;
+}
+
+// The palette in the family of a table's header fill (a design's accent, light or dark canvas), or undefined when the
+// header is not an accent's.
+export function paletteOfHeader(fill: string | undefined): ChartPaletteId | undefined {
+  if (!fill) return undefined;
+  const accent = SHEET_ACCENTS.find(
+    (a) => templateTints(a, false).head === fill || templateTints(a, true).head === fill,
+  );
+  return accent ? accentChartPalette(accent) : undefined;
+}
+
+// The header names of a range's value columns: its columns past the first (only those picked, when some are).
+function valueNames(wb: Workbook, sheetId: string, r: number, cols: readonly number[]): string[] {
+  return cols.slice(1).map((c) => {
+    const v = wb.value(sheetId, r, c);
+    return typeof v === 'string' && v ? v : columnLetters(c);
+  });
+}
 
 // A chart's size when none is given, the least it takes (the editor's resize floor) and the most.
 export const SHEET_CHART_SIZE = { width: 420, height: 280 } as const;
@@ -118,7 +151,7 @@ export function designCharts(
       anchor: anchorAt(layout, at),
       width: sized(t.chart.width, SHEET_CHART_SIZE.width, CHART_MIN.width),
       height: sized(t.chart.height, SHEET_CHART_SIZE.height, CHART_MIN.height),
-      palette,
+      palette: t.chart.palette ?? palette,
     });
   }
   return out;
@@ -154,10 +187,20 @@ export function buildChartChange(
     if (!p) return refuse('range_invalid', `"${change.at}" is not a cell in A1 form ("H4").`);
     at = [p.r, p.c];
   }
+  const sheet = wb.sheet(sheetId)!;
+  const cols = change.columns?.length
+    ? change.columns.map((l) => columnIndex(l.trim()))
+    : Array.from({ length: g.c2 - g.c1 + 1 }, (_, i) => g.c1 + i);
+  const palette =
+    change.palette ??
+    paletteOfHeader(sheet.cells.get(cellKey(layout.rows[g.r1]!, layout.cols[g.c1]!))?.format?.bg);
   return {
     ok: true,
     writes: [],
-    line: `charted ${formatRange(g)} as a ${change.type} chart at ${change.at ?? `the cell right of it`}`,
+    line: `charted ${formatRange(g)} as a ${change.type} chart at ${change.at ?? `the cell right of it`}${seriesNote(
+      change.type,
+      valueNames(wb, sheetId, g.r1, cols),
+    )}`,
     charts: [
       {
         type: change.type,
@@ -166,6 +209,7 @@ export function buildChartChange(
         anchor: anchorAt(layout, at),
         width: sized(change.width, SHEET_CHART_SIZE.width, CHART_MIN.width),
         height: sized(change.height, SHEET_CHART_SIZE.height, CHART_MIN.height),
+        ...(palette ? { palette } : {}),
       },
     ],
   };

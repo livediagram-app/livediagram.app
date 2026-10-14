@@ -1,8 +1,23 @@
 // change_sheet's chart (docs/specs/029-sheets/sheet-store.md "Shaping a sheet"): a range in A1, some of its columns by
 // letter, at a cell; refused in words.
 import { describe, expect, it } from 'vitest';
-import { NOBODY, Workbook, emptyLayout, posRangeOf, type Sheet } from '@livediagram/sheets';
-import { anchorAt, buildChartChange, type SheetChartChange } from './sheet-charts';
+import {
+  NOBODY,
+  Workbook,
+  cellKey,
+  emptyLayout,
+  posRangeOf,
+  templateTints,
+  type Sheet,
+} from '@livediagram/sheets';
+import {
+  anchorAt,
+  buildChartChange,
+  paletteOfHeader,
+  seriesNote,
+  sheetChartElements,
+  type SheetChartChange,
+} from './sheet-charts';
 import { seeded } from '../testing/sheets';
 
 function book() {
@@ -73,5 +88,58 @@ describe('a chart over cells', () => {
     expect(anchorAt(book().sheet.layout, [0, 0])).toEqual({ x: 0, y: 0 });
     // A at 200, B to F at 120 each, G hidden.
     expect(anchorAt(book().sheet.layout, [0, 7]).x).toBe(200 + 5 * 120);
+  });
+});
+
+describe('a chart’s colours and series', () => {
+  it('takes the palette of its table’s header, or the one given', () => {
+    const { wb, sheet } = book();
+    const head = templateTints('emerald', false).head;
+    const { rows, cols } = sheet.layout;
+    sheet.cells.set(cellKey(rows[3]!, cols[0]!), { input: { s: 'Item' }, format: { bg: head } });
+    sheet.cells.set(cellKey(rows[3]!, cols[1]!), { input: { s: 'Planned' } });
+    sheet.cells.set(cellKey(rows[3]!, cols[2]!), { input: { s: 'Actual' } });
+    wb.updateSheet({ ...sheet });
+    const built = buildChartChange(wb, sheet.id, { op: 'chart', type: 'column', range: 'A4:C9' });
+    if (!built.ok) throw new Error(built.message);
+    expect(built.charts[0]!.palette).toBe('forest');
+    expect(built.line).toBe(
+      'charted A4:C9 as a column chart at the cell right of it (a column chart shows one series, Planned; line and area charts show all 2)',
+    );
+    const given = buildChartChange(wb, sheet.id, {
+      op: 'chart',
+      type: 'line',
+      range: 'A4:C9',
+      palette: 'sunset',
+    });
+    expect(given.ok && given.charts[0]!.palette).toBe('sunset');
+    // Unnamed value columns go by their letters; a plain header takes no palette.
+    const plain = buildChartChange(wb, sheet.id, { op: 'chart', type: 'pie', range: 'D4:F9' });
+    expect(plain.ok && plain.charts[0]!.palette).toBeUndefined();
+    expect(plain.ok && plain.line).toContain('one series, E;');
+  });
+
+  it('knows each accent’s header on either canvas, and notes only one-series types given several', () => {
+    expect(paletteOfHeader(templateTints('violet', true).head)).toBe('berry');
+    expect(paletteOfHeader('#123456')).toBeUndefined();
+    expect(paletteOfHeader(undefined)).toBeUndefined();
+    expect(seriesNote('line', ['a', 'b'])).toBe('');
+    expect(seriesNote('bar', ['a'])).toBe('');
+  });
+});
+
+describe('chart elements', () => {
+  it('take no palette of their own when given none, drawing in the default', () => {
+    const { wb, sheet } = book();
+    const built = buildChartChange(wb, sheet.id, { op: 'chart', type: 'pie', range: 'A1:B3' });
+    if (!built.ok) throw new Error(built.message);
+    const [el] = sheetChartElements(
+      wb,
+      { x: 0, y: 0, width: 960, height: 560 },
+      sheet.id,
+      built.charts,
+    );
+    expect(el).toMatchObject({ shape: 'pie-chart', chartSource: { sheetId: sheet.id } });
+    expect(el!.chartPalette).toBeUndefined();
   });
 });
