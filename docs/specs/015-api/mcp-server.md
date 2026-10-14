@@ -483,7 +483,10 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   the frame, else from the frame's near side, so it never sweeps along the frame past its members' own drops (the
   D2 "publish events" bus). An edge between two nodes outside a group is routed round the frame, never through the
   gaps between its members. A line into a group's first members lands clear of its heading: down the page, a frame
-  whose first member would take a line through the heading's text is widened on the left until it does not.
+  whose first member would take a line through the heading's text is widened on the left until it does not. The
+  reverse holds too: a group in one row whose members have no lines among them (a row of data stores) seats each
+  member by the outside nodes it links to, a database under its service, its order and gaps kept, and its frame
+  refits round them; skipped when the refitted frame would cover another node or frame.
 - **Stacked groups line up.** Groups that follow one another down the flow, no two side by side (a pipeline's
   stages), share one width: each frame spans the union of theirs across the flow, so the stages read as one column
   rather than boxes of four widths off the spine. Skipped when a widened frame would take in a node outside it.

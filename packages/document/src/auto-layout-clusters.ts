@@ -21,6 +21,7 @@ import { unionRects, type Rect } from './geometry-primitives';
 import { bowReciprocalEdges } from './arrow-reciprocal';
 import { faceGroupEdges, headingLead, seatByMembers } from './auto-layout-cluster-seats';
 import { lineUpStackedFrames } from './auto-layout-cluster-stack';
+import { seatMembersByNeighbours } from './auto-layout-cluster-members';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // Space between a frame's border and its members: the top band is deeper so
@@ -241,9 +242,11 @@ export function layoutClusteredGraph(
   // 3b. Within each group, order members that share a rank by where their
   // outside neighbours ended up, so edges into the group don't cross it.
   orderMembersByNeighbours(clusters, placedNodes, placedFrames, graph, direction ?? 'TB');
-  // 3c. Each node outside the groups that members link to sits by those members, not by the group's middle.
+  // 3c. A row of members with no lines among them sits by the outside nodes they link to.
+  seatMembersByNeighbours(placedNodes, placedFrames, clusterOf, graph, direction ?? 'TB');
+  // 3d. Each node outside the groups that members link to sits by those members, not by the group's middle.
   seatByMembers(placedNodes, placedFrames, clusterOf, graph, direction ?? 'TB');
-  // 3d. Groups stacked down the flow share one width, so a pipeline's stages read as one column.
+  // 3e. Groups stacked down the flow share one width, so a pipeline's stages read as one column.
   lineUpStackedFrames(
     placedFrames,
     placedNodes,
