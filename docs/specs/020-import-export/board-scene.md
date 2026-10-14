@@ -141,9 +141,10 @@ colours can be snapped afterwards, in one press, if wanted.
 | frame      | A frame titled with its name, in the palette frame's title look (top right, padded); unnamed, "Frame"                                                                                                                    | The same                                                |
 
 - **Heads**: arrow (an open V), triangle, hollow triangle, circle, hollow
-  circle, diamond, hollow diamond; a bar lands as an open V (degraded: "Bar
-  arrowheads drawn as open arrowheads"). An arrow with two different heads uses
-  its end's (degraded: "Arrows with two different heads use one").
+  circle, diamond, hollow diamond, and the ER ends one, many and one or many; a bar
+  lands as an open V (degraded: "Bar arrowheads drawn as open arrowheads"). An arrow
+  with two different heads keeps both: the end's as its head, the start's as its start
+  head (`arrowheadStartShape`).
 - **Bends**: an arrow through more than two points is drawn as a smooth curve
   through them; a sharp-cornered one says so (degraded: "Bent arrows drawn as
   curves").

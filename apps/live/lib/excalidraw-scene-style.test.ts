@@ -232,14 +232,21 @@ describe('headOf', () => {
     expect(notes.list()).toEqual([]);
   });
 
-  it.each(['crowfoot_one', 'crowfoot_many', 'crowfoot_one_or_many', 'spiral'])(
-    'draws %s as an arrow with a note',
-    (value) => {
-      const notes = new SceneNotes();
-      expect(headOf(value, notes)).toBe('arrow');
-      expect(notes.list()).toEqual([{ rule: EXCALIDRAW_NOTE.unmatchedHeads, count: 1 }]);
-    },
-  );
+  it.each([
+    ['crowfoot_one', 'one'],
+    ['crowfoot_many', 'many'],
+    ['crowfoot_one_or_many', 'one-or-many'],
+  ] as const)('reads %s as the ER end %s', (value, head) => {
+    const notes = new SceneNotes();
+    expect(headOf(value, notes)).toBe(head);
+    expect(notes.list()).toEqual([]);
+  });
+
+  it.each(['spiral'])('draws %s as an arrow with a note', (value) => {
+    const notes = new SceneNotes();
+    expect(headOf(value, notes)).toBe('arrow');
+    expect(notes.list()).toEqual([{ rule: EXCALIDRAW_NOTE.unmatchedHeads, count: 1 }]);
+  });
 
   it('has no head for null or absent values', () => {
     expect(headOf(null, new SceneNotes())).toBeUndefined();

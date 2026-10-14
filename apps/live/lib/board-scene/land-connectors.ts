@@ -30,6 +30,9 @@ const HEADS: Readonly<Record<SceneHead, ArrowheadShape>> = {
   'circle-hollow': 'circle-hollow',
   diamond: 'diamond',
   'diamond-hollow': 'diamond-hollow',
+  one: 'one',
+  many: 'many',
+  'one-or-many': 'one-or-many',
 };
 
 type Point = { x: number; y: number };
@@ -86,8 +89,9 @@ export function landArrow(
     heads.start && heads.end ? 'both' : heads.start ? 'from' : heads.end ? 'to' : 'none';
   const head = heads.end ?? heads.start;
   if (heads.start === 'bar' || heads.end === 'bar') ctx.degrade(LANDING_RULES.barHead);
-  if (heads.start && heads.end && heads.start !== heads.end) ctx.degrade(LANDING_RULES.twoHeads);
   const shape = head ? HEADS[head] : undefined;
+  // Two different heads keep both: the start's as its own (an ER relationship's two cardinalities).
+  const startShape = heads.start && heads.end ? HEADS[heads.start] : undefined;
 
   const mid = { x: (first.x + last.x) / 2, y: (first.y + last.y) / 2 };
   const bends = points.slice(1, -1).map((p) => ({ dx: p.x - mid.x, dy: p.y - mid.y }));
@@ -128,6 +132,7 @@ export function landArrow(
     to: endpoint(connector?.to, last),
     ...(arrowEnds !== 'to' ? { arrowEnds } : {}),
     ...(shape && shape !== 'triangle' ? { arrowheadShape: shape } : {}),
+    ...(startShape && startShape !== shape ? { arrowheadStartShape: startShape } : {}),
     ...(bends.length > 0 ? { arrowStyle: 'curved' as const, curvePoints: bends } : {}),
     strokeWidth: profile === 'whiteboard' ? arrowWidthPx(item.stroke.widthPx) : item.stroke.widthPx,
     ...(item.stroke.dash === 'dashed' || item.stroke.dash === 'dotted'

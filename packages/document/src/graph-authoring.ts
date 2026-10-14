@@ -13,6 +13,7 @@
 // referencing an unknown node id is dropped rather than producing an arrow
 // to nowhere.
 
+import type { ErShape } from './er-heads';
 import { SHAPE_DEFAULT_SIZE } from './factories';
 import { ARROW_THICKNESS_PX } from './arrow-style';
 import { coerceShapeKind } from './validate';
@@ -59,6 +60,9 @@ export type GraphEdge = {
   // Head marker: 'circle' → hollow circle, 'cross' → the open-V head (the
   // closest marker to Mermaid's x terminal). Omitted = the filled triangle.
   head?: 'triangle' | 'circle' | 'cross';
+  // The ER ends (docs/specs/020-import-export/mermaid.md "ER diagram coverage"): each table's cardinality where the
+  // line meets it, its start's and its end's. Set, they take over from `head`.
+  er?: { from: ErShape; to: ErShape };
 };
 
 // A named cluster of nodes (docs/specs/020-import-export/mermaid.md: a Mermaid subgraph). Rendered as a
@@ -98,6 +102,7 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
     ...(e.ends && e.ends !== 'to' ? { arrowEnds: e.ends } : {}),
     ...(e.head === 'circle' ? { arrowheadShape: 'circle-hollow' as const } : {}),
     ...(e.head === 'cross' ? { arrowheadShape: 'line' as const } : {}),
+    ...(e.er ? { arrowheadShape: e.er.to, arrowheadStartShape: e.er.from } : {}),
   };
 }
 

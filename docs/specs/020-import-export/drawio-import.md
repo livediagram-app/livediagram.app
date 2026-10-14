@@ -412,15 +412,16 @@ When the cell has no label, the box is labelled with the stencil's readable name
 - **A shape riding on an edge** (a vertex inside the edge that is not a label) has its corner where
   draw.io puts it along the route.
 - **Heads.** `endArrow` / `startArrow` decide `arrowEnds` (draw.io's default end is `classic`, its
-  default start none). The head shape is one per arrow: the end's, else the start's. `classic`,
-  `block`, `classicThin`, `blockThin` to `triangle`; `open`, `openThin` to `line`; `oval`, `circle`
-  to `circle`; `diamond`, `diamondThin` to `diamond`; `startFill=0` / `endFill=0` to the hollow
-  variant. The head's drawn length is draw.io's (`endSize` / `startSize`, default 6, plus the stroke
+  default start none). The end's head is `arrowheadShape`; a start whose head differs is
+  `arrowheadStartShape`. `classic`, `block`, `classicThin`, `blockThin` to `triangle`; `open`, `openThin`
+  to `line`; `oval`, `circle` to `circle`; `diamond`, `diamondThin` to `diamond`; `startFill=0` /
+  `endFill=0` to the hollow variant; the ER ends `ERmandOne` to `one`, `ERzeroToOne` to `zero-or-one`,
+  `ERmany` to `many`, `ERzeroToMany` to `zero-or-many`, `ERoneToMany` to `one-or-many`, and `ERone` (a
+  single bar) to `one`, approximated. The head's drawn length is draw.io's (`endSize` / `startSize`, default 6, plus the stroke
   width), so `arrowheadSize` is the preset nearest that length on the arrow's stroke: a thin line
-  keeps a readable head and a 5 px line no longer carries a giant one. Two different heads on one arrow,
-  and markers livediagram does not draw (`dash`, `cross`, `async`, `box`, `halfCircle`, the ER
-  crow's feet `ERone`, `ERmany`, `ERmandOne`, `ERoneToMany`, `ERzeroToOne`, `ERzeroToMany`, ...),
-  become the nearest head and are counted (`arrowhead-approximated`).
+  keeps a readable head and a 5 px line no longer carries a giant one. Markers livediagram does not
+  draw (`dash`, `cross`, `async`, `box`, `halfCircle`, ...) become the nearest head and are counted
+  (`arrowhead-approximated`).
 - **Stroke.** `strokeColor`, `strokeWidth` (px, kept as a number), `dashed`, `opacity` as for
   vertices.
 - **Labels.** The edge's own value and its `edgeLabel` children form the arrow's one label; several

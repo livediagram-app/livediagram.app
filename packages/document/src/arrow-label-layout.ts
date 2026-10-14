@@ -15,7 +15,15 @@ import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { arrowLabelFontSize } from './arrow-label';
 import { longestWordWidth, wrapBalanced, type TextMeasure } from './arrow-label-wrap';
 import { arrowLabelAnchor, arrowPathPolyline } from './arrow-path';
-import { ARROWHEAD_SIZE_PX, arrowheadShapeOf, arrowheadSizeOf, arrowStyleOf } from './arrow-style';
+import {
+  ARROWHEAD_SIZE_PX,
+  arrowheadShapeOf,
+  arrowheadSizeOf,
+  arrowheadStartShapeOf,
+  arrowStyleOf,
+  type ArrowheadShape,
+} from './arrow-style';
+import { isErShape } from './er-heads';
 import { endpointPosition } from './geometry';
 import { rectsIntersect, type Rect } from './geometry-primitives';
 import {
@@ -172,18 +180,24 @@ export function arrowRoutePoints(arrow: ArrowElement, elements: Element[]): Pt[]
   return arrowRoute(arrow, elements).route.pts;
 }
 
-function headLength(arrow: ArrowElement): number {
-  const shape = arrowheadShapeOf(arrow);
+function headLength(arrow: ArrowElement, shape: ArrowheadShape = arrowheadShapeOf(arrow)): number {
   const base = (8 / ARROWHEAD_SIZE_PX.medium) * ARROWHEAD_SIZE_PX[arrowheadSizeOf(arrow)];
-  return shape === 'diamond' || shape === 'diamond-hollow' ? base * 1.5 : base;
+  // An ER end (er-heads.ts) runs 1.5 heads back from the table.
+  return shape === 'diamond' || shape === 'diamond-hollow'
+    ? base * 1.5
+    : isErShape(shape)
+      ? base * 1.5
+      : base;
 }
 
 function endClearances(arrow: ArrowElement): { start: number; end: number } {
   const ends = arrow.arrowEnds ?? 'to';
-  const head = headLength(arrow) + END_STUB_PX;
   return {
-    start: ends === 'from' || ends === 'both' ? head : END_STUB_PX,
-    end: ends === 'to' || ends === 'both' ? head : END_STUB_PX,
+    start:
+      ends === 'from' || ends === 'both'
+        ? headLength(arrow, arrowheadStartShapeOf(arrow)) + END_STUB_PX
+        : END_STUB_PX,
+    end: ends === 'to' || ends === 'both' ? headLength(arrow) + END_STUB_PX : END_STUB_PX,
   };
 }
 

@@ -619,6 +619,7 @@ export const ELEMENT_FIELD_NAMES = {
     'strokeStyle',
     'arrowheadSize',
     'arrowheadShape',
+    'arrowheadStartShape',
     'arrowStyle',
     'routeBehind',
     'exactStart',

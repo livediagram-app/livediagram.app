@@ -81,7 +81,7 @@ const CONTENT_KINDS =
   'on "bar-chart" "horizontal" draws a Bar chart (absent: upright columns); on "line-chart" "area" ' +
   'fills each series down to zero and "scatter" draws points only, at x = each category read as a ' +
   'number; on "pie-chart" "doughnut" opens the middle. "chartValues": true prints each mark\'s ' +
-  'number on the chart (a pie\'s as percentages when its values add up to 100; a column chart also ' +
+  "number on the chart (a pie's as percentages when its values add up to 100; a column chart also " +
   'names each column under it, so "chartLegend": false can drop the key). A chart draws no title (a caption is a ' +
   'separate "text" element) and draws sample data when its data is empty. ' +
   'shape "sankey": a Sankey diagram, bands as wide as the amount they carry, laid out in columns ' +
@@ -145,7 +145,9 @@ const STYLE_FIELDS =
   'shown on the element); on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
   '"fontWeight" (400, 500, 700), "textCase" (upper, lower), "textArc" (bends one line along a circle, -360 to ' +
   '360 degrees, positive bowing up: a badge\u2019s top line 180, its bottom -180); on an arrow "label", ' +
-  '"strokeStyle", "arrowEnds", "arrowheadShape". A field a type ' +
+  '"strokeStyle", "arrowEnds", "arrowheadShape" (an ER line\u2019s ends: one, zero-or-one, many, zero-or-many, ' +
+  'one-or-many), "arrowheadStartShape" (the start\u2019s, when it differs: a one at one table, a many at the ' +
+  'other). A Mermaid erDiagram draws these ends itself. A field a type ' +
   'does not have, or a value off its list, is refused naming what it takes. ' +
   'Facilitation kinds and what they hold: "session-button" a "session" ({"tool": "timer" with "minutes", ' +
   '"stopwatch", "vote" with "dots", or "poll" with "question" and "options"}), drawn as what pressing it does ' +

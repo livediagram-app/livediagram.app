@@ -10,7 +10,6 @@ export const LANDING_RULES = {
   filledInk: 'Filled pen strokes drawn without their fill',
   dashedInk: 'Dashed pen strokes drawn solid',
   barHead: 'Bar arrowheads drawn as open arrowheads',
-  twoHeads: 'Arrows with two different heads use one',
   bentArrow: 'Bent arrows drawn as curves',
   unsafeLink: "Links that aren't web addresses were dropped",
   unsized: 'Elements without a size were skipped',

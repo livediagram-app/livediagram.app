@@ -55,10 +55,35 @@ describe('landArrow', () => {
     expect(el.arrowheadShape).toBe(shape);
   });
 
-  it('says so for a bar head and for two different heads', () => {
+  it('says so for a bar head', () => {
     const ctx = createLandContext();
     landArrow(connector({ heads: { start: 'bar', end: 'arrow' } }), 'a', ctx, landed, 'whiteboard');
-    expect(ctx.notes().map((n) => n.rule)).toEqual([LANDING_RULES.barHead, LANDING_RULES.twoHeads]);
+    expect(ctx.notes().map((n) => n.rule)).toEqual([LANDING_RULES.barHead]);
+  });
+
+  it('keeps two different heads, the start as its own: an ER relationship lands whole', () => {
+    const ctx = createLandContext();
+    const el = landArrow(
+      connector({ heads: { start: 'one', end: 'many' } }),
+      'a',
+      ctx,
+      landed,
+      'whiteboard',
+    );
+    expect(el).toMatchObject({
+      arrowEnds: 'both',
+      arrowheadShape: 'many',
+      arrowheadStartShape: 'one',
+    });
+    expect(ctx.notes()).toEqual([]);
+    const same = landArrow(
+      connector({ heads: { start: 'diamond', end: 'diamond' } }),
+      'b',
+      ctx,
+      landed,
+      'whiteboard',
+    );
+    expect(same.arrowheadStartShape).toBeUndefined();
   });
 
   it('bends through middle points as a curve, saying so when the source was sharp', () => {

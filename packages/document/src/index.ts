@@ -533,6 +533,7 @@ export * from './label-font';
 export * from './table-cell-font';
 export * from './lane-gutter';
 export * from './arrow-style';
+export * from './er-heads';
 export * from './border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';

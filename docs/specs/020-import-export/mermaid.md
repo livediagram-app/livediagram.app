@@ -128,13 +128,12 @@ LR` line sets the layout direction (TB default).
   attribute on its own line, which read as a paragraph and did not survive a
   label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened
   it to "SHARE_LINK text code text document_id…").
-- **Relationships**: `A ||--o{ B : label` becomes an edge labelled with the verb and the multiplicity in words,
-  as the ER template writes it: `label · 1 : 0..*` (`|o` zero or one `0..1`, `||` exactly one `1`, `}o` zero or
-  more `0..*`, `}|` one or more `1..*`; with no verb, the multiplicity alone).
-  Cardinality maps onto arrow ends: a "many" side (crow's foot, `{` / `}`)
-  gets an open-V arrowhead on that end (`ends`: the many side(s), `head:
-'cross'`); one-to-one relationships render headless. Non-identifying
-  (dotted `..`) relationships render dashed.
+- **Relationships**: `A ||--o{ B : label` becomes an edge labelled with its verb alone (none with no verb): the
+  ER ends say the multiplicity, which the label spelled out in words (`places · 1 : 0..*`) while the heads could
+  only say "many".
+  Cardinality maps onto the ER arrow ends at both tables (`ends: 'both'`): `||` One, `|o` Zero or One, `}o` / `o{`
+  Zero or Many, `}|` / `|{` One or Many, the line's start taking its left token and its end its right
+  (`arrowheadStartShape` and `arrowheadShape`). Non-identifying (dotted `..`) relationships render dashed.
 
 ## Sequence diagrams (agents)
 

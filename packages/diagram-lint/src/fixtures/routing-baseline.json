@@ -160,24 +160,24 @@
     "extent": "861×838"
   },
   "mermaid-erdiagram-2": {
-    "shared": 458,
+    "shared": 305,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 1,
     "behind": 0,
     "collisions": 0,
-    "extent": "987×602"
+    "extent": "841×602"
   },
   "mermaid-erdiagram-3": {
-    "shared": 458,
+    "shared": 305,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 1,
     "behind": 0,
     "collisions": 1,
-    "extent": "987×602"
+    "extent": "841×602"
   },
   "mermaid-erdiagram-4": {
     "shared": 291,
@@ -187,7 +187,7 @@
     "crossings": 1,
     "behind": 0,
     "collisions": 0,
-    "extent": "794×642"
+    "extent": "785×642"
   },
   "mermaid-sequencediagram-1": {
     "shared": 0,

@@ -1,11 +1,11 @@
 // Mermaid ER diagram -> DiagramGraph (docs/specs/020-import-export/mermaid.md). Import-only: entities are
 // Entity elements (the name is the title, each attribute a field row with its
-// type and any PK / FK / UK marker as the row's type text), relationships are edges whose cardinality maps onto arrow ends —
-// a "many" side (crow's foot) gets the open-V head on that end, one-to-one
-// renders headless, and non-identifying (dotted) relationships render
+// type and any PK / FK / UK marker as the row's type text), relationships are edges whose cardinality is an ER end
+// at each table (one, zero or one, one or many, zero or many), and non-identifying (dotted) relationships render
 // dashed. Export always emits flowchart text.
 
 import type { EntityField } from './data-shapes';
+import type { ErShape } from './er-heads';
 import type { GraphEdge, GraphNode } from './graph-authoring';
 import {
   cleanLine,
@@ -81,25 +81,19 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
     if (rel) {
       const from = touch(rel[1]!).id;
       const to = touch(rel[5]!).id;
-      // Crow's foot = the "many" side: `}` on the left token, `{` on the
-      // right. The open-V arrowhead points at each many side.
-      const fromMany = rel[2]!.includes('}');
-      const toMany = rel[4]!.includes('{');
-      const ends: GraphEdge['ends'] =
-        fromMany && toMany ? 'both' : toMany ? 'to' : fromMany ? 'from' : 'none';
+      // Each table's cardinality as an ER end where the line meets it: the left token at the start, the right at
+      // the end.
       const dashed = rel[3] === '..';
-      // The multiplicity in words beside the verb, as the ER template writes it ("places · 1 : 0..*"): the
-      // arrowheads alone said "many" but never "at least one" or "optional".
-      const said = rel[6] ? decodeLabel(rel[6]) : '';
-      const multiplicity = `${multiplicityOf(rel[2]!)} : ${multiplicityOf(rel[4]!)}`;
-      const label = said ? `${said} · ${multiplicity}` : multiplicity;
+      // The verb alone: the ER ends say the multiplicity ("1 : 0..*" in words was there while the heads could only
+      // say "many").
+      const said = rel[6] ? decodeLabel(rel[6]).trim() : '';
       edges.push({
         from,
         to,
-        label,
+        ...(said ? { label: said } : {}),
         ...(dashed ? { line: 'dashed' as const } : {}),
-        ends,
-        ...(fromMany || toMany ? { head: 'cross' as const } : {}),
+        ends: 'both',
+        er: { from: erEndOf(rel[2]!), to: erEndOf(rel[4]!) },
       });
       continue;
     }
@@ -115,10 +109,10 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
   return { ok: true, graph: { nodes: [...nodes.values()], edges }, direction };
 }
 
-// A cardinality token in UML multiplicity: `|o` / `o|` zero or one, `||` exactly one, `}o` / `o{` zero or more,
-// `}|` / `|{` one or more.
-function multiplicityOf(token: string): string {
+// A cardinality token as an ER end: `||` one, `|o` / `o|` zero or one, `}|` / `|{` one or many, `}o` / `o{` zero or
+// many.
+function erEndOf(token: string): ErShape {
   const many = token.includes('{') || token.includes('}');
   const optional = token.includes('o');
-  return many ? (optional ? '0..*' : '1..*') : optional ? '0..1' : '1';
+  return many ? (optional ? 'zero-or-many' : 'one-or-many') : optional ? 'zero-or-one' : 'one';
 }
