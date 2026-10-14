@@ -5,8 +5,19 @@
 import { clickTour, findTour, waitForTour } from './tour-dom';
 import { stepTelemetryType, type TourStepOf } from './tour-step';
 
-// Whether the tour opened the panel, so leaving puts it back as it found it.
-let panelOpenedByTour = false;
+// Whether the panel was open when the tour began, so leaving puts it back as it found it: open again if the person
+// had it open (the push step closes it), closed if the tour opened it.
+// Null outside a tour.
+let panelOpenAtStart: boolean | null = null;
+
+// Put the panel back as the tour found it, once.
+async function restorePanel(): Promise<void> {
+  const wasOpen = panelOpenAtStart;
+  panelOpenAtStart = null;
+  if (wasOpen === null) return;
+  if (wasOpen) await openPanel();
+  else closePanel();
+}
 
 const panelOpen = () => findTour('avatar-character') !== null;
 
@@ -14,7 +25,6 @@ const panelOpen = () => findTour('avatar-character') !== null;
 async function openPanel(): Promise<void> {
   if (panelOpen()) return;
   if (!clickTour('avatar-button')) return;
-  panelOpenedByTour = true;
   await waitForTour('avatar-character', 1500);
 }
 
@@ -38,6 +48,9 @@ export const AVATAR_TOUR_STEPS: AvatarTourStep[] = [
     card: 'welcome',
     title: 'Meet Your Avatar',
     body: 'Want a quick tour of dressing up your character, reacting, saying something and giving someone a push?',
+    prepare: () => {
+      panelOpenAtStart = panelOpen();
+    },
   },
   {
     id: 'avatar-button',
@@ -83,11 +96,7 @@ export const AVATAR_TOUR_STEPS: AvatarTourStep[] = [
     title: "You're Ready to Roam",
     body: 'Walk anywhere on the canvas and say hello. The help centre has more on Avatar mode.',
     // Leave the panel as the tour found it.
-    prepare: () => {
-      if (!panelOpenedByTour) return;
-      panelOpenedByTour = false;
-      closePanel();
-    },
+    prepare: restorePanel,
   },
 ];
 
@@ -107,11 +116,9 @@ export function avatarTourSteps({
   );
 }
 
-/** Closes the panel if the tour left it open (a Skip mid-way). */
+/** Puts the panel back as the tour found it when it ends early (a Skip mid-way). */
 export function tidyAvatarTour(): void {
-  if (!panelOpenedByTour) return;
-  panelOpenedByTour = false;
-  closePanel();
+  void restorePanel();
 }
 
 // Telemetry `type` token for a step-viewed event: 'avatar-button' → 'AvatarTourStepAvatarButton'.
