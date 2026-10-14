@@ -137,10 +137,16 @@ describe('layoutSequence', () => {
       ].join('\n'),
     );
     if (!g.ok) throw new Error(g.error);
-    const bars = layoutGraph(g.graph).filter(
-      (e) => e.type === 'shape' && e.shape === 'square' && e.width === 14,
-    );
+    const els = layoutGraph(g.graph);
+    const bars = els.filter((e) => e.type === 'shape' && e.shape === 'square' && e.width === 14);
     expect(bars.length).toBe(1);
+    // The bar starts at the call the activate line follows, not a row later.
+    const request = els.find((e) => e.type === 'arrow' && e.label === 'request') as Element & {
+      from: { y: number };
+    };
+    expect(Math.abs((bars[0] as Element & { y: number }).y - request.from.y)).toBeLessThanOrEqual(
+      6,
+    );
   });
 
   it('spans a fragment across the lifelines it involves, a nested one inside it', () => {

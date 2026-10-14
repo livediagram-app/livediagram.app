@@ -136,6 +136,9 @@ export function layoutSequence(
     return px(who) + ((d - 1) * BAR) / 2 + (towardRight ? -BAR / 2 : BAR / 2);
   };
 
+  // The row of the last message: an `activate` or `deactivate` line acts at it, as Mermaid starts a bar at the call
+  // that precedes the line, not a row later.
+  let messageY: number | undefined;
   for (const [i, it] of items.entries()) {
     if (it.kind === 'message') {
       const label = diagram.autonumber ? `${++number}: ${it.label}` : it.label;
@@ -168,10 +171,11 @@ export function layoutSequence(
         deactivate(it.from, y + SELF_DROP + 20);
       }
       for (const who of [it.from, it.to]) lastRow.set(who, y);
+      messageY = y;
       involve(it.from, it.to);
       y += self ? SELF_DROP + 36 : STEP;
-    } else if (it.kind === 'activate') activate(it.who, y - STEP / 2);
-    else if (it.kind === 'deactivate') deactivate(it.who, y - STEP / 2);
+    } else if (it.kind === 'activate') activate(it.who, messageY ?? y - STEP / 2);
+    else if (it.kind === 'deactivate') deactivate(it.who, messageY ?? y - STEP / 2);
     else if (it.kind === 'note') {
       const width = noteWidth(it, pitch, headW);
       const lines = Math.max(1, Math.ceil(glyphWidth(it.text, 13) / Math.max(40, width - 28)));
