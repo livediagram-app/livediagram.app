@@ -36,6 +36,17 @@ describe('the GIF encoder client', () => {
     expect(fake.worker.terminate).toHaveBeenCalled();
   });
 
+  it('transfers a page palette’s samples, and names it on each frame', () => {
+    const fake = fakeWorker();
+    const session = openGifEncoder(4, 4, () => fake.worker);
+    const sample = frame();
+    session.palette(2, [sample]);
+    session.add(frame(), 7, 2);
+    expect(fake.sent[1]!.message).toMatchObject({ type: 'palette', key: 2 });
+    expect(fake.sent[1]!.transfer).toEqual([sample.buffer]);
+    expect(fake.sent[2]!.message).toMatchObject({ type: 'frame', palette: 2 });
+  });
+
   it('rejects when the worker fails, and ignores frames after', async () => {
     const fake = fakeWorker();
     const session = openGifEncoder(4, 4, () => fake.worker);
@@ -66,6 +77,14 @@ describe('the GIF encoder client', () => {
     session.add(frame(), 7);
     const { bytes, written } = await session.finish();
     expect(String.fromCharCode(...bytes.slice(0, 6))).toBe('GIF89a');
+    expect(written).toBe(1);
+  });
+
+  it('uses a page palette on the page too', async () => {
+    const session = openGifEncoder(4, 4, null);
+    session.palette(0, [frame()]);
+    session.add(frame(), 7, 0);
+    const { written } = await session.finish();
     expect(written).toBe(1);
   });
 

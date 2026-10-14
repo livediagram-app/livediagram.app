@@ -3,7 +3,9 @@
 
 export type GifEncodeRequest =
   | { type: 'start'; width: number; height: number }
-  | { type: 'frame'; rgba: ArrayBuffer; delayCs: number }
+  // A page's palette, from sample frames across its hold, kept under `key` for the frames that name it.
+  | { type: 'palette'; key: number; samples: ArrayBuffer[] }
+  | { type: 'frame'; rgba: ArrayBuffer; delayCs: number; palette?: number }
   | { type: 'finish' };
 
 export type GifEncodeResponse =

@@ -47,6 +47,16 @@ describe('the GIF encoder worker', () => {
     );
   });
 
+  it('keeps a page palette and writes the frames that name it', async () => {
+    const { posted, send } = await startWorker();
+    send({ type: 'start', width: 4, height: 2 });
+    send({ type: 'palette', key: 0, samples: [frame(10), frame(200)] });
+    send({ type: 'frame', rgba: frame(10), delayCs: 7, palette: 0 });
+    send({ type: 'frame', rgba: frame(200), delayCs: 7, palette: 0 });
+    send({ type: 'finish' });
+    expect(posted[0]!.message).toMatchObject({ type: 'done', written: 2 });
+  });
+
   it('ignores a finish with nothing started', async () => {
     const { posted, send } = await startWorker();
     send({ type: 'finish' });

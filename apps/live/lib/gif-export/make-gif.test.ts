@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { GifEncoderSession } from './gif-encoder';
 import { GifExportError } from './gif-export-error';
 import type { GifFrame } from './gif-timeline';
-import { makeGif } from './make-gif';
+import { makeGif, paletteSamples } from './make-gif';
 import type { PageSnapshot } from './page-snapshot';
 
 // docs/specs/020-import-export/blueprints/animated-gif-export.md "The hook": Make.
@@ -15,13 +15,21 @@ const snap = (animated: boolean): PageSnapshot => ({
 
 function deps(pages: PageSnapshot[], draw?: (f: GifFrame) => void) {
   const added: number[] = [];
+  const palettes: number[] = [];
+  const pageOf: (number | undefined)[] = [];
   const encoder: GifEncoderSession = {
-    add: (_rgba, delayCs) => added.push(delayCs),
+    palette: (key) => void palettes.push(key),
+    add: (_rgba, delayCs, palette) => {
+      added.push(delayCs);
+      pageOf.push(palette);
+    },
     finish: vi.fn(async () => ({ bytes: new Uint8Array([1, 2, 3]), written: added.length })),
     cancel: vi.fn(),
   };
   return {
     added,
+    palettes,
+    pageOf,
     encoder,
     snapshot: vi.fn(async (page: number) => pages[page]!),
     drawer: {
@@ -55,6 +63,21 @@ describe('making the GIF', () => {
     expect(d.added.reduce((a, b) => a + b, 0)).toBe(200);
     expect(onProgress).toHaveBeenLastCalledWith(1);
     expect(d.snapshot).toHaveBeenCalledTimes(2);
+  });
+
+  it('gives each page one palette from its frames, and a transition frame its own', async () => {
+    const d = deps([snap(true), snap(true)]);
+    const { frames } = await makeGif(input({ transition: 'fade', transitionMs: 380 }), d);
+    expect(d.palettes).toEqual([0, 1]);
+    frames.forEach((f, i) => expect(d.pageOf[i]).toBe(f.from ? undefined : f.page));
+    expect(d.pageOf).toContain(undefined);
+  });
+
+  it('samples a page’s palette from its first, middle and last frames', () => {
+    const own = (t: number) => ({ page: 0, t, mix: 1, delayCs: 7 });
+    const frames = [own(0), own(1), own(2), own(3), own(4), { ...own(5), page: 1 }];
+    expect(paletteSamples(frames, 0).map((f) => f.t)).toEqual([0, 2, 4]);
+    expect(paletteSamples(frames.slice(0, 2), 0)).toHaveLength(2);
   });
 
   it('draws a still page once', async () => {

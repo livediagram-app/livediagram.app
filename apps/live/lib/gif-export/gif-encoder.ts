@@ -1,11 +1,15 @@
 // The page's side of the GIF encoder (docs/specs/020-import-export/blueprints/animated-gif-export.md "The encoder"):
 // one worker per GIF, started when the GIF is made and ended with it. Where a module worker cannot start, the same
 // encoder runs on the page.
+import type { GifPalette } from 'gifenc';
 import type { GifEncodeRequest, GifEncodeResponse } from './gif-encode-protocol';
 
 export type GifEncoderSession = {
-  /** Hand a frame over (its buffer is transferred, so the caller must not reuse it). */
-  add(rgba: Uint8ClampedArray, delayCs: number): void;
+  /** A page's palette from sample frames across its hold, kept under `key` (the buffers are transferred). */
+  palette(key: number, samples: Uint8ClampedArray[]): void;
+  /** Hand a frame over (its buffer is transferred, so the caller must not reuse it), in the palette under `palette`
+   *  (its own when absent). */
+  add(rgba: Uint8ClampedArray, delayCs: number, palette?: number): void;
   /** Every frame added: the file. */
   finish(): Promise<{ bytes: Uint8Array; written: number }>;
   /** Stop and discard. */
@@ -63,10 +67,15 @@ function workerSession(worker: WorkerLike, width: number, height: number): GifEn
   worker.addEventListener('error', (e) => fail(new Error(e.message || 'GIF worker failed')));
   worker.postMessage({ type: 'start', width, height });
   return {
-    add(rgba, delayCs) {
+    palette(key, samples) {
+      if (failure) return;
+      const buffers = samples.map((s) => s.buffer as ArrayBuffer);
+      worker.postMessage({ type: 'palette', key, samples: buffers }, buffers);
+    },
+    add(rgba, delayCs, palette) {
       if (failure) return;
       const buffer = rgba.buffer as ArrayBuffer;
-      worker.postMessage({ type: 'frame', rgba: buffer, delayCs }, [buffer]);
+      worker.postMessage({ type: 'frame', rgba: buffer, delayCs, palette }, [buffer]);
     },
     finish() {
       if (failure) return Promise.reject(failure);
@@ -83,13 +92,25 @@ function workerSession(worker: WorkerLike, width: number, height: number): GifEn
 }
 
 function inlineSession(width: number, height: number): GifEncoderSession {
-  const writer = import('./gif-encode-core').then((m) => m.createGifWriter(width, height));
+  const core = import('./gif-encode-core');
+  const writer = core.then((m) => m.createGifWriter(width, height));
+  const palettes = new Map<number, GifPalette>();
   let queue: Promise<unknown> = writer;
   let cancelled = false;
   return {
-    add(rgba, delayCs) {
+    palette(key, samples) {
       queue = queue.then(async () => {
-        if (!cancelled) (await writer).add(rgba, delayCs);
+        if (!cancelled) palettes.set(key, (await core).pagePalette(samples));
+      });
+    },
+    add(rgba, delayCs, palette) {
+      queue = queue.then(async () => {
+        if (!cancelled)
+          (await writer).add(
+            rgba,
+            delayCs,
+            palette === undefined ? undefined : palettes.get(palette),
+          );
       });
     },
     async finish() {

@@ -102,7 +102,8 @@ describe('the GIF card (docs/specs/020-import-export/animated-gif-export.md "Whe
   it('opens the GIF options', async () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: /^GIF/ }));
-    expect(await screen.findByText('Each page holds')).toBeTruthy();
+    // The panel loads on demand: under a loaded machine the import can take more than a second.
+    expect(await screen.findByText('Each page holds', {}, { timeout: 5000 })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Download GIF' })).toBeTruthy();
   });
 });

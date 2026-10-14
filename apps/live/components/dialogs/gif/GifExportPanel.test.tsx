@@ -19,7 +19,7 @@ const h = vi.hoisted(() => ({
   sampleBytes: 10_000,
   track: vi.fn(),
   download: vi.fn(),
-  encoder: { add: vi.fn(), finish: vi.fn(), cancel: vi.fn() },
+  encoder: { palette: vi.fn(), add: vi.fn(), finish: vi.fn(), cancel: vi.fn() },
 }));
 vi.mock('@/lib/telemetry', () => ({ track: h.track }));
 vi.mock('@/lib/download-blob', () => ({ downloadBlob: h.download }));
@@ -135,7 +135,7 @@ describe('the GIF panel', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
     });
-    await waitFor(() => expect(onDone).toHaveBeenCalled());
+    await waitFor(() => expect(onDone).toHaveBeenCalled(), { timeout: 8000 });
     const [blob, name] = h.download.mock.calls[0]!;
     expect(name).toBe('Doc - Deck.gif');
     expect((blob as Blob).type).toBe('image/gif');

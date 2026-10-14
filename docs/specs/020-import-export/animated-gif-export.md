@@ -74,6 +74,11 @@ The GIF card opens an options-and-download panel, like PNG's, with the shared ba
   exporter's. The panel's preview, which is still, is unaffected.
 - **What cannot be sampled shows still**: a video shows its poster, an animated GIF image its first frame, and a
   web embed its placeholder, as in a PNG export.
+- **Colours hold still**: a GIF frame has at most 256 colours. Every frame of a page shares one set, chosen from
+  across the page's hold, so a slowly drifting gradient (an aurora, bokeh) drifts calmly instead of its colour bands
+  jumping from frame to frame, and a colour always comes out as the same one of the 256. A transition frame, where
+  two pages mix, takes its own set. Gradients are not dithered: it smooths their faint steps but makes the file
+  about 70% bigger.
 
 ## Errors
 

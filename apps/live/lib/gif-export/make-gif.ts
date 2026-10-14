@@ -46,11 +46,22 @@ export async function makeGif(
     debugLog(
       `[gif-export] start pages=${timeline.pageCount} hold=${timeline.holdSeconds} frames=${frames.length}`,
     );
+    const snapshotOf = (page: number) => snaps.get(page)!;
+    // Each page's palette, from its frames across the hold (a transition frame keeps its own).
+    for (let page = 0; page < timeline.pageCount; page += 1) {
+      const samples: Uint8ClampedArray[] = [];
+      for (const frame of paletteSamples(frames, page)) {
+        stop();
+        samples.push(await drawer.draw(frame, snapshotOf));
+      }
+      if (samples.length) encoder.palette(page, samples);
+      await yieldToPage();
+    }
     const lastUse = lastUses(frames);
     for (const [i, frame] of frames.entries()) {
       stop();
-      const rgba = await drawer.draw(frame, (page) => snaps.get(page)!);
-      encoder.add(rgba, frame.delayCs);
+      const rgba = await drawer.draw(frame, snapshotOf);
+      encoder.add(rgba, frame.delayCs, frame.from ? undefined : frame.page);
       for (const [page, last] of lastUse) if (last === i) snaps.delete(page);
       onProgress((i + 1) / frames.length);
       await yieldToPage();
@@ -73,6 +84,16 @@ export async function makeGif(
     debugLog(`[gif-export] failed ${code}`, err);
     throw err instanceof GifExportError ? err : new GifExportError('failed');
   }
+}
+
+// A page's palette is chosen from these of its frames: its first, middle and last outside a transition.
+export const PALETTE_SAMPLES = 3;
+
+export function paletteSamples(frames: readonly GifFrame[], page: number): GifFrame[] {
+  const own = frames.filter((f) => f.page === page && !f.from);
+  if (own.length <= PALETTE_SAMPLES) return own;
+  const picks = new Set([0, Math.floor((own.length - 1) / 2), own.length - 1]);
+  return [...picks].map((i) => own[i]!);
 }
 
 // The last frame each page is drawn in (itself, or as the outgoing page of a transition).

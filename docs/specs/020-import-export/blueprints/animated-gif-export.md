@@ -39,7 +39,10 @@ All in `lib/gif-export/gif-timeline.ts`.
 
 In `lib/gif-export/gif-estimate.ts`: `GIF_HEADER_BYTES` 800 (D48) and `GIF_ESTIMATE_DELAY_MS` 250 (D47). In
 `lib/gif-export/snapshot-media.ts`: `TRANSPARENT_PIXEL`, a 1 x 1 see-through PNG (D49). In
-`lib/gif-export/gif-encode-core.ts`: 256 colours, `rgb565` quantising (gifenc's best quality).
+`lib/gif-export/gif-encode-core.ts`: 256 colours, `rgb565` quantising (gifenc's best quality),
+`PALETTE_SAMPLE_STRIDE` 4 (D53). In `lib/gif-export/make-gif.ts`: `PALETTE_SAMPLES` 3 (D53). No dither: an ordered
+4 x 4 dither at strength 5 smoothed the last faint gradient steps but made the test GIF 70% bigger (6.5 to
+11.1 MB), so it was left out.
 
 ## Behaviour and state
 
@@ -129,17 +132,26 @@ snapshotOf)` loads the incoming page at `frame.t` and, under a transition, the o
 
 ### The encoder (`gif-encode-core.ts`, `gif-encode.worker.ts`, `gif-encoder.ts`)
 
-- `createGifWriter(w, h)` (`gif-encode-core.ts`, pure over `gifenc`): `add(rgba, delayCs)`, `written`, `finish()`.
-  Each written frame: `quantize(rgba, 256, { format: 'rgb565' })`, `applyPalette`, `writeFrame(index, w, h, {
-palette, delay: delayCs * 10, repeat: 0 })` (`repeat: 0` on the first frame writes the loop-forever extension).
+- `createGifWriter(w, h)` (`gif-encode-core.ts`, pure over `gifenc`): `add(rgba, delayCs, palette?)`, `written`,
+  `finish()`. Each written frame: its page's palette, or for a transition frame its own `quantize(rgba, 256, {
+format: 'rgb565' })`; `indexFrame`; `writeFrame(index, w, h, { palette, delay: delayCs * 10, repeat: 0 })`
+  (`repeat: 0` on the first frame writes the loop-forever extension).
+- `pagePalette(samples)`: `quantize` over every `PALETTE_SAMPLE_STRIDE`-th pixel of the page's sample frames.
+- `indexFrame(rgba, palette)`: each pixel's index through a 65,536-entry table per palette (a `WeakMap`), one entry
+  per 5-6-5 bucket, filled on first use with the nearest colour to the bucket's centre. gifenc's own `applyPalette`
+  fills a bucket from whichever pixel reaches it first, so a colour could map one way in one frame and another way
+  in the next; measured on the seeded aurora slide, 2 to 49% of background pixels changed between consecutive
+  frames with it (the source changes 0%), and 1 to 2% with `indexFrame` and the shared palette.
   **Merge**: the writer holds the last frame back; a next frame whose bytes are equal (compared four at a time)
   adds its delay to the held one instead of being written (D46).
 - `sampleFrameBytes(rgba, w, h)`: one frame's bytes with a local colour table, for the estimate (main thread, by
   dynamic import, so `gifenc` is in neither first-load JS nor the panel's chunk).
 - The worker (`gif-encode.worker.ts`) runs a writer. Messages in (`gif-encode-protocol.ts`): `start { width, height
-}`, `frame { rgba: ArrayBuffer (transferred), delayCs }`, `finish`. Out: `done { bytes: ArrayBuffer (transferred),
+}`, `palette { key, samples: ArrayBuffer[] (transferred) }`, `frame { rgba: ArrayBuffer (transferred), delayCs,
+palette?: key }`, `finish`. Out: `done { bytes: ArrayBuffer (transferred),
 written }`, `failed { message }`. Cancel is `terminate()`.
-- `openGifEncoder(w, h)` (`gif-encoder.ts`): one module worker per GIF (`new Worker(new URL(...), { type: 'module'
+- `openGifEncoder(w, h)` (`gif-encoder.ts`): `palette(key, samples)` and `add(rgba, delayCs, palette?)`, one module
+  worker per GIF (`new Worker(new URL(...), { type: 'module'
 })`, as the other workers here). `add` transfers the buffer, `finish` resolves with the bytes or rejects on
   `failed` or a worker `error`, `cancel` terminates. Where a worker cannot start, the same writer runs on the page,
   queued.
@@ -160,7 +172,7 @@ pages.length > 1`; the transition is `config.transition`, its length `SLIDE_SPEE
   shown with `gifSizeLabel`. The preview is that snapshot's `urlAt(0)` in an `<img>` on white. A snapshot error
   shows its line; the next estimate that works clears it.
 - **Make** (`makeGif`, `lib/gif-export/make-gif.ts`): snapshot every chosen page first (stillness decides the frame
-  count), build the timeline, then for each frame: stop if aborted, `drawer.draw`, `encoder.add`, drop a snapshot
+  count), build the timeline, then each page's palette (`paletteSamples`: its first, middle and last frames outside a transition, drawn and sent with `encoder.palette(page, ...)`, a task between pages), then for each frame: stop if aborted, `drawer.draw`, `encoder.add(rgba, delayCs, frame.from ? undefined : frame.page)`, drop a snapshot
   after its last use (as itself or as an outgoing page), progress = frames done / total, yield a task
   (`setTimeout 0`, D52). Then `encoder.finish()`. An abort is an `AbortError`; a `GifExportError` passes on; any
   other failure is `GifExportError('failed')`; either way the encoder is cancelled.
@@ -214,12 +226,11 @@ Measured 2026-10-14, M-series, the seeded two-slide deck (aurora and bokeh backg
   chunks. The panel, hook, snapshot and frames load with the GIF card (9.1 KB gzip); `gifenc` with the encoder core
   is a separate 4.0 KB gzip chunk, in the worker and in the estimate's dynamic import.
 - **A frame** (main thread, SVG decode and draw, Chromium): 25 ms at Small, 36 ms at Medium, 45 ms at Large (max
-  76 ms); WebKit 84 ms at Medium. Encoding runs in the worker: 3, 10 and 20 ms a frame. A frame draws one page's
+  76 ms); WebKit 84 ms at Medium. Encoding runs in the worker: 3, 10 and 20 ms a frame with a palette per frame (a shared page palette skips the quantise). A frame draws one page's
   DOM (other pages and off-page elements are left out of its snapshot).
 - **A snapshot**: 15 to 30 ms a page, plus about 15 ms for `withFullMotion`'s style recalculation. The encoded SVG
   is about 670 KB a page (mostly the app's ~457 KB of CSS); a frame re-encodes only its pinning rules.
-- **Totals**: a 6 s, 90 frame GIF made in 3.1 s at Medium, 5.3 MB (estimated 5.0 MB). Two pages for 4 s: 1.3 MB
-  Small, 3.6 MB Medium, 7.1 MB Large.
+- **Totals**: a 6 s, 90 frame GIF made in 3.6 s at Medium, 6.5 MB with the shared palettes (5.3 MB with a palette per frame, which shimmered). The palette pass adds three draws a page.
 - **Worst case**: 180 s at 15 fps = 2,700 frames: about 2 minutes of capture at Large (2,700 x 45 ms), the editor
   getting a task between frames, so it never freezes for more than one frame's draw. Still pages cost one frame.
   The progress bar and Cancel cover it.
@@ -272,6 +283,8 @@ frames=<n>`, `done frames=<written> bytes=<n> ms=<n>`, `cancelled`, `failed <cod
 | Pictures, canvases, embeds and style URLs inlined; one read a URL         | `snapshot-media.test.ts` (jsdom)                                     |
 | White paper; Fade / Slide / None composition                              | `page-frames.test.ts` (a fake 2D context)                            |
 | Loop extension, frames, merge of equal frames, sample size                | `gif-encode-core.test.ts`                                            |
+| Shared page palette; a colour always the same entry                       | `gif-encode-core.test.ts`, `gif-encode.worker.test.ts`               |
+| Palette samples per page; transition frames keep their own                | `make-gif.test.ts`, `gif-encoder.test.ts`                            |
 | Worker session: transfer, done, failed, error, cancel; on-page fallback   | `gif-encoder.test.ts`                                                |
 | Make: progress, finish, cancel between frames, error mapping              | `make-gif.test.ts`                                                   |
 | GIF card only in Illustrate, after SVG; never on Plan/diagram tabs        | `ExportTabDialog.illustrate.test.tsx`, `plan-export-formats.test.ts` |
@@ -285,4 +298,4 @@ licences page picks it up from what the app bundles.
 
 ## Defaults ledger
 
-DEFAULTS.md rows D46 to D52.
+DEFAULTS.md rows D46 to D53.
