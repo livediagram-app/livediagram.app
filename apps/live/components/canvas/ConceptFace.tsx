@@ -29,6 +29,7 @@ import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { ChevronStageControls } from '@/components/canvas/ConceptRowBar';
 
 type Props = {
   element: ShapeElement & { shape: ConceptShape };
@@ -288,13 +289,9 @@ export function ConceptFace({
       </Row>
     ));
   } else if (element.shape === 'chevrons') {
-    const l = chevronLayout(
-      W,
-      H,
-      n,
-      rows.some((r) => !!r.note),
-    );
-    body = rows.map((row, i) => {
+    const hasNotes = rows.some((r) => !!r.note);
+    const l = chevronLayout(W, H, n, hasNotes);
+    const stages = rows.map((row, i) => {
       const st = l.stages[i]!;
       return (
         <Row
@@ -316,6 +313,19 @@ export function ConceptFace({
         </Row>
       );
     });
+    body = editable ? (
+      <ChevronStageControls
+        stages={l.stages}
+        rows={rows}
+        notes={hasNotes}
+        invScale={1 / zoom}
+        onSetRows={onSetRows}
+      >
+        {stages}
+      </ChevronStageControls>
+    ) : (
+      stages
+    );
   } else {
     const l = cycleLayout(W, H, n);
     const head = Math.min(10, Math.max(6, l.discR * 0.14));
