@@ -100,10 +100,13 @@ describe('an article estimated', () => {
     );
     const title = ops.find((o) => o.k === 'text' && o.text === 'Report')!;
     expect(title).toMatchObject({ size: 36, weight: '700', color: '#0369a1' });
-    expect(ops.find((o) => o.k === 'text' && o.text === 'Body text')).toMatchObject({
-      anchor: 'middle',
-    });
-    expect(ops.find((o) => o.k === 'text' && o.text === 'Right')).toMatchObject({ anchor: 'end' });
+    // A centred line starts left of the page's middle by half its width, a right-aligned one ends at the margin.
+    const r = laid(tab)[0]!.rect;
+    const centred = ops.find((o) => o.k === 'text' && o.text === 'Body text') as { x: number };
+    expect(centred.x).toBeLessThan(r.x + r.width / 2);
+    expect(centred.x).toBeGreaterThan(r.x + r.width / 2 - 100);
+    const right = ops.find((o) => o.k === 'text' && o.text === 'Right') as { x: number };
+    expect(right.x).toBeGreaterThan(r.x + r.width / 2);
     expect(ops.find((o) => o.k === 'text' && o.text === 'Bold')).toMatchObject({ weight: '700' });
     expect(ops.find((o) => o.k === 'text' && o.text === 'npm test')).toMatchObject({
       family: expect.stringContaining('Mono'),
@@ -111,6 +114,29 @@ describe('an article estimated', () => {
     expect(ops.some((o) => o.k === 'check' && o.done)).toBe(true);
     expect(ops.filter((o) => o.k === 'line').length).toBeGreaterThanOrEqual(4);
     expect(ops.filter((o) => o.k === 'rect').length).toBe(2);
+  });
+
+  it('draws a line in its runs’ styles, each stretch after the one before', () => {
+    const mixed = {
+      id: 'm',
+      type: 'paragraph',
+      runs: [{ text: 'Lead: ', b: true }, { text: 'the rest ' }, { text: 'leans', i: true }],
+    } as ArticleBlock;
+    const tab = article([mixed]);
+    const parts = estimateArticle(tab, 'f', laid(tab), '#000000')
+      .ops.get('a1')!
+      .filter((o) => o.k === 'text') as {
+      text: string;
+      weight: string;
+      style: string;
+      x: number;
+    }[];
+    expect(parts.map((p) => [p.text, p.weight, p.style])).toEqual([
+      ['Lead: ', '700', 'normal'],
+      ['the rest ', '400', 'normal'],
+      ['leans', '400', 'italic'],
+    ]);
+    expect(parts[1]!.x).toBeGreaterThan(parts[0]!.x);
   });
 
   it('inks the writing light on a dark page', () => {

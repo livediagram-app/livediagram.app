@@ -115,6 +115,36 @@ function setOf(b: ArticleBlock, para: number, rules: 'none' | 'title' | 'heading
 
 const runsText = (runs: readonly ArticleRun[]) => runs.map((r) => r.text).join('');
 
+// A stretch of a line in one style, and the estimated advance of text in it.
+type Style = { b: boolean; i: boolean };
+type Segment = Style & { text: string };
+const advanceOf = (text: string, px: number, bold: boolean) =>
+  text.length * px * CHAR_EM * (bold ? BOLD_EM : 1);
+
+// Each character's style, from the runs it is in (a block set bold, a heading, bolds every character).
+function charStyles(runs: readonly ArticleRun[], bold: boolean, italic: boolean): Style[] {
+  return runs.flatMap((r) => Array.from(r.text, () => ({ b: bold || !!r.b, i: italic || !!r.i })));
+}
+
+// A wrapped line cut where its style changes, found in the block's text from `from`; the end it reached.
+function segmentsOf(
+  text: string,
+  styles: readonly Style[],
+  line: string,
+  from: number,
+): { segments: Segment[]; end: number } {
+  const at = line ? text.indexOf(line, from) : from;
+  const start = at < 0 ? from : at;
+  const segments: Segment[] = [];
+  for (let k = 0; k < line.length; k++) {
+    const s = styles[start + k] ?? { b: false, i: false };
+    const last = segments[segments.length - 1];
+    if (last && last.b === s.b && last.i === s.i) last.text += line[k];
+    else segments.push({ ...s, text: line[k]! });
+  }
+  return { segments, end: start + line.length };
+}
+
 // The lines a text breaks into at `width` px, words kept whole unless one alone is wider.
 export function wrapEstimated(text: string, width: number, px: number, bold: boolean): string[] {
   const advance = px * CHAR_EM * (bold ? BOLD_EM : 1);
@@ -275,13 +305,20 @@ export function estimateArticle(
     const px = size * set.scale;
     const lh = px * (set.leading ?? leading);
     const text = b.type === 'code' ? b.text : runsText(b.runs);
+    // Wrapped as bold when every word of it is (a bold line runs wider).
     const bold =
       set.weight !== '400' || (b.type !== 'code' && b.runs.length > 0 && b.runs.every((r) => r.b));
     const lines = wrapEstimated(text, width - set.indent * (b.type === 'code' ? 2 : 1), px, bold);
+    const styles =
+      b.type === 'code'
+        ? Array.from(text, () => ({ b: false, i: false }))
+        : charStyles(b.runs, set.weight !== '400', !!set.italic);
+    let cursor = 0;
     const color =
       set.heading && style.accentHeadings ? ink.accent : set.muted ? ink.muted : ink.text;
     const align = b.type === 'paragraph' || b.type === 'list' ? (b.align ?? 'left') : 'left';
-    const anchor = align === 'center' ? 'middle' : align === 'right' ? 'end' : 'start';
+    const anchor: 'start' | 'middle' | 'end' =
+      align === 'center' ? 'middle' : align === 'right' ? 'end' : 'start';
     // From the page's left edge, so a line that breaks onto the next page lands on it.
     const dx = margin + (align === 'center' ? width / 2 : align === 'right' ? width : set.indent);
     if (b.type === 'code' && room(lines.length * lh + 20))
@@ -324,18 +361,27 @@ export function estimateArticle(
             anchor: 'end',
           });
       }
-      push({
-        k: 'text',
-        x,
-        y: baseline,
-        text: t,
-        family: b.type === 'code' ? MONO : set.heading ? headingFace : body,
-        size: px,
-        weight: bold && set.weight === '400' ? '700' : set.weight,
-        style: set.italic ? 'italic' : 'normal',
-        color: b.type === 'paragraph' && b.style === 'quote' ? ink.text : color,
-        anchor,
-      });
+      // The line in its runs' styles, each stretch where the ones before it end (a centred or right-aligned line
+      // set from where its estimated width puts its start).
+      const cut = segmentsOf(text, styles, t, cursor);
+      cursor = cut.end;
+      const lineWidth = cut.segments.reduce((w, sg) => w + advanceOf(sg.text, px, sg.b), 0);
+      let sx = anchor === 'middle' ? x - lineWidth / 2 : anchor === 'end' ? x - lineWidth : x;
+      for (const sg of cut.segments) {
+        push({
+          k: 'text',
+          x: sx,
+          y: baseline,
+          text: sg.text,
+          family: b.type === 'code' ? MONO : set.heading ? headingFace : body,
+          size: px,
+          weight: sg.b ? (set.weight === '400' ? '700' : set.weight) : '400',
+          style: sg.i ? 'italic' : 'normal',
+          color: b.type === 'paragraph' && b.style === 'quote' ? ink.text : color,
+          anchor: 'start',
+        });
+        sx += advanceOf(sg.text, px, sg.b);
+      }
       y += lh;
     });
     const end = page().rect.x + margin;
