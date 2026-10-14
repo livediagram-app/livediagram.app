@@ -176,7 +176,10 @@ legend dropped beside a chart already match it: first row, first slice. A row
 added from the menu is created with no colour for the same reason, so it picks up
 the next colour rather than leaving a blank swatch to go and fill in. Setting a
 legend's own `chartPalette` re-colours every uncoloured row, so a legend and a
-chart set to the same palette stay in step.
+chart set to the same palette stay in step. It is set from the **Palette** tiles at
+the foot of the Legend section (the same eight as a chart's Presets, with a reset
+back to the theme's ramp); the legend's Presets grid keeps the card looks, which
+colour the card itself.
 
 The **Legend** section also carries **Text Size** (the same slider, without Scale), on
 the same `legendFontPx` scale as a chart's key, so a Legend beside a chart can
