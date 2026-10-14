@@ -4,11 +4,9 @@
 // model can write by hand, so the stroke's box is taken from its points and the points are packed by the
 // shared codec, through the stored-tab migration every entry point runs.
 
-import { MAX_FREEHAND_POINTS, migrateIncomingElements } from '@livediagram/document';
+import { isRecord, MAX_FREEHAND_POINTS, migrateIncomingElements } from '@livediagram/document';
 
 type Rec = Record<string, unknown>;
-
-const isRec = (v: unknown): v is Rec => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 const isPoint = (p: unknown): p is [number, number] =>
   Array.isArray(p) &&
@@ -34,7 +32,9 @@ function packed(el: Rec, where: string): Rec | string {
   const y = Math.min(...ys);
   const width = Math.max(...xs) - x;
   const height = Math.max(...ys) - y;
-  const { points: _given, ...rest } = el;
+  // The given points are the stroke: a packed form echoed from a read (packedPoints) is left behind, or the migration
+  // would keep it and stretch the old drawing into the new points' box.
+  const { points: _given, packedPoints: _old, ...rest } = el;
   const [stored] = migrateIncomingElements([
     {
       closed: false,
@@ -59,7 +59,7 @@ export function packFreehandPoints(
 ): { elements: unknown[] } | { error: string } {
   const out: unknown[] = [];
   for (const [i, el] of elements.entries()) {
-    if (!isRec(el) || el.type !== 'freehand' || el.points === undefined) {
+    if (!isRecord(el) || el.type !== 'freehand' || el.points === undefined) {
       out.push(el);
       continue;
     }
