@@ -254,3 +254,63 @@ describe('layoutGraph edge ids', () => {
     expect(tree.filter((el) => el.type === 'arrow').map((el) => el.id)).toEqual(['tree-edge']);
   });
 });
+
+describe('graphShapeError', () => {
+  const nodes = [
+    { id: 'a', label: 'A' },
+    { id: 'b', label: 'B' },
+  ];
+  it('refuses a group nested in another, naming both', () => {
+    const r = resolveGraphInput({
+      graph: {
+        nodes,
+        edges: [],
+        groups: [
+          { id: 'vpc', label: 'VPC', members: ['subnet'] },
+          { id: 'subnet', label: 'Subnet', members: ['a'] },
+        ],
+      },
+    });
+    expect(r.error).toBe(
+      'group "vpc" lists group "subnet" as a member: groups do not nest; list nodes, one group each',
+    );
+  });
+
+  it('refuses a lanes graph with a node in no lane, and passes one with every node laned', () => {
+    const many = Array.from({ length: 7 }, (_, i) => ({ id: `n${i}`, label: `N${i}` }));
+    const loose = resolveGraphInput({
+      graph: {
+        style: 'lanes',
+        nodes: many,
+        edges: [],
+        groups: [{ id: 'l', label: 'L', members: [] }],
+      },
+    });
+    expect(loose.error).toBe(
+      'a lanes graph puts every node in a lane: "n0", "n1", "n2", "n3", "n4" and 2 more in no group',
+    );
+    const one = resolveGraphInput({
+      graph: {
+        style: 'lanes',
+        nodes,
+        edges: [],
+        groups: [{ id: 'l', label: 'L', members: ['a'] }],
+      },
+    });
+    expect(one.error).toBe('a lanes graph puts every node in a lane: "b" in no group');
+    const laned = resolveGraphInput({
+      graph: {
+        style: 'lanes',
+        nodes: [
+          { id: 'a', label: 'A', group: 'l' },
+          { id: 'b', label: 'B', group: 'l' },
+        ],
+        edges: [],
+      },
+    });
+    expect(laned.error).toBeUndefined();
+    expect(resolveGraphInput({ graph: { style: 'lanes', nodes, edges: [] } }).error).toMatch(
+      /in no group$/,
+    );
+  });
+});

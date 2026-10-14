@@ -385,6 +385,24 @@ export function sequenceFromGraph(input: GraphInput): SequenceDiagram {
 // A tool's graph-shaped input, from whichever of `graph` / `mermaid` it gave:
 // the graph, nothing (the call used elements or a template), or an error that
 // names what Mermaid supports.
+// What a graph asks that it cannot be drawn as, said rather than dropped: a group listed as another's member (groups
+// do not nest, and the member was silently left out), and a node in no lane on a lanes graph (it went to an
+// unlabelled lane of its own).
+export function graphShapeError(graph: GraphInput): string | undefined {
+  const groupIds = new Set((graph.groups ?? []).map((g) => g.id));
+  for (const g of graph.groups ?? []) {
+    const nested = (g.members ?? []).find((m) => groupIds.has(m));
+    if (nested)
+      return `group "${g.id}" lists group "${nested}" as a member: groups do not nest; list nodes, one group each`;
+  }
+  if (graph.style !== 'lanes') return undefined;
+  const laned = new Set((withNodeGroups(graph) ?? []).flatMap((g) => g.members));
+  const loose = graph.nodes.filter((n) => !laned.has(n.id)).map((n) => `"${n.id}"`);
+  return loose.length
+    ? `a lanes graph puts every node in a lane: ${loose.slice(0, 5).join(', ')}${loose.length > 5 ? ` and ${loose.length - 5} more` : ''} in no group`
+    : undefined;
+}
+
 export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }): {
   graph?: GraphInput;
   error?: string;
@@ -392,7 +410,8 @@ export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }
   if (args.graph) {
     // The MCP schema caps these too; this holds for every caller (graph-limits.ts).
     const tooLarge = graphTooLargeError(args.graph.nodes.length, args.graph.edges.length);
-    return tooLarge ? { error: tooLarge } : { graph: args.graph };
+    const shape = tooLarge ?? graphShapeError(args.graph);
+    return shape ? { error: shape } : { graph: args.graph };
   }
   if (args.mermaid === undefined) return {};
   const parsed = graphFromMermaid(args.mermaid);
