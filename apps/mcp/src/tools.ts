@@ -62,6 +62,7 @@ import {
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue, graphIconIssue } from './element-values';
+import { packFreehandPoints } from './freehand-points';
 import { searchIcons } from '@livediagram/icons/search';
 import { imageResult } from './image-result';
 import {
@@ -70,6 +71,7 @@ import {
   editsBase,
   isChangesetRefusal,
   mcpOpsToEditOperations,
+  mcpResultText,
   replaceBodyFrom,
   submitChangeset,
 } from './changeset-client';
@@ -188,9 +190,11 @@ export function registerTools(server: McpServer, env: Env): void {
         tabs.push(buildGraphTab(tabId, t.name, input.graph, args.theme));
         continue;
       }
-      const valueIssue = elementsIssue(t.elements ?? []);
+      const drawn = packFreehandPoints(t.elements ?? []);
+      if ('error' in drawn) return errorResult(`Tab "${t.name}": ${drawn.error}`);
+      const valueIssue = elementsIssue(drawn.elements);
       if (valueIssue) return errorResult(`Tab "${t.name}": ${valueIssue}`);
-      const ended = resolveArrowEnds(t.elements ?? [], idsOf(t.elements ?? []));
+      const ended = resolveArrowEnds(drawn.elements, idsOf(drawn.elements));
       if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
       const candidate: unknown = {
         id: tabId,
@@ -284,9 +288,12 @@ export function registerTools(server: McpServer, env: Env): void {
           'from list_templates. Check the livediagram://schema/elements resource.',
       );
     }
-    const valueIssue = args.elements ? elementsIssue(args.elements) : null;
+    const drawn = args.elements ? packFreehandPoints(args.elements) : null;
+    if (drawn && 'error' in drawn) return errorResult(drawn.error);
+    const given = drawn?.elements;
+    const valueIssue = given ? elementsIssue(given) : null;
     if (valueIssue) return errorResult(valueIssue);
-    const ended = args.elements ? resolveArrowEnds(args.elements, idsOf(args.elements)) : null;
+    const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
     if (ended && 'error' in ended) return errorResult(ended.error);
     // Default the new tab's theme to the document's existing one so it matches the other tabs
     // rather than landing as a clashing brand-white tab; the model can still pass a theme.
@@ -335,7 +342,7 @@ export function registerTools(server: McpServer, env: Env): void {
         url: deepLink(env, args.documentId),
         changesetId: answer.changeset?.id ?? null,
         rev: tab.rev,
-        text: answer.text,
+        text: mcpResultText(answer.text),
         lint: lintLineOf(answer.lint),
         ...templateNote(args.template),
       },
@@ -368,10 +375,13 @@ export function registerTools(server: McpServer, env: Env): void {
       } else if (!input.graph && !args.elements) {
         return errorResult('replace mode requires "graph", "mermaid", "elements" or "dashboard".');
       } else {
-        const valueIssue = args.elements ? elementsIssue(args.elements) : null;
+        const drawn = args.elements ? packFreehandPoints(args.elements) : null;
+        if (drawn && 'error' in drawn) return errorResult(drawn.error);
+        const given = drawn?.elements;
+        const valueIssue = given ? elementsIssue(given) : null;
         if (valueIssue) return errorResult(valueIssue);
         // The new elements are the whole tab, so an arrow end may name only them.
-        const ended = args.elements ? resolveArrowEnds(args.elements, idsOf(args.elements)) : null;
+        const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
         if (ended && 'error' in ended) return errorResult(ended.error);
         body = {
           replace: replaceBodyFrom({
@@ -411,7 +421,7 @@ export function registerTools(server: McpServer, env: Env): void {
         url: deepLink(env, args.documentId),
         changesetId: answer.changeset?.id ?? null,
         rev: next.rev,
-        text: answer.text,
+        text: mcpResultText(answer.text),
         lint: lintLineOf(answer.lint),
       },
       next,

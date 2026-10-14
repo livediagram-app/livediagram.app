@@ -98,4 +98,16 @@ describe('colour-on-themed', () => {
       of(lint(themed('ocean', node('r', 0), node('k', 300), link)), 'colour-on-themed'),
     ).toEqual([]);
   });
+
+  it('passes a fill locked against the theme, still reporting its stroke', () => {
+    const locked = box('a', 0, 0, {
+      fillColor: '#123456',
+      strokeColor: '#654321',
+      themeLockFill: true,
+    });
+    const found = of(lint({ ...tabOf(locked), theme: 'ocean' }), 'colour-on-themed');
+    expect(found.map((f) => f.message)).toEqual([
+      expect.stringMatching(/sets its stroke on a themed tab$/),
+    ]);
+  });
 });

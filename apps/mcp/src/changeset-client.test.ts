@@ -12,6 +12,7 @@ import {
   changesetErrorText,
   editsBase,
   mcpOpsToEditOperations,
+  mcpResultText,
   replaceBodyFrom,
 } from './changeset-client';
 import { connectTestClient } from './mcp-test-client';
@@ -42,6 +43,41 @@ describe('mcpOpsToEditOperations', () => {
     name: 'T',
     elements: [box('4aeb12f0-aaaa'), box('9c11aa00-bbbb')],
   };
+
+  it('packs a stroke’s new points with its new box, and refuses points it cannot draw', () => {
+    const stroke = {
+      id: 'ring',
+      type: 'freehand',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      closed: true,
+      packedPoints: 'AQA=',
+    } as unknown as Element;
+    const tab: Tab = { id: 't3', name: 'T', elements: [stroke] };
+    const points = [
+      [100, 50],
+      [140, 90],
+      [100, 130],
+    ];
+    const ops = mcpOpsToEditOperations(
+      [{ op: 'update', elementId: 'ring', element: { points, penColour: 'red' } }],
+      tab,
+    ) as { fields: Record<string, unknown> }[];
+    expect(ops[0]!.fields).toMatchObject({
+      x: 100,
+      y: 50,
+      width: 40,
+      height: 80,
+      penColour: 'red',
+    });
+    expect(ops[0]!.fields.points).toBeUndefined();
+    expect(ops[0]!.fields.packedPoints).not.toBe('AQA=');
+    expect(
+      mcpOpsToEditOperations([{ op: 'update', elementId: 'ring', element: { points: [] } }], tab),
+    ).toMatch(/^ops\[1\]: element 1: "points" takes 1 to/);
+  });
 
   it('pins an added arrow by the refs read_document prints, and to an element added in the same call', () => {
     const ops = mcpOpsToEditOperations(
@@ -298,5 +334,18 @@ describe('the tools on changesets', () => {
     expect(JSON.stringify(result.content)).toContain('held by Bea');
     const events = sent.filter((s) => s.path === '/events').map((s) => JSON.stringify(s.body));
     expect(events.some((e) => e.includes('"Error"'))).toBe(false);
+  });
+});
+
+describe('mcpResultText', () => {
+  it('leaves off the CLI revert line no MCP tool runs, keeping the rest', () => {
+    expect(
+      mcpResultText(
+        '+ a\nrev 1→2 · cs_1 · lint clean · revert: livediagram changeset revert doc_1 cs_1',
+      ),
+    ).toBe('+ a\nrev 1→2 · cs_1 · lint clean');
+    expect(mcpResultText('dry run · rev 4 · lint clean · nothing written')).toBe(
+      'dry run · rev 4 · lint clean · nothing written',
+    );
   });
 });

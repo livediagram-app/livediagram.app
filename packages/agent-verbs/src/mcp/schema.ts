@@ -20,6 +20,9 @@ import {
 import {
   ANCHORS,
   ELEMENT_FIELD_VALUES,
+  GREY_PEN_COLOUR,
+  INK_PEN_COLOUR,
+  PEN_COLOUR_NAMES,
   FINISHES,
   type Finish,
   CODE_LANGUAGES,
@@ -101,7 +104,14 @@ const STYLE_FIELDS =
   'tinted, solid, bold, ghost, paper, muted, slate, inked, hairline, outline, dotted, dash-dot, frame, info, ' +
   'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; "note" (detail ' +
   'shown on the element); on an arrow "label", "strokeStyle", "arrowEnds", "arrowheadShape". A field a type ' +
-  'does not have, or a value off its list, is refused naming what it takes. ';
+  'does not have, or a value off its list, is refused naming what it takes. ' +
+  'Facilitation kinds and what they hold: "session-button" a "session" ({"tool": "timer" with "minutes", ' +
+  '"stopwatch", "vote" with "dots", or "poll" with "question" and "options"}), drawn as what pressing it does ' +
+  'unless it has a label; "agenda" its "agendaItems" ([{"label", "minutes"}]); "checklist" its "checklistItems" ' +
+  '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout its "pageTitle" over its "label" ' +
+  '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). The entries of a "qa-board", ' +
+  '"idea-box" and "temperature" are the people\u2019s, never an edit\u2019s: starter questions or ideas go on ' +
+  'stickies beside them. ';
 
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).
@@ -114,7 +124,16 @@ const ELEMENT_SCHEMA_HINT =
   `${shapeKinds}. The default box is "square" (there is NO "rectangle"); use ` +
   '"diamond" for a decision, "cylinder" for a datastore, "stadium" for start/end. ' +
   'type "text" is BARE text with no box; use it only for a title, caption, or ' +
-  'legend, never for a node. type "arrow" needs "from" and "to" endpoints, each ' +
+  'legend, never for a node; it is centred in its box, so a left-aligned heading or caption sets ' +
+  '"textAlignX": "left". type "freehand" is a HAND-DRAWN stroke: give "points" as canvas ' +
+  'coordinates, [[x, y], ...] in drawing order (the box is taken from them), with "closed" true to ' +
+  'close and fill the shape, and "penColour" (' +
+  `${[INK_PEN_COLOUR, GREY_PEN_COLOUR, ...PEN_COLOUR_NAMES].join(', ')}` +
+  '). A hand-drawn board starts from the "whiteboard" template, a tab in Draw mode: underline a ' +
+  'heading, ring a word or draw a doodle with a few strokes, a point every 10 to 20 px along a ' +
+  'curve; an arrow between boxes stays a pinned "arrow", which a "sketch" finish draws by hand and ' +
+  'which stays attached. Any box may carry "rotation" in degrees, a small tilt (-4 to 4) reading as ' +
+  'placed by hand. type "arrow" needs "from" and "to" endpoints, each ' +
   'either { "kind": "pinned", "elementId", "anchor" } (anchors: ' +
   `${anchors}; preferred, so arrows track their shapes) or ` +
   '{ "kind": "free", "x", "y" }; an arrow may carry a "label". ' +

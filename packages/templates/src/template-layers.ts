@@ -41,6 +41,8 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     case 'mad-sad-glad':
     case 'four-ls':
     case 'sailboat':
+    case 'brainstorm':
+    case 'workshop-board':
       return layered('Board', 'Stickies');
     case 'incident-postmortem':
       return layered('Report', 'Findings');

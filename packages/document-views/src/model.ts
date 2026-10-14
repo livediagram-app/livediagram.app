@@ -63,6 +63,8 @@ function headerFacts(
     unknown: printed.filter((el) => !isKnownElement(el)).length,
     threads: threadCounts(printed),
     rev: rev ?? null,
+    ...(opensInOf(tab) !== 'diagram' ? { mode: opensInOf(tab) } : {}),
+    ...(tab.finish ? { finish: tab.finish } : {}),
     ...illustrateFacts(tab),
   };
 }

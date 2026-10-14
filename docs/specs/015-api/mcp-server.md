@@ -597,6 +597,25 @@ heads, border style and radius) with its values, bold and italic, `colorPreset` 
 `iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
 an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
 
+**Facilitation kinds.** The format also names what the session kinds hold: a `session-button`'s `session` (a timer
+with `minutes`, a stopwatch, a vote with `dots`, a poll with `question` and `options`), an agenda's `agendaItems`,
+a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
+`pageTitle` and `pageSubtitle`, and a sticker's `stickerId`. A bare `text` is centred in its box unless it sets
+`textAlignX`. The entries of a Q&A board, an idea box and a temperature check are the people's, never an edit's,
+so starter questions go on stickies beside them. An agenda written with segments grows to draw every one
+([Agenda](../012-collaboration/agenda.md) "The face").
+
+**Hand-drawn strokes.** A `freehand` element is written with `points` as canvas coordinates, `[[x, y], ...]` in
+drawing order, `closed` to close and fill it, and a `penColour` (ink, grey or a hued pen). The stored form is a box
+with the points packed inside it ([Stroke points](../006-document/stroke-points.md)), which no model can write, so
+the MCP takes the box from the points and packs them through the stored-tab migration, before the element is
+checked, on every element path (`freehand-points.ts`), and an ops update giving a stroke new `points` sets its new box and block together, where a bare `points` field would have emptied the stroke. Points it cannot draw (none, more than
+`MAX_FREEHAND_POINTS`, or not number pairs) are refused naming the element. The format says a hand-drawn board
+starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
+
+**No CLI hints.** An edit's result text is the api's, less its footer's revert line: that line names the
+`livediagram changeset revert` command, which no MCP tool runs.
+
 ### 4.8 `share_document`
 
 Create a shareable link so anyone with the URL can open a document without

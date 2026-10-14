@@ -45,6 +45,9 @@ export function headerSegments(facts: HeaderFacts): string {
     `${plural(facts.elements, 'element', 'elements')}${shown.length ? `: ${shown.join(', ')}` : ''}`,
   ];
   if (facts.tab.kind !== 'diagram') segments.push(`kind=${facts.tab.kind}`);
+  // An Illustrate tab says so in its pages segment.
+  if (facts.mode && !facts.illustrate) segments.push(`mode=${facts.mode}`);
+  if (facts.finish) segments.push(`finish=${facts.finish}`);
   if (facts.illustrate) {
     const { pages, kinds } = facts.illustrate;
     const byKind = Object.entries(kinds).map(([kind, n]) => `${n} ${kind}`);

@@ -780,3 +780,5 @@ export * from './dashboard-cards';
 export * from './dashboard-card-style';
 export * from './tab-names';
 export { planBoardFitHeight } from './svg-render-plan';
+export { agendaFitHeight } from './svg-render-agenda';
+export * from './session-button-text';

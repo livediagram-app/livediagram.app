@@ -7,6 +7,7 @@ import { autoLayoutElements, isLayoutCandidate, nodesLookUnplaced } from './auto
 import { eventStormingLayers, isEventStormingNote, isEventStormingTab } from './event-storming';
 import { landArrivals } from './event-storming-lane-landing';
 import { layoutGraph, type GraphInput } from './graph-input';
+import { agendaFitHeight } from './svg-render-agenda';
 import { recolourElementsForTheme } from './theme-graph';
 import { getBuiltInTheme } from './themes';
 import { coerceShapeKind } from './validate';
@@ -40,9 +41,12 @@ export function buildTab(
   const theme = getBuiltInTheme(themeId);
   // Coerce off-vocabulary shape kinds (e.g. a model emitting "rectangle", which
   // isn't a kind — the box is "square") so every node actually renders a box.
-  const coerced = elements.map((el) =>
-    el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
-  );
+  // An agenda grows to draw every segment it is given (docs/specs/012-collaboration/agenda.md "The face").
+  const coerced = elements.map((el) => {
+    if (el.type !== 'shape') return el;
+    const shape = coerceShapeKind(el.shape);
+    return shape === 'agenda' ? { ...el, shape, height: agendaFitHeight(el) } : { ...el, shape };
+  });
   const laidOut = applyLayout(layout, coerced);
   return {
     id: tabId,
