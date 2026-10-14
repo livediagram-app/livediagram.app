@@ -11,6 +11,7 @@ export const POWER_USER_PRESET = {
   planTourSeen: { planTourSeen: true },
   facilitateTourSeen: { facilitateTourSeen: true },
   drawTourSeen: { drawTourSeen: true },
+  avatarTourSeen: { avatarTourSeen: true },
   illustrateTourSeen: { illustrateTourSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },

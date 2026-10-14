@@ -2,6 +2,7 @@ import type { AgentPresence } from './agent-presence';
 import type { ArticleOp, ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
+import type { AvatarSayOp } from './avatar-say';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
@@ -85,6 +86,9 @@ export const PRESENCE_OP_KINDS = [
   // A shove (docs/specs/008-canvas/avatar-mode.md) moves nothing on the server and nothing in the
   // document — it asks one peer to step aside. Same trust level as `avatar`.
   'avatar-push',
+  // A character saying something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): a message that floats
+  // away in seconds, so nothing to order, log or replay. The room relays it from an Editor or a Participant only.
+  'avatar-say',
   // A reaction burst (docs/specs/009-elements/reaction-pad.md) is pure theatre: nothing on the server,
   // nothing in the document, and nothing worth replaying to somebody who
   // arrives after it finished.
@@ -553,6 +557,9 @@ export type RoomOp =
   // its owner's machine, so a push is a request, never a remote write, and a
   // peer who has left the mode simply ignores it.
   | { kind: 'avatar-push'; tabId: string; targetId: string; dx: number; dy: number }
+  // A character SAYS something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): `id` names the bubble,
+  // `x, y` the canvas point above the speaker's head it rises from. Parsed by `parseAvatarSay` at both ends.
+  | AvatarSayOp
   // Somebody set off a REACTION PAD (docs/specs/009-elements/reaction-pad.md). Ephemeral exactly like cursor
   // / laser / avatar: never logged, never ordered, never replayed to a
   // reconnecting client — a burst you missed is a burst that is over.

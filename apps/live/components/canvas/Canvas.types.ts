@@ -213,11 +213,6 @@ export type CanvasProps = {
   // palette (any tile pick) and to a palette drag-drop, both of which are
   // edits the read-only mode would otherwise swallow.
   onExitAvatarMode?: () => void;
-  // Avatar Panel placement (docs/specs/008-canvas/avatar-mode.md + docs/specs/007-editor/panel-docking.md). Position is null until the
-  // user drags it; the panel itself only exists while the mode is active.
-  avatarPanelPosition?: { x: number; y: number } | null;
-  onMoveAvatarPanel?: (x: number, y: number) => void;
-  onResetAvatarPanel?: () => void;
   // The laser pen (docs/specs/008-canvas/spotlight-panel.md). Owned in editor state, not here: the broadcaster
   // stamps it onto every sample and the trail rows carry it, both of which sit
   // above Canvas — so Canvas forwards it to the panel rather than owning it.
@@ -283,6 +278,9 @@ export type CanvasProps = {
   // Shove a peer's character (docs/specs/008-canvas/avatar-mode.md): sent when our character finishes
   // walking up to the one we clicked. Optional — no room, no push.
   onAvatarPush?: (targetId: string, dx: number, dy: number) => void;
+  // Say something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): sends one message to the room.
+  // Optional: with no room the bubble is still drawn for you.
+  onAvatarSay?: (say: { id: string; text: string; x: number; y: number }) => void;
   // A shove somebody sent US, as a direction plus a sequence number so the same
   // push isn't replayed on every render. Null until someone pushes.
   avatarShove?: { dx: number; dy: number; seq: number } | null;
