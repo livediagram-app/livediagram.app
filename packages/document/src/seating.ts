@@ -61,14 +61,7 @@ export function facingSwapsBox(from: ChairFacing, to: ChairFacing): boolean {
 //   floor:  a room's floor, in the element's fill, unstroked (docs/specs/009-elements/office.md)
 // A panel or face may carry its own `fill`: what keeps its colour whatever the theme (a leaf, water, coffee).
 export type FurniturePartRole =
-  | 'shadow'
-  | 'panel'
-  | 'face'
-  | 'line'
-  | 'rail'
-  | 'screen'
-  | 'glint'
-  | 'floor';
+  'shadow' | 'panel' | 'face' | 'line' | 'rail' | 'screen' | 'glint' | 'floor';
 
 export type FurniturePart = (
   | { tag: 'rect'; role: FurniturePartRole; x: number; y: number; w: number; h: number; rx: number }
