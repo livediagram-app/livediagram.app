@@ -132,7 +132,7 @@ export function AvatarWalker({
           // Your own character has no name chip: its status sits alone where the chip would be.
           <div
             className="absolute left-1/2 -translate-x-1/2"
-            style={{ top: box.offsetY - AVATAR_HEIGHT * scale - 12 }}
+            style={{ top: box.offsetY - AVATAR_HEIGHT * scale - 22 }}
             aria-label={avatarStatusLabel(status)}
           >
             <StatusDot status={status} />

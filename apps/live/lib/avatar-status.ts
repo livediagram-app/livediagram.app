@@ -14,7 +14,9 @@ const BY_ID = new Map(AVATAR_STATUSES.map((s) => [s.id, s]));
 
 /** A status from the wire, or null for anything this build does not know. */
 export function parseAvatarStatus(value: unknown): AvatarStatus | null {
-  return typeof value === 'string' && BY_ID.has(value as AvatarStatus) ? (value as AvatarStatus) : null;
+  return typeof value === 'string' && BY_ID.has(value as AvatarStatus)
+    ? (value as AvatarStatus)
+    : null;
 }
 
 export function avatarStatusLabel(status: AvatarStatus): string {
