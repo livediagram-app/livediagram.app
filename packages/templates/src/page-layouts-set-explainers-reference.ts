@@ -95,7 +95,7 @@ function cheatSheet(k: Kit): Element[] {
   });
   if (tipH) {
     els.push(
-      k.shape('callout', 0, bottom - tipH, W, tipH, {
+      k.callout(0, bottom - tipH, W, tipH, {
         pageTitle: 'Pro tip',
         label: 'Hold Ctrl and click to pick cells that are not next to each other.',
         textSize: 'md',

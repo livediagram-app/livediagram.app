@@ -8,6 +8,8 @@ import {
   keptAnimation,
   type BoxedElement,
   type ShapeAnimation,
+  STEP_SEQUENCE_BEAT_S,
+  stepOrdinal,
 } from '@livediagram/document';
 import { drawsShapeSvgOverlay } from '@/components/canvas/ShapeContentRouter';
 import { bodySetClass } from '@/lib/animation-classes';
@@ -50,6 +52,14 @@ export function wrapperShapeAnimation(element: BoxedElement): ShapeAnimation | u
     return value as ShapeAnimation;
   }
   return keptAnimation(set, value);
+}
+
+function stepSequenceDelay(element: BoxedElement): React.CSSProperties {
+  if (element.type !== 'shape' || element.shape !== 'step' || !element.stepSequence) return {};
+  const n = stepOrdinal(element);
+  if (n === null || n <= 1) return {};
+  const speed = ANIMATION_SPEED_FACTOR[element.animationSpeed ?? DEFAULT_ANIMATION_SPEED];
+  return { animationDelay: `${((n - 1) * STEP_SEQUENCE_BEAT_S * speed).toFixed(2)}s` };
 }
 
 export function useBoxedElementAnimation(element: BoxedElement, textColor: string) {
@@ -201,6 +211,9 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
         // toward the accent (the box version blends the fill, which a
         // text element doesn't have); see .lvd-anim-text-gradient.
         ...(isTextNativeAnim && animation === 'gradient' ? { '--lvd-anim-text': textColor } : {}),
+        // Play in Order (docs/specs/009-elements/step-number.md "Animation"): step n starts n - 1 beats after
+        // step 1, the beat scaled like the animation's own duration, so a pulse walks the numbers in turn.
+        ...stepSequenceDelay(element),
       } as React.CSSProperties)
     : {};
 

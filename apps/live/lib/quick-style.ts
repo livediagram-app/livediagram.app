@@ -4,7 +4,7 @@
 import {
   ARROW_THICKNESS_PX,
   DEFAULT_ANIMATION_SPEED,
-  acceptsInlineIcon,
+  positionsInlineIcon,
   arrowThicknessOf,
   canvasSurface,
   defaultArrowStrokeColor,
@@ -123,7 +123,8 @@ export function supportsQuickSection(el: QuickStyleTarget, section: QuickSection
       // Only once the shape has words to align: an empty label has nothing to move.
       return el.type === 'shape' && supportsTextAlign(el.shape) && !!el.label?.trim();
     case 'iconAlign':
-      return el.type === 'shape' && acceptsInlineIcon(el) && !!el.iconId;
+      // Not on a card, callout, header or boundary: they place their icon themselves.
+      return el.type === 'shape' && positionsInlineIcon(el) && !!el.iconId;
   }
 }
 

@@ -183,19 +183,29 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
     col: number,
     tier: number,
     extra: Partial<Node> = {},
-  ): Node => ({
-    ...createShape('square', colX(col) - nodeW / 2, laneMid(tier) - nodeH / 2),
-    width: nodeW,
-    height: nodeH,
-    label,
-    iconId,
-    iconPosition: 'left',
-    textSize: 'sm',
-    fillColor: '#ffffff',
-    strokeColor: TIERS[tier]!.node,
-    textColor: INK,
-    ...extra,
-  });
+  ): Node => {
+    // Each node is a Card (docs/specs/009-elements/card.md): its glyph in a tile, its name as the title, and an
+    // accent edge in its tier's hue, so where a part runs reads before its name does.
+    const {
+      pageSubtitle: _meta,
+      tags: _tags,
+      ...base
+    } = createShape('card', colX(col) - nodeW / 2, laneMid(tier) - nodeH / 2) as Node;
+    return {
+      ...base,
+      width: nodeW,
+      height: nodeH,
+      cardMedia: 'tile',
+      iconId,
+      pageTitle: label,
+      label: '',
+      fillColor: '#ffffff',
+      strokeColor: TIERS[tier]!.node,
+      textColor: INK,
+      accentEdge: 'left',
+      ...extra,
+    };
+  };
   const store = (label: string, col: number): Node => ({
     ...createShape('cylinder', colX(col) - nodeW / 2, laneMid(3) - nodeH / 2 - 6),
     width: nodeW,
@@ -214,6 +224,8 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
   const cdn = node('CDN', 'globe', 0, 1);
   // Every request enters here, so it is the one filled node.
   const gateway = node('API gateway', 'shield', 1, 1, {
+    // A badge disc keeps its glyph white on the filled card.
+    cardMedia: 'badge',
     fillColor: '#0284c7',
     strokeColor: '#075985',
     textColor: '#ffffff',

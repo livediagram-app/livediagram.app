@@ -15,6 +15,7 @@ import {
   type AnimationSetId,
   type Element,
   type ShapeElement,
+  CONTAINER_ANIMATIONS,
 } from '@livediagram/document';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
@@ -209,6 +210,12 @@ function CategoryBody({
   return (
     <AnimationSetTiles
       set={set}
+      // A boundary is offered only the motions that leave it in place (docs/specs/009-elements/boundary.md).
+      values={
+        set === 'shape' && elements.some((el) => el.type === 'shape' && el.shape === 'boundary')
+          ? CONTAINER_ANIMATIONS
+          : undefined
+      }
       current={state.value}
       legacy={state.legacy}
       speed={state.speed ?? DEFAULT_ANIMATION_SPEED}

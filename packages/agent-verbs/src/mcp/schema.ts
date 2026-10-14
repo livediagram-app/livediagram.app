@@ -19,6 +19,8 @@ import {
 } from '@livediagram/api-schema';
 import {
   ANCHORS,
+  BADGE_LABEL_MAX,
+  CARD_TAGS_MAX,
   ELEMENT_FIELD_VALUES,
   GREY_PEN_COLOUR,
   INK_PEN_COLOUR,
@@ -40,6 +42,7 @@ import {
   SANKEY_UNIT_MAX,
   SANKEY_VALUE_LABELS,
   SHAPE_KINDS,
+  STEP_LABEL_MAX,
   STICKY_PRESETS,
   THEMES,
   truncateName,
@@ -91,7 +94,23 @@ const CONTENT_KINDS =
   '"sankeyLeftover" (show, the default: a middle node that sends on less than it receives draws ' +
   'the difference to a "Leftover" end node; hide: it does not), "sankeyLeftoverName" (that ' +
   "node's name; do not write leftover flows yourself). Make it " +
-  'wide (about 2:1); it draws no title.';
+  'wide (about 2:1); it draws no title. ' +
+  // The diagram-building kinds (docs/specs/015-api/mcp-server.md §4.7a).
+  'shape "card": a node with a title, meta line and body; "pageTitle" is the title, "pageSubtitle" ' +
+  'the meta (a product or runtime), "label" the body, "cardMedia" + "iconId" the glyph (a badge disc, a ' +
+  `tile or an initial), "cardHeader" true for a coloured header band, "tags" up to ${CARD_TAGS_MAX} short ` +
+  'facts. Use cards for service and component nodes. "callout" is accepted and stored as a card. ' +
+  '"accentEdge" on a square, stadium or card draws a coloured strip on that side. ' +
+  `shape "badge": a small label pill (up to ${BADGE_LABEL_MAX} chars); shape "step": a numbered disc ` +
+  `("label" the number, up to ${STEP_LABEL_MAX} chars). Both take "chipLook"; with "attachedTo" (a node id) ` +
+  'and "attachAt" they sit on that point of the node and move, copy and delete with it; no x / y needed. ' +
+  'shape "boundary": a titled container ("label" the title, "pageSubtitle" a meta line such as a CIDR, ' +
+  '"iconId" in its tab); elements whose centre is inside it belong to it; nest them for edge, region, ' +
+  'VPC and subnet, "boundaryStyle" inset for a nested one, c4 for a C4 diagram. ' +
+  'shape "layer-stack" / "pyramid" / "cycle": "conceptRows" is [{ "label", "note"? }]: a stack 2 to 8 ' +
+  '(note = a side note), a pyramid 2 to 6 (first row the apex; "pyramidVariant" funnel makes it a ' +
+  'funnel and its note the row\'s value), a cycle 3 to 8 clockwise from the top (its "label" is the ' +
+  'centre). They draw their own rows in the colour ramp; do not draw them from separate shapes.';
 
 // The style fields a box or arrow takes beyond its geometry, as facts (docs/specs/015-api/mcp-server.md §4.7a "Style
 // fields"): the closed vocabularies from the one list edit operations and the value check read, so they cannot drift.

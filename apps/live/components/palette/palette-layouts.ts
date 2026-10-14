@@ -65,13 +65,18 @@ const EMBED_TILES = [
   'media:embed-website',
 ];
 
-// Write's own tiles, then the Comment panel and the Action card: comments and assigned actions belong
-// to every mode, so Diagram keeps them though their Collaborate category is Facilitate's.
+// Write's own tiles and the Callout (a headed note, as much a diagram's as a page's), then the Comment
+// panel and the Action card: comments and assigned actions belong to every mode, so Diagram keeps them
+// though their Collaborate category is Facilitate's.
 const WRITE_WITH_COMMENTS = [
   ...tilesForCategory('write').map((t) => t.id),
+  'components:callout',
   'collab:comment-pin',
   'collab:action-card',
 ];
+
+// The diagram-building elements Diagram's Build adds to the category's own tiles.
+const DIAGRAM_BUILD_EXTRAS = ['components:card', 'components:badge', 'components:step'];
 
 // Image and Avatar; no embedded pages.
 const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);
@@ -107,7 +112,13 @@ const DIAGRAM: PaletteLayout = {
     // Comments and assigned actions belong to every mode, so their two Collaborate tiles stay here.
     { id: 'write', tiles: WRITE_WITH_COMMENTS },
     { id: 'draw' },
-    { id: 'build' },
+    // The diagram-building elements join Build here (docs/specs/009-elements/card.md and its siblings).
+    {
+      id: 'build',
+      tiles: [...tilesForCategory('build').map((t) => t.id), ...DIAGRAM_BUILD_EXTRAS],
+    },
+    // Concept graphics (docs/specs/009-elements/concept-graphics.md).
+    { id: 'concepts' },
     { id: 'event-storming', boardOnly: true },
     { id: 'icons' },
     { id: 'technology' },
@@ -167,8 +178,10 @@ const ILLUSTRATE: PaletteLayout = {
         'tools:flowchart',
         'tools:lane',
         'tools:frame',
+        'tools:boundary',
       ),
     },
+    { id: 'concepts' },
     // The web blocks, without the data-model Entity.
     { id: 'components', tiles: tilesExcept('components', 'tools:entity') },
     { id: 'devices' },
@@ -182,7 +195,7 @@ const ILLUSTRATE: PaletteLayout = {
 // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette"): running a session
 // with a team. Popular, the drawing basics a session uses (no Page or Annotation, no Shape Pen or
 // Polygon, no Lane or Timeline), the decorations a room reaches for, and the Collaborate elements as
-// six categories, one per group; no tech icons, mock-up kit, charts or workshop notation.
+// six categories, one per group, plus the charts; no tech icons, mock-up kit or workshop notation.
 const FACILITATE: PaletteLayout = {
   landing: 'popular',
   categories: [
@@ -213,18 +226,23 @@ const FACILITATE: PaletteLayout = {
     {
       id: 'write',
       label: 'Write & Build',
-      description: 'Text, sticky notes, tables and frames.',
+      description: 'Text, sticky notes, tables, checklists and frames.',
       tiles: [
         ...tilesExcept('write', 'tools:page', 'tools:annotation'),
         DIVIDE,
         'tools:table',
+        'tools:checklist',
         'tools:frame',
       ],
     },
     { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
+    // A session reads results and runs retros in cycles (docs/specs/009-elements/concept-graphics.md).
+    { id: 'concepts' },
     { id: 'icons' },
     { id: 'stickers' },
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
+    // The charts and meters: a session reads results and sets targets as often as a page reports them.
+    { id: 'data' },
     { id: 'collab-ask' },
     { id: 'collab-tools' },
     { id: 'collab-record' },

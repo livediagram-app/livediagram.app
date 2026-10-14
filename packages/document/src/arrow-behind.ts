@@ -19,6 +19,7 @@
 // bowed clear at draw time simply never crosses anything, so the two
 // don't fight.
 
+import { isContainerKind } from './containment';
 import { pointInRect, rectsIntersect, type Rect } from './geometry-primitives';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
@@ -58,7 +59,7 @@ function isOccluder(el: Element): el is BoxedElement {
   if (el.type === 'text' || el.type === 'annotation' || el.type === 'freehand') return false;
   if (el.type === 'path') return el.closed && el.fillColor !== 'transparent';
   if (el.type === 'shape' && el.fillColor === 'transparent') return false;
-  return !(el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane'));
+  return !(el.type === 'shape' && isContainerKind(el.shape));
 }
 
 // The arrow's own bounding box, padded by the margin so a box just past an endpoint still registers.

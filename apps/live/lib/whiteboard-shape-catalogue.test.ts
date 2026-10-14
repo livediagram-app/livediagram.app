@@ -69,6 +69,7 @@ describe('the whiteboard shape catalogue', () => {
       'write',
       'draw',
       'build',
+      'concepts',
       'devices',
       'data',
       'collab-ask',

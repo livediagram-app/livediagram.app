@@ -254,10 +254,11 @@ function effortImpact(k: Kit): Element[] {
     const cx = x0 + fx * (x1 - x0);
     const cy = y1 >= y0 ? y1 - fy * (y1 - y0) : (y0 + y1) / 2;
     els.push(
-      k.shape('circle', cx - d / 2, cy - d / 2, d, d, {
+      // The idea's place on the matrix: a Step number (docs/specs/009-elements/step-number.md), outlined.
+      k.shape('step', cx - d / 2, cy - d / 2, d, d, {
         label: `${i + 1}`,
         textBold: true,
-        strokeWidth: 'thick',
+        chipLook: 'outline',
       }),
     );
   });
@@ -275,7 +276,11 @@ function effortImpact(k: Kit): Element[] {
     const y = keyY + (i % perCol) * kRowH;
     const keyText: Partial<TextElement> = { textAlignY: 'middle' };
     els.push(
-      k.shape('circle', x, y + (kRowH - kd) / 2, kd, kd, { label: `${i + 1}`, textBold: true }),
+      k.shape('step', x, y + (kRowH - kd) / 2, kd, kd, {
+        label: `${i + 1}`,
+        textBold: true,
+        chipLook: 'outline',
+      }),
       k.text(x + kd + u * 3, y, colW - kd - u * 4, kRowH, name, keyText),
     );
   });

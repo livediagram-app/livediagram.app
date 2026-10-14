@@ -1,0 +1,65 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { CardAnatomy, AccentEdges } from '@/components/illustrations/palette-diagram-elements';
+
+export const metadata = helpMetadata({
+  title: 'Cards and Callouts',
+  description:
+    'A card is one node with a title, a meta line, a body, an icon and tags you switch on, so a service reads as designed, not a box of words.',
+  path: '/help/palette/cards-and-callouts/',
+});
+
+<ArticleLayout
+  title="Cards and Callouts"
+  description="One node with a title, a meta line, a body, an icon and tags, each switched on or off."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("cards-and-callouts")}
+>
+
+A **Card** is a single diagram node with slots: a title, a muted meta line, a body, an icon and a row of tags. Use it wherever a node has more to say than its name: a service with what it runs on, a persona with their role, a feature with its status.
+
+In Diagram mode it sits in the palette's [Build](/help/palette/build/) category; in Illustrate mode it is in **Components**. A new card shows every slot filled in, so you can see what each one is and switch off the ones you don't need.
+
+<Figure caption="A card with a tile and tags, one with a header band and a badge, and the Callout preset.">
+  <CardAnatomy />
+</Figure>
+
+## The slots
+
+From the top:
+
+- **Header Band**: a coloured band across the top that carries the title and meta line, for a card that reads as a titled panel.
+- **Media**: at the top left, an icon on a **Badge** (a filled disc), on a **Tile** (a soft rounded square), or the title's **Initial**. Drop an icon from the palette onto a card to set it; a card with no media turns Tile on.
+- **Title** and **Meta Line**: the name, and a quieter line beside it for the product, runtime, team or date.
+- **Body**: the card's ordinary label. Double-click to edit it with the full text toolbar.
+- **Tags**: up to six small chips along the bottom. A tag that doesn't fit the width is hidden until the card is wide enough again.
+
+Select a card, then click its title, meta line or a tag to type in place. Enter keeps the change and Escape puts it back.
+
+Right-click and open the **Card** section to switch **Header Band**, **Title** and **Meta Line** on or off, pick the **Media**, and add, reorder or remove tags. **Add Tag** is also on the ring round a selected card.
+
+Everything else is an ordinary element: resize it and the text re-wraps, recolour it from **Colours**, connect arrows to it, and animate it like any shape.
+
+## Callouts are cards
+
+The **Callout** tile places a card with a badge, a heading and a body: a soft note box for a tip or a warning. It is a card underneath, so you can add tags or a meta line to it like any other.
+
+## Accent edge
+
+Any card, rectangle, stadium or mind-map node can carry an **accent edge**: a coloured strip down its left side, or across its top or bottom. Use it to colour-code nodes by team or status without filling the whole box.
+
+<Figure caption="An accent edge on the left, the top and the bottom.">
+  <AccentEdges />
+</Figure>
+
+Right-click, open **Border** and pick the side under **Accent Edge**. **Edge Colour** sets its colour, and **Match Border** makes it the border's own colour again. The format painter copies it along with the border.
+
+<Tip>
+  For a node with a name and one quiet line under it, you don't need a card: type both lines in a
+  rectangle, then pick **Title and Caption** from the text toolbar's paragraph menu. The first line
+  turns bold and the rest turns into a smaller, muted caption.
+</Tip>
+
+</ArticleLayout>

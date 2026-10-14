@@ -3,6 +3,7 @@ import {
   applyFormatToRange,
   applyHeadingToLines,
   applyListStyle,
+  applyTitleCaption,
   expandRangeToLines,
   runsPlainText,
   toggleFormatInRange,
@@ -140,5 +141,11 @@ export function useRichTextFormatActions({
     );
   };
 
-  return { onToggle, onPatch, applyList, applyHeading, applyLink };
+  // Title and Caption (docs/specs/009-elements/block-type-picker.md): the whole label, whatever is selected.
+  const applyTitleCaptionPreset = () => {
+    applyBlock(applyTitleCaption(runsRef.current), undefined);
+    trackFormat('TitleCaption');
+  };
+
+  return { onToggle, onPatch, applyList, applyHeading, applyLink, applyTitleCaptionPreset };
 }

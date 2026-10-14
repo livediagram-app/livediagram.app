@@ -47,10 +47,28 @@ describe('palette layouts', () => {
       'write',
       'draw',
       'build',
+      'concepts',
       'icons',
       'technology',
       'media',
     ]);
+  });
+
+  // A headed note belongs to a diagram as much as a page (docs/specs/007-editor/editor-modes.md).
+  it("puts the Callout in Diagram's Write, before the Comment panel", () => {
+    const write = paletteCategoriesFor('diagram').find((c) => c.id === 'write')!;
+    expect(write.tiles!.slice(-3)[0]!.id).toBe('components:callout');
+  });
+
+  it('offers every Data tile in Facilitate and Illustrate', () => {
+    const data = tilesForCategory('data').map((t) => t.id);
+    for (const mode of ['facilitate', 'illustrate'] as const)
+      expect(
+        paletteCategoriesFor(mode)
+          .find((c) => c.id === 'data')!
+          .tiles!.map((t) => t.id),
+        mode,
+      ).toEqual(data);
   });
 
   // Comments and assigned actions belong to every mode (docs/specs/012-collaboration/facilitate-mode.md).
@@ -63,16 +81,18 @@ describe('palette layouts', () => {
   });
 
   // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
-  it('gives Facilitate Popular, the drawing basics (Write & Build as one), the decorations and the six Collaborate categories', () => {
+  it('gives Facilitate Popular, the drawing basics (Write & Build as one), the decorations, the charts and the six Collaborate categories', () => {
     expect(ids('facilitate')).toEqual([
       'popular',
       'shapes',
       'my-shapes',
       'write',
       'draw',
+      'concepts',
       'icons',
       'stickers',
       'media',
+      'data',
       'collab-ask',
       'collab-tools',
       'collab-record',
@@ -124,7 +144,13 @@ describe('palette layouts', () => {
     // Write and Build as one, "Write & Build".
     const write = paletteCategoriesFor('facilitate').find((c) => c.id === 'write')!;
     expect(write.label).toBe('Write & Build');
-    expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky', 'tools:table', 'tools:frame']);
+    expect(tilesOf('write')).toEqual([
+      'tools:text',
+      'tools:sticky',
+      'tools:table',
+      'tools:checklist',
+      'tools:frame',
+    ]);
     expect(tilesOf('draw')).toEqual([
       'tools:pencil',
       'tools:highlighter',
@@ -153,6 +179,7 @@ describe('palette layouts', () => {
       'my-shapes',
       'write',
       'build',
+      'concepts',
       'components',
       'devices',
       'icons',

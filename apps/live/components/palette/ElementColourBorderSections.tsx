@@ -35,6 +35,7 @@ import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/
 import { isTechIconId } from '@/lib/tech-icons';
 import { ColourRow } from '@/components/palette/context-menu-rows';
 import { BorderControls } from '@/components/palette/BorderControls';
+import { AccentEdgeRow } from '@/components/palette/AccentEdgeRow';
 import { ShadowSection } from '@/components/palette/ShadowSection';
 import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
@@ -233,6 +234,19 @@ export function ElementColourBorderSections({
               onCommitBorderRadius={props.onCommitBorderRadius}
               onPreviewBorderRadius={props.onPreviewBorderRadius}
               onPreviewStyleEnd={props.onPreviewStyleEnd}
+            />
+            <AccentEdgeRow
+              target={target}
+              ops={props.elementStyle}
+              borderColour={shownColour(
+                target,
+                'line',
+                surface,
+                defaultStrokeColor(target as BoxedElement, surface),
+              )}
+              colourOpen={colorProps('accent-edge').open}
+              onToggleColour={colorProps('accent-edge').onToggle}
+              colourPalette={props.colourPalette}
             />
           </MenuAccordionSection>
         </>

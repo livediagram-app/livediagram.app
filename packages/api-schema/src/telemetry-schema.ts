@@ -441,6 +441,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'FlowchartStep',
     // Lane (docs/specs/009-elements/lane.md).
     'Lane',
+    // Boundary (docs/specs/009-elements/boundary.md): a Build container beside Frame and Lane.
+    'Boundary',
     // Entity (docs/specs/009-elements/entity.md).
     'Entity',
     'Checklist',
@@ -494,7 +496,19 @@ export const PALETTE_TELEMETRY_TYPES = {
     // Action panel (docs/specs/012-collaboration/action-panel.md).
     'ActionPanel',
   ],
-  components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
+  components: [
+    'Banner',
+    'Hero',
+    'Header',
+    'Callout',
+    'StatRow',
+    'ProcessSteps',
+    'Card',
+    'Badge',
+    'Step',
+  ],
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): the Concepts category.
+  concepts: ['LayerStack', 'Pyramid', 'Cycle'],
   devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Foldable', 'Smartwatch'],
   icons: ['Icon', 'TechIcon', 'Sticker'],
 } as const satisfies Record<string, readonly string[]>;

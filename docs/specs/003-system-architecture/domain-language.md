@@ -60,6 +60,27 @@ The words for the work a Plan board frames ([Items](../026-plan/items.md), [Plan
 - **Plan** is an editor mode, never a kind: a Plan board is an element on a general tab.
 - A **column** belongs to a Plan board and stands for a status; a **lane** is the Lane element.
 
+## Diagram elements
+
+The words for the diagram-building elements ([The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
+[The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md),
+[Concept graphics](../009-elements/concept-graphics.md)).
+
+| Term                | Means                                                                                   | Never called                              |
+| ------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **Card**            | The diagram element (`card`) with a header band, media, title, meta line, body and tags | node card, info card, Plan card           |
+| **slot**            | One part of a Card a person switches on or off                                          | section, field (in copy)                  |
+| **Badge**           | The small pill element (`badge`)                                                        | tag (a tag is a chip inside a Card), pill |
+| **Step number**     | The numbered disc element (`step`)                                                      | marker (that is a shape's status mark)    |
+| **attachment**      | A badge or step number held on one of eight points of a host element                    | group, pin, dock                          |
+| **host**            | The element an attached badge or step number sits on                                    | parent (that is a mind node's)            |
+| **Boundary**        | The titled, tinted container element (`boundary`)                                       | zone, group, frame (that is the Frame)    |
+| **concept graphic** | A Layer stack, Pyramid or Cycle: one element laying out its own rows                    | SmartArt, diagram                         |
+| **row**             | One layer, tier or step of a concept graphic (`conceptRows`)                            | item (that is a Plan record)              |
+
+- A Plan **card** draws an item and is always called a Plan card where the two could meet; the diagram **Card** is
+  never offered in Plan mode.
+
 ## Agents
 
 The words for a program working on documents for a person ([Agents](../024-agents/README.md)).

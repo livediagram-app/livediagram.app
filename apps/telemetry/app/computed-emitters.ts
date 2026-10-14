@@ -604,7 +604,26 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['LogoGuideStrengthFaint', 'LogoGuideStrengthMedium', 'LogoGuideStrengthStrong'],
   },
   'apps/live/hooks/canvas/useStylePreview.ts Element·Changed': {
-    values: ['TextTracking', 'TextWeight', 'TextCase', 'TextArc'],
+    // The wordmark fields, and the types the element menu's generic style ops pass through it
+    // (apps/live/lib/element-style-ops.ts): the accent edge, card slots and chip looks.
+    values: [
+      'TextTracking',
+      'TextWeight',
+      'TextCase',
+      'TextArc',
+      'AccentEdge',
+      'CardSlots',
+      'ChipLook',
+      'ChipDetach',
+      'BoundaryStyle',
+      'BoundaryMeta',
+      'PyramidVariant',
+      'ConceptAnim',
+    ],
+  },
+  // The element menu's whole-tab writes (apps/live/lib/element-style-ops.ts `commitTab`).
+  'apps/live/components/palette/EditorContextMenuHost.tsx Element·Changed': {
+    values: ['RenumberSteps', 'StepSequence'],
   },
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],

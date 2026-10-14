@@ -35,8 +35,14 @@ import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgFace } from './svg-render-f
 import { svgCollabFace } from './svg-render-collab-faces';
 import { svgWebComponent } from './svg-render-web';
 import { isWebComponentShape } from './web-components';
+import { isChipShape } from './chip';
+import { svgChip } from './svg-render-chip';
+import { svgBoundary } from './svg-render-boundary';
+import { svgConcept } from './svg-render-concept';
+import { isConceptShape } from './concept';
 import type { BoxedElement, ShapeKind } from './index';
-import type { CanvasSurface } from './colors';
+import { defaultTextColor, type CanvasSurface } from './colors';
+import type { ResolveIconArt } from './svg-render-describe';
 
 /** The kinds whose body these emitters draw, rather than it being a box with a
  *  label. See the module comment: the PNG path reads this. */
@@ -46,6 +52,9 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     isCollabPanelShape(kind) ||
     BEHAVIOUR_FACE_SHAPES.has(kind) ||
     isWebComponentShape(kind) ||
+    isChipShape(kind) ||
+    kind === 'boundary' ||
+    isConceptShape(kind) ||
     kind === 'entity' ||
     kind === 'page' ||
     kind === 'lane' ||
@@ -76,6 +85,8 @@ export function svgElementBody(
     label: string;
     /** The paper under the element, for the faces whose base follows it. */
     surface?: CanvasSurface;
+    /** Resolves an icon id to its art, for a card's media glyph. */
+    resolveIconArt?: ResolveIconArt;
   },
 ): string {
   if (el.type !== 'shape') return '';
@@ -97,9 +108,31 @@ export function svgElementBody(
   if (isRatingShape(el.shape)) return svgRating(el, stroke);
   if (isRailShape(el.shape)) return svgTimelineRail(el, stroke, labelColor, fontFamily);
   if (el.shape === 'entity') return svgEntityRows(el, labelColor, fontFamily);
+  // A layer stack, pyramid or cycle's rows (docs/specs/009-elements/concept-graphics.md).
+  if (isConceptShape(el.shape))
+    return svgConcept(el, { stroke, fill, labelColor, label, fontFamily });
+  // A boundary's tint and title (docs/specs/009-elements/boundary.md).
+  if (el.shape === 'boundary')
+    return svgBoundary(el, {
+      stroke,
+      labelColor,
+      label,
+      fontFamily,
+      resolveIconArt: o.resolveIconArt,
+    });
+  // A badge or step number's pill or disc (docs/specs/009-elements/badge.md); its label draws over it as usual.
+  if (isChipShape(el.shape))
+    return svgChip(el, { stroke, fill, ink: el.textColor ?? defaultTextColor(el, o.surface) });
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) lay out their own text, label included.
   if (isWebComponentShape(el.shape))
-    return svgWebComponent(el, { stroke, fill, labelColor, label, fontFamily });
+    return svgWebComponent(el, {
+      stroke,
+      fill,
+      labelColor,
+      label,
+      fontFamily,
+      resolveIconArt: o.resolveIconArt,
+    });
   if (el.shape === 'page')
     return svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily);
   // The Behaviour + Collaborate faces (docs/specs/009-elements/mode-button.md to /137), which all exported

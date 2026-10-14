@@ -216,6 +216,18 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // replace arrived at, so a canvas built from either reads the same.
   banner: { width: 440, height: 104 },
   callout: { width: 380, height: 116 },
+  // Card (docs/specs/009-elements/card.md): room for a title, a meta line, two body lines and a tag row.
+  card: { width: 300, height: 150 },
+  // Badge (docs/specs/009-elements/badge.md): fitted to its text on every commit (badgeSize); this is "New".
+  badge: { width: 40, height: 24 },
+  // Step number (docs/specs/009-elements/step-number.md): a small disc.
+  step: { width: 28, height: 28 },
+  // Boundary (docs/specs/009-elements/boundary.md): room for a few nodes inside.
+  boundary: { width: 480, height: 300 },
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md).
+  'layer-stack': { width: 360, height: 260 },
+  pyramid: { width: 320, height: 260 },
+  cycle: { width: 300, height: 300 },
   // Three 150px cards and two 16px gaps.
   'stat-row': { width: 482, height: 96 },
   process: { width: 420, height: 110 },
@@ -590,6 +602,74 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textAlignX: 'center',
       textAlignY: 'middle',
       borderRadius: 'lg',
+    };
+  }
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): rows to start from, so the first one reads as
+  // what it is.
+  if (kind === 'layer-stack')
+    return {
+      ...base,
+      conceptRows: [
+        { label: 'Presentation', note: 'Next.js' },
+        { label: 'API', note: 'Workers' },
+        { label: 'Domain', note: 'packages/document' },
+        { label: 'Storage', note: 'D1' },
+      ],
+    };
+  if (kind === 'pyramid')
+    return {
+      ...base,
+      conceptRows: [
+        { label: 'Vision' },
+        { label: 'Strategy' },
+        { label: 'Objectives' },
+        { label: 'Daily work' },
+      ],
+    };
+  if (kind === 'cycle')
+    return {
+      ...base,
+      label: 'Weekly loop',
+      textSize: 'sm',
+      aspectLocked: true,
+      conceptRows: [{ label: 'Plan' }, { label: 'Do' }, { label: 'Check' }, { label: 'Act' }],
+    };
+  // Boundary (docs/specs/009-elements/boundary.md): a titled, dashed container.
+  if (kind === 'boundary')
+    return {
+      ...base,
+      label: 'Region',
+      strokeStyle: 'dashed',
+      borderRadius: 'md',
+      textSize: 'sm',
+      textBold: true,
+      // The title sits in its tab or corner (boundaryLayout), so the label takes the region whole.
+      textAlignX: 'left',
+      textAlignY: 'middle',
+      padding: 'none',
+    };
+  // Badge (docs/specs/009-elements/badge.md): a word to start from; a step takes its number when it lands
+  // (settleChips), so it starts with none.
+  // Their text is centred with no padding: the face is the pill, the label its word.
+  if (kind === 'badge')
+    return { ...base, label: 'New', textSize: 'sm', textBold: true, padding: 'none' };
+  if (kind === 'step')
+    return { ...base, aspectLocked: true, textSize: 14, textBold: true, padding: 'none' };
+  // Card (docs/specs/009-elements/card.md): every slot but the band on, so the first one shows what a card is made of.
+  if (kind === 'card') {
+    return {
+      ...base,
+      cardMedia: 'tile',
+      iconId: 'credit-card',
+      pageTitle: 'Payments',
+      pageSubtitle: 'Stripe, EU region',
+      label: 'Takes card payments and issues refunds.',
+      tags: ['PCI', 'v2'],
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+      strokeWidth: 'thin',
+      borderRadius: 'md',
     };
   }
   if (kind === 'callout') {

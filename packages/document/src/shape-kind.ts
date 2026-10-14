@@ -36,6 +36,20 @@ export type ShapeKind =
   | 'banner'
   // Callout: a card with an accent badge, a heading line and a body (label).
   | 'callout'
+  // Card (docs/specs/009-elements/card.md): a diagram node with slots (header band, media, title, meta line,
+  // body, tags). The Callout is its preset; a stored `callout` migrates to one on read.
+  | 'card'
+  // Badge and Step number (docs/specs/009-elements/badge.md, step-number.md): small marks that may attach to a
+  // point on a host element (`attachedTo` / `attachAt`) and travel with it.
+  | 'badge'
+  | 'step'
+  // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
+  | 'boundary'
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): one element laying out its own rows
+  // (`conceptRows`): a stack of layers, a pyramid (or inverted, or a funnel), a cycle of steps.
+  | 'layer-stack'
+  | 'pyramid'
+  | 'cycle'
   // Stat row: KPI cards, a big value over a caption each, in `stats`.
   | 'stat-row'
   // Process steps: numbered circles joined by arrows, captions in

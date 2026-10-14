@@ -51,7 +51,7 @@ function factFile(k: Kit): Element[] {
   const bottom = H - u * FOOT;
   const cells = MARS.map(([fact, value]) => [fact, value]);
   const callout = (x: number, y: number, w: number, h: number) =>
-    k.shape('callout', x, y, w, h, {
+    k.callout(x, y, w, h, {
       pageTitle: 'Did you know?',
       label: 'Olympus Mons, a volcano on Mars, stands almost three times as tall as Everest.',
       textSize: 'md',
@@ -127,7 +127,8 @@ function lessonSummary(k: Kit): Element[] {
       ...KEY_POINTS.flatMap((line, i) => {
         const ry = s.top + i * rowH;
         return [
-          k.shape('circle', x, ry, d, d, { label: `${i + 1}`, textBold: true }),
+          // A Step number (docs/specs/009-elements/step-number.md) for each key point.
+          k.shape('step', x, ry, d, d, { label: `${i + 1}`, textBold: true, chipLook: 'solid' }),
           k.text(x + d + u * 3, ry, w - d - u * 3, Math.min(rowH, u * 10), line, {
             textAlignY: d >= u * 6 ? 'middle' : 'top',
           }),
@@ -302,7 +303,7 @@ function formula(k: Kit): Element[] {
     }),
   ];
   const example = (x: number, y: number, w: number, h: number) =>
-    k.shape('callout', x, y, w, h, {
+    k.callout(x, y, w, h, {
       pageTitle: 'Worked example',
       label: '£1,000 at 5% for 10 years: A = 1,000 × 1.05¹⁰ = £1,629.',
       textSize: 'md',

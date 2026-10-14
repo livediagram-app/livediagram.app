@@ -94,10 +94,11 @@ function stairCards(k: Kit): Element[] {
     const ty = y + (cardH - nameH - noteH) / 2;
     els.push(
       card,
-      k.shape('circle', x + pad, y + (cardH - d) / 2, d, d, {
+      // The step's number: a Step number (docs/specs/009-elements/step-number.md) in the theme's accent.
+      k.shape('step', x + pad, y + (cardH - d) / 2, d, d, {
         label: `${i + 1}`,
         textBold: true,
-        textSize: 'lg',
+        chipLook: 'solid',
       }),
       k.text(tx, ty, tw, nameH, name, { textSize: 'lg', textBold: true }),
       k.text(tx, ty + nameH, tw, noteH, note),

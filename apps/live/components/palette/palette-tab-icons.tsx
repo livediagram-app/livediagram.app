@@ -49,6 +49,17 @@ export function BuildTabIcon() {
   );
 }
 
+// Concepts (docs/specs/009-elements/concept-graphics.md): a small pyramid of stacked tiers, the shape ideas come in.
+export function ConceptsTabIcon() {
+  return (
+    <Glyph size={18} units={18}>
+      <path d="M9 2.5 11.6 7H6.4Z" />
+      <path d="M5.6 8.4h6.8l2.2 3.6H3.4Z" />
+      <path d="M2.6 13.4h12.8l1 2.1H1.6Z" />
+    </Glyph>
+  );
+}
+
 export function ComponentsTabIcon() {
   return (
     <Glyph size={18} units={18}>

@@ -132,7 +132,7 @@ describe('slide deck template', () => {
   });
 
   it('builds each body from the element that suits it', () => {
-    for (const kind of ['circle', 'stat-row', 'line-chart', 'pie-chart', 'icon', 'sticker'])
+    for (const kind of ['step', 'stat-row', 'line-chart', 'pie-chart', 'icon', 'sticker'])
       expect(shapesOf(els, kind).length, kind).toBeGreaterThan(0);
   });
 

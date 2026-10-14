@@ -30,6 +30,7 @@ import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
 import { pageBodyTop } from './svg-render-page';
 import { borderOf } from './svg-render-border';
+import { chipColours, chipLookOf, isChipShape } from './chip';
 import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from './label-font';
@@ -309,7 +310,13 @@ export function describeBoxedExport(
         : el.type === 'text'
           ? { kind: 'none' }
           : { kind: 'rect', fill, stroke };
-  const baseColor = own.text ?? defaultTextColor(el, surface);
+  // A badge or step number (docs/specs/009-elements/badge.md) writes in its look's text colour: the look decides
+  // what the pill is filled with, so it decides what reads on it.
+  const inkColor = own.text ?? defaultTextColor(el, surface);
+  const baseColor =
+    el.type === 'shape' && isChipShape(el.shape)
+      ? chipColours(chipLookOf(el), { accent: stroke, surface: fill, ink: inkColor }).text
+      : inkColor;
   // A sticky's label is a block of writing rather than a name, and runs
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).
@@ -325,6 +332,7 @@ export function describeBoxedExport(
         size: run.size ? runFontPx(run.size, multiline) * textScale : baseSize,
         bold: run.bold ?? !!el.textBold,
         italic: run.italic ?? !!el.textItalic,
+        ...(run.muted ? { muted: true } : {}),
       }))
     : undefined;
   // Mirror the editor's label layout: alignment defaults per element type
@@ -420,7 +428,11 @@ export function selfLabelled(el: BoxedElement): boolean {
     (isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
     isCollabPanelShape(el.shape) ||
     (BEHAVIOUR_FACE_SHAPES.has(el.shape) && el.shape !== 'chair') ||
-    isWebComponentShape(el.shape)
+    isWebComponentShape(el.shape) ||
+    // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
+    el.shape === 'boundary' ||
+    // A cycle writes its centre label itself (docs/specs/009-elements/concept-graphics.md).
+    el.shape === 'cycle'
   );
 }
 

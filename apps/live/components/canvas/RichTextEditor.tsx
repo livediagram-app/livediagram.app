@@ -75,6 +75,7 @@ export function RichTextEditor({
     onPatch,
     applyList,
     applyHeading,
+    applyTitleCaptionPreset,
     liveText,
   } = useRichTextSession({
     element,
@@ -284,6 +285,7 @@ export function RichTextEditor({
           onToggle={onToggle}
           onApplyList={applyList}
           onApplyHeading={applyHeading}
+          onApplyTitleCaption={applyTitleCaptionPreset}
           listStyle={listStyleOfText(liveText)}
           onColor={(color) => onPatch({ color })}
           onSetAlign={(x, y) => onSetAlign?.(x, y)}

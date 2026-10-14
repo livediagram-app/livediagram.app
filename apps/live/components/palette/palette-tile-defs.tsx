@@ -1,3 +1,4 @@
+import { CARD_PRESET_TILES } from './palette-card-presets';
 import { headlineCase } from '@livediagram/api-schema';
 import type { PenColour } from '@livediagram/document';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
@@ -126,6 +127,8 @@ export type PaletteTileSection =
   // They are now Collaborate elements, offered as six categories: see COLLABORATE_CATEGORY_GROUPS.
   | 'media'
   | 'components'
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md).
+  | 'concepts'
   | 'devices'
   | 'stickers'
   | 'icons'
@@ -148,6 +151,8 @@ type PaletteTileAction =
       estimateScale?: EstimateScale;
       // Plan board preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md "The palette").
       plan?: string;
+      // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
+      variant?: string;
     }
   | { type: 'text' }
   // An opener (palette-openers): stands for a category, or one group of a catalogue, and opens it; places nothing.
@@ -276,6 +281,9 @@ export type PaletteTileDef = {
   // strip, between it and the next tile shown (docs/specs/007-editor/toolbar-layout.md "Fixed
   // dividers"). Never more than two per category.
   dividerAfter?: true;
+  // Presets of this tile's element (docs/specs/009-elements/card.md "Card presets"): on the Toolbar strip the tile is
+  // drawn as an opener (its glyph with a caret) whose popover offers them; elsewhere the tile places its own element.
+  variants?: readonly PaletteTileDef[];
   action: PaletteTileAction;
 };
 
@@ -1416,6 +1424,65 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The card (docs/specs/009-elements/card.md): a diagram node with slots, placed like any shape so the theme
+    // paints it. The Callout below is its preset.
+    id: 'components:card',
+    blurb: 'A node with an icon, title, meta and tags',
+    caption: 'Card',
+    section: 'components',
+    label: 'Add Card',
+    description:
+      'Card. A diagram node with slots you switch on: a header band, an icon, a title and meta line, a body and tags. Tap to drop or drag to size.',
+    filled: true,
+    action: { type: 'shape', kind: 'card' },
+    variants: CARD_PRESET_TILES,
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
+        <rect x="5.5" y="6.5" width="4.5" height="4.5" rx="1.2" />
+        <path d="M12.5 7.5h6M12.5 10h4M5.5 14h13" />
+        <rect x="5.5" y="16.5" width="4" height="1.6" rx="0.8" />
+        <rect x="11" y="16.5" width="4" height="1.6" rx="0.8" />
+      </Glyph>
+    ),
+  },
+  {
+    // The badge (docs/specs/009-elements/badge.md): a pill that attaches to a point on a node when dropped there.
+    id: 'components:badge',
+    blurb: 'A small tag that sits on a node',
+    caption: 'Badge',
+    section: 'components',
+    label: 'Add Badge',
+    description:
+      'Badge. A small pill like "Beta" or "v2". Drop it on a corner or edge of a node and it stays there as the node moves.',
+    filled: true,
+    action: { type: 'shape', kind: 'badge' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="3" y="8" width="18" height="8" rx="4" />
+        <path d="M7.5 12h9" />
+      </Glyph>
+    ),
+  },
+  {
+    // The step number (docs/specs/009-elements/step-number.md): numbers itself as it lands.
+    id: 'components:step',
+    blurb: 'A numbered disc for walkthroughs',
+    caption: 'Step Number',
+    section: 'components',
+    label: 'Add Step Number',
+    description:
+      'Step number. A numbered disc for walking through a diagram in order; each new one takes the next number.',
+    filled: true,
+    action: { type: 'shape', kind: 'step' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M10.5 9.5 12.5 8v8" />
+      </Glyph>
+    ),
+  },
+  {
     id: 'tools:lane',
     blurb: 'A titled band that carries its steps',
     caption: 'Lane',
@@ -1444,6 +1511,90 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucidePanelTop} />
+      </Glyph>
+    ),
+  },
+  {
+    // The boundary (docs/specs/009-elements/boundary.md): a titled, tinted container for regions and systems.
+    id: 'tools:boundary',
+    blurb: 'A titled zone: a region, a VPC, a system',
+    section: 'build',
+    label: 'Add Boundary',
+    description:
+      'Boundary. A titled, tinted container for a cloud region, a network or a system. It carries what is inside it, and nested boundaries tint deeper.',
+    action: { type: 'shape', kind: 'boundary' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="3" y="6" width="18" height="15" rx="2" strokeDasharray="3 2.5" />
+        <rect x="5" y="3.5" width="9" height="5" rx="1.5" />
+      </Glyph>
+    ),
+  },
+  // --- Concepts (docs/specs/009-elements/concept-graphics.md) --------------------------------------
+  {
+    id: 'concepts:layer-stack',
+    blurb: 'Stacked layers with side notes',
+    caption: 'Layer Stack',
+    section: 'concepts',
+    label: 'Add Layer Stack',
+    description:
+      'Layer stack. Horizontal bands for a tech stack, the OSI model or architecture tiers.',
+    action: { type: 'shape', kind: 'layer-stack' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="3" y="3.5" width="18" height="4.5" rx="1.2" />
+        <rect x="3" y="9.75" width="18" height="4.5" rx="1.2" />
+        <rect x="3" y="16" width="18" height="4.5" rx="1.2" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:pyramid',
+    blurb: 'Tiers in a triangle',
+    caption: 'Pyramid',
+    section: 'concepts',
+    label: 'Add Pyramid',
+    description: 'Pyramid. Tiers cut from one triangle: a hierarchy, a strategy stack, needs.',
+    action: { type: 'shape', kind: 'pyramid' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M12 3 15.4 9H8.6Z" />
+        <path d="M7.7 10.6h8.6l2.9 5H4.8Z" />
+        <path d="M3.9 17.2h16.2l1.4 3.3h-19Z" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:funnel',
+    blurb: 'Narrowing bands with values',
+    caption: 'Funnel',
+    section: 'concepts',
+    label: 'Add Funnel',
+    description: 'Funnel. Bands narrowing downward, each with a value: a conversion story.',
+    action: { type: 'shape', kind: 'pyramid', variant: 'funnel' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M3 4h18l-2.2 4.5H5.2Z" />
+        <path d="M6 10.5h12l-2 4H8Z" />
+        <path d="M8.8 16.5h6.4l-1.2 3.5h-4Z" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:cycle',
+    blurb: 'Steps round a loop',
+    caption: 'Cycle',
+    section: 'concepts',
+    label: 'Add Cycle',
+    description: 'Cycle. Steps round a ring joined by arrows: PDCA, a flywheel, a release loop.',
+    action: { type: 'shape', kind: 'cycle' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <circle cx="12" cy="4.5" r="2.3" />
+        <circle cx="19.5" cy="12" r="2.3" />
+        <circle cx="12" cy="19.5" r="2.3" />
+        <circle cx="4.5" cy="12" r="2.3" />
+        <path d="M15 5.5a8 8 0 0 1 3.5 3.5M18.5 15a8 8 0 0 1-3.5 3.5M9 18.5A8 8 0 0 1 5.5 15M5.5 9A8 8 0 0 1 9 5.5" />
       </Glyph>
     ),
   },

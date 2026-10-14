@@ -72,6 +72,14 @@ describe('stateAttributeOf (R14, VW22)', () => {
     expect(state('page', { pageTitle: ' ' })).toBe('');
   });
 
+  it('titles a card, and flags a badge or step that is attached to a node', () => {
+    expect(state('card', { pageTitle: 'Orders service' })).toBe('title="Orders service"');
+    expect(state('card', { pageTitle: undefined })).toBe('');
+    expect(state('step', { attachedTo: 'host' })).toBe('attached');
+    expect(state('badge', { attachedTo: 'host' })).toBe('attached');
+    expect(state('badge')).toBe('');
+  });
+
   it('gives every other kind none', () => {
     expect(state('square')).toBe('');
   });

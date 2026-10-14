@@ -195,7 +195,8 @@ function giveaway(k: Kit): Element[] {
       textAlignX: align,
     });
   const step = (x: number, y: number, i: number) =>
-    k.shape('circle', x, y, disc, disc, { label: `${i + 1}`, textBold: true, textSize: 'lg' });
+    // A Step number (docs/specs/009-elements/step-number.md) in the theme's accent.
+    k.shape('step', x, y, disc, disc, { label: `${i + 1}`, textBold: true, chipLook: 'solid' });
   if (k.wide) {
     // The offer and how to enter down the left, the prize on the right with its star.
     const colW = W * 0.46;

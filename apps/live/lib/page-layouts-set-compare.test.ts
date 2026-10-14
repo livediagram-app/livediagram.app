@@ -84,11 +84,20 @@ describe('the Compare set', () => {
       const names = ['Quick wins', 'Big bets', 'Fill-ins', 'Money pits'].map((n) =>
         labelled(els, n)!,
       );
-      const discs = shapes(els, 'circle').filter((c) => c.strokeWidth === 'thick');
+      // The plotted ideas are Step numbers inside the grid; the key repeats the numbers beside it.
+      const steps = shapes(els, 'step');
+      expect(steps).toHaveLength(14);
+      const inside = (d: (typeof steps)[number]) =>
+        quads.some(
+          (s) =>
+            d.x >= s.x &&
+            d.x + d.width <= s.x + s.width &&
+            d.y >= s.y &&
+            d.y + d.height <= s.y + s.height,
+        );
+      const discs = steps.filter(inside);
       expect(discs).toHaveLength(7);
       for (const d of discs) {
-        const q = quads.find((s) => d.x >= s.x && d.x + d.width <= s.x + s.width && d.y >= s.y);
-        expect(q).toBeDefined();
         for (const n of names) {
           const apart =
             d.x + d.width <= n.x ||

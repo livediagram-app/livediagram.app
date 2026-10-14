@@ -227,6 +227,16 @@ export function duplicateElements(
         if (mapped !== undefined) shape.portalTarget = mapped;
       }
       if (shape.flowchartId !== undefined) shape.flowchartId = chartIds.get(shape.flowchartId)!;
+      // An attached badge or step (docs/specs/009-elements/badge.md) follows its host's copy; copied alone it lands
+      // detached.
+      if (shape.attachedTo !== undefined) {
+        const host = idMap.get(shape.attachedTo);
+        if (host !== undefined) shape.attachedTo = host;
+        else {
+          delete shape.attachedTo;
+          delete shape.attachAt;
+        }
+      }
       // The lane follows the copy when it was copied too; otherwise the copy is in no lane of its
       // new chart.
       if (shape.flowLaneId !== undefined) {

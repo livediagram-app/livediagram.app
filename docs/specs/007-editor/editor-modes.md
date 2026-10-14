@@ -318,11 +318,15 @@ Illustrate's **Write** leaves out **Page** (the page is the canvas there) and
 (they organise a diagram, not a visual page), and its **Components** leaves
 out **Entity**; Diagram's
 **Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
-Docs, Website), keeping Image and Avatar. Facilitate joins **Write** and **Build** as one category, **Write &
-Build** (Text, Sticky note, Table, Frame: no Page, Annotation, Mind node, Flowchart, Lane, Timeline or Sankey), and
+Docs, Website), keeping Image and Avatar; its **Build** adds the **Card**, **Badge**, **Step Number** and
+**Boundary** ([The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
+[The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md)), and its **Write** adds the **Callout** from Components (a headed
+note belongs to a diagram as much as a page) ahead of the Comment panel and Action card. Facilitate joins **Write** and **Build** as one category, **Write &
+Build** (Text, Sticky note, Table, Checklist, Frame: no Page, Annotation, Mind node, Flowchart, Lane, Timeline or Sankey), and
 its **Draw** leaves out **Shape Pen** and **Polygon**: a session needs none of them. Facilitate offers the Collaborate elements as
 six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** and **Navigate**
-("Collaborate's six" below).
+("Collaborate's six" below), and shares Illustrate's **Data**: every chart and meter, since a session reads results
+and sets targets as often as a page reports them.
 
 | Category          | Diagram | Illustrate | Plan | Facilitate          |
 | ----------------- | ------- | ---------- | ---- | ------------------- |
@@ -335,13 +339,14 @@ six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** an
 | Draw              | yes     | no         | no   | yes                 |
 | Build             | yes     | yes        | no   | in Write            |
 | Components        | no      | yes        | no   | no                  |
+| Concepts          | yes     | yes        | no   | yes                 |
 | Devices           | no      | yes        | no   | no                  |
 | Event Storming    | board   | no         | no   | no                  |
 | Icons             | yes     | yes        | no   | yes                 |
 | Stickers          | no      | yes        | no   | yes                 |
 | Tech              | yes     | no         | no   | no                  |
 | Media             | yes     | yes        | no   | yes                 |
-| Data              | no      | yes        | no   | no                  |
+| Data              | no      | yes        | no   | yes                 |
 | Collaborate's six | no      | no         | no   | yes                 |
 
 Illustrate offers **Logo** only while the tab has a logo page, and turns to it when one is added

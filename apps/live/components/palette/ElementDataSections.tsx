@@ -14,7 +14,15 @@
 // handlers; this component only decides which items to show.
 
 import dynamic from 'next/dynamic';
+import { CardMenuSection } from '@/components/palette/CardMenuSection';
+import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
+import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
+import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import {
+  isChipShape,
+  isConceptShape,
+  type ConceptShape,
+  type ShapeElement,
   animLoops,
   DEFAULT_ANIMATION_SPEED,
   LINE_DEFAULT_SERIES,
@@ -218,8 +226,12 @@ export function ElementDataSections({
   // pattern as Style and Text, so a data element's menu doesn't grow a
   // band of bespoke rows. Animation stays top-level (every boxed
   // element has it).
+  const isChip = shapeTarget ? isChipShape(shapeTarget.shape) : false;
   const showTools =
     hasWebRowsSection(target) ||
+    isChip ||
+    shapeTarget?.shape === 'boundary' ||
+    (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isProgress ||
     isRail ||
     isRating ||
@@ -426,6 +438,41 @@ export function ElementDataSections({
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
             steps, a header's links: add / remove / reorder. */}
+          {/* A concept graphic's variant and animation (docs/specs/009-elements/concept-graphics.md). */}
+          {shapeTarget && isConceptShape(shapeTarget.shape) ? (
+            <ConceptMenuSection
+              target={shapeTarget as ShapeElement & { shape: ConceptShape }}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A boundary's style (docs/specs/009-elements/boundary.md). */}
+          {shapeTarget?.shape === 'boundary' ? (
+            <BoundaryMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A badge's or step number's look, Detach, Renumber, Play in Order (docs/specs/009-elements/badge.md). */}
+          {shapeTarget && isChip ? (
+            <ChipMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              stepsInOrder={props.elements.some(
+                (el) => el.type === 'shape' && el.shape === 'step' && el.stepSequence === true,
+              )}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* The card's slots (docs/specs/009-elements/card.md): band, title, meta line, media. */}
+          {shapeTarget?.shape === 'card' ? (
+            <CardMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
           {shapeTarget && hasWebRowsSection(shapeTarget) ? (
             <WebRowsMenuSection
               target={shapeTarget}

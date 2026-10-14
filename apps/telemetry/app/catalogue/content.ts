@@ -480,7 +480,13 @@ export const COLLABORATE_ADDED = addedFrom(
 export const COMPONENTS_ADDED = addedFrom(
   'components',
   'Components Added',
-  'Web components that lay themselves out: banners, callouts, stat rows, heroes.',
+  'Blocks that lay themselves out: cards, badges, step numbers, banners, callouts, stat rows, heroes.',
+);
+
+export const CONCEPTS_ADDED = addedFrom(
+  'concepts',
+  'Concepts Added',
+  'Concept graphics that lay out their own rows: layer stacks, pyramids, funnels and cycles.',
 );
 
 export const DEVICES_ADDED = addedFrom('devices', 'Devices Added', 'Device frames and mockups.');
@@ -510,6 +516,7 @@ export const ELEMENTS_ADDED: MetricStack = {
     TOOLS_ADDED,
     COLLABORATE_ADDED,
     COMPONENTS_ADDED,
+    CONCEPTS_ADDED,
     DEVICES_ADDED,
     ICONS_ADDED,
     OTHER_ELEMENTS_ADDED,

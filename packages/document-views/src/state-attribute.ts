@@ -110,6 +110,11 @@ export function stateAttributeOf(el: Element): ViewAttribute[] {
       return [countAttribute('progress', numberField(el, 'progress') ?? PROGRESS_DEFAULT)];
     case 'timeline-rail':
       return [countAttribute('points', numberField(el, 'railCount') ?? RAIL_DEFAULT_POINTS)];
+    case 'badge':
+    case 'step':
+      // Attached to a node (docs/specs/009-elements/badge.md): it moves, copies and deletes with it.
+      return stringField(el, 'attachedTo') ? [flagAttribute('attached')] : [];
+    case 'card':
     case 'page':
       return textState('title', textField(el, 'pageTitle'), (t) => jsonString(t, NOTE_CUT_CHARS));
     default:

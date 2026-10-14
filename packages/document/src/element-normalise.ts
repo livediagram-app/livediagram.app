@@ -11,12 +11,13 @@ import { CODE_LANGUAGES } from './data-shapes';
 import { isCodeThemeId } from './code-themes';
 import { variantFitsKind } from './chart-types';
 import { entityHeight } from './entity-geometry';
+import { settleChips } from './attachment';
 import { createShape } from './shape-factory';
 import { createSticky, createTable, createText } from './factories';
 import { migrateIncomingElements } from './stored-tab';
 import { normalizeTable } from './table';
 import { coerceShapeKind } from './validate';
-import type { TableElement, TextSize } from './index';
+import type { Element as DocElement, TableElement, TextSize } from './index';
 import { isRecord } from './is-record';
 import {
   cleanSankeyName,
@@ -241,5 +242,10 @@ export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
 
 export function normaliseElements<T>(elements: T): T {
   if (!Array.isArray(elements)) return elements;
-  return lanesToFront(elements.map(normaliseElement)) as T;
+  // An agent's badges and step numbers land fitted, numbered and on their hosts' points, as the editor's commits
+  // keep them (docs/specs/009-elements/badge.md "Agents").
+  const normalised = lanesToFront(elements.map(normaliseElement));
+  // Only a list of element records is settled; anything else is left for validation to refuse.
+  if (!normalised.every(isRecord)) return normalised as T;
+  return settleChips([], normalised as DocElement[]) as T;
 }

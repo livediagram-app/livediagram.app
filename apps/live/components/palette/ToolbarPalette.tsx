@@ -260,8 +260,17 @@ export function ToolbarPalette(props: Props) {
   const openedTab = openers.opened
     ? tabs.find((t) => t.id === openers.opened!.category)
     : undefined;
-  const openedPanel =
-    openers.opened && !openers.opened.group && openedTab?.tiles ? openedTab : null;
+  // A tile's presets (docs/specs/009-elements/card.md "Card presets") show in the same panel as an opener's category.
+  const openedVariants = openers.opened?.variants;
+  const openedPanel = openedVariants
+    ? {
+        label: openers.opened!.label,
+        description: openedVariants.description,
+        tiles: openedVariants.tiles,
+      }
+    : openers.opened && !openers.opened.group && openedTab?.tiles
+      ? openedTab
+      : null;
   // On a phone only My shapes keeps More: the swipe reaches every other category's tiles or groups.
   const showMore = swipe ? category?.id === 'my-shapes' : hasMore;
 

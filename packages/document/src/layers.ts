@@ -69,7 +69,12 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 //   front of actors (docs/specs/021-event-storming/event-storming.md Phase 4).
 // Array order decides within a tier.
 function paintTier(el: Element): number {
-  if (el.type === 'shape' && el.shape === 'frame') return 0;
+  // Frames and boundaries are backdrops (docs/specs/009-elements/boundary.md "A container").
+  if (el.type === 'shape' && (el.shape === 'frame' || el.shape === 'boundary')) return 0;
+  // An attached badge or step number (docs/specs/009-elements/badge.md) sits above everything in its band, so a
+  // later element never covers the mark on its host.
+  if (el.type === 'shape' && el.attachedTo && (el.shape === 'badge' || el.shape === 'step'))
+    return 4;
   const kind = eventStormingKindOf(el);
   if (kind === 'actor') return 2;
   if (kind === 'hotspot') return 3;
@@ -80,10 +85,17 @@ function paintTier(el: Element): number {
 // order, which is every band without frames, actors or hotspots out of place.
 function paintOrderIn(elements: Element[]): Element[] {
   const tiers = elements.map(paintTier);
-  if (tiers.every((t, i) => i === 0 || tiers[i - 1]! <= t)) return elements;
+  // Among the backdrops the larger paints first, so a boundary nested in another is never hidden behind it.
+  const area = (el: Element) =>
+    'width' in el && 'height' in el ? (el.width as number) * (el.height as number) : 0;
+  const backdropsInOrder = elements.every(
+    (el, i) =>
+      i === 0 || tiers[i] !== 0 || tiers[i - 1] !== 0 || area(elements[i - 1]!) >= area(el),
+  );
+  if (backdropsInOrder && tiers.every((t, i) => i === 0 || tiers[i - 1]! <= t)) return elements;
   return elements
-    .map((el, i) => ({ el, i, tier: tiers[i]! }))
-    .sort((a, b) => a.tier - b.tier || a.i - b.i)
+    .map((el, i) => ({ el, i, tier: tiers[i]!, area: tiers[i] === 0 ? area(el) : 0 }))
+    .sort((a, b) => a.tier - b.tier || b.area - a.area || a.i - b.i)
     .map((x) => x.el);
 }
 

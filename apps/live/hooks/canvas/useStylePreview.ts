@@ -214,6 +214,9 @@ export function useStylePreview(deps: {
 
   return {
     clearPreview,
+    // The preview / commit pair itself, for controls that map a field of their own (lib/element-style-ops.ts).
+    previewElementStyle: previewStyle,
+    commitElementStyle: commitStyle,
     // Shape colour preset
     previewShapeColorPreset: (p: ShapeColorPreset) =>
       previewStyle((el) => applyColorPresetToEl(el, p)),

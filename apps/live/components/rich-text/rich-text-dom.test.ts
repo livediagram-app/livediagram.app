@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import {
+  dataAttrsForRun,
   lineBeforeCaret,
+  readRunsFromDom,
   offsetsToDomRange,
   paragraphEndOffset,
   selectRange,
@@ -30,5 +32,27 @@ describe('rich-text-dom caret helpers', () => {
     expect(paragraphEndOffset(root)).toBe(15);
     selectRange(offsetsToDomRange(root, 18, 18));
     expect(paragraphEndOffset(root)).toBe(22);
+  });
+});
+
+describe('rich-text-dom run attributes', () => {
+  // A span the editor renders for a run, as React would with dataAttrsForRun.
+  const spanFor = (run: Parameters<typeof dataAttrsForRun>[0]) => {
+    const span = document.createElement('span');
+    for (const [k, v] of Object.entries(dataAttrsForRun(run))) span.setAttribute(k, v);
+    span.textContent = run.text;
+    return span;
+  };
+
+  it('round-trips a muted caption run and every heading level', () => {
+    const root = document.createElement('div');
+    root.append(
+      spanFor({ text: 'Title', heading: 3 }),
+      spanFor({ text: '\nCaption', muted: true, size: 'sm' }),
+    );
+    expect(readRunsFromDom(root)).toEqual([
+      { text: 'Title', heading: 3 },
+      { text: '\nCaption', muted: true, size: 'sm' },
+    ]);
   });
 });

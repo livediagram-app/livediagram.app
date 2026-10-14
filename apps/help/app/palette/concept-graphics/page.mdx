@@ -1,0 +1,65 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ConceptGraphics } from '@/components/illustrations/palette-diagram-elements';
+
+export const metadata = helpMetadata({
+  title: 'Concept Graphics',
+  description:
+    'Layer stacks, pyramids, funnels and cycles as single elements that lay out their own rows: add a tier or resize, and the whole graphic redraws.',
+  path: '/help/palette/concept-graphics/',
+});
+
+<ArticleLayout
+  title="Concept Graphics"
+  description="Layer stacks, pyramids, funnels and cycles that lay out their own rows."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("concept-graphics")}
+>
+
+The **Concepts** category holds four graphics for the shapes ideas come in. Each one is a single element that lays out its own rows, so adding a tier or resizing it redraws the whole thing, with nothing to re-cut or realign.
+
+- **Layer Stack**: bands stacked top to bottom, each with an optional side note. A tech stack, the OSI model, architecture tiers.
+- **Pyramid**: tiers cut from one triangle. A hierarchy of needs, a strategy stack.
+- **Funnel**: bands narrowing downward, each with an optional value. A conversion funnel.
+- **Cycle**: steps round a ring joined by arrows, with a label in the middle. Plan, Do, Check, Act; a flywheel; a release loop.
+
+Concepts is in the palette in Diagram, Illustrate and Facilitate modes.
+
+<Figure caption="A layer stack, a pyramid, a funnel and a cycle.">
+  <ConceptGraphics />
+</Figure>
+
+## Editing the rows
+
+Select the graphic, then click a row's words to type in place. Enter keeps the change and Escape puts it back. A layer's side note and a funnel band's value edit the same way.
+
+To add, remove or reorder rows, right-click and open the **Rows** section, or use **Add Layer**, **Add Tier** or **Add Step** on the ring round the selected graphic. A stack takes 2 to 8 layers, a pyramid 2 to 6 tiers and a cycle 3 to 8 steps.
+
+The first row is the top layer, the top tier (a pyramid's apex, a funnel's widest band) or the cycle's first step at twelve o'clock, with the rest following clockwise. Double-click a cycle to edit the label in its middle.
+
+## Pyramid, inverted or funnel
+
+A Pyramid, an Inverted pyramid and a Funnel are one element in three shapes. Right-click and pick one under **Shape** in its section to switch, keeping its rows.
+
+## Colours
+
+The rows are a ramp from the element's colour: the first row in full, each later one lighter. Each row's words take whichever ink reads best on it. Pick a new colour in **Colours** and the whole ramp follows, as does a theme switch. A cycle draws its first step solid, to show where the loop starts.
+
+## Animation
+
+Concept graphics animate their rows rather than the whole box. Right-click, open the graphic's section and pick under **Animation**:
+
+- **Build**: the rows appear one after another in reading order (a stack top down, a pyramid from its base up, a cycle clockwise). It plays once unless you turn on **Repeat**.
+- **Pulse**: each row lights in turn, then the loop starts again. On a cycle it reads as "we are here" travelling round.
+- **Flow** (cycles only): dashes travel round the arrows in the loop's direction.
+
+**Speed** sets the pace. Exports, and anyone who has turned on reduced motion, see every row at rest.
+
+<Tip>
+  The **Pyramid**, **Funnel** and **Flywheel** templates are built on these elements, so they make a
+  quick starting point with worked content.
+</Tip>
+
+</ArticleLayout>

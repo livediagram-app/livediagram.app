@@ -31,3 +31,4 @@ Follow the references below only as needed; never upfront.
 - ./canvas-performance.md - when a change touches how the canvas renders or reacts to a gesture: the budget, the reference board, and the rules that keep cost following what a gesture touches
 - ./drag-preview.md - when working on how a move, resize or reshape draws while it lasts, writes on release, and shows live to collaborators
 - ./finish.md - when working on Finish: the Flexible / Professional / Sketch drawing style of a tab and its elements (element follows its tab unless set), what each changes, where it is set, roles
+- ./accent-edge.md - when working on Accent edge: A coloured bar along the left, top or bottom of a box shape (square, stadium, card, mind node), clipped to its outline, set from Border, drawn the same in every export

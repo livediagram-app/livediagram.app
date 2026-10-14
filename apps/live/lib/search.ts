@@ -102,6 +102,7 @@ export type PaletteAdd =
       mode?: import('@livediagram/document').SelectionMode;
       estimateScale?: import('@livediagram/document').EstimateScale;
       plan?: string;
+      variant?: string;
     }
   | { type: 'icon'; iconId: string }
   | { type: 'tech'; iconId: string }

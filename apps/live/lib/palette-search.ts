@@ -41,6 +41,7 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
     mode?: string;
     estimateScale?: string;
     plan?: string;
+    variant?: string;
   };
   const kind = action.kind;
   // Keyed on the CHOICE where there is one, not just the kind: the five
@@ -48,7 +49,12 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
   // so keying on kind alone gave eight results three distinct ids and the
   // panel silently dropped the duplicates.
   const choice =
-    action.session ?? action.reaction ?? action.mode ?? action.estimateScale ?? action.plan;
+    action.session ??
+    action.reaction ??
+    action.mode ??
+    action.estimateScale ??
+    action.plan ??
+    action.variant;
   return {
     id: choice ? `shape:${kind}:${choice}` : `shape:${kind}`,
     name: tileDisplayName(tile),
@@ -63,6 +69,7 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
       ...(action.reaction ? { reaction: action.reaction as never } : {}),
       ...(action.mode ? { mode: action.mode as never } : {}),
       ...(action.estimateScale ? { estimateScale: action.estimateScale as never } : {}),
+      ...(action.variant ? { variant: action.variant } : {}),
       ...(action.plan ? { plan: action.plan } : {}),
     },
   } satisfies PaletteSearchItem;

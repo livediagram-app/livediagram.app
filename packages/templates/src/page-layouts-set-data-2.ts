@@ -97,7 +97,7 @@ function marketShare(k: Kit): Element[] {
     ];
   };
   const insight = (x: number, y: number, w: number, h: number) =>
-    k.shape('callout', x, y, w, h, {
+    k.callout(x, y, w, h, {
       pageTitle: 'The story',
       label: 'Oat took six points in a year, most of them from soy.',
       textSize: 'md',

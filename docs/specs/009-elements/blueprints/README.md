@@ -30,3 +30,7 @@ Follow the references below only as needed; never upfront.
 - ./web-components.md - when implementing or changing web components, their rows, or legacy group migration
 - ./DEFAULTS.md - when an elements blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories an elements blueprint covers
+- ./card.md - when implementing or changing the card, its slots, layout, menu or the callout migration
+- ./badge.md - when implementing or changing the badge, the step number, attachment and settling, or step numbering
+- ./boundary.md - when implementing or changing the boundary, its styles, depth tint, containment or paint order
+- ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations

@@ -1,4 +1,4 @@
-import type { Element } from '@livediagram/document';
+import { withInlineIcon, type Element } from '@livediagram/document';
 
 import { isTechIconId } from '@/lib/tech-icons';
 import { track } from '@/lib/telemetry';
@@ -44,7 +44,7 @@ export function useInlineIconMutators({
     if (target?.type === 'shape' && target.shape === 'icon') {
       if (target.iconId === iconId) return;
       commit((els) =>
-        els.map((e) => (e.id === elementId && e.type === 'shape' ? { ...e, iconId } : e)),
+        els.map((e) => (e.id === elementId && e.type === 'shape' ? withInlineIcon(e, iconId) : e)),
       );
       track('Element', 'Changed', 'IconSwapped');
       return;
@@ -52,7 +52,7 @@ export function useInlineIconMutators({
     commit((els) =>
       els.map((e) =>
         e.id === elementId && e.type === 'shape' && e.shape !== 'icon'
-          ? { ...e, iconId, iconPosition: position }
+          ? withInlineIcon(e, iconId, position)
           : e,
       ),
     );
@@ -100,7 +100,7 @@ export function useInlineIconMutators({
           // Onto an icon: the dragged icon replaces its glyph; the target keeps its box,
           // place and style, and the dragged one is used up.
           if (e.shape === 'icon') return { ...e, iconId: glyph };
-          return { ...e, iconId: glyph, iconPosition: position };
+          return withInlineIcon(e, glyph, position);
         });
     });
     // No `Element·Added` here: the glyph is an icon that was already counted

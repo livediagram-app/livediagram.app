@@ -26,6 +26,7 @@ import {
   createText,
   type Element,
   type TableCellStyle,
+  createCalloutCard,
 } from '@livediagram/document';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import {
@@ -177,7 +178,7 @@ function summaryBand(x0: number, top: number, h: number): Element[] {
       ...CONTENT,
     },
     {
-      ...createShape('callout', x0 + summaryW + gap, top),
+      ...createCalloutCard(x0 + summaryW + gap, top),
       width: calloutW,
       height: h,
       pageTitle: 'Blameless',

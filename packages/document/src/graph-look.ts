@@ -8,6 +8,7 @@
 //
 // Graph input only (graph-input.ts `layoutGraph`); the editor's Mermaid import and Tidy Up never run them.
 
+import { isContainerKind } from './containment';
 import { edgeKey } from './auto-layout';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { rectGrid, type RectGrid } from './auto-layout-route-grid';
@@ -418,9 +419,8 @@ function segmentHitsBox(a: Pt, b: Pt, box: BoxedElement, inset = 4): boolean {
   return clip(-dx, a.x - x0) && clip(dx, x1 - a.x) && clip(-dy, a.y - y0) && clip(dy, y1 - a.y);
 }
 
-// A frame or lane is a backdrop the loop may cross; it never pushes the track out.
-const isBackdrop = (b: BoxedElement) =>
-  b.type === 'shape' && (b.shape === 'frame' || b.shape === 'lane');
+// A container (a frame, lane or boundary) is a backdrop the loop may cross; it never pushes the track out.
+const isBackdrop = (b: BoxedElement) => b.type === 'shape' && isContainerKind(b.shape);
 
 // The one-bend route for a loop whose source sits clear beyond its target's outer side, or null: up (TB) from the
 // source's top to the target's middle, then into the target's outer side. Null when a box stands on either leg.

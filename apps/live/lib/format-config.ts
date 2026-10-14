@@ -58,6 +58,8 @@ const FIELD_GROUP: Record<string, FormatGroup> = {
   strokeWidth: 'border',
   strokeStyle: 'border',
   borderRadius: 'border',
+  accentEdge: 'border',
+  accentEdgeColor: 'border',
   arrowEnds: 'border',
   arrowheadColor: 'border',
   arrowheadSize: 'border',

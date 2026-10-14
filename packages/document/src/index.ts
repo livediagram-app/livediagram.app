@@ -399,6 +399,15 @@ export {
   type PlanTabKind,
   type TabKind,
 } from './tab-kind';
+export * from './accent-edge';
+export * from './card';
+export * from './chip';
+export * from './attachment';
+export * from './boundary';
+export * from './concept';
+export * from './concept-ramp';
+export * from './shape-variants';
+export * from './title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
 export * from './illustrate-page';
@@ -569,6 +578,7 @@ export * from './quiz';
 export * from './shape-geometry';
 export * from './actor-figure';
 export * from './color-wash';
+export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
 // The Q&A board (docs/specs/012-collaboration/qa-board.md)

@@ -2,6 +2,7 @@ import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAc
 import {
   containerContents,
   withSheetCharts,
+  withAttached,
   anchorOutward,
   anchorPosition,
   isBoxed,
@@ -97,11 +98,15 @@ export function useBoxedDragHandlers({
     const ids =
       mode === 'move'
         ? unlocked(
-            withSheetCharts(
+            // A host's badges and step numbers ride its drag (docs/specs/009-elements/badge.md).
+            withAttached(
               d.activeTab.elements,
-              withMindSubtrees(
+              withSheetCharts(
                 d.activeTab.elements,
-                containerContents(d.activeTab.elements, baseIds),
+                withMindSubtrees(
+                  d.activeTab.elements,
+                  containerContents(d.activeTab.elements, baseIds),
+                ),
               ),
             ),
           )

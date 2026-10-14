@@ -42,6 +42,11 @@ import {
 } from './data-shapes';
 import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web-components';
 import { isCodeThemeId } from './code-themes';
+import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
+import { isChipLook } from './chip';
+import { isAttachPoint } from './attachment';
+import { isBoundaryStyle } from './boundary';
+import { isPyramidVariant } from './concept';
 import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow, isMindSpacing } from './mind-flow';
 import {
@@ -105,6 +110,21 @@ export const CHART_PALETTE_IDS_RULE = [
   'earth',
   'grey',
   'contrast',
+] as const;
+
+// The chip looks and attach points a refusal lists, written out for the same reason as the chart palettes above:
+// chip.ts sits in an import cycle with this module, so its lists may be uninitialised while this one loads. A test
+// keeps the copies equal.
+export const CHIP_LOOKS_RULE = ['solid', 'ink', 'outline', 'tinted', 'quiet'] as const;
+export const ATTACH_POINTS_RULE = [
+  'top-left',
+  'top',
+  'top-right',
+  'right',
+  'bottom-right',
+  'bottom',
+  'bottom-left',
+  'left',
 ] as const;
 
 const flag = (field: string): FieldCheck => ({ field, valid: isBool, rule: 'a boolean' });
@@ -247,6 +267,33 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'flowLaneId', valid: isNonEmptyStr, rule: 'an element id' },
   { field: 'pageTitle', valid: isHeadingStr, rule: stringRule(PAGE_HEADING_MAX) },
   { field: 'pageSubtitle', valid: isHeadingStr, rule: stringRule(PAGE_HEADING_MAX) },
+  // Card slots (docs/specs/009-elements/card.md).
+  { field: 'cardMedia', valid: isCardMedia, rule: oneOfRule(['badge', 'tile', 'initial']) },
+  flag('cardHeader'),
+  // Badge and Step number (docs/specs/009-elements/badge.md).
+  { field: 'chipLook', valid: isChipLook, rule: oneOfRule(CHIP_LOOKS_RULE) },
+  { field: 'attachedTo', valid: isNonEmptyStr, rule: 'an element id' },
+  { field: 'attachAt', valid: isAttachPoint, rule: oneOfRule(ATTACH_POINTS_RULE) },
+  flag('stepSequence'),
+  // Boundary (docs/specs/009-elements/boundary.md).
+  { field: 'boundaryStyle', valid: isBoundaryStyle, rule: oneOfRule(['tab', 'inset', 'c4']) },
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows are content; the animation is
+  // cosmetic and lenient, like every element animation.
+  {
+    field: 'conceptRows',
+    valid: rowsOf(8, (r) => isRecord(r) && isStrUpTo(60)(r.label) && isOptionalStrUpTo(r.note, 40)),
+    rule: 'an array of at most 8 { label, note? } rows (60 and 40 characters)',
+  },
+  {
+    field: 'pyramidVariant',
+    valid: isPyramidVariant,
+    rule: oneOfRule(['pyramid', 'inverted', 'funnel']),
+  },
+  {
+    field: 'tags',
+    valid: rowsOf(CARD_TAGS_MAX, isStrUpTo(CARD_TAG_MAX)),
+    rule: `an array of at most ${CARD_TAGS_MAX} strings of at most ${CARD_TAG_MAX} characters`,
+  },
   {
     field: 'entityFields',
     valid: rowsOf(ENTITY_MAX_FIELDS, isEntityField),

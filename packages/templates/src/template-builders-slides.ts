@@ -221,10 +221,11 @@ const SLIDE_BODIES: ((k: Kit, top: number, bottom: number) => Element[])[] = [
     ] as const;
     const centred = { textAlignX: 'center' as const };
     const discs = steps.map((_, i) =>
-      k.shape('circle', i * colW + (colW - d) / 2, top, d, d, {
+      // Step numbers (docs/specs/009-elements/step-number.md) in the theme's accent.
+      k.shape('step', i * colW + (colW - d) / 2, top, d, d, {
         label: String(i + 1),
         textBold: true,
-        textSize: 'lg',
+        chipLook: 'solid',
       }),
     );
     return [
@@ -240,7 +241,7 @@ const SLIDE_BODIES: ((k: Kit, top: number, bottom: number) => Element[])[] = [
           ...slideType(k, DETAIL_UNITS),
         }),
       ]),
-      k.shape('callout', 0, bottom - calloutH, W, calloutH, {
+      k.callout(0, bottom - calloutH, W, calloutH, {
         pageTitle: 'Safe by default',
         label: 'Skills, hours and pay grade are checked automatically.',
         textSize: 'lg',
@@ -269,7 +270,7 @@ const SLIDE_BODIES: ((k: Kit, top: number, bottom: number) => Element[])[] = [
         ],
         chartLegend: false,
       }),
-      k.shape('callout', W * 0.64, y, W * 0.36, bottom - y, {
+      k.callout(W * 0.64, y, W * 0.36, bottom - y, {
         pageTitle: 'From the wards',
         label: '“The first rota tool our night shift actually uses.” Matron, St Anne’s',
         textSize: 'lg',

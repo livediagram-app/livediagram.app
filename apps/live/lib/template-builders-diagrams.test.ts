@@ -20,30 +20,27 @@ const centreOf = (el: { x: number; y: number; width: number; height: number }) =
 
 describe('pyramid template', () => {
   const els = buildTemplate('pyramid', 0, 0);
-  const bands = shapesOf(els, 'triangle');
+  const [pyramid] = shapesOf(els, 'pyramid');
 
-  it('bands one triangle into five theme-locked tiers that share an apex', () => {
-    expect(bands).toHaveLength(5);
-    // The triangle silhouette's apex sits at 50% across, 2% down its box.
-    const apexes = bands.map((b) => ({ x: b.x + b.width / 2, y: b.y + b.height * 0.02 }));
-    for (const a of apexes) {
-      expect(a.x).toBeCloseTo(apexes[0]!.x, 5);
-      expect(a.y).toBeCloseTo(apexes[0]!.y, 5);
-    }
-    // Largest band first, so each smaller one paints over the top of it.
-    const widths = bands.map((b) => b.width);
-    expect([...widths].sort((a, b) => b - a)).toEqual(widths);
-    expect(bands.every((b) => b.themeLockFill)).toBe(true);
+  it('is one theme-locked Pyramid element with the five tiers, peak first', () => {
+    expect(shapesOf(els, 'triangle')).toHaveLength(0);
+    expect(pyramid?.conceptRows?.map((r) => r.label)).toEqual([
+      'Purpose',
+      'Vision',
+      'Strategy',
+      'Goals',
+      'Initiatives',
+    ]);
+    expect(pyramid?.themeLockFill).toBe(true);
   });
 
-  it('names each tier and gives it a guiding question card on the rail', () => {
-    const t = texts(els);
-    for (const tier of ['Purpose', 'Vision', 'Strategy', 'Goals', 'Initiatives'])
-      expect(t).toContain(tier);
-    // Each card leads with its question, carries a glyph and is tinted.
-    const cards = shapesOf(els, 'square');
-    expect(cards.map((c) => c.label?.split('\n')[0]?.endsWith('?'))).toEqual(Array(5).fill(true));
-    expect(cards.every((c) => c.iconId && c.themeLockFill)).toBe(true);
+  it('gives each tier a guiding question card on the rail', () => {
+    const cards = shapesOf(els, 'card');
+    expect(cards.map((c) => c.pageTitle?.endsWith('?'))).toEqual(Array(5).fill(true));
+    expect(cards.every((c) => c.iconId && c.cardMedia === 'tile' && c.themeLockFill)).toBe(true);
+    expect(cards.every((c) => c.accentEdge === 'left')).toBe(true);
+    // The rail sits clear of the pyramid, to its right.
+    expect(cards.every((c) => c.x > pyramid!.x + pyramid!.width)).toBe(true);
   });
 
   it('opens with a bold title', () => {

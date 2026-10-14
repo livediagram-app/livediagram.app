@@ -9,6 +9,8 @@ import {
   acceptsInlineIcon,
   createAnnotation,
   type EmbedProvider,
+  applyShapeVariant,
+  withInlineIcon,
   createShape,
   defaultIconAnimation,
   createText,
@@ -124,6 +126,7 @@ export function useElementCreation(opts: {
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
       plan?: string;
+      variant?: string;
     },
   ) => {
     if (editsBlocked) return;
@@ -137,6 +140,7 @@ export function useElementCreation(opts: {
       ...(opts?.reaction ? { reaction: opts.reaction } : {}),
       ...(opts?.mode ? { mode: opts.mode } : {}),
       ...(opts?.estimateScale ? { estimateScale: opts.estimateScale } : {}),
+      ...(opts?.variant ? { variant: opts.variant } : {}),
     });
   };
 
@@ -165,7 +169,7 @@ export function useElementCreation(opts: {
                 // closure — writing `sel` back would clobber any change
                 // that landed on this element since the render.
                 elements: t.elements.map((e) =>
-                  e.id === sel.id ? { ...e, iconId, iconPosition: sel.iconPosition ?? 'left' } : e,
+                  e.id === sel.id ? withInlineIcon(e, iconId, sel.iconPosition ?? 'left') : e,
                 ),
               },
         ),
@@ -411,7 +415,8 @@ export function useElementCreation(opts: {
                 : {}),
             }
           : {
-              ...createShape(kind, x, y),
+              // A creation-time variant (the Callout card, a Funnel) applies to its own kind only.
+              ...applyShapeVariant(createShape(kind, x, y), art?.choice),
               // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
               // /135). Applied by the kind that owns the field, so one payload
               // serves all four without the drop path knowing which is which.

@@ -25,6 +25,7 @@ import {
   carriesWords,
   hasRichFormatting,
   normalizeRuns,
+  supportsAccentEdge,
   type AnimationSpeed,
   type ArrowElement,
   type BorderRadius,
@@ -172,6 +173,11 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     out.strokeStyle = ext.strokeStyle;
   }
   if (RADIUS_KINDS.has(kind)) out.borderRadius = ext.borderRadius;
+  // The accent edge (docs/specs/008-canvas/accent-edge.md) travels with Border, on the kinds that draw one.
+  if (supportsAccentEdge(source)) {
+    out.accentEdge = (source as { accentEdge?: unknown }).accentEdge;
+    out.accentEdgeColor = (source as { accentEdgeColor?: unknown }).accentEdgeColor;
+  }
   if (kind === 'table') out.headerTextColor = ext.headerTextColor;
   // The finish (docs/specs/008-canvas/finish.md), on the kinds that carry one; unset copies Follow Tab.
   if (FINISH_KINDS.has(kind)) out.finish = (source as { finish?: Finish }).finish;
@@ -324,6 +330,12 @@ export function applyPaint<T extends BoxedElement | ArrowElement>(
     if (!(colour in painted)) continue;
     if (painted[binding] !== undefined) next[binding] = painted[binding];
     else delete next[binding];
+  }
+
+  // An accent edge lands only on a kind that draws one (docs/specs/008-canvas/accent-edge.md).
+  if (!supportsAccentEdge(target)) {
+    delete next.accentEdge;
+    delete next.accentEdgeColor;
   }
 
   const runs = next.richText as TextRun[] | undefined;

@@ -88,7 +88,7 @@ describe('People and Ideas layouts', () => {
     expect(notes).toHaveLength(6);
     expect(notes.every((n) => n.rotation !== 0)).toBe(true);
     expect(shapes(els, 'circle')).toHaveLength(6);
-    expect(shapes(els, 'callout')).toHaveLength(1);
+    expect(shapes(els, 'card')).toHaveLength(1);
   });
 
   it('persona: a quote, goals and frustrations, and two traits', () => {

@@ -135,6 +135,25 @@ Invariants:
 - **I4:** no stored value ever reaches the DOM as markup; runs render as React text.
 - **I5:** an `href` is emitted only when `isSafeFollowUrl(run.link)`.
 
+### Title and Caption (label toolbar only)
+
+Derived from [The block-type picker](../block-type-picker.md) "Title and Caption".
+
+- `TextRun.muted?: boolean` (in `ATTR_KEYS` and `RunPatch`); renderers draw a muted run at `MUTED_RUN_OPACITY`
+  (0.65): `effectiveRunStyle` (`opacity`), `svgRichWrappedLabel` (`fill-opacity`), the PNG drawer
+  (`ctx.globalAlpha`). Carried on the editor's spans as `data-rt-muted` and read back; `ExportRun.muted` keeps a
+  muted fragment from merging with a plain one.
+- `applyTitleCaption(runs)` (`packages/document/src/title-caption.ts`): clears headings and list markers, appends
+  `\nCaption` to a one-line label, then line 0 `{ bold: true, size: undefined, muted: undefined }` and every later
+  line `{ bold: false, size: 'sm', muted: true }`; normalised.
+- `useRichTextFormatActions.applyTitleCaptionPreset` applies it to the whole label (one block apply, caret parked at
+  the end); `BlockTypePicker` shows the entry below a separator only when `onApplyTitleCaption` is passed (the label
+  toolbar), so the note toolbar never offers it. Telemetry rides the label editor's generic `TextFormat`.
+- Read-back fix: `data-rt-heading="3"` now reads back as heading 3 (it was dropped, so a character typed inside a
+  Heading 3 lost the level).
+- Tests: `packages/document/src/title-caption.test.ts`, `apps/live/components/rich-text/rich-text-dom.test.ts`
+  ("round-trips a muted caption run and every heading level"), `apps/live/components/rich-text/BlockTypePicker.test.tsx`.
+
 ## Interfaces and contracts
 
 ```ts

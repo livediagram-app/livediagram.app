@@ -18,6 +18,7 @@ import {
   defaultPadding,
   isBoxed,
   isChartShape,
+  positionsInlineIcon,
   isLaneBand,
   laneEdgeOfElement,
   isChecklistShape,
@@ -303,28 +304,34 @@ export function ElementAppearanceSections({
         <>
           <MenuGroupSeparator />
           <MenuAccordionSection title="Icon" icon={<IconCategoryGlyph />} {...sectionProps('icon')}>
-            <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-              Icon position
-            </p>
-            <IconPositionGrid
-              current={(target as { iconPosition?: string }).iconPosition ?? 'left'}
-              onPick={(pos) =>
-                props.onSetIconPosition(
-                  target.id,
-                  (target as { iconId?: string }).iconId ?? '',
-                  pos,
-                )
-              }
-              onPreview={(pos) =>
-                props.onPreviewIconPosition(
-                  target.id,
-                  (target as { iconId?: string }).iconId ?? '',
-                  pos,
-                )
-              }
-              onPreviewEnd={props.onPreviewStyleEnd}
-            />
-            <ContextMenuDivider />
+            {/* A card, callout, header or boundary places its own icon, so it offers no position. */}
+            {positionsInlineIcon(target) ? (
+              <>
+                <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                  Icon position
+                </p>
+                <IconPositionGrid
+                  current={(target as { iconPosition?: string }).iconPosition ?? 'left'}
+                  onPick={(pos) =>
+                    props.onSetIconPosition(
+                      target.id,
+                      (target as { iconId?: string }).iconId ?? '',
+                      pos,
+                    )
+                  }
+                  onPreview={(pos) =>
+                    props.onPreviewIconPosition(
+                      target.id,
+                      (target as { iconId?: string }).iconId ?? '',
+                      pos,
+                    )
+                  }
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                />
+                <ContextMenuDivider />
+              </>
+            ) : null}
+
             <div className="px-2 py-1.5">
               <MenuTile
                 icon={<RemoveIconGlyph />}

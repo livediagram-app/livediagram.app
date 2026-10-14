@@ -124,6 +124,7 @@ import { boundsOfPoints, type Point } from './geometry-primitives';
 import { getBuiltInTheme } from './themes';
 import { themeChartPalette } from './theme-presets';
 import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
+import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
@@ -313,6 +314,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       chartGround: opts.chartGrounds?.get(el.id),
       label: label?.text ?? el.label ?? '',
       surface,
+      resolveIconArt: opts.resolveIconArt,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the
@@ -351,7 +353,17 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
           : el.type === 'shape' && el.shape === 'page'
             ? svgPageFold(el, shape.fill, shape.stroke, opts.paper ?? '#ffffff')
             : '';
-    shapeStr = box + onBox + face;
+    // An accent edge (docs/specs/008-canvas/accent-edge.md): over the fill, inside the border, under the label.
+    const edgeBorder = el.type === 'shape' ? borderOf(el, finish) : null;
+    const edge =
+      el.type === 'shape' && edgeBorder
+        ? svgAccentEdge(el, {
+            stroke: shape.stroke,
+            borderWidth: edgeBorder.width,
+            radius: el.shape === 'stadium' || el.shape === 'mind-node' ? rx : edgeBorder.radius,
+          })
+        : '';
+    shapeStr = box + edge + onBox + face;
   } else if (shape.kind === 'icon') {
     shapeStr = svgIconShape(el, shape.art, shape.stroke);
   } else if (shape.kind === 'sticker') {
@@ -480,6 +492,8 @@ export function boxedNeedsSvgRaster(
   // A shadow renders via an feDropShadow filter def (docs/specs/008-canvas/element-shadows.md), which the
   // PNG canvas drawers can't reproduce natively.
   if (supportsShadow(el) && el.shadow) return true;
+  // An accent edge (docs/specs/008-canvas/accent-edge.md) is a clipped bar only the SVG draws.
+  if (resolvedAccentEdge(el)) return true;
   if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return true;
   // Wordmark type (tracking, weight, case, an arc) is drawn by the SVG alone.
   if (el.type === 'text' && hasWordmarkType(el)) return true;

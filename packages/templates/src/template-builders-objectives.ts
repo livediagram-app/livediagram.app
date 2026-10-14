@@ -6,7 +6,7 @@
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
 import {
-  createShape,
+  createCalloutCard,
   createSticky,
   createText,
   runsPlainText,
@@ -183,7 +183,7 @@ export function buildObjectivesPlanner(cx: number, cy: number): Element[] {
   // START WITH WHY: the focus, then what to build on and what to grow.
   const focusH = 132;
   content.push({
-    ...createShape('callout', whyX, top),
+    ...createCalloutCard(whyX, top),
     width: whyW,
     height: focusH,
     pageTitle: 'My focus for the half',

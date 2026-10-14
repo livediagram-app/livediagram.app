@@ -78,6 +78,14 @@ describe('quickStyleView: which sections show', () => {
     expect(sections([shape('a', { iconId: 'server' })])).toContain('iconAlign');
   });
 
+  it('offers no icon alignment on a kind that places its own icon (a card, callout, header, boundary)', () => {
+    for (const kind of ['card', 'callout', 'site-header', 'boundary'] as const) {
+      expect(sections([shape('a', { shape: kind, iconId: 'server' })]), kind).not.toContain(
+        'iconAlign',
+      );
+    }
+  });
+
   it('gives an arrow stroke, width and style', () => {
     expect(sections([arrow('a')])).toEqual(['stroke', 'width', 'style']);
   });

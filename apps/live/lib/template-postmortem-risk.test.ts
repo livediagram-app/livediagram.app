@@ -41,7 +41,7 @@ describe('incident postmortem', () => {
 
   it('opens with a summary, a Blameless reminder and a stat row of impact', () => {
     expect(labels(els)).toContain('Summary');
-    const callout = shapesOf(els, 'callout')[0]!;
+    const callout = shapesOf(els, 'card')[0]!;
     expect(callout.pageTitle).toBe('Blameless');
     const stats = shapesOf(els, 'stat-row')[0]!.stats!;
     expect(stats.map((s) => s.caption)).toEqual([

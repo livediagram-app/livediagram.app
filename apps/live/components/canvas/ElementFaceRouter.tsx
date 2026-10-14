@@ -16,6 +16,11 @@ import {
   ownColours,
   isSelfDrawingShape,
   isWebComponentShape,
+  isChipShape,
+  isConceptShape,
+  type ConceptShape,
+  type ShapeElement,
+  defaultTextColor,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
@@ -47,6 +52,9 @@ import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
 import { loadCollabFaceRouter, loadTableView } from '@/lib/editor-deferred-code';
 import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
+import { ChipFace } from '@/components/canvas/ChipFace';
+import { BoundaryFace } from '@/components/canvas/BoundaryFace';
+import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -464,6 +472,41 @@ export function ElementFaceRouter({
           onFollowLink={onFollowLink}
           fontFamily={fontFamily}
         />
+      ) : element.type === 'shape' && isConceptShape(element.shape) ? (
+        // A layer stack, pyramid or cycle (docs/specs/009-elements/concept-graphics.md): its rows in the accent ramp.
+        <ConceptFace
+          element={element as ShapeElement & { shape: ConceptShape }}
+          labelNode={labelNode}
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          fill={element.fillColor ?? defaultFillColor(element, surface)}
+          ink={textColor}
+          fontFamily={fontFamily}
+          editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
+          onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
+        />
+      ) : element.type === 'shape' && element.shape === 'boundary' ? (
+        // A boundary (docs/specs/009-elements/boundary.md): its tint, and its title in its tab or corner. It draws
+        // its own icon, so this sits before the generic inline-icon layout.
+        <BoundaryFace
+          element={element}
+          labelNode={labelNode}
+          // Its own accent, never a remote selector's: the tab, tint and title are its content, and the wrapper's
+          // outline already shows who has it selected.
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          ink={textColor}
+          fontFamily={fontFamily}
+          editable={isSelected && !readOnly && !isLocked}
+          onSetMeta={(value) => onSetPageHeading(element.id, 'pageSubtitle', value)}
+        />
+      ) : element.type === 'shape' && isChipShape(element.shape) ? (
+        // A badge or step number (docs/specs/009-elements/badge.md): its pill or disc under its own label.
+        <ChipFace
+          element={element}
+          labelNode={labelNode}
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          fill={element.fillColor ?? defaultFillColor(element, surface)}
+          ink={element.textColor ?? defaultTextColor(element, surface)}
+        />
       ) : element.type === 'shape' && isWebComponentShape(element.shape) ? (
         /* The web components (docs/specs/009-elements/web-components-and-no-groups.md): each lays out its own content and
            places the label in its own region, so it is edited like any
@@ -474,7 +517,10 @@ export function ElementFaceRouter({
           kind={element.shape}
           element={element}
           labelNode={labelNode}
-          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+          // Its own accent, never a remote selector's: a card's header band, media and tags (a banner's bar, a stat
+          // row's numbers) are its content, so a collaborator's selection recoloured the whole face; the wrapper's
+          // outline already shows who has it selected.
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
           fill={element.fillColor ?? defaultFillColor(element, surface)}
           textColor={textColor}
           fontFamily={fontFamily}

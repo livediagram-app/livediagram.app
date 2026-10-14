@@ -85,6 +85,7 @@ import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID, opensInOf, settleFlowcharts } from '@livediagram/document';
+import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { useArticles } from '@/hooks/editor/useArticles';
@@ -305,7 +306,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
     (mapTabs: (ts: Tab[]) => Tab[]) =>
-      rawTickTabs((ts) => guardLockedPagesIn(ts, mapTabs(ts), pageLockGuardRef.current)),
+      rawTickTabs((ts) =>
+        guardLockedPagesIn(ts, settleChipsInTabs(ts, mapTabs(ts)), pageLockGuardRef.current),
+      ),
     [rawTickTabs],
   );
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
@@ -340,7 +343,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       });
       // Locked pages (docs/specs/007-editor/illustrate-pages.md "Locking a page"): in Illustrate
       // mode nothing is added to, moved onto, changed on or taken off a locked page.
-      const next = guardLockedPagesIn(ts, mapped, pageLockGuardRef.current);
+      // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after any chart re-layout moved
+      // their hosts.
+      const next = guardLockedPagesIn(ts, settleChipsInTabs(ts, mapped), pageLockGuardRef.current);
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
       return next.map((t) => {
@@ -3134,6 +3139,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTableHeaderColumnSelected,
     setTableZebraSelected,
     setHeaderFillSelected,
+    burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
     setTableHeaderTextColorSelected,
@@ -3289,6 +3295,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // state.
   const {
     clearPreview: clearStylePreview,
+    previewElementStyle,
+    commitElementStyle,
     previewShapeColorPreset,
     commitShapeColorPreset,
     previewArrowPreset,
@@ -4116,6 +4124,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     resetColorsSelected,
     // Style-preset hover preview + click commit (docs/specs/010-palette/style-presets.md).
     clearStylePreview,
+    previewElementStyle,
+    commitElementStyle,
+    // A whole-tab write in one history step, for menu controls that change many elements at once (renumbering
+    // steps, Play in Order): lib/element-style-ops.ts.
+    commitElements: commit,
     previewShapeColorPreset,
     commitShapeColorPreset,
     previewArrowPreset,
@@ -4199,6 +4212,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTableHeaderColumnSelected,
     setTableZebraSelected,
     setHeaderFillSelected,
+    burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
     setTableHeaderTextColorSelected,

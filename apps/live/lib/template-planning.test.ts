@@ -175,7 +175,7 @@ describe('roadmap template', () => {
 describe('horizontal milestone timeline template', () => {
   const els = buildTemplate('milestone-timeline', 0, 0);
   const phases = shapesOf(els, 'stadium').filter((s) => s.themeLockFill);
-  const cards = shapesOf(els, 'callout');
+  const cards = shapesOf(els, 'card');
   const ribbonTop = phases[0]!.y;
   const ribbonBottom = ribbonTop + phases[0]!.height;
 
@@ -207,7 +207,7 @@ describe('horizontal milestone timeline template', () => {
       const ring = byId(els, s.from.elementId);
       const ringCy = ring.y + ring.height / 2;
       expect([ribbonTop, ribbonBottom]).toContain(ringCy);
-      expect(byId(els, s.to.elementId).shape).toBe('callout');
+      expect(byId(els, s.to.elementId).shape).toBe('card');
       expect(s.arrowEnds).toBe('none');
     }
     for (const c of cards) {
@@ -240,7 +240,7 @@ describe('horizontal milestone timeline template', () => {
 
 describe('vertical milestone timeline template', () => {
   const els = buildTemplate('milestone-timeline-vertical', 0, 0);
-  const cards = shapesOf(els, 'callout');
+  const cards = shapesOf(els, 'card');
   const spine = arrowsOf(els).find((a) => a.from.kind === 'free')!;
   const spineX = spine.from.kind === 'free' ? spine.from.x : NaN;
   const years = textsOf(els).filter((t) => /^20\d\d$/.test(t.label ?? ''));

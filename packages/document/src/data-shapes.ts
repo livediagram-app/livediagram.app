@@ -217,7 +217,11 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     isLegendShape(kind) ||
     isSankeyShape(kind) ||
     isPlanShape(kind) ||
-    kind === 'sticker'
+    kind === 'sticker' ||
+    // A layer stack and a pyramid draw all their own text (docs/specs/009-elements/concept-graphics.md); a cycle
+    // keeps its label, the words at its centre.
+    kind === 'layer-stack' ||
+    kind === 'pyramid'
   );
 }
 

@@ -47,6 +47,7 @@ import { describeVariant, editingLook } from '@/components/canvas/element-varian
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
+import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
@@ -529,6 +530,10 @@ function BoxedElementViewImpl({
           stroke={remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface)}
         />
       ) : null}
+      <AccentEdgeOverlay
+        element={element}
+        stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+      />
       <ShapeContentRouter
         element={element}
         isEditing={isEditing}

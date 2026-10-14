@@ -13,6 +13,12 @@ import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
+import type { AccentEdge } from './accent-edge';
+import type { CardMedia } from './card';
+import type { ChipLook } from './chip';
+import type { AttachPoint } from './attachment';
+import type { BoundaryStyle } from './boundary';
+import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
@@ -222,6 +228,10 @@ export type ShapeElement = {
   strokeWidth?: BorderStroke;
   strokeStyle?: BorderStyle;
   borderRadius?: BorderRadius;
+  // A coloured bar along one edge of a box shape (docs/specs/008-canvas/accent-edge.md); absent = none. Only
+  // the kinds in ACCENT_EDGE_SHAPES draw it. Its colour is its own, else the border's as drawn.
+  accentEdge?: AccentEdge;
+  accentEdgeColor?: string;
   // Colour-preset binding (docs/specs/010-palette/style-presets.md). When a one-click colour preset is applied
   // to a shape, we store the preset's stable id (e.g. 'bold', 'soft',
   // 'branch-0') alongside the concrete fill / stroke / text it wrote. This lets
@@ -441,6 +451,26 @@ export type ShapeElement = {
   // Plain strings, not rich runs: a title has one look, set by the element.
   pageTitle?: string;
   pageSubtitle?: string;
+  // Card slots (docs/specs/009-elements/card.md): media at the top left (absent = none), the header band (stored
+  // only when on) and up to six tag chips along the bottom. Title and meta line are pageTitle / pageSubtitle.
+  cardMedia?: CardMedia;
+  cardHeader?: boolean;
+  tags?: string[];
+  // Badge and Step number (docs/specs/009-elements/badge.md): the look (absent = the kind's default), the host it is
+  // attached to and the point it sits on (both or neither), and a step's Play in Order (stored only when true).
+  chipLook?: ChipLook;
+  attachedTo?: ElementId;
+  attachAt?: AttachPoint;
+  stepSequence?: boolean;
+  // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
+  boundaryStyle?: BoundaryStyle;
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows (a layer, tier or step each, with an
+  // optional note), a pyramid's variant (absent = pyramid) and the Concept animation with its speed and repeat.
+  conceptRows?: ConceptRow[];
+  pyramidVariant?: PyramidVariant;
+  conceptAnim?: ConceptAnim;
+  conceptAnimSpeed?: AnimationSpeed;
+  conceptAnimRepeat?: boolean;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), bounded in validate.ts: a stat row's KPI
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.

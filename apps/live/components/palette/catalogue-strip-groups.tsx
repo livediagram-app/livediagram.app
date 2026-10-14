@@ -6,6 +6,7 @@ import { isIconCatalogsLoaded } from '@/lib/icon-registry';
 import { iconBrowseGroups } from './IconPickerTab';
 import { stickerBrowseGroups } from './StickerPickerTab';
 import { techBrowseGroups } from './TechPickerTab';
+import type { PaletteTileDef } from './palette-tile-defs';
 
 // The Toolbar strip's tiles for Icons, Stickers and Technology (docs/specs/007-editor/toolbar-layout.md "More"): the
 // catalogue's browse groups, each opening a popover of its entries. The groups are the browse's own
@@ -13,9 +14,16 @@ import { techBrowseGroups } from './TechPickerTab';
 
 export type StripGroup = { id: string; label: string; icon: ReactNode };
 
-// What a strip popover opened on: a catalogue's group, or an opener (palette-openers) for a category or one of its
-// groups. `key` is the tile that opened it.
-export type StripOpen = { key: string; category: string; group: string | null; label: string };
+// What a strip popover opened on: a catalogue's group, an opener (palette-openers) for a category or one of its
+// groups, or a tile's presets (`variants`, docs/specs/009-elements/card.md "Card presets"). `key` is the tile that
+// opened it.
+export type StripOpen = {
+  key: string;
+  category: string;
+  group: string | null;
+  label: string;
+  variants?: { description: string; tiles: readonly PaletteTileDef[] };
+};
 
 /** The category's groups when it is a grouped catalogue, else null (its strip shows tiles). Empty groups (the
  *  catalogue chunk still in flight) are left out, so the strip shows nothing until there is something to open. */

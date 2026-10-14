@@ -228,6 +228,30 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|ArrowheadSize': "Someone changed a selected arrow's arrowhead size.",
   'Element|Changed|AspectRatioReset':
     'Someone reset a selected shape back to its default proportions.',
+  'Element|Changed|AccentEdge':
+    'Someone set, moved, recoloured or removed the coloured accent edge along one side of a selected shape.',
+  'Element|Changed|CardSlots':
+    "Someone switched a card's header band, title, meta line or icon on or off, or changed how its icon is shown.",
+  'Element|Changed|Card':
+    'Someone added, removed or reordered the tags along the bottom of a card.',
+  'Element|Changed|ChipLook':
+    'Someone changed how a badge or step number looks (solid, ink, outline, tinted or quiet).',
+  'Element|Changed|ChipDetach':
+    'Someone let a badge or step number go from the element it was attached to.',
+  'Element|Changed|BoundaryStyle':
+    "Someone changed where a boundary shows its title: in a tab on its edge, inside its corner, or C4's bottom-left.",
+  'Element|Changed|BoundaryMeta':
+    "Someone added or removed the second line under a boundary's title, such as a network range.",
+  'Element|Changed|ConceptRows':
+    'Someone added, removed, reordered or renamed the layers, tiers or steps of a layer stack, pyramid or cycle.',
+  'Element|Changed|PyramidVariant':
+    'Someone switched a pyramid between pointing up, pointing down and a funnel.',
+  'Element|Changed|ConceptAnim':
+    "Someone set or cleared a layer stack's, pyramid's or cycle's animation (Build, Pulse or Flow), or its speed or repeat.",
+  'Element|Changed|RenumberSteps':
+    'Someone renumbered every step number on a tab in reading order.',
+  'Element|Changed|StepSequence':
+    "Someone turned on or off playing the step numbers' animations one after another.",
   'Element|Changed|BorderRadius': "Someone changed a selected element's corner rounding.",
   'Element|Changed|BorderStroke': "Someone changed a selected element's border weight.",
   'Element|Changed|BorderStyle':

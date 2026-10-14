@@ -319,7 +319,9 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
   // did nothing, and the headless renderer (exports, the minimap) never got
   // the memo and filled every frame with the shape default, so a frame that
   // was transparent on the canvas exported pale blue.
-  if (element.type === 'shape' && element.shape === 'frame') return 'transparent';
+  // A boundary's face paints its tint, deeper as it nests (docs/specs/009-elements/boundary.md).
+  if (element.type === 'shape' && (element.shape === 'frame' || element.shape === 'boundary'))
+    return 'transparent';
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.fill;
   if (surface === 'dark') {
@@ -506,6 +508,13 @@ export function supportsBorder(
 // second condition.
 export const SELF_PAINTING_SHAPES = new Set<string>([
   'actor',
+  // Badge and Step number (docs/specs/009-elements/badge.md): the face paints the pill / disc in its look.
+  'badge',
+  'step',
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): rows, tiers and discs, no box.
+  'layer-stack',
+  'pyramid',
+  'cycle',
   'icon',
   // A sticker paints its own plate, shadow and content (docs/specs/010-palette/stickers.md).
   'sticker',
@@ -575,6 +584,21 @@ export function supportsBorderControls(element: Element): boolean {
 // (hasOwnFace: the collaboration cards, the buttons, the picker, the reveal
 // cover, the chair...): their face never renders an inline icon, so one folded
 // in would be invisible. Dropped on them, it stands alone too.
+// Kinds that take an inline icon but place it themselves, so its position (`iconPosition`) is not the user's to set:
+// a card's media slot and a callout's badge (docs/specs/009-elements/card.md), a header's logo, a boundary's tab
+// (docs/specs/009-elements/boundary.md). Their Icon position controls would write a field nothing reads.
+export const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set([
+  'card',
+  'callout',
+  'site-header',
+  'boundary',
+]);
+
+/** Whether a shape's inline icon goes where `iconPosition` says, so offering that choice does something. */
+export function positionsInlineIcon(element: Element): boolean {
+  return acceptsInlineIcon(element) && !SELF_PLACED_ICON_SHAPES.has(element.shape);
+}
+
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
   return (
     element.type === 'shape' &&
@@ -610,6 +634,7 @@ const RADIUS_SHAPES = new Set<string>([
   'browser',
   'banner',
   'callout',
+  'card',
   'site-header',
   'stat-row',
   'mind-node',
