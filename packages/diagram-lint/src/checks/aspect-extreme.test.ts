@@ -50,4 +50,16 @@ describe('aspect-extreme', () => {
     );
     expect(of(lint(framed), 'aspect-extreme')).toEqual([]);
   });
+
+  it('fires on a framed graph, whose fix lays it out again with its groups', () => {
+    const framed = tabOf(
+      frame('f', -20, -20, 1400, 120),
+      box('a', 0, 0),
+      box('b', 600, 0),
+      box('c', 1200, 0),
+    );
+    expect(of(lint(framed, { source: 'graph' }), 'aspect-extreme')[0]).toMatchObject({
+      fix: 'direction: down',
+    });
+  });
 });
