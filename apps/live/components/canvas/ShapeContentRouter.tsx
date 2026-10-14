@@ -33,6 +33,7 @@ import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-s
 import { isTechIconId } from '@/lib/tech-icons';
 import { TechIconGlyph } from '@/components/primitives/tech-icon-glyph';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
+import { iconMakesRoomForLabel } from '@/components/primitives/icon-band';
 import { StickerView } from '@/components/canvas/StickerView';
 import { SKETCH_TILE_FILTER_ID } from '@/components/palette/palette-tile-finish';
 import { ProgressView } from '@/components/canvas/ProgressView';
@@ -103,6 +104,7 @@ type ShapeContentRouterProps = Pick<
   | 'onToggleChecklistItem'
   | 'chartPalette'
   | 'fontFamily'
+  | 'isEditing'
 > & {
   accent: string;
   textColor: string;
@@ -158,7 +160,10 @@ export function ShapeContentRouter({
   fontFamily,
   svgAnim,
   artAnimClass,
+  isEditing,
 }: ShapeContentRouterProps) {
+  // An icon's glyph moves aside for its caption from the moment the label is typed.
+  const iconCaptioned = iconMakesRoomForLabel(element.label, !!isEditing);
   // The paper under this shape, for colours it doesn't carry (docs/specs/007-editor/live-app.md): its
   // Illustrate page's where that page has a fill, else the canvas's.
   const surface = useElementSurface(element.id);
@@ -195,7 +200,7 @@ export function ShapeContentRouter({
     art(
       <TechIconGlyph
         iconId={element.iconId}
-        hasLabel={(element.label ?? '').trim().length > 0}
+        hasLabel={iconCaptioned}
         size={element.iconSize}
         labelAlignX={element.textAlignX ?? 'center'}
         labelAlignY={element.textAlignY ?? 'bottom'}
@@ -219,7 +224,7 @@ export function ShapeContentRouter({
             ? ICON_REMOTE_HIGHLIGHT_PX
             : iconWeightPx(finishIconWeight(element.iconWeight, finish))
         }
-        hasLabel={(element.label ?? '').trim().length > 0}
+        hasLabel={iconCaptioned}
         labelAlignX={element.textAlignX ?? 'center'}
         labelAlignY={element.textAlignY ?? 'bottom'}
         // Per-icon looping animation (docs/specs/008-canvas/canvas-and-palette.md). Picked from the icon context

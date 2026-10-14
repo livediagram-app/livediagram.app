@@ -539,7 +539,10 @@ export function ElementFaceRouter({
         // Icon caption band (docs/specs/010-palette/technology-icons.md): the label (and the inline editor while
         // typing) fills this positioned container instead of the whole box,
         // so the caption stays clear of the glyph in every alignment combo.
-        <div className={`absolute ${iconCaptionBand}`}>{labelNode}</div>
+        // The label's own clip is lifted: a band is a fraction of a small icon,
+        // and a caption taller than it draws over the art (it paints after the
+        // glyph) rather than clipping to a sliver ("A caption never disappears").
+        <div className={`absolute ${iconCaptionBand} [&>*]:overflow-visible`}>{labelNode}</div>
       ) : (
         <InsetContent inset={contentInset}>{labelNode}</InsetContent>
       )}

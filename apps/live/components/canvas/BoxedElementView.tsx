@@ -531,6 +531,7 @@ function BoxedElementViewImpl({
       ) : null}
       <ShapeContentRouter
         element={element}
+        isEditing={isEditing}
         artAnimClass={artAnimClass}
         accent={accent}
         textColor={textColor}
