@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import {
   backgroundPatchFor,
   pageBackgroundCopied,
@@ -187,5 +188,42 @@ describe('backgroundPatchFor', () => {
     expect(backgroundPatchFor({ kind: 'logo' }, { fill: dusk, pattern: 'dots' })).toEqual({
       fill: dusk,
     });
+  });
+});
+
+// Performance: a deck at the page cap, every page full, takes one press. Measured 136 ms on an
+// M-series Mac (O(pages x elements): each page is re-inked against the tab); the budget is loose
+// for slower runners, there to catch a slide into worse than that.
+describe('pageBackgroundSpread at the page cap', () => {
+  it('gives 99 full slides one background within its budget', () => {
+    const pages = Array.from({ length: 100 }, (_, i) =>
+      slide(`p${i}`, i === 0 ? { background: { fill: { kind: 'solid', color: '#0f172a' } } } : {}),
+    );
+    const laid = layOutIllustratePages(pages);
+    const elements = laid.flatMap((pg) =>
+      Array.from(
+        { length: 50 },
+        (_, j) =>
+          ({
+            id: `${pg.id}-e${j}`,
+            type: 'shape',
+            shape: 'square',
+            label: 'x',
+            x: pg.rect.x + 20 + (j % 10) * 100,
+            y: pg.rect.y + 20 + Math.floor(j / 10) * 100,
+            width: 80,
+            height: 60,
+            fillColor: '#f0f9ff',
+            strokeColor: '#bae6fd',
+          }) as Element,
+      ),
+    );
+    const tab = tabOf(pages, elements);
+    let out: ReturnType<typeof pageBackgroundSpread<Tab>> | undefined;
+    const ms = cpuMsOf(() => {
+      out = pageBackgroundSpread(tab, 'p0');
+    });
+    expect(out).toMatchObject({ applied: 99 });
+    expect(ms).toBeLessThan(1500);
   });
 });
