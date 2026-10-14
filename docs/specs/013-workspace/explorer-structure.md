@@ -193,11 +193,13 @@ a single stacked tree, which was cramped and sent half its rows off to the Explo
 
 Top to bottom:
 
-1. **The panel header**: "Explorer", the `⋯` menu ([Folders](folders.md#the-editors-explorer-editor--new)) and Help.
+1. **The panel header**: "Explorer", the `⋯` menu ([Folders](folders.md#the-editors-explorer-editor--new)) and Help;
+   a phone's sheet drops the `⋯` menu, every entry of it a tap away there already.
 2. **The Current Document card**, when a document is open: its thumbnail, the label "Current Document", the
-   document's **name**, "Updated <relative time>", and at the card's right the document's **visibility badge** (the
-   editor header's badge: Private, Shared, Team, Public or Local only, with its legend, [Offline Mode](../006-document/offline-mode.md))
-   above its `⋯` (the document menu). The badge's legend opens over everything, right-aligned under it, never clipped
+   document's **name**, "Updated <relative time>". The document's **visibility badge** (the editor header's badge:
+   Private, Shared, Team, Public or Local only, with its legend, [Offline Mode](../006-document/offline-mode.md)) sits
+   at the right of the label's row and its `⋯` (the document menu) at the right of the date's, so the name has the
+   card's whole width. The badge's legend opens over everything, right-aligned under it, never clipped
    by the panel.
    - **Click the name to rename it**, for someone who may rename the document (an Editor of their own or a shared
      document); hovering the name underlines it (dotted) and shows a pencil, the name's own width, never a block of
@@ -205,12 +207,13 @@ Top to bottom:
      keeps the old one. For anyone else it is plain text.
 3. **The rail and the pane**, side by side on a desktop: the rail on the left lists the sections, the pane on the right
    shows the picked one.
-4. **The footer**: the product's surfaces as links, one row: **Welcome**, **Explorer** (the Explorer page),
-   **Community** (while the Community is on), **Help**, **Telemetry**. They are the product menu's entries; the editor
+4. **The footer**: the product's surfaces as links, one row: **Home** (the landing page), **Explorer** (the Explorer
+   page), **Community** (while the Community is on), **Help**. They are the product menu's entries but Telemetry; the editor
    header carries no product menu ([Live app: header](../007-editor/live-app.md)).
 5. **The sign-in note** for a signed-out guest: one quiet line under the Current Document card ("Keep your work. A free
-   account saves it across devices." with **Sign in**; on a deployment without sign-in, "Saved in this browser.
-   Clearing site data deletes it."), dismissible as the sign-in notice is. Minimal chrome drops it.
+   account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one
+   line; on a deployment without sign-in, "Browser only. Clearing site data deletes it."), dismissible as the sign-in
+   notice is. Minimal chrome drops it.
 
 While the panel is open, the trays that hang from the palette strip (a tab's "is empty" tray, the mode banners) step
 aside: the panel reaches under the strip and they would cover its header.
@@ -272,10 +275,12 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 
 ### On a phone
 
-The panel is the full-width banner at the top of the canvas. The rail becomes a **row of section chips** under the
-Current Document card, scrolling sideways, the picked chip filled and scrolled into view; the pane fills the rest of the
-panel's height above the tab bar, its header actions their glyph alone, and the footer links scroll sideways. Every
-chip, row and link is at least 44 px tall.
+The panel is a **sheet** under the menu button: the canvas's full width, edge to edge, reaching down to the tab bar,
+and it **opens on Home every time** (a pick lasts while it is open and is not remembered). The rail becomes a **row of
+section chips** under the Current Document card, scrolling sideways, the picked chip filled and scrolled into view;
+the chips are squared (rounded corners, not pills), 36 px to the eye with a 44 px tap. The pane fills the rest of the
+sheet's height above its footer, its header tight under the chips, its header actions their glyph alone, and the
+footer links spread across its width (scrolling sideways should they not fit). Every row and link is at least 44 px tall.
 
 ### Keyboard and ARIA
 

@@ -187,7 +187,7 @@ A held-back commit shows `HELD_BACK_NOTICE` at most once per `HELD_BACK_NOTICE_M
 
 Gestures opened for a Participant, each beside `isReadOnly`: the palette strip in its `participant` variant
 (`ToolbarPalette participant`, `usePaletteCatalogue participant`): one category, `participate`
-(`participantPaletteCategories`: the landing category's sticky and text tiles, an Event Storming board's notes),
+(`participantPaletteCategories`: an Event Storming board's notes, else the Sticky and Text tiles),
 the selection modes in `PARTICIPANT_CANVAS_TOOLS`, no Search, no Event Storming photo import, on every mode; inline text edit (`canWriteText`); a
 move drag (`canMove`, never a resize); the Delete, type-to-edit and Space-to-edit keys; the quick-style panel for
 what `recolour` admits (`canStyle`); answering session tools (`takePart`). Plan: `canEditCards` (add, edit, move)

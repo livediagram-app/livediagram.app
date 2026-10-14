@@ -12,6 +12,7 @@
 import type { EditorMode } from '@livediagram/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
+import { openerById } from './palette-openers';
 
 export type PaletteLayoutEntry = {
   // A PALETTE_CATEGORIES id: the glyph, and the default label, blurb and band.
@@ -19,7 +20,8 @@ export type PaletteLayoutEntry = {
   label?: string;
   description?: string;
   band?: number;
-  // The tiles, in order, by tile id. Absent = the category's own tiles.
+  // The tiles, in order, by tile id (or opener id, palette-openers). `DIVIDE` between two puts a fixed divider there
+  // for this layout alone (a tile's own `dividerAfter` follows it everywhere). Absent = the category's own tiles.
   tiles?: readonly string[];
   // Offered only on an event-storming board.
   boardOnly?: true;
@@ -27,6 +29,10 @@ export type PaletteLayoutEntry = {
   // palette").
   logoOnly?: true;
 };
+
+// A layout's own fixed divider, between the tiles either side of it (docs/specs/007-editor/toolbar-layout.md "Fixed
+// dividers").
+export const DIVIDE = '|';
 
 export type PaletteLayout = {
   // The category the palette opens on (an event-storming board opens on its notation instead).
@@ -77,9 +83,9 @@ const DIAGRAM: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
-      // The twelve tiles a diagram is most often built from (what used to be the default
-      // Favourites): the basic shapes, words, an arrow and a frame, a note and a picture, the
-      // shape pen, and the table, code block and entity.
+      // The twelve a diagram is most often built from: the basic shapes, words, an arrow and a frame, the
+      // structures (a mind node, a flowchart node, a Sankey, a table), the AWS marks (an opener, palette-openers) and
+      // the entity.
       id: 'popular',
       tiles: [
         'shapes:square',
@@ -88,11 +94,11 @@ const DIAGRAM: PaletteLayout = {
         'tools:text',
         'tools:arrow',
         'tools:frame',
-        'tools:sticky',
-        'tools:image',
-        'tools:shape-pen',
+        'tools:mind-node',
+        'tools:flowchart',
+        'tools:sankey',
         'tools:table',
-        'tools:code-block',
+        'open:technology/aws',
         'tools:entity',
       ],
     },
@@ -181,30 +187,41 @@ const FACILITATE: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
-      // Twelve tiles a session is most often run with: notes and words, a frame and an arrow to
-      // arrange them, the three session tools, then the reveal and the ask-the-room elements.
+      // What a session is most often run with: a square, notes and words, a frame and an arrow to arrange them,
+      // then, behind a divider, the session kit as four openers (palette-openers), each its Collaborate category in
+      // a popover.
       id: 'popular',
       tiles: [
+        'shapes:square',
         'tools:sticky',
         'tools:text',
         'tools:frame',
         'tools:arrow',
-        'tools:session-timer',
-        'tools:session-vote',
-        'tools:session-poll',
-        'tools:reveal',
-        'collab:agenda',
-        'collab:idea-box',
-        'collab:qa-board',
-        'collab:temperature',
+        'tools:image',
+        DIVIDE,
+        'open:collab-ask',
+        'open:collab-tools',
+        'open:collab-record',
+        'open:collab-react',
       ],
     },
     { id: 'shapes' },
     { id: 'my-shapes' },
-    { id: 'write', tiles: tilesExcept('write', 'tools:page', 'tools:annotation') },
+    // Write and Build as one, "Write & Build": words and notes, then a table and a frame to hold them. No Page or
+    // Annotation; and a Sankey reports on a flow, mind maps and flowcharts build a diagram, lanes and timelines lay
+    // one out: a session does not stop for them.
+    {
+      id: 'write',
+      label: 'Write & Build',
+      description: 'Text, sticky notes, tables and frames.',
+      tiles: [
+        ...tilesExcept('write', 'tools:page', 'tools:annotation'),
+        DIVIDE,
+        'tools:table',
+        'tools:frame',
+      ],
+    },
     { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
-    // A Sankey reports on a flow; a session does not stop to chart one.
-    { id: 'build', tiles: tilesExcept('build', 'tools:lane', 'tools:timeline', 'tools:sankey') },
     { id: 'icons' },
     { id: 'stickers' },
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
@@ -264,13 +281,28 @@ export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {
 
 const IDENTITY = new Map(PALETTE_CATEGORIES.map((c) => [c.id, c]));
 
+// The listed tiles and openers; a DIVIDE marks the tile before it as ending a group, in this list only.
+function resolveTiles(ids: readonly string[]): PaletteTileDef[] {
+  const out: PaletteTileDef[] = [];
+  for (const id of ids) {
+    if (id === DIVIDE) {
+      const last = out.at(-1);
+      if (last) out[out.length - 1] = { ...last, dividerAfter: true };
+      continue;
+    }
+    const def = tileById(id) ?? openerById(id);
+    if (def) out.push(def);
+  }
+  return out;
+}
+
 function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
   const identity = IDENTITY.get(entry.id);
   if (!identity) throw new Error(`palette layout names an unknown category: ${entry.id}`);
   const tiles = CATALOGUE_CATEGORIES.has(entry.id)
     ? null
     : entry.tiles
-      ? entry.tiles.map(tileById).filter((t): t is PaletteTileDef => t !== undefined)
+      ? resolveTiles(entry.tiles)
       : tilesForCategory(entry.id);
   return {
     ...identity,
@@ -382,23 +414,19 @@ export function paletteLandingCategory(
 
 // A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
 // Participate, holding only what it may add, as the full palette's own tiles. On an Event Storming board that is the
-// notation's coloured notes; elsewhere the landing category's sticky and text tiles, else the Sticky and Text tiles;
-// then the Image tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
-const PARTICIPANT_FALLBACK_TILES = ['tools:sticky', 'tools:text'] as const;
+// notation's coloured notes; elsewhere the Sticky and Text tiles (whatever a mode's Popular holds); then the Image
+// tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
+const PARTICIPANT_TILES = ['tools:sticky', 'tools:text'] as const;
 const PARTICIPANT_IMAGE_TILE = 'tools:image';
 
 export function participantTiles(mode: EditorMode, esBoard: boolean): PaletteTileDef[] {
   const landing = paletteLandingCategory(mode, esBoard);
   const category = paletteCategoriesFor(mode, { esBoard }).find((c) => c.id === landing);
-  const tiles = (category?.tiles ?? []).filter(
-    (t) => t.action.type === 'sticky' || t.action.type === 'text',
-  );
+  const notation = esBoard ? (category?.tiles ?? []).filter((t) => t.action.type === 'sticky') : [];
   const base =
-    tiles.length > 0
-      ? tiles
-      : PARTICIPANT_FALLBACK_TILES.map(tileById).filter(
-          (t): t is PaletteTileDef => t !== undefined,
-        );
+    notation.length > 0
+      ? notation
+      : PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
   const image = tileById(PARTICIPANT_IMAGE_TILE);
   return image ? [...base, image] : base;
 }

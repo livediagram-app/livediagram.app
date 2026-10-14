@@ -22,15 +22,15 @@ describe('ProductNav', () => {
 });
 
 // docs/specs/013-workspace/explorer-structure.md "Layout": the editor's Explorer footer carries the same surfaces as
-// links, the current one left out.
+// links, the current one and Telemetry left out.
 describe('ProductNavLinks', () => {
   const html = renderToStaticMarkup(<ProductNavLinks current="editor" />);
 
-  it('lists every other surface as a link, in order', () => {
+  it('lists every other surface but Telemetry as a link, in order', () => {
     const labels = [...html.matchAll(/<a [^>]*href="([^"]+)"[^>]*>.*?<\/span>([^<]+)<\/a>/g)].map(
       (m) => m[2],
     );
-    expect(labels).toEqual(['Welcome', 'Explorer', 'Community', 'Help', 'Telemetry']);
+    expect(labels).toEqual(['Home', 'Explorer', 'Community', 'Help']);
     expect(html).toContain('aria-label="Go to"');
     expect(html).not.toContain('>Editor<');
   });

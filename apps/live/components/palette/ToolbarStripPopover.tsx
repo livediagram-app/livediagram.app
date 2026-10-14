@@ -9,6 +9,9 @@ import { uiUnscaleStyle } from '@/lib/ui-scale';
 // Clicks inside these don't count as "outside" a strip popover: the icon
 // filter's portalled dropdown menus, and any dialog a category body opens
 // (closing the popover would unmount it mid-edit).
+// The popover's width on a desktop (the card's w-[26rem]), at design size.
+const STRIP_POPOVER_PX = 416;
+
 const INSIDE_SELECTOR = '[data-palette-dropdown-menu], [role="dialog"], [data-tour-popover]';
 
 /** One strip popover's open state and where it hangs. `ownSelector` matches the popover and its
@@ -21,6 +24,13 @@ export function useStripPopover(rootRef: RefObject<HTMLElement | null>, ownSelec
   // offset stays right.
   const [right, setRight] = useState(0);
   const close = useEffectEvent(() => setOpen(false));
+  // While open, the trays hanging from the strip step aside (PaletteTray), as they do for the Explorer: they would
+  // cover the popover's top.
+  useEffect(() => {
+    if (!open) return;
+    document.body.setAttribute('data-strip-popover-open', '');
+    return () => document.body.removeAttribute('data-strip-popover-open');
+  }, [open]);
   useEffect(() => {
     if (!open) return;
     // Capture phase: the strip stops pointerdown from reaching the canvas.
@@ -40,9 +50,20 @@ export function useStripPopover(rootRef: RefObject<HTMLElement | null>, ownSelec
       document.removeEventListener('keydown', onKey);
     };
   }, [open, ownSelector]);
-  const openFrom = (button: HTMLElement) => {
+  // `centre` hangs it centred under the button (a strip group's popover) rather than from its right edge, kept
+  // inside the row.
+  const openFrom = (button: HTMLElement, align: 'right' | 'centre' = 'right') => {
     const root = rootRef.current?.getBoundingClientRect();
-    if (root) setRight(root.right - button.getBoundingClientRect().right);
+    const box = button.getBoundingClientRect();
+    if (root)
+      setRight(
+        align === 'centre'
+          ? Math.min(
+              Math.max(0, root.right - (box.left + box.width / 2) - STRIP_POPOVER_PX / 2),
+              Math.max(0, root.width - STRIP_POPOVER_PX),
+            )
+          : root.right - box.right,
+      );
     setOpen(true);
   };
   return { open, right, openFrom, setOpen };
@@ -65,8 +86,8 @@ export function StripPopover({
   right: number;
   isMobile: boolean;
   scale: number;
-  // The small heading over the body.
-  label: ReactNode;
+  // The small heading over the body; absent for a body that names itself.
+  label?: ReactNode;
   // Marks the card for its popover's ownSelector.
   dataAttr: string;
   children: ReactNode;
@@ -102,9 +123,11 @@ export function StripPopover({
       style={isMobile ? undefined : { ...uiUnscaleStyle(scale), right }}
       className={`absolute top-full mt-2 max-h-[calc(100dvh-14rem)] ${isMobile ? 'inset-x-3' : 'w-[26rem]'} origin-top-right animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white px-2 py-2.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
     >
-      <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-        {label}
-      </div>
+      {label ? (
+        <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          {label}
+        </div>
+      ) : null}
       {children}
     </div>
   );

@@ -102,7 +102,7 @@ export function ExplorerPanelPane({
     );
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div className="flex items-center gap-2 px-5 pb-3 pt-4">
+      <div className="flex items-center gap-2 px-5 pb-3 pt-4 max-sm:px-4 max-sm:pb-1.5 max-sm:pt-2.5">
         <h3 className="min-w-0 flex-1 truncate text-[15px] font-semibold text-slate-900 dark:text-slate-50">
           {title}
         </h3>

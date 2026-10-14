@@ -86,7 +86,8 @@ tray read the same key and follow each other as it changes.
 
 The rail is led by the editor's own mode switch, named and full width (`StartModeSwitch`, `ModeMenuChip` with
 `labelled`), so a tab begun in the wrong mode changes before anything is made. Its menu is the top chrome's, the
-list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules.
+list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules. On a
+phone its menu spans the row it opens from, each mode a roomy row with its description across the full width.
 
 **An empty tab crosses Plan's line.** Plan stands apart ([Editor modes](editor-modes.md)): a tab never switches into
 or out of it, and the mode menu offers a new tab instead. An empty tab has nothing either side's tools could not

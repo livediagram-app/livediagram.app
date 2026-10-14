@@ -18,7 +18,15 @@ import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { useRef, useState } from 'react';
 import { resolveFinish, type BackgroundPattern, type Finish } from '@livediagram/document';
-import { useEscape, useFocusTrap, Portal, DialogCloseButton } from '@livediagram/ui';
+import {
+  useEscape,
+  useFocusTrap,
+  Portal,
+  DialogCloseButton,
+  SheetHandle,
+  safeInset,
+  useSheetDrag,
+} from '@livediagram/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { BackBar } from '@/components/primitives/BackBar';
@@ -146,6 +154,8 @@ export function CanvasThemeDialog({
   // whiteboard, an embed) or on a phone, it is the centred (phone: full-screen) dialog it always was.
   const anchor = useBrushAnchor();
   const panelScale = useUiScale('panels');
+  // On a phone it is a bottom sheet, its grab handle dragging it taller or down to close (BottomSheet's).
+  const sheet = useSheetDrag(onClose);
   // Show Me: the tour of the home, run on this dialog (docs/specs/011-theme/canvas-and-theme-dialog.md "Show Me").
   const tour = useTabStyleTour({ showHome: () => (tab === 'looks' ? undefined : go('looks')) });
   // While Show Me runs, Escape is the tour's, never the dialog's.
@@ -167,7 +177,7 @@ export function CanvasThemeDialog({
         // dialog as they click (docs/specs/011-theme/canvas-and-theme-dialog.md). The full-screen layer stays as a
         // transparent click-catcher (click-outside / right-click guard) so an
         // accidental edit doesn't leak to the canvas while it's open.
-        className={`fixed inset-0 z-[var(--z-modal)] flex ${anchor ? '' : 'items-center justify-center'}`}
+        className={`fixed inset-0 z-[var(--z-modal)] flex ${anchor ? '' : 'items-center justify-center max-sm:items-end'}`}
       >
         <div
           ref={dialogRef}
@@ -175,12 +185,9 @@ export function CanvasThemeDialog({
           role="dialog"
           aria-modal="true"
           aria-label="Tab style"
-          // Edge to edge on a phone, matching the shared Dialog's rule for its
-          // larger sizes. This one predates that component and carries its own
-          // portal + backdrop, so it repeats the classes rather than inheriting
-          // them — the theme grid is exactly the kind of content that wants the
-          // whole screen.
-          className={`flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0 dark:border-slate-700 dark:bg-slate-900 ${anchor ? 'fixed animate-fly-up-in shadow-2xl motion-reduce:animate-fade-in' : ''}`}
+          // A bottom sheet on a phone, rising from the bottom edge as the editor's other phone sheets do, the canvas
+          // still in view above it so each pick shows on the tab.
+          className={`flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:max-h-[75dvh] max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-x-0 max-sm:border-b-0 max-sm:shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900 ${anchor ? 'fixed animate-fly-up-in shadow-2xl motion-reduce:animate-fade-in' : ''}`}
           // Drawn at the Panels UI scale like every other panel (docs/specs/007-editor/ui-scale.md); under its
           // `zoom` the anchored offsets are in the panel's own px, so they are converted (toSurfacePx).
           style={
@@ -192,12 +199,13 @@ export function CanvasThemeDialog({
                   maxHeight: `calc(100% - ${toSurfacePx(anchor.bottom + 16, panelScale)}px)`,
                   transformOrigin: 'bottom right',
                 }
-              : uiScaleStyle(panelScale)
+              : { ...uiScaleStyle(panelScale), ...sheet.style, paddingBottom: safeInset('bottom') }
           }
         >
+          <SheetHandle handleProps={sheet.handleProps} className="sm:hidden" />
           {/* The header: the title with help and close on the right; inside a panel, a Back row to the home
               (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"). */}
-          <div className="flex flex-col gap-2 border-b border-slate-200 px-4 pb-2.5 pt-3 dark:border-slate-800">
+          <div className="flex flex-col gap-2 border-b border-slate-200 px-4 pb-2.5 pt-3 max-sm:pt-0 dark:border-slate-800">
             <div className="flex items-center justify-between gap-3">
               {/* "Appearance" is the VIEWER's own light / dark chrome now
                   (docs/specs/007-editor/live-app.md), so this dialog — which is the tab's look, shared

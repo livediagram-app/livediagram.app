@@ -6,7 +6,10 @@ import {
 } from '@/lib/tech-icons';
 import { IconButton } from '@/components/palette/palette-controls';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
-import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
+import {
+  PaletteCategoryBrowser,
+  type BrowserCategory,
+} from '@/components/palette/PaletteCategoryBrowser';
 
 // Rendered tile sizes; TechIconArt weights its glyph for them.
 const CATEGORY_TILE_PX = 18;
@@ -25,20 +28,10 @@ type TechPickerTabProps = {
   loading?: boolean;
 };
 
-// The command palette's Technology tab (docs/specs/010-palette/technology-icons.md, docs/specs/010-palette/palette-category-browse.md): brand / tech marks
-// browsed by provider, using the same drill-in navigation as Tools and Icons.
-// Clicking one drops it as a fixed-colour tech-icon shape; each is also
-// drag-droppable.
-export function TechPickerTab({
-  addTechIcon,
-  techQuery,
-  setTechQuery,
-  techResults,
-  loading = false,
-}: TechPickerTabProps) {
-  // A provider is a category. Its artwork is its first mark, so the tile
-  // carries the brand's own colours rather than a generic glyph.
-  const categories = TECH_PROVIDERS.map((provider) => {
+// The Technology browse's groups, also the Toolbar strip's tiles for the category. A provider is a category. Its
+// artwork is its first mark, so the tile carries the brand's own colours rather than a generic glyph.
+export function techBrowseGroups(): BrowserCategory<TechIconDef>[] {
+  return TECH_PROVIDERS.map((provider) => {
     const items = searchTechIcons('', provider.id);
     const first = items[0];
     return {
@@ -53,6 +46,20 @@ export function TechPickerTab({
       items,
     };
   });
+}
+
+// The command palette's Technology tab (docs/specs/010-palette/technology-icons.md, docs/specs/010-palette/palette-category-browse.md): brand / tech marks
+// browsed by provider, using the same drill-in navigation as Tools and Icons.
+// Clicking one drops it as a fixed-colour tech-icon shape; each is also
+// drag-droppable.
+export function TechPickerTab({
+  addTechIcon,
+  techQuery,
+  setTechQuery,
+  techResults,
+  loading = false,
+}: TechPickerTabProps) {
+  const categories = techBrowseGroups();
   return (
     <PaletteCategoryBrowser
       root="Tech"

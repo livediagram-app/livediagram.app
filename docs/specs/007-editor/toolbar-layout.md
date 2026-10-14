@@ -143,8 +143,19 @@ more than tiles (search, group browsing, the person's libraries; My shapes has n
 of its own, so More is its only way in). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
-For Icons / Stickers / Technology the strip's twelve are the first twelve of the
-catalogue in its own order.
+**Icons, Stickers and Technology show their groups**, on a desktop and on a phone: the strip's tiles
+for one of them are its browse groups (the Icons groups, the Sticker groups, the Technology providers),
+each drawn as an opener rather than a tile (its first entry with a chevron, as the strip's pickers are, so it reads
+as a group to open rather than an icon to drag) with the group's name on its hover card, in the browse's own order. Pressing one
+opens a popover centred under that tile (on a phone it spans the screen, as More's does), showing **that group's
+entries alone**, headed with the group's name: no search and no breadcrumb, since the strip is the way between
+groups (More, on a desktop, keeps the whole browse with its search). Pressing the open group's tile again closes it. Picking an entry
+closes it, as More's does. The groups and their entries are the browse's
+([Palette category browse](../010-palette/palette-category-browse.md)), so the strip and the More body never
+disagree.
+
+**On a phone More shows only for My shapes**, whose library picker has no strip tiles of its own: every other
+category's strip already holds all of it (the whole category swipes, and the three catalogues hold their groups).
 
 ## The strip's order and dividers
 
@@ -253,14 +264,14 @@ their bottom-row buttons. What changes to fit the width:
   left-aligned rather than centred, so the two read as separate toolbars on
   one row. There is no room for a corner card above a strip that needs the
   whole top row.
-- **The category picker is icon-only**, like the selection mode.
+- **The category picker is icon-only**, like the selection mode, and the two sit together with no divider between
+  them, each caret 4px from its glyph. The strip's tiles are 32px wide (36px elsewhere), so more fit in view.
 - **The tiles swipe.** The strip holds the whole current category and fills the row to the
   right gutter; only its tiles scroll sideways, under a finger, while the selection mode, the
   category picker and More stay put. The scrollbar is hidden ([Scrollbars](../004-interface-design/scrollbars.md)):
   a tile cut at the edge shows there is more. A new category starts scrolled to its first tile.
-  More stays for the category's full body (search, the icon catalogues). It shows when the
-  category holds more than fits in view (`phoneStripTileLimit` before the first measurement):
-  two tiles on a 360px phone, three on a 390px one, four from about 410px.
+  More shows only for My shapes ([More](#more-the-rest-of-the-category)): the swiping strip reaches every
+  other category's tiles, and Icons, Stickers and Technology their groups.
 - **More spans the screen** between the gutters instead of hanging from its
   button.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Live app](live-app.md)). Fit
@@ -294,6 +305,8 @@ their bottom-row buttons. What changes to fit the width:
     Templates**, which opens the start again, until the first element lands
     ([Template starts](start-diagramming.md) "Bringing it back").
   - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
+  - While one of the strip's popovers is open (More, a catalogue group, Search) the tray steps aside, as it does
+    for the Explorer: it would cover the popover's top.
   - Without a strip (Draw mode's dock, zen, read-only, the welcome flow) the messages stay the
     top-centre pills they are elsewhere.
 - Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the strip's pickers, and the strip shows the notation's tiles, led by

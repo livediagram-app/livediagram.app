@@ -1,8 +1,10 @@
+import { openerById } from './palette-openers';
 import { describe, expect, it } from 'vitest';
 import { isPlanViewId } from '@livediagram/items';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import {
   CATALOGUE_CATEGORIES,
+  DIVIDE,
   COVERED_PALETTE_CATEGORY,
   PALETTE_LAYOUTS,
   coveredPaletteCategories,
@@ -29,7 +31,8 @@ describe('palette layouts', () => {
       expect(new Set(seen).size, mode).toBe(seen.length);
       for (const e of layout.categories) {
         expect(known.has(e.id), `${mode}: ${e.id}`).toBe(true);
-        for (const t of e.tiles ?? []) expect(tileById(t), `${mode}: ${t}`).toBeDefined();
+        for (const t of e.tiles ?? [])
+          if (t !== DIVIDE) expect(tileById(t) ?? openerById(t), `${mode}: ${t}`).toBeDefined();
         if (CATALOGUE_CATEGORIES.has(e.id)) expect(e.tiles, `${mode}: ${e.id}`).toBeUndefined();
       }
       expect(seen, `${mode} lands on one of its own`).toContain(layout.landing);
@@ -60,14 +63,13 @@ describe('palette layouts', () => {
   });
 
   // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
-  it('gives Facilitate Popular, the drawing basics, the decorations and the six Collaborate categories', () => {
+  it('gives Facilitate Popular, the drawing basics (Write & Build as one), the decorations and the six Collaborate categories', () => {
     expect(ids('facilitate')).toEqual([
       'popular',
       'shapes',
       'my-shapes',
       'write',
       'draw',
-      'build',
       'icons',
       'stickers',
       'media',
@@ -81,22 +83,26 @@ describe('palette layouts', () => {
     expect(paletteLandingCategory('facilitate', false)).toBe('popular');
   });
 
-  it("puts the session tools on Facilitate's Popular, twelve tiles", () => {
+  it("puts the session kit on Facilitate's Popular as four openers", () => {
     const popular = paletteCategoriesFor('facilitate').find((c) => c.id === 'popular')!;
     expect(popular.tiles!.map((t) => t.id)).toEqual([
+      'shapes:square',
       'tools:sticky',
       'tools:text',
       'tools:frame',
       'tools:arrow',
-      'tools:session-timer',
-      'tools:session-vote',
-      'tools:session-poll',
-      'tools:reveal',
-      'collab:agenda',
-      'collab:idea-box',
-      'collab:qa-board',
-      'collab:temperature',
+      'tools:image',
+      'open:collab-ask',
+      'open:collab-tools',
+      'open:collab-record',
+      'open:collab-react',
     ]);
+    // A divider of its own between the tiles and the openers, here only.
+    expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toContain('tools:image');
+    // Each opens a category Facilitate offers.
+    const offered = new Set(paletteCategoriesFor('facilitate').map((c) => c.id));
+    for (const t of popular.tiles!)
+      if (t.action.type === 'open') expect(offered.has(t.action.category), t.id).toBe(true);
   });
 
   it('holds every Collaborate tile in Facilitate, across its six categories', () => {
@@ -110,27 +116,24 @@ describe('palette layouts', () => {
     );
   });
 
-  it("leaves Page, Annotation, Shape Pen, Polygon, Lane and Timeline out of Facilitate's Write, Draw and Build", () => {
+  it("leaves Page, Annotation, Shape Pen, Polygon, Mind node, Flowchart, Lane and Timeline out of Facilitate's Write, Draw and Build", () => {
     const tilesOf = (id: string) =>
       paletteCategoriesFor('facilitate')
         .find((c) => c.id === id)!
         .tiles!.map((t) => t.id);
-    expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky']);
+    // Write and Build as one, "Write & Build".
+    const write = paletteCategoriesFor('facilitate').find((c) => c.id === 'write')!;
+    expect(write.label).toBe('Write & Build');
+    expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky', 'tools:table', 'tools:frame']);
     expect(tilesOf('draw')).toEqual([
       'tools:pencil',
       'tools:highlighter',
       'tools:arrow',
       'tools:line',
     ]);
-    expect(tilesOf('build')).toEqual([
-      'tools:mind-node',
-      'tools:flowchart',
-      'tools:table',
-      'tools:frame',
-    ]);
   });
 
-  it("gives a Facilitate Participant the landing's sticky and text, and an image", () => {
+  it('gives a Facilitate Participant Sticky and Text, and an image', () => {
     expect(participantTiles('facilitate', false).map((t) => t.id)).toEqual([
       'tools:sticky',
       'tools:text',
@@ -202,7 +205,7 @@ describe('palette layouts', () => {
     expect(tileIds('diagram', 'shapes')).toEqual(tilesForCategory('shapes').map((t) => t.id));
   });
 
-  it("fills Diagram's Popular with what used to be the default Favourites", () => {
+  it("fills Diagram's Popular with the shapes, the structures and the AWS marks", () => {
     expect(tileIds('diagram', 'popular')).toEqual([
       'shapes:square',
       'shapes:circle',
@@ -210,11 +213,11 @@ describe('palette layouts', () => {
       'tools:text',
       'tools:arrow',
       'tools:frame',
-      'tools:sticky',
-      'tools:image',
-      'tools:shape-pen',
+      'tools:mind-node',
+      'tools:flowchart',
+      'tools:sankey',
       'tools:table',
-      'tools:code-block',
+      'open:technology/aws',
       'tools:entity',
     ]);
   });
