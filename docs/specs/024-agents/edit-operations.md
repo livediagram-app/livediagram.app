@@ -95,8 +95,10 @@ The editor's drag carries by the same rule ([Canvas and palette](../008-canvas/c
 `after:<x>` (along the flow of x's outgoing arrows), `inside:<frame>` (the next free slot), `align:<x>` (sharing x's
 centre on the axis the element is already nearer it), `at:x,y`. `inside:<frame>` may also go with a side
 (`inside:<frame> right-of:<x>`): beside x, which must be inside that frame or lane (refused, naming the frame,
-otherwise), the way a model writes "in the group, next to x". Without one, a new element goes beside the last one
-added, or right of the content. To place beside a group but outside it, place against the frame or lane itself. An occupied spot moves along the placement axis until free. Coordinates shown and
+otherwise), the way a model writes "in the group, next to x". A side may also take `align:<x>`
+(`below:<frame> align:<x>`): beside the reference, centred on x across the side, so a box goes under a group, outside
+it, lined up with one of its members. Without one, a new element goes beside the last one added, or right of the
+content. To place beside a group but outside it, place against the frame or lane itself. An occupied spot moves along the placement axis until free. Coordinates shown and
 taken are rounded and relative to the tab's content origin.
 
 ## Layout on edit

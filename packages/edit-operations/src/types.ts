@@ -23,9 +23,10 @@ export type Fields = Readonly<Record<string, FieldValue>>;
 
 // Where `add` and `move` put an element: beside, after, inside or aligned with a reference, or at a
 // point relative to the content origin.
-// `within` (a frame or lane, from `inside:<frame> right-of:<x>`) says the reference must be inside it.
+// `within` (a frame or lane, from `inside:<frame> right-of:<x>`) says the reference must be inside it; `alignTo`
+// (from `below:<frame> align:<x>`) centres the placed box on x across the side.
 export type Placement =
-  | { rel: PlacementRelation; ref: Selector; gap?: number; within?: Selector }
+  | { rel: PlacementRelation; ref: Selector; gap?: number; within?: Selector; alignTo?: Selector }
   | { rel: 'at'; x: number; y: number };
 
 // `add` with a whole raw element, as the MCP's `ops` mode sends: taken as given, its geometry kept.

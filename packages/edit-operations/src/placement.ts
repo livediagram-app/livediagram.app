@@ -322,7 +322,20 @@ export function resolvePlacement(
     default: {
       const side = placement.rel === 'after' ? sideAfter(state, ref, refBox) : placement.rel;
       const among = placement.rel === 'after' ? null : frameOccupiers(state, ref, moving);
-      const box = nudgeUntilFree(beside(refBox, side, size, gap), side, gap, among ?? taken);
+      let start = beside(refBox, side, size, gap);
+      // `below:<frame> align:<x>`: beside the reference, centred on x across the side.
+      if (placement.alignTo !== undefined) {
+        const to = resolveOne(state, placement.alignTo, operation);
+        if ('rejection' in to) return to;
+        const toBox = boxOf(to.el);
+        if (!toBox) return refusal(`aligns to ${placement.alignTo}, an arrow; align to a box`);
+        const c = centre(toBox);
+        start =
+          side === 'above' || side === 'below'
+            ? { ...start, x: c.x - start.width / 2 }
+            : { ...start, y: c.y - start.height / 2 };
+      }
+      const box = nudgeUntilFree(start, side, gap, among ?? taken);
       return { x: Math.round(box.x), y: Math.round(box.y), ref };
     }
   }

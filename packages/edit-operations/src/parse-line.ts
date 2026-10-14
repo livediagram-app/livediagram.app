@@ -97,12 +97,48 @@ const numbers = (text: string): [number, number] | null => {
   return pair.every(Number.isFinite) ? [pair[0]!, pair[1]!] : null;
 };
 
+type PlacementWord = { word: Word; key: string; text: string };
+
+// Several placement words read as one placement: a side or `after` (the main one) with at most one `inside:<frame>`
+// (`within`, the reference must be inside it) and one `align:<x>` (`alignTo`, centred on x across the side). `at:`
+// takes no company.
+function combinePlacements(
+  words: readonly PlacementWord[],
+): { place: Record<string, unknown> } | { error: LineError } {
+  const refused = (w: PlacementWord) => ({
+    error: { column: w.word.column, expected: 'one placement (or inside: and align: with a side)' },
+  });
+  const at = words.find((w) => w.key === 'at');
+  if (at) return refused(words.find((w) => w !== at)!);
+  const [main, ...more] = words.filter((w) => w.key !== 'inside' && w.key !== 'align');
+  const insides = words.filter((w) => w.key === 'inside');
+  const aligns = words.filter((w) => w.key === 'align');
+  if (more.length) return refused(more[0]!);
+  if (insides.length > 1) return refused(insides[1]!);
+  if (aligns.length > 1) return refused(aligns[1]!);
+  if (!main) {
+    // `inside:` with `align:`: aligned, the reference inside the frame.
+    return { place: { rel: 'align', ref: aligns[0]!.text, within: insides[0]!.text } };
+  }
+  return {
+    place: {
+      rel: main.key,
+      ref: main.text,
+      ...(insides[0] ? { within: insides[0].text } : {}),
+      ...(aligns[0] ? { alignTo: aligns[0].text } : {}),
+    },
+  };
+}
+
 type Collected = {
   fields: Record<string, FieldValue>;
   special: Record<string, string>;
   flags: Record<string, true>;
   place?: Record<string, unknown>;
   gap?: Word;
+  // The placement words while more than one was given, combined after the loop.
+  placeWord?: PlacementWord;
+  pending?: PlacementWord[];
   terms: Word[];
 };
 
@@ -137,23 +173,13 @@ function collect(name: EditOperationName, words: readonly Word[]): Collected | L
         out.gap = word;
         continue;
       }
-      // `inside:<frame>` with a side: beside the reference, which must be inside that frame.
-      if (out.place) {
-        const prior = out.place as { rel: string; ref?: string };
-        const pair =
-          prior.rel === 'inside' && placement.key !== 'inside' && placement.key !== 'at'
-            ? { rel: placement.key, ref: placement.text, within: prior.ref }
-            : placement.key === 'inside' &&
-                prior.rel !== 'inside' &&
-                prior.rel !== 'at' &&
-                !('within' in prior)
-              ? { ...prior, within: placement.text }
-              : null;
-        if (!pair)
-          return { column: word.column, expected: 'one placement (or inside: with a side)' };
-        out.place = pair;
+      // Placements combine after the loop: a side or `after` with an `inside:` and an `align:`.
+      if (out.place || out.pending) {
+        (out.pending ??= out.place ? [out.placeWord!] : []).push({ word, ...placement });
+        out.place = undefined;
         continue;
       }
+      out.placeWord = { word, ...placement };
       if (placement.key === 'at') {
         const at = numbers(placement.text);
         if (!at) return { column: word.column, expected: 'at:x,y with two numbers' };
@@ -162,6 +188,11 @@ function collect(name: EditOperationName, words: readonly Word[]): Collected | L
       continue;
     }
     out.terms.push(word);
+  }
+  if (out.pending) {
+    const combined = combinePlacements(out.pending);
+    if ('error' in combined) return combined.error;
+    out.place = combined.place;
   }
   if (out.gap !== undefined) {
     if (!out.place || out.place.rel === 'at')

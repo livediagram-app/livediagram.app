@@ -239,8 +239,9 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
 
 ### Placement
 
-`Placement` in line form is one word, plus an optional `gap:<n>`; `inside:<frame>` may pair with one side, `after`
-or `align` word, in either order (`{ rel, ref, within: <frame> }`):
+`Placement` in line form is one word, plus an optional `gap:<n>`; a side or `after` word may take one `inside:<frame>`
+(`within`) and one `align:<x>` (`alignTo`), in any order, and `inside:` with `align:` reads as `{ rel: 'align', ref,
+within }` (`combinePlacements`):
 
 | Word             | Puts the element                                                                                                                                                       |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -253,11 +254,14 @@ or `align` word, in either order (`{ rel, ref, within: <frame> }`):
 | `align:<x>`      | Shares x's centre on the axis where the element's centre is already nearer x's; a tie aligns the column (EO50)                                                         |
 | `at:x,y`         | Top-left at `origin + (x, y)`, exact, never nudged (EO25)                                                                                                              |
 
+- **`alignTo`.** The paired `align:<x>`: resolved by `resolveOne`; the box beside the reference is centred on x's
+  centre across the side (x for `above` / `below`, y for `left-of` / `right-of`) before the nudge; an arrow →
+  `invalid_value`. `alignTo` with `rel: 'inside'` or `'align'` in the JSON form is refused.
 - **`within`.** The paired `inside:<frame>`: resolved by `resolveOne`; not a container → `invalid_value` ("is placed
   inside <frame>, which is not a frame or lane"); the reference not inside it at any depth (`holdersOf`) →
   `invalid_value` ("is not inside <frame>"). Otherwise the side placement as given: beside a member, the box joins
   the container. Two placements that are not such a pair, or `inside:` with `at:`, are a `parse_error` ("one
-  placement (or inside: with a side)"); `within` with `rel: 'inside'` in the JSON form is refused.
+  placement (or inside: and align: with a side)"); `within` with `rel: 'inside'` in the JSON form is refused.
 - `gap` defaults to `PLACEMENT_GAP` and is an integer in `[0, PLACEMENT_GAP_MAX]` (EO23); it applies to the four
   sides and `after`. `gap:` with no number, or one that is not a number, is a `parse_error` ("a number after
   gap:"), never 0.
