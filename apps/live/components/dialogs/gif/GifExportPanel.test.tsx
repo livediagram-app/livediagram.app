@@ -168,6 +168,23 @@ describe('the GIF panel', () => {
     expect(h.download).not.toHaveBeenCalled();
   });
 
+  it('clears the canvas selection as it opens, so no frame shows a selection ring', () => {
+    const onClearSelection = vi.fn();
+    render(
+      <GifExportPanel
+        tab={tab}
+        pages={pages}
+        page={pages[0]!}
+        baseName="Doc - Deck"
+        onPick={vi.fn()}
+        onDone={vi.fn()}
+        onBack={vi.fn()}
+        onClearSelection={onClearSelection}
+      />,
+    );
+    expect(onClearSelection).toHaveBeenCalledTimes(1);
+  });
+
   it('settles its estimate though the editor re-renders it with a fresh tab all the while', async () => {
     const props = {
       pages,

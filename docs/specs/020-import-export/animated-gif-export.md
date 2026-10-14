@@ -68,7 +68,9 @@ The GIF card opens an options-and-download panel, like PNG's, with the shared ba
   surface. It is drawn from the canvas's own rendering, not the image exporter's, so an element animates in the GIF
   exactly as it does on the canvas.
 - **Never** what is only the editor's: a selection, grips, hover, cursors and remote presence, comment pins, page
-  headers and toolbars, the in-page **Start From a Layout** card, the laser.
+  headers and toolbars, the in-page **Start From a Layout** card, the laser. The panel clears the person's own
+  selection as it opens, so no element is ringed; a collaborator's selection colour is drawn into the element itself
+  on the canvas, so it shows in the GIF while it lasts (a known gap).
 - **Fonts and images travel in the file**, as in every image export.
 - **Reduce Motion** never stills the GIF: the file is made to move, and it plays on screens that are not the
   exporter's. The panel's preview, which is still, is unaffected.

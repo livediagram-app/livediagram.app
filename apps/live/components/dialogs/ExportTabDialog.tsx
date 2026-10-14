@@ -123,6 +123,8 @@ type ExportTabDialogProps = {
   documentTabs?: readonly Tab[];
   // Fetch tabs' content (a tab window's tab, which arrives only when opened or fetched); resolves to the failures.
   loadTabs?: (only: readonly string[]) => Promise<string[]>;
+  // Empty the canvas selection: the GIF draws the canvas as it stands, rings and all.
+  onClearSelection?: () => void;
 };
 
 const NO_DOCUMENT_TABS: readonly Tab[] = [];
@@ -265,6 +267,7 @@ export function ExportTabDialog({
   pages,
   documentTabs,
   loadTabs,
+  onClearSelection,
 }: ExportTabDialogProps) {
   // A Board, Sheet or Dashboard tab offers only its formats and exports as laid out; a plan view anywhere draws as its
   // chart (docs/specs/026-plan/plan-tabs.md "Export").
@@ -533,6 +536,7 @@ export function ExportTabDialog({
               onPick={setPageIndex}
               onDone={onClose}
               onBack={() => setActive(null)}
+              onClearSelection={onClearSelection}
             />
           </Suspense>
         ) : active ? (
