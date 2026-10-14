@@ -137,7 +137,8 @@ describe('sticky border', () => {
   it('keeps the border of a note whose fill the edit left alone, and reports only the label', () => {
     const { el, out } = after({ label: 'Who helped?' });
     expect(el.strokeColor).toBeUndefined();
-    expect(out.results[0]!.changes?.map((c) => c.key)).toEqual(['label']);
+    const line = out.results[0]!;
+    expect('changes' in line && line.changes.map((c) => c.key)).toEqual(['label']);
   });
 
   it('gives a note a new fill the borderless look', () => {
