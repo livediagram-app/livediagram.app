@@ -16,6 +16,7 @@ import {
   pageDuplicated,
   pageKindOf,
   pageLaidOut,
+  themedForTab,
   pageLockSet,
   pageMovedTo,
   pageRemoved,
@@ -151,7 +152,11 @@ export function applyPageChanges(
         const laid = layOutIllustratePages(pages()).find((p) => p.id === page.id)!;
         const replaced = onPage(page.id);
         current = take(
-          pageLaidOut(current, page.id, buildPageLayout(found!.id as PageLayoutId, laid)),
+          pageLaidOut(
+            current,
+            page.id,
+            themedForTab(buildPageLayout(found!.id as PageLayoutId, laid), current.theme),
+          ),
           page,
         );
         return `${found!.label}${replaced ? ` (replaced ${replaced} elements)` : ''}`;
