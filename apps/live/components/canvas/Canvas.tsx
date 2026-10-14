@@ -74,6 +74,10 @@ import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { spotlightRadius } from '@/lib/spotlight-config';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
+import { useAvatarSpeech } from '@/hooks/canvas/useAvatarSpeech';
+import { useSpeechBubbles } from '@/lib/avatar-speech-store';
+import { headPoint } from '@/lib/avatar-speech';
+import { avatarScale } from '@/lib/avatar-config';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 
 // The footprint a burst is scaled against when it comes from the avatar panel
@@ -119,6 +123,12 @@ import { GifOmit } from './GifOmit';
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
 const IllustratePages = dynamic(loadIllustratePages, { ssr: false });
 const ArticleFlows = dynamic(loadArticleFlows, { ssr: false });
+// Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
+// nothing on the canvas needs them before then.
+const AvatarSpeechLayer = dynamic(
+  () => import('@/components/canvas/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer),
+  { ssr: false },
+);
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
@@ -429,6 +439,17 @@ function CanvasView(props: CanvasProps) {
     (elementId: string) => (machineAnswer?.id === elementId ? machineAnswer.seq : 0),
     [machineAnswer],
   );
+  // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): an Editor or a Participant says
+  // something above their character's head; everyone on the tab sees it float away.
+  const speech = useAvatarSpeech({
+    active: canvasTool === 'avatar',
+    canSpeak: !props.readOnly || !!props.takePart,
+    feet: avatar.pos,
+    scale: avatarScale(avatarLook.config.size),
+    tabId: props.activeTabId ?? '',
+    onSay: props.onAvatarSay,
+  });
+  const speechBubbles = useSpeechBubbles();
 
   // Who is sitting in each chair, from PRESENCE — never from the document. Our
   // own character plus every peer's, keyed by chair id, so a chair empties by
@@ -1017,6 +1038,27 @@ function CanvasView(props: CanvasProps) {
                   onStand={avatar.standUp}
                 />
               ) : null}
+              {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
+              own head while you type. */}
+              {speechBubbles.length > 0 || speech.composerOpen ? (
+                <AvatarSpeechLayer
+                  bubbles={speechBubbles}
+                  activeTabId={props.activeTabId ?? ''}
+                  zoom={viewportZoom}
+                  peers={props.remoteAvatars}
+                  self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
+                  composer={
+                    speech.composerOpen && avatar.pos
+                      ? {
+                          head: headPoint(avatar.pos, avatarScale(avatarLook.config.size)),
+                          coolingDown: speech.coolingDown,
+                          onSend: (text) => speech.send(text, 'composer'),
+                          onCancel: speech.closeComposer,
+                        }
+                      : null
+                  }
+                />
+              ) : null}
             </GifOmit>
           </div>
 
@@ -1104,6 +1146,10 @@ function CanvasView(props: CanvasProps) {
             onMoveLaserPanel={props.onMoveLaserPanel}
             onResetLaserPanel={props.onResetLaserPanel}
             onRandomiseAvatar={avatarLook.randomise}
+            onSendAvatarMessage={
+              speech.speaking ? (text: string) => speech.send(text, 'panel') : undefined
+            }
+            avatarSpeechCooling={speech.coolingDown}
             onAvatarReaction={avatar.playReaction}
             onAvatarBurst={(reaction: Reaction) => {
               // A fresh seed each  press, so pressing the same reaction twice replays

@@ -569,7 +569,8 @@ describe('DocumentRoom op-role enforcement', () => {
   // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
   const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer', 'follow'];
   // A reaction is taking part (docs/specs/013-workspace/share-roles.md): a Participant's, never a Viewer's.
-  const PARTICIPANT_PRESENCE_KINDS = ['reaction'];
+  // So is speaking (docs/specs/008-canvas/avatar-mode.md "Who may speak").
+  const PARTICIPANT_PRESENCE_KINDS = ['reaction', 'avatar-say'];
   for (const kind of PARTICIPANT_PRESENCE_KINDS) {
     it(`drops a '${kind}' from a Viewer and relays a Participant's`, () => {
       const { room } = newRoom();
@@ -577,12 +578,26 @@ describe('DocumentRoom op-role enforcement', () => {
       const viewer = connect(room, 'viewer', 'view');
       const participant = connect(room, 'participant', 'participate');
       editor.ws.sent.length = 0;
-      sendFrame(room, viewer.ws, { kind: 'op', op: { kind, tabId: 't', x: 1, y: 2 } });
+      const op = { kind, tabId: 't', id: 'b1', text: 'hi', x: 1, y: 2 };
+      sendFrame(room, viewer.ws, { kind: 'op', op });
       expect(opsReceived(editor.ws)).toHaveLength(0);
-      sendFrame(room, participant.ws, { kind: 'op', op: { kind, tabId: 't', x: 1, y: 2 } });
+      sendFrame(room, participant.ws, { kind: 'op', op });
       expect(opsReceived(editor.ws)).toHaveLength(1);
     });
   }
+  it('drops a malformed avatar-say even from an editor', () => {
+    const { room } = newRoom();
+    const speaker = connect(room, 'speaker', 'edit');
+    const peer = connect(room, 'peer', 'edit');
+    peer.ws.sent.length = 0;
+    for (const bad of [{ text: 'x'.repeat(301) }, { text: '   ' }, { text: 7 }, { x: 'left' }]) {
+      sendFrame(room, speaker.ws, {
+        kind: 'op',
+        op: { kind: 'avatar-say', tabId: 't', id: 'b1', text: 'hi', x: 1, y: 2, ...bad },
+      });
+    }
+    expect(opsReceived(peer.ws)).toHaveLength(0);
+  });
   for (const kind of [...PRESENCE_OP_KINDS].filter(
     (k) =>
       !ADDRESSED_PRESENCE_KINDS.includes(k) &&

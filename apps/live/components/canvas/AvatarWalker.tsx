@@ -84,6 +84,8 @@ export function AvatarWalker({
       <div
         aria-hidden
         data-avatar={onStand ? 'self' : 'peer'}
+        // Your own character is the Avatar tour's push step's anchor (docs/specs/008-canvas/avatar-tour.md).
+        data-tour-id={onStand ? 'avatar-self' : undefined}
         data-seated={seated ? '' : undefined}
         className="pointer-events-none absolute"
         style={{

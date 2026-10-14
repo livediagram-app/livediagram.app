@@ -45,6 +45,7 @@ import {
   receivePeerDragPreview,
 } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
+import { receivePeerSay, resetSpeechBubbles } from '@/lib/avatar-speech-store';
 import {
   receiveArticleCaret,
   resetArticlePeers,
@@ -508,6 +509,10 @@ export function useRoomConnection(opts: {
         // written to the document either way: our client decides what to do
         // with the request, and does nothing if we've left the mode.
         receiveAvatarPush(op.dx, op.dy);
+      } else if (op.kind === 'avatar-say') {
+        // A peer said something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): parsed, deduped and
+        // drawn by the speech layer, never written.
+        receivePeerSay(from, op);
       } else if (op.kind === 'reaction') {
         // No tab check here, unlike the laser: a burst is keyed to the
         // ELEMENT, and only the active tab's elements are rendered, so a
@@ -716,6 +721,8 @@ export function useRoomConnection(opts: {
       cancelled = true;
       presence.cancel();
       resetArticlePeers();
+      // Nobody's words outlive the room they were said in.
+      resetSpeechBubbles();
       openedRoom?.close();
       roomRef.current = null;
     };

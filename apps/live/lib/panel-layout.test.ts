@@ -56,10 +56,10 @@ describe('panel-layout', () => {
 
   it('reflow: removing a stacked panel shifts the rest up', () => {
     // Stack two in the top-right, then move the first away; the second leads the stack.
-    const stacked = dockPanel(defaultPanelLayout(), 'avatar', 'top-right');
-    expect(stacked.corners['top-right']).toEqual(['ai', 'avatar']);
+    const stacked = dockPanel(defaultPanelLayout(), 'laser', 'top-right');
+    expect(stacked.corners['top-right']).toEqual(['ai', 'laser']);
     const next = dockPanel(stacked, 'ai', 'top-left');
-    expect(next.corners['top-right']).toEqual(['avatar']);
+    expect(next.corners['top-right']).toEqual(['laser']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {
@@ -75,13 +75,13 @@ describe('panel-layout', () => {
       const layout = normalizePanelLayout({
         corners: {
           'top-left': ['ai', 'bogus', 'ai'],
-          'top-right': ['ai', 'avatar'],
+          'top-right': ['ai', 'laser'],
         },
         free: {},
       });
       expect(layout.corners['top-left']).toEqual(['ai']);
-      // ai already seen in top-left, so top-right keeps only avatar.
-      expect(layout.corners['top-right']).toEqual(['avatar']);
+      // ai already seen in top-left, so top-right keeps only laser.
+      expect(layout.corners['top-right']).toEqual(['laser']);
     });
 
     // Poll and Vote moved to the Session strip (docs/specs/012-collaboration/session-tools.md).

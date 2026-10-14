@@ -32,7 +32,7 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 
 ## The Avatar Panel
 
-While the mode is active, an **Avatar** panel is present — the character sheet. It is a normal corner panel ([Panel corner docking](../007-editor/panel-docking.md)): draggable, dockable to any corner, the standard panel width (so the top-right column reads as one edge), and homed **top-right**. Like the Poll / Vote panels it exists only while its mode does, so it joins and leaves its corner stack rather than sitting there, and its position is remembered for the session but never minimised (leaving the mode dismisses it outright). It docks in its corner on a desktop and a phone alike. View-role visitors get it too — the mode is theirs as well.
+While the mode is active, an **Avatar** button sits in the bottom-right cluster, **immediately right of Undo / Redo** (first in the cluster for a Viewer, who has no Undo), and opens the **Avatar** panel, the character sheet, as a popover over it, the way Layers, Contents and the Session strip's buttons open theirs. The panel is **closed when the mode starts**: the canvas is the point of the mode, and a panel that always covered a corner of it was in the way. Pressing the button again, pressing outside the popover, or Escape closes it. The button exists only while the mode does, so leaving the mode takes the button and any open panel with it. It shows on a desktop and a phone alike, named **Avatar** beside a small head-and-shoulders glyph on a desktop and the glyph alone on a phone, like its neighbours. View-role visitors get it too: the mode is theirs as well. The panel is never a corner panel: it does not dock, drag or join a corner stack.
 
 Contents, top to bottom:
 
@@ -54,6 +54,8 @@ Contents, top to bottom:
   A Behaviour performance plays **on the spot**: starting one drops any walk in progress (sliding through a routine reads as a bug) and clicking again restarts it rather than queueing. Peers see it: the presence packet carries the **kind plus how far into it the sender is**, and each receiver derives the pose with the same pure `reactionPose` function: a kind and a clock on the wire rather than a pose.
 
 - **Reactions** holds the same five bursts a [Reaction Pad](../009-elements/reaction-pad.md) throws (Confetti, Sparkles, Hearts, Applause, Fireworks), played around the character instead of around a pad. Unlike a Behaviour performance, a Reactions burst plays **on your own screen only**: the room's `reaction` op is keyed to a pad's element id (the character has none), and the avatar presence packet carries no burst. Showing it to peers would mean a burst field on `AvatarPresence` and a peer-side burst layer; it is not built.
+
+- A **Send a Message** button closes the panel, full width under the action rows, for someone who may [speak](#speech-bubbles). It opens the [message popover](#the-message-popover), and it is the only way to speak on a device with no Enter key. On a desktop it carries an `Enter` key hint, so the shortcut is learned where the button is. A Viewer's panel has no such button.
 
 **No colour picker**, deliberately — see above.
 
@@ -97,6 +99,49 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 - **You can push each other.** Clicking a peer's character (in Avatar mode) walks yours over to them and, on arrival, sends an `avatar-push` op naming them plus a unit direction. Only that participant acts on it, by sliding their own character a short way (70 canvas px) along the direction — so a push is a **request to the owner**, never a remote write, and someone who has already left the mode simply ignores it. Same presence trust level as `avatar`: unordered, any role, never logged, never replayed. It is not throttled, because it is an event rather than a sample.
 - A **hide-cursors vote ([Session tools (timer + voting)](../012-collaboration/session-tools.md)) hides avatars too**, on both the outbound and render halves. A walking character is a position on the canvas, so showing it while cursors are hidden would leak exactly what the vote exists to hide.
 
+## Speech bubbles
+
+A character can **say something**: a short message appears in a speech bubble above its head, then floats up and away for everyone on the tab to see. It is the lightest possible way to talk on the canvas: a "hello!", a "follow me", a "nice one" while somebody presents, without a chat panel or anything left behind.
+
+### Who may speak
+
+- An **Editor** and a **Participant** may speak. A **Viewer** may not: the Enter key does nothing for them and their panel has no Send a Message button, but they **see** everyone else's bubbles, as they see everyone's characters. Gated on the session's `can`, never on `isReadOnly` (Avatar mode makes the canvas read-only for everyone in it).
+- The room enforces it too: it drops an `avatar-say` from a view-role sender, as it drops a Viewer's reaction or poll answer.
+- Speaking needs the mode: there is no bubble without a character to say it.
+
+### Typing a message (the composer)
+
+- **Enter**, in Avatar mode and with nothing else holding the keyboard, opens the **composer**: a speech bubble above your own character's head with a text box in it, focused, its tail pointing at the head. It pops open with a small bounce.
+- The composer **follows your character**: walking by click keeps it above the head. While you type, the keyboard is the composer's: arrow keys move the caret and Space types a space, so neither walks nor hops.
+- **Up to 50 words**, and at most 300 characters. A word counter appears once you pass 40 words (`43 / 50`) and turns amber at 50; typing past either limit is refused rather than cut, so nothing you wrote vanishes. A pasted message is trimmed to the limit. Newlines become spaces: a bubble is one thought.
+- **Enter sends.** So does the small send button (a paper plane) at the bubble's right edge. Sending an empty or all-space message just closes the composer.
+- **Escape cancels**: the composer closes and the text is dropped. Pressing outside it on the canvas walks as usual and leaves the composer open with your text; the composer only closes on its own when it loses focus while empty.
+- The composer is drawn at **reading size whatever the zoom**: it sits at a canvas point (above the head) but does not shrink as you zoom out, so it is always typeable.
+
+### The message popover
+
+The panel's **Send a Message** opens a popover over the Avatar button with a text area, the same 50-word and 300-character limits and counter, and **Cancel** and **Send**. **Send** (or Enter in the text area, Shift+Enter being the same as Enter) sends exactly as the composer does, closes the popover and the panel, so you see your bubble rise. Cancel or Escape closes the popover and returns to the panel. This is the phone's way to speak; a desktop has both.
+
+### Sending: the bubble floats away
+
+- On send the bubble **detaches**: its tail fades, and it floats **straight up from where your character's head was** when you sent it, swaying gently from side to side, so it reads as drifting rather than sliding. Your character is free to walk away from it at once.
+- It **fades out over the last third** of its flight and is gone. How long it flies **scales with its length**: 4 seconds for up to two words, 0.15 seconds more for each further word, and never more than 10 seconds (reached at 42 words), so a long message stays up long enough to read. It rises at a steady 18 screen pixels a second, so a longer message also floats higher.
+- Like the composer, a floating bubble is drawn at reading size whatever the zoom, anchored to its canvas point, so it pans with the canvas.
+- **Several at once**: you may send again as soon as your last bubble has left your head, after a **1.5 second cooldown**; until then Enter and Send are held (the composer shows "One moment…"). Each bubble flies on its own clock, so a quick second message rises beneath the first.
+- **Peers see the same flight**, starting when their copy arrives. Every bubble, yours included, has its border and tail in the speaker's **avatar colour** (their presence colour, the shirt's) and the speaker's **name** in small type **under the message**, in the same colour, so a message is still attributable once its sender has walked away. The composer wears your colour too, its send button included.
+- **Bounded on every screen**: at most **three** bubbles per person are on screen; a fourth from the same person makes their oldest fade out at once. A client that ignores the cooldown therefore cannot fill anyone's canvas.
+
+### The wire
+
+- An `avatar-say` presence op: `{ kind: 'avatar-say', tabId, id, text, x, y }`, where `id` is the bubble's random id, `text` the message and `x, y` the canvas point the bubble starts from (the speaker's head). It is **presence**: unordered, never logged, never replayed to a late joiner (a message is about the moment), never written to the document or D1.
+- The room relays it from an Editor or a Participant only, and drops one whose `text` is not a string of at most 300 characters. A receiver parses it field by field, re-applies the 50-word and 300-character limits, ignores one for another tab, ignores repeats of an id it has seen, and draws the text as **plain text**, never markup.
+- A **hide-cursors vote** hides bubbles too, on both halves, as it hides characters.
+- A screen reader hears a peer's message through a polite live region ("Sam says: hello!"); your own is not repeated back to you.
+
+### Motion
+
+The pop on opening, the sway and the rise are decoration. Under **reduced motion** a bubble neither pops nor sways nor rises: it appears above where it was sent, holds for its flight time and fades.
+
 ## Entering from a button
 
 A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops the character **just below that button** rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. The spawn point is one-shot — entering from the palette still spawns centre-screen, and a quick detour to Select still returns you to where you left the character. Only a press that enters the mode sets it: pressing the button while already in Avatar mode leaves the mode and leaves no spawn point behind (`avatarSpawnFromButton`).
@@ -112,21 +157,23 @@ Per the no-god-files rule:
 - **`apps/live/components/primitives/AccordionSection.tsx`** — the shared single-open accordion row (header + chevron + grid-rows body), now used by the Avatar Panel and the Settings dialog (including its Keyboard category's shortcut groups).
 - **`apps/live/lib/avatar-reactions.ts`** — the five reactions, their durations, and `reactionPose(kind, elapsedMs)`: a pure timeline that turns "this reaction, this far in" into the pose inputs the sprite already draws (hop height, facing, arms, stance, lean). Unit-tested (five jack reps, two spin turns, no arms-up-two-ways-at-once, everything back to standing when done), and pure precisely so a peer can replay a performance from a kind + a clock.
 - **`apps/live/hooks/canvas/useAvatarConfig.ts`** — the costume state slice: load on mount, persist + report telemetry on each pick, and the gender toggle the right-click uses.
-- **`apps/live/components/panels/AvatarPanel.tsx`** — the panel: the preview plus four radiogroups, on the shared `MovablePanel` like every other panel.
+- **`apps/live/components/panels/AvatarPanel.tsx`** — the panel: the preview, the four choices, the two action rows and Send a Message, on the shared `ModePanel`, shown as a popover over **`apps/live/components/canvas/AvatarClusterButton.tsx`**, the bottom-bar button.
+- **Speech**: **`packages/api-schema/src/avatar-say.ts`** (the `avatar-say` op, its limits and its field-by-field parser, shared by the room and the editor); **`apps/live/lib/avatar-speech-store.ts`** (the bubbles on screen, a module store the room connection writes to and the layer reads); **`apps/live/lib/avatar-speech.ts`** (pure: word counting and the limits, the flight time, the bubble's rise, sway and fade at a moment, the per-person cap; unit-tested); **`apps/live/hooks/canvas/useAvatarSpeech.ts`** (the composer's open state, the cooldown, the floating bubbles, own and peers', sending and receiving); **`apps/live/components/canvas/AvatarSpeechLayer.tsx`** (the composer and the floating bubbles, drawn in canvas space at reading size, loaded the first time somebody speaks); **`apps/live/components/canvas/AvatarSpeechBubble.tsx`** (the bubble's look and the draft field, shared with the panel); **`apps/live/components/panels/AvatarMessagePopover.tsx`** (the panel's message popover).
 - **`apps/live/hooks/canvas/useAvatarWalk.ts`** — the state slice: position / target / facing / hop / wave, the `requestAnimationFrame` loop, the camera nudge, and the presence publisher.
 - **`apps/live/hooks/canvas/useAvatarKeys.ts`** — the keyboard slice (held arrows + the Space jump), split out so the hook above keeps to state + loop.
 - **`apps/live/components/canvas/AvatarWalker.tsx`** — placement: the canvas-coords box, the standing-on ring, the peer name chip. The pixel art itself is three files beside it: **`avatar-sprite.tsx`** draws the body and assembles the whole figure (the walk cycle, the hop, the flag), **`avatar-sprite-head.tsx`** everything above the neck (where the eight-hairstyles-by-three-facings combinations live, which is most of what the sprite draws), and **`avatar-sprite-palette.ts`** the colours both halves have to agree on.
 - **Realtime**: `AvatarPresence` + the `avatar` `RoomOp` in `@livediagram/api-schema`; `'avatar'` added to `PRESENCE_OP_KINDS` in `@livediagram/api-schema`; `broadcastAvatar` in `useEditorBroadcast`; the inbound coalescing buffer in `useRoomConnection`; `remoteAvatars` in `usePresenceState`; `buildRemoteAvatarRows` in `lib/presence-rows.ts` (unit-tested).
-- Wiring, one small edit each: `canvas-tool-options.tsx` + `palette-icons.tsx` (picker entry), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept, next to the spotlight one), `canvas-chrome.ts` (cursor), `editor-shortcut-keys.ts` + `useEditorKeyboardShortcuts.ts` (`W`, the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `panel-layout.ts` + `usePanelLayout.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the panel's id, position, and its place in the docked corner stacks).
+- Wiring, one small edit each: `canvas-tool-options.tsx` + `palette-icons.tsx` (picker entry), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept, next to the spotlight one), `canvas-chrome.ts` (cursor), `editor-shortcut-keys.ts` + `useEditorKeyboardShortcuts.ts` (`W`, the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `useDockPopovers.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the `avatar` dock popover and its button).
 
 ## Telemetry
 
-Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): `track('Canvas', 'Used', 'AvatarMode')` on entry, emitted from `selectCanvasTool` beside the Laser / Spotlight / Eraser lines. `AvatarMode` (not `Avatar`) keeps the mode distinct from the `Element·Added·Avatar` token the palette's photo tile already emits. Each customisation fires `track('UI', 'Changed', 'AvatarGender' | 'AvatarClothing' | 'AvatarHair' | 'AvatarSize')`, and the dice button fires `AvatarRandomised` — which KIND of choice was made, never the value, so the signal is "do people dress their character" without recording what they picked. No per-step, per-click, or per-reaction events (chatty, no signal).
+Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): `track('Canvas', 'Used', 'AvatarMode')` on entry, emitted from `selectCanvasTool` beside the Laser / Spotlight / Eraser lines. `AvatarMode` (not `Avatar`) keeps the mode distinct from the `Element·Added·Avatar` token the palette's photo tile already emits. Each customisation fires `track('UI', 'Changed', 'AvatarGender' | 'AvatarClothing' | 'AvatarHair' | 'AvatarSize')`, and the dice button fires `AvatarRandomised` — which KIND of choice was made, never the value, so the signal is "do people dress their character" without recording what they picked. Opening the panel from its button fires `track('UI', 'Opened', 'AvatarPanel')`. Sending a message fires `track('Canvas', 'Used', 'AvatarMessage')` from the composer and `track('Canvas', 'Used', 'AvatarMessagePanel')` from the panel's popover: that somebody spoke and by which door, **never the text** and never its length. The [Avatar tour](avatar-tour.md) has its own funnel. No per-step, per-click, or per-reaction events (chatty, no signal).
 
 ## Out of scope (v1)
 
 - Collision with ordinary elements, or pathfinding around them (walk-around-the-box, walkable frames). Only a [Fence](../009-elements/fence.md), a room's walls and the office's scenery block ([Office](../009-elements/office.md)).
 - Avatar customisation beyond the four choices and the presence-coloured shirt (hats, accessories, skin tones, a picked photo, a colour picker — the shirt colour is load-bearing).
-- Emotes beyond the five Behaviour performances and the flag wave: sitting, speech bubbles, a reaction someone else can trigger on your character.
+- Emotes beyond the five Behaviour performances, the flag wave and [speech bubbles](#speech-bubbles): a reaction someone else can trigger on your character. (Sitting is the [Chair](../009-elements/chair.md)'s.)
+- A message history, replies, mentions, private messages, or anything typed reaching the document or the server's storage: speech is ephemeral.
 - A mobile on-screen direction pad (touch gets tap-to-walk only — no arrow keys, no Space).
 - Any persistence of where the avatar was left (only the costume persists), or syncing the costume to an account across devices.
