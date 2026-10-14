@@ -400,7 +400,13 @@ export function ElementFaceRouter({
         />
       ) : element.type === 'shape' && element.shape === 'tab-window' ? (
         /* Tab window (docs/specs/009-elements/tab-window.md): another tab of the document, live, fitted inside it. */
-        <TabWindowFace element={element} surface={surface} selected={isSelected} />
+        <TabWindowFace
+          element={element}
+          surface={surface}
+          selected={isSelected}
+          // A locked window, or a read-only canvas (presenting, a viewer), keeps its tab: no Choose a Tab.
+          canChoose={!readOnly && !isLocked}
+        />
       ) : element.type === 'annotation' && element.articleNote ? (
         <ArticleNoteFace element={element} />
       ) : element.type === 'annotation' ? (
