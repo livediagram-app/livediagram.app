@@ -18,7 +18,7 @@ import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
 import { useSheetChartMenuSelection } from '@/hooks/sheets/useSheetChartMenuSelection';
 import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
-import { participantKey } from '@/lib/identity';
+import { answeringKeys, participantKey } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
@@ -893,8 +893,9 @@ export function EditorCanvasHost() {
             !runBlocked &&
             isVoteHost(activeTab.vote, participantKey(selfParticipant), facilitator.isFacilitator)
           }
-          // +1 for the local participant: livePresence is the REMOTE roster.
-          participantCount={livePresence.length + 1}
+          // Who can cast, ourselves included (livePresence is the REMOTE roster): one per person, never a
+          // view-link guest or an agent row (answeringKeys), so turnout never waits on someone who cannot vote.
+          participantCount={answeringKeys([selfParticipant, ...livePresence]).length}
           // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
           // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
           onOpenCanvasTheme={

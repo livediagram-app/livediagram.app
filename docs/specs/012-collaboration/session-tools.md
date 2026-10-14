@@ -330,7 +330,9 @@ on the tab. Two phases, one panel:
   winning" but never "is everyone done", which is the question that decides
   when to press End vote. It deliberately counts **people, not just dots**:
   "8 of 12 dots" reads as nearly finished when one person holds all four
-  remaining, which is exactly when you shouldn't call it.
+  remaining, which is exactly when you shouldn't call it. The people are those
+  who can cast: one per person however many tabs they have open, never a
+  view-link guest or an agent row (the [Participant responses](participant-responses.md) "Who counts" rule).
 - **Once results are revealed — the ranked list.** Every voted element, most
   dots first, each row clickable to **jump the results walkthrough** straight
   to that element (`jumpToVoteResult`, the same clamped setter Previous /
