@@ -11,6 +11,7 @@ import { lucideGlyph } from '@livediagram/ui';
 import type { ThemeBackgroundPreset } from '@/lib/illustrate-page-paint';
 import { track } from '@/lib/telemetry';
 import { BackgroundSection } from './page-background-section';
+import { ApplyBackgroundToAll } from './page-background-apply-all';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 
 const BackgroundIcon = lucideGlyph(lucidePaintRoller, 14);
@@ -33,11 +34,13 @@ function Body({
   themePresets,
   onBackground,
   onPreview,
+  applyToAll,
 }: {
   page: IllustratePage;
   themePresets: readonly ThemeBackgroundPreset[];
   onBackground: (patch: Partial<PageBackground>) => void;
   onPreview: (patch: Partial<PageBackground> | null) => void;
+  applyToAll?: { reach: number; onApply: () => void };
 }) {
   // Only on close: the callback is a fresh closure each render, so it is read through a ref.
   const clearPreview = useRef(onPreview);
@@ -56,6 +59,16 @@ function Body({
         }}
         onPreview={onPreview}
       />
+      {applyToAll ? (
+        <ApplyBackgroundToAll
+          page={page}
+          reach={applyToAll.reach}
+          onApply={() => {
+            onPreview(null);
+            applyToAll.onApply();
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -66,8 +79,12 @@ export function PageBackgroundButton({
   themePresets,
   onBackground,
   onPreview,
+  applyToAll,
 }: {
   page: IllustratePage;
+  // Apply to All at its foot (docs/specs/007-editor/illustrate-pages.md "Copying a background"): how
+  // many other pages of its kind it reaches, and the edit.
+  applyToAll?: { reach: number; onApply: () => void };
   // Named beside its icon (a desktop).
   labelled: boolean;
   // The tab theme's own backgrounds, offered first.
@@ -97,6 +114,7 @@ export function PageBackgroundButton({
           themePresets={themePresets}
           onBackground={onBackground}
           onPreview={onPreview}
+          {...(applyToAll ? { applyToAll } : {})}
         />
       </TitlePopoverButton>
     </div>

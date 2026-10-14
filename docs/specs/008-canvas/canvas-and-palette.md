@@ -1181,6 +1181,7 @@ The painter is the **Format** canvas tool in the palette tool dropdown (next to 
 - **Done** on the banner, **clicking the empty canvas**, pressing **Escape**, or switching to any other tool exits; leaving the tool **disarms** the source and **restores the tool that was active before Format** (falling back to Select). Clicking the source itself is a no-op but keeps the mode going.
 - The cursor is the copy cursor in both phases, on boxed elements and arrows alike.
 - Mechanically the click handler routes through `useEditorDrag` (`formatToolActive`) for boxed elements and through `selectElement` (`useSelectionEditing`) for arrows (arrows have no drag starter in format mode, their clicks land as selections), and both call the same `applyFormatFromSource`, which reads the Format Panel's mode to decide whether the source survives the apply.
+- **Illustrate pages** are painted too: in Illustrate mode a press on a page's paper arms its background, and later presses on other pages paint it ([Copying a background](../007-editor/illustrate-pages.md#copying-a-background)).
 - **Arrows work in both phases**: an arrow can be the **source** (copying its line + label look) and the **target** of another arrow's style. A cross-kind tap (arrow base → boxed target or vice versa) is a no-op that keeps the base armed: the two kinds share almost no formattable fields.
 
 ### Properties copied
@@ -1532,7 +1533,7 @@ The tool dropdown's Present band also carries **Slide Deck** ([Presentation mode
 `⌘C` puts the selection on the **OS clipboard**, serialised
 (`apps/live/lib/clipboard-payload.ts`); `⌘V` reads it back, re-mints it through
 `duplicateElements` so ids are remapped and pinned arrows re-wired, and
-drops the copies 24px offset on the active tab. On an event-storming board a paste holding a workshop note lands at the POINTER when the pointer is over the canvas, and otherwise staggers on the original along its lane (24px right, same lane); either way every workshop note lands on a lane ([Event storming](../021-event-storming/event-storming.md#always-on-a-lane)). `⌘X` is the same copy followed
+drops the copies 24px offset on the active tab. On an event-storming board a paste holding a workshop note lands at the POINTER when the pointer is over the canvas, and otherwise staggers on the original along its lane (24px right, same lane); either way every workshop note lands on a lane ([Event storming](../021-event-storming/event-storming.md#always-on-a-lane)). **A paste lands where the person is looking**: when the copies' usual spot would put their centre outside the view (copied on one tab and pasted on another, or copied on the first slide of a deck and pasted while on the twelfth), they land centred in the middle of the view instead, on whole pixels (`pasteTranslation` in `apps/live/lib/paste-placement.ts`). A paste at the pointer is unaffected. `⌘X` is the same copy followed
 by a delete. So a selection crosses a browser tab, a second window, and a
 reload — copy from one document, paste into another.
 

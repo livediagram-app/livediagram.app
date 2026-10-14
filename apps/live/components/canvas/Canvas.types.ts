@@ -246,7 +246,7 @@ export type CanvasProps = {
   formatConfig?: import('@/lib/format-config').FormatConfig;
   onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
   onSetFormatMode?: (mode: import('@/lib/format-config').FormatMode) => void;
-  formatBrushSource?: { name: string; fill?: string; stroke?: string; textColor?: string } | null;
+  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;
   onResetFormatPanel?: () => void;
@@ -694,6 +694,10 @@ export type CanvasProps = {
   // Wrap up the Format canvas tool (the palette tool): drops back to the
   // tool active before it. Drives the format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
+  // The Format tool's press on an Illustrate page's paper (docs/specs/007-editor/illustrate-pages.md
+  // "Copying a background"): arms or paints that page's background. Absent where pages cannot be
+  // painted (another mode, a person who may not edit them), so such a press is an empty-canvas one.
+  onFormatPagePress?: (pageId: string) => void;
   onFollowLink: (link: import('@livediagram/document').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). Available in

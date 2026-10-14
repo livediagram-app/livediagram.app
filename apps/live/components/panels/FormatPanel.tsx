@@ -25,6 +25,16 @@ import { HoverCard } from '@livediagram/ui';
 
 type Row = 'copies' | 'mode';
 
+/** What the brush holds, for the preview: the loaded element's (or page's) name and the three
+ *  colours the swatch draws, and, for a page's background, what a paint copies. */
+export type FormatBrushSource = {
+  name: string;
+  fill?: string;
+  stroke?: string;
+  textColor?: string;
+  summary?: string;
+};
+
 // What the brush holds. The swatch is drawn ONLY from enabled groups, so
 // turning Fill off visibly empties the fill out of the preview — the same
 // information the next paint will act on.
@@ -33,7 +43,7 @@ function BrushPreview({
   source,
 }: {
   config: FormatConfig;
-  source: { name: string; fill?: string; stroke?: string; textColor?: string } | null;
+  source: FormatBrushSource | null;
 }) {
   const on = config.copies;
   return (
@@ -57,7 +67,9 @@ function BrushPreview({
           {source ? source.name : 'Nothing loaded'}
         </span>
         <span className="block truncate text-[10px] text-slate-500 dark:text-slate-400">
-          {source ? `Copies: ${formatCopiesSummary(config)}` : 'Pick something to copy from'}
+          {source
+            ? (source.summary ?? `Copies: ${formatCopiesSummary(config)}`)
+            : 'Pick something to copy from'}
         </span>
       </span>
     </div>
@@ -75,7 +87,7 @@ export function FormatPanel({
   onToggleGroup: (group: FormatGroup) => void;
   onSetMode: (mode: FormatMode) => void;
   // The loaded element, described for the preview. Null until one is picked.
-  source: { name: string; fill?: string; stroke?: string; textColor?: string } | null;
+  source: FormatBrushSource | null;
 } & ModePanelProps) {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));

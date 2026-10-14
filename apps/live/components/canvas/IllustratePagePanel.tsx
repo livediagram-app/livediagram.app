@@ -37,6 +37,7 @@ import type { ThemeBackgroundPreset } from '@/lib/illustrate-page-paint';
 import type { PageLayoutId } from '@livediagram/templates';
 import { LayoutsSection } from './infographic-page-layouts-section';
 import { OrientationSection, SizeSection } from './illustrate-page-panel-sections';
+import { ApplyBackgroundToAll } from './page-background-apply-all';
 import { BackgroundSection } from './page-background-section';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
@@ -240,15 +241,25 @@ export function IllustratePagePanel({
             />
           </>
         ) : tab === 'background' ? (
-          <BackgroundSection
-            page={page}
-            themePresets={themeBackgrounds}
-            onBackground={(patch) => {
-              edit.setBackground(page.id, patch);
-              onPreview(null);
-            }}
-            onPreview={preview}
-          />
+          <>
+            <BackgroundSection
+              page={page}
+              themePresets={themeBackgrounds}
+              onBackground={(patch) => {
+                edit.setBackground(page.id, patch);
+                onPreview(null);
+              }}
+              onPreview={preview}
+            />
+            <ApplyBackgroundToAll
+              page={page}
+              reach={edit.applyToAllReach(page.id)}
+              onApply={() => {
+                onPreview(null);
+                edit.applyBackgroundToAll(page.id);
+              }}
+            />
+          </>
         ) : tab === 'layouts' ? (
           <LayoutsSection
             page={page}

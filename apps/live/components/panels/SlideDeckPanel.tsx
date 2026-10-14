@@ -34,15 +34,10 @@ import { PlayIcon, SlideDeckRow } from '@/components/panels/SlideDeckRow';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
-import { isDragTravel } from '@/lib/press-gestures';
+import { rowDropIndex, useRowReorderDrag } from '@/hooks/ui/useRowReorderDrag';
+import { DropCaret } from '@/components/primitives/DropCaret';
 import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
-import { useLatest } from '@/hooks/ui/useLatest';
-
-/** Where a dropped row will land, drawn between rows like the tab bar's caret. */
-function DropCaret() {
-  return <div aria-hidden className="pointer-events-none -my-0.5 h-0.5 rounded bg-brand-500" />;
-}
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 
@@ -121,80 +116,21 @@ export function SlideDeckPanel({
   const deleting = deck.slides.find((s) => s.id === confirmDelete?.id) ?? null;
   const notesSlide = deck.slides.find((s) => s.id === notesForId) ?? null;
 
-  // Row drag. The order does NOT change while you drag: a caret shows where the
-  // row will land and the move commits on release. Reordering live meant the
-  // list reshuffled under the pointer, which moved the very row you were aiming
-  // at — the tab bar settled this question already (docs/specs/006-document/tab-folders.md) and this follows
-  // it, with pointer events instead of HTML5 dnd so it works on touch.
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [moving, setMoving] = useState(false);
-  const [dropAt, setDropAt] = useState<{ index: number; side: 'before' | 'after' } | null>(null);
-  const origin = useRef<{ x: number; y: number } | null>(null);
-  const dragging = useRef(false);
-  const dropRef = useLatest<{ index: number; side: 'before' | 'after' } | null>(dropAt);
-
-  const slotUnder = (x: number, y: number) => {
-    const el = document.elementFromPoint(x, y)?.closest('[data-slide-slot]');
-    if (!el) return null;
-    const raw = el.getAttribute('data-slide-slot');
-    if (raw === null) return null;
-    const rect = el.getBoundingClientRect();
-    return {
-      index: Number(raw),
-      // Which half the pointer is in decides the side, so the caret sits
-      // exactly where the row will land.
-      side: (y < rect.top + rect.height / 2 ? 'before' : 'after') as 'before' | 'after',
-    };
-  };
-
-  const beginDrag = (e: React.PointerEvent, id: string) => {
-    if (e.button !== 0 || isReadOnly) return;
-    origin.current = { x: e.clientX, y: e.clientY };
-    dragging.current = false;
-    setMoving(false);
-    setDraggingId(id);
-    // NOT captured here. A row carries a press target and a `…` button, and
-    // capturing on pointer-down redirects every later event to the row, so the
-    // click those needed never arrives. Capture happens once it IS a drag.
-  };
-
-  const moveDrag = (e: React.PointerEvent) => {
-    if (!draggingId || !origin.current) return;
-    if (!dragging.current) {
-      const dx = e.clientX - origin.current.x;
-      const dy = e.clientY - origin.current.y;
-      if (!isDragTravel(dx, dy)) return;
-      dragging.current = true;
-      setMoving(true);
-      e.currentTarget.setPointerCapture(e.pointerId);
-    }
-    // elementFromPoint, not the event target: pointer capture keeps every move
-    // on the row the drag started from.
-    setDropAt(slotUnder(e.clientX, e.clientY));
-  };
-
-  const endDrag = (e: React.PointerEvent) => {
-    if (dragging.current && e.currentTarget.hasPointerCapture?.(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
-    const target = dropRef.current;
-    const id = draggingId;
-    if (dragging.current && id && target) {
-      const from = deck.slides.findIndex((s) => s.id === id);
-      // The caret sits BETWEEN rows, so 'after' means the slot below. Pulling
-      // the dragged row out first shifts everything below it up by one, which
-      // is why a downward move loses a step.
-      let to = target.side === 'before' ? target.index : target.index + 1;
-      if (from >= 0 && from < to) to -= 1;
-      const clamped = Math.max(0, Math.min(deck.slides.length - 1, to));
-      if (from >= 0 && clamped !== from) reorderSlides(id, clamped);
-    }
-    setDraggingId(null);
-    setMoving(false);
-    setDropAt(null);
-    dragging.current = false;
-    origin.current = null;
-  };
+  // Row drag: a caret shows where the row lands, the move commits on release (useRowReorderDrag).
+  const { draggingId, moving, beginDrag, moveDrag, endDrag, caretBefore, caretAfterLast } =
+    useRowReorderDrag({
+      slot: 'slide-slot',
+      count: deck.slides.length,
+      disabled: isReadOnly,
+      onDrop: (id, drop) => {
+        const to = rowDropIndex(
+          deck.slides.findIndex((s) => s.id === id),
+          drop,
+          deck.slides.length,
+        );
+        if (to !== null) reorderSlides(id, to);
+      },
+    });
 
   // The talk's planned length: every shown slide's minutes.
   const totalMinutes = deck.slides.reduce((n, sl) => n + (sl.hidden ? 0 : (sl.minutes ?? 0)), 0);
@@ -222,11 +158,6 @@ export function SlideDeckPanel({
           : `Add All ${missingSlidePages.length} Slide Pages`}
       </button>
     ) : null;
-
-  const caretBefore = (i: number) =>
-    moving &&
-    dropAt !== null &&
-    (dropAt.side === 'before' ? dropAt.index === i : dropAt.index === i - 1);
 
   return (
     <ModePanel
@@ -338,9 +269,7 @@ export function SlideDeckPanel({
               </div>
             ))}
             {/* The caret past the last row, for a drop below everything. */}
-            {moving && dropAt?.side === 'after' && dropAt.index === deck.slides.length - 1 ? (
-              <DropCaret />
-            ) : null}
+            {caretAfterLast ? <DropCaret /> : null}
           </div>
         )}
 

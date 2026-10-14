@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
 import { layOutIllustratePages, newLogoPage } from './illustrate-page';
 import type { PageImageFill } from './illustrate-page-image';
-import { pageExportFrame, pageImageSvg, pagePatternInk } from './illustrate-page-frame';
+import {
+  pageExportFrame,
+  pageGradientLine,
+  pageImageSvg,
+  pagePatternInk,
+} from './illustrate-page-frame';
 import type { Element } from './index';
 
 // docs/specs/007-editor/illustrate-pages.md "Export": one page as an export draws it, shared by the editor's exports
@@ -115,5 +120,40 @@ describe('a page’s frame', () => {
     } as unknown as Element;
     const els = [inside, outside, arrow, away];
     expect(els.filter((el) => frame.reaches(el, els)).map((el) => el.id)).toEqual(['in', 'ar']);
+  });
+});
+
+describe('markup over the paper', () => {
+  // A slide's animated background's opening frame goes over its gradient and under its pattern
+  // (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
+  it('sits over the fill and under the pattern', () => {
+    const [page] = layOutIllustratePages([
+      {
+        id: 's',
+        orientation: 'landscape',
+        kind: 'slide',
+        background: {
+          fill: { kind: 'gradient', from: '#000000', to: '#ffffff', angle: 90 },
+          pattern: 'dots',
+        },
+      },
+    ]);
+    const svg = pageExportFrame(page!, { overFill: '<image id="frame"/>' }).backgroundSvg;
+    const fill = svg.indexOf('-fill)"');
+    const frame = svg.indexOf('<image id="frame"/>');
+    expect(fill).toBeGreaterThan(-1);
+    expect(frame).toBeGreaterThan(fill);
+    expect(svg.indexOf('<pattern')).toBeGreaterThan(frame);
+  });
+});
+
+describe('pageGradientLine', () => {
+  it('runs through the centre at the angle, as long as the box across it', () => {
+    const fill = { kind: 'gradient' as const, from: '#000', to: '#fff', angle: 90 };
+    const l = pageGradientLine(fill, { x: 0, y: 0, width: 200, height: 100 });
+    expect(l.x1).toBeCloseTo(0);
+    expect(l.y1).toBeCloseTo(50);
+    expect(l.x2).toBeCloseTo(200);
+    expect(l.y2).toBeCloseTo(50);
   });
 });

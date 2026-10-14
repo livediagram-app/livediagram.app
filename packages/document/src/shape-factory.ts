@@ -218,7 +218,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   callout: { width: 380, height: 116 },
   // Card (docs/specs/009-elements/card.md): room for a title, a meta line, two body lines and a tag row.
   card: { width: 300, height: 150 },
-  // Badge (docs/specs/009-elements/badge.md): fitted to its text on every commit (badgeSize); this is "New".
+  // Badge (docs/specs/009-elements/badge.md): fitted to its text on every commit (badgeSize); this is "New" (BADGE_NEW_LABEL).
   badge: { width: 40, height: 24 },
   // Step number (docs/specs/009-elements/step-number.md): a small disc.
   step: { width: 28, height: 28 },

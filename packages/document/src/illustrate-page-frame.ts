@@ -77,7 +77,10 @@ export type PageExportFrame = {
 // A CSS linear-gradient's line (docs: CSS Images 3) as SVG user-space end points: through the
 // box's centre at the angle (0deg runs bottom to top, 90deg left to right), as long as the box's
 // projection onto it.
-function gradientLine(fill: Extract<PageFill, { kind: 'gradient' }>, r: LaidOutPage['rect']) {
+export function pageGradientLine(
+  fill: Extract<PageFill, { kind: 'gradient' }>,
+  r: LaidOutPage['rect'],
+) {
   const a = (fill.angle * Math.PI) / 180;
   const dx = Math.sin(a);
   const dy = -Math.cos(a);
@@ -104,6 +107,7 @@ export function pageExportFrame(
     ruling,
     transparentPaper = false,
     imageHref,
+    overFill,
   }: {
     // The plain paper's colour: white in an export; the canvas's own paper where a page is drawn
     // as the canvas shows it (the Map).
@@ -119,6 +123,9 @@ export function pageExportFrame(
     // A page picture's bytes by gallery id (a data URL, export-tab-images), to embed. Without them
     // (the Map, slide thumbnails) the page is painted in the picture's tone under its overlay.
     imageHref?: (imageId: string) => string | undefined;
+    // Markup laid over the paper and under its pattern: a slide's animated background as it
+    // stands when the slide opens (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
+    overFill?: string;
   } = {},
 ): PageExportFrame {
   const r = page.rect;
@@ -129,7 +136,7 @@ export function pageExportFrame(
   const parts: string[] = [];
   const transparent = transparentPaper && page.kind === 'logo' && !fill;
   if (fill?.kind === 'gradient') {
-    const l = gradientLine(fill, r);
+    const l = pageGradientLine(fill, r);
     parts.push(
       `<defs><linearGradient id="${id}-fill" gradientUnits="userSpaceOnUse" x1="${r2(l.x1)}" y1="${r2(l.y1)}" x2="${r2(l.x2)}" y2="${r2(l.y2)}">` +
         `<stop offset="0" stop-color="${xmlEscape(fill.from)}"/><stop offset="1" stop-color="${xmlEscape(fill.to)}"/>` +
@@ -143,6 +150,7 @@ export function pageExportFrame(
   } else if (!transparent) {
     parts.push(rect(xmlEscape(fill?.color ?? paper)));
   }
+  if (overFill) parts.push(overFill);
   if (pattern && ruling && pattern === 'lines') {
     // Ruled inside the margins, one line under each line of body text.
     const p = ruling.pitch;

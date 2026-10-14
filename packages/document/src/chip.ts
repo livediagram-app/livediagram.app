@@ -14,6 +14,8 @@ export type ChipShape = 'badge' | 'step';
 export type ChipLook = 'solid' | 'ink' | 'outline' | 'tinted' | 'quiet';
 export const CHIP_LOOKS: readonly ChipLook[] = ['solid', 'ink', 'outline', 'tinted', 'quiet'];
 
+/** A fresh badge's text (the New preset's). */
+export const BADGE_NEW_LABEL = 'New';
 export const BADGE_LABEL_MAX = 24;
 export const STEP_LABEL_MAX = 3;
 export const STEP_SIZE_PX = 28;

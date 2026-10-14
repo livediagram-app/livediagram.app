@@ -409,13 +409,25 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
   dropped on reading) and divides every loop's length and start, so the whole motion runs faster
   or slower together.
 - **What is stored**: the gradient (its two stops, at the presets' angle) with its `motion`. So
-  everything that reads a gradient reads it unchanged: re-inking measures its tones, exports and
-  thumbnails draw the still gradient, AI tools see a gradient. A motion the editor does not know
-  is dropped on reading, leaving the gradient.
+  everything that reads a gradient reads it unchanged: re-inking measures its tones, thumbnails
+  draw the still gradient, AI tools see a gradient. A motion the editor does not know is dropped
+  on reading, leaving the gradient.
 - **Where it moves**: on the slide on screen and while presenting, its moving parts over the
   gradient and under everything on the slide. In an export, a thumbnail and with Reduce Motion on
   it is still: under Reduce Motion each part rests where it stands, a finished background in
   itself.
+- **In an export** (PDF, PNG and SVG, and the export's preview) the slide's background is its first
+  frame: every part where it stands as the slide opens, never the bare gradient. The parts are
+  described once (`motionParts`, `apps/live/lib/page-motion-parts.ts`), so the moving layer and the
+  export draw the same ones; where each stands is its loop evaluated at its start
+  (`openingPose`, `page-motion-frame.ts`, which restates `app/motion-page.css`'s keyframes and
+  matches the browser's own first frame). The PNG and PDF paint it onto the page
+  (`paintMotionFrame`, `page-motion-canvas.ts`); the SVG embeds a picture of the gradient with the
+  frame over it (a JPEG, 29 to 141 KiB for a 1920 x 1080 slide, about a fiftieth of a see-through
+  PNG), laid over the fill and under the pattern (`pageExportFrame`'s `overFill`). A deck repeats
+  one background, so an export paints each background once (the PDF and a zip of pages keep the
+  last two painted, as a 1920 x 1080 slide at 2x is 33 MB of pixels; the SVG keeps its last eight
+  pictures).
 - **Cost**: every part moves by transform and opacity alone, so the compositor runs it with no
   repaint; soft edges are radial gradients, never blur filters; each motion has at most about a
   hundred parts (Dot Wave's grid); loops run from 4 to 90 seconds, calm rather than busy. Positions come from fixed
@@ -491,6 +503,42 @@ Image category: a logo goes over other things, so its artboard stays a colour or
 - **Telemetry**: `Tab · Changed · PageBackgroundImage` when a picked or uploaded picture lands
   (beside the background's own `PageBackground`); a search counts as the picker's
   `Element · Searched · Image`, and a failed search or pick as its `ImageSearch.*` warnings.
+
+### Copying a background
+
+A page's **format** is its background: its fill (a colour, a gradient, an animated background with
+its speed, or a picture with its overlay and position) and its pattern. Its size, orientation,
+content, name and lock stay its own. A deck or a set of pages often wears one background, so it is
+given in one go rather than page by page.
+
+- **Apply to All**: at the foot of a page's **Background** (the button beside its cog, and the page
+  panel's Background tab), **Apply to All Slides** (on a slide;
+  **Apply to All Infographic Pages**, **Article Pages** or **Logo Pages** on the other kinds) gives
+  every other page of the same kind this page's background, under a line saying how many it reaches
+  and that a locked one keeps its own. Shown only while there is another page of the kind (an
+  article's own pages already share one background). One edit, one undo, each page re-inked for
+  its new fill ("Re-inking"). A notice says what it did: "Background applied to 35 slides.", adding
+  "2 locked slides kept their own." when it skipped any. A locked page is skipped, never refused
+  whole; a logo page's pattern is never touched.
+- **The Format tool paints pages**: in Illustrate mode, with the [Format
+  tool](../008-canvas/canvas-and-palette.md#format-painter), a press on a page's paper (anywhere on
+  the page but on an element) arms that page's background as the brush, and each press on another
+  page paints it there, one edit each, re-inked. The banner reads "Select a base element or page to
+  copy its style", then "Tap pages to paint this background onto them". **Keep the brush** and
+  **Paint once** work as for elements; the Format Panel's groups (Fill, Border, Text, Effects, Size)
+  are an element's and do not narrow a page's paint. A press on the source page, an element pressed
+  under a page brush, or a page pressed under an element's brush is a no-op that keeps the brush
+  (as a shape's look onto an arrow is). Painting crosses kinds (a slide's background onto an
+  infographic page), except a picture onto a logo page ("A logo page takes no picture background.");
+  a locked target says so ("That page is locked. Unlock it to change its background.") and is left
+  as it is. A press off every page still ends the tool.
+- **Agents** give every page of a kind one background with `change_pages`'s
+  `apply_background_to_all` ([Illustrate for agents](../024-agents/illustrate-for-agents.md)).
+- **Share roles**: as any background, an Editor's alone. A Participant's or a Viewer's press on a
+  page with the Format tool is an empty-canvas press, and they see no Apply to All.
+- The pure edits are `pageBackgroundSpread` and `pageBackgroundCopied`
+  (`packages/document/src/illustrate-background-copy.ts`), shared by the panel, the Format tool and
+  the agents.
 
 ### Beside the cog
 
@@ -1012,6 +1060,15 @@ bottom sheet on a phone), the way round a big document:
   and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
   on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to
   the first and last; the list scrolls the marked page into view when it opens.
+- **Reordering**: an Editor drags a row to move its page: a caret shows where it will land and
+  the move commits on release, one edit (one undo), the page's content with it, exactly as
+  dragging its label along the pages row does. A page moves with its unit, so an article's pages
+  move together, and a drop beside any of an article's pages is a drop beside the whole article.
+  A mouse or pen drags the whole row; a finger drags the row's grip (at its right, shown on a
+  phone and on hover on a desktop), so the list still scrolls by touch. The release is not a press
+  of the row: it does not glide there, but marks the moved page as here. While Find a Page narrows
+  the list there is no reordering (the rows shown are not the whole order). A Participant and a
+  Viewer see no grip and cannot drag. The drag is the Slide Deck's (`useRowReorderDrag`).
 - **Adding**: an Editor's footer holds **Add Page** with the four kinds as compact buttons
   (Infographic, Slide, Article, Logo, each its glyph and name); a press adds a page of that kind
   after the last, exactly as the row's **+** does (carrying the background, theme's Mist for a
@@ -1022,7 +1079,7 @@ bottom sheet on a phone), the way round a big document:
   or pages change while it is open, arrow labels laid out once for the tab rather than once a
   page; nothing is drawn while it is closed.
 - **Telemetry**: `UI · Opened · PageContents` on opening; `UI · Used · PageContentsJump` on going
-  to a page; adding a page counts as the row's + does.
+  to a page; `UI · Used · PageContentsReorder` on moving one; adding a page counts as the row's + does.
 
 ## Slide layouts
 
@@ -1222,7 +1279,8 @@ are diagram formats and are not offered.
 ## Telemetry
 
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
-`PageBackground`, `PageBackgroundImage`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
+`PageBackground`, `PageBackgroundImage`, `PagePattern`, `PageBackgroundAppliedToAll` (Apply to All),
+`PageBackgroundPainted` (the Format tool, page onto page), `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
 `PageLocked`, `PageUnlocked`,
 `PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`
 (and `ArticleAdded`, `LogoPageAdded`, the other kinds' adds), `PageKindInfographic` / `PageKindArticle` / `PageKindSlide` /

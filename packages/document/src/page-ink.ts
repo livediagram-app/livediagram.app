@@ -12,12 +12,13 @@ import {
 } from './colors';
 import { elementIndexFor, endpointPosition, type ElementIndex } from './geometry';
 import {
+  illustratePageAt,
   illustratePagesOf,
   layOutIllustratePages,
   type IllustratePage,
   type PageRect,
 } from './illustrate-page';
-import { elementAnchorPoint, elementIdsOnPage, pageFillTone } from './illustrate-page-content';
+import { elementAnchorPoint, pageFillTone } from './illustrate-page-content';
 import { layerBands } from './layers';
 import { inkToward, isOpaqueHex, worstContrast } from './page-ink-contrast';
 import { PAPER_TONE, pageGroundUnder, type PageGround } from './page-ink-ground';
@@ -73,6 +74,9 @@ type TabLike = Pick<Tab, 'elements'> & {
   layers?: Tab['layers'];
 };
 
+/** A page and the background it now wears, for pagesInkFor. */
+export type PageInk = { pageId: string; background: IllustratePage['background'] };
+
 /**
  * The tab re-inked for page `pageId`'s background `background` (its background after the change),
  * and the memory after it. `memory` is what earlier re-inking replaced; absent, colours are judged
@@ -84,31 +88,76 @@ export function pageInkFor<T extends TabLike>(
   background: IllustratePage['background'],
   memory: InkMemory = EMPTY_INK_MEMORY,
 ): { tab: T; memory: InkMemory } {
+  return pagesInkFor(tab, [{ pageId, background }], memory);
+}
+
+/**
+ * pageInkFor for several pages in one walk (Apply to All on a full deck): the pages laid out, the
+ * elements indexed and sorted onto their pages once, not once a page, so a deck at the page cap
+ * costs O(elements + pages) rather than O(pages x elements x pages). Only colours change, never a
+ * box, so the one index stays true for every page's pass. Each page is inked as pageInkFor would,
+ * in `inks` order, one memory carried through.
+ */
+export function pagesInkFor<T extends TabLike>(
+  tab: T,
+  inks: readonly PageInk[],
+  memory: InkMemory = EMPTY_INK_MEMORY,
+): { tab: T; memory: InkMemory } {
+  if (inks.length === 0) return { tab, memory };
   const pages = layOutIllustratePages(illustratePagesOf(tab));
-  const page = pages.find((p) => p.id === pageId);
-  if (!page) return { tab, memory };
-  const on = elementIdsOnPage(tab.elements, pages, pageId);
-  if (on.size === 0) return { tab, memory };
-  const surface: CanvasSurface = background?.fill
-    ? canvasSurface(pageFillTone(background.fill))
-    : 'light';
-  const painted = layerBands(
-    tab.elements.filter((el) => on.has(el.id)),
-    tab.layers,
-    { includeHidden: true },
-  ).flatMap((b) => b.elements);
   const index = elementIndexFor(tab.elements);
-  const anchors = painted.map((el) => elementAnchorPoint(el, index));
-  const pass = inkPass(index, page.rect, background, surface, memory);
+  const wanted = new Set(inks.map((i) => i.pageId));
+  // Each wanted page's elements, in the tab's order: one walk over the tab.
+  const onPage = new Map<string, Element[]>();
+  for (const el of tab.elements) {
+    const page = illustratePageAt(pages, elementAnchorPoint(el, index));
+    if (!page || !wanted.has(page.id)) continue;
+    const list = onPage.get(page.id);
+    if (list) list.push(el);
+    else onPage.set(page.id, [el]);
+  }
+  const recall = new Map<string, Partial<Record<InkField, InkRecall>>>(
+    [...memory].map(([id, r]) => [id, { ...r }]),
+  );
   const replaced = new Map<string, Element>();
-  painted.forEach((el, i) => {
-    const next = pass.reink(el, anchors, i);
-    if (next !== el) replaced.set(el.id, next);
-  });
-  const nextMemory = pass.memoryFor(tab.elements);
+  let touched = false;
+  for (const { pageId, background } of inks) {
+    const page = pages.find((p) => p.id === pageId);
+    const on = onPage.get(pageId);
+    if (!page || !on) continue;
+    touched = true;
+    const surface: CanvasSurface = background?.fill
+      ? canvasSurface(pageFillTone(background.fill))
+      : 'light';
+    // A page inked twice in one call is judged as its first pass left it.
+    const current = on.map((el) => replaced.get(el.id) ?? el);
+    const painted = layerBands(current, tab.layers, { includeHidden: true }).flatMap(
+      (b) => b.elements,
+    );
+    const anchors = painted.map((el) => elementAnchorPoint(el, index));
+    const pass = inkPass(index, page.rect, background, surface, recall);
+    painted.forEach((el, i) => {
+      const next = pass.reink(el, anchors, i);
+      if (next !== el) replaced.set(el.id, next);
+    });
+  }
+  if (!touched) return { tab, memory };
+  const nextMemory = pruned(recall, tab.elements);
   if (replaced.size === 0) return { tab, memory: nextMemory };
   const elements = tab.elements.map((el) => replaced.get(el.id) ?? el);
   return { tab: { ...tab, elements }, memory: nextMemory };
+}
+
+// The memory with what no longer applies dropped: an element gone, or nothing recalled for it.
+function pruned(
+  memory: Map<string, Partial<Record<InkField, InkRecall>>>,
+  elements: readonly Element[],
+): InkMemory {
+  const ids = new Set(elements.map((e) => e.id));
+  for (const [id, r] of [...memory]) {
+    if (!ids.has(id) || Object.keys(r).length === 0) memory.delete(id);
+  }
+  return memory;
 }
 
 /** The tab re-inked for the page's new background (pageInkFor without a memory). */
@@ -127,21 +176,10 @@ function inkPass(
   rect: PageRect,
   background: IllustratePage['background'],
   surface: CanvasSurface,
-  remembered: InkMemory,
+  // The call's memory, written as the pass goes (pagesInkFor copies it first).
+  memory: Map<string, Partial<Record<InkField, InkRecall>>>,
 ) {
   const covers: Cover[] = [];
-  const memory = new Map<string, Partial<Record<InkField, InkRecall>>>(
-    [...remembered].map(([id, r]) => [id, { ...r }]),
-  );
-
-  const memoryFor = (elements: Element[]): InkMemory => {
-    const ids = new Set(elements.map((e) => e.id));
-    for (const id of [...memory.keys()]) {
-      const r = memory.get(id)!;
-      if (!ids.has(id) || Object.keys(r).length === 0) memory.delete(id);
-    }
-    return memory;
-  };
 
   // The ground under an element: its topmost cover, else the page; null when a surface of unknown
   // tone covers it.
@@ -347,7 +385,7 @@ function inkPass(
     patch[field] = recall.from;
     return recall.from;
   };
-  return { reink, memoryFor };
+  return { reink };
 }
 
 // Whether anything drawn after the element (on the page) sits on it: its centre inside the box.

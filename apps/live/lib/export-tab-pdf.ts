@@ -46,8 +46,10 @@ export async function exportPagesAsPdf(
   opts: ImageExportOpts = {},
 ): Promise<Blob> {
   const out: PdfPage[] = [];
+  // A deck often repeats one animated background: paint it once for the whole PDF.
+  const motionFrames = opts.motionFrames ?? new Map();
   for (const page of pages) {
-    const canvas = await renderTabToCanvas(tab, { ...opts, page });
+    const canvas = await renderTabToCanvas(tab, { ...opts, page, motionFrames });
     out.push({
       ...(await pdfImage(canvas)),
       mediaW: Math.round(page.rect.width * PT_PER_PX * 100) / 100,

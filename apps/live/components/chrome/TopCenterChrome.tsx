@@ -8,6 +8,7 @@ import { OfflineBanner } from '@/components/chrome/OfflineBanner';
 import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { useCanvasCovered } from '@/hooks/plan/plan-cover-store';
+import { formatBannerMessage } from '@/lib/format-page-brush';
 
 // Everything that floats at the top of the canvas: the follow-me pill,
 // the active editor-mode banner. (The session timer and the vote's status and
@@ -25,6 +26,7 @@ type TopCenterChromeProps = Pick<
   | 'onExitFormatTool'
   | 'canvasTool'
   | 'formatSourceId'
+  | 'illustratePages'
 > & {
   // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
   // the stack starts beneath it.
@@ -47,6 +49,7 @@ export function TopCenterChrome({
   onExitFormatTool,
   canvasTool,
   formatSourceId,
+  illustratePages,
   dockOnTop = false,
   followingName,
   onStopFollowing,
@@ -108,11 +111,7 @@ export function TopCenterChrome({
         {canvasTool === 'format' ? (
           <ModeBanner
             icon={<FormatPainterIcon />}
-            message={
-              formatSourceId
-                ? 'Tap elements to paint this style onto them'
-                : 'Select a base element to copy its style'
-            }
+            message={formatBannerMessage(formatSourceId, !!illustratePages)}
             actionLabel="Done"
             onAction={onExitFormatTool}
             tray={tray}

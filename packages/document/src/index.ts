@@ -441,6 +441,7 @@ export * from './article-markdown-io';
 export * from './illustrate-page-paint';
 export * from './page-default-background';
 export * from './illustrate-edits';
+export * from './illustrate-background-copy';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 

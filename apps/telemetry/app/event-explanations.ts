@@ -824,6 +824,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageBackgroundImage':
     'Someone put a picture behind an Illustrate page, searched or uploaded, under an overlay.',
   'Tab|Changed|PagePattern': "Someone changed an Illustrate page's background pattern.",
+  'Tab|Changed|PageBackgroundAppliedToAll':
+    "Someone gave every other page of a kind (every slide, say) one page's background at once.",
+  'Tab|Changed|PageBackgroundPainted':
+    "Someone painted one Illustrate page's background onto another with the Format tool.",
   'Tab|Changed|PageLocked':
     'Someone locked an Illustrate page, so it and what is on it stay as they are.',
   'Tab|Changed|PageUnlocked': 'Someone unlocked an Illustrate page.',
@@ -1187,6 +1191,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|PageContents':
     "Someone opened Illustrate's Contents: every page of the tab in a list.",
   'UI|Used|PageContentsJump': "Someone went to a page from Illustrate's Contents list.",
+  'UI|Used|PageContentsReorder':
+    "Someone dragged a page to a new place in Illustrate's Contents list.",
   'UI|Added|AllPageSlides':
     "Someone added every slide page of a tab to the deck at once, from the Slide Deck's Add All Slide Pages.",
   'UI|Opened|SlideDeck':

@@ -36,7 +36,7 @@ import {
   withDuplicatedPage,
   withPageContentReplaced,
 } from './illustrate-page-content';
-import { pageInkFor, type InkMemory } from './page-ink';
+import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
 import { sameFill, withBackgroundPatch } from './illustrate-page-paint';
 
 export type PageEditRefusal =
@@ -181,6 +181,20 @@ export function pageBackgroundSet<T extends PagesTab>(
   patch: Partial<PageBackground>,
   memory?: InkMemory,
 ): PageEdit<T> & { memory?: InkMemory } {
+  const stored = pageBackgroundStored(tab, pageId, patch);
+  if ('refused' in stored) return stored;
+  if (stored.inks.length === 0) return { tab: stored.tab };
+  return pagesInkFor(stored.tab, stored.inks, memory);
+}
+
+/** pageBackgroundSet's page half: the background written onto the page (and its article), and
+ *  the pages a new fill must re-ink, left for the caller to ink (pagesInkFor) so a spread over
+ *  many pages inks them in one walk. No inks when nothing changed or the fill was left alone. */
+export function pageBackgroundStored<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  patch: Partial<PageBackground>,
+): { tab: T; inks: PageInk[] } | { refused: PageEditRefusal } {
   const pages = pagesOf(tab);
   const target = pages.find((p) => p.id === pageId);
   if (!target) return refused('unknown_page');
@@ -188,22 +202,18 @@ export function pageBackgroundSet<T extends PagesTab>(
   if (target.kind === 'logo' && 'pattern' in patch) return refused('pattern_not_offered');
   const was = target.background;
   const background = withBackgroundPatch(target, patch);
-  if (sameFill(was?.fill, background?.fill) && was?.pattern === background?.pattern) return { tab };
+  if (sameFill(was?.fill, background?.fill) && was?.pattern === background?.pattern) {
+    return { tab, inks: [] };
+  }
   const reach = pagesSharing(pages, pageId);
   const next = pages.map((p) => {
     if (!reach.has(p.id)) return p;
     const { background: _drop, ...rest } = p;
     return background ? { ...rest, background } : rest;
   });
-  let out = withIllustratePages(tab, next) as T;
-  if (!('fill' in patch)) return { tab: out };
-  let recall = memory;
-  for (const id of reach) {
-    const inked = pageInkFor(out, id, background, recall);
-    out = inked.tab;
-    recall = inked.memory;
-  }
-  return { tab: out, memory: recall };
+  const out = withIllustratePages(tab, next) as T;
+  if (!('fill' in patch)) return { tab: out, inks: [] };
+  return { tab: out, inks: [...reach].map((id) => ({ pageId: id, background })) };
 }
 
 /** Whether another page of this kind fits (an article's copy is all its pages). */

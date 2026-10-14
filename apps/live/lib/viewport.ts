@@ -109,6 +109,16 @@ export function computeViewportCenter(rect: Rect, offset: Offset): { x: number; 
   };
 }
 
+// The canvas-coord rectangle the viewport shows at the current pan / zoom: the
+// viewport centre, spread by the screen size divided by the zoom. A paste whose
+// usual spot is outside it lands in the middle of it instead.
+export function computeViewportCanvasRect(rect: Rect, offset: Offset, zoom: number): BBox {
+  const centre = computeViewportCenter(rect, offset);
+  const width = rect.width / zoom;
+  const height = rect.height / zoom;
+  return { x: centre.x - width / 2, y: centre.y - height / 2, width, height };
+}
+
 // True when the elements' bounding box is entirely outside the viewport at
 // the current pan / zoom — i.e. nothing on the tab is in view. Projects the
 // canvas-coord bbox to screen pixels through the same centred-scale transform

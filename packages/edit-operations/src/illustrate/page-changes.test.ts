@@ -409,3 +409,44 @@ describe('a layout on a themed tab', () => {
     expect(circle?.strokeColor).toBe(getBuiltInTheme('mocha').elementStroke);
   });
 });
+
+// docs/specs/024-agents/illustrate-for-agents.md "change_pages": apply_background_to_all, the
+// Background tab's Apply to All.
+describe('giving every page of a kind one background', () => {
+  const slide = (id: string, extra: Partial<IllustratePage> = {}) =>
+    page(id, { kind: 'slide', orientation: 'landscape', ...extra });
+
+  it('sets a slide, then gives every other slide its background, in one call', () => {
+    const tab = tabOf({ pages: [slide('s1'), slide('s2'), page('i1'), slide('s3')] });
+    const out = run(tab, [
+      { op: 'set', page: 1, background: { gradient: ['#1e1b4b', '#4c1d95'], pattern: 'dots' } },
+      { op: 'apply_background_to_all', page: 1 },
+    ]);
+    expect(out.lines[1]).toBe('Gave 2 other slide pages the background of page 1.');
+    const bg = Object.fromEntries(pageSummaries(out.tab).map((p) => [p.id, p.background]));
+    expect(bg.s2).toBe(bg.s1);
+    expect(bg.s3).toBe(bg.s1);
+    expect(bg.i1).toBeNull();
+  });
+
+  it('says how many locked slides kept their own', () => {
+    const tab = tabOf({
+      pages: [
+        slide('s1', { background: { fill: { kind: 'solid', color: '#0f172a' } } }),
+        slide('s2', { locked: true }),
+        slide('s3'),
+      ],
+    });
+    expect(run(tab, [{ op: 'apply_background_to_all', page: 's1' }]).lines[0]).toBe(
+      'Gave 1 other slide page the background of page 1; 1 locked kept their own.',
+    );
+  });
+
+  it('is refused with no other page of the kind', () => {
+    const tab = tabOf({ pages: [slide('s1'), page('i1')] });
+    expect(refusal(tab, [{ op: 'apply_background_to_all', page: 1 }])).toMatchObject({
+      code: 'no_other_pages',
+      change: 0,
+    });
+  });
+});
