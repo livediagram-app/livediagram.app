@@ -128,11 +128,12 @@ kind one of three); `sequenceNumbered` boolean; `sequenceAnim` `'play'`.
 
 ## Errors and edge cases
 
-| #   | Case                               | Handling                                                                |
-| --- | ---------------------------------- | ----------------------------------------------------------------------- |
-| E1  | No messages                        | Heads and lifelines only                                                |
-| E2  | A message to a removed participant | Dropped by the write; ignored by the reader                             |
-| E3  | Very long labels                   | The layout widens its pitch (capped at 520) and the picture scales down |
+| #   | Case                                     | Handling                                                                  |
+| --- | ---------------------------------------- | ------------------------------------------------------------------------- |
+| E1  | No messages                              | Heads and lifelines only                                                  |
+| E2  | A message to a removed participant       | Dropped by the write; ignored by the reader                               |
+| E3  | Very long labels                         | The layout widens its pitch (capped at 520) and the picture scales down   |
+| E4  | Diagram deleted while its dialog is open | The dialog closes (`useCloseVanishedDialogs`); an undo does not reopen it |
 
 ## Security and trust
 
