@@ -442,6 +442,8 @@ export function supportsFillColor(element: Element): boolean {
   // The control was inert on both, and picking a colour still wrote to the
   // element, autosaved, logged a change and broadcast an op for nothing.
   if (element.type === 'shape' && element.shape === 'icon') return false;
+  // A tab window's ground is the paper of the tab it shows (docs/specs/009-elements/tab-window.md).
+  if (element.type === 'shape' && element.shape === 'tab-window') return false;
   return element.type !== 'text' && element.type !== 'image';
 }
 
@@ -557,6 +559,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'sankey',
   // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
   'portal',
+  // A tab window (docs/specs/009-elements/tab-window.md) draws its own rounded frame round the tab it shows.
+  'tab-window',
   'reveal',
   // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
   // which is what the canvas does too (isSvgRenderedShape excludes it).

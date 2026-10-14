@@ -42,6 +42,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'logo-pages': '#0891b2',
   articles: '#0d9488',
   'exporting-pages': '#9333ea',
+  'tab-windows': '#4f46e5',
   'using-tabs': '#3b82f6',
   comments: '#f59e0b',
   'live-presence': '#06b6d4',

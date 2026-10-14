@@ -43,3 +43,4 @@ Follow the references below only as needed; never upfront.
 - ./sequence-diagram.md - when working on The sequence diagram: One element holding participants and messages that lays itself out as a UML sequence diagram, edited as rows
 - ./boundary.md - when working on The boundary: A titled, tinted, dashed container (Tab / Inset / C4 styles, icon, meta line) whose tint deepens with nesting; a container like frame and lane, animated without moving motions
 - ./concept-graphics.md - when working on Concept graphics: Layer stack, Pyramid (pyramid / inverted / funnel) and Cycle as single elements laying out `conceptRows`, an accent ramp, in-place row editing, and the Concept animation set (build / pulse / flow)
+- ./tab-window.md - when working on The tab window: an element showing another tab of the document live, zoomed to fit (`tab-window` with `windowTabId`); its states, the tab list, opening the tab, exports drawing the shown tab, no recursion, share roles

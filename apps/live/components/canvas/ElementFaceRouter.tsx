@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { TabWindowFace } from './tab-window/TabWindowFace';
 import type { CSSProperties, ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/document';
 import {
@@ -397,6 +398,9 @@ export function ElementFaceRouter({
           targetName={onEnterPortal?.(element).targetName ?? null}
           onEnter={onEnterPortal?.(element).travel}
         />
+      ) : element.type === 'shape' && element.shape === 'tab-window' ? (
+        /* Tab window (docs/specs/009-elements/tab-window.md): another tab of the document, live, fitted inside it. */
+        <TabWindowFace element={element} surface={surface} selected={isSelected} />
       ) : element.type === 'annotation' && element.articleNote ? (
         <ArticleNoteFace element={element} />
       ) : element.type === 'annotation' ? (

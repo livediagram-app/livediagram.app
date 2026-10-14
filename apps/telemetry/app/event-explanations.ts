@@ -240,6 +240,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone let a badge or step number go from the element it was attached to.',
   'Element|Changed|BoundaryStyle':
     "Someone changed where a boundary shows its title: in a tab on its edge, inside its corner, or C4's bottom-left.",
+  'Element|Changed|TabWindowTab':
+    'Someone chose which tab a Tab Window shows, so a slide or page shows that tab live.',
+  'UI|Used|TabWindowOpen':
+    'Someone opened the tab a Tab Window shows, from the window or its menu.',
   'Element|Changed|BoundaryMeta':
     "Someone added or removed the second line under a boundary's title, such as a network range.",
   'Element|Changed|ConceptRows':

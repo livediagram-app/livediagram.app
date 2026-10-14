@@ -206,6 +206,8 @@ export function takesChartPalette(kind: ShapeKind): boolean {
 // type into. The banner, callout and header DO carry a label and are not here.
 export function isSelfDrawingShape(kind: ShapeKind): boolean {
   return (
+    // A tab window (docs/specs/009-elements/tab-window.md) draws another tab; it takes no label.
+    kind === 'tab-window' ||
     kind === 'stat-row' ||
     kind === 'process' ||
     isProgressShape(kind) ||

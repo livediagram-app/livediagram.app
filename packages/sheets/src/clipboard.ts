@@ -276,8 +276,9 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
   return rows.map((r) => [...r, ...Array.from({ length: width - r.length }, () => ({ text: '' }))]);
 }
 
-// Pasted plain text as rows: tab-separated when any line holds a tab; comma-separated when every line splits into
-// the same number (more than one) of fields; else a line a row.
+// Pasted plain text as rows: tab-separated when any line holds a tab; comma-separated when there are two lines or
+// more and every one splits into the same number (more than one) of fields; else a line a row. One line is never
+// read as commas: "Thanks, Sam" pasted on a cell is a sentence, not two columns.
 export function readPastedText(text: string): string[][] {
   return parsePastedText(text).rows;
 }
@@ -289,7 +290,7 @@ export function parsePastedText(text: string): ParsedCsv {
   if (trimmed.includes('\t')) return parseCsv(trimmed, '\t');
   const csv = parseCsv(trimmed, ',');
   if (
-    csv.rows.length > 0 &&
+    csv.rows.length > 1 &&
     csv.rows[0]!.length > 1 &&
     csv.rows.every((r) => r.length === csv.rows[0]!.length)
   )

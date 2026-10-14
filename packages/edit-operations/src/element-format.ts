@@ -176,6 +176,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   desk: ['chairFacing'],
   sofa: ['chairFacing'],
   portal: ['portalTarget'],
+  // docs/specs/009-elements/tab-window.md: which tab the window shows.
+  'tab-window': ['windowTabId'],
   // docs/specs/026-plan/plan-board.md: the board's set-up and the card's item; items change through
   // the item verbs, never through element fields.
   'plan-board': ['planBoard'],

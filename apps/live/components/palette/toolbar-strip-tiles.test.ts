@@ -69,7 +69,7 @@ describe('stripTilesFor', () => {
     ['write', ['tools:text']],
     ['draw', ['tools:highlighter', 'tools:polygon']],
     ['devices', ['devices:laptop']],
-    ['media', ['tools:image', 'media:embed-website']],
+    ['media', ['media:tab-window', 'media:embed-website']],
     ['data', ['data:legend']],
   ])('divides %s into its groups', (category, after) => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);

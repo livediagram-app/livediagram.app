@@ -463,6 +463,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'PlanSheet',
     'ModeButton',
     'Portal',
+    // Tab window (docs/specs/009-elements/tab-window.md).
+    'TabWindow',
     'SessionButton',
     'Reveal',
     'Picker',

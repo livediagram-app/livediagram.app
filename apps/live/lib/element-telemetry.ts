@@ -67,6 +67,8 @@ const SHAPE_TOKENS: Record<string, string> = {
   'comment-pin': 'CommentPin',
   'action-card': 'ActionPanel',
   'done-check': 'DoneCheck',
+  // The tab window (docs/specs/009-elements/tab-window.md).
+  'tab-window': 'TabWindow',
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) report as their palette component, so a
   // copied stat row lands in the same dashboard row as a dropped one.
   banner: 'Banner',
