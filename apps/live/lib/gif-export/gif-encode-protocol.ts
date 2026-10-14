@@ -9,4 +9,7 @@ export type GifEncodeRequest =
   | { type: 'finish' };
 
 export type GifEncodeResponse =
-  { type: 'done'; bytes: ArrayBuffer; written: number } | { type: 'failed'; message: string };
+  // Started: the module loaded and ran, so the page may hand frames over (a load failure arrives before this).
+  | { type: 'ready' }
+  | { type: 'done'; bytes: ArrayBuffer; written: number }
+  | { type: 'failed'; message: string };

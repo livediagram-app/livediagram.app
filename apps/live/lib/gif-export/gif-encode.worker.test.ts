@@ -25,7 +25,8 @@ describe('the GIF encoder worker', () => {
     send({ type: 'frame', rgba: frame(10), delayCs: 7 });
     send({ type: 'frame', rgba: frame(10), delayCs: 6 });
     send({ type: 'finish' });
-    const done = posted[0]!;
+    expect(posted[0]!.message).toEqual({ type: 'ready' });
+    const done = posted[1]!;
     expect(done.message).toMatchObject({ type: 'done', written: 1 });
     const bytes = new Uint8Array((done.message as { bytes: ArrayBuffer }).bytes);
     expect(String.fromCharCode(...bytes.slice(0, 6))).toBe('GIF89a');
@@ -41,8 +42,8 @@ describe('the GIF encoder worker', () => {
       },
     };
     send({ type: 'frame', rgba: unreadable as unknown as ArrayBuffer, delayCs: 7 });
-    expect(posted[0]!.message).toMatchObject({ type: 'failed' });
-    expect((posted[0]!.message as { message: string }).message).toBe(
+    expect(posted[1]!.message).toMatchObject({ type: 'failed' });
+    expect((posted[1]!.message as { message: string }).message).toBe(
       '4x2: RangeError: out of memory',
     );
   });
@@ -54,7 +55,7 @@ describe('the GIF encoder worker', () => {
     send({ type: 'frame', rgba: frame(10), delayCs: 7, palette: 0 });
     send({ type: 'frame', rgba: frame(200), delayCs: 7, palette: 0 });
     send({ type: 'finish' });
-    expect(posted[0]!.message).toMatchObject({ type: 'done', written: 2 });
+    expect(posted[1]!.message).toMatchObject({ type: 'done', written: 2 });
   });
 
   it('ignores a finish with nothing started', async () => {

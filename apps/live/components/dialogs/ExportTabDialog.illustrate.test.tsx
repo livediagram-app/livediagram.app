@@ -94,6 +94,12 @@ describe('the GIF card (docs/specs/020-import-export/animated-gif-export.md "Whe
     ).toBeTruthy();
   });
 
+  it('is not offered on an Illustrate tab with no pages yet', () => {
+    render(<ExportTabDialog tab={tab} documentName="Doc" onClose={vi.fn()} pages={[]} />);
+    expect(screen.queryByRole('button', { name: /^GIF/ })).toBeNull();
+    expect(screen.getByRole('button', { name: /^PDF/ })).toBeTruthy();
+  });
+
   it('is never offered outside Illustrate', () => {
     open(false);
     expect(screen.queryByRole('button', { name: /^GIF/ })).toBeNull();
