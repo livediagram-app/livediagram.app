@@ -100,7 +100,10 @@ const STYLE_FIELDS =
   '; "textBold", "textItalic" (true/false); "colorPreset" (a shape\u2019s look from the theme: theme, soft, ' +
   'tinted, solid, bold, ghost, paper, muted, slate, inked, hairline, outline, dotted, dash-dot, frame, info, ' +
   'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; "note" (detail ' +
-  'shown on the element); on an arrow "label", "strokeStyle", "arrowEnds", "arrowheadShape". A field a type ' +
+  'shown on the element); on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
+  '"fontWeight" (400, 500, 700), "textCase" (upper, lower), "textArc" (bends one line along a circle, -360 to ' +
+  '360 degrees, positive bowing up: a badge\u2019s top line 180, its bottom -180); on an arrow "label", ' +
+  '"strokeStyle", "arrowEnds", "arrowheadShape". A field a type ' +
   'does not have, or a value off its list, is refused naming what it takes. ';
 
 // Self-contained element schema, attached to each tool's element argument so the
