@@ -76,7 +76,9 @@ to where the label may sit, not to its width.
   knockout never reaches one.
 - A label's plate (`labelFill`), when the author sets one, still paints inside the gap. Without one
   the gap stays transparent.
-- A label cuts only its own line. Other arrows crossing beneath it are drawn as they are.
+- A label cuts its own line, and any other arrow's run along it on the same track (a bus several arrows share
+  reads as one line, and drawn over the plate it struck the label through). Other arrows that only cross beneath it
+  are drawn as they are.
 
 ## Editing
 
