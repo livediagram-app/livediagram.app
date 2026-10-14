@@ -46,10 +46,18 @@ export function rootLook(label: string): { side: number; textSize: 'lg' | 'md' }
     : { side: rootSide(label, ROOT_SMALL_PX), textSize: 'md' };
 }
 
-// One height for the leaves of one branch, the tallest any of them needs, so a column reads as a set.
-function evenLeaves(leaves: MindSpec[]): MindSpec[] {
+// One height for every leaf of the map, the tallest any of them needs: evened per branch, two columns on one side
+// kept two rhythms.
+function evenLeaves(spec: MindSpec): MindSpec {
+  const leaves = (spec.children ?? []).flatMap((b) => b.children ?? []);
   const tallest = Math.max(0, ...leaves.map((l) => l.look.height));
-  return leaves.map((l) => ({ ...l, look: { ...l.look, height: tallest } }));
+  return {
+    ...spec,
+    children: (spec.children ?? []).map((b) => ({
+      ...b,
+      children: (b.children ?? []).map((l) => ({ ...l, look: { ...l.look, height: tallest } })),
+    })),
+  };
 }
 
 const fit = (label: string, lv: typeof BRANCH, iconRoom = 0) => {
@@ -137,12 +145,12 @@ export function layoutMindmapGraph(
           ...(n.icon ? { iconId: n.icon } : {}),
         },
         connector: { strokeColor: hue.stroke, strokeWidth: 4 },
-        children: evenLeaves((children.get(id) ?? []).map((c) => leafSpec(c, hue))),
+        children: (children.get(id) ?? []).map((c) => leafSpec(c, hue)),
       };
     }),
   };
   // The builder mints its own ids; map them back to the graph's by walking both trees in the same order.
-  const built = buildMindTemplate(spec, 'balanced', 0, 0);
+  const built = buildMindTemplate(evenLeaves(spec), 'balanced', 0, 0);
   const order: string[] = [];
   const walk = (id: string) => {
     order.push(id);

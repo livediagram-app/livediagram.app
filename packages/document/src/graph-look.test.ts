@@ -513,8 +513,25 @@ describe('mindmap sizes', () => {
       ],
     });
 
-  it('gives every leaf of a branch one height', () => {
-    const els = map('Launch');
+  it('gives every leaf of the map one height, across branches', () => {
+    const els = lay({
+      style: 'mindmap',
+      nodes: [
+        { id: 'r', label: 'Launch' },
+        { id: 'b', label: 'Marketing' },
+        { id: 'c', label: 'Pricing' },
+        { id: 'l1', label: 'Founding-member waitlist for early subscribers who join' },
+        { id: 'l2', label: 'PR' },
+        { id: 'l3', label: 'Tiers' },
+      ],
+      edges: [
+        { from: 'r', to: 'b' },
+        { from: 'r', to: 'c' },
+        { from: 'b', to: 'l1' },
+        { from: 'b', to: 'l2' },
+        { from: 'c', to: 'l3' },
+      ],
+    });
     const heights = new Set(['l1', 'l2', 'l3'].map((id) => box(els, id).height));
     expect(heights.size).toBe(1);
   });
