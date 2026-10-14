@@ -21,6 +21,7 @@ scope.addEventListener('message', ({ data }) => {
       size = { width: data.width, height: data.height };
       writer = createGifWriter(data.width, data.height);
       palettes.clear();
+      scope.postMessage({ type: 'ready' });
     } else if (data.type === 'palette') {
       palettes.set(data.key, pagePalette(data.samples.map((b) => new Uint8ClampedArray(b))));
     } else if (data.type === 'frame') {

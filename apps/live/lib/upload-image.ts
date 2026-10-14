@@ -10,6 +10,7 @@ import {
   MAX_IMAGE_MB,
   type AcceptedImageType,
 } from '@livediagram/api-schema';
+import { blobToDataUrl } from '@/lib/blob-data-url';
 
 // Map the api worker's upload error tokens (responses.ts / images.ts)
 // to messages safe to render inline in the picker. The client-side
@@ -121,11 +122,8 @@ async function embedImageFile(file: File): Promise<UploadResult> {
   if (!dims) {
     throw new ImageUploadError('Could not read image dimensions.');
   }
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new ImageUploadError('Could not read the file.'));
-    reader.readAsDataURL(file);
+  const dataUrl = await blobToDataUrl(file).catch(() => {
+    throw new ImageUploadError('Could not read the file.');
   });
   return {
     image: {

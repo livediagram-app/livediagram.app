@@ -9,8 +9,10 @@ import type { Check } from './types';
 
 export const aspectExtreme: Check = (ctx) => {
   const extent = lintExtent(ctx);
-  // A tab whose boxes sit in frames or lanes takes its shape from its groups, and no layout keeps them (LN16).
-  if (!extent || ctx.boxes.length < LINT_ASPECT_MIN_BOXES || framedTab(ctx)) return [];
+  // A tab whose boxes sit in frames or lanes takes its shape from its groups, and no tab layout keeps them (LN16); a
+  // graph's fix lays it out again with its groups, so a graph is held to its shape whatever it groups.
+  const framed = ctx.source === 'tab' && framedTab(ctx);
+  if (!extent || ctx.boxes.length < LINT_ASPECT_MIN_BOXES || framed) return [];
   const { width, height } = extent;
   if (width < 1 || height < 1) return [];
   const ratio = Math.max(width / height, height / width);
