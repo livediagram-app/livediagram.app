@@ -10,7 +10,7 @@ Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.m
 | `packages/document/src/shape-variants.ts`                                                            | `pyramid` + `funnel` / `inverted` variants                                   |
 | `apps/live/components/canvas/ConceptFace.tsx`                                                        | Canvas face: rows, in-place lines, the Cycle's centre label                  |
 | `apps/live/app/canvas-motion.css`                                                                    | `lvd-concept-*` keyframes                                                    |
-| `apps/live/components/palette/ConceptMenuSection.tsx`                                                | Variant tiles, Concept animation (tiles, Speed, Repeat)                      |
+| `apps/live/components/palette/ConceptMenuSection.tsx`                                                | Variant tiles, a hub's Spokes; none for a kind with neither                  |
 | `apps/live/components/palette/context-menu-web-editors.tsx`                                          | The Rows editor (label + note)                                               |
 | `apps/live/components/palette/palette-categories.tsx`, `palette-tile-defs.tsx`, `palette-layouts.ts` | The Concepts category                                                        |
 
@@ -169,8 +169,9 @@ element is still.
   centre "Orders"; onion 320 × 320 Domain / Application / Adapters / Infrastructure; chevrons 600 × 150 Commit /
   Build / Test / Release with notes "push to main", "2 min", "8,400 tests", "manual gate".
 - Menu (Tools flyout): **Rows** (label + note per row where drawn, ↑ ↓ ×, Add Layer / Tier / Step), **Pyramid**
-  variant tiles (Pyramid, Inverted, Funnel), **Animation** in a Concept section (None, Build, Pulse, Flow on a Cycle;
-  Speed; Repeat).
+  variant tiles (Pyramid, Inverted, Funnel). **Animation** is the Animation row's Concept section
+  (`ElementAnimationTiles.tsx` `ConceptAnimTiles`: None, Build, Pulse, Flow on a Cycle; Speed; Repeat); a concept
+  graphic takes no Shape set (`animation-membership.ts` `hasOwnBodySet`).
 - Ring: Add Layer / Add Tier / Add Step.
 - Palette **Concepts** category (Structure band, rows with blurbs): Layer Stack, Pyramid, Funnel, Cycle.
 

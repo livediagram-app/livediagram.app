@@ -100,8 +100,8 @@ from the stroke and fill.
 
 ## Animation
 
-Concept graphics take their own set, **Concept**, in the element's Tools section like a chart's (not the Shape set:
-the rows are what moves, not the box), with its own Speed and Repeat:
+Concept graphics take their own set, **Concept**, a section of the menu's Animation row like a chart's (not the Shape
+set: the rows are what moves, not the box), with its own Speed and Repeat:
 
 ```ts
 conceptAnim?: 'build' | 'pulse' | 'flow';

@@ -35,7 +35,8 @@ A sequence is too much to edit in a menu, so it has its own dialog, as the [Sank
 ### The menu
 
 The **Sequence** section (Tools flyout), closed until opened: a one-line summary (`3 participants · 5 messages`), an
-**Edit Sequence** button that opens the dialog, **Numbered** on / off, and the **Play** animation.
+**Edit Sequence** button that opens the dialog, and **Numbered** on / off. The **Play** animation is the Sequence
+section of the menu's Animation row.
 
 ### The Sequence dialog
 
@@ -83,7 +84,7 @@ The **Sequence** section (Tools flyout), closed until opened: a one-line summary
 
 ## Animation
 
-**Play** (`sequenceAnim: 'play'`, in the menu's Sequence section) reveals the diagram top to bottom,
+**Play** (`sequenceAnim: 'play'`, the Sequence section of the menu's Animation row) reveals the diagram top to bottom,
 so the messages appear in the order they happen; the wipe takes 0.4 s per message at Normal speed (scaled by Speed; the default Slow doubles it) and plays once
 unless Repeat is on. CSS only (a clip from the top); reduced motion and every export show the whole diagram.
 
