@@ -13,6 +13,7 @@ import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
 import { markPanThrough } from '@/hooks/canvas/pan-through';
+import { mayCreateCardType } from './may-create-card-type';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cornerRadiusPx, type ShapeElement } from '@livediagram/document';
@@ -256,9 +257,9 @@ export function PlanBoardView({
   // Setup Board asked for again from the board's Board Setup (a board that has columns), for this person only.
   const settingUp = canEdit && plan?.setupBoardId === element.id;
   // The Add a Card menu's Add New Card Type: a new type with only this board's statuses, added to it once saved
-  // (docs/specs/026-plan/plan-board.md "Add New Card Type"); not offered once the catalogue is full.
+  // (docs/specs/026-plan/plan-board.md "Add New Card Type"), for an Editor while the catalogue has room.
   const createType =
-    plan && plan.types.length < ITEM_TYPES_MAX
+    plan && mayCreateCardType(plan)
       ? () =>
           plan.createTypeForBoard(
             element.id,

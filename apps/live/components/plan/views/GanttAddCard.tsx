@@ -4,7 +4,8 @@
 // under the last card in the names column, opening the Add a Card menu of the card types the chart draws (those with a Start and a Due). The new
 // card starts today and is due a week on, so its bar shows at once, and opens to be named.
 import { useState } from 'react';
-import { ITEM_TYPES_MAX, newItemId, typeIn, type ItemTypeDef } from '@livediagram/items';
+import { newItemId, typeIn, type ItemTypeDef } from '@livediagram/items';
+import { mayCreateCardType } from '../may-create-card-type';
 import { lucideGlyph } from '@livediagram/ui';
 import { lucidePlus } from '@livediagram/icons/lucide';
 import { AddCardPopover } from '../AddCardPopover';
@@ -49,10 +50,7 @@ export function GanttAddCard({
   const ids = shown.split(',');
   const types = all.filter((t) => ids.includes(t.id));
   // Add New Card Type, as a board's Add a Card menu offers it (an Editor's, while the catalogue has room).
-  const createType =
-    plan.canEdit && plan.types.length < ITEM_TYPES_MAX
-      ? () => plan.createTypeForView(viewId)
-      : undefined;
+  const createType = mayCreateCardType(plan) ? () => plan.createTypeForView(viewId) : undefined;
   if (!plan.canEditCards || (types.length === 0 && !createType)) return null;
   return (
     <>
