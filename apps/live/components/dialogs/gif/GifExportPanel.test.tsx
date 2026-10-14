@@ -168,6 +168,26 @@ describe('the GIF panel', () => {
     expect(h.download).not.toHaveBeenCalled();
   });
 
+  it('settles its estimate though the editor re-renders it with a fresh tab all the while', async () => {
+    const props = {
+      pages,
+      page: pages[0]!,
+      baseName: 'Doc - Deck',
+      onPick: vi.fn(),
+      onDone: vi.fn(),
+      onBack: vi.fn(),
+    };
+    const { rerender } = render(<GifExportPanel tab={{ ...tab }} {...props} />);
+    // A collaborator typing: a new tab object every 100 ms, quicker than the estimate's rest.
+    for (let i = 0; i < 6; i++) {
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 100));
+      });
+      rerender(<GifExportPanel tab={{ ...tab }} {...props} />);
+    }
+    expect(h.snapshot).toHaveBeenCalled();
+  });
+
   it('keeps a failed Download’s message up, though the preview’s estimate succeeds after it', async () => {
     h.encoder.finish.mockRejectedValue(new Error('out of memory'));
     open();

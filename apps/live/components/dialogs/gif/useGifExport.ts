@@ -1,5 +1,6 @@
 // The GIF panel's state (docs/specs/020-import-export/blueprints/animated-gif-export.md "The hook"): the options,
 // the estimate and preview worked out once they settle, and the making, with progress, Cancel and its errors.
+import { useLatest } from '@/hooks/ui/useLatest';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   exportFontIds,
@@ -71,15 +72,20 @@ export function useGifExport({
   const tooLong = gifTooLong(chosen.length, holdSeconds);
 
   // The CSS, the fonts and an image cache, worked out once per panel: the canvas does not change under the dialog.
+  // Stable, reading the tab through a ref: the dialog is handed a fresh tab object on every editor render, and the
+  // estimate below re-runs when this changes, so a busy editor (a collaborator typing) kept restarting it.
   const capture = useRef<Promise<Capture> | null>(null);
+  const fontSource = useLatest({ tab, pages });
   const captureOnce = useCallback(() => {
     capture.current ??= (async () => ({
       css: collectCss(document.styleSheets),
-      fontCss: await embeddedFontFaceCss(gifFontIds(tab, pages)),
+      fontCss: await embeddedFontFaceCss(
+        gifFontIds(fontSource.current.tab, fontSource.current.pages),
+      ),
       images: createImageInliner(),
     }))();
     return capture.current;
-  }, [tab, pages]);
+  }, [fontSource]);
   // Whether each page moves, by id: it decides the frame count, whatever the size.
   const stillness = useRef(new Map<string, boolean>());
 
