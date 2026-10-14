@@ -23,7 +23,7 @@ export function BuildWithAiLink({ current = false }: { current?: boolean }) {
         }`,
       })}
     >
-      <SparklesIcon aria-hidden className="text-brand-600 dark:text-brand-400" />
+      <SparklesIcon aria-hidden className="text-brand-700 dark:text-brand-400" />
       <ButtonContent>Build with AI</ButtonContent>
     </a>
   );

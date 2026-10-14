@@ -38,7 +38,7 @@ export function AiChatArt() {
           <DiagramBuildAnimation className="max-w-[300px]" cursorLabel="AI" label="" />
         </div>
         <p className="flex items-start gap-2 text-slate-700 dark:text-slate-200">
-          <SparklesIcon className="mt-0.5 shrink-0 text-brand-600 dark:text-brand-400" />
+          <SparklesIcon className="mt-0.5 shrink-0 text-brand-700 dark:text-brand-400" />
           <span>
             Done. <span className="font-semibold">Order flow</span> is in your livediagram account,
             ready to edit together.
