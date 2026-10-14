@@ -132,7 +132,10 @@ export function writeFieldsOnto<T extends Element>(
   const patch: Patch = {};
   const warnings: EditWarning[] = [];
   let label: string | null | undefined;
-  for (const [key, value] of Object.entries(fields)) {
+  for (const [given, value] of Object.entries(fields)) {
+    // `icon`, graph input's name for a node's icon, is read as the stored `iconId` on an element that has one.
+    const key =
+      given === 'icon' && hasField(el, 'iconId') && !hasField(el, 'icon') ? 'iconId' : given;
     if (PROTOTYPE_KEYS.has(key)) return unknownField(operation, kindOf(el), key, stored, aliases);
     if (IDENTITY_FIELDS.has(key)) return invalidValue(operation, key, value, 'cannot be changed');
     if (LIVE_FIELDS.has(key))

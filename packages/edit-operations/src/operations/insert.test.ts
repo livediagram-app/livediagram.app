@@ -11,11 +11,11 @@ describe('insert', () => {
     );
     expect(lines(outcome)).toEqual([
       '~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160',
-      '+ verify  square "Verify email" @40,300 140×120',
-      '~ f2  taller 200→360',
+      '+ verify  square "Verify email" @40,300 140×60',
+      '~ f2  taller 200→300',
       '~ a3  to n4→verify',
       '+ arrow  verify→n4 (style of a3)',
-      '» n4 n5 n6 n7 n8  +0,+160 (make room)',
+      '» n4 n5 n6 n7 n8  +0,+100 (make room)',
       'f2  +verify',
     ]);
     const { tab, targets, createdIds } = applied(outcome);
@@ -60,7 +60,8 @@ describe('insert', () => {
     const row = flowWith((el) => (el.id === 'n8' ? ({ ...el, x: 400, y: 620 } as Element) : el));
     const tab = applied(run('connect n8 -> n7\ninsert square between n8 n7', row)).tab;
     const [x, y, width] = boxIn(tab, 'square');
-    expect(y).toBe(620 + 30 - 60);
+    // Centred on n8 (620 + 30), half the new box's 60 above it.
+    expect(y).toBe(620 + 30 - 30);
     // n7 ends at 140, n8 starts at 400: the node's right edge sits the gap left of n8.
     expect(x + width).toBe(400 - 260);
   });

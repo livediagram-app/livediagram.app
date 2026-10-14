@@ -105,11 +105,15 @@ The layout an agent did not ask to change stays put:
   (reported).
 - **A new box matches its siblings.** `add` and `insert` of a shape given no size take the text size most boxes of
   that shape on the tab wear and at least their median size (grown only for a longer label), so a step added to a
-  drawn flow is not a small box wrapping its label mid-word. On a tab with no box of that shape, it takes the
+  drawn flow is not a small box wrapping its label mid-word. Siblings shorter than the palette's box of their shape
+  wear the template look, and the label is measured as that look measures, from their size: a short label takes
+  their size exactly, never the palette's taller square. On a tab with no box of that shape, it takes the
   template's proportions graph input draws ([MCP server](../015-api/mcp-server.md) §4.7, 180×64 for a square).
 - **A new box placed beside a member joins its frame or lane**: `add` with a placement against an element inside a
   container grows that container (`widened`, `taller`) to hold the new box with its padding, as an insertion does,
-  instead of the box landing just outside it.
+  instead of the box landing just outside it. The box lands beside its neighbour, making way only for what the
+  container holds, and what sat past the container on the side it grew, within its span, moves on by the growth, never
+  taken in. A box `inside:` a container that holds something grows it the same way.
 - **A new arrow takes the tab's line.** `connect` with no `line=` draws with the line most of the tab's pinned arrows
   use: angled (anchors along the axis the two boxes lie on, bent twice as graph input bends an elbow) or curved; a
   given `line=` wins.
@@ -126,11 +130,11 @@ A changeset answers with what it did, one line per element, the same text for a 
 
 ```text
 ~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160
-+ verify  square "Verify email" @45,300 131×120
-~ f2  taller 200→360
++ verify  square "Verify email" @40,300 140×60
+~ f2  taller 200→300
 ~ a3  to n4→verify
 + arrow  verify→n4 (style of a3)
-» n4 n5 n6 n7 n8  +0,+160 (make room)
+» n4 n5 n6 n7 n8  +0,+100 (make room)
 f2  +verify
 rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livediagram changeset revert 3f9c2a71-… cs_8k2m4q7d1x
 ```

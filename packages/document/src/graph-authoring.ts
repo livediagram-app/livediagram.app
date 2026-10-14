@@ -157,8 +157,10 @@ export function labelBoxSize(
   shape: string,
   look?: GraphLook,
   hasIcon = false,
+  // In the look, the smallest box in place of the kind's: a box joining siblings starts at their size.
+  floor?: { width: number; height: number },
 ): { width: number; height: number } {
-  if (look) return lookBoxSize(label, coerceShapeKind(shape), look, hasIcon);
+  if (look) return lookBoxSize(label, coerceShapeKind(shape), look, hasIcon, floor);
   const base = SHAPE_DEFAULT_SIZE[coerceShapeKind(shape)];
   const text = (label ?? '').trim();
   if (!text) return { width: base.width, height: base.height };
@@ -178,9 +180,10 @@ function lookBoxSize(
   kind: string,
   look: GraphLook,
   hasIcon: boolean,
+  given?: { width: number; height: number },
 ): { width: number; height: number } {
   const base = SHAPE_DEFAULT_SIZE[kind as keyof typeof SHAPE_DEFAULT_SIZE];
-  const floor = LOOK_FLOOR[kind] ?? base;
+  const floor = given ?? LOOK_FLOOR[kind] ?? base;
   const text = (label ?? '').trim();
   if (!text) return { ...floor };
   const px = LOOK_FONT_PX[look.textSize];
@@ -189,12 +192,17 @@ function lookBoxSize(
   const iconRoom = hasIcon ? Math.round(px * 1.6 * 1.32) : 0;
   const roomy =
     kind === 'diamond' ? 1.5 : kind === 'parallelogram' || kind === 'hexagon' ? 1.15 : 1;
-  const textW = glyphUnits(text) * px * GLYPH_EM * roomy + iconRoom;
+  // A label written over several lines is measured line by line: its widest line sets the width, and each wraps on its own.
+  const lineW = text.split('\n').map((l) => glyphUnits(l) * px * GLYPH_EM * roomy);
+  const textW = Math.max(...lineW) + iconRoom;
   const pad = 48;
   const width = Math.round(
     Math.min(LOOK_MAX_W[look.textSize] * roomy, Math.max(floor.width, textW + pad)),
   );
-  const lines = Math.max(1, Math.ceil(textW / (width - pad)));
+  const lines = lineW.reduce(
+    (n, w, i) => n + Math.max(1, Math.ceil((w + (i === 0 ? iconRoom : 0)) / (width - pad))),
+    0,
+  );
   const textH = lines * px * LINE_EM + 28;
   const height = Math.round(Math.max(floor.height, kind === 'diamond' ? textH * 1.6 : textH));
   if (kind === 'circle') {
@@ -283,5 +291,23 @@ export function graphToElements(
     .filter((e) => nodeIds.has(e.from) && nodeIds.has(e.to))
     .map((e) => edgeToArrow(e, makeEdgeId()));
 
-  return [...nodes, ...arrows];
+  return [...(look ? sizedAlike(nodes) : nodes), ...arrows];
+}
+
+// In the template look, the boxes of one kind share one size, the largest any of them needs, as a template's steps
+// do: a step whose label wrapped stood taller than its neighbours, and the column read as ragged.
+function sizedAlike(nodes: Element[]): Element[] {
+  const size = new Map<string, { width: number; height: number }>();
+  for (const el of nodes) {
+    if (el.type !== 'shape' || !LOOK_FLOOR[el.shape] || !el.label) continue;
+    const was = size.get(el.shape) ?? { width: 0, height: 0 };
+    size.set(el.shape, {
+      width: Math.max(was.width, el.width),
+      height: Math.max(was.height, el.height),
+    });
+  }
+  return nodes.map((el) => {
+    const alike = el.type === 'shape' && el.label ? size.get(el.shape) : undefined;
+    return alike ? { ...el, ...alike } : el;
+  });
 }

@@ -176,6 +176,62 @@ describe('title, subtitle and key', () => {
   });
 });
 
+describe('one size per kind', () => {
+  it('gives every box of a kind the size the largest needs, leaving other kinds their own', () => {
+    const els = lay({
+      nodes: [
+        { id: 'a', label: 'Pay' },
+        { id: 'b', label: 'Send the receipt and the order summary by email' },
+        { id: 'c', label: 'Ok?', shape: 'diamond' },
+      ],
+      edges: [
+        { from: 'a', to: 'b' },
+        { from: 'b', to: 'c' },
+      ],
+    });
+    const [a, b, c] = ['a', 'b', 'c'].map((id) => box(els, id));
+    expect([a!.width, a!.height]).toEqual([b!.width, b!.height]);
+    expect(c!.width).not.toBe(a!.width);
+  });
+});
+
+describe('a label over two lines', () => {
+  it('is measured line by line: narrower than one line holding both, and taller', () => {
+    const one = labelBoxSize('App tasks on ECS Fargate in two zones', 'square', { textSize: 'md' });
+    const two = labelBoxSize('App tasks on ECS\nFargate in two zones', 'square', {
+      textSize: 'md',
+    });
+    expect(two.width).toBeLessThan(one.width);
+    expect(two.height).toBeGreaterThanOrEqual(one.height);
+  });
+});
+
+describe('key samples', () => {
+  const kinds = (tones: ('muted' | 'soft')[]): GraphInput => ({
+    nodes: [
+      ...tones.map((tone, i) => ({ id: `s${i}`, label: `S${i}`, shape: 'stadium' as const, tone })),
+      { id: 'step', label: 'Step' },
+    ],
+    edges: tones.map((_, i) => ({ from: `s${i}`, to: 'step' })),
+    key: true,
+  });
+  it('shows a kind in its ordinary look, not the muted exception among it', () => {
+    const els = lay(kinds(['soft', 'soft', 'muted']));
+    const keyed = els.filter(
+      (e) => e.type === 'shape' && e.shape === 'stadium' && e.width < 100,
+    ) as { colorPreset?: string }[];
+    expect(keyed.map((k) => k.colorPreset)).toEqual(['soft']);
+  });
+
+  it('shows the muted look when every one of the kind is muted', () => {
+    const els = lay(kinds(['muted']));
+    const keyed = els.filter(
+      (e) => e.type === 'shape' && e.shape === 'stadium' && e.width < 100,
+    ) as { colorPreset?: string }[];
+    expect(keyed.map((k) => k.colorPreset)).toEqual(['outline']);
+  });
+});
+
 describe('key meanings', () => {
   const system: GraphInput = {
     nodes: [

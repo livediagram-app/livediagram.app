@@ -4,6 +4,7 @@
 
 import { unionRects } from './geometry-primitives';
 import { glyphWidth } from './graph-authoring';
+import { TONE_PRESET } from './graph-look';
 import { isBoxed, type BoxedElement, type Element, type ShapeElement } from './index';
 
 // The template's muted caption grey (template-builders-flowchart.ts MUTED).
@@ -186,8 +187,11 @@ function keyCard(
 
 // The preset most of these shapes wear, or undefined when most wear none.
 function mostCommonPreset(shapes: ShapeElement[]): string | undefined {
+  // A muted node is the exception, drawn quiet and dashed: the key shows a kind's ordinary look unless every one of
+  // its kind is muted.
+  const ordinary = shapes.filter((s) => s.colorPreset !== TONE_PRESET.muted);
   const counts = new Map<string, number>();
-  for (const s of shapes)
+  for (const s of ordinary.length ? ordinary : shapes)
     counts.set(s.colorPreset ?? '', (counts.get(s.colorPreset ?? '') ?? 0) + 1);
   const [best] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0] ?? [''];
   return best || undefined;

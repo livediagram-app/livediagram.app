@@ -5,6 +5,7 @@
 
 import type { EditRejection } from '@livediagram/api-schema';
 import {
+  SHAPE_DEFAULT_SIZE,
   SHAPE_KINDS,
   coerceShapeKind,
   createAnnotation,
@@ -19,15 +20,17 @@ import {
   resolveActiveLayerId,
   type BoxedElement,
   type Element,
+  type ElementId,
   type TextSize,
   type ThemeDefinition,
 } from '@livediagram/document';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
 import { layerLockOf } from '../locks';
+import { growContainer } from '../grow-container';
 import { resolvePlacement, type Placed } from '../placement';
 import { invalidValue } from '../rejections';
-import { type EditState, holdersOf, putElement, refuseLocked, touch, writeFields } from '../state';
+import { type EditState, holdersOf, refuseLocked, writeFields } from '../state';
 import type { AddKindOperation, Fields } from '../types';
 
 // Kinds an edit operation cannot make, and what to use instead.
@@ -135,16 +138,21 @@ export function createKind(
     const peers = peerLook(state, el.shape);
     if (peers && !('textSize' in named) && !('text' in named))
       el = { ...el, textSize: peers.textSize };
+    const look =
+      el.textSize === 'sm' || el.textSize === 'md' ? { textSize: el.textSize } : undefined;
     if (peers) {
-      const fit = labelBoxSize(el.label, el.shape);
+      // Siblings shorter than the palette's box of their shape wear the template look (graph input, templates): the
+      // new box is measured as that look measures, so a short label is not the palette's tall square beside them.
+      const templated = peers.height < SHAPE_DEFAULT_SIZE[el.shape].height;
+      const fit = templated
+        ? labelBoxSize(el.label, el.shape, look ?? { textSize: 'sm' }, !!el.iconId, peers)
+        : labelBoxSize(el.label, el.shape);
       el = {
         ...el,
         width: Math.max(fit.width, peers.width),
         height: Math.max(fit.height, peers.height),
       };
     } else {
-      const look =
-        el.textSize === 'sm' || el.textSize === 'md' ? { textSize: el.textSize } : undefined;
       el = { ...el, ...labelBoxSize(el.label, el.shape, look, !!el.iconId) };
     }
   }
@@ -175,14 +183,19 @@ export function layerFor(state: EditState, ref: Element | undefined): string | u
   return resolveActiveLayerId(layers, null);
 }
 
-// Grows the container `inside:` filled, so the element sits in it (EO27).
-export function growInto(state: EditState, placed: Placed, operation: number): void {
+// Grows the container `inside:` filled, so the element sits in it (EO27): what sat under it moves on rather than
+// being taken in (grow-container.ts).
+export function growInto(
+  state: EditState,
+  placed: Placed,
+  held: ElementId,
+  operation: number,
+): void {
   if (!placed.grow) return;
   const { container, height } = placed.grow;
   if (container.type === 'arrow' || state.locked.has(container.id)) return;
-  putElement(state, { ...container, height }, operation);
-  const touched = touch(state, container.id, operation);
-  touched.fit = { ...touched.fit, taller: [container.height, height] };
+  const { x, y, width } = container;
+  growContainer(state, container, { x, y, width, height }, held, operation);
 }
 
 // A made element onto its layer, refused when that layer is locked, then added.
@@ -212,7 +225,7 @@ export function applyAddKind(
   if ('rejection' in made) return made.rejection;
   const refused = commitNew(state, made, 'add', index);
   if (refused) return refused;
-  growInto(state, made.placed, index);
+  growInto(state, made.placed, made.el.id, index);
   if (operation.place && operation.place.rel !== 'at' && operation.place.rel !== 'inside')
     growToHold(state, made.placed.ref, made.el, index);
   return null;
@@ -222,7 +235,8 @@ export function applyAddKind(
 const HOLD_PAD = 32;
 
 // A box placed beside a member of a frame or lane joins it: the container grows to hold it, as an insertion grows
-// one (docs/specs/024-agents/edit-operations.md "Layout on edit"), instead of the new box landing just outside.
+// one (docs/specs/024-agents/edit-operations.md "Layout on edit"), instead of the new box landing just outside, and
+// what sat past it moves on rather than being taken in (grow-container.ts).
 function growToHold(
   state: EditState,
   ref: Element | undefined,
@@ -244,15 +258,11 @@ function growToHold(
     bottom === holder.y + holder.height
   )
     return;
-  putElement(state, { ...holder, x, y, width: right - x, height: bottom - y }, operation);
-  const touched = touch(state, holder.id, operation);
-  touched.fit = {
-    ...touched.fit,
-    ...(right - x !== holder.width
-      ? { widened: [holder.width, right - x] as [number, number] }
-      : {}),
-    ...(bottom - y !== holder.height
-      ? { taller: [holder.height, bottom - y] as [number, number] }
-      : {}),
-  };
+  growContainer(
+    state,
+    holder,
+    { x, y, width: Math.round(right - x), height: Math.round(bottom - y) },
+    el.id,
+    operation,
+  );
 }

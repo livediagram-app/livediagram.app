@@ -602,7 +602,9 @@ max-age=300` (CLI72).
 | `GET /api/schema/:kind`        | 200 `text/plain`: `elementFormatText(kind)`, the kind's fields, values and defaults                                            | 404 `unknown_kind { kinds }`                                                                     |
 
 - `searchIcons(query, limit)` (`@livediagram/icons`) ranks the line-art and Technology catalogues by `paletteRank`
-  over each icon's label and keywords, ties in catalogue order (CLI74).
+  over each icon's label and keywords, its id's words and a Technology icon's provider ("aws lambda" finds
+  `aws-lambda`), ties in catalogue order (CLI74). A query that is an icon's id ranks it first; an emoji ranks
+  `EMOJI_AFTER` (0.05) behind an icon answering as well, so a node's icon is a drawn glyph first.
 - `elementKindsText()` and `elementFormatText(kind)` (`@livediagram/edit-operations`) are read off the engine itself:
   the kinds `add` makes (`buildKind`'s factories), each kind's first size, the aliases `set` takes for it (`aliasesOf`)
   with their values (theme slots, sticky presets, border styles, text sizes, line styles), and its stored fields; a

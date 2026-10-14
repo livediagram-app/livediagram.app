@@ -116,4 +116,11 @@ describe('parseMermaid: ER diagrams', () => {
     expect(isValidTab({ id: 't', name: 'T', elements: els })).toBe(true);
     expect(els.filter((e) => e.type === 'arrow')).toHaveLength(2);
   });
+
+  it('reads a direction line, top to bottom by default', () => {
+    const text = (dir: string) =>
+      ['erDiagram', ...(dir ? [dir] : []), 'A ||--o{ B : has'].join('\n');
+    expect(parseMermaid(text('direction LR'))).toMatchObject({ ok: true, direction: 'LR' });
+    expect(parseMermaid(text(''))).toMatchObject({ ok: true, direction: 'TB' });
+  });
 });

@@ -18,6 +18,10 @@ const STEP = 52;
 const SELF_DROP = 40;
 const SELF_LOOP = 56;
 const FRAGMENT_BAND = 40;
+// How far a guard sits right of its fragment's first lifeline and bar.
+const GUARD_GAP = 10;
+// How far a fragment nested in another, on the same first lifeline, sits inside it on each side.
+const FRAGMENT_INSET = 12;
 const DIVIDER_BAND = 36;
 const FRAGMENT_END = 24;
 const NOTE_LINE = 18;
@@ -91,6 +95,14 @@ export function layoutSequence(
       }
     }
   });
+  // A diagram that activates anything itself (`activate`, `+`, `-`) draws its bars as told, as Mermaid does: answered
+  // calls add none of their own, which would stack a second bar on each the author drew.
+  const explicit = items.some(
+    (it) =>
+      it.kind === 'activate' ||
+      it.kind === 'deactivate' ||
+      (it.kind === 'message' && (!!it.activate || !!it.deactivate)),
+  );
   // The calls still waiting on a reply, so a reply ends the activation its call began.
   const waiting: { caller: string; callee: string; auto: boolean }[] = [];
   const messages: {
@@ -99,11 +111,13 @@ export function layoutSequence(
     fromX: number;
     toX: number;
   }[] = [];
+  // Each fragment's participants: those its messages and notes touch, so its frame spans their lifelines alone.
   const fragments: {
     op: string;
     label: string;
     top: number;
     dividers: { y: number; label: string }[];
+    who: Set<string>;
   }[] = [];
   const closed: {
     op: string;
@@ -111,7 +125,11 @@ export function layoutSequence(
     top: number;
     bottom: number;
     dividers: { y: number; label: string }[];
+    who: Set<string>;
   }[] = [];
+  const involve = (...who: string[]) => {
+    for (const f of fragments) for (const w of who) f.who.add(w);
+  };
   const notes: { item: Extract<SequenceItem, { kind: 'note' }>; y: number; h: number }[] = [];
   // Where a message meets a lifeline: the near edge of its outermost open bar, or the lifeline itself.
   const edge = (who: string, towardRight: boolean) => {
@@ -120,13 +138,21 @@ export function layoutSequence(
     return px(who) + ((d - 1) * BAR) / 2 + (towardRight ? -BAR / 2 : BAR / 2);
   };
 
+  // The row of the last message: an `activate` or `deactivate` line acts at it, as Mermaid starts a bar at the call
+  // that precedes the line, not a row later.
+  let messageY: number | undefined;
   for (const [i, it] of items.entries()) {
     if (it.kind === 'message') {
       const label = diagram.autonumber ? `${++number}: ${it.label}` : it.label;
       const self = it.from === it.to;
       // A plain call to another participant that is answered activates it until the answer.
       const auto =
-        !self && it.style === 'call' && !it.activate && !it.deactivate && answered.has(i);
+        !explicit &&
+        !self &&
+        it.style === 'call' &&
+        !it.activate &&
+        !it.deactivate &&
+        answered.has(i);
       if (it.style === 'reply' && !it.deactivate) {
         const w = [...waiting].reverse().find((c) => c.callee === it.from && c.caller === it.to);
         if (w) {
@@ -147,17 +173,20 @@ export function layoutSequence(
         deactivate(it.from, y + SELF_DROP + 20);
       }
       for (const who of [it.from, it.to]) lastRow.set(who, y);
+      messageY = y;
+      involve(it.from, it.to);
       y += self ? SELF_DROP + 36 : STEP;
-    } else if (it.kind === 'activate') activate(it.who, y - STEP / 2);
-    else if (it.kind === 'deactivate') deactivate(it.who, y - STEP / 2);
+    } else if (it.kind === 'activate') activate(it.who, messageY ?? y - STEP / 2);
+    else if (it.kind === 'deactivate') deactivate(it.who, messageY ?? y - STEP / 2);
     else if (it.kind === 'note') {
       const width = noteWidth(it, pitch, headW);
       const lines = Math.max(1, Math.ceil(glyphWidth(it.text, 13) / Math.max(40, width - 28)));
       const h = Math.max(56, lines * NOTE_LINE + 30);
       notes.push({ item: it, y: y - 14, h });
+      involve(...it.who);
       y += h + 16;
     } else if (it.kind === 'fragment') {
-      fragments.push({ op: it.op, label: it.label, top: y - 22, dividers: [] });
+      fragments.push({ op: it.op, label: it.label, top: y - 22, dividers: [], who: new Set() });
       y += FRAGMENT_BAND;
     } else if (it.kind === 'else') {
       const frag = fragments.at(-1);
@@ -218,10 +247,19 @@ export function layoutSequence(
     });
   }
 
-  // Fragments behind everything that happens in them.
-  const left = -40;
-  const rightEdge = (participants.length - 1) * pitch + headW + 40;
+  // Fragments behind everything that happens in them, across the lifelines of the participants they involve (every
+  // lifeline when they involve none), nested ones a step inside those they sit in.
+  const columns = (f: { who: Set<string> }): [number, number] => {
+    const cols = [...f.who].flatMap((w) => (index.has(w) ? [index.get(w)!] : []));
+    return cols.length ? [Math.min(...cols), Math.max(...cols)] : [0, participants.length - 1];
+  };
   for (const f of closed) {
+    const [first, last] = columns(f);
+    const depth = closed.filter(
+      (o) => o !== f && o.top < f.top && o.bottom > f.bottom && columns(o)[0] === first,
+    ).length;
+    const left = first * pitch - 40 + depth * FRAGMENT_INSET;
+    const rightEdge = last * pitch + headW + 40 - depth * FRAGMENT_INSET;
     out.push({
       ...createShape('frame', left, f.top),
       id: freshId('fragment', opts.makeId),
@@ -232,7 +270,9 @@ export function layoutSequence(
       textBold: true,
       textAlignX: 'left',
     });
-    if (f.label) out.push(guard(left + 64, f.top + 6, f.label, opts.makeId));
+    // A guard reads in the gap right of the fragment's first lifeline and its bar, never across a lifeline.
+    const guardX = Math.max(left + 64, px(participants[first]!.id) + BAR + GUARD_GAP);
+    if (f.label) out.push(guard(guardX, f.top + 6, f.label, opts.makeId));
     for (const d of f.dividers) {
       out.push({
         ...createArrow(left + 12, d.y, rightEdge - 12, d.y),
@@ -241,7 +281,7 @@ export function layoutSequence(
         strokeStyle: 'dashed',
         routeBehind: false,
       });
-      if (d.label) out.push(guard(left + 64, d.y + 4, d.label, opts.makeId));
+      if (d.label) out.push(guard(guardX, d.y + 4, d.label, opts.makeId));
     }
   }
 

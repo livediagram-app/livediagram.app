@@ -422,7 +422,8 @@ a layout no one could read.
 **A label is a heading; detail goes in the note.** A node's `label` is the text
 in the box and is capped at **40 characters** (`GRAPH_LABEL_MAX`). The cap is a
 plain fact in the tool's description, not an instruction (§4.15), and the server
-enforces it rather than rejecting the call. A longer label becomes a heading:
+enforces it rather than rejecting the call. A label that fits keeps the line breaks written into it
+("App tasks\nECS Fargate" is two lines, measured line by line), other runs of space made one. A longer label becomes a heading:
 bracketed asides go first ("Web client (React SPA served from the CDN)" becomes
 "Web client"); then the noun phrase before its first clause word when there is
 one ("Orders service which creates orders" becomes "Orders service", "Message
@@ -444,7 +445,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 **The graph look** (what makes graph input read like a template, the flowchart template being the yardstick):
 
 - **Boxes are template-sized.** A box is at least 180×64 (a diamond 180×104, wider than tall; a circle stays round),
-  wider for a longer label, never the 120×120 square the editor's palette starts a square at. Every node's text is
+  wider for a longer label, never the 120×120 square the editor's palette starts a square at. The labelled boxes of
+  one kind share one size, the largest any of them needs, so a wrapped step does not stand taller than its
+  neighbours. Every node's text is
   one size: `md` for a graph of up to 12 nodes (the template's size), `sm` beyond, so a large system still fits.
 - **Roles by notation.** In a flowchart (a graph with a diamond or a stadium) the first stadium a flow starts from is
   `bold` and a stadium it ends on `soft`; a diamond is `soft`. A node's `tone` overrides: `strong` (bold), `soft`,
@@ -465,7 +468,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   their outside tracks, so a dense graph lays out in well under a second (60 boxes and 140 edges in about 0.2 s).
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
-  what that shape means, in the diagram's own tones. `true` names them by default: in a flowchart by ISO 5807
+  what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted. `true` names them by default: in a flowchart by ISO 5807
   (stadium "Start or end", square "Step", diamond "Decision", parallelogram "Input or output", document "Document",
   hexagon "Preparation"), otherwise as a diagram of systems reads them (stadium "Entry point", square "Component",
   hexagon "Hub or bus", circle "Node"; cylinder "Data store", cloud "External system", actor "Person" in both). An
@@ -492,7 +495,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   may point at a group id. With groups, `style` is flow. A node may name its
   group itself (`group`), the shape a model reaches for first; it joins that
   group's members, and a group id nothing declares is created with the id as its
-  label. `members` is then optional.
+  label. `members` is then optional. Groups do not nest: a group listed as another's member is refused, naming
+  both, rather than dropped; and a `lanes` graph refuses a node in no group, which would otherwise land in an
+  unlabelled lane of its own (`graphShapeError`).
 - `lines` (`angled` for flow, lanes and tree, `curved` for mindmap and cycle): the
   arrows' routing, from the editor's own arrow styles. Angled lines **bend
   twice** along the flow (down, across at half height, down into the child's
@@ -622,7 +627,9 @@ checked, on every element path (`freehand-points.ts`), and an ops update giving 
 starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
 
 **No CLI hints.** An edit's result text is the api's, less its footer's revert line: that line names the
-`livediagram changeset revert` command, which no MCP tool runs.
+`livediagram changeset revert` command, which no MCP tool runs. Its `@x,y` positions are from the content's top-left as it was read, while an element's `x` and `y` are canvas
+coordinates; when the content does not start at 0,0, a closing line gives the offset (`x, y = @x + ox, @y + oy`),
+so a position read from a result is not sent back off by it.
 
 ### 4.8 `share_document`
 

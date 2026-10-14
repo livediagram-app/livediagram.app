@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { box, lint, of, tabOf } from '../fixtures/build';
+import { box, frame, lint, of, tabOf } from '../fixtures/build';
 
 describe('aspect-extreme', () => {
   it('fires on a drawing more than three times wider than tall, or the reverse', () => {
@@ -39,5 +39,15 @@ describe('aspect-extreme', () => {
   it('stays quiet on an Illustrate tab, whose pages fix its shape (a row of slides)', () => {
     const row = tabOf(box('a', 0, 0), box('b', 600, 0), box('c', 1200, 0));
     expect(of(lint({ ...row, opensIn: 'illustrate' }), 'aspect-extreme')).toEqual([]);
+  });
+
+  it('stays quiet on a tab whose boxes sit in frames, which no layout keeps', () => {
+    const framed = tabOf(
+      frame('f', -20, -20, 1400, 120),
+      box('a', 0, 0),
+      box('b', 600, 0),
+      box('c', 1200, 0),
+    );
+    expect(of(lint(framed), 'aspect-extreme')).toEqual([]);
   });
 });

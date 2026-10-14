@@ -43,9 +43,18 @@ export async function submitChangeset(
 }
 
 // The api's result text as the model reads it: its footer's revert line names the CLI command, which no
-// MCP tool runs, so it is left off rather than sending the model to a command it cannot reach.
-export function mcpResultText(text: string): string {
-  return text.replace(/ · revert: livediagram changeset revert \S+ \S+/g, '');
+// MCP tool runs, so it is left off rather than sending the model to a command it cannot reach. Its `@x,y`
+// positions are from the content's top-left as it was read, while an element's x and y are canvas coordinates:
+// when the two differ, a closing line says how to get from one to the other, as the layout view does.
+export function mcpResultText(
+  text: string,
+  origin: { x: number; y: number } = { x: 0, y: 0 },
+): string {
+  const plain = text.replace(/ · revert: livediagram changeset revert \S+ \S+/g, '');
+  const [ox, oy] = [Math.round(origin.x), Math.round(origin.y)];
+  if ((ox === 0 && oy === 0) || !/@-?\d+,-?\d+/.test(plain)) return plain;
+  const plus = (n: number) => (n < 0 ? `- ${-n}` : `+ ${n}`);
+  return `${plain}\n@x,y above are from the content's top-left: an element's x, y = @x ${plus(ox)}, @y ${plus(oy)}.`;
 }
 
 // One op of `update_document`'s ops mode, as the model sends it.

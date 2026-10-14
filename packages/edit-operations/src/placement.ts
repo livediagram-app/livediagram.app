@@ -15,7 +15,7 @@ import {
   type ElementId,
 } from '@livediagram/document';
 import { resolveOne } from './selectors';
-import { currentElements, refsOf, type EditState } from './state';
+import { currentElements, holdersOf, refsOf, type EditState } from './state';
 import type { Placement } from './types';
 import { PLACEMENT_GAP } from './vocabulary';
 
@@ -54,6 +54,28 @@ function occupiers(state: EditState, moving: ReadonlySet<ElementId>): Box[] {
   return currentElements(state).flatMap((el) => {
     const box = boxOf(el);
     return box && !isContainer(el) && !moving.has(el.id) ? [box] : [];
+  });
+}
+
+// The boxes a new box beside a framed one makes way for: the frame's own contents, at any depth. What lies outside
+// the frame is moved on when the frame grows to hold it (make room), so the new box sits beside its neighbour
+// rather than being pushed past the frame's surroundings. Null when the box is in no frame, or a locked one, which
+// cannot grow.
+function frameOccupiers(
+  state: EditState,
+  ref: Element,
+  moving: ReadonlySet<ElementId>,
+): Box[] | null {
+  const holders = holdersOf(state);
+  const frame = holders.get(ref.id);
+  if (!frame || state.locked.has(frame)) return null;
+  const within = (id: ElementId): boolean => {
+    const holder = holders.get(id);
+    return holder === frame || (!!holder && within(holder));
+  };
+  return currentElements(state).flatMap((el) => {
+    const box = boxOf(el);
+    return box && !isContainer(el) && !moving.has(el.id) && within(el.id) ? [box] : [];
   });
 }
 
@@ -286,7 +308,8 @@ export function resolvePlacement(
     }
     default: {
       const side = placement.rel === 'after' ? sideAfter(state, ref, refBox) : placement.rel;
-      const box = nudgeUntilFree(beside(refBox, side, size, gap), side, gap, taken);
+      const among = placement.rel === 'after' ? null : frameOccupiers(state, ref, moving);
+      const box = nudgeUntilFree(beside(refBox, side, size, gap), side, gap, among ?? taken);
       return { x: Math.round(box.x), y: Math.round(box.y), ref };
     }
   }

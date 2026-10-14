@@ -117,7 +117,7 @@ LR` line sets the layout direction (TB default).
 
 ## ER diagram coverage (import)
 
-- **Header**: `erDiagram` (no direction syntax; lays out TB).
+- **Header**: `erDiagram`; a `direction LR` (or `RL`) line lays it out left to right, otherwise top to bottom.
 - **Entities**: [Entity](../009-elements/entity.md) elements (`shape:
 'entity'`), the canvas's own record box: the entity name is the title and
   each attribute (`CUSTOMER { string name PK "comment" }`) is a field row,
@@ -145,17 +145,19 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
   participants appear in the order declared, then first mentioned. Messages `A->>B: text` (a call: solid, filled
   head), `A-)B: text` (async: solid, open head), `A-->>B: text` and `A-->B: text` (a reply: dashed, open head),
   `A->B` and `A-xB` (calls); `A->>A` is a self-call. `+` and `-` after the arrow (`A->>+B`, `B-->>-A`) and
-  `activate B` / `deactivate B` start and end activations. `Note over A,B: text`, `Note right of A: text`,
+  `activate B` / `deactivate B` start and end activations at the message the line follows. `Note over A,B: text`, `Note right of A: text`,
   `Note left of A: text`. Fragments `loop`, `alt` (with `else`), `opt`, `par` (with `and`), `critical`, `break`,
   each closed by `end`. `autonumber` numbers the messages; `title Text` (or front matter `title:`) heads the
   diagram. `rect` blocks, `box` groupings, links and styling are read and skipped, never an error.
 - **Activations without markers**: a call to another participant activates it from that message until it replies
   to its caller; one never closed ends after the participant's last message. A self-call nests an activation,
-  stepped right. Nested activations step right by half a bar.
+  stepped right. Nested activations step right by half a bar. A diagram that activates anything itself (`activate`, `deactivate`, `+`, `-`) draws
+  only those bars: answered calls add none, so an author's bars are never doubled.
 - **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, the
   pitch wide enough for the longest message between neighbours; messages a row each, edge to edge of the activation
   bars, labels above their line; a self-call loops out of the bar and back into its nested one; a note is a sticky
-  over or beside its participants; a fragment is a frame across every lifeline with its operator as its label and
+  over or beside its participants; a fragment is a frame across the lifelines its messages and notes involve (every lifeline when they
+  involve none; one nested on the same first lifeline sits a step inside) with its operator as its label and
   each guard in muted text, operands split by a dashed divider.
 - **Limits**: at most 30 participants and 300 messages, notes and fragment lines; past them the parser refuses
   naming the limit.

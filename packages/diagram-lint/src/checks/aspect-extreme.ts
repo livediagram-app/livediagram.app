@@ -2,13 +2,15 @@
 // LINT_MAX_ASPECT times wider than tall or the reverse (LN16). It names no element and reads first.
 
 import { LINT_ASPECT_MIN_BOXES, LINT_MAX_ASPECT } from '../constants';
+import { framedTab } from '../context';
 import { fixes } from '../fixes';
 import { lintExtent } from '../measures';
 import type { Check } from './types';
 
 export const aspectExtreme: Check = (ctx) => {
   const extent = lintExtent(ctx);
-  if (!extent || ctx.boxes.length < LINT_ASPECT_MIN_BOXES) return [];
+  // A tab whose boxes sit in frames or lanes takes its shape from its groups, and no layout keeps them (LN16).
+  if (!extent || ctx.boxes.length < LINT_ASPECT_MIN_BOXES || framedTab(ctx)) return [];
   const { width, height } = extent;
   if (width < 1 || height < 1) return [];
   const ratio = Math.max(width / height, height / width);

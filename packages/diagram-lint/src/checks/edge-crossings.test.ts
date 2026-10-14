@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { LINT_MAX_ARROWS } from '../constants';
-import { arrow, box, lint, of, tabOf } from '../fixtures/build';
+import { arrow, box, frame, lint, of, tabOf } from '../fixtures/build';
 import { formatLintReport } from '../format';
 
 // A column of sources on the left, a column of targets on the right, every source joined to the target
@@ -59,5 +59,11 @@ describe('edge-crossings', () => {
     expect(report.measures.crossings).toBeNull();
     expect(formatLintReport(report).split('\n')[0]).toMatch(/^crossings skipped \(301 arrows\) · /);
     expect(logged).toContain('[lint] crossings skipped');
+  });
+
+  it('on a framed tab, reroutes the most-crossed arrow rather than laying out shapes alone', () => {
+    const framed = [frame('f', -20, -20, 260, 440), ...crossed(4)];
+    const [finding] = of(lint(tabOf(...framed)), 'edge-crossings');
+    expect(finding!.fix).toMatch(/^set \S+ line=(angled|curved)$/);
   });
 });
