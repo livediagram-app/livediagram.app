@@ -127,6 +127,7 @@ import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
 import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
 import { isPointerNote, pointerTipOf } from './pointer-note';
+import { isPersonNode } from './person-node';
 import { tagColoursOf, withTagAccent } from './tag-colours';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
@@ -516,6 +517,8 @@ export function boxedNeedsSvgRaster(
   // plain boxes while the SVG export drew them properly, which is the same
   // inconsistency one file down.
   if (el.type === 'shape' && shapeHasBespokeBody(el.shape)) return true;
+  // A person node's disc and lines (docs/specs/009-elements/org-chart.md) are drawn by the SVG alone.
+  if (isPersonNode(el)) return true;
   if (el.type === 'shape' && el.shape === 'icon' && el.iconId && resolveIconArt?.(el.iconId))
     return true;
   // An inline icon beside a label (svg-render-inline-icon) is drawn by the SVG alone.

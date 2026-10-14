@@ -445,6 +445,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Lane',
     // Boundary (docs/specs/009-elements/boundary.md): a Build container beside Frame and Lane.
     'Boundary',
+    // Org chart (docs/specs/009-elements/org-chart.md): a person mind node, after Mind node.
+    'OrgChart',
     // Stack (docs/specs/009-elements/stack.md): a Build container after Frame.
     'Stack',
     // Diagram key (docs/specs/009-elements/diagram-key.md): a Build element after Boundary.

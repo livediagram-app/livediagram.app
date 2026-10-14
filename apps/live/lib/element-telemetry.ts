@@ -139,6 +139,8 @@ export function elementTelemetryType(element: Element): string {
       // A brand mark reports as TechIcon rather than by its shape, matching
       // both the click-to-add and drag-to-draw paths.
       if (element.iconId && isTechIconId(element.iconId)) return 'TechIcon';
+      // A person node is the org chart's (docs/specs/009-elements/org-chart.md), counted apart from mind nodes.
+      if (element.shape === 'mind-node' && element.mindLook === 'person') return 'OrgChart';
       return shapeTelemetryToken(element.shape);
     }
   }

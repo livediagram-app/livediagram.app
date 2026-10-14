@@ -175,6 +175,7 @@ const ILLUSTRATE: PaletteLayout = {
       tiles: tilesExcept(
         'build',
         'tools:mind-node',
+        'tools:org-chart',
         'tools:flowchart',
         'tools:lane',
         'tools:frame',

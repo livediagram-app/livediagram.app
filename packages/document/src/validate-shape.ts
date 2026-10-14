@@ -283,6 +283,8 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v: unknown) => isPointerTip(v),
     rule: 'an { x, y } of finite numbers within ±4000',
   },
+  // A person node (docs/specs/009-elements/org-chart.md).
+  { field: 'mindLook', valid: (v: unknown) => v === 'person', rule: oneOfRule(['person']) },
   // A stack's arrangement (docs/specs/009-elements/stack.md).
   {
     field: 'stackDirection',

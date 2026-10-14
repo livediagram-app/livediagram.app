@@ -86,15 +86,16 @@ function flowOf(index: ElementIndex, node: ShapeElement): MindFlow {
 const FACE: Record<string, 'e' | 'w' | 'n' | 's'> = { e: 'e', w: 'w', n: 'n', s: 's' };
 
 /**
- * The route the finish draws `arrow` along, or null when it is drawn as stored: not Professional, not a
- * mind connector (both ends pinned to mind nodes, one the other's parent), or not in the default look.
+ * The route the finish draws `arrow` along, or null when it is drawn as stored: not Professional (nor an org
+ * chart's connector, which is always routed), not a mind connector (both ends pinned to mind nodes, one the other's
+ * parent), or not in the default look.
  */
 export function finishMindConnectorRoute(
   arrow: ArrowElement,
   elements: readonly Element[] | ElementIndex,
   finish: Finish,
 ): MindConnectorRoute | null {
-  if (finish !== 'professional' || !isDefaultMindConnectorLook(arrow)) return null;
+  if (!isDefaultMindConnectorLook(arrow)) return null;
   if (arrow.from.kind !== 'pinned' || arrow.to.kind !== 'pinned') return null;
   const index: ElementIndex = Array.isArray(elements)
     ? elementIndexFor(elements)
@@ -102,6 +103,10 @@ export function finishMindConnectorRoute(
   const a = index.get(arrow.from.elementId);
   const b = index.get(arrow.to.elementId);
   if (!isNode(a) || !isNode(b)) return null;
+  // An org chart (docs/specs/009-elements/org-chart.md) draws its connectors as this bracket in every finish: a
+  // person map's reports hang off one trunk, the way org charts are read.
+  const orgChart = a.mindLook === 'person' && b.mindLook === 'person';
+  if (finish !== 'professional' && !orgChart) return null;
   // Usually drawn parent to child, but a swapped connector is the same branch.
   const forward = b.mindParentId === a.id;
   if (!forward && a.mindParentId !== b.id) return null;

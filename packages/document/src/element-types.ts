@@ -473,6 +473,8 @@ export type ShapeElement = {
   stackGap?: number;
   stackPadding?: number;
   stackColumns?: number;
+  // A mind node drawn as a person (docs/specs/009-elements/org-chart.md); absent = an ordinary mind node.
+  mindLook?: import('./person-node').MindLook;
   // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
   boundaryStyle?: BoundaryStyle;
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows (a layer, tier or step each, with an

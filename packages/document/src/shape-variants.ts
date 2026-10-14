@@ -95,6 +95,18 @@ export function applyShapeVariant(el: ShapeElement, variant: string | undefined)
     const preset = cardPreset(el, variant);
     if (preset) return preset;
   }
+  // The org chart (docs/specs/009-elements/org-chart.md): a person root in the Downward flow.
+  if (el.shape === 'mind-node' && variant === 'org-chart')
+    return {
+      ...el,
+      width: 220,
+      height: 64,
+      mindLook: 'person',
+      mindFlow: 'downward',
+      label: 'Ana Kim',
+      pageSubtitle: 'Head of Engineering',
+      textAlignX: 'left',
+    };
   if (el.shape === 'badge' && Object.hasOwn(BADGE_PRESETS, variant))
     return { ...el, ...BADGE_PRESETS[variant] };
   // The pyramid's variants (docs/specs/009-elements/concept-graphics.md): a Funnel starts from a conversion story.

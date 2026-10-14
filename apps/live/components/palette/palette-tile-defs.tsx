@@ -490,6 +490,25 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The org chart (docs/specs/009-elements/org-chart.md): a person root in the Downward flow; Tab adds a report.
+    id: 'tools:org-chart',
+    blurb: 'Tab adds a report, Enter a peer',
+    caption: 'Org Chart',
+    section: 'build',
+    label: 'Add Org Chart',
+    description:
+      'Org chart. A person with a name and role; with it selected, Tab adds a report below and Enter a peer beside it.',
+    action: { type: 'shape', kind: 'mind-node', variant: 'org-chart' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="8" y="2.5" width="8" height="5" rx="1.5" />
+        <rect x="2" y="16.5" width="8" height="5" rx="1.5" />
+        <rect x="14" y="16.5" width="8" height="5" rx="1.5" />
+        <path d="M12 7.5V12M6 16.5V12h12v4.5" />
+      </Glyph>
+    ),
+  },
+  {
     // Flowchart (docs/specs/009-elements/flowchart.md): drops a Start that IS a chart; the steps grow
     // from it and the chart lays itself out.
     id: 'tools:flowchart',

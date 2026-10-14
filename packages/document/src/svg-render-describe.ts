@@ -4,6 +4,7 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
+import { isPersonNode } from './person-node';
 import type { SheetRenderModel } from './svg-render-plan-sheet';
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx } from './border-style';
@@ -437,7 +438,9 @@ export function selfLabelled(el: BoxedElement): boolean {
     el.shape === 'cycle' ||
     el.shape === 'hub' ||
     // A diagram key writes its title above its rows (docs/specs/009-elements/diagram-key.md).
-    el.shape === 'diagram-key'
+    el.shape === 'diagram-key' ||
+    // A person node writes its name beside its initials (docs/specs/009-elements/org-chart.md).
+    isPersonNode(el)
   );
 }
 

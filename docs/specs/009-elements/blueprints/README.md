@@ -36,5 +36,6 @@ Follow the references below only as needed; never upfront.
 - ./tag-colours.md - when implementing or changing tag colours, the tab map or how cards render it
 - ./diagram-key.md - when implementing or changing the diagram key, its derived rows or its meanings
 - ./stack.md - when implementing or changing the stack, its layout or how it settles
+- ./org-chart.md - when implementing or changing person nodes, the org chart variant or how they grow
 - ./boundary.md - when implementing or changing the boundary, its styles, depth tint, containment or paint order
 - ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations

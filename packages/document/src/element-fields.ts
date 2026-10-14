@@ -167,6 +167,7 @@ export const ELEMENT_FIELD_NAMES = {
     'stackGap',
     'stackPadding',
     'stackColumns',
+    'mindLook',
     'boundaryStyle',
     'conceptRows',
     'pyramidVariant',
