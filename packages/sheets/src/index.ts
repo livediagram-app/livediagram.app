@@ -60,3 +60,4 @@ export {
   type SheetRenderModel,
 } from './engine/render';
 export type { Frame, RangeRef, EvalValue } from './engine/frame';
+export { valuesOnly, writesFormats } from './values-only';

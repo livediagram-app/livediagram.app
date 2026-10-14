@@ -138,12 +138,15 @@ export function SheetCellMenu({
               description="Clear what the cells hold, keeping their formats (Delete)."
               onClick={act(() => actions.clear('inputs'))}
             />
-            <MenuToolButton
-              icon={<ClearFormatIcon />}
-              label="Clear Formatting"
-              description="Clear the cells' formats, keeping what they hold."
-              onClick={act(() => actions.clear('formats'))}
-            />
+            {/* Formats are an Editor's (sheet.md "Who may do what"). */}
+            {c.canShape ? (
+              <MenuToolButton
+                icon={<ClearFormatIcon />}
+                label="Clear Formatting"
+                description="Clear the cells' formats, keeping what they hold."
+                onClick={act(() => actions.clear('formats'))}
+              />
+            ) : null}
           </>
         ) : null}
       </MenuToolbar>
