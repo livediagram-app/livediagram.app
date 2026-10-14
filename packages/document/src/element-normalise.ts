@@ -162,7 +162,16 @@ export function normaliseElement(el: unknown): unknown {
   const [current] = migrateStoredElementsUnsettled([
     el,
   ] as unknown as DocElement[]) as unknown as Raw[];
-  return normaliseContent(withFactoryDefaults(current!));
+  return normaliseContent(withFactoryDefaults(withTextLabel(current!)));
+}
+
+// A label is text. An agent's number or yes/no (a step labelled 5) is written as its text; anything else is left for
+// validation to refuse.
+function withTextLabel(el: Raw): Raw {
+  const label = el.label;
+  return typeof label === 'number' || typeof label === 'boolean'
+    ? { ...el, label: String(label) }
+    : el;
 }
 
 // A new element of this kind, as the editor's own factory makes it, one per
@@ -249,7 +258,13 @@ export function normaliseElements<T>(elements: T): T {
   // An agent's badges and step numbers land fitted, numbered and on their hosts' points, as the editor's commits
   // keep them (docs/specs/009-elements/badge.md "Agents").
   const normalised = lanesToFront(elements.map(normaliseElement));
-  // Only a list of element records is settled; anything else is left for validation to refuse.
+  // Only a list of element records is settled; anything else is left for validation to refuse. The records are not
+  // validated yet (an agent's step with a label of 5), so one that settling cannot read is left as it came, for
+  // validation to refuse by name rather than the request failing whole.
   if (!normalised.every(isRecord)) return normalised as T;
-  return settleChips([], normalised as DocElement[]) as T;
+  try {
+    return settleChips([], normalised as DocElement[]) as T;
+  } catch {
+    return normalised as T;
+  }
 }

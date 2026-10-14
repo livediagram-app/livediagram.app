@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, entityHeight, isValidTab } from './index';
+import { createShape, entityHeight, isValidElement, isValidTab } from './index';
 import {
   lanesToFront,
   mergeElementUpdate,
@@ -209,5 +209,39 @@ describe('attached elements through normaliseElements', () => {
     const n = out.find((e) => e.id === 'n')!;
     expect(n.attachedTo).toBe('host');
     expect(n.attachAt).toBe('top-left');
+  });
+});
+
+describe('settling an agent’s chips', () => {
+  it('writes an agent’s numbered step’s label as text, settled and valid', () => {
+    const step = {
+      id: 's',
+      type: 'shape',
+      shape: 'step',
+      x: 0,
+      y: 0,
+      width: 28,
+      height: 28,
+      label: 5,
+    };
+    const [out] = normaliseElements([step]) as Record<string, unknown>[];
+    expect(out!.label).toBe('5');
+    expect(isValidElement(out as never)).toBe(true);
+  });
+
+  it('leaves a label it cannot read for validation to refuse, rather than throwing', () => {
+    const step = {
+      id: 's',
+      type: 'shape',
+      shape: 'step',
+      x: 0,
+      y: 0,
+      width: 28,
+      height: 28,
+      label: { n: 5 },
+    };
+    let out: unknown;
+    expect(() => (out = normaliseElements([step]))).not.toThrow();
+    expect(isValidElement((out as unknown[])[0] as never)).toBe(false);
   });
 });
