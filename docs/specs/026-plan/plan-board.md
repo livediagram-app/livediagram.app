@@ -471,7 +471,7 @@ In Plan mode:
 
 With focus on a card: arrow keys move focus between cards; Enter opens the item; **Shift+Left/Right** moves the
 card to the previous or next column; **Shift+Up/Down** moves it within the column; Delete moves it to the
-Trash; **N** opens the Add a Card menu for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In Progress,
+Trash, focus going on to the next card in its cell (else the one before); **N** opens the Add a Card menu for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In Progress,
 position 2 of 4").
 
 ## Option lists
@@ -675,7 +675,8 @@ for a moment at most ([Maximised board](#maximised-board)).
 A board's cards go out to a CSV file from a **Board tab's** Export dialog (its **CSV** format,
 [Export](plan-tabs.md#export)) and come in from its tab menu's **Import CSV…**, in place of the document's Import
 ([Board tab and Sheet tab](plan-tabs.md#board-tab-and-sheet-tab)). The files are read and written by the Sheet's CSV reader and writer
-([CSV](../029-sheets/sheet.md#csv)): RFC 4180 quoting both ways, a comma (or a tab, when the first line holds one).
+([CSV](../029-sheets/sheet.md#csv)): RFC 4180 quoting both ways, a comma (or a tab, when the first line holds one; a semicolon when it holds semicolons
+and no comma).
 A download is safe to open: a field a spreadsheet would run as a formula is made inert with a leading `'` (the
 Sheet's rule).
 

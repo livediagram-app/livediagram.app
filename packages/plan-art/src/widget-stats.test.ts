@@ -7,6 +7,7 @@ import {
   boardTypeCounts,
   dueCounts,
   overWipColumns,
+  percentDone,
   priorityCounts,
   staleCount,
   topVoted,
@@ -112,5 +113,20 @@ describe('more widget stats', () => {
     const oldDone = { ...item({ status: done }), updatedAt: 0 };
     const fresh = { ...item({ status: 'todo' }), updatedAt: new Date(2026, 9, 29).getTime() };
     expect(staleCount(setup, [old, oldDone, fresh], now)).toBe(1);
+  });
+});
+
+// docs/specs/026-plan/board-widgets.md "Widget kinds": Completion never reads finished, or untouched, when it is not.
+describe('percentDone', () => {
+  it('rounds the share done', () => {
+    expect(percentDone(1, 4)).toBe(25);
+    expect(percentDone(2, 3)).toBe(67);
+  });
+  it('reads 100 only when everything is done, and 0 only when nothing is', () => {
+    expect(percentDone(199, 200)).toBe(99);
+    expect(percentDone(200, 200)).toBe(100);
+    expect(percentDone(1, 300)).toBe(1);
+    expect(percentDone(0, 300)).toBe(0);
+    expect(percentDone(0, 0)).toBe(0);
   });
 });

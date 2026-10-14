@@ -415,7 +415,8 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   references shift with them (`=A1` copied one row down becomes `=A2`). A paste of a cut moves the cells: their
   old place is cleared and every formula pointing at them follows them.
 - **Paste** from elsewhere reads an HTML table (from Google Sheets, Excel, a web page: values, bold, italic,
-  colours and alignment) or tab-separated, comma-separated or plain text (a line a row). Values are read as if
+  colours and alignment) or tab-separated, comma-separated or plain text (a line a row). Commas split columns
+  only across two lines or more that split alike: one line, like "Thanks, Sam", stays in one cell. Values are read as if
   typed.
 - A paste into a selection larger than what was copied, whose size is a whole multiple of it, repeats it to fill.
 - A paste past the grid's edge grows the grid, up to its limit; a paste past the limit is cut at it, and says so.
@@ -882,7 +883,9 @@ not in Sheet Settings, not anywhere.
 
 ## CSV
 
-- **Import CSV…** (Sheet Settings) opens a file picker for a `.csv` or `.tsv`; on a sheet with filled cells it asks
+- **Import CSV…** (Sheet Settings) opens a file picker for a `.csv` or `.tsv`, read as tab-separated when its first
+  line holds a tab, semicolon-separated when it holds semicolons and no comma (Excel's CSV where the decimal mark is a
+  comma), else comma-separated; on a sheet with filled cells it asks
   first: **Replace Sheet**, **Insert at Selection** or **Cancel**. Values are read as if typed; the grid grows to fit,
   up to its limit (past it: "Imported the first 10,000 rows").
 - Dropping a `.csv` on the canvas in Plan mode places a new sheet with it (above).

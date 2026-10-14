@@ -3,11 +3,18 @@ import { SHEET_COLS_MAX, SHEET_ROWS_MAX } from './limits';
 
 export type ParsedCsv = { rows: string[][]; truncated: boolean };
 
-// Rows of fields. `sep` defaults to a tab when the first line holds one, else a comma.
+// Rows of fields. `sep` defaults to a tab when the first line holds one, a semicolon when it holds semicolons and
+// no comma (Excel's CSV in locales whose decimal mark is a comma), else a comma.
 export function parseCsv(text: string, sep?: string): ParsedCsv {
   const body = text.startsWith('﻿') ? text.slice(1) : text;
   const firstLine = body.slice(0, body.search(/\r?\n|$/));
-  const d = sep ?? (firstLine.includes('\t') ? '\t' : ',');
+  const d =
+    sep ??
+    (firstLine.includes('\t')
+      ? '\t'
+      : firstLine.includes(';') && !firstLine.includes(',')
+        ? ';'
+        : ',');
   const rows: string[][] = [];
   let row: string[] = [];
   let field = '';

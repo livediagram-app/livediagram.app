@@ -35,6 +35,7 @@ import {
   boardTypeCounts,
   dueCounts,
   overWipColumns,
+  percentDone,
 } from '@livediagram/plan-art';
 import { OVERDUE_RED, PHASE_COLOURS } from '../views/view-frame';
 import { CountBadge } from '@livediagram/ui';
@@ -165,9 +166,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
           </span>
         );
       }
-      const pct = projection.total
-        ? Math.round((projection.doneCount / projection.total) * 100)
-        : 0;
+      const pct = percentDone(projection.doneCount, projection.total);
       return (
         <span
           className={`${WIDGET_PILL} pl-1.5`}

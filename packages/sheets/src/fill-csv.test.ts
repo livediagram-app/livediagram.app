@@ -69,6 +69,19 @@ describe('CSV', () => {
     expect(parseCsv('').rows).toEqual([]);
     expect(parseCsv('x').rows).toEqual([['x']]);
   });
+
+  it('reads a semicolon-separated file, as Excel writes it where the decimal mark is a comma', () => {
+    expect(parseCsv('Name;Amount\nTea;3,50\n').rows).toEqual([
+      ['Name', 'Amount'],
+      ['Tea', '3,50'],
+    ]);
+    // A comma on the first line keeps it comma-separated, semicolons and all.
+    expect(parseCsv('a,b;c\n1,2').rows).toEqual([
+      ['a', 'b;c'],
+      ['1', '2'],
+    ]);
+  });
+
   it('cuts at the limits', () => {
     expect(parseCsv(`${'a,'.repeat(250)}a`).rows[0]).toHaveLength(200);
     const big = parseCsv('1\n'.repeat(10_005));

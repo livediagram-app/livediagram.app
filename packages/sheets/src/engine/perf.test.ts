@@ -91,5 +91,7 @@ describe('performance', () => {
     expect(full).toBeLessThan(400 * CI_FACTOR);
     expect(change).toBeLessThan(100 * CI_FACTOR);
     expect(small).toBeLessThan(5 * CI_FACTOR);
-  });
+    // The budgets above are CPU time; the wall clock only bounds a hung run. On a loaded CI runner
+    // building the 50,000-cell sheet outran vitest's default 5 s while its CPU budget still held.
+  }, 30_000);
 });
