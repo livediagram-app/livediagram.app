@@ -35,7 +35,10 @@ beforeEach(() => {
   vi.stubGlobal(
     'Path2D',
     class {
-      constructor(public d: string) {}
+      d: string;
+      constructor(d: string) {
+        this.d = d;
+      }
     },
   );
 });

@@ -59,44 +59,44 @@ export function poseAt(anim: MotionAnim, p: number): MotionPose {
         ...REST,
         ty: y * p,
         scale: 0.8 + 0.3 * p,
-        opacity: track([0, 0], [0.15, 1], [0.7, 0.8], [1, 0])(p, linear),
+        opacity: through([0, 0], [0.15, 1], [0.7, 0.8], [1, 0])(p, linear),
       };
     case 'wander': {
       const at = (vals: readonly number[]) =>
-        track(...vals.map((v, i) => [i / 4, v] as const))(p, easeInOut);
+        through(...vals.map((v, i) => [i / 4, v] as const))(p, easeInOut);
       return { ...REST, tx: at([0, x, x * 0.4, -x * 0.8, 0]), ty: at([0, -y, y, y * 0.3, 0]) };
     }
     case 'spread':
       return {
         ...REST,
         scale: 0.05 + 0.95 * spreadOut(p),
-        opacity: track([0, 0], [0.12, 1], [1, 0])(p, spreadOut),
+        opacity: through([0, 0], [0.12, 1], [1, 0])(p, spreadOut),
       };
     case 'twinkle':
       return {
         ...REST,
-        scale: track([0, 0.7], [0.5, 1], [1, 0.7])(p, easeInOut),
-        opacity: track([0, 0.25], [0.5, 1], [1, 0.25])(p, easeInOut),
+        scale: through([0, 0.7], [0.5, 1], [1, 0.7])(p, easeInOut),
+        opacity: through([0, 0.25], [0.5, 1], [1, 0.25])(p, easeInOut),
       };
     case 'float':
       return {
         ...REST,
-        tx: track([0, 0], [0.5, x], [1, 0])(p, easeInOut),
-        ty: track([0, 0], [0.5, y], [1, 0])(p, easeInOut),
-        scale: track([0, 1], [0.5, 1.12], [1, 1])(p, easeInOut),
-        opacity: track([0, 0.75], [0.5, 1], [1, 0.75])(p, easeInOut),
+        tx: through([0, 0], [0.5, x], [1, 0])(p, easeInOut),
+        ty: through([0, 0], [0.5, y], [1, 0])(p, easeInOut),
+        scale: through([0, 1], [0.5, 1.12], [1, 1])(p, easeInOut),
+        opacity: through([0, 0.75], [0.5, 1], [1, 0.75])(p, easeInOut),
       };
     case 'pulse':
       return {
         ...REST,
-        scale: track([0, 0.55], [0.5, 1.15], [1, 0.55])(p, easeInOut),
-        opacity: track([0, 0.35], [0.5, 1], [1, 0.35])(p, easeInOut),
+        scale: through([0, 0.55], [0.5, 1.15], [1, 0.55])(p, easeInOut),
+        opacity: through([0, 0.35], [0.5, 1], [1, 0.35])(p, easeInOut),
       };
   }
 }
 
 // One property through its keyframes (offset, value), eased within each step as CSS eases them.
-function track(...frames: (readonly [number, number])[]) {
+function through(...frames: (readonly [number, number])[]) {
   return (p: number, ease: Easing): number => {
     for (let i = 1; i < frames.length; i += 1) {
       const [o1, v1] = frames[i]!;
