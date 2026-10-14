@@ -11,7 +11,7 @@ import {
   type Sheet,
   type SheetWrite,
 } from '@livediagram/sheets';
-import { buildDesign, type SheetDesignInput } from './sheet-design';
+import { buildDesign, darkCanvas, type SheetDesignInput } from './sheet-design';
 import { buildSheetChange } from './sheet-change-build';
 
 let n = 1;
@@ -69,6 +69,7 @@ const BUDGET: SheetDesignInput = {
       items: [
         { label: 'Left over', value: '=B7-C7', kind: 'result', format: 'currency' },
         { label: 'Savings goal', value: 300, kind: 'input' },
+        { label: 'Months', value: 12 },
       ],
     },
     { kind: 'note', text: 'Figures in pounds.' },
@@ -82,7 +83,7 @@ describe('a design', () => {
     if (!built.ok) throw new Error(built.message);
     expect(built.line).toBe(
       'laid out "Household Budget" in banded, emerald: table "Category…" header A4:F4, rows A5:F6, total A7:F7; ' +
-        'fields A10:B11 (values in B); note A13; a chart',
+        'fields A10:B12 (values in B); note A14; a chart',
     );
     const s = laid(wb, sheet, built.writes);
     const cell = (r: number, c: number) =>
@@ -98,7 +99,8 @@ describe('a design', () => {
     expect(wb.value(sheet.id, 6, 1)).toBe(1600);
     expect(wb.value(sheet.id, 9, 0)).toBe('Left over');
     expect(wb.value(sheet.id, 9, 1)).toBe(-50);
-    expect(wb.value(sheet.id, 12, 0)).toBe('Figures in pounds.');
+    expect(wb.value(sheet.id, 11, 1)).toBe(12);
+    expect(wb.value(sheet.id, 13, 0)).toBe('Figures in pounds.');
     // The heading spans the design, the header is frozen, the columns fitted.
     expect(posRangeOf(s.layout, s.layout.merges![0]!)).toEqual({ r1: 0, c1: 0, r2: 0, c2: 5 });
     expect(s.layout.frozenRows).toBe(4);
@@ -174,6 +176,24 @@ describe('a design', () => {
     expect(laid(wb, sheet, built.writes).layout.frozenRows ?? 0).toBe(0);
   });
 
+  it('fits nothing when only a note holds text, and knows a dark canvas', () => {
+    const { wb, sheet } = blankBook();
+    const built = buildDesign(
+      wb,
+      sheet.id,
+      { heading: '', blocks: [{ kind: 'note', text: 'Only a note' }] },
+      { dark: false },
+      rand,
+    );
+    if (!built.ok) throw new Error(built.message);
+    expect(laid(wb, sheet, built.writes).layout.colSize ?? {}).toEqual({});
+    expect([darkCanvas(undefined), darkCanvas('#ffffff'), darkCanvas('#0f172a')]).toEqual([
+      false,
+      false,
+      true,
+    ]);
+  });
+
   it('refuses what it cannot lay out, in words', () => {
     const refusal = (design: SheetDesignInput, cols?: number) => {
       const { wb, sheet } = blankBook(cols);
@@ -210,6 +230,12 @@ describe('a design', () => {
         blocks: [{ kind: 'fields', items: [{ label: 'x', value: 1, format: 'nope' }] }],
       }),
     ).toBe(`format_invalid: "x"'s format is not one a cell takes.`);
+    expect(
+      refusal({
+        heading: 'H',
+        blocks: [{ kind: 'fields', heading: 'S', items: [{ label: 'x', value: '=1+' }] }],
+      }),
+    ).toMatch(/^formula_invalid: The formula in B5 cannot be read/);
     expect(refusal(table({}), 1)).toBe(
       'sheet_too_large: The design is 2 columns wide; the sheet has 1.',
     );

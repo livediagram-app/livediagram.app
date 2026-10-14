@@ -21,7 +21,9 @@ const SHEET_EL = {
   planSheet: { sheetId: 'sheet_blank1' },
 };
 
-function setup(opts: { background?: string; elements?: unknown[] } = {}): {
+function setup(
+  opts: { background?: string; elements?: unknown[]; changesets?: (r: Request) => Response } = {},
+): {
   api: ApiClient;
   server: SheetServer;
   sent: { operations: { op: string; element: Record<string, unknown> }[] }[];
@@ -42,6 +44,7 @@ function setup(opts: { background?: string; elements?: unknown[] } = {}): {
         },
       },
       [`/documents/${DOC_A}/tabs/${ONE}/changesets`]: async (r: Request) => {
+        if (opts.changesets) return opts.changesets(r);
         sent.push(await r.json());
         return Response.json({ changeset: { id: 'cs', rev: 4 } });
       },
@@ -184,6 +187,62 @@ describe('a design through change_sheet', () => {
   });
 });
 
+describe('charts through change_sheet', () => {
+  const twoTables: SheetDesignInput = {
+    heading: 'Two',
+    blocks: [
+      { kind: 'table', head: ['A', 'B'], rows: [['x', 1]], chart: { type: 'bar' } },
+      {
+        kind: 'table',
+        head: ['C', 'D'],
+        rows: [['y', 2]],
+        chart: { type: 'pie', columns: ['C', 'D'] },
+      },
+    ],
+  };
+
+  it('places every chart of a change in one changeset', async () => {
+    const { api, sent } = setup();
+    const result = await changeSheet(
+      api,
+      DOC_A,
+      { sheet: 'Sheet 1', changes: [{ op: 'design', design: twoTables }] },
+      'mcp',
+    );
+    expect(result.applied[0]).toMatch(/; 2 charts$/);
+    expect(result.applied[1]).toBe('placed 2 charts');
+    expect(sent[0]).toMatchObject({ summary: 'Add 2 charts' });
+    expect(sent[0]!.operations[1]!.element.chartSource).toMatchObject({ cols: expect.any(Array) });
+  });
+
+  it('says when the tab refuses its charts, and lets any other failure through', async () => {
+    const refused = setup({
+      changesets: () => Response.json({ error: 'conflict', message: 'Busy' }, { status: 409 }),
+    });
+    const result = await changeSheet(
+      refused.api,
+      DOC_A,
+      { sheet: 'Sheet 1', changes: [{ op: 'design', design: DESIGN }] },
+      'mcp',
+    );
+    expect(result.applied).toHaveLength(1);
+    expect(result.refusal).toBeDefined();
+    const broken = setup({
+      changesets: () => {
+        throw new Error('network');
+      },
+    });
+    await expect(
+      changeSheet(
+        broken.api,
+        DOC_A,
+        { sheet: 'Sheet 1', changes: [{ op: 'design', design: DESIGN }] },
+        'mcp',
+      ),
+    ).rejects.toThrow('network');
+  });
+});
+
 describe('a design through add_sheet', () => {
   it('makes a Sheet as large as its cells, with its charts in the same changeset', async () => {
     const { api, sent } = setup();
@@ -211,8 +270,8 @@ describe('a design through add_sheet', () => {
     expect(result.filled).toBe('A1:J5');
     const ops = sent[0]!.operations;
     expect(ops.map((o) => o.element.shape)).toEqual(['plan-sheet', 'line-chart']);
-    // Ten columns of 200 px and one more, past its row numbers.
-    expect(ops[0]!.element.width).toBe(46 + 10 * 200 > 1800 ? 1800 : 46 + 10 * 200);
+    // Ten columns of 200 px and one more, past its row numbers, is past the largest a new Sheet is made.
+    expect(ops[0]!.element.width).toBe(1800);
     expect(ops[1]!.element).toMatchObject({ chartSource: { sheetId: result.sheetId } });
   });
 

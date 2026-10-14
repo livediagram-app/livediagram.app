@@ -191,7 +191,8 @@ export function sheetChartElements(
       sheetAnchor: ch.anchor,
       ...(ch.palette ? { chartPalette: ch.palette } : {}),
     };
-    const table = sheetChartTable(wb, source, wb.locale) ?? { categories: [], series: [] };
+    // Its range was just read from this workbook, so it reads.
+    const table = sheetChartTable(wb, source, wb.locale)!;
     return {
       ...base,
       ...chartFieldsFromTable(base, table),

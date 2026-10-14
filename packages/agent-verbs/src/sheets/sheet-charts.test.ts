@@ -12,7 +12,12 @@ function book() {
     id: 'sheet_chart1',
     tabId: 'tab',
     title: 'C',
-    layout: { ...layout, colSize: { [layout.cols[0]!]: 200 }, hiddenRows: [layout.rows[1]!] },
+    layout: {
+      ...layout,
+      colSize: { [layout.cols[0]!]: 200 },
+      hiddenRows: [layout.rows[1]!],
+      hiddenCols: [layout.cols[6]!],
+    },
     cells: new Map(),
     rev: 0,
     createdAt: 0,
@@ -64,7 +69,9 @@ describe('a chart over cells', () => {
     );
   });
 
-  it('anchors at A1 with nothing before it', () => {
+  it('anchors at A1 with nothing before it, and passes hidden columns by', () => {
     expect(anchorAt(book().sheet.layout, [0, 0])).toEqual({ x: 0, y: 0 });
+    // A at 200, B to F at 120 each, G hidden.
+    expect(anchorAt(book().sheet.layout, [0, 7]).x).toBe(200 + 5 * 120);
   });
 });

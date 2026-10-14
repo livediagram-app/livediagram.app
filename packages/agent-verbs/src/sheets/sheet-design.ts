@@ -28,7 +28,7 @@ import {
   type StarterCell,
   type AgentValue,
 } from '@livediagram/sheets';
-import type { ChartType } from '@livediagram/document';
+import { isLightColor, type ChartType } from '@livediagram/document';
 import { formatPatchOf, type SheetFormatInput } from './sheet-change-build';
 import { buildRuleChange } from './sheet-rule-change';
 import { designCharts, type SheetChartOut } from './sheet-charts';
@@ -89,6 +89,10 @@ export type SheetDesignInput = {
 export type DesignBuilt =
   { ok: true; writes: SheetWrite[]; line: string; charts: SheetChartOut[] } | SheetRefusal;
 
+// Whether a tab's canvas is dark (a design is tinted for it); a tab with no colour of its own is light.
+export const darkCanvas = (background: string | undefined): boolean =>
+  !!background && !isLightColor(background);
+
 // The accent and look a design takes when it names none.
 export const DESIGN_ACCENT_DEFAULT: SheetAccent = 'blue';
 export const DESIGN_LOOK_DEFAULT: SheetLook = 'banded';
@@ -137,7 +141,7 @@ function blockLines(blocks: readonly DesignBlock[]): string[] {
       const total = b.total
         ? `, total ${first}${r + 2 + b.rows.length}:${last}${r + 2 + b.rows.length}`
         : '';
-      return `table "${b.head[0] ?? ''}…" header ${first}${r + 1}:${last}${r + 1}${body}${total}`;
+      return `table "${b.head[0]!}…" header ${first}${r + 1}:${last}${r + 1}${body}${total}`;
     }
     if (b.kind === 'fields') {
       const top = r + (b.heading ? 2 : 1);
@@ -301,15 +305,14 @@ export function buildDesign(
   const bad = badFormula(wb, sheetId, design);
   if (bad) return bad;
   const look = input.look ?? DESIGN_LOOK_DEFAULT;
+  // badFormula read every formula and the columns fit, so the write is made.
   const made = designWrite(
     wb,
     sheetId,
     design,
     { look, freezeHeader: true, size: 'default', dark: opts.dark },
     rand,
-  );
-  // badFormula read every formula, and the columns fit, so only a value no cell takes is left to refuse.
-  if (!made) return refuse('write_invalid', 'A value of the design cannot be written to a cell.');
+  )!;
   // The sheet as the design leaves it, to fit widths and build rules against.
   const scratch = new Workbook({ sheets: wb.sheetList(), locale: wb.locale });
   const writes: SheetWrite[] = [];

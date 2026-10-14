@@ -14,9 +14,9 @@ import {
   type TabRecord,
   type TabResponse,
 } from '@livediagram/api-schema';
-import { isLightColor } from '@livediagram/document';
 import { tabPath } from '../verbs/shared';
 import { sheetChartElements, type SheetChartOut } from './sheet-charts';
+import { darkCanvas } from './sheet-design';
 import {
   applySheetWrite,
   documentCellCount,
@@ -145,7 +145,8 @@ export async function applySheetChanges(
   return { applied, rev, charts };
 }
 
-// The charts changes made, added to the sheet's tab over its Sheet element in one changeset, each with its first read.
+// The charts changes made (one or more), added to the sheet's tab over its Sheet element in one changeset, each with
+// its first read.
 // A tab with no Sheet framing the sheet takes none, and says so.
 export async function placeSheetCharts(
   api: ApiClient,
@@ -155,8 +156,7 @@ export async function placeSheetCharts(
   sheetId: string,
   charts: readonly SheetChartOut[],
   client: 'mcp' | 'cli',
-): Promise<string | null> {
-  if (charts.length === 0) return null;
+): Promise<string> {
   const frame = tab.elements.find(
     (el) =>
       el.type === 'shape' &&
@@ -195,7 +195,7 @@ export async function changeSheet(
   // A design is tinted for its tab's canvas, and charts go on the tab: read it only when a change needs it.
   const needsTab = input.changes.some((c) => c.op === 'design' || c.op === 'chart');
   const tab = needsTab ? (await api.json<TabResponse>(tabPath(documentId, tabId))).tab : null;
-  const dark = !!tab?.backgroundColor && !isLightColor(tab.backgroundColor);
+  const dark = darkCanvas(tab?.backgroundColor);
   const { charts, ...result } = await applySheetChanges(
     api,
     documentId,
@@ -209,8 +209,7 @@ export async function changeSheet(
   );
   if (tab && charts.length) {
     try {
-      const line = await placeSheetCharts(api, documentId, tab, wb, id, charts, client);
-      if (line) result.applied.push(line);
+      result.applied.push(await placeSheetCharts(api, documentId, tab, wb, id, charts, client));
     } catch (err) {
       const refusal = apiRefusalOf(err);
       if (!refusal) throw err;

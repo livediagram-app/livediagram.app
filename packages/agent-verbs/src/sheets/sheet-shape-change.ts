@@ -129,7 +129,8 @@ export function buildShapeChange(wb: Workbook, sheetId: string, change: SheetSha
       const made = mergeRange(sheet, range, change.across ? 'across' : 'all');
       if (!made)
         return refuse('range_invalid', `${formatRange(range)} is one cell, or past the sheet.`);
-      const cleared = (made.write as { cells?: readonly CellChange[] }).cells?.length ?? 0;
+      // A merge's write lists the cells it clears (none, often).
+      const cleared = (made.write as { cells: readonly CellChange[] }).cells.length;
       return {
         ok: true,
         writes: [made.write],

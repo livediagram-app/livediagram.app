@@ -126,8 +126,8 @@ function formatsCopied(
   source: number,
   ids: readonly string[],
 ): CellChange[] {
-  const id = (axis === 'r' ? sheet.layout.rows : sheet.layout.cols)[source];
-  if (!id) return [];
+  // The insert was checked against the sheet, so its neighbour is one of its rows (columns).
+  const id = (axis === 'r' ? sheet.layout.rows : sheet.layout.cols)[source]!;
   const out: CellChange[] = [];
   for (const [key, cell] of sheet.cells) {
     if (!cell.format) continue;

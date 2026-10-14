@@ -30,7 +30,14 @@ describe('chartsReadLive', () => {
       chartSource: { sheetId: 'gone', range },
     } as Element;
     const box = createShape('square', 0, 0) as Element;
-    const [live, untouched, plain] = chartsReadLive([stale, other, box], [sheet]);
+    const line = {
+      id: 'a',
+      type: 'arrow',
+      from: { x: 0, y: 0 },
+      to: { x: 1, y: 1 },
+    } as unknown as Element;
+    const [live, untouched, plain, arrow] = chartsReadLive([stale, other, box, line], [sheet]);
+    expect(arrow).toBe(line);
     expect((live as { pieSlices: unknown }).pieSlices).toMatchObject([
       { label: 'North', value: 10 },
       { label: 'South', value: 30 },

@@ -19,7 +19,6 @@ import {
   SHEET_HEADER_H,
   SHEET_ROW_HEAD_W,
   createShape,
-  isLightColor,
 } from '@livediagram/document';
 import { placeBeside } from '@livediagram/items';
 import {
@@ -50,7 +49,7 @@ import { apiRefusalOf } from '../plan/api-refusal';
 import { tabPath } from '../verbs/shared';
 import { capsRefusal, sendSheetWrite } from './change-sheet';
 import { readSheets, sheetsPath, type SheetRefusal } from './sheet-state';
-import { buildDesign, type SheetDesignInput } from './sheet-design';
+import { buildDesign, darkCanvas, type SheetDesignInput } from './sheet-design';
 import { sheetChartElements, type SheetChartOut } from './sheet-charts';
 
 // A Sheet's chrome round its cells (its row numbers; its title bar and column letters), and the largest a new Sheet is
@@ -139,17 +138,19 @@ function firstCells(
 }
 
 // The range a laid-out sheet fills, A1 to its last cell with an input, in A1.
-function filledExtent(sheet: Sheet): string | null {
+function filledExtent(sheet: Sheet): string {
   const ix = layoutIndex(sheet.layout);
   let r2 = -1;
   let c2 = -1;
   for (const [key, cell] of sheet.cells) {
     if (!cell.input) continue;
     const { r, c } = splitCellKey(key);
-    r2 = Math.max(r2, ix.rowPos.get(r) ?? -1);
-    c2 = Math.max(c2, ix.colPos.get(c) ?? -1);
+    // A stored cell's row and column are the sheet's.
+    r2 = Math.max(r2, ix.rowPos.get(r)!);
+    c2 = Math.max(c2, ix.colPos.get(c)!);
   }
-  return r2 < 0 ? null : formatRange({ r1: 0, c1: 0, r2, c2 });
+  // A design's heading is always written, so A1 at least.
+  return formatRange({ r1: 0, c1: 0, r2: Math.max(0, r2), c2: Math.max(0, c2) });
 }
 
 export async function addSheet(
@@ -188,7 +189,7 @@ export async function addSheet(
     const background = input.design
       ? (await api.json<TabResponse>(tabPath(documentId, tabId))).tab.backgroundColor
       : undefined;
-    const dark = !!background && !isLightColor(background);
+    const dark = darkCanvas(background);
     const first = firstCells(input, onTab.map(sheetFromJson), blank, dark, rand);
     if ('ok' in first) return first;
     if (first.writes.length) {

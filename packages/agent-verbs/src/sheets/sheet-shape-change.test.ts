@@ -81,6 +81,9 @@ describe('sizes', () => {
     expect(code(b, { op: 'resize', px: 100 })).toBe('write_invalid');
     expect(code(b, { op: 'resize', cols: 'A', rows: '1', px: 100 })).toBe('write_invalid');
     expect(code(b, { op: 'resize', cols: 'A', px: 4 })).toBe('write_invalid');
+    expect(b.run({ op: 'resize', rows: '1', px: 4 })).toMatchObject({
+      message: 'Give px, 18 to 2000.',
+    });
     expect(code(b, { op: 'resize', cols: 'A' })).toBe('write_invalid');
     expect(code(b, { op: 'resize', rows: '2', fit: true })).toBe('write_invalid');
     expect(code(b, { op: 'resize', cols: '9', px: 100 })).toBe('range_invalid');
