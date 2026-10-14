@@ -69,7 +69,6 @@ export function EditorCanvasHost() {
     activeLayerId,
     layerInertIds,
     layerCounts,
-    avatarPanelPosition,
     laserPanelPosition,
     spotlightPanelPosition,
     setSpotlightPanelPosition,
@@ -85,7 +84,6 @@ export function EditorCanvasHost() {
     laserConfig,
     onChangeLaserField,
     setLaserPanelPosition,
-    setAvatarPanelPosition,
     toggleRecentExclusion,
     favouriteIds,
     toggleFavourite,
@@ -163,6 +161,7 @@ export function EditorCanvasHost() {
     beginPath,
     broadcastAvatar,
     broadcastAvatarPush,
+    broadcastAvatarSay,
     avatarShove,
     fireReaction,
     pressFocusButton,
@@ -663,6 +662,7 @@ export function EditorCanvasHost() {
               // Avatar mode (docs/specs/008-canvas/avatar-mode.md): clicking a peer's character walks over and
               // shoves it; their own client decides what to do with the request.
               onAvatarPush={broadcastAvatarPush}
+              onAvatarSay={broadcastAvatarSay}
               avatarShove={avatarShove}
               onFireReaction={can.takePart ? fireReaction : undefined}
               // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is live for view-role visitors too: it mutates
@@ -892,7 +892,6 @@ export function EditorCanvasHost() {
               onToggleRecentExclusion={toggleRecentExclusion}
               favouriteIds={favouriteIds}
               onToggleFavourite={toggleFavourite}
-              avatarPanelPosition={avatarPanelPosition}
               laserPanelPosition={laserPanelPosition}
               spotlightPanelPosition={spotlightPanelPosition}
               eraserPanelPosition={eraserPanelPosition}
@@ -932,8 +931,6 @@ export function EditorCanvasHost() {
               onChangeLaserField={onChangeLaserField}
               onMoveLaserPanel={(x, y) => setLaserPanelPosition({ x, y })}
               onResetLaserPanel={() => setLaserPanelPosition(null)}
-              onMoveAvatarPanel={(x, y) => setAvatarPanelPosition({ x, y })}
-              onResetAvatarPanel={() => setAvatarPanelPosition(null)}
               voteResults={voteResults}
               onJumpToVoteResult={jumpToVoteResult}
               // A vote's starter is not its host while somebody else facilitates: every control would be refused.
