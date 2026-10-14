@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   THEMES,
@@ -22,6 +22,7 @@ import {
   PLACEHOLDER_INK_CONTRAST,
   PLACEHOLDER_LABEL_MAX_PX,
   PLACEHOLDER_LABEL_MIN_PX,
+  imageEmptyLayout,
   imagePlaceholderMetrics,
   imagePlaceholderTone,
   placeholderThemeInk,
@@ -32,6 +33,8 @@ import {
 
 const blob = vi.hoisted(() => ({ state: { status: 'idle' } as { status: string } }));
 vi.mock('@/hooks/persistence/useImageBlobUrl', () => ({ useImageBlobUrl: () => blob.state }));
+const track = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/telemetry', () => ({ track }));
 
 const image = (over: Partial<ImageElement> = {}): ImageElement =>
   ({
@@ -47,10 +50,18 @@ const image = (over: Partial<ImageElement> = {}): ImageElement =>
 
 function draw(
   el: ImageElement,
-  { canvas = 'light', page, canOpenPicker = true, theme = null, fontFamily } = {} as {
+  {
+    canvas = 'light',
+    page,
+    onOpenPicker = () => {},
+    canPick = true,
+    theme = null,
+    fontFamily,
+  } = {} as {
     canvas?: 'light' | 'dark';
     page?: 'light' | 'dark';
-    canOpenPicker?: boolean;
+    onOpenPicker?: (id: string) => void;
+    canPick?: boolean;
     theme?: ThemeDefinition | null;
     fontFamily?: string;
   },
@@ -64,7 +75,7 @@ function draw(
             ownerId="o"
             documentId="d"
             shareCode={null}
-            canOpenPicker={canOpenPicker}
+            onOpenPicker={canPick ? onOpenPicker : undefined}
             fontFamily={fontFamily}
           />
         </PageSurfacesProvider>
@@ -92,7 +103,7 @@ describe('image placeholder ink', () => {
     expect(el.dataset.imagePlaceholder).toBe('light');
     expect(el.style.getPropertyValue('--ph-ink')).toBe(IMAGE_PLACEHOLDER_TONE.light.ink);
     expect(el.style.getPropertyValue('--ph-body')).toBe(IMAGE_PLACEHOLDER_TONE.light.body);
-    expect(getByText('Double-click to upload')).toBeTruthy();
+    expect(getByText('No image yet')).toBeTruthy();
     // No chrome-driven variant left to flip it back.
     expect(el.className).not.toMatch(/\bdark:/);
   });
@@ -112,9 +123,10 @@ describe('image placeholder ink', () => {
     expect(box(draw(image(), { canvas: 'dark' }).container).dataset.imagePlaceholder).toBe('dark');
   });
 
-  it('says No image, with no hover tint, to someone who cannot pick one', () => {
-    const { container, getByText } = draw(image(), { canOpenPicker: false });
-    expect(getByText('No image')).toBeTruthy();
+  it('shows the face with no button and no hover tint to someone who cannot pick one', () => {
+    const { container, getByText, queryByRole } = draw(image(), { canPick: false });
+    expect(getByText('No image yet')).toBeTruthy();
+    expect(queryByRole('button')).toBeNull();
     expect(box(container).className).not.toContain('hover:');
   });
 
@@ -129,15 +141,101 @@ describe('image placeholder ink', () => {
     expect(box(container).style.color).toBe('rgb(190, 18, 60)'); // IMAGE_BROKEN_TONE.light.ink
   });
 
-  it('sizes the hint to the box', () => {
-    const { getByText } = draw(image({ width: 900, height: 400 }));
-    expect(getByText('Double-click to upload').style.fontSize).toBe('40px');
+  it('reads as an empty state, with a Select Image button that opens the picker', () => {
+    const open = vi.fn();
+    const { getByText, getByRole } = draw(image(), { onOpenPicker: open });
+    expect(getByText('No image yet')).toBeTruthy();
+    expect(getByText('Upload one, or pick from your gallery.')).toBeTruthy();
+    fireEvent.click(getByRole('button', { name: 'Select Image' }));
+    expect(open).toHaveBeenCalledWith('img');
+    expect(track).toHaveBeenCalledWith('Element', 'Used', 'ImagePlaceholder');
   });
 
-  it('shows the icon alone, named for assistive tech, in a box too small for the label', () => {
-    const { container, queryByText } = draw(image({ width: 40, height: 40 }));
-    expect(queryByText('Double-click to upload')).toBeNull();
-    expect(box(container).getAttribute('aria-label')).toBe('Double-click to upload');
+  it('keeps a press on the button from reaching the canvas (no drag, no double-click)', () => {
+    const outer = { down: vi.fn(), dbl: vi.fn() };
+    const { getByRole } = render(
+      <div onPointerDown={outer.down} onDoubleClick={outer.dbl}>
+        <ImageElementView
+          element={image()}
+          ownerId="o"
+          documentId="d"
+          shareCode={null}
+          onOpenPicker={() => {}}
+        />
+      </div>,
+    );
+    const button = getByRole('button', { name: 'Select Image' });
+    fireEvent.pointerDown(button);
+    fireEvent.doubleClick(button);
+    expect(outer.down).not.toHaveBeenCalled();
+    expect(outer.dbl).not.toHaveBeenCalled();
+  });
+
+  it('scales the face up with a big box', () => {
+    const { getByText } = draw(image({ width: 900, height: 600 }));
+    expect(parseFloat(getByText('No image yet').style.fontSize)).toBeGreaterThan(20);
+  });
+
+  it('makes the badge the button on a small avatar', () => {
+    const open = vi.fn();
+    const { container, getByRole, queryByText } = draw(
+      image({ width: 64, height: 64, borderRadius: 'full' }),
+      { onOpenPicker: open },
+    );
+    expect(box(container).dataset.imageEmpty).toBe('badge');
+    expect(queryByText('No image yet')).toBeNull();
+    fireEvent.click(getByRole('button', { name: 'Select Image' }));
+    expect(open).toHaveBeenCalledWith('img');
+  });
+
+  it('names a lone badge for assistive tech when there is no button', () => {
+    const { container } = draw(image({ width: 40, height: 40 }), { canPick: false });
+    expect(box(container).getAttribute('aria-label')).toBe('No image yet');
+  });
+});
+
+describe('imageEmptyLayout', () => {
+  const pick = { canPick: true, round: false };
+  it('shows the whole face where it fits, at no less than its own size', () => {
+    expect(imageEmptyLayout(300, 220, pick)).toEqual({
+      kind: 'face',
+      scale: 1,
+      parts: { title: true, line: true, button: true },
+    });
+  });
+
+  it('drops the line, then the heading, as the box shrinks', () => {
+    expect(imageEmptyLayout(160, 150, pick)).toMatchObject({
+      parts: { title: true, line: false, button: true },
+    });
+    expect(imageEmptyLayout(140, 120, pick)).toMatchObject({
+      parts: { title: false, line: false, button: true },
+    });
+    expect(imageEmptyLayout(60, 60, pick)).toMatchObject({ kind: 'badge' });
+  });
+
+  it('fits a round box in its inscribed square', () => {
+    expect(imageEmptyLayout(200, 200, pick)).toMatchObject({ parts: { line: true } });
+    expect(imageEmptyLayout(200, 200, { canPick: true, round: true })).toMatchObject({
+      parts: { line: false },
+    });
+  });
+
+  it('grows with the box, within its cap', () => {
+    const big = imageEmptyLayout(1200, 800, pick);
+    expect(big.kind === 'face' && big.scale).toBeGreaterThan(2);
+    const huge = imageEmptyLayout(10000, 10000, pick);
+    expect(huge.kind === 'face' && huge.scale).toBe(3);
+  });
+
+  it('shows only the heading to someone who cannot pick', () => {
+    expect(imageEmptyLayout(300, 220, { canPick: false, round: false })).toMatchObject({
+      parts: { title: true, line: false, button: false },
+    });
+  });
+
+  it('treats a degenerate box as a small badge, never NaN', () => {
+    expect(imageEmptyLayout(-5, 0, pick)).toEqual({ kind: 'badge', badgePx: 12 });
   });
 });
 
@@ -191,8 +289,14 @@ describe('image placeholder contrast', () => {
       it(`reads on ${surface} paper in the ${t.id} theme`, () => {
         const tone = imagePlaceholderTone(surface, placeholderThemeInk(t));
         expect(contrastRatio(tone.ink, tone.body)).toBeGreaterThanOrEqual(PLACEHOLDER_INK_CONTRAST);
-        expect(contrastRatio(tone.hoverInk, tone.body)).toBeGreaterThanOrEqual(
+        expect(contrastRatio(tone.muted, tone.body)).toBeGreaterThanOrEqual(
           PLACEHOLDER_INK_CONTRAST,
+        );
+        expect(contrastRatio(tone.onAccent, tone.accent)).toBeGreaterThanOrEqual(
+          PLACEHOLDER_INK_CONTRAST,
+        );
+        expect(contrastRatio(tone.accent, tone.body)).toBeGreaterThanOrEqual(
+          PLACEHOLDER_BORDER_CONTRAST,
         );
         expect(contrastRatio(tone.border, tone.body)).toBeGreaterThanOrEqual(
           PLACEHOLDER_BORDER_CONTRAST,
@@ -212,8 +316,14 @@ describe('image placeholder contrast', () => {
       for (const surface of ['light', 'dark'] as const) {
         const tone = imagePlaceholderTone(surface, ink);
         expect(contrastRatio(tone.ink, tone.body)).toBeGreaterThanOrEqual(PLACEHOLDER_INK_CONTRAST);
-        expect(contrastRatio(tone.hoverInk, tone.body)).toBeGreaterThanOrEqual(
+        expect(contrastRatio(tone.muted, tone.body)).toBeGreaterThanOrEqual(
           PLACEHOLDER_INK_CONTRAST,
+        );
+        expect(contrastRatio(tone.onAccent, tone.accent)).toBeGreaterThanOrEqual(
+          PLACEHOLDER_INK_CONTRAST,
+        );
+        expect(contrastRatio(tone.accent, tone.body)).toBeGreaterThanOrEqual(
+          PLACEHOLDER_BORDER_CONTRAST,
         );
         expect(contrastRatio(tone.border, tone.body)).toBeGreaterThanOrEqual(
           PLACEHOLDER_BORDER_CONTRAST,
@@ -225,9 +335,10 @@ describe('image placeholder contrast', () => {
   // Every body is opaque, so the ink is measured against the body alone, whatever lies under it.
   for (const surface of ['light', 'dark'] as const) {
     const t = IMAGE_PLACEHOLDER_TONE[surface];
-    it(`meets AA text contrast on ${surface} paper, at rest and hovered`, () => {
+    it(`meets AA text contrast on ${surface} paper, heading, line and button`, () => {
       expect(contrastRatio(t.ink, t.body)).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
-      expect(contrastRatio(t.hoverInk, t.body)).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
+      expect(contrastRatio(t.muted, t.body)).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
+      expect(contrastRatio(t.onAccent, t.accent)).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
     });
     it(`keeps its dashed outline at 3:1 on ${surface} paper`, () => {
       expect(contrastRatio(t.border, t.body)).toBeGreaterThanOrEqual(3);

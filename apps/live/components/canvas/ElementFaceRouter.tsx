@@ -404,7 +404,7 @@ export function ElementFaceRouter({
             ownerId={imageContext.ownerId}
             documentId={imageContext.documentId}
             shareCode={imageContext.shareCode}
-            canOpenPicker={!!imageContext.onOpenPicker}
+            onOpenPicker={imageContext.onOpenPicker}
             fontFamily={fontFamily}
           />
           {/* A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image. */}

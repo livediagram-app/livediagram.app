@@ -388,8 +388,11 @@ read a 503 as `null` and `{}`.
 
 ## Presentation and UX
 
-- **Placeholder**, editor: dashed slate border, image glyph, "Double-click to upload"; hover
-  tints brand. View role: same box, "No image". `[QB10]`
+- **Placeholder** (`ImageEmptyFace`): the empty state on the canvas: dashed outline, badge with
+  the image glyph and two rings, "No image yet", "Upload one, or pick from your gallery.", a
+  "Select Image" button (opens the picker; stops pointer-down and double-click propagation),
+  scaled and trimmed by `imageEmptyLayout`; a lone badge is the button. View role: badge and
+  "No image yet", no button, no hover tint. `[QB10]`
 - **Loading**: pulsing slate box with the element's radius. **Broken**: rose box, broken glyph,
   "Image unavailable". **Ready**: bitmap on white in every theme (D47), `objectFit` (default
   `contain`), radius from `borderRadius` (default 4 px) (D48).
