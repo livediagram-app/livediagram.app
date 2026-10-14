@@ -156,7 +156,10 @@ export const mcpCreateDocument = mcpTool('create_document', {
   behaviour: 'write',
   title: 'Create a document',
   description:
-    'Create a new document. Each tab takes a "graph" (nodes and edges, laid out in the template look: ' +
+    'Create a new document: a diagram (flowchart, architecture, org chart, mind map, sequence, ER), a whiteboard, a ' +
+    'slide deck or presentation (a tab from the "blank-slide-deck" template, then change_pages adds the slides), an ' +
+    'article or report (write_article), an infographic, a Plan board or a spreadsheet. Each tab takes a "graph" ' +
+    '(nodes and edges, laid out in the template look: ' +
     'sizes, elbows, side exits, loops round the outside, title and key), "mermaid", raw "elements" (the full ' +
     'format is documented inline on the "tabs" argument below) or a "template". ' +
     'Pass one tab, or several to build a multi-tab document in one call (an ' +
@@ -377,7 +380,8 @@ export const mcpChangePages = mcpTool('change_pages', {
   behaviour: 'destructive',
   title: 'Change Illustrate pages',
   description:
-    'Change the pages of a tab in Illustrate mode, in order, as one edit: add {kind, layout, ...} an ' +
+    'Build a slide deck or presentation, an infographic or a logo: change the pages of a tab in Illustrate mode, in ' +
+    'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} an ' +
     'infographic, slide or logo page, set {page, name, size, orientation, background, locked}, layout ' +
     '{page, layout}, move {page, to}, duplicate {page}, delete {page}. A tab in another mode, named by tabId, ' +
     'is switched into Illustrate. The answer gives every page with its rectangle in canvas coordinates, the ' +
@@ -396,7 +400,8 @@ export const mcpWriteArticle = mcpTool('write_article', {
   description:
     'Write an article (a document of text on pages, in Illustrate mode) from Markdown: a new one, or replace ' +
     'or append to one named by id or title, with its look. The editor flows the text onto as many pages as ' +
-    'it needs. read_document with view "pages" shows each article as Markdown to edit and write back.',
+    'it needs. read_document with view "pages" shows each article as Markdown to edit and write back. Not for ' +
+    'slides: an article flows as running text, where a slide deck is slide pages, made with change_pages.',
   inputSchema: writeArticleShape,
   outputSchema: writeArticleOutput,
 });

@@ -310,8 +310,10 @@ elements; write_article writes an article from Markdown, new or over an existing
 one, and the editor flows it onto pages. Asked to write a document, a report or
 a brief, write an article; asked for a deck, add slide pages; asked for a logo,
 add a logo page. A new document for pages starts with create_document and one
-tab whose template is "blank-illustration" (then write_article or change_pages
-on it); the Illustrate templates (article, slide-deck, logo-design, ...) start
+tab whose template is "blank-slide-deck" for a deck (one empty slide; change_pages
+adds the rest, each change an object such as {"op": "add", "kind": "slide",
+"layout": ...}) or "blank-illustration" otherwise (then write_article or
+change_pages on it); the Illustrate templates (article, slide-deck, logo-design, ...) start
 from ready-made pages. A layout's elements hold sample text: read_document with
 view "pages" lists each page's elements with their refs and text, to replace
 with update_document. It also shows each article as Markdown.`;
@@ -695,7 +697,7 @@ const nameField = (what: string, schema: z.ZodString = z.string()) =>
     )
     .transform(truncateName);
 
-const tabShape = z.object({
+export const createDocumentTab = z.object({
   name: nameField(
     'Name of the tab. Optional with a template (its own first tab name is used); otherwise "Tab n".',
   ).optional(),
@@ -716,7 +718,7 @@ export const createDocumentShape = {
   // client with a stale cached schema (or one that just sends `tab`) still works
   // — provide one or the other.
   tabs: z
-    .array(tabShape)
+    .array(createDocumentTab)
     .min(1)
     .max(20)
     .optional()
@@ -724,7 +726,12 @@ export const createDocumentShape = {
       'One or more tabs, each its own canvas. Preferred — pass several to create a multi-tab ' +
         'document in one call (e.g. an overview tab plus a detail tab per subsystem).',
     ),
-  tab: tabShape.optional().describe('A single tab — accepted as an alias for tabs: [tab].'),
+  // The alias is checked against the tab shape by the tool, not listed here a second time: the shape carries the
+  // whole element format, and a definition twice its size is one a client's tool search ranks out of sight.
+  tab: z
+    .unknown()
+    .optional()
+    .describe('A single tab, shaped as one item of "tabs"; accepted as an alias for tabs: [tab].'),
   layout: layoutField,
   theme: themeField,
   finish: finishField,
@@ -758,8 +765,11 @@ export const updateDocumentShape = {
   documentId: z.string().describe('The document to edit (from find_documents / read_document).'),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z
-    .enum(['replace', 'ops'])
-    .describe('"replace" the whole tab, or apply granular "ops" (or "edits").'),
+    .enum(['replace', 'ops', 'edits'])
+    .describe(
+      '"replace" the whole tab, or change it in place: "ops" (an ops list, or "edits" text); "edits" names the same ' +
+        'mode by its text form.',
+    ),
   rev: z
     .number()
     .int()

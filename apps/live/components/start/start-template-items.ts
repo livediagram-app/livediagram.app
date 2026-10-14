@@ -85,6 +85,18 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       kinds: ['meeting-agenda', 'workshop-board', 'town-hall', 'lean-coffee'],
     },
     {
+      id: 'games',
+      name: 'Quizzes & Games',
+      line: 'Quizzes, icebreakers and games to warm up the room.',
+      kinds: [
+        'pub-quiz',
+        'icebreaker-questions',
+        'two-truths-and-a-lie',
+        'would-you-rather',
+        'people-bingo',
+      ],
+    },
+    {
       id: 'workshops',
       name: 'Workshops',
       line: 'Hands-on formats for ideas and design work.',

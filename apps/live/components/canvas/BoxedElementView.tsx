@@ -124,6 +124,7 @@ function BoxedElementViewImpl({
   onPressFocusButton,
   onPressSessionButton,
   sessionStartBlocked,
+  sessionRunBy,
   timerState,
   tabTimer,
   timerControls,
@@ -659,6 +660,7 @@ function BoxedElementViewImpl({
         timerControls={timerControls}
         timerState={timerState}
         sessionStartBlocked={sessionStartBlocked}
+        sessionRunBy={sessionRunBy}
         revealedForMe={revealedForMe}
         onCommitTable={onCommitTable}
         onEnterPortal={onEnterPortal}

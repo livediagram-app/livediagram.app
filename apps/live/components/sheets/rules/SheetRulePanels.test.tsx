@@ -7,6 +7,10 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { posRangeOf, formatRange } from '@livediagram/sheets';
 import { SheetRuleLayer } from './SheetRuleLayer';
 import {
+  NO_FORMAT_RULES,
+  NO_FORMAT_RULES_READ,
+  NO_VALIDATION_RULES,
+  NO_VALIDATION_RULES_READ,
   SheetFormatRuleList,
   SheetValidationRules,
   validationRuleShortLine,
@@ -333,5 +337,16 @@ describe('who may (docs/specs/013-workspace/share-roles.md)', () => {
       ruled.actions().toggleCheckboxes();
     });
     expect(ruled.h.cell('A2')?.input).toEqual({ b: true });
+  });
+
+  // Empty states describe instead of instructing someone with no toolbar to follow.
+  it('tells an Editor how to make a rule, and a Participant only that there is none', async () => {
+    await open({}, { canShape: false });
+    expect(screen.getByText(NO_VALIDATION_RULES_READ)).toBeTruthy();
+    expect(screen.getByText(NO_FORMAT_RULES_READ)).toBeTruthy();
+    cleanup();
+    await open();
+    expect(screen.getByText(NO_VALIDATION_RULES)).toBeTruthy();
+    expect(screen.getByText(NO_FORMAT_RULES)).toBeTruthy();
   });
 });

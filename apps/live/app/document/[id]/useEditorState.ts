@@ -1116,7 +1116,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onNotice: (message) => toast.info(message),
     // Names come from the roster we already hold, so a renamed participant's
     // announcement reads correctly.
-    nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? 'Somebody',
+    nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? null,
   });
   useAssignRef(sessionBlockedRef, facilitator.sessionToolsBlocked);
 

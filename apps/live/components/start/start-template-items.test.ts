@@ -56,11 +56,12 @@ describe.each(MODES)('the %s template start', (mode) => {
 });
 
 describe('Start Facilitating', () => {
-  it('groups by the session run: Retrospectives, Meetings, Workshops, Planning, Strategy, Decisions', () => {
+  it('groups by the session run: Retrospectives, Meetings, Quizzes & Games, Workshops, Planning, Strategy, Decisions', () => {
     expect(TEMPLATE_STARTS.facilitate.groups.map((g) => g.id)).toEqual([
       'recommended',
       'retrospectives',
       'meetings',
+      'games',
       'workshops',
       'planning',
       'strategy',
@@ -70,6 +71,13 @@ describe('Start Facilitating', () => {
     const group = (id: string) => TEMPLATE_STARTS.facilitate.groups.find((g) => g.id === id)!.kinds;
     expect(group('retrospectives')).toContain('incident-postmortem');
     expect(group('workshops')).toContain('user-persona');
+    expect(group('games')).toEqual([
+      'pub-quiz',
+      'icebreaker-questions',
+      'two-truths-and-a-lie',
+      'would-you-rather',
+      'people-bingo',
+    ]);
     expect(group('planning')).toEqual([
       'objectives-planner',
       'roadmap',

@@ -134,6 +134,9 @@ export type CanvasProps = {
   // True when this viewer can't start session tools (view role): the button
   // renders inert and says why instead of failing silently on press.
   sessionStartBlocked?: boolean;
+  // Who is running the session when it is somebody else (docs/specs/012-collaboration/facilitator.md), so a blocked
+  // face names the person to ask; null when nobody else holds the baton.
+  sessionRunBy?: string | null;
   // The tab timer's state for the session button's face (docs/specs/012-collaboration/session-button.md).
   timerState?: import('@/components/canvas/SessionButtonFace').TimerState;
   // Reveal zones (docs/specs/009-elements/reveal-zone.md) this viewer has lifted for themselves. Ephemeral

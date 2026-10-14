@@ -53,12 +53,15 @@ A Participant changes the board's **content**, never its **shape**.
   An element an Editor added, or one added before this level existed, belongs to nobody a Participant can claim.
 - **Stickies and images are the content**, so a Participant arranges them whoever added them: moves and resizes
   them. Shapes, frames, connectors and someone else's text boxes (which often label the structure) stay where
-  their author put them; a text box that sizes to its words still follows them when a Participant writes on it.
+  their author put them; a text box that sizes to its words still follows them when a Participant writes on it,
+  and a mind node grows to fit the label a Participant writes on it (taller only, in the same change).
 - **Nothing offers what a session cannot do.** A Participant or Viewer sees no Slides button or Slide Deck command,
   no timer controls on a timer element, and an inert face on a mode button set to the Eraser or Format Painter; a
   Participant sees no Sheet toolbar, row, column, merge or settings controls (cells only). Empty states describe
   instead of instructing: an agenda, roll call or done check with nothing in it says who fills it, a mood meter
-  asks only someone who may answer, a comment thread or card finder invites only someone who may add. A Participant
+  asks only someone who may answer, a comment thread or card finder invites only someone who may add. A Viewer's
+  selection toolbar offers **Show Comments** on an element that has comments, to read them, and no comment button
+  on one that has none (a Participant's offers **Add Comment** everywhere). A Participant
   writes on comment panels and adds Plan cards from New Card, as it may.
 - **The server is the rule.** A Participant's content changes travel as element changes the server applies one by
   one against the stored tab: a permitted change lands, a forbidden field is left as stored, a forbidden add or

@@ -11,6 +11,7 @@ import {
   isFlowchartStep,
   isMindNode,
   takesAttachments,
+  type Element,
 } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import {
@@ -193,12 +194,19 @@ export function CanvasSelectionToolbars({
             // duplicate for them. View-role visitors get no context menu,
             // so the toolbar stays their only way into a thread.
             // Not where the reader has no comments to open (an embed's viewer, a Community visitor).
+            // A Viewer writes no comment (docs/specs/013-workspace/share-roles.md): it reads the thread an
+            // element has, behind Show Comments, and gets no button on one with none.
             onOpenComments={
               // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
-              readOnly && selected && commentsShown && takesAttachments(selected)
+              readOnly &&
+              selected &&
+              commentsShown &&
+              takesAttachments(selected) &&
+              (props.takePart || hasComments(selected))
                 ? () => onOpenComments(selected.id)
                 : undefined
             }
+            commentsReadOnly={!props.takePart}
             onOpenContextMenu={
               readOnly
                 ? undefined
@@ -269,4 +277,10 @@ export function CanvasSelectionToolbars({
       ) : null}
     </>
   );
+}
+
+// Whether an element carries a comment thread to read (resolved ones included: a reader opens those too).
+function hasComments(el: Element): boolean {
+  const thread = (el as { commentThread?: { comments: readonly unknown[] } }).commentThread;
+  return (thread?.comments.length ?? 0) > 0;
 }

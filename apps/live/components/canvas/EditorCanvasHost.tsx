@@ -686,6 +686,7 @@ export function EditorCanvasHost() {
             // element and calls the tool that already exists.
             onPressSessionButton={pressSessionButton}
             sessionStartBlocked={isReadOnly || runBlocked}
+            sessionRunBy={isReadOnly ? null : sessionTools.facilitatedBy}
             timerState={activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none'}
             revealedIds={revealedIds}
             // A cover is the facilitator's to lift while one is running the session

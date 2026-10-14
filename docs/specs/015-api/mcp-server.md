@@ -318,7 +318,7 @@ refused as held. Both return the changeset's result lines, its [lint](../024-age
 the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
 tweak → `ops`.
 
-**Edits.** `ops` mode takes `edits` instead of `ops`: [edit operations](../024-agents/edit-operations.md) in the line
+**Edits.** `ops` mode takes `edits` instead of `ops` (`mode: "edits"` names the same mode, as agents read it): [edit operations](../024-agents/edit-operations.md) in the line
 form, one a line, sent as the changeset's operations text for the api to parse and apply all or nothing. They reach
 what JSON ops cannot say in one step (`insert … between a b` making room, `wrap … in frame`, `connect a -> b`, `layout`
 of a selection, placement beside another element), and they are the language each [lint](../024-agents/diagram-lint.md)
@@ -632,6 +632,12 @@ the MCP takes the box from the points and packs them through the stored-tab migr
 checked, on every element path (`freehand-points.ts`), and an ops update giving a stroke new `points` sets its new box and block together, where a bare `points` field would have emptied the stroke. Points it cannot draw (none, more than
 `MAX_FREEHAND_POINTS`, or not number pairs) are refused naming the element. The format says a hand-drawn board
 starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
+
+**Found by search.** A client that searches tools by text finds a tool by its name, description and schema, and
+ranks long ones down or leaves the largest out. So `create_document` leads with what it makes (a slide deck among
+them, and how to start one), `change_pages` and `write_article` say which is for slides, and the single-`tab` alias
+is checked against the tab shape by the tool rather than repeating that shape (the whole element format) in the
+schema: the definition halved, from about 41 KB to 21 KB, the size of `update_document` and `add_tab`.
 
 **No CLI hints.** An edit's result text is the api's, less its footer's revert line: that line names the
 `livediagram changeset revert` command, which no MCP tool runs. Its `@x,y` positions are from the content's top-left as it was read, while an element's `x` and `y` are canvas

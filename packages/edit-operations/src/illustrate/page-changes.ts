@@ -113,6 +113,9 @@ export function applyPageChanges(
   const lines: string[] = entered.switched ? ['Switched the tab to Illustrate.'] : [];
   const newPageId = ids.page ?? (() => nextIllustratePageId(illustratePagesOf(current)));
   const newFlowId = ids.flow ?? (() => nextArticleFlowId());
+  // The pages a delete in this change took, an article's whole flow among them: a later delete naming one by id is
+  // already done, never a missing page that undoes the change.
+  const removed = new Set<string>();
   try {
     changes.forEach((change, i) => {
       const stop = (code: IllustrateRefusal['code'], message: string): never => {
@@ -242,7 +245,16 @@ export function applyPageChanges(
           return;
         }
         case 'delete': {
+          if (typeof change.page === 'string' && removed.has(change.page)) {
+            lines.push(`Page ${change.page} went with what an earlier delete in this change took.`);
+            return;
+          }
           const page = pageOf(change);
+          const gone = page.flow
+            ? pages()
+                .filter((p) => p.flow === page.flow)
+                .map((p) => p.id)
+            : [page.id];
           const at = placeOf(page.id);
           const count = page.flow ? pages().filter((p) => p.flow === page.flow).length : 1;
           const els = page.flow
@@ -251,6 +263,7 @@ export function applyPageChanges(
                 .reduce((n, p) => n + onPage(p.id), 0)
             : onPage(page.id);
           current = take(pageRemoved(current, page.id), page);
+          for (const id of gone) removed.add(id);
           lines.push(
             page.flow
               ? `Deleted the article on page ${at} (${count} pages, writing and ${els} elements).`

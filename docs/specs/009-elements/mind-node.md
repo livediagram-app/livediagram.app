@@ -88,6 +88,9 @@ rounded up to a whole pixel.
   tidy; a hand-arranged map is left where it is.
 - A node **never shrinks** on its own: deleting lines leaves the height it had, the way a resized
   node keeps the size it was given. Resizing it is how it gets shorter.
+- A **Participant** writing on anyone's node grows it the same way: the taller height lands with the label in
+  one change (`participant-content.ts`, the rule the editor and the room share), though a Participant never
+  otherwise resizes a node it did not add ([Share roles](../013-workspace/share-roles.md)).
 
 ### A tidy map stays tidy
 

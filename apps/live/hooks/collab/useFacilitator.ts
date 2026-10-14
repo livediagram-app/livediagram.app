@@ -11,7 +11,7 @@
 // about right now, and a second tab opened on the same document is a different
 // seat at the table, not the same one.
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FacilitatorReason } from '@livediagram/api-schema';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -91,8 +91,8 @@ export function useFacilitator(deps: {
   ) => void;
   /** Announce a change to this user, gated by their notification preference. */
   onNotice: (message: string) => void;
-  /** Resolve a presence id to a name for those announcements. */
-  nameOf: (presenceId: string) => string;
+  /** Resolve a presence id to a name for those announcements; null for somebody no longer present. */
+  nameOf: (presenceId: string) => string | null;
 }): FacilitatorApi {
   const { documentId } = deps;
   const [facilitatorId, setFacilitatorId] = useState<string | null>(null);
@@ -105,6 +105,15 @@ export function useFacilitator(deps: {
   // Live deps so the socket handler never reads a stale closure: it is wired
   // once, and the names it announces change every time somebody renames.
   const ref = useLatest(deps);
+  // The holder's name as last seen. By the time the room says an absent holder timed out
+  // (docs/specs/012-collaboration/facilitator.md "Telling the room"), they have left the roster, so the
+  // announcement names them from here.
+  const holderName = useRef<{ id: string; name: string } | null>(null);
+  useEffect(() => {
+    if (!facilitatorId) return;
+    const name = deps.nameOf(facilitatorId);
+    if (name) holderName.current = { id: facilitatorId, name };
+  });
 
   // A different document is a different session, reset during render.
   const [sessionDocumentId, setSessionDocumentId] = useState(documentId);
@@ -118,7 +127,9 @@ export function useFacilitator(deps: {
 
   const receiveFacilitator = useCallback(
     (msg: { holder: string | null; by?: string; reason: FacilitatorReason; token?: string }) => {
-      const { onNotice, nameOf } = ref.current;
+      const { onNotice } = ref.current;
+      const nameOf = (id: string) => ref.current.nameOf(id) ?? 'Somebody';
+      const held = holderName.current;
       const mine = msg.token !== undefined;
       setFacilitatorId(msg.holder);
       setIsFacilitator(mine);
@@ -129,7 +140,9 @@ export function useFacilitator(deps: {
       // news as if it were an event.
       if (msg.reason === 'state') return;
       if (msg.reason === 'left') {
-        onNotice(`${nameOf(msg.by ?? '')} left, so nobody is facilitating`);
+        const by = msg.by ?? '';
+        const gone = ref.current.nameOf(by) ?? (held?.id === by ? held.name : null);
+        onNotice(`${gone ?? 'Somebody'} left, so nobody is facilitating`);
         return;
       }
       if (msg.holder === null) {

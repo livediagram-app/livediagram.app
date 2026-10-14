@@ -110,6 +110,8 @@ export type BoxedElementViewProps = {
   // role), so the face renders inert and explains rather than lying.
   onPressSessionButton?: (element: import('@livediagram/document').ShapeElement) => void;
   sessionStartBlocked?: boolean;
+  // The facilitator's name when the face is blocked because somebody else runs the session.
+  sessionRunBy?: string | null;
   // What the tab's timer is doing, so a timer button can say "Pause" /
   // "Continue" instead of always promising a fresh countdown.
   timerState?: import('@/components/canvas/SessionButtonFace').TimerState;

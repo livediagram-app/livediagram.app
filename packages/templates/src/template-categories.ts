@@ -1,4 +1,4 @@
-// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): twelve,
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): thirteen,
 // grouped by the job a person is getting done rather than the artefact a template is. Every template but the five
 // blanks has exactly one primary category and may be cross-listed in others where people would genuinely look for it.
 // Read by the template step (Quick Start and /new), the marketing gallery and the agents' catalogue. Pure data plus
@@ -17,7 +17,8 @@ export type TemplateCategory =
   | 'hierarchies'
   | 'design'
   | 'presentations'
-  | 'technical';
+  | 'technical'
+  | 'games';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions are kept to a similar length (40 to 50 characters) so the folded
 // category tiles read as an even set. Ids survive where the meaning did (links, tests and the agents' catalogue name
@@ -99,6 +100,12 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'technical',
     label: 'Technical',
     description: 'Architecture, schema and sequence diagrams.',
+  },
+  {
+    id: 'games',
+    label: 'Quizzes & Games',
+    searchWords: 'quiz trivia icebreaker icebreakers warm up energiser fun team building',
+    description: 'Quizzes, icebreakers and games for the room.',
   },
 ];
 
@@ -245,6 +252,12 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'state-machine': 'technical',
   'event-storming': 'technical',
   'incident-postmortem': 'technical',
+  // Quizzes and Games: the lighter end of running a room.
+  'pub-quiz': 'games',
+  'icebreaker-questions': 'games',
+  'two-truths-and-a-lie': 'games',
+  'would-you-rather': 'games',
+  'people-bingo': 'games',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -278,7 +291,7 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'prioritization-matrix': ['planning'],
   // Workshop formats.
   'crazy-eights': ['meetings', 'design'],
-  'doodle-warmup': ['meetings'],
+  'doodle-warmup': ['meetings', 'games'],
   'event-storming': ['meetings'],
   'incident-postmortem': ['meetings'],
   // Research synthesis and site structure are design work too.

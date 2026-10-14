@@ -1,8 +1,16 @@
 // Shared parts of the live-session boards (template-builders-sessions.ts and
 // template-builders-town-hall.ts): the heading, section labels, guidance
-// lines and a checklist sized to its rows, plus the spacing they share.
+// lines, a checklist sized to its rows and a column of joined step cards, plus the spacing they share.
 
-import { createShape, createText, fontSizeFor, type Element } from '@livediagram/document';
+import {
+  createPinnedArrow,
+  createShape,
+  createText,
+  fontSizeFor,
+  type Element,
+  type SessionButtonConfig,
+  type ShapeElement,
+} from '@livediagram/document';
 
 export const GAP = 40;
 export const TITLE_H = 52;
@@ -96,5 +104,108 @@ export function checklist(x: number, y: number, width: number, items: string[]):
     width,
     height: items.length * CHECK_ROW_H + 24,
     checklistItems: items.map((text) => ({ text, done: false })),
+  };
+}
+
+// One step of a session's ritual: its number, name, one line of how, a glyph and its tint.
+export type SessionStep = {
+  n: string;
+  title: string;
+  hint: string;
+  icon: string;
+  fill: string;
+  ink: string;
+};
+
+// A column of tinted step cards, each with a number disc, glyph, name and one line of how, joined top to bottom
+// by pinned arrows. Returns the cards' ids too, so a board can draw a loop back between two of them.
+export function stepCards(
+  x: number,
+  top: number,
+  width: number,
+  height: number,
+  gap: number,
+  steps: readonly SessionStep[],
+): { elements: Element[]; ids: string[] } {
+  const elements: Element[] = [];
+  const ids: string[] = [];
+  const disc = 36;
+  steps.forEach((s, i) => {
+    const y = top + i * (height + gap);
+    const card = {
+      ...createShape('square', x, y),
+      width,
+      height,
+      fillColor: s.fill,
+      strokeColor: s.ink,
+    };
+    ids.push(card.id);
+    elements.push(
+      card,
+      {
+        ...createShape('circle', x + 16, y + 16),
+        width: disc,
+        height: disc,
+        label: s.n,
+        textSize: 'md',
+        textBold: true,
+        padding: 'none',
+        fillColor: s.ink,
+        strokeColor: '#ffffff',
+        textColor: '#ffffff',
+        themeLockFill: true,
+      },
+      {
+        ...createText(x + 16 + disc + 12, y + 16),
+        width: width - 32 - disc - 12 - 40,
+        height: disc,
+        label: s.title,
+        textSize: 'md',
+        textBold: true,
+        textAlignX: 'left',
+        textColor: s.ink,
+      },
+      {
+        ...createShape('icon', x + width - 16 - 32, y + 18),
+        width: 32,
+        height: 32,
+        iconId: s.icon,
+        strokeColor: s.ink,
+      },
+      {
+        ...createText(x + 16, y + 16 + disc + 8),
+        width: width - 32,
+        height: height - 16 - disc - 8 - 12,
+        label: s.hint,
+        textSize: 'sm',
+        textAlignX: 'left',
+        textAlignY: 'top',
+      },
+    );
+  });
+  for (let i = 0; i < ids.length - 1; i++) {
+    elements.push(createPinnedArrow(ids[i]!, 's', ids[i + 1]!, 'n'));
+  }
+  return { elements, ids };
+}
+
+// A session button with the line that says when to press it beside it.
+export function kitRow(
+  x: number,
+  y: number,
+  width: number,
+  button: ShapeElement,
+  text: string,
+): Element[] {
+  return [{ ...button, x, y }, note(x + BUTTON_W + 16, y, width - BUTTON_W - 16, BUTTON_H, text)];
+}
+
+// A session button of the board's standard size, set to one tool.
+export function sessionButton(session: SessionButtonConfig): ShapeElement {
+  return {
+    ...createShape('session-button', 0, 0),
+    width: BUTTON_W,
+    height: BUTTON_H,
+    session,
   };
 }
