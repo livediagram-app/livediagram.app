@@ -316,6 +316,7 @@ export function ConceptFace({
     body = editable ? (
       <ChevronStageControls
         stages={l.stages}
+        labelPx={l.labelPx}
         rows={rows}
         notes={hasNotes}
         invScale={1 / zoom}

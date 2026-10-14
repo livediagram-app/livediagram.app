@@ -62,7 +62,9 @@ While it is selected, the stage under the pointer shows a small bar inside its t
 **Move Stage Left**, **Move Stage Right** (each off at its end), **Add Note** (only while no stage has a note, so the
 note line is not drawn to click into; it gives that stage the note "Note" to type over) and **Delete Stage** (off at
 two stages). The bar stays a moment after the pointer leaves the stage, so it can be reached; on a phone, which has no
-hover, every stage shows its bar. While the element is selected, the ring offers **Add Layer**, **Add Tier**,
+hover, every stage shows its bar. A bar keeps clear of its stage's name and its neighbours: zoomed out, it shrinks to
+fit the band above the name, and once that would make it too small to press (under three quarters of its size) it is
+not drawn until the view is zoomed in again. While the element is selected, the ring offers **Add Layer**, **Add Tier**,
 **Add Step**, **Add Satellite**, **Add Ring** or **Add Stage**.
 
 **Pyramid variant** (`pyramidVariant: 'pyramid' | 'inverted' | 'funnel'`, Pyramid by default) is three tiles in the

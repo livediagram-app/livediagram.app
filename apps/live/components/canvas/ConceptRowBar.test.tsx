@@ -14,6 +14,7 @@ import {
   type WebRows,
 } from '@livediagram/document';
 import { ConceptFace } from './ConceptFace';
+import { BAR_MIN_SCALE, barScale, barWidthPx } from './ConceptRowBar';
 import { HOVER_GRACE_MS } from '@/hooks/ui/useGraceHover';
 
 afterEach(() => {
@@ -114,5 +115,22 @@ describe('chevron stage controls', () => {
     const { zone } = show(chevrons(), false);
     expect(zone(0)).toBeNull();
     expect(screen.queryAllByRole('toolbar')).toHaveLength(0);
+  });
+});
+
+describe('barScale', () => {
+  const tall = 1000;
+  it('keeps a constant screen size while the stage has room', () => {
+    expect(barScale({ width: 200, height: tall }, 3, 1)).toBe(1);
+    expect(barScale({ width: 400, height: tall }, 3, 2)).toBe(2);
+  });
+
+  it('shrinks to fit a narrow or short stage, and gives up below the smallest pressable size', () => {
+    const w = barWidthPx(3);
+    expect(barScale({ width: w * 0.8, height: tall }, 3, 1)).toBeCloseTo(0.8);
+    expect(barScale({ width: w * (BAR_MIN_SCALE - 0.05), height: tall }, 3, 1)).toBeNull();
+    // A bar is 30px tall at full size and sits 6px down: it needs 36px above the stage's name.
+    expect(barScale({ width: 1000, height: 36 }, 3, 1)).toBeCloseTo(1);
+    expect(barScale({ width: 1000, height: 36 * (BAR_MIN_SCALE - 0.05) }, 3, 1)).toBeNull();
   });
 });

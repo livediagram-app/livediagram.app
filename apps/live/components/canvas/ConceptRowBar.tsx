@@ -20,6 +20,40 @@ import { moveRow } from '@/lib/move-row';
 
 // The bar's top, in screen px, below the stage's top edge.
 const BAR_INSET_PX = 6;
+// A button's side and the bar's spacing, in screen px, matching the classes below (h-6 w-6, gap-0.5, p-0.5, a 1px
+// border), so the bar's width is known without measuring it.
+const BUTTON_PX = 24;
+const BAR_GAP_PX = 2;
+const BAR_EDGE_PX = 3;
+// Smallest share of its full size a bar may shrink to so it fits its stage when zoomed out; below it the bar would be
+// too small to press, so it is not drawn (zooming in brings it back).
+export const BAR_MIN_SCALE = 0.75;
+// How far above the middle of its stage a name's letters reach, as a share of its font size (one centred line), with
+// a little clearance.
+const NAME_HALF_HEIGHT = 0.75;
+
+/** The bar's width in screen px at full size, with `buttons` buttons. */
+export function barWidthPx(buttons: number): number {
+  return buttons * BUTTON_PX + (buttons - 1) * BAR_GAP_PX + 2 * BAR_EDGE_PX;
+}
+
+const BAR_HEIGHT_PX = BUTTON_PX + 2 * BAR_EDGE_PX;
+
+/** The bar's scale in element px: constant on screen, shrunk when zoomed out to fit `room` (the stage's own share of
+ *  the row, and the band from its top edge to its name's letters, inset included), or null when that is below
+ *  BAR_MIN_SCALE of its size. */
+export function barScale(
+  room: { width: number; height: number },
+  buttons: number,
+  invScale: number,
+): number | null {
+  const fit = Math.min(
+    invScale,
+    room.width / barWidthPx(buttons),
+    room.height / (BAR_HEIGHT_PX + BAR_INSET_PX),
+  );
+  return fit < BAR_MIN_SCALE * invScale ? null : fit;
+}
 
 const button =
   'flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-slate-500 transition enabled:hover:bg-brand-50 enabled:hover:text-brand-700 disabled:cursor-default disabled:opacity-30 dark:text-slate-300 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-brand-100';
@@ -28,6 +62,7 @@ const stop = (e: ReactPointerEvent) => e.stopPropagation();
 
 export function ConceptRowBar({
   rect,
+  room,
   index,
   count,
   min,
@@ -39,8 +74,10 @@ export function ConceptRowBar({
   onPointerEnter,
   onPointerLeave,
 }: {
-  // The stage's box in element px; the bar centres on it.
+  // Where the bar centres (the stage's label box, from the stage's top), in element px.
   rect: LayoutRect;
+  // The room it may take, in element px: the stage's own share of the row, and the band above its name.
+  room: { width: number; height: number };
   index: number;
   count: number;
   // Fewest rows the kind keeps: Delete is off at it.
@@ -55,6 +92,8 @@ export function ConceptRowBar({
   onPointerLeave?: () => void;
 }) {
   const lower = noun.toLowerCase();
+  const scale = barScale(room, onAddNote ? 4 : 3, invScale);
+  if (scale === null) return null;
   return (
     <div
       role="toolbar"
@@ -67,8 +106,8 @@ export function ConceptRowBar({
       className={`pointer-events-auto absolute flex items-center gap-0.5 p-0.5 ${FLOATING_CONTROL_CLASS}`}
       style={{
         left: rect.x + rect.width / 2,
-        top: rect.y + BAR_INSET_PX * invScale,
-        transform: `translateX(-50%) scale(${invScale})`,
+        top: rect.y + BAR_INSET_PX * scale,
+        transform: `translateX(-50%) scale(${scale})`,
         transformOrigin: 'top center',
       }}
     >
@@ -140,6 +179,7 @@ function boxOf(stage: ChevronLayout['stages'][number]): LayoutRect {
  */
 export function ChevronStageControls({
   stages,
+  labelPx,
   rows,
   notes,
   invScale,
@@ -147,6 +187,8 @@ export function ChevronStageControls({
   children,
 }: {
   stages: ChevronLayout['stages'];
+  // The stage names' font size, so a bar never covers a name.
+  labelPx: number;
   rows: ConceptRow[];
   // Whether any stage has a note (so the note line is drawn); Add Note is offered while none does.
   notes: boolean;
@@ -158,6 +200,9 @@ export function ChevronStageControls({
   const all = isMobileViewportSync();
   const { min, noun } = CONCEPT_ROWS.chevrons;
   const n = rows.length;
+  // Neighbouring chevrons overlap at their points, so a stage's own room is the step from one stage to the next.
+  const pitch =
+    stages.length > 1 ? boxOf(stages[1]!).x - boxOf(stages[0]!).x : boxOf(stages[0]!).width;
   return (
     <>
       {rows.map((_, i) => (
@@ -176,6 +221,10 @@ export function ChevronStageControls({
           <ConceptRowBar
             key={i}
             rect={{ ...stages[i]!.label, y: boxOf(stages[i]!).y }}
+            room={{
+              width: pitch,
+              height: boxOf(stages[i]!).height / 2 - NAME_HALF_HEIGHT * labelPx,
+            }}
             index={i}
             count={n}
             min={min}

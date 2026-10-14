@@ -174,7 +174,9 @@ element is still.
 - Chevron stage bars (`ChevronStageControls`, only while `editable`: selected, unlocked, an Editor): one transparent
   zone per stage (its outline's bounding box) under the stages arms the hover; the hovered stage's `ConceptRowBar` is
   drawn over the stages, centred on the stage's label box, `BAR_INSET_PX` (6) screen px inside its top, scaled by
-  `1 / zoom` about its top centre; its pointer-down stops propagation. Every stage's bar shows when
+  `barScale` about its top centre: `1 / zoom`, shrunk to fit the stage's pitch (the step between stage boxes, as
+  neighbours overlap at their points) and the band above the name (`box.height / 2 - NAME_HALF_HEIGHT * labelPx`, bar
+  height plus inset), or not drawn below `BAR_MIN_SCALE` of `1 / zoom`; its pointer-down stops propagation. Every stage's bar shows when
   `isMobileViewportSync()`. Move writes `moveRow`, Delete filters the row, Add Note (only while no row has a note) sets
   that row's `note: 'Note'`, all through `onSetRows` (`withWebRows`).
 - Menu (Tools flyout): **Rows** for every kind but chevrons (label + note per row where drawn, ↑ ↓ ×, Add Layer /
@@ -213,14 +215,16 @@ In-place edits commit on blur (INP); animations are compositor-only except Flow'
 
 ## Constants and configuration
 
-| Name                | Value  | Provenance / safe range                       |
-| ------------------- | ------ | --------------------------------------------- |
-| `CONCEPT_LABEL_MAX` | 60     | Spec                                          |
-| `CONCEPT_NOTE_MAX`  | 40     | Spec                                          |
-| Ramp floor          | 0.22   | Spec                                          |
-| Stack band share    | 0.62   | Spec                                          |
-| Funnel tip          | 0.35   | Spec                                          |
-| Build stagger       | 0.18 s | D187; 0.1 to 0.3                              |
-| Pulse beat          | 0.6 s  | D187; 0.4 to 1                                |
-| `BAR_INSET_PX`      | 6      | Clears the stage's top edge; 4 to 10          |
-| `HOVER_GRACE_MS`    | 250    | Same as the table's axis triggers; 150 to 400 |
+| Name                | Value  | Provenance / safe range                                                |
+| ------------------- | ------ | ---------------------------------------------------------------------- |
+| `CONCEPT_LABEL_MAX` | 60     | Spec                                                                   |
+| `CONCEPT_NOTE_MAX`  | 40     | Spec                                                                   |
+| Ramp floor          | 0.22   | Spec                                                                   |
+| Stack band share    | 0.62   | Spec                                                                   |
+| Funnel tip          | 0.35   | Spec                                                                   |
+| Build stagger       | 0.18 s | D187; 0.1 to 0.3                                                       |
+| Pulse beat          | 0.6 s  | D187; 0.4 to 1                                                         |
+| `BAR_INSET_PX`      | 6      | Clears the stage's top edge; 4 to 10                                   |
+| `BAR_MIN_SCALE`     | 0.75   | Smallest pressable bar (18px buttons); 0.6 to 0.9                      |
+| `NAME_HALF_HEIGHT`  | 0.75   | A centred name's half height plus clearance, in font sizes; 0.6 to 0.9 |
+| `HOVER_GRACE_MS`    | 250    | Same as the table's axis triggers; 150 to 400                          |
