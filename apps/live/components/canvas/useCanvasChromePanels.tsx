@@ -1,5 +1,6 @@
 'use client';
 
+import { isTypingTarget } from '@/lib/typing-target';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
@@ -115,6 +116,8 @@ export function useCanvasChromePanels({
   tidyUpPopoverEl: ReactNode;
   // Illustrate mode's Contents popover (docs/specs/007-editor/illustrate-pages.md "Contents").
   contentsPopoverEl: ReactNode;
+  // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
+  avatarPopoverEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -289,11 +292,34 @@ export function useCanvasChromePanels({
   useEffect(() => {
     if (activeDockPanel === 'tidy-up' && !tidyUpShown) closeDockPanel();
   }, [activeDockPanel, tidyUpShown, closeDockPanel]);
+  // The Avatar panel belongs to its button, which belongs to the mode: leaving Avatar mode closes it.
+  const avatarMode = props.canvasTool === 'avatar';
+  const avatarOpen = activeDockPanel === 'avatar' && avatarMode;
+  useEffect(() => {
+    if (activeDockPanel === 'avatar' && !avatarMode) closeDockPanel();
+  }, [activeDockPanel, avatarMode, closeDockPanel]);
+  // Escape closes the Avatar panel and nothing else (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"):
+  // caught ahead of the editor's shortcuts, where Escape would otherwise leave Avatar mode altogether. A typing
+  // field in the panel (the message view) handles its own Escape first.
+  useEffect(() => {
+    if (!avatarOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented || isTypingTarget(e.target)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      closeDockPanel();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [avatarOpen, closeDockPanel]);
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     panelWiringFor,
     slidesPopover: slidesOpen
+      ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
+      : null,
+    avatarPopover: avatarOpen
       ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
       : null,
   });
@@ -532,7 +558,6 @@ export function useCanvasChromePanels({
     collaborate: null,
     ai: aiEl,
     minimap: minimapEl,
-    avatar: avatarEl,
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
@@ -546,6 +571,7 @@ export function useCanvasChromePanels({
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
     slidesPopoverEl: slidesOpen ? slideDeckEl : null,
+    avatarPopoverEl: avatarEl,
     contentsPopoverEl:
       contentsOpen && props.illustratePages ? (
         <PageContentsPanel

@@ -89,12 +89,14 @@ Validation: `pointerTip` an object of two finite numbers, each within ±4000 (`P
 
 ## Errors and edge cases
 
-| #   | Case                                   | Handling                                                    |
-| --- | -------------------------------------- | ----------------------------------------------------------- |
-| E1  | Tip inside the note's box              | No leader; the tip dot still shows                          |
-| E2  | Host rotated                           | `attachPointXY` turns the point with it                     |
-| E3  | Host and note moved in the same commit | Treated as the host moving (both carried); the tip holds    |
-| E4  | `pointerTip` missing or invalid        | The default tip (D190); validation refuses an invalid write |
+| #   | Case                                             | Handling                                                                                   |
+| --- | ------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| E1  | Tip inside the note's box                        | No leader; the tip dot still shows                                                         |
+| E2  | Host rotated                                     | `attachPointXY` turns the point with it                                                    |
+| E3  | Host and note moved in the same commit           | Treated as the host moving (both carried); the tip holds                                   |
+| E4  | `pointerTip` missing or invalid                  | The default tip (D190); validation refuses an invalid write                                |
+| E5  | A stored `rotation`                              | `supportsRotation` is false and `rotationOf` 0: drawn upright on the canvas and in exports |
+| E6  | Tip drag cancelled (pointercancel, lost capture) | The tip returns to where it was; nothing is stored                                         |
 
 ## Security and trust
 

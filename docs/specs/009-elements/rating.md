@@ -8,11 +8,11 @@ elements ([Progress elements](progress.md)).
 ## Behaviour
 
 - Drops as five stars, **three filled** by default, in an amber accent.
-- A **Rating** context-menu category (in the menu's Tools flyout) carries:
-  - a **star picker** — click a star to set the score (1–5);
-  - an **Animation** row of star-specific animations (None / Pop / Twinkle /
-    Pulse / Rock), with a **Speed** row + **Repeat** toggle once one is picked.
-    Pop / Rock play once (an entrance); Twinkle / Pulse loop by default.
+- A **Rating** context-menu category (in the menu's Tools flyout) carries a **star picker**: click a star to set
+  the score (1–5).
+- The **Rating** section of the menu's **Animation** row carries the star-specific animations (None / Pop / Twinkle /
+  Pulse / Rock), with a **Speed** row + **Repeat** toggle once one is picked.
+  Pop / Rock play once (an entrance); Twinkle / Pulse loop by default.
 - It's a normal boxed element otherwise (move / resize / rotate / select /
   lock / theme-colour). Its accent (stroke colour) tints the filled
   stars; the wrapper draws no box border.

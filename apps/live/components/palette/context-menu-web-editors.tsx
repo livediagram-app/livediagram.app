@@ -23,6 +23,7 @@ import {
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
+import { moveRow } from '@/lib/move-row';
 
 // The web components' row editors (docs/specs/009-elements/web-components-and-no-groups.md), in the Tools flyout beside the
 // checklist's and the entity's: a stat row's cards, a process's steps and a
@@ -33,14 +34,6 @@ const rowButton =
   'flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800';
 const removeButton =
   'flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800';
-
-function move<T>(list: T[], from: number, to: number): T[] {
-  if (to < 0 || to >= list.length) return list;
-  const next = [...list];
-  const [item] = next.splice(from, 1);
-  next.splice(to, 0, item!);
-  return next;
-}
 
 // Up / down / remove for one row.
 function RowControls({
@@ -129,7 +122,7 @@ export function StatsEditor({
               count={rows.length}
               min={STATS_MIN}
               noun="stat"
-              onMove={(to) => onChange(move(rows, i, to))}
+              onMove={(to) => onChange(moveRow(rows, i, to))}
               onRemove={() => onChange(rows.filter((_, j) => j !== i))}
             />
           </div>
@@ -187,7 +180,7 @@ export function TextRowsEditor({
               count={rows.length}
               min={min}
               noun={noun.toLowerCase()}
-              onMove={(to) => onChange(move(rows, i, to))}
+              onMove={(to) => onChange(moveRow(rows, i, to))}
               onRemove={() => onChange(rows.filter((_, j) => j !== i))}
             />
           </div>
@@ -255,7 +248,7 @@ export function ConceptRowsEditor({
               count={rows.length}
               min={min}
               noun={noun.toLowerCase()}
-              onMove={(to) => onChange(move(rows, i, to))}
+              onMove={(to) => onChange(moveRow(rows, i, to))}
               onRemove={() => onChange(rows.filter((_, j) => j !== i))}
             />
           </div>
@@ -329,7 +322,8 @@ export function WebRowsMenuSection({
       </MenuAccordionSection>
     );
   }
-  if (isConceptShape(target.shape)) {
+  // Chevrons edit their stages on the canvas (ConceptRowBar), so they have no Rows section.
+  if (isConceptShape(target.shape) && target.shape !== 'chevrons') {
     const bounds = CONCEPT_ROWS[target.shape];
     return (
       <MenuAccordionSection title="Rows" icon={<DataMenuGlyph />} {...sectionProps('concept-rows')}>
@@ -373,6 +367,6 @@ export function hasWebRowsSection(target: { type: string; shape?: string }): boo
       target.shape === 'process' ||
       target.shape === 'site-header' ||
       target.shape === 'card' ||
-      isConceptShape(target.shape ?? ''))
+      (isConceptShape(target.shape ?? '') && target.shape !== 'chevrons'))
   );
 }

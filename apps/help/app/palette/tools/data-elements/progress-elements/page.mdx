@@ -2,7 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { ProgressBarAndRing } from '@/components/illustrations/palette-data';
-import { ProgressMenu } from '@/components/illustrations/tools-menus';
+import { ProgressAnimationMenu, ProgressMenu } from '@/components/illustrations/tools-menus';
 
 export const metadata = helpMetadata({
   title: 'Progress Bars and Rings',
@@ -41,10 +41,13 @@ Both elements show a centred percentage label, so you don't add your own text. T
 
 ## Setting the value and animation
 
-Right-click the element, open **Tools**, then **Progress**. There you can:
+Right-click the element, open **Tools**, then **Progress**, and drag the **Percentage** slider to set the value from 0 to 100.
 
-- Drag the **Percentage** slider to set the value from 0 to 100.
-- Choose how the fill animates: **None**, **Fill**, **Pulse**, or **Stripes**.
+<Figure caption="Right-click, Tools, then Progress: the Percentage slider.">
+  <ProgressMenu />
+</Figure>
+
+To animate the fill, right-click and open **Animation**, then choose **None**, **Fill**, **Pulse**, or **Stripes**.
 
 The animations each behave differently:
 
@@ -54,8 +57,8 @@ The animations each behave differently:
 
 Once you pick an animation, a speed row (**Slowest**, **Slow**, **Normal**, **Fast**) and a **Repeat** toggle appear so you can fine-tune it. Fill plays once by default while Pulse and Stripes loop, but the Repeat toggle lets you override that either way.
 
-<Figure caption="Right-click, Tools, then Progress: the Percentage slider and the four ways the fill can animate.">
-  <ProgressMenu />
+<Figure caption="Right-click, then Animation: the four ways the fill can animate.">
+  <ProgressAnimationMenu />
 </Figure>
 
 <Tip>

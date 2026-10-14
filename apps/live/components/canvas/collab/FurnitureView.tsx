@@ -4,6 +4,7 @@ import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import {
   chairSeatFill,
   FURNITURE_ART,
+  FURNITURE_FACE_SHADE,
   FURNITURE_GLINT,
   FURNITURE_LINE_STROKE,
   FURNITURE_PANEL_STROKE,
@@ -12,19 +13,25 @@ import {
   FURNITURE_SHADOW,
   furnitureFrame,
   furnitureParts,
+  furnitureRing,
   seatingFacing,
   type FurniturePart,
   type ShapeElement,
 } from '@livediagram/document';
-import type { ChairSitter } from '@/components/canvas/collab/ChairView';
 
-// A desk or a two-seater sofa (docs/specs/009-elements/chair.md "Desk and sofa"): furniture an
-// Avatar-mode character sits down in, like the chair. Drawn from the shared FURNITURE_ART table the
-// headless export draws too, turned for its facing inside the svg (a quarter turn swaps the viewBox,
-// and the facing setter swaps the box to match), so the drawing keeps its proportions.
+// A chair, a desk or a two-seater sofa (docs/specs/009-elements/chair.md "Facing", "Desk and sofa"):
+// furniture an Avatar-mode character sits down in. Drawn from the shared FURNITURE_ART table the headless
+// export draws too: the drawing for its facing (front, back, or side, mirrored for facing right), never
+// a rotation, so it always stands upright. A quarter turn swaps a desk's or sofa's box to fit its side
+// drawing (the facing setter does that).
 //
-// WHO is sitting is presence, never the element (docs/specs/008-canvas/avatar-mode.md): the canvas
-// passes the sitters it knows about.
+// Drawn rather than labelled, because a box with the word "chair" in it is not furniture; the element's
+// own label renders under it. WHO is sitting is presence, never the element
+// (docs/specs/008-canvas/avatar-mode.md): the canvas passes the sitters it knows about.
+
+export type ChairSitter = { name: string; color: string };
+
+const NOUN = { chair: 'Chair', desk: 'Desk', sofa: 'Sofa' } as const;
 export function FurnitureView({
   element,
   stroke,
@@ -36,14 +43,16 @@ export function FurnitureView({
   sitters: ChairSitter[];
   animClass?: string;
 }) {
-  if (element.shape !== 'desk' && element.shape !== 'sofa') return null;
+  if (element.shape !== 'chair' && element.shape !== 'desk' && element.shape !== 'sofa')
+    return null;
   const art = FURNITURE_ART[element.shape];
   const facing = seatingFacing({ shape: element.shape, chairFacing: element.chairFacing });
   const frame = furnitureFrame(art, facing);
   const seat = chairSeatFill(element.fillColor, stroke);
   const occupied = sitters.length > 0;
   const ringColor = sitters[0]?.color ?? stroke;
-  const noun = element.shape === 'desk' ? 'Desk' : 'Sofa';
+  const noun = NOUN[element.shape];
+  const ring = furnitureRing(art, facing);
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
       <svg
@@ -60,11 +69,11 @@ export function FurnitureView({
           {furnitureParts(art, facing).map((p, i) => (
             <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />
           ))}
-          {occupied ? (
-            // A soft ring in the first sitter's colour, under the seats.
-            <ellipse {...art.ring} fill="none" stroke={ringColor} strokeWidth="3" opacity="0.85" />
-          ) : null}
         </g>
+        {occupied ? (
+          // A soft ring in the first sitter's colour, under the seats.
+          <ellipse {...ring} fill="none" stroke={ringColor} strokeWidth="3" opacity="0.85" />
+        ) : null}
       </svg>
       {occupied ? (
         <span
@@ -92,6 +101,7 @@ function FurniturePartView({
       case 'shadow':
         return { fill: FURNITURE_SHADOW.fill, opacity: FURNITURE_SHADOW.opacity };
       case 'panel':
+      case 'face':
         return { fill: seat, stroke, strokeWidth: FURNITURE_PANEL_STROKE };
       case 'line':
         return {
@@ -121,8 +131,18 @@ function FurniturePartView({
     }
   })();
   switch (part.tag) {
-    case 'rect':
-      return <rect x={part.x} y={part.y} width={part.w} height={part.h} rx={part.rx} {...paint} />;
+    case 'rect': {
+      const box = { x: part.x, y: part.y, width: part.w, height: part.h, rx: part.rx };
+      // A face toward the room is the panel, shaded with its stroke colour.
+      return part.role === 'face' ? (
+        <>
+          <rect {...box} {...paint} />
+          <rect {...box} fill={stroke} opacity={FURNITURE_FACE_SHADE} />
+        </>
+      ) : (
+        <rect {...box} {...paint} />
+      );
+    }
     case 'ellipse':
       return <ellipse cx={part.cx} cy={part.cy} rx={part.rx} ry={part.ry} {...paint} />;
     case 'path':

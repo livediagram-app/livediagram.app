@@ -100,6 +100,10 @@ export type ImageExportOpts = {
   // Slides' animated backgrounds painted so far in this export, so a background repeated across a
   // deck is painted once (lib/page-motion-canvas.ts). Absent, each page paints its own.
   motionFrames?: MotionFrameCache;
+  // A slide's animated background drawn as its still gradient (a thumbnail): no frame is painted or
+  // embedded. The Layouts tab's tiles pass it, as a full-size picture in each 120 px tile was
+  // megabytes of markup for nothing seen.
+  stillBackground?: boolean;
   // The document's items, so Plan boards and cards export with their cards
   // (docs/specs/026-plan/plan-board.md "Both elements everywhere").
   items?: ReadonlyMap<string, Item>;
@@ -565,7 +569,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
         ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
         imageHref: (id) => opts.images?.get(id)?.href,
-        overFill: pageMotionSvg(opts.page),
+        overBackground: opts.stillBackground ? undefined : pageMotionSvg(opts.page),
       })
     : null;
   const writing = opts.page ? pageWriting(tab, opts.page) : null;

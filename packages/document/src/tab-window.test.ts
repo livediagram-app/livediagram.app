@@ -7,6 +7,7 @@ import {
   svgTabWindow,
   TAB_WINDOW_SIZE,
   tabWindowMayShow,
+  tabWindowNames,
   tabWindowOffers,
 } from './tab-window';
 
@@ -34,6 +35,30 @@ describe('which tabs a window may show', () => {
   it('never shows its own tab', () => {
     expect(tabWindowMayShow({ id: 'diagram' }, 'diagram')).toBe(false);
     expect(tabWindowMayShow({ id: 'diagram' }, undefined)).toBe(true);
+  });
+});
+
+describe('tabWindowNames', () => {
+  it('names a window for the tab it shows, Untitled for a blank name, nothing for no tab', () => {
+    const names = tabWindowNames([
+      { id: 'a', name: 'Flow' },
+      { id: 'b', name: '' },
+    ]);
+    const w = (windowTabId?: string) =>
+      ({
+        id: 'w',
+        type: 'shape',
+        shape: 'tab-window',
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 10,
+        windowTabId,
+      }) as never;
+    expect(names(w('a'))).toEqual({ name: 'Flow' });
+    expect(names(w('b'))).toEqual({ name: 'Untitled tab' });
+    expect(names(w('gone'))).toBeUndefined();
+    expect(names(w())).toBeUndefined();
   });
 });
 

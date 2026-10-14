@@ -19,15 +19,14 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // are not a MovablePanel and stay pinned bottom-right. The Palette, the
 // Explorer and Layers are not corner panels (the strip, and popovers off
 // their buttons, docs/specs/007-editor/toolbar-layout.md), nor are Poll and Vote (popovers off the
-// Session strip, docs/specs/012-collaboration/session-tools.md): a stored layout naming them
-// is read like any unknown id.
+// Session strip, docs/specs/012-collaboration/session-tools.md), nor the Avatar panel (a popover off its button,
+// docs/specs/008-canvas/avatar-mode.md): a stored layout naming them is read like any unknown id.
 export type PanelId =
   | 'collaborate'
   | 'ai'
   | 'minimap'
-  | 'avatar'
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, present only while the Laser
-  // tool is, exactly like the avatar's.
+  // tool is.
   | 'laser'
   // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, on the same terms.
   | 'spotlight'
@@ -49,7 +48,6 @@ export const PANEL_IDS: readonly PanelId[] = [
   'collaborate',
   'ai',
   'minimap',
-  'avatar',
   'laser',
   'spotlight',
   'eraser',
@@ -79,9 +77,7 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   collaborate: 'bottom-right',
   ai: 'top-right',
   minimap: 'bottom-left',
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): top-right, with the other tool panels.
-  // It exists only while its mode does, so it joins and leaves its corner stack.
-  avatar: 'top-right',
+  // The tool panels: top-right. Each exists only while its tool does, so it joins and leaves its corner stack.
   laser: 'top-right',
   spotlight: 'top-right',
   eraser: 'top-right',

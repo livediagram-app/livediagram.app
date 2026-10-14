@@ -12,7 +12,7 @@ None of that is worth a settings dialog, and none of it should be a permanent pr
 
 ## Where it lives
 
-A normal corner panel ([Panel corner docking](../007-editor/panel-docking.md)): draggable, dockable to any corner, the standard panel width, homed **top-right**. Like the Poll / Vote / Avatar panels it exists only while its mode does, so it joins and leaves the corner stack rather than sitting there. It docks in its corner on a desktop and a phone alike. View-role visitors get it — the laser is theirs too.
+A normal corner panel ([Panel corner docking](../007-editor/panel-docking.md)): draggable, dockable to any corner, the standard panel width, homed **top-right**. Like the Poll / Vote panels it exists only while its mode does, so it joins and leaves the corner stack rather than sitting there. It docks in its corner on a desktop and a phone alike. View-role visitors get it — the laser is theirs too.
 
 ## The settings
 

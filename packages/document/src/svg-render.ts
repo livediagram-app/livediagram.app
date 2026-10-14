@@ -129,6 +129,7 @@ import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
 import { isPointerNote, pointerTipOf } from './pointer-note';
 import { isPersonNode } from './person-node';
+import { rotationOf } from './rotation';
 import { tagColoursOf, withTagAccent } from './tag-colours';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
@@ -193,7 +194,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
   // Rotation applies to the whole element (body + label) about its centre,
   // exactly like the canvas wrapper's CSS rotate.
-  const rotation = el.rotation ?? 0;
+  const rotation = rotationOf(el);
   const rotAttr = rotation
     ? ` transform="rotate(${r2(rotation)} ${r2(el.x + el.width / 2)} ${r2(el.y + el.height / 2)})"`
     : '';
@@ -506,7 +507,7 @@ export function boxedNeedsSvgRaster(
   // The tab's finish (docs/specs/008-canvas/finish.md): the canvas drawers know only Flexible's borders.
   tabFinish?: Finish,
 ): boolean {
-  if (el.rotation) return true;
+  if (rotationOf(el)) return true;
   if (resolveFinish(finishOf(el), tabFinish) !== 'flexible') return true;
   // A shadow renders via an feDropShadow filter def (docs/specs/008-canvas/element-shadows.md), which the
   // PNG canvas drawers can't reproduce natively.
