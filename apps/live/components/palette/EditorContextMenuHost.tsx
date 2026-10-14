@@ -43,6 +43,7 @@ const EditorContextMenu = dynamic(
 export function EditorContextMenuHost() {
   const {
     contextMenu,
+    facilitator,
     userPreferences,
     activeTab,
     isReadOnly,
@@ -452,8 +453,8 @@ export function EditorContextMenuHost() {
       onSetPortalTarget={setPortalTargetSelected}
       onSetPortalName={setPortalNameSelected}
       onCreateLinkedPortal={createLinkedPortal}
-      onSetSession={setSessionConfigSelected}
-      onSetRevealed={setRevealedSelected}
+      onSetSession={facilitator.sessionToolsBlocked ? undefined : setSessionConfigSelected}
+      onSetRevealed={facilitator.sessionToolsBlocked ? undefined : setRevealedSelected}
       onSetPickerSource={setPickerSourceSelected}
       onSetReaction={setReactionSelected}
       onSetPickerOptions={setPickerOptionsSelected}

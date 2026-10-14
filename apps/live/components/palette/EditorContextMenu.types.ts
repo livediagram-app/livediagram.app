@@ -241,9 +241,10 @@ export type EditorContextMenuProps = {
   onSetPortalName: (name: string) => void;
   onCreateLinkedPortal: () => void;
   // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
-  // their settings, applied to the element the menu is acting on.
-  onSetSession: (config: import('@livediagram/document').SessionButtonConfig) => void;
-  onSetRevealed: (revealed: boolean) => void;
+  // their settings, applied to the element the menu is acting on. The session button's and the cover's are
+  // absent while somebody else holds the baton (docs/specs/012-collaboration/facilitator.md), so neither section shows.
+  onSetSession?: (config: import('@livediagram/document').SessionButtonConfig) => void;
+  onSetRevealed?: (revealed: boolean) => void;
   onSetPickerSource: (source: import('@livediagram/document').PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.

@@ -562,7 +562,7 @@ export function ElementDataSections({
           ) : null}
           {/* Session button (docs/specs/012-collaboration/session-button.md) — which tool a press starts, and its
             one setting. See BehaviourMenuSections. */}
-          {isSessionButton && shapeTarget ? (
+          {isSessionButton && shapeTarget && props.onSetSession ? (
             <SessionMenuSection
               element={shapeTarget}
               onSetSession={props.onSetSession}
@@ -570,7 +570,7 @@ export function ElementDataSections({
             />
           ) : null}
           {/* Reveal zone (docs/specs/009-elements/reveal-zone.md) — off for everyone, or back on. */}
-          {isReveal && shapeTarget ? (
+          {isReveal && shapeTarget && props.onSetRevealed ? (
             <RevealMenuSection
               element={shapeTarget}
               onSetRevealed={props.onSetRevealed}

@@ -3270,6 +3270,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tabs,
     activeId,
     setSelectedId,
+    sessionToolsBlocked: facilitator.sessionToolsBlocked,
   });
 
   // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on
