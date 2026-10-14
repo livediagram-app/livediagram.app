@@ -31,7 +31,6 @@ import {
   DEFAULT_CHAIR_FACING,
   DEFAULT_DECISION_STATUS,
 } from './collab-shapes';
-import { BADGE_NEW_LABEL } from './chip';
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
 import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
@@ -219,7 +218,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   callout: { width: 380, height: 116 },
   // Card (docs/specs/009-elements/card.md): room for a title, a meta line, two body lines and a tag row.
   card: { width: 300, height: 150 },
-  // Badge (docs/specs/009-elements/badge.md): fitted to its text on every commit (badgeSize); this is BADGE_NEW_LABEL.
+  // Badge (docs/specs/009-elements/badge.md): fitted to its text on every commit (badgeSize); this is "New" (BADGE_NEW_LABEL).
   badge: { width: 40, height: 24 },
   // Step number (docs/specs/009-elements/step-number.md): a small disc.
   step: { width: 28, height: 28 },
@@ -653,7 +652,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // (settleChips), so it starts with none.
   // Their text is centred with no padding: the face is the pill, the label its word.
   if (kind === 'badge')
-    return { ...base, label: BADGE_NEW_LABEL, textSize: 'sm', textBold: true, padding: 'none' };
+    return { ...base, label: 'New', textSize: 'sm', textBold: true, padding: 'none' };
   if (kind === 'step')
     return { ...base, aspectLocked: true, textSize: 14, textBold: true, padding: 'none' };
   // Card (docs/specs/009-elements/card.md): every slot but the band on, so the first one shows what a card is made of.

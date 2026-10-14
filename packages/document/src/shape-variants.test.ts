@@ -103,7 +103,7 @@ describe('badgePresetFace', () => {
   });
 
   it('matches what applyShapeVariant gives a fresh badge', () => {
-    for (const variant of BADGE_PRESET_VARIANTS) {
+    for (const variant of [undefined, ...BADGE_PRESET_VARIANTS]) {
       const el = applyShapeVariant(createShape('badge', 0, 0), variant);
       const face = badgePresetFace(variant);
       expect(face.label).toBe(el.label);
