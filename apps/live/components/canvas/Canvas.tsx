@@ -111,6 +111,7 @@ import { useFontEpoch } from '@/components/canvas/useFontEpoch';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { loadArticleFlows, loadIllustratePages } from '@/lib/editor-deferred-code';
 import { pageIdAtPress, pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
+import { GifOmit } from './GifOmit';
 
 // Illustrate's pages and their writing draw only on a tab that has pages, so their code loads on demand
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
@@ -892,100 +893,104 @@ function CanvasView(props: CanvasProps) {
                 </CanvasZoomProvider>
               </CanvasArrivalProvider>
             </CanvasStillProvider>
-            {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
+            {/* Drafts, the logo page's guides and the avatars: editor-only, left out of an animated GIF
+            (GifOmit). */}
+            <GifOmit>
+              {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
             in this transformed layer, after the elements, laid out as the stroke it lands as, so
             the same layer rasterises both and release changes no pixel. */}
-            {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
-              <WhiteboardPenPreview
-                stroke={penStroke}
-                pen={pendingDraw}
-                ink={props.whiteboardInk ?? 'currentColor'}
-                zoom={viewportZoom}
-              />
-            ) : null}
-            {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
-            {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
-            {/* A logo page's guides, its snap points and Mirror's live twins (LogoCanvasOverlays). */}
-            {props.illustratePages ? (
-              <LogoCanvasOverlays
-                view={props.illustratePages}
-                bare={props.zenMode === true || canvasTool === 'isometric'}
-                pendingDraw={pendingDraw}
-                penStroke={penStroke}
-                pathDraft={pathTool.draftView}
-                ink={props.whiteboardInk ?? 'currentColor'}
-                wrapperRef={wrapperRef}
-                zoom={viewportZoom}
-              />
-            ) : null}
-            {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
-            {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
+              {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
+                <WhiteboardPenPreview
+                  stroke={penStroke}
+                  pen={pendingDraw}
+                  ink={props.whiteboardInk ?? 'currentColor'}
+                  zoom={viewportZoom}
+                />
+              ) : null}
+              {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
+              {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
+              {/* A logo page's guides, its snap points and Mirror's live twins (LogoCanvasOverlays). */}
+              {props.illustratePages ? (
+                <LogoCanvasOverlays
+                  view={props.illustratePages}
+                  bare={props.zenMode === true || canvasTool === 'isometric'}
+                  pendingDraw={pendingDraw}
+                  penStroke={penStroke}
+                  pathDraft={pathTool.draftView}
+                  ink={props.whiteboardInk ?? 'currentColor'}
+                  wrapperRef={wrapperRef}
+                  zoom={viewportZoom}
+                />
+              ) : null}
+              {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
+              {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the canvas, and after
             the element layer so they stand in front of the content they walk
             over. Peers' characters render whether or not WE are in the mode —
             someone else walking the canvas is worth seeing regardless. */}
-            {props.remoteAvatars.map((peer) => (
-              <AvatarWalker
-                key={peer.id}
-                pos={{ x: peer.avatar.x, y: peer.avatar.y }}
-                facing={peer.avatar.facing}
-                // Parsed, not trusted: an older peer omits the costume entirely and
-                // a future one may send an option this build doesn't know.
-                config={parseAvatarConfig(peer.avatar.config)}
-                walking={peer.avatar.walking}
-                stepFrame={peer.avatar.stepFrame}
-                lift={peer.avatar.lift}
-                wave={peer.avatar.wave}
-                seated={!!peer.avatar.seatedOn}
-                // Replayed locally from the kind + elapsed time in their packet, by
-                // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
-                pose={
-                  peer.avatar.reaction
-                    ? reactionPose(peer.avatar.reaction.kind, peer.avatar.reaction.elapsedMs)
-                    : null
-                }
-                shirt={peer.color}
-                name={peer.name}
-                standingOn={null}
-              />
-            ))}
-            {/* A Reaction Pad burst (docs/specs/009-elements/reaction-pad.md) thrown around the CHARACTER rather
+              {props.remoteAvatars.map((peer) => (
+                <AvatarWalker
+                  key={peer.id}
+                  pos={{ x: peer.avatar.x, y: peer.avatar.y }}
+                  facing={peer.avatar.facing}
+                  // Parsed, not trusted: an older peer omits the costume entirely and
+                  // a future one may send an option this build doesn't know.
+                  config={parseAvatarConfig(peer.avatar.config)}
+                  walking={peer.avatar.walking}
+                  stepFrame={peer.avatar.stepFrame}
+                  lift={peer.avatar.lift}
+                  wave={peer.avatar.wave}
+                  seated={!!peer.avatar.seatedOn}
+                  // Replayed locally from the kind + elapsed time in their packet, by
+                  // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
+                  pose={
+                    peer.avatar.reaction
+                      ? reactionPose(peer.avatar.reaction.kind, peer.avatar.reaction.elapsedMs)
+                      : null
+                  }
+                  shirt={peer.color}
+                  name={peer.name}
+                  standingOn={null}
+                />
+              ))}
+              {/* A Reaction Pad burst (docs/specs/009-elements/reaction-pad.md) thrown around the CHARACTER rather
             than around a pad. Same engine, same particles: the pad and the
             avatar panel are two ways to set off one effect, not two effects.
             Positioned at the character's canvas point, inside the transformed
             wrapper, so it pans and zooms with the canvas it is celebrating. */}
-            {avatar.pos && avatarBurst ? (
-              <div
-                className="pointer-events-none absolute"
-                style={{ left: avatar.pos.x, top: avatar.pos.y, width: 0, height: 0 }}
-              >
-                <ReactionBurst
-                  reaction={avatarBurst.reaction}
-                  seed={avatarBurst.seed}
-                  // The character's own footprint, so the burst is scaled to a
-                  // person rather than to whatever pad happened to throw it.
-                  width={AVATAR_BURST_PX}
-                  height={AVATAR_BURST_PX}
-                  onDone={() => setAvatarBurst(null)}
+              {avatar.pos && avatarBurst ? (
+                <div
+                  className="pointer-events-none absolute"
+                  style={{ left: avatar.pos.x, top: avatar.pos.y, width: 0, height: 0 }}
+                >
+                  <ReactionBurst
+                    reaction={avatarBurst.reaction}
+                    seed={avatarBurst.seed}
+                    // The character's own footprint, so the burst is scaled to a
+                    // person rather than to whatever pad happened to throw it.
+                    width={AVATAR_BURST_PX}
+                    height={AVATAR_BURST_PX}
+                    onDone={() => setAvatarBurst(null)}
+                  />
+                </div>
+              ) : null}
+              {avatar.pos ? (
+                <AvatarWalker
+                  pos={avatar.pos}
+                  facing={avatar.facing}
+                  config={avatarLook.config}
+                  walking={avatar.walking}
+                  stepFrame={avatar.stepFrame}
+                  lift={avatar.lift}
+                  wave={avatar.wave}
+                  pose={avatar.pose}
+                  seated={avatar.seatedOn !== null}
+                  shirt={props.selfParticipant.color}
+                  standingOn={avatarStandingOn}
+                  onStand={avatar.standUp}
                 />
-              </div>
-            ) : null}
-            {avatar.pos ? (
-              <AvatarWalker
-                pos={avatar.pos}
-                facing={avatar.facing}
-                config={avatarLook.config}
-                walking={avatar.walking}
-                stepFrame={avatar.stepFrame}
-                lift={avatar.lift}
-                wave={avatar.wave}
-                pose={avatar.pose}
-                seated={avatar.seatedOn !== null}
-                shirt={props.selfParticipant.color}
-                standingOn={avatarStandingOn}
-                onStand={avatar.standUp}
-              />
-            ) : null}
+              ) : null}
+            </GifOmit>
           </div>
 
           {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the
