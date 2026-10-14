@@ -43,6 +43,13 @@ export const fixes = {
       `set ${arrow} label="<at most ${fits} characters>"`,
       `shorten the edge label to ${fits} characters`,
     ),
+  // A struck label moved along its own line to a spot clear of every other line and box.
+  labelStruck: (s: LintSource, arrow: string, t: number) =>
+    pick(
+      s,
+      `set ${arrow} labelOffset={"t":${t},"offset":0}`,
+      'shorten the edge label, or move one of the boxes',
+    ),
   labelOverflow: (s: LintSource, a: string, smaller: boolean) =>
     pick(
       s,

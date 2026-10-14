@@ -166,7 +166,7 @@
     "kinks": 0,
     "crossings": 0,
     "behind": 0,
-    "collisions": 0,
+    "collisions": 1,
     "extent": "1144×670"
   },
   "mermaid-erdiagram-3": {
@@ -256,7 +256,7 @@
     "kinks": 0,
     "crossings": 0,
     "behind": 0,
-    "collisions": 0,
+    "collisions": 1,
     "extent": "560×1272"
   }
 }
