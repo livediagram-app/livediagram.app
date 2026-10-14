@@ -303,6 +303,121 @@ function Dots({ cx, cy, from }: { cx: number; cy: number; from: number }) {
   );
 }
 
+// The Brainstorm Board: the question on its paper over the timer and vote, the slate Unsorted column of yellow
+// notes, then three themes the room clusters them into. Hover story: the room's dots land on a theme's note.
+function Brainstorm() {
+  const themes = [
+    { x: 32.5, hue: HUE.sky, notes: 4 },
+    { x: 48, hue: HUE.violet, notes: 3 },
+    { x: 63.5, hue: HUE.green, notes: 3 },
+  ];
+  return (
+    <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
+      <rect
+        x="2"
+        y="4"
+        width="13"
+        height="18"
+        rx="1.5"
+        fill="rgb(248 250 252)"
+        stroke={SLATE}
+        strokeWidth="1"
+      />
+      {[8, 11.5, 15].map((ry, i) => (
+        <rect
+          key={ry}
+          x="3.5"
+          y={ry}
+          width={i === 2 ? 6 : 10}
+          height="1.6"
+          rx="0.4"
+          fill="rgb(15 23 42)"
+        />
+      ))}
+      <Buttons x={2} y={25} w={13} />
+      <Column
+        x={17}
+        y={4}
+        w={14}
+        h={42}
+        hue={{ ...HUE.slate, note: HUE.amber.note }}
+        notes={6}
+        cols={2}
+        noteTop={12}
+      />
+      {themes.map((t) => (
+        <g key={t.x}>
+          <Column x={t.x} y={4} w={14} h={42} hue={t.hue} notes={t.notes} cols={2} noteTop={12} />
+          <rect x={t.x + 1.5} y="6.8" width="7" height="1.6" rx="0.4" fill={t.hue.deep} />
+        </g>
+      ))}
+      <Dots cx={39.5} cy={17} from={900} />
+    </svg>
+  );
+}
+
+// The Workshop Board: the mood check and the icebreaker down the rail, then Goals (a checklist), the Agenda (a
+// card of timed segments) and Ground rules (a stack of notes). Hover story: the room answers the mood check and
+// the first goal is ticked.
+function WorkshopBoard() {
+  return (
+    <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
+      <MoodCard x={2} y={4} w={13} h={22} />
+      <rect
+        x="2"
+        y="28"
+        width="13"
+        height="18"
+        rx="1.5"
+        fill="rgb(248 250 252)"
+        stroke={SLATE}
+        strokeWidth="1"
+      />
+      <rect x="3.5" y="30.5" width="7" height="1.6" rx="0.4" fill="rgb(15 23 42)" />
+      <Buttons x={3.5} y={38} w={10} />
+      <Column x={17} y={4} w={18.5} h={42} hue={HUE.amber} notes={0} noteTop={12} />
+      <rect x="18.5" y="6.8" width="6" height="1.6" rx="0.4" fill={HUE.amber.deep} />
+      {[12, 16, 20, 24].map((ry) => (
+        <g key={ry}>
+          <rect
+            x="18.5"
+            y={ry}
+            width="2.4"
+            height="2.4"
+            rx="0.4"
+            fill="white"
+            stroke={INK}
+            strokeWidth="0.45"
+          />
+          <line x1="22" y1={ry + 1.2} x2="33.5" y2={ry + 1.2} stroke={SLATE} strokeWidth="0.6" />
+        </g>
+      ))}
+      <Tick x={18.5} y={12} at={1300} />
+      <Column x={38} y={4} w={18.5} h={42} hue={HUE.sky} notes={0} noteTop={12} />
+      <rect x="39.5" y="6.8" width="7" height="1.6" rx="0.4" fill={HUE.sky.deep} />
+      <rect
+        x="39.5"
+        y="11"
+        width="15.5"
+        height="22"
+        rx="1.2"
+        fill="white"
+        stroke={HUE.sky.stroke}
+        strokeWidth="0.6"
+      />
+      {[15, 18.5, 22, 25.5, 29].map((ry) => (
+        <g key={ry}>
+          <circle cx="41.5" cy={ry} r="0.8" fill="none" stroke={INK} strokeWidth="0.4" />
+          <line x1="43.5" y1={ry} x2="51" y2={ry} stroke={SLATE} strokeWidth="0.6" />
+        </g>
+      ))}
+      <Buttons x={39.5} y={36} w={15.5} />
+      <Column x={59} y={4} w={18.5} h={42} hue={HUE.violet} notes={4} noteTop={12} />
+      <rect x="60.5" y="6.8" width="8" height="1.6" rx="0.4" fill={HUE.violet.deep} />
+    </svg>
+  );
+}
+
 function StartStopContinue() {
   const cols = [
     { x: 17, hue: HUE.green, lamp: 'play' },
@@ -740,6 +855,10 @@ export function templatePreviewGroup6(kind: TemplateKind): ReactElement | null {
       return FourLs();
     case 'sailboat':
       return Sailboat();
+    case 'brainstorm':
+      return Brainstorm();
+    case 'workshop-board':
+      return WorkshopBoard();
     default:
       return null;
   }
