@@ -27,7 +27,7 @@ import {
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
 import { layerLockOf } from '../locks';
-import { growContainer } from '../grow-container';
+import { growContainer, HOLD_PAD } from '../grow-container';
 import { resolvePlacement, type Placed } from '../placement';
 import { invalidValue } from '../rejections';
 import { type EditState, holdersOf, refuseLocked, writeFields } from '../state';
@@ -232,9 +232,6 @@ export function applyAddKind(
     growToHold(state, made.placed.ref, made.el, index);
   return null;
 }
-
-// Room a frame or lane leaves around what it holds, and the deeper band its header label takes.
-const HOLD_PAD = 32;
 
 // A box placed beside a member of a frame or lane joins it: the container grows to hold it, as an insertion grows
 // one (docs/specs/024-agents/edit-operations.md "Layout on edit"), instead of the new box landing just outside, and

@@ -268,7 +268,9 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
   `HOLD_PAD` (`growContainer`, `grow-container.ts`). On each side it grows, the units of the container's own scope
   that lay past its old edge (within `PAST_EDGE_TOLERANCE`, 2 px) and within its span on the other axis move on by
   the growth, carrying what they hold; a locked one stays. The new box itself never moves, and nothing inside the
-  container moves (EO27).
+  container moves (EO27). When the grown container, or a unit it moved on, now reaches within `HOLD_PAD` of its own
+  holder's edge or past it, that holder (an unlocked frame or lane) grows the same way to hold them, up the nesting;
+  what one level moved on is never moved again by the next (`growScope`).
 - **Move.** `move <selector> <placement>` places the moving set's bounding box as one box and translates every
   member by the same delta; `by=dx,dy` translates by exactly that. A placement relative to an element in the
   moving set is `invalid_value`. A container in the moving set carries `containerContents` ([Carry](#carry)). Carried

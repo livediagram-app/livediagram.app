@@ -337,6 +337,30 @@ describe('a frame grown to hold a new box', () => {
     expect(moved.x).toBeLessThan(-260);
   });
 
+  it('grows the frame the grown one sits in, so it still holds it', () => {
+    const tab: Tab = {
+      id: 't',
+      name: 't',
+      elements: [
+        { ...createShape('frame', 0, 0), id: 'outer', width: 400, height: 300, label: '' },
+        { ...createShape('frame', 40, 40), id: 'inner', width: 220, height: 160, label: '' },
+        { ...createShape('square', 60, 80), id: 'm', width: 140, height: 60, label: 'M' },
+      ] as Element[],
+    };
+    const { tab: next } = applied(run('add square label=N right-of:m', tab));
+    const box = (id: string) =>
+      next.elements.find((e) => e.id === id) as Element & {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+    const [outer, inner] = [box('outer'), box('inner')];
+    expect(inner.x + inner.width).toBeGreaterThan(400);
+    expect(outer.x + outer.width).toBeGreaterThan(inner.x + inner.width);
+    expect(outer.y + outer.height).toBeGreaterThanOrEqual(inner.y + inner.height);
+  });
+
   it('keeps a locked element where it is when what holds it moves on', () => {
     const tab = checkoutFlow();
     const below: Element[] = [
