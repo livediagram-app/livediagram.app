@@ -8,11 +8,16 @@
 // The flight runs on one requestAnimationFrame loop that writes each bubble's transform and opacity straight to
 // its node: no React render per frame, and no loop at all while nothing is flying.
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
+import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { bubbleMotion, type SpeechBubble } from '@/lib/avatar-speech';
 import type { AvatarPoint } from '@/lib/avatar-walk';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { SendIcon, SpeechCard, SpeechCounter, SpeechDraftField } from './AvatarSpeechBubble';
+
+// The brand cyan a character falls back to with no presence colour (AvatarWalker's).
+const BRAND_FALLBACK = '#0ea5e9';
 
 type Peer = { id: string; name: string; color: string };
 type Speaker = { name: string; colour: string } | null;
@@ -64,6 +69,7 @@ function Composer({
   onCancel,
 }: SpeechComposerProps & { zoom: number; colour: string }) {
   const [draft, setDraft] = useState('');
+  const canSend = !!draft.trim() && !coolingDown;
   const submit = () => {
     if (onSend(draft)) setDraft('');
   };
@@ -93,15 +99,18 @@ function Composer({
               <button
                 type="button"
                 aria-label="Send message"
-                disabled={!draft.trim() || coolingDown}
+                disabled={!canSend}
                 // Keep the text area's focus: a press on the button must not blur an empty-looking draft away.
                 onPointerDown={(e) => e.preventDefault()}
                 onClick={submit}
-                // Your colour, like the border: while it can send.
-                style={
-                  colour && draft.trim() && !coolingDown ? { backgroundColor: colour } : undefined
-                }
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white transition hover:bg-brand-700 disabled:cursor-default disabled:bg-slate-200 disabled:text-slate-400 dark:disabled:bg-slate-700 dark:disabled:text-slate-500"
+                // Your colour, like the border, while it can send: through the identity fill, so dark mode deepens it
+                // under the white glyph as it does every name chip.
+                style={canSend ? identityVars(colour || BRAND_FALLBACK) : undefined}
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition ${
+                  canSend
+                    ? `text-white ${IDENTITY_FILL}`
+                    : 'cursor-default bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-400'
+                }`}
               >
                 <SendIcon />
               </button>
@@ -139,47 +148,44 @@ export function AvatarSpeechLayer({
 }) {
   // Who said each bubble, decided once, when it first arrives: a peer whose character is not on this tab (or
   // hidden by a hide-cursors vote) is not drawn, and one who walks off afterwards keeps their words on screen.
-  const speakers = useRef(new Map<string, Speaker>());
+  // Adjusted during render, so a bubble draws in the same render it arrives in. A peer's message is read out
+  // (docs/specs/008-canvas/avatar-mode.md "The wire") at the same moment, once.
+  const [speakers, setSpeakers] = useState(() => new Map<string, Speaker>());
+  const [announcement, setAnnouncement] = useState('');
+  const liveIds = new Set(bubbles.map((b) => b.id));
+  const unresolved = bubbles.filter((b) => !b.own && !speakers.has(b.id));
+  const stale = [...speakers.keys()].some((id) => !liveIds.has(id));
+  if (unresolved.length > 0 || stale) {
+    const next = new Map([...speakers].filter(([id]) => liveIds.has(id)));
+    let heard: string | null = null;
+    for (const b of unresolved) {
+      const peer = peers.find((p) => p.id === b.from);
+      next.set(b.id, peer ? { name: peer.name, colour: peer.color } : null);
+      if (peer) heard = `${peer.name || 'Someone'} says: ${b.text}`;
+    }
+    setSpeakers(next);
+    if (heard) setAnnouncement(heard);
+  }
+  const speakerOf = (b: SpeechBubble): Speaker => (b.own ? self : (speakers.get(b.id) ?? null));
+  const shown = bubbles.filter((b) => b.tabId === activeTabId && speakerOf(b) !== null);
+
+  // Each bubble's nodes, kept by callback refs and read only by the flight loop below.
   const nodes = useRef(
     new Map<string, { card: HTMLDivElement | null; tail: HTMLSpanElement | null }>(),
   );
-  const peersRef = useRef(peers);
-  peersRef.current = peers;
-  const speakerOf = (b: SpeechBubble): Speaker => {
-    if (b.own) return self;
-    if (!speakers.current.has(b.id)) {
-      const peer = peersRef.current.find((p) => p.id === b.from);
-      speakers.current.set(b.id, peer ? { name: peer.name, colour: peer.color } : null);
-    }
-    return speakers.current.get(b.id) ?? null;
+  const nodeRef = (id: string, part: 'card' | 'tail') => (el: HTMLElement | null) => {
+    const entry = nodes.current.get(id) ?? { card: null, tail: null };
+    if (part === 'card') entry.card = el as HTMLDivElement | null;
+    else entry.tail = el as HTMLSpanElement | null;
+    if (entry.card || entry.tail) nodes.current.set(id, entry);
+    else nodes.current.delete(id);
   };
-  const shown = bubbles.filter((b) => b.tabId === activeTabId && speakerOf(b) !== null);
 
-  // Forget the speakers and nodes of bubbles that are gone.
-  useEffect(() => {
-    const live = new Set(bubbles.map((b) => b.id));
-    for (const id of speakers.current.keys()) if (!live.has(id)) speakers.current.delete(id);
-    for (const id of nodes.current.keys()) if (!live.has(id)) nodes.current.delete(id);
-  }, [bubbles]);
-
-  // A peer's message, read out once (docs/specs/008-canvas/avatar-mode.md "The wire").
-  const [announcement, setAnnouncement] = useState('');
-  const announced = useRef(new Set<string>());
-  const newestPeer = [...shown].reverse().find((b) => !b.own);
-  useEffect(() => {
-    if (!newestPeer || announced.current.has(newestPeer.id)) return;
-    announced.current.add(newestPeer.id);
-    if (announced.current.size > 50)
-      announced.current.delete(announced.current.values().next().value!);
-    const who = speakers.current.get(newestPeer.id)?.name || 'Someone';
-    setAnnouncement(`${who} says: ${newestPeer.text}`);
-  }, [newestPeer]);
-
-  // The flight: one loop while anything is flying.
-  const shownRef = useRef(shown);
-  shownRef.current = shown;
+  // The flight: one loop while anything is flying, its first frame written before paint so a new bubble never
+  // shows a frame out of place.
+  const shownRef = useLatest(shown);
   const flying = shown.length > 0;
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!flying) return;
     let raf = 0;
     const tick = () => {
@@ -195,37 +201,34 @@ export function AvatarSpeechLayer({
           n.tail.style.opacity = String(bubbleMotion(now - b.bornAt, b.flightMs, reduced).tail);
         }
       }
-      raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
+    const loop = () => {
+      tick();
+      raf = requestAnimationFrame(loop);
+    };
+    tick();
+    raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [flying]);
+  }, [flying, shown.length, shownRef]);
 
-  const renderNow = performance.now();
-  const reducedNow = prefersReducedMotion();
   return (
     <>
       {shown.map((b) => {
         const speaker = speakerOf(b)!;
-        const entry = nodes.current.get(b.id) ?? { card: null, tail: null };
-        nodes.current.set(b.id, entry);
         return (
           <AtPoint key={b.id} at={b} zoom={zoom}>
             <div
               aria-hidden
-              ref={(el) => {
-                entry.card = el;
-              }}
+              ref={nodeRef(b.id, 'card')}
               className="absolute bottom-0 left-0 w-max origin-bottom pb-[6px]"
-              style={motionStyle(b, renderNow, reducedNow)}
+              // Hidden until the flight loop places it, before the first paint.
+              style={{ opacity: 0 }}
             >
               <SpeechCard
                 floating
                 colour={speaker.colour || undefined}
                 name={speaker.name || undefined}
-                tailRef={(el) => {
-                  entry.tail = el;
-                }}
+                tailRef={nodeRef(b.id, 'tail')}
               >
                 <p className="whitespace-pre-wrap break-words">{b.text}</p>
               </SpeechCard>
