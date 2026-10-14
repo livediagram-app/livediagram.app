@@ -18,6 +18,7 @@ import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
+import { StackMenuSection } from '@/components/palette/StackMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
 import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import {
@@ -234,6 +235,7 @@ export function ElementDataSections({
     isChip ||
     shapeTarget?.shape === 'boundary' ||
     shapeTarget?.shape === 'pointer-note' ||
+    shapeTarget?.shape === 'stack' ||
     (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isProgress ||
     isRail ||
@@ -465,6 +467,14 @@ export function ElementDataSections({
               stepsInOrder={props.elements.some(
                 (el) => el.type === 'shape' && el.shape === 'step' && el.stepSequence === true,
               )}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A stack's arrangement (docs/specs/009-elements/stack.md). */}
+          {shapeTarget?.shape === 'stack' ? (
+            <StackMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
               sectionProps={sectionProps}
             />
           ) : null}

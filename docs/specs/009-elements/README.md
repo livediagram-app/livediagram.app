@@ -37,5 +37,6 @@ Follow the references below only as needed; never upfront.
 - ./pointer-note.md - when working on The pointer note: A short note joined by a leader line to a tip that attaches to a point on another element, so the note travels with what it is about
 - ./tag-colours.md - when working on Tag colours: A tab-level map from a card tag to a colour; mapped cards take it as their accent edge and their tag chips are tinted
 - ./diagram-key.md - when working on The diagram key: A legend that lists the tab's line styles and tag colours by itself, with a meaning typed per row
+- ./stack.md - when working on The stack: A container that arranges what is dropped into it in a row, column or grid with an even gap, reflows on every change and hugs its contents
 - ./boundary.md - when working on The boundary: A titled, tinted, dashed container (Tab / Inset / C4 styles, icon, meta line) whose tint deepens with nesting; a container like frame and lane, animated without moving motions
 - ./concept-graphics.md - when working on Concept graphics: Layer stack, Pyramid (pyramid / inverted / funnel) and Cycle as single elements laying out `conceptRows`, an accent ramp, in-place row editing, and the Concept animation set (build / pulse / flow)

@@ -45,7 +45,7 @@ function hasGeometry(el: Element): el is Boxed {
 
 // The containers (docs/specs/009-elements/boundary.md "A container"): a box that holds the elements whose centre is
 // inside it and carries them when it moves. One list, read wherever a frame, a lane or a boundary is special.
-export const CONTAINER_KINDS: ReadonlySet<string> = new Set(['frame', 'lane', 'boundary']);
+export const CONTAINER_KINDS: ReadonlySet<string> = new Set(['frame', 'lane', 'boundary', 'stack']);
 
 export function isContainerKind(kind: string): boolean {
   return CONTAINER_KINDS.has(kind);

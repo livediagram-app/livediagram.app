@@ -283,6 +283,32 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v: unknown) => isPointerTip(v),
     rule: 'an { x, y } of finite numbers within ±4000',
   },
+  // A stack's arrangement (docs/specs/009-elements/stack.md).
+  {
+    field: 'stackDirection',
+    valid: (v: unknown) => v === 'row' || v === 'column' || v === 'grid',
+    rule: oneOfRule(['row', 'column', 'grid']),
+  },
+  {
+    field: 'stackAlign',
+    valid: (v: unknown) => v === 'start' || v === 'center' || v === 'end',
+    rule: oneOfRule(['start', 'center', 'end']),
+  },
+  {
+    field: 'stackGap',
+    valid: (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 64,
+    rule: 'a whole number 0 to 64',
+  },
+  {
+    field: 'stackPadding',
+    valid: (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 64,
+    rule: 'a whole number 0 to 64',
+  },
+  {
+    field: 'stackColumns',
+    valid: (v: unknown) => Number.isInteger(v) && (v as number) >= 2 && (v as number) <= 6,
+    rule: 'a whole number 2 to 6',
+  },
   // A diagram key (docs/specs/009-elements/diagram-key.md): derived rows, and the author's meanings.
   {
     field: 'keyRows',

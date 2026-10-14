@@ -70,7 +70,11 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 // Array order decides within a tier.
 function paintTier(el: Element): number {
   // Frames and boundaries are backdrops (docs/specs/009-elements/boundary.md "A container").
-  if (el.type === 'shape' && (el.shape === 'frame' || el.shape === 'boundary')) return 0;
+  if (
+    el.type === 'shape' &&
+    (el.shape === 'frame' || el.shape === 'boundary' || el.shape === 'stack')
+  )
+    return 0;
   // An attached badge or step number (docs/specs/009-elements/badge.md) sits above everything in its band, so a
   // later element never covers the mark on its host.
   if (

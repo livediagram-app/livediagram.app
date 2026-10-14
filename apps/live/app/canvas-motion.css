@@ -1168,6 +1168,15 @@
   transition: transform 120ms ease-out;
 }
 
+/* A stack's reflow (docs/specs/009-elements/stack.md "Animation"): a child the stack holds glides from where it was to
+   its new slot. Only on children nothing is dragging (the attribute is dropped for the gesture's elements), so a drag
+   still tracks the pointer exactly. The global reduce-motion rules above collapse it to ~instant. */
+[data-stack-glide] {
+  transition:
+    left 160ms ease-out,
+    top 160ms ease-out;
+}
+
 /* Done check: the all-done flash (docs/specs/012-collaboration/done-check.md).
    A pulse of the card's own ring rather than a colour wash, so it reads on a
    card of any theme colour, and it RUNS OUT after a few cycles: a card that

@@ -253,6 +253,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TagColour':
     'Someone gave a card tag a colour for the whole tab, so every card with that tag shows it.',
   'Element|Changed|TagColourCleared': 'Someone removed the colour a card tag had across the tab.',
+  'Element|Changed|StackDirection':
+    'Someone switched a stack between laying things out in a row, a column and a grid.',
+  'Element|Changed|StackColumns': 'Someone changed how many columns a grid stack has.',
+  'Element|Changed|StackGap': 'Someone changed the gap between the things in a stack.',
+  'Element|Changed|StackPadding': 'Someone changed the space inside the edge of a stack.',
+  'Element|Changed|StackAlign':
+    'Someone changed whether the things in a stack line up at the start, the centre or the end.',
   'Element|Changed|HubSpokes': 'Someone switched the spokes of a hub and spoke graphic on or off.',
   'Element|Changed|PyramidVariant':
     'Someone switched a pyramid between pointing up, pointing down and a funnel.',

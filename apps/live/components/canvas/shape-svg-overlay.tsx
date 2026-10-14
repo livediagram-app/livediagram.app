@@ -86,6 +86,8 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'pointer-note' &&
     // A diagram key (docs/specs/009-elements/diagram-key.md) is a CSS box with its rows on top.
     kind !== 'diagram-key' &&
+    // A stack (docs/specs/009-elements/stack.md) is a CSS box (a dashed outline) behind what it holds.
+    kind !== 'stack' &&
     // A record (docs/specs/009-elements/entity.md) is a filled box with rows drawn on top.
     kind !== 'entity' &&
     // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) are filled rounded

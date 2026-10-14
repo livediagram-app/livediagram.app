@@ -467,6 +467,12 @@ export type ShapeElement = {
   // A diagram key's derived rows and the author's meaning per row id (docs/specs/009-elements/diagram-key.md).
   keyRows?: import('./diagram-key').KeyRow[];
   keyMeanings?: Record<string, string>;
+  // A stack's arrangement (docs/specs/009-elements/stack.md); each absent = its default.
+  stackDirection?: import('./stack').StackDirection;
+  stackAlign?: import('./stack').StackAlign;
+  stackGap?: number;
+  stackPadding?: number;
+  stackColumns?: number;
   // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
   boundaryStyle?: BoundaryStyle;
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows (a layer, tier or step each, with an

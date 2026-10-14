@@ -116,6 +116,7 @@ function BoxedElementViewImpl({
   isoDepth,
   insertShiftX,
   insertShiftAnimates,
+  stackGlide,
   chartPalette,
   onCancelEdit,
   onFollowLink,
@@ -432,6 +433,7 @@ function BoxedElementViewImpl({
       // Carries the slot's easing (globals.css) for as long as a slot COULD
       // be open, so the board eases shut as well as open.
       data-insert-shift={insertShiftAnimates ? '' : undefined}
+      data-stack-glide={stackGlide ? '' : undefined}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces.
       role="img"

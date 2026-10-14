@@ -39,6 +39,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   card: 'node service component box tile persona tag title',
   badge: 'tag pill label chip status version beta new count',
   step: 'number numbered sequence order walkthrough marker 1 2 3',
+  stack: 'stack row column grid auto layout flex align distribute even gap spacing container list',
   'diagram-key': 'legend key line styles dashed solid meaning tag colours colour code explain',
   'pointer-note':
     'annotation callout leader line pointer note comment explain here arrow pin label',

@@ -47,6 +47,8 @@ export type ShapeKind =
   | 'pointer-note'
   // Diagram key (docs/specs/009-elements/diagram-key.md): a legend of the tab's line patterns and tag colours.
   | 'diagram-key'
+  // Stack (docs/specs/009-elements/stack.md): a container that lays out what it holds in a row, column or grid.
+  | 'stack'
   // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
   | 'boundary'
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): one element laying out its own rows

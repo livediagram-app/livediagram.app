@@ -1520,6 +1520,25 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The stack (docs/specs/009-elements/stack.md): a container that arranges what is dropped into it.
+    id: 'tools:stack',
+    blurb: 'Lines things up with even gaps',
+    caption: 'Stack',
+    section: 'build',
+    label: 'Add Stack',
+    description:
+      'Stack. Drop elements in and it lines them up in a row, a column or a grid with even gaps, and reflows as they change.',
+    action: { type: 'shape', kind: 'stack' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="2.5" y="6" width="19" height="12" rx="2" strokeDasharray="2.5 2" />
+        <rect x="5" y="9" width="4" height="6" rx="1" />
+        <rect x="10" y="9" width="4" height="6" rx="1" />
+        <rect x="15" y="9" width="4" height="6" rx="1" />
+      </Glyph>
+    ),
+  },
+  {
     // The boundary (docs/specs/009-elements/boundary.md): a titled, tinted container for regions and systems.
     id: 'tools:boundary',
     blurb: 'A titled zone: a region, a VPC, a system',

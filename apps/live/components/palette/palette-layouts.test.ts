@@ -221,6 +221,7 @@ describe('palette layouts', () => {
     }
     expect(tileIds('illustrate', 'build')).toEqual([
       'tools:table',
+      'tools:stack',
       'tools:timeline',
       'tools:sankey',
     ]);

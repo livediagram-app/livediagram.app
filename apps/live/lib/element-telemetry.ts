@@ -78,6 +78,7 @@ const SHAPE_TOKENS: Record<string, string> = {
   step: 'Step',
   'pointer-note': 'PointerNote',
   'diagram-key': 'DiagramKey',
+  stack: 'Stack',
   // Boundary (docs/specs/009-elements/boundary.md).
   boundary: 'Boundary',
   // Concept graphics (docs/specs/009-elements/concept-graphics.md).
