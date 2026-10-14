@@ -45,8 +45,8 @@ element by its `data-tour-id`. The exact strings live in `apps/live/components/t
 1. **Your Avatar**: rings the Avatar button (`avatar-button`). The character sheet and everything your character
    can do live here.
 2. **Make It Yours**: opens the Avatar panel if it is closed and rings its character section (`avatar-character`):
-   gender, clothing, hair and size, the dice for a whole new look, and right-click on your character to swap
-   gender. The shirt is always your colour, so people know which character is you.
+   gender, clothing, hair and size, the dice for a whole new look, and a [status](avatar-mode.md#status) so people
+   know whether you are free. The shirt is always your colour, so people know which character is you.
 3. **Behaviour and Reactions**: rings the panel's action rows (`avatar-actions`). Jumping jacks, a wave, a spin,
    a cheer or a dance, and confetti, hearts and more thrown around you.
 4. **Say Something**: rings the panel's Send a Message button (`avatar-message`). Press Enter to type above your

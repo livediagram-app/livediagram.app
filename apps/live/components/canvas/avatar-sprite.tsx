@@ -528,6 +528,31 @@ function TorsoProfile({
   );
 }
 
+// --- Headphones ---------------------------------------------------------------
+
+const PHONES_BAND = '#334155';
+const PHONES_CUP = '#8b5cf6';
+
+// Focusing (docs/specs/008-canvas/avatar-mode.md "Status"): a band over the head and an ear cup either side (one
+// in profile), drawn over the hair.
+function Headphones({ profile }: { profile: boolean }) {
+  return profile ? (
+    <g>
+      <rect x={6} y={0} width={4} height={1} fill={PHONES_BAND} />
+      <rect x={9} y={0} width={1} height={4} fill={PHONES_BAND} />
+      <rect x={8} y={4} width={3} height={3} fill={PHONES_CUP} />
+    </g>
+  ) : (
+    <g>
+      <rect x={4} y={0} width={8} height={1} fill={PHONES_BAND} />
+      <rect x={3} y={1} width={1} height={3} fill={PHONES_BAND} />
+      <rect x={12} y={1} width={1} height={3} fill={PHONES_BAND} />
+      <rect x={2} y={4} width={2} height={3} fill={PHONES_CUP} />
+      <rect x={12} y={4} width={2} height={3} fill={PHONES_CUP} />
+    </g>
+  );
+}
+
 // --- Flag -------------------------------------------------------------------
 
 // An arm raised above the head holding a pole, with a cloth that snaps through
@@ -562,6 +587,7 @@ export function AvatarSprite({
   portrait = false,
   pose = null,
   seated = false,
+  headphones = false,
 }: {
   facing: AvatarFacing;
   config: AvatarConfig;
@@ -583,6 +609,8 @@ export function AvatarSprite({
   // already uses, so sitting needs no second set of artwork. It is a pose, not
   // a new sprite: a character who sits down is still the character you built.
   seated?: boolean;
+  // Focusing (docs/specs/008-canvas/avatar-mode.md "Status"): headphones on.
+  headphones?: boolean;
 }) {
   // Seated characters never walk (walkTo refuses while seated), so the stride
   // is forced off rather than merely unlikely.
@@ -651,6 +679,7 @@ export function AvatarSprite({
             />
             {config.clothing === 'hoodie' ? <Hood shirtDark={shirtDark} /> : null}
             <HeadProfile hair={config.hair} />
+            {headphones ? <Headphones profile /> : null}
           </>
         ) : (
           <>
@@ -677,6 +706,7 @@ export function AvatarSprite({
             ) : (
               <HeadFront gender={config.gender} hair={config.hair} />
             )}
+            {headphones ? <Headphones profile={false} /> : null}
           </>
         )}
         {wave !== null ? <Flag frame={wave} /> : null}

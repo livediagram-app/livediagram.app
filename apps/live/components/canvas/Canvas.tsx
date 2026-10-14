@@ -74,6 +74,8 @@ import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { spotlightRadius } from '@/lib/spotlight-config';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
+import { track } from '@/lib/telemetry';
+import { parseAvatarStatus, type AvatarStatus } from '@/lib/avatar-status';
 import { useAvatarSpeech } from '@/hooks/canvas/useAvatarSpeech';
 import { useSpeechBubbles } from '@/lib/avatar-speech-store';
 import { headPoint } from '@/lib/avatar-speech';
@@ -385,6 +387,10 @@ function CanvasView(props: CanvasProps) {
   // a pad's (docs/specs/009-elements/reaction-pad.md): nothing is stored and nothing is replayed.
   const [avatarBurst, setAvatarBurst] = useState<{ reaction: Reaction; seed: number } | null>(null);
   const avatarBurstSeq = useRef(0);
+  // Your status in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"): for the session, cleared on leaving
+  // the mode (adjusted during render so it never publishes a stale one).
+  const [avatarStatus, setAvatarStatus] = useState<AvatarStatus | null>(null);
+  if (canvasTool !== 'avatar' && avatarStatus !== null) setAvatarStatus(null);
   // A character walks among what is drawn: a hidden layer's fences, portals and seats are not there.
   const walkElements = useMemo(
     () => visibleLayerElements(elements, tabLayers),
@@ -393,6 +399,7 @@ function CanvasView(props: CanvasProps) {
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
     config: avatarLook.config,
+    status: avatarStatus,
     onToggleGender: avatarLook.toggleGender,
     elements: walkElements,
     mainRef,
@@ -970,6 +977,7 @@ function CanvasView(props: CanvasProps) {
                   lift={peer.avatar.lift}
                   wave={peer.avatar.wave}
                   seated={!!peer.avatar.seatedOn}
+                  status={parseAvatarStatus(peer.avatar.status)}
                   // Replayed locally from the kind + elapsed time in their packet, by
                   // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
                   pose={
@@ -1014,6 +1022,7 @@ function CanvasView(props: CanvasProps) {
                   wave={avatar.wave}
                   pose={avatar.pose}
                   seated={avatar.seatedOn !== null}
+                  status={avatarStatus}
                   shirt={props.selfParticipant.color}
                   standingOn={avatarStandingOn}
                   onStand={avatar.standUp}
@@ -1127,6 +1136,11 @@ function CanvasView(props: CanvasProps) {
             onMoveLaserPanel={props.onMoveLaserPanel}
             onResetLaserPanel={props.onResetLaserPanel}
             onRandomiseAvatar={avatarLook.randomise}
+            avatarStatus={avatarStatus}
+            onSetAvatarStatus={(next: AvatarStatus | null) => {
+              track('UI', 'Changed', 'AvatarStatus');
+              setAvatarStatus(next);
+            }}
             onSendAvatarMessage={
               speech.speaking ? (text: string) => speech.send(text, 'panel') : undefined
             }
