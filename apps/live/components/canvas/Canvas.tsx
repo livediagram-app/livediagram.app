@@ -591,6 +591,8 @@ function CanvasView(props: CanvasProps) {
   // illustrate-pages.md "Copying a background"); off every page it stays an empty-canvas press.
   const formatPagePress = (e: React.PointerEvent): boolean => {
     if (canvasTool !== 'format' || e.button !== 0 || !props.onFormatPagePress) return false;
+    // On an element, the press is the element's (arming or painting its look): only the paper is the page's.
+    if ((e.target as HTMLElement | null)?.closest?.('[data-element-id]')) return false;
     const pageId = pageIdAtPress(props.illustratePages, e, wrapperRef, viewportZoom);
     if (!pageId) return false;
     props.onFormatPagePress(pageId);
