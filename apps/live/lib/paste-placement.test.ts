@@ -91,3 +91,68 @@ describe('landPastedCopies', () => {
     expect(out.find((e) => e.id === 's')).toMatchObject({ x: 1100, y: 1333 });
   });
 });
+
+// A paste whose usual spot is out of view lands in the middle of the view
+// (docs/specs/008-canvas/canvas-and-palette.md Clipboard): copied near the first
+// slide and pasted while looking at the twelfth.
+describe('pasteTranslation into the view', () => {
+  const view = { x: 10_000, y: 0, width: 1200, height: 800 };
+
+  it('keeps the usual offset when the copies land in view', () => {
+    const inView = { x: -200, y: -200, width: 1200, height: 800 };
+    expect(pasteTranslation([shape('s', 0, 0)], plainBoard, null, inView)).toEqual({
+      dx: 24,
+      dy: 24,
+      atPointer: false,
+    });
+  });
+
+  it('centres the copies on the view when their spot is off-screen', () => {
+    // The square's centre is (50, 50); the view's (10_600, 400).
+    expect(pasteTranslation([shape('s', 0, 0)], plainBoard, null, view)).toEqual({
+      dx: 10_550,
+      dy: 350,
+      atPointer: false,
+    });
+  });
+
+  it('centres a block by its whole box, landing on whole pixels', () => {
+    const block = [shape('a', 0, 0), shape('b', 301, 0)];
+    // Box 0..401 by 0..100: centre (200.5, 50).
+    expect(pasteTranslation(block, plainBoard, null, view)).toEqual({
+      dx: Math.round(10_600 - 200.5),
+      dy: 350,
+      atPointer: false,
+    });
+  });
+
+  it('counts an arrow between the copies in the box', () => {
+    const arrow = {
+      id: 'ar',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 1000, y: 0 },
+    } as unknown as Element;
+    expect(pasteTranslation([shape('s', 0, 0), arrow], plainBoard, null, view).dx).toBe(
+      10_600 - 500,
+    );
+  });
+
+  it('keeps the offset with no view to measure', () => {
+    expect(pasteTranslation([shape('s', 0, 0)], plainBoard, null, null).dx).toBe(24);
+  });
+
+  it('staggers an event-storming note off-screen into the view, not at the pointer', () => {
+    expect(pasteTranslation([workshop('a', 0, 240)], esBoard(), null, view)).toEqual({
+      dx: 10_500,
+      dy: 60,
+      atPointer: false,
+    });
+  });
+
+  it('still lands an event-storming note at the pointer when there is one', () => {
+    expect(
+      pasteTranslation([workshop('a', 0, 240)], esBoard(), { x: 10_100, y: 100 }, view),
+    ).toMatchObject({ atPointer: true });
+  });
+});

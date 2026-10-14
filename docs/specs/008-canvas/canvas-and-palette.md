@@ -1532,7 +1532,7 @@ The tool dropdown's Present band also carries **Slide Deck** ([Presentation mode
 `⌘C` puts the selection on the **OS clipboard**, serialised
 (`apps/live/lib/clipboard-payload.ts`); `⌘V` reads it back, re-mints it through
 `duplicateElements` so ids are remapped and pinned arrows re-wired, and
-drops the copies 24px offset on the active tab. On an event-storming board a paste holding a workshop note lands at the POINTER when the pointer is over the canvas, and otherwise staggers on the original along its lane (24px right, same lane); either way every workshop note lands on a lane ([Event storming](../021-event-storming/event-storming.md#always-on-a-lane)). `⌘X` is the same copy followed
+drops the copies 24px offset on the active tab. On an event-storming board a paste holding a workshop note lands at the POINTER when the pointer is over the canvas, and otherwise staggers on the original along its lane (24px right, same lane); either way every workshop note lands on a lane ([Event storming](../021-event-storming/event-storming.md#always-on-a-lane)). **A paste lands where the person is looking**: when the copies' usual spot would put their centre outside the view (copied on one tab and pasted on another, or copied on the first slide of a deck and pasted while on the twelfth), they land centred in the middle of the view instead, on whole pixels (`pasteTranslation` in `apps/live/lib/paste-placement.ts`). A paste at the pointer is unaffected. `⌘X` is the same copy followed
 by a delete. So a selection crosses a browser tab, a second window, and a
 reload — copy from one document, paste into another.
 

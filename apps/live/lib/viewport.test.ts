@@ -8,6 +8,7 @@ import {
   computeFitToScreen,
   computeReadingFrame,
   READING_TOP_ROOM,
+  computeViewportCanvasRect,
   computeViewportCenter,
   isContentOffScreen,
   FIT_TOOLBAR_GAP,
@@ -226,5 +227,16 @@ describe('computeFitBelow with a DOMRect-like rect', () => {
     const { zoom, offset } = computeFitBelow(rect, { x: 0, y: 0, width: 400, height: 300 }, 60);
     expect(Number.isFinite(zoom)).toBe(true);
     expect(Number.isFinite(offset.x) && Number.isFinite(offset.y)).toBe(true);
+  });
+});
+
+describe('computeViewportCanvasRect', () => {
+  it('spreads the screen around the view centre, divided by the zoom', () => {
+    expect(computeViewportCanvasRect({ width: 1000, height: 600 }, { x: -100, y: 50 }, 2)).toEqual({
+      x: 350,
+      y: 100,
+      width: 500,
+      height: 300,
+    });
   });
 });
