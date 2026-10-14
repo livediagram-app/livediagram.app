@@ -129,7 +129,9 @@ The layout an agent did not ask to change stays put:
   comes in to what stays with its padding (`narrower`, `shorter`), and what lay past that edge moves back with it,
   as growing moved it on. A container left empty keeps its size.
 - **A re-ended arrow is re-routed.** `set` of an arrow's `from` or `to` drops its old bends (unless it writes new
-  ones), and an angled arrow bends twice between its new ends, meeting both square.
+  ones), and an angled arrow bends twice between its new ends, meeting both square. So does an arrow a `move`
+  re-anchors with one end's box moved and the other not: kept, its old bend ran the line through the moved box.
+  An arrow whose two ends moved together moved whole, and keeps its route.
 - `insert` places the node at the midpoint and **makes room**: everything beyond it along the flow, within the same
   frame or lane, or outside them within b's connected group along arrows, shifts by the node's size and the gap
   (reported as moves), whatever room there already was. A frame or lane holding shifted members grows with them.

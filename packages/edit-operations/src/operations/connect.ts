@@ -5,6 +5,7 @@
 
 import type { EditRejection } from '@livediagram/api-schema';
 import {
+  anchorPrimarySide,
   bestAnchorTowards,
   createPinnedArrow,
   recolourElementForTheme,
@@ -44,6 +45,18 @@ export function facing(a: BoxedElement, b: BoxedElement) {
 export function withoutRoute(arrow: ArrowElement): ArrowElement {
   const { curveOffset: _c, curvePoints: _p, elbowOffset: _e, ...rest } = arrow;
   return rest;
+}
+
+// An arrow whose ends moved drawn afresh between them: its old route dropped, and an angled one bent twice along
+// the axis its start anchor faces, so it meets both ends square rather than drawing one L (EO31). `elements` holds
+// the tab as it now stands.
+export function rerouted(arrow: ArrowElement, elements: readonly Element[]): ArrowElement {
+  const bare = withoutRoute(arrow);
+  if (bare.arrowStyle !== 'angled' || bare.from.kind !== 'pinned') return bare;
+  const side = anchorPrimarySide(bare.from.anchor);
+  const all = elements.map((el) => (el.id === bare.id ? bare : el));
+  const bends = orthogonalBends(bare, all, side === 'n' || side === 's' ? 'TB' : 'LR');
+  return bends ? { ...bare, curvePoints: bends } : bare;
 }
 
 export const pinnedFromTo = (arrow: Element, a: string, b: string) =>
