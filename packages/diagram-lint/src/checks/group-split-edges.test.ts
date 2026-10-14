@@ -43,6 +43,25 @@ describe('group-split-edges', () => {
     ).toBe('group by ownership, or drop the groups');
   });
 
+  it('stays quiet on a stage the flow passes through: in from before it, out to after it', () => {
+    // A pipeline stage: fed from above, drained below, one step inside.
+    const stage = (q: [number, number]) =>
+      lint(
+        tabOf(
+          ...core(),
+          box('p', 40, -200),
+          box('q', q[0], q[1]),
+          arrow('1', 'p', 'a', ['s', 'n']),
+          arrow('2', 'p', 'b', ['s', 'n']),
+          arrow('3', 'a', 'b', ['s', 'n']),
+          arrow('4', 'b', 'q', ['s', 'n']),
+        ),
+      );
+    expect(of(stage([40, 600]), 'group-split-edges')).toEqual([]);
+    // Drained to the side instead: split, not passed through.
+    expect(of(stage([400, 300]), 'group-split-edges')).toHaveLength(1);
+  });
+
   it('stays quiet under three arrows, when most stay inside, and for a lane', () => {
     expect(
       of(
