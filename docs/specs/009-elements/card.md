@@ -101,6 +101,26 @@ their own.
 The Card tile drops a card with a tile, a title, a meta line, a body and two tags, so the first one shows what the
 slots are; switching a slot off is quicker than discovering one exists.
 
+## Card presets
+
+A card has many possible shapes, so the palette offers a few to start close to what you want. On the Toolbar strip the
+Card tile is drawn as an opener (its glyph with a caret, as the Icons groups are) and pressing it opens a popover below
+it of the presets, two to a row (the same panel as Facilitate's openers): each places or drags exactly as a tile does,
+and using one closes the popover.
+
+| Preset  | Variant   | Slots                                                                      | Size      |
+| ------- | --------- | -------------------------------------------------------------------------- | --------- |
+| Service | (none)    | Tile media, title, meta line, body, two tags: the card's own starting copy | default   |
+| Compact | `compact` | Tile media, title and meta line; no body or tags                           | 240 × 64  |
+| Panel   | `panel`   | Header band, badge media, title, meta line and body; no tags               | 280 × 150 |
+| Person  | `person`  | Initial media, a name and role, a line about them, a Persona tag           | 280 × 140 |
+| Accent  | `accent`  | A left accent edge, title and body; no media, meta line or tags            | 260 × 110 |
+| Callout | `callout` | The Callout (below)                                                        | 380 × 116 |
+
+Every preset is an ordinary card, so any slot can be switched back on afterwards. Elsewhere (the category's More
+body, the rows view, Search) the Card tile places the Service preset as before. Telemetry: the placement's type
+carries the variant, as the Callout's and the Funnel's do.
+
 ## Editing the slots
 
 A **Card** section in the element's menu (Tools flyout), closed until opened:

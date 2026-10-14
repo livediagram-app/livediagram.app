@@ -1,3 +1,4 @@
+import { CARD_PRESET_TILES } from './palette-card-presets';
 import { headlineCase } from '@livediagram/api-schema';
 import type { PenColour } from '@livediagram/document';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
@@ -280,6 +281,9 @@ export type PaletteTileDef = {
   // strip, between it and the next tile shown (docs/specs/007-editor/toolbar-layout.md "Fixed
   // dividers"). Never more than two per category.
   dividerAfter?: true;
+  // Presets of this tile's element (docs/specs/009-elements/card.md "Card presets"): on the Toolbar strip the tile is
+  // drawn as an opener (its glyph with a caret) whose popover offers them; elsewhere the tile places its own element.
+  variants?: readonly PaletteTileDef[];
   action: PaletteTileAction;
 };
 
@@ -1431,6 +1435,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Card. A diagram node with slots you switch on: a header band, an icon, a title and meta line, a body and tags. Tap to drop or drag to size.',
     filled: true,
     action: { type: 'shape', kind: 'card' },
+    variants: CARD_PRESET_TILES,
     icon: (
       <Glyph size={18} units={24}>
         <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />

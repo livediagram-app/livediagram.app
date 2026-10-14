@@ -14,6 +14,9 @@ import type { useStripPopover } from './ToolbarStripPopover';
 // "More"), kept out of ToolbarPalette: a catalogue's groups, or a category's tiles with its openers
 // (palette-openers) and fixed dividers.
 
+// What a tile's presets popover says under its name.
+const PRESETS_DESCRIPTION = 'Start from a preset, then switch any part on or off.';
+
 export function Divider() {
   // Hairline margins on a phone, where every pixel of the strip is a tile's.
   return (
@@ -84,8 +87,27 @@ export function tileItems(
 ): ReactNode[] {
   return tiles.map((def) => {
     const a = def.action;
+    // A tile with presets opens them (docs/specs/009-elements/card.md "Card presets"), as a catalogue's group does.
+    const variants = def.variants;
     const tile =
-      a.type === 'open' ? (
+      variants && variants.length > 0 ? (
+        <CatalogueGroupTile
+          group={{ id: def.id, label: def.caption ?? def.label, icon: def.icon }}
+          open={openers?.isOpen(def.id) ?? false}
+          onToggle={(anchor) =>
+            openers?.toggleOpen(
+              {
+                key: def.id,
+                category: def.section,
+                group: null,
+                label: def.caption ?? def.label,
+                variants: { description: PRESETS_DESCRIPTION, tiles: variants },
+              },
+              anchor,
+            )
+          }
+        />
+      ) : a.type === 'open' ? (
         <CatalogueGroupTile
           group={{ id: def.id, label: def.label, icon: def.icon }}
           open={openers?.isOpen(def.id) ?? false}
