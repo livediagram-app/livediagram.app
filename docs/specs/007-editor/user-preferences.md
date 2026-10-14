@@ -411,8 +411,11 @@ Missing key === undefined === default behaviour. Concretely:
   default). A value below 1 makes every panel translucent at rest
   (snapping back to opaque on hover / focus) via the
   `--lvd-panel-opacity` custom property, on every surface: docked,
-  popover (the Explorer and cluster popovers), the Map, Quick style
-  and the Toolbar strip. Buttons stay opaque. A touch screen (no
+  popover (the cluster popovers), the Map, Quick style and the Toolbar
+  strip. Buttons stay opaque. The **Explorer** is always fully opaque,
+  docked or as a popover: it is where documents are read and managed,
+  and its menus open outside the panel, so a fade would set in just as
+  one of them is in use. A touch screen (no
   hover) keeps every panel opaque, since nothing there would bring a
   faded panel back while it is in use. Emits
   `UI`/`Changed`/`PanelOpacity` on release ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).

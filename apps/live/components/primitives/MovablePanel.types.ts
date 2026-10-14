@@ -161,5 +161,8 @@ export type MovablePanelProps = {
   // card search): a maximised or tab-filling Plan board stands beside it (lib/canvas-layer-insets.ts), while a passing
   // panel floats over the board and never moves it. Marked `data-layout-chrome`.
   layoutChrome?: boolean;
+  // Always fully opaque, whatever the Panel opacity preference (docs/specs/007-editor/user-preferences.md): the
+  // Explorer, whose menus open outside the panel, so a fade would set in while one is in use.
+  opaque?: boolean;
   children: ReactNode;
 };
