@@ -17,8 +17,12 @@ import {
 import { embedTabImages } from '@livediagram/api-schema';
 import {
   canvasSurface,
+  laidOutPagesOf,
   planBoardFitHeight,
   renderElementsToSvg,
+  renderPageToSvg,
+  renderPagesToSvg,
+  type LaidOutPage,
   type SheetRenderModel,
   type Tab,
 } from '@livediagram/document';
@@ -130,7 +134,16 @@ async function planContentFor(
 export async function tabPreview(
   tab: Tab,
   auth?: { env: Env; token: string; documentId?: string },
+  // One page of an Illustrate tab to draw alone (read_document's `page`); every page when absent.
+  page?: LaidOutPage,
 ): Promise<ImageBlock> {
+  // An Illustrate tab draws as its pages (svg-render-pages.ts), as the editor exports them.
+  if (laidOutPagesOf(tab).length > 0) {
+    const resolveImageHref = auth ? await buildImageResolver(auth.env, auth.token, tab) : undefined;
+    const drawWith = { resolveImageHref, resolveIconArt: resolveIconExportArt, resolveStickerArt };
+    const svg = page ? renderPageToSvg(tab, page, drawWith) : renderPagesToSvg(tab, drawWith)!;
+    return { type: 'image', data: await svgToPngBase64(svg), mimeType: 'image/png' };
+  }
   // A Plan tab as the editor exports it: a Dashboard laid out, its pictures drawn from the cards.
   const plain = (shown: Tab) =>
     renderElementsToSvg(shown, { resolveIconArt: resolveIconExportArt, resolveStickerArt });

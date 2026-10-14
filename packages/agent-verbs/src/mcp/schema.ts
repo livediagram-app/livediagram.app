@@ -614,7 +614,15 @@ export const readDocumentShape = {
   image: z
     .boolean()
     .optional()
-    .describe('Also attach a PNG preview of the tab (costs about a thousand tokens).'),
+    .describe(
+      'Also attach a PNG preview of the tab (costs about a thousand tokens). An Illustrate tab draws as its pages, each as it exports: its background, what reaches onto it, cut at its edges.',
+    ),
+  page: z
+    .union([z.string(), z.number().int().min(1)])
+    .optional()
+    .describe(
+      'With image, on an Illustrate tab: draw only this page, at its own size (its id, its place 1 first, or its name). Without it every page is drawn, in rows.',
+    ),
 };
 
 // A document or tab name (docs/specs/006-document/name-length.md). Shortened with
