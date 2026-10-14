@@ -224,9 +224,9 @@ export function useStylePreview(deps: {
     commitTablePreset: (p: TablePreset) =>
       commitStyle((el) => applyTablePresetToEl(el, p), 'TablePreset'),
     // Chart palette (docs/specs/009-elements/pie-chart.md): the chart's flavour of preset.
-    previewChartPalette: (id: ChartPaletteId) =>
+    previewChartPalette: (id: ChartPaletteId | null) =>
       previewStyle((el) => applyChartPaletteToEl(el, id)),
-    commitChartPalette: (id: ChartPaletteId) =>
+    commitChartPalette: (id: ChartPaletteId | null) =>
       commitStyle((el) => applyChartPaletteToEl(el, id), 'ChartPalette'),
     // Code-block scheme (docs/specs/009-elements/code-block.md): the code block's flavour of preset.
     previewCodeTheme: (id: CodeThemeId) => previewStyle((el) => applyCodeThemeToEl(el, id)),

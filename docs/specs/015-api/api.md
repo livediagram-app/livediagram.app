@@ -380,7 +380,7 @@ The vocabulary (the client-side union is `RoomOp`, 24 kinds):
 
 **Access changes end the sessions they affect.** Two api actions narrow who may be in a room without revoking a link: setting a share password, and a member leaving or being removed from a team. For each, the api calls the room's internal `POST /close-sessions` (never reachable from outside, like `/broadcast`) with what to match: `{ match: 'share-code' }` closes every session a share code admitted, and `{ match: 'person', personTag }` closes the sessions carrying that person tag. Matched sockets close with **4005** (`ACCESS_CHANGED_CLOSE`, reason `access-changed`); nothing is broadcast, so no other session learns who left. The connector stops on 4005 and the editor reloads, which runs the ordinary access path again: a password prompt, a refusal page, or (when access remains another way) the editor. The room logs `[room-access] closed` with the match kind and the count.
 
-Besides `op`, the room speaks a few non-op frames: `hello`, `sync` and `facilitator` from clients; `presence`, `catchup`, `cursor`, `facilitator` and `selection-released` from the room.
+Besides `op`, the room speaks a few non-op frames: `hello`, `sync` and `facilitator` from clients; `presence`, `catchup`, `cursor`, `facilitator`, `selection-released` and `followers` from the room. `followers` (the presence ids following you, [Follow-me viewport](../012-collaboration/follow-me-viewport.md) "Who follows whom") and `selection-released` go to one socket alone. The `follow` op is presence the room keeps and never relays.
 
 ### What the room does to a frame
 

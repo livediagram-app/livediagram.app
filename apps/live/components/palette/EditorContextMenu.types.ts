@@ -292,8 +292,9 @@ export type EditorContextMenuProps = {
   onApplyTablePreset: (preset: TablePreset) => void;
   onPreviewTablePreset: (preset: TablePreset) => void;
   // Chart palettes (docs/specs/009-elements/pie-chart.md): the chart's flavour of preset.
-  onApplyChartPalette: (id: ChartPaletteId) => void;
-  onPreviewChartPalette: (id: ChartPaletteId) => void;
+  // `null` back to the theme's ramp (a Legend's reset; a chart's goes through Reset Colours).
+  onApplyChartPalette: (id: ChartPaletteId | null) => void;
+  onPreviewChartPalette: (id: ChartPaletteId | null) => void;
   // Arrow style presets (docs/specs/010-palette/style-presets.md): one-click line looks (pattern / thickness /
   // optional flow animation) for the selected arrow, plus a reset.
   onApplyArrowPreset: (preset: ArrowPreset) => void;

@@ -38,6 +38,7 @@ import {
   helloPresence,
   resolveCatchup,
 } from './document-room-rules';
+import { followerIdsOf, followTargetOf } from './room-follows';
 import { opForScope, scopedSenderMayRelay } from './room-scope';
 import {
   parseAccessCloseMatch,
@@ -186,6 +187,9 @@ type SessionAttachment = {
   //   - `networkTag`: the caller's network, hashed with the document id, from X-Verified-Network
   //     (docs/specs/012-collaboration/vote-integrity.md): what caps one network's poll answers. 32 hex characters.
   networkTag?: string | null;
+  //   - `following`: the presence id this session follows (docs/specs/012-collaboration/follow-me-viewport.md
+  //     "Who follows whom"), from its `follow` op; absent when it follows nobody.
+  following?: string;
   //   - `pollAnsweredAs`: the key this session answered the running poll under, so a socket cannot become a
   //     second person in the same poll (docs/specs/012-collaboration/vote-integrity.md).
   pollAnsweredAs?: { pollId: string; key: string } | null;
@@ -943,6 +947,11 @@ export class DocumentRoom implements DurableObject {
           ws.serializeAttachment({ ...session, presence: sender } satisfies SessionAttachment);
         }
       }
+      // A follow is the room's to keep, never relayed: it tells the people followed, on their own sockets.
+      if (opKind === 'follow') {
+        this.noteFollow(ws, session, sender, msg.op);
+        return;
+      }
       // Presence ops relay unordered (ephemeral, no catch-up). Mutation
       // ops get a monotonic seq within the epoch and land in the catch-up
       // log so a reconnecting peer can replay the delta (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
@@ -1185,6 +1194,41 @@ export class DocumentRoom implements DurableObject {
     });
   }
 
+  // Who this session follows (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): kept on the
+  // session, then the person it stopped following and the one it now follows each hear their new list.
+  private noteFollow(
+    ws: WebSocket,
+    session: SessionAttachment,
+    sender: ParticipantPresence,
+    op: unknown,
+  ): void {
+    const target = followTargetOf(op, sender.id);
+    const before = session.following ?? null;
+    if (before === target) return;
+    const { following: _drop, ...rest } = session;
+    ws.serializeAttachment({
+      ...rest,
+      presence: sender,
+      ...(target ? { following: target } : {}),
+    } satisfies SessionAttachment);
+    if (before) this.sendFollowers(before);
+    if (target) this.sendFollowers(target);
+  }
+
+  // Tell `target` who follows them, on their socket alone; `except` is a socket on its way out.
+  private sendFollowers(target: string, except?: WebSocket): void {
+    const sessions = this.state
+      .getWebSockets()
+      .filter((s) => s !== except)
+      .map((s) => this.readSession(s))
+      .map((s) => ({ presenceId: s?.presence?.id, following: s?.following }));
+    this.sendToPresence(
+      target,
+      { kind: 'followers', ids: followerIdsOf(sessions, target) },
+      except,
+    );
+  }
+
   /** The target of a grant, as the rules need it. Null when they have left. */
   private sessionByPresence(presenceId: string): Asker | null {
     const ws = this.socketByPresence(presenceId);
@@ -1265,7 +1309,10 @@ export class DocumentRoom implements DurableObject {
 
   private dropSession(ws: WebSocket): void {
     this.opRates.delete(ws);
-    const presenceId = this.readSession(ws)?.presence?.id;
+    const leaving = this.readSession(ws);
+    // A follower leaving is one fewer for the person they followed.
+    if (leaving?.following) this.sendFollowers(leaving.following, ws);
+    const presenceId = leaving?.presence?.id;
     if (presenceId) {
       this.startFacilitatorGrace(presenceId);
       void this.selections.drop(presenceId).catch(() => {});

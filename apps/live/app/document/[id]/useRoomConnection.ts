@@ -145,6 +145,10 @@ export function useRoomConnection(opts: {
     token?: string;
   }) => void;
   readFacilitatorToken: () => string | null;
+  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): who follows us, from the room,
+  // and who we follow, said again on every new socket.
+  setFollowerIds: Dispatch<SetStateAction<readonly string[]>>;
+  readFollowing: () => string | null;
   // The facilitator freed an element we were holding (docs/specs/007-editor/live-app.md lock). Only our
   // socket is sent this, so there is nothing to check it against.
   receiveSelectionReleased: (msg: { elementId: string; by: string }) => void;
@@ -226,6 +230,8 @@ export function useRoomConnection(opts: {
     receiveFacilitator,
     receiveSelectionReleased,
     readFacilitatorToken,
+    setFollowerIds,
+    readFollowing,
     receivePoll,
     receivePollAnswer,
     receivePollEnd,
@@ -278,6 +284,8 @@ export function useRoomConnection(opts: {
   const nameByPresenceRef = useRef<Map<string, string>>(new Map());
   // The facilitator token is read on demand by the room, always as it is now.
   const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
+  const roomReadFollowing = useEffectEvent(() => readFollowing());
+  const roomFollowers = useEffectEvent((ids: string[]) => setFollowerIds(ids));
 
   // Whether this connection has had its first presence list: reset by every (re)open below.
   const joinedRef = useRef(false);
@@ -650,6 +658,8 @@ export function useRoomConnection(opts: {
       onOp: (from, op) => roomOp(from, migrateRoomOp(op), presence),
       onFacilitator: (msg) => roomFacilitator(msg),
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
+      // Called for this socket alone: being called is the addressing (we never learn our own presence id).
+      onFollowers: (ids) => roomFollowers(ids),
       onDocumentTrashed: () => roomDocumentTrashed(),
       // Reload so the access gates run again (a password prompt, a refusal page, or the editor).
       onAccessChanged: () => roomAccessChanged(),
@@ -700,6 +710,7 @@ export function useRoomConnection(opts: {
             if (again?.adderKey) announceAdderKey(again.adderKey);
             return again?.ticket ?? null;
           },
+          readFollowing: roomReadFollowing,
         },
         roomReadFacilitatorToken,
       );

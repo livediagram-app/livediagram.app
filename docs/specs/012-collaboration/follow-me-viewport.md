@@ -34,6 +34,25 @@ logged, never ordered (no `seq`), never replayed to a reconnecting client.
   than the traffic it saves. The cost is real and accepted: a room where nobody
   follows anybody still carries viewport frames while people scroll.
 
+## Who follows whom
+
+The room keeps the follow graph, because a client never learns its own presence
+id (the room mints one per socket and tells nobody which is theirs), so it cannot
+recognise itself in a peer's message.
+
+- A client sends **`{ kind: 'follow', target }`** whenever who it follows changes:
+  the presence id it now follows, or `null` when it stops. It is presence (any
+  role may send it, a tab-scoped visitor too) but the room **never relays it**:
+  it keeps the target on the session's attachment.
+- Each time a session's follow changes, and when a follower's socket closes, the
+  room sends the person followed **`{ kind: 'followers', ids }`** on their socket
+  alone: the presence ids following them, sorted. Nobody else hears it.
+- A new socket is a new presence id: the client empties its followers list when
+  a socket opens and says its own follow again right after `hello`, the way it
+  presents the facilitator token.
+- The presenter's own avatar in the tab presence stack carries the count, and its
+  hover card names it ("2 Following You").
+
 ## Starting and stopping
 
 - **Start** from the Collaborators modal ([Collaborator enhancements](collaborator-enhancements.md)):
@@ -61,8 +80,9 @@ logged, never ordered (no `seq`), never replayed to a reconnecting client.
   to serve. The presenter sees a small count on their own presence chip
   ("2 following") so they know to narrate rather than mouse in silence.
 - **Following someone who is following you is refused**, with a line saying
-  why. Two mirrors pointed at each other oscillate, and the check is cheap
-  because the follow graph is one hop of local state.
+  why ("Alex is following you, so you can't follow them back."). Two mirrors
+  pointed at each other oscillate. The check reads the room's `followers` list
+  (below), one hop, so it costs nothing.
 - **Following someone who is following a third person just works**: you get
   their viewport, which is the third person's viewport. No special case.
 - **Zoom is mirrored exactly, not fitted.** A follower on a smaller screen sees

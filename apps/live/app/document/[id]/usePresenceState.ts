@@ -111,6 +111,9 @@ export function usePresenceState() {
   const [remoteAvatars, setRemoteAvatars] = useState<
     Map<string, { tabId: string; avatar: AvatarPresence }>
   >(new Map());
+  // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id, as the
+  // room tells this socket alone.
+  const [followerIds, setFollowerIds] = useState<readonly string[]>([]);
 
   return {
     livePresence,
@@ -132,5 +135,7 @@ export function usePresenceState() {
     remoteViewports,
     setRemoteViewports,
     setRemoteAvatars,
+    followerIds,
+    setFollowerIds,
   };
 }

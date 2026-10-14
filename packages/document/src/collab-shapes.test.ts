@@ -272,14 +272,14 @@ describe('supportsTextAlign', () => {
       'quiz',
       'stat-row',
       'sticker',
-      'icon',
     ] as const) {
       expect(supportsTextAlign(kind), kind).toBe(false);
     }
   });
 
   it('is on for plain shapes and for kinds that render the aligned label', () => {
-    for (const kind of ['square', 'circle', 'banner', 'callout', 'page'] as const) {
+    // An icon's alignment places its caption around the glyph (docs/specs/010-palette/technology-icons.md).
+    for (const kind of ['square', 'circle', 'banner', 'callout', 'page', 'icon'] as const) {
       expect(supportsTextAlign(kind), kind).toBe(true);
     }
   });

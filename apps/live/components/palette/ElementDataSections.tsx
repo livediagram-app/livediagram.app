@@ -91,6 +91,7 @@ import {
 } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
+import { ChartPalettePresets } from './StylePresets';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -480,6 +481,18 @@ export function ElementDataSections({
                 onSet={props.onSetTextSize}
                 onPreview={props.onPreviewTextSize}
                 onPreviewEnd={props.onPreviewStyleEnd}
+              />
+              {/* Its own palette (docs/specs/009-elements/pie-chart.md "Legend"): re-colours every uncoloured row,
+                  so a legend set to a chart's palette stays in step with it. */}
+              <p className="px-3 pt-2 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                Palette
+              </p>
+              <ChartPalettePresets
+                current={shapeTarget?.chartPalette}
+                onApply={props.onApplyChartPalette}
+                onPreview={props.onPreviewChartPalette}
+                onPreviewEnd={props.onPreviewStyleEnd}
+                onReset={() => props.onApplyChartPalette(null)}
               />
             </MenuAccordionSection>
           ) : null}

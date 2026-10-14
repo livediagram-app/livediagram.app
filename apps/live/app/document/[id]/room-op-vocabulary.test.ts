@@ -58,8 +58,11 @@ describe('room op vocabulary', () => {
     // ignores on arrival, which looks exactly like a feature that does not work
     // rather than one that was never wired up.
     const handled = new Set(handledKinds());
+    // Kinds the room keeps and never relays, so none ever arrives: a `follow` reaches the person followed as a
+    // `followers` frame instead (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom").
+    const roomKept = new Set(['follow']);
     const unhandled = [...PRESENCE_OP_KINDS, ...MUTATION_OP_KINDS, ...SYSTEM_OP_KINDS].filter(
-      (kind) => !handled.has(kind),
+      (kind) => !handled.has(kind) && !roomKept.has(kind),
     );
     expect(unhandled).toEqual([]);
   });
