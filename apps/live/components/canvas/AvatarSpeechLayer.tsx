@@ -146,22 +146,29 @@ export function AvatarSpeechLayer({
   // Your own name and colour, for your bubbles.
   self: { name: string; colour: string };
 }) {
-  // Who said each bubble, decided once, when it first arrives: a peer whose character is not on this tab (or
-  // hidden by a hide-cursors vote) is not drawn, and one who walks off afterwards keeps their words on screen.
-  // Adjusted during render, so a bubble draws in the same render it arrives in. A peer's message is read out
-  // (docs/specs/008-canvas/avatar-mode.md "The wire") at the same moment, once.
+  // Who said each bubble, decided once their character is found: a peer whose character is not on this tab (or is
+  // hidden by a hide-cursors vote) is not drawn, and one who walks off afterwards keeps their words on screen. Not
+  // found yet (their presence lands a frame after their words, or they spoke on a tab you open a moment later), the
+  // bubble is looked for again while it flies. Adjusted during render, so a bubble draws in the same render its
+  // speaker is found in. A peer's message is read out (docs/specs/008-canvas/avatar-mode.md "The wire") at that
+  // moment, once.
   const [speakers, setSpeakers] = useState(() => new Map<string, Speaker>());
   const [announcement, setAnnouncement] = useState('');
   const liveIds = new Set(bubbles.map((b) => b.id));
-  const unresolved = bubbles.filter((b) => !b.own && !speakers.has(b.id));
+  const pending = bubbles.filter((b) => !b.own && !speakers.get(b.id));
+  const found = pending.flatMap((b) => {
+    const peer = peers.find((p) => p.id === b.from);
+    return peer ? [{ b, peer }] : [];
+  });
+  const unseen = pending.some((b) => !speakers.has(b.id));
   const stale = [...speakers.keys()].some((id) => !liveIds.has(id));
-  if (unresolved.length > 0 || stale) {
+  if (found.length > 0 || unseen || stale) {
     const next = new Map([...speakers].filter(([id]) => liveIds.has(id)));
+    for (const b of pending) if (!next.has(b.id)) next.set(b.id, null);
     let heard: string | null = null;
-    for (const b of unresolved) {
-      const peer = peers.find((p) => p.id === b.from);
-      next.set(b.id, peer ? { name: peer.name, colour: peer.color } : null);
-      if (peer) heard = `${peer.name || 'Someone'} says: ${b.text}`;
+    for (const { b, peer } of found) {
+      next.set(b.id, { name: peer.name, colour: peer.color });
+      heard = `${peer.name || 'Someone'} says: ${b.text}`;
     }
     setSpeakers(next);
     if (heard) setAnnouncement(heard);

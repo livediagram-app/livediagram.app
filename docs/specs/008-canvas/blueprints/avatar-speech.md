@@ -78,9 +78,11 @@ closes the composer, tracks `Canvas · Used · AvatarMessage` or `AvatarMessageP
   before paint, runs while any bubble is shown and writes each bubble's `transform` and `opacity` straight to its
   node (kept by callback refs); it stops when the list empties. A bubble renders at `opacity: 0` until the loop
   places it. No React state per frame.
-- Bubbles draw only for the active tab (`bubble.tabId === activeTabId`). A peer's bubble draws only when its speaker's
-  character is on this tab when it arrives (`peers`, empty under a hide-cursors vote): name and colour are captured
-  then, in state adjusted during render, and kept if the speaker walks off.
+- Bubbles draw only for the active tab (`bubble.tabId === activeTabId`). A peer's bubble draws only while its
+  speaker's character has been found on this tab (`peers`, empty under a hide-cursors vote): name and colour are
+  captured the first time it is, in state adjusted during render, and kept if the speaker walks off. Until then the
+  bubble is looked for again each render while it flies (their presence lands a frame after their words, or you open
+  their tab a moment later); state changes only when a speaker is newly found, a bubble is new or one has gone.
 
 ### Receiving
 
@@ -141,11 +143,12 @@ the one new stored value, a synced user preference.
 | #   | Case                                    | Handling                                                  |
 | --- | --------------------------------------- | --------------------------------------------------------- |
 | E1  | Enter while typing in a field elsewhere | Ignored (`isTypingTarget`)                                |
+| E1a | Enter on a focused button, row or tour  | Left to it (`isEnterActivatedTarget`)                     |
 | E2  | Enter with a dialog open                | Ignored (`anyModalOpen`)                                  |
 | E3  | Paste of 2,000 characters               | Clamped to the limits                                     |
 | E4  | Send during the cooldown                | Held, "One moment…"                                       |
 | E5  | Composer open, mode left / tab switched | Closed, draft dropped                                     |
-| E6  | Peer op for another tab                 | Not drawn: its speaker is not on this tab when it arrives |
+| E6  | Peer op for another tab                 | Not drawn until its speaker is found on the open tab      |
 | E7  | Same id twice                           | Second dropped (`SeenIds`, capped at 200)                 |
 | E8  | Peer floods ops                         | Room op-rate cap, then three bubbles per person on screen |
 | E9  | Viewer sends by a modified client       | Room drops it                                             |

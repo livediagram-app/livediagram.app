@@ -65,6 +65,35 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
     expect(screen.queryByText('psst')).toBeNull();
   });
 
+  it('draws a bubble whose speaker shows up after their words, while it still flies', () => {
+    const props = {
+      bubbles: [bubble()],
+      activeTabId: 't1',
+      zoom: 0.5,
+      composer: null,
+      self: { name: 'Tom', colour: '#14b8a6' },
+    };
+    // Their words land a frame before their character does.
+    const { rerender } = render(<AvatarSpeechLayer {...props} peers={[]} />);
+    expect(screen.queryByText('hello <b>there</b>')).toBeNull();
+    rerender(<AvatarSpeechLayer {...props} peers={PEERS} />);
+    expect(screen.getByText('hello <b>there</b>')).toBeTruthy();
+    expect(screen.getByText('Sam says: hello <b>there</b>')).toBeTruthy();
+  });
+
+  it('keeps the words of a speaker who walks off once drawn', () => {
+    const props = {
+      bubbles: [bubble()],
+      activeTabId: 't1',
+      zoom: 0.5,
+      composer: null,
+      self: { name: 'Tom', colour: '#14b8a6' },
+    };
+    const { rerender } = render(<AvatarSpeechLayer {...props} peers={PEERS} />);
+    rerender(<AvatarSpeechLayer {...props} peers={[]} />);
+    expect(screen.getByText('hello <b>there</b>')).toBeTruthy();
+  });
+
   it('keeps reading size whatever the zoom', () => {
     const { container } = layer([bubble()]);
     expect(container.innerHTML).toContain('scale(2)');
