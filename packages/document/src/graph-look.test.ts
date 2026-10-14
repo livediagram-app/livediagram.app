@@ -55,6 +55,22 @@ describe('template sizing', () => {
     expect(circle.width).toBe(circle.height);
   });
 
+  it('measures a label written over several lines line by line, without the look too', () => {
+    // Five short lines: as narrow as the widest, as tall as five lines (one long line would be wide and two tall).
+    const five = labelBoxSize('Step one\nStep two\nStep three\nStep four\nStep five', 'square');
+    expect(five.width).toBeLessThan(labelBoxSize('Step one Step two Step three', 'square').width);
+    expect(five.height).toBeGreaterThan(labelBoxSize('Step one', 'square').height);
+  });
+
+  it('measures at a given font size, wider for a larger one', () => {
+    const sm = labelBoxSize('Search service', 'square', { textSize: 'sm' });
+    const lg = labelBoxSize('Search service', 'square', { textSize: 'md', fontPx: 32 });
+    expect(lg.width).toBeGreaterThan(
+      labelBoxSize('Search service', 'square', { textSize: 'md' }).width,
+    );
+    expect(lg.width).toBeGreaterThan(sm.width);
+  });
+
   it('sets md text up to twelve nodes and sm beyond', () => {
     const textOf = (els: Element[]) =>
       (els.find((e) => e.type === 'shape') as { textSize?: string }).textSize;

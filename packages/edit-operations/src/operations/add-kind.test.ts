@@ -280,6 +280,15 @@ describe('add <kind> beside template-look siblings', () => {
     }
   });
 
+  it('measures a new box at its own text size, with no sibling to match', () => {
+    const tab: Tab = { id: 't', name: 'T', elements: [] };
+    const at = (size: string) =>
+      added(`add square label="Search service" textSize=${size}`, tab) as Element & {
+        width: number;
+      };
+    expect(at('lg').width).toBeGreaterThan(at('sm').width);
+  });
+
   it('matches siblings taller than the palette box of their shape', () => {
     const tall = (id: string, x: number): Element =>
       ({

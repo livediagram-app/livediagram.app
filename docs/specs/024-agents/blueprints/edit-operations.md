@@ -286,7 +286,8 @@ means `newElementId` ([Ids](#ids)).
   square). An unknown kind is coerced as a shape kind with `shape_coerced` (EO17). `arrow` is `invalid_value`
   ("use connect"); `image`, `video`, `freehand` and `path` are `invalid_value` (EO15). The element is the
   factory's (`createShape`, `createText`, `createSticky`, `createTable`, `createAnnotation`, `createLinkCard`) with
-  a new id; shapes and text take `textSize: 'sm'` and `labelBoxSize(label, kind)` (EO28); fields apply as `set`
+  a new id; shapes and text take `textSize: 'sm'` and `labelBoxSize(label, kind)` (EO28), a shape measured at
+  `labelFontPx` of its text size (`GraphLook.fontPx`); fields apply as `set`
   does; it is painted, placed, given the layer of the placement reference when that layer is not locked, else
   `resolveActiveLayerId(layers, null)` (EO29, EO47), and appended to the element order. The JSON form may carry
   `element` (a whole raw element, as the MCP's `ops` mode sends) instead of `kind` and `fields`: it is taken as
