@@ -34,4 +34,14 @@ describe('routeMeasures', () => {
     expect(routeMeasures(tab).strikes).toBe(1);
     expect(routeMeasures(tabOf()).extent).toBe('none');
   });
+
+  it('counts a route that runs straight through a frame heading with both its ends outside', () => {
+    const tab = tabOf(
+      { ...frame('f', 200, 0, 300, 300), label: 'Core services' } as Element,
+      box('a', 0, 0, { width: 40, height: 20 }),
+      box('b', 700, 0, { width: 40, height: 20 }),
+      arrow('x', 'a', 'b', ['e', 'w']),
+    );
+    expect(routeMeasures(tab).strikes).toBe(1);
+  });
 });
