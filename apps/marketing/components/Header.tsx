@@ -5,7 +5,14 @@ import { SiteHeader } from '@livediagram/ui';
 // apps-menu dropdown enabled next to the logo, where the landing page reads as
 // "Welcome". The telemetry dashboard renders the same SiteHeader keyed to its
 // own section. `surface` is the page's landing-funnel surface (docs/specs/019-marketing/landing-funnel.md),
-// which the header's CTA pair carries into the editor.
+// which the header's CTA pair carries into the editor. Every marketing page shows the Build with AI link
+// (docs/specs/019-marketing/build-with-ai.md), marked current on /ai itself.
 export function Header({ surface }: { surface: Exclude<CtaSurface, 'Help' | 'Dashboard'> }) {
-  return <SiteHeader productNav="home" ctaSurface={surface} />;
+  return (
+    <SiteHeader
+      productNav="home"
+      ctaSurface={surface}
+      buildWithAi={surface === 'Ai' ? 'current' : 'link'}
+    />
+  );
 }

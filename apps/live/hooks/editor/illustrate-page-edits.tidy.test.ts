@@ -32,6 +32,7 @@ function harness(tab: Tab) {
   const edits = () =>
     illustratePageEdits({
       tabId: tab.id,
+      tab: tabs[0]!,
       current: illustratePagesOf(tabs[0]!),
       elements: tabs[0]!.elements,
       layers: tabs[0]!.layers,
@@ -109,6 +110,26 @@ describe('Tidy Up a page', () => {
     expect(h.tab().elements[2]).toBe(other);
     expect(track).toHaveBeenCalledWith('Tab', 'Aligned', 'PageTidyUp');
     expect(h.toastInfo).not.toHaveBeenCalled();
+  });
+
+  it('tidies, and does not call the page tidy, when the commit runs later', () => {
+    const tab = pageTab([box('a', -200, -300), box('b', -196, -100)]);
+    const later: ((ts: Tab[]) => Tab[])[] = [];
+    const toastInfo = vi.fn();
+    illustratePageEdits({
+      tabId: tab.id,
+      tab,
+      current: illustratePagesOf(tab),
+      elements: tab.elements,
+      commitTabs: (map) => void later.push(map),
+      onGoTo: vi.fn(),
+      onLayoutPlaced: vi.fn(),
+      toastInfo,
+    }).tidyPage!('page-1');
+    expect(toastInfo).not.toHaveBeenCalled();
+    expect(track).toHaveBeenCalledWith('Tab', 'Aligned', 'PageTidyUp');
+    const [after] = later[0]!([tab]);
+    expect(xOf(after!, 'a')).toBe(xOf(after!, 'b'));
   });
 
   it('says a tidy page is already tidy, writing and tracking nothing', () => {

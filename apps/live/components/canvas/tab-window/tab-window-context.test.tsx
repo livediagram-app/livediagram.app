@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Element, Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { useTabWindowContextValue } from './tab-window-context';
+import { TAB_WINDOW_REASK_MS, useTabWindowContextValue } from './tab-window-context';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -82,6 +82,37 @@ describe('useTabWindowContextValue', () => {
     });
     expect(h.loadTabs).toHaveBeenCalledTimes(2);
     expect(h.hook.result.current.status('flow')).toBe('loading');
+  });
+
+  it('asks again while another fetch of the tab is under way, and shows how it ended', async () => {
+    vi.useFakeTimers();
+    try {
+      const h = setup();
+      // The first ask is answered at once without the tab: another caller is fetching it.
+      await act(async () => {
+        h.hook.result.current.request('flow');
+      });
+      expect(h.hook.result.current.status('flow')).toBe('loading');
+      // That fetch failed; the next ask reports it.
+      h.loadTabs.mockResolvedValueOnce(['flow']);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(TAB_WINDOW_REASK_MS);
+      });
+      expect(h.loadTabs).toHaveBeenCalledTimes(2);
+      expect(h.hook.result.current.status('flow')).toBe('failed');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reads a tab the editor failed to load as failed', () => {
+    const h = setup({ loadErrors: new Set(['flow']) });
+    expect(h.hook.result.current.status('flow')).toBe('failed');
+  });
+
+  it('leaves a tab outside a tab-scoped link out of the windows’ tabs', () => {
+    const h = setup({ isOutOfScope: (id) => id === 'flow' });
+    expect(h.hook.result.current.tabs.map((t) => t.id)).toEqual(['slides']);
   });
 
   it('opens the tab, tracked', () => {

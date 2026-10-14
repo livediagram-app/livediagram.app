@@ -40,8 +40,17 @@ export const cursorFadeKeyframes = (name: string) => `@keyframes ${name} {
 }`;
 
 // The "You" cursor. The outer group carries the path (`moveClass`), the inner one the fade (`fadeClass`), so the
-// two keyframe sets stay independent.
-export function BuildCursor({ moveClass, fadeClass }: { moveClass: string; fadeClass: string }) {
+// two keyframe sets stay independent. `label` names whose cursor it is (the Build with AI page's reads "AI"); the
+// pill fits three short letters.
+export function BuildCursor({
+  moveClass,
+  fadeClass,
+  label = 'You',
+}: {
+  moveClass: string;
+  fadeClass: string;
+  label?: string;
+}) {
   return (
     <g className={moveClass} aria-hidden="true">
       <g className={fadeClass}>
@@ -69,7 +78,7 @@ export function BuildCursor({ moveClass, fadeClass }: { moveClass: string; fadeC
           fill="white"
           fontFamily="ui-sans-serif, system-ui, sans-serif"
         >
-          You
+          {label}
         </text>
       </g>
     </g>

@@ -9,9 +9,10 @@
 // The points are chord-midpoint deltas (curveAnchorPoints), worked out from
 // the same fanned endpoints the renderers resolve, so the bends land square.
 
+import { anchorPrimarySide } from './anchors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { endpointPosition } from './geometry';
-import type { ArrowElement, Element } from './index';
+import type { Anchor, ArrowElement, Element } from './index';
 
 // The bends for one arrow along `axis`, or undefined when its ends already
 // line up (a straight run needs none) or aren't both pinned.
@@ -28,6 +29,19 @@ export function orthogonalBends(
   };
   const from = raw('from');
   const to = raw('to');
+  // One end on a side across the flow (a group's edge leaving its frame's side, auto-layout-cluster-seats.ts), the
+  // other along it: one bend, out of the side first, so the line meets each end square.
+  const across = (anchor: Anchor) => {
+    const side = anchorPrimarySide(anchor);
+    return axis === 'TB' ? side === 'e' || side === 'w' : side === 'n' || side === 's';
+  };
+  const fromAcross = across(arrow.from.anchor);
+  if (fromAcross !== across(arrow.to.anchor)) {
+    const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+    const bend = fromAcross === (axis === 'TB') ? { x: to.x, y: from.y } : { x: from.x, y: to.y };
+    if (Math.abs(from.x - to.x) < 1 || Math.abs(from.y - to.y) < 1) return undefined;
+    return [{ dx: bend.x - mid.x, dy: bend.y - mid.y }];
+  }
   const half = axis === 'TB' ? (to.x - from.x) / 2 : (to.y - from.y) / 2;
   if (Math.abs(half) < 1) return undefined;
   return axis === 'TB'

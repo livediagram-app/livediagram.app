@@ -12,6 +12,7 @@ import {
   isAnimatedPattern,
   isBoxed,
   type ShapeElement,
+  visibleLayerElements,
 } from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
@@ -384,11 +385,16 @@ function CanvasView(props: CanvasProps) {
   // a pad's (docs/specs/009-elements/reaction-pad.md): nothing is stored and nothing is replayed.
   const [avatarBurst, setAvatarBurst] = useState<{ reaction: Reaction; seed: number } | null>(null);
   const avatarBurstSeq = useRef(0);
+  // A character walks among what is drawn: a hidden layer's fences, portals and seats are not there.
+  const walkElements = useMemo(
+    () => visibleLayerElements(elements, tabLayers),
+    [elements, tabLayers],
+  );
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
     config: avatarLook.config,
     onToggleGender: avatarLook.toggleGender,
-    elements,
+    elements: walkElements,
     mainRef,
     wrapperRef,
     viewportOffset,
@@ -612,6 +618,8 @@ function CanvasView(props: CanvasProps) {
   // illustrate-pages.md "Copying a background"); off every page it stays an empty-canvas press.
   const formatPagePress = (e: React.PointerEvent): boolean => {
     if (canvasTool !== 'format' || e.button !== 0 || !props.onFormatPagePress) return false;
+    // On an element, the press is the element's (arming or painting its look): only the paper is the page's.
+    if ((e.target as HTMLElement | null)?.closest?.('[data-element-id]')) return false;
     const pageId = pageIdAtPress(props.illustratePages, e, wrapperRef, viewportZoom);
     if (!pageId) return false;
     props.onFormatPagePress(pageId);

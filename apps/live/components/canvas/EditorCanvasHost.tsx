@@ -362,9 +362,11 @@ export function EditorCanvasHost() {
     previewCleanup,
     endCleanupPreview,
     assessCleanupKind,
+    isOutOfScope,
+    tabLoadErrors,
   } = useEditorContext();
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
-  const { setPointerTip } = usePointerNoteSetters(commitElements);
+  const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
   // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
   const drawMode = editorMode.mode === 'draw';
@@ -584,6 +586,8 @@ export function EditorCanvasHost() {
     openTab: selectTab,
     canChoose: can.level === 'edit' && !activeTabLocked,
     commitElements,
+    isOutOfScope,
+    loadErrors: tabLoadErrors,
   });
 
   return (
@@ -790,13 +794,23 @@ export function EditorCanvasHost() {
                   ? (pageId) => {
                       // A page's background as the brush, painted page to page (docs/specs/007-editor/
                       // illustrate-pages.md "Copying a background").
+                      // A brush whose page has gone holds nothing any more, as an element's does.
+                      if (brushPageId(formatSourceId) && !brushedPage) {
+                        setFormatSourceId(null);
+                        return;
+                      }
                       const press = pagePaintPress(
                         formatSourceId,
                         pageId,
                         formatConfig.mode === 'keep',
                       );
-                      if (press.paint)
-                        illustratePages.edit?.copyBackground(press.paint.from, press.paint.to);
+                      // A refused paint (a locked page, a picture onto a logo page) keeps the brush:
+                      // only a paint empties a Paint once brush.
+                      if (
+                        press.paint &&
+                        !illustratePages.edit?.copyBackground(press.paint.from, press.paint.to)
+                      )
+                        return;
                       if (press.next !== formatSourceId) setFormatSourceId(press.next);
                     }
                   : undefined

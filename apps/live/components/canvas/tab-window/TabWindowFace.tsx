@@ -9,6 +9,7 @@ import {
   TAB_WINDOW_EMPTY,
   TAB_WINDOW_HAIRLINE,
   TAB_WINDOW_RADIUS,
+  tabWindowMayShow,
   type CanvasSurface,
   type ShapeElement,
 } from '@livediagram/document';
@@ -56,15 +57,21 @@ export function TabWindowFace({
   element,
   surface,
   selected,
+  canChoose,
 }: {
   element: ShapeElement;
   surface: CanvasSurface;
   // Selected, its Open button stays shown; otherwise it shows while the window is hovered.
   selected: boolean;
+  // False on a locked window or a read-only canvas: the tab stays as it is, whoever the person is.
+  canChoose?: boolean;
 }) {
   const ctx = useTabWindows();
+  const choose = canChoose === false ? undefined : ctx?.choose;
   const tabId = element.windowTabId;
-  const tab = tabId ? ctx?.tabs.find((t) => t.id === tabId) : undefined;
+  // A tab the window may not show (its own, a Plan tab) is unavailable, as the export draws it.
+  const found = tabId ? ctx?.tabs.find((t) => t.id === tabId) : undefined;
+  const tab = found && ctx && tabWindowMayShow(found, ctx.ownTabId) ? found : undefined;
   const state = ctx
     ? tabWindowState(tabId, tab, tabId ? ctx.status(tabId) : 'loaded')
     : { kind: 'unchosen' as const };
@@ -98,7 +105,7 @@ export function TabWindowFace({
       {action}
     </div>
   );
-  const chooseAction = ctx?.choose ? (
+  const chooseAction = choose ? (
     <button
       type="button"
       {...own}
@@ -119,7 +126,7 @@ export function TabWindowFace({
       {state.kind === 'drawing' && tab ? (
         <TabWindowDrawing tab={tab} elementId={element.id} />
       ) : state.kind === 'unchosen' ? (
-        message(ctx?.choose ? 'Show a tab here' : 'No tab chosen', chooseAction)
+        message(choose ? 'Show a tab here' : 'No tab chosen', chooseAction)
       ) : state.kind === 'unavailable' ? (
         message("This tab isn't available.", chooseAction)
       ) : state.kind === 'loading' ? (
@@ -166,7 +173,10 @@ export function TabWindowFace({
             {...own}
             onClick={() => ctx.open(tab.id)}
             className={`pointer-events-auto absolute flex items-center rounded-md bg-white/90 font-semibold text-slate-700 shadow-sm ring-1 ring-slate-900/10 transition hover:bg-white focus-visible:opacity-100 dark:bg-slate-900/90 dark:text-slate-100 dark:ring-white/15 ${
-              selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              selected
+                ? 'opacity-100'
+                : // Unseen until hovered, so untouchable until then: a tap that selects the window never opens the tab.
+                  'pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100'
             }`}
           >
             Open
@@ -174,14 +184,14 @@ export function TabWindowFace({
           </button>
         </Tooltip>
       ) : null}
-      {pickAnchor && ctx?.choose ? (
+      {pickAnchor && ctx && choose ? (
         <TabWindowPicker
           anchor={pickAnchor}
           tabs={ctx.tabs}
           ownTabId={ctx.ownTabId}
           shown={tabId}
           onPick={(id) => {
-            ctx.choose?.(element.id, id);
+            choose(element.id, id);
             setPickAnchor(null);
           }}
           onClose={() => setPickAnchor(null)}

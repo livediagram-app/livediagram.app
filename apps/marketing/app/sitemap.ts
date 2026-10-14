@@ -52,6 +52,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
+    // Build with AI (docs/specs/019-marketing/build-with-ai.md): the MCP setup page, a header link on every page.
+    {
+      url: `${base}/ai`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
     // One page per feature category (docs/specs/019-marketing/marketing-site.md "Feature category pages").
     // Derived from LANDING_SECTION_IDS so adding a section to LANDING_SECTIONS
     // sitemaps its page automatically. Build-time `now`: the feature copy

@@ -11,7 +11,7 @@ import {
   type IllustratePage,
   type LaidOutPage,
 } from '@livediagram/document';
-import type { RowDrop } from '@/hooks/ui/useRowReorderDrag';
+import { rowDropIndex, type RowDrop } from '@/hooks/ui/useRowReorderDrag';
 
 export type ContentsRow = {
   id: string;
@@ -120,7 +120,6 @@ export function contentsDropUnit(
   if (from < 0 || !target) return null;
   const at = unitOf(target.id);
   if (at === from) return null;
-  let to = drop.side === 'before' ? at : at + 1;
-  if (from < to) to -= 1;
-  return to === from ? null : Math.max(0, Math.min(units.length - 1, to));
+  // Among units, the list's own rule (rowDropIndex): the caret sits between units.
+  return rowDropIndex(from, { index: at, side: drop.side }, units.length);
 }

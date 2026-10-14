@@ -205,19 +205,24 @@ ${cursorFadeKeyframes('ldb-cursor-fade')}
 ${cursorKeyframes('ldb-cursor-move', cursorStops())}
 }`;
 
-export function DiagramBuildAnimation({ className = 'max-w-[240px]' }: { className?: string }) {
+export function DiagramBuildAnimation({
+  className = 'max-w-[240px]',
+  cursorLabel,
+  label = 'Building a diagram',
+}: {
+  className?: string;
+  /** Whose cursor draws (default "You"). */
+  cursorLabel?: string;
+  /** The picture's accessible name. */
+  label?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   // The /new creating stage gives way to the editor's own load in place: the drawing continues, never restarts.
   useLoopPhase(ref, 'diagram', DURATION_MS, '--ldb-delay');
 
   return (
     <div ref={ref} className={`mx-auto w-full ${className}`}>
-      <svg
-        viewBox="0 0 300 180"
-        className="w-full overflow-visible"
-        role="img"
-        aria-label="Building a diagram"
-      >
+      <svg viewBox="0 0 300 180" className="w-full overflow-visible" role="img" aria-label={label}>
         <defs>
           {EDGES.map((e) => {
             const [a, , , d] = e.p;
@@ -335,7 +340,7 @@ export function DiagramBuildAnimation({ className = 'max-w-[240px]' }: { classNa
           </g>
         ))}
 
-        <BuildCursor moveClass="ldb-cursor-move" fadeClass="ldb-cursor" />
+        <BuildCursor moveClass="ldb-cursor-move" fadeClass="ldb-cursor" label={cursorLabel} />
       </svg>
       <style>{CSS}</style>
     </div>

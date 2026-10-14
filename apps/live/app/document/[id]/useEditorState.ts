@@ -1393,7 +1393,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // A colour picked with + joins the tab's custom colours, which every picker offers.
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
-  const setTagColour = useTagColourSetter({ activeId: activeTab.id, canEdit, commitTabs });
+  const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
   // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
   // Plan asks nothing: a board outside Plan is an element like any other
   // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
@@ -2892,6 +2892,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { commitPath, commitPathEdit } = usePathCommits({
     editsBlocked: structureCreateBlocked,
     commit: logo.drawCommit,
+    elements: () => activeTab.elements,
     styleNewElement: styleMemory.styleNewElement,
     setSelectedId,
   });

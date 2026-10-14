@@ -44,7 +44,11 @@ const windowEl = (windowTabId?: string) =>
     ...(windowTabId ? { windowTabId } : {}),
   }) as ShapeElement;
 
-function show(el: ShapeElement, over: Partial<TabWindowContextValue> = {}) {
+function show(
+  el: ShapeElement,
+  over: Partial<TabWindowContextValue> = {},
+  face: { canChoose?: boolean; selected?: boolean } = {},
+) {
   const ctx: TabWindowContextValue = {
     tabs: [tab('slides', 'Slides'), tab('flow', 'Flow'), tab('blank', 'Blank', 0)],
     ownTabId: 'slides',
@@ -57,7 +61,12 @@ function show(el: ShapeElement, over: Partial<TabWindowContextValue> = {}) {
   };
   render(
     <TabWindowContext.Provider value={ctx}>
-      <TabWindowFace element={el} surface="light" selected={false} />
+      <TabWindowFace
+        element={el}
+        surface="light"
+        selected={face.selected ?? false}
+        canChoose={face.canChoose}
+      />
     </TabWindowContext.Provider>,
   );
   return ctx;
@@ -92,6 +101,23 @@ describe('TabWindowFace', () => {
     expect(ctx.choose).toHaveBeenCalledWith('w', 'flow');
   });
 
+  it('offers no Choose a Tab on a locked window or a read-only canvas, even to an Editor', () => {
+    show(windowEl(), {}, { canChoose: false });
+    expect(screen.getByText('No tab chosen')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Choose a Tab' })).toBeNull();
+  });
+
+  it('keeps the hidden Open button untouchable until the window is hovered or selected', () => {
+    show(windowEl('flow'));
+    const hidden = screen.getByRole('button', { name: 'Open Flow' });
+    expect(hidden.className).toContain('pointer-events-none');
+    cleanup();
+    show(windowEl('flow'), {}, { selected: true });
+    expect(screen.getByRole('button', { name: 'Open Flow' }).className).not.toContain(
+      'pointer-events-none',
+    );
+  });
+
   it('says no tab is chosen to someone who may not edit, with no button', () => {
     show(windowEl(), { choose: undefined });
     expect(screen.getByText('No tab chosen')).toBeTruthy();
@@ -104,6 +130,19 @@ describe('TabWindowFace', () => {
     expect(ctx.request).toHaveBeenCalledWith('flow');
     fireEvent.click(screen.getByRole('button', { name: 'Open Flow' }));
     expect(ctx.open).toHaveBeenCalledWith('flow');
+  });
+
+  it('shows its own tab or a Plan tab as not available, asking for nothing, as the export does', () => {
+    const own = show(windowEl('slides'));
+    expect(screen.getByText("This tab isn't available.")).toBeTruthy();
+    expect(own.request).not.toHaveBeenCalled();
+    cleanup();
+    const plan = show(windowEl('board'), {
+      tabs: [tab('slides', 'Slides'), { ...tab('board', 'Board'), opensIn: 'plan' } as never],
+    });
+    expect(screen.getByText("This tab isn't available.")).toBeTruthy();
+    expect(screen.queryByText(/Board/)).toBeNull();
+    expect(plan.request).not.toHaveBeenCalled();
   });
 
   it('waits, offers Retry, says when the tab is empty or not available', () => {

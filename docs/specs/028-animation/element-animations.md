@@ -48,10 +48,13 @@ These keep their catalogues and fields unchanged; they are listed so the menu ru
 ## The menu
 
 - The element context menu has one **Animation** row. Its flyout holds **one section per set present in the
-  selection**, named by its set (Shape, Text, Sticky, Drawing, Media, Table, Icon, Chart, Arrow), and no others.
+  selection**, named by its set (Shape, Text, Sticky, Drawing, Media, Table, Icon, Chart, Sankey, Progress, Rating, Concept,
+  Sequence, Arrow), and no others. An element's own animation is always one of these sections, never a picker inside
+  the element's own section (its Tools section holds only what the element is, not how it moves).
   A single shape with a label shows Shape and Text. When only one set is present (a single text element), there
   is nothing to choose between, so its section shows inline in the menu, titled Animation.
-- Sections appear in a fixed order: Shape, Sticky, Drawing, Media, Table, Icon, Chart, Text, Arrow. A body set
+- Sections appear in a fixed order: Shape, Sticky, Drawing, Media, Table, Icon, Chart, Sankey, Progress, Rating,
+  Concept, Sequence, Text, Arrow. A body set
   comes before the words it carries; arrows come last, as today.
 - A section applies to **every member of its set in the selection** and to nothing else. With a shape and a text
   element selected, the Shape section animates the shape, and the Text section animates the text element and the

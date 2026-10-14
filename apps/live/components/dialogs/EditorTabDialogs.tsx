@@ -70,6 +70,7 @@ export function EditorTabDialogs() {
     leaveIllustrate,
     setSelectedId,
     setMultiSelectedIds,
+    loadedTabIds,
   } = useEditorContext();
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -118,6 +119,7 @@ export function EditorTabDialogs() {
             setSelectedId(null);
             setMultiSelectedIds(new Set());
           }}
+          loadedTabIds={loadedTabIds}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}

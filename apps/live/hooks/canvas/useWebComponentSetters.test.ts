@@ -15,7 +15,11 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 
-vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
+const track = vi.fn();
+vi.mock('@/lib/telemetry', () => ({
+  track: (...a: unknown[]) => track(...a),
+  titleCaseType: (s: string) => s,
+}));
 
 import { useWebComponentSetters } from './useWebComponentSetters';
 
@@ -27,7 +31,11 @@ function harness(elements: Element[], selection: string[] = []) {
     current = map(current);
   };
   const { result } = renderHook(() =>
-    useWebComponentSetters({ currentSelectionIds: () => new Set(selection), commit }),
+    useWebComponentSetters({
+      currentSelectionIds: () => new Set(selection),
+      commit,
+      elements: () => current,
+    }),
   );
   return { setters: result.current, get: (id: string) => current.find((e) => e.id === id) };
 }
@@ -50,6 +58,27 @@ describe('useWebComponentSetters (docs/specs/009-elements/web-components-and-no-
     const h = harness([p]);
     for (let i = 0; i < PROCESS_MAX_STEPS + 3; i++) h.setters.appendWebRowTo(p.id);
     expect((h.get(p.id) as ShapeElement).processSteps).toHaveLength(PROCESS_MAX_STEPS);
+  });
+
+  it('appendWebRowTo reports a row it adds even when the commit runs later, and nothing at the cap', () => {
+    const p = process();
+    const kept: ((els: Element[]) => Element[])[] = [];
+    const { result } = renderHook(() =>
+      useWebComponentSetters({
+        currentSelectionIds: () => new Set(),
+        commit: (map) => void kept.push(map),
+        elements: () => [p],
+      }),
+    );
+    track.mockClear();
+    result.current.appendWebRowTo(p.id);
+    expect(kept).toHaveLength(1);
+    expect(track).toHaveBeenCalledTimes(1);
+    const full = harness([p]);
+    for (let i = 0; i < PROCESS_MAX_STEPS + 3; i++) full.setters.appendWebRowTo(p.id);
+    track.mockClear();
+    full.setters.appendWebRowTo(p.id);
+    expect(track).not.toHaveBeenCalled();
   });
 
   it('setWebRowsSelected lands each field only on its own kind', () => {
