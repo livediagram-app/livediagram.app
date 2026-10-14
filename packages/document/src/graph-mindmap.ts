@@ -25,19 +25,36 @@ const LEAF = { width: 160, height: 44, max: 260, px: 14 };
 // The round root's side: big enough that its longest word fits one line of the circle's inner width (about 0.7 of
 // it) and every line of its label fits down it, at the root's large text (32px), never under the template's 200.
 const ROOT_PX = 32;
-function rootSide(label: string): number {
+// A root label that would grow the circle past this takes the next text size down (md, about 22px): a 320px centre
+// dwarfed its branches.
+const ROOT_CAP = 260;
+const ROOT_SMALL_PX = 22;
+function rootSide(label: string, px = ROOT_PX): number {
   const words = label.split(/\s+/).filter(Boolean);
-  const longest = Math.max(0, ...words.map((w) => glyphWidth(w, ROOT_PX)));
+  const longest = Math.max(0, ...words.map((w) => glyphWidth(w, px)));
   let side = Math.max(ROOT_SIDE, Math.ceil(longest / 0.7 + 24));
   for (;;) {
-    const lines = Math.ceil(glyphWidth(label, ROOT_PX) / (side * 0.7));
-    if (lines * ROOT_PX * 1.25 <= side * 0.7 || side > 420) return side;
+    const lines = Math.ceil(glyphWidth(label, px) / (side * 0.7));
+    if (lines * px * 1.25 <= side * 0.7 || side > 420) return side;
     side += 20;
   }
 }
+export function rootLook(label: string): { side: number; textSize: 'lg' | 'md' } {
+  const side = rootSide(label);
+  return side <= ROOT_CAP
+    ? { side, textSize: 'lg' }
+    : { side: rootSide(label, ROOT_SMALL_PX), textSize: 'md' };
+}
+
+// One height for the leaves of one branch, the tallest any of them needs, so a column reads as a set.
+function evenLeaves(leaves: MindSpec[]): MindSpec[] {
+  const tallest = Math.max(0, ...leaves.map((l) => l.look.height));
+  return leaves.map((l) => ({ ...l, look: { ...l.look, height: tallest } }));
+}
 
 const fit = (label: string, lv: typeof BRANCH, iconRoom = 0) => {
-  const w = Math.round(
+  // Rounded up: rounded down, a label at the boundary counted as two lines and its box stood taller than its siblings.
+  const w = Math.ceil(
     Math.min(lv.max, Math.max(lv.width, glyphWidth(label, lv.px) + 48 + iconRoom)),
   );
   const lines = Math.ceil((glyphWidth(label, lv.px) + iconRoom) / Math.max(1, w - 48));
@@ -91,13 +108,13 @@ export function layoutMindmapGraph(
       children: (children.get(id) ?? []).map((c) => leafSpec(c, hue)),
     };
   };
-  const side = rootSide(root.label ?? '');
+  const { side, textSize: rootText } = rootLook(root.label ?? '');
   const spec: MindSpec = {
     label: root.label ?? '',
     look: {
       width: side,
       height: side,
-      textSize: 'lg',
+      textSize: rootText,
       textBold: true,
       colorPreset: 'bold',
       borderRadius: 'full',
@@ -120,7 +137,7 @@ export function layoutMindmapGraph(
           ...(n.icon ? { iconId: n.icon } : {}),
         },
         connector: { strokeColor: hue.stroke, strokeWidth: 4 },
-        children: (children.get(id) ?? []).map((c) => leafSpec(c, hue)),
+        children: evenLeaves((children.get(id) ?? []).map((c) => leafSpec(c, hue))),
       };
     }),
   };

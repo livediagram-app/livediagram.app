@@ -470,6 +470,41 @@ describe('mindmap', () => {
   });
 });
 
+describe('mindmap sizes', () => {
+  const map = (rootLabel: string) =>
+    lay({
+      style: 'mindmap',
+      nodes: [
+        { id: 'r', label: rootLabel },
+        { id: 'b', label: 'Marketing' },
+        { id: 'l1', label: 'Instagram brewing reels' },
+        { id: 'l2', label: 'Founding-member waitlist for early subscribers who join' },
+        { id: 'l3', label: 'PR' },
+      ],
+      edges: [
+        { from: 'r', to: 'b' },
+        { from: 'b', to: 'l1' },
+        { from: 'b', to: 'l2' },
+        { from: 'b', to: 'l3' },
+      ],
+    });
+
+  it('gives every leaf of a branch one height', () => {
+    const els = map('Launch');
+    const heights = new Set(['l1', 'l2', 'l3'].map((id) => box(els, id).height));
+    expect(heights.size).toBe(1);
+  });
+
+  it('keeps a long root near the template size by stepping its text down', () => {
+    const short = box(map('Launch'), 'r');
+    expect(short.width).toBe(200);
+    expect(short).toMatchObject({ textSize: 'lg' });
+    const long = box(map('Coffee subscription product launch plan for the autumn'), 'r');
+    expect(long).toMatchObject({ textSize: 'md' });
+    expect(long.width).toBeLessThanOrEqual(320);
+  });
+});
+
 describe('tree', () => {
   it("stacks a manager's leaf reports in a column under them, joined by a bus", () => {
     const els = lay({
