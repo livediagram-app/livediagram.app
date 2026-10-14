@@ -130,8 +130,37 @@ describe('sequence text', () => {
     expect(parseSequenceText(msgs).unread).toEqual([61, 62]);
   });
 
+  it('reads each arrow by the longest form, past dashes in a name, the extra dashes of a long arrow left off', () => {
+    const r = parseSequenceText(
+      [
+        'Front-end -> API: a',
+        'API --> Front-end: b',
+        'A ---> B: c',
+        'A ~> B: d',
+        'A -) B: e',
+        'A ->> B: f',
+        'A -->> B: g',
+        'A - > B: none',
+      ].join('\n'),
+    );
+    expect(r.messages.map((m) => [m.label, m.kind])).toEqual([
+      ['a', 'call'],
+      ['b', 'reply'],
+      ['c', 'reply'],
+      ['d', 'async'],
+      ['e', 'async'],
+      ['f', 'call'],
+      ['g', 'reply'],
+    ]);
+    expect(r.participants.map((p) => p.label)).toEqual(['Front-end', 'API', 'A', 'B']);
+    expect(r.unread).toEqual([8]);
+  });
+
   it('reads a hostile paste in linear time', () => {
-    const text = `${'-'.repeat(390)}\n`.repeat(2000) + `${'~'.repeat(100000)}`;
+    const text =
+      `${'-'.repeat(390)}\n`.repeat(1000) +
+      `A${' -'.repeat(190)}x -> B\n`.repeat(1000) +
+      `${'~'.repeat(100000)}`;
     expect(cpuMsOf(() => parseSequenceText(text))).toBeLessThan(200);
   });
 });
