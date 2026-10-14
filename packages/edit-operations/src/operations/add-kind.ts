@@ -25,8 +25,10 @@ import {
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
 import { layerLockOf } from '../locks';
+import { makeRoom, type Axis } from '../make-room';
 import { resolvePlacement, type Placed } from '../placement';
 import { invalidValue } from '../rejections';
+import { PLACEMENT_GAP, type PlacementRelation } from '../vocabulary';
 import { type EditState, holdersOf, putElement, refuseLocked, touch, writeFields } from '../state';
 import type { AddKindOperation, Fields } from '../types';
 
@@ -175,11 +177,29 @@ export function layerFor(state: EditState, ref: Element | undefined): string | u
   return resolveActiveLayerId(layers, null);
 }
 
-// Grows the container `inside:` filled, so the element sits in it (EO27).
-export function growInto(state: EditState, placed: Placed, operation: number): void {
+// Grows the container `inside:` filled, so the element sits in it (EO27). Its growth makes room as an insertion does,
+// against one of its members, so what sat under it moves on rather than being taken in.
+export function growInto(
+  state: EditState,
+  placed: Placed,
+  el: BoxedElement,
+  operation: number,
+): void {
   if (!placed.grow) return;
   const { container, height } = placed.grow;
   if (container.type === 'arrow' || state.locked.has(container.id)) return;
+  const member = [...holdersOf(state)].find(
+    ([id, holder]) => holder === container.id && id !== el.id,
+  );
+  if (member) {
+    const axis: Axis = { horizontal: false, sign: 1 };
+    makeRoom(
+      state,
+      { node: el, b: member[0], axis, shift: height - container.height, gap: PLACEMENT_GAP },
+      operation,
+    );
+    return;
+  }
   putElement(state, { ...container, height }, operation);
   const touched = touch(state, container.id, operation);
   touched.fit = { ...touched.fit, taller: [container.height, height] };
@@ -212,27 +232,54 @@ export function applyAddKind(
   if ('rejection' in made) return made.rejection;
   const refused = commitNew(state, made, 'add', index);
   if (refused) return refused;
-  growInto(state, made.placed, index);
+  growInto(state, made.placed, made.el, index);
   if (operation.place && operation.place.rel !== 'at' && operation.place.rel !== 'inside')
-    growToHold(state, made.placed.ref, made.el, index);
+    growToHold(state, made.placed.ref, made.el, operation.place.rel, index);
   return null;
 }
 
 // Room a frame or lane leaves around what it holds, and the deeper band its header label takes.
 const HOLD_PAD = 32;
 
+// The side a placement puts the new box on, as make room reads it; none for a placement along the flow or an align.
+const PLACED_AXIS: Partial<Record<PlacementRelation, Axis>> = {
+  'right-of': { horizontal: true, sign: 1 },
+  'left-of': { horizontal: true, sign: -1 },
+  below: { horizontal: false, sign: 1 },
+  above: { horizontal: false, sign: -1 },
+};
+
+// How far a box, with the container's padding, reaches past the container's edge on the axis.
+function reachPast(holder: BoxedElement, el: BoxedElement, { horizontal, sign }: Axis): number {
+  if (horizontal)
+    return sign > 0
+      ? el.x + el.width + HOLD_PAD - (holder.x + holder.width)
+      : holder.x - (el.x - HOLD_PAD);
+  return sign > 0
+    ? el.y + el.height + HOLD_PAD - (holder.y + holder.height)
+    : holder.y - (el.y - HOLD_PAD);
+}
+
 // A box placed beside a member of a frame or lane joins it: the container grows to hold it, as an insertion grows
-// one (docs/specs/024-agents/edit-operations.md "Layout on edit"), instead of the new box landing just outside.
+// one (docs/specs/024-agents/edit-operations.md "Layout on edit"), instead of the new box landing just outside. On
+// the side it was placed, the growth makes room as an insertion does, so what sat past the container moves on
+// rather than being taken in.
 function growToHold(
   state: EditState,
   ref: Element | undefined,
   el: BoxedElement,
+  rel: PlacementRelation,
   operation: number,
 ): void {
   // Placement refuses an arrow as its reference (placement.ts), so a relative placement's ref is always a box.
   const holderId = holdersOf(state).get(ref!.id);
-  const holder = holderId ? state.byId.get(holderId) : undefined;
-  if (!holder || holder.type === 'arrow' || state.locked.has(holder.id)) return;
+  const found = holderId ? state.byId.get(holderId) : undefined;
+  if (!found || found.type === 'arrow' || state.locked.has(found.id)) return;
+  const axis = PLACED_AXIS[rel];
+  const reach = axis ? reachPast(found, el, axis) : 0;
+  if (axis && reach > 0)
+    makeRoom(state, { node: el, b: ref!.id, axis, shift: reach, gap: PLACEMENT_GAP }, operation);
+  const holder = state.byId.get(found.id) as BoxedElement;
   const right = Math.max(holder.x + holder.width, el.x + el.width + HOLD_PAD);
   const bottom = Math.max(holder.y + holder.height, el.y + el.height + HOLD_PAD);
   const x = Math.min(holder.x, el.x - HOLD_PAD);

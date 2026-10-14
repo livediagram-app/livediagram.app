@@ -108,7 +108,9 @@ The layout an agent did not ask to change stays put:
   template's proportions graph input draws ([MCP server](../015-api/mcp-server.md) §4.7, 180×64 for a square).
 - **A new box placed beside a member joins its frame or lane**: `add` with a placement against an element inside a
   container grows that container (`widened`, `taller`) to hold the new box with its padding, as an insertion does,
-  instead of the box landing just outside it.
+  instead of the box landing just outside it. The box lands beside its neighbour, making way only for what the
+  container holds, and on that side the growth makes room as an insertion does: what sat past the container moves
+  on, never taken in. A box `inside:` a container that holds something grows it the same way.
 - **A new arrow takes the tab's line.** `connect` with no `line=` draws with the line most of the tab's pinned arrows
   use: angled (anchors along the axis the two boxes lie on, bent twice as graph input bends an elbow) or curved; a
   given `line=` wins.

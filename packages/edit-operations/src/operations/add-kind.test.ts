@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getBuiltInTheme, type Element, type Tab } from '@livediagram/document';
+import { createShape, getBuiltInTheme, type Element, type Tab } from '@livediagram/document';
 import { applyEditOperations } from '../apply';
 import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
@@ -118,7 +118,7 @@ describe('add <kind>', () => {
     expect(added('add sticky')).not.toHaveProperty('layerId');
   });
 
-  it('grows a full container it goes inside, reporting everything it now holds (EO27)', () => {
+  it('grows a full container it goes inside, moving what sat under it on (EO27)', () => {
     const outcome = run('add square label=Retry inside:f2');
     const f2 = applied(outcome).tab.elements.find((e) => e.id === 'f2') as Element & {
       height: number;
@@ -127,8 +127,9 @@ describe('add <kind>', () => {
     expect(lines(outcome)).toEqual([
       expect.stringMatching(/^\+ retry {2}square "Retry" @/),
       expect.stringMatching(/^~ f2 {2}taller 200→\d+$/),
-      // Growing below the lowest member also takes in the steps under the frame; the line says so.
-      'f2  +n6 +n7 +retry',
+      // The steps under the frame move down by the growth rather than being taken in.
+      '» n6 n7 n8  +0,+222 (make room)',
+      'f2  +retry',
     ]);
   });
 
@@ -186,6 +187,59 @@ describe('add <kind>', () => {
     const grown = lines(outcome).find((l) => l.startsWith('~ f2'));
     expect(grown).toMatch(/widened/);
     expect(grown).not.toMatch(/taller/);
+  });
+
+  it('places a box beside a framed one in the frame, moving what lay past the frame on', () => {
+    const outcome = run('add square label=Below below:n5 width=100');
+    const { tab } = applied(outcome);
+    const n5 = tab.elements.find((e) => e.id === 'n5') as Element & { y: number; height: number };
+    const below = tab.elements.find((e) => e.id === 'below') as Element & { y: number };
+    expect(below.y).toBe(n5.y + n5.height + PLACEMENT_GAP);
+    expect(lines(outcome)).toContain('» n6 n7 n8  +0,+222 (make room)');
+    expect(lines(outcome)).toContain('f2  +below');
+  });
+
+  it('makes room on whichever side the box goes, and grows without making room along the flow', () => {
+    for (const op of [
+      'add square label=L left-of:n4',
+      'add square label=A above:n4',
+      'add square label=F after:n4',
+    ]) {
+      const outcome = run(op);
+      expect(lines(outcome).some((l) => l.startsWith('~ f2'))).toBe(true);
+    }
+  });
+
+  it('widens a frame across the flow for a box wider than it, placed below a member', () => {
+    const grown = lines(run('add square label=Wide below:n5 width=600')).find((l) =>
+      l.startsWith('~ f2'),
+    );
+    expect(grown).toMatch(/widened/);
+    expect(grown).toMatch(/taller/);
+  });
+
+  it('leaves a frame as it is when the new box already fits inside it', () => {
+    const tab = checkoutFlow();
+    const roomy: Tab = {
+      ...tab,
+      elements: tab.elements.map((el) =>
+        el.id === 'f2' && el.type === 'shape' ? { ...el, height: el.height + 600 } : el,
+      ),
+    };
+    const outcome = run('add square label=Below below:n5 width=100', roomy);
+    expect(lines(outcome).some((l) => l.startsWith('~ f2'))).toBe(false);
+  });
+
+  it('grows an empty container it goes inside on its own, with nothing to make room against', () => {
+    const empty: Tab = {
+      id: 't',
+      name: 'T',
+      elements: [{ ...createShape('frame', 0, 0), id: 'f', width: 200, height: 40 } as Element],
+    };
+    const f = applied(run('add square label=One inside:f', empty)).tab.elements.find(
+      (e) => e.id === 'f',
+    ) as Element & { height: number };
+    expect(f.height).toBeGreaterThan(40);
   });
 
   it('makes a frame taller without widening it when the new box fits its width', () => {

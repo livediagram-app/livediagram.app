@@ -259,8 +259,14 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
   origin (EO26). `align:` on `add` aligns that default spot.
 - **Nudge.** For the four sides, `after` and the default, while the box overlaps an occupying element, it moves
   along the placement axis (outward; the default moves right) to the occupier's far edge plus the gap. Occupying
-  elements are boxed, not containers, not the moving set itself, on any layer. The loop ends: each step passes one
+  elements are boxed, not containers, not the moving set itself, on any layer. For the four sides against an
+  element in an unlocked container, the occupiers are only what that container holds at any depth
+  (`frameOccupiers`): what lies outside is moved on by the container's growth. The loop ends: each step passes one
   occupier.
+- **Growing to hold.** A box placed on one of the four sides of a container's member grows the container: on the
+  placement axis by `makeRoom` (the reach past its far edge with `HOLD_PAD`), so what sat past it shifts by the same
+  amount; across the axis and for `after`, by fitting the box with `HOLD_PAD`. `inside:` against a container holding
+  a member grows by `makeRoom` against that member; an empty one grows on its own (EO27).
 - **Move.** `move <selector> <placement>` places the moving set's bounding box as one box and translates every
   member by the same delta; `by=dx,dy` translates by exactly that. A placement relative to an element in the
   moving set is `invalid_value`. A container in the moving set carries `containerContents` ([Carry](#carry)). Carried
