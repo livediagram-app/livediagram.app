@@ -502,7 +502,10 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   arrows' routing, from the editor's own arrow styles. Angled lines **bend
   twice** along the flow (down, across at half height, down into the child's
   top), the org-chart shape; one whose ends already line up runs straight
-  ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice").
+  ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice"). **No notch in a straight line:** an
+  elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
+  is drawn straight: a few pixels' slant over the length of an edge cannot be seen, and a step that short reads as a
+  notch (two boxes of different widths centred a pixel or two apart).
 
 The flow layout reduces crossings: after ranking, a few up-and-down barycentre
 passes reorder each rank, and a new order is kept only when it crosses fewer

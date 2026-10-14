@@ -7,7 +7,13 @@
 //     with tiny symmetric bends draws a nearly straight line with a notch in it);
 //   - crossings, behind, collisions: the lint's own counts; extent: the drawing's size.
 
-import { arrowStyleOf, type Element, type Point, type Tab } from '@livediagram/document';
+import {
+  arrowStyleOf,
+  type ArrowElement,
+  type Element,
+  type Point,
+  type Tab,
+} from '@livediagram/document';
 import { lintTab } from '../lint';
 import { prepareLintContext } from '../context';
 
@@ -73,17 +79,30 @@ function sharedLength(a: readonly Run[], b: readonly Run[]): number {
 // A run between two turns shorter than this reads as a notch, not a bend.
 const KINK_RUN = 12;
 
-// Whether a route kinks: an interior run shorter than KINK_RUN, or two runs in a row heading opposite ways.
+// Whether a route kinks: an interior run with length but shorter than KINK_RUN, or two runs in a row heading
+// opposite ways.
 function kinked(points: readonly Point[]): boolean {
   for (let i = 1; i < points.length; i++) {
     const [a, b] = [points[i - 1]!, points[i]!];
     const interior = i > 1 && i < points.length - 1;
-    if (interior && Math.hypot(b.x - a.x, b.y - a.y) < KINK_RUN) return true;
+    // A run of no length draws nothing (the renderer snaps its bends onto the line): only a short one with length is
+    // a notch a reader sees.
+    const run = Math.hypot(b.x - a.x, b.y - a.y);
+    if (interior && run >= 0.5 && run < KINK_RUN) return true;
     if (i < 2) continue;
     const z = points[i - 2]!;
     if ((a.x - z.x) * (b.x - a.x) + (a.y - z.y) * (b.y - a.y) < 0) return true;
   }
   return false;
+}
+
+const endKey = (end: ArrowElement['from']) =>
+  end.kind === 'pinned' ? `${end.elementId}:${end.anchor}` : null;
+
+// Whether two arrows meet at a pinned end: the same anchor of the same box.
+function sharesEnd(a: ArrowElement, b: ArrowElement): boolean {
+  const mine = [endKey(a.from), endKey(a.to)].filter((k): k is string => !!k);
+  return [endKey(b.from), endKey(b.to)].some((k) => !!k && mine.includes(k));
 }
 
 type Rect = { x: number; y: number; width: number; height: number };
@@ -142,8 +161,13 @@ export function routeMeasures(tab: Pick<Tab, 'elements' | 'layers' | 'theme'>): 
     crossed: Math.round(crossed),
     strikes,
     // A curve is drawn as many short runs, all of them bends by design: only square and straight routes kink.
-    kinks: ctx.drawable.filter((d) => arrowStyleOf(d.arrow) !== 'curved' && kinked(d.polyline))
-      .length,
+    // A step where a bus joins is hidden by the run arriving there: only an arrow with ends of its own is judged.
+    kinks: ctx.drawable.filter(
+      (d, i) =>
+        arrowStyleOf(d.arrow) !== 'curved' &&
+        !ctx.drawable.some((o, j) => j !== i && sharesEnd(d.arrow, o.arrow)) &&
+        kinked(d.polyline),
+    ).length,
     // Null when the pair check was skipped: none counted.
     crossings: Number(report.measures.crossings),
     behind: report.measures.behind,

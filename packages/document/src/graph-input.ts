@@ -14,6 +14,7 @@
 import { autoLayoutElements, type LayoutDirection, type LayoutStyle } from './auto-layout';
 import { layoutClusteredGraph, sweepEdgelessNodes } from './auto-layout-clusters';
 import { withOrthogonalBends } from './arrow-orthogonal';
+import { withoutNotches } from './graph-notches';
 import type { ArrowStyle } from './arrow-style';
 import {
   graphToElements,
@@ -326,7 +327,7 @@ export function layoutGraph(
       laid = sideRejoins(laid, axis, routes);
     if (stacked.size) laid = stackBuses(laid, stacked, routes);
     if (style === 'flow' || style === 'lanes') laid = routeLoops(laid, axis, flat, routes);
-    laid = placeElbowLabels(applyRoutes(laid, routes));
+    laid = withoutNotches(placeElbowLabels(applyRoutes(laid, routes)));
   }
   return withHeaderAndKey(laid, {
     ...(g.title ? { title: g.title } : {}),
