@@ -14,6 +14,7 @@
 import { autoLayoutElements, type LayoutDirection, type LayoutStyle } from './auto-layout';
 import { layoutClusteredGraph, sweepEdgelessNodes } from './auto-layout-clusters';
 import { withOrthogonalBends } from './arrow-orthogonal';
+import { withoutNotches } from './graph-notches';
 import type { ArrowStyle } from './arrow-style';
 import {
   graphToElements,
@@ -40,6 +41,7 @@ import { unionRects } from './geometry-primitives';
 import { isBoxed } from './index';
 import { withHeaderAndKey, type GraphKey } from './graph-header';
 import { layoutLanes } from './graph-lanes';
+import { branchExits, withExactEnds } from './graph-branches';
 import { layoutCycle } from './graph-cycle';
 import { layoutMindmapGraph } from './graph-mindmap';
 import { layoutStormGraph } from './graph-storm';
@@ -313,12 +315,10 @@ export function layoutGraph(
   // rank then go round the outside instead.
   const axis = style === 'lanes' ? 'LR' : flowDir;
   if (lines === 'angled') {
-    // Arrows leaving one node share one trunk, and arrows into one node one bus, the org-chart shape: each end sits
-    // exactly on its anchor, so siblings' bends at the same height merge into one line.
-    // A labelled arrow keeps its own ends: merged into a trunk, a label could not say which line it names.
-    laid = laid.map((el) =>
-      el.type === 'arrow' && !el.label ? { ...el, exactStart: true, exactEnd: true } : el,
-    );
+    // Trunks and buses (graph-branches.ts); then, down a flow, a step's exits that keep their own start
+    // leave by different sides.
+    laid = withExactEnds(laid);
+    if (style === 'flow') laid = branchExits(laid, { axis, eligible: (a) => !a.exactStart });
     laid = spreadChannels(withOrthogonalBends(laid, axis), axis);
     // Anchors first, every pass; then each routed arrow's bends from its final, fanned ends.
     const routes: Routes = new Map();
@@ -326,7 +326,7 @@ export function layoutGraph(
       laid = sideRejoins(laid, axis, routes);
     if (stacked.size) laid = stackBuses(laid, stacked, routes);
     if (style === 'flow' || style === 'lanes') laid = routeLoops(laid, axis, flat, routes);
-    laid = placeElbowLabels(applyRoutes(laid, routes));
+    laid = withoutNotches(placeElbowLabels(applyRoutes(laid, routes)));
   }
   return withHeaderAndKey(laid, {
     ...(g.title ? { title: g.title } : {}),

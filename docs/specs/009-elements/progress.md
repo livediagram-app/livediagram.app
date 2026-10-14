@@ -34,7 +34,11 @@ The bar's percentage sits across the filled portion and the track, so one ink ca
 
 A **Progress** section inside the menu's **Tools** flyout (only for progress shapes; they are excluded from the **Shape** morph grid, which would drop the `progress` field) offers:
 
-- a **Percentage** slider (0–100, mirrors the Opacity row), and
+- a **Percentage** slider (0–100, mirrors the Opacity row).
+
+The fill's animation is the **Progress** section of the menu's **Animation** row
+([Element animations](../028-animation/element-animations.md#the-menu)):
+
 - **Fill animation** tiles: None / Fill / Pulse / Stripes (live miniatures of a progress bar, `ProgressAnimPreview`); once an animation is picked, a **Speed** row (Slowest / Slow / Normal / Fast) and a **Repeat** toggle appear beneath it.
 
 Setters `setProgressSelected` / `setProgressAnimSelected` / `setProgressAnimSpeedSelected` / `setProgressAnimRepeatSelected` (`useDataShapeSetters`, exposed through `useElementStyle`) apply to every selected progress shape; changes emit `track('Element', 'Changed', 'Progress' | 'ProgressAnim')`.

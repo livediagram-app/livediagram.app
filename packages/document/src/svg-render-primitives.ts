@@ -9,7 +9,9 @@ import type { BoxedElement } from './index';
 // than defined here: @livediagram/icons owns the one escaper the monorepo's
 // SVG builders share, and this package already depends on it. Every existing
 // `xmlEscape` import from here (and from the package barrel) still resolves.
-export { xmlEscape } from '@livediagram/icons';
+import type { ExportIconArt } from './svg-render-describe';
+import { xmlEscape } from '@livediagram/icons';
+export { xmlEscape };
 
 export const LABEL_LINE_HEIGHT = 1.25;
 
@@ -112,4 +114,21 @@ export function labelMeasure(
     fontFamily ?? 'system-ui, sans-serif'
   }`;
   return (s) => ctx.measureText(s).width;
+}
+
+/** An icon's art drawn in `r` (relative to the element at `el`), as the card and the boundary draw theirs: a coloured
+ *  icon keeps its own paint, a line icon is stroked in `colour`. */
+export function svgIconGlyph(
+  el: { x: number; y: number },
+  art: ExportIconArt,
+  r: { x: number; y: number; width: number; height: number },
+  colour: string,
+): string {
+  const attrs = art.colored
+    ? ''
+    : ` fill="none" stroke="${xmlEscape(colour)}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+  return (
+    `<svg x="${r2(el.x + r.x)}" y="${r2(el.y + r.y)}" width="${r2(r.width)}" height="${r2(r.height)}"` +
+    ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible"${attrs}>${art.markup}</svg>`
+  );
 }

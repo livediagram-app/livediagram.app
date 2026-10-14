@@ -18,8 +18,9 @@ import {
   type DrinkKind,
   type Element,
 } from '@livediagram/document';
-import { fenceSegments, fenceStep, FENCE_STALL } from '@/lib/avatar-fence';
+import { fenceReachFor, fenceSegments, fenceStalled, fenceStep } from '@/lib/avatar-fence';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
+import type { AvatarStatus } from '@/lib/avatar-status';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '@/lib/avatar-reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from '@/hooks/canvas/useAvatarKeys';
 import {
@@ -66,6 +67,8 @@ export type AvatarSnapshot = {
   seatedOn?: string | null;
   // A drink in the hand (docs/specs/009-elements/office.md "Using it"), or none.
   holding?: DrinkKind | null;
+  // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none.
+  status?: AvatarStatus | null;
   // Flag-wave frame, or null when the flag is down.
   wave: number | null;
 };
@@ -73,6 +76,7 @@ export type AvatarSnapshot = {
 export function useAvatarWalk({
   active,
   config,
+  status = null,
   onToggleGender,
   elements,
   mainRef,
@@ -92,6 +96,8 @@ export function useAvatarWalk({
   // The character's costume (useAvatarConfig): published to peers, and its
   // size scales the right-click hit box.
   config: AvatarConfig;
+  // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"): rides every snapshot.
+  status?: AvatarStatus | null;
   // Right-clicking the character flips male / female — the costume state lives
   // in useAvatarConfig (it persists), so the flip is delegated to it.
   onToggleGender: () => void;
@@ -426,13 +432,16 @@ export function useAvatarWalk({
         : step!.pos;
       // Fences (docs/specs/009-elements/fence.md "Blocking"): a step into one is refused, or slides
       // along it. A click-walk that can make no progress stops rather than pressing on forever.
-      const fenced = fenceStep(from, wanted, fences);
+      const fenced = fenceStep(from, wanted, fences, fenceReachFor(avatarScale(config.size)));
       const next = fenced.pos;
       if (
         fenced.blocked &&
         !held &&
         targetRef.current &&
-        Math.hypot(next.x - from.x, next.y - from.y) < FENCE_STALL
+        fenceStalled(
+          Math.hypot(next.x - from.x, next.y - from.y),
+          Math.hypot(wanted.x - from.x, wanted.y - from.y),
+        )
       ) {
         targetRef.current = null;
         arriveRef.current = null;
@@ -542,6 +551,7 @@ export function useAvatarWalk({
           wave: waveStartRef.current === null ? null : 0,
           seatedOn: seatedRef.current,
           holding: holdingRef.current,
+          status,
           ...(live ? { reaction: { kind: live.kind, elapsedMs: now - live.startedAt } } : null),
         });
       }
@@ -568,7 +578,8 @@ export function useAvatarWalk({
   // a null position, i.e. nothing, and a peer saw no character until the
   // walker moved (which needs animation frames the tab may not be getting).
   const publishStanding = useEffectEvent((at: AvatarPoint) => {
-    const costume = JSON.stringify(config);
+    // The costume and the status: a change to either is worth telling the room at once.
+    const costume = JSON.stringify([config, status]);
     if (publishedLookRef.current === costume) return;
     publishedLookRef.current = costume;
     onPresence?.({
@@ -582,13 +593,14 @@ export function useAvatarWalk({
       wave: null,
       seatedOn: seatedRef.current,
       holding: holdingRef.current,
+      status,
     });
   });
   // `facing` is read as the snapshot's value only (an effect event), since re-publishing on a turn would
   // fight the loop, which already publishes while walking.
   useEffect(() => {
     if (active && pos) publishStanding(pos);
-  }, [active, pos, config]);
+  }, [active, pos, config, status]);
 
   // Which element the avatar is standing on (the "you are here" ring). Cheap
   // rectangle scan, and only while the mode is on.
@@ -607,6 +619,7 @@ export function useAvatarWalk({
       wave: null,
       seatedOn: seatedRef.current,
       holding: holdingRef.current,
+      status,
     });
   // Take a drink (docs/specs/009-elements/office.md "Using it"): held for DRINK_HOLD_MS, replacing any other,
   // and told to the room at once rather than at the next step.

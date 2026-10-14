@@ -124,6 +124,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
   'Canvas|Used|CoffeeMachine':
     'Someone walked their Avatar-mode character up to a coffee machine and took a coffee.',
+  'Canvas|Used|AvatarMessage':
+    'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
+  'Canvas|Used|AvatarMessagePanel':
+    "Someone said something in Avatar mode from the Avatar panel's Send a Message. Never the words.",
   'Canvas|Used|AvatarMode':
     'Someone switched to Avatar mode, steering a small walking character around the canvas instead of the usual pointer.',
   'Canvas|Used|ChangeNoteKind':
@@ -1018,6 +1022,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|AvatarGender':
     "Someone changed the Avatar-mode character's gender, in the Avatar panel.",
   'UI|Changed|AvatarHair': "Someone changed the Avatar-mode character's hair, in the Avatar panel.",
+  'UI|Changed|AvatarStatus':
+    'Someone set or cleared their status in Avatar mode (Available, Focusing, In a Meeting or Away). Never which.',
   'UI|Changed|AvatarRandomised':
     'Someone clicked the dice button in the Avatar panel to roll a new random character, keeping their chosen size.',
   'UI|Changed|AvatarSize': "Someone changed the Avatar-mode character's size, in the Avatar panel.",
@@ -1105,6 +1111,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone dismissed the Diagram tour's offer card (the welcome tour's, until October 2026) without starting it.",
   'UI|Closed|IllustrateTourOffer':
     'Someone turned the Illustrate tour down with No on its own card.',
+  'UI|Closed|AvatarTourOffer': 'Someone turned the Avatar tour down with No on its own card.',
   'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
   'UI|Closed|FacilitateTourOffer':
     'Someone turned the Facilitate tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Facilitate).',
@@ -1163,6 +1170,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|IllustrateTourCompleted':
     "Someone reached the end of the Illustrate tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|IllustrateTourSkipped': 'Someone closed the Illustrate tour before its end.',
+  'UI|Ended|AvatarTourCompleted':
+    "Someone reached the end of the Avatar tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|AvatarTourSkipped': 'Someone closed the Avatar tour before its end.',
   'UI|Ended|DrawTourCompleted':
     "Someone reached the end of the Draw tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|DrawTourSkipped': 'Someone closed the Draw tour before its end.',
@@ -1263,6 +1273,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
   'UI|Opened|IllustrateTourOffer':
     'The Illustrate tour was offered: as its own card the first time someone worked in Illustrate mode, or replayed from Settings\' Tours › "Illustrate Tour".',
+  'UI|Opened|AvatarTourOffer':
+    'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour".',
+  'UI|Opened|AvatarPanel':
+    'Someone opened the Avatar panel from its button beside Undo and Redo, in Avatar mode.',
   'UI|Opened|DrawTourOffer':
     'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour".',
   'UI|Opened|FacilitateTourOffer':
@@ -1345,6 +1359,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the Share dialog, starting its tour of issuing and managing passes.',
   'UI|Started|IllustrateTour':
     "Someone pressed Yes on the Illustrate tour's first card, beginning its walkthrough of the pages.",
+  'UI|Started|AvatarTour':
+    "Someone pressed Yes on the Avatar tour's first card, beginning its walkthrough of Avatar mode.",
   'UI|Started|DrawTour':
     "Someone pressed Yes on the Draw tour's first card, beginning its walkthrough of the dock.",
   'UI|Started|FacilitateTour':
@@ -1496,6 +1512,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Illustrate Tour" in Settings, marking the Illustrate tour as not yet seen.',
   'UI|Toggled|IllustrateTourSeenOn':
     'Someone switched off Tours › "Illustrate Tour" in Settings, marking the Illustrate tour as seen.',
+  'UI|Toggled|AvatarTourSeenOff':
+    'Someone switched on Tours › "Avatar Tour" in Settings, marking the Avatar tour as not yet seen.',
+  'UI|Toggled|AvatarTourSeenOn':
+    'Someone switched off Tours › "Avatar Tour" in Settings, marking the Avatar tour as seen.',
   'UI|Toggled|DrawTourSeenOff':
     'Someone switched on Tours › "Draw Tour" in Settings, marking the Draw tour as not yet seen.',
   'UI|Toggled|DrawTourSeenOn':
@@ -1571,6 +1591,17 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Illustrate tour\'s logo track reached its "Combine Shapes" step.',
   'UI|View|IllustrateTourStepLogoOutro':
     'The Illustrate tour\'s logo track reached its closing "That Is a Logo Page" card.',
+  'UI|View|AvatarTourStepAvatarButton':
+    'The Avatar tour reached its "Your Avatar" step, on the Avatar button.',
+  'UI|View|AvatarTourStepCharacter':
+    'The Avatar tour reached its "Make It Yours" step, on the character sheet.',
+  'UI|View|AvatarTourStepActions': 'The Avatar tour reached its "Behaviour and Reactions" step.',
+  'UI|View|AvatarTourStepMessage':
+    'The Avatar tour reached its "Say Something" step, on Send a Message.',
+  'UI|View|AvatarTourStepPush':
+    'The Avatar tour reached its "Give Someone a Push" step, on the person\'s own character.',
+  'UI|View|AvatarTourStepOutro':
+    'The Avatar tour reached its closing "You\'re Ready to Roam" card.',
   'UI|View|DrawTourStepDrawingTools':
     'The Draw tour reached its "Pens and Tools" step, on the dock\'s Drawing tools group.',
   'UI|View|DrawTourStepQuickStyle':

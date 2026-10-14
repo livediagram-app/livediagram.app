@@ -32,14 +32,11 @@ export function useSnapColours(deps: {
       debugLog('[snap-colours] nothing to snap', { blocked: editsBlocked });
       return 0;
     }
-    let result = { colours: 0, changed: 0 };
-    // The live elements, read inside the commit, so an edit since this render is kept.
-    commit((els) => {
-      const out = snapTabColours(els, inertIds);
-      result = out;
-      return out.elements;
-    });
+    // What it will do is read from the elements as they are, not from inside the commit's updater, which React may run
+    // later; the commit itself snaps the live elements, so an edit since this render is kept.
+    const result = snapTabColours(elements, inertIds);
     if (result.changed === 0) return 0;
+    commit((els) => (els === elements ? result.elements : snapTabColours(els, inertIds).elements));
     debugLog('[snap-colours] snapped', { colours: result.colours, elements: result.changed });
     track('Draw', 'Changed', 'SnapColours');
     return result.colours;

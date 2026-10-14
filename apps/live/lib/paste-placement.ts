@@ -1,5 +1,6 @@
 import {
   elementBounds,
+  endpointPosition,
   isBoxed,
   isEventStormingNote,
   isEventStormingTab,
@@ -75,22 +76,41 @@ function intoView(
   };
 }
 
-// The box around the copied elements; an arrow resolves its ends against the copy.
+// The box around what the paste moves: the copied boxes, and each copied arrow's ends that are free
+// or held by something in the copy. An end pinned to an element left behind does not move with the
+// paste (and would resolve to the origin against the copy alone), so it is not measured.
 function sourceBounds(source: readonly Element[]): ViewRect | null {
   const all = [...source];
+  const ids = new Set(all.map((el) => el.id));
   let box: { x0: number; y0: number; x1: number; y1: number } | null = null;
-  for (const el of all) {
-    const r = elementBounds(el, all);
+  const take = (x0: number, y0: number, x1: number, y1: number) => {
     box = box
       ? {
-          x0: Math.min(box.x0, r.x),
-          y0: Math.min(box.y0, r.y),
-          x1: Math.max(box.x1, r.x + r.width),
-          y1: Math.max(box.y1, r.y + r.height),
+          x0: Math.min(box.x0, x0),
+          y0: Math.min(box.y0, y0),
+          x1: Math.max(box.x1, x1),
+          y1: Math.max(box.y1, y1),
         }
-      : { x0: r.x, y0: r.y, x1: r.x + r.width, y1: r.y + r.height };
+      : { x0, y0, x1, y1 };
+  };
+  for (const el of all) {
+    if (el.type !== 'arrow') {
+      const r = elementBounds(el, all);
+      take(r.x, r.y, r.x + r.width, r.y + r.height);
+      continue;
+    }
+    for (const end of [el.from, el.to]) {
+      const held =
+        end.kind === 'free' ||
+        (end.kind === 'pinned' && ids.has(end.elementId)) ||
+        (end.kind === 'on-arrow' && ids.has(end.arrowId));
+      if (!held) continue;
+      const p = endpointPosition(end, all);
+      take(p.x, p.y, p.x, p.y);
+    }
   }
-  return box && { x: box.x0, y: box.y0, width: box.x1 - box.x0, height: box.y1 - box.y0 };
+  const b = box as { x0: number; y0: number; x1: number; y1: number } | null;
+  return b && { x: b.x0, y: b.y0, width: b.x1 - b.x0, height: b.y1 - b.y0 };
 }
 
 // Land the copies once they are on the board. One note pasted at the pointer

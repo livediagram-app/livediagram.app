@@ -138,6 +138,24 @@ describe('pasteTranslation into the view', () => {
     );
   });
 
+  it('leaves out an arrow end pinned to an element that was not copied', () => {
+    // A box at x 6000 on slide 4, and an arrow from it to a box left behind: the far end does not move
+    // with the paste, so it must not stretch the box to the origin.
+    const box = shape('s', 6000, 0);
+    const arrow = {
+      id: 'ar',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 's', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'left-behind', anchor: 'w' },
+    } as unknown as Element;
+    const inView = { x: 5800, y: -200, width: 1200, height: 800 };
+    expect(pasteTranslation([box, arrow], plainBoard, null, inView)).toEqual({
+      dx: 24,
+      dy: 24,
+      atPointer: false,
+    });
+  });
+
   it('keeps the offset with no view to measure', () => {
     expect(pasteTranslation([shape('s', 0, 0)], plainBoard, null, null).dx).toBe(24);
   });

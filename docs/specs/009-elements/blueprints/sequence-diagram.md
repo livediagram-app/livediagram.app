@@ -7,7 +7,7 @@ Derived from [The sequence diagram](../sequence-diagram.md). Defaults in [DEFAUL
 | `packages/document/src/sequence-element.ts`                 | Fields, bounds, writes, the diagram it describes          |
 | `packages/document/src/svg-render-sequence.ts`              | The picture: `layoutSequence` drawn and fitted to the box |
 | `apps/live/components/canvas/SequenceFace.tsx`              | Canvas face (the same picture), the Play wipe             |
-| `apps/live/components/palette/SequenceMenuSection.tsx`      | Summary, Edit Sequence, Numbered, Play                    |
+| `apps/live/components/palette/SequenceMenuSection.tsx`      | Summary, Edit Sequence, Numbered                          |
 | `packages/document/src/sequence-text.ts`                    | The Text tab: rows as lines and back                      |
 | `apps/live/components/dialogs/SequenceDialog.tsx`           | The dialog: tabs, draft, preview, footer                  |
 | `apps/live/components/dialogs/SequenceParticipantStrip.tsx` | Participant chips and the open chip's editor              |
@@ -64,7 +64,8 @@ words` per message (`->`, `~>`, `-->`). A participant's name is its label (its i
   (case-insensitively) takes the first free ` <n>` suffix from 2, so every written name reads back as its own participant.
 - `parseSequenceText(text, known)`: per line (trimmed; empty and `//` skipped; past `SEQ_TEXT_LINE_MAX` unread):
   `participant|actor <name>` declares; otherwise the first arrow found scanning left to right (longest token at a
-  position: `-->>`, `-->`, `->>`, `->`, `~>`, `-)`) splits From and the rest; To is the longest participant named so
+  position: `-->>`, `-->`, `->>`, `->`, `~>`, `-)`, read a character at a time, at most four per position) splits From
+  (less any spaces and dashes before the arrow, so `A ---> B` reads From `A`) and the rest; To is the longest participant named so
   far whose name the rest starts with, followed by `:` or the line's end, else the rest up to its first `:`; the words
   follow the `:`.
   Names match case-insensitively; a known name keeps its id, a new one takes the next free `p<n>`. Past 12
@@ -128,11 +129,12 @@ kind one of three); `sequenceNumbered` boolean; `sequenceAnim` `'play'`.
 
 ## Errors and edge cases
 
-| #   | Case                               | Handling                                                                |
-| --- | ---------------------------------- | ----------------------------------------------------------------------- |
-| E1  | No messages                        | Heads and lifelines only                                                |
-| E2  | A message to a removed participant | Dropped by the write; ignored by the reader                             |
-| E3  | Very long labels                   | The layout widens its pitch (capped at 520) and the picture scales down |
+| #   | Case                                     | Handling                                                                  |
+| --- | ---------------------------------------- | ------------------------------------------------------------------------- |
+| E1  | No messages                              | Heads and lifelines only                                                  |
+| E2  | A message to a removed participant       | Dropped by the write; ignored by the reader                               |
+| E3  | Very long labels                         | The layout widens its pitch (capped at 520) and the picture scales down   |
+| E4  | Diagram deleted while its dialog is open | The dialog closes (`useCloseVanishedDialogs`); an undo does not reopen it |
 
 ## Security and trust
 
@@ -142,13 +144,20 @@ Labels pass through the headless renderer's escaping; the picture is our own SVG
 
 Layout is O(messages) ≤ 60; the picture is built once per change of the rows (memo on the canvas), not per frame.
 
+The Text tab parses on every keystroke. A hostile paste (1,000 lines of 390 dashes, 1,000 lines of 190 ` -` pairs before
+an arrow, a 100,000-character line) parses in 10 ms of CPU on an M-series Mac, 29 ms under coverage, against a 200 ms
+budget (`sequence-text.test.ts`). The arrow scan reads at most four characters per position and the trailing-dash trim
+is a walk back, never a backtracking pattern; trying the six arrows with `startsWith` at every dash cost 40 ms (73 ms
+under coverage, 281 ms on CI).
+
 ## Presentation and UX
 
 - D194: 560 × 340; participants Browser, API, Database; messages `Place order` (call, Browser → API), `Validate`
   (call, API → API), `Insert order` (call, API → Database), `Order id` (reply, Database → API), `201 Created` (reply,
   API → Browser).
 - The Sequence section: `N participants · M messages`, Edit Sequence (secondary, full width; only with
-  `onEditSequence`), Numbered, the Animation tiles (None, Play) and Speed / Repeat once Play is picked.
+  `onEditSequence`), Numbered. Play is the Animation row's Sequence section (`ElementAnimationTiles.tsx` `SequenceAnimTiles`: None, Play,
+  then Speed / Repeat); a sequence diagram takes no Shape set (`animation-membership.ts` `hasOwnBodySet`).
 - The dialog: size `3xl`, `phoneSheet`, `max-h-[90vh]`; header title "Sequence Diagram" and its line, labelled Help
   (`sequenceDiagram` → `palette/sequence-diagrams`), close. Tabs Messages / Text (`DialogTabs`). Body: rows column and
   a 280 px preview (white paper, `max-h-[360px]`, 160 px on a phone, above the rows there). Footer: Numbered switch,
@@ -157,8 +166,9 @@ Layout is O(messages) ≤ 60; the picture is built once per change of the rows (
   Box / Actor radio pair, Move Left, Move Right and Remove (rose on hover; disabled at two, tooltip says why, or how
   many messages go with it). Add Participant is a dashed pill; it adds `{ id: first free p<n>, label: Participant <k> }`,
   `k` the first number from the count plus one that no label uses (case-insensitively).
-- Message rows: grid `[1.25rem 6.5rem 2.5rem 6.5rem 1fr auto]` on a wide screen; on a phone From, kind, To and the
-  actions share the first line and the words the second. The kind button draws `KindArrow` (brand tint for Call and
+- Message rows: grid `[1.25rem 6.5rem 2.5rem 6.5rem 1fr auto]` on a wide screen; on a phone `[1.25rem 1fr 2.5rem 1fr]`,
+  From, kind and To on the first line (From and To equal), the words (columns 2 to 3) and the actions (column 4) on
+  the second. The kind button draws `KindArrow` (brand tint for Call and
   Async, plain for Reply). Move Up / Down show on hover or focus, always on a touch screen. Add Message is a dashed
   row ending in `n of 60`. No messages: `CompactEmptyState` "No messages yet".
 - A sequence opens no inline label editor (`opensInlineLabelEditor` is false), so a click never starts one and a
@@ -181,7 +191,7 @@ dialog, `useSequenceSetters`), `SequenceNumbered`, `SequenceAnim`.
 | ------------------------- | ----------------------------------------------------------- |
 | Writes, bounds (I1), next | `packages/document/src/sequence-element.test.ts`            |
 | Picture and export (I2)   | same                                                        |
-| Menu: summary, Edit, Play | `apps/live/components/palette/SequenceMenuSection.test.tsx` |
+| Menu: summary, Edit       | `apps/live/components/palette/SequenceMenuSection.test.tsx` |
 | Dialog: rows, text, close | `apps/live/components/dialogs/SequenceDialog.test.tsx`      |
 | Text read and written     | `packages/document/src/sequence-text.test.ts`               |
 | Dialog writes             | `apps/live/hooks/canvas/useSequenceSetters.test.ts`         |

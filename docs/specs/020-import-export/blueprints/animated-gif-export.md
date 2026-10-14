@@ -148,13 +148,15 @@ format: 'rgb565' })`; `indexFrame`; `writeFrame(index, w, h, { palette, delay: d
   dynamic import, so `gifenc` is in neither first-load JS nor the panel's chunk).
 - The worker (`gif-encode.worker.ts`) runs a writer. Messages in (`gif-encode-protocol.ts`): `start { width, height
 }`, `palette { key, samples: ArrayBuffer[] (transferred) }`, `frame { rgba: ArrayBuffer (transferred), delayCs,
-palette?: key }`, `finish`. Out: `done { bytes: ArrayBuffer (transferred),
-written }`, `failed { message }`. Cancel is `terminate()`.
+palette?: key }`, `finish`. Out: `ready` (on `start`: the module loaded and ran),
+  `done { bytes: ArrayBuffer (transferred), written }`, `failed { message }`. Cancel is `terminate()`.
 - `openGifEncoder(w, h)` (`gif-encoder.ts`): `palette(key, samples)` and `add(rgba, delayCs, palette?)`, one module
   worker per GIF (`new Worker(new URL(...), { type: 'module'
 })`, as the other workers here). `add` transfers the buffer, `finish` resolves with the bytes or rejects on
-  `failed` or a worker `error`, `cancel` terminates. Where a worker cannot start, the same writer runs on the page,
-  queued.
+  `failed` or a worker `error`, `cancel` terminates. Palettes and frames are held until `ready`, then transferred; a
+  failure before `ready` (the constructor throws, or the module fails to load and only an `error` event comes) hands
+  everything held to the same writer on the page, queued, and the GIF is still made. After `ready` a failure ends the
+  session: the next `palette` or `add` throws, so the frame loop stops at once rather than at `finish`.
 
 ### The hook (`useGifExport`) and panel (`GifExportPanel`)
 

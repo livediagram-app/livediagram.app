@@ -966,9 +966,20 @@ export const articles: Article[] = [
     title: 'Avatar Mode',
     description: 'Walk a pixel character around the canvas while you talk through it.',
     keywords:
-      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small',
+      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
+  },
+  {
+    slug: 'avatar-tour',
+    title: 'The Avatar Tour',
+    description:
+      'A short, optional walkthrough of Avatar mode, offered the first time you walk as an avatar and replayable from Settings.',
+    keywords:
+      'avatar tour walkthrough onboarding intro introduction getting started guide tutorial first time learn character walk dress outfit hair behaviour reactions speech bubble message say talk chat push shove replay rerun settings',
+    category: 'Selection Modes',
+    categorySlug: 'selection-modes/avatar-mode',
+    parentSlug: 'avatar-mode',
   },
   {
     slug: 'walking-together',

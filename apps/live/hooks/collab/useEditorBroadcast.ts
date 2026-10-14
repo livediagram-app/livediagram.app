@@ -76,6 +76,9 @@ type EditorBroadcastApi = {
   // Ask one peer's character to step aside (docs/specs/008-canvas/avatar-mode.md): a unit direction and
   // who it is aimed at. Never throttled — it is an event, not a sample.
   broadcastAvatarPush: (targetId: string, dx: number, dy: number) => void;
+  // Say something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): one message, rising from `x, y`.
+  // Never throttled (an event), held by the same gates as the push.
+  broadcastAvatarSay: (say: { id: string; text: string; x: number; y: number }) => void;
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): tell the room a pad went off, so the burst plays
   // for everyone rather than only the person who pressed it.
   broadcastReaction: (elementId: string, reaction: string) => void;
@@ -233,6 +236,18 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
+  // A speech bubble (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"). Discrete like the shove above:
+  // never throttled, same presence gate, so a hide-cursors vote keeps it home too.
+  const broadcastAvatarSay = (say: { id: string; text: string; x: number; y: number }) => {
+    if (deps.cursorsHidden) return;
+    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
+      return;
+    deps.roomRef.current?.send({
+      kind: 'op',
+      op: { kind: 'avatar-say', tabId: deps.activeId, ...say },
+    });
+  };
+
   // A reaction burst (docs/specs/009-elements/reaction-pad.md). Discrete like the shove above: never
   // throttled, never dropped, same presence gate.
   const broadcastReaction = (elementId: string, reaction: string) => {
@@ -251,6 +266,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     broadcastLaser,
     broadcastAvatar,
     broadcastAvatarPush,
+    broadcastAvatarSay,
     broadcastViewport,
     broadcastFocusHere,
     localLaserTrail,

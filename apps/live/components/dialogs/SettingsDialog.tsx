@@ -21,6 +21,7 @@ import { markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
 import { planTourOwed, requestPlanTourRelaunch } from '@/lib/plan-tour';
 import { requestFacilitateTourRelaunch } from '@/lib/facilitate-tour';
 import { requestDrawTourRelaunch } from '@/lib/draw-tour';
+import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { illustrateTourOwed, requestIllustrateTourRelaunch } from '@/lib/illustrate-tour';
 import { track } from '@/lib/telemetry';
 import {
@@ -196,6 +197,9 @@ export function SettingsDialog({
   // Tours › "Draw Tour" (docs/specs/023-draw-mode/draw-tour.md): as Plan Tour.
   const drawTourSeen = settings.drawTourSeen === true;
   const drawTourSeenAtOpen = useRef(drawTourSeen);
+  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as Plan Tour.
+  const avatarTourSeen = settings.avatarTourSeen === true;
+  const avatarTourSeenAtOpen = useRef(avatarTourSeen);
   // Tours › "Illustrate Tour" (docs/specs/007-editor/illustrate-tour.md): as Plan Tour.
   const illustrateTourSeen = !illustrateTourOwed(settings);
   const illustrateTourSeenAtOpen = useRef(illustrateTourSeen);
@@ -207,6 +211,7 @@ export function SettingsDialog({
     if (!planTourSeen && planTourSeenAtOpen.current) requestPlanTourRelaunch();
     if (!facilitateTourSeen && facilitateTourSeenAtOpen.current) requestFacilitateTourRelaunch();
     if (!drawTourSeen && drawTourSeenAtOpen.current) requestDrawTourRelaunch();
+    if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
     if (!illustrateTourSeen && illustrateTourSeenAtOpen.current) requestIllustrateTourRelaunch();
     onClose();
   };

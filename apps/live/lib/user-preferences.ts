@@ -214,6 +214,9 @@ export type UserPreferences = {
   // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
+  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
+  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
+  avatarTourSeen?: boolean;
   // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `planTourSeen`: true counts every
   // page kind's track as seen while Power user mode is on. Set with every kind by Settings' Tours › "Illustrate Tour".
   illustrateTourSeen?: boolean;

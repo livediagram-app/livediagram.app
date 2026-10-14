@@ -131,6 +131,11 @@ const DrawTourHost = dynamic(
   () => import('@/components/tour/DrawTourHost').then((m) => m.DrawTourHost),
   { ssr: false },
 );
+// The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the same, the first time the person walks as an avatar.
+const AvatarTourHost = dynamic(
+  () => import('@/components/tour/AvatarTourHost').then((m) => m.AvatarTourHost),
+  { ssr: false },
+);
 // The Illustrate tour (docs/specs/007-editor/illustrate-tour.md): the same, the first time the person enters
 // Illustrate.
 const IllustrateTourHost = dynamic(
@@ -273,6 +278,7 @@ export function EditorView() {
   const mountPlanTour = useEverTrue(ctx.editorMode.mode === 'plan');
   const mountFacilitateTour = useEverTrue(ctx.editorMode.mode === 'facilitate');
   const mountDrawTour = useEverTrue(ctx.editorMode.mode === 'draw');
+  const mountAvatarTour = useEverTrue(canvasTool === 'avatar');
   const mountIllustrateTour = useEverTrue(ctx.editorMode.mode === 'illustrate');
   useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
@@ -719,6 +725,8 @@ export function EditorView() {
                                   {/* The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md): the first time a person works in Facilitate. */}
                                   {mountFacilitateTour ? <FacilitateTourHost /> : null}
                                   {mountDrawTour ? <DrawTourHost /> : null}
+                                  {/* The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the first time a person walks as an avatar. */}
+                                  {mountAvatarTour ? <AvatarTourHost /> : null}
                                   {mountIllustrateTour ? <IllustrateTourHost /> : null}
                                 </AreaErrorBoundary>
 

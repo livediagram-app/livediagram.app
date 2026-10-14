@@ -400,7 +400,7 @@ export function useDataShapeSetters({
   // Mind map flow + Tidy Map (docs/specs/009-elements/mind-node.md) — see useMindMapSetters.
   const mindSetters = useMindMapSetters({ currentSelectionIds, commit, elements, notify });
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) — see useWebComponentSetters.
-  const webSetters = useWebComponentSetters({ currentSelectionIds, commit });
+  const webSetters = useWebComponentSetters({ currentSelectionIds, commit, elements });
 
   return {
     ...chartSetters,

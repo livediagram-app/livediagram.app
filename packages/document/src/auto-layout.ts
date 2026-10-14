@@ -34,6 +34,7 @@ import {
   type Size,
 } from './auto-layout-shared';
 import { positionTreeComponent } from './auto-layout-tree';
+import { LABEL_PAD as LABEL_GAP_PAD, labelRoom } from './auto-layout-tidy-flow';
 import { reduceCrossings } from './auto-layout-crossings';
 import { LANE_WIDTH, splitLongEdges } from './auto-layout-long-edges';
 import { placeCrossAxis } from './auto-layout-placement';
@@ -157,6 +158,7 @@ function positionComponent(
   dir: LayoutDirection,
   realEdges: Edge[],
   flat?: ReadonlySet<string>,
+  labelOf: (e: Edge) => string | undefined = () => undefined,
 ): PlacedComponent {
   const { ids, edges, layer, lanes } = splitLongEdges(realIds, realEdges, realLayer);
   const byLayer = new Map<number, ElementId[]>();
@@ -194,6 +196,18 @@ function positionComponent(
   const crossSize = (id: ElementId) =>
     lanes.has(id) ? LANE_WIDTH : dir === 'TB' ? size.get(id)!.w : size.get(id)!.h;
 
+  // The gap after each rank fits the labels of the edges crossing it, as Tidy Up's does (auto-layout-tidy-flow.ts):
+  // left to right, a label's width; top to bottom, its line height either side of the jog there. A label longer
+  // than the gap otherwise sat on the box it pointed at.
+  const gapAfter = new Map<number, number>();
+  for (const e of realEdges) {
+    const room = labelRoom(labelOf(e));
+    const [a, b] = [realLayer.get(e.from), realLayer.get(e.to)];
+    if (!room.w || a === undefined || b === undefined || a === b) continue;
+    const need = dir === 'LR' ? room.w : room.h * 2 + LABEL_GAP_PAD;
+    for (let L = Math.min(a, b); L < Math.max(a, b); L++)
+      gapAfter.set(L, Math.max(gapAfter.get(L) ?? LAYER_GAP, need));
+  }
   const layerMainStart = new Map<number, number>();
   const layerMainSize = new Map<number, number>();
   let mainCursor = 0;
@@ -201,7 +215,7 @@ function positionComponent(
     const lm = Math.max(...byLayer.get(L)!.map(mainSize));
     layerMainSize.set(L, lm);
     layerMainStart.set(L, mainCursor);
-    mainCursor += lm + LAYER_GAP;
+    mainCursor += lm + (gapAfter.get(L) ?? LAYER_GAP);
   }
 
   // Start packed and centred against the widest rank, then let each node
@@ -316,6 +330,11 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
     }
   }
   const edges = buildEdges(arrows, nodeIds);
+  // Each edge's label, for the gap it crosses to fit.
+  const labels = new Map<string, string>();
+  for (const a of arrows)
+    if (a.label?.trim() && a.from.kind === 'pinned' && a.to.kind === 'pinned')
+      labels.set(`${a.from.elementId}->${a.to.elementId}`, a.label);
   const centers = new Map<ElementId, Pt>(
     nodes.map((n) => [n.id, { x: n.x + n.width / 2, y: n.y + n.height / 2 }]),
   );
@@ -349,6 +368,7 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
         dir,
         edges,
         opts.flatEdges,
+        (e) => labels.get(`${e.from}->${e.to}`),
       );
     }
     for (const id of comp) {

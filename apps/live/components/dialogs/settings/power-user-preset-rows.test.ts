@@ -11,6 +11,7 @@ const ALL = new Set([
   'planTourSeen',
   'facilitateTourSeen',
   'drawTourSeen',
+  'avatarTourSeen',
   'illustrateTourSeen',
   'aiSuggestedPrompts',
 ]);
@@ -26,6 +27,7 @@ describe('presetSummaryLines', () => {
       ['Plan Tour', 'Off', 'Tours'],
       ['Facilitate Tour', 'Off', 'Tours'],
       ['Draw Tour', 'Off', 'Tours'],
+      ['Avatar Tour', 'Off', 'Tours'],
       ['Illustrate Tour', 'Off', 'Tours'],
       ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);

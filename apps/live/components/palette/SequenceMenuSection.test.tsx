@@ -60,10 +60,8 @@ describe('SequenceMenuSection', () => {
     expect('sequenceNumbered' in again.last()(seq({ sequenceNumbered: true }))).toBe(false);
   });
 
-  it('Play is offered', () => {
-    const { ops, last } = show(seq());
-    fireEvent.click(screen.getByRole('button', { name: 'Play Animation' }));
-    expect(ops.commit).toHaveBeenCalledWith(expect.any(Function), 'SequenceAnim');
-    expect(last()(seq()).sequenceAnim).toBe('play');
+  it('leaves Play to the Animation row', () => {
+    show(seq());
+    expect(screen.queryByRole('button', { name: 'Play Animation' })).toBeNull();
   });
 });

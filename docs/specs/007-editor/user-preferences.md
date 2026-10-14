@@ -270,6 +270,9 @@ type UserPreferences = {
   // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
+  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
+  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
+  avatarTourSeen?: boolean;
   // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `planTourSeen`: true counts every
   // page kind's track as seen while Power user mode is on. Set with every kind by Settings' Tours › "Illustrate Tour".
   illustrateTourSeen?: boolean;
@@ -408,8 +411,11 @@ Missing key === undefined === default behaviour. Concretely:
   default). A value below 1 makes every panel translucent at rest
   (snapping back to opaque on hover / focus) via the
   `--lvd-panel-opacity` custom property, on every surface: docked,
-  popover (the Explorer and cluster popovers), the Map, Quick style
-  and the Toolbar strip. Buttons stay opaque. A touch screen (no
+  popover (the cluster popovers), the Map, Quick style and the Toolbar
+  strip. Buttons stay opaque. The **Explorer** is always fully opaque,
+  docked or as a popover: it is where documents are read and managed,
+  and its menus open outside the panel, so a fade would set in just as
+  one of them is in use. A touch screen (no
   hover) keeps every panel opaque, since nothing there would bring a
   faded panel back while it is in use. Emits
   `UI`/`Changed`/`PanelOpacity` on release ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
@@ -753,8 +759,8 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Plan Tour**, **Facilitate Tour**, **Draw Tour** and **Illustrate
-  Tour**, each with a line saying where it offers itself and a **Learn more**
+  Tour**, **Plan Tour**, **Facilitate Tour**, **Draw Tour**, **Avatar Tour** and
+  **Illustrate Tour**, each with a line saying where it offers itself and a **Learn more**
   to its article, under one **Offer Again** section note: each tour offers
   itself once; switch one back on and close Settings to take it again, straight
   away if you are in its mode, otherwise the next time you are. (The tours used
@@ -776,7 +782,8 @@ and the dialog stays as the one complete, browsable index of them.
   Plan once a board or Sheet is open), so closing the dialog only reruns it, when it was turned on from off
   ([Plan tour](../026-plan/plan-tour.md)). **Facilitate Tour** works the same way against
   `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)), **Draw Tour** against
-  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), and **Illustrate Tour** is built as Plan Tour is
+  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Avatar Tour** against `avatarTourSeen`
+  ([Avatar tour](../008-canvas/avatar-tour.md)), and **Illustrate Tour** is built as Plan Tour is
   ([Illustrate tour](illustrate-tour.md)), one track per page kind: `illustrateTourKinds` lists the kinds answered.
   A multi-track tour's old single flag (`planTourSeen`, `illustrateTourSeen`) counts every track only while Power
   user mode is on, so an answer given before the tour split offers each track once more.

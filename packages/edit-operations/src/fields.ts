@@ -221,9 +221,11 @@ export function writeFieldsOnto<T extends Element>(
         `colorPreset takes ${ids.join(', ')}.`,
       );
     }
+    // Every field the write names itself wins over the preset: its colours, and a width or style of border too
+    // (the preset brings its own), so nothing the agent asked for is dropped while being reported as written.
     const own = Object.fromEntries(
-      ['fillColor', 'strokeColor', 'textColor'].flatMap((k) =>
-        patch[k] != null ? [[k, patch[k]]] : [],
+      Object.keys(patch).flatMap((k) =>
+        k !== 'colorPreset' && patch[k] != null ? [[k, merged[k]]] : [],
       ),
     );
     merged = { ...derived, ...own };

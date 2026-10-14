@@ -57,7 +57,14 @@ on / off row in the Hub's section; off leaves the satellites floating round the 
 **Editing.** Once the element is selected, click a row's label (or note) to edit it in place: Enter commits, Escape
 restores. A **Rows** section in the menu (Tools flyout) lists the rows with a label input, a note input where the
 kind draws notes, ↑ / ↓ reorder, × remove (disabled at the kind's minimum) and Add (disabled at its maximum), the
-same row editor as the web components. While the element is selected, the ring offers **Add Layer**, **Add Tier**,
+same row editor as the web components. A **Chevron process** has no Rows section: its stages are edited on the canvas.
+While it is selected, the stage under the pointer shows a small bar inside its top edge, at a constant screen size:
+**Move Stage Left**, **Move Stage Right** (each off at its end), **Add Note** (only while no stage has a note, so the
+note line is not drawn to click into; it gives that stage the note "Note" to type over) and **Delete Stage** (off at
+two stages). The bar stays a moment after the pointer leaves the stage, so it can be reached; on a phone, which has no
+hover, every stage shows its bar. A bar keeps clear of its stage's name and its neighbours: zoomed out, it shrinks to
+fit the band above the name, and once that would make it too small to press (under three quarters of its size) it is
+not drawn until the view is zoomed in again. While the element is selected, the ring offers **Add Layer**, **Add Tier**,
 **Add Step**, **Add Satellite**, **Add Ring** or **Add Stage**.
 
 **Pyramid variant** (`pyramidVariant: 'pyramid' | 'inverted' | 'funnel'`, Pyramid by default) is three tiles in the
@@ -100,8 +107,8 @@ from the stroke and fill.
 
 ## Animation
 
-Concept graphics take their own set, **Concept**, in the element's Tools section like a chart's (not the Shape set:
-the rows are what moves, not the box), with its own Speed and Repeat:
+Concept graphics take their own set, **Concept**, a section of the menu's Animation row like a chart's (not the Shape
+set: the rows are what moves, not the box), with its own Speed and Repeat:
 
 ```ts
 conceptAnim?: 'build' | 'pulse' | 'flow';
@@ -145,13 +152,15 @@ rows, and the **Flywheel** template's ring is one Cycle. Templates that sit besi
 
 | Role        | May                                                                                                    |
 | ----------- | ------------------------------------------------------------------------------------------------------ |
-| Editor      | Everything above                                                                                       |
+| Editor      | Everything above, the chevron stage bars included                                                      |
 | Participant | Write the Cycle's or Hub's centre label, as on any element; not the rows, variant, spokes or animation |
 | Viewer      | Look                                                                                                   |
 
-Rows are structure, so their in-place lines render inert for a Participant and a Viewer.
+Rows are structure, so their in-place lines render inert and a chevron's stage bars never show for a Participant and
+a Viewer.
 
 ## Agents
 
 The MCP server and the REST API take the six kinds with `conceptRows`, `pyramidVariant`, `hubSpokes` and the
-animation fields.
+animation fields. Rows are kept to the kind's own range, as the menu keeps them: past the most, the rest are dropped,
+and short of the fewest, rows named as Add names them ("Step 3") are added, so every later edit takes.

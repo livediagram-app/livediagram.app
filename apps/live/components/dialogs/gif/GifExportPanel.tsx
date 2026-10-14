@@ -3,6 +3,8 @@
 // The Export dialog's GIF panel (docs/specs/020-import-export/animated-gif-export.md "The options"): the pages, how
 // long each holds, the size, the deck's transition, the estimate and a still preview, then the making, with its
 // progress and Cancel. Loaded only when the GIF card opens.
+import { useEffect } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 import type { LaidOutPage, Tab } from '@livediagram/document';
 import { ACTIVE_SEGMENT, Button, SEGMENT_TRACK } from '@livediagram/ui';
 import { BackBar } from '@/components/primitives/BackBar';
@@ -39,6 +41,7 @@ export default function GifExportPanel({
   onPick,
   onDone,
   onBack,
+  onClearSelection,
 }: {
   tab: Tab;
   pages: readonly LaidOutPage[];
@@ -47,7 +50,12 @@ export default function GifExportPanel({
   onPick: (index: number) => void;
   onDone: () => void;
   onBack: () => void;
+  // The GIF is drawn from the canvas as it stands, so a selection would ring an element in every frame
+  // (docs/specs/020-import-export/animated-gif-export.md "What a frame shows"): it is cleared as the panel opens.
+  onClearSelection?: () => void;
 }) {
+  const clear = useLatest(onClearSelection);
+  useEffect(() => clear.current?.(), [clear]);
   const gif = useGifExport({ tab, pages, page, baseName, onDone });
   const making = gif.phase.kind === 'making';
   const percent = gif.phase.kind === 'making' ? Math.round(gif.phase.progress * 100) : 0;

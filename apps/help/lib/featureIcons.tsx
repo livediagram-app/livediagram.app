@@ -462,6 +462,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="12" cy="12" r="9" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
+  // A speech bubble over a little figure, under a dashed spotlight ring: a guided look at Avatar mode.
+  'avatar-tour': (
+    <Glyph>
+      <path d="M8 6h8a2 2 0 012 2v2a2 2 0 01-2 2h-3l-1 2-1-2H8a2 2 0 01-2-2V8a2 2 0 012-2z" />
+      <circle cx="12" cy="16" r="1.4" />
+      <path d="M10 20c0-1.2.9-2 2-2s2 .8 2 2" />
+      <circle cx="12" cy="12" r="10" strokeDasharray="1.6 1.4" />
+    </Glyph>
+  ),
   // A page with its colour band under a dashed spotlight ring: a guided look at Illustrate.
   'illustrate-tour': (
     <Glyph>

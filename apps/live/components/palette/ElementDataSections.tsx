@@ -28,16 +28,12 @@ import {
   isConceptShape,
   type ConceptShape,
   type ShapeElement,
-  animLoops,
-  DEFAULT_ANIMATION_SPEED,
   LINE_DEFAULT_SERIES,
   chartRamp,
   chartTypeOf,
   PIE_DEFAULT_SLICES,
-  PROGRESS_LOOPING_ANIMS,
   RAIL_DEFAULT_POINTS,
   RATING_DEFAULT,
-  RATING_LOOPING_ANIMS,
   DEFAULT_BUTTON_MODE,
   SELECTION_MODES,
   type ChecklistItem,
@@ -96,10 +92,8 @@ import {
   LineDataSummary,
   LinkedChartData,
   PieDataEditor,
-  ProgressAnimTiles,
   ProgressRow,
   RailPointsRow,
-  RatingAnimTiles,
   RatingMenuGlyph,
   RatingPickerRow,
 } from '@/components/palette/context-menu-rows';
@@ -296,8 +290,8 @@ export function ElementDataSections({
       ) : null}
       {showTools ? (
         <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
-          {/* Progress (docs/specs/009-elements/progress.md) — the percentage + how the fill animates. Only
-            for progress bars / rings. */}
+          {/* Progress (docs/specs/009-elements/progress.md) — the percentage; how the fill animates is the
+            Animation row's Progress category. Only for progress bars / rings. */}
           {isProgress ? (
             <MenuAccordionSection
               title="Progress"
@@ -305,18 +299,6 @@ export function ElementDataSections({
               {...sectionProps('progress')}
             >
               <ProgressRow value={shapeTarget?.progress ?? 50} onChange={props.onSetProgress} />
-              <ProgressAnimTiles
-                anim={shapeTarget?.progressAnim ?? null}
-                speed={shapeTarget?.progressAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
-                repeat={animLoops(
-                  shapeTarget?.progressAnim,
-                  shapeTarget?.progressAnimRepeat,
-                  PROGRESS_LOOPING_ANIMS,
-                )}
-                onSet={props.onSetProgressAnim}
-                onSetSpeed={props.onSetProgressAnimSpeed}
-                onSetRepeat={props.onSetProgressAnimRepeat}
-              />
             </MenuAccordionSection>
           ) : null}
           {/* Timeline (docs/specs/009-elements/timeline-rail.md) — how many points sit on the rail. The right-end
@@ -333,7 +315,8 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* Rating (docs/specs/009-elements/rating.md) — the star score + a star-specific animation. */}
+          {/* Rating (docs/specs/009-elements/rating.md) — the star score; its animation is the Animation row's Rating
+            category. */}
           {isRating ? (
             <MenuAccordionSection
               title="Rating"
@@ -343,18 +326,6 @@ export function ElementDataSections({
               <RatingPickerRow
                 value={shapeTarget?.rating ?? RATING_DEFAULT}
                 onChange={props.onSetRating}
-              />
-              <RatingAnimTiles
-                anim={shapeTarget?.ratingAnim ?? null}
-                speed={shapeTarget?.ratingAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
-                repeat={animLoops(
-                  shapeTarget?.ratingAnim,
-                  shapeTarget?.ratingAnimRepeat,
-                  RATING_LOOPING_ANIMS,
-                )}
-                onSet={props.onSetRatingAnim}
-                onSetSpeed={props.onSetRatingAnimSpeed}
-                onSetRepeat={props.onSetRatingAnimRepeat}
               />
             </MenuAccordionSection>
           ) : null}

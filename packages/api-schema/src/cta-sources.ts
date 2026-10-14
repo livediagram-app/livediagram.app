@@ -55,6 +55,16 @@ export const CTA_SOURCES = {
     'HeaderSession',
     'Card',
   ],
+  // The Build with AI page (docs/specs/019-marketing/build-with-ai.md): its header only. Its own buttons open
+  // a third-party tool or sign-up, never /new, so they are not funnel sources.
+  Ai: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+  ],
   Status: [
     'Header',
     'HeaderDraw',
@@ -154,6 +164,8 @@ export function ctaSurfaceOfPath(path: string): CtaSurface | null {
       return 'Compare';
     case 'faq':
       return 'Faq';
+    case 'ai':
+      return 'Ai';
     case 'status':
       return 'Status';
     case 'telemetry':

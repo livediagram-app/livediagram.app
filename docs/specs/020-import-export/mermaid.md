@@ -157,7 +157,7 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
   pitch wide enough for the longest message between neighbours; messages a row each, edge to edge of the activation
   bars, labels above their line; a self-call loops out of the bar and back into its nested one; a note is a sticky
   over or beside its participants; a fragment is a frame across the lifelines its messages and notes involve (every lifeline when they
-  involve none; one nested on the same first lifeline sits a step inside) with its operator as its label and
+  involve none), wide enough to hold its notes whole and every fragment nested in it a step inside, with its operator as its label and
   each guard in muted text, operands split by a dashed divider.
 - **Limits**: at most 30 participants and 300 messages, notes and fragment lines; past them the parser refuses
   naming the limit.
@@ -285,7 +285,13 @@ Inside a subgraph, members that no arrow **inside** the subgraph touches (a
 across the flow** in one row or column, not wrapped into a grid, and every
 group's members that share a rank are then ordered by where their neighbours
 outside the group ended up, so arrows from outside reach each member without
-crossing another.
+crossing another. A node outside every group that members link to then sits by
+those members rather than by the middle of the whole group (a database under the
+service that owns it), its rank kept in order with its gaps; an edge to or from a
+subgraph itself leaves the frame facing its other end; and a frame whose first
+member a line enters from above, down the page, is padded both sides so that line
+clears the header ([MCP server](../015-api/mcp-server.md) §4.7 "Groups keep their
+lines clear", the same layout).
 
 A subgraph's frame carries its title as a **header**: top-left, bold, at the
 nodes' size, in the band the clustered layout reserves above the members (it

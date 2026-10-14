@@ -101,20 +101,28 @@ describe('PNG and PDF', () => {
 });
 
 describe('SVG', () => {
-  it('embeds the opening frame over the gradient and under the pattern', () => {
+  it('embeds the opening frame over the gradient and its pattern, as PNG, PDF and the screen do', () => {
     const { tab, laid } = deck(animated, 'dots');
     const svg = renderTabToSvg(tab, { page: laid[0]!, fontCss: '' });
     const gradient = svg.indexOf('linearGradient');
     const frame = svg.indexOf(`href="${FRAME}"`);
     const pattern = svg.indexOf('<pattern');
     expect(gradient).toBeGreaterThan(-1);
-    expect(frame).toBeGreaterThan(gradient);
-    expect(pattern).toBeGreaterThan(frame);
+    expect(pattern).toBeGreaterThan(gradient);
+    expect(frame).toBeGreaterThan(pattern);
     expect(motionFrameHref).toHaveBeenCalledWith(
       expect.objectContaining({ motion: 'aurora' }),
       laid[0]!.rect.width,
       laid[0]!.rect.height,
     );
+  });
+
+  it('draws a thumbnail’s animated background still, painting no frame', () => {
+    const { tab, laid } = deck(animated, 'dots');
+    const svg = renderTabToSvg(tab, { page: laid[0]!, fontCss: '', stillBackground: true });
+    expect(svg).toContain('linearGradient');
+    expect(svg).not.toContain(FRAME);
+    expect(motionFrameHref).not.toHaveBeenCalled();
   });
 
   it('embeds nothing for a slide without a motion', () => {

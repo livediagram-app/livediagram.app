@@ -446,7 +446,12 @@ function tourTracksSwitch(
 }
 
 type TourSeenKey =
-  'tourSeen' | 'planTourSeen' | 'facilitateTourSeen' | 'drawTourSeen' | 'illustrateTourSeen';
+  | 'tourSeen'
+  | 'planTourSeen'
+  | 'facilitateTourSeen'
+  | 'drawTourSeen'
+  | 'avatarTourSeen'
+  | 'illustrateTourSeen';
 
 // A presenter setting's row (docs/specs/012-collaboration/presentation-mode.md "Settings"): read and written through
 // lib/presentation-config, which keeps the whole config in one preference. The telemetry token is the one the
@@ -1116,6 +1121,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'tour walkthrough onboarding tutorial draw whiteboard pen sketch replay',
         description: 'The first time you work in Draw.',
         helpArticle: 'drawTour',
+      }),
+      tourSwitch('avatarTourSeen', {
+        label: 'Avatar Tour',
+        event: { category: 'UI', on: 'AvatarTourSeenOff', off: 'AvatarTourSeenOn' },
+        keywords:
+          'tour walkthrough onboarding tutorial avatar character walk speech message push replay',
+        description: 'The first time you walk as an avatar.',
+        helpArticle: 'avatarTour',
       }),
       tourTracksSwitch(
         'illustrateTourSeen',
