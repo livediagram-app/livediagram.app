@@ -81,6 +81,12 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'workshop-board': 'facilitate',
   'crazy-eights': 'facilitate',
   'meeting-agenda': 'facilitate',
+  // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): run on quiz cards, pickers and polls.
+  'pub-quiz': 'facilitate',
+  'icebreaker-questions': 'facilitate',
+  'two-truths-and-a-lie': 'facilitate',
+  'would-you-rather': 'facilitate',
+  'people-bingo': 'facilitate',
   // Boards that ship a dot vote: only Facilitate's Session strip can watch, end and keep a vote.
   'affinity-map': 'facilitate',
   'prioritization-matrix': 'facilitate',

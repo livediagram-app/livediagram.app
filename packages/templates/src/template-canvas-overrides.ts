@@ -109,6 +109,11 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   brainstorm: 'grid',
   'workshop-board': 'grid',
   'town-hall': 'grid',
+  'pub-quiz': 'grid',
+  'icebreaker-questions': 'grid',
+  'two-truths-and-a-lie': 'grid',
+  'would-you-rather': 'grid',
+  'people-bingo': 'grid',
   // Event storming is a sticky-note workshop like the story / affinity
   // maps, so it pins the dot grid rather than riding the other technical
   // templates' graph paper.
