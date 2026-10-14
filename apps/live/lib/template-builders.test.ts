@@ -74,6 +74,7 @@ const ALL_KINDS = [
   'lean-coffee',
   'pub-quiz',
   'icebreaker-questions',
+  'virtual-office',
   'two-truths-and-a-lie',
   'would-you-rather',
   'people-bingo',

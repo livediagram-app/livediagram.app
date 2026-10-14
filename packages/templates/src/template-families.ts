@@ -76,6 +76,7 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'town-hall': null,
   'pub-quiz': null,
   'icebreaker-questions': null,
+  'virtual-office': null,
   'two-truths-and-a-lie': null,
   'would-you-rather': null,
   'people-bingo': null,

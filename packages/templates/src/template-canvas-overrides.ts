@@ -111,6 +111,8 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'town-hall': 'grid',
   'pub-quiz': 'grid',
   'icebreaker-questions': 'grid',
+  // Grid: an office's floor plan reads as one on gridded paper, the rooms carrying their own floors.
+  'virtual-office': 'grid',
   'two-truths-and-a-lie': 'grid',
   'would-you-rather': 'grid',
   'people-bingo': 'grid',
