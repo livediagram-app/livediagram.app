@@ -18,6 +18,9 @@ import {
   AgendaIcon,
   AvatarModeIcon,
   ChairIcon,
+  DeskIcon,
+  FenceIcon,
+  SofaIcon,
   DecisionIcon,
   EraserIcon,
   EstimateIcon,
@@ -1135,6 +1138,52 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'chair' },
     icon: <ChairIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Desk (docs/specs/009-elements/chair.md "Desk and sofa"): a chair pulled up to a desk with a
+    // computer on it; whoever sits faces the screen.
+    id: 'tools:desk',
+    tileGroup: 'move',
+    blurb: 'A desk with a computer for an Avatar to sit at',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Desk',
+    caption: 'Desk',
+    description:
+      'A desk with a computer and a chair for Avatar mode: walk your character in and it sits down facing the screen.',
+    filled: true,
+    action: { type: 'shape', kind: 'desk' },
+    icon: <DeskIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Sofa (docs/specs/009-elements/chair.md "Desk and sofa"): two seats side by side.
+    id: 'tools:sofa',
+    tileGroup: 'move',
+    blurb: 'A two-seater sofa for Avatars',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Sofa',
+    caption: 'Sofa',
+    description:
+      'A two-seater sofa for Avatar mode: walk your character in and it sits on the nearer cushion, room for two.',
+    filled: true,
+    action: { type: 'shape', kind: 'sofa' },
+    icon: <SofaIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
+    id: 'tools:fence',
+    tileGroup: 'move',
+    blurb: 'A barrier Avatars cannot walk through',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Fence',
+    caption: 'Fence',
+    description:
+      'A fence Avatar-mode characters cannot cross. Join fences end to end to wall off an area: people can walk round it, not into it.',
+    filled: true,
+    action: { type: 'shape', kind: 'fence' },
+    icon: <FenceIcon size={TILE_GLYPH_PX} />,
   },
   // --- Collaborate (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) ----------------------------------
   // Elements that collect what the ROOM thinks. Rows with a blurb, like

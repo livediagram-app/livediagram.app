@@ -106,6 +106,13 @@ export type ShapeKind =
   // Chair (docs/specs/009-elements/chair.md): furniture an Avatar-mode character sits down in when it
   // walks into one. Which way the seat points lives in `chairFacing`.
   | 'chair'
+  // Fence (docs/specs/009-elements/fence.md): one straight run of posts and rails an Avatar-mode
+  // character cannot walk through. The run lies along the longer side; no fields of its own.
+  | 'fence'
+  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): seating like the chair, with
+  // the chair's `chairFacing`. A desk seats one at a computer; a sofa seats two side by side.
+  | 'desk'
+  | 'sofa'
   // The collaboration family — elements that record what the ROOM thinks
   // rather than what one author drew.
   //

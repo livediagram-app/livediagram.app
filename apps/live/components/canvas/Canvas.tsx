@@ -81,7 +81,12 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 const AVATAR_BURST_PX = 120;
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { avatarSpawnFromButton, type AvatarPoint } from '@/lib/avatar-walk';
-import { CHAIR_SITTER_FACING, DEFAULT_CHAIR_FACING, chairSeatPoint } from '@livediagram/document';
+import {
+  CHAIR_SITTER_FACING,
+  isSeatingShape,
+  nearestSeat,
+  seatingFacing,
+} from '@livediagram/document';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
@@ -385,12 +390,15 @@ function CanvasView(props: CanvasProps) {
     onWalkIntoPortal: (element) => enterPortalRef.current(element),
     // Chair (docs/specs/009-elements/chair.md): walking onto one sits the character down, snapped to
     // the seat point so it sits ON the chair rather than wherever it arrived.
-    onWalkIntoChair: (element) => {
-      const facing = element.chairFacing ?? DEFAULT_CHAIR_FACING;
+    // A desk or a sofa does the same (docs/specs/009-elements/chair.md "Desk and sofa"): a sofa seats
+    // the character on the cushion nearest where it walked in.
+    onWalkIntoChair: (element, feet) => {
+      if (!isSeatingShape(element.shape)) return;
+      const seating = { ...element, shape: element.shape };
       avatarRef.current?.sitOn(
         element.id,
-        chairSeatPoint(element, facing),
-        CHAIR_SITTER_FACING[facing],
+        nearestSeat(seating, feet),
+        CHAIR_SITTER_FACING[seatingFacing(seating)],
       );
     },
     // Reaction pad (docs/specs/009-elements/reaction-pad.md): walking onto one is the same act as pressing

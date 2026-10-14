@@ -340,7 +340,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Navigate',
     group: 6,
     description:
-      'Take people somewhere: a portal to another tab, a bring-focus button, a chair or a link card.',
+      'Take people somewhere: a portal to another tab, a bring-focus button, a chair, desk or sofa, a fence or a link card.',
     icon: <MoveGroupIcon />,
   },
 ];

@@ -1495,6 +1495,8 @@ export type VideoElement = {
 // something that isn't theirs to edit.
 const UNTYPED_SHAPES = new Set<string>([
   'sticker',
+  // A fence (docs/specs/009-elements/fence.md) carries no label.
+  'fence',
   'session-button',
   'reaction-pad',
   'mode-button',

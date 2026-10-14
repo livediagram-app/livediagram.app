@@ -105,7 +105,7 @@ Facilitate's layout, in order:
   - **Record**: Comment panel, Action card, Agenda, Decision record, Roll call.
   - **React**: the five reaction pads.
   - **Selection Mode**: one button per selection mode.
-  - **Navigate**: Portal, Bring focus, Chair, Link card.
+  - **Navigate**: Portal, Bring focus, Chair, Desk, Sofa, Fence, Link card.
 
   In Facilitate every one of them is a tile you reach for mid-session, so a parent category was a
   click in front of each, with a group browser one level down. Six categories put every group one

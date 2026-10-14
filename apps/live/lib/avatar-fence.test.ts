@@ -1,0 +1,153 @@
+import { describe, expect, it } from 'vitest';
+import { createShape, type Element } from '@livediagram/document';
+import {
+  FENCE_REACH,
+  fenceRefuses,
+  fenceSegments,
+  fenceStep,
+  pointSegmentDistance,
+  segmentsIntersect,
+  type FenceSegment,
+} from './avatar-fence';
+
+// docs/specs/009-elements/fence.md "Blocking"
+const across: FenceSegment = { a: { x: 0, y: 0 }, b: { x: 200, y: 0 } };
+
+// Walks a character from `from` towards `to` in frame-sized steps, the way the walk loop does.
+function walk(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  fences: FenceSegment[],
+) {
+  let pos = from;
+  for (let i = 0; i < 400; i++) {
+    const dx = to.x - pos.x;
+    const dy = to.y - pos.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 0.5) break;
+    const travel = Math.min(13, dist);
+    pos = fenceStep(
+      pos,
+      { x: pos.x + (dx / dist) * travel, y: pos.y + (dy / dist) * travel },
+      fences,
+    ).pos;
+  }
+  return pos;
+}
+
+describe('fenceSegments', () => {
+  it('collects the line of every fence, and nothing else', () => {
+    const fence = { ...createShape('fence', 0, 0), id: 'f' };
+    const square = { ...createShape('square', 0, 0), id: 's' };
+    expect(fenceSegments([fence, square] as Element[])).toEqual([
+      { a: { x: 0, y: 12 }, b: { x: 240, y: 12 } },
+    ]);
+  });
+});
+
+describe('geometry', () => {
+  it('measures a point against a segment, ends included', () => {
+    expect(pointSegmentDistance({ x: 100, y: 30 }, across)).toBe(30);
+    expect(pointSegmentDistance({ x: 230, y: 40 }, across)).toBe(50);
+  });
+
+  it('knows when two segments cross or touch', () => {
+    expect(segmentsIntersect({ a: { x: 50, y: -10 }, b: { x: 50, y: 10 } }, across)).toBe(true);
+    expect(segmentsIntersect({ a: { x: 50, y: 0 }, b: { x: 50, y: 10 } }, across)).toBe(true);
+    expect(segmentsIntersect({ a: { x: 250, y: -10 }, b: { x: 250, y: 10 } }, across)).toBe(false);
+  });
+});
+
+describe('fenceRefuses', () => {
+  it('refuses a step into the reach, from either side', () => {
+    expect(fenceRefuses({ x: 100, y: 20 }, { x: 100, y: 8 }, across)).toBe(true);
+    expect(fenceRefuses({ x: 100, y: -20 }, { x: 100, y: -8 }, across)).toBe(true);
+  });
+
+  it('lets a step past the end of the fence through', () => {
+    expect(fenceRefuses({ x: 220, y: 20 }, { x: 220, y: -20 }, across)).toBe(false);
+  });
+
+  it('lets a character inside the reach step away but not across', () => {
+    expect(fenceRefuses({ x: 100, y: 4 }, { x: 100, y: 10 }, across)).toBe(false);
+    expect(fenceRefuses({ x: 100, y: 4 }, { x: 100, y: -4 }, across)).toBe(true);
+    expect(fenceRefuses({ x: 100, y: 4 }, { x: 100, y: 2 }, across)).toBe(true);
+  });
+});
+
+describe('fenceStep', () => {
+  it('passes a step untouched when there are no fences', () => {
+    expect(fenceStep({ x: 0, y: 0 }, { x: 5, y: 5 }, [])).toEqual({
+      pos: { x: 5, y: 5 },
+      blocked: false,
+    });
+  });
+
+  it('stops a walk straight at a fence at the reach, on its own side', () => {
+    const end = walk({ x: 100, y: 100 }, { x: 100, y: -100 }, [across]);
+    expect(end.y).toBeGreaterThanOrEqual(FENCE_REACH);
+    expect(end.y).toBeLessThan(FENCE_REACH + 0.5);
+  });
+
+  it('cannot tunnel through with one long step', () => {
+    const { pos, blocked } = fenceStep({ x: 100, y: 40 }, { x: 100, y: -40 }, [across]);
+    expect(blocked).toBe(true);
+    expect(pos.y).toBeGreaterThanOrEqual(FENCE_REACH);
+  });
+
+  it('slides along a fence walked into at an angle', () => {
+    const { pos, blocked } = fenceStep({ x: 100, y: 13 }, { x: 109, y: 4 }, [across]);
+    expect(blocked).toBe(true);
+    expect(pos.x).toBeCloseTo(109, 6);
+    expect(pos.y).toBeCloseTo(13, 6);
+  });
+
+  it('walks all the way round the outside of a fenced square but never in', () => {
+    // Four fences round a 300 x 300 area, joined at the corners.
+    const box: FenceSegment[] = [
+      { a: { x: 0, y: 0 }, b: { x: 300, y: 0 } },
+      { a: { x: 300, y: 0 }, b: { x: 300, y: 300 } },
+      { a: { x: 300, y: 300 }, b: { x: 0, y: 300 } },
+      { a: { x: 0, y: 300 }, b: { x: 0, y: 0 } },
+    ];
+    for (const start of [
+      { x: 150, y: -100 },
+      { x: 400, y: 150 },
+      { x: -100, y: 400 },
+    ]) {
+      const end = walk(start, { x: 150, y: 150 }, box);
+      const inside = end.x > 0 && end.x < 300 && end.y > 0 && end.y < 300;
+      expect(inside).toBe(false);
+    }
+    // Round the outside is still open.
+    const round = walk({ x: -50, y: -50 }, { x: 350, y: -50 }, box);
+    expect(round).toEqual({ x: 350, y: -50 });
+  });
+
+  it('seals a gap narrower than a character between two fences', () => {
+    const left: FenceSegment = { a: { x: 0, y: 0 }, b: { x: 100, y: 0 } };
+    const right: FenceSegment = { a: { x: 118, y: 0 }, b: { x: 200, y: 0 } };
+    const end = walk({ x: 109, y: 100 }, { x: 109, y: -100 }, [left, right]);
+    expect(end.y).toBeGreaterThan(0);
+  });
+
+  it('leaves a gap wider than a character open', () => {
+    const left: FenceSegment = { a: { x: 0, y: 0 }, b: { x: 100, y: 0 } };
+    const right: FenceSegment = { a: { x: 160, y: 0 }, b: { x: 260, y: 0 } };
+    expect(walk({ x: 130, y: 100 }, { x: 130, y: -100 }, [left, right])).toEqual({
+      x: 130,
+      y: -100,
+    });
+  });
+
+  it('keeps a frame within budget against a worst-case number of fences', () => {
+    const fences: FenceSegment[] = Array.from({ length: 2000 }, (_, i) => ({
+      a: { x: i * 30, y: 500 },
+      b: { x: i * 30 + 20, y: 500 },
+    }));
+    const started = performance.now();
+    for (let i = 0; i < 60; i++) fenceStep({ x: 15, y: 0 }, { x: 15, y: 13 }, fences);
+    // 60 frames of walking against 2000 fences: well under a frame's budget each.
+    expect((performance.now() - started) / 60).toBeLessThan(4);
+  });
+});

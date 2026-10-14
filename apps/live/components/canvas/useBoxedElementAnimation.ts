@@ -104,6 +104,9 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
     (element.type === 'shape' &&
       (element.shape === 'sticker' ||
         element.shape === 'chair' ||
+        element.shape === 'desk' ||
+        element.shape === 'sofa' ||
+        element.shape === 'fence' ||
         element.shape === 'timeline-rail'));
   const isTextNativeAnim = (element.type === 'text' || isDrawnArt) && silhouetteAnim;
   // `gradient` is a background clipped to the glyphs, which drawn art has
@@ -120,7 +123,12 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   // timeline rail have no art view to mount it, so it sits on the element itself, where a
   // drop-shadow follows the drawing's silhouette just the same over its transparent box.
   const hasArtView =
-    element.type === 'shape' && (element.shape === 'sticker' || element.shape === 'chair');
+    element.type === 'shape' &&
+    (element.shape === 'sticker' ||
+      element.shape === 'chair' ||
+      element.shape === 'desk' ||
+      element.shape === 'sofa' ||
+      element.shape === 'fence');
   const labelAnimClass = isDrawnArt ? undefined : silhouetteAnimClass;
   const artAnimClass = isDrawnArt && hasArtView ? silhouetteAnimClass : undefined;
   const ownAnimClass = isDrawnArt && !hasArtView ? silhouetteAnimClass : undefined;

@@ -29,6 +29,16 @@ Scope, by file:
 | `apps/live/components/palette/CollabMenuSections.tsx`     | `ChairMenuSection` (facing tiles)                                        |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`           | `setChairFacingSelected` (`Element·Changed·Chair`)                       |
 
+Desk and sofa (spec "Desk and sofa") add:
+
+| File                                                   | Role                                                                                                                                  |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/seating.ts`                     | `isSeatingShape`, `DEFAULT_SEATING_FACING`, `DESK_ART`, `SOFA_ART`, `furnitureFrame`, `seatPoints`, `nearestSeat`, `turnedSeatingBox` |
+| `packages/document/src/shape-factory.ts`               | desk 120x112, sofa 152x85, facing, `aspectLocked`, label bottom                                                                       |
+| `apps/live/components/canvas/collab/FurnitureView.tsx` | The canvas desk and sofa, occupied ring, sitter names                                                                                 |
+| `apps/live/hooks/canvas/useDataShapeSetters.ts`        | `setChairFacingSelected` for all three; quarter turns swap the box                                                                    |
+| `apps/live/components/palette/palette-tile-defs.tsx`   | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                        |
+
 ## Domain and naming
 
 | Term           | Identifier                                 | Meaning                                                 |
@@ -40,6 +50,9 @@ Scope, by file:
 | Seat point     | `chairSeatPoint(box, facing)`              | Where a sitter's feet snap                              |
 | Seated         | `seatedOn: string \| null`                 | The chair id this character sits in                     |
 | Sitter         | `ChairSitter = { name, color }`            | One occupant, from presence                             |
+| Seating        | `SeatingKind` (`chair \| desk \| sofa`)    | Every kind a character can sit in                       |
+| Furniture art  | `FurnitureArt` (`FURNITURE_ART[kind]`)     | A desk's or sofa's drawing, seats and ring              |
+| Drawn facing   | `FurnitureArt.drawnFacing`                 | Desk `'s'`, sofa `'n'`                                  |
 | Occupied       | `sitters.length > 0`                       | Derived per render, never stored                        |
 | Seat fill      | `chairSeatFill(fillColor, stroke)`         | Own fill, or a 0.32 wash of the stroke when transparent |
 
@@ -62,9 +75,9 @@ in `useAvatarWalk`; published on every avatar presence packet.
 | seated   | leaving Avatar mode                      |                    | standing                     |
 | seated   | disconnect, tab change (peer's view)     |                    | gone with presence           |
 
-1. **Sit.** `Canvas` passes `onWalkIntoChair(element)`: facing `= element.chairFacing ??
-DEFAULT_CHAIR_FACING`, then `sitOn(id, chairSeatPoint(element, facing),
-CHAIR_SITTER_FACING[facing])`. `sitOn` drops the walk target, arrival callback and held keys,
+1. **Sit.** `Canvas` passes `onWalkIntoChair(element, feet)` for any `isSeatingShape` kind: facing
+   `= seatingFacing(element)`, then `sitOn(id, nearestSeat(element, feet),
+CHAIR_SITTER_FACING[facing])`. A chair has one seat (`chairSeatPoint`); a sofa two; a desk one. `sitOn` drops the walk target, arrival callback and held keys,
    snaps the feet, sets the facing, marks seated, and records the chair as under the feet so
    standing still does not re-seat.
 2. **Seat point.** Centre `(cx, cy)`, offset `CHAIR_SEAT_DROP - 0.5 = 0.12` of the box away from
@@ -214,6 +227,9 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Occupancy from presence only (I1, I2)          | none                                                 | (gap)                                                    |
 | Label survives export                          | "prints a chair label under the seat"                | `packages/document/src/svg-render-fidelity.test.ts`      |
 | Unknown facing rejected                        | "rejects an off-vocabulary chair facing"             | `packages/document/src/collab-shapes.test.ts`            |
+| Desk faces the computer; sofa the reader       | "a new desk faces its sitter at the computer …"      | `packages/document/src/seating.test.ts`                  |
+| Sofa has two seats; nearest seat taken         | `seatPoints`, `nearestSeat` blocks                   | `packages/document/src/seating.test.ts`                  |
+| Quarter turn swaps a desk or sofa box          | "swaps a desk or sofa box about its centre …"        | `packages/document/src/seating.test.ts`                  |
 | Canvas chair follows the paper                 | none                                                 | (gap GF15)                                               |
 
 ## Constants and configuration
@@ -221,6 +237,10 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Name                       | Value                                                           | Provenance / safe range                     |
 | -------------------------- | --------------------------------------------------------------- | ------------------------------------------- |
 | `SHAPE_DEFAULT_SIZE.chair` | `{ width: 76, height: 84 }`                                     | Human scale beside a 40 px character (D126) |
+| `SHAPE_DEFAULT_SIZE.desk`  | `{ width: 120, height: 112 }`                                   | `DESK_ART` grid (D199)                      |
+| `SHAPE_DEFAULT_SIZE.sofa`  | `{ width: 152, height: 85 }`                                    | `SOFA_ART` aspect (D199)                    |
+| `DESK_ART.seats`           | `[{ u: 0.5, v: 0.68 }]`                                         | On the chair in front of the desk           |
+| `SOFA_ART.seats`           | `u` 44/136 and 92/136, `v` 0.62                                 | One per cushion (D200)                      |
 | `DEFAULT_CHAIR_FACING`     | `'n'`                                                           | Sitter faces the reader                     |
 | `CHAIR_SEAT_DROP`          | `0.62`                                                          | Fraction from the back; 0.55 to 0.7 (D123)  |
 | `CHAIR_FACING_ROTATION`    | `{ n: 0, e: 90, s: 180, w: 270 }`                               | Degrees; fixed by the four facings          |

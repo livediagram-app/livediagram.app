@@ -371,6 +371,8 @@ export function hasOwnFace(kind: ShapeKind): boolean {
   return (
     isCollabPanelShape(kind) ||
     kind === 'chair' ||
+    kind === 'desk' ||
+    kind === 'sofa' ||
     kind === 'mode-button' ||
     kind === 'session-button' ||
     kind === 'focus-button' ||

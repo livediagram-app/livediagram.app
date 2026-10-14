@@ -106,6 +106,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'edit-outline': '#7c3aed',
   collaborate: '#f59e0b',
   chairs: '#a855f7',
+  fences: '#b45309',
   lanes: '#3b82f6',
   entities: '#0284c7',
   'embed-elements': '#e11d48',

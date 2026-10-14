@@ -149,6 +149,11 @@ export const SHAPE_KINDS = new Set<string>([
   'done-check',
   // Chair (docs/specs/009-elements/chair.md): an Avatar-mode character sits down in one.
   'chair',
+  // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
+  'fence',
+  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa").
+  'desk',
+  'sofa',
   // The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md).
   'estimate',
   'temperature',

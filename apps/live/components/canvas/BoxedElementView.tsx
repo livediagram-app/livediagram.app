@@ -43,6 +43,8 @@ import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { ChairView } from '@/components/canvas/collab/ChairView';
+import { FenceView } from '@/components/canvas/collab/FenceView';
+import { FurnitureView } from '@/components/canvas/collab/FurnitureView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -597,6 +599,23 @@ function BoxedElementViewImpl({
         <ChairView
           element={element}
           sitters={chairSitters?.(element.id) ?? []}
+          animClass={artAnimClass}
+        />
+      ) : null}
+      {/* A desk or a sofa (docs/specs/009-elements/chair.md "Desk and sofa"): seating like the chair. */}
+      {element.type === 'shape' && (element.shape === 'desk' || element.shape === 'sofa') ? (
+        <FurnitureView
+          element={element}
+          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+          sitters={chairSitters?.(element.id) ?? []}
+          animClass={artAnimClass}
+        />
+      ) : null}
+      {/* A fence (docs/specs/009-elements/fence.md): posts and rails. */}
+      {element.type === 'shape' && element.shape === 'fence' ? (
+        <FenceView
+          element={element}
+          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
           animClass={artAnimClass}
         />
       ) : null}

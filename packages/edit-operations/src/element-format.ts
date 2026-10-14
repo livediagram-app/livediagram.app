@@ -173,6 +173,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   sticker: ['stickerId'],
   estimate: ['estimateScale'],
   chair: ['chairFacing'],
+  desk: ['chairFacing'],
+  sofa: ['chairFacing'],
   portal: ['portalTarget'],
   // docs/specs/026-plan/plan-board.md: the board's set-up and the card's item; items change through
   // the item verbs, never through element fields.

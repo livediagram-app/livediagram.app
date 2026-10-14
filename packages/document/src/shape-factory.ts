@@ -32,6 +32,7 @@ import {
   DEFAULT_DECISION_STATUS,
 } from './collab-shapes';
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
+import { DEFAULT_SEATING_FACING } from './seating';
 import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
@@ -185,6 +186,12 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // character — a seat the sprite fits into rather than a throne it rattles
   // around in.
   chair: { width: 76, height: 84 },
+  // Fence (docs/specs/009-elements/fence.md): a short run across, thin enough to read as a barrier.
+  fence: { width: 240, height: 24 },
+  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): their drawings' grids, at the
+  // chair's scale, so a character fits the seat.
+  desk: { width: 120, height: 112 },
+  sofa: { width: 152, height: 85 },
   // Estimate card (docs/specs/012-collaboration/estimate-card.md): the eight fibonacci chips wrap to two rows, and
   // the card has to hold them PLUS the answered avatars PLUS the two footer
   // buttons without clipping — a card that arrives already cut off is the
@@ -357,6 +364,17 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textAlignY: 'bottom',
       // A chair stretched wide stops reading as a chair, the same reason the
       // portal locks its aspect. Unlockable from the menu like any element.
+      aspectLocked: true,
+    };
+  }
+  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): furniture like the chair, each
+  // with the facing it is drawn at, its label under it, and its proportions held.
+  if (kind === 'desk' || kind === 'sofa') {
+    return {
+      ...base,
+      chairFacing: DEFAULT_SEATING_FACING[kind],
+      textSize: 'sm',
+      textAlignY: 'bottom',
       aspectLocked: true,
     };
   }

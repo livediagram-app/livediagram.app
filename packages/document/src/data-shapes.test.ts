@@ -67,6 +67,8 @@ describe('the self-drawing shape family', () => {
     fromMembers.add('pyramid');
     fromMembers.add('onion');
     fromMembers.add('chevrons');
+    // docs/specs/009-elements/fence.md: a fence is posts and rails, with nothing to write on.
+    fromMembers.add('fence');
     expect(kindsMatching(isSelfDrawingShape)).toEqual([...fromMembers].sort());
   });
 
