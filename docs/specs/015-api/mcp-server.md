@@ -692,10 +692,13 @@ document's Plan cards when a formula reads them.
 scale, first? }` and `clear_conditional_formats` `{ range? }` ([Data validation](../029-sheets/data-validation.md#agents),
   [Conditional formatting](../029-sheets/conditional-formatting.md#agents)); `resize` `{ cols | rows, px | fit }`,
   `merge` `{ range, across? }`, `unmerge` `{ range }`, `border` `{ range, sides, color, width, style }`, `filter`
-  `{ range | null }`, `chart` `{ type, range, columns?, at?, width?, height? }` and `design` `{ design }`
+  `{ range | null }`, `chart` `{ type, range, columns?, at?, width?, height?, palette? }`, `clear_charts`
+  `{ range? }` and `design` `{ design }`
   ([Shaping a sheet, A design](../029-sheets/sheet-store.md#agents); `sheet-shape-change.ts`, `sheet-design.ts`,
-  `sheet-charts.ts`). Inserted rows and columns take their neighbour's formats. Charts a change makes are added to
-  the sheet's tab over its Sheet element in one changeset after the writes, each with its first read. Each
+  `sheet-charts.ts`, `sheet-chart-follow.ts`). Inserted rows take their neighbour's formats, columns its look. After the
+  writes, one changeset on the sheet's tab removes the charts `clear_charts` took, moves those a change left over
+  other cells back onto their cells, and adds the charts the changes made over the Sheet element, each with its
+  first read. Each
   is sent through the sheet write route as the editor sends it (one write a call, split past 5,000 cells, each with
   its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`), as is a value a Reject
   validation rule does not allow (`value_invalid`, with what the rule allows); a refusal
