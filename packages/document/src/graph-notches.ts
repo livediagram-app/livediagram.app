@@ -15,7 +15,8 @@ export const NOTCH_MAX = 6;
 export const KINK_RUN = 12;
 
 // An arrow end as a key, for a pinned end: arrows sharing one join a bus there.
-const endKey = (end: Endpoint) => (end.kind === 'pinned' ? `${end.elementId}:${end.anchor}` : null);
+export const arrowEndKey = (end: Endpoint) =>
+  end.kind === 'pinned' ? `${end.elementId}:${end.anchor}` : null;
 
 export function withoutNotches(elements: Element[]): Element[] {
   const index = buildElementIndex(elements);
@@ -24,9 +25,9 @@ export function withoutNotches(elements: Element[]): Element[] {
   const shared = new Map<string, number>();
   for (const el of elements)
     if (el.type === 'arrow')
-      for (const key of [endKey(el.from), endKey(el.to)])
+      for (const key of [arrowEndKey(el.from), arrowEndKey(el.to)])
         if (key) shared.set(key, (shared.get(key) ?? 0) + 1);
-  const onBus = (end: Endpoint) => (shared.get(endKey(end) ?? '') ?? 0) > 1;
+  const onBus = (end: Endpoint) => (shared.get(arrowEndKey(end) ?? '') ?? 0) > 1;
   // The boxes a straightened line must miss: every box but the frames and lanes that hold them.
   const boxes = elements.filter(
     (el): el is BoxedElement =>

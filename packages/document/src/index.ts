@@ -666,6 +666,7 @@ export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
 // §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
 export * from './element-normalise';
 export * from './graph-input';
+export { KINK_RUN, arrowEndKey } from './graph-notches';
 export * from './graph-limits';
 export * from './tab-builders';
 

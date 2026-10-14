@@ -15,6 +15,7 @@ import { arrowRoutePoints } from './arrow-label-layout';
 import { frameHeadingRect } from './auto-layout-cluster-seats';
 import { rectGrid, type RectGrid } from './auto-layout-route-grid';
 import { anchorPosition, endpointPosition } from './geometry';
+import { rectsIntersect, type Rect } from './geometry-primitives';
 import type { GraphEdge, GraphNode } from './graph-authoring';
 import {
   ROUTER_BUDGET,
@@ -897,8 +898,8 @@ export function placeElbowLabels(elements: Element[]): Element[] {
           ) &&
           !holders.some(
             ({ rect, heading }) =>
-              (rectsMeet(plate, rect) && !rectWithin(plate, rect)) ||
-              (heading !== null && rectsMeet(plate, heading)),
+              (rectsIntersect(plate, rect) && !rectWithin(plate, rect)) ||
+              (heading !== null && rectsIntersect(plate, heading)),
           );
         if (clear) return f;
       }
@@ -921,9 +922,6 @@ export function placeElbowLabels(elements: Element[]): Element[] {
   return elements.map((el) => placed.get(el.id) ?? el);
 }
 
-type Rect = { x: number; y: number; width: number; height: number };
-const rectsMeet = (a: Rect, b: Rect) =>
-  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 const rectWithin = (a: Rect, b: Rect) =>
   a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height;
 
