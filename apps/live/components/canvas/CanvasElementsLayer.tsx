@@ -50,6 +50,7 @@ import {
   type SheetChartsValue,
 } from '@/components/sheets/sheet-charts-context';
 import { sheetDrawnChartIds } from '@livediagram/document';
+import { GifOmit } from './GifOmit';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
 const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
@@ -611,42 +612,45 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             />
           </IllustratePageClip>
 
-          {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
+          {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
+          <GifOmit>
+            {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
           element the release lands, after every element, where it will land. */}
-          {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
-            <DrawnArrowPreview
-              arrow={props.previewDrawnArrow(
-                props.pendingDraw,
-                drawDrag.startX,
-                drawDrag.startY,
-                drawDrag.currentX,
-                drawDrag.currentY,
-              )}
-              elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
-              occluders={drawnElements}
-              draftLayout={arrowLabels.draftLayout}
-              fontFamily={tabFontStack}
-              withDefs={!hasArrows}
-            />
-          ) : null}
+            {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
+              <DrawnArrowPreview
+                arrow={props.previewDrawnArrow(
+                  props.pendingDraw,
+                  drawDrag.startX,
+                  drawDrag.startY,
+                  drawDrag.currentX,
+                  drawDrag.currentY,
+                )}
+                elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
+                occluders={drawnElements}
+                draftLayout={arrowLabels.draftLayout}
+                fontFamily={tabFontStack}
+                withDefs={!hasArrows}
+              />
+            ) : null}
 
-          {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
+            {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
           above the elements, beneath the remote cursors. */}
-          <AgentFocusOverlay elements={elements} />
+            <AgentFocusOverlay elements={elements} />
 
-          {remoteCursors.map((c) => (
-            <ZoomedRemoteCursor key={c.id} cursor={c} />
-          ))}
+            {remoteCursors.map((c) => (
+              <ZoomedRemoteCursor key={c.id} cursor={c} />
+            ))}
 
-          {/* Laser overlay sits inside the viewport-transformed wrapper
+            {/* Laser overlay sits inside the viewport-transformed wrapper
             so trail coordinates (canvas-space) pan + zoom with
             elements. The overlay component owns its own RAF loop
             and only runs while there's at least one active trail. */}
-          <ZoomedLaserOverlay trails={laserTrails} />
+            <ZoomedLaserOverlay trails={laserTrails} />
 
-          {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
+            {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}
-          <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
+            <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
+          </GifOmit>
 
           {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}

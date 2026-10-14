@@ -64,7 +64,8 @@ words` per message (`->`, `~>`, `-->`). A participant's name is its label (its i
   (case-insensitively) takes the first free ` <n>` suffix from 2, so every written name reads back as its own participant.
 - `parseSequenceText(text, known)`: per line (trimmed; empty and `//` skipped; past `SEQ_TEXT_LINE_MAX` unread):
   `participant|actor <name>` declares; otherwise the first arrow found scanning left to right (longest token at a
-  position: `-->>`, `-->`, `->>`, `->`, `~>`, `-)`) splits From and the rest; To is the longest participant named so
+  position: `-->>`, `-->`, `->>`, `->`, `~>`, `-)`, read a character at a time, at most four per position) splits From
+  (less any spaces and dashes before the arrow, so `A ---> B` reads From `A`) and the rest; To is the longest participant named so
   far whose name the rest starts with, followed by `:` or the line's end, else the rest up to its first `:`; the words
   follow the `:`.
   Names match case-insensitively; a known name keeps its id, a new one takes the next free `p<n>`. Past 12
@@ -142,6 +143,12 @@ Labels pass through the headless renderer's escaping; the picture is our own SVG
 
 Layout is O(messages) ≤ 60; the picture is built once per change of the rows (memo on the canvas), not per frame.
 
+The Text tab parses on every keystroke. A hostile paste (1,000 lines of 390 dashes, 1,000 lines of 190 ` -` pairs before
+an arrow, a 100,000-character line) parses in 10 ms of CPU on an M-series Mac, 29 ms under coverage, against a 200 ms
+budget (`sequence-text.test.ts`). The arrow scan reads at most four characters per position and the trailing-dash trim
+is a walk back, never a backtracking pattern; trying the six arrows with `startsWith` at every dash cost 40 ms (73 ms
+under coverage, 281 ms on CI).
+
 ## Presentation and UX
 
 - D194: 560 × 340; participants Browser, API, Database; messages `Place order` (call, Browser → API), `Validate`
@@ -158,8 +165,9 @@ Layout is O(messages) ≤ 60; the picture is built once per change of the rows (
   Box / Actor radio pair, Move Left, Move Right and Remove (rose on hover; disabled at two, tooltip says why, or how
   many messages go with it). Add Participant is a dashed pill; it adds `{ id: first free p<n>, label: Participant <k> }`,
   `k` the first number from the count plus one that no label uses (case-insensitively).
-- Message rows: grid `[1.25rem 6.5rem 2.5rem 6.5rem 1fr auto]` on a wide screen; on a phone From, kind, To and the
-  actions share the first line and the words the second. The kind button draws `KindArrow` (brand tint for Call and
+- Message rows: grid `[1.25rem 6.5rem 2.5rem 6.5rem 1fr auto]` on a wide screen; on a phone `[1.25rem 1fr 2.5rem 1fr]`,
+  From, kind and To on the first line (From and To equal), the words (columns 2 to 3) and the actions (column 4) on
+  the second. The kind button draws `KindArrow` (brand tint for Call and
   Async, plain for Reply). Move Up / Down show on hover or focus, always on a touch screen. Add Message is a dashed
   row ending in `n of 60`. No messages: `CompactEmptyState` "No messages yet".
 - A sequence opens no inline label editor (`opensInlineLabelEditor` is false), so a click never starts one and a

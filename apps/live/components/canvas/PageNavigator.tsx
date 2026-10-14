@@ -7,6 +7,7 @@
 import { lucideChevronLeft, lucideChevronRight } from '@livediagram/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livediagram/ui';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
+import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 
 const Prev = lucideGlyph(lucideChevronLeft, 16);
 const Next = lucideGlyph(lucideChevronRight, 16);
@@ -41,6 +42,7 @@ export function PageNavigator({
   };
   return (
     <div
+      {...{ [GIF_OMIT_ATTR]: '' }}
       role="group"
       aria-label={`Page ${index + 1} of ${count}`}
       data-page-navigator=""

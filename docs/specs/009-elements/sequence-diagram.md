@@ -57,7 +57,8 @@ section of the menu's Animation row.
     name say which it is.
   - The **words**, a wide box.
   - **Move Up**, **Move Down** (on hover or focus with a mouse, always on a touch screen) and **Remove**.
-  - On a phone, From, the kind and To share the first line and the words take the second.
+  - On a phone, From, the kind and To share the first line, From and To equally wide, and the words and the row's
+    buttons take the second.
   - **Enter** in a message's words adds the next message under it, from that message's receiver to the participant
     after it (wrapping to the first), with the cursor in its words, so a conversation is typed straight down.
     **Backspace** in an empty message removes it and returns to the one above.

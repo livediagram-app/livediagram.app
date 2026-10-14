@@ -14,6 +14,10 @@ import { readFlowchartHeader, readInlineLabel } from './mermaid-scan';
 // quadratic work sixteen.
 
 const RUN = 20_000;
+// The sweeps time a few hundred inputs of tens of thousands of characters: under a second here, but over vitest's 5 s
+// default on a loaded CI runner under coverage (5.3 s, main 2026-10-14), so each has room. Linearity is what the test
+// holds, by growth, not by this limit.
+const TIMEOUT_MS = 30_000;
 const FILLS = [' ', '(', '[', '-', '.', '=', '"', ',', '|', '{'];
 
 type Case = { build: (n: number) => string };
@@ -58,7 +62,7 @@ function expectLinear(all: Case[], run: (text: string) => unknown): void {
 }
 
 describe('untrusted graph text stays linear', () => {
-  it('caps a label in linear time whatever it repeats', () => {
+  it('caps a label in linear time whatever it repeats', { timeout: TIMEOUT_MS }, () => {
     const samples = [
       'Web client (React SPA served from the CDN) for customers',
       'Orders service, which creates orders; and more.',
@@ -68,7 +72,7 @@ describe('untrusted graph text stays linear', () => {
     expectLinear([{ build: (n) => `${'a'.repeat(n)} ${'() '.repeat(n)}` }], (t) => capLabel(t));
   });
 
-  it('parses a flowchart in linear time whatever a line repeats', () => {
+  it('parses a flowchart in linear time whatever a line repeats', { timeout: TIMEOUT_MS }, () => {
     const lines = [
       'graph TD',
       'A["Start"] -- yes --> B(Done)',
@@ -84,12 +88,16 @@ describe('untrusted graph text stays linear', () => {
     expectLinear([{ build: (n) => `graph${' '.repeat(n)}x\nA --> B` }], (t) => parseMermaid(t));
   });
 
-  it('parses state and ER diagrams in linear time whatever a line repeats', () => {
-    const state = ['[*] --> Idle', 'Idle --> Busy : start work', 'state "Long name" as L'];
-    const er = ['CUSTOMER ||--o{ ORDER : places', 'ORDER { string id PK "the id" }'];
-    expectLinear(cases(state, 'stateDiagram-v2\n'), (t) => parseMermaid(t));
-    expectLinear(cases(er, 'erDiagram\n'), (t) => parseMermaid(t));
-  });
+  it(
+    'parses state and ER diagrams in linear time whatever a line repeats',
+    { timeout: TIMEOUT_MS },
+    () => {
+      const state = ['[*] --> Idle', 'Idle --> Busy : start work', 'state "Long name" as L'];
+      const er = ['CUSTOMER ||--o{ ORDER : places', 'ORDER { string id PK "the id" }'];
+      expectLinear(cases(state, 'stateDiagram-v2\n'), (t) => parseMermaid(t));
+      expectLinear(cases(er, 'erDiagram\n'), (t) => parseMermaid(t));
+    },
+  );
 });
 
 // The scans read exactly as the patterns they replaced, checked against those patterns on short

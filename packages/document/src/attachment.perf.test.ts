@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createShape, settleChips, type Element, type ShapeElement } from './index';
 
 // docs/specs/009-elements/blueprints/badge.md "Performance and limits": settling runs on every commit and every tick
@@ -48,7 +48,7 @@ describe('settleChips budget', () => {
         cpuMsOf(() => settleChips(prev, next)),
       );
     // Before the bounding-circle reject this took 106 ms uninstrumented, so 75 ms still catches that regression (8 ms warm here, 17 ms under coverage).
-    expect(best).toBeLessThan(75);
+    expect(best).toBeLessThan(cpuBudgetMs(75));
   });
 
   it('returns at once for a board with no chip', () => {
