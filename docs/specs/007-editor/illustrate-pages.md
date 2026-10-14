@@ -580,7 +580,9 @@ It shows wherever the session may restyle the tab (an Editor; never for a Partic
 who see no layout picker anyway). On a phone the Layout sheet keeps Change Theme and closes by a
 swipe, with no X.
 
-- **Ninety-two layouts**, each a complete, editable starting point in the tab's theme. Most open with
+- **Ninety-two layouts**, each a complete, editable starting point in the tab's theme: a layout is built without
+  colours where it means the theme's, and placing it (in the editor or by an agent) fills each of those from the
+  tab's built-in theme (`themedForTab`), keeping the colours it sets itself. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
   **wide** one sets things side by side:
   1. **Title Page**: an eyebrow line, a large title over a short accent rule, a subtitle, an image
