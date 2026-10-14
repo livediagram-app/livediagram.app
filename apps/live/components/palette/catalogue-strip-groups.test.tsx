@@ -23,6 +23,13 @@ describe('catalogueStripGroups', () => {
     expect(catalogueStripGroups('technology')?.length).toBeGreaterThan(0);
   });
 
+  it('is built once the catalogues have loaded, not on every strip render', () => {
+    expect(catalogueStripGroups('technology')).toBe(catalogueStripGroups('technology'));
+    const t = performance.now();
+    for (let i = 0; i < 1000; i++) catalogueStripGroups('icons');
+    expect(performance.now() - t).toBeLessThan(50);
+  });
+
   it('is null for a category of tiles', () => {
     expect(catalogueStripGroups('shapes')).toBeNull();
     expect(catalogueStripGroups('my-shapes')).toBeNull();

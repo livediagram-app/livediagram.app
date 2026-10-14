@@ -2,6 +2,7 @@
 
 import { useRef, type ReactNode } from 'react';
 import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
+import { isIconCatalogsLoaded } from '@/lib/icon-registry';
 import { iconBrowseGroups } from './IconPickerTab';
 import { stickerBrowseGroups } from './StickerPickerTab';
 import { techBrowseGroups } from './TechPickerTab';
@@ -19,6 +20,8 @@ export type StripOpen = { key: string; category: string; group: string | null; l
 /** The category's groups when it is a grouped catalogue, else null (its strip shows tiles). Empty groups (the
  *  catalogue chunk still in flight) are left out, so the strip shows nothing until there is something to open. */
 export function catalogueStripGroups(categoryId: string): StripGroup[] | null {
+  const cached = CACHE.get(categoryId);
+  if (cached) return cached;
   const groups =
     categoryId === 'icons'
       ? iconBrowseGroups()
@@ -28,10 +31,16 @@ export function catalogueStripGroups(categoryId: string): StripGroup[] | null {
           ? techBrowseGroups()
           : null;
   if (!groups) return null;
-  return groups
+  const strip = groups
     .filter((g) => g.items.length > 0)
     .map(({ id, label, icon }) => ({ id, label, icon }));
+  // Built once the catalogues have landed, after which they never change: about 1 ms a build (Icons, Technology)
+  // on every strip render otherwise, the AWS opener's glyph on Diagram's landing strip among them.
+  if (isIconCatalogsLoaded()) CACHE.set(categoryId, strip);
+  return strip;
 }
+
+const CACHE = new Map<string, StripGroup[]>();
 
 /** One group on the strip. Drawn as an opener, not a tile: its artwork with a chevron, as the strip's other pickers
  *  are, so it reads as "open this group" rather than "drag this icon". Pressing it toggles its popover, hung from the
