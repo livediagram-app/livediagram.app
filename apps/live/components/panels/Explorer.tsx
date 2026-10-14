@@ -258,7 +258,7 @@ function ExplorerImpl({
         : undefined;
 
   const currentCard = current ? (
-    <DocumentRowShell exiting={exitingDocumentIds.has(current.id)}>
+    <DocumentRowShell exiting={exitingDocumentIds.has(current.id)} enter={false}>
       <ExplorerCurrentDocument
         item={current}
         ownerId={ownerId}
@@ -318,12 +318,16 @@ function ExplorerImpl({
       // The ⋯ menu (docs/specs/013-workspace/folders.md): new / open, share / export, then search /
       // GitHub / settings. It replaced a "+ New" chip whose popover held
       // only the first two.
+      // A phone's sheet drops it: every entry is a tap away there already (the New chip, the footer's Explorer, the
+      // top bar's Share, the toolbars' Search and Settings).
       headerActions={
-        <ExplorerHeaderMenu
-          onNewDocument={onNewDocument}
-          actions={menuActions}
-          helpArticle="explorerPanel"
-        />
+        sheet ? undefined : (
+          <ExplorerHeaderMenu
+            onNewDocument={onNewDocument}
+            actions={menuActions}
+            helpArticle="explorerPanel"
+          />
+        )
       }
       {...dock}
       popoverOpen={popoverOpen}

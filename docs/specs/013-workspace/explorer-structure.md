@@ -193,7 +193,8 @@ a single stacked tree, which was cramped and sent half its rows off to the Explo
 
 Top to bottom:
 
-1. **The panel header**: "Explorer", the `⋯` menu ([Folders](folders.md#the-editors-explorer-editor--new)) and Help.
+1. **The panel header**: "Explorer", the `⋯` menu ([Folders](folders.md#the-editors-explorer-editor--new)) and Help;
+   a phone's sheet drops the `⋯` menu, every entry of it a tap away there already.
 2. **The Current Document card**, when a document is open: its thumbnail, the label "Current Document", the
    document's **name**, "Updated <relative time>". The document's **visibility badge** (the editor header's badge:
    Private, Shared, Team, Public or Local only, with its legend, [Offline Mode](../006-document/offline-mode.md)) sits

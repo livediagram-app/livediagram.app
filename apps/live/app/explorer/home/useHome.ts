@@ -31,6 +31,17 @@ type Loaded = { jumpBackIn: JumpBackInSet; whatHappened: HomeGroup[] };
 
 const EMPTY: Loaded = { jumpBackIn: { mostUsed: [], recent: [] }, whatHappened: [] };
 
+// The last successful read, one owner's only: a Home mounted again (the editor's Explorer, reopened) draws it at once
+// and refreshes behind it, rather than flashing its skeleton and jumping as the cards arrive.
+let lastRead: { ownerId: string; loaded: Loaded } | null = null;
+const cachedFor = (ownerId: string | null): Loaded | null =>
+  ownerId && lastRead?.ownerId === ownerId ? lastRead.loaded : null;
+
+/** Test seam: forget the remembered read. */
+export function forgetHomeRead(): void {
+  lastRead = null;
+}
+
 function browserTimeZone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 }
@@ -46,8 +57,10 @@ async function localOpens(): Promise<LocalOpenDocument[]> {
 
 /** `onSeen` runs after each successful read: the server moved the unread mark. */
 export function useHome(ownerId: string | null, onSeen: () => void): HomeData {
-  const [status, setStatus] = useState<HomeStatus>('loading');
-  const [loaded, setLoaded] = useState<Loaded>(EMPTY);
+  const [status, setStatus] = useState<HomeStatus>(() =>
+    cachedFor(ownerId) ? 'ready' : 'loading',
+  );
+  const [loaded, setLoaded] = useState<Loaded>(() => cachedFor(ownerId) ?? EMPTY);
   const [attempt, setAttempt] = useState(0);
   // From the first successful read only: that read moved the mark, so a later one reports nothing new.
   const [lastSeenAt, setLastSeenAt] = useState<{ at: number | undefined } | null>(null);
@@ -65,10 +78,12 @@ export function useHome(ownerId: string | null, onSeen: () => void): HomeData {
           setStatus('error');
           return;
         }
-        setLoaded({
+        const next = {
           jumpBackIn: jumpBackInSet(home.jumpBackIn, local, Date.now()),
           whatHappened: home.whatHappened,
-        });
+        };
+        lastRead = { ownerId, loaded: next };
+        setLoaded(next);
         setStatus('ready');
         setLastSeenAt((held) => held ?? { at: home.lastSeenAt ?? undefined });
         onSeenRef.current();
