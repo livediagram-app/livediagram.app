@@ -25,12 +25,39 @@ describe('text-overflow', () => {
 
   it('names two texts printed over each other, and leaves those apart', () => {
     const found = of(
-      lint(page(text('a', 0, 0, 'One'), text('b', 0, 20, 'Two'), text('c', 0, 300, 'Apart'))),
+      lint(page(text('a', 0, 0, 'One'), text('b', 0, 8, 'Two'), text('c', 0, 300, 'Apart'))),
       'text-overflow',
     );
     expect(found).toHaveLength(1);
     expect(found[0]!.message).toMatch(/prints over/);
     expect(found[0]!.fix).toMatch(/^move \S+ below:\S+$/);
+  });
+
+  it('judges where the lines are drawn: stacked lines that only touch pass, a wrapped line spilling onto the next does not', () => {
+    const stacked = [0, 1, 2].map((i) =>
+      text(`h${i}`, 0, i * 40, ['Keep pull', 'requests', 'small.'][i]!),
+    );
+    expect(of(lint(page(...stacked)), 'text-overflow')).toEqual([]);
+    const spill = text('name', 0, 0, 'Crumb and Company Bakers of Fine Bread', {
+      width: 160,
+      height: 30,
+      textSize: 'lg',
+      textAlignY: 'top',
+    });
+    const tagline = text('tag', 0, 34, 'ARTISAN BAKERY', {
+      width: 160,
+      height: 24,
+      textSize: 'sm',
+    });
+    expect(of(lint(page(spill, tagline)), 'text-overflow').map((f) => f.message)).toContainEqual(
+      expect.stringMatching(/prints over/),
+    );
+  });
+
+  it('leaves text on a curve out, drawn along its arc, not in its box', () => {
+    const top = text('t', 0, 0, 'CRUMB AND CO.', { width: 400, height: 400, textArc: 180 });
+    const bottom = text('b', 0, 0, 'ARTISAN BAKERY', { width: 400, height: 400, textArc: -180 });
+    expect(of(lint(page(top, bottom)), 'text-overflow')).toEqual([]);
   });
 
   it('stays quiet on text that fits, set to scale, blank, or off an Illustrate tab', () => {

@@ -74,7 +74,7 @@ const PAGE_DRAWINGS: Element[][] = [
   ],
   [
     { id: 'a', type: 'text', x: 0, y: 0, width: 200, height: 40, label: 'One' } as Element,
-    { id: 'b', type: 'text', x: 0, y: 20, width: 200, height: 40, label: 'Two' } as Element,
+    { id: 'b', type: 'text', x: 0, y: 8, width: 200, height: 40, label: 'Two' } as Element,
   ],
 ];
 
