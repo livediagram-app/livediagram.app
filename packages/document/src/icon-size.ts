@@ -55,7 +55,8 @@ export function iconBandBounds(el: {
   textAlignY?: 'top' | 'middle' | 'bottom';
 }): { x: number; y: number; width: number; height: number } {
   // A label on the glyph leaves it the whole box, like no label at all.
-  const hasLabel = !!el.label && !isOnGlyphLabel(el);
+  // Blank text is no caption, as on the canvas (the label renders nothing for it).
+  const hasLabel = (el.label ?? '').trim().length > 0 && !isOnGlyphLabel(el);
   const ax = el.textAlignX ?? 'center';
   const ay = el.textAlignY ?? 'bottom';
   let bandX = el.x;
