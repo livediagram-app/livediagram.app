@@ -4,6 +4,11 @@
 import { z } from 'zod';
 import {
   AGENT_READ_CELLS_MAX,
+  AXIS_SIZE_MAX,
+  COLUMN_WIDTH_MIN,
+  COLUMN_WIDTH_NEW,
+  ROW_HEIGHT_MIN,
+  ROW_HEIGHT_NEW,
   CURRENCY_SYMBOLS,
   FONT_SIZE_MIN,
   FONT_SIZE_MAX,
@@ -11,6 +16,7 @@ import {
   SHEET_COLS_MAX,
   SHEET_ROWS_MAX,
 } from '@livediagram/sheets';
+import { BORDER_COLOUR_DEFAULT } from '../sheets/sheet-shape-change';
 
 const url = z.string().describe('Link that opens the document in the livediagram editor.');
 const documentId = z.string().describe('The document (from find_documents).');
@@ -116,13 +122,21 @@ const sheetChange = z.discriminatedUnion('op', [
     format: formatArg,
   }),
   z.object({
-    op: z.literal('insert_rows').describe('Insert rows.'),
+    op: z
+      .literal('insert_rows')
+      .describe(
+        'Insert rows. They take the formats of the row above them (below, at the top), so a table keeps its look.',
+      ),
     at: z.number().int().min(1).describe('The row number they go beside (1 is the first row).'),
     count: countArg,
     side: sideArg,
   }),
   z.object({
-    op: z.literal('insert_cols').describe('Insert columns.'),
+    op: z
+      .literal('insert_cols')
+      .describe(
+        'Insert columns. They take the formats of the column left of them (right, at the left edge).',
+      ),
     at: z.string().describe('The column letter they go beside ("C").'),
     count: countArg,
     side: sideArg,
@@ -261,6 +275,64 @@ const sheetChange = z.discriminatedUnion('op', [
       })
       .optional()
       .describe('A colour scale instead of when: each number shaded between the points.'),
+    first: z
+      .boolean()
+      .optional()
+      .describe('Put it first in the list (default last): the first rule a cell meets draws it.'),
+  }),
+  z.object({
+    op: z
+      .literal('resize')
+      .describe('Size columns (px, or fit to what their cells show) or rows (px).'),
+    cols: z.string().optional().describe('Columns, "C" or "A:F".'),
+    rows: z.string().optional().describe('Rows, "3" or "4:20".'),
+    px: z
+      .number()
+      .optional()
+      .describe(
+        `Width or height in px: columns ${COLUMN_WIDTH_MIN} to ${AXIS_SIZE_MAX}, rows ${ROW_HEIGHT_MIN} to ${AXIS_SIZE_MAX}. A new sheet's are ${COLUMN_WIDTH_NEW} by ${ROW_HEIGHT_NEW}.`,
+      ),
+    fit: z
+      .boolean()
+      .optional()
+      .describe(
+        'Columns only: each as wide as the widest value it shows (a dropdown chip’s room included), 56 to 360 px; a cell merged across columns does not count.',
+      ),
+  }),
+  z.object({
+    op: z
+      .literal('merge')
+      .describe(
+        'Merge a range into one cell showing its top-left value; other values in it are cleared.',
+      ),
+    range: rangeArg,
+    across: z.boolean().optional().describe('Merge each row of the range on its own instead.'),
+  }),
+  z.object({
+    op: z.literal('unmerge').describe('Unmerge every merge touching a range.'),
+    range: rangeArg,
+  }),
+  z.object({
+    op: z.literal('border').describe('Draw borders on a range.'),
+    range: rangeArg,
+    sides: z
+      .enum(['all', 'outer', 'inner', 'top', 'bottom', 'left', 'right', 'none'])
+      .optional()
+      .describe('Which lines (default all); none takes them off.'),
+    color: z.string().optional().describe(`#rrggbb (default ${BORDER_COLOUR_DEFAULT}).`),
+    width: z
+      .union([z.literal(1), z.literal(2), z.literal(3)])
+      .optional()
+      .describe('1 (default) to 3 px.'),
+    style: z.enum(['solid', 'dashed', 'dotted']).optional().describe('Default solid.'),
+  }),
+  z.object({
+    op: z
+      .literal('filter')
+      .describe(
+        'Turn the filter on over a range (its first row the header, each column filterable), or off.',
+      ),
+    range: rangeArg.nullable().optional().describe('The range; left out or null turns it off.'),
   }),
   z.object({
     op: z

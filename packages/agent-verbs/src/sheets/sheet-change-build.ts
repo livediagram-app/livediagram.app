@@ -24,7 +24,9 @@ import {
   validateWrite,
   writeForRules,
   type AgentValue,
+  type CellChange,
   type FormatPatch,
+  type Sheet,
   type GridRange,
   type Rand,
   type SheetWrite,
@@ -32,6 +34,7 @@ import {
 } from '@livediagram/sheets';
 import type { SheetRefusal } from './sheet-state';
 import { buildRuleChange, type SheetRuleChange } from './sheet-rule-change';
+import { buildShapeChange, type SheetShapeChange } from './sheet-shape-change';
 import { plural } from '@livediagram/document';
 
 // How a cell looks, in words; null clears that part (false clears a flag).
@@ -65,7 +68,9 @@ export type SheetChange =
   | { op: 'sort'; by: string; range?: string; descending?: boolean; header?: boolean }
   | { op: 'freeze'; rows?: number; cols?: number }
   // Validation and format rules (sheet-rule-change.ts).
-  | SheetRuleChange;
+  | SheetRuleChange
+  // Sizes, merges, borders and the filter (sheet-shape-change.ts).
+  | SheetShapeChange;
 
 // What one change sends, and the line that says what it did.
 export type BuiltChange = { ok: true; writes: SheetWrite[]; line: string } | SheetRefusal;
@@ -102,6 +107,26 @@ export function formatPatchOf(input: SheetFormatInput): FormatPatch | null {
   };
   const patch = Object.fromEntries(Object.entries(raw).filter(([, v]) => v !== undefined));
   return Object.keys(patch).length && validFormatPatch(patch) ? patch : null;
+}
+
+// Each format of the row (or column) at `source`, onto the rows (columns) `ids` made beside it.
+function formatsCopied(
+  sheet: Sheet,
+  axis: 'r' | 'c',
+  source: number,
+  ids: readonly string[],
+): CellChange[] {
+  const id = (axis === 'r' ? sheet.layout.rows : sheet.layout.cols)[source];
+  if (!id) return [];
+  const out: CellChange[] = [];
+  for (const [key, cell] of sheet.cells) {
+    if (!cell.format) continue;
+    const { r, c } = splitCellKey(key);
+    if ((axis === 'r' ? r : c) !== id) continue;
+    for (const made of ids)
+      out.push(axis === 'r' ? { r: made, c, f: cell.format } : { r, c: made, f: cell.format });
+  }
+  return out;
 }
 
 // "3" or "3:5" (rows, 1-based) and "C" or "C:E" (columns) as positions.
@@ -197,11 +222,19 @@ export function buildSheetChange(
         );
       // insertAxis answers one layout insert, its ids the rows or columns made.
       const { changes } = write as Extract<SheetWrite, { kind: 'layout' }>;
-      const made = (changes[0] as { ids: string[] }).ids.length;
+      const ids = (changes[0] as { ids: string[] }).ids;
+      const made = ids.length;
       const where = rows ? `row ${at + 1}` : `column ${columnLetters(at)}`;
+      // The new rows (columns) take the formats of the one before them, or after them at the very top (left), as a
+      // spreadsheet's do: rows inserted above a total row look like the body row over them, not the total.
+      const before = side === 'before' ? at - 1 : at;
+      const source = before >= 0 ? before : at;
+      const cells = formatsCopied(sheet, rows ? 'r' : 'c', source, ids);
       return {
         ok: true,
-        writes: [write],
+        writes: [
+          cells.length ? { ...(write as Extract<SheetWrite, { kind: 'layout' }>), cells } : write,
+        ],
         line: `inserted ${plural(made, rows ? 'row' : 'column')} ${side} ${where}`,
       };
     }
@@ -280,6 +313,12 @@ export function buildSheetChange(
     case 'conditional_format':
     case 'clear_conditional_formats':
       return buildRuleChange(wb, sheetId, change, rand);
+    case 'resize':
+    case 'merge':
+    case 'unmerge':
+    case 'border':
+    case 'filter':
+      return buildShapeChange(wb, sheetId, change);
     case 'freeze': {
       if (change.rows === undefined && change.cols === undefined)
         return refuse('write_invalid', 'Freeze names rows, cols or both (0 unfreezes).');

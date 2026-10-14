@@ -186,6 +186,21 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
   - CLI: `sheet ls <doc>`, `sheet get <doc> <sheet> [range]`, `sheet set <doc> <sheet> <A1> <value…>` (or `--csv`
     from a file or stdin), `sheet add <doc> [--tab] [--title] [--csv]`, `sheet insert-rows`, `sheet insert-cols`,
     `sheet rm-rows`, `sheet rm-cols`.
+- **Shaping a sheet**: `change_sheet` also resizes columns and rows (`resize`: px, or `fit` to what the cells show),
+  merges and unmerges cells, draws borders (`border`: all, outer, inner, a side, or none), turns the filter on over a
+  range or off, and adds a chart over the sheet's cells (`chart`: a type, an A1 range, the columns to chart by header,
+  and the cell its top-left sits on, by default beside the range). Rows an agent inserts take the formats of the row
+  they go beside, as a spreadsheet's do, so a table keeps its banding and number formats. A format rule an agent adds
+  goes last unless it asks for `first` (the first rule met draws a cell).
+- **A design**: `add_sheet` and `change_sheet` take a sheet laid out as a template is
+  ([Sheet templates](sheet.md#sheet-templates)): a heading and subtitle over the sheet's width, then blocks (tables
+  with a header, rows, a total row, number formats, input columns, dropdown and checkbox columns by header name;
+  fields of labels and values, as inputs, values or results; notes), in a look and an accent, with charts over
+  tables. It is compiled by the templates' own step (`designWrite`), so it reads as a template does: the title row,
+  the banded tables with ruled totals, the tinted inputs, widths fitted to the cells unless given, the header frozen.
+  Blocks without a place stack from row 4 down column A, one blank row apart (a table's header first, then its rows,
+  then its total), so an agent writes formulas knowing where every row lands; the answer names each block's ranges.
+  A design lays out an empty sheet, and is refused on one with cells.
 - A read answers at most 5,000 cells of its range and 100,000 characters of cells, and says where to read on.
 - Inputs from agents are read as typed in the `en-GB` locale (day before month), unless a value is given as a
   JSON number or boolean; a formula an agent writes that cannot be read is refused (`formula_invalid`, naming the
