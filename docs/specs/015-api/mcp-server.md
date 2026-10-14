@@ -616,7 +616,9 @@ checked, on every element path (`freehand-points.ts`), and an ops update giving 
 starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
 
 **No CLI hints.** An edit's result text is the api's, less its footer's revert line: that line names the
-`livediagram changeset revert` command, which no MCP tool runs.
+`livediagram changeset revert` command, which no MCP tool runs. Its `@x,y` positions are from the content's top-left as it was read, while an element's `x` and `y` are canvas
+coordinates; when the content does not start at 0,0, a closing line gives the offset (`x, y = @x + ox, @y + oy`),
+so a position read from a result is not sent back off by it.
 
 ### 4.8 `share_document`
 

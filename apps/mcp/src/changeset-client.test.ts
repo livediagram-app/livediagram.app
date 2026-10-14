@@ -338,6 +338,17 @@ describe('the tools on changesets', () => {
 });
 
 describe('mcpResultText', () => {
+  it('says how printed positions map to canvas coordinates when the content does not start at 0,0', () => {
+    const text = '+ a  square "A" @10,20 140×60\nrev 1→2 · cs_1 · lint clean';
+    expect(mcpResultText(text, { x: 120, y: 75.6 })).toBe(
+      `${text}\n@x,y above are from the content's top-left: an element's x, y = @x + 120, @y + 76.`,
+    );
+    expect(mcpResultText(text, { x: 0, y: 0 })).toBe(text);
+    expect(mcpResultText('rev 1→2 · cs_1 · lint clean', { x: 5, y: 5 })).toBe(
+      'rev 1→2 · cs_1 · lint clean',
+    );
+  });
+
   it('leaves off the CLI revert line no MCP tool runs, keeping the rest', () => {
     expect(
       mcpResultText(

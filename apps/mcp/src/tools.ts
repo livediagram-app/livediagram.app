@@ -14,6 +14,7 @@ import type {
 import {
   buildGraphTab,
   buildTab,
+  contentOrigin,
   isValidTab,
   normaliseElements,
   resolveGraphInput,
@@ -435,7 +436,7 @@ export function registerTools(server: McpServer, env: Env): void {
         url: deepLink(env, args.documentId),
         changesetId: answer.changeset?.id ?? null,
         rev: next.rev,
-        text: mcpResultText(answer.text),
+        text: mcpResultText(answer.text, contentOrigin(tab.elements)),
         lint: lintLineOf(answer.lint),
       },
       next,
