@@ -7,6 +7,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { applyEditOperations } from './apply';
+import { parseEditOperations } from './parse';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
 import { applied, lines, refused } from './fixtures/outcomes';
 import type { EditLog, EditOperation } from './types';
@@ -285,5 +286,21 @@ describe('applyEditOperations', () => {
       run([set('n3', { label: 'x' })], tab, log);
       expect(calls[0]).toEqual(['[edit-ops] locked', { operation: 1, op: 'set', scope: 'layer' }]);
     });
+  });
+});
+
+describe('targets that match nothing', () => {
+  it('names every one in one answer and writes nothing, and stops at any other refusal', () => {
+    const parsed = parseEditOperations('set nope1 label=A\nset n1 label=Fine\nset nope2 label=B');
+    if ('errors' in parsed) throw new Error('parse');
+    const out = applyEditOperations(checkoutFlow(), parsed.operations);
+    expect('errors' in out && out.errors.map((e) => [e.code, e.operation])).toEqual([
+      ['target_not_found', 1],
+      ['target_not_found', 3],
+    ]);
+    const mixed = parseEditOperations('set nope1 label=A\nadd square id=n1');
+    if ('errors' in mixed) throw new Error('parse');
+    const stopped = applyEditOperations(checkoutFlow(), mixed.operations);
+    expect('errors' in stopped && stopped.errors.map((e) => e.code)).toEqual(['target_not_found']);
   });
 });
