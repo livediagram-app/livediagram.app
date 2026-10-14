@@ -52,7 +52,9 @@ const MODES: ModeConfig[] = [
     label: 'Clean',
     description: 'Fix typos, normalise layout, sizes and styles.',
     icon: <CleanIcon />,
-    suggestions: ['Fix spelling', 'Align and space evenly', 'Normalise colors', 'Improve layout'],
+    // Only what Clean can do: its prompt leaves colour to the theme (apps/api/src/ai-prompt.ts), so a colour chip
+    // asked for something every answer refused.
+    suggestions: ['Fix spelling', 'Align and space evenly', 'Make sizes consistent', 'Improve layout'],
   },
 ];
 
