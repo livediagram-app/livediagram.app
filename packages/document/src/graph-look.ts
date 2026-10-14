@@ -263,9 +263,11 @@ export function routeLoops(
   // "no" climbing the very line a "yes" climbs into its step) read as that line's; the router prices sharing them.
   const routing = new Set(loops.map((l) => l.id));
   const round = (p: Pt) => ({ x: Math.round(p.x), y: Math.round(p.y) });
-  const taken: Run[] = elements
+  // Lines an earlier pass routed (a rejoin, a bus) are measured on their routes, not the elbows they still carry.
+  const drawn = applyRoutes(elements, routes);
+  const taken: Run[] = drawn
     .filter((el): el is ArrowElement => el.type === 'arrow' && !routing.has(el.id))
-    .flatMap((a) => runsOf(arrowRoutePoints(a, elements).map(round)));
+    .flatMap((a) => runsOf(arrowRoutePoints(a, drawn).map(round)));
   // Every route of this layout draws on one budget: spent, the rest take their outside tracks.
   const budget: RouterBudget = { left: ROUTER_BUDGET };
   let next = elements;

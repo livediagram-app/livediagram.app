@@ -574,3 +574,29 @@ describe('frames as walls', () => {
     }
   });
 });
+
+describe('routing against lines already routed', () => {
+  it('prices sharing against a routed line where it is drawn, not the elbow it still carries', () => {
+    const box = (id: string, y: number): Element =>
+      ({ id, type: 'shape', shape: 'square', x: 0, y, width: 200, height: 60 }) as Element;
+    const arrow = (id: string, from: string, to: string): Element =>
+      ({
+        id,
+        type: 'arrow',
+        from: { kind: 'pinned', elementId: from, anchor: 'e' },
+        to: { kind: 'pinned', elementId: to, anchor: 'e' },
+        arrowStyle: 'angled',
+      }) as Element;
+    // R was routed by an earlier pass (a rejoin) down a track at x 218, right where the loop L would go round m.
+    const routes: Routes = new Map([['R', { kind: 'track', axis: 'TB', at: 218 }]]);
+    routeLoops(
+      [box('a', 0), box('m', 150), box('b', 300), arrow('L', 'b', 'a'), arrow('R', 'a', 'b')],
+      'TB',
+      new Set(),
+      routes,
+    );
+    const loop = routes.get('L');
+    expect(loop?.kind).toBe('path');
+    if (loop?.kind === 'path') for (const c of loop.corners) expect(c.x).not.toBe(218);
+  });
+});
