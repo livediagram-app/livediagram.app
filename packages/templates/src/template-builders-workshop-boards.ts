@@ -257,7 +257,8 @@ export function buildWorkshopBoard(cx: number, cy: number): Element[] {
       ...createShape('session-button', x0 + pad, iceButtonY),
       width: railW - pad * 2,
       height: RETRO.buttonH,
-      session: { tool: 'timer', minutes: 10 },
+      // Half the check-in segment: the other half is the check-in itself.
+      session: { tool: 'timer', minutes: 5 },
       ...CONTENT,
     },
   ];
