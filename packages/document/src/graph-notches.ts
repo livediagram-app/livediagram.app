@@ -26,7 +26,15 @@ export function withoutNotches(elements: Element[]): Element[] {
       for (const key of [endKey(el.from), endKey(el.to)])
         if (key) shared.set(key, (shared.get(key) ?? 0) + 1);
   const onBus = (end: Endpoint) => (shared.get(endKey(end) ?? '') ?? 0) > 1;
-  return elements.map((el) => {
+  // How many arrows meet each box, and the boxes moved to true a line up.
+  const attached = new Map<string, number>();
+  for (const el of elements)
+    if (el.type === 'arrow')
+      for (const end of [el.from, el.to])
+        if (end.kind === 'pinned')
+          attached.set(end.elementId, (attached.get(end.elementId) ?? 0) + 1);
+  const moves = new Map<string, { x: number; y: number }>();
+  const out = elements.map((el) => {
     if (el.type !== 'arrow' || el.arrowStyle !== 'angled' || !el.curvePoints?.length) return el;
     if (onBus(el.from) || onBus(el.to)) return el;
     const points = arrowPolyline(el, index);
@@ -37,8 +45,23 @@ export function withoutNotches(elements: Element[]): Element[] {
     });
     if (!notched) return el;
     const [start, end] = [points[0]!, points[points.length - 1]!];
-    if (Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) > NOTCH_MAX) return el;
+    const [dx, dy] = [end.x - start.x, end.y - start.y];
+    if (Math.min(Math.abs(dx), Math.abs(dy)) > NOTCH_MAX) return el;
+    // A box no other line meets moves across by the step, so the line runs true: drawn straight between ends a few
+    // pixels apart, a store's drop read as a slant (an evaluator saw 5 px over 250).
+    const step = Math.abs(dx) < Math.abs(dy) ? { x: dx, y: 0 } : { x: 0, y: dy };
+    const leaf = [
+      { end: el.to, by: { x: -step.x, y: -step.y } },
+      { end: el.from, by: step },
+    ].find(({ end }) => end.kind === 'pinned' && (attached.get(end.elementId) ?? 0) === 1);
+    if (leaf && leaf.end.kind === 'pinned' && !moves.has(leaf.end.elementId))
+      moves.set(leaf.end.elementId, leaf.by);
     const { curvePoints: _bends, ...straight } = el;
     return { ...straight, arrowStyle: 'straight' as const };
+  });
+  if (moves.size === 0) return out;
+  return out.map((el) => {
+    const by = moves.get(el.id);
+    return by && el.type !== 'arrow' && 'x' in el ? { ...el, x: el.x + by.x, y: el.y + by.y } : el;
   });
 }

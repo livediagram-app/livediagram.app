@@ -549,8 +549,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   top), the org-chart shape; one whose ends already line up runs straight
   ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice"). **No notch in a straight line:** an
   elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
-  is drawn straight: a few pixels' slant over the length of an edge cannot be seen, and a step that short reads as a
-  notch (two boxes of different widths centred a pixel or two apart).
+  is drawn straight, as a step that short reads as a notch (two boxes of different widths centred a pixel or two
+  apart). Where one end's box meets no other line, that box moves across by the step so the line runs true; only
+  when both ends meet other lines is it drawn as a slight slant (a store's 5 px slant over 250 was seen).
 
 The flow layout reduces crossings: after ranking, a few up-and-down barycentre
 passes reorder each rank, and a new order is kept only when it crosses fewer

@@ -76,7 +76,7 @@ describe('a member within a notch of its spot', () => {
       box('m0', 0, 300),
       box('m1', 400, 300),
     ];
-    const frames = [box('g', -40, 240, 600, 160)];
+    const frames = [{ ...box('g', -40, 240), width: 600, height: 160 }];
     seatMembersByNeighbours(
       nodes,
       frames,
