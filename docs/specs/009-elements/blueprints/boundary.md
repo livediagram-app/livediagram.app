@@ -34,7 +34,9 @@ Banned: "zone" in code, "group".
     top-left corner below the tab (y = 20, height 18).
   - `inset`: icon and title at (12, 10), height 22, title px 13; meta after the title on the same line.
   - `c4`: title bold at (12, h - 46), height 22, meta below at (12, h - 26), height 18; no icon.
-- **Writes.** `withBoundaryStyle(el, style | null)` through the menu's generic style ops (`BoundaryStyle`).
+- **Writes.** `withBoundaryStyle(el, style | null)` and `withBoundaryMeta(el, on)` (on gives `BOUNDARY_META_DEFAULT`,
+  "Meta line", unless it has words; off deletes `pageSubtitle`) through the menu's generic style ops (`BoundaryStyle`,
+  `BoundaryMeta`).
   The meta line edits in place (`pageSubtitle`, `setPageHeading`, `MASTHEAD_SHAPES` gains `boundary`).
 - **Paint order.** Tier 0 holds frames and boundaries; within it the larger area paints first, so an inner boundary
   never hides behind its outer one whatever the array order.
@@ -66,6 +68,8 @@ export function boundaryLayout(
   metaPx: number;
 };
 export function withBoundaryStyle<T extends Element>(el: T, style: BoundaryStyle | null): T;
+export const BOUNDARY_META_DEFAULT = 'Meta line';
+export function withBoundaryMeta<T extends Element>(el: T, on: boolean): T;
 export const CONTAINER_KINDS: ReadonlySet<string>;
 export function isContainerKind(kind: string): boolean;
 ```

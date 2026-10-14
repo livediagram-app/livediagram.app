@@ -17,7 +17,7 @@ renumber by hand.
 - **A new step takes the next number**: one more than the highest whole number among the tab's steps, or 1 when there
   are none. It does not renumber itself afterwards: moving a step keeps its number, and deleting one leaves the
   others as they are, because a number that changes under you mid-edit is worse than a gap.
-- **Renumber Steps** (in the step's menu and the command palette) renumbers every step on the tab 1, 2, 3… in
+- **Renumber Steps** (in the step's menu, and in the command palette while the tab holds a step) renumbers every step on the tab 1, 2, 3… in
   **reading order**: top to bottom in rows, then left to right, where a row is any steps whose centres sit within
   half a step's height of each other. One history step.
 - **Size**: a circle, 28px by default, aspect-locked; resizing grows the disc and its number together.
@@ -34,7 +34,8 @@ it. A step takes no connectors.
 
 A step takes the **Shape** set for its body, along its disc. It adds one option of its own:
 
-- **Play in Order** (`stepSequence: true`), offered in the Shape animation section while the step has an animation.
+- **Play in Order** (`stepSequence: true`), a toggle in the step's **Step Number** section, offered while the step has
+  an animation.
   Each step whose label is a whole number `n` starts `(n − 1)` beats after step 1, a beat being 0.4 s at normal speed
   (scaled by the animation's Speed), so a pulse walks 1, 2, 3 and comes round again. Turning it on or off
   applies to every step on the tab (one history step), since order is a property of the set. It is CSS only: an

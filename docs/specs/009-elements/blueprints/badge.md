@@ -168,7 +168,9 @@ case (`attachment.perf.test.ts`).
 - Starting content: badge "New", step the next number.
 - Looks as the spec's table; the step's Ink is the theme's ink with the surface colour number.
 - Menu section **Badge** or **Step Number** (Tools flyout): look tiles (Solid, Ink, Outline, Tinted, Quiet); **Detach**
-  while attached; on a step, **Renumber Steps**. **Play in Order** is a toggle in the step's Animation section.
+  while attached; on a step, **Renumber Steps**. **Play in Order** is a toggle in the same section, shown
+  while the step has an animation. **Renumber Steps** is also a command-palette command (`renumber-steps`, offered while
+  the tab holds a step; `apps/live/lib/editor-commands.ts`).
 - No resize handles on a badge (it fits its text); no quick-connect ring or anchors on either.
 
 ## Accessibility

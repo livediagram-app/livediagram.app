@@ -54,6 +54,8 @@ export type CommandContext = {
   // True when the single selection already carries a looping animation
   // (boxed `animation` or arrow `flow`) — gates "Clear animation".
   hasAnimation: boolean;
+  // True when the tab holds a step number, so Renumber Steps has something to number.
+  tabHasSteps?: boolean;
   // The single shape's current marker, or null — gates "Clear marker" and
   // hides the redundant "add <current marker>" entry.
   marker: ShapeMarker | null;
@@ -124,6 +126,8 @@ export type CommandHandlers = {
   fitToScreen: () => void;
   autoLayout: (choice?: AutoLayoutChoice) => void;
   autoAlign: () => void;
+  // Number every step on the tab 1, 2, 3 in reading order (docs/specs/009-elements/step-number.md).
+  renumberSteps: () => void;
   openExport: () => void;
   openImport: () => void;
   openSettings: () => void;
@@ -388,6 +392,15 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       keywords: 'align grid snap straighten cleanup arrange',
       run: () => h.autoAlign(),
     });
+    if (ctx.tabHasSteps) {
+      out.push({
+        id: 'renumber-steps',
+        name: 'Renumber Steps',
+        keywords:
+          'renumber step steps number numbers order sequence walkthrough 1 2 3 reading order',
+        run: h.renumberSteps,
+      });
+    }
   }
   out.push({
     id: 'import',
