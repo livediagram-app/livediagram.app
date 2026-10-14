@@ -48,6 +48,7 @@ export function SessionButtonFace({
   // False on a read-only surface (a view-role visitor, an embed): the face
   // renders inert and says why rather than looking live.
   canStart,
+  runBy = null,
   timerState = 'none',
   onPress,
   onSetConfig,
@@ -57,6 +58,9 @@ export function SessionButtonFace({
   label: string;
   textColor: string;
   canStart: boolean;
+  // Somebody else runs the session (docs/specs/012-collaboration/facilitator.md): the inert face names them, since
+  // the person reading it may well have edit access.
+  runBy?: string | null;
   timerState?: TimerState;
   onPress?: () => void;
   // Per-element settings from the button's own `…` menu (docs/specs/012-collaboration/session-button.md): the
@@ -142,7 +146,9 @@ export function SessionButtonFace({
         aria-label={
           canStart
             ? `${text || `${derived.kicker} ${derived.action}`}. ${TOOL_BLURB[plan.tool]}`
-            : `${text || `${derived.kicker} ${derived.action}`}. Only people with edit access can start this.`
+            : runBy
+              ? `${text || `${derived.kicker} ${derived.action}`}. ${runBy} is facilitating this session; ask them to start it.`
+              : `${text || `${derived.kicker} ${derived.action}`}. Only people with edit access can start this.`
         }
         className={`pointer-events-auto cursor-default opacity-60 ${layout}`}
       >
