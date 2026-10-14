@@ -4,9 +4,10 @@
 // per-range RichLabel. renderLabel (the dispatcher the element views
 // call) stays in element-labels.tsx and picks between them.
 
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { renderUnits } from './animated-words';
 import type { TextAnimView } from './useTextAnimation';
+import { scaleFitViewBox, type ViewBox } from './scale-fit';
 import {
   type BoxedElement,
   type TextAlignX,
@@ -37,11 +38,13 @@ function svgPreserve(alignX: TextAlignX, alignY: TextAlignY): string {
 // --- Auto-scaling single-line label (SVG fit-to-bounds) --------------------
 
 // Where `preserveAspectRatio="… meet"` puts the measured box inside the svg: its scale and the
-// offset of its top-left corner from the label's own (padding included). Measured when the box or
+// offset of its top-left corner from the label's own (padding included). The svg fits the view
+// box, which an off-centre alignment widens past the text (scale-fit.ts). Measured when the box or
 // the svg's size changes; only while a Text animation needs it.
 function useSvgFit(
   svg: React.RefObject<SVGSVGElement | null>,
-  bbox: { w: number; h: number } | null,
+  bbox: ViewBox | null,
+  viewBox: ViewBox | null,
   alignX: TextAlignX,
   alignY: TextAlignY,
   padding: number,
@@ -50,25 +53,25 @@ function useSvgFit(
   const [fit, setFit] = useState<{ scale: number; x: number; y: number } | null>(null);
   useLayoutEffect(() => {
     const node = svg.current;
-    if (!active || !node || !bbox) return;
+    if (!active || !node || !bbox || !viewBox) return;
     const measure = () => {
       const w = node.clientWidth;
       const h = node.clientHeight;
       if (!w || !h) return;
-      const scale = Math.min(w / bbox.w, h / bbox.h);
+      const scale = Math.min(w / viewBox.w, h / viewBox.h);
       const fx = alignX === 'left' ? 0 : alignX === 'right' ? 1 : 0.5;
       const fy = alignY === 'top' ? 0 : alignY === 'bottom' ? 1 : 0.5;
       setFit({
         scale,
-        x: padding + (w - bbox.w * scale) * fx,
-        y: padding + (h - bbox.h * scale) * fy,
+        x: padding + (w - viewBox.w * scale) * fx + (bbox.x - viewBox.x) * scale,
+        y: padding + (h - viewBox.h * scale) * fy + (bbox.y - viewBox.y) * scale,
       });
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(node);
     return () => observer.disconnect();
-  }, [svg, bbox, alignX, alignY, padding, active]);
+  }, [svg, bbox, viewBox, alignX, alignY, padding, active]);
   return active ? fit : null;
 }
 
@@ -99,7 +102,7 @@ export function ScalingLabel({
   animClass?: string;
 }) {
   const textRef = useRef<SVGTextElement>(null);
-  const [bbox, setBBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [bbox, setBBox] = useState<ViewBox | null>(null);
 
   useLayoutEffect(() => {
     const node = textRef.current;
@@ -109,9 +112,14 @@ export function ScalingLabel({
     // Tracking, weight and case change the glyphs' extent too.
   }, [text, style?.letterSpacing, style?.weight, style?.uppercase, style?.lowercase]);
 
-  const viewBox = bbox ? `${bbox.x} ${bbox.y} ${bbox.w} ${bbox.h}` : '0 0 100 24';
+  // Off-centre alignment widens the box past the text so it has room to sit at that edge.
+  const fitBox = useMemo(
+    () => (bbox ? scaleFitViewBox(bbox, alignX, alignY) : null),
+    [bbox, alignX, alignY],
+  );
+  const viewBox = fitBox ? `${fitBox.x} ${fitBox.y} ${fitBox.w} ${fitBox.h}` : '0 0 100 24';
   const svgRef = useRef<SVGSVGElement>(null);
-  const fit = useSvgFit(svgRef, bbox, alignX, alignY, padding, !!textAnim);
+  const fit = useSvgFit(svgRef, bbox, fitBox, alignX, alignY, padding, !!textAnim);
 
   return (
     <div className="pointer-events-none absolute inset-0 flex" style={{ padding }}>

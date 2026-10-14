@@ -59,6 +59,8 @@ Behaviour per label renderer:
 | Fixed-size single  | CSS `align-items` + `text-align` on a flex container.                                                                               |
 | Sticky multi-line  | CSS `align-items` for vertical + `text-align` on the inner block.                                                                   |
 
+**Off-centre alignment leaves room under Scale.** An auto-fit label scales until one axis is full, so on that axis there is no room to move: a short word on a long, flat shape (a boat's hull, a banner) fills the height, and Top / Middle / Bottom used to look identical. So an off-centre choice caps the fit along its own axis: with `left` / `right` the text spans at most **60%** of the box's width, with `top` / `bottom` at most 60% of its height (`SCALE_ALIGNED_AXIS_MAX_FILL`, in `apps/live/components/canvas/scale-fit.ts`). The cap only matters on the axis that binds, so on the hull Top shrinks the word to sit at the top, while Left just slides it left at full size. Centred (`center` / `middle`, the default) keeps filling the box exactly as before. The cap is applied by widening the SVG `viewBox` along that axis, away from the chosen edge, so the same `preserveAspectRatio` corner keeps placing the text. A Text animation's HTML overlay is measured against the same widened box.
+
 The label editor (input/textarea) inherits the horizontal alignment so the cursor appears where the committed text will land.
 
 ## Colours
