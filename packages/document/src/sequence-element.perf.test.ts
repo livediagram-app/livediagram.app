@@ -35,7 +35,10 @@ describe('sequenceDrawing budget', () => {
     let best = Infinity;
     for (let p = 0; p < PASSES; p++) {
       const el = worst(n++);
-      best = Math.min(best, cpuMsOf(() => sequenceDrawing(el)));
+      best = Math.min(
+        best,
+        cpuMsOf(() => sequenceDrawing(el)),
+      );
     }
     expect(best).toBeLessThan(40);
   });
