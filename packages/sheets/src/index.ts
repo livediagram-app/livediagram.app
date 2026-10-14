@@ -52,6 +52,7 @@ export {
   renderFrameWindow,
   renderModelsForTab,
   renderWindow,
+  sheetContentSize,
   sheetFramesOf,
   type RenderCell,
   type SheetFrame,

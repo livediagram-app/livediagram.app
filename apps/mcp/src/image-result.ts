@@ -74,6 +74,7 @@ export type ImageBlock = { type: 'image'; data: string; mimeType: string };
 async function planContentFor(
   tab: Tab,
   auth: { env: Env; token: string; documentId?: string } | undefined,
+  read: SheetsResponse['sheets'] | undefined,
 ): Promise<{
   items?: ReadonlyMap<string, Item>;
   itemTypes?: readonly ItemTypeDef[];
@@ -89,13 +90,15 @@ async function planContentFor(
   if ((!plan && frames.length === 0) || !auth?.documentId) return {};
   const path = `/documents/${encodeURIComponent(auth.documentId)}`;
   const ids = [...new Set(frames.map((f) => f.sheetId))].slice(0, 50);
-  const sheets = ids.length
-    ? await apiJson<SheetsResponse>(
-        auth.env,
-        auth.token,
-        `${path}/sheets?ids=${ids.join(',')}`,
-      ).catch(() => null)
-    : null;
+  const sheets = read
+    ? { sheets: read }
+    : ids.length
+      ? await apiJson<SheetsResponse>(
+          auth.env,
+          auth.token,
+          `${path}/sheets?ids=${ids.join(',')}`,
+        ).catch(() => null)
+      : null;
   const sheetCards = !!sheets?.sheets.some((s) =>
     s.cells.some((c) => c.i && 'f' in c.i && c.i.f.t.includes('CARD')),
   );
@@ -138,7 +141,7 @@ export async function tabPreview(
   const drawn = laidOut?.tab ?? tab;
   const [resolveImageHref, content] = await Promise.all([
     auth ? buildImageResolver(auth.env, auth.token, drawn) : undefined,
-    planContentFor(drawn, auth),
+    planContentFor(drawn, auth, laidOut?.sheets),
   ]);
   // A Board tab's board scrolls on its tab, so its preview grows to every card rather than cutting the rest off.
   const shown =

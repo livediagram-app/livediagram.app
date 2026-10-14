@@ -3,7 +3,7 @@
 import { columnLetters } from '../address';
 import { colWidth, layoutIndex, posRangeOf, rowHeight } from '../layout';
 import { displayValue } from '../number-format';
-import { cellKey, type Border, type CellFormat } from '../sheet';
+import { cellKey, type Border, type CellFormat, type Sheet } from '../sheet';
 import { Workbook } from './workbook';
 import type { CardSource } from '../cards';
 import { sheetFromJson, type SheetJson } from '../sheet-json';
@@ -31,6 +31,10 @@ export type RenderCell = {
   rowSpan?: number;
   colSpan?: number;
   borders?: { t?: Border; r?: Border; b?: Border; l?: Border };
+  // A dropdown drawn as a chip (data-validation.md "Drawing"): its value on a pill in its option's colour, if any.
+  chip?: { color?: string };
+  // A dropdown drawn with an arrow at its right instead.
+  arrow?: true;
 };
 
 export type SheetRenderModel = {
@@ -103,14 +107,23 @@ export function renderWindow(
       // A checkbox draws as a box, a chip on its option's colour (data-validation.md "Drawing").
       const rule = layout.rules?.length ? validationRuleAt(layout, r, c) : null;
       const scalar = isArray(value) ? scalarOf(value) : value;
-      let chip: string | undefined;
+      let chip: { color?: string } | undefined;
       if (rule?.is === 'check') {
         const box = checkboxValue(scalar);
         if (box !== undefined) shown = { text: box ? '☑' : '☐', align: 'c', kind: 'text' };
-      } else if (rule?.is === 'list' && !rule.show && scalar !== null && !isError(scalar))
-        chip = optionFor(rule, scalar)?.c;
+      } else if (
+        (rule?.is === 'list' || rule?.is === 'range') &&
+        !rule.show &&
+        scalar !== null &&
+        scalar !== '' &&
+        !isError(scalar)
+      ) {
+        const color = rule.is === 'list' ? optionFor(rule, scalar)?.c : undefined;
+        chip = color ? { color } : {};
+      }
+      const arrow = (rule?.is === 'list' || rule?.is === 'range') && rule.show === 'arrow';
       const span = spans.get(`${r},${c}`);
-      if (!shown.text && !f.bg && !f.bt && !f.br && !f.bb && !f.bl) continue;
+      if (!shown.text && !arrow && !f.bg && !f.bt && !f.br && !f.bb && !f.bl) continue;
       const out: RenderCell = {
         r: rowAt.get(r)!,
         c: colAt.get(c)!,
@@ -124,7 +137,9 @@ export function renderWindow(
       if (f.u) out.underline = true;
       if (f.st) out.strike = true;
       if (f.fc) out.color = f.fc;
-      if (chip ?? f.bg) out.fill = chip ?? f.bg;
+      if (f.bg) out.fill = f.bg;
+      if (chip) out.chip = chip;
+      if (arrow) out.arrow = true;
       if (f.ff) out.font = f.ff;
       if (f.fs) out.size = f.fs;
       if (f.wr) out.wrap = f.wr;
@@ -152,6 +167,45 @@ export function renderWindow(
     cells,
     ...(layout.showGrid === false ? { hideGrid: true as const } : {}),
     ...(layout.showHeaders === false ? { hideHeaders: true as const } : {}),
+  };
+}
+
+// The grid a sheet's cells fill, in px (docs/specs/029-sheets/sheet.md "Exports and images"): its visible rows and
+// columns through the last that holds an input, a fill, a border or a merge, and one more of each so the grid reads
+// as going on; null for a sheet with nothing in it. A Sheet tab's image grows its Sheet to this, as the tab shows it.
+export function sheetContentSize(sheet: Sheet): { width: number; height: number } | null {
+  const { layout } = sheet;
+  const ix = layoutIndex(layout);
+  let lastRow = -1;
+  let lastCol = -1;
+  for (const [key, cell] of sheet.cells) {
+    const f = cell.format;
+    if (!cell.input && !f?.bg && !f?.bt && !f?.br && !f?.bb && !f?.bl) continue;
+    const [r, c] = key.split(':');
+    lastRow = Math.max(lastRow, ix.rowPos.get(r!) ?? -1);
+    lastCol = Math.max(lastCol, ix.colPos.get(c!) ?? -1);
+  }
+  for (const m of layout.merges ?? []) {
+    const p = posRangeOf(layout, m);
+    if (!p) continue;
+    lastRow = Math.max(lastRow, p.r2);
+    lastCol = Math.max(lastCol, p.c2);
+  }
+  if (lastRow < 0) return null;
+  const span = (
+    ids: readonly string[],
+    hidden: ReadonlySet<string>,
+    last: number,
+    size: (id: string) => number,
+  ) => {
+    let px = 0;
+    for (let i = 0; i <= Math.min(last + 1, ids.length - 1); i++)
+      if (!hidden.has(ids[i]!)) px += size(ids[i]!);
+    return px;
+  };
+  return {
+    width: span(layout.cols, ix.hiddenCols, lastCol, (id) => colWidth(layout, id)),
+    height: span(layout.rows, ix.hiddenRows, lastRow, (id) => rowHeight(layout, id)),
   };
 }
 
