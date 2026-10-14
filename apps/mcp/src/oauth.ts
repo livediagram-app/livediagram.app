@@ -8,6 +8,7 @@ import { appBase } from './tool-helpers';
 import {
   DEVICE_CODE_GRANT,
   isLoopbackHostname,
+  objectOrEmpty,
   oauthRedirectUrl,
   pkceChallenge,
 } from '@livediagram/api-schema';
@@ -110,7 +111,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     if (count >= 20) return c.json({ error: 'rate_limited' }, 429);
     await c.env.OAUTH_KV.put(rateKey, String(count + 1), { expirationTtl: 3600 });
 
-    const body = (await c.req.json().catch(() => ({}))) as {
+    const body = objectOrEmpty(await c.req.json().catch(() => null)) as {
       redirect_uris?: unknown;
       client_name?: unknown;
     };
@@ -243,7 +244,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
   // --- Complete: the Clerk-authed consent page posts the minted token here,
   // bound to a fresh authorization code (one-time, PKCE-gated at /oauth/token).
   app.post('/oauth/complete', async (c) => {
-    const body = (await c.req.json().catch(() => ({}))) as {
+    const body = objectOrEmpty(await c.req.json().catch(() => null)) as {
       session?: string;
       token?: string;
       expiresAt?: number;
