@@ -123,8 +123,8 @@ function StartCard({
             ) : null}
           </span>
           <span
-            // In full: a card's line is short, and cut it misleads (on a phone, two lines at most beside the picture).
-            className="text-[12.5px] leading-snug max-sm:line-clamp-2"
+            // In full, on a phone too: a card's line is short, and cut it misleads.
+            className="text-[12.5px] leading-snug"
             style={{ color: palette.muted }}
           >
             {card.line}

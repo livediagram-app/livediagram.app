@@ -37,6 +37,7 @@ export function ModeMenu({
   crossPlan,
   lockedReason,
   onLockedPick,
+  fill = false,
 }: {
   crossPlan: boolean;
   mode: Mode;
@@ -49,6 +50,9 @@ export function ModeMenu({
   onClose: () => void;
   lockedReason?: string | undefined;
   onLockedPick?: (mode: Mode) => void;
+  // A start panel's labelled switch: on a phone the menu spans the row it opens from, its descriptions running the
+  // full width (the top chrome's chip is too narrow to span).
+  fill?: boolean;
 }) {
   const { attach, surfaceProps } = useMenu({
     onClose,
@@ -82,9 +86,9 @@ export function ModeMenu({
       {...surfaceProps}
       data-tour-id="editor-mode-menu"
       style={hostZoom === 1 ? undefined : { zoom: 1 / hostZoom }}
-      className={`absolute left-0 top-full z-(--z-popover) mt-1.5 w-max min-w-56 max-w-[calc(100vw-2rem)] outline-none sm:flex-row sm:p-0 ${MENU_PANEL}`}
+      className={`absolute left-0 top-full z-(--z-popover) mt-1.5 w-max min-w-56 max-w-[calc(100vw-2rem)] outline-none sm:flex-row sm:p-0 ${fill ? 'max-sm:inset-x-2 max-sm:w-auto' : ''} ${MENU_PANEL}`}
     >
-      <div className="flex flex-col gap-px sm:w-48 sm:shrink-0 sm:border-r sm:border-slate-200 sm:p-1.5 dark:sm:border-slate-700">
+      <div className="flex flex-col gap-px max-sm:gap-0.5 sm:w-48 sm:shrink-0 sm:border-r sm:border-slate-200 sm:p-1.5 dark:sm:border-slate-700">
         {modes.map((option) => {
           const action = actionOf(option);
           const checked = action === 'current';
@@ -105,7 +109,7 @@ export function ModeMenu({
               onPointerEnter={() => setShown(option)}
               onFocus={() => setShown(option)}
               onClick={() => choose(option)}
-              className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors ${MODE_SWITCH_FOCUS} ${
+              className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors max-sm:gap-3 max-sm:px-2.5 max-sm:py-2.5 ${MODE_SWITCH_FOCUS} ${
                 checked
                   ? 'font-semibold text-slate-900 dark:text-white'
                   : 'font-medium text-slate-600 dark:text-slate-300'
@@ -116,17 +120,17 @@ export function ModeMenu({
               }`}
             >
               <span
-                className={`flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-md ${MODE_TINT[option]}`}
+                className={`flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-md max-sm:h-8 max-sm:w-8 ${MODE_TINT[option]}`}
               >
                 <RowIcon size={15} aria-hidden />
               </span>
-              <span className="flex min-w-0 flex-1 flex-col">
+              <span className="flex min-w-0 flex-1 flex-col max-sm:gap-0.5">
                 {editorModeLabel(option)}
                 {/* Shown under the name where there is no preview (under 640px); read by assistive
                     technology as the row's description everywhere. */}
                 <span
                   id={describedBy}
-                  className="max-w-60 text-xs font-normal leading-snug text-slate-500 sm:sr-only dark:text-slate-400"
+                  className={`${fill ? '' : 'max-w-60'} text-xs font-normal leading-snug text-slate-500 sm:sr-only dark:text-slate-400`}
                 >
                   {editorModeDescription(option)}
                   {action === 'new-tab' ? ' Opens in a new tab.' : ''}

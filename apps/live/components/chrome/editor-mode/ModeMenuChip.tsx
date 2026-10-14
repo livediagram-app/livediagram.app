@@ -133,6 +133,7 @@ export function ModeMenuChip({
           onClose={close}
           crossPlan={crossPlan}
           lockedReason={lockedReason}
+          fill={labelled}
           // No new tab to offer (a session that cannot add tabs, such as a tab-scoped link): the
           // locked rows are inert.
           {...(newTabIn
