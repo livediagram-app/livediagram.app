@@ -56,6 +56,8 @@ export async function exportPages({
   opts: ImageExportOpts;
 }): Promise<{ blob: Blob; ext: string }> {
   const chosen = scope === 'all' ? pages : [page];
+  // A deck often repeats one animated background: paint it once for every page of this export.
+  opts = { ...opts, motionFrames: opts.motionFrames ?? new Map() };
   if (format === 'pdf') return { blob: await exportPagesAsPdf(tab, chosen, opts), ext: 'pdf' };
   const render = (p: LaidOutPage) =>
     format === 'png'

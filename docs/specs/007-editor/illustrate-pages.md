@@ -409,13 +409,25 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
   dropped on reading) and divides every loop's length and start, so the whole motion runs faster
   or slower together.
 - **What is stored**: the gradient (its two stops, at the presets' angle) with its `motion`. So
-  everything that reads a gradient reads it unchanged: re-inking measures its tones, exports and
-  thumbnails draw the still gradient, AI tools see a gradient. A motion the editor does not know
-  is dropped on reading, leaving the gradient.
+  everything that reads a gradient reads it unchanged: re-inking measures its tones, thumbnails
+  draw the still gradient, AI tools see a gradient. A motion the editor does not know is dropped
+  on reading, leaving the gradient.
 - **Where it moves**: on the slide on screen and while presenting, its moving parts over the
   gradient and under everything on the slide. In an export, a thumbnail and with Reduce Motion on
   it is still: under Reduce Motion each part rests where it stands, a finished background in
   itself.
+- **In an export** (PDF, PNG and SVG, and the export's preview) the slide's background is its first
+  frame: every part where it stands as the slide opens, never the bare gradient. The parts are
+  described once (`motionParts`, `apps/live/lib/page-motion-parts.ts`), so the moving layer and the
+  export draw the same ones; where each stands is its loop evaluated at its start
+  (`openingPose`, `page-motion-frame.ts`, which restates `app/motion-page.css`'s keyframes and
+  matches the browser's own first frame). The PNG and PDF paint it onto the page
+  (`paintMotionFrame`, `page-motion-canvas.ts`); the SVG embeds a picture of the gradient with the
+  frame over it (a JPEG, 29 to 141 KiB for a 1920 x 1080 slide, about a fiftieth of a see-through
+  PNG), laid over the fill and under the pattern (`pageExportFrame`'s `overFill`). A deck repeats
+  one background, so an export paints each background once (the PDF and a zip of pages keep the
+  last two painted, as a 1920 x 1080 slide at 2x is 33 MB of pixels; the SVG keeps its last eight
+  pictures).
 - **Cost**: every part moves by transform and opacity alone, so the compositor runs it with no
   repaint; soft edges are radial gradients, never blur filters; each motion has at most about a
   hundred parts (Dot Wave's grid); loops run from 4 to 90 seconds, calm rather than busy. Positions come from fixed

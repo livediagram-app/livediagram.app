@@ -68,6 +68,7 @@ import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
 import { EXPORT_PAPER, pageExportFrame } from './export-page';
 import type { ExportImageMap } from './export-tab-images';
 import { exportChartInk } from './export-chart-ink';
+import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page-motion-canvas';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
 // the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
@@ -95,6 +96,9 @@ export type ImageExportOpts = {
   // A logo page's plain paper left see-through (docs/specs/007-editor/logo-pages.md "Export"):
   // PNG and SVG pass it, PDF never does.
   transparentPaper?: boolean;
+  // Slides' animated backgrounds painted so far in this export, so a background repeated across a
+  // deck is painted once (lib/page-motion-canvas.ts). Absent, each page paints its own.
+  motionFrames?: MotionFrameCache;
   // The document's items, so Plan boards and cards export with their cards
   // (docs/specs/026-plan/plan-board.md "Both elements everywhere").
   items?: ReadonlyMap<string, Item>;
@@ -292,6 +296,19 @@ export async function renderTabToCanvas(
       ctx.drawImage(await svgToImage(svg), 0, 0, w / scale, h / scale);
     } catch {
       // The paper behind it is already down: a failed paint must never abort the export.
+    }
+    // A slide's animated background, still as the slide opens, over its gradient and under all on
+    // it (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
+    const pageFill = opts.page?.background?.fill;
+    if (opts.page && pageFill?.kind === 'gradient' && pageFill.motion) {
+      const r = opts.page.rect;
+      paintMotionFrame(
+        ctx,
+        pageFill.motion,
+        pageFill,
+        { x: r.x - x, y: r.y - y, width: r.width, height: r.height },
+        opts.motionFrames,
+      );
     }
   }
   if (bg) {
@@ -518,6 +535,19 @@ function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
 // export (docs/specs/010-palette/style-presets.md): same SVG the .svg download produces, and PNG / PDF
 // rasterise the same content, so one SVG preview faithfully represents all
 // three image formats under the current isometric / pattern options.
+// A slide's animated background in the SVG export: a picture of its gradient with the motion as
+// it stands when the slide opens, as the PNG and PDF paint it (docs/specs/007-editor/
+// illustrate-pages.md "Animated backgrounds"). Nothing where no canvas can draw it, leaving the
+// gradient.
+function pageMotionSvg(page: LaidOutPage | undefined): string {
+  const fill = page?.background?.fill;
+  if (!page || fill?.kind !== 'gradient' || !fill.motion) return '';
+  const r = page.rect;
+  const href = motionFrameHref(fill, r.width, r.height);
+  if (!href) return '';
+  return `<image x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" preserveAspectRatio="none" href="${href}"/>`;
+}
+
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
@@ -526,6 +556,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
         ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
         imageHref: (id) => opts.images?.get(id)?.href,
+        overFill: pageMotionSvg(opts.page),
       })
     : null;
   const writing = opts.page ? pageWriting(tab, opts.page) : null;

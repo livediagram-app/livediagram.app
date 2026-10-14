@@ -23,9 +23,7 @@ beforeEach(() => {
       set: () => true,
     },
   );
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
-    ctx as unknown as CanvasRenderingContext2D,
-  );
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctx as never);
   class FakeImage {
     onload: (() => void) | null = null;
     onerror: (() => void) | null = null;
@@ -56,9 +54,7 @@ const image = (overrides: Partial<ImageElement> = {}): ImageElement => ({
 
 const tab = (el: ImageElement) => ({ id: 't', name: 'T', elements: [el] }) as unknown as Tab;
 
-const images = new Map([
-  ['img1', { href: HREF, image: {} as HTMLImageElement }],
-]) as ExportImageMap;
+const images = new Map([['img1', { href: HREF, image: {} as HTMLImageElement }]]) as ExportImageMap;
 
 describe('renderTabToCanvas images drawn through their SVG', () => {
   it('embeds a shadowed image', async () => {

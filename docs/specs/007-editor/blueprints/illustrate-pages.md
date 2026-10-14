@@ -73,6 +73,7 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | Page export                 | `pageExportFrame`, `PageExportFrame`, `EXPORT_PAPER` (`apps/live/lib/export-page.ts`); `ImageExportOpts.page`; `exportPagesAsPdf`                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Export pages                | `PageScope`, `PageExportFormat`, `DEFAULT_PAGE_SCOPE`, `exportPages`, `exportPageLabel`, `zipEntryName`, `sanitizeFilename` (`apps/live/lib/export-pages.ts`); `writeZip`, `crc32` (`apps/live/lib/zip-writer.ts`)                                                                                                                                                                                                                                                                                                                                                                   |
 | Export page row             | `ExportPagePicker` (scope + page); `ImageExportPanel` `pagePicker`; `ILLUSTRATE_FORMATS`, `ILLUSTRATE_CARD_COPY` (`ExportTabDialog.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Animated background export  | `motionParts`, `MotionNode`, `MotionBox`, `MotionWave`, `MotionGroup`, `MotionGrid`, `MotionFill`, `MotionAnim`, `wavePath` (`apps/live/lib/page-motion-parts.ts`); `openingPhase`, `openingPose`, `poseAt`, `cubicBezier` (`page-motion-frame.ts`); `paintMotionFrame`, `MotionFrameCache`, `motionFrameHref`, `blurredDisc`, `rgba` (`page-motion-canvas.ts`); `pageGradientLine`, `pageExportFrame`'s `overFill`                                                                                                                                                                  |
 | Import formats              | `ImportTabDialog` `formats` (`['json']` in Illustrate mode, from `EditorTabDialogs`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Page slide                  | `Slide.pageId`, `slideFrame(slide, tab)` (`packages/document/src/slide-deck.ts`); `newPageSlide`; `PageSlidePicker`                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Slides button               | `SlidesClusterButton`; dock panel `'slides'` (`useDockPopovers`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -619,8 +620,40 @@ bounds = the page rect, no padding, no isometric, no tab backdrop or pattern; ba
 `backgroundSvg` (rect fill or `<linearGradient>` along the CSS gradient line, then a `<pattern>`
 anchored at the page's corner); surface = `pageSurface(page) ?? 'light'`; elements filtered to
 those whose bounds meet the page (arrows kept). The canvas rasterises `backgroundSvg` first.
-`exportPagesAsPdf` renders each page and writes one PDF page per image with a MediaBox of the page
-size x `PT_PER_PX`. The dialog's `pages` prop (Illustrate mode, tab scope) selects the page row.
+
+A slide whose fill is a gradient with a `motion` exports its opening frame:
+
+- `motionParts(motion, { w, h }, motionPaint(fill))` (`apps/live/lib/page-motion-parts.ts`) lists
+  every part as data: `MotionBox` (`left`, `top`, `width`, `height`, `round?`, `fill: MotionFill`,
+  `halo?`, `anim?`), `MotionWave`, `MotionGroup` (`anim?`, `mask?: 'from-below'`) and `MotionGrid`;
+  `MotionAnim` is `{ name: MotionAnimName, d, dl?, x?, y?, rest? }`, one name per `pm-<name>`
+  keyframes in `app/motion-page.css`. `PageMotionLayer` renders the parts as the moving DOM;
+  nothing else defines a part.
+- `openingPose(anim)` (`page-motion-frame.ts`): `openingPhase` = `(-dl / d)` modulo 1 (the speed
+  divides both, so it cancels), `reversed` on an odd loop (`sweep` alternates); `poseAt(anim, p)`
+  restates each keyframes as tracks eased per step (`ease-in-out` = `cubicBezier(0.42, 0, 0.58, 1)`,
+  `spread` = `cubicBezier(0.2, 0.6, 0.4, 1)`, the rest linear) into `MotionPose { tx, ty, scale,
+rotate, opacity }`.
+- `paintMotionFrame(ctx, motion, fill, rect, cache?)` (`page-motion-canvas.ts`): clipped to
+  `rect`, alpha x `paint.strength`; a box is translated to its centre plus the pose, turned, scaled
+  and faded, then its fill drawn (`glow` / `fade`: an elliptical radial gradient reaching its sides;
+  `bokeh`: reaching its farthest corner; `lines`: 2px bands every `gap` at 45 degrees; `beam`; `mesh`:
+  its spots painted bottom layer first; `rays`: 5 of every 12 degrees from straight up; `ring`: a
+  stroke inside the box). A `halo` is the disc of radius plus spread under a Gaussian of half the
+  blur, `blurredDisc` sampled into 12 stops. A masked group and the grid paint into a layer at the
+  context's scale and keep it `destination-in` their mask. The grid projects its lines through
+  `rotateX(62deg)` and a perspective of 0.6 x the slide's height from the middle of its band.
+- `renderTabToCanvas` paints it after `backgroundSvg` (over the pattern, as on screen), at the
+  page rect's offset from the frame, passing `opts.motionFrames`. `exportPagesAsPdf` and
+  `exportPages` create one `MotionFrameCache` per export when none is given; it keeps the
+  last `FRAMES_KEPT` (2) painted frames, keyed by motion, stops, size and scale.
+- `renderTabToSvg` passes `pageExportFrame`'s `overFill` an `<image preserveAspectRatio="none">`
+  of `motionFrameHref(fill, width, height)`: the gradient along `pageGradientLine` with the frame
+  painted over it, a JPEG at `FRAME_JPEG_QUALITY` (0.9), the last `FRAME_CACHE_SIZE` (8) kept;
+  `overFill` sits after the fill and before the pattern. Without a canvas (a test run) it is
+  undefined and the gradient stands alone.
+  `exportPagesAsPdf` renders each page and writes one PDF page per image with a MediaBox of the page
+  size x `PT_PER_PX`. The dialog's `pages` prop (Illustrate mode, tab scope) selects the page row.
 
 The dialog offers `ILLUSTRATE_FORMATS` (pdf, png, svg, file, and `logo-kit` while the tab has a
 logo page, [Logo pages](logo-pages.md)) with `ILLUSTRATE_CARD_COPY` for the page formats. Each image format holds its own `PageScope` (state `scopes`, unset =
@@ -773,6 +806,10 @@ SVG `href` is escaped. The api counts a page picture as an image reference
   pass over `elementIndexFor` (measured 1.4 ms at 3000 elements, against 67 ms for the clustering
   it replaced; guarded by a 5000-element budget test). `contentClusters` is O(n²) in the split
   page's elements, run only when Split Into Pages is pressed (57 ms at 3000).
+- An animated slide's opening frame (measured in headless Chromium at 1920 x 1080, 2x): 1 ms
+  (Snowfall) to 122 ms (Mesh) to paint, once per distinct background per export; the SVG's JPEG
+  encodes in 13 to 44 ms at 29 to 141 KiB. A frame kept for reuse is 33 MB of pixels, so an export
+  keeps two.
 - A Fit to Content page's image export is drawn at 2x, lowered by `exportScale` so no canvas side
   passes `MAX_EXPORT_CANVAS_SIDE` (16384 px); its PDF page is at most 14400 pt.
 - Carrying content: gathering the placeholders builds every layout twice, once per session
@@ -915,6 +952,7 @@ read against the code. Rules no test covers are listed as gaps after the table.
 | Export: defaults per format, zip entry names, filename sanitising                                                                                                           | `apps/live/lib/export-pages.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Export: the zip writer's CRC and round trip                                                                                                                                 | `apps/live/lib/zip-writer.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Export: a page's PDF size, past the limit shrunk                                                                                                                            | `apps/live/lib/export-tab-pdf.test.ts` "singlePageMedia"                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Export: an animated slide's opening frame (parts, poses, paint, cache; PNG / PDF over the gradient, SVG under the pattern)                                                  | `apps/live/lib/page-motion-parts.test.ts`; `page-motion-frame.test.ts`; `page-motion-canvas.test.ts`; `export-tab-page-motion.test.ts`; `packages/document/src/illustrate-page-frame.test.ts` "markup over the paper"                                                                                                                                                                                                                                                                         |
 | Export: no Hidden layers option; a logo page's preview is the download                                                                                                      | `apps/live/components/dialogs/ExportTabDialog.illustrate.test.tsx`; `apps/live/lib/export-logo.test.ts`                                                                                                                                                                                                                                                                                                                                                                                       |
 | Import offers JSON only, opening straight at it                                                                                                                             | `apps/live/components/dialogs/ImportTabDialog.test.tsx` "ImportTabDialog, offered formats"                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Into pages: page around content, nothing moved, stored pages kept when made into something                                                                                  | `packages/document/src/illustrate-paginate.test.ts` "pageAround", "withContentOnAPage", "withContentOnAPage: cost"                                                                                                                                                                                                                                                                                                                                                                            |
