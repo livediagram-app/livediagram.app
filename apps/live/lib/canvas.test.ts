@@ -3,6 +3,7 @@ import {
   createAnnotation,
   createShape,
   type ArrowElement,
+  type BoxedElement,
 } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
@@ -110,6 +111,26 @@ const bothPinnedArrow: ArrowElement = {
 };
 
 describe('inheritedSizeFor', () => {
+  it('keeps a step number, boundary, concept graphic, sequence, key and tab window their own size', () => {
+    const card = { ...createShape('card', 0, 0), width: 300, height: 150 } as BoxedElement;
+    for (const kind of [
+      'step',
+      'boundary',
+      'stack',
+      'cycle',
+      'pyramid',
+      'sequence',
+      'diagram-key',
+      'tab-window',
+    ] as const) {
+      const fresh = createShape(kind, 0, 0) as BoxedElement;
+      expect(inheritedSizeFor(fresh, card), kind).toEqual({
+        width: fresh.width,
+        height: fresh.height,
+      });
+    }
+  });
+
   it('inherits the selected element size for a normal shape', () => {
     const newShape = createShape('square', 0, 0);
     const selected = { ...createShape('square', 0, 0), width: 300, height: 90 };
