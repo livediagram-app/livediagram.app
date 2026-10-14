@@ -1,9 +1,10 @@
 // `edge-crossings` (warning): more crossing pairs than LINT_CROSSINGS_PER_ARROW × arrows, one finding for
 // the tab naming the most-crossed arrows (LN9). Skipped with the pair count above LINT_MAX_ARROWS (N2).
 
-import { arrowName } from '../arrow-names';
+import { arrowStyleOf } from '@livediagram/document';
+import { arrowName, arrowSelector } from '../arrow-names';
 import { LINT_CROSSINGS_PER_ARROW, LINT_REFS_PER_FINDING_MAX } from '../constants';
-import { refOf } from '../context';
+import { framedTab, refOf } from '../context';
 import { fixes } from '../fixes';
 import type { Check } from './types';
 
@@ -24,7 +25,15 @@ export const edgeCrossings: Check = (ctx) => {
       code: 'edge-crossings' as const,
       refs: crossed.map((d) => refOf(ctx, d.arrow.id)),
       message: `${named.join(', ')}${more > 0 ? ` +${more}` : ''}: ${crossings.pairs} crossings among ${ctx.drawable.length} arrows, limit ${Math.floor(limit)}`,
-      fix: fixes.edgeCrossings(ctx.source),
+      fix: fixes.edgeCrossings(
+        ctx.source,
+        framedTab(ctx)
+          ? {
+              arrow: arrowSelector(ctx, crossed[0]!.arrow),
+              angled: arrowStyleOf(crossed[0]!.arrow) === 'angled',
+            }
+          : null,
+      ),
       at: crossed[0]!.polyline[0]!,
     },
   ];

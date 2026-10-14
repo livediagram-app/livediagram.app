@@ -163,3 +163,9 @@ export function padded(ctx: LintContext, rect: Rect): Rect {
 
 // The ref the views print for an element.
 export const refOf = (ctx: LintContext, id: ElementId) => ctx.refs.refOf(id);
+
+// Whether anything on the tab sits in a frame or lane: a layout of the shapes alone would leave those behind.
+export function framedTab(ctx: Pick<LintContext, 'containers'>): boolean {
+  for (const holder of ctx.containers.values()) if (holder !== null) return true;
+  return false;
+}

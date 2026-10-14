@@ -16,8 +16,16 @@ export const fixes = {
       `set ${arrow} line=${angled ? 'curved' : 'angled'}`,
       'drop the groups, or lines: angled',
     ),
-  edgeCrossings: (s: LintSource) =>
-    pick(s, 'layout type:shape', 'graph lint --compare direction,groups,lines'),
+  // `layout` lays out shapes alone, so on a tab with frames or lanes it would leave them behind: there the fix
+  // reroutes the most-crossed arrow instead.
+  edgeCrossings: (s: LintSource, framed: { arrow: string; angled: boolean } | null) =>
+    pick(
+      s,
+      framed
+        ? `set ${framed.arrow} line=${framed.angled ? 'curved' : 'angled'}`
+        : 'layout type:shape',
+      'graph lint --compare direction,groups,lines',
+    ),
   labelCollision: (s: LintSource, arrow: string) =>
     pick(s, `set ${arrow} label="<text>"`, 'shorten the edge label'),
   labelOverflow: (s: LintSource, a: string, smaller: boolean) =>
