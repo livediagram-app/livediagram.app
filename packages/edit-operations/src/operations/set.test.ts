@@ -302,6 +302,25 @@ describe('set: an arrow given new ends', () => {
     ]);
     expect(after({ label: 'Go' }).curvePoints).toEqual([{ dx: 40, dy: 0 }]);
   });
+
+  it('bends an angled arrow twice between its new ends, so it meets both square', () => {
+    const tab = checkoutFlow();
+    const a1 = tab.elements.find((e) => e.id === 'a1') as Element & { to: { elementId: string } };
+    const angled: Tab = {
+      ...tab,
+      elements: tab.elements.map((el) =>
+        el.id === 'a1'
+          ? ({ ...el, arrowStyle: 'angled', curvePoints: [{ dx: 40, dy: 0 }] } as Element)
+          : el.id === a1.to.elementId
+            ? ({ ...el, x: (el as { x: number }).x + 300 } as Element)
+            : el,
+      ),
+    };
+    const moved = applied(
+      run([set('a1', { from: { kind: 'pinned', elementId: 'n1', anchor: 's' } })], angled),
+    ).tab.elements.find((e) => e.id === 'a1') as Element & { curvePoints?: unknown[] };
+    expect(moved.curvePoints).toHaveLength(2);
+  });
 });
 
 describe('set: a label over lines', () => {

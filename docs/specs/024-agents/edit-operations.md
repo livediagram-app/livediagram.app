@@ -124,6 +124,8 @@ The layout an agent did not ask to change stays put:
   angled arrow out of the side that faces the new target (a gateway fanning down to its services), the new arrow
   leaves from that point too and bends in the trunk's channel, into the target's facing side, so a service added
   to the row hangs off the gateway's bar like its siblings rather than running sideways behind them.
+- **A re-ended arrow is re-routed.** `set` of an arrow's `from` or `to` drops its old bends (unless it writes new
+  ones), and an angled arrow bends twice between its new ends, meeting both square.
 - `insert` places the node at the midpoint and **makes room**: everything beyond it along the flow, within the same
   frame or lane, or outside them within b's connected group along arrows, shifts by the node's size and the gap
   (reported as moves), whatever room there already was. A frame or lane holding shifted members grows with them.

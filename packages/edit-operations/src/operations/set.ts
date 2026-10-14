@@ -4,13 +4,25 @@
 // not touched, so it is never normalised (E1, I2).
 
 import type { EditRejection } from '@livediagram/api-schema';
-import type { ArrowElement, Element } from '@livediagram/document';
+import {
+  anchorPrimarySide,
+  orthogonalBends,
+  type ArrowElement,
+  type Element,
+} from '@livediagram/document';
 import { sameValue } from '../equality';
 import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';
 import { layerLockOf } from '../locks';
 import { resolveSome } from '../selectors';
-import { type EditState, refsOf, refuseLocked, touch, writeFields } from '../state';
+import {
+  currentElements,
+  type EditState,
+  refsOf,
+  refuseLocked,
+  touch,
+  writeFields,
+} from '../state';
 import type { SetOperation } from '../types';
 import { withoutRoute } from './connect';
 
@@ -53,7 +65,7 @@ function setOne(
     fitted.el.type === 'arrow' &&
     written.written.some((key) => key === 'from' || key === 'to') &&
     !written.written.some((key) => ROUTE_KEYS.has(key));
-  const next = reEnded ? withoutRoute(fitted.el as ArrowElement) : fitted.el;
+  const next = reEnded ? rebent(state, withoutRoute(fitted.el as ArrowElement)) : fitted.el;
   if (sameValue(next, el)) return null;
   const layerLock = layerLockOf(state.tab.layers, next.layerId);
   if (layerLock) return refuseLocked(state, 'set', operation, next, layerLock);
@@ -70,4 +82,14 @@ function setOne(
     state.log('[edit-ops] widened', { operation });
   }
   return null;
+}
+
+// A re-ended angled arrow bends twice between its new ends, as connect draws one, so it meets both square: left
+// without bends it drew one L, the second leg running along the box it meets.
+function rebent(state: EditState, arrow: ArrowElement): ArrowElement {
+  if (arrow.arrowStyle !== 'angled' || arrow.from.kind !== 'pinned') return arrow;
+  const side = anchorPrimarySide(arrow.from.anchor);
+  const elements = currentElements(state).map((el) => (el.id === arrow.id ? arrow : el));
+  const bends = orthogonalBends(arrow, elements, side === 'n' || side === 's' ? 'TB' : 'LR');
+  return bends ? { ...arrow, curvePoints: bends } : arrow;
 }
