@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createShape, parseSequenceText, sequenceToText, type ShapeElement } from './index';
 
 // docs/specs/009-elements/sequence-diagram.md "The Sequence dialog" (Text).
@@ -161,6 +161,6 @@ describe('sequence text', () => {
       `${'-'.repeat(390)}\n`.repeat(1000) +
       `A${' -'.repeat(190)}x -> B\n`.repeat(1000) +
       `${'~'.repeat(100000)}`;
-    expect(cpuMsOf(() => parseSequenceText(text))).toBeLessThan(200);
+    expect(cpuMsOf(() => parseSequenceText(text))).toBeLessThan(cpuBudgetMs(200));
   });
 });
