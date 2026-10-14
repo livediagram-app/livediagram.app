@@ -34,6 +34,8 @@ A new Show Me surface is added to this table, and its own spec says its steps.
 - **Show Me**, with a footprints glyph, drawn like the labelled Help link (`HelpArticleLink` variant
   `labelled`) and placed immediately left of it; a surface with no Help link gains one beside it, linking the
   surface's help article. Order in a title row: Show Me, Help, then the close cross where there is one.
+- On a phone the button is the glyph alone (its name kept for assistive tech), so a title row keeps its close
+  cross on screen.
 - `aria-pressed` while its tour runs; pressing it again then does nothing.
 - A surface whose steps load at the press ignores further presses until they arrive; if they fail to load (a
   dropped connection) nothing starts and the button can be pressed again.

@@ -76,6 +76,8 @@ export type SheetRuleChange =
       };
       style?: AgentFormatStyle;
       scale?: { min: AgentScalePoint; mid?: AgentScalePoint; max: AgentScalePoint };
+      // First in the list rather than last: the first rule met draws a cell.
+      first?: boolean;
     }
   | { op: 'clear_conditional_formats'; range?: string };
 
@@ -337,8 +339,13 @@ export function buildRuleChange(
       }
       return {
         ok: true,
-        writes: [{ kind: 'layout', changes: [{ k: 'frule', id: rule.id, rule }] }],
-        line: `added a format rule to ${formatRange(g)}`,
+        writes: [
+          {
+            kind: 'layout',
+            changes: [{ k: 'frule', id: rule.id, rule, ...(change.first ? { at: 0 } : {}) }],
+          },
+        ],
+        line: `added a format rule to ${formatRange(g)}${change.first ? ', first in the list' : ''}`,
       };
     }
     case 'clear_conditional_formats': {

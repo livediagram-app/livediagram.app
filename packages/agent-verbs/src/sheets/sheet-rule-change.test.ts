@@ -204,6 +204,20 @@ describe('format rules for agents', () => {
       'Colour Scale',
     ]);
     expect(read[0]).toMatchObject({ range: 'B2:B10', style: { bg: '#f4c7c3', b: true } });
+    // Asked to go first, a rule goes ahead of the rest.
+    const first = run({
+      op: 'conditional_format',
+      range: 'F12:F14',
+      when: { condition: 'empty' },
+      style: { background: '#eeeeee' },
+      first: true,
+    });
+    expect(first).toMatchObject({
+      ok: true,
+      line: 'added a format rule to F12:F14, first in the list',
+    });
+    expect(rulesRead(wb, id).conditionalFormats.map((r) => r.rule)[0]).toBe('Is Empty');
+    run({ op: 'clear_conditional_formats', range: 'F12:F14' });
     expect(run({ op: 'clear_conditional_formats', range: 'B5' })).toMatchObject({
       ok: true,
       line: 'cleared 2 format rules',

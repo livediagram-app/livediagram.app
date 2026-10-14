@@ -29,27 +29,36 @@ export type PlaceholderTone = {
   body: string;
   /** The dashed outline. */
   border: string;
-  /** The icon and label. */
+  /** The heading ("No image yet"). */
   ink: string;
-  /** The outline and ink while an editor's pointer is over it (the double-click target). */
+  /** The line under the heading. */
+  muted: string;
+  /** The outline while an editor's pointer is over it (the double-click target). */
   hoverBorder: string;
-  hoverInk: string;
+  /** The badge and the Select Image button. */
+  accent: string;
+  /** The glyph and the button's label on the accent. */
+  onAccent: string;
 };
 
 export const IMAGE_PLACEHOLDER_TONE: Record<CanvasSurface, PlaceholderTone> = {
   light: {
     body: '#f8fafc', // slate-50
     border: '#64748b', // slate-500: 4.5:1 on the body
-    ink: '#475569', // slate-600: 7.2:1 on the body
+    ink: '#1e293b', // slate-800: 13.9:1 on the body
+    muted: '#475569', // slate-600: 7.2:1 on the body
     hoverBorder: '#0284c7', // brand-600
-    hoverInk: '#0369a1', // brand-700: 5.7:1 on the body
+    accent: '#0369a1', // brand-700
+    onAccent: '#ffffff', // 5.9:1 on the accent
   },
   dark: {
     body: '#1e293b', // slate-800
     border: '#64748b', // slate-500: 3.1:1 on the body
-    ink: '#e2e8f0', // slate-200: 11.9:1 on the body
+    ink: '#f1f5f9', // slate-100: 13.4:1 on the body
+    muted: '#cbd5e1', // slate-300: 9.9:1 on the body
     hoverBorder: '#38bdf8', // brand-400
-    hoverInk: '#bae6fd', // brand-200: 11:1 on the body
+    accent: '#38bdf8', // brand-400
+    onAccent: '#0f172a', // slate-900: 8.9:1 on the accent
   },
 };
 
@@ -62,6 +71,8 @@ const BODY_TINT = 0.9;
 const BODY_SHADE = 0.75;
 // How far a hover pushes the accent toward contrast with the body.
 const HOVER_PUSH = 0.3;
+// How far the line under the heading is washed toward the body (then pushed back to AA).
+const MUTED_WASH = 0.35;
 // A theme fill is used as the body only when it reads as the paper's lightness (the way legibleOn
 // decides which way to push the ink) and the ink's far end (the app's near-black on light paper,
 // white on dark) clears this against it, leaving room for AA ink of any hue.
@@ -114,14 +125,29 @@ export function imagePlaceholderTone(
         ? tint(theme.accent, BODY_TINT)
         : shade(theme.accent, BODY_SHADE);
   const towardContrast = (c: string) => (light ? shade(c, HOVER_PUSH) : tint(c, HOVER_PUSH));
-  const hover = legibleOn(towardContrast(theme.accent), body, PLACEHOLDER_INK_CONTRAST);
+  const ink = legibleOn(theme.text ?? theme.accent, body, PLACEHOLDER_INK_CONTRAST);
+  const accent = legibleOn(theme.accent, body, PLACEHOLDER_BORDER_CONTRAST);
   return {
     body,
-    border: legibleOn(theme.accent, body, PLACEHOLDER_BORDER_CONTRAST),
-    ink: legibleOn(theme.text ?? theme.accent, body, PLACEHOLDER_INK_CONTRAST),
-    hoverBorder: hover,
-    hoverInk: hover,
+    border: accent,
+    ink,
+    muted: legibleOn(
+      light ? tint(ink, MUTED_WASH) : shade(ink, MUTED_WASH),
+      body,
+      PLACEHOLDER_INK_CONTRAST,
+    ),
+    hoverBorder: legibleOn(towardContrast(theme.accent), body, PLACEHOLDER_INK_CONTRAST),
+    accent,
+    onAccent: inkOn(accent),
   };
+}
+
+// The label on a filled accent: white, the app's near-black or black, whichever reads best. One
+// of white and black always clears 4.5:1 against any colour.
+function inkOn(fill: string): string {
+  return ['#ffffff', DEEPEST_INK, '#000000'].reduce((best, c) =>
+    contrastRatio(c, fill) > contrastRatio(best, fill) ? c : best,
+  );
 }
 
 /** The broken-image state ("Image unavailable"): rose, opaque, per paper. */
@@ -145,7 +171,7 @@ const LABEL_SHARE_OF_SIDE = 0.1;
 // The label's bounds, in canvas px: never smaller than the old fixed 10px, never shouting.
 export const PLACEHOLDER_LABEL_MIN_PX = 10;
 export const PLACEHOLDER_LABEL_MAX_PX = 40;
-// "Double-click to upload" is about 11 em wide: it takes one line when the box holds 12 em, else
+// "Image unavailable" is under 11 em wide: it takes one line when the box holds 12 em, else
 // it wraps to two.
 const LABEL_ONE_LINE_EMS = 12;
 // The icon is twice the label, within these bounds and at most this share of the shorter side.
@@ -183,4 +209,100 @@ export function imagePlaceholderMetrics(width: number, height: number): Placehol
   const lines = w - FRAME_PX >= labelPx * LABEL_ONE_LINE_EMS ? 1 : 2;
   const showLabel = h >= iconPx + gapPx + labelPx * LINE_HEIGHT * lines + FRAME_PX;
   return { labelPx, iconPx, gapPx, showLabel };
+}
+
+// The empty placeholder's face (docs/specs/009-elements/images.md "Placeholder rendering"): the
+// app's empty state (a badge, "No image yet", a line, one button) drawn on the canvas, scaled to
+// the box and trimmed to what fits it. Sizes below are at scale 1, in canvas px, and mirror
+// CompactEmptyState's regular size.
+export const EMPTY_FACE = {
+  badgePx: 40,
+  glyphPx: 20,
+  ringPx: 8,
+  gapPx: 8,
+  titlePx: 13,
+  linePx: 12,
+  lineMaxPx: 170,
+  buttonPx: 28,
+  buttonFontPx: 12,
+  padPx: 12,
+} as const;
+const TITLE_H = 17; // 13px at 1.3
+const LINE_H = 32; // two lines of 12px at 1.35
+const TITLE_W = 90; // "No image yet" at 13px semibold, with room
+const BUTTON_W = 104; // "Select Image" at 12px, with its padding and glyph
+// The face never grows past this, and fills at most this share of the box each way so the box
+// still reads as a frame around it.
+const FACE_MAX_SCALE = 3;
+const FACE_FILL = 0.62;
+// A round box (an avatar) holds its face in the inscribed square: its side is side / sqrt(2).
+const INSCRIBED = Math.SQRT1_2;
+// A badge on its own: this share of the usable side, between these bounds.
+const LONE_BADGE_SHARE = 0.6;
+const LONE_BADGE_MIN_PX = 12;
+const LONE_BADGE_MAX_PX = 56;
+
+export type EmptyFaceParts = { title: boolean; line: boolean; button: boolean };
+export type EmptyFaceLayout =
+  | { kind: 'face'; scale: number; parts: EmptyFaceParts }
+  /** Too small for any words: the badge alone (the button itself, for an editor). */
+  | { kind: 'badge'; badgePx: number };
+
+const tierSize = (p: EmptyFaceParts) => {
+  const { badgePx, ringPx, gapPx, buttonPx } = EMPTY_FACE;
+  let h = badgePx + ringPx * 2;
+  let w = badgePx + ringPx * 2;
+  if (p.title) {
+    h += gapPx + TITLE_H;
+    w = Math.max(w, TITLE_W);
+  }
+  if (p.line) {
+    h += 4 + LINE_H;
+    w = Math.max(w, EMPTY_FACE.lineMaxPx);
+  }
+  if (p.button) {
+    h += gapPx + buttonPx;
+    w = Math.max(w, BUTTON_W);
+  }
+  return { w, h };
+};
+
+/**
+ * What of the empty face a `width` x `height` box holds, and at what scale: the whole face where
+ * it fits, then without the line, then the badge with the button (or the heading, for someone who
+ * cannot pick), then the badge alone. `round` for a box clipped to a circle.
+ */
+export function imageEmptyLayout(
+  width: number,
+  height: number,
+  { canPick, round }: { canPick: boolean; round: boolean },
+): EmptyFaceLayout {
+  const w = Math.max(0, width);
+  const h = Math.max(0, height);
+  const side = Math.min(w, h) * INSCRIBED;
+  const uw = (round ? side : w) - EMPTY_FACE.padPx * 2;
+  const uh = (round ? side : h) - EMPTY_FACE.padPx * 2;
+  const tiers: EmptyFaceParts[] = canPick
+    ? [
+        { title: true, line: true, button: true },
+        { title: true, line: false, button: true },
+        { title: false, line: false, button: true },
+      ]
+    : [{ title: true, line: false, button: false }];
+  for (const parts of tiers) {
+    const t = tierSize(parts);
+    if (t.w > uw || t.h > uh) continue;
+    const scale = Math.min(
+      FACE_MAX_SCALE,
+      Math.max(1, Math.min((uw * FACE_FILL) / t.w, (uh * FACE_FILL) / t.h)),
+    );
+    return { kind: 'face', scale: Math.round(scale * 100) / 100, parts };
+  }
+  const usable = round ? side : Math.min(w, h);
+  return {
+    kind: 'badge',
+    badgePx: Math.round(
+      Math.min(LONE_BADGE_MAX_PX, Math.max(LONE_BADGE_MIN_PX, usable * LONE_BADGE_SHARE)),
+    ),
+  };
 }

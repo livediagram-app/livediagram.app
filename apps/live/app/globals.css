@@ -440,6 +440,12 @@
 [data-panel-translucent]:focus-within {
   opacity: 1;
 }
+/* A touch screen has no hover to bring a panel back, so it would stay faded while in use: panels are opaque there. */
+@media (hover: none) {
+  [data-panel-translucent] {
+    opacity: 1;
+  }
+}
 
 /*
  * Reduced motion (accessibility, docs/specs/007-editor/user-preferences.md). Honour BOTH the operating

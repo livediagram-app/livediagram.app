@@ -43,6 +43,9 @@ export type RoomHandlers = {
   // to this socket alone, so being called IS the addressing — there is no id to
   // check against our own, which we do not know (docs/specs/015-api/public-api-and-tokens.md §6).
   onSelectionReleased?: (msg: { elementId: string; by: string }) => void;
+  // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id. Sent to
+  // this socket alone, on every change; emptied when a new socket opens, since nobody follows its new id yet.
+  onFollowers?: (ids: string[]) => void;
   onClose?: () => void;
   // The document went to the Trash (docs/specs/013-workspace/trash.md): the room
   // closed this socket with DOCUMENT_TRASHED_CLOSE and will refuse every
@@ -85,6 +88,8 @@ type RoomConnectOptions = RoomAuthOptions & {
   // the first one again was refused, and a team member or signed-in owner lost the room for the rest
   // of the session. Called before each reconnect of a session that used a ticket.
   mintTicket?: () => Promise<string | null>;
+  // Who we follow, read at every (re)connect: the room keeps a follow on the socket, so a new socket says it again.
+  readFollowing?: () => string | null;
 };
 
 // Build the room WebSocket auth query string. Browsers can't set custom
@@ -305,6 +310,17 @@ export function connectRoom(
         ws.send(JSON.stringify({ kind: 'sync', epoch: lastEpoch, lastSeq } satisfies RoomOutgoing));
       }
       opened = true;
+      // A new socket is a new presence id: nobody follows it yet, and our own follow is said again.
+      handlers.onFollowers?.([]);
+      const following = options.readFollowing?.();
+      if (following) {
+        ws.send(
+          JSON.stringify({
+            kind: 'op',
+            op: { kind: 'follow', target: following },
+          } satisfies RoomOutgoing),
+        );
+      }
       const held = outbox;
       outbox = [];
       for (const msg of held) ws.send(JSON.stringify(msg));
@@ -321,6 +337,7 @@ export function connectRoom(
           handlers.onPresence(frame.participants, frame.agents);
         } else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
         else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
+        else if (msg.kind === 'followers') handlers.onFollowers?.(msg.ids);
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
         else if (msg.kind === 'format') {
           noteServerDocumentFormat(msg.format);

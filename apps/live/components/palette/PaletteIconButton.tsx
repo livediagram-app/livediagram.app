@@ -87,6 +87,8 @@ type IconButtonProps = {
   // its glyphs are a dense gallery where per-tile names would be noise (and
   // it stays a 6-up grid), unlike the shape / tool / device grids.
   hideCaption?: boolean;
+  // A Toolbar strip tile (PaletteTile `compact`): a phone's strip draws it a little narrower, so more fit in view.
+  stripTile?: boolean;
   // Override the caption text (default is derived from `label`). Used where
   // the derived name is too long for the tile, e.g. "Bubble".
   caption?: string;
@@ -132,6 +134,7 @@ export function IconButton({
   onDragEnd,
   hint,
   hideCaption,
+  stripTile = false,
   caption: captionOverride,
   dragKind,
   filled,
@@ -236,7 +239,7 @@ export function IconButton({
       }}
       className={
         hideCaption
-          ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
+          ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${stripTile ? 'phone:w-8' : ''} ${tone}`
           : minimalChrome
             ? // Keeps its grid cell's width, so the icon stays centred where the
               // captioned tile had it.

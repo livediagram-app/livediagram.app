@@ -566,7 +566,8 @@ describe('DocumentRoom op-role enforcement', () => {
   const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview', 'focus-here'];
   // `poll-answer` relays only once the room accepts it for a running poll, under the key the room chose
   // (docs/specs/012-collaboration/vote-integrity.md); its own tests below and in the live poll block pin that.
-  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer'];
+  // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
+  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer', 'follow'];
   // A reaction is taking part (docs/specs/013-workspace/share-roles.md): a Participant's, never a Viewer's.
   const PARTICIPANT_PRESENCE_KINDS = ['reaction'];
   for (const kind of PARTICIPANT_PRESENCE_KINDS) {
@@ -2695,5 +2696,43 @@ describe('DocumentRoom /purge', () => {
     expect(ws.closed).toEqual([4004, 'document-purged']);
     expect(state.store.size).toBe(0);
     expect(state.alarms.at(-1)).toBeNull();
+  });
+});
+
+// docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom": the room keeps who follows whom and tells
+// each person, on their own socket, who follows them. Nobody else hears it.
+describe('DocumentRoom follow', () => {
+  const followers = (ws: FakeSocket) =>
+    ws.sent
+      .map((s) => JSON.parse(s))
+      .filter((m) => m.kind === 'followers')
+      .map((m) => m.ids);
+
+  it('tells the person followed, and only them, as follows start, move, stop and leave', () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    const c = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'view'));
+    seedSession(state, c, presence('p-c', 'edit'));
+
+    sendFrame(room, b, { kind: 'op', op: { kind: 'follow', target: 'p-a' } });
+    sendFrame(room, c, { kind: 'op', op: { kind: 'follow', target: 'p-a' } });
+    expect(followers(a)).toEqual([['p-b'], ['p-b', 'p-c']]);
+    // Nothing relayed to anyone else.
+    expect(b.sent.concat(c.sent).some((s) => s.includes('"follow"'))).toBe(false);
+
+    // c moves to b: a loses one, b gains one.
+    sendFrame(room, c, { kind: 'op', op: { kind: 'follow', target: 'p-b' } });
+    expect(followers(a).at(-1)).toEqual(['p-b']);
+    expect(followers(b)).toEqual([['p-c']]);
+
+    // b stops; then c leaves the room.
+    sendFrame(room, b, { kind: 'op', op: { kind: 'follow', target: null } });
+    expect(followers(a).at(-1)).toEqual([]);
+    state.sockets = state.sockets.filter((s) => s !== asWs(c));
+    room.webSocketClose(asWs(c));
+    expect(followers(b).at(-1)).toEqual([]);
   });
 });

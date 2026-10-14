@@ -5,13 +5,15 @@
 //
 // Inter is the one font and the default for every family: resvg has no system fonts in a Worker and must not
 // read them in Node, or the same drawing would come out differently on every machine. Without a font buffer it
-// would draw no text at all.
+// would draw no text at all. Its Bold draws every weight past 500 (a title, a sheet's header row, a total), which
+// Regular alone would draw regular.
 
 import { initWasm, Resvg } from '@resvg/resvg-wasm';
 
 export type PngLoaders = {
   wasm: () => Promise<WebAssembly.Module | ArrayBuffer | Uint8Array>;
   font: () => Promise<Uint8Array | ArrayBuffer>;
+  bold: () => Promise<Uint8Array | ArrayBuffer>;
 };
 
 export type RenderedPng = { png: Uint8Array; width: number; height: number };
@@ -33,14 +35,16 @@ export function createPngRenderer(loaders: PngLoaders): {
    *  bigger drawing is drawn smaller rather than allocating a pixel buffer the Worker cannot hold. */
   renderPng(svg: string, scale?: number, maxSide?: number): Promise<RenderedPng>;
 } {
-  let font: Promise<Uint8Array> | null = null;
+  let fonts: Promise<Uint8Array[]> | null = null;
   return {
     async renderPng(svg, scale = 1, maxSide) {
       await ensureWasm(loaders.wasm);
-      font ??= loaders.font().then((bytes) => new Uint8Array(bytes));
+      fonts ??= Promise.all([loaders.font(), loaders.bold()]).then((all) =>
+        all.map((bytes) => new Uint8Array(bytes)),
+      );
       const options = {
         font: {
-          fontBuffers: [await font],
+          fontBuffers: await fonts,
           loadSystemFonts: false,
           defaultFontFamily: PNG_FONT_FAMILY,
         },

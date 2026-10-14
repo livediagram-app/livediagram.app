@@ -70,7 +70,7 @@ export function ExplorerRail({
       onClick={onNewDocument}
       className={`flex cursor-pointer items-center justify-center gap-1.5 bg-brand-700 font-semibold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:bg-brand-600 dark:hover:bg-brand-500 ${
         phone
-          ? 'h-11 shrink-0 whitespace-nowrap rounded-full px-4 text-[13px]'
+          ? 'relative h-9 shrink-0 touch-target-y whitespace-nowrap rounded-lg px-3 text-[13px]'
           : 'mb-3 h-9 w-full rounded-lg text-xs'
       }`}
     >
@@ -118,7 +118,7 @@ export function ExplorerRail({
           {...dropProps}
           className={`flex cursor-pointer items-center gap-2 text-left text-xs transition focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500 ${
             phone
-              ? 'h-11 whitespace-nowrap rounded-full px-3.5 text-[13px]'
+              ? 'relative h-9 touch-target-y whitespace-nowrap rounded-lg px-2.5 text-[13px]'
               : 'h-8 w-full rounded-md px-2'
           } ${
             on
@@ -156,12 +156,12 @@ export function ExplorerRail({
       onKeyDown={onKeyDown}
       className={
         phone
-          ? 'shrink-0 overflow-x-auto px-3 pb-2.5 pt-1 [scrollbar-width:none]'
+          ? 'shrink-0 overflow-x-auto px-2.5 py-1 [scrollbar-width:none]'
           : 'scrollbar-slim flex w-44 shrink-0 flex-col overflow-y-auto border-r border-slate-200 px-1.5 py-2 dark:border-slate-700/70'
       }
     >
       {phone ? (
-        <ul className="flex gap-2">
+        <ul className="flex gap-1.5">
           {newDocument ? <li className="shrink-0">{newDocument}</li> : null}
           {groups.flatMap((g) => g.sections).map(entry)}
         </ul>

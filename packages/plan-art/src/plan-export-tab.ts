@@ -20,7 +20,8 @@ export type PlanImage = {
 };
 
 const NO_ART: ReadonlyMap<string, string> = new Map();
-// The room kept round a Sheet's last chart, and the most a Sheet tab's image grows to for its charts (a side, in px).
+// The room kept round a Sheet's last chart, and the most a Sheet tab's image grows to for its cells and charts (a
+// side, in px).
 const SHEET_EDGE = 24;
 const SHEET_IMAGE_MAX = 4000;
 
@@ -43,6 +44,8 @@ type SheetEl = Element & {
 type PlanImageInput = Omit<DashboardExportInput, 'tab'> & {
   // Whether a Sheet shows its row and column headers (its layout, from the sheet store); shown when unknown.
   sheetHeads?: (sheetId: string) => boolean;
+  // The grid a Sheet's cells fill, in px (@livediagram/sheets' sheetContentSize); null or unknown keeps its size.
+  sheetContent?: (sheetId: string) => { width: number; height: number } | null;
 };
 
 // The image of a Plan tab, or null for any other tab (drawn as its canvas, as ever).
@@ -70,10 +73,15 @@ export function planImageOf(tab: Tab, input: PlanImageInput): PlanImage | null {
         ? ({ ...chart, x: left + chart.sheetAnchor.x, y: top + chart.sheetAnchor.y } as Element)
         : (chart as Element),
     );
-    // The Sheet grows to take in the charts it holds (as filling the tab, it shows them), within the image limit; a
-    // chart past that is out of view.
+    // The Sheet grows to take in its filled cells and the charts it holds (as filling the tab, it shows them), within
+    // the image limit; a chart past that is out of view.
     let right = sheet.x + sheet.width;
     let bottom = sheet.y + sheet.height;
+    const content = input.sheetContent?.(sheetId);
+    if (content) {
+      right = Math.max(right, left + content.width);
+      bottom = Math.max(bottom, top + content.height);
+    }
     own.forEach((chart, i) => {
       if (!chart.sheetAnchor) return;
       const placed = charts[i] as Element & { x: number; y: number };

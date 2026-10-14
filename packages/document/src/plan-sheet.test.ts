@@ -84,6 +84,30 @@ describe('the static render', () => {
     expect(svg).toContain('font-family="&#39;Lora&#39;');
     expect(svg.match(/font-family="&#39;/g)).toHaveLength(1);
   });
+  it('draws a dropdown chip as a pill in its option’s colour, inked to read, and an arrow dropdown’s chevron', () => {
+    const cells = (extra: SheetRenderModel['cells']) =>
+      svgPlanSheet(sheet, { ...MODEL, cells: extra }, 'light' as never);
+    const dark = cells([
+      { r: 0, c: 0, text: 'Won', align: 'l', valign: 'm', chip: { color: '#166534' } },
+    ]);
+    expect(dark).toMatch(
+      /<rect x="[\d.]+" y="[\d.]+" width="[\d.]+" height="[\d.]+" rx="[\d.]+" fill="#166534"\/>/,
+    );
+    expect(dark).toContain('fill="#ffffff"');
+    expect(dark).toContain('stroke-linecap="round"');
+    const light = cells([
+      { r: 0, c: 0, text: 'Lead', align: 'r', valign: 'm', chip: { color: '#fef08a' } },
+    ]);
+    expect(light).toContain('fill="#1f2937"');
+    // A chip's text starts inside its pill, whatever the cell's alignment.
+    expect(/<text[^>]*>Lead</.exec(light)?.[0]).not.toContain('text-anchor');
+    const plain = cells([{ r: 0, c: 0, text: 'Other', align: 'l', valign: 'm', chip: {} }]);
+    expect(plain).toMatch(/rx="[\d.]+" fill="#f1f5f9"/);
+    const arrow = cells([{ r: 0, c: 0, text: 'North', align: 'r', valign: 'm', arrow: true }]);
+    expect(arrow).toContain('stroke-linecap="round"');
+    expect(/<text[^>]*>North</.exec(arrow)?.[0]).toContain('text-anchor="end"');
+  });
+
   it('leaves out the gridlines and the headers when the sheet hides them', () => {
     const shown = svgPlanSheet(sheet, MODEL, 'light' as never);
     const hidden = svgPlanSheet(

@@ -1,8 +1,9 @@
 'use client';
 
-import { memo, useMemo, type CSSProperties } from 'react';
+import { memo, useMemo } from 'react';
 import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx, type ImageElement } from '@livediagram/document';
 import { useCanvasTheme, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { ImageEmptyFace } from '@/components/canvas/ImageEmptyFace';
 import {
   IMAGE_BROKEN_TONE,
   IMAGE_SKELETON_BODY,
@@ -41,16 +42,14 @@ type ImageElementViewProps = {
   // Share code carried by the visitor, when any. Null for the owner
   // session. Drives the X-Share-Code header on the fetch.
   shareCode: string | null;
-  // True when the editor exposes an image-picker affordance for this
-  // session (signed-in editor / edit-role visitor). False for
-  // view-role visitors. The actual double-click handler that opens
-  // the picker lives in BoxedElementView; this flag only drives the
-  // empty-state placeholder copy. A plain boolean (rather than a
-  // pre-bound callback) keeps the memo's shallow equality cheap
-  // and stable.
-  canOpenPicker: boolean;
+  // Opens the image picker for an element: present when this session
+  // may pick (owner / edit-role visitor), absent for view-role visitors.
+  // Drives the empty placeholder's Select Image button; the double-click
+  // that opens it too lives in BoxedElementView. useEditorImages keeps
+  // it reference-stable, so the memo's shallow equality still holds.
+  onOpenPicker?: (elementId: string) => void;
   // The element's resolved font stack (its own, else the tab's theme font): the placeholder's
-  // label is set in it, as its page's text is. Undefined falls back to the app's sans.
+  // words are set in it, as its page's text is. Undefined falls back to the app's sans.
   fontFamily?: string;
 };
 
@@ -59,7 +58,7 @@ function ImageElementViewImpl({
   ownerId,
   documentId,
   shareCode,
-  canOpenPicker,
+  onOpenPicker,
   fontFamily,
 }: ImageElementViewProps) {
   const { imageId } = element;
@@ -92,47 +91,21 @@ function ImageElementViewImpl({
   );
 
   if (!imageId) {
-    // Empty placeholder. Double-click opens the picker for editors
-    // so a single click (and the drag that follows it) can still
-    // move / resize the placeholder without spawning the modal.
-    // View-role visitors see the same hint with no picker.
-    // text-center + a side gutter because the hint WRAPS in a narrow box: the
-    // flex centring only centres the text block, so a wrapped second line sat
-    // hard left of it, which on a round avatar read as badly misaligned.
-    // In the element's (or tab's theme) font, as its page's text is; the app's sans otherwise.
-    const metrics = imagePlaceholderMetrics(element.width, element.height);
-    const style = {
-      ...radiusStyle,
-      gap: metrics.gapPx,
-      fontFamily,
-      '--ph-body': tone.body,
-      '--ph-border': tone.border,
-      '--ph-ink': tone.ink,
-      '--ph-hover-border': tone.hoverBorder,
-      '--ph-hover-ink': tone.hoverInk,
-    } as CSSProperties;
-    const label = canOpenPicker ? 'Double-click to upload' : 'No image';
+    // Empty: the app's empty state on the canvas, with a Select Image button. Double-clicking the
+    // box opens the picker too (BoxedElementView), and a single click still selects, so the
+    // placeholder can be moved and resized. Someone who cannot pick sees the face with no button.
     return (
-      <div
-        data-image-placeholder={surface}
-        className={`flex h-full w-full flex-col items-center justify-center overflow-hidden rounded border-2 border-dashed border-[var(--ph-border)] bg-[var(--ph-body)] px-2 text-center font-sans text-[var(--ph-ink)] ${
-          canOpenPicker
-            ? 'cursor-pointer transition hover:border-[var(--ph-hover-border)] hover:text-[var(--ph-hover-ink)]'
-            : ''
-        }`}
-        style={style}
-        aria-label={metrics.showLabel ? undefined : label}
-      >
-        <ImageIcon size={metrics.iconPx} />
-        {metrics.showLabel ? (
-          <span
-            className="font-medium not-italic leading-tight"
-            style={{ fontSize: metrics.labelPx }}
-          >
-            {label}
-          </span>
-        ) : null}
-      </div>
+      <ImageEmptyFace
+        elementId={element.id}
+        width={element.width}
+        height={element.height}
+        round={element.borderRadius === 'full'}
+        tone={tone}
+        surface={surface}
+        radius={radius}
+        fontFamily={fontFamily}
+        onOpenPicker={onOpenPicker}
+      />
     );
   }
 
@@ -206,16 +179,6 @@ function ImageElementViewImpl({
 }
 
 export const ImageElementView = memo(ImageElementViewImpl);
-
-function ImageIcon({ size }: { size: number }) {
-  return (
-    <Glyph size={size} units={24}>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="8.5" cy="9" r="1.5" />
-      <path d="M3.5 17l5-5 4 4 3-3 5 5" />
-    </Glyph>
-  );
-}
 
 function BrokenIcon({ size }: { size: number }) {
   return (

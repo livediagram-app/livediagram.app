@@ -77,7 +77,9 @@ function PromptShell({
         className="flex items-center gap-3 rounded-lg bg-amber-50/70 py-1.5 pl-3 pr-1.5 text-xs ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:ring-amber-400/25"
       >
         <p className="min-w-0 flex-1 leading-snug text-slate-600 dark:text-slate-300">
-          <span className="font-semibold text-slate-800 dark:text-white">{title}.</span> {body}
+          <span className="font-semibold text-slate-800 dark:text-white">{title}.</span>{' '}
+          {/* On a phone a note with an action keeps to its title and the action, so it stays one line. */}
+          <span className={action ? 'max-sm:hidden' : undefined}>{body}</span>
         </p>
         {action}
         <button
@@ -156,7 +158,7 @@ function SignInPromptDisabled({ fallback, bar = false }: SignInPromptProps) {
   return (
     <PromptShell
       bar={bar}
-      title={bar ? 'Saved in this browser' : 'Documents saved to this browser'}
+      title={bar ? 'Browser only' : 'Documents saved to this browser'}
       body={
         bar
           ? 'Clearing site data deletes it.'

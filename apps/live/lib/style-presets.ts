@@ -37,6 +37,7 @@ import {
   type Padding,
   type ShapeKind,
   takesChartPalette,
+  isLegendShape,
   supportsRotation,
   type ChartPaletteId,
   type CodeThemeId,
@@ -107,9 +108,11 @@ export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
 // A chart's palette (docs/specs/009-elements/pie-chart.md). One field, like the code block's scheme: the
 // ramp is resolved at render, so this never touches the data and a slice the
 // user coloured deliberately keeps its colour.
-export function applyChartPaletteToEl(el: Element, id: ChartPaletteId): Element {
-  if (el.type !== 'shape' || !takesChartPalette(el.shape)) return el;
-  return { ...el, chartPalette: id };
+// A Legend takes one too, from its Legend section, so a legend and a chart set to the same palette stay in step;
+// `null` puts either back on the theme's ramp.
+export function applyChartPaletteToEl(el: Element, id: ChartPaletteId | null): Element {
+  if (el.type !== 'shape' || !(takesChartPalette(el.shape) || isLegendShape(el.shape))) return el;
+  return { ...el, chartPalette: id ?? undefined };
 }
 
 // A code block's colour scheme (docs/specs/009-elements/code-block.md). Its own kind of preset: the card

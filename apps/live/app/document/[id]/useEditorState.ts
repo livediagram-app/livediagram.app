@@ -753,7 +753,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setRemoteAvatars,
     remoteViewports,
     setRemoteViewports,
+    followerIds,
+    setFollowerIds,
   } = usePresenceState();
+  // Who we follow, for the room connection to say again on a new socket; filled once useFollowMe exists below.
+  const followingRef = useRef<string | null>(null);
   // Local laser trail — held in state so the overlay re-renders when
   // we append a point, but mutations stay cheap by always producing a
   // bounded array.
@@ -1274,6 +1278,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       if (tabId === activeId) toast.info(peerModeSwitchMessage(name, mode));
     },
     readFacilitatorToken: facilitator.readFacilitatorToken,
+    setFollowerIds,
+    readFollowing: () => followingRef.current,
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,
     receivePollEnd: livePoll.receivePollEnd,
@@ -1720,7 +1726,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     viewport,
     onFollowTab: setActiveId,
     onNotice: (message) => toast.info(message),
+    followerIds,
+    nameOf: (id) => livePresence.find((p) => p.id === id)?.name ?? 'Someone',
+    sendFollow: (target) => roomRef.current?.send({ kind: 'op', op: { kind: 'follow', target } }),
   });
+  useAssignRef(followingRef, followMe.followingId);
 
   // A tab we are about to land on already aimed, so the tab-entry
   // fit-to-screen below leaves it alone (it runs a frame later and would
@@ -1975,6 +1985,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitTabs,
     activeId,
     switchActive: editorMode.setMode,
+    newTabIn: isStructureReadOnly ? undefined : (mode) => newTabInRef.current?.(mode),
   });
   // Illustrate mode's pages: their edits, and the view centred on them.
   // Set once the documents' hook exists (below): a new document's title takes the caret.
@@ -2789,7 +2800,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     imagePickerOpenFor,
     imageContext,
     addImageFromGallery,
-    openImagePickerFor,
     applyImageToElement,
     removeImageFromElement,
     refreshRecentImages,
@@ -2865,7 +2875,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelectedId,
     setMultiSelectedIds,
     setEditingId,
-    openImagePickerFor,
     zoomRef,
     styleNewElement: styleMemory.styleNewElement,
     onPlanCardPlace: placePaletteCard,

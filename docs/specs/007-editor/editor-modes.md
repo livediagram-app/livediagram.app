@@ -112,8 +112,8 @@ Facilitating, Start Illustrating or Start Drawing (a pen in hand) ([Template sta
 Start Planning for Plan, with no Quick Start over any of them. A session that cannot add
 tabs (a tab-scoped link, docs/specs/013-workspace/tab-scoped-share-links.md) is offered no new tab: those rows show,
 inert (`aria-disabled`), and ask nothing. **Shift+D** steps only through the modes beside the tab's
-own (Diagram, Draw, Facilitate, Illustrate; on a Plan tab it does nothing), and the tab menu's Mode lists only those
-(none on a Plan tab).
+own (Diagram, Draw, Facilitate, Illustrate; on a Plan tab it does nothing). The tab menu's Mode lists all five, as
+the switch does, a mode across Plan's line asking for a new tab the same way.
 
 **Except on an empty tab.** A general tab with no elements has nothing either side's tools could not hold, so it
 crosses the line freely, into Plan and out of it, as one plain switch (`crossPlan` on `useEditorMode`): the mode
@@ -169,12 +169,13 @@ first element closes the line again. A Board, Sheet or Dashboard tab keeps its k
 - **A new document opens in Diagram** unless its maker chose otherwise: a new document's Mode step on `/new` picks
   its mode's blank, so the document opens in that mode ([New document route](new-document-route.md)). An import that
   sets its own mode wins.
-- **Mode in the tab menu:** the tab menu holds a **Mode** group of full-width rows for editors (straight in the menu,
-  not behind a submenu), listing every editor mode beside the tab's own (Diagram, Draw, Facilitate, Illustrate; Plan
-  alone on a Plan tab, so no rows there: "Plan stands apart") as a radio choice with the tab's mode checked, each its
-  glyph and name only (no description line, so the menu stays short).
-  Choosing one switches the tab, exactly as the switch does (one tab edit, one undo step).
-  Choosing the checked mode does nothing. It is a phone's way to switch. The submenu lists modes
+- **Mode in the tab menu:** the tab menu holds a **Mode** section for editors, closed until opened as every menu
+  section is (on a desktop and a phone), listing **every** editor mode as a radio choice with the tab's mode checked,
+  each its glyph and name only (no description line, so the menu stays short). Choosing one beside the tab's own
+  switches the tab, exactly as the switch does (one tab edit, one undo step). Choosing one across Plan's line ("Plan
+  stands apart": Plan from another mode, or another mode from a Plan tab) asks the switch's question, "Open a New
+  Plan Tab?", and opens one if confirmed; with no new tab to offer the row shows, inert. Choosing the checked mode
+  does nothing. It is a phone's way to switch. The submenu lists modes
   from one catalogue, so a further mode joins it as one entry. Not offered on event-storming
   boards, to a visitor, or on a locked tab.
 - **The tab pill shows the tab's mode.** Each tab pill leads with the icon of its mode (the same
@@ -317,31 +318,31 @@ Illustrate's **Write** leaves out **Page** (the page is the canvas there) and
 (they organise a diagram, not a visual page), and its **Components** leaves
 out **Entity**; Diagram's
 **Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
-Docs, Website), keeping Image and Avatar. Facilitate's **Write** also leaves out **Page** and
-**Annotation**, its **Draw** leaves out **Shape Pen** and **Polygon**, and its **Build** leaves out
-**Lane** and **Timeline**: a session needs none of them. Facilitate offers the Collaborate elements as
+Docs, Website), keeping Image and Avatar. Facilitate joins **Write** and **Build** as one category, **Write &
+Build** (Text, Sticky note, Table, Frame: no Page, Annotation, Mind node, Flowchart, Lane, Timeline or Sankey), and
+its **Draw** leaves out **Shape Pen** and **Polygon**: a session needs none of them. Facilitate offers the Collaborate elements as
 six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** and **Navigate**
 ("Collaborate's six" below).
 
-| Category          | Diagram | Illustrate | Plan | Facilitate |
-| ----------------- | ------- | ---------- | ---- | ---------- |
-| Popular           | yes     | yes        | no   | yes        |
-| Plan's seven      | no      | no         | yes  | no         |
-| Logo              | no      | logo page  | no   | no         |
-| Shapes            | yes     | yes        | no   | yes        |
-| My shapes         | yes     | yes        | no   | yes        |
-| Write             | yes     | yes        | no   | yes        |
-| Draw              | yes     | no         | no   | yes        |
-| Build             | yes     | yes        | no   | yes        |
-| Components        | no      | yes        | no   | no         |
-| Devices           | no      | yes        | no   | no         |
-| Event Storming    | board   | no         | no   | no         |
-| Icons             | yes     | yes        | no   | yes        |
-| Stickers          | no      | yes        | no   | yes        |
-| Tech              | yes     | no         | no   | no         |
-| Media             | yes     | yes        | no   | yes        |
-| Data              | no      | yes        | no   | no         |
-| Collaborate's six | no      | no         | no   | yes        |
+| Category          | Diagram | Illustrate | Plan | Facilitate          |
+| ----------------- | ------- | ---------- | ---- | ------------------- |
+| Popular           | yes     | yes        | no   | yes                 |
+| Plan's seven      | no      | no         | yes  | no                  |
+| Logo              | no      | logo page  | no   | no                  |
+| Shapes            | yes     | yes        | no   | yes                 |
+| My shapes         | yes     | yes        | no   | yes                 |
+| Write             | yes     | yes        | no   | yes (Write & Build) |
+| Draw              | yes     | no         | no   | yes                 |
+| Build             | yes     | yes        | no   | in Write            |
+| Components        | no      | yes        | no   | no                  |
+| Devices           | no      | yes        | no   | no                  |
+| Event Storming    | board   | no         | no   | no                  |
+| Icons             | yes     | yes        | no   | yes                 |
+| Stickers          | no      | yes        | no   | yes                 |
+| Tech              | yes     | no         | no   | no                  |
+| Media             | yes     | yes        | no   | yes                 |
+| Data              | no      | yes        | no   | no                  |
+| Collaborate's six | no      | no         | no   | yes                 |
 
 Illustrate offers **Logo** only while the tab has a logo page, and turns to it when one is added
 or pressed into ([Logo pages](logo-pages.md#the-logo-palette)).
@@ -353,18 +354,21 @@ Plan shows no palette: its boards, sheets and dashboards carry their own tools
   event-storming board
   (the layout's `landing`). Switching mode re-lands the palette there, so it
   never shows a category the new mode leaves out.
-- **Popular** is the landing category of every mode but Plan: twelve tiles that mode is most
-  often built from, listed in its layout entry, fixed (not edited or
-  reordered). It replaced the per-browser **Favourites**
+- **Popular** is the landing category of every mode but Plan: the tiles that mode is most
+  often built from (twelve at most), listed in its layout entry, fixed (not edited or
+  reordered). A layout may put a divider of its own between two entries (`DIVIDE`), shown on the strip as a
+  tile's own fixed divider is. An entry may be an **opener** instead of a tile (`palette-openers`): it stands for a whole category, or
+  one group of a catalogue, and on the strip opens it in a popover under itself, drawn with a chevron as the
+  catalogue groups are ([Toolbar layout](toolbar-layout.md) "More"); in the Palette panel it moves the palette to
+  that category. An opener places nothing and is not a search result. It replaced the per-browser **Favourites**
   ([Palette Favourites](../010-palette/palette-favourites.md), removed).
-  - **Diagram**: Square, Circle, Diamond, Text, Arrow, Frame, Sticky note,
-    Image, Shape pen, Table, Code block, Entity (what were the default
-    Favourites).
+  - **Diagram**: Square, Circle, Diamond, Text, Arrow, Frame, Mind node, Flowchart node, Sankey, Table, the
+    **AWS** opener (Technology's AWS marks), Entity.
   - **Illustrate**: Text, Square, Circle, Image, Speech bubble, Pie, Bar,
     Donut, Stat row, Process, Timeline, Callout, each also reachable from
     another category the mode offers.
-  - **Facilitate**: Sticky note, Text, Frame, Arrow, Timer button, Vote button, Poll button,
-    Reveal zone, Agenda, Idea box, Q&A board, Temperature check
+  - **Facilitate**: Square, Sticky note, Text, Frame, Arrow, then, behind a divider, the session kit as four openers: **Ask**, **Tools**,
+    **Record**, **React** (each its Collaborate category)
     ([Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette)).
 - Elements already on the canvas are untouched: narrowing the palette only
   changes what is offered to add.
@@ -464,9 +468,9 @@ something on it asks first:
 ## Every mode, always offered
 
 Every mode of the catalogue is offered to everyone: the mode switch and the template picker's
-mode filter always list all five, and a tab always opens in its stored mode. The tab menu's Mode
-and Shift+D keep to the modes beside the tab's own ("Plan stands apart"), all five on an empty
-tab for Shift+D.
+mode filter always list all five, and a tab always opens in its stored mode. Shift+D keeps to the modes
+beside the tab's own ("Plan stands apart"), all five on an empty tab; the tab menu's Mode lists all five, a mode
+across the line offering a new tab.
 
 Illustrate and Plan each had a switch in **Settings › Experimental** while they
 were new. Both graduated on 2026-10-06, and the **Experimental** category went

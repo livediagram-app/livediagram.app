@@ -87,6 +87,7 @@ describe('EMBEDDED_WORKS', () => {
     ['webp_dec.0abc.wasm', ['libwebp']],
     ['dd4dd8881e2df4e64203b5c0ae65e1648ab55207-index_bg.wasm', ['resvg', 'tiny-skia']],
     ['7237d9cf55f177702066a28a4dde1e4c7e8ab576-Inter-Regular.ttf', ['inter']],
+    ['0f3a9c2e5d71b8a4c6e2f0d9b3a7c5e1f8d2b6a4-Inter-Bold.otf', ['inter']],
   ])('covers %s', (asset, ids) => {
     const hits = EMBEDDED_WORKS.filter(
       (w) => 'assets' in w.trigger && w.trigger.assets.test(asset),

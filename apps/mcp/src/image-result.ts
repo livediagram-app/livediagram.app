@@ -34,6 +34,7 @@ import {
   resolveIconPreviewArt as resolveIconExportArt,
   resolveStickerPreviewArt as resolveStickerArt,
 } from '@livediagram/icons/resolve';
+import { chartsReadLive } from '@livediagram/agent-verbs';
 import { svgToPngBase64 } from './render';
 import { planPreviewFor } from './plan-preview';
 import { apiFetch, apiJson } from './api';
@@ -82,10 +83,13 @@ export type ImageBlock = { type: 'image'; data: string; mimeType: string };
 async function planContentFor(
   tab: Tab,
   auth: { env: Env; token: string; documentId?: string } | undefined,
+  read: SheetsResponse['sheets'] | undefined,
 ): Promise<{
   items?: ReadonlyMap<string, Item>;
   itemTypes?: readonly ItemTypeDef[];
   sheets?: ReadonlyMap<string, SheetRenderModel>;
+  // The sheets read, for the charts linked to them to draw what their cells hold now.
+  sheetJson?: SheetsResponse['sheets'];
 }> {
   // Plan views (metrics, charts) read the cards too, as a Dashboard's do.
   const plan = tab.elements.some(
@@ -94,16 +98,23 @@ async function planContentFor(
       (el.shape === 'plan-board' || el.shape === 'plan-card' || el.shape === 'plan-view'),
   );
   const frames = sheetFramesOf(tab.elements as never);
-  if ((!plan && frames.length === 0) || !auth?.documentId) return {};
+  // A chart linked to a sheet reads it live, framed on this tab or not.
+  const charted = tab.elements.flatMap((el) => {
+    const source = (el as { chartSource?: { sheetId?: string } }).chartSource;
+    return source?.sheetId ? [source.sheetId] : [];
+  });
+  if ((!plan && frames.length === 0 && charted.length === 0) || !auth?.documentId) return {};
   const path = `/documents/${encodeURIComponent(auth.documentId)}`;
-  const ids = [...new Set(frames.map((f) => f.sheetId))].slice(0, 50);
-  const sheets = ids.length
-    ? await apiJson<SheetsResponse>(
-        auth.env,
-        auth.token,
-        `${path}/sheets?ids=${ids.join(',')}`,
-      ).catch(() => null)
-    : null;
+  const ids = [...new Set([...frames.map((f) => f.sheetId), ...charted])].slice(0, 50);
+  const sheets = read
+    ? { sheets: read }
+    : ids.length
+      ? await apiJson<SheetsResponse>(
+          auth.env,
+          auth.token,
+          `${path}/sheets?ids=${ids.join(',')}`,
+        ).catch(() => null)
+      : null;
   const sheetCards = !!sheets?.sheets.some((s) =>
     s.cells.some((c) => c.i && 'f' in c.i && c.i.f.t.includes('CARD')),
   );
@@ -124,6 +135,7 @@ async function planContentFor(
   return {
     ...(items ? { items: new Map(items.items.map((i) => [i.id, i])) } : {}),
     ...(plan ? { itemTypes } : {}),
+    ...(sheets ? { sheetJson: sheets.sheets } : {}),
     ...(sheets
       ? {
           sheets: renderModelsForTab(sheets.sheets, frames, {
@@ -155,7 +167,7 @@ export async function tabPreview(
   const drawn = laidOut?.tab ?? tab;
   const [resolveImageHref, content] = await Promise.all([
     auth ? buildImageResolver(auth.env, auth.token, drawn) : undefined,
-    planContentFor(drawn, auth),
+    planContentFor(drawn, auth, laidOut?.sheets),
   ]);
   // A Board tab's board scrolls on its tab, so its preview grows to every card rather than cutting the rest off.
   const shown =
@@ -177,12 +189,17 @@ export async function tabPreview(
           ),
         }
       : drawn;
+  // Charts linked to a sheet draw what its cells hold now, not what they were saved with.
+  const { sheetJson, ...drawWith } = content;
+  const live = sheetJson
+    ? { ...shown, elements: chartsReadLive(shown.elements, sheetJson) }
+    : shown;
   const png = await svgToPngBase64(
-    renderElementsToSvg(shown, {
+    renderElementsToSvg(live, {
       resolveImageHref,
       resolveIconArt: resolveIconExportArt,
       resolveStickerArt,
-      ...content,
+      ...drawWith,
       ...(laidOut ? { resolvePlanArt: laidOut.artWith(content) } : {}),
     }),
   );

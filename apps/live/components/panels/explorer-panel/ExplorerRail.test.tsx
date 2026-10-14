@@ -78,7 +78,8 @@ describe('ExplorerRail', () => {
   it('is a row of chips on a phone, without group titles', () => {
     show({ phone: true });
     expect(screen.queryAllByRole('heading')).toHaveLength(0);
-    expect(screen.getByRole('button', { name: 'Home' }).className).toContain('h-11');
+    // 36 px to the eye, a 44 px tap through touch-target-y (the row's py-1 keeps the pad unclipped).
+    expect(screen.getByRole('button', { name: 'Home' }).className).toContain('touch-target-y');
   });
 
   it('swaps titles for hairlines under Minimal chrome', () => {

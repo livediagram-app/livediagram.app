@@ -689,15 +689,26 @@ document's Plan cards when a formula reads them.
   currency), `insert_rows` / `insert_cols` `{ at, count, side }`, `delete_rows` `{ rows }`, `delete_cols`
   `{ cols }`, `rename` `{ title }`, `sort` `{ by, range?, descending, header }`, `freeze` `{ rows, cols }`, `validate`
   `{ range, rule, reject?, help? }`, `clear_validation` `{ range }`, `conditional_format` `{ range, when + style |
-scale }` and `clear_conditional_formats` `{ range? }` ([Data validation](../029-sheets/data-validation.md#agents),
-  [Conditional formatting](../029-sheets/conditional-formatting.md#agents)). Each
+scale, first? }` and `clear_conditional_formats` `{ range? }` ([Data validation](../029-sheets/data-validation.md#agents),
+  [Conditional formatting](../029-sheets/conditional-formatting.md#agents)); `resize` `{ cols | rows, px | fit }`,
+  `merge` `{ range, across? }`, `unmerge` `{ range }`, `border` `{ range, sides, color, width, style }`, `filter`
+  `{ range | null }`, `chart` `{ type, range, columns?, at?, width?, height?, palette? }`, `clear_charts`
+  `{ range? }` and `design` `{ design }`
+  ([Shaping a sheet, A design](../029-sheets/sheet-store.md#agents); `sheet-shape-change.ts`, `sheet-design.ts`,
+  `sheet-charts.ts`, `sheet-chart-follow.ts`). Inserted rows take their neighbour's formats, columns its look. After the
+  writes, one changeset on the sheet's tab removes the charts `clear_charts` took, moves those a change left over
+  other cells back onto their cells, and adds the charts the changes made over the Sheet element, each with its
+  first read. Each
   is sent through the sheet write route as the editor sends it (one write a call, split past 5,000 cells, each with
   its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`), as is a value a Reject
   validation rule does not allow (`value_invalid`, with what the rule allows); a refusal
   answers what was applied before it.
 - **`add_sheet`** (write): a new sheet on a tab (the tab named, else the first with a sheet, else the first), titled
-  uniquely on the tab, blank or filled from A1 with `rows` or `csv` (not both), then a Sheet element (960 x 560)
-  framing it placed beside what the tab holds, as `add_board` places a board, in one changeset.
+  uniquely on the tab, blank or filled from A1 with `rows`, `csv` or a `design` (one of them), then a Sheet element
+  framing it placed beside what the tab holds, as `add_board` places a board, in one changeset with a design's charts.
+  The element is 960 x 560, grown to show every filled cell (up to 1,800 x 1,400).
+- **Previews**: a Sheet tab's image grows its Sheet to its filled cells and charts (`sheetContentSize`); a chart linked
+  to a sheet draws what its cells hold now (`chartsReadLive`); a dropdown draws as the editor's chip, or its arrow.
 
 ### 4.9d The Illustrate tools
 
@@ -983,8 +994,9 @@ Worker (no DOM, no React).
   runtime), return it as base64 MCP image content (`image/png`) — broadest client
   support vs. raw SVG.
 - **Embedded font.** Workers have no system fonts, so the worker bundles one
-  (Inter, OFL — `packages/render-png/fonts/`, wired as a `Data` module + passed to resvg as
-  a `fontBuffer`) and renders every label in it. Without an embedded font resvg
+  (Inter, OFL — `packages/render-png/fonts/`, Regular and Bold, wired as `Data` modules + passed to resvg as
+  `fontBuffers`) and renders every label in it; a weight past 500 (a title, a sheet's header row and totals) draws
+  in Bold. Without an embedded font resvg
   draws shapes/arrows/colours but no text, so the calling model gets a text-less
   preview it can't self-check against. A diagram's own font choice falls back to
   Inter in the preview; the structured elements still carry the true font.

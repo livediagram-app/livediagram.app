@@ -29,6 +29,21 @@ describe('useExplorerPanelSection', () => {
     expect(again.result.current[0]).toEqual({ kind: 'timeline' });
   });
 
+  it("opens a phone's sheet on Home every time, without remembering a pick", () => {
+    localStorage.setItem(PANEL_SECTION_STORAGE_KEY, 'library');
+    const { result, rerender } = renderHook(
+      ({ open }) => useExplorerPanelSection(groups, { homeOnOpen: true, open }),
+      { initialProps: { open: true } },
+    );
+    expect(result.current[0]).toEqual({ kind: 'home' });
+    act(() => result.current[1]({ kind: 'timeline' }));
+    expect(result.current[0]).toEqual({ kind: 'timeline' });
+    expect(localStorage.getItem(PANEL_SECTION_STORAGE_KEY)).toBe('library');
+    rerender({ open: false });
+    rerender({ open: true });
+    expect(result.current[0]).toEqual({ kind: 'home' });
+  });
+
   it('still works when storage throws', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('blocked');

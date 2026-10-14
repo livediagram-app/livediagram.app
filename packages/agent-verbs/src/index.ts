@@ -99,6 +99,7 @@ export {
   applySheetChanges,
   buildSheetChange,
   changeSheet,
+  chartsReadLive,
   formatPatchOf,
   listSheets,
   readSheet,

@@ -129,6 +129,18 @@ describe('applyTablePresetToEl', () => {
 });
 
 describe('applyChartPaletteToEl', () => {
+  // docs/specs/009-elements/pie-chart.md "Legend": a legend sets its own palette, and can follow the theme again.
+  it('sets a legend palette, clears it with null, and leaves a plain shape alone', () => {
+    const legend = el('shape', { shape: 'legend' });
+    const set = applyChartPaletteToEl(legend, 'berry');
+    expect(set).toMatchObject({ chartPalette: 'berry' });
+    expect(
+      (applyChartPaletteToEl(set, null) as { chartPalette?: string }).chartPalette,
+    ).toBeUndefined();
+    const square = el('shape', { shape: 'square' });
+    expect(applyChartPaletteToEl(square, 'berry')).toBe(square);
+  });
+
   it('sets the palette on a chart without touching its data', () => {
     const chart = el('shape', { shape: 'pie-chart', pieSlices: [{ label: 'A', value: 1 }] });
     const applied = applyChartPaletteToEl(chart, 'ocean');

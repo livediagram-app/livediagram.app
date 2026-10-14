@@ -141,6 +141,8 @@ type TabBarProps = {
   // Optional: a surface with no room behind it leaves the avatars as plain
   // presence indicators.
   followingId?: string | null;
+  // How many people follow us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), on our own avatar.
+  followerCount?: number;
   onOpenCollaborators?: (participantId: string | null) => void;
 };
 
@@ -171,6 +173,7 @@ export function TabBar({
   selfId,
   selfRole,
   followingId,
+  followerCount,
   onOpenCollaborators,
   onOpenSettings,
   onOpenSearch,
@@ -289,6 +292,7 @@ export function TabBar({
     selfId,
     selfRole,
     followingId,
+    followerCount,
     onOpenCollaborators,
     canvasActions,
     tabMenuProps,
@@ -345,6 +349,7 @@ export function TabBar({
                 selfId={selfId}
                 selfRole={selfRole}
                 followingId={followingId}
+                followerCount={followerCount}
                 onOpenCollaborators={onOpenCollaborators}
               />
             ),

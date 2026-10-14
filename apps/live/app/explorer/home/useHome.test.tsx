@@ -16,7 +16,7 @@ vi.mock('@/lib/api-client', () => ({ apiReadHome }));
 vi.mock('@/lib/offline/offline-opens', () => ({ offlineListOpens }));
 vi.mock('@/lib/telemetry', () => ({ track }));
 
-import { useHome } from './useHome';
+import { forgetHomeRead, useHome } from './useHome';
 
 const place = {
   name: 'Doc',
@@ -44,6 +44,7 @@ beforeEach(() => {
   apiReadHome.mockReset();
   offlineListOpens.mockReset().mockResolvedValue([]);
   track.mockReset();
+  forgetHomeRead();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 afterEach(() => vi.restoreAllMocks());
@@ -70,6 +71,24 @@ describe('useHome', () => {
       ['s1', false],
     ]);
     expect(onSeen).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws the last read at once when mounted again, then refreshes it', async () => {
+    apiReadHome.mockResolvedValue(home());
+    const first = renderHook(() => useHome('owner', vi.fn()));
+    await waitFor(() => expect(first.result.current.status).toBe('ready'));
+    first.unmount();
+    apiReadHome.mockResolvedValue(home({ jumpBackIn: [jump('s2', 2)] }));
+    const again = renderHook(() => useHome('owner', vi.fn()));
+    expect(again.result.current.status).toBe('ready');
+    expect(again.result.current.jumpBackIn.mostUsed.map((d) => d.documentId)).toEqual(['s1']);
+    await waitFor(() =>
+      expect(again.result.current.jumpBackIn.mostUsed.map((d) => d.documentId)).toEqual(['s2']),
+    );
+    // Another owner never sees it.
+    expect(renderHook(() => useHome('someone-else', vi.fn())).result.current.status).toBe(
+      'loading',
+    );
   });
 
   it('says the read failed rather than showing an empty Home, and retries', async () => {

@@ -2,7 +2,12 @@
 // "Export"): a Board tab its board alone, a Sheet tab its Sheet, a Dashboard its page laid out with every metric, chart
 // and card drawn from the document's cards (@livediagram/plan-art), never the raw elements stacked where they sit.
 // Null for any other tab. Every read is best-effort: what cannot be read draws as the editor draws it missing.
-import type { DocumentResponse, PlanResponse, TabResponse } from '@livediagram/api-schema';
+import type {
+  DocumentResponse,
+  PlanResponse,
+  SheetsResponse,
+  TabResponse,
+} from '@livediagram/api-schema';
 import {
   PIE_PALETTE,
   canvasSurface,
@@ -11,6 +16,12 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { statusPhasesOf, type Item, type ItemTypeDef } from '@livediagram/items';
+import {
+  sheetContentSize,
+  sheetFromJson,
+  sheetFramesOf,
+  type SheetJson,
+} from '@livediagram/sheets';
 import { planImageOf, planTabKindOf, planViewArt, type PlanArtData } from '@livediagram/plan-art';
 import { apiJson } from './api';
 import type { Env } from './env';
@@ -28,7 +39,21 @@ export type PlanPreview = {
     items?: ReadonlyMap<string, Item>;
     itemTypes?: readonly ItemTypeDef[];
   }) => ResolvePlanArt;
+  // A Sheet tab's sheets, read to size its image, for the preview to draw without reading them again.
+  sheets?: SheetJson[];
 };
+
+// A Sheet tab's sheets (best-effort: null when they cannot be read, and the Sheet keeps its size).
+async function sheetsOfTab(
+  tab: Tab,
+  auth: { env: Env; token: string; documentId: string },
+): Promise<SheetJson[] | null> {
+  const ids = [...new Set(sheetFramesOf(tab.elements as never).map((f) => f.sheetId))];
+  if (ids.length === 0) return null;
+  const path = `/documents/${encodeURIComponent(auth.documentId)}/sheets?ids=${ids.join(',')}`;
+  const read = await apiJson<SheetsResponse>(auth.env, auth.token, path).catch(() => null);
+  return read?.sheets ?? null;
+}
 
 // Every tab of the document, this one as given; the rest read in parallel, up to PLAN_PREVIEW_TABS_MAX.
 async function documentTabs(
@@ -69,8 +94,21 @@ export async function planPreviewFor(
           ).catch(() => null),
         ])
       : [[tab], null];
+  // A Sheet tab's image shows every filled cell, as the tab does, rather than the frame's first screen of them.
+  const sheets =
+    kind === 'sheet' && auth && documentId ? await sheetsOfTab(tab, { ...auth, documentId }) : null;
+  const byId = new Map((sheets ?? []).map((s) => [s.id, s]));
   const now = new Date();
-  const image = planImageOf(tab, { tabs, now, renderDiagram: render });
+  const image = planImageOf(tab, {
+    tabs,
+    now,
+    renderDiagram: render,
+    sheetHeads: (id) => byId.get(id)?.layout.showHeaders !== false,
+    sheetContent: (id) => {
+      const json = byId.get(id);
+      return json ? sheetContentSize(sheetFromJson(json)) : null;
+    },
+  });
   if (!image) return null;
   const boards = tabs.flatMap((t) =>
     t.elements.flatMap((el) =>
@@ -85,6 +123,7 @@ export async function planPreviewFor(
   const { art } = image;
   return {
     tab: image.tab,
+    ...(sheets ? { sheets } : {}),
     artWith: (content) => {
       const data: PlanArtData = {
         items: content.items ?? new Map(),
