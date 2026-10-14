@@ -200,6 +200,18 @@ export function routeLoops(
   const solid = [...boxes.values()].filter((b) => !isBackdrop(b));
   // The solid boxes by place, so each arrow is tested against the boxes near its path, not every box.
   const solidGrid = rectGrid(solid, 0);
+  // A group's frame is a wall to a route between two nodes outside it: threaded through the gaps between its
+  // members, the line read as one of the group's own (docs/specs/015-api/mcp-server.md "Groups keep their lines
+  // clear").
+  const frames = [...boxes.values()].filter((b) => b.type === 'shape' && b.shape === 'frame');
+  const holds = (f: BoxedElement, b: BoxedElement) =>
+    f.id === b.id ||
+    (b.x >= f.x &&
+      b.y >= f.y &&
+      b.x + b.width <= f.x + f.width &&
+      b.y + b.height <= f.y + f.height);
+  const wallsFor = (src: BoxedElement, dst: BoxedElement) =>
+    frames.filter((f) => !holds(f, src) && !holds(f, dst));
   const main = (b: BoxedElement) => (axis === 'TB' ? b.y + b.height / 2 : b.x + b.width / 2);
   const spanOf = (b: BoxedElement): [number, number] =>
     axis === 'TB' ? [b.y, b.y + b.height] : [b.x, b.x + b.width];
@@ -247,6 +259,7 @@ export function routeLoops(
     const src = boxes.get(pinnedId(loop.from)!)!;
     const dst = boxes.get(pinnedId(loop.to)!)!;
     const current = next.find((el) => el.id === loop.id) as ArrowElement;
+    const obstacles = [...solid, ...wallsFor(src, dst)];
     // The router first, when the drawing is small enough to search: the cheapest clean path over every pair of
     // sides. Its ends sit exactly on the sides' midpoints, so the corners it finds are the ones drawn.
     const found =
@@ -254,7 +267,7 @@ export function routeLoops(
         ? bestRoute(
             src,
             dst,
-            solid,
+            obstacles,
             taken,
             anchorsInUse(next.filter((el) => el.id !== loop.id)),
             budget,
@@ -293,7 +306,7 @@ export function routeLoops(
       Math.min(spanOf(dst)[0], spanOf(src)[0]),
       Math.max(spanOf(dst)[1], spanOf(src)[1]),
     ];
-    const between = solid.filter((b) => {
+    const between = obstacles.filter((b) => {
       const [s0, s1] = spanOf(b);
       return s1 >= lo && s0 <= hi;
     });

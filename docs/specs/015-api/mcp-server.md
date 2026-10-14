@@ -469,6 +469,12 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   searched for (the orthogonal router: the cheapest clean path over every pair of sides); the search shares one
   budget per layout (`ROUTER_BUDGET`, grid crossings laid out plus steps taken), and once it is spent the rest take
   their outside tracks, so a dense graph lays out in well under a second (60 boxes and 140 edges in about 0.2 s).
+- **Groups keep their lines clear.** A node outside a group that a member links to sits by that member, not by the
+  middle of the group (a database under the service that owns it), its rank kept in order and its gaps kept. An edge
+  to or from the group itself leaves the frame facing the other end: from the side level with it when it lies under
+  the frame, else from the frame's near side, so it never sweeps along the frame past its members' own drops (the
+  D2 "publish events" bus). An edge between two nodes outside a group is routed round the frame, never through the
+  gaps between its members.
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
   what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted. `true` names them by default: in a flowchart by ISO 5807

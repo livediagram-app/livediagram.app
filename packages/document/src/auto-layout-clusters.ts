@@ -19,6 +19,7 @@ import {
 } from './graph-authoring';
 import { unionRects, type Rect } from './geometry-primitives';
 import { bowReciprocalEdges } from './arrow-reciprocal';
+import { faceGroupEdges, seatByMembers } from './auto-layout-cluster-seats';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // Space between a frame's border and its members: the top band is deeper so
@@ -224,6 +225,8 @@ export function layoutClusteredGraph(
   // 3b. Within each group, order members that share a rank by where their
   // outside neighbours ended up, so edges into the group don't cross it.
   orderMembersByNeighbours(clusters, placedNodes, placedFrames, graph, direction ?? 'TB');
+  // 3c. Each node outside the groups that members link to sits by those members, not by the group's middle.
+  seatByMembers(placedNodes, placedFrames, clusterOf, graph, direction ?? 'TB');
 
   // 4. Real arrows over the final geometry: every edge whose endpoints name
   // a node or a frame, re-anchored to the sides that face. Self-loops are
@@ -241,13 +244,15 @@ export function layoutClusteredGraph(
   const arrows: ArrowElement[] = graph.edges
     .filter((e) => known.has(e.from) && known.has(e.to))
     .map((e) => reanchorArrow(edgeToArrow(e, makeEdgeId()), centers, direction ?? 'TB'));
+  // An edge to or from a group leaves its frame facing the other end.
+  const faced = faceGroupEdges(arrows, placedFrames, placedNodes, direction ?? 'TB');
 
   // Frames first so they render behind their members. The final sweep only
   // catches free nodes with no edges at all — frames and cluster members
   // are deliberately placed, so they're exempt.
   const deliberate = new Set([...frameIds, ...clusterOf.keys()]);
   return bowReciprocalEdges(
-    sweepEdgelessNodes([...placedFrames, ...placedNodes, ...arrows], deliberate),
+    sweepEdgelessNodes([...placedFrames, ...placedNodes, ...faced], deliberate),
   );
 }
 
