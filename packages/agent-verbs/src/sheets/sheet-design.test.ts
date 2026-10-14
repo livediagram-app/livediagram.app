@@ -189,6 +189,32 @@ describe('a design', () => {
     expect(built.charts[0]!.palette).toBe('earth');
   });
 
+  it('freezes through the main table’s header, not a small one above it', () => {
+    const { wb, sheet } = blankBook();
+    const built = buildDesign(
+      wb,
+      sheet.id,
+      {
+        heading: 'Grades',
+        blocks: [
+          { kind: 'table', head: ['Weight', 'Essay'], rows: [['Weight', 0.5]] },
+          {
+            kind: 'table',
+            head: ['Student', 'Essay'],
+            rows: [
+              ['A', 1],
+              ['B', 2],
+            ],
+          },
+        ],
+      },
+      { dark: false },
+      rand,
+    );
+    if (!built.ok) throw new Error(built.message);
+    expect(laid(wb, sheet, built.writes).layout.frozenRows).toBe(7);
+  });
+
   it('freezes nothing by default when its first table sits low', () => {
     const { wb, sheet } = blankBook();
     const built = buildDesign(

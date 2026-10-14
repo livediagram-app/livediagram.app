@@ -245,7 +245,9 @@ const designArg = z
       .min(0)
       .max(100)
       .optional()
-      .describe('Rows frozen at the top; through the first table’s header by default.'),
+      .describe(
+        'Rows frozen at the top; by default through the header of the table with the most rows, when it starts by row 8.',
+      ),
   })
   .describe('A sheet laid out as a template is, on an empty sheet.');
 

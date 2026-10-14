@@ -84,7 +84,7 @@ export type SheetDesignInput = {
   blocks: (DesignTableInput | DesignFieldsInput | DesignNoteInput)[];
   // Column widths in px from A; fitted to the cells when left out.
   widths?: number[];
-  // Rows frozen at the top; through the first table's header when left out (0 for none).
+  // Rows frozen at the top; through the main table's header when left out (0 for none).
   freeze?: number;
 };
 
@@ -100,7 +100,7 @@ export const DESIGN_ACCENT_DEFAULT: SheetAccent = 'blue';
 export const DESIGN_LOOK_DEFAULT: SheetLook = 'banded';
 // The blank row between stacked blocks.
 const BLOCK_GAP_ROWS = 1;
-// The deepest first table whose header a design freezes by default: one lower down would freeze most of the view.
+// The deepest main table whose header a design freezes by default: one lower down would freeze most of the view.
 const FREEZE_HEADER_ROW_MAX = 8;
 
 const refuse = (code: string, message: string): SheetRefusal => ({ ok: false, code, message });
@@ -233,7 +233,11 @@ function compileInput(
     if (b.at === undefined) next = at[0] + blockRows(block) + BLOCK_GAP_ROWS;
     else next = Math.max(next, at[0] + blockRows(block) + BLOCK_GAP_ROWS);
   }
-  const firstTable = blocks.find((b) => b.kind === 'table');
+  // The main table, the one with the most rows (the first of those): its header is what scrolling keeps in view.
+  const mainTable = blocks.reduce<Extract<DesignBlock, { kind: 'table' }> | undefined>(
+    (best, b) => (b.kind === 'table' && (!best || b.rows.length > best.rows.length) ? b : best),
+    undefined,
+  );
   const draft: SheetDesign = {
     heading: input.heading,
     subtitle: input.subtitle ?? '',
@@ -243,7 +247,7 @@ function compileInput(
     widths: input.widths ?? [],
     freeze:
       input.freeze ??
-      (firstTable && firstTable.at[0] < FREEZE_HEADER_ROW_MAX ? firstTable.at[0] + 1 : 0),
+      (mainTable && mainTable.at[0] < FREEZE_HEADER_ROW_MAX ? mainTable.at[0] + 1 : 0),
   };
   // The heading spans every column the blocks fill.
   return { design: { ...draft, span: designExtent(draft).cols }, tables };
