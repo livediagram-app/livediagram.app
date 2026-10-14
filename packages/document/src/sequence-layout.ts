@@ -34,6 +34,7 @@ const LABEL_PX = 14;
 const PITCH_MAX = 520;
 const MESSAGE_LABEL_MARGIN = 40;
 const MESSAGE_LABEL_GAP = 4.5;
+const MESSAGE_LABEL_LINES = 1;
 const HEAD_PX = 22;
 const ACTOR_W = 44;
 const ACTOR_H = 60;
@@ -58,12 +59,16 @@ export function layoutSequence(
   const index = new Map(participants.map((p, i) => [p.id, i]));
   const longestHead = Math.max(0, ...participants.map((p) => glyphWidth(p.label, HEAD_PX)));
   const headW = Math.round(Math.max(HEAD_MIN_W, longestHead + 48));
-  // The pitch: the head box, or the longest message label in one gap, as a message keeps its label in its first gap
-  // (spread over the whole span, a long label wrapped narrow in that first gap and its plate cut its own line).
+  // The pitch: the head box, or the longest message label on one line in one gap, as a message keeps its label in its
+  // first gap (spread over the whole span, a long label wrapped narrow there and cut its own line; two lines each
+  // crowded the message above, rows being one height). Up to PITCH_MAX, past which a label wraps and lifts.
   let pitch = Math.max(PITCH_MIN, headW + 40);
   for (const it of items) {
     if (it.kind !== 'message' || it.from === it.to) continue;
-    pitch = Math.max(pitch, Math.ceil(glyphWidth(it.label, LABEL_PX) + 60));
+    pitch = Math.max(
+      pitch,
+      Math.ceil(glyphWidth(it.label, LABEL_PX) / MESSAGE_LABEL_LINES + MESSAGE_LABEL_MARGIN + 20),
+    );
   }
   pitch = Math.round(Math.min(pitch, PITCH_MAX));
   // A message label wraps to its gap, and sits clear above (or below) its line however many lines it takes.
