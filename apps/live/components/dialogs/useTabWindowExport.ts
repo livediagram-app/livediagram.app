@@ -5,6 +5,7 @@
 // A window inside a shown tab draws as its frame named for its tab, so nothing recurses.
 import { useEffect, useMemo, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { TAB_WINDOW_REASK_MS } from '@/components/canvas/tab-window/tab-window-context';
 import {
   exportFontIds,
   tabWindowMayShow,
@@ -76,6 +77,7 @@ export function useTabWindowExport({
   tab,
   tabs,
   loadTabs,
+  loadedTabIds,
   imageContext,
   active,
   items,
@@ -83,6 +85,9 @@ export function useTabWindowExport({
   tab: Pick<Tab, 'id' | 'elements'>;
   tabs: readonly Tab[];
   loadTabs?: (only: readonly string[]) => Promise<string[]>;
+  // The tabs whose content has arrived. A fetch already under way elsewhere answers at once without the tab, so the
+  // export waits for it here (asking again shortly) rather than drawing the tab's empty placeholder.
+  loadedTabIds?: ReadonlySet<string>;
   imageContext?: ImageContext;
   active: boolean;
   items?: Pick<Parameters<typeof renderTabToSvg>[1] & object, 'items' | 'itemTypes'>;
@@ -94,17 +99,32 @@ export function useTabWindowExport({
   const [images, setImages] = useState<{ key: string; map: ReadonlyMap<string, ExportImageMap> }>(
     () => ({ key: '', map: new Map() }),
   );
-  // Fetch the shown tabs' content once an image format is picked.
+  // Fetch the shown tabs' content once an image format is picked; done once each has arrived or failed.
+  const loaded = useLatest(loadedTabIds);
+  const known = useLatest(tabs);
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     if (!active || key === '') return;
     let live = true;
-    void (loadTabs ? loadTabs(key.split(',')) : Promise.resolve([])).then(
-      () => live && setFetched(key),
-    );
+    let again: ReturnType<typeof setTimeout> | undefined;
+    const ids = key.split(',');
+    void (loadTabs ? loadTabs(ids) : Promise.resolve([] as string[])).then((failures) => {
+      if (!live) return;
+      const waiting = ids.filter(
+        (id) =>
+          loaded.current &&
+          !loaded.current.has(id) &&
+          !failures.includes(id) &&
+          known.current.some((t) => t.id === id),
+      );
+      if (waiting.length === 0) setFetched(key);
+      else again = setTimeout(() => setAttempt((n) => n + 1), TAB_WINDOW_REASK_MS);
+    });
     return () => {
       live = false;
+      if (again) clearTimeout(again);
     };
-  }, [active, key, loadTabs]);
+  }, [active, key, loadTabs, loaded, known, attempt]);
   // Then their photos, each tab's once.
   const shown = useMemo(
     () => (fetched === key ? targets.flatMap((id) => tabs.filter((t) => t.id === id)) : []),

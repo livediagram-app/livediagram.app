@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // docs/specs/009-elements/tab-window.md "Exports": the export waits for the shown tabs and their photos.
 
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Element, Tab } from '@livediagram/document';
 
@@ -12,6 +12,7 @@ vi.mock('@/lib/export-tab', async (real) => ({
 }));
 
 import { useTabWindowExport } from './useTabWindowExport';
+import { TAB_WINDOW_REASK_MS } from '@/components/canvas/tab-window/tab-window-context';
 
 const win = (windowTabId: string): Element =>
   ({
@@ -70,5 +71,39 @@ describe('useTabWindowExport', () => {
     rerender();
     await waitFor(() => expect(result.current.ready).toBe(true));
     expect(loadTabImages).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits for a shown tab still being fetched elsewhere, never drawing its empty placeholder', async () => {
+    vi.useFakeTimers();
+    try {
+      const slide = { id: 's', name: 'S', elements: [win('f')] } as Tab;
+      // The placeholder: content not arrived, so no elements yet.
+      let flow = { id: 'f', name: 'Flow', elements: [] } as Tab;
+      let loadedTabIds = new Set<string>(['s']);
+      const { result, rerender } = renderHook(() =>
+        useTabWindowExport({
+          tab: slide,
+          tabs: [slide, flow],
+          // Another caller is fetching it: answered at once, without it.
+          loadTabs: async () => [],
+          loadedTabIds,
+          active: true,
+        }),
+      );
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(result.current.ready).toBe(false);
+      // That fetch lands.
+      flow = { ...flow, elements: [box] };
+      loadedTabIds = new Set(['s', 'f']);
+      rerender();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(TAB_WINDOW_REASK_MS);
+      });
+      expect(result.current.ready).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
