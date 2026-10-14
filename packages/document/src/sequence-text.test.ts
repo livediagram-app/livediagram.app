@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createShape, parseSequenceText, sequenceToText, type ShapeElement } from './index';
 
 // docs/specs/009-elements/sequence-diagram.md "The Sequence dialog" (Text).
@@ -130,18 +130,37 @@ describe('sequence text', () => {
     expect(parseSequenceText(msgs).unread).toEqual([61, 62]);
   });
 
+  it('reads each arrow by the longest form, past dashes in a name, the extra dashes of a long arrow left off', () => {
+    const r = parseSequenceText(
+      [
+        'Front-end -> API: a',
+        'API --> Front-end: b',
+        'A ---> B: c',
+        'A ~> B: d',
+        'A -) B: e',
+        'A ->> B: f',
+        'A -->> B: g',
+        'A - > B: none',
+      ].join('\n'),
+    );
+    expect(r.messages.map((m) => [m.label, m.kind])).toEqual([
+      ['a', 'call'],
+      ['b', 'reply'],
+      ['c', 'reply'],
+      ['d', 'async'],
+      ['e', 'async'],
+      ['f', 'call'],
+      ['g', 'reply'],
+    ]);
+    expect(r.participants.map((p) => p.label)).toEqual(['Front-end', 'API', 'A', 'B']);
+    expect(r.unread).toEqual([8]);
+  });
+
   it('reads a hostile paste in linear time', () => {
-    // Scaling, not a budget: twice the paste costs about twice the time when linear and four times when quadratic.
-    // An absolute 200ms failed under CI's coverage instrumentation at 280ms on a linear parse.
-    const paste = (n: number) => `${'-'.repeat(390)}\n`.repeat(n) + `${'~'.repeat(50 * n)}`;
-    const [small, large] = [paste(1000), paste(2000)];
-    parseSequenceText(small);
-    const ratio =
-      cpuMsOf(() => parseSequenceText(large)) /
-      Math.max(
-        1,
-        cpuMsOf(() => parseSequenceText(small)),
-      );
-    expect(ratio).toBeLessThan(3);
+    const text =
+      `${'-'.repeat(390)}\n`.repeat(1000) +
+      `A${' -'.repeat(190)}x -> B\n`.repeat(1000) +
+      `${'~'.repeat(100000)}`;
+    expect(cpuMsOf(() => parseSequenceText(text))).toBeLessThan(cpuBudgetMs(200));
   });
 });
