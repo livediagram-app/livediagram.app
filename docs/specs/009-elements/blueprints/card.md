@@ -41,7 +41,8 @@ and the rows menu, and only what differs is written here.
 `slots = { header, media, title, meta, tags: readonly string[] }` (booleans except tags).
 
 1. `pad = round(clamp(min(w, h) * 0.1, 10, 18))`, `gap = 6`.
-2. `titlePx = round(clamp(h * 0.12, 12, 17))`, `metaPx = round(clamp(titlePx * 0.8, 10, 13))`.
+2. `titlePx = round(clamp(h * 0.16, 14, 18))` (never below the body's default size), `metaPx = round(clamp(titlePx *
+0.8, 11, 14))`.
 3. **Tags row**: `tagH = round(clamp(h * 0.16, 18, 22))`, `tagPx = round(tagH * 0.5)`; chips laid left to right from
    `pad` at `y = h - pad - tagH`, width `cardTagWidth(text, tagPx) = ceil(len * tagPx * 0.6) + round(tagPx * 1.6)`,
    gap 4; a chip whose right edge would pass `w - pad` and every chip after it are not placed (D176).
@@ -54,8 +55,8 @@ and the rows menu, and only what differs is written here.
 6. **Body**: from below the top row (or band) plus `gap` to above the tags row minus `gap` (or `h - pad`); x from
    `pad` to `w - pad`, except with **badge** media and no band, where it starts at the text column (the Callout's
    layout).
-7. **Dropping** (D177): if the body would be under `max(14, titlePx)` tall, drop tags and redo; then the meta; then
-   the media. A dropped slot is absent from the result.
+7. **Dropping** (D177): if the body has words and would be under `max(14, titlePx)` tall, drop tags and redo; then
+   the meta; then the media. A dropped slot is absent from the result. A card with no body text drops nothing.
 
 ### Media
 

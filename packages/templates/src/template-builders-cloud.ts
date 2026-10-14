@@ -79,10 +79,11 @@ export function buildCloudArchitecture(cx: number, cy: number): Element[] {
   const tileL = (c: number) => colX(c) - tileW / 2;
   const tileR = (c: number) => colX(c) + tileW / 2;
 
-  // Groups first so they paint under the tiles. Labels sit top-left, the
-  // AWS convention. Frames stay unfilled so the tiles' theme-owned captions
-  // read on any canvas; the border colour and weight tell the levels apart.
-  const frame = (
+  // Groups are Boundaries (docs/specs/009-elements/boundary.md), nesting the way AWS scopes them: each takes a light
+  // wash of its own colour, so the VPC inside the region and the subnets inside the VPC read deeper as they stack, and
+  // each carries what sits in it when it moves. The region's title rides a tab on its top edge; the groups nested in
+  // it title themselves inside their corner, with their CIDR as the meta line, so the titles never stack up.
+  const boundary = (
     label: string,
     x0: number,
     y0: number,
@@ -90,57 +91,51 @@ export function buildCloudArchitecture(cx: number, cy: number): Element[] {
     y1: number,
     style: Partial<Node>,
   ): Node => ({
-    ...createShape('frame', x0, y0),
+    ...createShape('boundary', x0, y0),
     width: x1 - x0,
     height: y1 - y0,
     label,
-    textSize: 'sm',
-    textAlignX: 'left',
     ...style,
   });
   const regionTop = tileTop(0) - 2 * labelBand;
-  // Two-line subnet labels (kind, then CIDR) stay narrow enough that the
-  // vertical SQL edge down the VPC's middle never crosses them.
+  // The subnets stay narrow enough that the vertical SQL edge down the VPC's middle never crosses their titles.
   const subnetHalfW = 146;
   const vpcHalfW = 162;
   const subnet = (cidr: string, r: number) =>
-    frame(
-      `Private subnet\n${cidr}`,
+    boundary(
+      'Private subnet',
       colX(3) - subnetHalfW,
       tileTop(r) - labelBand,
       colX(3) + subnetHalfW,
       tileBottom(r) + 8,
-      {
-        strokeColor: GROUP.subnet,
-        textColor: GROUP.subnet,
-      },
+      { boundaryStyle: 'inset', pageSubtitle: cidr, strokeColor: GROUP.subnet },
     );
   elements.push(
-    frame('Edge · global', tileL(1) - pad, regionTop, tileR(1) + pad, tileBottom(1) + pad, {
+    boundary('Edge · global', tileL(1) - pad, regionTop, tileR(1) + pad, tileBottom(1) + pad, {
+      iconId: 'globe',
       strokeColor: GROUP.edge,
-      textColor: GROUP.edge,
-      strokeStyle: 'dashed',
     }),
-    frame(
+    boundary(
       'AWS Cloud · eu-west-2 (London)',
       tileL(2) - pad,
       regionTop,
       tileR(6) + pad,
       tileBottom(2) + pad + 14,
-      {
-        strokeColor: GROUP.region,
-        textColor: GROUP.region,
-        strokeStyle: 'dashed',
-        strokeWidth: 'thick',
-      },
+      { iconId: 'cloud', strokeColor: GROUP.region, strokeWidth: 'thick' },
     ),
-    frame(
-      'VPC · 10.0.0.0/16',
+    boundary(
+      'VPC',
       colX(3) - vpcHalfW,
       tileTop(1) - 2 * labelBand,
       colX(3) + vpcHalfW,
       tileBottom(2) + pad - 4,
-      { strokeColor: GROUP.vpc, textColor: GROUP.vpc, strokeWidth: 'thick' },
+      {
+        boundaryStyle: 'inset',
+        pageSubtitle: '10.0.0.0/16',
+        iconId: 'lock',
+        strokeColor: GROUP.vpc,
+        strokeStyle: 'solid',
+      },
     ),
     subnet('10.0.1.0/24', 1),
     subnet('10.0.2.0/24', 2),
@@ -156,15 +151,24 @@ export function buildCloudArchitecture(cx: number, cy: number): Element[] {
     // Technology marks keep a fixed size, so the box may be wider than tall.
     aspectLocked: false,
   });
-  const card = (label: string, iconId: string, col: number, row: number): Node => ({
-    ...createShape('square', colX(col) - cardW / 2, rowY(row) - cardH / 2),
-    width: cardW,
-    height: cardH,
-    label,
-    iconId,
-    iconPosition: 'left',
-    textSize: 'sm',
-  });
+  // The apps outside the cloud are Cards (docs/specs/009-elements/card.md): a line-art glyph in a tile and the app's
+  // name, so "ours, running on AWS" and "people's devices" read apart.
+  const card = (label: string, iconId: string, col: number, row: number): Node => {
+    const {
+      pageSubtitle: _meta,
+      tags: _tags,
+      ...base
+    } = createShape('card', colX(col) - cardW / 2, rowY(row) - cardH / 2) as Node;
+    return {
+      ...base,
+      width: cardW,
+      height: cardH,
+      cardMedia: 'tile',
+      iconId,
+      pageTitle: label,
+      label: '',
+    };
+  };
 
   const customer = card('Customer app', 'smartphone', 0, 1);
   const dns = tile('DNS\nRoute 53', 'aws-route53', 1, 0);

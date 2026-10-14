@@ -101,7 +101,7 @@ export function svgConcept(
   }
   // Cycle: arcs under the discs, the first disc solid in the accent, the rest the fill ringed in the accent.
   const l = cycleLayout(el.width, el.height, n);
-  const head = Math.max(5, l.discR * 0.28);
+  const head = Math.min(10, Math.max(6, l.discR * 0.14));
   const arcs = l.arcs
     .map(
       (a) =>

@@ -189,7 +189,9 @@ export function ConceptFace({
       const t = l.tiers[i]!;
       // The base builds first on a pyramid; a funnel and an inverted pyramid read top down.
       const order = variant === 'pyramid' ? n - 1 - i : i;
-      const half = notes ? { ...t.label, width: t.label.width / 2 } : t.label;
+      // A funnel tier with a value splits its width with it; one without takes the whole tier.
+      const valued = notes && !!row.note;
+      const half = valued ? { ...t.label, width: t.label.width / 2 } : t.label;
       return (
         <Row
           key={i}
@@ -204,7 +206,7 @@ export function ConceptFace({
             />,
           )}
           {line(i, half, row.label, l.labelPx, ramp[i]!.text, {})}
-          {notes
+          {valued
             ? line(
                 i,
                 { ...t.label, x: t.label.x + t.label.width / 2, width: t.label.width / 2 },
@@ -219,7 +221,7 @@ export function ConceptFace({
     });
   } else {
     const l = cycleLayout(W, H, n);
-    const head = Math.max(5, l.discR * 0.28);
+    const head = Math.min(10, Math.max(6, l.discR * 0.14));
     body = (
       <>
         {l.arcs.map((a, i) => (

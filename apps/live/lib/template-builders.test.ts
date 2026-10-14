@@ -512,9 +512,13 @@ describe('system architecture is a vendor-neutral tiered diagram', () => {
     );
     expect(nodes.length).toBeGreaterThan(0);
     for (const n of nodes) {
-      expect(n.label?.length).toBeGreaterThan(0);
+      // A service node is a Card named by its title; a store keeps its label.
+      expect((n.shape === 'card' ? n.pageTitle : n.label)?.length).toBeGreaterThan(0);
       if (n.iconId) expect(isTechIconId(n.iconId)).toBe(false);
     }
+    expect(nodes.filter((n) => n.shape === 'card').every((n) => n.accentEdge === 'left')).toBe(
+      true,
+    );
   });
 
   it('pins and labels every edge', () => {

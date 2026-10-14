@@ -1,11 +1,18 @@
 // Conversion-funnel template. Its own file because it is neither a tree nor
-// a board: a stacked-silhouette diagram like the pyramid, built from flipped
-// trapezoids so each tier genuinely tapers.
+// a board: one Funnel element (a Pyramid in its funnel variant) with a rail of
+// counts beside it.
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[]. See
 // docs/specs/008-canvas/canvas-and-palette.md "Templates".
 
-import { createPinnedArrow, createShape, createText, type Element } from '@livediagram/document';
+import {
+  createCalloutCard,
+  createPinnedArrow,
+  createShape,
+  createText,
+  pyramidLayout,
+  type Element,
+} from '@livediagram/document';
 
 // A funnel that tells a conversion story rather than just drawing a shape.
 // Four AIDA tiers (Awareness / Interest / Decision / Action) ramp from a pale
@@ -23,7 +30,6 @@ type Stage = {
   count: number;
   counts: string;
   icon: string;
-  fill: string;
 };
 
 const STAGES: Stage[] = [
@@ -32,28 +38,24 @@ const STAGES: Stage[] = [
     count: 12400,
     counts: 'visited freshbox.app',
     icon: 'eye',
-    fill: '#e0f2fe',
   },
   {
     label: 'Interest',
     count: 3100,
     counts: 'signed up for a free account',
     icon: 'user-plus',
-    fill: '#bae6fd',
   },
   {
     label: 'Decision',
     count: 930,
     counts: 'started a 14-day trial',
     icon: 'cart',
-    fill: '#7dd3fc',
   },
   {
     label: 'Action',
     count: 210,
     counts: 'paid for a first box',
     icon: 'credit-card',
-    fill: '#38bdf8',
   },
 ];
 
@@ -65,23 +67,18 @@ const LEAK_EXPERIMENTS = [
 ];
 
 const MUTED = '#64748b';
-const INK = '#0c4a6e';
+// The funnel's ramp: a saturated tip mixing toward a pale mouth (the Pyramid ramps from its accent, row one).
+const FUNNEL_TIP = '#0284c7';
+const FUNNEL_MOUTH = '#e0f2fe';
 
 const pct = (a: number, b: number) => (a / b) * 100;
 // Thousands separators without Intl, so the output is locale-proof.
 const withCommas = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 export function buildFunnel(cx: number, cy: number): Element[] {
-  // The trapezoid renders narrow-top / wide-bottom (22..78 over 2..98 in its
-  // 100-unit box), so each tier is rotated 180° to taper downward. Rotation
-  // flips the label too, so tiers stay unlabelled and a separate text element
-  // carries each stage name. Chaining the widths so one tier's bottom edge
-  // (56% of its box) meets the next tier's top edge (96% of its box) makes
-  // the silhouette read as one continuous funnel: nextW = W * 0.56 / 0.96.
   const tierH = 112;
   const tierGap = 36;
   const topW = 760;
-  const taper = 0.56 / 0.96;
   const railGap = 56;
   const railW = 300;
   const calloutGap = 64;
@@ -97,7 +94,6 @@ export function buildFunnel(cx: number, cy: number): Element[] {
   const totalH = titleH + captionH + headGap + funnelH + pillGap + pillH;
   const x0 = cx - totalW / 2;
   const y0 = cy - totalH / 2;
-  const fx = x0 + topW / 2;
   const top = y0 + titleH + captionH + headGap;
   const railX = x0 + topW + railGap;
   const calloutX = railX + railW + calloutGap;
@@ -134,33 +130,25 @@ export function buildFunnel(cx: number, cy: number): Element[] {
       worst = i;
   }
 
-  let tierW = topW;
+  // One Funnel element (docs/specs/009-elements/concept-graphics.md): a Pyramid in its funnel variant, its bands
+  // laid out and tapered by its own layout. Theme-locked, so the pale-mouth-to-saturated-tip ramp (the reading
+  // order) survives a theme switch.
+  elements.push({
+    ...createShape('pyramid', x0, top),
+    width: topW,
+    height: funnelH,
+    pyramidVariant: 'funnel',
+    conceptRows: STAGES.map((stage) => ({ label: stage.label })),
+    strokeColor: FUNNEL_TIP,
+    fillColor: FUNNEL_MOUTH,
+    themeLockFill: true,
+  });
+  const layout = pyramidLayout(topW, funnelH, STAGES.length, 'funnel');
+  const midOf = (i: number) => top + layout.tiers[i]!.label.y + layout.tiers[i]!.label.height / 2;
+
   let worstChip: Element | undefined;
   STAGES.forEach((stage, i) => {
-    const y = top + i * (tierH + tierGap);
-    const midY = y + tierH / 2;
-    elements.push({
-      ...createShape('trapezoid', fx - tierW / 2, y),
-      width: tierW,
-      height: tierH,
-      rotation: 180,
-      fillColor: stage.fill,
-      // The ramp is the reading order (pale mouth to the prize at the
-      // tip), so it survives a theme switch; the dark ink stays legible on
-      // every step of it.
-      themeLockFill: true,
-    });
-    elements.push({
-      ...createText(fx - 110, midY - 20),
-      width: 220,
-      height: 40,
-      label: stage.label,
-      textSize: 'md',
-      textBold: true,
-      textAlignX: 'center',
-      textColor: INK,
-    });
-
+    const midY = midOf(i);
     // Rail: the stage glyph, the count, and what counts as reaching it.
     const iconSize = 36;
     elements.push(
@@ -191,13 +179,13 @@ export function buildFunnel(cx: number, cy: number): Element[] {
       },
     );
 
-    // The step INTO this stage, as a chip in the gap above it.
+    // The step INTO this stage, as a chip halfway between it and the stage above.
     if (i > 0) {
       const rate = Math.round(pct(stage.count, STAGES[i - 1]!.count));
       const isWorst = i === worst;
       const chipH = 30;
       const chip: Element = {
-        ...createShape('stadium', railX, y - tierGap / 2 - chipH / 2),
+        ...createShape('stadium', railX, (midOf(i - 1) + midY) / 2 - chipH / 2),
         width: 170,
         height: chipH,
         label: `↓ ${rate}% move on`,
@@ -211,7 +199,6 @@ export function buildFunnel(cx: number, cy: number): Element[] {
       elements.push(chip);
       if (isWorst) worstChip = chip;
     }
-    tierW *= taper;
   });
 
   // End-to-end rate under the tip.
@@ -219,7 +206,7 @@ export function buildFunnel(cx: number, cy: number): Element[] {
   const last = STAGES[STAGES.length - 1]!;
   const pillW = 360;
   elements.push({
-    ...createShape('stadium', fx - pillW / 2, top + funnelH + pillGap),
+    ...createShape('stadium', x0 + topW / 2 - pillW / 2, top + funnelH + pillGap),
     width: pillW,
     height: pillH,
     label: `${pct(last.count, first.count).toFixed(1)}% of visitors become customers`,
@@ -228,62 +215,38 @@ export function buildFunnel(cx: number, cy: number): Element[] {
     colorPreset: 'soft',
   });
 
-  // The drop-off callout, level with the weakest step (clamped inside the
-  // composition), wired to its chip with a dashed pointer.
-  const pad = 20;
-  const headerH = 36;
-  const bodyH = 56;
-  const listLabelH = 26;
+  // The drop-off, level with the weakest step (clamped inside the composition): a Callout
+  // (docs/specs/009-elements/card.md) with a warning badge, and the experiments to try as a checklist under it, wired
+  // to its chip with a dashed pointer.
+  const cardH = 132;
+  const listGap = 12;
   const checklistH = LEAK_EXPERIMENTS.length * 30 + 22;
-  const calloutH = pad + headerH + 8 + bodyH + 12 + listLabelH + 8 + checklistH + pad;
+  const blockH = cardH + listGap + 26 + checklistH;
   const prev = STAGES[worst - 1]!;
   const lost = Math.round(100 - pct(STAGES[worst]!.count, prev.count));
-  const chipMidY = top + worst * (tierH + tierGap) - tierGap / 2;
+  const chipMidY = (midOf(worst - 1) + midOf(worst)) / 2;
   const calloutY = Math.min(
-    Math.max(chipMidY - calloutH / 2, top),
-    top + funnelH + pillGap + pillH - calloutH,
+    Math.max(chipMidY - cardH / 2, top),
+    top + funnelH + pillGap + pillH - blockH,
   );
   const callout: Element = {
-    ...createShape('square', calloutX, calloutY),
+    ...createCalloutCard(calloutX, calloutY),
     width: calloutW,
-    height: calloutH,
+    height: cardH,
+    iconId: 'alert-triangle',
+    pageTitle: 'Biggest drop-off',
+    label: `${lost}% of people who reach ${prev.label} never get to ${STAGES[worst]!.label}. Most leave before their first box arrives.`,
     fillColor: '#fff1f2',
-    strokeColor: '#fda4af',
+    strokeColor: '#e11d48',
+    textColor: '#4c0519',
+    themeLockFill: true,
   };
-  elements.push(callout);
-  const iconSize = 32;
   elements.push(
+    callout,
     {
-      ...createShape('icon', calloutX + pad, calloutY + pad + (headerH - iconSize) / 2),
-      width: iconSize,
-      height: iconSize,
-      iconId: 'alert-triangle',
-      strokeColor: '#be123c',
-    },
-    {
-      ...createText(calloutX + pad + iconSize + 12, calloutY + pad),
-      width: calloutW - pad * 2 - iconSize - 12,
-      height: headerH,
-      label: 'Biggest drop-off',
-      textSize: 'md',
-      textBold: true,
-      textAlignX: 'left',
-      textColor: '#be123c',
-    },
-    {
-      ...createText(calloutX + pad, calloutY + pad + headerH + 8),
-      width: calloutW - pad * 2,
-      height: bodyH,
-      label: `${lost}% of people who reach ${prev.label} never get to ${STAGES[worst]!.label}. Most leave before their first box arrives.`,
-      textSize: 'sm',
-      textColor: '#4c0519',
-      textAlignX: 'left',
-      textAlignY: 'top',
-    },
-    {
-      ...createText(calloutX + pad, calloutY + pad + headerH + 8 + bodyH + 12),
-      width: calloutW - pad * 2,
-      height: listLabelH,
+      ...createText(calloutX, calloutY + cardH + listGap),
+      width: calloutW,
+      height: 26,
       label: 'Experiments to try',
       textSize: 'sm',
       textBold: true,
@@ -291,12 +254,8 @@ export function buildFunnel(cx: number, cy: number): Element[] {
       textColor: '#be123c',
     },
     {
-      ...createShape(
-        'checklist',
-        calloutX + pad,
-        calloutY + pad + headerH + 8 + bodyH + 12 + listLabelH + 8,
-      ),
-      width: calloutW - pad * 2,
+      ...createShape('checklist', calloutX, calloutY + cardH + listGap + 26),
+      width: calloutW,
       height: checklistH,
       checklistItems: LEAK_EXPERIMENTS.map((text) => ({ text, done: false })),
     },

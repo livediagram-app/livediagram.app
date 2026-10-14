@@ -35,6 +35,9 @@ export type CardSlots = {
   metaChars?: number;
   // Badge media lines the body up under the title, as the Callout did; the other media sit above a full-width body.
   badge: boolean;
+  // Whether the body has words. A card with none needs no room for them, so its other slots are never dropped to
+  // make some. Absent reads as true.
+  body?: boolean;
   tags: readonly string[];
 };
 
@@ -70,6 +73,7 @@ export function cardSlotsOf(el: ShapeElement): CardSlots {
     metaChars: el.pageSubtitle?.length ?? 0,
     badge: media === 'badge',
     tags: el.tags ?? [],
+    body: !!el.label?.trim(),
   };
 }
 
@@ -81,8 +85,9 @@ export function cardMediaOf(el: ShapeElement): CardMedia | null {
 
 function layoutOnce(w: number, h: number, s: CardSlots): CardLayout {
   const pad = Math.round(clamp(Math.min(w, h) * 0.1, 10, 18));
-  const titlePx = Math.round(clamp(h * 0.12, 12, 17));
-  const metaPx = Math.round(clamp(titlePx * 0.8, 10, 13));
+  // Never smaller than the body's default, so the title always leads.
+  const titlePx = Math.round(clamp(h * 0.16, 14, 18));
+  const metaPx = Math.round(clamp(titlePx * 0.8, 11, 14));
   const tagH = Math.round(clamp(h * 0.16, 18, 22));
   const tagPx = Math.round(tagH * 0.5);
   const right = w - pad;
@@ -139,13 +144,15 @@ function layoutOnce(w: number, h: number, s: CardSlots): CardLayout {
     const textW = Math.max(0, right - textX);
     const titleH = s.title ? Math.round(titlePx * 1.35) : 0;
     const metaH = s.meta ? Math.round(metaPx * 1.4) : 0;
-    if (s.title) title = { x: textX, y: pad, width: textW, height: titleH };
-    if (s.meta) meta = { x: textX, y: pad + titleH, width: textW, height: metaH };
+    // The title and meta block centres on the media beside it when it is the shorter of the two.
+    const textTop = pad + (s.media ? Math.max(0, (m - titleH - metaH) / 2) : 0);
+    if (s.title) title = { x: textX, y: textTop, width: textW, height: titleH };
+    if (s.meta) meta = { x: textX, y: textTop + titleH, width: textW, height: metaH };
     // A badge sits beside the title and the body follows the title's column (the Callout); a tile or an initial
     // sits above a full-width body.
     if (s.badge && s.media) {
       bodyX = textX;
-      bodyTop = pad + Math.max(titleH + metaH, 0) + (titleH + metaH > 0 ? 2 : 0);
+      bodyTop = textTop + titleH + metaH + (titleH + metaH > 0 ? 2 : 0);
     } else {
       const top = Math.max(s.media ? m : 0, titleH + metaH);
       bodyTop = pad + top + (top > 0 ? CARD_GAP : 0);
@@ -161,6 +168,19 @@ function layoutOnce(w: number, h: number, s: CardSlots): CardLayout {
   return { band, media, title, meta, body, tags, titlePx, metaPx, tagPx };
 }
 
+// The top row (media, title, meta) moved down so it sits in the middle of the card.
+function centredRow(l: CardLayout, height: number): CardLayout {
+  const rects = [l.media, l.title, l.meta].filter((r): r is LayoutRect => r !== null);
+  if (rects.length === 0) return l;
+  const top = Math.min(...rects.map((r) => r.y));
+  const bottom = Math.max(...rects.map((r) => r.y + r.height));
+  const dy = Math.max(0, (height - (bottom - top)) / 2 - top);
+  if (dy < 0.5) return l;
+  const shift = (r: LayoutRect | null) => (r ? { ...r, y: r.y + dy } : null);
+  // The title and meta pair centres as a block on the media's middle when both are there.
+  return { ...l, media: shift(l.media), title: shift(l.title), meta: shift(l.meta) };
+}
+
 /**
  * Every slot's rect, element-relative, for a card of `width` × `height` with `slots` on. A card too small for its
  * slots drops them in the order tags, meta line, media until its body has room for a line.
@@ -168,6 +188,10 @@ function layoutOnce(w: number, h: number, s: CardSlots): CardLayout {
 export function cardLayout(width: number, height: number, slots: CardSlots): CardLayout {
   let s = slots;
   let l = layoutOnce(width, height, s);
+  // A card with no body text keeps every slot (there is nothing to make room for), and with no tags or band either
+  // its title row centres in the card, so a one-line node reads as one.
+  if (slots.body === false)
+    return slots.tags.length === 0 && !slots.header ? centredRow(l, height) : l;
   const minBody = Math.max(14, l.titlePx);
   const drops: ((x: CardSlots) => CardSlots)[] = [
     (x) => ({ ...x, tags: [] }),

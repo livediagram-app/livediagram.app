@@ -221,10 +221,11 @@ const SLIDE_BODIES: ((k: Kit, top: number, bottom: number) => Element[])[] = [
     ] as const;
     const centred = { textAlignX: 'center' as const };
     const discs = steps.map((_, i) =>
-      k.shape('circle', i * colW + (colW - d) / 2, top, d, d, {
+      // Step numbers (docs/specs/009-elements/step-number.md) in the theme's accent.
+      k.shape('step', i * colW + (colW - d) / 2, top, d, d, {
         label: String(i + 1),
         textBold: true,
-        textSize: 'lg',
+        chipLook: 'solid',
       }),
     );
     return [

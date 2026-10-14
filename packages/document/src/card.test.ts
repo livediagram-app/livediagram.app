@@ -213,3 +213,34 @@ describe('card lines and inline icons', () => {
     expect('cardMedia' in sq).toBe(false);
   });
 });
+
+describe('a card with no body text', () => {
+  it('keeps its media even when too short for a body', () => {
+    const l = cardLayout(176, 60, {
+      header: false,
+      media: true,
+      title: true,
+      meta: false,
+      badge: false,
+      tags: [],
+      body: false,
+    });
+    expect(l.media).not.toBeNull();
+  });
+});
+
+describe('a one-line card', () => {
+  it('centres its title row when it has no body, tags or band', () => {
+    const l = cardLayout(216, 72, {
+      header: false,
+      media: true,
+      title: true,
+      meta: false,
+      badge: false,
+      tags: [],
+      body: false,
+    });
+    const mid = l.media!.y + l.media!.height / 2;
+    expect(mid).toBeCloseTo(36, 0);
+  });
+});

@@ -107,10 +107,11 @@ function howItWorks(k: Kit): Element[] {
     return [
       k.image(x, y, w, h),
       ...HEAT_STEPS.map(([, , ax, ay], i) =>
-        k.shape('circle', x + w * ax - m / 2, y + h * ay - m / 2, m, m, {
+        // Step numbers (docs/specs/009-elements/step-number.md) marking the picture.
+        k.shape('step', x + w * ax - m / 2, y + h * ay - m / 2, m, m, {
           label: `${i + 1}`,
           textBold: true,
-          textSize: 'lg',
+          chipLook: 'solid',
         }),
       ),
     ];
@@ -127,7 +128,7 @@ function howItWorks(k: Kit): Element[] {
       const cy = y + Math.floor(i / cols) * cellH;
       const tx = cx + d + u * 4;
       return [
-        k.shape('circle', cx, cy, d, d, { label: `${i + 1}`, textBold: true, textSize: 'lg' }),
+        k.shape('step', cx, cy, d, d, { label: `${i + 1}`, textBold: true, chipLook: 'solid' }),
         k.text(tx, cy, cx + cellW - tx, d, name, {
           textSize: 'lg',
           textBold: true,

@@ -758,22 +758,22 @@ describe('wireframe templates', () => {
     expect(tab.elements.filter((el) => el.type === 'arrow')).toHaveLength(0);
   });
 
-  it('flywheel drops a hub plus four stages with a clockwise arrow loop', () => {
+  it('flywheel is one Cycle of four stages round Momentum', () => {
     const tab = buildTemplatedTab('flywheel', 'brand', 'tab-1', 'fly');
-    const circles = tab.elements.filter((el) => el.type === 'shape' && el.shape === 'circle');
-    // One hub + four stage circles.
-    expect(circles).toHaveLength(5);
-    const labels = circles
-      .map((c) => (c as { label?: string }).label)
-      .filter((l): l is string => Boolean(l));
-    expect(labels).toContain('Momentum');
-    expect(labels).toContain('More subscribers');
-    expect(labels).toContain('More weekly orders');
-    expect(labels).toContain('Better farm deals');
-    expect(labels).toContain('Lower box prices');
-    // Four arrows complete the clockwise loop.
-    const arrows = tab.elements.filter((el) => el.type === 'arrow');
-    expect(arrows).toHaveLength(4);
+    const cycles = tab.elements.filter(
+      (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> =>
+        el.type === 'shape' && el.shape === 'cycle',
+    );
+    expect(cycles).toHaveLength(1);
+    expect(cycles[0]!.label).toBe('Momentum');
+    expect(cycles[0]!.conceptRows?.map((r) => r.label)).toEqual([
+      'More subscribers',
+      'More weekly orders',
+      'Better farm deals',
+      'Lower box prices',
+    ]);
+    // The cycle draws its own clockwise arcs; no loose arrows.
+    expect(tab.elements.filter((el) => el.type === 'arrow')).toHaveLength(0);
   });
 });
 
@@ -896,21 +896,21 @@ describe('planning + strategy templates', () => {
     for (const h of headers) expect(personaName.y + personaName.height).toBeLessThan(h.y);
   });
 
-  it('funnel drops four narrowing flipped-trapezoid tiers with a count rail', () => {
+  it('funnel is one Funnel element with a count rail', () => {
     const tab = buildTemplatedTab('funnel', 'brand', 'tab-1', 'funnel');
     const labels = labelsOf('funnel');
-    for (const stage of ['Awareness', 'Interest', 'Decision', 'Action']) {
-      expect(labels).toContain(stage);
-    }
-    const tiers = tab.elements.filter(
+    const funnels = tab.elements.filter(
       (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> =>
-        el.type === 'shape' && el.shape === 'trapezoid',
+        el.type === 'shape' && el.shape === 'pyramid',
     );
-    expect(tiers).toHaveLength(4);
-    // Every tier is flipped wide-side-up and strictly narrower than the last.
-    expect(tiers.every((t) => t.rotation === 180)).toBe(true);
-    for (let i = 1; i < tiers.length; i++)
-      expect(tiers[i]!.width).toBeLessThan(tiers[i - 1]!.width);
+    expect(funnels).toHaveLength(1);
+    expect(funnels[0]!.pyramidVariant).toBe('funnel');
+    expect(funnels[0]!.conceptRows?.map((r) => r.label)).toEqual([
+      'Awareness',
+      'Interest',
+      'Decision',
+      'Action',
+    ]);
     expect(labels).toContain('12,400');
     expect(labels.filter((l) => l.includes('move on'))).toHaveLength(3);
   });

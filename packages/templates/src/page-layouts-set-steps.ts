@@ -61,10 +61,11 @@ function howTo(k: Kit): Element[] {
     const y = gridTop + Math.floor(i / cols) * (cardH + gap);
     els.push(
       k.image(x, y, cardW, imgH),
-      k.shape('circle', x + u * 3, y + u * 3, d, d, {
+      // A Step number (docs/specs/009-elements/step-number.md) on the step's picture.
+      k.shape('step', x + u * 3, y + u * 3, d, d, {
         label: `${i + 1}`,
         textBold: true,
-        textSize: 'lg',
+        chipLook: 'solid',
       }),
       k.text(x, y + imgH + u * 2, cardW, u * 7, name, { textSize: 'lg', textBold: true }),
       k.text(x, y + imgH + u * 9, cardW, noteH, note),

@@ -209,7 +209,7 @@ describe('sequence diagram', () => {
 describe('cloud architecture', () => {
   const els = buildTemplate('cloud-architecture', 0, 0);
   const tiles = shapesOf(els, 'icon');
-  const frames = shapesOf(els, 'frame');
+  const frames = shapesOf(els, 'boundary');
   const frame = (prefix: string) => frames.filter((f) => f.label!.startsWith(prefix));
   const tile = (role: string) => tiles.find((t) => t.label!.startsWith(`${role}\n`))!;
 
@@ -221,17 +221,18 @@ describe('cloud architecture', () => {
     }
   });
 
-  it('nests edge, region, VPC and two private subnets, labels top-left, unfilled', () => {
+  it('nests edge, region, VPC and two private subnets as boundaries, the nested ones titled inside', () => {
     const [edge] = frame('Edge');
     const [region] = frame('AWS Cloud');
     const [vpc] = frame('VPC');
     const subnets = frame('Private subnet');
     expect([edge, region, vpc].every(Boolean)).toBe(true);
     expect(subnets).toHaveLength(2);
-    for (const f of frames) {
-      expect(f.textAlignX).toBe('left');
-      expect(f.fillColor).toBeUndefined();
-    }
+    // A wash of each one's own colour, never a fill of its own, so nested groups stack deeper.
+    for (const f of frames) expect(f.fillColor).toBeUndefined();
+    expect(vpc!.boundaryStyle).toBe('inset');
+    expect(vpc!.pageSubtitle).toBe('10.0.0.0/16');
+    for (const s of subnets) expect(s.boundaryStyle).toBe('inset');
     expect(inside(vpc!, region!)).toBe(true);
     for (const s of subnets) expect(inside(s, vpc!)).toBe(true);
     expect(inside(tile('Orders service'), subnets[0]!)).toBe(true);
@@ -247,8 +248,8 @@ describe('cloud architecture', () => {
   });
 
   it('keeps the three apps outside the cloud as line-art cards', () => {
-    const cards = shapesOf(els, 'square');
-    expect(cards.map((c) => c.label).sort()).toEqual([
+    const cards = shapesOf(els, 'card');
+    expect(cards.map((c) => c.pageTitle).sort()).toEqual([
       'Courier app',
       'Customer app',
       'Kitchen tablet',

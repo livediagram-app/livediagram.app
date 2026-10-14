@@ -151,13 +151,15 @@ export function buildStoryboard(cx: number, cy: number): Element[] {
     const fy = top + Math.floor(i / cols) * rowPitch;
     const at = uiAt(fx, fy);
 
-    elements.push({
+    const panel = {
       ...createShape('square', fx, fy),
       width: frameW,
       height: frameH,
-      borderRadius: 'sm',
+      borderRadius: 'sm' as const,
       ...scaffold,
-    });
+    };
+    const panelId = panel.id;
+    elements.push(panel);
 
     // The shot chip, top-right inside the panel.
     const chipW = 188;
@@ -211,16 +213,18 @@ export function buildStoryboard(cx: number, cy: number): Element[] {
       );
     }
 
-    // Number chip overlapping the panel's top-left corner.
+    // The panel's number: a Step number (docs/specs/009-elements/step-number.md) attached to its top-left corner,
+    // so it travels with the panel.
     const chip = 40;
     elements.push({
-      ...createShape('circle', fx - chip / 2 + 6, fy - chip / 2 + 6),
+      ...createShape('step', fx - chip / 2, fy - chip / 2),
       width: chip,
       height: chip,
       label: `${i + 1}`,
-      textSize: 'sm',
       textBold: true,
-      colorPreset: 'bold',
+      chipLook: 'solid',
+      attachedTo: panelId,
+      attachAt: 'top-left',
       ...scaffold,
     });
 

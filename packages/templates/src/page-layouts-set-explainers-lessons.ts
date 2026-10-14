@@ -127,7 +127,8 @@ function lessonSummary(k: Kit): Element[] {
       ...KEY_POINTS.flatMap((line, i) => {
         const ry = s.top + i * rowH;
         return [
-          k.shape('circle', x, ry, d, d, { label: `${i + 1}`, textBold: true }),
+          // A Step number (docs/specs/009-elements/step-number.md) for each key point.
+          k.shape('step', x, ry, d, d, { label: `${i + 1}`, textBold: true, chipLook: 'solid' }),
           k.text(x + d + u * 3, ry, w - d - u * 3, Math.min(rowH, u * 10), line, {
             textAlignY: d >= u * 6 ? 'middle' : 'top',
           }),
