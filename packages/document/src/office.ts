@@ -10,13 +10,7 @@ import type { FurnitureArt, FurniturePart, FurniturePartRole, FurnitureView } fr
 import type { ShapeKind } from './shape-kind';
 
 export type OfficeKind =
-  | 'room'
-  | 'meeting-table'
-  | 'plant'
-  | 'bookshelf'
-  | 'water-cooler'
-  | 'coffee-machine'
-  | 'rug';
+  'room' | 'meeting-table' | 'plant' | 'bookshelf' | 'water-cooler' | 'coffee-machine' | 'rug';
 
 export const OFFICE_KINDS: readonly OfficeKind[] = [
   'room',
@@ -319,7 +313,7 @@ export function isRoomDoor(value: unknown): value is RoomDoor {
 export const ROOM_WALL = 10;
 // The back wall's face, standing up, so the room reads from the front and above.
 export const ROOM_BACK_FACE = 36;
-export const ROOM_DOOR_WIDTH = 72;
+export const ROOM_DOOR_WIDTH = 96;
 // The floor's wash when the room has no fill of its own.
 export const ROOM_FLOOR = '#f5f0e6';
 export const RUG_FILL = '#fde68a';
@@ -358,9 +352,12 @@ export function roomParts(width: number, height: number, door: RoomDoor): Furnit
   // A mat across the doorway.
   const span = door === 'n' || door === 's' ? roomDoorSpan(width, door) : null;
   const side = door === 'e' || door === 'w' ? roomDoorSpan(height, door) : null;
-  if (span && door === 's') parts.push(rect('rail', span[0] + 6, height - W - 14, span[1] - span[0] - 12, 10, 2));
-  if (span && door === 'n') parts.push(rect('rail', span[0] + 6, F + 4, span[1] - span[0] - 12, 10, 2));
-  if (side && door === 'w') parts.push(rect('rail', W + 4, side[0] + 6, 10, side[1] - side[0] - 12, 2));
+  if (span && door === 's')
+    parts.push(rect('rail', span[0] + 6, height - W - 14, span[1] - span[0] - 12, 10, 2));
+  if (span && door === 'n')
+    parts.push(rect('rail', span[0] + 6, F + 4, span[1] - span[0] - 12, 10, 2));
+  if (side && door === 'w')
+    parts.push(rect('rail', W + 4, side[0] + 6, 10, side[1] - side[0] - 12, 2));
   if (side && door === 'e')
     parts.push(rect('rail', width - W - 14, side[0] + 6, 10, side[1] - side[0] - 12, 2));
   return parts;
@@ -381,7 +378,11 @@ export function roomWalls(el: Box & { roomDoor?: RoomDoor }): WallSegment[] {
   const left = x + half;
   const right = x + w - half;
   const out: WallSegment[] = [];
-  const along = (gap: [number, number] | null, at: (t: number) => { x: number; y: number }, len: number) => {
+  const along = (
+    gap: [number, number] | null,
+    at: (t: number) => { x: number; y: number },
+    len: number,
+  ) => {
     for (const [a, b] of brokenRun(len, gap)) if (b - a > 0) out.push({ a: at(a), b: at(b) });
   };
   along(door === 'n' ? roomDoorSpan(w, 'n') : null, (t) => ({ x: x + t, y: back }), w);

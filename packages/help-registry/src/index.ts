@@ -170,7 +170,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 35,
+    articleCount: 36,
     kind: 'feature',
   },
   {
@@ -1188,6 +1188,17 @@ export const articles: Article[] = [
     description: 'A barrier for Avatar mode: characters cannot walk through a fence.',
     keywords:
       'fence fences barrier wall block blocked keep out enclosure boundary pen gate avatar character walk collision no entry area navigate behaviour',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'virtual-office',
+    title: 'Virtual Office',
+    description:
+      'Rooms with doorways, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs for Avatar mode.',
+    keywords:
+      'virtual office room rooms walls door doorway meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception team avatar walk sit navigate',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

@@ -151,3 +151,32 @@ describe('fenceStep', () => {
     expect((performance.now() - started) / 60).toBeLessThan(4);
   });
 });
+
+// docs/specs/009-elements/office.md: a room's walls and the scenery's footprints block like a fence.
+describe('the office blocks like a fence', () => {
+  const room: Element = {
+    ...createShape('room', 0, 0),
+    id: 'room',
+    width: 400,
+    height: 300,
+    roomDoor: 's',
+  };
+
+  it('counts a room’s walls and a plant’s pot as lines, and a cooler as nothing', () => {
+    const plant: Element = { ...createShape('plant', 600, 0), id: 'p' };
+    const cooler: Element = { ...createShape('water-cooler', 700, 0), id: 'c' };
+    expect(fenceSegments([room])).toHaveLength(5);
+    expect(fenceSegments([plant])).toHaveLength(4);
+    expect(fenceSegments([cooler])).toHaveLength(0);
+  });
+
+  it('lets a character walk in through the doorway and not through a wall', () => {
+    const walls = fenceSegments([room]);
+    // Straight up through the middle of the front wall: the doorway.
+    const through = walk({ x: 200, y: 360 }, { x: 200, y: 200 }, walls);
+    expect(through.y).toBeCloseTo(200, 0);
+    // The same walk a little to the side meets the wall.
+    const blocked = walk({ x: 60, y: 360 }, { x: 60, y: 200 }, walls);
+    expect(blocked.y).toBeGreaterThan(300);
+  });
+});

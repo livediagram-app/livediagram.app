@@ -28,7 +28,7 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   showing its face (so it reads as a wall standing up, not a line), the side walls as bars, the front wall a low
   bar you see the top of. Walls are a fixed thickness however big the room, so a big room is a big floor, not
   thick walls.
-- **The doorway** is a gap in one wall, centred, 72 canvas px wide (narrower if the wall is short), with a mat
+- **The doorway** is a gap in one wall, centred, 96 canvas px wide (narrower if the wall is short), which leaves a character 72 px to walk through once the wall ends keep their reach, with a mat
   across it. `ShapeElement.roomDoor`: `'n' | 'e' | 's' | 'w' | 'none'`, the wall it is in; absent means the front
   wall (`'s'`). **None** makes a closed room you reach only through a [Portal](portal-element.md). Set from the
   element menu's **Room** section: Top, Right, Bottom, Left, None.
