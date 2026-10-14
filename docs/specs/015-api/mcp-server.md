@@ -457,7 +457,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus, as long as
   they are drawn alike: where solid and dashed lines meet at one end of a node, the lines of the style most of them
   have share it and the rest keep their own ends, leaving from that side's quarter toward their other end, beside the
-  trunk rather than on it, so a dashed event line never rides a solid call's trunk; a labelled
+  trunk rather than on it, so a dashed event line never rides a solid call's trunk, nor its run across the gap
+  between ranks (each line's runs take their own channel there); a labelled
   arrow keeps its own ends, unless arrows into one node (or out of one) say the same thing in the same line: those
   join one bus too, each label on its own leg (several services that each "publish" to one event bus), and its label
   sits on a run no other labelled arrow shares (the drop into its target,

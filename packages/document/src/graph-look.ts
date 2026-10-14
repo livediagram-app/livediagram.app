@@ -646,8 +646,8 @@ const CHANNEL_BIN = 24;
 
 // Elbows given channels of their own (docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"): every elbow
 // between the same two ranks bent at the gap's middle, so arrows from different nodes ran down one line and read as
-// joined. Within each gap the arrows of one source share a slot (its trunk) and so do the arrows into one target
-// (its bus); every other arrow gets a slot of its own, CHANNEL_GAP apart around the middle, ordered so runs going the
+// joined. Within each gap the arrows of one source drawn alike share a slot (its trunk) and so do the arrows into one
+// target (its bus); every other arrow gets a slot of its own, CHANNEL_GAP apart around the middle, ordered so runs going the
 // same way never cross: of those heading down (TB) or right (LR) the one starting nearest the far side bends first.
 export function spreadChannels(elements: Element[], axis: 'TB' | 'LR'): Element[] {
   type Bent = { el: ArrowElement; from: Pt; to: Pt; at: number };
@@ -672,20 +672,23 @@ export function spreadChannels(elements: Element[], axis: 'TB' | 'LR'): Element[
   const placed = new Map<string, number>();
   for (const group of gaps.values()) {
     // Slots: one per source trunk, a lone arrow into a shared target joining that target's bus.
+    // Keyed by line too: only lines drawn alike share a trunk or bus (withExactEnds), so a dashed event line never
+    // rides a solid call's run across the gap.
+    const line = (b: Bent) => b.el.strokeStyle ?? 'solid';
     const slotOf = new Map<string, string>();
     const bySource = new Map<string, Bent[]>();
     for (const b of group) {
-      const src = pinnedId(b.el.from) ?? b.el.id;
+      const src = `${pinnedId(b.el.from) ?? b.el.id}|${line(b)}`;
       (bySource.get(src) ?? bySource.set(src, []).get(src)!).push(b);
     }
     const intoTarget = new Map<string, Bent[]>();
     for (const b of group) {
-      const dst = pinnedId(b.el.to) ?? b.el.id;
+      const dst = `${pinnedId(b.el.to) ?? b.el.id}|${line(b)}`;
       (intoTarget.get(dst) ?? intoTarget.set(dst, []).get(dst)!).push(b);
     }
     for (const b of group) {
-      const src = pinnedId(b.el.from) ?? b.el.id;
-      const dst = pinnedId(b.el.to) ?? b.el.id;
+      const src = `${pinnedId(b.el.from) ?? b.el.id}|${line(b)}`;
+      const dst = `${pinnedId(b.el.to) ?? b.el.id}|${line(b)}`;
       slotOf.set(
         b.el.id,
         bySource.get(src)!.length > 1 || intoTarget.get(dst)!.length < 2 ? `s:${src}` : `t:${dst}`,
