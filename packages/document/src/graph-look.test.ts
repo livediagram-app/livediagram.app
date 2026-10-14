@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { layoutGraph, type GraphInput } from './graph-input';
 import { labelBoxSize } from './graph-authoring';
-import { sideStepEdges, withTones } from './graph-look';
+import { routeLoops, segmentHitsBox, sideStepEdges, withTones, type Routes } from './graph-look';
 import type { ArrowElement, BoxedElement, Element } from './index';
 
 // The graph look (docs/specs/015-api/mcp-server.md §4.7 "The graph look").
@@ -544,5 +544,33 @@ describe('storm', () => {
     );
     expect(tab.kind).toBe('event-storming');
     expect(tab.esLanesSettled).toBe(true);
+  });
+});
+
+describe('frames as walls', () => {
+  const box = (id: string, x: number, y: number, extra: object = {}): Element =>
+    ({ id, type: 'shape', shape: 'square', x, y, width: 200, height: 60, ...extra }) as Element;
+
+  it('routes a line between two nodes outside a group round it, though it touches no member', () => {
+    // a over b, a group between them whose one member stands clear of the line: the straight line runs through the
+    // frame's empty side.
+    const frame = box('g', -60, 150, { shape: 'frame', width: 420, height: 160 });
+    const member = box('m', 140, 200);
+    const line = {
+      id: 'x',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 's' },
+      to: { kind: 'pinned', elementId: 'b', anchor: 'n' },
+      arrowStyle: 'angled',
+    } as Element;
+    const routes: Routes = new Map();
+    routeLoops([box('a', 0, 0), frame, member, box('b', 0, 420), line], 'TB', new Set(), routes);
+    const route = routes.get('x');
+    expect(route).toBeDefined();
+    if (route?.kind === 'path') {
+      const f = frame as BoxedElement;
+      for (const [p, q] of route.corners.slice(1).map((c, i) => [route.corners[i]!, c] as const))
+        expect(segmentHitsBox(p, q, f)).toBe(false);
+    }
   });
 });

@@ -213,6 +213,7 @@ export function routeLoops(
       b.y + b.height <= f.y + f.height);
   const wallsFor = (src: BoxedElement, dst: BoxedElement) =>
     frames.filter((f) => !holds(f, src) && !holds(f, dst));
+  const frameGrid = rectGrid(frames, 0);
   const main = (b: BoxedElement) => (axis === 'TB' ? b.y + b.height / 2 : b.x + b.width / 2);
   const spanOf = (b: BoxedElement): [number, number] =>
     axis === 'TB' ? [b.y, b.y + b.height] : [b.x, b.x + b.width];
@@ -229,7 +230,13 @@ export function routeLoops(
     const [f, t] = [pinnedId(el.from), pinnedId(el.to)];
     if (!f || !t || f === t || flat.has(edgeKey(f, t)) || !boxes.has(f) || !boxes.has(t))
       return false;
-    return backward(el) || crossesABox(el, elements, solidGrid);
+    if (backward(el) || crossesABox(el, elements, solidGrid)) return true;
+    // A line through a group it does not join goes round it too, though it touches none of the group's members.
+    const [src, dst] = [boxes.get(f)!, boxes.get(t)!];
+    return (
+      frames.length > 0 &&
+      crossesABox(el, elements, frameGrid, (b) => holds(b, src) || holds(b, dst))
+    );
   });
   if (loops.length === 0) return elements;
 
@@ -293,7 +300,7 @@ export function routeLoops(
       taken.push(...runsOf([found.from, ...found.corners, found.to]));
       continue;
     }
-    const single = backward(current) ? singleBend(current, src, dst, solid, axis, next) : null;
+    const single = backward(current) ? singleBend(current, src, dst, obstacles, axis, next) : null;
     if (single) {
       next = next.map((el) => (el.id === loop.id ? single : el));
       routes.set(loop.id, { kind: 'corner', first: axis === 'TB' ? 'v' : 'h' });
@@ -395,7 +402,13 @@ function bestRoute(
 }
 
 // Whether an arrow's drawn path (its ends and bends) passes through a box it does not connect.
-function crossesABox(arrow: ArrowElement, elements: Element[], solid: RectGrid): boolean {
+function crossesABox(
+  arrow: ArrowElement,
+  elements: Element[],
+  solid: RectGrid,
+  // Boxes the path may pass through (a frame holding one of its ends).
+  skip?: (box: BoxedElement) => boolean,
+): boolean {
   const from = endAt(arrow, 'from', elements);
   const to = endAt(arrow, 'to', elements);
   const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
@@ -410,7 +423,7 @@ function crossesABox(arrow: ArrowElement, elements: Element[], solid: RectGrid):
       Math.max(a.x, p.x),
       Math.max(a.y, p.y),
     ) as BoxedElement[];
-    return near.some((b) => !ends.has(b.id) && segmentHitsBox(a, p, b));
+    return near.some((b) => !ends.has(b.id) && !skip?.(b) && segmentHitsBox(a, p, b));
   });
 }
 
