@@ -25,9 +25,18 @@ import {
   FURNITURE_SHADOW,
   furnitureFrame,
   furnitureParts,
+  isSeatingShape,
   seatingFacing,
   type FurniturePart,
 } from './seating';
+import {
+  DEFAULT_ROOM_DOOR,
+  isOfficeShape,
+  OFFICE_ART,
+  ROOM_FLOOR,
+  roomParts,
+  RUG_FILL,
+} from './office';
 import { chairSeatFill } from './shape-geometry';
 import { REACTION_DEFAULT, REACTION_EMOJI, REACTION_HUES } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -82,6 +91,14 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'desk',
   'sofa',
   'fence',
+  // The virtual office (docs/specs/009-elements/office.md).
+  'room',
+  'meeting-table',
+  'plant',
+  'bookshelf',
+  'water-cooler',
+  'coffee-machine',
+  'rug',
   'focus-button',
 ]);
 
@@ -170,7 +187,17 @@ export function svgBehaviourFace(
     case 'chair':
     case 'desk':
     case 'sofa':
+    case 'meeting-table':
+    case 'plant':
+    case 'bookshelf':
+    case 'water-cooler':
+    case 'coffee-machine':
       return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
+    // A rug and a room are floor: their own fill, not the seats' wash (docs/specs/009-elements/office.md).
+    case 'rug':
+      return furnitureArt(el, el.fillColor ?? RUG_FILL, stroke);
+    case 'room':
+      return roomSvg(el, el.fillColor ?? ROOM_FLOOR, stroke);
     case 'fence':
       return fenceArt(el, stroke);
     case 'comment-pin':
@@ -471,9 +498,15 @@ function fenceArt(el: Face, stroke: string): string {
 // A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"), from the FURNITURE_ART table
 // FurnitureView draws: the drawing for its facing, mirrored for facing right, exactly as the canvas.
 function furnitureArt(el: Face, seat: string, stroke: string): string {
-  if (el.shape !== 'chair' && el.shape !== 'desk' && el.shape !== 'sofa') return '';
-  const art = FURNITURE_ART[el.shape];
-  const facing = seatingFacing({ shape: el.shape, chairFacing: el.chairFacing });
+  const art = isSeatingShape(el.shape)
+    ? FURNITURE_ART[el.shape]
+    : isOfficeShape(el.shape) && el.shape !== 'room'
+      ? OFFICE_ART[el.shape]
+      : null;
+  if (!art) return '';
+  const facing = isSeatingShape(el.shape)
+    ? seatingFacing({ shape: el.shape, chairFacing: el.chairFacing })
+    : 'n';
   const frame = furnitureFrame(art, facing);
   const parts = furnitureParts(art, facing)
     .map((p) => furniturePart(p, xmlEscape(seat), xmlEscape(stroke)))
@@ -485,6 +518,14 @@ function furnitureArt(el: Face, seat: string, stroke: string): string {
   );
 }
 
+// A room (docs/specs/009-elements/office.md "Room"), drawn to its own size so its walls keep their thickness.
+function roomSvg(el: Face, floor: string, stroke: string): string {
+  const parts = roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR)
+    .map((p) => furniturePart(p, xmlEscape(floor), xmlEscape(stroke)))
+    .join('');
+  return `<g transform="translate(${r2(el.x)} ${r2(el.y)})">${parts}</g>`;
+}
+
 function furniturePart(p: FurniturePart, seat: string, line: string): string {
   const paint = (() => {
     switch (p.role) {
@@ -492,7 +533,9 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
         return `fill="${FURNITURE_SHADOW.fill}" opacity="${FURNITURE_SHADOW.opacity}"`;
       case 'panel':
       case 'face':
-        return `fill="${seat}" stroke="${line}" stroke-width="${FURNITURE_PANEL_STROKE}"`;
+        return `fill="${p.fill ? xmlEscape(p.fill) : seat}" stroke="${line}" stroke-width="${FURNITURE_PANEL_STROKE}"`;
+      case 'floor':
+        return `fill="${seat}"`;
       case 'line':
         return `fill="none" stroke="${line}" stroke-width="${FURNITURE_LINE_STROKE}" stroke-linecap="round"`;
       case 'rail':

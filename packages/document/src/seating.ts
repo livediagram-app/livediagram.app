@@ -7,14 +7,15 @@
 // All three share `chairFacing` (where the furniture's back is) and the walk hook's arrival rule;
 // what differs is the drawing, the facing it is drawn at, and how many seats it has.
 
-import { DEFAULT_CHAIR_FACING, type ChairFacing } from './collab-shapes';
+import { DEFAULT_CHAIR_FACING, type ChairFacing, type ChairSitterFacing } from './collab-shapes';
+import { MEETING_TABLE_ART, MEETING_TABLE_VIEW } from './office';
 import type { ShapeKind } from './shape-kind';
 
-export type SeatingKind = 'chair' | 'desk' | 'sofa';
+export type SeatingKind = 'chair' | 'desk' | 'sofa' | 'meeting-table';
 export type FurnitureKind = 'desk' | 'sofa';
 
 export function isSeatingShape(kind: ShapeKind | string): kind is SeatingKind {
-  return kind === 'chair' || kind === 'desk' || kind === 'sofa';
+  return kind === 'chair' || kind === 'desk' || kind === 'sofa' || kind === 'meeting-table';
 }
 
 export function isFurnitureShape(kind: ShapeKind | string): kind is FurnitureKind {
@@ -27,6 +28,8 @@ export const DEFAULT_SEATING_FACING: Record<SeatingKind, ChairFacing> = {
   chair: DEFAULT_CHAIR_FACING,
   sofa: 'n',
   desk: 's',
+  // The meeting table reads the same from every side and does not turn.
+  'meeting-table': 'n',
 };
 
 export function seatingFacing(el: { shape: SeatingKind; chairFacing?: ChairFacing }): ChairFacing {
@@ -55,12 +58,23 @@ export function facingSwapsBox(from: ChairFacing, to: ChairFacing): boolean {
 //   rail:   a faint stroke (a seam, a stand)
 //   screen: the monitor's glass (the stroke colour, so it follows the theme)
 //   glint:  a light reflection on the glass
-export type FurniturePartRole = 'shadow' | 'panel' | 'face' | 'line' | 'rail' | 'screen' | 'glint';
+//   floor:  a room's floor, in the element's fill, unstroked (docs/specs/009-elements/office.md)
+// A panel or face may carry its own `fill`: what keeps its colour whatever the theme (a leaf, water, coffee).
+export type FurniturePartRole =
+  | 'shadow'
+  | 'panel'
+  | 'face'
+  | 'line'
+  | 'rail'
+  | 'screen'
+  | 'glint'
+  | 'floor';
 
-export type FurniturePart =
+export type FurniturePart = (
   | { tag: 'rect'; role: FurniturePartRole; x: number; y: number; w: number; h: number; rx: number }
   | { tag: 'ellipse'; role: FurniturePartRole; cx: number; cy: number; rx: number; ry: number }
-  | { tag: 'path'; role: FurniturePartRole; d: string };
+  | { tag: 'path'; role: FurniturePartRole; d: string }
+) & { fill?: string };
 
 // One drawing of a piece, from the room's camera (docs/specs/009-elements/chair.md "Facing").
 export type FurnitureView = {
@@ -307,6 +321,7 @@ export const FURNITURE_ART: Record<SeatingKind, FurnitureArt> = {
   chair: CHAIR_ART,
   desk: DESK_ART,
   sofa: SOFA_ART,
+  'meeting-table': MEETING_TABLE_ART,
 };
 
 // Stroke widths, in grid units.
@@ -340,10 +355,19 @@ export function furnitureParts(art: FurnitureArt, facing: ChairFacing): readonly
 
 type Box = { x: number; y: number; width: number; height: number };
 
-/** Every seat's feet point, in canvas coordinates, from the drawing its facing shows. */
+/**
+ * Every seat's feet point, in canvas coordinates, from the drawing its facing shows. A meeting table's seats
+ * also say which way their sitter faces (docs/specs/009-elements/office.md "Meeting Table").
+ */
 export function seatPoints(
   el: Box & { shape: SeatingKind; chairFacing?: ChairFacing },
-): { x: number; y: number }[] {
+): { x: number; y: number; facing?: ChairSitterFacing }[] {
+  if (el.shape === 'meeting-table')
+    return MEETING_TABLE_VIEW.tableSeats.map(({ u, v, facing }) => ({
+      x: el.x + el.width * u,
+      y: el.y + el.height * v,
+      facing,
+    }));
   const { view: name, mirrored } = facingView(seatingFacing(el));
   return FURNITURE_ART[el.shape][name].seats.map(({ u, v }) => ({
     x: el.x + el.width * (mirrored ? 1 - u : u),
@@ -362,7 +386,7 @@ export function furnitureRing(art: FurnitureArt, facing: ChairFacing): Furniture
 export function nearestSeat(
   el: Box & { shape: SeatingKind; chairFacing?: ChairFacing },
   from: { x: number; y: number },
-): { x: number; y: number } {
+): { x: number; y: number; facing?: ChairSitterFacing } {
   const seats = seatPoints(el);
   let best = seats[0]!;
   for (const seat of seats) {
@@ -382,7 +406,8 @@ export function turnedSeatingBox(
   from: ChairFacing,
   to: ChairFacing,
 ): Box {
-  if (el.shape === 'chair' || !facingSwapsBox(from, to)) return { ...el };
+  if (el.shape === 'chair' || el.shape === 'meeting-table' || !facingSwapsBox(from, to))
+    return { ...el };
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
   return { x: cx - el.height / 2, y: cy - el.width / 2, width: el.height, height: el.width };

@@ -10,6 +10,7 @@
 // and because the editor needs to answer one question about all of them at
 // once: does this element carry a `…` on its face?
 
+import { isOfficeShape } from './office';
 import type { ShapeKind } from './index';
 
 // Every kind the palette's Behaviours category can place.
@@ -25,6 +26,15 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'fence',
   'desk',
   'sofa',
+  // The virtual office (docs/specs/009-elements/office.md): what happens is a character walking in, round
+  // or up to it.
+  'room',
+  'meeting-table',
+  'plant',
+  'bookshelf',
+  'water-cooler',
+  'coffee-machine',
+  'rug',
   'done-check',
   'estimate',
   // Quiz (docs/specs/012-collaboration/quiz.md).
@@ -99,6 +109,7 @@ export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
     kind === 'desk' ||
     kind === 'sofa' ||
     kind === 'fence' ||
+    isOfficeShape(kind) ||
     kind === 'reveal' ||
     kind === 'comment-pin' ||
     kind === 'action-card'

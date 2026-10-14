@@ -341,7 +341,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Navigate',
     group: 6,
     description:
-      'Take people somewhere: a portal to another tab, a bring-focus button, a chair, desk or sofa, a fence or a link card.',
+      'Take people somewhere and build an office: a portal, a bring-focus button, a chair, desk or sofa, a fence, a link card, rooms, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs.',
     icon: <MoveGroupIcon />,
   },
 ];

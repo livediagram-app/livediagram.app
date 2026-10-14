@@ -156,6 +156,14 @@ export const SHAPE_KINDS = new Set<string>([
   // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa").
   'desk',
   'sofa',
+  // The virtual office (docs/specs/009-elements/office.md).
+  'room',
+  'meeting-table',
+  'plant',
+  'bookshelf',
+  'water-cooler',
+  'coffee-machine',
+  'rug',
   // The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md).
   'estimate',
   'temperature',

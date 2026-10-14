@@ -593,6 +593,7 @@ export * from './shape-geometry';
 export * from './fence';
 // Seating (docs/specs/009-elements/chair.md): the desk and sofa drawings and every seat's feet point.
 export * from './seating';
+export * from './office';
 export * from './actor-figure';
 export * from './color-wash';
 export { labelOn } from './readable-colour';

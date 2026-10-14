@@ -20,6 +20,13 @@ import {
   ChairIcon,
   DeskIcon,
   FenceIcon,
+  RoomIcon,
+  MeetingTableIcon,
+  PlantIcon,
+  BookshelfIcon,
+  WaterCoolerIcon,
+  CoffeeMachineIcon,
+  RugIcon,
   SofaIcon,
   DecisionIcon,
   EraserIcon,
@@ -1185,6 +1192,111 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'fence' },
     icon: <FenceIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Room (docs/specs/009-elements/office.md).
+    id: 'tools:room',
+    tileGroup: 'move',
+    blurb: 'A room with walls and a doorway',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Room',
+    caption: 'Room',
+    description:
+      'A room for a virtual office: walls Avatar-mode characters walk round, a doorway they walk through, and its name on the back wall. It goes in behind everything, so furniture stands on its floor.',
+    filled: true,
+    action: { type: 'shape', kind: 'room' },
+    icon: <RoomIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Meeting Table (docs/specs/009-elements/office.md).
+    id: 'tools:meeting-table',
+    tileGroup: 'move',
+    blurb: 'A table with six seats round it',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Meeting Table',
+    caption: 'Meeting Table',
+    description:
+      'A meeting table with six chairs for Avatar mode: walk your character in and it sits on the nearest seat, facing the table.',
+    filled: true,
+    action: { type: 'shape', kind: 'meeting-table' },
+    icon: <MeetingTableIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Plant (docs/specs/009-elements/office.md).
+    id: 'tools:plant',
+    tileGroup: 'move',
+    blurb: 'A potted plant Avatars walk round',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Plant',
+    caption: 'Plant',
+    description:
+      'A potted plant to make an office feel lived in. Avatar-mode characters walk round its pot.',
+    filled: true,
+    action: { type: 'shape', kind: 'plant' },
+    icon: <PlantIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Bookshelf (docs/specs/009-elements/office.md).
+    id: 'tools:bookshelf',
+    tileGroup: 'move',
+    blurb: 'Shelves of books Avatars walk round',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Bookshelf',
+    caption: 'Bookshelf',
+    description:
+      'A bookshelf to stand against a wall. Avatar-mode characters walk along in front of it, not through it.',
+    filled: true,
+    action: { type: 'shape', kind: 'bookshelf' },
+    icon: <BookshelfIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Water Cooler (docs/specs/009-elements/office.md).
+    id: 'tools:water-cooler',
+    tileGroup: 'move',
+    blurb: 'Walk up for a cup of water',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Water Cooler',
+    caption: 'Water Cooler',
+    description:
+      'A water cooler for Avatar mode: walk your character up to it and it gets a cup of water, sipping it for a minute where everyone can see.',
+    filled: true,
+    action: { type: 'shape', kind: 'water-cooler' },
+    icon: <WaterCoolerIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Coffee Machine (docs/specs/009-elements/office.md).
+    id: 'tools:coffee-machine',
+    tileGroup: 'move',
+    blurb: 'Walk up for a coffee',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Coffee Machine',
+    caption: 'Coffee Machine',
+    description:
+      'A coffee machine for Avatar mode: walk your character up to it and it gets a steaming coffee, sipping it for a minute where everyone can see.',
+    filled: true,
+    action: { type: 'shape', kind: 'coffee-machine' },
+    icon: <CoffeeMachineIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Rug (docs/specs/009-elements/office.md).
+    id: 'tools:rug',
+    tileGroup: 'move',
+    blurb: 'A rug on the floor',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Rug',
+    caption: 'Rug',
+    description:
+      'A rug that lies on the floor under the furniture, to mark out a lounge or a reception.',
+    filled: true,
+    action: { type: 'shape', kind: 'rug' },
+    icon: <RugIcon size={TILE_GLYPH_PX} />,
   },
   // --- Collaborate (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) ----------------------------------
   // Elements that collect what the ROOM thinks. Rows with a blurb, like

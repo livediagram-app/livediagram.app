@@ -16,12 +16,15 @@ import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
 import { FENCE_WOOD } from './fence';
+import { isOfficeShape, ROOM_FLOOR, RUG_FILL } from './office';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
   switch (element.type) {
     case 'shape':
-      return 'sm';
+      // A room's name sits in its back wall's face (docs/specs/009-elements/office.md "Room"): the roomier
+      // padding clears the wall's top.
+      return element.shape === 'room' ? 'md' : 'sm';
     case 'text':
       return 'none';
     case 'sticky':
@@ -222,7 +225,28 @@ function behaviourSkin(
   if (kind === 'fence') {
     return { fill: 'transparent', stroke: FENCE_WOOD[surface], text: OUTLINE_SKIN_LIGHT.text };
   }
-  if (kind === 'reveal' || kind === 'chair' || kind === 'desk' || kind === 'sofa') {
+  // A room's floor and a rug are the element's fill (docs/specs/009-elements/office.md): warm on light paper,
+  // deep on dark. Their outlines are the furniture's.
+  if (kind === 'room' || kind === 'rug') {
+    const fill =
+      kind === 'room'
+        ? surface === 'dark'
+          ? '#292524'
+          : ROOM_FLOOR
+        : surface === 'dark'
+          ? '#713f12'
+          : RUG_FILL;
+    return surface === 'dark'
+      ? { fill, stroke: DARK_INK.stroke, text: DARK_INK.text }
+      : { fill, ...OUTLINE_SKIN_LIGHT };
+  }
+  if (
+    kind === 'reveal' ||
+    kind === 'chair' ||
+    kind === 'desk' ||
+    kind === 'sofa' ||
+    isOfficeShape(kind)
+  ) {
     if (surface === 'dark') {
       return { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text };
     }
@@ -569,6 +593,14 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'fence',
   'desk',
   'sofa',
+  // The office pieces (docs/specs/009-elements/office.md) draw themselves, the room its own floor.
+  'room',
+  'meeting-table',
+  'plant',
+  'bookshelf',
+  'water-cooler',
+  'coffee-machine',
+  'rug',
   // A quiz (docs/specs/012-collaboration/quiz.md) paints its own disc and ring of answers; a box behind
   // them would frame a circle in a square.
   'quiz',

@@ -7,7 +7,14 @@
 // no gap to squeeze through. A refused step slides along the fence instead, the way people walk
 // along a wall.
 
-import { fenceLine, type Element, type FencePoint } from '@livediagram/document';
+import {
+  boxEdges,
+  fenceLine,
+  officeFootprint,
+  roomWalls,
+  type Element,
+  type FencePoint,
+} from '@livediagram/document';
 
 // How close a character's feet may come to a fence's line, in canvas px: about the feet's own
 // half-width, so a character stops AT a fence rather than standing in it.
@@ -18,11 +25,21 @@ export const FENCE_STALL = 0.25;
 
 export type FenceSegment = { a: FencePoint; b: FencePoint };
 
-/** The blocking line of every fence on the tab, in paint order. */
+/**
+ * Every line on the tab a character cannot cross, in paint order: each fence's run, each room's walls (broken
+ * at its doorway), and the outline of each piece of scenery's footprint (docs/specs/009-elements/office.md), all
+ * blocked the same way.
+ */
 export function fenceSegments(elements: readonly Element[]): FenceSegment[] {
   const out: FenceSegment[] = [];
   for (const el of elements) {
-    if (el.type === 'shape' && el.shape === 'fence') out.push(fenceLine(el));
+    if (el.type !== 'shape') continue;
+    if (el.shape === 'fence') out.push(fenceLine(el));
+    else if (el.shape === 'room') out.push(...roomWalls(el));
+    else {
+      const footprint = officeFootprint(el);
+      if (footprint) out.push(...boxEdges(footprint));
+    }
   }
   return out;
 }

@@ -175,6 +175,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   chair: ['chairFacing'],
   desk: ['chairFacing'],
   sofa: ['chairFacing'],
+  // docs/specs/009-elements/office.md: which wall a room's doorway is in.
+  room: ['roomDoor'],
   portal: ['portalTarget'],
   // docs/specs/009-elements/tab-window.md: which tab the window shows.
   'tab-window': ['windowTabId'],

@@ -157,6 +157,7 @@ export function EditorContextMenuHost() {
     setDecisionDateSelected,
     setDecisionDriversSelected,
     setChairFacingSelected,
+    setRoomDoorSelected,
     setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,
@@ -465,6 +466,7 @@ export function EditorContextMenuHost() {
       onSetDecisionDate={setDecisionDateSelected}
       onSetDecisionDrivers={setDecisionDriversSelected}
       onSetChairFacing={setChairFacingSelected}
+      onSetRoomDoor={setRoomDoorSelected}
       onSetButtonMode={setButtonModeSelected}
       onSetPortalTarget={setPortalTargetSelected}
       onSetPortalName={setPortalNameSelected}

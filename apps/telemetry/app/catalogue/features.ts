@@ -834,11 +834,20 @@ export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
   ),
 );
 
+// The office's machines (docs/specs/009-elements/office.md "Using it"): a drink taken in Avatar mode.
+export const OFFICE_DRINKS = chart(
+  'Canvas',
+  'Used',
+  'Office Drinks',
+  'A drink taken at a water cooler or a coffee machine in Avatar mode.',
+  { types: ['WaterCooler', 'CoffeeMachine'] },
+);
+
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, MODE_OPTIONS],
+  members: [...MODE_METRICS, OFFICE_DRINKS, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
   seeAlso: { view: 'modes', label: 'See Each Mode on the Modes Tab' },
