@@ -85,7 +85,7 @@ export function ImageEmptyFace({
       ].join(', '),
     };
     const className =
-      'flex shrink-0 items-center justify-center transition-transform duration-200 ease-out group-hover:-translate-y-px group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:transform-none';
+      'flex shrink-0 items-center justify-center transition-transform duration-150 ease-out group-hover:-translate-y-px group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:transform-none';
     const glyph = <ImageGlyph size={glyphPx} />;
     return asButton ? (
       <button
