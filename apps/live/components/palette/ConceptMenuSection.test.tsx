@@ -39,6 +39,18 @@ function show(target: ShapeElement & { shape: ConceptShape }) {
 }
 
 describe('ConceptMenuSection', () => {
+  it("switches a hub's spokes off, and names each new kind", () => {
+    const { ops, lastMap } = show(make('hub'));
+    expect(screen.getByText('Hub and Spoke')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Spokes/ }));
+    expect(ops.commit).toHaveBeenCalledWith(expect.any(Function), 'HubSpokes');
+    expect(lastMap()(make('hub')).hubSpokes).toBe(false);
+    cleanup();
+    show(make('chevrons'));
+    expect(screen.queryByRole('button', { name: /Spokes/ })).toBeNull();
+    expect(screen.getByText('Chevrons')).toBeTruthy();
+  });
+
   it('switches a pyramid to a funnel', () => {
     const { lastMap } = show(make('pyramid'));
     fireEvent.click(screen.getByRole('button', { name: 'Funnel' }));

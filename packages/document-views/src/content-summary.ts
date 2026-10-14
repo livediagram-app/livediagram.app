@@ -69,6 +69,15 @@ function conceptSummary(el: Element): string {
   return `rows=${labels}${variant ? ` variant=${cellText(variant)}` : ''}`;
 }
 
+// A sequence diagram (docs/specs/009-elements/sequence-diagram.md): its participants in order and its message count.
+function sequenceSummary(el: Element): string {
+  const people = arrayField(el, 'sequenceParticipants')
+    .filter(isObject)
+    .map((p) => cellText(stringField(p, 'label') ?? '?'))
+    .join('|');
+  return `participants=${people} messages=${arrayField(el, 'sequenceMessages').length}`;
+}
+
 export function contentSummaryOf(el: Element): string | null {
   switch (shapeKindOf(el)) {
     case 'entity':
@@ -89,7 +98,14 @@ export function contentSummaryOf(el: Element): string | null {
     case 'layer-stack':
     case 'pyramid':
     case 'cycle':
+    case 'hub':
+    case 'onion':
+    case 'chevrons':
       return conceptSummary(el);
+    case 'sequence':
+      return sequenceSummary(el);
+    case 'stack':
+      return `direction=${cellText(stringField(el, 'stackDirection') ?? 'row')}`;
     case 'plan-board':
       return planBoardSummary(el);
     case 'plan-card': {

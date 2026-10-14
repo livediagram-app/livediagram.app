@@ -3626,6 +3626,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "chevrons": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "circle": {
             "additionalProperties": false,
             "properties": {
@@ -3717,6 +3732,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "decision": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "diagram-key": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3852,6 +3882,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "hexagon": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "hub": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -4016,6 +4061,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "onion": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "page": {
             "additionalProperties": false,
             "properties": {
@@ -4137,6 +4197,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "plan-view": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "pointer-note": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -4331,6 +4406,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "sequence": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "session-button": {
             "additionalProperties": false,
             "properties": {
@@ -4392,6 +4482,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "square": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "stack": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -8244,6 +8349,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "KeyRow": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "kind": {
+        "enum": [
+          "line",
+          "tag"
+        ],
+        "type": "string"
+      },
+      "style": {
+        "type": "string"
+      },
+      "tag": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "kind"
+    ],
+    "type": "object"
+  },
   "KnownTimelineEventType": {
     "enum": [
       "document_created",
@@ -9277,6 +9411,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "upward",
       "bubble"
     ],
+    "type": "string"
+  },
+  "MindLook": {
+    "const": "person",
     "type": "string"
   },
   "MindSpacing": {
@@ -11833,6 +11971,57 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "SequenceElementMessage": {
+    "additionalProperties": false,
+    "properties": {
+      "from": {
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/SequenceMessageKindName"
+      },
+      "label": {
+        "type": "string"
+      },
+      "to": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "from",
+      "to",
+      "label",
+      "kind"
+    ],
+    "type": "object"
+  },
+  "SequenceElementParticipant": {
+    "additionalProperties": false,
+    "properties": {
+      "actor": {
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "label"
+    ],
+    "type": "object"
+  },
+  "SequenceMessageKindName": {
+    "enum": [
+      "call",
+      "async",
+      "reply"
+    ],
+    "type": "string"
+  },
   "SessionButtonConfig": {
     "additionalProperties": false,
     "properties": {
@@ -12072,6 +12261,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "height": {
         "type": "number"
       },
+      "hubSpokes": {
+        "type": "boolean"
+      },
       "iconAnimation": {
         "$ref": "#/components/schemas/IconAnimation"
       },
@@ -12111,6 +12303,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ideasRevealed": {
         "type": "boolean"
       },
+      "keyMeanings": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "keyRows": {
+        "items": {
+          "$ref": "#/components/schemas/KeyRow"
+        },
+        "type": "array"
+      },
       "label": {
         "type": "string"
       },
@@ -12149,6 +12353,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "mindFlow": {
         "$ref": "#/components/schemas/MindFlow"
+      },
+      "mindLook": {
+        "$ref": "#/components/schemas/MindLook"
       },
       "mindParentId": {
         "$ref": "#/components/schemas/ElementId"
@@ -12230,6 +12437,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "planView": {
         "$ref": "#/components/schemas/PlanViewRef"
+      },
+      "pointerTip": {
+        "additionalProperties": false,
+        "properties": {
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ],
+        "type": "object"
       },
       "portalTarget": {
         "$ref": "#/components/schemas/ElementId"
@@ -12375,6 +12598,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "sankeyValueLabel": {
         "$ref": "#/components/schemas/SankeyValueLabel"
       },
+      "sequenceAnim": {
+        "const": "play",
+        "type": "string"
+      },
+      "sequenceAnimRepeat": {
+        "type": "boolean"
+      },
+      "sequenceAnimSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "sequenceMessages": {
+        "items": {
+          "$ref": "#/components/schemas/SequenceElementMessage"
+        },
+        "type": "array"
+      },
+      "sequenceNumbered": {
+        "type": "boolean"
+      },
+      "sequenceParticipants": {
+        "items": {
+          "$ref": "#/components/schemas/SequenceElementParticipant"
+        },
+        "type": "array"
+      },
       "session": {
         "$ref": "#/components/schemas/SessionButtonConfig"
       },
@@ -12386,6 +12634,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "sheetAnchor": {
         "$ref": "#/components/schemas/SheetAnchor"
+      },
+      "stackAlign": {
+        "$ref": "#/components/schemas/StackAlign"
+      },
+      "stackColumns": {
+        "type": "number"
+      },
+      "stackDirection": {
+        "$ref": "#/components/schemas/StackDirection"
+      },
+      "stackGap": {
+        "type": "number"
+      },
+      "stackPadding": {
+        "type": "number"
       },
       "stats": {
         "items": {
@@ -12500,10 +12763,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "card",
       "badge",
       "step",
+      "pointer-note",
+      "diagram-key",
+      "stack",
+      "sequence",
       "boundary",
       "layer-stack",
       "pyramid",
       "cycle",
+      "hub",
+      "onion",
+      "chevrons",
       "stat-row",
       "process",
       "site-header",
@@ -13432,6 +13702,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "StackAlign": {
+    "enum": [
+      "start",
+      "center",
+      "end"
+    ],
+    "type": "string"
+  },
+  "StackDirection": {
+    "enum": [
+      "row",
+      "column",
+      "grid"
+    ],
+    "type": "string"
+  },
   "StatItem": {
     "additionalProperties": false,
     "properties": {
@@ -13780,6 +14066,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "patternColor": {
         "type": "string"
       },
+      "tagColours": {
+        "items": {
+          "$ref": "#/components/schemas/TagColour"
+        },
+        "type": "array"
+      },
       "templateChosen": {
         "type": "boolean"
       },
@@ -13908,6 +14200,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "rev": {
         "type": "number"
+      },
+      "tagColours": {
+        "items": {
+          "$ref": "#/components/schemas/TagColour"
+        },
+        "type": "array"
       },
       "templateChosen": {
         "type": "boolean"
@@ -14284,6 +14582,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "width",
       "height",
       "cells"
+    ],
+    "type": "object"
+  },
+  "TagColour": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "tag": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tag",
+      "color"
     ],
     "type": "object"
   },

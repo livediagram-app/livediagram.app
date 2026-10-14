@@ -126,6 +126,9 @@ import { themeChartPalette } from './theme-presets';
 import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
 import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
+import { isPointerNote, pointerTipOf } from './pointer-note';
+import { isPersonNode } from './person-node';
+import { tagColoursOf, withTagAccent } from './tag-colours';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -148,6 +151,14 @@ export function contentBounds(
       }
     } else {
       points.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
+      // A pointer note's tip can sit well outside its box (docs/specs/009-elements/pointer-note.md).
+      if (isPointerNote(el)) {
+        const t = pointerTipOf(el);
+        points.push(
+          { x: el.x + t.x - 4, y: el.y + t.y - 4 },
+          { x: el.x + t.x + 4, y: el.y + t.y + 4 },
+        );
+      }
     }
   }
   const b = boundsOfPoints(points);
@@ -164,7 +175,8 @@ export { svgIconShape } from './svg-render-image-icon';
 export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): string {
   const surface = opts.surface ?? 'light';
   // A stock colour stored by name is drawn in its version for this page.
-  const el = resolveStockColours(source, surface);
+  // A card under the tab's tag colours renders their accent edge (docs/specs/009-elements/tag-colours.md).
+  const el = resolveStockColours(withTagAccent(source, opts.tagColours), surface);
   const { opacity, shape, label: described } = describeBoxedExport(el, opts);
   let label = described;
   // What a self-drawing element writes its own text in: the label's resolved
@@ -315,6 +327,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       label: label?.text ?? el.label ?? '',
       surface,
       resolveIconArt: opts.resolveIconArt,
+      tagColours: opts.tagColours,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the
@@ -504,6 +517,8 @@ export function boxedNeedsSvgRaster(
   // plain boxes while the SVG export drew them properly, which is the same
   // inconsistency one file down.
   if (el.type === 'shape' && shapeHasBespokeBody(el.shape)) return true;
+  // A person node's disc and lines (docs/specs/009-elements/org-chart.md) are drawn by the SVG alone.
+  if (isPersonNode(el)) return true;
   if (el.type === 'shape' && el.shape === 'icon' && el.iconId && resolveIconArt?.(el.iconId))
     return true;
   // An inline icon beside a label (svg-render-inline-icon) is drawn by the SVG alone.
@@ -597,6 +612,8 @@ export function renderElementsToSvg(
   // Per band, in the canvas's paint order (docs/specs/006-document/layers.md): arrows and boxes
   // interleave by array order, so an arrow sent behind a box stays behind it.
   // A dimmed layer wraps its band in a <g opacity>.
+  // The tab's tag colours (docs/specs/009-elements/tag-colours.md): a mapped card's edge and chips.
+  const tagColours = tagColoursOf(tab);
   for (const band of layerBands(tab.elements, tab.layers)) {
     const shown = frame
       ? band.elements.filter((el) => frame.reaches(el, tab.elements))
@@ -618,6 +635,7 @@ export function renderElementsToSvg(
             itemTypes: opts.itemTypes,
             sheets: opts.sheets,
             resolvePlanArt: opts.resolvePlanArt,
+            tagColours,
           }),
     );
     const opacity = layerOpacityOf(band.layer);

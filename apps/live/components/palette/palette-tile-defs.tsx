@@ -491,6 +491,25 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The org chart (docs/specs/009-elements/org-chart.md): a person root in the Downward flow; Tab adds a report.
+    id: 'tools:org-chart',
+    blurb: 'Tab adds a report, Enter a peer',
+    caption: 'Org Chart',
+    section: 'build',
+    label: 'Add Org Chart',
+    description:
+      'Org chart. A person with a name and role; with it selected, Tab adds a report below and Enter a peer beside it.',
+    action: { type: 'shape', kind: 'mind-node', variant: 'org-chart' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="8" y="2.5" width="8" height="5" rx="1.5" />
+        <rect x="2" y="16.5" width="8" height="5" rx="1.5" />
+        <rect x="14" y="16.5" width="8" height="5" rx="1.5" />
+        <path d="M12 7.5V12M6 16.5V12h12v4.5" />
+      </Glyph>
+    ),
+  },
+  {
     // Flowchart (docs/specs/009-elements/flowchart.md): drops a Start that IS a chart; the steps grow
     // from it and the chart lays itself out.
     id: 'tools:flowchart',
@@ -509,6 +528,26 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <path d="M12 6v3.5M8 13H4.5v4.5M16 13h3.5v4.5" />
         <rect x="1.5" y="17.5" width="6" height="5" rx="0.5" />
         <rect x="16.5" y="17.5" width="6" height="5" rx="0.5" />
+      </Glyph>
+    ),
+  },
+  {
+    // The sequence diagram (docs/specs/009-elements/sequence-diagram.md): participants and messages, laid out as UML.
+    id: 'tools:sequence',
+    blurb: 'Who calls whom, in order',
+    caption: 'Sequence',
+    section: 'build',
+    label: 'Add Sequence Diagram',
+    description:
+      'Sequence diagram. Participants side by side and the messages between them in order; add a message by typing a row and the diagram lays itself out.',
+    action: { type: 'shape', kind: 'sequence' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="2" y="2" width="6" height="4" rx="1" />
+        <rect x="16" y="2" width="6" height="4" rx="1" />
+        <path d="M5 6v16M19 6v16" strokeDasharray="2 2" />
+        <path d="M5 10h13M15.5 8l2.5 2-2.5 2" />
+        <path d="M19 16H6M8.5 14 6 16l2.5 2" strokeDasharray="2 1.5" />
       </Glyph>
     ),
   },
@@ -1517,6 +1556,25 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The stack (docs/specs/009-elements/stack.md): a container that arranges what is dropped into it.
+    id: 'tools:stack',
+    blurb: 'Lines things up with even gaps',
+    caption: 'Stack',
+    section: 'build',
+    label: 'Add Stack',
+    description:
+      'Stack. Drop elements in and it lines them up in a row, a column or a grid with even gaps, and reflows as they change.',
+    action: { type: 'shape', kind: 'stack' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="2.5" y="6" width="19" height="12" rx="2" strokeDasharray="2.5 2" />
+        <rect x="5" y="9" width="4" height="6" rx="1" />
+        <rect x="10" y="9" width="4" height="6" rx="1" />
+        <rect x="15" y="9" width="4" height="6" rx="1" />
+      </Glyph>
+    ),
+  },
+  {
     // The boundary (docs/specs/009-elements/boundary.md): a titled, tinted container for regions and systems.
     id: 'tools:boundary',
     blurb: 'A titled zone: a region, a VPC, a system',
@@ -1529,6 +1587,26 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <rect x="3" y="6" width="18" height="15" rx="2" strokeDasharray="3 2.5" />
         <rect x="5" y="3.5" width="9" height="5" rx="1.5" />
+      </Glyph>
+    ),
+  },
+  {
+    // The diagram key (docs/specs/009-elements/diagram-key.md): a legend of the tab's line patterns and tag colours.
+    id: 'tools:diagram-key',
+    blurb: 'A legend that fills itself in',
+    caption: 'Diagram Key',
+    section: 'build',
+    label: 'Add Diagram Key',
+    description:
+      'Diagram key. Lists the line styles and tag colours this tab uses, each with a meaning you type.',
+    filled: true,
+    action: { type: 'shape', kind: 'diagram-key' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
+        <path d="M5.5 9h5M15 9h3.5" />
+        <path d="M5.5 14h1.5M9 14h1.5M15 14h3.5" />
+        <path d="M5.5 17.5h5" strokeOpacity={0.5} />
       </Glyph>
     ),
   },
@@ -1601,6 +1679,59 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    id: 'concepts:hub',
+    blurb: 'Satellites round a centre',
+    caption: 'Hub and Spoke',
+    section: 'concepts',
+    label: 'Add Hub and Spoke',
+    description:
+      'Hub and spoke. Satellites round a central hub, joined by spokes: an ecosystem, stakeholders, integrations.',
+    action: { type: 'shape', kind: 'hub' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <circle cx="12" cy="12" r="3.2" />
+        <circle cx="12" cy="3.5" r="1.8" />
+        <circle cx="19.4" cy="16.2" r="1.8" />
+        <circle cx="4.6" cy="16.2" r="1.8" />
+        <path d="M12 8.8V5.3M14.8 13.6l3 1.7M9.2 13.6l-3 1.7" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:onion',
+    blurb: 'Rings from a core outward',
+    caption: 'Onion',
+    section: 'concepts',
+    label: 'Add Onion',
+    description:
+      'Onion rings. Concentric rings from a core outward: clean architecture, trust layers, a maturity model.',
+    action: { type: 'shape', kind: 'onion' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <circle cx="12" cy="12" r="9" />
+        <circle cx="12" cy="12" r="6" />
+        <circle cx="12" cy="12" r="3" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:chevrons',
+    blurb: 'Arrow-shaped stages in a row',
+    caption: 'Chevrons',
+    section: 'concepts',
+    label: 'Add Chevrons',
+    description:
+      'Chevron process. Arrow-shaped stages in a row, each pointing into the next: a pipeline, a value chain, phases.',
+    action: { type: 'shape', kind: 'chevrons' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M2 8h5l2.5 4L7 16H2l2.5-4Z" />
+        <path d="M9 8h5l2.5 4L14 16H9l2.5-4Z" />
+        <path d="M16 8h4.5l2 4-2 4H16l2.5-4Z" />
+      </Glyph>
+    ),
+  },
+  {
     id: 'tools:annotation',
     blurb: 'A marker that holds a note',
     section: 'tools',
@@ -1620,6 +1751,27 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <path d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v8a1.5 1.5 0 0 1-1.5 1.5H10l-4 3v-3H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5Z" />
         <path d="M6.5 9.75h11" />
         <path d="M6.5 12.5h7" />
+      </Glyph>
+    ),
+  },
+  {
+    // The pointer note (docs/specs/009-elements/pointer-note.md): a note whose leader's tip pins to a point on a shape.
+    id: 'tools:pointer-note',
+    blurb: 'A note that points at a spot',
+    caption: 'Pointer Note',
+    section: 'tools',
+    toolGroup: 'write',
+    label: 'Add Pointer Note',
+    description:
+      'Pointer note. A short note with a line to a dot; drag the dot onto a corner or edge of a shape and the note follows it.',
+    filled: true,
+    action: { type: 'shape', kind: 'pointer-note' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="9" y="3" width="12.5" height="8" rx="2" />
+        <path d="M11.5 6h7.5M11.5 8.5h4.5" />
+        <path d="M9 11 4.5 18" />
+        <circle cx="4" cy="19" r="1.6" fill="currentColor" />
       </Glyph>
     ),
   },

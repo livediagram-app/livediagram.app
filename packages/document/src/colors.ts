@@ -320,7 +320,11 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
   // the memo and filled every frame with the shape default, so a frame that
   // was transparent on the canvas exported pale blue.
   // A boundary's face paints its tint, deeper as it nests (docs/specs/009-elements/boundary.md).
-  if (element.type === 'shape' && (element.shape === 'frame' || element.shape === 'boundary'))
+  // A stack is a target to drop into, drawn as an outline (docs/specs/009-elements/stack.md).
+  if (
+    element.type === 'shape' &&
+    (element.shape === 'frame' || element.shape === 'boundary' || element.shape === 'stack')
+  )
     return 'transparent';
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.fill;
@@ -515,6 +519,9 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'layer-stack',
   'pyramid',
   'cycle',
+  'hub',
+  'onion',
+  'chevrons',
   'icon',
   // A sticker paints its own plate, shadow and content (docs/specs/010-palette/stickers.md).
   'sticker',
@@ -606,6 +613,7 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
     element.shape !== 'icon' &&
     element.shape !== 'sticker' &&
     element.shape !== 'frame' &&
+    element.shape !== 'stack' &&
     element.shape !== 'banner' &&
     element.shape !== 'stat-row' &&
     element.shape !== 'process'

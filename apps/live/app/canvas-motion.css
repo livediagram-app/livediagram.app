@@ -1065,6 +1065,61 @@
     calc(var(--lvd-cg-i, 0) * 0.6s * var(--lvd-concept-speed, 1)) var(--lvd-concept-iter, infinite)
     both;
 }
+/* A pointer note's tip under Pulse (docs/specs/009-elements/pointer-note.md "Animation"): a ring grows from the dot
+ * and fades, drawing the eye to the spot the note is about. Transform and opacity only. */
+@keyframes lvd-pointer-tip-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  70%,
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+.lvd-pointer-tip-pulse {
+  animation: lvd-pointer-tip-pulse 1.6s ease-out infinite;
+}
+
+/* A sequence diagram's Play (docs/specs/009-elements/sequence-diagram.md "Animation"): the picture is uncovered top
+ * to bottom, 0.4 s per message scaled by Speed (--lvd-seq-dur, set by the face), so messages appear in the order they
+ * happen. Once, or with Repeat a reveal, hold and clear on a loop. A clip-path on one layer per diagram. */
+@keyframes lvd-seq-play {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes lvd-seq-play-loop {
+  0% {
+    clip-path: inset(0 0 100% 0);
+  }
+  70%,
+  92% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+}
+.lvd-seq-play {
+  animation: lvd-seq-play var(--lvd-seq-dur, 2s) linear 1 both;
+}
+.lvd-seq-play-loop {
+  animation: lvd-seq-play-loop calc(var(--lvd-seq-dur, 2s) / 0.7) linear infinite both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lvd-seq-play,
+  .lvd-seq-play-loop {
+    animation: none;
+  }
+}
+
 @keyframes lvd-concept-flow {
   to {
     stroke-dashoffset: -24;
@@ -1130,8 +1185,10 @@
   .lvd-concept-build .lvd-cg-row,
   .lvd-concept-build-loop .lvd-cg-row,
   .lvd-concept-pulse .lvd-cg-row,
-  .lvd-concept-flow .lvd-cg-arc {
+  .lvd-concept-flow .lvd-cg-arc,
+  .lvd-pointer-tip-pulse {
     animation: none;
+    opacity: 0;
   }
   /* A still Flow is the rest frame: solid arcs. */
   .lvd-concept-flow .lvd-cg-arc {
@@ -1147,6 +1204,15 @@
    above collapse it to ~instant. */
 [data-insert-shift] {
   transition: transform 120ms ease-out;
+}
+
+/* A stack's reflow (docs/specs/009-elements/stack.md "Animation"): a child the stack holds glides from where it was to
+   its new slot. Only on children nothing is dragging (the attribute is dropped for the gesture's elements), so a drag
+   still tracks the pointer exactly. The global reduce-motion rules above collapse it to ~instant. */
+[data-stack-glide] {
+  transition:
+    left 160ms ease-out,
+    top 160ms ease-out;
 }
 
 /* Done check: the all-done flash (docs/specs/012-collaboration/done-check.md).

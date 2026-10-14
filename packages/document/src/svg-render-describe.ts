@@ -4,6 +4,8 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
+import type { TagColour } from './tag-colours';
+import { isPersonNode } from './person-node';
 import type { SheetRenderModel } from './svg-render-plan-sheet';
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx } from './border-style';
@@ -102,6 +104,8 @@ export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLa
 // the wrong typeface for the whole canvas.
 export type BoxedExportOptions = {
   resolveImageHref?: ResolveImageHref;
+  // The tab's tag colours (docs/specs/009-elements/tag-colours.md): a mapped card's accent edge and tinted chips.
+  tagColours?: readonly TagColour[];
   resolveIconArt?: ResolveIconArt;
   resolveStickerArt?: ResolveStickerArt;
   tabFont?: string;
@@ -431,8 +435,15 @@ export function selfLabelled(el: BoxedElement): boolean {
     isWebComponentShape(el.shape) ||
     // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
     el.shape === 'boundary' ||
-    // A cycle writes its centre label itself (docs/specs/009-elements/concept-graphics.md).
-    el.shape === 'cycle'
+    // A cycle and a hub write their centre label themselves (docs/specs/009-elements/concept-graphics.md).
+    el.shape === 'cycle' ||
+    el.shape === 'hub' ||
+    // A diagram key writes its title above its rows (docs/specs/009-elements/diagram-key.md).
+    el.shape === 'diagram-key' ||
+    // A sequence diagram's names are in its picture (docs/specs/009-elements/sequence-diagram.md).
+    el.shape === 'sequence' ||
+    // A person node writes its name beside its initials (docs/specs/009-elements/org-chart.md).
+    isPersonNode(el)
   );
 }
 

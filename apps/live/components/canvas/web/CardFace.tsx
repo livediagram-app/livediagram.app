@@ -9,6 +9,8 @@ import {
   labelOn,
   type CardMedia,
   type LayoutRect,
+  TAG_CHIP_WASH,
+  tagColourOf,
 } from '@livediagram/document';
 import { GlyphDisc } from '@livediagram/ui';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
@@ -18,6 +20,7 @@ import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 import { isTechIconId } from '@/lib/tech-icons';
+import { useTagColours } from '@/components/canvas/TagColoursContext';
 
 // The card's media (docs/specs/009-elements/card.md "The slots"): a badge disc, a soft tile, or an initial.
 function CardMediaArt({
@@ -118,6 +121,7 @@ export function CardFace({
   const l = cardLayout(element.width, element.height, cardSlotsOf(element));
   const media = cardMediaOf(element);
   const tags = element.tags ?? [];
+  const tagColours = useTagColours();
   const bandText = l.band
     ? element.headerFill
       ? labelOn(element.headerFill)
@@ -186,30 +190,40 @@ export function CardFace({
         </div>
       ) : null}
       <LabelRegion rect={l.body}>{labelNode}</LabelRegion>
-      {l.tags.map((t, i) => (
-        <div
-          key={i}
-          className="absolute flex items-center justify-center rounded-full border"
-          style={{
-            ...rectStyle(t.rect),
-            backgroundColor: colorWash(accent, 0.1),
-            borderColor: colorWash(accent, 0.35),
-            fontFamily,
-          }}
-        >
-          <InlineTextLine
-            value={t.text}
-            placeholder="Tag"
-            editable={editable}
-            onCommit={(v) => editTag(i, v)}
-            zoom={zoom}
-            maxLength={CARD_TAG_MAX}
-            className="whitespace-nowrap leading-none"
-            style={{ color: textColor, fontSize: l.tagPx, opacity: 0.85 }}
-            ariaLabel={`Tag ${i + 1}`}
-          />
-        </div>
-      ))}
+      {l.tags.map((t, i) => {
+        // A mapped tag's chip in its colour (docs/specs/009-elements/tag-colours.md).
+        const tagged = tagColourOf(tagColours, t.text);
+        const wash = tagged ? colorWash(tagged, TAG_CHIP_WASH) : colorWash(accent, 0.1);
+        return (
+          <div
+            key={i}
+            className="absolute flex items-center justify-center rounded-full border"
+            data-tag-colour={tagged ?? undefined}
+            style={{
+              ...rectStyle(t.rect),
+              backgroundColor: wash,
+              borderColor: tagged ?? colorWash(accent, 0.35),
+              fontFamily,
+            }}
+          >
+            <InlineTextLine
+              value={t.text}
+              placeholder="Tag"
+              editable={editable}
+              onCommit={(v) => editTag(i, v)}
+              zoom={zoom}
+              maxLength={CARD_TAG_MAX}
+              className="whitespace-nowrap leading-none"
+              style={{
+                color: tagged ?? textColor,
+                fontSize: l.tagPx,
+                opacity: tagged ? 1 : 0.85,
+              }}
+              ariaLabel={`Tag ${i + 1}`}
+            />
+          </div>
+        );
+      })}
     </>
   );
 }

@@ -4,6 +4,7 @@
 // gesture needs attachment code of its own; the stored x / y it keeps true is all any reader needs.
 
 import { badgeSize, isChip, nextStepNumber, stepFontPx } from './chip';
+import { isPointerNote, pointerTipOf } from './pointer-note';
 import type { Point, Rect } from './geometry-primitives';
 import type { Element, ElementId, ShapeElement } from './index';
 
@@ -133,7 +134,7 @@ export function settleChips(
   // there nothing was just dropped, and a loose badge near a corner is where its author left it.
   { attachLoose = true }: { attachLoose?: boolean } = {},
 ): Element[] {
-  if (!next.some(isChip)) return next;
+  if (!next.some((el) => isChip(el) || isPointerNote(el))) return next;
   const prevById = new Map(prev.map((el) => [el.id, el]));
   const byId = new Map(next.map((el) => [el.id, el]));
   let hosts: Boxed[] | null = null;
@@ -141,6 +142,17 @@ export function settleChips(
   let changed = false;
   const out: Element[] = [];
   for (const el of next) {
+    if (isPointerNote(el)) {
+      // A pointer note (docs/specs/009-elements/blueprints/pointer-note.md "Settling"): its tip, not its box, holds.
+      const settled = settlePointerNote(el, prevById, byId);
+      if (settled === null) {
+        changed = true;
+        continue;
+      }
+      if (settled !== el) changed = true;
+      out.push(settled);
+      continue;
+    }
     if (!isChip(el)) {
       out.push(el);
       continue;
@@ -203,6 +215,38 @@ export function settleChips(
   return changed ? out : next;
 }
 
+/** One pointer note settled: on its host's point when attached, carried when its host moved, null when its host was
+ *  deleted, detached when its host is unknown. */
+function settlePointerNote(
+  note: ShapeElement,
+  prevById: ReadonlyMap<ElementId, Element>,
+  byId: ReadonlyMap<ElementId, Element>,
+): ShapeElement | null {
+  if (note.attachedTo === undefined && note.attachAt === undefined) return note;
+  const host = note.attachedTo ? byId.get(note.attachedTo) : undefined;
+  if (!host || !canHost(host) || !isAttachPoint(note.attachAt) || host.id === note.id) {
+    if (note.attachedTo && prevById.has(note.attachedTo) && !host) return null;
+    return detached(note);
+  }
+  const target = attachPointXY(host as Boxed, note.attachAt);
+  const before = prevById.get(note.id);
+  const hostBefore = prevById.get(host.id);
+  const hostStill = !!hostBefore && isBoxedEl(hostBefore) && sameBox(hostBefore, host as Boxed);
+  const tip = pointerTipOf(note);
+  if (!before || !hostStill) {
+    // The host moved (or the note is new): carry the note so its tip lands on the point.
+    const x = target.x - tip.x;
+    const y = target.y - tip.y;
+    return Math.abs(x - note.x) < 0.5 && Math.abs(y - note.y) < 0.5 ? note : { ...note, x, y };
+  }
+  // The note moved (or nothing did): keep it, re-aim the tip at the point.
+  const nx = target.x - note.x;
+  const ny = target.y - note.y;
+  return Math.abs(nx - tip.x) < 0.05 && Math.abs(ny - tip.y) < 0.05
+    ? note
+    : { ...note, pointerTip: { x: Math.round(nx * 10) / 10, y: Math.round(ny * 10) / 10 } };
+}
+
 /** `ids` and every chip attached to an element in it: what travels with a dragged, nudged, copied or duplicated
  *  host. `ids` itself when nothing is attached to any of them. */
 export function withAttached(
@@ -211,7 +255,13 @@ export function withAttached(
 ): ReadonlySet<ElementId> {
   let out: Set<ElementId> | null = null;
   for (const el of elements) {
-    if (!isChip(el) || !el.attachedTo || !ids.has(el.attachedTo) || ids.has(el.id)) continue;
+    if (
+      !(isChip(el) || isPointerNote(el)) ||
+      !el.attachedTo ||
+      !ids.has(el.attachedTo) ||
+      ids.has(el.id)
+    )
+      continue;
     (out ??= new Set(ids)).add(el.id);
   }
   return out ?? ids;
@@ -219,6 +269,10 @@ export function withAttached(
 
 /** A chip let go of its host, where it is. Any other element comes back unchanged. */
 export function detachChip<T extends Element>(el: T): T {
-  if (!isChip(el) || (el.attachedTo === undefined && el.attachAt === undefined)) return el;
+  if (
+    !(isChip(el) || isPointerNote(el)) ||
+    (el.attachedTo === undefined && el.attachAt === undefined)
+  )
+    return el;
   return detached(el as ShapeElement & T);
 }

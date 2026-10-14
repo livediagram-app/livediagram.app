@@ -1042,6 +1042,50 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="9" y="10" width="9" height="7" rx="1.5" strokeDasharray="2 1.8" />
     </Glyph>
   ),
+  // A note box with a leader line out to a dot.
+  'pointer-notes': (
+    <Glyph>
+      <rect x="3" y="3.5" width="12" height="8" rx="1.5" />
+      <path d="M8 11.5 17 18.5" />
+      <circle cx="18" cy="19" r="2" fill="currentColor" stroke="none" />
+    </Glyph>
+  ),
+  // A dashed tray holding three evenly spaced boxes.
+  stacks: (
+    <Glyph>
+      <rect x="2.5" y="6" width="19" height="12" rx="2" strokeDasharray="2.5 2" />
+      <rect x="5" y="9" width="4" height="6" rx="1" />
+      <rect x="10" y="9" width="4" height="6" rx="1" />
+      <rect x="15" y="9" width="4" height="6" rx="1" />
+    </Glyph>
+  ),
+  // A legend: a solid and a dashed line sample, each beside its meaning.
+  'diagram-keys': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M6 9.5h4M13 9.5h5M13 14.5h5" />
+      <path d="M6 14.5h4" strokeDasharray="1.6 1.4" />
+    </Glyph>
+  ),
+  // One box over two, joined by an elbow trunk.
+  'org-charts': (
+    <Glyph>
+      <rect x="8" y="2.5" width="8" height="5" rx="1.5" />
+      <rect x="2" y="16.5" width="8" height="5" rx="1.5" />
+      <rect x="14" y="16.5" width="8" height="5" rx="1.5" />
+      <path d="M12 7.5V12M6 16.5V12h12v4.5" />
+    </Glyph>
+  ),
+  // Two heads over dashed lifelines, a call across and a reply back.
+  'sequence-diagrams': (
+    <Glyph>
+      <rect x="2" y="2" width="6" height="4" rx="1" />
+      <rect x="16" y="2" width="6" height="4" rx="1" />
+      <path d="M5 6v16M19 6v16" strokeDasharray="2 2" />
+      <path d="M5 11h12.5M15.5 9l2.5 2-2.5 2" />
+      <path d="M19 17H6.5" strokeDasharray="2 1.5" />
+    </Glyph>
+  ),
   // A pyramid cut into three tiers.
   'concept-graphics': (
     <Glyph>

@@ -187,7 +187,7 @@ export const PALETTE_CATEGORIES: {
     id: 'write',
     label: 'Write',
     group: 0,
-    description: 'The wordy elements: pages, text, sticky notes, and annotations.',
+    description: 'The wordy elements: pages, text, sticky notes, annotations and pointer notes.',
     icon: <WriteTabIcon />,
   },
   {
@@ -212,7 +212,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Build',
     group: 1,
     description:
-      'The structural elements: mind nodes, flowcharts, lanes, frames, boundaries, timelines, tables, and Sankey diagrams.',
+      'The structural elements: mind nodes, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, a diagram key, timelines, tables, and Sankey diagrams.',
     icon: <BuildTabIcon />,
   },
   {
@@ -221,7 +221,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Concepts',
     group: 1,
     description:
-      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel and a cycle. Add, reorder and retitle rows in place.',
+      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel, a cycle, a hub and spoke, onion rings and chevrons. Add, reorder and retitle rows in place.',
     icon: <ConceptsTabIcon />,
   },
   {

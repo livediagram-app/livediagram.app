@@ -237,11 +237,15 @@ export type BoxedElementViewProps = {
   // outlive the offset itself: were the transition removed in the same commit
   // as the transform, the board would snap shut instead of easing.
   insertShiftAnimates?: boolean;
+  // Held by a stack and not being dragged: glides to its slot when the stack reflows (docs/specs/009-elements/stack.md).
+  stackGlide?: boolean;
   // The Page masthead (docs/specs/009-elements/page-element.md), and the banner / callout lines (docs/specs/009-elements/web-components-and-no-groups.md).
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components' rows and a hero's caption lines, edited in place
   // (docs/specs/009-elements/web-components-and-no-groups.md). Omitted in read-only.
   onSetWebRows?: (elementId: string, rows: WebRows) => void;
+  // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md).
+  onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
   onSetHeroCaptionLine?: (elementId: string, field: keyof HeroCaption, value: string) => void;
   // Live dot-vote (docs/specs/012-collaboration/session-tools.md). `vote` is the active tab's vote session
   // (undefined when none). `selfId` is the local participant (for "my

@@ -110,7 +110,23 @@ const CONTENT_KINDS =
   'shape "layer-stack" / "pyramid" / "cycle": "conceptRows" is [{ "label", "note"? }]: a stack 2 to 8 ' +
   '(note = a side note), a pyramid 2 to 6 (first row the apex; "pyramidVariant" funnel makes it a ' +
   'funnel and its note the row\'s value), a cycle 3 to 8 clockwise from the top (its "label" is the ' +
-  'centre). They draw their own rows in the colour ramp; do not draw them from separate shapes.';
+  'centre); "hub" 3 to 8 satellites round its "label" ("hubSpokes" false hides the lines), "onion" 2 to 6 ' +
+  'rings from the core out, "chevrons" 2 to 8 stages left to right. They draw their own rows in the colour ramp; ' +
+  'do not draw them from separate shapes. ' +
+  // Round 2 (docs/specs/015-api/mcp-server.md §4.7a).
+  'shape "pointer-note": a note ("label") with a leader to a tip; "pointerTip" { x, y } is relative to its ' +
+  'top-left, or "attachedTo" + "attachAt" pins the tip to that point of a node. ' +
+  'shape "diagram-key": a legend of the tab\'s arrow line styles and tag colours; its rows fill in by ' +
+  'themselves, "keyMeanings" maps a row id ("line:dashed", "tag:<tag>") to what it means. ' +
+  'shape "stack": a container that lines up the elements whose centre is inside it; "stackDirection", ' +
+  '"stackColumns" (2 to 6, grid), "stackGap" and "stackPadding" (0 to 64), "stackAlign"; place children ' +
+  'anywhere inside and the editor lays them out. ' +
+  'An org chart is mind nodes with "mindLook" person: "label" the name, "pageSubtitle" the role, ' +
+  '"mindParentId" the manager, "mindFlow" downward on the root. ' +
+  'shape "sequence": a UML sequence diagram in one element; "sequenceParticipants" is [{ "id", "label", ' +
+  '"actor"? }] (2 to 12, left to right), "sequenceMessages" [{ "from", "to", "label", "kind": call | async | ' +
+  'reply }] (up to 60, top to bottom, from === to a self-call), "sequenceNumbered" true numbers them. It lays ' +
+  'itself out; prefer it over loose shapes and arrows for a sequence diagram you will edit.';
 
 // The style fields a box or arrow takes beyond its geometry, as facts (docs/specs/015-api/mcp-server.md §4.7a "Style
 // fields"): the closed vocabularies from the one list edit operations and the value check read, so they cannot drift.
