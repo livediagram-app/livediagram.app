@@ -6,9 +6,12 @@ import {
   pageHasOrientation,
   pageKindOf,
   pageSizeLabel,
+  pageUnits,
   type ArticleFlow,
+  type IllustratePage,
   type LaidOutPage,
 } from '@livediagram/document';
+import type { RowDrop } from '@/hooks/ui/useRowReorderDrag';
 
 export type ContentsRow = {
   id: string;
@@ -99,4 +102,25 @@ export function pageInView(
     }
   }
   return best?.id;
+}
+
+/** The place (among the row's units, 0 first) a page dropped beside the row at `drop.index` moves
+ *  to, or null when it stays put (docs/specs/007-editor/illustrate-pages.md "Contents"). A page moves
+ *  with its unit: an article's pages go together, so a drop beside any of its pages is a drop beside
+ *  the whole article. */
+export function contentsDropUnit(
+  pages: readonly Pick<IllustratePage, 'id' | 'flow'>[],
+  pageId: string,
+  drop: RowDrop,
+): number | null {
+  const units = pageUnits(pages as IllustratePage[]);
+  const unitOf = (id: string) => units.findIndex((u) => u.pageIds.includes(id));
+  const from = unitOf(pageId);
+  const target = pages[drop.index];
+  if (from < 0 || !target) return null;
+  const at = unitOf(target.id);
+  if (at === from) return null;
+  let to = drop.side === 'before' ? at : at + 1;
+  if (from < to) to -= 1;
+  return to === from ? null : Math.max(0, Math.min(units.length - 1, to));
 }

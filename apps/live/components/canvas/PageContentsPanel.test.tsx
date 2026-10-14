@@ -31,11 +31,12 @@ const pages = (n: number) =>
 function show(n: number, canEdit = true) {
   const focusPage = vi.fn();
   const addPage = vi.fn();
+  const movePageTo = vi.fn();
   const laid = pages(n);
   const view = {
     pages: laid,
     focusPage,
-    ...(canEdit ? { edit: { addPage } } : {}),
+    ...(canEdit ? { edit: { addPage, movePageTo } } : {}),
   } as unknown as IllustratePagesView;
   const onClose = vi.fn();
   render(
@@ -45,7 +46,7 @@ function show(n: number, canEdit = true) {
       onClose={onClose}
     />,
   );
-  return { focusPage, addPage, onClose };
+  return { focusPage, addPage, movePageTo, onClose };
 }
 
 describe('PageContentsPanel', () => {
@@ -89,5 +90,50 @@ describe('PageContentsPanel', () => {
     expect(document.activeElement).toBe(screen.getAllByRole('option')[1]);
     fireEvent.keyDown(document.activeElement!, { key: 'End' });
     expect(document.activeElement).toBe(screen.getAllByRole('option')[2]);
+  });
+});
+
+// Dragging a row reorders the pages: the caret shows where it lands, the move commits on release,
+// and the release is not a press of the row.
+describe('PageContentsPanel reordering', () => {
+  const rowRect = (i: number) =>
+    ({ top: i * 60, bottom: i * 60 + 60, height: 60, left: 0, right: 300, width: 300 }) as DOMRect;
+
+  function drag(h: ReturnType<typeof show>, fromIndex: number, toY: number) {
+    const rows = screen.getAllByRole('option');
+    rows.forEach((r, i) => (r.getBoundingClientRect = () => rowRect(i)));
+    document.elementFromPoint = (_x: number, y: number) => rows[Math.floor(y / 60)] ?? null;
+    const row = rows[fromIndex]!;
+    row.setPointerCapture = () => {};
+    row.hasPointerCapture = () => true;
+    row.releasePointerCapture = () => {};
+    const startY = fromIndex * 60 + 30;
+    fireEvent.pointerDown(row, { button: 0, pointerType: 'mouse', clientX: 10, clientY: startY });
+    fireEvent.pointerMove(row, { pointerType: 'mouse', clientX: 10, clientY: toY });
+    fireEvent.pointerUp(row, { pointerType: 'mouse', clientX: 10, clientY: toY });
+    fireEvent.click(row);
+    return h;
+  }
+
+  it('moves a page dragged below another, and does not jump to it', () => {
+    const h = drag(show(4), 0, 2 * 60 + 50);
+    // Below page 3: the page lands third.
+    expect(h.movePageTo).toHaveBeenCalledWith('p1', 2);
+    expect(h.focusPage).not.toHaveBeenCalled();
+  });
+
+  it('moves a page dragged above another', () => {
+    const h = drag(show(4), 3, 0 + 10);
+    expect(h.movePageTo).toHaveBeenCalledWith('p4', 0);
+  });
+
+  it('leaves the order alone for a drop where the page already is', () => {
+    const h = drag(show(4), 1, 60 + 20);
+    expect(h.movePageTo).not.toHaveBeenCalled();
+  });
+
+  it('offers no grip to someone who may not edit', () => {
+    show(3, false);
+    expect(document.querySelector('[data-contents-grip]')).toBeNull();
   });
 });

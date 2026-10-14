@@ -366,13 +366,13 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
 );
 
 // Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): a press on a page in the list,
-// going there.
+// going there, or a page dragged to a new place in it.
 export const PAGE_CONTENTS_JUMPS = chart(
   'UI',
   'Used',
-  'Contents Jumps',
-  "A page pressed in Illustrate's Contents list, the canvas gliding to it.",
-  { types: ['PageContentsJump'], rising: 'neutral' },
+  'Contents Jumps and Reorders',
+  "A page pressed in Illustrate's Contents list (the canvas gliding to it), or dragged to a new place there.",
+  { types: ['PageContentsJump', 'PageContentsReorder'], rising: 'neutral' },
 );
 
 // Building Illustrate pages: a layout placed, a page duplicated or moved.

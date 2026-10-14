@@ -1191,6 +1191,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|PageContents':
     "Someone opened Illustrate's Contents: every page of the tab in a list.",
   'UI|Used|PageContentsJump': "Someone went to a page from Illustrate's Contents list.",
+  'UI|Used|PageContentsReorder': "Someone dragged a page to a new place in Illustrate's Contents list.",
   'UI|Added|AllPageSlides':
     "Someone added every slide page of a tab to the deck at once, from the Slide Deck's Add All Slide Pages.",
   'UI|Opened|SlideDeck':
