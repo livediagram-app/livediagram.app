@@ -465,7 +465,7 @@ function sessionWords(
   const { kicker, action } = sessionButtonText(sessionButtonPlan(el.session));
   const lines = wrapLines(action, room, 12, 2);
   return (
-    text(cx, cy + 12, fitLine(kicker, room, 9, 0.75), {
+    text(cx, cy + 12, fitLine(kicker, room, 9), {
       size: 9,
       weight: 500,
       color,
