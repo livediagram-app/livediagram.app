@@ -10,23 +10,30 @@ import { useTabSvg } from '@/components/split/useTabSvg';
 
 export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: string }) {
   const svg = useTabSvg(tab);
-  const html = useMemo(() => {
-    if (!svg) return null;
-    const prefix = `tw-${elementId}-`.replace(/[^a-zA-Z0-9-]/g, '');
-    return (
-      `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${svg.width} ${svg.height}" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="display:block">` +
-      prefixSvgIds(svg.markup, prefix) +
-      `</svg>`
-    );
-  }, [svg, elementId]);
-  if (!html || !svg) return null;
+  // Ids prefixed so the drawing's gradients and markers never meet the canvas's. The outer <svg> is JSX, so no
+  // markup is built here: only the renderer's own output goes in as HTML.
+  const inner = useMemo(
+    () => (svg ? prefixSvgIds(svg.markup, `tw-${elementId}-`.replace(/[^a-zA-Z0-9-]/g, '')) : null),
+    [svg, elementId],
+  );
+  if (inner == null || !svg) return null;
   return (
     <div
       data-tab-window-drawing=""
       className="pointer-events-none absolute inset-0"
       style={{ background: svg.background }}
-      // Our own renderer's output (every label is xmlEscaped inside it).
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${svg.width} ${svg.height}`}
+        preserveAspectRatio="xMidYMid meet"
+        aria-hidden="true"
+        style={{ display: 'block' }}
+        // Our own renderer's output (every label is xmlEscaped inside it).
+        dangerouslySetInnerHTML={{ __html: inner }}
+      />
+    </div>
   );
 }
