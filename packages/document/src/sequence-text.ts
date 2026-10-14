@@ -12,15 +12,6 @@ import {
   type SequenceMessageKindName,
 } from './sequence-element';
 
-// Longest first at a position, so `-->>` is not read as `-->` then `>`.
-const ARROWS: readonly [string, SequenceMessageKindName][] = [
-  ['-->>', 'reply'],
-  ['-->', 'reply'],
-  ['->>', 'call'],
-  ['->', 'call'],
-  ['~>', 'async'],
-  ['-)', 'async'],
-];
 const WRITE: Record<SequenceMessageKindName, string> = { call: '->', async: '~>', reply: '-->' };
 // A line longer than this is not read (named, not lost), so a pasted wall of text costs nothing.
 export const SEQ_TEXT_LINE_MAX = 400;
@@ -61,15 +52,29 @@ export function sequenceToText(
   return [...head, ...(head.length && body.length ? [''] : []), ...body].join('\n');
 }
 
-/** Where a line's arrow is, and which, scanning left to right; null when it has none. */
+/** Where a line's arrow is, and which, scanning left to right; null when it has none. The arrows are `-->>` and
+ *  `-->` (reply), `->>` and `->` (call), `~>` and `-)` (async), the longest at a position winning, so `-->>` is not
+ *  read as `-->` then `>`. Each position reads at most four characters, so a line of dashes stays cheap. */
 function findArrow(
   line: string,
 ): { at: number; token: string; kind: SequenceMessageKindName } | null {
   for (let i = 0; i < line.length; i++) {
     const c = line[i];
-    if (c !== '-' && c !== '~') continue;
-    for (const [token, kind] of ARROWS)
-      if (line.startsWith(token, i)) return { at: i, token, kind };
+    if (c === '~') {
+      if (line[i + 1] === '>') return { at: i, token: '~>', kind: 'async' };
+      continue;
+    }
+    if (c !== '-') continue;
+    const n = line[i + 1];
+    if (n === '>')
+      return line[i + 2] === '>'
+        ? { at: i, token: '->>', kind: 'call' }
+        : { at: i, token: '->', kind: 'call' };
+    if (n === ')') return { at: i, token: '-)', kind: 'async' };
+    if (n === '-' && line[i + 2] === '>')
+      return line[i + 3] === '>'
+        ? { at: i, token: '-->>', kind: 'reply' }
+        : { at: i, token: '-->', kind: 'reply' };
   }
   return null;
 }
@@ -152,7 +157,11 @@ export function parseSequenceText(
     const colon = named ? -1 : rest.indexOf(':');
     const toName = named ? named.label : colon === -1 ? rest : rest.slice(0, colon);
     const words = named ? named.words : colon === -1 ? '' : rest.slice(colon + 1);
-    const from = participant(line.slice(0, arrow.at));
+    // Dashes the arrow did not take (`A ---> B`) are a long arrow, not part of the name. Trimmed by a walk back, not a
+    // `[\s-]+$` pattern, which backtracks on a long run of them that does not reach the end.
+    let fromEnd = arrow.at;
+    while (fromEnd > 0 && (line[fromEnd - 1] === '-' || /\s/.test(line[fromEnd - 1]!))) fromEnd--;
+    const from = participant(line.slice(0, fromEnd));
     const to = participant(toName);
     if (!from || !to) return void unread.push(i + 1);
     messages.push({

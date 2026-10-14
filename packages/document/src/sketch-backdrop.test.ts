@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { sketchBackdropIds } from './sketch-backdrop';
 import type { Element } from './index';
 
@@ -49,6 +49,6 @@ describe('sketchBackdropIds', () => {
     const ms = Math.min(
       ...[0, 1, 2, 3, 4].map(() => cpuMsOf(() => void sketchBackdropIds(els, 'sketch'))),
     );
-    expect(ms).toBeLessThan(25);
+    expect(ms).toBeLessThan(cpuBudgetMs(25));
   });
 });
