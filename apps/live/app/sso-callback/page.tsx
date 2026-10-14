@@ -18,19 +18,44 @@
 // components/providers/ClerkProvider.tsx for the same rationale.
 import { StaticClerkProvider } from '@/components/providers/StaticClerkProvider';
 import { AuthenticateWithRedirectCallback } from '@clerk/react';
-import { AuthCard, AuthDisabledNotice } from '@/components/chrome/auth-shared';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import {
+  AuthCard,
+  AuthDisabledNotice,
+  POST_AUTH_DEFAULT,
+  POST_AUTH_SIGNIN_DEFAULT,
+  ssoCallbackDestination,
+} from '@/components/chrome/auth-shared';
 import { DiagramBuildAnimation } from '@livediagram/ui';
 import { clerkEnabled } from '@/lib/clerk-config';
+
+// The sign-in / get-started pages forward their `?redirect_url` onto this
+// page's URL (ssoCallbackUrl), so a round-trip Clerk finishes HERE still
+// returns to it, whichever way it ends: a Google sign-in for an unknown
+// account becomes a sign-up, and would otherwise land on /new (issue #612,
+// an MCP consent lost mid-connect). Forced, so only the validated value is
+// used; without one the per-flow defaults apply.
+function SSOCallbackContent() {
+  const destination = ssoCallbackDestination(useSearchParams());
+  return (
+    <AuthenticateWithRedirectCallback
+      signInForceRedirectUrl={destination}
+      signUpForceRedirectUrl={destination}
+      signInFallbackRedirectUrl={POST_AUTH_SIGNIN_DEFAULT}
+      signUpFallbackRedirectUrl={POST_AUTH_DEFAULT}
+    />
+  );
+}
 
 function SSOCallbackPageInner() {
   if (!clerkEnabled) return <AuthDisabledNotice />;
   return (
     <AuthCard subtitle="Completing sign in…" error="">
       <DiagramBuildAnimation />
-      <AuthenticateWithRedirectCallback
-        signInFallbackRedirectUrl="/explorer"
-        signUpFallbackRedirectUrl="/new"
-      />
+      <Suspense fallback={null}>
+        <SSOCallbackContent />
+      </Suspense>
     </AuthCard>
   );
 }

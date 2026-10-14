@@ -6,6 +6,8 @@ import {
   messageOf,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
+  ssoCallbackDestination,
+  ssoCallbackUrl,
 } from '@/components/chrome/auth-shared';
 
 // resolvePostAuthDestination decides where the sign-in and sign-up
@@ -231,5 +233,32 @@ describe('sign-in default (POST_AUTH_SIGNIN_DEFAULT)', () => {
   it('leaves the sign-up flow (no default arg) on the welcome flow (/new)', () => {
     expect(resolvePostAuthDestination(params(''))).toBe(POST_AUTH_DEFAULT);
     expect(resolveOAuthCompleteUrl(params(''))).toBe(POST_AUTH_DEFAULT);
+  });
+});
+
+// The OAuth callback leg (issue #612): a Google round-trip that ends on
+// /sso-callback used to land on a default, dropping an MCP consent mid-connect.
+// The destination now rides on the callback URL, through the same guard.
+describe('ssoCallbackUrl / ssoCallbackDestination', () => {
+  const consent = '/oauth/consent/?session=abc123&client=Claude&to=claude.ai';
+
+  it('carries a safe return path onto the callback and reads it back intact', () => {
+    const url = ssoCallbackUrl(params(`redirect_url=${encodeURIComponent(consent)}`));
+    expect(url).toBe(`/sso-callback?redirect_url=${encodeURIComponent(consent)}`);
+    const back = new URL(url, 'https://livediagram.app').searchParams;
+    expect(ssoCallbackDestination(back)).toBe(consent);
+  });
+
+  it('is the bare callback, and no destination, when there is nothing safe to carry', () => {
+    for (const qs of [
+      '',
+      'redirect_url=https://evil.example',
+      'redirect_url=//evil.example',
+      'redirect_url=/sign-in/',
+      'redirect_url=/get-started',
+    ]) {
+      expect(ssoCallbackUrl(params(qs))).toBe('/sso-callback');
+      expect(ssoCallbackDestination(params(qs))).toBeUndefined();
+    }
   });
 });

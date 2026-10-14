@@ -475,6 +475,30 @@ export function resolveOAuthCompleteUrl(
   return resolvePostAuthDestination(searchParams, defaultDest);
 }
 
+// The OAuth round-trip's callback URL, carrying a valid `?redirect_url` on.
+// `redirectUrlComplete` only covers a round-trip Clerk finishes on its own;
+// one that ends on /sso-callback (a Google sign-in Clerk turns into a
+// sign-up, an extra step) navigates from that page instead, so the
+// destination has to travel there too or the user lands on a default and
+// loses where they were going (an MCP consent, issue #612).
+export const SSO_CALLBACK_PATH = '/sso-callback';
+export function ssoCallbackUrl(searchParams: { get: (key: string) => string | null }): string {
+  const redirect = searchParams.get('redirect_url');
+  return isSafeInternalPath(redirect)
+    ? `${SSO_CALLBACK_PATH}?redirect_url=${encodeURIComponent(redirect)}`
+    : SSO_CALLBACK_PATH;
+}
+
+// Where /sso-callback sends a finished round-trip: the carried
+// `?redirect_url` when it is safe, else nothing, leaving the callback's own
+// per-flow defaults (Explorer after sign-in, /new after sign-up) in charge.
+export function ssoCallbackDestination(searchParams: {
+  get: (key: string) => string | null;
+}): string | undefined {
+  const redirect = searchParams.get('redirect_url');
+  return isSafeInternalPath(redirect) ? redirect : undefined;
+}
+
 // ---------------------------------------------------------------------
 // Building auth hrefs (the OTHER half of the round-trip)
 //
