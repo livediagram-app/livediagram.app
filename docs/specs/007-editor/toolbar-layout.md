@@ -143,8 +143,18 @@ more than tiles (search, group browsing, the person's libraries; My shapes has n
 of its own, so More is its only way in). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
-For Icons / Stickers / Technology the strip's twelve are the first twelve of the
-catalogue in its own order.
+**Icons, Stickers and Technology show their groups**, on a desktop and on a phone: the strip's tiles
+for one of them are its browse groups (the Icons groups, the Sticker groups, the Technology providers),
+each drawn as its first entry with the group's name on its hover card, in the browse's own order. Pressing one
+opens a popover under it, hung from that tile as More hangs from its button, showing **that group's
+entries** under the browse's breadcrumb (back to every group, and its search across them all): the
+category's own body, opened on the group. Pressing the open group's tile again closes it. Picking an entry
+closes it, as More's does. The groups and their entries are the browse's
+([Palette category browse](../010-palette/palette-category-browse.md)), so the strip and the More body never
+disagree.
+
+**On a phone More shows only for My shapes**, whose library picker has no strip tiles of its own: every other
+category's strip already holds all of it (the whole category swipes, and the three catalogues hold their groups).
 
 ## The strip's order and dividers
 
@@ -258,9 +268,8 @@ their bottom-row buttons. What changes to fit the width:
   right gutter; only its tiles scroll sideways, under a finger, while the selection mode, the
   category picker and More stay put. The scrollbar is hidden ([Scrollbars](../004-interface-design/scrollbars.md)):
   a tile cut at the edge shows there is more. A new category starts scrolled to its first tile.
-  More stays for the category's full body (search, the icon catalogues). It shows when the
-  category holds more than fits in view (`phoneStripTileLimit` before the first measurement):
-  two tiles on a 360px phone, three on a 390px one, four from about 410px.
+  More shows only for My shapes ([More](#more-the-rest-of-the-category)): the swiping strip reaches every
+  other category's tiles, and Icons, Stickers and Technology their groups.
 - **More spans the screen** between the gutters instead of hanging from its
   button.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Live app](live-app.md)). Fit

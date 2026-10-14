@@ -1,7 +1,10 @@
 import type { StickerDef } from '@livediagram/icons';
 import { STICKER_CATEGORIES, STICKER_DND_MIME, stickersInCategory } from '@/lib/stickers';
 import { StickerArt } from '@/components/canvas/StickerView';
-import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
+import {
+  PaletteCategoryBrowser,
+  type BrowserCategory,
+} from '@/components/palette/PaletteCategoryBrowser';
 import { HoverCard } from '@livediagram/ui';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { paletteFinishClass } from './palette-tile-finish';
@@ -50,6 +53,23 @@ function StickerTile({ sticker, onAdd }: { sticker: StickerDef; onAdd: (id: stri
   );
 }
 
+// The Stickers browse's groups, also the Toolbar strip's tiles for the category. Group artwork = the group's first
+// sticker, the same "a category looks like what it holds" rule the Icons and Tools tabs follow.
+export function stickerBrowseGroups(): BrowserCategory<StickerDef>[] {
+  return STICKER_CATEGORIES.map((cat) => {
+    const items = stickersInCategory(cat.id);
+    const first = items[0];
+    return {
+      id: cat.id,
+      label: cat.label,
+      icon: first ? (
+        <StickerArt def={first} className="h-[22px] w-[22px] overflow-visible" />
+      ) : null,
+      items,
+    };
+  });
+}
+
 // The palette's Stickers category (docs/specs/010-palette/stickers.md): the drill-in browse every
 // catalogue tab uses (docs/specs/010-palette/palette-category-browse.md), over the sticker catalogue. Eleven groups —
 // Badges first, then Reactions, Feelings, Status, Direction, Celebrate,
@@ -71,20 +91,7 @@ export function StickerPickerTab({
   // empty then, so show a loading note rather than a false "no matches".
   loading?: boolean;
 }) {
-  // Group artwork = the group's first sticker, the same "a category looks like
-  // what it holds" rule the Icons and Tools tabs follow.
-  const categories = STICKER_CATEGORIES.map((cat) => {
-    const items = stickersInCategory(cat.id);
-    const first = items[0];
-    return {
-      id: cat.id,
-      label: cat.label,
-      icon: first ? (
-        <StickerArt def={first} className="h-[22px] w-[22px] overflow-visible" />
-      ) : null,
-      items,
-    };
-  });
+  const categories = stickerBrowseGroups();
   return (
     <PaletteCategoryBrowser
       root="Stickers"

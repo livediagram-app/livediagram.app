@@ -41,6 +41,8 @@ import type { PaletteProps } from './palette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { STRIP_DIVIDER_ATTR } from './useEdgeDividers';
 import { StripPopover, useStripPopover } from './ToolbarStripPopover';
+import { CatalogueGroupTile, catalogueStripGroups } from './catalogue-strip-groups';
+import { BrowseStartGroup } from './PaletteCategoryBrowser';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 import {
   useCoveringBoardId,
@@ -254,6 +256,14 @@ export function ToolbarPalette(props: Props) {
       })
     : fitted;
   const { hasMore } = fitted;
+  // Icons, Stickers and Technology show their groups instead of tiles, each opening a popover of its entries
+  // (docs/specs/007-editor/toolbar-layout.md "More"); a desktop strip shows as many as fit, More the rest.
+  const allGroups = category ? catalogueStripGroups(category.id) : null;
+  const groups = allGroups && !swipe ? allGroups.slice(0, Math.floor(stripLimit)) : allGroups;
+  // The group the More popover opened on: a group tile's, or null for More's own (the group grid).
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  // On a phone only My shapes keeps More: the swipe reaches every other category's tiles or groups.
+  const showMore = swipe ? category?.id === 'my-shapes' : hasMore;
 
   // The category being switched AWAY from, while its tiles animate out
   // (ToolbarStripRail). Rebuilt from data rather than kept as stale nodes, and
@@ -277,6 +287,8 @@ export function ToolbarPalette(props: Props) {
     leaveTimer.current = window.setTimeout(() => setLeavingId(null), RAIL_LEAVE_MS);
     track('UI', 'Changed', 'ToolbarCategory');
   };
+  // A catalogue leaves as the groups it showed.
+  const leavingGroups = leavingId ? catalogueStripGroups(leavingId) : null;
   const leaving = leavingId
     ? stripTilesFor(leavingId, {
         hasImage: tileActions.hasImage,
@@ -287,7 +299,14 @@ export function ToolbarPalette(props: Props) {
 
   const openMore = (button: HTMLElement) => {
     track('UI', 'Opened', 'ToolbarMore');
+    setOpenGroup(null);
     more.openFrom(button);
+  };
+  const toggleGroup = (id: string, anchor: HTMLElement) => {
+    if (moreOpen && openGroup === id) return setMoreOpen(false);
+    track('UI', 'Opened', 'ToolbarMore');
+    setOpenGroup(id);
+    more.openFrom(anchor);
   };
   // Opening the Search starts a new choice: a tile armed to place (its "Tap to drop" banner) is let go first.
   const beforeSearch = () => {
@@ -468,49 +487,70 @@ export function ToolbarPalette(props: Props) {
                   <ToolbarStripRail
                     scrollable={swipe}
                     railKey={category?.id ?? defaultId}
-                    items={[
-                      ...tiles.map((def) => {
-                        const tile = (
-                          <PaletteTile
-                            def={def}
-                            actions={tileActions}
-                            pendingDraw={pendingDraw}
-                            compact
-                          />
-                        );
-                        // A fixed divider rides with the tile it follows.
-                        return dividersAfter.has(def.id) ? (
-                          <span key={def.id} className="flex items-center">
-                            {tile}
-                            <Divider />
-                          </span>
-                        ) : (
-                          <Fragment key={def.id}>{tile}</Fragment>
-                        );
-                      }),
-                    ]}
-                    leavingItems={
-                      leaving
-                        ? [
-                            ...leaving.tiles.map((def) => (
-                              <span key={def.id} className="flex items-center">
+                    items={
+                      groups
+                        ? groups.map((g) => (
+                            <CatalogueGroupTile
+                              key={g.id}
+                              group={g}
+                              open={moreOpen && openGroup === g.id}
+                              noTint={category?.id === 'technology'}
+                              onToggle={(anchor) => toggleGroup(g.id, anchor)}
+                            />
+                          ))
+                        : [
+                            ...tiles.map((def) => {
+                              const tile = (
                                 <PaletteTile
                                   def={def}
                                   actions={tileActions}
-                                  pendingDraw={null}
+                                  pendingDraw={pendingDraw}
                                   compact
                                 />
-                                {leaving.dividersAfter.has(def.id) ? <Divider /> : null}
-                              </span>
-                            )),
+                              );
+                              // A fixed divider rides with the tile it follows.
+                              return dividersAfter.has(def.id) ? (
+                                <span key={def.id} className="flex items-center">
+                                  {tile}
+                                  <Divider />
+                                </span>
+                              ) : (
+                                <Fragment key={def.id}>{tile}</Fragment>
+                              );
+                            }),
                           ]
-                        : null
+                    }
+                    leavingItems={
+                      leavingGroups
+                        ? leavingGroups.map((g) => (
+                            <CatalogueGroupTile
+                              key={g.id}
+                              group={g}
+                              open={false}
+                              onToggle={() => {}}
+                            />
+                          ))
+                        : leaving
+                          ? [
+                              ...leaving.tiles.map((def) => (
+                                <span key={def.id} className="flex items-center">
+                                  <PaletteTile
+                                    def={def}
+                                    actions={tileActions}
+                                    pendingDraw={null}
+                                    compact
+                                  />
+                                  {leaving.dividersAfter.has(def.id) ? <Divider /> : null}
+                                </span>
+                              )),
+                            ]
+                          : null
                     }
                   />
                   {/* Outside the rail so it rides the rail's width change rather
                 than popping out and back in with the tiles. Only there when
-                the category has more than the strip shows. */}
-                  {hasMore ? (
+                the category has more than the strip shows. On a phone only for My shapes (showMore). */}
+                  {showMore ? (
                     <>
                       <Divider />
                       {moreOpen ? (
@@ -563,7 +603,10 @@ export function ToolbarPalette(props: Props) {
               label={category.label}
               dataAttr="data-toolbar-more"
             >
-              {category.content}
+              <BrowseStartGroup.Provider value={openGroup}>
+                {/* Keyed on the group, so another group's tile opens the browse afresh on it. */}
+                <Fragment key={openGroup ?? ''}>{category.content}</Fragment>
+              </BrowseStartGroup.Provider>
             </StripPopover>
           ) : null}
           {search.open && !esBoard && !participant ? (
