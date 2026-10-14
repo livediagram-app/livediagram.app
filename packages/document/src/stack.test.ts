@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createArrow,
   createShape,
   isValidElement,
   layoutStack,
@@ -124,6 +125,23 @@ describe('a stack', () => {
       elements: Element[];
     };
     expect(at(tab.elements, 'a')).toMatchObject({ x: 16, y: 16 });
+  });
+
+  it('lays out a key it holds at the height its rows give it, on read', () => {
+    const key = { ...(createShape('diagram-key', 0, 0) as ShapeElement), id: 'k', x: 40, y: 40 };
+    const solid = { ...createArrow(500, 500, 600, 600), id: 'x' };
+    const tab = migrateStoredTab({
+      theme: 'default',
+      elements: [
+        stack({ stackDirection: 'column' }),
+        key,
+        box('q', 40, 150),
+        solid,
+        { ...solid, id: 'y', strokeStyle: 'dashed' },
+      ],
+    } as never) as { elements: Element[] };
+    const k = at(tab.elements, 'k');
+    expect(at(tab.elements, 'q').y).toBe(k.y + k.h + 16);
   });
 
   it('keeps a title band above its children when it has a title', () => {

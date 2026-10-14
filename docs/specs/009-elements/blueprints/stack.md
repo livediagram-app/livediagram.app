@@ -2,14 +2,14 @@
 
 Derived from [The stack](../stack.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                | Role                                                   |
-| --------------------------------------------------- | ------------------------------------------------------ |
-| `packages/document/src/stack.ts`                    | Fields, bounds, children, the layout, `settleStacks`   |
-| `packages/document/src/containment.ts`              | `stack` joins `CONTAINER_KINDS`                        |
-| `apps/live/lib/settle-tabs.ts`                      | Settles stacks per changed tab (before chips and keys) |
-| `packages/document/src/stored-tab.ts`               | Settles stacks on read                                 |
-| `apps/live/components/palette/StackMenuSection.tsx` | Arrangement, columns, gap, padding, align              |
-| `apps/live/app/canvas-motion.css`                   | The reflow glide                                       |
+| File                                                | Role                                                      |
+| --------------------------------------------------- | --------------------------------------------------------- |
+| `packages/document/src/stack.ts`                    | Fields, bounds, children, the layout, `settleStacks`      |
+| `packages/document/src/containment.ts`              | `stack` joins `CONTAINER_KINDS`                           |
+| `apps/live/lib/settle-tabs.ts`                      | Settles stacks per changed tab (after keys, before chips) |
+| `packages/document/src/stored-tab.ts`               | Settles stacks on read                                    |
+| `apps/live/components/palette/StackMenuSection.tsx` | Arrangement, columns, gap, padding, align                 |
+| `apps/live/app/canvas-motion.css`                   | The reflow glide                                          |
 
 ## Domain and naming
 
