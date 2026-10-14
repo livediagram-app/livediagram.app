@@ -176,6 +176,32 @@ describe('title, subtitle and key', () => {
   });
 });
 
+describe('key samples', () => {
+  const kinds = (tones: ('muted' | 'soft')[]): GraphInput => ({
+    nodes: [
+      ...tones.map((tone, i) => ({ id: `s${i}`, label: `S${i}`, shape: 'stadium' as const, tone })),
+      { id: 'step', label: 'Step' },
+    ],
+    edges: tones.map((_, i) => ({ from: `s${i}`, to: 'step' })),
+    key: true,
+  });
+  it('shows a kind in its ordinary look, not the muted exception among it', () => {
+    const els = lay(kinds(['soft', 'soft', 'muted']));
+    const keyed = els.filter(
+      (e) => e.type === 'shape' && e.shape === 'stadium' && e.width < 100,
+    ) as { colorPreset?: string }[];
+    expect(keyed.map((k) => k.colorPreset)).toEqual(['soft']);
+  });
+
+  it('shows the muted look when every one of the kind is muted', () => {
+    const els = lay(kinds(['muted']));
+    const keyed = els.filter(
+      (e) => e.type === 'shape' && e.shape === 'stadium' && e.width < 100,
+    ) as { colorPreset?: string }[];
+    expect(keyed.map((k) => k.colorPreset)).toEqual(['outline']);
+  });
+});
+
 describe('key meanings', () => {
   const system: GraphInput = {
     nodes: [

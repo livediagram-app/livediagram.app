@@ -32,7 +32,7 @@ const MAIN_EXIT =
   /^(yes|y|ok|okay|true|pass|passed|success|succeeds|approved|valid|healthy|accept|accepted)\b/i;
 
 // The colour preset each tone draws with; plain draws with none.
-const TONE_PRESET: Readonly<Record<Exclude<GraphTone, 'plain'>, string>> = {
+export const TONE_PRESET: Readonly<Record<Exclude<GraphTone, 'plain'>, string>> = {
   strong: 'bold',
   soft: 'soft',
   muted: 'outline',
