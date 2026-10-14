@@ -12219,6 +12219,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "chartSource": {
         "$ref": "#/components/schemas/ChartSource"
       },
+      "chartValues": {
+        "type": "boolean"
+      },
       "chartVariant": {
         "$ref": "#/components/schemas/ChartVariant"
       },

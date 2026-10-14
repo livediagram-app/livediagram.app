@@ -580,6 +580,7 @@ export * from './chart-frame';
 export * from './chart-ink';
 export * from './chart-types';
 export * from './chart-marks';
+export * from './chart-values';
 export * from './chart-source';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.

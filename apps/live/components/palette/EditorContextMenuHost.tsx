@@ -129,6 +129,7 @@ export function EditorContextMenuHost() {
     setPieAnimSpeedSelected,
     setPieAnimRepeatSelected,
     setChartLegendSelected,
+    setChartValuesSelected,
     setChartLegendPositionSelected,
     setChartTypeSelected,
     unlinkChartSelected,
@@ -425,6 +426,7 @@ export function EditorContextMenuHost() {
       onSetPieAnimSpeed={setPieAnimSpeedSelected}
       onSetPieAnimRepeat={setPieAnimRepeatSelected}
       onSetChartLegend={setChartLegendSelected}
+      onSetChartValues={setChartValuesSelected}
       onSetChartLegendPosition={setChartLegendPositionSelected}
       onSetChartType={setChartTypeSelected}
       onUnlinkChart={unlinkChartSelected}

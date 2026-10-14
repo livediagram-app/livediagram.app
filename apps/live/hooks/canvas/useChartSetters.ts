@@ -69,6 +69,9 @@ export function useChartSetters({
     setPieFieldSelected({ pieAnimRepeat: value }, 'ChartAnim');
   const setChartLegendSelected = (value: boolean) =>
     setPieFieldSelected({ chartLegend: value }, 'ChartLegend');
+  // Show Values (docs/specs/009-elements/pie-chart.md): each mark's number on the chart.
+  const setChartValuesSelected = (value: boolean) =>
+    setPieFieldSelected({ chartValues: value }, 'ChartValues');
   // Legend placement (docs/specs/009-elements/pie-chart.md): picking a side also turns the legend on, so the
   // position tiles double as "on" while the Off tile uses setChartLegendSelected.
   const setChartLegendPositionSelected = (position: ChartLegendPosition) =>
@@ -107,6 +110,7 @@ export function useChartSetters({
     setPieAnimSpeedSelected,
     setPieAnimRepeatSelected,
     setChartLegendSelected,
+    setChartValuesSelected,
     setChartLegendPositionSelected,
     setLineDataSelected,
   };
