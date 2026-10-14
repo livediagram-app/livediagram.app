@@ -146,7 +146,15 @@ export function useEditorImages(deps: EditorImagesDeps) {
             onOpenPicker: isReadOnly || embedMode || editsBlocked ? undefined : openImagePickerFor,
           }
         : undefined,
-    [documentId, ownerId, sessionShareCode, isReadOnly, embedMode, editsBlocked, openImagePickerFor],
+    [
+      documentId,
+      ownerId,
+      sessionShareCode,
+      isReadOnly,
+      embedMode,
+      editsBlocked,
+      openImagePickerFor,
+    ],
   );
 
   // Apply the picker's selection: set imageId + natural dimensions on
