@@ -35,6 +35,7 @@ export function TabPresenceStack({
   selfId,
   selfRole,
   followingId,
+  followerCount = 0,
   onOpenCollaborators,
 }: {
   participants: Participant[];
@@ -42,6 +43,9 @@ export function TabPresenceStack({
   selfRole: AccessLevel;
   // Who we are following (docs/specs/012-collaboration/follow-me-viewport.md), for the ring + hover card chip.
   followingId?: string | null;
+  // How many follow us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): a count on our own
+  // avatar, so a presenter knows to narrate rather than mouse in silence.
+  followerCount?: number;
   // Opens the Collaborators modal with the clicked person highlighted (null
   // from the "+N" badge). Absent leaves the avatars as plain indicators.
   onOpenCollaborators?: (participantId: string | null) => void;
@@ -93,8 +97,11 @@ export function TabPresenceStack({
         >
           {(() => {
             const following = followingId === slot.p.id;
-            const badges = participantBadges(slot.p, selfId, selfRole, followingId);
-            const avatar = (
+            const followed = slot.p.id === selfId ? followerCount : 0;
+            const badges = participantBadges(slot.p, selfId, selfRole, followingId, {
+              followerCount: followed,
+            });
+            const face = (
               <ParticipantAvatar
                 participant={slot.p}
                 size={16}
@@ -102,6 +109,20 @@ export function TabPresenceStack({
                 badges={badges.length > 0 ? badges : undefined}
               />
             );
+            const avatar =
+              followed > 0 ? (
+                <span className="relative inline-flex">
+                  {face}
+                  <span
+                    aria-label={`${followed} following you`}
+                    className="pointer-events-none absolute -right-1 -top-1.5 flex h-3 min-w-3 items-center justify-center rounded-full bg-brand-700 px-0.5 text-[8px] font-semibold leading-none text-white dark:bg-brand-500"
+                  >
+                    {followed}
+                  </span>
+                </span>
+              ) : (
+                face
+              );
             if (!onOpenCollaborators) return avatar;
             return (
               <button

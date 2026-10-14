@@ -73,4 +73,25 @@ describe('useFollowMe', () => {
     expect(hook.result.current.followingId).toBeNull();
     expect(args.onNotice).toHaveBeenCalledTimes(1);
   });
+
+  // docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"
+  it('refuses to follow someone who follows you, saying why', () => {
+    const { hook, args } = setup({ followerIds: ['p1'], nameOf: () => 'Alex' });
+    act(() => hook.result.current.startFollowing('p1'));
+    expect(hook.result.current.followingId).toBeNull();
+    expect(args.onNotice).toHaveBeenCalledWith(
+      "Alex is following you, so you can't follow them back.",
+    );
+  });
+
+  it('tells the room who it follows, and when it stops', () => {
+    const sendFollow = vi.fn();
+    const { hook } = setup({ sendFollow });
+    expect(sendFollow).not.toHaveBeenCalled();
+    act(() => hook.result.current.startFollowing('p1'));
+    expect(sendFollow).toHaveBeenLastCalledWith('p1');
+    act(() => hook.result.current.stopFollowing());
+    expect(sendFollow).toHaveBeenLastCalledWith(null);
+    expect(sendFollow).toHaveBeenCalledTimes(2);
+  });
 });

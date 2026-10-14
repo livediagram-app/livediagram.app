@@ -457,6 +457,7 @@ export function EditorView() {
           // Clicking an avatar in a presence stack opens the Collaborators
           // modal (docs/specs/012-collaboration/collaborator-enhancements.md), which is where Follow (docs/specs/012-collaboration/follow-me-viewport.md) lives.
           followingId={followMe.followingId}
+          followerCount={followMe.followerCount}
           onOpenCollaborators={openCollaborators}
           onMoveTabToFolder={moveTabToFolder}
           onRemoveTabFromFolder={removeTabFromFolder}

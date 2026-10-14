@@ -10,6 +10,7 @@
 import type { ViewportStore } from '@/lib/viewport-store';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { track } from '@/lib/telemetry';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 export type RemoteViewport = { tabId: string; pan: { x: number; y: number }; zoom: number };
 
@@ -24,6 +25,9 @@ export function useFollowMe({
   viewport,
   onFollowTab,
   onNotice,
+  followerIds = [],
+  nameOf = () => 'Someone',
+  sendFollow = () => {},
 }: {
   remoteViewports: Map<string, RemoteViewport>;
   // Who is still in the room, so a follow ends by itself when they leave.
@@ -35,10 +39,18 @@ export function useFollowMe({
   // Switch to the tab the presenter is on: "look at this" has to work when
   // the this is on tab 3.
   onFollowTab: (tabId: string) => void;
-  // One-line explanation when a follow ends by itself.
+  // One-line explanation when a follow ends by itself, or is refused.
   onNotice: (message: string) => void;
+  // Who follows us, by presence id, as the room tells us (docs/specs/012-collaboration/follow-me-viewport.md "Who
+  // follows whom"): one of them can't be followed back, or two mirrors face each other.
+  followerIds?: readonly string[];
+  // A participant's name, for the refusal's line.
+  nameOf?: (participantId: string) => string;
+  // Tell the room who we follow now (null: nobody), so the person followed can be told.
+  sendFollow?: (target: string | null) => void;
 }) {
   const [followingId, setFollowingId] = useState<string | null>(null);
+  const onNoticeRef = useLatest(onNotice);
   // The last view WE wrote while following. Any other view appearing in the store is the user moving
   // the canvas.
   const appliedRef = useRef<{ pan: Pan; zoom: number } | null>(null);
@@ -48,17 +60,38 @@ export function useFollowMe({
     setFollowingId(null);
   }, []);
 
-  const startFollowing = useCallback((participantId: string) => {
-    // Seeded so the first frame we apply isn't mistaken for a user gesture.
-    appliedRef.current = null;
-    setFollowingId(participantId);
-    // docs/specs/017-telemetry/telemetry.md: the other "look at this" tools (laser, spotlight, avatar mode)
-    // all report as Canvas·Used, so following ranks beside them on the
-    // dashboard's Selection-modes list instead of being the one pointing tool
-    // nobody can see the usage of. Entering the mode only, never per frame —
-    // the applied viewports are a continuous gesture.
-    track('Canvas', 'Used', 'FollowMe');
-  }, []);
+  const followerIdsRef = useLatest(followerIds);
+  const nameOfRef = useLatest(nameOf);
+  const startFollowing = useCallback(
+    (participantId: string) => {
+      // Following someone who follows you is refused, with the reason: two mirrors pointed at each other.
+      if (followerIdsRef.current.includes(participantId)) {
+        onNoticeRef.current(
+          `${nameOfRef.current(participantId)} is following you, so you can't follow them back.`,
+        );
+        return;
+      }
+      // Seeded so the first frame we apply isn't mistaken for a user gesture.
+      appliedRef.current = null;
+      setFollowingId(participantId);
+      // docs/specs/017-telemetry/telemetry.md: the other "look at this" tools (laser, spotlight, avatar mode)
+      // all report as Canvas·Used, so following ranks beside them on the
+      // dashboard's Selection-modes list instead of being the one pointing tool
+      // nobody can see the usage of. Entering the mode only, never per frame —
+      // the applied viewports are a continuous gesture.
+      track('Canvas', 'Used', 'FollowMe');
+    },
+    [followerIdsRef, nameOfRef, onNoticeRef],
+  );
+
+  // The room hears every change of who we follow, and nothing before the first.
+  const sendFollowEvent = useEffectEvent((target: string | null) => sendFollow(target));
+  const announced = useRef<string | null>(null);
+  useEffect(() => {
+    if (announced.current === followingId) return;
+    announced.current = followingId;
+    sendFollowEvent(followingId);
+  }, [followingId]);
 
   // The follow ends by itself when the person leaves the room, during
   // render so no frame follows somebody who has gone, with a line so the
@@ -116,5 +149,5 @@ export function useFollowMe({
     viewport.setView({ zoom: seen.zoom, offset: seen.pan });
   }, [followingId, remoteViewports, activeId, onFollowTab, viewport]);
 
-  return { followingId, startFollowing, stopFollowing };
+  return { followingId, startFollowing, stopFollowing, followerCount: followerIds.length };
 }

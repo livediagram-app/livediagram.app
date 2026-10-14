@@ -110,6 +110,11 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
     expect(scopedSenderMayRelay({ kind: 'el', tabId: SCOPE }, SCOPE)).toBe(true);
   });
 
+  // docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom": a follow names a person, not a tab.
+  it('lets a scoped visitor follow someone', () => {
+    expect(scopedSenderMayRelay({ kind: 'follow', target: 'p-a' }, SCOPE)).toBe(true);
+  });
+
   it('refuses any other tab', () => {
     expect(scopedSenderMayRelay({ kind: 'el', tabId: 't1' }, SCOPE)).toBe(false);
     expect(scopedSenderMayRelay({ kind: 'tab-focus', tabId: 't1' }, SCOPE)).toBe(false);

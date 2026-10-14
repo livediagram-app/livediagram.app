@@ -129,6 +129,10 @@ export const PRESENCE_OP_KINDS = [
   // Someone's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"): outlined in their colour.
   // Ephemeral, never logged, from any session (a viewer selects too).
   'sheet-presence',
+  // Who the sender is following (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"). The room
+  // keeps it on the session and is the only one who reads it: it tells each person, on their own socket, who
+  // follows them (`followers`). Never relayed, from any session (a viewer follows too).
+  'follow',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
@@ -328,6 +332,10 @@ export type ServerMessage =
   // every other peer's lock clears through the ordinary path and the room needs
   // to tell nobody else anything.
   | { kind: 'selection-released'; elementId: string; by: string }
+  // Who is following you (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): their presence
+  // ids, sent to YOUR SOCKET ALONE whenever the list changes, the same addressing as `selection-released`. It is
+  // how a client counts its followers and refuses to follow one of them back.
+  | { kind: 'followers'; ids: string[] }
   // The ordering cursor this session has reached (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1), sent on
   // `hello` and to the SENDER of each ordered op, which the relay skips. Without
   // it a client only learned seqs from other people's ops, so a reconnect
@@ -582,6 +590,8 @@ export type RoomOp =
   // already-throttled channel. The cost is accepted and written down: a room
   // where nobody follows anybody still carries these while people scroll.
   | { kind: 'viewport'; tabId: string; pan: { x: number; y: number }; zoom: number }
+  // Who the sender follows (a presence id), or null when they stop: to the room, never relayed.
+  | { kind: 'follow'; target: string | null }
   // --- Bring Focus (docs/specs/012-collaboration/bring-focus.md) ----------------------------------------
   // Somebody pressed a Bring Focus element: offer everyone else a jump to it.
   //
@@ -683,6 +693,7 @@ export type RoomIncoming =
     }
   // Addressed by being sent at all — see ServerMessage above.
   | { kind: 'selection-released'; elementId: string; by: string }
+  | { kind: 'followers'; ids: string[] }
   | CursorMessage
   | FormatMessage;
 

@@ -41,6 +41,7 @@ export type TabPillCtx = {
   // Threaded to the presence stack: the follow ring (docs/specs/012-collaboration/follow-me-viewport.md) and the
   // Collaborators modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md).
   followingId?: string | null;
+  followerCount?: number;
   onOpenCollaborators?: (participantId: string | null) => void;
   canvasActions?: CanvasMenuActions;
   // The shared tab-menu callback bundle (see TabBar.tabMenuProps): the
@@ -74,6 +75,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
     selfId,
     selfRole,
     followingId,
+    followerCount,
     onOpenCollaborators,
     canvasActions,
     tabMenuProps,
@@ -194,6 +196,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
         selfId={selfId}
         selfRole={selfRole}
         followingId={followingId}
+        followerCount={followerCount}
         onOpenCollaborators={onOpenCollaborators}
       />
       {isActive && !isEditing && !readOnly ? (
