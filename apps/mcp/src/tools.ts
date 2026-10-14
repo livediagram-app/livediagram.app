@@ -81,6 +81,7 @@ import { registerPlanTools } from './plan-tools';
 import { registerSheetTools } from './sheet-tools';
 import { registerIllustrateTools } from './illustrate-tools';
 import {
+  createDocumentTab,
   mcpAddTab,
   mcpCreateDocument,
   mcpDeleteDocument,
@@ -132,8 +133,15 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(server, env, mcpCreateDocument, async (args, extra) => {
     const token = requireToken(extra as Extra);
-    // Accept either `tabs` (preferred) or a single `tab` alias.
-    const inputTabs = args.tabs ?? (args.tab ? [args.tab] : undefined);
+    // Accept either `tabs` (preferred) or a single `tab` alias, checked here against the tab shape.
+    const single =
+      args.tabs || args.tab === undefined ? null : createDocumentTab.safeParse(args.tab);
+    if (single && !single.success)
+      return errorResult(
+        `"tab": ${single.error.issues.map((i) => `${i.path.join('.') || 'tab'}: ${i.message}`).join('; ')}. ` +
+          'Pass "tabs": [{ name, graph | mermaid | elements | template }].',
+      );
+    const inputTabs = args.tabs ?? (single ? [single.data] : undefined);
     if (!inputTabs || inputTabs.length === 0) {
       return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
     }

@@ -27,7 +27,7 @@ import { applySet } from './operations/set';
 import { buildResultLines } from './results';
 import { tabLocked, tooLarge } from './rejections';
 import { createState, type EditState } from './state';
-import type { ApplyOptions, ApplyOutcome, EditLog, EditOperation } from './types';
+import type { ApplyOptions, ApplyOutcome, ApplyRejection, EditLog, EditOperation } from './types';
 
 const silent: EditLog = () => {};
 
@@ -70,7 +70,7 @@ function rejected(
   log: EditLog,
   rejection: EditRejection,
   operations: readonly EditOperation[],
-): ApplyOutcome {
+): ApplyRejection {
   const at = rejection.operation;
   const op = at === undefined ? 'none' : operations[at - 1]!.op;
   log('[edit-ops] rejected', { code: rejection.code, operation: at ?? 0, op });
@@ -90,10 +90,22 @@ export function applyEditOperations(
     return rejected(log, tabLocked(), operations);
   }
   const state = createState(tab, options, log);
+  // A target that matches nothing is skipped and the rest read on, so one answer names every such target and a long
+  // changeset is fixed in one retry, not one per wrong ref; any other rejection stops at once. Nothing is written
+  // while one remains.
+  const unmatched: EditRejection[] = [];
   for (const [index, operation] of operations.entries()) {
     const rejection = applyOperation(state, operation, index + 1);
-    if (rejection) return rejected(log, rejection, operations);
+    if (!rejection) continue;
+    if (rejection.code !== 'target_not_found') {
+      if (unmatched.length) break;
+      return rejected(log, rejection, operations);
+    }
+    unmatched.push(rejection);
   }
+  // Logged as the first is, then answered with them all.
+  if (unmatched.length)
+    return { errors: [...rejected(log, unmatched[0]!, operations).errors, ...unmatched.slice(1)] };
   const next = finalise(state, log);
   if ('code' in next) return rejected(log, next, operations);
   const elementOps = diffToElementOps(tab.elements, next.elements);
