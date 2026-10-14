@@ -466,7 +466,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   and off every frame's and lane's border and heading; where the middle of a run is not clear, a point a quarter or a
   third of the way along it is tried before the next run.
   The gap between two ranks fits the widest label crossing it, as Tidy Up's does (its width left to right, its line
-  height either side of the jog top to bottom), so a caption is never longer than its edge.
+  height either side of the jog top to bottom), so a caption is never longer than its edge; between a group and a
+  node outside it too.
 - **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
   the spine (the one labelled yes / ok / true / pass, else the one leading furthest) and lays each other exit whose
   target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.

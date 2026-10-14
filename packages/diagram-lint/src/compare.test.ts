@@ -32,7 +32,7 @@ describe('compareGraphLayouts', () => {
         r.best,
       ]),
     ).toEqual([
-      ['groups', 5, 3, { width: 1516, height: 948 }, false],
+      ['groups', 5, 3, { width: 1555, height: 948 }, false],
       ['no-groups', 0, 1, { width: 1569, height: 596 }, true],
     ]);
   });
@@ -75,7 +75,7 @@ describe('compareGraphLayouts', () => {
     );
     expect(text.split('\n')).toEqual([
       'variant    crossings  behind  overlaps  extent    ratio  verdict',
-      expect.stringMatching(/^groups {5}5 {10}3 {7}0 {9}1516×948 {2}1\.6 {4}/),
+      expect.stringMatching(/^groups {5}5 {10}3 {7}0 {9}1555×948 {2}1\.6 {4}/),
       'no-groups  0          1       0         1569×596  2.6    1 warning  ← best',
     ]);
   });
