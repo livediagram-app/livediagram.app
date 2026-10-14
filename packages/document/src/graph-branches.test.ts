@@ -279,6 +279,34 @@ describe('labels off frames', () => {
 });
 
 describe('labels slide along their run', () => {
+  it("leaves a lanes decision's exits on its side when the lines are not angled", () => {
+    const exitsOf = (lines: 'straight' | 'angled') =>
+      layoutGraph({
+        style: 'lanes',
+        lines,
+        nodes: [
+          { id: 'check', label: 'Approved?', shape: 'diamond', group: 'a' },
+          { id: 'yes', label: 'Ship', group: 'b' },
+          { id: 'no', label: 'Rework', group: 'c' },
+        ],
+        groups: [
+          { id: 'a', label: 'Review' },
+          { id: 'b', label: 'Release' },
+          { id: 'c', label: 'Build' },
+        ],
+        edges: [
+          { from: 'check', to: 'yes', label: 'yes' },
+          { from: 'check', to: 'no', label: 'no' },
+        ],
+      })
+        .filter((e): e is ArrowElement => e.type === 'arrow')
+        .map((a) => (a.from.kind === 'pinned' ? a.from.anchor : null));
+    // Angled, one exit leaves by the top or bottom, squared by its elbow.
+    expect(exitsOf('angled').some((a) => a === 'n' || a === 's')).toBe(true);
+    // Straight, nothing turns it: both leave the side facing their targets.
+    expect(exitsOf('straight').some((a) => a === 'n' || a === 's')).toBe(false);
+  });
+
   it('keeps a label on a drop between two lanes off both lane borders', () => {
     const els = layoutGraph(
       {

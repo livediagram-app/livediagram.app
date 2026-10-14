@@ -6,7 +6,6 @@
 
 import { edgeToArrow, graphToElements, type DiagramGraph, type GraphLook } from './graph-authoring';
 import { reanchorArrow, type Pt } from './auto-layout-shared';
-import { branchExits } from './graph-branches';
 import { isBoxed, type BoxedElement, type Element } from './index';
 
 // The swimlane template's grid: header strip, padding inside a lane, gaps between columns and lanes.
@@ -135,8 +134,9 @@ export function layoutLanes(
   const arrows = graph.edges
     .filter((e) => centers.has(e.from) && centers.has(e.to))
     .map((e) => reanchorArrow(edgeToArrow(e, makeEdgeId()), centers, 'LR'));
-  // A step's exits leave by different sides (graph-branches.ts): a decision's, or any step's that branches.
-  return branchExits([...laneEls, ...placed, ...arrows], { axis: 'LR' });
+  // A step's exits leave by different sides (graph-branches.ts) once graph input knows its lines are angled: only an
+  // elbow turns a side exit into a square line.
+  return [...laneEls, ...placed, ...arrows];
 }
 
 // Columns with the staircase (docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):

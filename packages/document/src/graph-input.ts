@@ -315,6 +315,8 @@ export function layoutGraph(
   // rank then go round the outside instead.
   const axis = style === 'lanes' ? 'LR' : flowDir;
   if (lines === 'angled') {
+    // Across lanes, a step's exits leave by different sides: a decision's, or any step's that branches.
+    if (style === 'lanes') laid = branchExits(laid, { axis: 'LR' });
     // Trunks and buses (graph-branches.ts); then, down a flow, a step's exits that keep their own start
     // leave by different sides.
     laid = withExactEnds(laid);
