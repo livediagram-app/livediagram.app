@@ -719,9 +719,9 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('y="26" width="48" height="48"');
       // The label centres over it, drawn after the art so it sits on top. It used to
       // sit in the top band at y = 14, clear of the art.
-      const text = svg.match(/<text[^<>]*y="([0-9.]+)"[^<>]*dominant-baseline="central"/);
-      expect(text).not.toBeNull();
-      expect(parseFloat(text![1]!)).toBe(50);
+      const text = textTagBefore(svg, 'EC2');
+      expect(text?.['dominant-baseline']).toBe('central');
+      expect(parseFloat(text!.y!)).toBe(50);
       expect(svg.indexOf('<text')).toBeGreaterThan(svg.indexOf('<circle/>'));
     });
 
