@@ -62,6 +62,19 @@ describe('a stack', () => {
     expect(settleStacks(out)).toBe(out);
   });
 
+  it('takes in what it grows over in the same settle, so the next settle changes nothing (I3)', () => {
+    // Two children hug the stack to 208 wide; a neighbour sits just past it, its centre at 260.
+    const hugged = settleStacks([stack(), box('a', 30, 40), box('b', 150, 40)]);
+    expect(at(hugged, 's').w).toBe(208);
+    const placed = [...hugged, box('n', 220, 40)];
+    expect(settleStacks(placed)).toBe(placed);
+    // A third child grows it to 304, over the neighbour's centre: the neighbour is laid out now, not on a later edit.
+    const out = settleStacks([...placed, box('c', 120, 40)]);
+    expect(at(out, 's').w).toBe(16 + 4 * 80 + 3 * 16 + 16);
+    expect(at(out, 'n').x).toBe(16 + 3 * (80 + 16));
+    expect(settleStacks(out)).toBe(out);
+  });
+
   it('lays a column and a grid, aligning across the flow', () => {
     const col = settleStacks([
       stack({ stackDirection: 'column', stackAlign: 'start' }),

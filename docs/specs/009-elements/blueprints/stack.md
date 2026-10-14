@@ -36,6 +36,8 @@ align(innerH - h)` where `innerH` is the tallest child; `width = p * 2 + Σw + g
 - `settleStacks(elements)`: stacks innermost first (ascending area); for each with children, write each child's new
   `x / y` (moving its own children, attached chips and pointer notes by the same delta, as a drag would) and the
   stack's hugged `width / height` (its `x / y` stay). An empty stack is untouched. Returns the input when nothing moved.
+  A pass in which a stack grew runs again (up to `STACK_SETTLE_PASSES_MAX`, 8), since a grown stack can cover a
+  neighbour's centre and so hold it: the neighbour is laid out in the same settle, never on a later unrelated edit.
 
 ### Invariants
 
@@ -81,7 +83,8 @@ Numbers bounded by validation; no text of its own beyond the label.
 
 ## Performance and limits
 
-`deriveContainers` once per settle (O(n log n)), derived again only after a stack moved something; a tab with no
+`deriveContainers` once per pass (O(n log n)), derived again only after a stack moved something; a second pass runs
+only when a stack grew (a child added or enlarged), so a move within a stack stays one pass; a tab with no
 stack costs one `some` scan. Measured in the perf test, a 2,000-element board with 20 stacks of 10 and one child moved:
 2.5 ms of CPU on an M-series Mac, 7.6 ms under coverage (deriving per stack cost 10.9 and 43 ms, and 154 ms on CI),
 against a 60 ms budget (`stack.perf.test.ts`).
@@ -112,9 +115,10 @@ Menu tiles named "Row Stack", "Column Stack", "Grid Stack", "Align Start / Centr
 
 ## Constants and configuration
 
-| Name            | Value  | Provenance / safe range |
-| --------------- | ------ | ----------------------- |
-| Gap default     | 16     | D192; 0 to 64           |
-| Padding default | 16     | D192; 0 to 64           |
-| Columns default | 2      | D192; 2 to 6            |
-| Glide           | 160 ms | D192                    |
+| Name            | Value  | Provenance / safe range                            |
+| --------------- | ------ | -------------------------------------------------- |
+| Gap default     | 16     | D192; 0 to 64                                      |
+| Padding default | 16     | D192; 0 to 64                                      |
+| Columns default | 2      | D192; 2 to 6                                       |
+| Glide           | 160 ms | D192                                               |
+| Settle passes   | 8      | I3; each repeat takes one more element in, 2 to 16 |
