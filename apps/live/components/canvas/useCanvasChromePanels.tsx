@@ -115,6 +115,8 @@ export function useCanvasChromePanels({
   tidyUpPopoverEl: ReactNode;
   // Illustrate mode's Contents popover (docs/specs/007-editor/illustrate-pages.md "Contents").
   contentsPopoverEl: ReactNode;
+  // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
+  avatarPopoverEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -289,11 +291,20 @@ export function useCanvasChromePanels({
   useEffect(() => {
     if (activeDockPanel === 'tidy-up' && !tidyUpShown) closeDockPanel();
   }, [activeDockPanel, tidyUpShown, closeDockPanel]);
+  // The Avatar panel belongs to its button, which belongs to the mode: leaving Avatar mode closes it.
+  const avatarMode = props.canvasTool === 'avatar';
+  const avatarOpen = activeDockPanel === 'avatar' && avatarMode;
+  useEffect(() => {
+    if (activeDockPanel === 'avatar' && !avatarMode) closeDockPanel();
+  }, [activeDockPanel, avatarMode, closeDockPanel]);
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     panelWiringFor,
     slidesPopover: slidesOpen
+      ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
+      : null,
+    avatarPopover: avatarOpen
       ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
       : null,
   });
@@ -532,7 +543,6 @@ export function useCanvasChromePanels({
     collaborate: null,
     ai: aiEl,
     minimap: minimapEl,
-    avatar: avatarEl,
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
@@ -546,6 +556,7 @@ export function useCanvasChromePanels({
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
     slidesPopoverEl: slidesOpen ? slideDeckEl : null,
+    avatarPopoverEl: avatarEl,
     contentsPopoverEl:
       contentsOpen && props.illustratePages ? (
         <PageContentsPanel

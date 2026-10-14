@@ -73,6 +73,11 @@ import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { spotlightRadius } from '@/lib/spotlight-config';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
+import { AvatarSpeechLayer } from '@/components/canvas/AvatarSpeechLayer';
+import { useAvatarSpeech } from '@/hooks/canvas/useAvatarSpeech';
+import { useSpeechBubbles } from '@/lib/avatar-speech-store';
+import { headPoint } from '@/lib/avatar-speech';
+import { avatarScale } from '@/lib/avatar-config';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 
 // The footprint a burst is scaled against when it comes from the avatar panel
@@ -410,6 +415,17 @@ function CanvasView(props: CanvasProps) {
   // goes through a ref — declared above, repointed here, read at arrival time.
   // Same shape as `enterPortalRef` below, for the same reason.
   const avatarRef = useLatest<ReturnType<typeof useAvatarWalk> | null>(avatar);
+  // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): an Editor or a Participant says
+  // something above their character's head; everyone on the tab sees it float away.
+  const speech = useAvatarSpeech({
+    active: canvasTool === 'avatar',
+    canSpeak: !props.readOnly || !!props.takePart,
+    feet: avatar.pos,
+    scale: avatarScale(avatarLook.config.size),
+    tabId: props.activeTabId ?? '',
+    onSay: props.onAvatarSay,
+  });
+  const speechBubbles = useSpeechBubbles();
 
   // Who is sitting in each chair, from PRESENCE — never from the document. Our
   // own character plus every peer's, keyed by chair id, so a chair empties by
@@ -990,6 +1006,25 @@ function CanvasView(props: CanvasProps) {
                   onStand={avatar.standUp}
                 />
               ) : null}
+              {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
+              own head while you type. */}
+              <AvatarSpeechLayer
+                bubbles={speechBubbles}
+                activeTabId={props.activeTabId ?? ''}
+                zoom={viewportZoom}
+                peers={props.remoteAvatars}
+                self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
+                composer={
+                  speech.composerOpen && avatar.pos
+                    ? {
+                        head: headPoint(avatar.pos, avatarScale(avatarLook.config.size)),
+                        coolingDown: speech.coolingDown,
+                        onSend: (text) => speech.send(text, 'composer'),
+                        onCancel: speech.closeComposer,
+                      }
+                    : null
+                }
+              />
             </GifOmit>
           </div>
 
@@ -1077,6 +1112,10 @@ function CanvasView(props: CanvasProps) {
             onMoveLaserPanel={props.onMoveLaserPanel}
             onResetLaserPanel={props.onResetLaserPanel}
             onRandomiseAvatar={avatarLook.randomise}
+            onSendAvatarMessage={
+              speech.speaking ? (text: string) => speech.send(text, 'panel') : undefined
+            }
+            avatarSpeechCooling={speech.coolingDown}
             onAvatarReaction={avatar.playReaction}
             onAvatarBurst={(reaction: Reaction) => {
               // A fresh seed each  press, so pressing the same reaction twice replays

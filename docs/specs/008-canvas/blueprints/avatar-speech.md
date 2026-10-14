@@ -162,11 +162,12 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
 
 ## Presentation and UX
 
-- Bubble: white (slate-900 dark) card, `rounded-2xl`, 1.5px border (own: brand; peer: presence colour), shadow,
-  max width 240px, 13px text, padding 8px 12px, a 10px tail centred at the bottom. Peer name: 10px semibold in the
-  presence colour above the text.
+- Bubble: white (slate-900 dark) card, `rounded-2xl`, 1.5px border and tail in the speaker's avatar colour (the brand
+  when there is none), shadow, max width 240px, 13px text, padding 8px 12px, a 10px tail centred at the bottom. The
+  speaker's name, yours included, sits under the text: 10px semibold in the same colour.
 - Composer: the same card with an auto-growing textarea (one line to start, up to 5), placeholder "Say
-  something…", a 28px round send button with the paper-plane glyph, and the counter `43 / 50` (amber at 50) under
+  something…", a 28px round send button with the paper-plane glyph, in your colour while it can send; a single line is padded to the
+  button's height so the text sits level with it, and the counter `43 / 50` (amber at 50) under
   the text. Pops in with `animate-dialog-in`.
 - Button: `ClusterPopoverButton` with label "Avatar", hover title "Avatar", description "Dress your character,
   react, and say something." (Viewer: "Dress your character and react.").
