@@ -4,6 +4,7 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
+import type { ResolveTabWindow } from './tab-window';
 import type { SheetRenderModel } from './svg-render-plan-sheet';
 import type { Item, ItemTypeDef } from '@livediagram/items';
 import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx } from './border-style';
@@ -133,6 +134,9 @@ export type BoxedExportOptions = {
   // A plan view's picture at its box (docs/specs/026-plan/plan-tabs.md "Export"), from a caller that has the charts'
   // models (the editor); undefined, or no resolver, draws the labelled box.
   resolvePlanArt?: ResolvePlanArt;
+  // A tab window's tab (docs/specs/009-elements/tab-window.md "Exports"): its drawing to fit inside, from a caller
+  // that has the document's tabs (the editor's export); without one a window draws its frame named for its tab.
+  resolveTabWindow?: ResolveTabWindow;
 };
 
 // The markup of a plan view drawn at its own box, or undefined to fall back to the labelled box.
@@ -448,7 +452,8 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
       el.shape === 'plan-board' ||
       el.shape === 'plan-card' ||
       el.shape === 'plan-view' ||
-      el.shape === 'plan-sheet')
+      el.shape === 'plan-sheet' ||
+      el.shape === 'tab-window')
   )
     return false;
   return !selfLabelled(el);

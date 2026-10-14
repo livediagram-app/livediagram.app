@@ -1,0 +1,115 @@
+# The tab window
+
+## What
+
+A **Tab Window**: an element that shows another tab of the same document, live, fitted inside it. Build a diagram
+on its own tab, put a window onto it on a slide, and the slide follows every change to the diagram. A
+`shape: 'tab-window'` holding the tab it shows in `windowTabId`.
+
+## Why
+
+A deck explains the work done on the document's other tabs: the architecture, the flow, the board. Copying those
+elements onto a slide makes a second copy that goes stale the moment the diagram changes, and someone has to
+remember to paste it again. A window is one source of truth: the diagram is edited where it lives and every slide
+showing it is up to date.
+
+## The element
+
+- **What it shows** (`windowTabId`): one tab of the document, never the tab the window is on and never a Plan tab (a
+  Board, Sheet or Dashboard tab, or any tab in Plan mode). Absent until chosen.
+- **The drawing**: the tab's content drawn as the editor shows it (the export renderer, in this person's appearance,
+  the tab's own theme, its photos and the document's cards), **zoomed to fit** inside the window with the tab's
+  paper behind it, centred, never cropped. It follows every change to the tab (an edit, a collaborator's) at a
+  deferred priority, so a burst of edits never competes with the canvas.
+- **Still**: the drawing is a picture of the tab. It never scrolls, zooms or takes a click of its own; the window is
+  an ordinary element (select, move, resize, copy, layer, lock, delete).
+- **Its frame**: rounded corners (12 px) and a hairline in the element's stroke (the theme's hairline when unset);
+  a Stroke and Opacity change it like any shape. Its fill is the shown tab's paper; it takes no label.
+- **A window inside the tab it shows** (a slide showing a tab that itself holds a window) is drawn as its **frame
+  named for its tab**, never the tab inside it, so windows can never recurse.
+- **Default size**: 640 by 360 (16:9), resizable to at least 160 by 90.
+
+## States
+
+| State                                           | The window shows                                                                   |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------- |
+| No tab chosen                                   | "Show a tab here" with **Choose a Tab** (an Editor); "No tab chosen" (anyone else) |
+| The tab's content on its way                    | "Loading <name>…"                                                                  |
+| Its fetch failed                                | "Couldn't load <name>." with **Retry**                                             |
+| Loaded with nothing on it                       | "Nothing on <name> yet."                                                           |
+| The tab deleted, or not shared with this person | "This tab isn't available." with **Choose a Tab** (an Editor)                      |
+| Loaded                                          | The drawing                                                                        |
+
+A tab's content arrives only when it is opened or fetched (per-tab storage), so a window asks for its tab's content
+as it is shown, as a Dashboard's Diagram slot does. A tab the person may not see is never fetched or drawn: the
+window says it is not available rather than leaking it.
+
+## Choosing the tab
+
+**Choose a Tab** (the empty window's button, and the menu's **Tab Window** section) opens a list of the tabs a window
+may show, in tab-bar order, each its mode icon and name, the current one marked. A press shows that tab (one edit,
+one undo). With no tab to offer it says "No other tab to show yet." The list follows the tab bar live (a tab added,
+renamed or deleted).
+
+## Opening the tab
+
+**Open <name>** goes to the shown tab: a button in the window's top-right corner while it is hovered or selected,
+and the menu's Tab Window section. Opening is navigation, so it is everyone's who can see the tab.
+
+## Exports
+
+A PDF, PNG or SVG export draws each window's tab inside it, fitted, as on screen: the export fetches each shown tab's
+content and photos first. A window inside a shown tab is drawn as its frame (no recursion). Ids inside a shown tab's
+drawing are prefixed per window, so its gradients, patterns and markers never collide with the page's. Thumbnails
+(Contents, the Slide Deck, layouts) and the API's tab render draw the frame, named for its tab where the caller
+knows it, else "Tab Window".
+
+## Palette
+
+| Mode       | Where                                   |
+| ---------- | --------------------------------------- |
+| Illustrate | **Media**: Tab Window, after Video      |
+| Diagram    | none (Search still finds and places it) |
+| Draw       | none                                    |
+| Facilitate | none                                    |
+| Plan       | none                                    |
+
+A window placed or pasted on any tab still draws there.
+
+## The menu
+
+A **Tab Window** section, closed until opened: **Shows** (the tab list above) and **Open <name>**.
+
+## Share roles
+
+| Role        | May                                                                    |
+| ----------- | ---------------------------------------------------------------------- |
+| Editor      | Place, choose the tab, move, resize, restyle, delete                   |
+| Participant | Look, and open the shown tab; cannot place one or change what it shows |
+| Viewer      | Look, and open the shown tab                                           |
+
+Gated on the session's `can` (`edit` for choosing the tab), never on read-only alone.
+
+## Cost
+
+- Each window renders its tab once per change to that tab, at a deferred priority, and never while the tab is
+  unchanged. The renderer loads only once a window is on screen.
+- The drawing is one inline SVG: its node count is the shown tab's, so a window onto a very large tab costs the page
+  what that tab costs the export.
+- Nothing runs per frame; moving or resizing a window only re-lays its frame.
+
+## Telemetry
+
+`Element · Added · TabWindow` (as any palette tile); `Element · Changed · TabWindowTab` on choosing a tab;
+`UI · Used · TabWindowOpen` on opening it. Never a tab name.
+
+## Agents
+
+The REST API and the MCP server take `tab-window` with `windowTabId` (a tab id of the same document). An agent
+building a deck puts a window onto the tab it drew the diagram on rather than copying the diagram.
+
+## Non-goals
+
+- Panning or zooming inside a window, or showing a region of a tab: a window shows the whole tab, fitted.
+- Editing the shown tab through the window: it opens the tab instead.
+- Showing a tab of another document.

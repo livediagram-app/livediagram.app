@@ -126,6 +126,8 @@ export const SHAPE_KINDS = new Set<string>([
   'mode-button',
   // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
   'portal',
+  // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn inside it.
+  'tab-window',
   // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the room.
   'session-button',
   // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.

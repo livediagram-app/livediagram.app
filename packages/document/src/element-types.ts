@@ -256,6 +256,9 @@ export type ShapeElement = {
   // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
   // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
   portalTarget?: ElementId;
+  // Tab window (docs/specs/009-elements/tab-window.md): the id of the tab of this document it shows. Only meaningful
+  // on the 'tab-window' kind. Absent until chosen; a tab that is gone (or not shared) shows as unavailable.
+  windowTabId?: string;
   // Session button (docs/specs/012-collaboration/session-button.md): which session tool pressing this element starts
   // for the room, and its one setting. Only meaningful on 'session-button';
   // absent means a default five-minute timer, so a button authored without one

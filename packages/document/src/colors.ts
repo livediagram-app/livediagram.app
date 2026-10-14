@@ -545,6 +545,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'sankey',
   // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
   'portal',
+  // A tab window (docs/specs/009-elements/tab-window.md) draws its own rounded frame round the tab it shows.
+  'tab-window',
   'reveal',
   // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
   // which is what the canvas does too (isSvgRenderedShape excludes it).
