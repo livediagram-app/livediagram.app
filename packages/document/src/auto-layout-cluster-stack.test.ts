@@ -65,6 +65,18 @@ describe('stacked groups', () => {
     }
   });
 
+  it('keep a node after the last stage under the member it follows, once the stage has moved', () => {
+    const els2 = layoutClusteredGraph(
+      {
+        ...pipeline,
+        nodes: [...pipeline.nodes, { id: 'done', label: 'Released' }],
+        edges: [...pipeline.edges, { from: 'roll', to: 'done' }],
+      },
+      { direction: 'TB', makeEdgeId: ids() },
+    );
+    expect(Math.abs(mid(byId(els2, 'done')) - mid(byId(els2, 'roll')))).toBeLessThan(1);
+  });
+
   it('leave groups side by side as they were', () => {
     const els2 = layoutClusteredGraph(
       {

@@ -244,9 +244,8 @@ export function layoutClusteredGraph(
   orderMembersByNeighbours(clusters, placedNodes, placedFrames, graph, direction ?? 'TB');
   // 3c. A row of members with no lines among them sits by the outside nodes they link to.
   seatMembersByNeighbours(placedNodes, placedFrames, clusterOf, graph, direction ?? 'TB');
-  // 3d. Each node outside the groups that members link to sits by those members, not by the group's middle.
-  seatByMembers(placedNodes, placedFrames, clusterOf, graph, direction ?? 'TB');
-  // 3e. Groups stacked down the flow share one width, so a pipeline's stages read as one column.
+  // 3d. Groups stacked down the flow share one width, so a pipeline's stages read as one column. Before 3e: it moves
+  // a stage's members, and a node seated by them first was left behind.
   lineUpStackedFrames(
     placedFrames,
     placedNodes,
@@ -255,6 +254,8 @@ export function layoutClusteredGraph(
     FRAME_PAD,
     direction ?? 'TB',
   );
+  // 3e. Each node outside the groups that members link to sits by those members, not by the group's middle.
+  seatByMembers(placedNodes, placedFrames, clusterOf, graph, direction ?? 'TB');
 
   // 4. Real arrows over the final geometry: every edge whose endpoints name
   // a node or a frame, re-anchored to the sides that face. Self-loops are
