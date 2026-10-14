@@ -2,7 +2,7 @@
 // template-builders-town-hall.ts): the heading, section labels, guidance
 // lines and a checklist sized to its rows, plus the spacing they share.
 
-import { createShape, createText, type Element } from '@livediagram/document';
+import { createShape, createText, fontSizeFor, type Element } from '@livediagram/document';
 
 export const GAP = 40;
 export const TITLE_H = 52;
@@ -13,6 +13,9 @@ export const SECTION_H = 32;
 export const BUTTON_H = 96;
 export const BUTTON_W = 152;
 export const CHECK_ROW_H = 40;
+// A bold large title's average glyph advance (a share of its size) and its box's inner room.
+const TITLE_CHAR_EM = 0.6;
+const TITLE_PAD_PX = 24;
 
 // The title (with a sticker beside it) + one-line how-to every session board
 // opens with.
@@ -26,10 +29,14 @@ export function heading(
   subtitle: string,
 ): Element[] {
   const sticker = 52;
+  // As wide as the title needs on one line, never narrower than the board asks: a hand-set width wrapped a longer
+  // title into the subtitle under it. Bold large text runs about TITLE_CHAR_EM of its size a character.
+  const fits = Math.ceil(title.length * fontSizeFor('lg') * TITLE_CHAR_EM) + TITLE_PAD_PX;
+  const w = Math.min(Math.max(titleW, fits), width - sticker - 8);
   return [
     {
       ...createText(x, y),
-      width: titleW,
+      width: w,
       height: TITLE_H,
       label: title,
       textSize: 'lg',
@@ -37,7 +44,7 @@ export function heading(
       textAlignX: 'left',
     },
     {
-      ...createShape('sticker', x + titleW + 8, y),
+      ...createShape('sticker', x + w + 8, y),
       width: sticker,
       height: sticker,
       stickerId,

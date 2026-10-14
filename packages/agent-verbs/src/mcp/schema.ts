@@ -101,7 +101,14 @@ const STYLE_FIELDS =
   'tinted, solid, bold, ghost, paper, muted, slate, inked, hairline, outline, dotted, dash-dot, frame, info, ' +
   'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; "note" (detail ' +
   'shown on the element); on an arrow "label", "strokeStyle", "arrowEnds", "arrowheadShape". A field a type ' +
-  'does not have, or a value off its list, is refused naming what it takes. ';
+  'does not have, or a value off its list, is refused naming what it takes. ' +
+  'Facilitation kinds and what they hold: "session-button" a "session" ({"tool": "timer" with "minutes", ' +
+  '"stopwatch", "vote" with "dots", or "poll" with "question" and "options"}), drawn as what pressing it does ' +
+  'unless it has a label; "agenda" its "agendaItems" ([{"label", "minutes"}]); "checklist" its "checklistItems" ' +
+  '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout or page its "pageTitle" and ' +
+  '"pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). The entries of a "qa-board", ' +
+  '"idea-box" and "temperature" are the people\u2019s, never an edit\u2019s: starter questions or ideas go on ' +
+  'stickies beside them. ';
 
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).
