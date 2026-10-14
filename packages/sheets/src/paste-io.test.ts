@@ -173,6 +173,12 @@ describe('copy and paste', () => {
     expect(readPastedText('one\ntwo, three')).toEqual([['one'], ['two, three']]);
     expect(readPastedText('')).toEqual([['']]);
   });
+  // A sentence pasted on a cell stays in that cell: one line is never read as commas, only as tabs.
+  it('keeps one pasted line with a comma in one cell', () => {
+    expect(readPastedText('Thanks, Sam')).toEqual([['Thanks, Sam']]);
+    expect(readPastedText('Thanks, Sam\n')).toEqual([['Thanks, Sam']]);
+    expect(readPastedText('a\tb, c')).toEqual([['a', 'b, c']]);
+  });
   it('pastes external rows read as typed, with formats', () => {
     const b = book({});
     const id = b.sheets[0]!.id;

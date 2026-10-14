@@ -2,7 +2,7 @@
 
 ## What
 
-Three elements for the shapes ideas come in, each one element that lays out its own rows:
+Six elements for the shapes ideas come in, each one element that lays out its own rows:
 
 - **Layer stack** (`shape: 'layer-stack'`): horizontal bands stacked top to bottom, each with a label and an
   optional side note. A tech stack, the OSI model, architecture tiers.
@@ -11,6 +11,12 @@ Three elements for the shapes ideas come in, each one element that lays out its 
   strategy stack, a conversion funnel.
 - **Cycle** (`shape: 'cycle'`): steps evenly spaced round a ring, joined by curved arrows, with a label in the middle.
   PDCA, a flywheel, a release loop.
+- **Hub and spoke** (`shape: 'hub'`): satellites evenly spaced round a central hub, joined to it by spokes (which can be
+  switched off). An ecosystem, stakeholders, integrations, everything that touches one service.
+- **Onion rings** (`shape: 'onion'`): concentric rings from a core outward, each labelled. Clean or hexagonal
+  architecture, trust layers, a maturity model. Nesting, not overlap: it is not a Venn.
+- **Chevron process** (`shape: 'chevrons'`): arrow-shaped stages in a row, each pointing into the next, with an
+  optional note under each. A value chain, delivery phases, a CI pipeline, a customer lifecycle.
 
 ## Why
 
@@ -28,24 +34,31 @@ All three carry their content as **rows**:
 conceptRows?: { label: string; note?: string }[];
 ```
 
-| Kind        | Rows   | `label`   | `note`                                      |
-| ----------- | ------ | --------- | ------------------------------------------- |
-| Layer stack | 2 to 8 | the layer | a side note to the right of the band        |
-| Pyramid     | 2 to 6 | the tier  | a value after the label (Funnel only)       |
-| Cycle       | 3 to 8 | the step  | not drawn (kept, so a kind switch keeps it) |
+| Kind        | Rows   | `label`     | `note`                                      |
+| ----------- | ------ | ----------- | ------------------------------------------- |
+| Layer stack | 2 to 8 | the layer   | a side note to the right of the band        |
+| Pyramid     | 2 to 6 | the tier    | a value after the label (Funnel only)       |
+| Cycle       | 3 to 8 | the step    | not drawn (kept, so a kind switch keeps it) |
+| Hub         | 3 to 8 | a satellite | not drawn                                   |
+| Onion       | 2 to 6 | a ring      | not drawn                                   |
+| Chevrons    | 2 to 8 | the stage   | a note under the stage                      |
 
 A label is at most 60 characters and a note at most 40. Row order is meaning: the first row is the top layer, the
 top tier (the apex of a Pyramid, the widest band of a Funnel or Inverted) and the cycle's first step, at twelve
-o'clock, the rest following clockwise.
+o'clock, the rest following clockwise; a Hub's first satellite sits at twelve o'clock likewise; an Onion's first ring
+is its core, the rest outward; a Chevron process reads left to right.
 
-**The element's label** is the Cycle's centre label. A Layer stack and a Pyramid take no label (they draw all their
-own text).
+**The element's label** is the Cycle's centre label and the Hub's hub. A Layer stack, a Pyramid, an Onion and a
+Chevron process take no label (they draw all their own text).
+
+**Spokes** (`hubSpokes?: boolean`, on when absent): a Hub draws a line from the hub to each satellite. **Spokes** is an
+on / off row in the Hub's section; off leaves the satellites floating round the hub.
 
 **Editing.** Once the element is selected, click a row's label (or note) to edit it in place: Enter commits, Escape
 restores. A **Rows** section in the menu (Tools flyout) lists the rows with a label input, a note input where the
 kind draws notes, ↑ / ↓ reorder, × remove (disabled at the kind's minimum) and Add (disabled at its maximum), the
-same row editor as the web components. While the element is selected, the ring offers **Add Layer**, **Add Tier** or
-**Add Step**.
+same row editor as the web components. While the element is selected, the ring offers **Add Layer**, **Add Tier**,
+**Add Step**, **Add Satellite**, **Add Ring** or **Add Stage**.
 
 **Pyramid variant** (`pyramidVariant: 'pyramid' | 'inverted' | 'funnel'`, Pyramid by default) is three tiles in the
 same section.
@@ -65,12 +78,23 @@ export matches the editor. Text re-wraps and re-sizes with the element; it never
 - **Cycle.** Steps sit on a circle inscribed in the element, each a disc sized so neighbours never touch (the
   smaller of a quarter of the ring's spacing and a fifth of the element), labels inside the disc. Arcs run clockwise
   between neighbours, stopping short of each disc, with an arrowhead. The centre label sits in the middle.
+- **Hub.** The hub is a disc at the centre, about a third of the element's smaller side; the satellites sit on a ring
+  round it, each a disc sized so neighbours never touch (as a Cycle's steps), labels inside. Spokes run from the hub's
+  edge to each satellite's edge. The hub's label sits inside the hub.
+- **Onion.** Rings share the radius of the circle inscribed in the element evenly, the core innermost. The core's label
+  sits at the centre; each ring's label sits at the top of its band, as wide as the band allows there.
+- **Chevrons.** Stages share the width, each a chevron whose point reaches into the next one's notch (the first has a
+  flat left side), with a small gap between them. The point's depth follows the stage height, never more than a
+  third of a stage's width. Labels are centred in the stage's body; with any note, the chevrons take the top 62% of
+  the height and each note sits under its stage.
 
 ## Colours
 
 The rows are a **ramp from the accent**: the first row is the accent (the element's stroke) and each later row mixes
 it further toward the element's fill, down to 22%. The Cycle draws its steps as the fill with an accent ring, and its
-first step solid in the accent to mark where the loop starts. Each row's text takes the readable colour for its own
+first step solid in the accent to mark where the loop starts. A Hub's hub is solid in the accent and its satellites
+the fill with an accent ring, its spokes in the accent at half strength. An Onion's core is the accent and each ring
+outward steps down the ramp; a Chevron process ramps left to right. Each row's text takes the readable colour for its own
 fill (`readableColour`), so labels stay legible down the ramp. A theme switch carries all of it, since it is derived
 from the stroke and fill.
 
@@ -87,9 +111,11 @@ conceptAnimRepeat?: boolean;
 
 - **Build** (a reveal): the rows appear one after another in the order the graphic is read: a Layer stack top to
   bottom, a Pyramid from the base up, a Funnel and an Inverted pyramid from the top down, a Cycle clockwise from the
-  first step (each arc drawing on after its step). Plays once by default.
+  first step (each arc drawing on after its step), a Hub's hub then each satellite clockwise (its spoke drawing on
+  with it), an Onion from the core outward, a Chevron process left to right. Plays once by default.
 - **Pulse** (a loop): each row lights in turn, a short brighten-and-settle, then the next, with a beat of rest after
-  the last. On a Cycle it reads as "we are here" travelling round.
+  the last. On a Cycle it reads as "we are here" travelling round; on a Hub it travels round the satellites, on an
+  Onion it ripples outward, and on a Chevron process it runs along the stages.
 - **Flow** (a loop, Cycle only): dashes travel along the arcs in the loop's direction.
 
 They follow the shared rules ([Element animations](../028-animation/element-animations.md)): pure CSS keyframes with
@@ -99,7 +125,8 @@ no animation.
 
 ## Palette
 
-A new category, **Concepts**, in the Structure band: **Layer Stack**, **Pyramid**, **Funnel**, **Cycle**. The Funnel
+A new category, **Concepts**, in the Structure band: **Layer Stack**, **Pyramid**, **Funnel**, **Cycle**, **Hub and
+Spoke**, **Onion**, **Chevrons**. The Funnel
 tile places a Pyramid with the Funnel variant (the variant is the decision, so it gets its own tile).
 
 | Mode       | Concepts |
@@ -116,14 +143,15 @@ rows, and the **Flywheel** template's ring is one Cycle. Templates that sit besi
 
 ## Share roles
 
-| Role        | May                                                                                   |
-| ----------- | ------------------------------------------------------------------------------------- |
-| Editor      | Everything above                                                                      |
-| Participant | Write the Cycle's centre label, as on any element; not the rows, variant or animation |
-| Viewer      | Look                                                                                  |
+| Role        | May                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
+| Editor      | Everything above                                                                                       |
+| Participant | Write the Cycle's or Hub's centre label, as on any element; not the rows, variant, spokes or animation |
+| Viewer      | Look                                                                                                   |
 
 Rows are structure, so their in-place lines render inert for a Participant and a Viewer.
 
 ## Agents
 
-The MCP server and the REST API take the three kinds with `conceptRows`, `pyramidVariant` and the animation fields.
+The MCP server and the REST API take the six kinds with `conceptRows`, `pyramidVariant`, `hubSpokes` and the
+animation fields.

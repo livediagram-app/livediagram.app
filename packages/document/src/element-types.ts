@@ -76,6 +76,10 @@ import type {
   TextSize,
   TextSizePreset,
 } from './index';
+import type { KeyRow } from './diagram-key';
+import type { MindLook } from './person-node';
+import type { SequenceElementMessage, SequenceElementParticipant } from './sequence-element';
+import type { StackAlign, StackDirection } from './stack';
 
 // Where a chart's legend sits relative to the plot (docs/specs/009-elements/pie-chart.md). 'off' is modelled
 // separately by `chartLegend: false`, so this only covers the four placements.
@@ -256,6 +260,9 @@ export type ShapeElement = {
   // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
   // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
   portalTarget?: ElementId;
+  // Tab window (docs/specs/009-elements/tab-window.md): the id of the tab of this document it shows. Only meaningful
+  // on the 'tab-window' kind. Absent until chosen; a tab that is gone (or not shared) shows as unavailable.
+  windowTabId?: string;
   // Session button (docs/specs/012-collaboration/session-button.md): which session tool pressing this element starts
   // for the room, and its one setting. Only meaningful on 'session-button';
   // absent means a default five-minute timer, so a button authored without one
@@ -462,6 +469,26 @@ export type ShapeElement = {
   attachedTo?: ElementId;
   attachAt?: AttachPoint;
   stepSequence?: boolean;
+  // A pointer note's tip, relative to its top-left (docs/specs/009-elements/pointer-note.md).
+  pointerTip?: { x: number; y: number };
+  // A diagram key's derived rows and the author's meaning per row id (docs/specs/009-elements/diagram-key.md).
+  keyRows?: KeyRow[];
+  keyMeanings?: Record<string, string>;
+  // A stack's arrangement (docs/specs/009-elements/stack.md); each absent = its default.
+  stackDirection?: StackDirection;
+  stackAlign?: StackAlign;
+  stackGap?: number;
+  stackPadding?: number;
+  stackColumns?: number;
+  // A sequence diagram's rows, Numbered and Play (docs/specs/009-elements/sequence-diagram.md).
+  sequenceParticipants?: SequenceElementParticipant[];
+  sequenceMessages?: SequenceElementMessage[];
+  sequenceNumbered?: boolean;
+  sequenceAnim?: 'play';
+  sequenceAnimSpeed?: AnimationSpeed;
+  sequenceAnimRepeat?: boolean;
+  // A mind node drawn as a person (docs/specs/009-elements/org-chart.md); absent = an ordinary mind node.
+  mindLook?: MindLook;
   // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
   boundaryStyle?: BoundaryStyle;
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows (a layer, tier or step each, with an
@@ -471,6 +498,8 @@ export type ShapeElement = {
   conceptAnim?: ConceptAnim;
   conceptAnimSpeed?: AnimationSpeed;
   conceptAnimRepeat?: boolean;
+  // A hub's spokes (docs/specs/009-elements/concept-graphics.md); absent = drawn, `false` = off.
+  hubSpokes?: boolean;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), bounded in validate.ts: a stat row's KPI
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.
@@ -1469,6 +1498,8 @@ export type VideoElement = {
 // something that isn't theirs to edit.
 const UNTYPED_SHAPES = new Set<string>([
   'sticker',
+  // A fence (docs/specs/009-elements/fence.md) carries no label.
+  'fence',
   'session-button',
   'reaction-pad',
   'mode-button',
@@ -1479,6 +1510,8 @@ const UNTYPED_SHAPES = new Set<string>([
   'plan-card',
   'plan-view',
   'plan-sheet',
+  // A tab window shows another tab (docs/specs/009-elements/tab-window.md); there is nothing to write on it.
+  'tab-window',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {

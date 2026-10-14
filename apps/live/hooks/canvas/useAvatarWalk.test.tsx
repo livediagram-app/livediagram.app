@@ -2,20 +2,22 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { createShape, type Element } from '@livediagram/document';
 import { DEFAULT_AVATAR_CONFIG } from '@/lib/avatar-config';
+import { FENCE_REACH } from '@/lib/avatar-fence';
 import { useAvatarWalk } from './useAvatarWalk';
 
 // Leaving Avatar mode (docs/specs/008-canvas/avatar-mode.md) drops whatever the character was doing and
 // vacates its chair, and tells peers to drop it.
 
-function setup(onPresence = vi.fn()) {
+function setup(onPresence = vi.fn(), elements: Element[] = []) {
   const hook = renderHook(
     ({ active }: { active: boolean }) =>
       useAvatarWalk({
         active,
         config: DEFAULT_AVATAR_CONFIG,
         onToggleGender: vi.fn(),
-        elements: [],
+        elements,
         mainRef: { current: null },
         wrapperRef: { current: null },
         viewportOffset: { x: 0, y: 0 },
@@ -50,5 +52,26 @@ describe('useAvatarWalk leaving the mode', () => {
     rerender({ active: false });
     rerender({ active: true });
     expect(result.current.seatedOn).toBeNull();
+  });
+});
+
+// docs/specs/009-elements/fence.md "Blocking": the walk loop runs every step through the fences.
+describe('useAvatarWalk with a fence', () => {
+  it('stops a click-walk at a fence', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+    try {
+      // A fence across y = 112, from x = 0 to 240.
+      const fence = { ...createShape('fence', 0, 100), id: 'fence' };
+      const { result } = setup(vi.fn(), [fence]);
+      act(() => result.current.teleportTo({ x: 120, y: 200 }));
+      act(() => result.current.walkTo({ x: 120, y: 0 }));
+      act(() => vi.advanceTimersByTime(3000));
+      const pos = result.current.pos!;
+      expect(pos.y).toBeGreaterThanOrEqual(112 + FENCE_REACH);
+      expect(pos.y).toBeLessThan(112 + FENCE_REACH + 1);
+      expect(result.current.walking).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

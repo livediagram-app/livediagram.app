@@ -232,6 +232,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8 15v5.5M16 15v5.5" />
     </Glyph>
   ),
+  // Three pointed pickets on two rails: a fence, not a grid.
+  fences: (
+    <Glyph>
+      <path d="M5 20V7l1.5-2.5L8 7v13M11 20V7l1.5-2.5L14 7v13M17 20V7l1.5-2.5L20 7v13" />
+      <path d="M3 10.5h18M3 15.5h18" />
+    </Glyph>
+  ),
   lanes: (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />
@@ -530,6 +537,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8 5.5V3.5a1 1 0 011-1h9.5a1 1 0 011 1v13a1 1 0 01-1 1H16" />
       <rect x="4.5" y="6" width="11.5" height="15.5" rx="1" />
       <path d="M10.25 10.5v6.5M7.75 14.5l2.5 2.5 2.5-2.5" />
+    </Glyph>
+  ),
+  // A slide with a window onto a small diagram: another tab shown live inside it.
+  'tab-windows': (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
+      <rect x="6.5" y="8" width="11" height="8" rx="1" />
+      <circle cx="9.5" cy="12" r="1.25" />
+      <circle cx="14.5" cy="12" r="1.25" />
+      <path d="M10.75 12h2.5" />
     </Glyph>
   ),
   'using-tabs': (
@@ -1040,6 +1057,50 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="3" y="6" width="18" height="14" rx="2" strokeDasharray="2.5 2" />
       <rect x="5" y="3.5" width="7" height="3.5" rx="1" fill="currentColor" stroke="none" />
       <rect x="9" y="10" width="9" height="7" rx="1.5" strokeDasharray="2 1.8" />
+    </Glyph>
+  ),
+  // A note box with a leader line out to a dot.
+  'pointer-notes': (
+    <Glyph>
+      <rect x="3" y="3.5" width="12" height="8" rx="1.5" />
+      <path d="M8 11.5 17 18.5" />
+      <circle cx="18" cy="19" r="2" fill="currentColor" stroke="none" />
+    </Glyph>
+  ),
+  // A dashed tray holding three evenly spaced boxes.
+  stacks: (
+    <Glyph>
+      <rect x="2.5" y="6" width="19" height="12" rx="2" strokeDasharray="2.5 2" />
+      <rect x="5" y="9" width="4" height="6" rx="1" />
+      <rect x="10" y="9" width="4" height="6" rx="1" />
+      <rect x="15" y="9" width="4" height="6" rx="1" />
+    </Glyph>
+  ),
+  // A legend: a solid and a dashed line sample, each beside its meaning.
+  'diagram-keys': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M6 9.5h4M13 9.5h5M13 14.5h5" />
+      <path d="M6 14.5h4" strokeDasharray="1.6 1.4" />
+    </Glyph>
+  ),
+  // One box over two, joined by an elbow trunk.
+  'org-charts': (
+    <Glyph>
+      <rect x="8" y="2.5" width="8" height="5" rx="1.5" />
+      <rect x="2" y="16.5" width="8" height="5" rx="1.5" />
+      <rect x="14" y="16.5" width="8" height="5" rx="1.5" />
+      <path d="M12 7.5V12M6 16.5V12h12v4.5" />
+    </Glyph>
+  ),
+  // Two heads over dashed lifelines, a call across and a reply back.
+  'sequence-diagrams': (
+    <Glyph>
+      <rect x="2" y="2" width="6" height="4" rx="1" />
+      <rect x="16" y="2" width="6" height="4" rx="1" />
+      <path d="M5 6v16M19 6v16" strokeDasharray="2 2" />
+      <path d="M5 11h12.5M15.5 9l2.5 2-2.5 2" />
+      <path d="M19 17H6.5" strokeDasharray="2 1.5" />
     </Glyph>
   ),
   // A pyramid cut into three tiers.

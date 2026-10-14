@@ -89,8 +89,16 @@ export function useMindGrowth(opts: {
   const lastGrown = useRef<string | null>(null);
 
   // The new node's look: the tab's theme, then its level's (lib/mind-dress.ts).
-  const dress = (node: ShapeElement, styleFrom: ShapeElement | null): ShapeElement =>
-    dressMindNode(node, styleFrom, activeTab);
+  // In a person map (docs/specs/009-elements/org-chart.md) the node and its connector take the org chart's look.
+  const rootOf = (id: string): ShapeElement | null => {
+    const from = activeTab.elements.find((e) => e.id === id);
+    return from && isMindNode(from) ? mindRootOf(activeTab.elements, from) : null;
+  };
+  const dress = (
+    node: ShapeElement,
+    styleFrom: ShapeElement | null,
+    root: ShapeElement | null,
+  ): ShapeElement => dressMindNode(node, styleFrom, activeTab, root);
 
   // A label written here never passed through an editor, so the node grows to fit it here
   // (docs/specs/009-elements/mind-node.md "A node grows to fit its label").
@@ -121,8 +129,9 @@ export function useMindGrowth(opts: {
     const before = activeTab.elements;
     const plan = planMindGrowth(before, id, kind, ids);
     if (!plan) return;
+    const root = rootOf(id);
     const build = (p: MindGrowthPlan) => {
-      const node = dress(p.node, p.styleFrom);
+      const node = dress(p.node, p.styleFrom, root);
       const arrow: ArrowElement | null = p.arrow
         ? dressMindConnector(p.arrow, p.connectorStyleFrom)
         : null;

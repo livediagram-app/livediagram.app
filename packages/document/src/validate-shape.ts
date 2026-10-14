@@ -45,6 +45,7 @@ import { isCodeThemeId } from './code-themes';
 import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
 import { isChipLook } from './chip';
 import { isAttachPoint } from './attachment';
+import { isPointerTip } from './pointer-note';
 import { isBoundaryStyle } from './boundary';
 import { isPyramidVariant } from './concept';
 import { isChartPaletteId } from './chart-palettes';
@@ -224,7 +225,7 @@ const isSession = (v: unknown) =>
   (v.options === undefined || boundedArray(v.options, MAX_DATA_ARRAY));
 
 // Absent passes every check; a present value must satisfy its rule. Ids that point at nothing
-// (`portalTarget`, `mindParentId`) are legal: the element renders unpaired or as a root.
+// (`portalTarget`, `mindParentId`, `windowTabId`) are legal: the element renders unpaired or as a root.
 const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'titleOrientation', valid: (v) => v === 'upright', rule: oneOfRule(['upright']) },
   dataArray('railLabels'),
@@ -232,6 +233,8 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   dataArray('pieSlices'),
   dataArray('lineSeries'),
   { field: 'portalTarget', valid: isNonEmptyStr, rule: 'an element id' },
+  // A tab id that is gone is legal too: the window says its tab is not available.
+  { field: 'windowTabId', valid: isNonEmptyStr, rule: 'a tab id' },
   { field: 'mode', valid: isSelectionMode, rule: oneOfRule(SELECTION_MODES) },
   { field: 'session', valid: isSession, rule: 'a session with a known tool' },
   flag('revealed'),
@@ -275,6 +278,96 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'attachedTo', valid: isNonEmptyStr, rule: 'an element id' },
   { field: 'attachAt', valid: isAttachPoint, rule: oneOfRule(ATTACH_POINTS_RULE) },
   flag('stepSequence'),
+  {
+    field: 'pointerTip',
+    // Read at call time: pointer-note.ts sits on an import cycle with attachment.ts, so it may not be loaded yet
+    // when this table is built.
+    valid: (v: unknown) => isPointerTip(v),
+    rule: 'an { x, y } of finite numbers within ±4000',
+  },
+  // A person node (docs/specs/009-elements/org-chart.md).
+  { field: 'mindLook', valid: (v: unknown) => v === 'person', rule: oneOfRule(['person']) },
+  // A stack's arrangement (docs/specs/009-elements/stack.md).
+  {
+    field: 'stackDirection',
+    valid: (v: unknown) => v === 'row' || v === 'column' || v === 'grid',
+    rule: oneOfRule(['row', 'column', 'grid']),
+  },
+  {
+    field: 'stackAlign',
+    valid: (v: unknown) => v === 'start' || v === 'center' || v === 'end',
+    rule: oneOfRule(['start', 'center', 'end']),
+  },
+  {
+    field: 'stackGap',
+    valid: (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 64,
+    rule: 'a whole number 0 to 64',
+  },
+  {
+    field: 'stackPadding',
+    valid: (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 64,
+    rule: 'a whole number 0 to 64',
+  },
+  {
+    field: 'stackColumns',
+    valid: (v: unknown) => Number.isInteger(v) && (v as number) >= 2 && (v as number) <= 6,
+    rule: 'a whole number 2 to 6',
+  },
+  // A diagram key (docs/specs/009-elements/diagram-key.md): derived rows, and the author's meanings.
+  {
+    field: 'keyRows',
+    valid: rowsOf(
+      12,
+      (r) =>
+        isRecord(r) &&
+        isStrUpTo(48)(r.id) &&
+        (r.kind === 'line' || r.kind === 'tag') &&
+        isOptionalStrUpTo(r.style, 40) &&
+        isOptionalStrUpTo(r.tag, 40) &&
+        isOptionalStrUpTo(r.color, 40),
+    ),
+    rule: 'an array of at most 12 { id, kind: line | tag, style?, tag?, color? } rows',
+  },
+  {
+    field: 'keyMeanings',
+    valid: (v: unknown) =>
+      isRecord(v) &&
+      Object.keys(v).length <= 24 &&
+      Object.entries(v).every(([k, t]) => k.length <= 48 && isStrUpTo(60)(t)),
+    rule: 'at most 24 row meanings of at most 60 characters',
+  },
+  flag('hubSpokes'),
+  // A sequence diagram's rows (docs/specs/009-elements/sequence-diagram.md); Play is cosmetic and lenient.
+  {
+    field: 'sequenceParticipants',
+    valid: (v: unknown) =>
+      Array.isArray(v) &&
+      v.length >= 2 &&
+      rowsOf(
+        12,
+        (p) =>
+          isRecord(p) &&
+          isNonEmptyStr(p.id) &&
+          isStrUpTo(24)(p.id) &&
+          isStrUpTo(40)(p.label) &&
+          (p.actor === undefined || isBool(p.actor)),
+      )(v),
+    rule: 'an array of 2 to 12 { id, label, actor? } participants (24 and 40 characters)',
+  },
+  {
+    field: 'sequenceMessages',
+    valid: rowsOf(
+      60,
+      (m) =>
+        isRecord(m) &&
+        isStrUpTo(24)(m.from) &&
+        isStrUpTo(24)(m.to) &&
+        isStrUpTo(80)(m.label) &&
+        (m.kind === 'call' || m.kind === 'async' || m.kind === 'reply'),
+    ),
+    rule: 'an array of at most 60 { from, to, label, kind: call | async | reply } messages',
+  },
+  flag('sequenceNumbered'),
   // Boundary (docs/specs/009-elements/boundary.md).
   { field: 'boundaryStyle', valid: isBoundaryStyle, rule: oneOfRule(['tab', 'inset', 'c4']) },
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows are content; the animation is

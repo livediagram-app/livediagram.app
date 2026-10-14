@@ -15,6 +15,7 @@ import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
+import { FENCE_WOOD } from './fence';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
@@ -217,7 +218,11 @@ function behaviourSkin(
   if (kind === 'mode-button' || kind === 'session-button' || kind === 'picker') {
     return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
   }
-  if (kind === 'reveal' || kind === 'chair') {
+  // A fence (docs/specs/009-elements/fence.md) is timber: a wood brown on each paper, no box.
+  if (kind === 'fence') {
+    return { fill: 'transparent', stroke: FENCE_WOOD[surface], text: OUTLINE_SKIN_LIGHT.text };
+  }
+  if (kind === 'reveal' || kind === 'chair' || kind === 'desk' || kind === 'sofa') {
     if (surface === 'dark') {
       return { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text };
     }
@@ -320,7 +325,11 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
   // the memo and filled every frame with the shape default, so a frame that
   // was transparent on the canvas exported pale blue.
   // A boundary's face paints its tint, deeper as it nests (docs/specs/009-elements/boundary.md).
-  if (element.type === 'shape' && (element.shape === 'frame' || element.shape === 'boundary'))
+  // A stack is a target to drop into, drawn as an outline (docs/specs/009-elements/stack.md).
+  if (
+    element.type === 'shape' &&
+    (element.shape === 'frame' || element.shape === 'boundary' || element.shape === 'stack')
+  )
     return 'transparent';
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.fill;
@@ -433,6 +442,8 @@ export function supportsFillColor(element: Element): boolean {
   // The control was inert on both, and picking a colour still wrote to the
   // element, autosaved, logged a change and broadcast an op for nothing.
   if (element.type === 'shape' && element.shape === 'icon') return false;
+  // A tab window's ground is the paper of the tab it shows (docs/specs/009-elements/tab-window.md).
+  if (element.type === 'shape' && element.shape === 'tab-window') return false;
   return element.type !== 'text' && element.type !== 'image';
 }
 
@@ -515,6 +526,9 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'layer-stack',
   'pyramid',
   'cycle',
+  'hub',
+  'onion',
+  'chevrons',
   'icon',
   // A sticker paints its own plate, shadow and content (docs/specs/010-palette/stickers.md).
   'sticker',
@@ -545,10 +559,16 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'sankey',
   // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
   'portal',
+  // A tab window (docs/specs/009-elements/tab-window.md) draws its own rounded frame round the tab it shows.
+  'tab-window',
   'reveal',
   // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
   // which is what the canvas does too (isSvgRenderedShape excludes it).
   'chair',
+  // A fence, a desk and a sofa (docs/specs/009-elements/fence.md, chair.md) draw themselves too.
+  'fence',
+  'desk',
+  'sofa',
   // A quiz (docs/specs/012-collaboration/quiz.md) paints its own disc and ring of answers; a box behind
   // them would frame a circle in a square.
   'quiz',
@@ -606,6 +626,7 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
     element.shape !== 'icon' &&
     element.shape !== 'sticker' &&
     element.shape !== 'frame' &&
+    element.shape !== 'stack' &&
     element.shape !== 'banner' &&
     element.shape !== 'stat-row' &&
     element.shape !== 'process'

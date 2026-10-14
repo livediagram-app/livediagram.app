@@ -120,5 +120,29 @@ describe('contentSummaryOf (R14)', () => {
       'rows=Plan|?',
     );
     expect(contentSummaryOf(shape('layer-stack', { conceptRows: undefined }))).toBe('rows=');
+    expect(contentSummaryOf(shape('chevrons', { conceptRows: [{ label: 'Build' }] }))).toBe(
+      'rows=Build',
+    );
+  });
+
+  it("lists a sequence diagram's participants and counts its messages (docs/specs/009-elements/sequence-diagram.md)", () => {
+    expect(
+      contentSummaryOf(
+        shape('sequence', {
+          sequenceParticipants: [
+            { id: 'a', label: 'Browser' },
+            { id: 'b', label: 'API' },
+          ],
+          sequenceMessages: [{ from: 'a', to: 'b', label: 'GET', kind: 'call' }],
+        }),
+      ),
+    ).toBe('participants=Browser|API messages=1');
+    // A participant with no label reads as `?`, as a concept row does.
+    expect(
+      contentSummaryOf(
+        shape('sequence', { sequenceParticipants: [{ id: 'a' }], sequenceMessages: [] }),
+      ),
+    ).toBe('participants=? messages=0');
+    expect(contentSummaryOf(shape('stack', {}))).toBe('direction=row');
   });
 });

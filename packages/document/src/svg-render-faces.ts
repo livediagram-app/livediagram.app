@@ -14,6 +14,20 @@
 // box, so a big one has bigger type rather than more padding.
 
 import { DEFAULT_CHAIR_FACING } from './collab-shapes';
+import { fenceParts, FENCE_RAIL_OPACITY } from './fence';
+import {
+  FURNITURE_ART,
+  FURNITURE_GLINT,
+  FURNITURE_LINE_STROKE,
+  FURNITURE_PANEL_STROKE,
+  FURNITURE_RAIL_OPACITY,
+  FURNITURE_RAIL_STROKE,
+  FURNITURE_SHADOW,
+  furnitureFrame,
+  furnitureParts,
+  seatingFacing,
+  type FurniturePart,
+} from './seating';
 import { CHAIR_FACING_ROTATION, CHAIR_GEOMETRY, chairSeatFill } from './shape-geometry';
 import { REACTION_DEFAULT, REACTION_EMOJI, REACTION_HUES } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -65,6 +79,9 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'action-card',
   'portal',
   'chair',
+  'desk',
+  'sofa',
+  'fence',
   'focus-button',
 ]);
 
@@ -177,6 +194,11 @@ export function svgBehaviourFace(
         ? `<g transform="rotate(${turn} ${r2(el.x + el.width / 2)} ${r2(el.y + el.height / 2)})">${chair}</g>`
         : chair;
     }
+    case 'desk':
+    case 'sofa':
+      return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
+    case 'fence':
+      return fenceArt(el, stroke);
     case 'comment-pin':
       // docs/specs/012-collaboration/comment-pin.md "The look": the thread as bubbles, the composer.
       return svgCommentPanel(el, title, color, collabAccent(stroke, fill ?? '#ffffff', color));
@@ -458,4 +480,60 @@ function sessionWords(
       uppercase: true,
     }) + text(cx, cy + 27, action, { size: 12, weight: 600, color, anchor: 'middle' })
   );
+}
+
+// A fence (docs/specs/009-elements/fence.md): rails then posts, from the table FenceView draws, in the
+// element's own box (its rotation is the generic element rotation, applied by the caller).
+function fenceArt(el: Face, stroke: string): string {
+  const line = xmlEscape(stroke);
+  return fenceParts(el.width, el.height)
+    .map(
+      (p) =>
+        `<rect x="${r2(el.x + p.x)}" y="${r2(el.y + p.y)}" width="${r2(p.width)}" height="${r2(p.height)}" rx="${r2(p.rx)}" fill="${line}"${p.role === 'rail' ? ` opacity="${FENCE_RAIL_OPACITY}"` : ''}/>`,
+    )
+    .join('');
+}
+
+// A desk or a sofa (docs/specs/009-elements/chair.md "Desk and sofa"), from the FURNITURE_ART table
+// FurnitureView draws, turned for its facing exactly as the canvas turns it.
+function furnitureArt(el: Face, seat: string, stroke: string): string {
+  if (el.shape !== 'desk' && el.shape !== 'sofa') return '';
+  const art = FURNITURE_ART[el.shape];
+  const facing = seatingFacing({ shape: el.shape, chairFacing: el.chairFacing });
+  const frame = furnitureFrame(art, facing);
+  const parts = furnitureParts(art, facing)
+    .map((p) => furniturePart(p, xmlEscape(seat), xmlEscape(stroke)))
+    .join('');
+  return (
+    `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" viewBox="${frame.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
+    (frame.transform ? `<g transform="${frame.transform}">${parts}</g>` : parts) +
+    `</svg>`
+  );
+}
+
+function furniturePart(p: FurniturePart, seat: string, line: string): string {
+  const paint = (() => {
+    switch (p.role) {
+      case 'shadow':
+        return `fill="${FURNITURE_SHADOW.fill}" opacity="${FURNITURE_SHADOW.opacity}"`;
+      case 'panel':
+        return `fill="${seat}" stroke="${line}" stroke-width="${FURNITURE_PANEL_STROKE}"`;
+      case 'line':
+        return `fill="none" stroke="${line}" stroke-width="${FURNITURE_LINE_STROKE}" stroke-linecap="round"`;
+      case 'rail':
+        return `fill="none" stroke="${line}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_RAIL_OPACITY}" stroke-linecap="round"`;
+      case 'screen':
+        return `fill="${line}"`;
+      case 'glint':
+        return `fill="none" stroke="${FURNITURE_GLINT.stroke}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_GLINT.opacity}" stroke-linecap="round"`;
+    }
+  })();
+  switch (p.tag) {
+    case 'rect':
+      return `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" ${paint}/>`;
+    case 'ellipse':
+      return `<ellipse cx="${p.cx}" cy="${p.cy}" rx="${p.rx}" ry="${p.ry}" ${paint}/>`;
+    case 'path':
+      return `<path d="${p.d}" ${paint}/>`;
+  }
 }

@@ -19,6 +19,7 @@ import {
   flowchartStepTypeOf,
   isFlowchartLane,
   isFlowchartStep,
+  tagColoursOf,
 } from '@livediagram/document';
 import type { FlowchartMenuHandlers } from '@/components/flowchart/FlowchartMenuSections';
 import { track } from '@/lib/telemetry';
@@ -26,6 +27,7 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets, themeChartPalette } from '@/lib/themes';
 import { canEditSankey } from '@/lib/sankey-edit';
+import { canEditSequence } from '@/lib/sequence-edit';
 import { panelEnabled } from '@/lib/user-preferences';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
@@ -47,6 +49,7 @@ export function EditorContextMenuHost() {
     userPreferences,
     activeTab,
     isReadOnly,
+    setTagColour,
     editingId,
     closeContextMenu,
     openLinkPicker,
@@ -135,6 +138,7 @@ export function EditorContextMenuHost() {
     setLegendItemsSelected,
     sankey,
     setSankeyFlowsOpenForId,
+    setSequenceOpenForId,
     can,
     setMindFlowSelected,
     setMindSpacingSelected,
@@ -429,6 +433,13 @@ export function EditorContextMenuHost() {
       onSetCodeWrap={setCodeWrapSelected}
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
+      onEditSequence={
+        ctxSelectedEl?.type === 'shape' &&
+        ctxSelectedEl.shape === 'sequence' &&
+        canEditSequence(can, ctxSelectedEl)
+          ? setSequenceOpenForId
+          : undefined
+      }
       chartThemeRamp={themeChartPalette(getTheme(activeTab.theme))}
       flowchart={flowchartMenu}
       mindFlow={menuMindFlow}
@@ -538,6 +549,8 @@ export function EditorContextMenuHost() {
       onResetAspectRatio={resetAspectRatioSelected}
       onSetSize={setSizeSelected}
       colourPalette={swatches}
+      tagColours={tagColoursOf(activeTab)}
+      onSetTagColour={setTagColour}
       onToggleTableHeaderRow={setTableHeaderRowSelected}
       onToggleTableHeaderColumn={setTableHeaderColumnSelected}
       onToggleTableZebra={setTableZebraSelected}

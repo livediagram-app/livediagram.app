@@ -80,4 +80,45 @@ describe('ConceptFace', () => {
     const { container } = show(make('layer-stack', { conceptAnim: 'flow' }));
     expect(container.querySelector('.lvd-concept-flow')).toBeNull();
   });
+
+  it('draws a hub with its centre words, its satellites and a spoke to each', () => {
+    const { container } = show(make('hub'));
+    expect(screen.getByText('centre words')).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: 'Satellite 6' }).textContent).toBe('Support');
+    expect(container.querySelectorAll('line')).toHaveLength(6);
+    cleanup();
+    const off = show(make('hub', { hubSpokes: false }));
+    expect(off.container.querySelectorAll('line')).toHaveLength(0);
+  });
+
+  it('builds a hub from its centre, then each satellite', () => {
+    const { container } = show(make('hub', { conceptAnim: 'build' }));
+    const rows = [...container.querySelectorAll<HTMLElement>('.lvd-cg-row')];
+    expect(rows.map((r) => r.style.getPropertyValue('--lvd-cg-i'))).toEqual([
+      '0',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+    ]);
+  });
+
+  it('paints an onion outermost first but builds it from the core', () => {
+    const { container } = show(make('onion', { conceptAnim: 'build' }));
+    const rows = [...container.querySelectorAll<HTMLElement>('.lvd-cg-row')];
+    expect(rows[0]!.style.getPropertyValue('--lvd-cg-i')).toBe('3');
+    expect(screen.getByRole('textbox', { name: 'Ring 1' }).textContent).toBe('Domain');
+  });
+
+  it('draws each chevron with its label and the note under it, and commits an edited note', () => {
+    const { onSetRows, container } = show(make('chevrons'));
+    expect(container.querySelectorAll('polygon')).toHaveLength(4);
+    expect(screen.getByRole('textbox', { name: 'Stage 4 note' }).textContent).toBe('manual gate');
+    retype('Stage 1 note', 'merge');
+    expect(onSetRows).toHaveBeenCalledWith({
+      conceptRows: expect.arrayContaining([{ label: 'Commit', note: 'merge' }]),
+    });
+  });
 });

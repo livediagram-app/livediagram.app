@@ -1,4 +1,10 @@
-import { settleChips, type Tab } from '@livediagram/document';
+import {
+  settleChips,
+  settleDiagramKeys,
+  settleStacks,
+  tagColoursOf,
+  type Tab,
+} from '@livediagram/document';
 
 // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment") settled on every tab a write changed, against
 // the tab as it was: fitted, numbered, kept on their hosts' points, attached where dropped. Both of the editor's
@@ -9,7 +15,13 @@ export function settleChipsInTabs(before: readonly Tab[], after: Tab[]): Tab[] {
   const out = after.map((t) => {
     const prev = before.find((p) => p.id === t.id);
     if (prev === t) return t;
-    const settled = settleChips(prev?.elements ?? [], t.elements);
+    // And every diagram key's rows, from the tab's arrows and tag colours (docs/specs/009-elements/diagram-key.md).
+    // Keys first, as they depend on no position, so a key a stack holds is laid out at its new height; then stacks
+    // (docs/specs/009-elements/stack.md), so attached marks settle on where things end up.
+    const settled = settleChips(
+      prev?.elements ?? [],
+      settleStacks(settleDiagramKeys(t.elements, tagColoursOf(t))),
+    );
     if (settled === t.elements) return t;
     changed = true;
     return { ...t, elements: settled };

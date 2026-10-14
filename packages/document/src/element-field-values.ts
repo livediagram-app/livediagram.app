@@ -13,6 +13,7 @@ import { CHIP_LOOKS } from './chip';
 import { PYRAMID_VARIANTS } from './concept';
 import { FONTS } from './fonts';
 import { ICON_WEIGHTS } from './icon-weight';
+import { STACK_ALIGNS, STACK_DIRECTIONS } from './stack';
 
 export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> = {
   textSize: ['sm', 'md', 'lg', 'scale'],
@@ -31,6 +32,11 @@ export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> =
   attachAt: ATTACH_POINTS,
   boundaryStyle: BOUNDARY_STYLES,
   pyramidVariant: PYRAMID_VARIANTS,
+  // Round 2 (docs/specs/009-elements/stack.md, org-chart.md, sequence-diagram.md).
+  stackDirection: STACK_DIRECTIONS,
+  stackAlign: STACK_ALIGNS,
+  mindLook: ['person'],
+  sequenceAnim: ['play'],
   // A line-art icon's stroke (icon-weight.ts): an icon's strokeWidth is not its weight.
   iconWeight: ICON_WEIGHTS,
   // The editor's faces (fonts.ts): a family name ("serif", "Georgia") drew in the tab's font in silence.

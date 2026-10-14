@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createPinnedArrow, createShape, type Element } from '@livediagram/document';
 import { cleanupElements, type CleanupKind } from './tab-cleanup';
 
@@ -46,7 +46,9 @@ describe('Tidy Up hover budget', () => {
       // parallel suite starves a wall-clock budget (#586). Same pattern as mind-connector-route.perf.test.ts.
       for (let pass = 0; pass < WARM_UP_PASSES; pass++) cleanupElements(els, kind);
       const best = Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void cleanupElements(els, kind))));
-      expect(best).toBeLessThan(TIDY_PREVIEW_BUDGET_MS);
+      // The hover budget as written on a developer's machine; CI's coverage-instrumented runners get
+      // CI_CPU_HEADROOM, as Smart measures about 100 ms there against 24 ms locally.
+      expect(best).toBeLessThan(cpuBudgetMs(TIDY_PREVIEW_BUDGET_MS));
     });
   }
 });

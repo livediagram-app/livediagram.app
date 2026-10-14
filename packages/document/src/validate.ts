@@ -114,10 +114,17 @@ export const SHAPE_KINDS = new Set<string>([
   'card',
   'badge',
   'step',
+  'pointer-note',
+  'diagram-key',
+  'stack',
+  'sequence',
   'boundary',
   'layer-stack',
   'pyramid',
   'cycle',
+  'hub',
+  'onion',
+  'chevrons',
   'stat-row',
   'process',
   'site-header',
@@ -126,6 +133,8 @@ export const SHAPE_KINDS = new Set<string>([
   'mode-button',
   // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
   'portal',
+  // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn inside it.
+  'tab-window',
   // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the room.
   'session-button',
   // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
@@ -142,6 +151,11 @@ export const SHAPE_KINDS = new Set<string>([
   'done-check',
   // Chair (docs/specs/009-elements/chair.md): an Avatar-mode character sits down in one.
   'chair',
+  // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
+  'fence',
+  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa").
+  'desk',
+  'sofa',
   // The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md).
   'estimate',
   'temperature',

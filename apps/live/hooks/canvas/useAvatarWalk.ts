@@ -10,8 +10,9 @@
 // ephemeral presence snapshot handed to `onPresence` for peers (docs/specs/008-canvas/avatar-mode.md
 // Realtime), which the room relays like a cursor.
 
-import { useEffect, useEffectEvent, useInsertionEffect, useRef, useState } from 'react';
-import type { Element } from '@livediagram/document';
+import { useEffect, useEffectEvent, useInsertionEffect, useMemo, useRef, useState } from 'react';
+import { isSeatingShape, type Element } from '@livediagram/document';
+import { fenceSegments, fenceStep, FENCE_STALL } from '@/lib/avatar-fence';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '@/lib/avatar-reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from '@/hooks/canvas/useAvatarKeys';
@@ -105,9 +106,13 @@ export function useAvatarWalk({
   // ARRIVAL, not every frame it stands there, and never for the portal it just
   // came out of.
   onWalkIntoPortal?: (element: import('@livediagram/document').ShapeElement) => void;
-  // Chair (docs/specs/009-elements/chair.md): the character walked onto a chair. Fired once on ARRIVAL,
-  // like the portal above.
-  onWalkIntoChair?: (element: import('@livediagram/document').ShapeElement) => void;
+  // Chair (docs/specs/009-elements/chair.md): the character walked onto a chair, a desk or a sofa.
+  // Fired once on ARRIVAL, like the portal above, with where the feet were when they got there (a
+  // sofa seats you on the cushion nearest that point).
+  onWalkIntoChair?: (
+    element: import('@livediagram/document').ShapeElement,
+    feet: AvatarPoint,
+  ) => void;
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): the character walked onto a pad. Same arrival
   // hook as the portal and the chair, so a pad costs no third mechanism.
   onWalkIntoReactionPad?: (element: import('@livediagram/document').ShapeElement) => void;
@@ -134,6 +139,9 @@ export function useAvatarWalk({
   // Loop-internal state. Refs (not state) because the rAF tick reads and
   // writes these many times between renders.
   const posRef = useRef<AvatarPoint | null>(null);
+  // Fences (docs/specs/009-elements/fence.md): the lines the walk may not cross, worked out once per
+  // change to the elements rather than per frame.
+  const fences = useMemo(() => fenceSegments(elements), [elements]);
   const targetRef = useRef<AvatarPoint | null>(null);
   const heldRef = useRef<AvatarHeldKeys>({ ...NO_KEYS_HELD });
   const travelledRef = useRef(0);
@@ -394,13 +402,28 @@ export function useAvatarWalk({
       const held = arrowDirection(heldRef.current);
       const travel = AVATAR_SPEED * dt;
       const step = held ? null : stepTowards(from, targetRef.current, dt);
-      const next = held ? { x: from.x + held.x * travel, y: from.y + held.y * travel } : step!.pos;
+      const wanted = held
+        ? { x: from.x + held.x * travel, y: from.y + held.y * travel }
+        : step!.pos;
+      // Fences (docs/specs/009-elements/fence.md "Blocking"): a step into one is refused, or slides
+      // along it. A click-walk that can make no progress stops rather than pressing on forever.
+      const fenced = fenceStep(from, wanted, fences);
+      const next = fenced.pos;
+      if (
+        fenced.blocked &&
+        !held &&
+        targetRef.current &&
+        Math.hypot(next.x - from.x, next.y - from.y) < FENCE_STALL
+      ) {
+        targetRef.current = null;
+        arriveRef.current = null;
+      }
       // Target reached — drop it so the avatar goes idle rather than
       // re-arriving on every subsequent frame, and fire whatever was waiting
       // on the arrival (the shove, docs/specs/008-canvas/avatar-mode.md). `stepTowards` already decides
       // this, including the within-a-hair case; re-deriving it here from the
       // coordinates was a second, subtly different definition of "arrived".
-      if (!held && targetRef.current && step?.arrived) {
+      if (!held && !fenced.blocked && targetRef.current && step?.arrived) {
         targetRef.current = null;
         const arrived = arriveRef.current;
         arriveRef.current = null;
@@ -597,8 +620,15 @@ export function useAvatarWalk({
     if (el && el.type === 'shape' && el.shape === 'portal') onWalkIntoPortal?.(el);
     // Chair (docs/specs/009-elements/chair.md): the same arrival hook, so sitting down costs no second
     // mechanism. Skipped while already seated somewhere.
-    if (el && el.type === 'shape' && el.shape === 'chair' && !seatedRef.current) {
-      onWalkIntoChair?.(el);
+    // A desk and a sofa seat a character the same way (docs/specs/009-elements/chair.md "Desk and sofa").
+    if (
+      el &&
+      el.type === 'shape' &&
+      isSeatingShape(el.shape) &&
+      !seatedRef.current &&
+      posRef.current
+    ) {
+      onWalkIntoChair?.(el, posRef.current);
     }
     // Reaction pad (docs/specs/009-elements/reaction-pad.md). Fires on ARRIVAL like the others, so standing
     // on a pad throws one burst rather than one per frame; stepping off and

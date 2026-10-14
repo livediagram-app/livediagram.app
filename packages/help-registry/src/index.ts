@@ -170,7 +170,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 29,
+    articleCount: 35,
     kind: 'feature',
   },
   {
@@ -1072,9 +1072,10 @@ export const articles: Article[] = [
   {
     slug: 'write',
     title: 'Write Elements',
-    description: 'Page, Text, Sticky note and Annotation: the elements whose content is words.',
+    description:
+      'Page, Text, Sticky note, Annotation and Pointer note: the elements made of words.',
     keywords:
-      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose event storming domain event command actor policy read model aggregate hotspot brandolini ddd workshop notation',
+      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader event storming domain event command actor policy read model aggregate hotspot brandolini ddd workshop notation',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1093,9 +1094,9 @@ export const articles: Article[] = [
     slug: 'build',
     title: 'Build Elements',
     description:
-      'Mind nodes, flowcharts, lanes, frames, boundaries, tables, Sankeys and cards: the elements you lay a diagram out with.',
+      'Mind maps, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, keys and tables: diagram structure.',
     keywords:
-      'build structure layout container holds frame lane boundary timeline table mind node sankey flow arrange scaffold group section band track grid organise card badge step number',
+      'build structure layout container holds frame lane boundary timeline table mind node sankey flow arrange scaffold group section band track grid organise card badge step number diagram key legend stack row column grid auto layout even gaps org chart organisation reports hierarchy sequence diagram uml lifeline message',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1174,9 +1175,19 @@ export const articles: Article[] = [
   {
     slug: 'chairs',
     title: 'Chairs',
-    description: 'Furniture for Avatar mode: walk a character in and it sits down.',
+    description: 'Chairs, desks and sofas for Avatar mode: walk a character in and it sits down.',
     keywords:
-      'chair chairs seat seating sit sitting sat furniture avatar character walk stand table room seating plan attendance behaviour navigate facing up',
+      'chair chairs seat seating sit sitting sat furniture avatar character walk stand table room seating plan attendance behaviour navigate facing up desk desks computer monitor screen office workstation sofa sofas couch settee loveseat two seater',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'fences',
+    title: 'Fences',
+    description: 'A barrier for Avatar mode: characters cannot walk through a fence.',
+    keywords:
+      'fence fences barrier wall block blocked keep out enclosure boundary pen gate avatar character walk collision no entry area navigate behaviour',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1212,11 +1223,62 @@ export const articles: Article[] = [
     group: 'Elements',
   },
   {
+    slug: 'pointer-notes',
+    title: 'Pointer Notes',
+    description: 'A note joined by a line to the one spot it is about.',
+    keywords:
+      'pointer note notes leader line callout remark comment annotate point spot pin pinned dot tip attach detach follow arrow label caveat',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'stacks',
+    title: 'Stacks',
+    description: 'A container that lines up what you drop in, with even gaps.',
+    keywords:
+      'stack stacks row column grid auto layout autolayout flex flexbox align distribute even gaps spacing padding container list reflow arrange',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'diagram-keys',
+    title: 'Diagram Keys and Tag Colours',
+    description: 'A legend that builds itself, and cards coloured by their tags.',
+    keywords:
+      'diagram key keys legend line styles dashed dotted solid meaning explain tag tags colour color colours colors colour code coding by team status layer card edge',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'org-charts',
+    title: 'Org Charts',
+    description: 'A tree of people with names and roles that lays itself out.',
+    keywords:
+      'org chart organisation organization chart people team hierarchy reports manager reporting line structure role initials tree ownership',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'sequence-diagrams',
+    title: 'Sequence Diagrams',
+    description: 'Who calls whom, in order, laid out from a list of messages.',
+    keywords:
+      'sequence diagram diagrams uml lifeline lifelines message messages call reply async request response interaction api participants actor activation numbered',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
     slug: 'concept-graphics',
     title: 'Concept Graphics',
-    description: 'Layer stacks, pyramids, funnels and cycles that lay out their own rows.',
+    description:
+      'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons that lay out their rows.',
     keywords:
-      'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation',
+      'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation hub and spoke hub spoke satellites ecosystem onion rings concentric core chevron chevrons pipeline value chain stages',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1268,7 +1330,7 @@ export const articles: Article[] = [
     description:
       'Every element that comes alive with the room, as six palette categories in Facilitate mode: comment and action panels, estimates, quizzes, temperature checks, idea boxes, Q&A boards, Done checks, pickers, session buttons (timer, stopwatch, vote, poll), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
     keywords:
-      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate quiz trivia question temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live tools record react navigate selection mode',
+      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat desk sofa couch fence barrier link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate quiz trivia question temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live tools record react navigate selection mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1632,6 +1694,16 @@ export const articles: Article[] = [
     description: 'Every page or one page as a PDF or images, and pages as slides.',
     keywords:
       'export download pdf png svg image zip all pages one page import json print printable pages page illustrate infographic slides slide deck present presentation add as slide page slide deck from pages',
+    category: 'Canvas',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
+  },
+  {
+    slug: 'tab-windows',
+    title: 'Tab Windows',
+    description: 'Another tab, live, fitted inside a slide or page.',
+    keywords:
+      'tab window windows live view embed mirror show another tab diagram on a slide reference up to date stale copy paste sync linked picture choose a tab open',
     category: 'Canvas',
     categorySlug: 'canvas/illustrate',
     parentSlug: 'illustrate',

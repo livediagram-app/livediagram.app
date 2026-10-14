@@ -206,6 +206,8 @@ export function takesChartPalette(kind: ShapeKind): boolean {
 // type into. The banner, callout and header DO carry a label and are not here.
 export function isSelfDrawingShape(kind: ShapeKind): boolean {
   return (
+    // A tab window (docs/specs/009-elements/tab-window.md) draws another tab; it takes no label.
+    kind === 'tab-window' ||
     kind === 'stat-row' ||
     kind === 'process' ||
     isProgressShape(kind) ||
@@ -218,10 +220,14 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     isSankeyShape(kind) ||
     isPlanShape(kind) ||
     kind === 'sticker' ||
-    // A layer stack and a pyramid draw all their own text (docs/specs/009-elements/concept-graphics.md); a cycle
-    // keeps its label, the words at its centre.
+    // A fence (docs/specs/009-elements/fence.md) is posts and rails, with nothing to write on.
+    kind === 'fence' ||
+    // A layer stack, a pyramid, an onion and a chevron process draw all their own text
+    // (docs/specs/009-elements/concept-graphics.md); a cycle and a hub keep their label, the words at the centre.
     kind === 'layer-stack' ||
-    kind === 'pyramid'
+    kind === 'pyramid' ||
+    kind === 'onion' ||
+    kind === 'chevrons'
   );
 }
 

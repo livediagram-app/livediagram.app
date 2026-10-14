@@ -371,6 +371,8 @@ export function hasOwnFace(kind: ShapeKind): boolean {
   return (
     isCollabPanelShape(kind) ||
     kind === 'chair' ||
+    kind === 'desk' ||
+    kind === 'sofa' ||
     kind === 'mode-button' ||
     kind === 'session-button' ||
     kind === 'focus-button' ||
@@ -390,7 +392,9 @@ export function hasOwnFace(kind: ShapeKind): boolean {
 // Edit Quiz dialog owns, and editing it inline would print the hidden question
 // over the closed disc for anybody who double-clicked the card.
 export function opensInlineLabelEditor(kind: ShapeKind): boolean {
-  return !isSelfDrawingShape(kind) && !isQuizShape(kind);
+  // A sequence diagram's words are its rows, written in its dialog (docs/specs/009-elements/sequence-diagram.md); its
+  // box keeps its border controls, so it is not self-drawing, but a click never opens a label editor on it.
+  return !isSelfDrawingShape(kind) && !isQuizShape(kind) && kind !== 'sequence';
 }
 
 // Whether text alignment does anything on this kind: not a self-drawing kind

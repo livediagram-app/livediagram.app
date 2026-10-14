@@ -10,6 +10,7 @@
 // Value import from the data-shapes LEAF module (it imports only types from
 // here, so no cycle at runtime) — elementSupportsText excludes the
 // self-drawing data shapes the same way the inline editor does.
+import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
@@ -315,6 +316,8 @@ export type Tab = {
   // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
   // `customColoursOf`; every picker in the document offers them as Custom Colours.
   customColours?: string[];
+  // Tag colours (docs/specs/009-elements/tag-colours.md): a card tag mapped to a colour, read with `tagColoursOf`.
+  tagColours?: TagColour[];
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
@@ -403,6 +406,14 @@ export * from './accent-edge';
 export * from './card';
 export * from './chip';
 export * from './attachment';
+export * from './pointer-note';
+export * from './tag-colours';
+export * from './diagram-key';
+export * from './stack';
+export * from './sequence-element';
+export * from './sequence-text';
+export { sequenceDrawing } from './svg-render-sequence';
+export * from './person-node';
 export * from './boundary';
 export * from './concept';
 export * from './concept-ramp';
@@ -442,6 +453,7 @@ export * from './illustrate-page-paint';
 export * from './page-default-background';
 export * from './illustrate-edits';
 export * from './illustrate-background-copy';
+export * from './tab-window';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
@@ -577,6 +589,10 @@ export * from './agenda-current';
 // Quiz (docs/specs/012-collaboration/quiz.md). A leaf module, for the same cycle.
 export * from './quiz';
 export * from './shape-geometry';
+// Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
+export * from './fence';
+// Seating (docs/specs/009-elements/chair.md): the desk and sofa drawings and every seat's feet point.
+export * from './seating';
 export * from './actor-figure';
 export * from './color-wash';
 export { labelOn } from './readable-colour';

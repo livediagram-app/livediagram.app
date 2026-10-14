@@ -14,7 +14,7 @@ import { entityHeight } from './entity-geometry';
 import { settleChips } from './attachment';
 import { createShape } from './shape-factory';
 import { createSticky, createTable, createText } from './factories';
-import { migrateIncomingElements } from './stored-tab';
+import { migrateStoredElementsUnsettled } from './stored-elements';
 import { normalizeTable } from './table';
 import { coerceShapeKind } from './validate';
 import type { Element as DocElement, TableElement, TextSize } from './index';
@@ -157,7 +157,11 @@ function normaliseSticky(el: Raw): Raw {
 export function normaliseElement(el: unknown): unknown {
   if (!isRecord(el)) return el;
   // A stroke in a former stored shape (docs/specs/006-document/stroke-points.md) is packed first.
-  const [current] = migrateIncomingElements([el]) as unknown as Raw[];
+  // Unsettled: a lone element's host is not beside it, so settling it here would detach it; normaliseElements settles
+  // the whole list.
+  const [current] = migrateStoredElementsUnsettled([
+    el,
+  ] as unknown as DocElement[]) as unknown as Raw[];
   return normaliseContent(withFactoryDefaults(current!));
 }
 

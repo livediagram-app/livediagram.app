@@ -240,10 +240,41 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone let a badge or step number go from the element it was attached to.',
   'Element|Changed|BoundaryStyle':
     "Someone changed where a boundary shows its title: in a tab on its edge, inside its corner, or C4's bottom-left.",
+  'Element|Changed|TabWindowTab':
+    'Someone chose which tab a Tab Window shows, so a slide or page shows that tab live.',
+  'UI|Used|TabWindowOpen':
+    'Someone opened the tab a Tab Window shows, from the window or its menu.',
   'Element|Changed|BoundaryMeta':
     "Someone added or removed the second line under a boundary's title, such as a network range.",
   'Element|Changed|ConceptRows':
     'Someone added, removed, reordered or renamed the layers, tiers or steps of a layer stack, pyramid or cycle.',
+  'Element|Changed|PointerTip':
+    'Someone moved the tip of a pointer note to a free spot on the board.',
+  'Element|Changed|PointerAttach':
+    'Someone pinned the tip of a pointer note to a corner or edge of a shape.',
+  'Element|Changed|PointerDetach':
+    'Someone let a pointer note go from the shape its tip was pinned to.',
+  'Element|Changed|TagColour':
+    'Someone gave a card tag a colour for the whole tab, so every card with that tag shows it.',
+  'Element|Changed|TagColourCleared': 'Someone removed the colour a card tag had across the tab.',
+  'Element|Changed|StackDirection':
+    'Someone switched a stack between laying things out in a row, a column and a grid.',
+  'Element|Changed|StackColumns': 'Someone changed how many columns a grid stack has.',
+  'Element|Changed|StackGap': 'Someone changed the gap between the things in a stack.',
+  'Element|Changed|StackPadding': 'Someone changed the space inside the edge of a stack.',
+  'Element|Changed|StackAlign':
+    'Someone changed whether the things in a stack line up at the start, the centre or the end.',
+  'Element|Changed|SequenceParticipants':
+    'Someone added, renamed, reordered or removed a participant in a sequence diagram.',
+  'Element|Changed|SequenceMessages':
+    'Someone added, edited, reordered or removed a message in a sequence diagram.',
+  'Element|Changed|SequenceText':
+    'Someone rewrote a sequence diagram as text in its dialog, one message per line.',
+  'Element|Changed|SequenceNumbered':
+    'Someone switched the message numbers of a sequence diagram on or off.',
+  'Element|Changed|SequenceAnim':
+    'Someone changed how a sequence diagram plays in, or its speed or repeat.',
+  'Element|Changed|HubSpokes': 'Someone switched the spokes of a hub and spoke graphic on or off.',
   'Element|Changed|PyramidVariant':
     'Someone switched a pyramid between pointing up, pointing down and a funnel.',
   'Element|Changed|ConceptAnim':
@@ -258,6 +289,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone changed a selected element's border pattern: solid, dashed, or dotted.",
   'Element|Changed|Chair':
     'Someone changed which way a Chair element faces, on a meeting-room layout board.',
+  'Element|Changed|Desk':
+    'Someone changed which way a Desk element faces, so whoever sits at it looks another way.',
+  'Element|Changed|Sofa': 'Someone changed which way a Sofa element faces.',
   'Element|Changed|ChartAnim':
     'Someone gave a selected chart a looping reveal animation, changed its speed, or turned it off.',
   'Element|Changed|ChartData': "Someone edited a chart element's underlying data.",

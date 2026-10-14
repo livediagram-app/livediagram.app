@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { TabWindowFace } from './tab-window/TabWindowFace';
 import type { CSSProperties, ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/document';
 import {
@@ -53,6 +54,9 @@ import { loadCollabFaceRouter, loadTableView } from '@/lib/editor-deferred-code'
 import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
 import { ChipFace } from '@/components/canvas/ChipFace';
+import { PersonNodeFace } from '@/components/canvas/PersonNodeFace';
+import { DiagramKeyFace } from '@/components/canvas/DiagramKeyFace';
+import { SequenceFace } from '@/components/canvas/SequenceFace';
 import { BoundaryFace } from '@/components/canvas/BoundaryFace';
 import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
@@ -394,6 +398,9 @@ export function ElementFaceRouter({
           targetName={onEnterPortal?.(element).targetName ?? null}
           onEnter={onEnterPortal?.(element).travel}
         />
+      ) : element.type === 'shape' && element.shape === 'tab-window' ? (
+        /* Tab window (docs/specs/009-elements/tab-window.md): another tab of the document, live, fitted inside it. */
+        <TabWindowFace element={element} surface={surface} selected={isSelected} />
       ) : element.type === 'annotation' && element.articleNote ? (
         <ArticleNoteFace element={element} />
       ) : element.type === 'annotation' ? (
@@ -482,6 +489,33 @@ export function ElementFaceRouter({
           labelNode={labelNode}
           accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
           fill={element.fillColor ?? defaultFillColor(element, surface)}
+          ink={textColor}
+          fontFamily={fontFamily}
+          editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
+          onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
+        />
+      ) : element.type === 'shape' &&
+        element.shape === 'mind-node' &&
+        element.mindLook === 'person' ? (
+        // A person node (docs/specs/009-elements/org-chart.md): initials, name and role.
+        <PersonNodeFace
+          element={element}
+          labelNode={labelNode}
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          ink={textColor}
+          fontFamily={fontFamily}
+          editable={isSelected && !readOnly && !isLocked}
+          onSetRole={(value) => onSetPageHeading(element.id, 'pageSubtitle', value)}
+        />
+      ) : element.type === 'shape' && element.shape === 'sequence' ? (
+        // A sequence diagram (docs/specs/009-elements/sequence-diagram.md): the export's picture, fitted.
+        <SequenceFace element={element} paper={cardFill} />
+      ) : element.type === 'shape' && element.shape === 'diagram-key' ? (
+        // A diagram key (docs/specs/009-elements/diagram-key.md): its title, swatches and meanings.
+        <DiagramKeyFace
+          element={element}
+          labelNode={labelNode}
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
           ink={textColor}
           fontFamily={fontFamily}
           editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}

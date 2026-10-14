@@ -68,9 +68,8 @@ describe('stripTilesFor', () => {
     ['shapes', ['shapes:diamond', 'shapes:stadium']],
     ['write', ['tools:text']],
     ['draw', ['tools:highlighter', 'tools:polygon']],
-    ['build', ['tools:table']],
     ['devices', ['devices:laptop']],
-    ['media', ['tools:image', 'media:embed-website']],
+    ['media', ['media:tab-window', 'media:embed-website']],
     ['data', ['data:legend']],
   ])('divides %s into its groups', (category, after) => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
@@ -82,6 +81,10 @@ describe('stripTilesFor', () => {
     const components = stripTilesFor('components', NONE);
     expect(components.tiles).toHaveLength(STRIP_TILE_LIMIT);
     expect([...components.dividersAfter]).toEqual([]);
+    // Build fills it too since the Sequence diagram joined (docs/specs/009-elements/sequence-diagram.md).
+    const build = stripTilesFor('build', NONE);
+    expect(build.tiles).toHaveLength(STRIP_TILE_LIMIT);
+    expect([...build.dividersAfter]).toEqual([]);
   });
 
   it('gives a divided category one tile less when it overflows, to make room', () => {

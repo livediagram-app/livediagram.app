@@ -32,6 +32,7 @@ import {
   DEFAULT_DECISION_STATUS,
 } from './collab-shapes';
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
+import { DEFAULT_SEATING_FACING } from './seating';
 import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
@@ -173,6 +174,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'focus-button': { width: 120, height: 96 },
   // Portal (docs/specs/009-elements/portal-element.md): portal-shaped — taller than it is wide, like a portal.
   portal: { width: 72, height: 112 },
+  // Tab window (docs/specs/009-elements/tab-window.md): 16:9, TAB_WINDOW_SIZE.
+  'tab-window': { width: 640, height: 360 },
   // Session button (docs/specs/012-collaboration/session-button.md): the Selection Mode button's tile, so a row of
   // Behaviour controls lines up.
   'session-button': { width: 104, height: 96 },
@@ -185,6 +188,12 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // character — a seat the sprite fits into rather than a throne it rattles
   // around in.
   chair: { width: 76, height: 84 },
+  // Fence (docs/specs/009-elements/fence.md): a short run across, thin enough to read as a barrier.
+  fence: { width: 240, height: 24 },
+  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): their drawings' grids, at the
+  // chair's scale, so a character fits the seat.
+  desk: { width: 120, height: 112 },
+  sofa: { width: 152, height: 85 },
   // Estimate card (docs/specs/012-collaboration/estimate-card.md): the eight fibonacci chips wrap to two rows, and
   // the card has to hold them PLUS the answered avatars PLUS the two footer
   // buttons without clipping — a card that arrives already cut off is the
@@ -222,12 +231,23 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   badge: { width: 40, height: 24 },
   // Step number (docs/specs/009-elements/step-number.md): a small disc.
   step: { width: 28, height: 28 },
+  // Pointer note (docs/specs/009-elements/pointer-note.md): a short note; its tip hangs below it (D190).
+  'pointer-note': { width: 180, height: 64 },
+  // Diagram key (docs/specs/009-elements/diagram-key.md): one row's height until it settles (D191).
+  'diagram-key': { width: 260, height: 68 },
+  // Stack (docs/specs/009-elements/stack.md): an empty row to drop into (D192).
+  stack: { width: 360, height: 160 },
+  // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): three lifelines and five messages (D194).
+  sequence: { width: 560, height: 340 },
   // Boundary (docs/specs/009-elements/boundary.md): room for a few nodes inside.
   boundary: { width: 480, height: 300 },
   // Concept graphics (docs/specs/009-elements/concept-graphics.md).
   'layer-stack': { width: 360, height: 260 },
   pyramid: { width: 320, height: 260 },
   cycle: { width: 300, height: 300 },
+  hub: { width: 340, height: 320 },
+  onion: { width: 320, height: 320 },
+  chevrons: { width: 600, height: 150 },
   // Three 150px cards and two 16px gaps.
   'stat-row': { width: 482, height: 96 },
   process: { width: 420, height: 110 },
@@ -346,6 +366,17 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textAlignY: 'bottom',
       // A chair stretched wide stops reading as a chair, the same reason the
       // portal locks its aspect. Unlockable from the menu like any element.
+      aspectLocked: true,
+    };
+  }
+  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): furniture like the chair, each
+  // with the facing it is drawn at, its label under it, and its proportions held.
+  if (kind === 'desk' || kind === 'sofa') {
+    return {
+      ...base,
+      chairFacing: DEFAULT_SEATING_FACING[kind],
+      textSize: 'sm',
+      textAlignY: 'bottom',
       aspectLocked: true,
     };
   }
@@ -634,6 +665,39 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       aspectLocked: true,
       conceptRows: [{ label: 'Plan' }, { label: 'Do' }, { label: 'Check' }, { label: 'Act' }],
     };
+  if (kind === 'hub')
+    return {
+      ...base,
+      label: 'Orders',
+      textSize: 'sm',
+      textBold: true,
+      conceptRows: ['Payments', 'Stock', 'Email', 'Search', 'Analytics', 'Support'].map(
+        (label) => ({
+          label,
+        }),
+      ),
+    };
+  if (kind === 'onion')
+    return {
+      ...base,
+      aspectLocked: true,
+      conceptRows: [
+        { label: 'Domain' },
+        { label: 'Application' },
+        { label: 'Adapters' },
+        { label: 'Infrastructure' },
+      ],
+    };
+  if (kind === 'chevrons')
+    return {
+      ...base,
+      conceptRows: [
+        { label: 'Commit', note: 'push to main' },
+        { label: 'Build', note: '2 min' },
+        { label: 'Test', note: '8,400 tests' },
+        { label: 'Release', note: 'manual gate' },
+      ],
+    };
   // Boundary (docs/specs/009-elements/boundary.md): a titled, dashed container.
   if (kind === 'boundary')
     return {
@@ -653,6 +717,61 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // Their text is centred with no padding: the face is the pill, the label its word.
   if (kind === 'badge')
     return { ...base, label: 'New', textSize: 'sm', textBold: true, padding: 'none' };
+  if (kind === 'stack')
+    return {
+      ...base,
+      label: '',
+      strokeStyle: 'dashed',
+      strokeWidth: 'thin',
+      borderRadius: 'md',
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+    };
+  if (kind === 'sequence')
+    return {
+      ...base,
+      label: '',
+      strokeWidth: 'thin',
+      sequenceParticipants: [
+        { id: 'browser', label: 'Browser' },
+        { id: 'api', label: 'API' },
+        { id: 'db', label: 'Database' },
+      ],
+      sequenceMessages: [
+        { from: 'browser', to: 'api', label: 'Place order', kind: 'call' },
+        { from: 'api', to: 'api', label: 'Validate', kind: 'call' },
+        { from: 'api', to: 'db', label: 'Insert order', kind: 'call' },
+        { from: 'db', to: 'api', label: 'Order id', kind: 'reply' },
+        { from: 'api', to: 'browser', label: '201 Created', kind: 'reply' },
+      ],
+    };
+  if (kind === 'diagram-key')
+    return {
+      ...base,
+      label: 'Key',
+      textSize: 'sm',
+      textBold: true,
+      textAlignX: 'left',
+      textAlignY: 'top',
+      // The title sits in its own 20 px band (diagramKeyLayout); padding there clipped its descenders.
+      padding: 'none',
+      borderRadius: 'md',
+      strokeWidth: 'thin',
+    };
+  if (kind === 'pointer-note')
+    return {
+      ...base,
+      label: 'Stale for 60 s after a price change',
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+      borderRadius: 'md',
+      strokeColor: '#d97706',
+      fillColor: '#fffbeb',
+      textColor: '#78350f',
+      pointerTip: { x: -24, y: 120 },
+    };
   if (kind === 'step')
     return { ...base, aspectLocked: true, textSize: 14, textBold: true, padding: 'none' };
   // Card (docs/specs/009-elements/card.md): every slot but the band on, so the first one shows what a card is made of.

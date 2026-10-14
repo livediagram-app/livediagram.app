@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { themeColourMap, themeHalf, viewElementInTheme } from './theme-halves';
 import { THEMES } from './themes';
 import { legacyShapeColorPresets, shapeColorPresets } from './theme-presets';
@@ -81,6 +81,6 @@ describe('viewElementInTheme cost', () => {
     const runs = [0, 1, 2].map(() =>
       cpuMsOf(() => boxes.forEach((b) => viewElementInTheme(b, skyMap))),
     );
-    expect(Math.min(...runs)).toBeLessThan(20);
+    expect(Math.min(...runs)).toBeLessThan(cpuBudgetMs(20));
   });
 });

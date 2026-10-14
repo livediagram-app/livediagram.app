@@ -205,6 +205,9 @@ export type EditorContextMenuProps = {
   // Sankey diagram (docs/specs/009-elements/sankey.md): its edits, present only when this session may make
   // them (an Editor, on an unlocked diagram), so the menu shows no Sankey section otherwise.
   sankey?: import('./SankeyMenuSection').SankeyMenuHandlers;
+  // A sequence diagram's Edit Sequence (docs/specs/009-elements/sequence-diagram.md "The menu"): present only when this
+  // session may edit it (an Editor, on an unlocked diagram), so the section shows no button otherwise.
+  onEditSequence?: (elementId: string) => void;
   // The tab theme's chart ramp (themeChartPalette), so a chart or legend's data-row swatches show the colours the
   // canvas draws (chartRamp). Absent falls back to the built-in ramp.
   chartThemeRamp?: readonly string[];
@@ -384,6 +387,10 @@ export type EditorContextMenuProps = {
   // The colour palette every ColourRow in this menu offers (docs/specs/008-canvas/canvas-and-palette.md Colours):
   // the theme's swatches plus the user's own, spread straight onto the row.
   colourPalette: ColourPalette;
+  // Tag colours (docs/specs/009-elements/tag-colours.md): the active tab's map, and setting or clearing one tag's
+  // colour across the tab. Absent where the menu cannot edit the tab.
+  tagColours?: readonly import('@livediagram/document').TagColour[];
+  onSetTagColour?: (tag: string, colour: string | null) => void;
   // Table structure toggles (header row / column, zebra) for the Table
   // category.
   onToggleTableHeaderRow: () => void;

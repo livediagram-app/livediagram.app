@@ -67,6 +67,8 @@ const SHAPE_TOKENS: Record<string, string> = {
   'comment-pin': 'CommentPin',
   'action-card': 'ActionPanel',
   'done-check': 'DoneCheck',
+  // The tab window (docs/specs/009-elements/tab-window.md).
+  'tab-window': 'TabWindow',
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) report as their palette component, so a
   // copied stat row lands in the same dashboard row as a dropped one.
   banner: 'Banner',
@@ -76,12 +78,19 @@ const SHAPE_TOKENS: Record<string, string> = {
   // Badge and Step number (docs/specs/009-elements/badge.md).
   badge: 'Badge',
   step: 'Step',
+  'pointer-note': 'PointerNote',
+  'diagram-key': 'DiagramKey',
+  stack: 'Stack',
+  sequence: 'Sequence',
   // Boundary (docs/specs/009-elements/boundary.md).
   boundary: 'Boundary',
   // Concept graphics (docs/specs/009-elements/concept-graphics.md).
   'layer-stack': 'LayerStack',
   pyramid: 'Pyramid',
   cycle: 'Cycle',
+  hub: 'Hub',
+  onion: 'Onion',
+  chevrons: 'Chevrons',
   'stat-row': 'StatRow',
   process: 'ProcessSteps',
   'site-header': 'Header',
@@ -133,6 +142,8 @@ export function elementTelemetryType(element: Element): string {
       // A brand mark reports as TechIcon rather than by its shape, matching
       // both the click-to-add and drag-to-draw paths.
       if (element.iconId && isTechIconId(element.iconId)) return 'TechIcon';
+      // A person node is the org chart's (docs/specs/009-elements/org-chart.md), counted apart from mind nodes.
+      if (element.shape === 'mind-node' && element.mindLook === 'person') return 'OrgChart';
       return shapeTelemetryToken(element.shape);
     }
   }

@@ -291,6 +291,8 @@ export function elementUnderFeet(elements: Element[], feet: AvatarPoint): string
   for (const el of elements) {
     if (!isBoxed(el)) continue;
     if (el.type === 'shape' && el.shape === 'frame') continue;
+    // A fence is not a destination (docs/specs/009-elements/fence.md): walking along one must not ring it.
+    if (el.type === 'shape' && el.shape === 'fence') continue;
     if (
       feet.x >= el.x &&
       feet.x <= el.x + el.width &&

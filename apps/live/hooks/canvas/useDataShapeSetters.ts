@@ -31,6 +31,10 @@ import {
   type Element,
   type ProgressAnim,
   type ShapeElement,
+  isSeatingShape,
+  seatingFacing,
+  turnedSeatingBox,
+  type SeatingKind,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
@@ -54,6 +58,13 @@ type DataShapeSetterDeps = {
 // looping animation + chart legend). Each kind has a private field setter the
 // public ones delegate to; all resolve the selection and commit through the
 // two shared handles, so they live together off useElementStyle.
+// The telemetry type a facing change reports, per piece of furniture (docs/specs/017-telemetry/telemetry.md).
+const SEATING_TELEMETRY: Record<SeatingKind, string> = {
+  chair: 'Chair',
+  desk: 'Desk',
+  sofa: 'Sofa',
+};
+
 export function useDataShapeSetters({
   currentSelectionIds,
   commit,
@@ -222,7 +233,11 @@ export function useDataShapeSetters({
   ) => {
     commit((els) =>
       els.map((el) => {
-        if (el.id !== elementId || el.type !== 'shape' || !MASTHEAD_SHAPES.has(el.shape)) return el;
+        if (el.id !== elementId || el.type !== 'shape') return el;
+        // A person node's role is its meta line (docs/specs/009-elements/org-chart.md).
+        const personRole =
+          el.shape === 'mind-node' && el.mindLook === 'person' && field === 'pageSubtitle';
+        if (!MASTHEAD_SHAPES.has(el.shape) && !personRole) return el;
         // An empty line stores as undefined rather than '', so a page that was
         // typed into and cleared serialises the same as one never touched.
         return { ...el, [field]: value.trim() ? value : undefined };
@@ -319,8 +334,26 @@ export function useDataShapeSetters({
       'Decision',
     );
 
-  const setChairFacingSelected = (facing: ChairFacing) =>
-    setCollabFieldSelected('chair', { chairFacing: facing }, 'Chair');
+  // Chair, desk and sofa (docs/specs/009-elements/chair.md): one facing for all three. A desk or a
+  // sofa turned onto its side swaps its box about its centre, so the drawing keeps its proportions.
+  const setChairFacingSelected = (facing: ChairFacing) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    const first = elements().find(
+      (el) => ids.has(el.id) && el.type === 'shape' && isSeatingShape(el.shape),
+    );
+    if (!first || first.type !== 'shape' || !isSeatingShape(first.shape)) return;
+    const turned: SeatingKind = first.shape;
+    commit((els) =>
+      els.map((el) => {
+        if (!ids.has(el.id) || el.type !== 'shape' || !isSeatingShape(el.shape)) return el;
+        const seating = { ...el, shape: el.shape };
+        const box = turnedSeatingBox(seating, seatingFacing(seating), facing);
+        return { ...el, ...box, chairFacing: facing };
+      }),
+    );
+    track('Element', 'Changed', SEATING_TELEMETRY[turned]);
+  };
 
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
     const ids = currentSelectionIds();

@@ -60,6 +60,13 @@ export default defineProject({ test: { environment: 'jsdom' } });
   those tests flake on a busy machine. CPU time still catches the regression
   the budget is for. The one exception is a test that asserts nothing WAITS
   (no sleep, no retry delay): only wall-clock time can see a wait.
+- **A tight budget is written for a developer's machine and widened on CI.** CI's
+  shared runners, under coverage, run the same work about 4x slower than an
+  M-series Mac (the Tidy Up hover: 24 ms locally, 101 to 104 ms on CI), so a
+  budget set for a person's device sits at the line there and fails at random.
+  Such a test asserts `cpuBudgetMs(ms)`: `ms` locally, `ms x CI_CPU_HEADROOM`
+  (3) when `CI` is set. A loose regression guard (a budget many times what the
+  work measures) needs neither.
 - **A test never pays a cold module load.** When the code under test imports
   a module lazily (`await import(...)`), the test file also imports it
   statically, so its transform happens at collection, outside every test's

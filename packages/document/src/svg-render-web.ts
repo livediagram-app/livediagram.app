@@ -12,6 +12,7 @@ import { labelFontPx } from './label-font';
 import type { BoxedElement, ImageElement } from './index';
 import { svgWrappedLabel } from './svg-render-labels';
 import { svgCard } from './svg-render-card';
+import type { TagColour } from './tag-colours';
 import type { ResolveIconArt } from './svg-render-describe';
 import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
 import {
@@ -109,6 +110,8 @@ export function svgWebComponent(
     label: string;
     fontFamily?: string;
     resolveIconArt?: ResolveIconArt;
+    // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
+    tagColours?: readonly TagColour[];
   },
 ): string {
   const { stroke, fill, label: text, fontFamily } = o;

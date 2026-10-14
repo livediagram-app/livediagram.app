@@ -16,8 +16,13 @@
 import dynamic from 'next/dynamic';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
+import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
+import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
+import { StackMenuSection } from '@/components/palette/StackMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
+import { TabWindowMenuSection } from '@/components/palette/TabWindowMenuSection';
 import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
+import { SequenceMenuSection } from '@/components/palette/SequenceMenuSection';
 import {
   isChipShape,
   isConceptShape,
@@ -231,6 +236,9 @@ export function ElementDataSections({
     hasWebRowsSection(target) ||
     isChip ||
     shapeTarget?.shape === 'boundary' ||
+    shapeTarget?.shape === 'pointer-note' ||
+    shapeTarget?.shape === 'stack' ||
+    shapeTarget?.shape === 'sequence' ||
     (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isProgress ||
     isRail ||
@@ -446,6 +454,14 @@ export function ElementDataSections({
               sectionProps={sectionProps}
             />
           ) : null}
+          {/* A tab window's tab, and opening it (docs/specs/009-elements/tab-window.md). */}
+          {shapeTarget?.shape === 'tab-window' ? (
+            <TabWindowMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
           {/* A boundary's style (docs/specs/009-elements/boundary.md). */}
           {shapeTarget?.shape === 'boundary' ? (
             <BoundaryMenuSection
@@ -465,12 +481,48 @@ export function ElementDataSections({
               sectionProps={sectionProps}
             />
           ) : null}
+          {/* A stack's arrangement (docs/specs/009-elements/stack.md). */}
+          {shapeTarget?.shape === 'stack' ? (
+            <StackMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A sequence diagram's summary, Edit Sequence, Numbered and Play (docs/specs/009-elements/sequence-diagram.md
+              "The menu"). */}
+          {shapeTarget?.shape === 'sequence' ? (
+            <SequenceMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+              onEdit={props.onEditSequence}
+            />
+          ) : null}
+          {/* A pointer note's Detach (docs/specs/009-elements/pointer-note.md). */}
+          {shapeTarget?.shape === 'pointer-note' ? (
+            <PointerNoteMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
           {/* The card's slots (docs/specs/009-elements/card.md): band, title, meta line, media. */}
           {shapeTarget?.shape === 'card' ? (
             <CardMenuSection
               target={shapeTarget}
               ops={props.elementStyle}
               sectionProps={sectionProps}
+              tagColours={
+                props.onSetTagColour ? (
+                  <TagColoursBlock
+                    target={shapeTarget}
+                    tagColours={props.tagColours}
+                    colourPalette={props.colourPalette}
+                    onSetTagColour={props.onSetTagColour}
+                  />
+                ) : null
+              }
             />
           ) : null}
           {shapeTarget && hasWebRowsSection(shapeTarget) ? (
