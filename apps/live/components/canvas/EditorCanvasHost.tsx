@@ -198,7 +198,6 @@ export function EditorCanvasHost() {
     documentListLoading,
     documentName,
     dismissSharedDocument,
-    distGuides,
     dropIconOnElement,
     dropPaletteItem,
     duplicateDocument,
@@ -324,8 +323,7 @@ export function EditorCanvasHost() {
     sharedDocuments,
     shiftDupGhostIds,
     skipTemplatePicker,
-    snapGuides,
-    snapTargets,
+    snapGuideStore,
     spawnConnectSelected,
     startTimer,
     startVote,
@@ -627,9 +625,7 @@ export function EditorCanvasHost() {
           }
           layerInertIds={layerInertIds}
           shiftDupGhostIds={shiftDupGhostIds}
-          snapGuides={snapGuides}
-          distGuides={distGuides}
-          snapTargets={snapTargets}
+          snapGuideStore={snapGuideStore}
           remoteSelectionsByElement={remoteSelectionsByElement}
           remoteCursors={remoteCursorRows}
           remoteAvatars={remoteAvatarRows}

@@ -31,6 +31,7 @@ export function onLogoPage(
 
 export function LayerSelectionChrome({
   selectionInput,
+  tabId,
   elements,
   editingId,
   nextNote,
@@ -39,6 +40,8 @@ export function LayerSelectionChrome({
   pages,
 }: {
   selectionInput: CanvasSelectionInput;
+  // The tab the selection is on, whose drag preview the selection follows.
+  tabId: string;
   elements: Element[];
   editingId: string | null;
   // The event-storming next-note buttons, when the board offers them.
@@ -50,7 +53,7 @@ export function LayerSelectionChrome({
   pages?: readonly LaidOutPage[] | null;
 }) {
   const { selectionBounds, showPlus, showUnionResize, unionResizeBounds, unionResizePrimaryId } =
-    useCanvasSelectionView(selectionInput);
+    useCanvasSelectionView(selectionInput, tabId);
   const selectedId = useSelectionOf(singleId);
   // Counter-scaled chrome: the zoom from the canvas's zoom context, so the layer passes none.
   const zoom = useCanvasZoom();

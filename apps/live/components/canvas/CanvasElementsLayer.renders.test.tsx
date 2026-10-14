@@ -248,6 +248,45 @@ describe('drawing a drag preview', () => {
     expect([...renders.arrow.keys()]).toEqual([ab.id]);
   });
 
+  // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved": a preview frame renders
+  // neither the layer nor any element it leaves alone.
+  it('does not render the layer itself for a preview frame', () => {
+    mount();
+    for (const y of [10, 20, 30])
+      act(() =>
+        setLocalPreview(
+          't',
+          BOARD.map((el) => (el.id === a.id ? { ...a, y } : el)),
+          BOARD,
+        ),
+      );
+    expect(layerRenders.count).toBe(0);
+    expect([...renders.boxed.keys()]).toEqual([a.id]);
+    expect(renders.boxed.get(a.id)).toBe(3);
+    expect((drawnAs.get(a.id) as { y: number } | undefined)?.y).toBe(30);
+  });
+
+  it('lists an element the preview adds, after its neighbour, and drops one it removes', () => {
+    const { container } = mount();
+    const copy = { ...c, id: 'copy-of-c', x: 80 };
+    act(() =>
+      setLocalPreview(
+        't',
+        [a, b, c, copy, ab].filter((el) => el.id !== b.id),
+        BOARD,
+      ),
+    );
+    expect(drawnAs.get(copy.id)).toBe(copy);
+    expect(renders.boxed.has(b.id)).toBe(false);
+    expect(container.querySelectorAll('[data-arrow-svg]').length).toBe(1);
+    // The copy moving on renders it alone; the list holds.
+    const before = layerRenders.count;
+    const moved = { ...copy, x: 120 };
+    act(() => setLocalPreview('t', [a, c, moved, ab], BOARD));
+    expect(layerRenders.count).toBe(before);
+    expect(drawnAs.get(copy.id)).toBe(moved);
+  });
+
   it('ignores a preview for another tab', () => {
     mount();
     act(() =>

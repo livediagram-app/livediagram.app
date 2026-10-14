@@ -1,4 +1,5 @@
 import type { TidyUpActions } from './tidy-up-actions';
+import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { CombineOp } from '@/lib/combine/combine';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
@@ -19,9 +20,7 @@ import type {
   RecognisedShape,
 } from '@livediagram/document';
 import type {
-  AlignmentGuide,
   BackgroundPattern,
-  DistributionGuide,
   TabKind,
   EditorMode,
   Element,
@@ -115,16 +114,10 @@ export type CanvasProps = {
   // start position, so the set under the cursor shows as a ghost. Null
   // outside a shift-held move drag.
   shiftDupGhostIds: ReadonlySet<string> | null;
-  // Faint alignment guides for the active move / resize drag (the edge
-  // / centre lines the dragged element shares with neighbours). Empty
-  // when no snap is in effect. Rendered by CanvasChrome. See docs/specs/008-canvas/canvas-and-palette.md.
-  snapGuides: AlignmentGuide[];
-  // Equal-spacing guides: the gap segments shown when a moved element
-  // snaps to even spacing with its neighbours. Rendered by CanvasChrome.
-  distGuides: DistributionGuide[];
-  // Connection-point markers revealed while dragging an arrow endpoint near
-  // a shape, so the user can see exactly where it will snap. Empty otherwise.
-  snapTargets: SnapTarget[];
+  // The active move / resize drag's snap guides (alignment lines, equal-spacing gaps, arrow-endpoint
+  // markers; see docs/specs/008-canvas/canvas-and-palette.md), in the editor's store. Only CanvasChrome,
+  // which draws them, reads it, so a new set renders the chrome and not the canvas.
+  snapGuideStore: SnapGuideStore;
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
