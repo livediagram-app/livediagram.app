@@ -1,6 +1,14 @@
 // Where a live or structured element stands, in one attribute (docs/specs/024-agents/blueprints/
 // document-views.md "State attributes", VW22).
-import { RAIL_DEFAULT_POINTS, RATING_DEFAULT, type Element } from '@livediagram/document';
+import {
+  RAIL_DEFAULT_POINTS,
+  RATING_DEFAULT,
+  agendaTotalMinutes,
+  sessionButtonPlan,
+  type AgendaItem,
+  type Element,
+  type SessionButtonConfig,
+} from '@livediagram/document';
 import { NOTE_CUT_CHARS, PROGRESS_DEFAULT } from './constants';
 import { arrayField, flagField, numberField, stringField, textField } from './fields';
 import { attrValue, jsonString } from './text';
@@ -12,12 +20,30 @@ function withFlag(attribute: ViewAttribute, flag: string, on: boolean): ViewAttr
   return on ? [attribute, flagAttribute(flag)] : [attribute];
 }
 
-function agendaState(el: Element): ViewAttribute {
+function agendaState(el: Element): ViewAttribute[] {
   const items = countOf(el, 'agendaItems');
   const current = numberField(el, 'agendaCurrent');
-  return current === null
-    ? countAttribute('items', items)
-    : countAttribute('item', `${current + 1}/${items}`);
+  const minutes = agendaTotalMinutes(arrayField(el, 'agendaItems') as AgendaItem[]);
+  return [
+    current === null
+      ? countAttribute('items', items)
+      : countAttribute('item', `${current + 1}/${items}`),
+    countAttribute('minutes', minutes),
+  ];
+}
+
+// What pressing a session button starts: its tool and the setting it starts with.
+function sessionState(el: Element): ViewAttribute {
+  const plan = sessionButtonPlan(Reflect.get(el, 'session') as SessionButtonConfig | undefined)!;
+  const setting =
+    plan.tool === 'timer'
+      ? `:${plan.minutes}m`
+      : plan.tool === 'vote'
+        ? `:${plan.dots}`
+        : plan.tool === 'poll'
+          ? `:${plan.style}`
+          : '';
+  return countAttribute('session', `${plan.tool}${setting}`);
 }
 
 function quizState(el: Element): ViewAttribute {
@@ -56,7 +82,9 @@ export function stateAttributeOf(el: Element): ViewAttribute[] {
     case 'qa-board':
       return [countAttribute('questions', countOf(el, 'qaNotes'))];
     case 'agenda':
-      return [agendaState(el)];
+      return agendaState(el);
+    case 'session-button':
+      return [sessionState(el)];
     case 'decision':
       return textState('status', stringField(el, 'decisionStatus'), attrValue);
     case 'roll-call':

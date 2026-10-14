@@ -336,27 +336,28 @@ The table line prints its label first when it has one. Every text a summary prin
 
 **State attributes** (`stateAttributeOf`), one per element of these kinds, printed after the summary (`VW22`):
 
-| Kind                    | State attribute                                                           |
-| ----------------------- | ------------------------------------------------------------------------- |
-| `estimate`              | `votes=<responses.length>`, then `revealed` when `responsesRevealed`      |
-| `temperature`           | `votes=<responses.length>`                                                |
-| `done-check`            | `done=<responses.length>`                                                 |
-| `idea-box`              | `ideas=<ideaCards.length>`, then `revealed` when `ideasRevealed`          |
-| `qa-board`              | `questions=<qaNotes.length>`                                              |
-| `agenda`                | `item=<agendaCurrent + 1>/<n>` once started, else `items=<n>`             |
-| `decision`              | `status=<decisionStatus>` when set                                        |
-| `roll-call`             | `present=<rollCall.length>`                                               |
-| `quiz`                  | `state=revealed`, `state=locked`, `state=open` (started) or `state=ready` |
-| `picker`                | `picked=<attrValue(pickerResult)>` when set                               |
-| `reveal`                | `revealed` when `revealed`                                                |
-| `stat-row`              | `stats=<stats.length>`                                                    |
-| `process`               | `steps=<processSteps.length>`                                             |
-| `site-header`           | `links=<navLinks.length>`                                                 |
-| `legend`                | `items=<legendItems.length>`                                              |
-| `rating`                | `rating=<rating>/5`                                                       |
-| `progress-bar`, `-ring` | `progress=<progress, else 50>`                                            |
-| `timeline-rail`         | `points=<railCount>`                                                      |
-| `page`                  | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                |
+| Kind                    | State attribute                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| `estimate`              | `votes=<responses.length>`, then `revealed` when `responsesRevealed`                  |
+| `temperature`           | `votes=<responses.length>`                                                            |
+| `done-check`            | `done=<responses.length>`                                                             |
+| `idea-box`              | `ideas=<ideaCards.length>`, then `revealed` when `ideasRevealed`                      |
+| `qa-board`              | `questions=<qaNotes.length>`                                                          |
+| `agenda`                | `item=<agendaCurrent + 1>/<n>` once started, else `items=<n>`; then `minutes=<total>` |
+| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer), `:<dots>` (vote) or `:<style>` (poll)   |
+| `decision`              | `status=<decisionStatus>` when set                                                    |
+| `roll-call`             | `present=<rollCall.length>`                                                           |
+| `quiz`                  | `state=revealed`, `state=locked`, `state=open` (started) or `state=ready`             |
+| `picker`                | `picked=<attrValue(pickerResult)>` when set                                           |
+| `reveal`                | `revealed` when `revealed`                                                            |
+| `stat-row`              | `stats=<stats.length>`                                                                |
+| `process`               | `steps=<processSteps.length>`                                                         |
+| `site-header`           | `links=<navLinks.length>`                                                             |
+| `legend`                | `items=<legendItems.length>`                                                          |
+| `rating`                | `rating=<rating>/5`                                                                   |
+| `progress-bar`, `-ring` | `progress=<progress, else 50>`                                                        |
+| `timeline-rail`         | `points=<railCount>`                                                                  |
+| `page`                  | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                            |
 
 Every other kind has no state attribute; `show` has its content.
 
