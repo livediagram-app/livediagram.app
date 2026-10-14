@@ -54,7 +54,9 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 - The Icons catalogue holds, besides the editor's general glyphs (people, devices, files, actions, furniture),
   subjects: food and drink, shops and money, travel, nature and weather, people and pets, learning, health, media and
   work (`icon-catalog-3.ts`), each Lucide's glyph vendored through the manifest, so a page or diagram about a bakery, a
-  startup or a trip has an icon of its subject in the line-art set rather than an emoji.
+  startup or a trip has an icon of its subject in the line-art set rather than an emoji. The palette's Icons tab browses them in their
+  own categories: Food & Drink, Shopping & Money, Business, Travel, Nature & Weather, Life & Health, Learning &
+  Media (the code-review glyphs in Tech, the verified shield in Security).
 
 ## Technology tiles
 

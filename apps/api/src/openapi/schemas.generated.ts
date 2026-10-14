@@ -1354,6 +1354,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "blocks": {
         "type": "number"
       },
+      "estimatedPages": {
+        "type": "number"
+      },
       "flow": {
         "type": "string"
       },
@@ -1386,6 +1389,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pages",
       "blocks",
       "words",
+      "estimatedPages",
       "look"
     ],
     "type": "object"
@@ -6996,6 +7000,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "created": {
             "type": "boolean"
           },
+          "estimatedPages": {
+            "type": "number"
+          },
           "flow": {
             "type": "string"
           },
@@ -7025,6 +7032,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "required": [
           "blocks",
           "created",
+          "estimatedPages",
           "flow",
           "look",
           "pages",
@@ -8919,7 +8927,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "duplicate-label",
       "flow-backwards",
       "aspect-extreme",
-      "colour-on-themed"
+      "colour-on-themed",
+      "text-overflow"
     ],
     "type": "string"
   },
@@ -9988,6 +9997,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "blocks": {
               "type": "number"
             },
+            "estimatedPages": {
+              "type": "number"
+            },
             "flow": {
               "type": "string"
             },
@@ -10019,6 +10031,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           "required": [
             "blocks",
+            "estimatedPages",
             "flow",
             "look",
             "markdown",
