@@ -169,6 +169,9 @@ export function EditorContextMenuHost() {
     commitArrowPreset,
     previewArrowPreset,
     clearStylePreview,
+    previewElementStyle,
+    commitElementStyle,
+    burstSelectedStyle,
     resetArrowStyleSelected,
     commitSetAnimation,
     commitArrowFlow,
@@ -468,6 +471,12 @@ export function EditorContextMenuHost() {
       onApplyArrowPreset={commitArrowPreset}
       onPreviewArrowPreset={previewArrowPreset}
       onPreviewStyleEnd={clearStylePreview}
+      elementStyle={{
+        preview: (map) => previewElementStyle(map),
+        end: clearStylePreview,
+        commit: (map, telemetryType) => commitElementStyle(map, telemetryType),
+        burst: burstSelectedStyle,
+      }}
       onApplyCodeTheme={commitCodeTheme}
       onPreviewCodeTheme={previewCodeTheme}
       tableColorPresets={tableColorPresets(getTheme(activeTab.theme))}

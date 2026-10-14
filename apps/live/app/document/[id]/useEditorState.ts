@@ -3134,6 +3134,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTableHeaderColumnSelected,
     setTableZebraSelected,
     setHeaderFillSelected,
+    burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
     setTableHeaderTextColorSelected,
@@ -3289,6 +3290,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // state.
   const {
     clearPreview: clearStylePreview,
+    previewElementStyle,
+    commitElementStyle,
     previewShapeColorPreset,
     commitShapeColorPreset,
     previewArrowPreset,
@@ -4118,6 +4121,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     resetColorsSelected,
     // Style-preset hover preview + click commit (docs/specs/010-palette/style-presets.md).
     clearStylePreview,
+    previewElementStyle,
+    commitElementStyle,
     previewShapeColorPreset,
     commitShapeColorPreset,
     previewArrowPreset,
@@ -4201,6 +4206,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTableHeaderColumnSelected,
     setTableZebraSelected,
     setHeaderFillSelected,
+    burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
     setTableHeaderTextColorSelected,

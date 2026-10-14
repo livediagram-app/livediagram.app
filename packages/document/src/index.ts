@@ -399,6 +399,7 @@ export {
   type PlanTabKind,
   type TabKind,
 } from './tab-kind';
+export * from './accent-edge';
 export * from './editor-mode';
 export * from './tab-stats';
 export * from './illustrate-page';

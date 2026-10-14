@@ -37,9 +37,10 @@ kinds) do not offer it; a stored value on one is ignored.
 
 ## The menu
 
-In **Border**: an **Accent Edge** row of four tiles (None, Left, Top, Bottom). Picking an edge shows one colour well
-under it, the shared colour picker ([Colour picker](../004-interface-design/colour-picker.md)); its "Automatic" swatch
-clears `accentEdgeColor`. In a multi-selection it applies to every selected shape that supports it, one history step.
+In **Border**: an **Accent Edge** row of four tiles (None, Left, Top, Bottom), each previewing on hover. Picking an
+edge shows an **Edge Colour** row under it, the shared colour picker ([Colour picker](../004-interface-design/colour-picker.md)),
+showing the border's colour until one is picked; once the edge has its own colour, **Match Border** clears it. In a
+multi-selection it applies to every selected shape that supports it, one history step.
 
 The Quick Style Panel does not offer it; it is a deliberate detail, not a most-used choice.
 

@@ -1,3 +1,4 @@
+import type { ElementStyleOps } from '@/lib/element-style-ops';
 import type { CombineOp } from '@/lib/combine/combine';
 import type { WordmarkPatch } from '@/lib/style-presets';
 import type { EventStormingNoteKind } from '@livediagram/document';
@@ -152,6 +153,8 @@ export type EditorContextMenuProps = {
   onCommitBorderStroke: (value: BorderStroke) => void;
   onPreviewBorderStyle: (value: BorderStyle) => void;
   onCommitBorderStyle: (value: BorderStyle) => void;
+  // Writes a control's own field onto the selection (lib/element-style-ops.ts).
+  elementStyle: ElementStyleOps;
   onPreviewBorderRadius: (value: BorderRadius) => void;
   onCommitBorderRadius: (value: BorderRadius) => void;
   // Drop shadow (docs/specs/008-canvas/element-shadows.md): preset tiles commit/preview like the border

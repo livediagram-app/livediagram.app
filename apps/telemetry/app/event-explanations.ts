@@ -228,6 +228,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|ArrowheadSize': "Someone changed a selected arrow's arrowhead size.",
   'Element|Changed|AspectRatioReset':
     'Someone reset a selected shape back to its default proportions.',
+  'Element|Changed|AccentEdge':
+    'Someone set, moved, recoloured or removed the coloured accent edge along one side of a selected shape.',
   'Element|Changed|BorderRadius': "Someone changed a selected element's corner rounding.",
   'Element|Changed|BorderStroke': "Someone changed a selected element's border weight.",
   'Element|Changed|BorderStyle':
