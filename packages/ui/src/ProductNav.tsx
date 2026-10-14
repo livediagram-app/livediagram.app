@@ -79,7 +79,7 @@ const ICONS: Record<ProductNavKey, () => ReactNode> = {
 };
 
 const ITEMS: { key: ProductNavKey; label: string; href: string; desc: string }[] = [
-  { key: 'home', label: 'Welcome', href: '/', desc: 'Learn about our features' },
+  { key: 'home', label: 'Home', href: '/', desc: 'Learn about our features' },
   { key: 'editor', label: 'Editor', href: '/new', desc: 'Start or edit a document' },
   { key: 'explorer', label: 'Explorer', href: '/explorer', desc: 'Your documents & folders' },
   {
@@ -231,7 +231,8 @@ export function ProductNav({
 
 // The same surfaces as a row of links, for a host that carries no menu (the editor's Explorer footer,
 // docs/specs/013-workspace/explorer-structure.md "Layout"): each icon and label, `current` left out. Asks whether
-// the Community is on as it mounts, since a host shows it only once someone opens it.
+// the Community is on as it mounts, since a host shows it only once someone opens it. Telemetry stays in the menu but
+// not in this row: the Explorer footer keeps to where someone works.
 export function ProductNavLinks({
   current,
   className = '',
@@ -240,7 +241,9 @@ export function ProductNavLinks({
   className?: string;
 }) {
   const communityOn = useCommunityEnabled(undefined, true);
-  const items = ITEMS.filter((i) => i.key !== current && (communityOn || i.key !== 'community'));
+  const items = ITEMS.filter(
+    (i) => i.key !== current && i.key !== 'telemetry' && (communityOn || i.key !== 'community'),
+  );
   return (
     <nav aria-label="Go to" className={`flex items-center gap-0.5 ${className}`}>
       {items.map((item) => (

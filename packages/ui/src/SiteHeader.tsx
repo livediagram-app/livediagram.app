@@ -18,7 +18,7 @@ import { StartBlankMenu } from './StartBlankMenu';
 // no gutter for the rail it is left out (the device's own setting applies through System).
 //
 // `productNav` is the current section key for the apps-menu dropdown next to
-// the logo (the landing page passes 'home', which reads as "Welcome").
+// the logo (the landing page passes 'home', which reads as "Home").
 // `center` is an optional slot between the two clusters, shown from `sm` up
 // (the help centre's search box). `actions` replaces the default CTA pair
 // (no surface uses it today). `shareRail` (default true) puts the
