@@ -144,7 +144,8 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
   participants appear in the order declared, then first mentioned. Messages `A->>B: text` (a call: solid, filled
   head), `A-)B: text` (async: solid, open head), `A-->>B: text` and `A-->B: text` (a reply: dashed, open head),
   `A->B` and `A-xB` (calls); `A->>A` is a self-call. `+` and `-` after the arrow (`A->>+B`, `B-->>-A`) and
-  `activate B` / `deactivate B` start and end activations at the message the line follows. `Note over A,B: text`, `Note right of A: text`,
+  `activate B` / `deactivate B` start and end activations at the message the line follows; a message into B that
+  `activate B` follows ends on the bar it starts, not on B's lifeline inside it. `Note over A,B: text`, `Note right of A: text`,
   `Note left of A: text`. Fragments `loop`, `alt` (with `else`), `opt`, `par` (with `and`), `critical`, `break`,
   each closed by `end`. `autonumber` numbers the messages; `title Text` (or front matter `title:`) heads the
   diagram. `rect` blocks, `box` groupings, links and styling are read and skipped, never an error.
@@ -155,7 +156,7 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
 - **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, the
   pitch wide enough for the longest message between neighbours; messages a row each, edge to edge of the activation
   bars, labels above their line; a self-call loops out of the bar and back into its nested one; a note is a sticky
-  over or beside its participants; a fragment is a frame across the lifelines its messages and notes involve (every lifeline when they
+  over or beside its participants, as tall as its text needs (one line, 48 px) with the text centred; a fragment is a frame across the lifelines its messages and notes involve (every lifeline when they
   involve none; one nested on the same first lifeline sits a step inside) with its operator as its label and
   each guard in muted text, operands split by a dashed divider.
 - **Limits**: at most 30 participants and 300 messages, notes and fragment lines; past them the parser refuses

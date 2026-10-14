@@ -226,3 +226,43 @@ describe('layoutSequence', () => {
     expect(msgs[1]!.strokeStyle).toBe('dashed');
   });
 });
+
+describe('late activations and notes', () => {
+  const lay = (src: string) => {
+    const g = graphFromMermaid(src);
+    if (!g.ok) throw new Error(g.error);
+    let n = 0;
+    return layoutGraph(g.graph, { makeEdgeId: () => `y${n++}` });
+  };
+
+  it('ends a message on the bar an activate line after it starts, not on the lifeline inside it', () => {
+    const els = lay(`sequenceDiagram
+  participant A
+  participant B
+  A->>B: Open
+  activate B
+  B-->>A: Done
+  deactivate B`);
+    const open = els.find((e): e is ArrowElement => e.type === 'arrow' && e.label === 'Open')!;
+    // B's activation bar: the 14px box on B's lifeline.
+    const bar = els.find((e) => e.type === 'shape' && (e as { width: number }).width === 14) as
+      { x: number } | undefined;
+    expect(bar).toBeDefined();
+    expect(open.to.kind === 'free' && open.to.x).toBe(bar!.x);
+  });
+
+  it('sizes a one-line note to its text and centres it', () => {
+    const els = lay(`sequenceDiagram
+  participant A
+  participant B
+  A->>B: Hi
+  Note right of B: Short`);
+    const note = els.find((e) => e.type === 'sticky') as Element & {
+      height: number;
+      textAlignX?: string;
+      textAlignY?: string;
+    };
+    expect(note.height).toBe(48);
+    expect(note).toMatchObject({ textAlignX: 'center', textAlignY: 'middle' });
+  });
+});

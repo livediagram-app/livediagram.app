@@ -110,6 +110,8 @@ export function layoutSequence(
     y: number;
     fromX: number;
     toX: number;
+    // Whether it runs to the right, for re-placing its end on a bar an `activate` line starts.
+    right: boolean;
   }[] = [];
   // Each fragment's participants: those its messages and notes touch, so its frame spans their lifelines alone.
   const fragments: {
@@ -167,7 +169,7 @@ export function layoutSequence(
       if (it.deactivate) deactivate(it.from, y);
       if (!self && it.style === 'call')
         waiting.push({ caller: it.from, callee: it.to, auto: auto || !!it.activate });
-      messages.push({ item: { ...it, label }, y, fromX, toX });
+      messages.push({ item: { ...it, label }, y, fromX, toX, right });
       if (self) {
         activate(it.from, y + SELF_DROP);
         deactivate(it.from, y + SELF_DROP + 20);
@@ -176,12 +178,18 @@ export function layoutSequence(
       messageY = y;
       involve(it.from, it.to);
       y += self ? SELF_DROP + 36 : STEP;
-    } else if (it.kind === 'activate') activate(it.who, messageY ?? y - STEP / 2);
-    else if (it.kind === 'deactivate') deactivate(it.who, messageY ?? y - STEP / 2);
+    } else if (it.kind === 'activate') {
+      activate(it.who, messageY ?? y - STEP / 2);
+      // The message this line follows, into the participant it activates, ends on the bar it starts: its end was
+      // worked out before the bar existed, on the lifeline inside it.
+      const last = messages.at(-1);
+      if (last && last.y === messageY && last.item.to === it.who && last.item.from !== it.who)
+        last.toX = edge(it.who, last.right);
+    } else if (it.kind === 'deactivate') deactivate(it.who, messageY ?? y - STEP / 2);
     else if (it.kind === 'note') {
       const width = noteWidth(it, pitch, headW);
       const lines = Math.max(1, Math.ceil(glyphWidth(it.text, 13) / Math.max(40, width - 28)));
-      const h = Math.max(56, lines * NOTE_LINE + 30);
+      const h = lines * NOTE_LINE + 30;
       notes.push({ item: it, y: y - 14, h });
       involve(...it.who);
       y += h + 16;
@@ -350,6 +358,9 @@ export function layoutSequence(
       height: n.h,
       label: n.item.text,
       textSize: 'sm',
+      // Centred in a note sized to its text: top-left in a taller box it read as unfinished.
+      textAlignX: 'center',
+      textAlignY: 'middle',
     });
   }
 
