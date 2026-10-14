@@ -12,6 +12,7 @@ import type { Item, ItemTypeDef } from '@livediagram/items';
 import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
 import { PAGE_EXPORT_PAPER, type PageExportFrame } from './illustrate-page-frame';
 import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
+import { svgTabWindow, type ResolveTabWindow } from './tab-window';
 import {
   hasShapeSilhouette,
   scaledPolygonPoints,
@@ -249,6 +250,11 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
           ? svgPlanCard(el, opts.items, surface, opts.itemTypes)
           : (opts.resolvePlanArt?.(el) ?? svgPlanView(el, surface));
     return `<g${opAttr}${rotAttr}${shadowAttr}>${body}</g>`;
+  }
+  if (el.type === 'shape' && el.shape === 'tab-window') {
+    // Another tab of the document, fitted inside its frame (docs/specs/009-elements/tab-window.md "Exports"); its frame
+    // named for its tab where the caller has no drawing.
+    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgTabWindow(el, opts.resolveTabWindow?.(el), el.strokeColor, surface)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
     // The themed to-do card with its rows + done-count footer (docs/specs/009-elements/checklist.md).
@@ -560,6 +566,8 @@ export function renderElementsToSvg(
     // A plan view's or placeholder's picture (a Dashboard laid out, @livediagram/plan-art); its labelled box when
     // absent or answering nothing.
     resolvePlanArt?: ResolvePlanArt;
+    // Each tab window's tab (docs/specs/009-elements/tab-window.md "Exports"); its frame named for its tab without.
+    resolveTabWindow?: ResolveTabWindow;
     // One Illustrate page as an export draws it (illustrate-page-frame.ts, svg-render-pages.ts): the drawing is the
     // page's rect, painted with its background, its elements inked for it; only the elements reaching it are drawn.
     // `writingSvg` goes over the page and under every element (an article's writing).
@@ -635,6 +643,7 @@ export function renderElementsToSvg(
             itemTypes: opts.itemTypes,
             sheets: opts.sheets,
             resolvePlanArt: opts.resolvePlanArt,
+            resolveTabWindow: opts.resolveTabWindow,
             tagColours,
           }),
     );

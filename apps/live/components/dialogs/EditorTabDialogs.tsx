@@ -42,6 +42,7 @@ export function EditorTabDialogs() {
     illustratePages,
     activeTab,
     tabs,
+    loadAllTabs,
     documentName,
     imageContext,
     setExportOpen,
@@ -110,6 +111,7 @@ export function EditorTabDialogs() {
           documentName={documentName}
           // A Dashboard's slots that show another tab draw it (docs/specs/026-plan/plan-tabs.md "Export").
           documentTabs={tabs}
+          loadTabs={loadAllTabs}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}

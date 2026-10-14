@@ -46,6 +46,7 @@ import {
   lucideFileText,
   lucideGlobe,
   lucideImage,
+  lucideAppWindow,
   lucideMoveRight,
   lucidePanelTop,
   lucideSquare,
@@ -1340,11 +1341,27 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: '9',
     noTint: true,
     needsImage: true,
-    dividerAfter: true,
     action: { type: 'image' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucideImage} />
+      </Glyph>
+    ),
+  },
+  {
+    // The tab window (docs/specs/009-elements/tab-window.md): another tab of the document, live, fitted inside it.
+    id: 'media:tab-window',
+    blurb: 'Another tab, live',
+    caption: 'Tab Window',
+    section: 'media',
+    label: 'Add Tab Window',
+    description:
+      'Tab Window. Shows another tab of this document, live and fitted inside it, so a slide stays up to date with the diagram it shows.',
+    dividerAfter: true,
+    action: { type: 'shape', kind: 'tab-window' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideAppWindow} />
       </Glyph>
     ),
   },

@@ -375,6 +375,15 @@ export const PAGE_CONTENTS_JUMPS = chart(
   { types: ['PageContentsJump', 'PageContentsReorder'], rising: 'neutral' },
 );
 
+// Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
+export const TAB_WINDOW_USE = chart(
+  'UI',
+  'Used',
+  'Tab Windows Opened',
+  'A tab opened from a Tab Window showing it, on a slide or page.',
+  { types: ['TabWindowOpen'], rising: 'neutral' },
+);
+
 // Building Illustrate pages: a layout placed, a page duplicated or moved.
 export const ILLUSTRATE_PAGE_BUILDING = chart(
   'Tab',
@@ -481,6 +490,7 @@ export const WHITEBOARDS: MetricStack = {
     ILLUSTRATE_PAGE_SETUP,
     ILLUSTRATE_PAGE_BUILDING,
     PAGE_CONTENTS_JUMPS,
+    TAB_WINDOW_USE,
     LOGO_TOOLS,
     LOGO_MIRROR_TWINS,
     LOGO_SWITCHES,

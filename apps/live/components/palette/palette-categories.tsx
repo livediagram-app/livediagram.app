@@ -278,7 +278,8 @@ export const PALETTE_CATEGORIES: {
     id: 'media',
     label: 'Media',
     group: 2,
-    description: 'Pictures and figures: an uploaded image, or a circular avatar.',
+    description:
+      'Pictures and figures: an uploaded image or a circular avatar; in Illustrate, embeds and a Tab Window onto another tab.',
     icon: <MediaTabIcon />,
   },
   {

@@ -67,7 +67,8 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     kind === 'entity' ||
     kind === 'page' ||
     kind === 'lane' ||
-    kind === 'browser'
+    kind === 'browser' ||
+    kind === 'tab-window'
   );
 }
 

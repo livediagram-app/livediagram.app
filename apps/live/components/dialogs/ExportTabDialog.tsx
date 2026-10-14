@@ -38,6 +38,7 @@ import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { useTabWindowExport } from './useTabWindowExport';
 import { usePlanImageExport } from './usePlanImageExport';
 import type { ExportFormatKey } from '@livediagram/plan-art';
 
@@ -112,9 +113,14 @@ type ExportTabDialogProps = {
   // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md "Export"): PDF, PNG and
   // SVG export all pages or one chosen page, each exactly its sheet. Absent elsewhere.
   pages?: LaidOutPage[];
-  // The document's tabs, for a Dashboard's slots that show one (docs/specs/026-plan/plan-tabs.md "Export").
+  // The document's tabs, for a Dashboard's slots that show one (docs/specs/026-plan/plan-tabs.md "Export") and for
+  // the tabs a tab window shows (docs/specs/009-elements/tab-window.md "Exports").
   documentTabs?: readonly Tab[];
+  // Fetch tabs' content (a tab window's tab, which arrives only when opened or fetched); resolves to the failures.
+  loadTabs?: (only: readonly string[]) => Promise<string[]>;
 };
+
+const NO_DOCUMENT_TABS: readonly Tab[] = [];
 
 // The format keys (plan-export-formats.ts): 'logo-kit' is a logo page's kit (docs/specs/007-editor/logo-pages.md
 // "Export"), while the tab has one.
@@ -247,6 +253,7 @@ export function ExportTabDialog({
   offerHiddenLayers = true,
   pages,
   documentTabs,
+  loadTabs,
 }: ExportTabDialogProps) {
   // A Board, Sheet or Dashboard tab offers only its formats and exports as laid out; a plan view anywhere draws as its
   // chart (docs/specs/026-plan/plan-tabs.md "Export").
@@ -350,6 +357,26 @@ export function ExportTabDialog({
   // three. Stable across renders so the panel can memoise on the toggles.
   const plain = planImage.plain;
   const planExtras = planImage.opts;
+  // Each tab window's tab, fetched and drawn once an image format is picked (docs/specs/009-elements/tab-window.md
+  // "Exports").
+  const windows = useTabWindowExport({
+    tab: imageTab,
+    tabs: documentTabs ?? NO_DOCUMENT_TABS,
+    loadTabs,
+    imageContext,
+    active: !!active && !isTextFormat(active),
+    items: planOpts,
+  });
+  const windowOpts = useMemo(
+    () =>
+      windows.resolveTabWindow
+        ? {
+            resolveTabWindow: windows.resolveTabWindow,
+            tabWindowFontIds: windows.tabWindowFontIds ?? [],
+          }
+        : {},
+    [windows],
+  );
   const renderPreview = useCallback(
     (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
       renderTabToSvg(imageTab, {
@@ -359,8 +386,9 @@ export function ExportTabDialog({
         ...(seeThrough ? { transparentPaper: true } : {}),
         ...planOpts,
         ...planExtras,
+        ...windowOpts,
       }),
-    [imageTab, plain, previewImages, page, seeThrough, planOpts, planExtras],
+    [imageTab, plain, previewImages, page, seeThrough, planOpts, planExtras, windowOpts],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -386,6 +414,7 @@ export function ExportTabDialog({
         page,
         ...planOpts,
         ...planExtras,
+        ...windowOpts,
       };
       if (pages && page) {
         const pageScope = scopeOf(format);
@@ -495,7 +524,8 @@ export function ExportTabDialog({
             label={activeCard!.title}
             // A page, or a Plan tab as laid out: no canvas to tilt or pattern.
             pageExport={!!pages || plain}
-            busy={busy}
+            // Held until each tab window's tab is drawn, so a download never misses one.
+            busy={busy || !windows.ready}
             error={error}
             checkerboard={seeThrough && page?.kind === 'logo'}
             // Illustrate mode has no Layers, so no "Hidden layers" option: hidden layers stay
@@ -507,7 +537,7 @@ export function ExportTabDialog({
               tabLayers(tab.layers).some((l) => !isLayerVisible(l))
             }
             renderPreview={renderPreview}
-            previewReady={previewReady && planImage.ready}
+            previewReady={previewReady && planImage.ready && windows.ready}
             onExport={(opts) => void runImageExport(active as ImageFormat, opts)}
             onBack={() => {
               setError(null);

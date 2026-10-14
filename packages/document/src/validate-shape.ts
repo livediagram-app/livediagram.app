@@ -225,7 +225,7 @@ const isSession = (v: unknown) =>
   (v.options === undefined || boundedArray(v.options, MAX_DATA_ARRAY));
 
 // Absent passes every check; a present value must satisfy its rule. Ids that point at nothing
-// (`portalTarget`, `mindParentId`) are legal: the element renders unpaired or as a root.
+// (`portalTarget`, `mindParentId`, `windowTabId`) are legal: the element renders unpaired or as a root.
 const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'titleOrientation', valid: (v) => v === 'upright', rule: oneOfRule(['upright']) },
   dataArray('railLabels'),
@@ -233,6 +233,8 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   dataArray('pieSlices'),
   dataArray('lineSeries'),
   { field: 'portalTarget', valid: isNonEmptyStr, rule: 'an element id' },
+  // A tab id that is gone is legal too: the window says its tab is not available.
+  { field: 'windowTabId', valid: isNonEmptyStr, rule: 'a tab id' },
   { field: 'mode', valid: isSelectionMode, rule: oneOfRule(SELECTION_MODES) },
   { field: 'session', valid: isSession, rule: 'a session with a known tool' },
   flag('revealed'),

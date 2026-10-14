@@ -1689,6 +1689,16 @@ export const articles: Article[] = [
     parentSlug: 'illustrate',
   },
   {
+    slug: 'tab-windows',
+    title: 'Tab Windows',
+    description: 'Another tab, live, fitted inside a slide or page.',
+    keywords:
+      'tab window windows live view embed mirror show another tab diagram on a slide reference up to date stale copy paste sync linked picture choose a tab open',
+    category: 'Canvas',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
+  },
+  {
     slug: 'slide-pages',
     title: 'Slide Pages',
     description: 'Landscape 16:9 or 4:3 pages with slide layouts, added to the deck in one press.',

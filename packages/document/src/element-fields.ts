@@ -80,6 +80,7 @@ export const ELEMENT_FIELD_NAMES = {
     'fillSwatch',
     'mode',
     'portalTarget',
+    'windowTabId',
     'session',
     'revealed',
     'pickerSource',
