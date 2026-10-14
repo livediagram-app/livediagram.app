@@ -9,7 +9,7 @@
 // Gated exactly like /api/tokens: a guest (X-Owner-Id only) or a no-auth
 // self-host has no verified Clerk identity, so nothing can be minted.
 import { badRequest, conflict, forbidden, json, notFound } from '../responses';
-import { type RouteContext } from './context';
+import { readOptionalBody, type RouteContext } from './context';
 import { mintApiToken } from '../db';
 import { MAX_NAME_LEN } from '../limits';
 
@@ -22,7 +22,7 @@ export async function handleOauthExchange(ctx: RouteContext): Promise<Response> 
   }
   const owner = clerkUserId;
 
-  const body = (await request.json().catch(() => ({}))) as {
+  const body = (await readOptionalBody(request)) as {
     clientName?: string;
     readOnly?: boolean;
   };

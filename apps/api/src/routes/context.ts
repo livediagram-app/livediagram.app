@@ -343,6 +343,16 @@ export async function deniedParticipate(
   return forbidden();
 }
 
+// A body whose every field is optional: the JSON object, or `{}` for an empty, unparseable or non-object body
+// (`null`, a string, an array), so reading a field off it never throws. An absent body is the documented
+// default on these routes, so anything that is not an object reads the same way.
+export async function readOptionalBody(request: Request): Promise<Record<string, unknown>> {
+  const body: unknown = await request.json().catch(() => null);
+  return typeof body === 'object' && body !== null && !Array.isArray(body)
+    ? (body as Record<string, unknown>)
+    : {};
+}
+
 // The request's JSON body as an object, or the 400 to return: `invalid json` when it doesn't
 // parse, `expected a JSON object` when it parses to anything but a plain object.
 export async function readBody(ctx: RouteContext): Promise<Record<string, unknown> | Response> {
