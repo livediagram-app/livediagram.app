@@ -903,18 +903,55 @@ export function placeElbowLabels(elements: Element[]): Element[] {
       }
       return null;
     };
+    // Beside run i rather than on it: the plate just off the line, either side, where it touches no box, frame border
+    // or heading, and no line at all. A wide label on a drop beside a neighbour's drop was struck through by it.
+    // The offset is along the run's left-hand normal, as the renderer reads labelOffset.
+    const besideSpot = (i: number): { f: number; offset: number } | null => {
+      const [p, q] = [pts[i]!, pts[i + 1]!];
+      if (lens[i]! < LABEL_CLEAR + LABEL_RUN_MARGIN) return null;
+      const u = { x: (q.x - p.x) / lens[i]!, y: (q.y - p.y) / lens[i]! };
+      const n = { x: -u.y, y: u.x };
+      const reach =
+        Math.abs(n.x) * (width / 2) + Math.abs(n.y) * (LABEL_CLEAR / 2) + LABEL_BESIDE_GAP;
+      for (const f of LABEL_SPOTS)
+        for (const sign of [1, -1]) {
+          const cx = p.x + (q.x - p.x) * f + n.x * reach * sign;
+          const cy = p.y + (q.y - p.y) * f + n.y * reach * sign;
+          const plate = { x: cx - width / 2, y: cy - LABEL_CLEAR / 2, width, height: LABEL_CLEAR };
+          const clear =
+            !boxes.some((b) => rectsMeet(plate, b)) &&
+            !holders.some(
+              ({ rect, heading }) =>
+                (rectsMeet(plate, rect) && !rectWithin(plate, rect)) ||
+                (heading !== null && rectsMeet(plate, heading)),
+            ) &&
+            !lines.some((l) =>
+              l.pts.some((pt, k) => k > 0 && segmentHitsRect(l.pts[k - 1]!, pt, plate)),
+            );
+          if (clear) return { f, offset: Number((reach * sign).toFixed(2)) };
+        }
+      return null;
+    };
     const holds = (i: number) => spot(i) !== null;
-    const seg =
+    const centred =
       [last, 0, ...byLength].find((i) => holds(i) && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
-      // Beside another labelled line is better than over a box; over another line better still than over a box.
-      byLength.find(holds) ??
-      byLength.find((i) => spot(i, false) !== null) ??
-      byLength[0]!;
+      // Beside another labelled line is better than over a box.
+      byLength.find(holds);
+    // No run holds it on the line: beside one, clear of every line, before over another line or a box.
+    const beside =
+      centred === undefined
+        ? byLength.map((i) => ({ i, at: besideSpot(i) })).find(({ at }) => at !== null)
+        : undefined;
+    const seg =
+      centred ?? beside?.i ?? byLength.find((i) => spot(i, false) !== null) ?? byLength[0]!;
     const before = lens.slice(0, seg).reduce((s, l) => s + l, 0);
-    const along = (spot(seg) ?? spot(seg, false) ?? 0.5) * lens[seg]!;
+    const along = (beside?.at?.f ?? spot(seg) ?? spot(seg, false) ?? 0.5) * lens[seg]!;
     placed.set(a.id, {
       ...a,
-      labelOffset: { t: Number(((before + along) / total).toFixed(4)), offset: 0 },
+      labelOffset: {
+        t: Number(((before + along) / total).toFixed(4)),
+        offset: beside?.at?.offset ?? 0,
+      },
       labelMaxWidth: Math.ceil(width),
     });
   }
@@ -957,6 +994,8 @@ const LABEL_CLEAR = 22;
 const LABEL_SPOTS = [0.5, 0.25, 0.75, 1 / 3, 2 / 3] as const;
 // The gap a tucked label keeps from the box at its run's end.
 const LABEL_TUCK = 4;
+// How far a label set beside its line keeps off it, in px.
+const LABEL_BESIDE_GAP = 6;
 // Room a run keeps beyond its label, so the label clears the boxes at the run's ends.
 const LABEL_RUN_MARGIN = 16;
 
