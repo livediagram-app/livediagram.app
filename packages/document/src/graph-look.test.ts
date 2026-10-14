@@ -470,6 +470,30 @@ describe('mindmap', () => {
   });
 });
 
+describe('cycle tangents', () => {
+  it('leaves and enters each stop along the ring, so every arc bows out alike', () => {
+    const els = lay({
+      style: 'cycle',
+      nodes: ['n', 'e', 's', 'w'].map((id) => ({ id, label: id })),
+      edges: [
+        { from: 'n', to: 'e' },
+        { from: 'e', to: 's' },
+        { from: 's', to: 'w' },
+        { from: 'w', to: 'n' },
+      ],
+    });
+    const ends = (from: string, to: string) => {
+      const a = arrowTo(els, from, to);
+      return [a.from, a.to].map((p) => (p.kind === 'pinned' ? p.anchor : null));
+    };
+    // Clockwise from the top: out of the top stop's right, into the right stop's top, and so on round.
+    expect(ends('n', 'e')).toEqual(['e', 'n']);
+    expect(ends('e', 's')).toEqual(['s', 'e']);
+    expect(ends('s', 'w')).toEqual(['w', 's']);
+    expect(ends('w', 'n')).toEqual(['n', 'w']);
+  });
+});
+
 describe('mindmap sizes', () => {
   const map = (rootLabel: string) =>
     lay({
