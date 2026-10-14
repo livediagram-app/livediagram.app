@@ -10,6 +10,9 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/lib/canvas-gesture.ts`                         | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`          |
 | `apps/live/components/canvas/CanvasZoomContext.tsx`       | `CanvasZoomProvider`, `useCanvasZoom()`, `CounterScaled` (a div reading the zoom itself) |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`     | Stable per-element props; per-arrow frame and holes; the grid                            |
+| `apps/live/components/canvas/CanvasElementList.tsx`       | Every element in paint order, memoised so an editor render that changes none skips them  |
+| `apps/live/hooks/canvas/useLayerDragPreview.ts`           | The layer's preview store: a drag frame renders each previewed element, not the layer    |
+| `apps/live/hooks/canvas/useSnapGuideState.ts`             | `SnapGuideStore`: the drag's snap guides, read only by `CanvasChrome`                    |
 | `apps/live/components/canvas/element-layer-props.ts`      | `idBound`, `useStableCollab`: identity-stable per-element objects                        |
 | `apps/live/components/canvas/arrow-view-frame.ts`         | `ArrowViewFrame` and `sameArrowViewFrame`                                                |
 | `apps/live/components/canvas/ArrowView.tsx`               | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                 |
@@ -123,6 +126,27 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - Invariants: a `Canvas` render that changes no element, no selection and no zoom renders no
   element view; a move of one element renders that element, the arrows pinned to it, and arrows
   whose frame or holes changed; a zoom renders only zoom consumers.
+
+### A drag frame renders what moved
+
+- A drag preview frame renders no `Canvas` and no `CanvasElementsLayer`: each element reads its own
+  entry from the layer's preview store, and the selection chrome reads the preview itself
+  ([Drag preview blueprint](drag-preview.md) "Drawing"). Before, every frame re-rendered the layer,
+  and React walked all 1,000 of the reference board's element views (memo comparisons and context
+  checks): 50-90 ms a frame at the reference speed.
+- The drag's snap guides (alignment, equal spacing, arrow-endpoint markers) live in a
+  `SnapGuideStore` per editor (`useSnapGuideState`), not in the editor's state: a dense board
+  changes them on most frames of a drag, and each change used to render the whole editor.
+  `useEditorDrag` writes it through the rAF-coalesced `scheduleGuides` / `scheduleSnapTargets`;
+  the editor hands the store down as one stable prop, and only `CanvasChrome` reads it
+  (`useSnapGuides`), so a new set renders that chrome alone.
+- The elements themselves are listed by `CanvasElementList`, memoised, with every prop
+  identity-stable across editor renders that change nothing it draws (`useInsertShift` returns one
+  object while its answers hold). A press or a release that renders the editor (the drag state
+  beginning or ending) renders the layer but walks none of the board's element slots.
+- Invariant: between the press and the release of a move, the editor root, `Canvas` and the element
+  layer do not render; at the press and the release, the element list does not render unless an
+  element changed.
 
 ### The element grid
 
@@ -478,24 +502,24 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 
 ## Testing
 
-| Spec rule                                        | Test                                                                                                                                            |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| A still canvas does nothing                      | `e2e/canvas-still.spec.ts`: no frame requested over a still second; probe idle row                                                              |
-| An observer never notifies itself                | `useQuickStylePlacement.test.tsx` (shipped)                                                                                                     |
-| A pan or zoom moves the canvas, not its elements | `CanvasElementsLayer.renders.test.tsx`: re-render with the same inputs renders no view; a zoom renders zoom consumers only                      |
-| No layout read in a gesture frame                | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                                     |
-| Selection chrome hidden while moving             | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                                     |
-| The Map redraws when a gesture ends              | `useSettledElements.test.tsx`: frozen, released, throttled, trailing; `Minimap.test.tsx`: held mid-move                                         |
-| Questions about neighbours ask the index         | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                                             |
-| Whole-board passes linear and once               | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                                               |
-| A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; `element-layer-props.collab.test.tsx`                                    |
-| Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                                        |
-| Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                                       |
-| Budget evaluation and table                      | `budget.test.ts`                                                                                                                                |
-| Opening counts every long frame                  | `interactive.test.ts`: tasks and frames merged, overlaps, a gap of exactly 500 ms, nothing after the response                                   |
-| Opening animates nothing across the board        | `canvas-motion.test.tsx`: arriving elements do not pop and arm no timer, later ones pop; `canvas-motion.test.ts`: the fade rule omits the world |
-| Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                 |
-| The budget holds                                 | The nightly probe                                                                                                                               |
+| Spec rule                                        | Test                                                                                                                                                                                                                                                       |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A still canvas does nothing                      | `e2e/canvas-still.spec.ts`: no frame requested over a still second; probe idle row                                                                                                                                                                         |
+| An observer never notifies itself                | `useQuickStylePlacement.test.tsx` (shipped)                                                                                                                                                                                                                |
+| A pan or zoom moves the canvas, not its elements | `CanvasElementsLayer.renders.test.tsx`: re-render with the same inputs renders no view; a zoom renders zoom consumers only                                                                                                                                 |
+| No layout read in a gesture frame                | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                                                                                                                                                |
+| Selection chrome hidden while moving             | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                                                                                                                                                |
+| The Map redraws when a gesture ends              | `useSettledElements.test.tsx`: frozen, released, throttled, trailing; `Minimap.test.tsx`: held mid-move                                                                                                                                                    |
+| Questions about neighbours ask the index         | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                                                                                                                                                        |
+| Whole-board passes linear and once               | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                                                                                                                                                          |
+| A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; a preview frame renders no layer; `useLayerDragPreview.test.ts`; `useSnapGuideState.test.ts`: a guide set tells its readers only on a change; `element-layer-props.collab.test.tsx` |
+| Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                                                                                                                                                   |
+| Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                                                                                                                                                  |
+| Budget evaluation and table                      | `budget.test.ts`                                                                                                                                                                                                                                           |
+| Opening counts every long frame                  | `interactive.test.ts`: tasks and frames merged, overlaps, a gap of exactly 500 ms, nothing after the response                                                                                                                                              |
+| Opening animates nothing across the board        | `canvas-motion.test.tsx`: arriving elements do not pop and arm no timer, later ones pop; `canvas-motion.test.ts`: the fade rule omits the world                                                                                                            |
+| Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                                                                                                                            |
+| The budget holds                                 | The nightly probe                                                                                                                                                                                                                                          |
 
 ## Constants and configuration
 

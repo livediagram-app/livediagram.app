@@ -50,7 +50,6 @@ import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
 import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
 import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
-import { usePreviewedElements } from '@/hooks/canvas/usePreviewedElements';
 import { useSelectionOf, useSelectionStore } from '@/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import type { Selection } from '@/lib/selection-store';
@@ -272,9 +271,9 @@ function CanvasView(props: CanvasProps) {
 
   // Selection-display derivation (primary element, bounds, and every
   // "show this chrome?" predicate) lives in lib/canvas-selection.ts so
-  // it's unit-tested. Memoised because it walks the elements. It reads the elements as a drag in
-  // progress shows them (docs/specs/008-canvas/drag-preview.md), so the union handles follow a resize.
-  const selectionElements = usePreviewedElements(elements, props.activeTabId ?? '');
+  // it's unit-tested. Memoised because it walks the elements. The chrome that derives it lays a drag in
+  // progress over these elements itself (useCanvasSelectionView), so a preview frame renders the
+  // chrome and not this canvas (docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved").
   // An object in an article's writing (a chart, an image, a table) connects to nothing: no
   // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
   // selection derivation applies, so the canvas itself still doesn't read the selection.
@@ -283,7 +282,7 @@ function CanvasView(props: CanvasProps) {
     if (!articlePages?.some((p) => p.flow)) return undefined;
     return (el: Element) => {
       if (isDrawingElement(el)) return false;
-      const at = zoneAnchorOf(el, selectionElements);
+      const at = zoneAnchorOf(el, elements);
       return articlePages.some(
         (p) =>
           p.flow &&
@@ -293,10 +292,10 @@ function CanvasView(props: CanvasProps) {
           at.y <= p.rect.y + p.rect.height,
       );
     };
-  }, [articlePages, selectionElements]);
+  }, [articlePages, elements]);
   const selectionInput = useMemo<CanvasSelectionInput>(
     () => ({
-      elements: selectionElements,
+      elements,
       editingId,
       isPaintMode,
       tabLocked,
@@ -307,7 +306,7 @@ function CanvasView(props: CanvasProps) {
       plusBlocked,
     }),
     [
-      selectionElements,
+      elements,
       editingId,
       isPaintMode,
       tabLocked,

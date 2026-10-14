@@ -77,7 +77,9 @@ A gesture's cost scales with what it changes and what is on screen, never with t
 - **A move re-renders what moved.** A move, resize or reshape draws from a preview and writes the
   document once, on release ([Drag preview](drag-preview.md)): the moved elements and the arrows
   that depend on them re-render each frame, and nothing derived from the rest of the board is
-  recomputed.
+  recomputed. A preview frame renders neither the canvas nor the element layer: each element view
+  reads its own part of the preview, so a frame's work follows what moved, not the board, and only
+  what follows the moved selection (its chrome) reads the whole preview.
 - **The canvas re-renders only for what it shows.** The editor around the canvas re-renders for
   many reasons (a panel opening, a toast, a collaborator's presence, the selection); none of them
   re-renders the canvas unless something the canvas shows changed. The canvas's event handlers keep
