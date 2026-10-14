@@ -211,7 +211,7 @@ describe('charts through change_sheet', () => {
     );
     expect(result.applied[0]).toMatch(/; 2 charts$/);
     expect(result.applied[1]).toBe('placed 2 charts');
-    expect(sent[0]).toMatchObject({ summary: 'Add 2 charts' });
+    expect(sent[0]).toMatchObject({ summary: 'Charts of the sheet' });
     expect(sent[0]!.operations[1]!.element.chartSource).toMatchObject({ cols: expect.any(Array) });
   });
 
@@ -240,6 +240,82 @@ describe('charts through change_sheet', () => {
         'mcp',
       ),
     ).rejects.toThrow('network');
+  });
+});
+
+describe('a sheet’s charts through later changes', () => {
+  const CHART = {
+    id: 'el-chart',
+    type: 'shape',
+    shape: 'pie-chart',
+    x: 0,
+    y: 0,
+    width: 300,
+    height: 200,
+    chartSource: { sheetId: 'sheet_blank1', range: { r1: 'x', c1: 'y', r2: 'x', c2: 'y' } },
+    sheetAnchor: { x: 250, y: 30 },
+  };
+
+  it('keeps a chart on its cell when a column goes in before it, and clears the sheet’s charts', async () => {
+    const { api, sent } = setup({ elements: [SHEET_EL, CHART] });
+    const two = setup({ elements: [SHEET_EL, CHART, { ...CHART, id: 'el-chart-2' }] });
+    const both = await changeSheet(
+      two.api,
+      DOC_A,
+      { sheet: 'Sheet 1', changes: [{ op: 'resize', cols: 'A', px: 200 }] },
+      'mcp',
+    );
+    expect(both.applied[1]).toBe('moved 2 charts back onto the cells they sit on');
+    const inserted = await changeSheet(
+      api,
+      DOC_A,
+      { sheet: 'Sheet 1', changes: [{ op: 'insert_cols', at: 'A', side: 'before' }] },
+      'mcp',
+    );
+    expect(inserted.applied).toEqual([
+      'inserted 1 column before column A',
+      'moved a chart back onto the cells it sits on',
+    ]);
+    expect(sent[0]!.operations).toEqual([
+      { op: 'set', target: 'el-chart', fields: { sheetAnchor: { x: 370, y: 30 } } },
+    ]);
+    const cleared = await changeSheet(
+      api,
+      DOC_A,
+      { sheet: 'Sheet 1', changes: [{ op: 'clear_charts' }, { op: 'resize', cols: 'A', px: 300 }] },
+      'mcp',
+    );
+    expect(cleared.applied).toEqual([
+      'cleared the sheet’s charts',
+      'sized column A to 300 px',
+      'removed a chart',
+    ]);
+    expect(sent[1]!.operations).toEqual([{ op: 'rm', target: 'el-chart' }]);
+  });
+
+  it('clears only the charts reading a range, refuses a range it cannot read, and sends nothing with nothing to do', async () => {
+    const { api, sent } = setup({ elements: [SHEET_EL, CHART] });
+    const none = await changeSheet(
+      api,
+      DOC_A,
+      {
+        sheet: 'Sheet 1',
+        changes: [
+          { op: 'clear_charts', range: 'A1:B2' },
+          { op: 'resize', rows: '40', px: 30 },
+        ],
+      },
+      'mcp',
+    );
+    expect(none.applied[0]).toBe('cleared the charts reading A1:B2');
+    expect(sent).toEqual([]);
+    const bad = await changeSheet(
+      api,
+      DOC_A,
+      { sheet: 'Sheet 1', changes: [{ op: 'clear_charts', range: '??' }] },
+      'mcp',
+    );
+    expect(bad.refusal).toMatchObject({ code: 'range_invalid' });
   });
 });
 

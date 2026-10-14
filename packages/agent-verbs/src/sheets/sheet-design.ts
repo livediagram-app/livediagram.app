@@ -101,7 +101,7 @@ export const DESIGN_LOOK_DEFAULT: SheetLook = 'banded';
 // The blank row between stacked blocks.
 const BLOCK_GAP_ROWS = 1;
 // The deepest main table whose header a design freezes by default: one lower down would freeze most of the view.
-const FREEZE_HEADER_ROW_MAX = 8;
+const FREEZE_HEADER_ROW_MAX = 12;
 
 const refuse = (code: string, message: string): SheetRefusal => ({ ok: false, code, message });
 

@@ -167,7 +167,7 @@ describe('the filter', () => {
 });
 
 describe('inserted rows and columns', () => {
-  it('take the formats of the row above them, or below at the top, and of the column left of them', () => {
+  it('take the formats of the row above them, or below at the top, and the look of the column left of them', () => {
     const b = book();
     b.run({
       op: 'set',
@@ -198,8 +198,11 @@ describe('inserted rows and columns', () => {
     });
     b.run({ op: 'insert_cols', at: 'B', side: 'after' });
     const u = b.at();
-    expect(u.cells.get(cellKey(u.layout.rows[3]!, u.layout.cols[2]!))?.format).toMatchObject({
-      nf: 'currency',
+    // A new column takes its neighbour's look, not its number format; a cell with only a number format gives none.
+    expect(u.cells.get(cellKey(u.layout.rows[1]!, u.layout.cols[2]!))?.format).toMatchObject({
+      b: true,
+      bg: '#e0f2fe',
     });
+    expect(u.cells.get(cellKey(u.layout.rows[3]!, u.layout.cols[2]!))).toBeUndefined();
   });
 });

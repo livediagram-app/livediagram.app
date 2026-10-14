@@ -111,7 +111,7 @@ const chartPalette = z
   .enum(CHART_PALETTES.map((p) => p.id) as [ChartPaletteId, ...ChartPaletteId[]])
   .optional()
   .describe(
-    'Its colours. Left out: the family of its table’s header (a design’s accent: emerald and teal forest; sky, blue, indigo and cyan ocean; amber and orange sunset; rose, violet, purple and fuchsia berry), else vivid.',
+    'Its colours. Left out: the family of its table’s header (a design’s accent: emerald and teal forest; sky, blue, indigo and cyan ocean; amber and orange sunset; rose, violet, purple and fuchsia berry), else vivid; a line, area or scatter chart of several series vivid, so its lines tell apart.',
   );
 
 const designArg = z
@@ -137,7 +137,7 @@ const designArg = z
       .array(
         z.discriminatedUnion('kind', [
           z.object({
-            kind: z.literal('table'),
+            kind: z.literal('table').describe('A block is a table, fields or a note.'),
             at: z
               .string()
               .optional()
@@ -202,7 +202,7 @@ const designArg = z
               ),
           }),
           z.object({
-            kind: z.literal('fields'),
+            kind: z.literal('fields').describe('Labels and values, two columns.'),
             at: z.string().optional().describe('Its first cell; stacked when left out.'),
             heading: z.string().optional().describe('A ruled heading over them.'),
             items: z
@@ -222,7 +222,7 @@ const designArg = z
               .min(1),
           }),
           z.object({
-            kind: z.literal('note'),
+            kind: z.literal('note').describe('One quiet line.'),
             at: z.string().optional(),
             text: z.string().describe('A quiet italic line.'),
           }),
@@ -246,7 +246,7 @@ const designArg = z
       .max(100)
       .optional()
       .describe(
-        'Rows frozen at the top; by default through the header of the table with the most rows, when it starts by row 8.',
+        'Rows frozen at the top; by default through the header of the table with the most rows, when it starts by row 12.',
       ),
   })
   .describe('A sheet laid out as a template is, on an empty sheet.');
@@ -286,7 +286,8 @@ const sheetChange = z.discriminatedUnion('op', [
     op: z
       .literal('insert_rows')
       .describe(
-        'Insert rows. They take the formats of the row above them (below, at the top), so a table keeps its look.',
+        'Insert rows. They take the formats of the row above them (below, at the top), so a table keeps its look. ' +
+          'Formulas, rules and charts reading a range grow with rows inserted inside it, not at its edge.',
       ),
     at: z.number().int().min(1).describe('The row number they go beside (1 is the first row).'),
     count: countArg,
@@ -296,7 +297,9 @@ const sheetChange = z.discriminatedUnion('op', [
     op: z
       .literal('insert_cols')
       .describe(
-        'Insert columns. They take the formats of the column left of them (right, at the left edge).',
+        'Insert columns. They take the look of the column left of them (right, at the left edge), not its number ' +
+          'format. Formulas, rules and charts reading a range grow with columns inserted inside it, not at its edge; ' +
+          'charts keep to the cells they sit on.',
       ),
     at: z.string().describe('The column letter they go beside ("C").'),
     count: countArg,
@@ -341,7 +344,9 @@ const sheetChange = z.discriminatedUnion('op', [
     rule: z
       .discriminatedUnion('type', [
         z.object({
-          type: z.literal('dropdown'),
+          type: z
+            .literal('dropdown')
+            .describe('A rule is a dropdown, dropdown_range, checkbox, number, date or text.'),
           options: z.array(z.string()).min(1).max(500).describe('The values offered, in order.'),
           colors: z
             .array(z.string().nullable())
@@ -470,6 +475,14 @@ const sheetChange = z.discriminatedUnion('op', [
     width: z.number().optional().describe(`px, default ${SHEET_CHART_SIZE.width}.`),
     height: z.number().optional().describe(`px, default ${SHEET_CHART_SIZE.height}.`),
     palette: chartPalette,
+  }),
+  z.object({
+    op: z
+      .literal('clear_charts')
+      .describe(
+        'Take the sheet’s charts off its tab: those reading cells of a range, or every one.',
+      ),
+    range: rangeArg.optional().describe('Only the charts reading cells of this range.'),
   }),
   z.object({
     op: z

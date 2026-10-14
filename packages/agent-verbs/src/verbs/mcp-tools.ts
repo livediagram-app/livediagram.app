@@ -352,7 +352,7 @@ export const mcpChangeSheet = mcpTool('change_sheet', {
     'resize {cols or rows, px or fit}, insert_rows {at, count}, insert_cols {at, count}, delete_rows {rows}, ' +
     'delete_cols {cols}, rename {title}, sort {by, range}, freeze {rows, cols}, filter {range}, validate {range, ' +
     'rule} (dropdowns, checkboxes, number, date and text rules), conditional_format {range, when or scale, style}, ' +
-    'chart {type, range} (a chart over the cells, read live). Cells by A1, rows by number, columns by letter. A ' +
+    'chart {type, range} (a chart over the cells, read live), clear_charts {range}. Cells by A1, rows by number, columns by letter. A ' +
     'formula that cannot be read is refused, naming the cell. Everyone with the document open sees each change at ' +
     'once.',
   inputSchema: changeSheetShape,

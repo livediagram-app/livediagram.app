@@ -75,6 +75,17 @@ export function paletteOfHeader(fill: string | undefined): ChartPaletteId | unde
   return accent ? accentChartPalette(accent) : undefined;
 }
 
+// The palette a chart takes when none is given: its table's family for a chart of one series, but none (the vivid
+// default, whose colours tell apart) for lines, areas and points of several series, which one family's near shades
+// would not.
+export function defaultPalette(
+  type: ChartType,
+  series: number,
+  family: ChartPaletteId | undefined,
+): ChartPaletteId | undefined {
+  return !ONE_SERIES_TYPES.includes(type) && series > 1 ? undefined : family;
+}
+
 // The header names of a range's value columns: its columns past the first (only those picked, when some are).
 function valueNames(wb: Workbook, sheetId: string, r: number, cols: readonly number[]): string[] {
   return cols.slice(1).map((c) => {
@@ -151,7 +162,9 @@ export function designCharts(
       anchor: anchorAt(layout, at),
       width: sized(t.chart.width, SHEET_CHART_SIZE.width, CHART_MIN.width),
       height: sized(t.chart.height, SHEET_CHART_SIZE.height, CHART_MIN.height),
-      palette: t.chart.palette ?? palette,
+      palette:
+        t.chart.palette ??
+        defaultPalette(t.chart.type, (t.chart.columns?.length || t.head.length) - 1, palette),
     });
   }
   return out;
@@ -191,16 +204,18 @@ export function buildChartChange(
   const cols = change.columns?.length
     ? change.columns.map((l) => columnIndex(l.trim()))
     : Array.from({ length: g.c2 - g.c1 + 1 }, (_, i) => g.c1 + i);
+  const values = valueNames(wb, sheetId, g.r1, cols);
   const palette =
     change.palette ??
-    paletteOfHeader(sheet.cells.get(cellKey(layout.rows[g.r1]!, layout.cols[g.c1]!))?.format?.bg);
+    defaultPalette(
+      change.type,
+      values.length,
+      paletteOfHeader(sheet.cells.get(cellKey(layout.rows[g.r1]!, layout.cols[g.c1]!))?.format?.bg),
+    );
   return {
     ok: true,
     writes: [],
-    line: `charted ${formatRange(g)} as a ${change.type} chart at ${change.at ?? `the cell right of it`}${seriesNote(
-      change.type,
-      valueNames(wb, sheetId, g.r1, cols),
-    )}`,
+    line: `charted ${formatRange(g)} as a ${change.type} chart at ${change.at ?? `the cell right of it`}${seriesNote(change.type, values)}`,
     charts: [
       {
         type: change.type,

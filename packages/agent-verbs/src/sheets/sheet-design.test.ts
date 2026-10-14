@@ -220,7 +220,7 @@ describe('a design', () => {
     const built = buildDesign(
       wb,
       sheet.id,
-      { heading: 'Low', blocks: [{ kind: 'table', at: 'A12', head: ['A'], rows: [] }] },
+      { heading: 'Low', blocks: [{ kind: 'table', at: 'A14', head: ['A'], rows: [] }] },
       { dark: false },
       rand,
     );

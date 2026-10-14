@@ -75,12 +75,21 @@ export type SheetChange =
   | SheetShapeChange
   // A sheet laid out as a template is (sheet-design.ts), and a chart over cells (sheet-charts.ts).
   | { op: 'design'; design: SheetDesignInput }
-  | SheetChartChange;
+  | SheetChartChange
+  | { op: 'clear_charts'; range?: string };
 
 // What one change sends, the line that says what it did, and the charts it puts over the cells (for the caller to add
 // to the tab).
 export type BuiltChange =
-  { ok: true; writes: SheetWrite[]; line: string; charts?: SheetChartOut[] } | SheetRefusal;
+  | {
+      ok: true;
+      writes: SheetWrite[];
+      line: string;
+      charts?: SheetChartOut[];
+      // The charts to take off the tab: those reading a range's cells, or (null) every one of the sheet's.
+      clearCharts?: GridRange | null;
+    }
+  | SheetRefusal;
 
 // What a change needs of where its sheet is drawn: whether its tab's canvas is dark (a design's tints follow it).
 export type SheetChangeContext = { dark?: boolean };
@@ -133,8 +142,12 @@ function formatsCopied(
     if (!cell.format) continue;
     const { r, c } = splitCellKey(key);
     if ((axis === 'r' ? r : c) !== id) continue;
-    for (const made of ids)
-      out.push(axis === 'r' ? { r: made, c, f: cell.format } : { r, c: made, f: cell.format });
+    // A new column takes its neighbour's look but not its number format: a column of amounts beside dates is not
+    // dates. A new row is the same columns, so it takes all of it.
+    const { nf: _nf, dp: _dp, cur: _cur, nc: _nc, ...look } = cell.format;
+    const f = axis === 'r' ? cell.format : look;
+    if (Object.keys(f).length === 0) continue;
+    for (const made of ids) out.push(axis === 'r' ? { r: made, c, f } : { r, c: made, f });
   }
   return out;
 }
@@ -237,7 +250,8 @@ export function buildSheetChange(
       const made = ids.length;
       const where = rows ? `row ${at + 1}` : `column ${columnLetters(at)}`;
       // The new rows (columns) take the formats of the one before them, or after them at the very top (left), as a
-      // spreadsheet's do: rows inserted above a total row look like the body row over them, not the total.
+      // spreadsheet's do: rows inserted above a total row look like the body row over them, not the total. Columns
+      // take the look only (formatsCopied).
       const before = side === 'before' ? at - 1 : at;
       const source = before >= 0 ? before : at;
       const cells = formatsCopied(sheet, rows ? 'r' : 'c', source, ids);
@@ -334,6 +348,18 @@ export function buildSheetChange(
       return buildDesign(wb, sheetId, change.design, { dark: !!context.dark }, rand);
     case 'chart':
       return buildChartChange(wb, sheetId, change);
+    case 'clear_charts': {
+      if (change.range === undefined)
+        return { ok: true, writes: [], line: 'cleared the sheet’s charts', clearCharts: null };
+      const range = parseRangeText(change.range);
+      if (!range) return badRange(change.range);
+      return {
+        ok: true,
+        writes: [],
+        line: `cleared the charts reading ${formatRange(range)}`,
+        clearCharts: range,
+      };
+    }
     case 'freeze': {
       if (change.rows === undefined && change.cols === undefined)
         return refuse('write_invalid', 'Freeze names rows, cols or both (0 unfreezes).');
