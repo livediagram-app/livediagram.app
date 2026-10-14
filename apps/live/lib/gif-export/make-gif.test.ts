@@ -79,6 +79,18 @@ describe('making the GIF', () => {
     expect(d.encoder.finish).not.toHaveBeenCalled();
   });
 
+  it('discards the file when cancelled while it is being finished', async () => {
+    const controller = new AbortController();
+    const d = deps([snap(true), snap(true)]);
+    d.encoder.finish = vi.fn(async () => {
+      controller.abort();
+      return { bytes: new Uint8Array([1]), written: 1 };
+    });
+    await expect(makeGif(input({ signal: controller.signal }), d)).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+  });
+
   it('passes an export error on as it is, and anything else as failed', async () => {
     const tainted = deps([snap(true), snap(true)], () => {
       throw new GifExportError('tainted');

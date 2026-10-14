@@ -57,6 +57,8 @@ export async function makeGif(
     }
     stop();
     const { bytes, written } = await encoder.finish();
+    // A Cancel while the file was being finished still discards it.
+    stop();
     debugLog(
       `[gif-export] done frames=${written} bytes=${bytes.length} ms=${Math.round(performance.now() - started)}`,
     );
