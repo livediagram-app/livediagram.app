@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { ICON_CATALOG_1 } from './icon-catalog-1';
 import { iconPrimMarkup } from './markup';
-import { resolveIconExportArt } from './resolve';
+import {
+  resolveIconExportArt,
+  resolveIconPreviewArt,
+  resolveStickerArt,
+  resolveStickerPreviewArt,
+} from './resolve';
+import { STICKER_CATALOG } from './sticker-catalog';
 import { TECH_ICON_CATALOG } from './tech-icon-catalog';
 
 describe('resolveIconExportArt', () => {
@@ -79,5 +85,20 @@ describe('iconPrimMarkup', () => {
     const markup = iconPrimMarkup({ t: 'text', text: '<&>', x: 12, y: 12, size: 20 });
     expect(markup).toContain('>&lt;&amp;&gt;</text>');
     expect(markup).not.toContain('<&');
+  });
+});
+
+// docs/specs/015-api/mcp-server.md §5: a preview with no emoji font draws an emoji as a labelled disc.
+describe('the preview resolvers', () => {
+  it('draw an emoji icon or sticker as its placeholder, and every other as ever', () => {
+    expect(resolveIconPreviewArt('emoji-fire')).toMatchObject({
+      colored: true,
+      markup: expect.stringContaining('>emoji<'),
+    });
+    expect(resolveIconPreviewArt('clock')).toEqual(resolveIconExportArt('clock'));
+    expect(resolveIconPreviewArt('nope')).toBeUndefined();
+    expect(resolveStickerPreviewArt('emoji-thumbs-up')?.markup).toContain('>emoji<');
+    const badge = STICKER_CATALOG.find((s) => s.kind !== 'emoji')!;
+    expect(resolveStickerPreviewArt(badge.id)).toEqual(resolveStickerArt(badge.id));
   });
 });

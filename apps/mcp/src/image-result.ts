@@ -29,7 +29,11 @@ import {
 import { planTabKindOf } from '@livediagram/plan-art';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
-import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
+// The preview resolvers: an emoji (no emoji font in a Worker) draws as a labelled disc, not missing-glyph boxes.
+import {
+  resolveIconPreviewArt as resolveIconExportArt,
+  resolveStickerPreviewArt as resolveStickerArt,
+} from '@livediagram/icons/resolve';
 import { svgToPngBase64 } from './render';
 import { planPreviewFor } from './plan-preview';
 import { apiFetch, apiJson } from './api';

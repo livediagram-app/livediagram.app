@@ -146,7 +146,8 @@ export const mcpSearchIcons = mcpTool('search_icons', {
   description:
     'Find icons by what they show, best match first: the line-art set and the Technology set ' +
     '(brand, cloud and database marks such as aws-lambda, postgresql, kafka). Each hit\u2019s id is ' +
-    'what an element\u2019s "iconId" takes; an iconId that names no icon is refused.',
+    'what an element\u2019s "iconId" takes; an iconId that names no icon is refused. An emoji- id draws ' +
+    'in the viewer\u2019s colour emoji, which a PNG preview cannot draw: it shows a disc labelled emoji there.',
   inputSchema: searchIconsShape,
   outputSchema: searchIconsOutput,
 });
