@@ -143,5 +143,7 @@ describe('sticky border', () => {
 
   it('gives a note a new fill the borderless look', () => {
     expect(after({ fillColor: '#bae6fd' }).el.strokeColor).toBe('transparent');
+    // Named by its alias too.
+    expect(after({ fill: '#bae6fd' }).el.strokeColor).toBe('transparent');
   });
 });
