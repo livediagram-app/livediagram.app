@@ -67,3 +67,36 @@ describe('inline icons in an export', () => {
     );
   });
 });
+
+describe('a rich label beside its icon', () => {
+  it("keeps a person card's role on one line when it is the longest line", async () => {
+    const { renderElementsToSvg, personCardText } = await import('./index');
+    const card = (id: string, name: string, role: string, x: number) => ({
+      id,
+      type: 'shape',
+      shape: 'square',
+      x,
+      y: 0,
+      width: 223,
+      height: 86,
+      textSize: 'sm',
+      iconId: 'user',
+      ...personCardText(name, role),
+    });
+    const svg = renderElementsToSvg(
+      {
+        id: 't',
+        name: 'T',
+        elements: [
+          card('g', 'Grace', 'People Lead', 0),
+          card('j', 'Jonas', 'Software Engineer', 300),
+        ],
+      } as never,
+      { resolveIconArt: () => '<path d="M0 0h1"/>' } as never,
+    );
+    const lines = [...svg.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/g)].map((m) =>
+      m[1]!.replace(/<[^>]+>/g, '|').replace(/\|+/g, '|'),
+    );
+    expect(lines).toEqual(['|Grace|People Lead|', '|Jonas|Software Engineer|']);
+  });
+});
