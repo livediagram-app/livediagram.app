@@ -864,6 +864,15 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   --ld-timeline-neutral-soft: rgb(148 163 184 / 0.06);
 }
 
+/* The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
+   elements"): the canvas's cursor is inherited, and changes on a tool switch, a pan and a stroke
+   landing; stopping it here means such a change restyles this one node, not every element. Each
+   element sets its own cursor where it takes a press. A pen or path cursor that must show over the
+   elements passes through on purpose (the rule below matches the plane too). */
+[data-element-plane] {
+  cursor: auto;
+}
+
 /* A whiteboard pen in hand draws wherever it presses (docs/specs/023-draw-mode/draw-mode.md "Pens"):
    elements, handles and labels under it keep the pen cursor instead of their own. A path in its
    edit mode owns the cursor the same way (docs/specs/023-draw-mode/path-tool.md "Cursors in edit
