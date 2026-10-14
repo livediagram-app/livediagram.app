@@ -151,6 +151,23 @@ describe('hub, onion and chevrons (round 2)', () => {
     expect(Math.hypot(sp.x1 - l.centre.x, sp.y1 - l.centre.y)).toBeCloseTo(l.hubR, 5);
   });
 
+  it('keeps the hub clear of its satellites at every size down to the smallest, spokes running outward', () => {
+    for (const side of [20, 30, 40, 60, 80, 100, 120, 200, 340])
+      for (const n of [3, 5, 8]) {
+        const l = hubLayout(side, side, n);
+        for (const [i, s] of l.satellites.entries()) {
+          const R = Math.hypot(s.x - l.centre.x, s.y - l.centre.y);
+          expect(R, `${side} px, ${n} satellites`).toBeGreaterThanOrEqual(l.hubR + l.satR);
+          const sp = l.spokes[i]!;
+          const from = Math.hypot(sp.x1 - l.centre.x, sp.y1 - l.centre.y);
+          const to = Math.hypot(sp.x2 - l.centre.x, sp.y2 - l.centre.y);
+          expect(to, `${side} px spoke`).toBeGreaterThanOrEqual(from);
+        }
+      }
+    // A hub that already fitted keeps its 16 px least radius.
+    expect(hubLayout(120, 120, 6).hubR).toBeGreaterThanOrEqual(16);
+  });
+
   it('switches spokes off and back on (on is the absent default)', () => {
     const off = withHubSpokes(make('hub'), false);
     expect(off.hubSpokes).toBe(false);

@@ -67,7 +67,8 @@ for every row.
   of side `(R - r) * 1.2` about the centre.
 
 - `hubLayout(w, h, n)`: `S = min(w, h) / 2`; satellite radius `r = min(S * 0.25, S * sin(π / n) * 0.6)`; ring
-  `R = S - r - 2`; hub radius `H = max(16, min(S * 0.34, R - r - 10))`; satellite `i` at `-90° + i * 360° / n`;
+  `R = S - r - 2`; hub radius `H = max(lo, min(S * 0.34, R - r - 10))` with `lo = min(16, max((R - r) / 2, R - r - 4))`, so on a small hub the
+  disc never reaches its satellites and every spoke runs outward; satellite `i` at `-90° + i * 360° / n`;
   spoke `i` from the hub's edge to the satellite's edge along their line; satellite label rect the disc's box inset 2 px each side; hub
   label rect a square of side `H * 1.4` about the centre; label px `round(clamp(r * 0.3, 10, 14))`.
 - `onionLayout(w, h, n)`: `S = min(w, h) / 2`; ring `k` (0 = core) has radius `S * (k + 1) / n`; drawn outermost

@@ -263,7 +263,10 @@ export function hubLayout(w: number, h: number, n: number): HubLayout {
   const S = Math.min(w, h) / 2;
   const r = Math.min(S * 0.25, S * Math.sin(Math.PI / Math.max(2, count)) * 0.6);
   const R = Math.max(1, S - r - 2);
-  const H = Math.max(16, Math.min(S * 0.34, R - r - 10));
+  // The hub's least radius is 16, but never more than the room inside the satellites' ring: on a small hub a fixed 16
+  // covered the satellites and turned the spokes inward.
+  const lo = Math.min(16, Math.max((R - r) / 2, R - r - 4));
+  const H = Math.max(lo, Math.min(S * 0.34, R - r - 10));
   const centre = { x: w / 2, y: h / 2 };
   const satellites = Array.from({ length: count }, (_, i) => {
     const a = -Math.PI / 2 + (i * 2 * Math.PI) / count;
