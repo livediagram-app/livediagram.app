@@ -131,7 +131,17 @@ describe('sequence text', () => {
   });
 
   it('reads a hostile paste in linear time', () => {
-    const text = `${'-'.repeat(390)}\n`.repeat(2000) + `${'~'.repeat(100000)}`;
-    expect(cpuMsOf(() => parseSequenceText(text))).toBeLessThan(200);
+    // Scaling, not a budget: twice the paste costs about twice the time when linear and four times when quadratic.
+    // An absolute 200ms failed under CI's coverage instrumentation at 280ms on a linear parse.
+    const paste = (n: number) => `${'-'.repeat(390)}\n`.repeat(n) + `${'~'.repeat(50 * n)}`;
+    const [small, large] = [paste(1000), paste(2000)];
+    parseSequenceText(small);
+    const ratio =
+      cpuMsOf(() => parseSequenceText(large)) /
+      Math.max(
+        1,
+        cpuMsOf(() => parseSequenceText(small)),
+      );
+    expect(ratio).toBeLessThan(3);
   });
 });
