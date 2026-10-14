@@ -3,7 +3,7 @@
 import { queryElementGrid, type Rect } from '@livediagram/document';
 import { arrowName, arrowSelector } from '../arrow-names';
 import { boxBounds, isLintBox } from '../boxes';
-import { LINT_OVERLAP_TOLERANCE_PX } from '../constants';
+import { LINT_LABEL_RUN_PAD, LINT_OVERLAP_TOLERANCE_PX } from '../constants';
 import { padded, refOf } from '../context';
 import { fixes } from '../fixes';
 import type { Check } from './types';
@@ -12,6 +12,21 @@ import type { Check } from './types';
 const overlaps = (a: Rect, b: Rect) =>
   Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x) > LINT_OVERLAP_TOLERANCE_PX &&
   Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y) > LINT_OVERLAP_TOLERANCE_PX;
+
+// How many characters the edge's longest run holds: its length less the room a label keeps either end, over the
+// plate's width per character.
+function fits(
+  polyline: readonly { x: number; y: number }[],
+  plateWidth: number,
+  label?: string,
+): number {
+  const longest = Math.max(
+    0,
+    ...polyline.slice(1).map((p, i) => Math.hypot(p.x - polyline[i]!.x, p.y - polyline[i]!.y)),
+  );
+  const perChar = plateWidth / Math.max(1, (label ?? '').trim().length);
+  return Math.max(3, Math.floor((longest - 2 * LINT_LABEL_RUN_PAD) / Math.max(1, perChar)));
+}
 
 export const labelCollision: Check = (ctx) =>
   ctx.drawable.flatMap((d) => {
@@ -33,7 +48,11 @@ export const labelCollision: Check = (ctx) =>
         code: 'label-collision' as const,
         refs: [refOf(ctx, d.arrow.id), ...boxes],
         message: `${arrowName(ctx, d.arrow)} label overlaps ${boxes.join(', ')}`,
-        fix: fixes.labelCollision(ctx.source, arrowSelector(ctx, d.arrow)),
+        fix: fixes.labelCollision(
+          ctx.source,
+          arrowSelector(ctx, d.arrow),
+          fits(d.polyline, layout.width, d.arrow.label),
+        ),
         at: d.polyline[0]!,
       },
     ];

@@ -8,14 +8,14 @@ describe('label-collision', () => {
     expect(f).toMatchObject({
       refs: ['x', 'a', 'b'],
       message: 'a→b label overlaps a, b',
-      fix: 'set a->b label="<text>"',
+      fix: 'set a->b label="<at most 3 characters>"',
     });
     expect(
       of(
         lint(tabOf(box('a', 0, 0), box('b', 160, 0), labelled), { source: 'graph' }),
         'label-collision',
       )[0]!.fix,
-    ).toBe('shorten the edge label');
+    ).toBe('shorten the edge label to 3 characters');
   });
 
   it('stays quiet for a label clear of every box, and an arrow without one', () => {

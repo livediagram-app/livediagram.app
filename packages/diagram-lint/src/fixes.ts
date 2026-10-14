@@ -26,8 +26,12 @@ export const fixes = {
         : 'layout type:shape',
       'graph lint --compare direction,groups,lines',
     ),
-  labelCollision: (s: LintSource, arrow: string) =>
-    pick(s, `set ${arrow} label="<text>"`, 'shorten the edge label'),
+  labelCollision: (s: LintSource, arrow: string, fits: number) =>
+    pick(
+      s,
+      `set ${arrow} label="<at most ${fits} characters>"`,
+      `shorten the edge label to ${fits} characters`,
+    ),
   labelOverflow: (s: LintSource, a: string, smaller: boolean) =>
     pick(
       s,

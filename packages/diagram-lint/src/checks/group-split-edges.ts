@@ -1,5 +1,7 @@
 // `group-split-edges` (info): most of a frame's arrows cross its border. Of the drawable arrows with an end
-// on a member, those with exactly one are crossing; it fires on more than half of at least three (LN12).
+// on a member, those with exactly one are crossing; it fires on more than half of at least three (LN12), and only
+// when some arrow runs inside the frame: a frame none of whose arrows do is a role group (a services tier, a CI
+// stage of parallel steps), split by design, and unwrapping it, as the fix said, made the drawing worse.
 
 import { LINT_GROUP_SPLIT_MIN_ARROWS, LINT_GROUP_SPLIT_SHARE } from '../constants';
 import { refOf } from '../context';
@@ -14,7 +16,11 @@ export const groupSplitEdges: Check = (ctx) =>
     );
     const total = ends.filter((n) => n > 0).length;
     const crossing = ends.filter((n) => n === 1).length;
-    if (total < LINT_GROUP_SPLIT_MIN_ARROWS || crossing <= LINT_GROUP_SPLIT_SHARE * total)
+    if (
+      total < LINT_GROUP_SPLIT_MIN_ARROWS ||
+      crossing <= LINT_GROUP_SPLIT_SHARE * total ||
+      crossing === total
+    )
       return [];
     const ref = refOf(ctx, frame.id);
     return [

@@ -13,6 +13,7 @@ describe('group-split-edges', () => {
         arrow('1', 'a', 'x'),
         arrow('2', 'b', 'y'),
         arrow('3', 'a', 'z'),
+        arrow('4', 'a', 'b'),
       ),
     );
     expect(of(report, 'group-split-edges')).toEqual([
@@ -20,7 +21,7 @@ describe('group-split-edges', () => {
         code: 'group-split-edges',
         severity: 'info',
         refs: ['core'],
-        message: 'core: 3 of 3 arrows cross its border',
+        message: 'core: 3 of 4 arrows cross its border',
         fix: 'unwrap core',
       },
     ]);
@@ -33,6 +34,7 @@ describe('group-split-edges', () => {
             arrow('1', 'a', 'x'),
             arrow('2', 'b', 'y'),
             arrow('3', 'a', 'z'),
+            arrow('4', 'a', 'b'),
           ),
           { source: 'graph' },
         ),
@@ -80,6 +82,7 @@ describe('group-split-edges', () => {
       frame('outer', 0, 0, 300, 400),
       frame('inner', 20, 20, 200, 200),
       box('a', 40, 40),
+      box('c', 40, 120),
     ];
     const outside = [box('x', 500, 40), box('y', 500, 300), box('z', 500, 500)];
     const report = lint(
@@ -89,8 +92,23 @@ describe('group-split-edges', () => {
         arrow('1', 'a', 'x'),
         arrow('2', 'a', 'y'),
         arrow('3', 'a', 'z'),
+        arrow('4', 'a', 'c'),
       ),
     );
     expect(of(report, 'group-split-edges').map((f) => f.refs[0])).toEqual(['outer', 'inner']);
+  });
+
+  it('stays quiet on a role group: none of its arrows runs inside it, so the split is its design', () => {
+    const outside = [box('x', 400, 40), box('y', 400, 300), box('z', 400, 500)];
+    const report = lint(
+      tabOf(
+        ...core(),
+        ...outside,
+        arrow('1', 'a', 'x'),
+        arrow('2', 'b', 'y'),
+        arrow('3', 'a', 'z'),
+      ),
+    );
+    expect(of(report, 'group-split-edges')).toEqual([]);
   });
 });
