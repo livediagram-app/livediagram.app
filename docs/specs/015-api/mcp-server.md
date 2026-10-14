@@ -464,7 +464,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   their outside tracks, so a dense graph lays out in well under a second (60 boxes and 140 edges in about 0.2 s).
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
-  what that shape means, in the diagram's own tones. `true` names them by default: in a flowchart by ISO 5807
+  what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted. `true` names them by default: in a flowchart by ISO 5807
   (stadium "Start or end", square "Step", diamond "Decision", parallelogram "Input or output", document "Document",
   hexagon "Preparation"), otherwise as a diagram of systems reads them (stadium "Entry point", square "Component",
   hexagon "Hub or bus", circle "Node"; cylinder "Data store", cloud "External system", actor "Person" in both). An
