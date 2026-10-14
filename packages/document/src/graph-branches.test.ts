@@ -57,6 +57,30 @@ describe('withExactEnds', () => {
   });
 });
 
+describe('withExactEnds: who counts', () => {
+  it('reads an explicit solid line and an unset one as the same line', () => {
+    const els = withExactEnds([
+      arrow('p1', 'a', 'bus', { label: 'publish', strokeStyle: 'solid' }),
+      arrow('p2', 'b', 'bus', { label: 'publish' }),
+    ]);
+    expect(byId(els, 'p1')).toMatchObject({ exactEnd: true });
+    expect(byId(els, 'p2')).toMatchObject({ exactEnd: true });
+  });
+
+  it('lets alike lines share a trunk though more lines of another style leave there, each saying its own thing', () => {
+    const els = withExactEnds([
+      arrow('get', 'svc', 'x', { label: 'GET' }),
+      arrow('post', 'svc', 'y', { label: 'POST' }),
+      arrow('put', 'svc', 'z', { label: 'PUT' }),
+      arrow('e1', 'svc', 'q', { strokeStyle: 'dashed' }),
+      arrow('e2', 'svc', 'r', { strokeStyle: 'dashed' }),
+    ]);
+    expect(byId(els, 'e1')).toMatchObject({ exactStart: true });
+    expect(byId(els, 'e2')).toMatchObject({ exactStart: true });
+    expect(byId(els, 'get').exactStart).toBeUndefined();
+  });
+});
+
 describe('withExactEnds by line', () => {
   it('lets only the style most lines at an end have share it, solid on a tie', () => {
     const els = withExactEnds([
