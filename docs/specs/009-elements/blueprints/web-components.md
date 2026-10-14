@@ -36,19 +36,19 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term           | Identifier                                                                                             | Meaning                                                      |
-| -------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| Web component  | `WebComponentShape`, `isWebComponentShape`                                                             | `banner`, `callout`, `stat-row`, `process`, `site-header`    |
-| Component      | `ComponentKind`                                                                                        | Palette id: `banner hero header callout stat process avatar` |
-| Accent bar     | `isAccentBarShape`                                                                                     | `banner`, `site-header`: a solid bar under white text        |
-| Card component | (the other three)                                                                                      | Theme surface fill, ink text, accent emphasis                |
-| Hero           | `ImageElement` with `heroCaption`                                                                      | An image with a caption card                                 |
-| Caption card   | `HeroCaption = { title, subtitle }`                                                                    | The hero's two lines                                         |
-| Masthead line  | `pageTitle`, `pageSubtitle`                                                                            | Single-line heading fields shared with the Page              |
-| Row            | `StatItem`, `processSteps[i]`, `navLinks[i]`                                                           | One stat, step or link                                       |
-| Rows patch     | `WebRows`                                                                                              | `{ stats?, processSteps?, navLinks? }`                       |
-| Layout         | `bannerLayout`, `calloutLayout`, `statRowLayout`, `processLayout`, `headerLayout`, `heroCaptionLayout` | Pure element-relative rects                                  |
-| Legacy group   | `groupId`, `{ kind: 'pinned-group' }` (stored only)                                                    | Traces migrated away on read                                 |
+| Term           | Identifier                                                                            | Meaning                                                      |
+| -------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Web component  | `WebComponentShape`, `isWebComponentShape`                                            | `banner`, `callout`, `stat-row`, `process`, `site-header`    |
+| Component      | `ComponentKind`                                                                       | Palette id: `banner hero header callout stat process avatar` |
+| Accent bar     | `isAccentBarShape`                                                                    | `banner`, `site-header`: a solid bar under white text        |
+| Card component | (the other three)                                                                     | Theme surface fill, ink text, accent emphasis                |
+| Hero           | `ImageElement` with `heroCaption`                                                     | An image with a caption card                                 |
+| Caption card   | `HeroCaption = { title, subtitle }`                                                   | The hero's two lines                                         |
+| Masthead line  | `pageTitle`, `pageSubtitle`                                                           | Single-line heading fields shared with the Page              |
+| Row            | `StatItem`, `processSteps[i]`, `navLinks[i]`                                          | One stat, step or link                                       |
+| Rows patch     | `WebRows`                                                                             | `{ stats?, processSteps?, navLinks? }`                       |
+| Layout         | `bannerLayout`, `statRowLayout`, `processLayout`, `headerLayout`, `heroCaptionLayout` | Pure element-relative rects                                  |
+| Legacy group   | `groupId`, `{ kind: 'pinned-group' }` (stored only)                                   | Traces migrated away on read                                 |
 
 Banned synonyms: "widget", "block" (the block-type picker), "group" for anything live, "header"
 for the kind in code (the kind is `site-header`; "Header" is the user-facing name), "hero" as a
@@ -96,8 +96,7 @@ shape kind.
 - **Banner:** `pad = round(clamp(min(w, h) * 0.16, 8, 32))`; subtitle band `round(subtitlePx *
 1.5)` tall at the bottom of the padded box, `subtitlePx = round(clamp(h * 0.13, 11, 22))`; the
   title takes the rest.
-- **Callout:** `pad = round(clamp(min * 0.15, 8, 24))`; badge radius `round(clamp(min * 0.13, 8,
-22))` at the top-left; heading `round(clamp(h * 0.14, 12, 24))` px, one line; body below.
+- **Callout:** a Card preset since [card.md](card.md); laid out by `cardLayout` with badge media.
 - **Stat row:** `n` cards, `gap = min(STAT_GAP, w * 0.2 / (n - 1))`, equal widths; value px
   `round(clamp(min(h * 0.34, cardW * 0.28), 12, 72))`, caption `round(clamp(value * 0.45, 10, 22))`
   [QA3].

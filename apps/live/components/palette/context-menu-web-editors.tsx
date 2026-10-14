@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import {
+  CARD_TAG_MAX,
+  CARD_TAGS_MAX,
   NAV_LINKS_MAX,
   PROCESS_MAX_STEPS,
   PROCESS_MIN_STEPS,
@@ -147,6 +149,7 @@ export function TextRowsEditor({
   addLabel,
   nextRow,
   onChange,
+  maxLength = WEB_TEXT_MAX,
 }: {
   rows: string[];
   min: number;
@@ -155,6 +158,8 @@ export function TextRowsEditor({
   addLabel: string;
   nextRow: (count: number) => string;
   onChange: (rows: string[]) => void;
+  // Per-row bound; a card's tags are shorter than a step (docs/specs/009-elements/card.md).
+  maxLength?: number;
 }) {
   const [rows, setRows] = useState<string[]>(initial);
   return (
@@ -167,7 +172,7 @@ export function TextRowsEditor({
               value={text}
               placeholder={noun}
               aria-label={`${noun} ${i + 1}`}
-              maxLength={WEB_TEXT_MAX}
+              maxLength={maxLength}
               onChange={(e) => setRows((r) => r.map((s, j) => (j === i ? e.target.value : s)))}
               onBlur={() => onChange(rows)}
             />
@@ -250,6 +255,23 @@ export function WebRowsMenuSection({
       </MenuAccordionSection>
     );
   }
+  if (target.shape === 'card') {
+    return (
+      <MenuAccordionSection title="Tags" icon={<DataMenuGlyph />} {...sectionProps('tags')}>
+        <TextRowsEditor
+          key={JSON.stringify(target.tags ?? [])}
+          rows={target.tags ?? []}
+          min={0}
+          max={CARD_TAGS_MAX}
+          noun="Tag"
+          addLabel="Add Tag"
+          nextRow={() => 'Tag'}
+          maxLength={CARD_TAG_MAX}
+          onChange={(tags) => onSetRows({ tags })}
+        />
+      </MenuAccordionSection>
+    );
+  }
   return null;
 }
 
@@ -257,6 +279,9 @@ export function WebRowsMenuSection({
 export function hasWebRowsSection(target: { type: string; shape?: string }): boolean {
   return (
     target.type === 'shape' &&
-    (target.shape === 'stat-row' || target.shape === 'process' || target.shape === 'site-header')
+    (target.shape === 'stat-row' ||
+      target.shape === 'process' ||
+      target.shape === 'site-header' ||
+      target.shape === 'card')
   );
 }

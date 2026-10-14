@@ -142,7 +142,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   technology: 0,
   'my-shapes': 0,
   media: 8,
-  components: 9,
+  components: 10,
   data: 7,
   // The Collaborate elements, one category per group (docs/specs/012-collaboration/facilitate-mode.md
   // "The palette"): 34 tiles between them.

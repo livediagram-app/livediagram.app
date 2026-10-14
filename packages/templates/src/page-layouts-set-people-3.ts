@@ -97,7 +97,7 @@ function ideaBoard(k: Kit): Element[] {
         }),
       ];
     }),
-    k.shape('callout', 0, H - nextH, W, nextH, {
+    k.callout(0, H - nextH, W, nextH, {
       pageTitle: 'Next step',
       label: 'Trial the top two for a month, then vote again on 14 November.',
       textSize: 'md',

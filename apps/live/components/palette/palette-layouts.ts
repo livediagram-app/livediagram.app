@@ -75,6 +75,9 @@ const WRITE_WITH_COMMENTS = [
   'collab:action-card',
 ];
 
+// The diagram-building elements Diagram's Build adds to the category's own tiles.
+const DIAGRAM_BUILD_EXTRAS = ['components:card'];
+
 // Image and Avatar; no embedded pages.
 const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);
 
@@ -109,7 +112,11 @@ const DIAGRAM: PaletteLayout = {
     // Comments and assigned actions belong to every mode, so their two Collaborate tiles stay here.
     { id: 'write', tiles: WRITE_WITH_COMMENTS },
     { id: 'draw' },
-    { id: 'build' },
+    // The diagram-building elements join Build here (docs/specs/009-elements/card.md and its siblings).
+    {
+      id: 'build',
+      tiles: [...tilesForCategory('build').map((t) => t.id), ...DIAGRAM_BUILD_EXTRAS],
+    },
     { id: 'event-storming', boardOnly: true },
     { id: 'icons' },
     { id: 'technology' },

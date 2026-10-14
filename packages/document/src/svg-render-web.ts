@@ -11,11 +11,12 @@ import { BORDER_RADIUS_PX, cornerRadiusPx } from './border-style';
 import { labelFontPx } from './label-font';
 import type { BoxedElement, ImageElement } from './index';
 import { svgWrappedLabel } from './svg-render-labels';
+import { svgCard } from './svg-render-card';
+import type { ResolveIconArt } from './svg-render-describe';
 import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
 import {
   ACCENT_BAR_TEXT,
   bannerLayout,
-  calloutLayout,
   headerLayout,
   heroCaptionLayout,
   processLayout,
@@ -32,7 +33,7 @@ const family = (fontFamily?: string) =>
 // `align`. Clipped by character count, since a headless render cannot measure.
 // `onCapBand`: a glyph in a disc sits on the alphabetic baseline that centres its cap band
 // (docs/specs/004-interface-design/optical-alignment.md); other lines centre their em box.
-function line(
+export function line(
   el: BoxedElement,
   text: string,
   r: LayoutRect,
@@ -62,7 +63,13 @@ function line(
 }
 
 // The element's label, wrapped into `r` with its own size / weight / alignment.
-function label(el: Shape, text: string, r: LayoutRect, color: string, fontFamily?: string): string {
+export function label(
+  el: Shape,
+  text: string,
+  r: LayoutRect,
+  color: string,
+  fontFamily?: string,
+): string {
   if (!text) return '';
   const px = labelFontPx(el.textSize);
   const bold = !!el.textBold;
@@ -95,7 +102,14 @@ const radiusOf = (el: Shape, fallback: number, r: LayoutRect) =>
 /** The body of a web component shape, or '' for any other kind. */
 export function svgWebComponent(
   el: Shape,
-  o: { stroke: string; fill: string; labelColor: string; label: string; fontFamily?: string },
+  o: {
+    stroke: string;
+    fill: string;
+    labelColor: string;
+    label: string;
+    fontFamily?: string;
+    resolveIconArt?: ResolveIconArt;
+  },
 ): string {
   const { stroke, fill, label: text, fontFamily } = o;
   const ink = el.textColor ?? o.labelColor;
@@ -114,33 +128,10 @@ export function svgWebComponent(
         })
       );
     }
-    case 'callout': {
-      // The card itself is the ordinary box svgBoxed draws; this is what
-      // sits in it.
-      const l = calloutLayout(el.width, el.height);
-      return (
-        `<circle cx="${r2(el.x + l.badge.cx)}" cy="${r2(el.y + l.badge.cy)}" r="${r2(l.badge.r)}" fill="${xmlEscape(stroke)}"/>` +
-        line(
-          el,
-          'i',
-          {
-            x: l.badge.cx - l.badge.r,
-            y: l.badge.cy - l.badge.r,
-            width: l.badge.r * 2,
-            height: l.badge.r * 2,
-          },
-          Math.round(l.badge.r),
-          ACCENT_BAR_TEXT,
-          { bold: true, fontFamily, onCapBand: true },
-        ) +
-        line(el, el.pageTitle ?? '', l.heading, l.headingPx, ink, {
-          align: 'start',
-          bold: true,
-          fontFamily,
-        }) +
-        label(el, text, l.body, ink, fontFamily)
-      );
-    }
+    // A callout not yet migrated draws as the badge card it becomes (docs/specs/009-elements/card.md).
+    case 'callout':
+    case 'card':
+      return svgCard(el, o);
     case 'stat-row': {
       const stats = el.stats ?? [];
       const l = statRowLayout(el.width, el.height, stats.length);

@@ -111,6 +111,7 @@ export const SHAPE_KINDS = new Set<string>([
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md).
   'banner',
   'callout',
+  'card',
   'stat-row',
   'process',
   'site-header',

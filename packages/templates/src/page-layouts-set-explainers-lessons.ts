@@ -51,7 +51,7 @@ function factFile(k: Kit): Element[] {
   const bottom = H - u * FOOT;
   const cells = MARS.map(([fact, value]) => [fact, value]);
   const callout = (x: number, y: number, w: number, h: number) =>
-    k.shape('callout', x, y, w, h, {
+    k.callout(x, y, w, h, {
       pageTitle: 'Did you know?',
       label: 'Olympus Mons, a volcano on Mars, stands almost three times as tall as Everest.',
       textSize: 'md',
@@ -302,7 +302,7 @@ function formula(k: Kit): Element[] {
     }),
   ];
   const example = (x: number, y: number, w: number, h: number) =>
-    k.shape('callout', x, y, w, h, {
+    k.callout(x, y, w, h, {
       pageTitle: 'Worked example',
       label: '£1,000 at 5% for 10 years: A = 1,000 × 1.05¹⁰ = £1,629.',
       textSize: 'md',

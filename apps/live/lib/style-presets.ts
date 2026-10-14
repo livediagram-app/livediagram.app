@@ -51,6 +51,7 @@ import {
   type FontWeight,
   type TextCase,
   type TextElement,
+  withInlineIcon,
 } from '@livediagram/document';
 import type { ShapeColorPreset } from './themes';
 import { isTechIconId } from './tech-icons';
@@ -333,9 +334,7 @@ export function applyPaddingToEl(el: Element, padding: Padding): Element {
 // shapes only — the dedicated 'icon' shape has no inline-icon slot. Mirrors
 // dropIconOnElement in useInlineIconMutators.
 export function applyInlineIconToEl(el: Element, iconId: string, position: IconPosition): Element {
-  return el.type === 'shape' && el.shape !== 'icon'
-    ? { ...el, iconId, iconPosition: position }
-    : el;
+  return el.type === 'shape' && el.shape !== 'icon' ? withInlineIcon(el, iconId, position) : el;
 }
 
 // Apply a line preset (pattern × thickness × optional flow) to an arrow. A

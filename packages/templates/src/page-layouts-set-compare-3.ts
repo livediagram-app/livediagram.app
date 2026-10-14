@@ -152,7 +152,7 @@ function spectrum(k: Kit): Element[] {
   }
   if (callout) {
     els.push(
-      k.shape('callout', 0, H - calloutH, W, calloutH, {
+      k.callout(0, H - calloutH, W, calloutH, {
         pageTitle: 'Why the middle',
         label: 'Enough structure for a team of twelve, without a week of set-up.',
         textSize: 'md',

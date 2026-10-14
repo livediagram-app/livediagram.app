@@ -11,6 +11,7 @@ const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: strin
   'stat-row': { label: 'Add Stat', description: 'Add another KPI card to the row.' },
   process: { label: 'Add Step', description: 'Add another step to the end of the process.' },
   'site-header': { label: 'Add Link', description: 'Add another link to the header.' },
+  card: { label: 'Add Tag', description: 'Add a tag chip along the bottom of the card.' },
 };
 
 // The four quick-connect "+" buttons around a single selected element (docs/specs/008-canvas/canvas-and-palette.md),

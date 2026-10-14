@@ -313,6 +313,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       chartGround: opts.chartGrounds?.get(el.id),
       label: label?.text ?? el.label ?? '',
       surface,
+      resolveIconArt: opts.resolveIconArt,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the

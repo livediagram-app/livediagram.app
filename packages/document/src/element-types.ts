@@ -14,6 +14,7 @@ import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
 import type { AccentEdge } from './accent-edge';
+import type { CardMedia } from './card';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
@@ -446,6 +447,11 @@ export type ShapeElement = {
   // Plain strings, not rich runs: a title has one look, set by the element.
   pageTitle?: string;
   pageSubtitle?: string;
+  // Card slots (docs/specs/009-elements/card.md): media at the top left (absent = none), the header band (stored
+  // only when on) and up to six tag chips along the bottom. Title and meta line are pageTitle / pageSubtitle.
+  cardMedia?: CardMedia;
+  cardHeader?: boolean;
+  tags?: string[];
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), bounded in validate.ts: a stat row's KPI
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.

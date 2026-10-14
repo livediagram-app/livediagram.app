@@ -39,7 +39,7 @@ import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 
 // The kinds carrying masthead lines (see setPageHeading).
-const MASTHEAD_SHAPES = new Set<string>(['page', 'banner', 'callout']);
+const MASTHEAD_SHAPES = new Set<string>(['page', 'banner', 'callout', 'card']);
 
 type DataShapeSetterDeps = {
   currentSelectionIds: () => Set<string>;

@@ -494,7 +494,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     // Action panel (docs/specs/012-collaboration/action-panel.md).
     'ActionPanel',
   ],
-  components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
+  components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps', 'Card'],
   devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Foldable', 'Smartwatch'],
   icons: ['Icon', 'TechIcon', 'Sticker'],
 } as const satisfies Record<string, readonly string[]>;

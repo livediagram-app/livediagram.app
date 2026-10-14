@@ -195,7 +195,7 @@ function keyStats(k: Kit): Element[] {
     );
   }
   els.push(
-    k.shape('callout', 0, H - calloutH, W, calloutH, {
+    k.callout(0, H - calloutH, W, calloutH, {
       pageTitle: 'Takeaway',
       label: 'Say what the numbers mean in one or two sentences.',
       textSize: 'md',
@@ -226,7 +226,7 @@ function process(k: Kit): Element[] {
         textAlignX: 'center',
       }),
     ),
-    k.shape('callout', 0, k.box.height - u * 20, W, u * 20, {
+    k.callout(0, k.box.height - u * 20, W, u * 20, {
       pageTitle: 'Why it works',
       label: 'Small steps, real feedback, and a loop that never stops.',
       textSize: 'md',
@@ -340,7 +340,7 @@ function comparison(k: Kit): Element[] {
       'One source of truth',
       'Answers right now',
     ]),
-    k.shape('callout', 0, H - verdictH, W, verdictH, {
+    k.callout(0, H - verdictH, W, verdictH, {
       pageTitle: 'The verdict',
       label: 'Sum up the difference in one sentence.',
       textSize: 'md',

@@ -49,7 +49,8 @@ describe('components are single elements (docs/specs/009-elements/web-components
     const kind = (k: ComponentKind) => (createComponent(k, 0, 0, colors) as ShapeElement).shape;
     expect(kind('banner')).toBe('banner');
     expect(kind('header')).toBe('site-header');
-    expect(kind('callout')).toBe('callout');
+    // The Callout is a Card preset (docs/specs/009-elements/card.md).
+    expect(kind('callout')).toBe('card');
     expect(kind('stat')).toBe('stat-row');
     expect(kind('process')).toBe('process');
   });

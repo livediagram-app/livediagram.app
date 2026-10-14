@@ -28,6 +28,7 @@ import {
   createComponent,
   createImage,
   createLinkCard,
+  applyShapeVariant,
   createShape,
   createSticky,
   createTable,
@@ -265,7 +266,7 @@ export function buildDrawnBoxed(
   const esBoardSticky = intent.type === 'sticky' && isEventStormingTab(activeTab);
   const base =
     intent.type === 'shape'
-      ? createShape(intent.kind, startX, startY)
+      ? applyShapeVariant(createShape(intent.kind, startX, startY), intent.variant)
       : intent.type === 'text'
         ? createText(startX, startY)
         : intent.type === 'sticky'

@@ -1,6 +1,7 @@
 // Everything a stored tab's elements need on the way in, in one call. Composed
 // into migrateStoredTab (stored-tab.ts), which every stored-tab entry point runs.
 
+import { migrateLegacyCallouts } from './card';
 import { dropLegacyDocks } from './legacy-docks';
 import { stampLegacyEsKinds } from './legacy-es-kinds';
 import { migrateLegacyGroups } from './legacy-groups';
@@ -13,7 +14,9 @@ export function migrateStoredElements(elements: Element[]): Element[] {
   return stampLegacyEsKinds(
     migrateLegacyModeButtons(
       migrateLegacyTextSizing(
-        migrateLegacyStrokePoints(dropLegacyDocks(migrateLegacyGroups(elements))),
+        migrateLegacyStrokePoints(
+          dropLegacyDocks(migrateLegacyGroups(migrateLegacyCallouts(elements))),
+        ),
       ),
     ),
   );

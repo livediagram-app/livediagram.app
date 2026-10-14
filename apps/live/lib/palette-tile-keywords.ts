@@ -36,6 +36,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'mind-node': 'mind map brainstorm branch idea tree',
   lane: 'swimlane band row track process',
   entity: 'record table uml class er schema field',
+  card: 'node service component box tile persona tag title',
   'mode-button': 'mode switch button press avatar',
   portal: 'teleport jump link warp travel',
   'session-button': 'timer vote poll session start',

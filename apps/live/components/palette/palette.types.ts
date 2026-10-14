@@ -50,6 +50,7 @@ export type PaletteProps = {
       mode?: import('@livediagram/document').SelectionMode;
       estimateScale?: import('@livediagram/document').EstimateScale;
       plan?: string;
+      variant?: string;
     },
   ) => void;
   // Drops a curated icon glyph (shape kind 'icon') carrying the chosen

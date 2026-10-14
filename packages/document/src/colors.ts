@@ -610,6 +610,7 @@ const RADIUS_SHAPES = new Set<string>([
   'browser',
   'banner',
   'callout',
+  'card',
   'site-header',
   'stat-row',
   'mind-node',

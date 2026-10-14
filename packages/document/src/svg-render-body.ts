@@ -37,6 +37,7 @@ import { svgWebComponent } from './svg-render-web';
 import { isWebComponentShape } from './web-components';
 import type { BoxedElement, ShapeKind } from './index';
 import type { CanvasSurface } from './colors';
+import type { ResolveIconArt } from './svg-render-describe';
 
 /** The kinds whose body these emitters draw, rather than it being a box with a
  *  label. See the module comment: the PNG path reads this. */
@@ -76,6 +77,8 @@ export function svgElementBody(
     label: string;
     /** The paper under the element, for the faces whose base follows it. */
     surface?: CanvasSurface;
+    /** Resolves an icon id to its art, for a card's media glyph. */
+    resolveIconArt?: ResolveIconArt;
   },
 ): string {
   if (el.type !== 'shape') return '';
@@ -99,7 +102,14 @@ export function svgElementBody(
   if (el.shape === 'entity') return svgEntityRows(el, labelColor, fontFamily);
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) lay out their own text, label included.
   if (isWebComponentShape(el.shape))
-    return svgWebComponent(el, { stroke, fill, labelColor, label, fontFamily });
+    return svgWebComponent(el, {
+      stroke,
+      fill,
+      labelColor,
+      label,
+      fontFamily,
+      resolveIconArt: o.resolveIconArt,
+    });
   if (el.shape === 'page')
     return svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily);
   // The Behaviour + Collaborate faces (docs/specs/009-elements/mode-button.md to /137), which all exported

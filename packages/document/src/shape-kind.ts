@@ -36,6 +36,9 @@ export type ShapeKind =
   | 'banner'
   // Callout: a card with an accent badge, a heading line and a body (label).
   | 'callout'
+  // Card (docs/specs/009-elements/card.md): a diagram node with slots (header band, media, title, meta line,
+  // body, tags). The Callout is its preset; a stored `callout` migrates to one on read.
+  | 'card'
   // Stat row: KPI cards, a big value over a caption each, in `stats`.
   | 'stat-row'
   // Process steps: numbered circles joined by arrows, captions in

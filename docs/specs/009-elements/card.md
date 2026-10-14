@@ -104,7 +104,8 @@ slots are; switching a slot off is quicker than discovering one exists.
 
 A **Card** section in the element's menu (Tools flyout), closed until opened:
 
-- **Header Band** on / off.
+- **Header Band**, **Title** and **Meta Line**, each on / off. Switching the title or meta line on gives it starting
+  words to type over; clearing its text in place switches it off.
 - **Media**: None, Badge, Tile, Initial (one row of tiles).
 - **Tags**: per-row inputs committing on blur, ↑ / ↓ reorder, × remove, Add (disabled at six), the web components'
   row editor.

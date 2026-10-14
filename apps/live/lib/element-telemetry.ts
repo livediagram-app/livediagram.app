@@ -71,6 +71,8 @@ const SHAPE_TOKENS: Record<string, string> = {
   // copied stat row lands in the same dashboard row as a dropped one.
   banner: 'Banner',
   callout: 'Callout',
+  // The card (docs/specs/009-elements/card.md); a Callout placed from its tile reports as a Card.
+  card: 'Card',
   'stat-row': 'StatRow',
   process: 'ProcessSteps',
   'site-header': 'Header',

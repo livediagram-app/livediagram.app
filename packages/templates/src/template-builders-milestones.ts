@@ -22,6 +22,7 @@ import {
   createShape,
   createText,
   type Element,
+  createCalloutCard,
 } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
@@ -43,7 +44,7 @@ export function milestoneCard(
   accent: string,
 ): Shape {
   return {
-    ...createShape('callout', x, y),
+    ...createCalloutCard(x, y),
     width: w,
     height: h,
     pageTitle: heading,

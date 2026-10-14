@@ -216,6 +216,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // replace arrived at, so a canvas built from either reads the same.
   banner: { width: 440, height: 104 },
   callout: { width: 380, height: 116 },
+  // Card (docs/specs/009-elements/card.md): room for a title, a meta line, two body lines and a tag row.
+  card: { width: 300, height: 150 },
   // Three 150px cards and two 16px gaps.
   'stat-row': { width: 482, height: 96 },
   process: { width: 420, height: 110 },
@@ -590,6 +592,23 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textAlignX: 'center',
       textAlignY: 'middle',
       borderRadius: 'lg',
+    };
+  }
+  // Card (docs/specs/009-elements/card.md): every slot but the band on, so the first one shows what a card is made of.
+  if (kind === 'card') {
+    return {
+      ...base,
+      cardMedia: 'tile',
+      iconId: 'credit-card',
+      pageTitle: 'Payments',
+      pageSubtitle: 'Stripe, EU region',
+      label: 'Takes card payments and issues refunds.',
+      tags: ['PCI', 'v2'],
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+      strokeWidth: 'thin',
+      borderRadius: 'md',
     };
   }
   if (kind === 'callout') {

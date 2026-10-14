@@ -148,6 +148,8 @@ type PaletteTileAction =
       estimateScale?: EstimateScale;
       // Plan board preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md "The palette").
       plan?: string;
+      // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
+      variant?: string;
     }
   | { type: 'text' }
   // An opener (palette-openers): stands for a category, or one group of a catalogue, and opens it; places nothing.
@@ -1412,6 +1414,28 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         {/* A titled box with rows: the classic class-diagram silhouette. */}
         <rect x="3.5" y="3" width="17" height="18" rx="2" />
         <path d="M3.5 8.5h17M7 12h6M7 15.5h9" />
+      </Glyph>
+    ),
+  },
+  {
+    // The card (docs/specs/009-elements/card.md): a diagram node with slots, placed like any shape so the theme
+    // paints it. The Callout below is its preset.
+    id: 'components:card',
+    blurb: 'A node with an icon, title, meta and tags',
+    caption: 'Card',
+    section: 'components',
+    label: 'Add Card',
+    description:
+      'Card. A diagram node with slots you switch on: a header band, an icon, a title and meta line, a body and tags. Tap to drop or drag to size.',
+    filled: true,
+    action: { type: 'shape', kind: 'card' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
+        <rect x="5.5" y="6.5" width="4.5" height="4.5" rx="1.2" />
+        <path d="M12.5 7.5h6M12.5 10h4M5.5 14h13" />
+        <rect x="5.5" y="16.5" width="4" height="1.6" rx="0.8" />
+        <rect x="11" y="16.5" width="4" height="1.6" rx="0.8" />
       </Glyph>
     ),
   },

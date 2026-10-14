@@ -14,6 +14,7 @@
 // handlers; this component only decides which items to show.
 
 import dynamic from 'next/dynamic';
+import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import {
   animLoops,
   DEFAULT_ANIMATION_SPEED,
@@ -426,6 +427,14 @@ export function ElementDataSections({
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
             steps, a header's links: add / remove / reorder. */}
+          {/* The card's slots (docs/specs/009-elements/card.md): band, title, meta line, media. */}
+          {shapeTarget?.shape === 'card' ? (
+            <CardMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
           {shapeTarget && hasWebRowsSection(shapeTarget) ? (
             <WebRowsMenuSection
               target={shapeTarget}

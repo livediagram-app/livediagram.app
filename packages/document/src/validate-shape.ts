@@ -42,6 +42,7 @@ import {
 } from './data-shapes';
 import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web-components';
 import { isCodeThemeId } from './code-themes';
+import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
 import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow, isMindSpacing } from './mind-flow';
 import {
@@ -247,6 +248,14 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'flowLaneId', valid: isNonEmptyStr, rule: 'an element id' },
   { field: 'pageTitle', valid: isHeadingStr, rule: stringRule(PAGE_HEADING_MAX) },
   { field: 'pageSubtitle', valid: isHeadingStr, rule: stringRule(PAGE_HEADING_MAX) },
+  // Card slots (docs/specs/009-elements/card.md).
+  { field: 'cardMedia', valid: isCardMedia, rule: oneOfRule(['badge', 'tile', 'initial']) },
+  flag('cardHeader'),
+  {
+    field: 'tags',
+    valid: rowsOf(CARD_TAGS_MAX, isStrUpTo(CARD_TAG_MAX)),
+    rule: `an array of at most ${CARD_TAGS_MAX} strings of at most ${CARD_TAG_MAX} characters`,
+  },
   {
     field: 'entityFields',
     valid: rowsOf(ENTITY_MAX_FIELDS, isEntityField),

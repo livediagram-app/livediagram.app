@@ -52,6 +52,7 @@ const BOX_KINDS = new Set<string>([
   'lane',
   'entity',
   'callout',
+  'card',
   'stadium',
   'cloud',
   'triangle',
