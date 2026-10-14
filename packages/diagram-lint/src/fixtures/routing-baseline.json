@@ -50,14 +50,14 @@
     "extent": "1116×2326"
   },
   "graph-flow-9": {
-    "shared": 21,
+    "shared": 83,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 1,
     "behind": 0,
-    "collisions": 3,
-    "extent": "2240×280"
+    "collisions": 0,
+    "extent": "2761×280"
   },
   "graph-lanes-12": {
     "shared": 254,
@@ -76,7 +76,7 @@
     "kinks": 0,
     "crossings": 9,
     "behind": 0,
-    "collisions": 4,
+    "collisions": 2,
     "extent": "3511×901"
   },
   "graph-lanes-15": {
@@ -150,24 +150,24 @@
     "extent": "861×838"
   },
   "mermaid-erdiagram-2": {
-    "shared": 157,
+    "shared": 418,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 1,
     "behind": 0,
-    "collisions": 5,
-    "extent": "784×602"
+    "collisions": 1,
+    "extent": "987×602"
   },
   "mermaid-erdiagram-3": {
-    "shared": 157,
+    "shared": 418,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 1,
     "behind": 0,
-    "collisions": 6,
-    "extent": "784×602"
+    "collisions": 2,
+    "extent": "987×602"
   },
   "mermaid-erdiagram-4": {
     "shared": 238,
@@ -230,14 +230,14 @@
     "extent": "1933×1528"
   },
   "mermaid-statediagram-1": {
-    "shared": 21,
+    "shared": 57,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 1,
     "behind": 0,
-    "collisions": 3,
-    "extent": "2036×252"
+    "collisions": 1,
+    "extent": "2459×252"
   },
   "mermaid-statediagram-2": {
     "shared": 21,

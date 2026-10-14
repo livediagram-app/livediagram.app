@@ -11,6 +11,7 @@
 import { isContainerKind } from './containment';
 import { edgeKey } from './auto-layout';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
+import { arrowRoutePoints } from './arrow-label-layout';
 import { rectGrid, type RectGrid } from './auto-layout-route-grid';
 import { anchorPosition, endpointPosition } from './geometry';
 import type { GraphEdge, GraphNode } from './graph-authoring';
@@ -766,13 +767,14 @@ export function placeElbowLabels(elements: Element[]): Element[] {
       (el.curvePoints?.length ?? 0) > 0,
   );
   if (labelled.length === 0) return elements;
-  const pathOf = (a: ArrowElement): Pt[] => {
-    const from = endAt(a, 'from', elements);
-    const to = endAt(a, 'to', elements);
-    const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
-    return [from, ...a.curvePoints!.map((p) => ({ x: mid.x + p.dx, y: mid.y + p.dy })), to];
-  };
+  // The route as it is drawn (the renderer's own points, bends squared onto the line), which the label's `t` measures.
+  const pathOf = (a: ArrowElement): Pt[] => arrowRoutePoints(a, elements);
   const paths = new Map(labelled.map((a) => [a.id, pathOf(a)]));
+  // The boxes a label must clear: every boxed element but the frames and lanes that hold them.
+  const boxes = elements.filter(
+    (el): el is BoxedElement =>
+      isBoxed(el) && !(el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane')),
+  );
   const overlap = (p0: number, p1: number, q0: number, q1: number) =>
     Math.min(Math.max(p0, p1), Math.max(q0, q1)) > Math.max(Math.min(p0, p1), Math.min(q0, q1));
   // Whether a run (a to b) lies along a run of another labelled arrow: the same line within LABEL_CLEAR, overlapping.
@@ -791,20 +793,42 @@ export function placeElbowLabels(elements: Element[]): Element[] {
     });
   const placed = new Map<string, ArrowElement>();
   for (const a of labelled) {
-    const pts = paths.get(a.id)!;
+    // Runs on one line are one run: an elbow whose bends fall on its line draws straight, and a label needs the
+    // whole of it, not either half.
+    const pts = paths
+      .get(a.id)!
+      .filter(
+        (p, i, all) => i === 0 || i === all.length - 1 || !collinear(all[i - 1]!, p, all[i + 1]!),
+      );
     const lens = pts.slice(1).map((p, i) => Math.hypot(p.x - pts[i]!.x, p.y - pts[i]!.y));
     const total = lens.reduce((s, l) => s + l, 0);
     if (total <= 0) continue;
     const last = lens.length - 1;
     const byLength = lens.map((_, i) => i).sort((p, q) => lens[q]! - lens[p]!);
+    // A run holds the label when its plate, centred on the run, touches no box: on a level run that also means the
+    // run is long enough for it; on an upright one, that nothing stands beside it. A 126 px caption centred on a
+    // 45 px drop into its target sat over the target.
+    const width = labelWidth(a.label!);
+    const holds = (i: number) => {
+      const level = Math.abs(pts[i]!.y - pts[i + 1]!.y) < 1;
+      if (lens[i]! < (level ? width + LABEL_RUN_MARGIN : LABEL_CLEAR + LABEL_RUN_MARGIN))
+        return false;
+      const cx = (pts[i]!.x + pts[i + 1]!.x) / 2;
+      const cy = (pts[i]!.y + pts[i + 1]!.y) / 2;
+      return !boxes.some(
+        (b) =>
+          Math.abs(cx - (b.x + b.width / 2)) < (width + b.width) / 2 &&
+          Math.abs(cy - (b.y + b.height / 2)) < (LABEL_CLEAR + b.height) / 2,
+      );
+    };
     const seg =
-      [last, 0, ...byLength].find((i) => lens[i]! > 30 && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
+      [last, 0, ...byLength].find((i) => holds(i) && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
       byLength[0]!;
     const before = lens.slice(0, seg).reduce((s, l) => s + l, 0);
     placed.set(a.id, {
       ...a,
       labelOffset: { t: Number(((before + lens[seg]! / 2) / total).toFixed(4)), offset: 0 },
-      labelMaxWidth: Math.ceil(labelWidth(a.label!)),
+      labelMaxWidth: Math.ceil(width),
     });
   }
   return elements.map((el) => placed.get(el.id) ?? el);
@@ -812,6 +836,13 @@ export function placeElbowLabels(elements: Element[]): Element[] {
 
 // How close two runs may be before a label on one would sit on the other: a label's height and some.
 const LABEL_CLEAR = 22;
+// Room a run keeps beyond its label, so the label clears the boxes at the run's ends.
+const LABEL_RUN_MARGIN = 16;
+
+// Whether b lies on the line from a to c: the same row or the same column within a pixel.
+const collinear = (a: Pt, b: Pt, c: Pt) =>
+  (Math.abs(a.y - b.y) < 1 && Math.abs(b.y - c.y) < 1) ||
+  (Math.abs(a.x - b.x) < 1 && Math.abs(b.x - c.x) < 1);
 
 // A caption's one-line width at the arrow label's default size, with room for its plate.
 const labelWidth = (label: string) => Math.min(260, label.length * 12 * 0.56 + 18);

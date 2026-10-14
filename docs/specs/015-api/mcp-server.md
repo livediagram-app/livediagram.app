@@ -456,7 +456,10 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - **Flow lines are elbows.** `lines` defaults to `angled` for flow, lanes and tree; every edge to a later rank bends
   twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus; a labelled
   arrow keeps its own ends, and its label sits on a run no other labelled arrow shares (the drop into its target,
-  else the leg out of its source, else its longest run), one line wide.
+  else the leg out of its source, else its longest run), one line wide. Runs are read as drawn, those on one line
+  as one, and a run takes the label only when its plate there touches no box: long enough along it, clear beside it.
+  The gap between two ranks fits the widest label crossing it, as Tidy Up's does (its width left to right, its line
+  height either side of the jog top to bottom), so a caption is never longer than its edge.
 - **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
   the spine (the one labelled yes / ok / true / pass, else the one leading furthest) and lays each other exit whose
   target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.
