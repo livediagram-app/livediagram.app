@@ -623,7 +623,10 @@ wrongly:
   editor never arrives that way. This applies to every element on these paths,
   not only the six. As graph input sizes its text by count, so do raw boxes: on a list of more than 12 labelled
   boxes, a box that gives no `textSize` takes `sm` rather than `md`, so a hand-placed architecture of twenty boxes
-  does not wrap its names mid-word ("ElastiCa / che").
+  does not wrap its names mid-word ("ElastiCa / che"). A raw arrow pinned at both ends that gives no `arrowStyle` is
+  angled, as graph input draws its lines, and an angled one that gives no bends takes graph input's two (out of its
+  start, across, into its end), so it meets both ends square rather than as the editor's lone L, sideways into a top;
+  one whose ends line up runs straight. `"arrowStyle": "straight"` keeps a diagonal.
 - A **table**'s ragged rows are padded to the widest (`normalizeTable`, the same
   pass the editor runs on load), so every row renders.
 - An unknown **codeLanguage** becomes `plain` and an unknown **codeTheme** is

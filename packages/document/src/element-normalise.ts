@@ -7,6 +7,8 @@
 // tidied. Input is untrusted JSON: anything not shaped like the field it claims
 // to be is left for isValidTab to judge.
 
+import { anchorPrimarySide } from './anchors';
+import { orthogonalBends } from './arrow-orthogonal';
 import { LOOK_MD_MAX_NODES } from './look-size';
 import { CODE_LANGUAGES } from './data-shapes';
 import { isCodeThemeId } from './code-themes';
@@ -273,6 +275,23 @@ function withLookTextSize(elements: unknown[]): unknown[] {
   );
 }
 
+// A raw arrow pinned at both ends draws as graph input's lines do (docs/specs/015-api/mcp-server.md): angled when it
+// names no style, and an angled one with no bends given its two, along the axis its start leaves by, so it meets
+// both ends square; ends that line up run straight.
+function withRawElbows(elements: DocElement[]): DocElement[] {
+  return elements.map((el) => {
+    if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.to.kind !== 'pinned') return el;
+    const styled = el.arrowStyle ?? 'angled';
+    if (styled !== 'angled' || (el.curvePoints?.length ?? 0) > 0)
+      return el.arrowStyle ? el : { ...el, arrowStyle: styled };
+    const side = anchorPrimarySide(el.from.anchor);
+    const bends = orthogonalBends(el, elements, side === 'n' || side === 's' ? 'TB' : 'LR');
+    return bends
+      ? { ...el, arrowStyle: 'angled' as const, curvePoints: bends }
+      : { ...el, arrowStyle: 'straight' as const };
+  });
+}
+
 export function normaliseElements<T>(elements: T): T {
   if (!Array.isArray(elements)) return elements;
   const sized = withLookTextSize(elements);
@@ -281,5 +300,5 @@ export function normaliseElements<T>(elements: T): T {
   const normalised = lanesToFront(sized.map(normaliseElement));
   // Only a list of element records is settled; anything else is left for validation to refuse.
   if (!normalised.every(isRecord)) return normalised as T;
-  return settleChips([], normalised as DocElement[]) as T;
+  return withRawElbows(settleChips([], normalised as DocElement[])) as T;
 }
