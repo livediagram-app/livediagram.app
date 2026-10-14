@@ -87,7 +87,8 @@ Numbers bounded by validation; no text of its own beyond the label.
 only when a stack grew (a child added or enlarged), so a move within a stack stays one pass; a tab with no
 stack costs one `some` scan. Measured in the perf test, a 2,000-element board with 20 stacks of 10 and one child moved:
 2.5 ms of CPU on an M-series Mac, 7.6 ms under coverage (deriving per stack cost 10.9 and 43 ms, and 154 ms on CI),
-against a 60 ms budget (`stack.perf.test.ts`).
+against a 60 ms budget (`stack.perf.test.ts`). The same board with a child added (the stack grows, two passes): 4.6 ms,
+against the same budget.
 
 ## Presentation and UX
 
