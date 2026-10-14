@@ -51,6 +51,17 @@ vi.mock('./selection-aware-views', async (importOriginal) => {
     }),
   };
 });
+// Each element's slot in the list: its count shows whether a layer render walked the board.
+const slotRenders = { count: 0 };
+vi.mock('./PreviewedElement', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./PreviewedElement')>();
+  return {
+    PreviewedElement: (props: Parameters<typeof real.PreviewedElement>[0]) => {
+      slotRenders.count += 1;
+      return real.PreviewedElement(props);
+    },
+  };
+});
 // The grips layer is re-created on every layer render, so its count is the layer's.
 const layerRenders = { count: 0 };
 vi.mock('@/components/canvas/SelectionGripsLayer', async (importOriginal) => {
@@ -154,6 +165,7 @@ function mount(first = layerProps()) {
   renders.arrow.clear();
   renders.frame.clear();
   layerRenders.count = 0;
+  slotRenders.count = 0;
   return view;
 }
 
@@ -168,6 +180,22 @@ describe('element views render only for their own changes', () => {
     const { rerender } = mount();
     rerender(<CanvasElementsLayer {...layerProps()} />);
     expect(counts()).toEqual({ boxed: 0, arrows: 0 });
+  });
+
+  // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved": a press or a release
+  // renders the editor (a drag begins or ends), and that must not walk the board's elements.
+  it('walks no element slot for an editor render that changes nothing they show', () => {
+    const { rerender } = mount();
+    rerender(<CanvasElementsLayer {...layerProps()} />);
+    rerender(<CanvasElementsLayer {...layerProps()} />);
+    expect(slotRenders.count).toBe(0);
+  });
+
+  it('walks the element slots again when an element changes', () => {
+    const { rerender } = mount();
+    const moved = BOARD.map((el) => (el.id === c.id ? { ...el, x: 40 } : el));
+    rerender(<CanvasElementsLayer {...layerProps({ elements: moved })} />);
+    expect(slotRenders.count).toBe(BOARD.length);
   });
 
   it('renders no element view, and no arrow frame slot, for a zoom', () => {
