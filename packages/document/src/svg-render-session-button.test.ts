@@ -11,7 +11,13 @@ const button = (session?: unknown) =>
     label: '',
     session,
   }) as unknown as BoxedElement;
-const texts = (svg: string) => [...svg.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]!);
+// Each <text>'s plain words, read by index rather than a regex, so the scan stays linear in the svg.
+const texts = (svg: string) =>
+  svg
+    .split('<text')
+    .slice(1)
+    .map((chunk) => chunk.slice(chunk.indexOf('>') + 1, chunk.indexOf('</text>')))
+    .filter((words) => !words.includes('<'));
 
 describe('a Session button in an export', () => {
   it('draws the timer for a button with no tool, or one it does not know, as the canvas does', () => {

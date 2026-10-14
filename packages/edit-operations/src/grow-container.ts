@@ -129,9 +129,9 @@ function growScope(
     return;
   let [x, y] = [parent.x, parent.y];
   let [right, bottom] = [parent.x + parent.width, parent.y + parent.height];
-  for (const id of ids) {
-    const box = boxOf(state.byId.get(id)!);
-    if (!box) continue;
+  // A carried arrow has no box: only boxes count.
+  const boxes = ids.map((id) => boxOf(state.byId.get(id)!)).filter((b): b is Box => b !== null);
+  for (const box of boxes) {
     x = Math.min(x, box.x - HOLD_PAD);
     y = Math.min(y, box.y - HOLD_PAD);
     right = Math.max(right, box.x + box.width + HOLD_PAD);
