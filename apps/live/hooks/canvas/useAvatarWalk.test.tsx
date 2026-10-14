@@ -75,3 +75,31 @@ describe('useAvatarWalk with a fence', () => {
     }
   });
 });
+
+// docs/specs/008-canvas/avatar-mode.md "Status": a status rides the presence, and a change is told at once.
+describe('useAvatarWalk with a status', () => {
+  it('publishes a status change straight away', () => {
+    const onPresence = vi.fn();
+    const hook = renderHook(
+      ({ status }: { status: 'focus' | 'away' | null }) =>
+        useAvatarWalk({
+          active: true,
+          config: DEFAULT_AVATAR_CONFIG,
+          status,
+          onToggleGender: vi.fn(),
+          elements: [],
+          mainRef: { current: null },
+          wrapperRef: { current: null },
+          viewportOffset: { x: 0, y: 0 },
+          viewportZoom: 1,
+          setViewportOffset: vi.fn(),
+          onPresence,
+        }),
+      { initialProps: { status: null } },
+    );
+    act(() => hook.result.current.teleportTo({ x: 50, y: 50 }));
+    onPresence.mockClear();
+    hook.rerender({ status: 'focus' });
+    expect(onPresence).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'focus' }));
+  });
+});

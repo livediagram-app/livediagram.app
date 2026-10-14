@@ -1017,6 +1017,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|AvatarGender':
     "Someone changed the Avatar-mode character's gender, in the Avatar panel.",
   'UI|Changed|AvatarHair': "Someone changed the Avatar-mode character's hair, in the Avatar panel.",
+  'UI|Changed|AvatarStatus':
+    'Someone set or cleared their status in Avatar mode (Available, Focusing, In a Meeting or Away). Never which.',
   'UI|Changed|AvatarRandomised':
     'Someone clicked the dice button in the Avatar panel to roll a new random character, keeping their chosen size.',
   'UI|Changed|AvatarSize': "Someone changed the Avatar-mode character's size, in the Avatar panel.",
