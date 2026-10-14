@@ -494,7 +494,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   page does the same across: of a step's exits leaving its bottom on their own ends (labelled, or drawn unlike the
   trunk), one whose next step lies clearly to its left or right leaves that side instead.
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
-  aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
+  aligned, as every template has. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
+  an edit, as one: one miniature per shape kind the graph uses, with
   what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted. `true` names them by default: in a flowchart by ISO 5807
   (stadium "Start or end", square "Step", diamond "Decision", parallelogram "Input or output", document "Document",
   hexagon "Preparation"), otherwise as a diagram of systems reads them (stadium "Entry point", square "Component",

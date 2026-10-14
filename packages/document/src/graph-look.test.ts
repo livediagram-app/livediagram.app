@@ -171,8 +171,18 @@ describe('title, subtitle and key', () => {
   it('adds a key of the shape kinds used beside the drawing, one row each', () => {
     const els = lay({ ...checkout, key: true });
     const labels = els.filter((e) => e.type === 'text').map((e) => (e as { label?: string }).label);
-    expect(labels).toEqual(expect.arrayContaining(['Key', 'Start or end', 'Step', 'Decision']));
+    expect(labels).toEqual(expect.arrayContaining(['Start or end', 'Step', 'Decision']));
     expect(labels).not.toContain('Data store');
+    // A frame titled Key holding its rows, so it moves as one.
+    const key = els.find(
+      (e) => e.type === 'shape' && e.shape === 'frame' && (e as { label?: string }).label === 'Key',
+    ) as BoxedElement;
+    expect(key).toBeDefined();
+    const step = els.find(
+      (e) => e.type === 'text' && (e as { label?: string }).label === 'Step',
+    ) as BoxedElement;
+    expect(step.x).toBeGreaterThanOrEqual(key.x);
+    expect(step.y + step.height).toBeLessThanOrEqual(key.y + key.height);
   });
 });
 

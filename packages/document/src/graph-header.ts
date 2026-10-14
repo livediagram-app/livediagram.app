@@ -112,7 +112,7 @@ export function withHeaderAndKey(
   return [...added, ...elements];
 }
 
-// The key: a quiet card level with the drawing's top, one row per shape kind the drawing uses, each a miniature
+// The key: a frame level with the drawing's top, one row per shape kind the drawing uses, each a miniature
 // in the tone the drawing gives that kind most.
 function keyCard(
   boxes: BoxedElement[],
@@ -128,29 +128,22 @@ function keyCard(
   const x = block.x + block.width + KEY_GAP;
   const top = block.y;
   const height = KEY_PAD + 40 + rows.length * KEY_ROW_H + KEY_PAD - 12;
+  // A frame titled "Key", so the key moves as one (a frame carries its members), in the editor or by an edit.
   const out: Element[] = [
     {
       id: idOf(makeId, 'key'),
       type: 'shape',
-      shape: 'square',
+      shape: 'frame',
       x,
       y: top,
       width: KEY_W,
       height,
-      label: '',
-      colorPreset: 'paper',
-    },
-    {
-      id: idOf(makeId, 'key-title'),
-      type: 'text',
-      x: x + KEY_PAD,
-      y: top + KEY_PAD,
-      width: KEY_W - KEY_PAD * 2,
-      height: 28,
       label: 'Key',
       textSize: 'md',
       textBold: true,
       textAlignX: 'left',
+      textAlignY: 'top',
+      padding: 'lg',
     },
   ];
   rows.forEach(([kind, fallback, iconH], i) => {
