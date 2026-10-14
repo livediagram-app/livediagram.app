@@ -1813,7 +1813,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     remoteAvatars,
     localLaserTrail,
     selfLaserConfig: laserPen.config,
-    cursorsHidden: voteCursorsHidden,
+    // A presenter sees nobody else's cursor, laser or character: it is their screen on a projector
+    // (docs/specs/012-collaboration/presentation-mode.md). Inbound only; our own laser still broadcasts.
+    cursorsHidden: voteCursorsHidden || presenting,
   });
   // Everyone in the document, as poll candidates (docs/specs/012-collaboration/live-poll.md). Self first, then
   // whoever is present on any tab — the order the Collaborators modal uses, so
