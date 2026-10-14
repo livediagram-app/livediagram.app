@@ -480,12 +480,14 @@ export function ElementDataSections({
               sectionProps={sectionProps}
             />
           ) : null}
-          {/* A sequence diagram's rows, Numbered and Play (docs/specs/009-elements/sequence-diagram.md). */}
+          {/* A sequence diagram's summary, Edit Sequence, Numbered and Play (docs/specs/009-elements/sequence-diagram.md
+              "The menu"). */}
           {shapeTarget?.shape === 'sequence' ? (
             <SequenceMenuSection
               target={shapeTarget}
               ops={props.elementStyle}
               sectionProps={sectionProps}
+              onEdit={props.onEditSequence}
             />
           ) : null}
           {/* A pointer note's Detach (docs/specs/009-elements/pointer-note.md). */}

@@ -30,17 +30,57 @@ Removing a participant removes the messages to and from it.
 
 ## Editing
 
-The **Sequence** section (Tools flyout), closed until opened:
+A sequence is too much to edit in a menu, so it has its own dialog, as the [Sankey](sankey.md) has its Flows dialog.
 
-- **Participants**: a row per participant (name, an Actor toggle, ↑ ↓ ×), **Add Participant** (disabled at 12).
-- **Messages**: a row per message (From, To, label, kind, ↑ ↓ ×), **Add Message** (disabled at 60). **Enter** in a
-  message's label adds the next message under it, from that message's receiver to the participant after it (wrapping
-  to the first), and puts the cursor in its label, so a conversation is typed straight down.
-- **Numbered**: on / off.
+### The menu
+
+The **Sequence** section (Tools flyout), closed until opened: a one-line summary (`3 participants · 5 messages`), an
+**Edit Sequence** button that opens the dialog, **Numbered** on / off, and the **Play** animation.
+
+### The Sequence dialog
+
+- Opened by double-clicking the diagram or **Edit Sequence**. On a phone it rises from the bottom as a sheet, as the
+  editor's other dialogs do (Edit Outline).
+- **Header**: title **Sequence Diagram**, the line "Who calls whom, in order. Write the messages top to bottom and the
+  diagram lays itself out.", the labelled **Help** link (the Sequence Diagrams article) and the close cross.
+- Two tabs, **Messages** first and **Text**. Switching tabs carries the rows across.
+- **Participants** run along the top as chips, left to right as the diagram draws them, each with its look's glyph (a
+  box, or a stick figure for an actor). Clicking one opens it in place: its name, **Actor** on / off, **Move Left**,
+  **Move Right** and **Remove** (which takes its messages with it; disabled at two participants). Enter or a click
+  away closes it; Escape cancels the rename, not the dialog. A dashed **Add Participant** chip ends the strip
+  (disabled at 12) and opens the new one, named, for renaming.
+- **Messages** (the first tab): a numbered row per message, top to bottom:
+  - **From** and **To**, picked from the participants; the same participant twice is a self-call.
+  - The **kind**, one button between them drawn as the arrow it makes (a solid line with a filled head for **Call**,
+    an open head for **Async**, a dashed line for **Reply**); clicking it moves to the next kind, and its tooltip and
+    name say which it is.
+  - The **words**, a wide box.
+  - **Move Up**, **Move Down** (on hover or focus with a mouse, always on a touch screen) and **Remove**.
+  - On a phone, From, the kind and To share the first line and the words take the second.
+  - **Enter** in a message's words adds the next message under it, from that message's receiver to the participant
+    after it (wrapping to the first), with the cursor in its words, so a conversation is typed straight down.
+    **Backspace** in an empty message removes it and returns to the one above.
+  - **Add Message**, a full-width dashed row under the last (disabled at 60), adds one after the last, the same way.
+    It counts the messages (`5 of 60`).
+  - With no messages, the list shows an empty state, "No messages yet", over the Add Message row.
+- **Text**: the sequence as lines, edited in place:
+  - `participant API` or `actor Customer` declares a participant (optional; any name a message uses is added, in the
+    order it first appears);
+  - `From -> To: words` is a call, `From ~> To: words` is async, `From --> To: words` is a reply;
+  - lines starting with `//` are notes and are skipped;
+  - lines it cannot read are named (`Line 4 was not read.`), and nothing else is lost.
+    The common arrows other tools write (`->>`, `-->>`, `-)`) are read too. Participants keep their identity across a
+    round trip by name, so their messages stay theirs.
+- A **preview** of the diagram sits beside the rows on a wide screen (above them on a narrow one), drawn on white
+  whatever the appearance, from the draft as you type.
+- The footer holds **Numbered** on the left and **Done** on the right.
+- Every change is stored as one undo step: words when their box loses focus, anything structural (a pick, a move, an
+  add, a remove, a kind) at once, and the text when its box loses focus. A store that would change nothing is skipped.
+  Closing (Done, the cross, Escape, a tap outside) stores what is being typed.
 
 ## Animation
 
-**Play** (`sequenceAnim: 'play'`, the Concept-style option in the Sequence section) reveals the diagram top to bottom,
+**Play** (`sequenceAnim: 'play'`, in the menu's Sequence section) reveals the diagram top to bottom,
 so the messages appear in the order they happen; the wipe takes 0.4 s per message at Normal speed (scaled by Speed; the default Slow doubles it) and plays once
 unless Repeat is on. CSS only (a clip from the top); reduced motion and every export show the whole diagram.
 
@@ -58,11 +98,11 @@ and the reply to the browser.
 
 ## Share roles
 
-| Role        | May              |
-| ----------- | ---------------- |
-| Editor      | Everything above |
-| Participant | Look             |
-| Viewer      | Look             |
+| Role        | May                                                                                        |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| Editor      | Everything above (the dialog and the double-click are an Editor's, on an unlocked diagram) |
+| Participant | Look                                                                                       |
+| Viewer      | Look                                                                                       |
 
 ## Agents
 

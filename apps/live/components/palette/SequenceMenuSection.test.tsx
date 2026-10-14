@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// A sequence diagram's section (docs/specs/009-elements/sequence-diagram.md "Editing").
+// A sequence diagram's section (docs/specs/009-elements/sequence-diagram.md "The menu").
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -11,9 +11,9 @@ import type { ElementStyleOps } from '@/lib/element-style-ops';
 afterEach(cleanup);
 
 const seq = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('sequence', 0, 0) as ShapeElement), ...over }) as ShapeElement;
+  ({ ...(createShape('sequence', 0, 0) as ShapeElement), id: 'q', ...over }) as ShapeElement;
 
-function show(target: ShapeElement) {
+function show(target: ShapeElement, onEdit?: (id: string) => void) {
   const ops: ElementStyleOps = {
     preview: vi.fn(),
     end: vi.fn(),
@@ -26,6 +26,7 @@ function show(target: ShapeElement) {
       target={target}
       ops={ops}
       sectionProps={() => ({ open: true, onToggle: () => {}, flush: true })}
+      onEdit={onEdit}
     />,
   );
   const last = () =>
@@ -34,37 +35,19 @@ function show(target: ShapeElement) {
 }
 
 describe('SequenceMenuSection', () => {
-  it('Enter in a message adds the next one under it, from its receiver, and focuses it', () => {
-    const { ops, last } = show(seq());
-    const first = screen.getByRole('textbox', { name: 'Message 1 label' });
-    fireEvent.keyDown(first, { key: 'Enter' });
-    expect(ops.commit).toHaveBeenCalledWith(expect.any(Function), 'SequenceMessages');
-    const messages = last()(seq()).sequenceMessages!;
-    expect(messages).toHaveLength(6);
-    expect(messages[1]).toEqual({ from: 'api', to: 'db', label: '', kind: 'call' });
-    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Message 2 label' }));
+  it('summarises the diagram and opens the dialog from Edit Sequence', () => {
+    const onEdit = vi.fn();
+    show(seq(), onEdit);
+    expect(screen.getByText('3 participants · 5 messages')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Sequence' }));
+    expect(onEdit).toHaveBeenCalledWith('q');
+    // The rows are the dialog's now, not the menu's.
+    expect(screen.queryByRole('textbox')).toBeNull();
   });
 
-  it('removing a participant drops its messages', () => {
-    const { last } = show(seq());
-    fireEvent.click(screen.getAllByRole('button', { name: 'Remove participant' })[2]!);
-    const next = last()(seq());
-    expect(next.sequenceParticipants).toHaveLength(2);
-    expect(next.sequenceMessages).toHaveLength(3);
-  });
-
-  it('keeps two participants: their Remove is disabled', () => {
-    show(
-      seq({
-        sequenceParticipants: [
-          { id: 'a', label: 'A' },
-          { id: 'b', label: 'B' },
-        ],
-        sequenceMessages: [],
-      }),
-    );
-    for (const b of screen.getAllByRole('button', { name: 'Remove participant' }))
-      expect((b as HTMLButtonElement).disabled).toBe(true);
+  it('offers no Edit Sequence to someone who may not edit it', () => {
+    show(seq());
+    expect(screen.queryByRole('button', { name: 'Edit Sequence' })).toBeNull();
   });
 
   it('turns Numbered on and off, absent when off', () => {
@@ -77,7 +60,7 @@ describe('SequenceMenuSection', () => {
     expect('sequenceNumbered' in again.last()(seq({ sequenceNumbered: true }))).toBe(false);
   });
 
-  it('Play is offered, with Speed and Repeat once picked', () => {
+  it('Play is offered', () => {
     const { ops, last } = show(seq());
     fireEvent.click(screen.getByRole('button', { name: 'Play Animation' }));
     expect(ops.commit).toHaveBeenCalledWith(expect.any(Function), 'SequenceAnim');

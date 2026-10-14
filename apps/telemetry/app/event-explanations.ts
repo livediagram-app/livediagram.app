@@ -264,6 +264,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone added, renamed, reordered or removed a participant in a sequence diagram.',
   'Element|Changed|SequenceMessages':
     'Someone added, edited, reordered or removed a message in a sequence diagram.',
+  'Element|Changed|SequenceText':
+    'Someone rewrote a sequence diagram as text in its dialog, one message per line.',
   'Element|Changed|SequenceNumbered':
     'Someone switched the message numbers of a sequence diagram on or off.',
   'Element|Changed|SequenceAnim':

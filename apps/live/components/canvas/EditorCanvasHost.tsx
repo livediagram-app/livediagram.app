@@ -38,6 +38,7 @@ import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { canEditSankey } from '@/lib/sankey-edit';
+import { canEditSequence } from '@/lib/sequence-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { brushPageId, pageBrushPreview, pagePaintPress } from '@/lib/format-page-brush';
 
@@ -304,6 +305,7 @@ export function EditorCanvasHost() {
     setExportScope,
     setCodeEditOpenForId,
     setSankeyFlowsOpenForId,
+    setSequenceOpenForId,
     setFormatSourceId,
     setLinkPickerOpenForId,
     setMapPosition,
@@ -444,6 +446,7 @@ export function EditorCanvasHost() {
     if (!el || el.type !== 'shape') return;
     if (el.shape === 'code-block') setCodeEditOpenForId(id);
     else if (el.shape === 'sankey' && canEditSankey(can, el)) setSankeyFlowsOpenForId(id);
+    else if (el.shape === 'sequence' && canEditSequence(can, el)) setSequenceOpenForId(id);
   };
   const backdrop = resolveViewBackdrop(
     activeTab,

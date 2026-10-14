@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   createShape,
   isValidElement,
+  opensInlineLabelEditor,
+  supportsBorderControls,
   nextMessageAfter,
   renderElementsToSvg,
   sequenceDiagramOf,
@@ -86,6 +88,11 @@ describe('sequence diagram element', () => {
     expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
     expect(svg).toContain('Place order');
     expect(svg).toContain('Database');
+  });
+
+  it('opens no label editor (its words are its rows) but keeps its border controls', () => {
+    expect(opensInlineLabelEditor('sequence')).toBe(false);
+    expect(supportsBorderControls(seq())).toBe(true);
   });
 
   it('Play is stored only when on', () => {
