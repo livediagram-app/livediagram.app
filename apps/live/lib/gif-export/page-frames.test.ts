@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { composeFrame, type FrameContext } from './page-frames';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { GifExportError } from './gif-export-error';
+import { composeFrame, createFrameDrawer, loadSvg, type FrameContext } from './page-frames';
 
 // docs/specs/020-import-export/blueprints/animated-gif-export.md "Frames".
 function fakeContext() {
@@ -42,5 +43,79 @@ describe('composing a frame', () => {
     const { ctx, calls } = fakeContext();
     composeFrame(ctx, under, 'none', 100, 50, { incoming: IN, outgoing: OUT });
     expect(calls.slice(1)).toEqual(['draw in 0,0 a=1']);
+  });
+});
+
+describe('the frame drawer', () => {
+  const frame = { page: 0, t: 0, mix: 1, delayCs: 7 };
+  const snapshot = { animated: false, width: 4, height: 2, urlAt: (t: number) => `data:${t}` };
+
+  function fakeDoc(ctx: Partial<CanvasRenderingContext2D> | null) {
+    return {
+      createElement: () => ({ width: 0, height: 0, getContext: () => ctx }),
+    } as unknown as Document;
+  }
+  function stubImage(decode: () => Promise<void>) {
+    const srcs: string[] = [];
+    vi.stubGlobal(
+      'Image',
+      class {
+        decoding = '';
+        set src(v: string) {
+          srcs.push(v);
+        }
+        decode = decode;
+      },
+    );
+    return srcs;
+  }
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('draws the page at its moment and reads the frame back', async () => {
+    const srcs = stubImage(async () => {});
+    const data = new Uint8ClampedArray(32);
+    const ctx = {
+      ...fakeContext().ctx,
+      getImageData: () => ({ data }),
+    } as unknown as CanvasRenderingContext2D;
+    const drawer = createFrameDrawer(4, 2, 'fade', fakeDoc(ctx));
+    await expect(drawer.draw({ ...frame, t: 500 }, () => snapshot)).resolves.toBe(data);
+    expect(srcs).toEqual(['data:500']);
+  });
+
+  it('loads the outgoing page too under a transition', async () => {
+    const srcs = stubImage(async () => {});
+    const ctx = { ...fakeContext().ctx, getImageData: () => ({ data: new Uint8ClampedArray(32) }) };
+    const drawer = createFrameDrawer(
+      4,
+      2,
+      'fade',
+      fakeDoc(ctx as unknown as CanvasRenderingContext2D),
+    );
+    await drawer.draw({ ...frame, t: 67, from: { page: 1, t: 3067 }, mix: 0.2 }, () => snapshot);
+    expect(srcs).toEqual(['data:67', 'data:3067']);
+  });
+
+  it('fails as tainted when the browser will not hand the pixels back', async () => {
+    stubImage(async () => {});
+    const ctx = {
+      ...fakeContext().ctx,
+      getImageData: () => {
+        throw new DOMException('tainted', 'SecurityError');
+      },
+    };
+    const drawer = createFrameDrawer(
+      4,
+      2,
+      'none',
+      fakeDoc(ctx as unknown as CanvasRenderingContext2D),
+    );
+    await expect(drawer.draw(frame, () => snapshot)).rejects.toEqual(new GifExportError('tainted'));
+  });
+
+  it('fails when a page will not decode, or there is no canvas to draw on', async () => {
+    stubImage(() => Promise.reject(new Error('decode')));
+    await expect(loadSvg('data:x')).rejects.toEqual(new GifExportError('failed'));
+    expect(() => createFrameDrawer(4, 2, 'none', fakeDoc(null))).toThrow(GifExportError);
   });
 });

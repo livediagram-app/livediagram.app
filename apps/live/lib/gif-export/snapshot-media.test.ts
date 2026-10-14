@@ -69,4 +69,29 @@ describe('inlining pictures', () => {
       'background:url("data:/bg.png")',
     );
   });
+
+  it('gives an SVG picture its data: URL, a video its poster, and a canvas it cannot read nothing', async () => {
+    const live = document.createElement('div');
+    live.innerHTML =
+      '<svg><image xlink:href="/pic.png"></image></svg><video class="v" poster="/poster.png"></video><canvas></canvas>';
+    const clone = live.cloneNode(true) as HTMLElement;
+    const images = { dataUrl: async (u: string) => `data:${u.replace(/^https?:\/\/[^/]+/, '')}` };
+    HTMLCanvasElement.prototype.toDataURL = () => {
+      throw new DOMException('tainted', 'SecurityError');
+    };
+    await inlineMedia(
+      [...live.querySelectorAll('*')],
+      [...clone.querySelectorAll('*')],
+      images,
+      () => false,
+    );
+    expect(clone.querySelector('image')?.getAttribute('href')).toBe('data:/pic.png');
+    expect(clone.querySelector('image')?.hasAttribute('xlink:href')).toBe(false);
+    expect(clone.querySelector('img.v')?.getAttribute('src')).toBe('data:/poster.png');
+    expect(clone.querySelector('video')).toBeNull();
+    expect(clone.querySelector('canvas')).toBeNull();
+    expect([...clone.querySelectorAll('img')].map((i) => i.getAttribute('src'))).toContain(
+      TRANSPARENT_PIXEL,
+    );
+  });
 });
