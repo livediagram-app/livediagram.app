@@ -5,6 +5,7 @@
 
 import type { EditRejection } from '@livediagram/api-schema';
 import {
+  SHAPE_DEFAULT_SIZE,
   SHAPE_KINDS,
   coerceShapeKind,
   createAnnotation,
@@ -137,16 +138,21 @@ export function createKind(
     const peers = peerLook(state, el.shape);
     if (peers && !('textSize' in named) && !('text' in named))
       el = { ...el, textSize: peers.textSize };
+    const look =
+      el.textSize === 'sm' || el.textSize === 'md' ? { textSize: el.textSize } : undefined;
     if (peers) {
-      const fit = labelBoxSize(el.label, el.shape);
+      // Siblings shorter than the palette's box of their shape wear the template look (graph input, templates): the
+      // new box is measured as that look measures, so a short label is not the palette's tall square beside them.
+      const templated = peers.height < SHAPE_DEFAULT_SIZE[el.shape].height;
+      const fit = templated
+        ? labelBoxSize(el.label, el.shape, look ?? { textSize: 'sm' }, !!el.iconId, peers)
+        : labelBoxSize(el.label, el.shape);
       el = {
         ...el,
         width: Math.max(fit.width, peers.width),
         height: Math.max(fit.height, peers.height),
       };
     } else {
-      const look =
-        el.textSize === 'sm' || el.textSize === 'md' ? { textSize: el.textSize } : undefined;
       el = { ...el, ...labelBoxSize(el.label, el.shape, look, !!el.iconId) };
     }
   }

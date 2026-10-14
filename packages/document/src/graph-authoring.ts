@@ -157,8 +157,10 @@ export function labelBoxSize(
   shape: string,
   look?: GraphLook,
   hasIcon = false,
+  // In the look, the smallest box in place of the kind's: a box joining siblings starts at their size.
+  floor?: { width: number; height: number },
 ): { width: number; height: number } {
-  if (look) return lookBoxSize(label, coerceShapeKind(shape), look, hasIcon);
+  if (look) return lookBoxSize(label, coerceShapeKind(shape), look, hasIcon, floor);
   const base = SHAPE_DEFAULT_SIZE[coerceShapeKind(shape)];
   const text = (label ?? '').trim();
   if (!text) return { width: base.width, height: base.height };
@@ -178,9 +180,10 @@ function lookBoxSize(
   kind: string,
   look: GraphLook,
   hasIcon: boolean,
+  given?: { width: number; height: number },
 ): { width: number; height: number } {
   const base = SHAPE_DEFAULT_SIZE[kind as keyof typeof SHAPE_DEFAULT_SIZE];
-  const floor = LOOK_FLOOR[kind] ?? base;
+  const floor = given ?? LOOK_FLOOR[kind] ?? base;
   const text = (label ?? '').trim();
   if (!text) return { ...floor };
   const px = LOOK_FONT_PX[look.textSize];

@@ -280,3 +280,25 @@ function withTall(el: Element): Tab {
   const tab = checkoutFlow();
   return { ...tab, elements: [...tab.elements, el] };
 }
+
+describe('set: an arrow given new ends', () => {
+  it('drops its route, unless the same set writes one', () => {
+    const tab = checkoutFlow();
+    const bent: Tab = {
+      ...tab,
+      elements: tab.elements.map((el) =>
+        el.id === 'a1' ? ({ ...el, curvePoints: [{ dx: 40, dy: 0 }] } as Element) : el,
+      ),
+    };
+    const from = { kind: 'pinned', elementId: 'n1', anchor: 'e' };
+    const after = (fields: Record<string, unknown>) =>
+      applied(run([set('a1', fields)], bent)).tab.elements.find((e) => e.id === 'a1') as Element & {
+        curvePoints?: unknown;
+      };
+    expect(after({ from }).curvePoints).toBeUndefined();
+    expect(after({ from, curvePoints: [{ dx: 10, dy: 10 }] }).curvePoints).toEqual([
+      { dx: 10, dy: 10 },
+    ]);
+    expect(after({ label: 'Go' }).curvePoints).toEqual([{ dx: 40, dy: 0 }]);
+  });
+});

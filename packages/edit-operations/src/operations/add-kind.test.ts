@@ -28,13 +28,11 @@ describe('add <kind>', () => {
       type: 'shape',
       shape: 'square',
       textSize: 'sm',
-      // The checkout flow's squares are 140×120: the new one matches them.
+      // The checkout flow's squares are 140×60: the new one matches them, not the palette's taller square.
       width: 140,
-      height: 120,
+      height: 60,
     });
-    expect(lines(outcome)[0]).toMatch(
-      /^\+ verify-email {2}square "Verify email" @\d+,\d+ 140×120$/,
-    );
+    expect(lines(outcome)[0]).toMatch(/^\+ verify-email {2}square "Verify email" @\d+,\d+ 140×60$/);
   });
 
   it('takes an id, fields and named geometry, which wins over a placement', () => {
@@ -128,7 +126,7 @@ describe('add <kind>', () => {
       expect.stringMatching(/^\+ retry {2}square "Retry" @/),
       expect.stringMatching(/^~ f2 {2}taller 200→\d+$/),
       // The steps under the frame move down by the growth rather than being taken in.
-      '» n6 n7 n8  +0,+222 (make room)',
+      '» n6 n7 n8  +0,+162 (make room)',
       'f2  +retry',
     ]);
   });
@@ -247,5 +245,58 @@ describe('add <kind>', () => {
     const grown = lines(outcome).find((l) => l.startsWith('~ f2'));
     expect(grown).toMatch(/taller/);
     expect(grown).not.toMatch(/widened/);
+  });
+});
+
+describe('add <kind> beside template-look siblings', () => {
+  const sq = (id: string, x: number, textSize: string): Element =>
+    ({
+      id,
+      type: 'shape',
+      shape: 'square',
+      x,
+      y: 0,
+      width: 236,
+      height: 66,
+      label: id,
+      textSize,
+    }) as Element;
+  it('takes their size, not the palette square, whatever their text size', () => {
+    for (const textSize of ['md', 'lg']) {
+      const tab: Tab = {
+        id: 't',
+        name: 'T',
+        elements: [sq('a', 0, textSize), sq('b', 300, textSize)],
+      };
+      const el = applied(
+        run(
+          `add square label="Search service"${textSize === 'md' ? ' iconId=search' : ''} right-of:b`,
+          tab,
+        ),
+      ).tab.elements.find((e) => e.id === 'search-service');
+      // Their height; their width, or wider where a label with its icon needs it.
+      expect(el).toMatchObject({ height: 66 });
+      expect((el as Element & { width: number }).width).toBeGreaterThanOrEqual(236);
+    }
+  });
+
+  it('matches siblings taller than the palette box of their shape', () => {
+    const tall = (id: string, x: number): Element =>
+      ({
+        id,
+        type: 'shape',
+        shape: 'square',
+        x,
+        y: 0,
+        width: 160,
+        height: 180,
+        label: id,
+        textSize: 'sm',
+      }) as Element;
+    const tab: Tab = { id: 't', name: 'T', elements: [tall('a', 0), tall('b', 300)] };
+    const el = applied(run('add square label=Next right-of:b', tab)).tab.elements.find(
+      (e) => e.id === 'next',
+    );
+    expect(el).toMatchObject({ width: 160, height: 180 });
   });
 });

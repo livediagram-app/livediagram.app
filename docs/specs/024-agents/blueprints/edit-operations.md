@@ -304,6 +304,8 @@ means `newElementId` ([Ids](#ids)).
   otherwise). Each named end is pinned to its box; both ends re-anchor with `bestAnchorTowards` facing each other; the
   arrow's `curveOffset`, `curvePoints` and `elbowOffset` are removed (EO31). Ends that would land on one box (a named end onto the box
   the other end is pinned to, or both named alike) are `invalid_value` ("an arrow joins two different boxes"), as `connect a -> a` is.
+- **`set` on an arrow's `from` or `to`** drops its route the same way (EO31), unless that `set` writes a route field
+  itself: a route kept from the old ends was drawn from the new anchor through boxes and along their edges.
 - **`insert <kind> [id=] key=value… between <a> <b>`.** The arrows pinned from a to b: none is `not_connected`,
   several is `target_ambiguous` naming them, with the hint "rewire one of them by its ref instead". The node is
   built as `add` builds it, then:
