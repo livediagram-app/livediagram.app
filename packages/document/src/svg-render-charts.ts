@@ -26,6 +26,7 @@ import { chartTypeOf, lineVariantOf } from './chart-types';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
 import type { BoxedElement, ShapeElement } from './index';
 import { legendFontPx } from './label-font';
+import { EXPORT_DEFAULT_FONT } from './svg-render-labels';
 import { r2, xmlEscape } from './svg-render-primitives';
 
 type Chart = BoxedElement & { type: 'shape' };
@@ -46,7 +47,7 @@ function svgChartLegend(
 ): string {
   const vertical = legend.pos === 'left' || legend.pos === 'right';
   if (!legend.show || (vertical ? legend.w < 48 : legend.h < 18)) return '';
-  const font = fontFamily ? ` font-family="${xmlEscape(fontFamily)}"` : '';
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   // Text Size (docs/specs/009-elements/pie-chart.md), on the canvas's scale; the swatch and row pitch keep
   // their proportion to it, as ChartLegend's do.
   const fontPx = legendFontPx(el.textSize);
@@ -107,7 +108,7 @@ function svgValueLabels(
   fontPx: number,
   fontFamily?: string,
 ): string {
-  const font = fontFamily ? ` font-family="${xmlEscape(fontFamily)}"` : '';
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   return labels
     .map((l) => {
       const ink = l.onMark !== undefined ? labelOn(fillOf(l.onMark)) : textColor;
@@ -223,7 +224,7 @@ export function svgLineChart(
       return fill + line + dots;
     })
     .join('');
-  const font = fontFamily ? ` font-family="${xmlEscape(fontFamily)}"` : '';
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   const labels = m.labels
     .map(
       (l) =>

@@ -114,7 +114,8 @@ groups all three (they're all in `isSelfDrawingShape` too).
   `chartShapeOf(type)` map between a chart and its type, `chartTypeChange(el, type)` gives the patch that changes it
   (`packages/document/src/chart-types.ts`), and `pieMarks` / `barMarks` / `lineMarks`
   (`packages/document/src/chart-marks.ts`) lay out every type's marks for both the canvas views and the exporter, so
-  the two never draw a chart differently.
+  the two never draw a chart differently. An exported chart's (and Sankey's) text names the theme's font, else the
+  export's sans default, never bare: a standalone viewer drew bare text in its serif default.
   The types + constants + `isPieShape` / `isBarShape` / `isLineShape` /
   `isChartShape` live in `@livediagram/document` (`src/data-shapes.ts`).
 - Rendered by `PieChartView` / `BarChartView` / `LineChartView`: SVG marks in the
