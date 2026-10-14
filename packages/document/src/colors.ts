@@ -584,6 +584,21 @@ export function supportsBorderControls(element: Element): boolean {
 // (hasOwnFace: the collaboration cards, the buttons, the picker, the reveal
 // cover, the chair...): their face never renders an inline icon, so one folded
 // in would be invisible. Dropped on them, it stands alone too.
+// Kinds that take an inline icon but place it themselves, so its position (`iconPosition`) is not the user's to set:
+// a card's media slot and a callout's badge (docs/specs/009-elements/card.md), a header's logo, a boundary's tab
+// (docs/specs/009-elements/boundary.md). Their Icon position controls would write a field nothing reads.
+export const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set([
+  'card',
+  'callout',
+  'site-header',
+  'boundary',
+]);
+
+/** Whether a shape's inline icon goes where `iconPosition` says, so offering that choice does something. */
+export function positionsInlineIcon(element: Element): boolean {
+  return acceptsInlineIcon(element) && !SELF_PLACED_ICON_SHAPES.has(element.shape);
+}
+
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
   return (
     element.type === 'shape' &&
