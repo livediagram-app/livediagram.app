@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyShapeVariant,
+  BADGE_PRESET_VARIANTS,
   CARD_PRESET_VARIANTS,
   cardLayout,
   cardSlotsOf,
@@ -64,5 +65,30 @@ describe('card presets', () => {
   it('ignores a card variant on another kind', () => {
     const sq = createShape('square', 0, 0) as ShapeElement;
     expect(applyShapeVariant(sq, 'panel')).toBe(sq);
+  });
+});
+
+// docs/specs/009-elements/badge.md "Badge presets".
+describe('badge presets', () => {
+  const badge = () => createShape('badge', 0, 0) as ShapeElement;
+
+  it('gives each preset its text and look, and keeps it a valid badge', () => {
+    expect(applyShapeVariant(badge(), 'beta')).toMatchObject({ label: 'Beta', chipLook: 'tinted' });
+    expect(applyShapeVariant(badge(), 'warning')).toMatchObject({
+      label: 'PII',
+      chipLook: 'solid',
+      strokeColor: '#e11d48',
+    });
+    for (const v of BADGE_PRESET_VARIANTS) {
+      const b = applyShapeVariant(badge(), v);
+      expect(b.shape, v).toBe('badge');
+      expect(isValidElement(b), v).toBe(true);
+    }
+  });
+
+  it('leaves the New preset (no variant) and an unknown variant as the badge it was', () => {
+    const b = badge();
+    expect(applyShapeVariant(b, undefined)).toBe(b);
+    expect(applyShapeVariant(b, 'toString')).toBe(b);
   });
 });

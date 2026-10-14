@@ -1,9 +1,10 @@
 import { Glyph } from '@livediagram/ui';
 import type { PaletteTileDef } from './palette-tile-defs';
 
-// The Card tile's presets (docs/specs/009-elements/card.md "Card presets"): what its opener shows on the Toolbar strip,
-// each one an ordinary card tile carrying its variant (packages/document shape-variants.ts `cardPreset`). Not in
-// PALETTE_TILES: they live under the Card tile, so a category's tile count and Search keep the one Card.
+// The presets a tile's opener shows on the Toolbar strip: the Card's (docs/specs/009-elements/card.md "Card presets")
+// and the Badge's (docs/specs/009-elements/badge.md "Badge presets"), each an ordinary tile carrying its variant
+// (packages/document shape-variants.ts). Not in PALETTE_TILES: they live under their tile, so a category's tile count
+// and Search keep the one Card and the one Badge.
 
 const preset = (
   variant: string | undefined,
@@ -96,5 +97,94 @@ export const CARD_PRESET_TILES: readonly PaletteTileDef[] = [
       <circle cx="7" cy="10" r="2" />
       <path d="M11 10h7M7 14.5h11" />
     </>,
+  ),
+];
+
+// A badge preset's tile: the pill drawn in its look, its text the caption's own word.
+const badge = (
+  variant: string | undefined,
+  caption: string,
+  blurb: string,
+  description: string,
+  look: 'solid' | 'tinted' | 'outline' | 'ink' | 'quiet',
+): PaletteTileDef => ({
+  id: `components:badge${variant ? `-${variant}` : ''}`,
+  section: 'components',
+  caption,
+  label: `Add ${caption} Badge`,
+  blurb,
+  description,
+  filled: true,
+  action: { type: 'shape', kind: 'badge', ...(variant ? { variant } : {}) },
+  icon: (
+    <Glyph size={18} units={24}>
+      <rect
+        x="3"
+        y="8"
+        width="18"
+        height="8"
+        rx="4"
+        fill={look === 'solid' || look === 'ink' ? 'currentColor' : 'none'}
+        fillOpacity={look === 'ink' ? 0.85 : look === 'solid' ? 0.6 : undefined}
+        strokeDasharray={look === 'quiet' ? '2 2' : undefined}
+      />
+      {look === 'tinted' ? (
+        <rect
+          x="5"
+          y="10"
+          width="14"
+          height="4"
+          rx="2"
+          fill="currentColor"
+          fillOpacity={0.3}
+          stroke="none"
+        />
+      ) : null}
+    </Glyph>
+  ),
+});
+
+export const BADGE_PRESET_TILES: readonly PaletteTileDef[] = [
+  badge(
+    undefined,
+    'New',
+    'Solid, in the accent',
+    'New badge. A solid pill in the accent: mark something new.',
+    'solid',
+  ),
+  badge(
+    'beta',
+    'Beta',
+    'Tinted, quieter',
+    'Beta badge. A tinted pill: a stage such as Beta or Preview.',
+    'tinted',
+  ),
+  badge(
+    'version',
+    'Version',
+    'Outlined, like v2.1',
+    'Version badge. An outlined pill for a version or an environment.',
+    'outline',
+  ),
+  badge(
+    'count',
+    'Count',
+    'Dark, like 3×',
+    'Count badge. A dark pill for a count or a replica number.',
+    'ink',
+  ),
+  badge(
+    'draft',
+    'Draft',
+    'Muted, for a status',
+    'Draft badge. A muted pill for a status nobody needs to act on.',
+    'quiet',
+  ),
+  badge(
+    'warning',
+    'Warning',
+    'Solid rose, like PII',
+    'Warning badge. A rose pill for data, risk or a warning such as PII.',
+    'solid',
   ),
 ];

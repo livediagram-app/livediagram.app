@@ -71,6 +71,19 @@ function cardPreset(el: ShapeElement, variant: string): ShapeElement | null {
   }
 }
 
+// The badge presets (docs/specs/009-elements/badge.md "Badge presets"): a text and a look; the badge fits its text as
+// it settles.
+const BADGE_PRESETS: Record<string, Partial<ShapeElement>> = {
+  beta: { label: 'Beta', chipLook: 'tinted' },
+  version: { label: 'v2.1', chipLook: 'outline' },
+  count: { label: '3×', chipLook: 'ink' },
+  draft: { label: 'Draft', chipLook: 'quiet' },
+  warning: { label: 'PII', chipLook: 'solid', strokeColor: '#e11d48' },
+};
+
+/** The badge presets' variants, in palette order after the New preset (no variant). */
+export const BADGE_PRESET_VARIANTS = ['beta', 'version', 'count', 'draft', 'warning'] as const;
+
 /** The card presets' variants, in palette order after the Service preset (no variant). */
 export const CARD_PRESET_VARIANTS = ['compact', 'panel', 'person', 'accent', 'callout'] as const;
 
@@ -82,6 +95,8 @@ export function applyShapeVariant(el: ShapeElement, variant: string | undefined)
     const preset = cardPreset(el, variant);
     if (preset) return preset;
   }
+  if (el.shape === 'badge' && Object.hasOwn(BADGE_PRESETS, variant))
+    return { ...el, ...BADGE_PRESETS[variant] };
   // The pyramid's variants (docs/specs/009-elements/concept-graphics.md): a Funnel starts from a conversion story.
   if (el.shape === 'pyramid' && variant === 'funnel')
     return {

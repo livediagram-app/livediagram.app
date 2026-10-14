@@ -1,4 +1,4 @@
-import { CARD_PRESET_TILES } from './palette-card-presets';
+import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
 import { headlineCase } from '@livediagram/api-schema';
 import type { PenColour } from '@livediagram/document';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
@@ -284,6 +284,8 @@ export type PaletteTileDef = {
   // Presets of this tile's element (docs/specs/009-elements/card.md "Card presets"): on the Toolbar strip the tile is
   // drawn as an opener (its glyph with a caret) whose popover offers them; elsewhere the tile places its own element.
   variants?: readonly PaletteTileDef[];
+  // The line under the presets popover's title: what can still change after one is placed.
+  variantsHint?: string;
   action: PaletteTileAction;
 };
 
@@ -1436,6 +1438,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'card' },
     variants: CARD_PRESET_TILES,
+    variantsHint: 'Start from a preset, then switch any part on or off.',
     icon: (
       <Glyph size={18} units={24}>
         <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
@@ -1457,6 +1460,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Badge. A small pill like "Beta" or "v2". Drop it on a corner or edge of a node and it stays there as the node moves.',
     filled: true,
     action: { type: 'shape', kind: 'badge' },
+    variants: BADGE_PRESET_TILES,
+    variantsHint: 'Start from a preset, then change its text, look or colour.',
     icon: (
       <Glyph size={18} units={24}>
         <rect x="3" y="8" width="18" height="8" rx="4" />
