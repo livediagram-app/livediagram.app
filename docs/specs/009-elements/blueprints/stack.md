@@ -81,8 +81,10 @@ Numbers bounded by validation; no text of its own beyond the label.
 
 ## Performance and limits
 
-`deriveContainers` once per settle (O(n log n)); a tab with no stack costs one `some` scan. Measured in the perf test:
-a 2,000-element board with 20 stacks of 10 settles within budget (`stack.perf.test.ts`).
+`deriveContainers` once per settle (O(n log n)), derived again only after a stack moved something; a tab with no
+stack costs one `some` scan. Measured in the perf test, a 2,000-element board with 20 stacks of 10 and one child moved:
+2.5 ms of CPU on an M-series Mac, 7.6 ms under coverage (deriving per stack cost 10.9 and 43 ms, and 154 ms on CI),
+against a 60 ms budget (`stack.perf.test.ts`).
 
 ## Presentation and UX
 

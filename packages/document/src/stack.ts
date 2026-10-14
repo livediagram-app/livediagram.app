@@ -144,10 +144,17 @@ export function settleStacks(elements: Element[]): Element[] {
   if (stacks.length === 0) return elements;
   let current = elements;
   const order = [...stacks].sort((a, b) => a.width * a.height - b.width * b.height);
+  // Who holds what, derived again only after a stack moved something: settling runs at every commit,
+  // and the common case (one child moved) changes one stack, so the rest share one derivation.
+  let holders = deriveContainers(current);
+  let holdersOf = current;
   for (const s of order) {
     const stack = current.find((el) => el.id === s.id) as (ShapeElement & Box) | undefined;
     if (!stack) continue;
-    const holders = deriveContainers(current);
+    if (holdersOf !== current) {
+      holders = deriveContainers(current);
+      holdersOf = current;
+    }
     const kids = stackChildren(current, stack, holders);
     if (kids.length === 0) continue;
     const l = layoutStack(stack, kids);
