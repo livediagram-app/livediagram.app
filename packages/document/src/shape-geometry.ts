@@ -17,7 +17,6 @@
 //   - detail:  thin solid chrome (bezels, keys, creases), no fill
 //   - limb:    an unfilled round-capped line (the actor's body)
 //   - head:    a limb that takes the element's fill (the actor's head)
-import type { ChairFacing } from './collab-shapes';
 import { colorWash } from './color-wash';
 import type { ShapeKind } from './shape-kind';
 
@@ -288,31 +287,6 @@ export function browserChromeLayout(): { dotX: number[]; navX: number; pillX: nu
   const navX = c.padXPx + 3 * c.dotPx + 2 * c.dotGapPx + c.groupGapPx;
   return { dotX, navX, pillX: navX + c.nav.widthPx + c.groupGapPx };
 }
-
-// The chair (docs/specs/009-elements/chair.md), on its own 64x72 grid, drawn facing 'n' (back at the
-// top) and turned whole for the other facings.
-export const CHAIR_GEOMETRY = {
-  viewBox: '0 0 64 72',
-  // Contact shadow, so the chair sits ON the canvas.
-  shadow: { cx: 32, cy: 66, rx: 19, ry: 4, fill: '#0f172a', opacity: 0.12 },
-  // Tall backrest, so the silhouette reads as a chair and not two pills.
-  back: { x: 17, y: 3, width: 30, height: 31, rx: 4 },
-  // The slat down the back and the stretcher between the legs: faint rails.
-  slat: 'M32 8v21',
-  stretcher: 'M15 57h34',
-  // Seat: a shallow slab wider than the back.
-  seat: { x: 10, y: 34, width: 44, height: 13, rx: 3 },
-  legs: 'M15 47v16M49 47v16',
-  // The occupied ring, on the seat where the sitter's feet land (canvas only:
-  // presence is not in the element, so a still render never has a sitter).
-  ring: { cx: 32, cy: 40, rx: 24, ry: 10 },
-  panelStrokeWidth: 2,
-  legStrokeWidth: 2.5,
-  railStrokeWidth: 1.5,
-  railOpacity: 0.5,
-} as const;
-
-export const CHAIR_FACING_ROTATION: Record<ChairFacing, number> = { n: 0, e: 90, s: 180, w: 270 };
 
 /** A chair's seat colour: its own fill, or with none (the default is
  *  `transparent`) a wash of its stroke, so it follows the tab theme rather
