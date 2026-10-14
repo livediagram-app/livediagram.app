@@ -33,6 +33,7 @@ import {
   messageOf,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
+  ssoCallbackUrl,
 } from '@/components/chrome/auth-shared';
 import { Button, TextInput } from '@livediagram/ui';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
@@ -76,7 +77,7 @@ function GetStartedContent() {
     try {
       await clerkSignUp.authenticateWithRedirect({
         strategy: 'oauth_google',
-        redirectUrl: '/sso-callback',
+        redirectUrl: ssoCallbackUrl(searchParams),
         // Honour ?redirect_url so an OAuth sign-up from a protected
         // page lands back where it came from, matching the email-code
         // path. See docs/specs/014-identity/auth-and-guest-access.md "Routes" + auth-shared.tsx.
