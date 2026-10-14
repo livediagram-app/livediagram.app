@@ -341,6 +341,20 @@ describe('drawing a drag preview', () => {
   });
 });
 
+// docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the elements": every
+// element sits in the plane that stops the canvas's cursor (globals.css [data-element-plane]).
+describe('the element plane', () => {
+  it('holds every element, and nothing else the layer draws', () => {
+    const { container } = mount();
+    const plane = container.querySelector('[data-element-plane]');
+    expect(plane).not.toBeNull();
+    expect(plane!.className).toBe('contents');
+    expect(plane!.querySelectorAll('[data-arrow-svg]').length).toBe(1);
+    expect(container.querySelectorAll('[data-element-plane]').length).toBe(1);
+    expect(plane!.querySelector('[data-selection-grips]')).toBeNull();
+  });
+});
+
 // docs/specs/029-sheets/sheet.md "Charts": a chart that sits in a Sheet on the tab is the Sheet's to draw.
 describe('charts that sit in a Sheet', () => {
   it('are not drawn on the canvas while their Sheet is on the tab; floating and orphaned ones are', () => {

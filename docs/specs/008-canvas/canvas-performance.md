@@ -80,6 +80,13 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   recomputed. A preview frame renders neither the canvas nor the element layer: each element view
   reads its own part of the preview, so a frame's work follows what moved, not the board, and only
   what follows the moved selection (its chrome) reads the whole preview.
+- **The canvas's cursor stays off the elements.** The cursor the canvas shows (the tool's, a pan's
+  grab, a draw tool's intent) changes on a tool switch, at the start and end of a pan and when a
+  stroke lands, and a cursor is inherited: set on what holds the elements, each change restyled
+  every element on the board. The elements sit in a plane with a cursor of its own, so a change of
+  the canvas's cursor restyles that plane and not what is in it. Each element shows its own cursor
+  where it takes a press, as it already does; a whiteboard pen or a path in its edit mode, whose
+  cursor shows over elements, passes it through the plane on purpose.
 - **The canvas re-renders only for what it shows.** The editor around the canvas re-renders for
   many reasons (a panel opening, a toast, a collaborator's presence, the selection); none of them
   re-renders the canvas unless something the canvas shows changed. The canvas's event handlers keep
@@ -116,7 +123,9 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
 - **Level of detail at low zoom**: text and icons below a few screen pixels drawn as simpler
   marks.
 - **Containment** (`contain` on element wrappers) so a change inside one element does not
-  invalidate the layout of others.
+  invalidate the layout of others. Measured and set aside: `contain: layout` on every element left
+  a pen stroke's release unchanged (layout was about 8 ms of it; the rest was a restyle of the
+  whole board, which the cursor rule above removes).
 
 ## Measuring
 

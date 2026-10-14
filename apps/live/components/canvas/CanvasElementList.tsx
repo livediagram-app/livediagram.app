@@ -127,7 +127,10 @@ export const CanvasElementList = memo(function CanvasElementList({
   tabFinish,
 }: CanvasElementListProps) {
   return (
-    <>
+    // The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
+    // elements"): no box of its own, and a cursor of its own (globals.css), so the canvas's cursor
+    // changing restyles this node and not the board beneath it.
+    <div data-element-plane="" className="contents">
       {shownOrder.map(({ element: listed, layerOpacity }, isoDepth) => (
         <PreviewedElement
           key={listed.id}
@@ -260,6 +263,6 @@ export const CanvasElementList = memo(function CanvasElementList({
           }}
         />
       ))}
-    </>
+    </div>
   );
 });
