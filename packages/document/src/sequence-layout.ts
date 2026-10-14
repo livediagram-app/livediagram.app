@@ -5,6 +5,9 @@
 
 import { createArrow, createShape, createSticky, createText } from './factories';
 import { glyphWidth } from './graph-authoring';
+import { arrowLabelFontSize } from './arrow-label';
+import { wrapBalanced } from './arrow-label-wrap';
+import { LABEL_LINE_HEIGHT, labelMeasure } from './svg-render-primitives';
 import { GRAPH_MUTED, withHeaderAndKey } from './graph-header';
 import type { SequenceDiagram, SequenceItem, SequenceMessageKind } from './mermaid-sequence';
 import type { ArrowheadShape, Element } from './index';
@@ -26,6 +29,11 @@ const DIVIDER_BAND = 36;
 const FRAGMENT_END = 24;
 const NOTE_LINE = 18;
 const LABEL_PX = 14;
+// The widest a lifeline gap grows for its labels, the room a message label leaves either end of its gap, and how far
+// a label keeps off its line.
+const PITCH_MAX = 520;
+const MESSAGE_LABEL_MARGIN = 40;
+const MESSAGE_LABEL_GAP = 4.5;
 const HEAD_PX = 22;
 const ACTOR_W = 44;
 const ACTOR_H = 60;
@@ -50,14 +58,22 @@ export function layoutSequence(
   const index = new Map(participants.map((p, i) => [p.id, i]));
   const longestHead = Math.max(0, ...participants.map((p) => glyphWidth(p.label, HEAD_PX)));
   const headW = Math.round(Math.max(HEAD_MIN_W, longestHead + 48));
-  // The pitch: the head box, or the longest message between two lifelines spread over the gap it spans.
+  // The pitch: the head box, or the longest message label in one gap, as a message keeps its label in its first gap
+  // (spread over the whole span, a long label wrapped narrow in that first gap and its plate cut its own line).
   let pitch = Math.max(PITCH_MIN, headW + 40);
   for (const it of items) {
     if (it.kind !== 'message' || it.from === it.to) continue;
-    const span = Math.abs(index.get(it.to)! - index.get(it.from)!);
-    pitch = Math.max(pitch, Math.ceil((glyphWidth(it.label, LABEL_PX) + 60) / span));
+    pitch = Math.max(pitch, Math.ceil(glyphWidth(it.label, LABEL_PX) + 60));
   }
-  pitch = Math.round(Math.min(pitch, 520));
+  pitch = Math.round(Math.min(pitch, PITCH_MAX));
+  // A message label wraps to its gap, and sits clear above (or below) its line however many lines it takes.
+  const labelWidth = pitch - MESSAGE_LABEL_MARGIN;
+  const measure = labelMeasure(arrowLabelFontSize(undefined), false, false);
+  const lift = (label: string) => {
+    const lines = wrapBalanced(label, labelWidth, measure).lines.length;
+    const fontPx = arrowLabelFontSize(undefined);
+    return (lines * fontPx * LABEL_LINE_HEIGHT + 4) / 2 + MESSAGE_LABEL_GAP;
+  };
   const px = (id: string) => index.get(id)! * pitch + headW / 2;
   const out: Element[] = [];
   const headTop = 0;
@@ -336,7 +352,11 @@ export function layoutSequence(
       // A message is drawn over the bars and lifelines it passes, as UML draws it.
       routeBehind: false,
       ...(m.item.label
-        ? { label: m.item.label, labelOffset: { t, offset: right ? -14 : 14 } }
+        ? {
+            label: m.item.label,
+            labelOffset: { t, offset: (right ? -1 : 1) * lift(m.item.label) },
+            labelMaxWidth: labelWidth,
+          }
         : {}),
       arrowheadShape: HEAD[style],
       ...(style === 'reply' ? { strokeStyle: 'dashed' as const } : {}),

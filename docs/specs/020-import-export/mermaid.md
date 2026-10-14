@@ -166,8 +166,9 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
   stepped right. Nested activations step right by half a bar. A diagram that activates anything itself (`activate`, `deactivate`, `+`, `-`) draws
   only those bars: answered calls add none, so an author's bars are never doubled.
 - **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, the
-  pitch wide enough for the longest message between neighbours; messages a row each, edge to edge of the activation
-  bars, labels above their line; a self-call loops out of the bar and back into its nested one; a note is a sticky
+  pitch wide enough for the longest message label in one gap (up to 520 px), as a message keeps its label in its
+  first gap; messages a row each, edge to edge of the activation bars, labels above their line, wrapped to the gap
+  and lifted by however many lines they take so no plate cuts its own line; a self-call loops out of the bar and back into its nested one; a note is a sticky
   over or beside its participants, as tall as its text needs (one line, 48 px) with the text centred; a fragment is a frame across the lifelines its messages and notes involve (every lifeline when they
   involve none; one nested on the same first lifeline sits a step inside) with its operator as its label and
   each guard in muted text, operands split by a dashed divider.

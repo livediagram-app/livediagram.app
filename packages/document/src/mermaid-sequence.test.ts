@@ -5,6 +5,7 @@ import {
   SEQUENCE_MAX_PARTICIPANTS,
 } from './mermaid-sequence';
 import { layoutGraph, graphFromMermaid } from './graph-input';
+import { arrowLabelPass } from './arrow-label-layout';
 import type { ArrowElement, Element } from './index';
 
 // docs/specs/020-import-export/mermaid.md "Sequence diagrams (agents)".
@@ -105,6 +106,23 @@ describe('layoutSequence', () => {
     expect([...ys].sort((a, b) => a - b)).toEqual(ys);
     expect(messages.find((m) => m.label === '4: 201 Created')!.strokeStyle).toBe('dashed');
     expect(messages.every((m) => m.routeBehind === false)).toBe(true);
+  });
+
+  it("fits a long message's label in its first gap on one line, its plate clear of its own line", () => {
+    const long = 'GET /authorize (code_challenge, S256, state)';
+    const g = graphFromMermaid(
+      ['sequenceDiagram', 'participant A', 'participant B', 'participant C', `A->>C: ${long}`].join(
+        '\n',
+      ),
+    );
+    if (!g.ok) throw new Error(g.error);
+    const els = layoutGraph(g.graph, { makeEdgeId: () => 'x' });
+    const message = arrows(els).find((a) => a.label === long)!;
+    const pass = arrowLabelPass(els);
+    const layout = pass.layouts.get(message.id)!;
+    expect(layout.lines).toHaveLength(1);
+    // Above its line, never over it: no knockout cuts the message.
+    expect(layout.knockout).toBeNull();
   });
 
   it('draws the fragment as a frame with its operator, the actor as a stick figure, the note as a sticky', () => {
