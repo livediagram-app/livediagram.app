@@ -151,7 +151,8 @@ or **Plain Text** (the value alone; the arrow shows on the active cell only).
 - **Sheet Settings** gains a **Data Validation** section (after Named Ranges): each rule as a row (its kind's glyph,
   its range, its short line: "Dropdown: To Do, Doing, Done", "Checkbox", "Number between 1 and 10"), **Edit** (the
   rule editor, anchored to the row), **Go To** (selects its range) and **Remove**; "No validation rules yet. Select
-  cells and choose Dropdown or Checkbox from the toolbar's Data menu." when there are none.
+  cells and choose Dropdown or Checkbox from the toolbar's Data menu." when there are none ("No validation rules."
+  for a Participant or Viewer, who has no toolbar). Edit and Remove are an Editor's.
 - Telemetry: `Sheet · Changed · Validation` for each rule change (made, edited, removed); never the options.
 
 ## Who may do what

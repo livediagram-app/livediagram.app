@@ -600,10 +600,11 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
   are, so it grows with rows inserted inside it and follows moves ([Formulas](formulas.md#named-ranges)).
 - A name: 1 to 60 characters, starting with a letter or `_`, then letters, digits, `_` or `.`; not `TRUE` or
   `FALSE`; not one that reads as a cell reference (`AB12`, `R1C1`); unique on its sheet, case aside. Up to 100 a sheet.
-- **Naming**: select the cells and type the name in the formula bar's name box, then Enter (one undo step). Typing an
-  existing name there selects its range.
+- **Naming** (an Editor): select the cells and type the name in the formula bar's name box, then Enter (one undo
+  step). Typing an existing name there selects its range, for anyone.
 - **Sheet Settings** has a **Named Ranges** section: each name with its range (`A1:B4`), **Go To** (selects it) and
-  **Remove** (one undo step); "No named ranges yet. Select cells and type a name in the name box." when there are none.
+  **Remove** (an Editor; one undo step); "No named ranges yet. Select cells and type a name in the name box." when there
+  are none, and "No named ranges." for a Participant or Viewer, who cannot name cells.
 - Formulas offer the sheet's names in their autocomplete, after the functions that match.
 - Deleting every row or every column a range covers removes its name; Clear Sheet removes them all. A copied sheet
   keeps its names (they are its own).
