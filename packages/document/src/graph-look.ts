@@ -252,7 +252,13 @@ export function routeLoops(
   // Shortest loops innermost: each takes a track further out than any loop it overlaps on its side.
   const ordered = [...loops].sort((p, q) => length(p) - length(q));
   const tracks: { lo: number; hi: number; at: number; dir: 1 | -1 }[] = [];
-  const taken: Run[] = [];
+  // The runs already drawn: every line this pass leaves alone, as it is drawn. A detour that ran along one (a long
+  // "no" climbing the very line a "yes" climbs into its step) read as that line's; the router prices sharing them.
+  const routing = new Set(loops.map((l) => l.id));
+  const round = (p: Pt) => ({ x: Math.round(p.x), y: Math.round(p.y) });
+  const taken: Run[] = elements
+    .filter((el): el is ArrowElement => el.type === 'arrow' && !routing.has(el.id))
+    .flatMap((a) => runsOf(arrowRoutePoints(a, elements).map(round)));
   // Every route of this layout draws on one budget: spent, the rest take their outside tracks.
   const budget: RouterBudget = { left: ROUTER_BUDGET };
   let next = elements;

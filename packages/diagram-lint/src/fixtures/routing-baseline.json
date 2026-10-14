@@ -79,6 +79,16 @@
     "collisions": 2,
     "extent": "2755×901"
   },
+  "graph-lanes-14": {
+    "shared": 186,
+    "crossed": 0,
+    "strikes": 0,
+    "kinks": 0,
+    "crossings": 1,
+    "behind": 0,
+    "collisions": 0,
+    "extent": "3518×919"
+  },
   "graph-lanes-15": {
     "shared": 12,
     "crossed": 0,
