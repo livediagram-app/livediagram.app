@@ -180,3 +180,33 @@ describe('ER entity aliases', () => {
     expect(result.graph.nodes.find((n) => n.id === 'BOOK_AUTHOR')?.fields).toHaveLength(1);
   });
 });
+
+describe('ER hub first', () => {
+  it('turns each relationship away from the best-connected entity, its ends swapped with it', () => {
+    const result = parseMermaid(
+      [
+        'erDiagram',
+        '  AUTHOR ||--o{ BOOK_AUTHOR : writes',
+        '  BOOK_AUTHOR }|--|| BOOK : credits',
+        '  PUBLISHER ||--o{ BOOK : publishes',
+        '  ORDER_LINE }o--|| BOOK : "is for"',
+        '  BOOK ||--o{ REVIEW : receives',
+      ].join('\n'),
+    );
+    if (!result.ok) throw new Error(result.error);
+    const edge = (label: string) => result.graph.edges.find((e) => e.label === label)!;
+    for (const label of ['credits', 'publishes', 'is for', 'receives'])
+      expect(edge(label).from).toBe('BOOK');
+    expect(edge('credits')).toMatchObject({
+      from: 'BOOK',
+      to: 'BOOK_AUTHOR',
+      er: { from: 'one', to: 'one-or-many' },
+    });
+    // One step further out: from the hub's neighbour on.
+    expect(edge('writes')).toMatchObject({
+      from: 'BOOK_AUTHOR',
+      to: 'AUTHOR',
+      er: { from: 'zero-or-many', to: 'one' },
+    });
+  });
+});

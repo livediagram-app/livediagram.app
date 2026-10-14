@@ -150,44 +150,44 @@
     "extent": "1330×753"
   },
   "mermaid-erdiagram-1": {
-    "shared": 280,
+    "shared": 30,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "861×838"
+    "extent": "972×855"
   },
   "mermaid-erdiagram-2": {
-    "shared": 305,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 1,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "841×602"
-  },
-  "mermaid-erdiagram-3": {
-    "shared": 305,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 1,
-    "behind": 0,
-    "collisions": 1,
-    "extent": "841×602"
-  },
-  "mermaid-erdiagram-4": {
     "shared": 291,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
-    "crossings": 1,
+    "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "785×642"
+    "extent": "1144×670"
+  },
+  "mermaid-erdiagram-3": {
+    "shared": 293,
+    "crossed": 0,
+    "strikes": 0,
+    "kinks": 0,
+    "crossings": 0,
+    "behind": 0,
+    "collisions": 0,
+    "extent": "1144×670"
+  },
+  "mermaid-erdiagram-4": {
+    "shared": 25,
+    "crossed": 0,
+    "strikes": 0,
+    "kinks": 0,
+    "crossings": 0,
+    "behind": 0,
+    "collisions": 0,
+    "extent": "972×855"
   },
   "mermaid-sequencediagram-1": {
     "shared": 0,
