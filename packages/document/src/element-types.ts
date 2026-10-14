@@ -471,6 +471,8 @@ export type ShapeElement = {
   conceptAnim?: ConceptAnim;
   conceptAnimSpeed?: AnimationSpeed;
   conceptAnimRepeat?: boolean;
+  // A hub's spokes (docs/specs/009-elements/concept-graphics.md); absent = drawn, `false` = off.
+  hubSpokes?: boolean;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), bounded in validate.ts: a stat row's KPI
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.

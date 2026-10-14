@@ -1214,9 +1214,10 @@ export const articles: Article[] = [
   {
     slug: 'concept-graphics',
     title: 'Concept Graphics',
-    description: 'Layer stacks, pyramids, funnels and cycles that lay out their own rows.',
+    description:
+      'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons that lay out their rows.',
     keywords:
-      'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation',
+      'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation hub and spoke hub spoke satellites ecosystem onion rings concentric core chevron chevrons pipeline value chain stages',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

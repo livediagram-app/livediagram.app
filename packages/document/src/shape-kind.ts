@@ -50,6 +50,10 @@ export type ShapeKind =
   | 'layer-stack'
   | 'pyramid'
   | 'cycle'
+  // Round 2: satellites round a hub, concentric rings, chevron stages in a row.
+  | 'hub'
+  | 'onion'
+  | 'chevrons'
   // Stat row: KPI cards, a big value over a caption each, in `stats`.
   | 'stat-row'
   // Process steps: numbered circles joined by arrows, captions in

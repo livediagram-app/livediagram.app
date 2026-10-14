@@ -618,6 +618,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'BoundaryStyle',
       'BoundaryMeta',
       'PyramidVariant',
+      'HubSpokes',
       'ConceptAnim',
     ],
   },

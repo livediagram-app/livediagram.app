@@ -6,8 +6,10 @@ import {
   conceptAnimOf,
   conceptAnimRepeats,
   conceptAnimsFor,
+  hubDrawsSpokes,
   pyramidVariantOf,
   withConceptAnim,
+  withHubSpokes,
   withPyramidVariant,
   type ConceptAnim,
   type ConceptShape,
@@ -17,7 +19,7 @@ import {
 import { Glyph } from '@livediagram/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
-import { BorderGrid } from '@/components/palette/context-menu-rows';
+import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
   SpeedAndRepeatRows,
@@ -62,6 +64,16 @@ function AnimIcon({ anim }: { anim: ConceptAnim | null }) {
   );
 }
 
+// Each kind's section title.
+const CONCEPT_TITLE: Record<ConceptShape, string> = {
+  'layer-stack': 'Layer Stack',
+  pyramid: 'Pyramid',
+  cycle: 'Cycle',
+  hub: 'Hub and Spoke',
+  onion: 'Onion',
+  chevrons: 'Chevrons',
+};
+
 // A concept graphic's own section (docs/specs/009-elements/concept-graphics.md): a pyramid's variant, and the
 // Concept animation with its speed and repeat. The rows have their own Rows section, like a web component's.
 export function ConceptMenuSection({
@@ -78,14 +90,18 @@ export function ConceptMenuSection({
     ops.commit((el) => withConceptAnim(el, { anim: v }), 'ConceptAnim'),
   );
   const variant = target.shape === 'pyramid' ? pyramidVariantOf(target) : null;
-  const title =
-    target.shape === 'layer-stack'
-      ? 'Layer Stack'
-      : target.shape === 'pyramid'
-        ? 'Pyramid'
-        : 'Cycle';
+  const title = CONCEPT_TITLE[target.shape];
   return (
     <MenuAccordionSection title={title} icon={<DataMenuGlyph />} {...sectionProps('concept')}>
+      {target.shape === 'hub' ? (
+        <MenuToggleRow
+          label="Spokes"
+          checked={hubDrawsSpokes(target)}
+          onToggle={() =>
+            ops.commit((el) => withHubSpokes(el, !hubDrawsSpokes(target)), 'HubSpokes')
+          }
+        />
+      ) : null}
       {variant ? (
         <div className="px-2 pb-1">
           <BorderGrid label="Shape" cols={3}>

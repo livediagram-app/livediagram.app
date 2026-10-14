@@ -228,6 +228,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'layer-stack': { width: 360, height: 260 },
   pyramid: { width: 320, height: 260 },
   cycle: { width: 300, height: 300 },
+  hub: { width: 340, height: 320 },
+  onion: { width: 320, height: 320 },
+  chevrons: { width: 600, height: 150 },
   // Three 150px cards and two 16px gaps.
   'stat-row': { width: 482, height: 96 },
   process: { width: 420, height: 110 },
@@ -633,6 +636,39 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textSize: 'sm',
       aspectLocked: true,
       conceptRows: [{ label: 'Plan' }, { label: 'Do' }, { label: 'Check' }, { label: 'Act' }],
+    };
+  if (kind === 'hub')
+    return {
+      ...base,
+      label: 'Orders',
+      textSize: 'sm',
+      textBold: true,
+      conceptRows: ['Payments', 'Stock', 'Email', 'Search', 'Analytics', 'Support'].map(
+        (label) => ({
+          label,
+        }),
+      ),
+    };
+  if (kind === 'onion')
+    return {
+      ...base,
+      aspectLocked: true,
+      conceptRows: [
+        { label: 'Domain' },
+        { label: 'Application' },
+        { label: 'Adapters' },
+        { label: 'Infrastructure' },
+      ],
+    };
+  if (kind === 'chevrons')
+    return {
+      ...base,
+      conceptRows: [
+        { label: 'Commit', note: 'push to main' },
+        { label: 'Build', note: '2 min' },
+        { label: 'Test', note: '8,400 tests' },
+        { label: 'Release', note: 'manual gate' },
+      ],
     };
   // Boundary (docs/specs/009-elements/boundary.md): a titled, dashed container.
   if (kind === 'boundary')

@@ -1604,6 +1604,59 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    id: 'concepts:hub',
+    blurb: 'Satellites round a centre',
+    caption: 'Hub and Spoke',
+    section: 'concepts',
+    label: 'Add Hub and Spoke',
+    description:
+      'Hub and spoke. Satellites round a central hub, joined by spokes: an ecosystem, stakeholders, integrations.',
+    action: { type: 'shape', kind: 'hub' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <circle cx="12" cy="12" r="3.2" />
+        <circle cx="12" cy="3.5" r="1.8" />
+        <circle cx="19.4" cy="16.2" r="1.8" />
+        <circle cx="4.6" cy="16.2" r="1.8" />
+        <path d="M12 8.8V5.3M14.8 13.6l3 1.7M9.2 13.6l-3 1.7" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:onion',
+    blurb: 'Rings from a core outward',
+    caption: 'Onion',
+    section: 'concepts',
+    label: 'Add Onion',
+    description:
+      'Onion rings. Concentric rings from a core outward: clean architecture, trust layers, a maturity model.',
+    action: { type: 'shape', kind: 'onion' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <circle cx="12" cy="12" r="9" />
+        <circle cx="12" cy="12" r="6" />
+        <circle cx="12" cy="12" r="3" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:chevrons',
+    blurb: 'Arrow-shaped stages in a row',
+    caption: 'Chevrons',
+    section: 'concepts',
+    label: 'Add Chevrons',
+    description:
+      'Chevron process. Arrow-shaped stages in a row, each pointing into the next: a pipeline, a value chain, phases.',
+    action: { type: 'shape', kind: 'chevrons' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M2 8h5l2.5 4L7 16H2l2.5-4Z" />
+        <path d="M9 8h5l2.5 4L14 16H9l2.5-4Z" />
+        <path d="M16 8h4.5l2 4-2 4H16l2.5-4Z" />
+      </Glyph>
+    ),
+  },
+  {
     id: 'tools:annotation',
     blurb: 'A marker that holds a note',
     section: 'tools',

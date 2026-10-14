@@ -221,7 +221,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Concepts',
     group: 1,
     description:
-      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel and a cycle. Add, reorder and retitle rows in place.',
+      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel, a cycle, a hub and spoke, onion rings and chevrons. Add, reorder and retitle rows in place.',
     icon: <ConceptsTabIcon />,
   },
   {

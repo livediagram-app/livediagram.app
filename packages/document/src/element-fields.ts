@@ -165,6 +165,7 @@ export const ELEMENT_FIELD_NAMES = {
     'conceptAnim',
     'conceptAnimSpeed',
     'conceptAnimRepeat',
+    'hubSpokes',
     'stats',
     'processSteps',
     'navLinks',

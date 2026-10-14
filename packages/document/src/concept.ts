@@ -1,5 +1,5 @@
 // Concept graphics (docs/specs/009-elements/concept-graphics.md): the Layer stack, the Pyramid (with its Inverted and
-// Funnel variants) and the Cycle, each one element laying out its own rows. The layouts are PURE so the canvas face
+// Funnel variants), the Cycle, the Hub (and spoke), the Onion and the Chevron process, each one element laying out its own rows. The layouts are PURE so the canvas face
 // and the headless renderer place every row from the same numbers, and an export matches the editor.
 //
 // A LEAF module: types only from './index'.
@@ -8,7 +8,7 @@ import { clamp } from './geometry-primitives';
 import type { AnimationSpeed, Element, ShapeElement } from './index';
 import type { LayoutRect } from './web-components';
 
-export type ConceptShape = 'layer-stack' | 'pyramid' | 'cycle';
+export type ConceptShape = 'layer-stack' | 'pyramid' | 'cycle' | 'hub' | 'onion' | 'chevrons';
 export type ConceptRow = { label: string; note?: string };
 export type PyramidVariant = 'pyramid' | 'inverted' | 'funnel';
 export type ConceptAnim = 'build' | 'pulse' | 'flow';
@@ -25,10 +25,13 @@ export const CONCEPT_ROWS: Readonly<
   'layer-stack': { min: 2, max: 8, noun: 'Layer' },
   pyramid: { min: 2, max: 6, noun: 'Tier' },
   cycle: { min: 3, max: 8, noun: 'Step' },
+  hub: { min: 3, max: 8, noun: 'Satellite' },
+  onion: { min: 2, max: 6, noun: 'Ring' },
+  chevrons: { min: 2, max: 8, noun: 'Stage' },
 };
 
 export function isConceptShape(kind: string): kind is ConceptShape {
-  return kind === 'layer-stack' || kind === 'pyramid' || kind === 'cycle';
+  return Object.hasOwn(CONCEPT_ROWS, kind);
 }
 
 export function isPyramidVariant(v: unknown): v is PyramidVariant {
@@ -54,11 +57,18 @@ export function conceptAnimOf(el: ShapeElement): ConceptAnim | null {
   return conceptAnimsFor(el.shape).includes(el.conceptAnim) ? el.conceptAnim : null;
 }
 
-/** Whether a row draws its note: a layer's side note and a funnel tier's value. */
+/** Whether a row draws its note: a layer's side note, a funnel tier's value and a stage's note. */
 export function conceptDrawsNotes(el: ShapeElement): boolean {
   return (
-    el.shape === 'layer-stack' || (el.shape === 'pyramid' && pyramidVariantOf(el) === 'funnel')
+    el.shape === 'layer-stack' ||
+    el.shape === 'chevrons' ||
+    (el.shape === 'pyramid' && pyramidVariantOf(el) === 'funnel')
   );
+}
+
+/** Whether a hub draws its spokes (on unless switched off). */
+export function hubDrawsSpokes(el: ShapeElement): boolean {
+  return el.hubSpokes !== false;
 }
 
 /** Trim + bound a row's text the way every write path should. */
@@ -238,6 +248,113 @@ export function cycleLayout(w: number, h: number, n: number): CycleLayout {
   };
 }
 
+export type HubLayout = {
+  centre: { x: number; y: number };
+  hubR: number;
+  satR: number;
+  satellites: { x: number; y: number }[];
+  spokes: { x1: number; y1: number; x2: number; y2: number }[];
+  hubLabel: LayoutRect;
+  labelPx: number;
+};
+
+export function hubLayout(w: number, h: number, n: number): HubLayout {
+  const count = Math.max(1, n);
+  const S = Math.min(w, h) / 2;
+  const r = Math.min(S * 0.25, S * Math.sin(Math.PI / Math.max(2, count)) * 0.6);
+  const R = Math.max(1, S - r - 2);
+  const H = Math.max(16, Math.min(S * 0.34, R - r - 10));
+  const centre = { x: w / 2, y: h / 2 };
+  const satellites = Array.from({ length: count }, (_, i) => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / count;
+    return { x: centre.x + R * Math.cos(a), y: centre.y + R * Math.sin(a) };
+  });
+  const spokes = satellites.map((p) => {
+    const dx = p.x - centre.x;
+    const dy = p.y - centre.y;
+    const d = Math.max(1, Math.hypot(dx, dy));
+    return {
+      x1: centre.x + (dx / d) * H,
+      y1: centre.y + (dy / d) * H,
+      x2: p.x - (dx / d) * r,
+      y2: p.y - (dy / d) * r,
+    };
+  });
+  const side = H * 1.4;
+  return {
+    centre,
+    hubR: H,
+    satR: r,
+    satellites,
+    spokes,
+    hubLabel: { x: centre.x - side / 2, y: centre.y - side / 2, width: side, height: side },
+    labelPx: Math.round(clamp(r * 0.3, 10, 14)),
+  };
+}
+
+export type OnionLayout = {
+  centre: { x: number; y: number };
+  // Ring k's outer radius, the core first.
+  radii: number[];
+  labels: LayoutRect[];
+  labelPx: number;
+};
+
+export function onionLayout(w: number, h: number, n: number): OnionLayout {
+  const count = Math.max(1, n);
+  const S = Math.min(w, h) / 2;
+  const centre = { x: w / 2, y: h / 2 };
+  const band = S / count;
+  const radii = Array.from({ length: count }, (_, k) => band * (k + 1));
+  const labels = radii.map((R, k) => {
+    if (k === 0) {
+      // The core's words take nearly its whole disc's width.
+      const width = band * 1.9;
+      const height = band * 1.4;
+      return { x: centre.x - width / 2, y: centre.y - height / 2, width, height };
+    }
+    const width = Math.min(w, R * 1.1);
+    return { x: centre.x - width / 2, y: centre.y - R, width, height: band };
+  });
+  return { centre, radii, labels, labelPx: Math.round(clamp(band * 0.36, 10, 18)) };
+}
+
+export type ChevronLayout = {
+  stages: { points: { x: number; y: number }[]; label: LayoutRect; note: LayoutRect | null }[];
+  labelPx: number;
+  notePx: number;
+};
+
+export function chevronLayout(w: number, h: number, n: number, notes: boolean): ChevronLayout {
+  const count = Math.max(1, n);
+  const gap = 4;
+  const ch = notes ? Math.round(h * 0.62) : h;
+  const p = Math.max(0, Math.min(ch * 0.35, w / count / 3));
+  const sw = (w + (count - 1) * (p - gap)) / count;
+  const stages = Array.from({ length: count }, (_, i) => {
+    const x0 = i * (sw - p + gap);
+    const points = [
+      { x: x0, y: 0 },
+      { x: x0 + sw - p, y: 0 },
+      { x: x0 + sw, y: ch / 2 },
+      { x: x0 + sw - p, y: ch },
+      { x: x0, y: ch },
+      ...(i > 0 ? [{ x: x0 + p, y: ch / 2 }] : []),
+    ];
+    const lx0 = x0 + (i > 0 ? p : 0) + 4;
+    const lx1 = x0 + sw - p - 4;
+    return {
+      points,
+      label: { x: lx0, y: 0, width: Math.max(0, lx1 - lx0), height: ch },
+      note: notes
+        ? { x: x0, y: ch + 8, width: Math.max(0, sw - p), height: Math.max(0, h - ch - 8) }
+        : null,
+    };
+  });
+  const labelPx = Math.round(clamp(ch * 0.24, 10, 18));
+  return { stages, labelPx, notePx: Math.round(clamp(labelPx * 0.8, 10, 14)) };
+}
+
 /** A small arrowhead at `tip`, pointing along `angle` (radians), `size` long. */
 export function arrowheadPoints(
   tip: { x: number; y: number },
@@ -265,6 +382,15 @@ export function withPyramidVariant<T extends Element>(el: T, variant: PyramidVar
   const next = { ...el } as T & { pyramidVariant?: PyramidVariant };
   if (variant && variant !== 'pyramid') next.pyramidVariant = variant;
   else delete next.pyramidVariant;
+  return next;
+}
+
+/** Switch a hub's spokes on (the default, so the field is dropped) or off. */
+export function withHubSpokes<T extends Element>(el: T, on: boolean): T {
+  if (el.type !== 'shape' || el.shape !== 'hub') return el;
+  const next = { ...el } as T & { hubSpokes?: boolean };
+  if (on) delete next.hubSpokes;
+  else next.hubSpokes = false;
   return next;
 }
 

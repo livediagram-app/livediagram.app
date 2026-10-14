@@ -275,6 +275,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'attachedTo', valid: isNonEmptyStr, rule: 'an element id' },
   { field: 'attachAt', valid: isAttachPoint, rule: oneOfRule(ATTACH_POINTS_RULE) },
   flag('stepSequence'),
+  flag('hubSpokes'),
   // Boundary (docs/specs/009-elements/boundary.md).
   { field: 'boundaryStyle', valid: isBoundaryStyle, rule: oneOfRule(['tab', 'inset', 'c4']) },
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows are content; the animation is

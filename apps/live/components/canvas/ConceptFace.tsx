@@ -6,13 +6,17 @@ import {
   CONCEPT_ROWS,
   DEFAULT_ANIMATION_SPEED,
   arrowheadPoints,
+  chevronLayout,
   conceptAnimOf,
   conceptAnimRepeats,
   conceptDrawsNotes,
   conceptFitPx,
   conceptRamp,
   cycleLayout,
+  hubDrawsSpokes,
+  hubLayout,
   layerStackLayout,
+  onionLayout,
   pyramidLayout,
   pyramidVariantOf,
   type ConceptRow,
@@ -59,7 +63,7 @@ function Row({
 }
 
 // The concept graphics (docs/specs/009-elements/concept-graphics.md): a layer stack, a pyramid (or inverted, or a
-// funnel) and a cycle, each row placed by the shared pure layout (the export's numbers) in the accent ramp. Rows
+// funnel), a cycle, a hub and spoke, onion rings and a chevron process, each row placed by the shared pure layout (the export's numbers) in the accent ramp. Rows
 // edit in place once the element is selected; a cycle's centre words are its ordinary label.
 export function ConceptFace({
   element,
@@ -215,6 +219,99 @@ export function ConceptFace({
                 ramp[i]!.text,
                 { note: true },
               )
+            : null}
+        </Row>
+      );
+    });
+  } else if (element.shape === 'hub') {
+    // The hub builds first, then each satellite clockwise with its spoke.
+    const l = hubLayout(W, H, n);
+    const spokes = hubDrawsSpokes(element);
+    body = (
+      <>
+        <Row i={0} origin={l.centre}>
+          {svg(<circle cx={l.centre.x} cy={l.centre.y} r={l.hubR} fill={accent} />)}
+          <LabelRegion rect={l.hubLabel}>
+            <div className="absolute inset-0" style={{ color: ramp[0]?.text ?? ink }}>
+              {labelNode}
+            </div>
+          </LabelRegion>
+        </Row>
+        {rows.map((row, i) => {
+          const d = l.satellites[i]!;
+          const sp = l.spokes[i]!;
+          const rect = {
+            x: d.x - l.satR + 2,
+            y: d.y - l.satR,
+            width: Math.max(0, l.satR * 2 - 4),
+            height: l.satR * 2,
+          };
+          return (
+            <Row key={i} i={i + 1} origin={d}>
+              {svg(
+                <>
+                  {spokes ? (
+                    <line
+                      x1={sp.x1}
+                      y1={sp.y1}
+                      x2={sp.x2}
+                      y2={sp.y2}
+                      stroke={accent}
+                      strokeOpacity={0.5}
+                      strokeWidth={2}
+                    />
+                  ) : null}
+                  <circle
+                    cx={d.x}
+                    cy={d.y}
+                    r={l.satR}
+                    fill={fill}
+                    stroke={accent}
+                    strokeWidth={2}
+                  />
+                </>,
+              )}
+              {line(i, rect, row.label, l.labelPx, ink, {})}
+            </Row>
+          );
+        })}
+      </>
+    );
+  } else if (element.shape === 'onion') {
+    // Outermost ring first in paint order, so each smaller one sits on top; it builds from the core outward.
+    const l = onionLayout(W, H, n);
+    const order = rows.map((_, k) => k).reverse();
+    body = order.map((k) => (
+      <Row key={k} i={k} origin={l.centre}>
+        {svg(<circle cx={l.centre.x} cy={l.centre.y} r={l.radii[k]} fill={ramp[k]!.fill} />)}
+        {line(k, l.labels[k]!, rows[k]!.label, l.labelPx, ramp[k]!.text, {})}
+      </Row>
+    ));
+  } else if (element.shape === 'chevrons') {
+    const l = chevronLayout(
+      W,
+      H,
+      n,
+      rows.some((r) => !!r.note),
+    );
+    body = rows.map((row, i) => {
+      const st = l.stages[i]!;
+      return (
+        <Row
+          key={i}
+          i={i}
+          origin={{ x: st.label.x + st.label.width / 2, y: st.label.y + st.label.height / 2 }}
+        >
+          {svg(
+            <polygon
+              points={st.points.map((p) => `${p.x},${p.y}`).join(' ')}
+              fill={ramp[i]!.fill}
+              strokeLinejoin="round"
+            />,
+          )}
+          {line(i, st.label, row.label, l.labelPx, ramp[i]!.text, {})}
+          {st.note
+            ? line(i, st.note, row.note ?? '', l.notePx, ink, { note: true, bold: false })
             : null}
         </Row>
       );

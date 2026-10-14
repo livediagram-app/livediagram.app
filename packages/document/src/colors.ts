@@ -515,6 +515,9 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'layer-stack',
   'pyramid',
   'cycle',
+  'hub',
+  'onion',
+  'chevrons',
   'icon',
   // A sticker paints its own plate, shadow and content (docs/specs/010-palette/stickers.md).
   'sticker',
