@@ -58,7 +58,7 @@ const WORDS =
 const ROW_TOOL =
   'touch-target relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-400 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:cursor-default disabled:opacity-30 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-200';
 // Move Up and Move Down show on a row's hover or focus with a mouse, and always on a touch screen. On a phone the
-// words and these tools take a second line, so From and To keep the first line's width.
+// words and these tools take a second line, so From and To share the first line at equal widths.
 const REVEAL =
   'opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100';
 const ADD_ROW =
@@ -128,7 +128,7 @@ export function SequenceMessageList({
             return (
               <li
                 key={i}
-                className="group grid grid-cols-[1.25rem_minmax(0,1fr)_2.5rem_minmax(0,1fr)_auto] items-center gap-x-1.5 gap-y-1.5 rounded-lg px-1 py-1 transition hover:bg-slate-50 focus-within:bg-slate-50 sm:grid-cols-[1.25rem_6.5rem_2.5rem_6.5rem_minmax(0,1fr)_auto] dark:hover:bg-slate-800/50 dark:focus-within:bg-slate-800/50"
+                className="group grid grid-cols-[1.25rem_minmax(0,1fr)_2.5rem_minmax(0,1fr)] items-center gap-x-1.5 gap-y-1.5 rounded-lg px-1 py-1 transition hover:bg-slate-50 focus-within:bg-slate-50 sm:grid-cols-[1.25rem_6.5rem_2.5rem_6.5rem_minmax(0,1fr)_auto] dark:hover:bg-slate-800/50 dark:focus-within:bg-slate-800/50"
               >
                 <span
                   aria-hidden
@@ -139,7 +139,7 @@ export function SequenceMessageList({
                 {(['from', 'to'] as const).map((end) => (
                   <Select
                     key={end}
-                    className={`min-w-0 ${end === 'to' ? 'order-4 col-span-2 sm:col-span-1' : 'order-2'}`}
+                    className={`min-w-0 ${end === 'to' ? 'order-4' : 'order-2'}`}
                     selectClassName="h-9 !text-sm"
                     aria-label={`Message ${n} ${end}`}
                     value={m[end]}
@@ -170,7 +170,7 @@ export function SequenceMessageList({
                   ref={(el) => {
                     words.current[i] = el;
                   }}
-                  className={`${WORDS} order-5 col-span-3 col-start-2 sm:col-span-1 sm:col-start-auto`}
+                  className={`${WORDS} order-5 col-span-2 col-start-2 sm:col-span-1 sm:col-start-auto`}
                   value={m.label}
                   maxLength={SEQ_MESSAGE_LABEL_MAX}
                   placeholder={

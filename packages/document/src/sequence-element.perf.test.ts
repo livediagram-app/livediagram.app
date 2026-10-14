@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createShape, sequenceDrawing, type ShapeElement } from './index';
 
 // docs/specs/009-elements/blueprints/sequence-diagram.md "Performance and limits": the picture is rebuilt on every
@@ -40,13 +40,13 @@ describe('sequenceDrawing budget', () => {
         cpuMsOf(() => sequenceDrawing(el)),
       );
     }
-    expect(best).toBeLessThan(40);
+    expect(best).toBeLessThan(cpuBudgetMs(40));
   });
 
   it('answers the same rows from its cache', () => {
     const el = worst(-1);
     const first = sequenceDrawing(el);
-    expect(cpuMsOf(() => sequenceDrawing({ ...el }))).toBeLessThan(5);
+    expect(cpuMsOf(() => sequenceDrawing({ ...el }))).toBeLessThan(cpuBudgetMs(5));
     expect(sequenceDrawing({ ...el })).toBe(first);
   });
 });
