@@ -96,6 +96,13 @@ whose popover offers presets; elsewhere it places the New badge as before.
 | Draft   | `draft`   | Draft | Quiet                    |
 | Warning | `warning` | PII   | Solid, in rose (#e11d48) |
 
+**Each tile is the badge it adds**: its own text in its own look and colours, drawn by the canvas's colour rule
+(`chipColours`) over the tab theme's element colours (the Default theme's sky without one), and a preset's own colour
+(the Warning's rose) wins, as on the canvas. So the tiles are untinted: the palette's theme fill never paints over a
+pill's look. The Badge tile itself shows the New badge it drops. One source: `badgePresetFace(variant)`
+(`packages/document/src/shape-variants.ts`) reads the preset the tile places; `BadgePresetGlyph`
+(`apps/live/components/palette/BadgePresetGlyph.tsx`) draws it.
+
 Each is an ordinary badge: its text, look and colour change afterwards like any badge's.
 
 ## The menu

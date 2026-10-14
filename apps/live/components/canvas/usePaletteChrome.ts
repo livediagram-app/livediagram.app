@@ -20,6 +20,7 @@ export function usePaletteChrome({ tabThemeId }: { tabThemeId: CanvasChromeProps
       ? {
           stroke: paletteTheme.elementStroke ?? undefined,
           fill: paletteTheme.elementFill ?? undefined,
+          text: paletteTheme.elementText ?? undefined,
           shapeColors: paletteTheme.shapeColors,
         }
       : undefined;

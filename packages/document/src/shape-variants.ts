@@ -7,6 +7,7 @@
 // A LEAF module: types only from './index'.
 
 import type { ShapeElement } from './index';
+import { BADGE_NEW_LABEL, isChipLook, type ChipLook } from './chip';
 
 /** The Callout: a card with badge media, the callout's old size and copy, and no meta line, tags or icon. */
 function calloutCard(el: ShapeElement): ShapeElement {
@@ -80,6 +81,21 @@ const BADGE_PRESETS: Record<string, Partial<ShapeElement>> = {
   draft: { label: 'Draft', chipLook: 'quiet' },
   warning: { label: 'PII', chipLook: 'solid', strokeColor: '#e11d48' },
 };
+
+/** What a badge preset looks like as it lands (its text, look and own colour, if any): the palette draws its tile
+ *  from this, so the tile is the badge. No variant is the New preset, a fresh badge. */
+export function badgePresetFace(variant: string | undefined): {
+  label: string;
+  look: ChipLook;
+  accent?: string;
+} {
+  const preset = variant && Object.hasOwn(BADGE_PRESETS, variant) ? BADGE_PRESETS[variant]! : {};
+  return {
+    label: preset.label ?? BADGE_NEW_LABEL,
+    look: isChipLook(preset.chipLook) ? preset.chipLook : 'solid',
+    ...(preset.strokeColor ? { accent: preset.strokeColor } : {}),
+  };
+}
 
 /** The badge presets' variants, in palette order after the New preset (no variant). */
 export const BADGE_PRESET_VARIANTS = ['beta', 'version', 'count', 'draft', 'warning'] as const;

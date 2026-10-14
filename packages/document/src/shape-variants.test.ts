@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyShapeVariant,
+  badgePresetFace,
   BADGE_PRESET_VARIANTS,
   CARD_PRESET_VARIANTS,
   cardLayout,
@@ -90,5 +91,24 @@ describe('badge presets', () => {
     const b = badge();
     expect(applyShapeVariant(b, undefined)).toBe(b);
     expect(applyShapeVariant(b, 'toString')).toBe(b);
+  });
+});
+
+describe('badgePresetFace', () => {
+  it('reads each preset as it lands, the New preset a fresh badge', () => {
+    expect(badgePresetFace(undefined)).toEqual({ label: 'New', look: 'solid' });
+    expect(badgePresetFace('warning')).toEqual({ label: 'PII', look: 'solid', accent: '#e11d48' });
+    expect(badgePresetFace('count')).toEqual({ label: '3×', look: 'ink' });
+    expect(badgePresetFace('nope')).toEqual({ label: 'New', look: 'solid' });
+  });
+
+  it('matches what applyShapeVariant gives a fresh badge', () => {
+    for (const variant of BADGE_PRESET_VARIANTS) {
+      const el = applyShapeVariant(createShape('badge', 0, 0), variant);
+      const face = badgePresetFace(variant);
+      expect(face.label).toBe(el.label);
+      expect(face.look).toBe(el.chipLook ?? 'solid');
+      expect(face.accent).toBe(el.strokeColor);
+    }
   });
 });

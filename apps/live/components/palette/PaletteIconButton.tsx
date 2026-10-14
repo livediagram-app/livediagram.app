@@ -26,6 +26,8 @@ import type { PaletteTileDef } from './palette-tile-defs';
 export type PaletteTint = {
   stroke?: string;
   fill?: string;
+  // The theme's element text colour, for a tile that draws an element's label in it (a badge preset).
+  text?: string;
   shapeColors?: Partial<Record<ShapeKind, { fill?: string; stroke?: string }>>;
 };
 
@@ -39,6 +41,11 @@ export function PaletteTintProvider({
   children: React.ReactNode;
 }) {
   return <PaletteTintContext.Provider value={tint}>{children}</PaletteTintContext.Provider>;
+}
+
+/** The theme tint the palette is drawn in; undefined on the Default theme. */
+export function usePaletteTint(): PaletteTint | undefined {
+  return useContext(PaletteTintContext);
 }
 
 export type TileHint = 'tooltip' | 'hover-card';
