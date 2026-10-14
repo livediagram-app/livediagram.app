@@ -250,7 +250,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Ask the room to look here',
         description:
-          'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, your zoom, the thing you mean. It asks rather than drags, so nobody loses the place they were working in.',
+          'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, the thing you mean, centred on their screen. It asks rather than drags, so nobody loses the place they were working in.',
       },
       {
         art: <FacilitatorArt />,

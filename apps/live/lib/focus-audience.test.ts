@@ -8,21 +8,18 @@ const AT = { x: 400, y: 300 };
 
 describe('viewIsCentredOn', () => {
   it('says yes to the view centreOn would have produced', () => {
-    expect(viewIsCentredOn(centred, AT, 0.5)).toBe(true);
+    expect(viewIsCentredOn(centred, AT)).toBe(true);
   });
 
-  it('says no once the zoom is a different amount of canvas', () => {
-    expect(viewIsCentredOn({ ...centred, zoom: 0.75 }, AT, 0.5)).toBe(false);
-  });
-
-  it('tolerates a nudge of the zoom slider', () => {
-    expect(viewIsCentredOn({ ...centred, zoom: 0.51 }, AT, 0.5)).toBe(true);
+  it('says yes at any zoom, because taking it keeps your own', () => {
+    expect(viewIsCentredOn({ ...centred, zoom: 2 }, AT)).toBe(true);
+    expect(viewIsCentredOn({ ...centred, zoom: 0.25 }, AT)).toBe(true);
   });
 
   it('says no once they have panned the point away from the middle', () => {
     // 600 canvas units at 50% zoom is 300px on screen, well past the slack.
     const panned = { ...centred, pan: { x: centred.pan.x - 600, y: centred.pan.y } };
-    expect(viewIsCentredOn(panned, AT, 0.5)).toBe(false);
+    expect(viewIsCentredOn(panned, AT)).toBe(false);
   });
 
   it('measures the slack on screen, not on the canvas', () => {
@@ -33,17 +30,17 @@ describe('viewIsCentredOn', () => {
       pan: { x: SIZE.width / 2 - 400 - 100, y: SIZE.height / 2 - 300 },
       zoom,
     });
-    expect(viewIsCentredOn(off(0.5), AT, 0.5)).toBe(true);
-    expect(viewIsCentredOn(off(2), AT, 2)).toBe(false);
+    expect(viewIsCentredOn(off(0.5), AT)).toBe(true);
+    expect(viewIsCentredOn(off(2), AT)).toBe(false);
   });
 
   it('says no to an unmeasured canvas rather than guessing', () => {
-    expect(viewIsCentredOn({ ...centred, size: { width: 0, height: 0 } }, AT, 0.5)).toBe(false);
+    expect(viewIsCentredOn({ ...centred, size: { width: 0, height: 0 } }, AT)).toBe(false);
   });
 });
 
 describe('focusPressOutcome', () => {
-  const base = { size: SIZE, tabId: 'tab-a', at: AT, zoom: 0.5 };
+  const base = { size: SIZE, tabId: 'tab-a', at: AT };
   const view = (
     over: Partial<{ tabId: string; pan: { x: number; y: number }; zoom: number }> = {},
   ) => ({
@@ -88,10 +85,10 @@ describe('focusPressOutcome', () => {
     );
   });
 
-  it('reports a room that is already looking at it', () => {
+  it('reports a room that is already looking at it, whatever their zoom', () => {
     const viewports = new Map([
       ['a', view()],
-      ['b', view()],
+      ['b', view({ zoom: 1.5 })],
     ]);
     expect(focusPressOutcome({ ...base, sent: true, peerIds: ['a', 'b'], viewports })).toBe(
       'already-there',

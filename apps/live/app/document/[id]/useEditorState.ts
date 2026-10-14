@@ -1275,7 +1275,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Filled by the hook below, which cannot be declared up here because
     // taking an invitation navigates through the viewport (declared later
     // still). Same knot, and the same ref, as the portal's travel callback.
-    receiveFocusHere: (from, tabId, at, zoom) => receiveFocusRef.current?.(from, tabId, at, zoom),
+    receiveFocusHere: (from, tabId, at) => receiveFocusRef.current?.(from, tabId, at),
     receiveFacilitator: facilitator.receiveFacilitator,
     receiveSelectionReleased,
     // Everyone follows a collaborator's switch of the tab's mode; the one on this tab is said.
@@ -1545,7 +1545,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
             size: { width: node?.offsetWidth ?? 0, height: node?.offsetHeight ?? 0 },
             tabId: activeId,
             at,
-            zoom: zoomRef.current,
           })
         ],
       );
@@ -1751,7 +1750,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setActiveId(tabId);
     },
     onCentreOn: centreOn,
-    isAlreadyThere: (tabId, at, zoom) => tabId === activeId && isCentredOn(at, zoom),
+    isAlreadyThere: (tabId, at) => tabId === activeId && isCentredOn(at),
   });
   // The toast's Show (docs/specs/024-agents/agent-changesets.md "In the editor", CS34): the tab, then
   // every element the changeset touched that is still there, framed no closer than 100%.
@@ -1766,7 +1765,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fitToBounds(bounds, { maxZoom: 1 });
   });
   const receiveFocusRef = useLatest<
-    ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
+    ((from: string, tabId: string, at: { x: number; y: number }) => void) | null
   >(focusInvite.receiveFocusHere);
 
   // Server capabilities (docs/specs/007-editor/ai-assistance.md). Fetched once at mount; determines
