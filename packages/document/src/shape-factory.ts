@@ -734,6 +734,8 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textBold: true,
       textAlignX: 'left',
       textAlignY: 'top',
+      // The title sits in its own 20 px band (diagramKeyLayout); padding there clipped its descenders.
+      padding: 'none',
       borderRadius: 'md',
       strokeWidth: 'thin',
     };
