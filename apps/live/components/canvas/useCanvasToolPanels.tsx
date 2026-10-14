@@ -63,6 +63,8 @@ export function useCanvasToolPanels({
     onAvatarReaction,
     onAvatarBurst,
     onSendAvatarMessage,
+    avatarStatus,
+    onSetAvatarStatus,
     avatarSpeechCooling,
     laserConfig,
     onChangeLaserField,
@@ -139,6 +141,8 @@ export function useCanvasToolPanels({
             : undefined
         }
         speechCooling={!!avatarSpeechCooling}
+        status={avatarStatus ?? null}
+        onSetStatus={(next) => onSetAvatarStatus?.(next)}
         position={null}
         onMoveTo={() => {}}
         asPopover

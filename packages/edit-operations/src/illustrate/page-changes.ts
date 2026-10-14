@@ -18,6 +18,7 @@ import {
   pageKindOf,
   pageLaidOut,
   themedForTab,
+  pageIsDark,
   pageLockSet,
   pageMovedTo,
   pageRemoved,
@@ -159,7 +160,9 @@ export function applyPageChanges(
           pageLaidOut(
             current,
             page.id,
-            themedForTab(buildPageLayout(found!.id as PageLayoutId, laid), current.theme),
+            themedForTab(buildPageLayout(found!.id as PageLayoutId, laid), current.theme, {
+              dark: pageIsDark(laid),
+            }),
           ),
           page,
         );

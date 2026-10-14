@@ -8,11 +8,26 @@
 // is why every animation input is a prop rather than read from the walk hook.
 
 import type { DrinkKind } from '@livediagram/document';
+import { avatarStatusColour, avatarStatusLabel, type AvatarStatus } from '@/lib/avatar-status';
 import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import type { AvatarFacing } from '@/lib/avatar-walk';
 import { AVATAR_HEIGHT, avatarBox } from '@/lib/avatar-walk';
 import { AvatarSprite } from '@/components/canvas/avatar-sprite';
+
+// An Away character fades to half (docs/specs/008-canvas/avatar-mode.md "Status").
+const AWAY_OPACITY = 0.5;
+
+// A status dot: a small circle in the status's colour with a white rim, so it reads on a name chip and on the canvas.
+function StatusDot({ status }: { status: AvatarStatus }) {
+  return (
+    <span
+      aria-hidden
+      className="inline-block h-2 w-2 shrink-0 rounded-full ring-[1.5px] ring-white"
+      style={{ backgroundColor: avatarStatusColour(status) }}
+    />
+  );
+}
 
 export function AvatarWalker({
   pos,
@@ -29,6 +44,7 @@ export function AvatarWalker({
   standingOn,
   name,
   onStand,
+  status = null,
 }: {
   // Feet position in canvas coords.
   pos: { x: number; y: number };
@@ -60,6 +76,8 @@ export function AvatarWalker({
   name?: string;
   // Stand up from a chair (docs/specs/009-elements/chair.md). Absent for peers' characters.
   onStand?: () => void;
+  // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none.
+  status?: AvatarStatus | null;
 }) {
   const scale = avatarScale(config.size);
   const box = avatarBox(scale);
@@ -102,30 +120,57 @@ export function AvatarWalker({
       >
         {name ? (
           <div
-            className={`absolute left-1/2 max-w-[120px] -translate-x-1/2 truncate rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${IDENTITY_FILL}`}
+            className={`absolute left-1/2 flex max-w-[120px] -translate-x-1/2 items-center gap-1 truncate rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${IDENTITY_FILL}`}
             // Pinned just above the HEAD, not the (headroom-extended) box, and
             // tracking the size choice so it hugs a small character too.
             style={{
               ...identityVars(shirt ?? '#0ea5e9'),
               top: box.offsetY - AVATAR_HEIGHT * scale - 16,
             }}
+            aria-label={status ? `${name}, ${avatarStatusLabel(status)}` : undefined}
           >
+            {status ? <StatusDot status={status} /> : null}
             {name}
           </div>
+        ) : status ? (
+          // Your own character has no name chip: its status sits alone where the chip would be.
+          <div
+            className="absolute left-1/2 -translate-x-1/2"
+            style={{ top: box.offsetY - AVATAR_HEIGHT * scale - 22 }}
+            aria-label={avatarStatusLabel(status)}
+          >
+            <StatusDot status={status} />
+          </div>
         ) : null}
-        <AvatarSprite
-          facing={facing}
-          config={config}
-          walking={walking}
-          stepFrame={stepFrame}
-          lift={lift}
-          wave={wave}
-          pose={pose}
-          seated={seated}
-          holding={holding}
-          shirt={shirt}
-          scale={scale}
-        />
+        {status === 'away' ? (
+          // Away: a slow Zz rising over the head (a CSS loop, still under reduced motion).
+          <div
+            aria-hidden
+            className="animate-avatar-zz pointer-events-none absolute text-[11px] font-bold italic text-slate-400"
+            style={{
+              left: box.offsetX + 8 * scale,
+              top: box.offsetY - AVATAR_HEIGHT * scale - 24,
+            }}
+          >
+            Zz
+          </div>
+        ) : null}
+        <div style={status === 'away' ? { opacity: AWAY_OPACITY } : undefined}>
+          <AvatarSprite
+            headphones={status === 'focus'}
+            facing={facing}
+            config={config}
+            walking={walking}
+            stepFrame={stepFrame}
+            lift={lift}
+            wave={wave}
+            pose={pose}
+            seated={seated}
+            holding={holding}
+            shirt={shirt}
+            scale={scale}
+          />
+        </div>
         {/* Stand (docs/specs/009-elements/chair.md). Arrow keys and a double-click both get you out of
             a chair, and neither exists on a touch device — so the seat carries
             its own press. Only for your OWN character: you cannot stand

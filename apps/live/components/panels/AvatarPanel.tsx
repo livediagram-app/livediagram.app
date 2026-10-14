@@ -17,6 +17,7 @@
 // what you're wearing. A cropped portrait sits on top, drawn by the SAME sprite
 // the canvas uses, so what you build here is exactly what walks around.
 
+import { AVATAR_STATUSES, avatarStatusColour, type AvatarStatus } from '@/lib/avatar-status';
 import { useState } from 'react';
 import {
   AVATAR_CLOTHING,
@@ -42,7 +43,13 @@ import { AvatarMessagePopover } from './AvatarMessagePopover';
 
 const MessageIcon = lucideGlyph(lucideMessageCircle, 14);
 
-type Row = 'gender' | 'clothing' | 'hair' | 'size' | 'behaviour' | 'reactions';
+// The Status row's choices (docs/specs/008-canvas/avatar-mode.md "Status"): none, then the four.
+const STATUS_OPTIONS: readonly { id: AvatarStatus | 'none'; label: string }[] = [
+  { id: 'none', label: 'None' },
+  ...AVATAR_STATUSES.map(({ id, label }) => ({ id, label })),
+];
+
+type Row = 'gender' | 'clothing' | 'hair' | 'size' | 'status' | 'behaviour' | 'reactions';
 
 // A disclosure holding one-shot ACTIONS rather than a setting's options, so
 // it looks like the ToolOptionRows above it without pretending one of its
@@ -102,6 +109,8 @@ export function AvatarPanel({
   shirt,
   onSendMessage,
   speechCooling = false,
+  status = null,
+  onSetStatus,
   ...placement
 }: {
   config: AvatarConfig;
@@ -122,6 +131,9 @@ export function AvatarPanel({
   onSendMessage?: (text: string) => boolean;
   // Held between one message and the next.
   speechCooling?: boolean;
+  // How you are (docs/specs/008-canvas/avatar-mode.md "Status"); absent where nothing can take it.
+  status?: AvatarStatus | null;
+  onSetStatus?: (status: AvatarStatus | null) => void;
 } & ModePanelProps) {
   // Single-open, and closed to start: the panel opens as a four-line summary of
   // the character, and you expand only the row you came to change.
@@ -212,6 +224,17 @@ export function AvatarPanel({
                 onToggle={() => toggle('size')}
                 onPick={(id) => onChange('size', id)}
               />
+              {onSetStatus ? (
+                <ToolOptionRow
+                  label="Status"
+                  options={STATUS_OPTIONS}
+                  value={status ?? 'none'}
+                  open={openRow === 'status'}
+                  onToggle={() => toggle('status')}
+                  onPick={(id) => onSetStatus(id === 'none' ? null : id)}
+                  swatchFor={(id) => (id === 'none' ? 'transparent' : avatarStatusColour(id))}
+                />
+              ) : null}
             </div>
           </div>
           {/* Two lists of actions, both behind a disclosure like the settings

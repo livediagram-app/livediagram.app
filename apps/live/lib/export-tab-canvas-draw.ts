@@ -215,10 +215,11 @@ export function drawBoxed(
         for (const run of line) {
           ctx.font = fontFor(run);
           ctx.fillStyle = run.color;
-          // A muted run (a caption) draws at the same reduced opacity as the SVG's fill-opacity.
-          ctx.globalAlpha = run.muted ? MUTED_RUN_OPACITY : 1;
+          // A muted run (a caption) draws at the same reduced opacity as the SVG's fill-opacity, on top of the
+          // element's own opacity and its layer's (set above), never in place of them.
+          ctx.globalAlpha = opacity * alpha * (run.muted ? MUTED_RUN_OPACITY : 1);
           ctx.fillText(run.text, x, ly);
-          ctx.globalAlpha = 1;
+          ctx.globalAlpha = opacity * alpha;
           x += ctx.measureText(run.text).width;
         }
         ly += lineH;

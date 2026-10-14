@@ -55,6 +55,9 @@ export type AvatarPresence = {
   // or none. Presence like the seat: put down after a minute or on leaving the mode, never in the document.
   // Optional so an older client's packet parses as empty-handed; anything else draws nothing.
   holding?: 'water' | 'coffee' | null;
+  // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none. Presence for the session only;
+  // a receiver draws only a status it knows. Optional so an older client's packet parses as no status.
+  status?: 'available' | 'focus' | 'meeting' | 'away' | null;
 };
 
 // Room op kinds that are ephemeral signals: they mutate no document state,

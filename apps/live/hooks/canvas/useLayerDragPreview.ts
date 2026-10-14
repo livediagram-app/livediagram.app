@@ -1,17 +1,10 @@
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react';
+import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { Element, ElementGrid, ElementIndex } from '@livediagram/document';
 import { dragPreviewFor, subscribeDragPreview, type DragOverlay } from '@/lib/drag-preview';
 import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
-import type { ArrowViewFrame } from '@/components/canvas/arrow-view-frame';
+import { sameArrowViewFrame, type ArrowViewFrame } from '@/components/canvas/arrow-view-frame';
 import {
   affectedArrows,
   previewArrowGeometry,
@@ -61,31 +54,86 @@ export type LayerPreviewStore = {
   update(inputs: LayerPreviewInputs): void;
 };
 
-// `ordered` with the preview laid over it: changed elements swapped in, removed ones dropped, added
-// ones after their neighbour (at the end when it is not drawn). Linear in the board.
+// `ordered` with the preview laid over it: changed elements swapped in, removed ones dropped, added ones in the order
+// lib/drag-preview's applyOverlay gives them (which selection and hit-testing read): those after nothing first, each
+// after its neighbour, a chain of adds (a multi-element duplicate) one after another, the rest at the end. An added
+// element takes its neighbour's layer opacity. Linear in the board.
 export function shownWithOverlay(
   ordered: readonly LayerDrawn[],
   overlay: Pick<DragOverlay, 'removed' | 'added'> & { changed?: DragOverlay['changed'] },
 ): LayerDrawn[] {
-  const after = new Map<string, Element[]>();
-  for (const { el, after: id } of overlay.added)
-    if (id !== null) after.set(id, [...(after.get(id) ?? []), el]);
+  const pending = new Map<string | null, Element[]>();
+  for (const { el, after } of overlay.added)
+    pending.set(after, [...(pending.get(after) ?? []), el]);
   const shown: LayerDrawn[] = [];
-  const placed = new Set<string>();
+  const drain = (key: string | null, layerOpacity: number) => {
+    const queue = pending.get(key);
+    if (!queue) return;
+    pending.delete(key);
+    for (const el of queue) {
+      shown.push({ element: el, layerOpacity });
+      drain(el.id, layerOpacity);
+    }
+  };
+  drain(null, ordered[0]?.layerOpacity ?? 1);
   for (const o of ordered) {
     if (overlay.removed.has(o.element.id)) continue;
     shown.push({
       element: overlay.changed?.get(o.element.id) ?? o.element,
       layerOpacity: o.layerOpacity,
     });
-    for (const el of after.get(o.element.id) ?? []) {
-      shown.push({ element: el, layerOpacity: o.layerOpacity });
-      placed.add(el.id);
-    }
+    drain(o.element.id, o.layerOpacity);
   }
-  for (const { el } of overlay.added)
-    if (!placed.has(el.id)) shown.push({ element: el, layerOpacity: 1 });
+  for (const key of [...pending.keys()]) drain(key, 1);
   return shown;
+}
+
+// Whether two inputs would derive the same entries. The layer hands a fresh object (and a fresh `gridFor` closure) on
+// every render, so identity alone made any layer render mid-gesture (a peer's cursor, a timer tick) re-derive every
+// moved element and arrow; the fields themselves are what matter, and the grid follows `drawnElements`.
+function sameInputs(a: LayerPreviewInputs | null, b: LayerPreviewInputs): boolean {
+  return (
+    a !== null &&
+    a.tabId === b.tabId &&
+    a.ordered === b.ordered &&
+    a.drawnElements === b.drawnElements &&
+    a.elementIndex === b.elementIndex &&
+    a.arrowLinks === b.arrowLinks &&
+    a.arrowLabels === b.arrowLabels &&
+    a.tabFinish === b.tabFinish
+  );
+}
+
+// Whether an element looks the same (every field the same value): a collaborator's preview is rebuilt as a fresh
+// object on every frame of ours, though nothing about it moved.
+function sameElement(a: Element, b: Element): boolean {
+  if (a === b) return true;
+  const ka = Object.keys(a);
+  if (ka.length !== Object.keys(b).length) return false;
+  return ka.every((k) => (a as Record<string, unknown>)[k] === (b as Record<string, unknown>)[k]);
+}
+
+const sameRects = (a: readonly Rect[], b: readonly Rect[]) =>
+  a.length === b.length &&
+  a.every(
+    (r, i) =>
+      r.x === b[i]!.x && r.y === b[i]!.y && r.width === b[i]!.width && r.height === b[i]!.height,
+  );
+
+// The previous entry when the new one draws the same (the same element, and for an arrow the same frame, holes and
+// label), so only the elements that changed re-render. By value and cheap first (sameArrowViewFrame leaves at the
+// path), as it runs for every affected arrow on every frame; a label, rarer, by its JSON.
+function steadyEntry(prev: PreviewEntry | undefined, next: PreviewEntry): PreviewEntry {
+  if (!prev || !sameElement(prev.element, next.element)) return next;
+  const pg = prev.geometry;
+  const ng = next.geometry;
+  if (pg || ng) {
+    if (!pg || !ng || !sameArrowViewFrame(pg.frame, ng.frame) || !sameRects(pg.holes, ng.holes))
+      return next;
+  }
+  if ((prev.label || next.label) && JSON.stringify(prev.label) !== JSON.stringify(next.label))
+    return next;
+  return prev;
 }
 
 const structureKey = (s: PreviewStructure | null) =>
@@ -161,19 +209,20 @@ export function createLayerPreviewStore(): LayerPreviewStore {
     update(inputs) {
       const overlay = dragPreviewFor(inputs.tabId, inputs.drawnElements);
       // Nothing to do: no preview before or now, or the same preview over the same inputs.
-      if (overlay === lastOverlay && (overlay === null || inputs === lastInputs)) return;
+      if (overlay === lastOverlay && (overlay === null || sameInputs(lastInputs, inputs))) return;
       lastOverlay = overlay;
       lastInputs = inputs;
       const prev = entries;
       entries = overlay ? derive(overlay, inputs) : new Map();
+      for (const [id, entry] of entries) entries.set(id, steadyEntry(prev.get(id), entry));
       const nextStructure: PreviewStructure | null =
         overlay && (overlay.removed.size > 0 || overlay.added.length > 0)
           ? { removed: overlay.removed, added: overlay.added }
           : null;
       const structureChanged = structureKey(nextStructure) !== structureKey(structure);
       if (structureChanged) structure = nextStructure;
-      // Only the elements whose entry changed (an entry is new on every change, so an element the
-      // preview still holds redraws; one it no longer holds redraws from the document).
+      // Only the elements whose entry changed (an entry that draws the same is kept, steadyEntry; one the preview no
+      // longer holds redraws from the document).
       const touched = new Set([...prev.keys(), ...entries.keys()]);
       for (const id of touched) {
         if (prev.get(id) === entries.get(id)) continue;
@@ -199,7 +248,13 @@ export function useLayerDragPreview(inputs: LayerPreviewInputs): {
     inputsRef.current = inputs;
     store.update(inputs);
   });
-  useEffect(() => subscribeDragPreview(() => store.update(inputsRef.current)), [store]);
+  // Subscribed before paint, and read once on subscribing: a preview change between the layer's commit and a passive
+  // effect (a layer mounting mid-gesture, a tab switched back to while a peer drags) would otherwise never be applied.
+  useLayoutEffect(() => {
+    const off = subscribeDragPreview(() => store.update(inputsRef.current));
+    store.update(inputsRef.current);
+    return off;
+  }, [store]);
   const structure = useSyncExternalStore(store.subscribeStructure, store.structure, () => null);
   return { store, structure };
 }
