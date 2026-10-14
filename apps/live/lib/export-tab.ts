@@ -371,6 +371,9 @@ export async function renderTabToCanvas(
       `${fontDefs}${svgShadowDefs([el])}${svgBoxed(el, {
         resolveIconArt: resolveIconArtLoaded,
         resolveStickerArt: resolveStickerArtLoaded,
+        // An image drawn this way (a shadow, a turn, an accent edge, a finish) embeds its bytes
+        // like the SVG export, not the empty-image placeholder.
+        resolveImageHref: (id) => opts.images?.get(id)?.href,
         tabFont,
         tabFinish: tab.finish,
         sketchBackdrop: backdrops.has(el.id),
