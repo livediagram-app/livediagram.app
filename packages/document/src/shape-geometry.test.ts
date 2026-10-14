@@ -156,7 +156,8 @@ describe('the chair', () => {
     );
     // The chair is the furniture table's, drawn facing you (docs/specs/009-elements/chair.md "Facing").
     expect(svg).toContain(`viewBox="0 0 ${CHAIR_ART.front.width} ${CHAIR_ART.front.height}"`);
-    for (const p of CHAIR_ART.front.parts) if (p.tag === 'path') expect(svg).toContain(`<path d="${p.d}"`);
+    for (const p of CHAIR_ART.front.parts)
+      if (p.tag === 'path') expect(svg).toContain(`<path d="${p.d}"`);
     // Its default transparent fill washes its stroke, never an invisible seat.
     expect(svg).toContain(`fill="${chairSeatFill('transparent', '#94a3b8')}"`);
     expect(chairSeatFill('transparent', '#94a3b8')).toBe('rgba(148, 163, 184, 0.32)');
