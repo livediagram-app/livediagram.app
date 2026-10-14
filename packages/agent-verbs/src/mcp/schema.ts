@@ -448,7 +448,8 @@ const graphField = z
             .optional()
             .describe(
               `Shape kind (${shapeKinds}); default "square". Use "diamond" for a ` +
-                'decision, "cylinder" for a datastore, "stadium" for start/end.',
+                'decision, "cylinder" for a datastore, "stadium" for start/end. A "circle" with no label is a ' +
+                "small solid dot, a state machine's start or end.",
             ),
           note: z
             .string()
