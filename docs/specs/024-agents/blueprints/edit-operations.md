@@ -260,15 +260,17 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
   origin (EO26). `align:` on `add` aligns that default spot.
 - **Nudge.** For the four sides, `after` and the default, while the box overlaps an occupying element, it moves
   along the placement axis (outward; the default moves right) to the occupier's far edge plus the gap. Occupying
-  elements are boxed, not containers, not the moving set itself, on any layer. For the four sides against an
-  element in an unlocked container, the occupiers are only what that container holds at any depth
-  (`frameOccupiers`): what lies outside is moved on by the container's growth. The loop ends: each step passes one
-  occupier.
+  elements are boxed, not containers, not the moving set itself, on any layer. For an `add` on the four sides
+  against an element in an unlocked container, the occupiers are only what that container holds at any depth
+  (`frameOccupiers`): what lies outside is moved on by the container's growth. A `move` grows nothing, so it keeps
+  clear of every occupier on the tab. The loop ends: each step passes one occupier.
 - **Growing to hold.** A box placed beside a container's member, or `inside:` it, grows the container to hold it with
   `HOLD_PAD` (`growContainer`, `grow-container.ts`). On each side it grows, the units of the container's own scope
   that lay past its old edge (within `PAST_EDGE_TOLERANCE`, 2 px) and within its span on the other axis move on by
   the growth, carrying what they hold; a locked one stays. The new box itself never moves, and nothing inside the
-  container moves (EO27).
+  container moves (EO27). When the grown container, or a unit it moved on, now reaches within `HOLD_PAD` of its own
+  holder's edge or past it, that holder (an unlocked frame or lane) grows the same way to hold them, up the nesting;
+  what one level moved on is never moved again by the next (`growScope`).
 - **Move.** `move <selector> <placement>` places the moving set's bounding box as one box and translates every
   member by the same delta; `by=dx,dy` translates by exactly that. A placement relative to an element in the
   moving set is `invalid_value`. A container in the moving set carries `containerContents` ([Carry](#carry)). Carried
@@ -284,7 +286,8 @@ means `newElementId` ([Ids](#ids)).
   square). An unknown kind is coerced as a shape kind with `shape_coerced` (EO17). `arrow` is `invalid_value`
   ("use connect"); `image`, `video`, `freehand` and `path` are `invalid_value` (EO15). The element is the
   factory's (`createShape`, `createText`, `createSticky`, `createTable`, `createAnnotation`, `createLinkCard`) with
-  a new id; shapes and text take `textSize: 'sm'` and `labelBoxSize(label, kind)` (EO28); fields apply as `set`
+  a new id; shapes and text take `textSize: 'sm'` and `labelBoxSize(label, kind)` (EO28), a shape measured at
+  `labelFontPx` of its text size (`GraphLook.fontPx`); fields apply as `set`
   does; it is painted, placed, given the layer of the placement reference when that layer is not locked, else
   `resolveActiveLayerId(layers, null)` (EO29, EO47), and appended to the element order. The JSON form may carry
   `element` (a whole raw element, as the MCP's `ops` mode sends) instead of `kind` and `fields`: it is taken as

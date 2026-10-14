@@ -26,7 +26,7 @@ Each **lint finding** has a code, a severity, the refs involved and a fix phrase
 | `group-split-edges` | info     | Most of a frame's arrows cross its border                                                                                                                          |
 | `duplicate-label`   | info     | Two boxes share a label                                                                                                                                            |
 | `flow-backwards`    | info     | Arrows point against the flow direction (not one that closes a loop: a retry runs back by design)                                                                  |
-| `aspect-extreme`    | info     | The drawing is more than `LINT_MAX_ASPECT` times wider than tall, or the reverse, on a tab with no frames or lanes                                                 |
+| `aspect-extreme`    | info     | The drawing is more than `LINT_MAX_ASPECT` times wider than tall, or the reverse, on a graph or on a tab with no frames or lanes                                   |
 | `colour-on-themed`  | info     | A fill or stroke the tab's theme would not paint, on an element the theme colours, bound to no preset or swatch (stickies, and a mind map's branch hues, excepted) |
 | `text-overflow`     | warning  | An Illustrate tab only: a page's text needs more lines than its box holds, or two texts print over each other (text on a page is its content, not a caption)       |
 

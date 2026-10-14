@@ -6,6 +6,7 @@ import {
   EVENT_STORMING_NOTES,
   SEQUENCE_MAX_ITEMS,
   SEQUENCE_MAX_PARTICIPANTS,
+  graphShapeError,
   isRecord,
   MAX_ELEMENTS_PER_TAB,
   type GraphInput,
@@ -149,5 +150,6 @@ export function graphBodyIssue(graph: unknown): string | null {
         : '; search_icons finds one by what it shows')
     );
   }
-  return null;
+  // What it asks that cannot be drawn (nested groups, a node in no lane), refused as the MCP refuses it.
+  return graphShapeError(graph as GraphInput) ?? null;
 }

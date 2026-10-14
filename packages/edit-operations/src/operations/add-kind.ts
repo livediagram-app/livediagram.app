@@ -15,7 +15,9 @@ import {
   createTable,
   createText,
   kindWordOf,
+  LABEL_FONT_PX,
   labelBoxSize,
+  labelFontPx,
   recolourElementForTheme,
   resolveActiveLayerId,
   type BoxedElement,
@@ -27,7 +29,7 @@ import {
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
 import { layerLockOf } from '../locks';
-import { growContainer } from '../grow-container';
+import { growContainer, HOLD_PAD } from '../grow-container';
 import { resolvePlacement, type Placed } from '../placement';
 import { invalidValue } from '../rejections';
 import { type EditState, holdersOf, refuseLocked, writeFields } from '../state';
@@ -138,14 +140,15 @@ export function createKind(
     const peers = peerLook(state, el.shape);
     if (peers && !('textSize' in named) && !('text' in named))
       el = { ...el, textSize: peers.textSize };
-    const look =
-      el.textSize === 'sm' || el.textSize === 'md' ? { textSize: el.textSize } : undefined;
+    // Measured at the box's own label size, whatever it is.
+    const fontPx = labelFontPx(el.textSize);
+    const look = { textSize: fontPx <= LABEL_FONT_PX.sm ? 'sm' : 'md', fontPx } as const;
     if (peers) {
       // Siblings shorter than the palette's box of their shape wear the template look (graph input, templates): the
       // new box is measured as that look measures, so a short label is not the palette's tall square beside them.
       const templated = peers.height < SHAPE_DEFAULT_SIZE[el.shape].height;
       const fit = templated
-        ? labelBoxSize(el.label, el.shape, look ?? { textSize: 'sm' }, !!el.iconId, peers)
+        ? labelBoxSize(el.label, el.shape, look, !!el.iconId, peers)
         : labelBoxSize(el.label, el.shape);
       el = {
         ...el,
@@ -220,7 +223,9 @@ export function applyAddKind(
   index: number,
 ): EditRejection | null {
   const place = (size: { width: number; height: number }) =>
-    resolvePlacement(state, operation.place, size, new Set(), index);
+    resolvePlacement(state, operation.place, size, new Set(), index, undefined, {
+      growsFrame: true,
+    });
   const made = createKind(state, operation, index, place);
   if ('rejection' in made) return made.rejection;
   const refused = commitNew(state, made, 'add', index);
@@ -230,9 +235,6 @@ export function applyAddKind(
     growToHold(state, made.placed.ref, made.el, index);
   return null;
 }
-
-// Room a frame or lane leaves around what it holds, and the deeper band its header label takes.
-const HOLD_PAD = 32;
 
 // A box placed beside a member of a frame or lane joins it: the container grows to hold it, as an insertion grows
 // one (docs/specs/024-agents/edit-operations.md "Layout on edit"), instead of the new box landing just outside, and

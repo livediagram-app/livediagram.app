@@ -72,6 +72,14 @@ describe('agendaFitHeight', () => {
     );
   });
 
+  it('leaves room for the current step, so a session started later still draws the last', () => {
+    const short = agenda({ width: 360, height: 300, agendaItems: eight });
+    // Fitted before the session starts, then the last segment becomes current.
+    const fitted = agendaFitHeight(short);
+    expect(svgOf({ ...short, height: fitted, agendaCurrent: 7 })).toContain('Step 8');
+    expect(svgOf({ ...short, height: fitted, agendaCurrent: 0 })).toContain('Step 8');
+  });
+
   it('never shrinks a card, and leaves one with no segments as it is', () => {
     expect(agendaFitHeight(agenda({ width: 330, height: 900 }))).toBe(900);
     expect(agendaFitHeight(agenda({ height: 120, agendaItems: [] }))).toBe(120);

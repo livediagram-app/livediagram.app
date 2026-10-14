@@ -33,6 +33,41 @@ describe('packFreehandPoints', () => {
     expect(block.points[1]!.ny).toBeCloseTo(1, 3);
   });
 
+  it('draws the given points, not a packed form echoed from a read', () => {
+    const first = packFreehandPoints([
+      {
+        id: 's',
+        type: 'freehand',
+        points: [
+          [0, 0],
+          [100, 100],
+        ],
+      },
+    ]);
+    if ('error' in first) throw new Error(first.error);
+    const old = (first.elements[0] as Record<string, unknown>).packedPoints;
+    // The model echoes the stroke with its packed form and gives new points: a dip, not a diagonal.
+    const out = packFreehandPoints([
+      {
+        id: 's',
+        type: 'freehand',
+        packedPoints: old,
+        points: [
+          [0, 0],
+          [50, 100],
+          [100, 0],
+        ],
+      },
+    ]);
+    if ('error' in out) throw new Error(out.error);
+    const block = describeStrokePoints(
+      (out.elements[0] as Record<string, unknown>).packedPoints as string,
+    );
+    if (!block.ok) throw new Error(block.rejection);
+    expect(block.points).toHaveLength(3);
+    expect(block.points[1]!.ny).toBeCloseTo(1, 3);
+  });
+
   it('packs a flat line on its zero-height axis, and passes everything else through', () => {
     const line = {
       type: 'freehand',
