@@ -18,11 +18,15 @@ export const fixes = {
     ),
   // `layout` lays out shapes alone, so on a tab with frames or lanes it would leave them behind: there the fix
   // reroutes the most-crossed arrow instead.
-  edgeCrossings: (s: LintSource, framed: { arrow: string; angled: boolean } | null) =>
+  // On a framed tab, a line style for one of the most-crossed arrows that strictly lowers its crossings, else advice:
+  // a style suggested blind added crossings, and the next lint then suggested the style back.
+  edgeCrossings: (s: LintSource, framed: { arrow: string; style: string | null } | null) =>
     pick(
       s,
       framed
-        ? `set ${framed.arrow} line=${framed.angled ? 'curved' : 'angled'}`
+        ? framed.style
+          ? `set ${framed.arrow} line=${framed.style}`
+          : `move a box so ${framed.arrow} crosses fewer lines`
         : 'layout type:shape',
       'graph lint --compare direction,groups,lines',
     ),
