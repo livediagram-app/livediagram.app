@@ -177,6 +177,7 @@ const ILLUSTRATE: PaletteLayout = {
         'tools:mind-node',
         'tools:org-chart',
         'tools:flowchart',
+        'tools:sequence',
         'tools:lane',
         'tools:frame',
         'tools:boundary',

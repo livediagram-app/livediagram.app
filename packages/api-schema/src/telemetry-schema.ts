@@ -449,6 +449,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'OrgChart',
     // Stack (docs/specs/009-elements/stack.md): a Build container after Frame.
     'Stack',
+    // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): a Build element after Flowchart.
+    'Sequence',
     // Diagram key (docs/specs/009-elements/diagram-key.md): a Build element after Boundary.
     'DiagramKey',
     // Entity (docs/specs/009-elements/entity.md).

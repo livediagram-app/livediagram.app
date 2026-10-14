@@ -21,6 +21,7 @@ import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { StackMenuSection } from '@/components/palette/StackMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
 import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
+import { SequenceMenuSection } from '@/components/palette/SequenceMenuSection';
 import {
   isChipShape,
   isConceptShape,
@@ -236,6 +237,7 @@ export function ElementDataSections({
     shapeTarget?.shape === 'boundary' ||
     shapeTarget?.shape === 'pointer-note' ||
     shapeTarget?.shape === 'stack' ||
+    shapeTarget?.shape === 'sequence' ||
     (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isProgress ||
     isRail ||
@@ -473,6 +475,14 @@ export function ElementDataSections({
           {/* A stack's arrangement (docs/specs/009-elements/stack.md). */}
           {shapeTarget?.shape === 'stack' ? (
             <StackMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* A sequence diagram's rows, Numbered and Play (docs/specs/009-elements/sequence-diagram.md). */}
+          {shapeTarget?.shape === 'sequence' ? (
+            <SequenceMenuSection
               target={shapeTarget}
               ops={props.elementStyle}
               sectionProps={sectionProps}

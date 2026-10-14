@@ -335,6 +335,37 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: 'at most 24 row meanings of at most 60 characters',
   },
   flag('hubSpokes'),
+  // A sequence diagram's rows (docs/specs/009-elements/sequence-diagram.md); Play is cosmetic and lenient.
+  {
+    field: 'sequenceParticipants',
+    valid: (v: unknown) =>
+      Array.isArray(v) &&
+      v.length >= 2 &&
+      rowsOf(
+        12,
+        (p) =>
+          isRecord(p) &&
+          isNonEmptyStr(p.id) &&
+          isStrUpTo(24)(p.id) &&
+          isStrUpTo(40)(p.label) &&
+          (p.actor === undefined || isBool(p.actor)),
+      )(v),
+    rule: 'an array of 2 to 12 { id, label, actor? } participants (24 and 40 characters)',
+  },
+  {
+    field: 'sequenceMessages',
+    valid: rowsOf(
+      60,
+      (m) =>
+        isRecord(m) &&
+        isStrUpTo(24)(m.from) &&
+        isStrUpTo(24)(m.to) &&
+        isStrUpTo(80)(m.label) &&
+        (m.kind === 'call' || m.kind === 'async' || m.kind === 'reply'),
+    ),
+    rule: 'an array of at most 60 { from, to, label, kind: call | async | reply } messages',
+  },
+  flag('sequenceNumbered'),
   // Boundary (docs/specs/009-elements/boundary.md).
   { field: 'boundaryStyle', valid: isBoundaryStyle, rule: oneOfRule(['tab', 'inset', 'c4']) },
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows are content; the animation is

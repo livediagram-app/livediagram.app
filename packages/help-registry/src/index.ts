@@ -1094,9 +1094,9 @@ export const articles: Article[] = [
     slug: 'build',
     title: 'Build Elements',
     description:
-      'Mind maps, org charts, flowcharts, lanes, frames, stacks, boundaries, keys and tables: diagram structure.',
+      'Mind maps, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, keys and tables: diagram structure.',
     keywords:
-      'build structure layout container holds frame lane boundary timeline table mind node sankey flow arrange scaffold group section band track grid organise card badge step number diagram key legend stack row column grid auto layout even gaps org chart organisation reports hierarchy',
+      'build structure layout container holds frame lane boundary timeline table mind node sankey flow arrange scaffold group section band track grid organise card badge step number diagram key legend stack row column grid auto layout even gaps org chart organisation reports hierarchy sequence diagram uml lifeline message',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

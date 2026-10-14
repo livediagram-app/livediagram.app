@@ -228,6 +228,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'diagram-key': { width: 260, height: 68 },
   // Stack (docs/specs/009-elements/stack.md): an empty row to drop into (D192).
   stack: { width: 360, height: 160 },
+  // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): three lifelines and five messages (D194).
+  sequence: { width: 560, height: 340 },
   // Boundary (docs/specs/009-elements/boundary.md): room for a few nodes inside.
   boundary: { width: 480, height: 300 },
   // Concept graphics (docs/specs/009-elements/concept-graphics.md).
@@ -705,6 +707,24 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textSize: 'sm',
       textAlignX: 'left',
       textAlignY: 'top',
+    };
+  if (kind === 'sequence')
+    return {
+      ...base,
+      label: '',
+      strokeWidth: 'thin',
+      sequenceParticipants: [
+        { id: 'browser', label: 'Browser' },
+        { id: 'api', label: 'API' },
+        { id: 'db', label: 'Database' },
+      ],
+      sequenceMessages: [
+        { from: 'browser', to: 'api', label: 'Place order', kind: 'call' },
+        { from: 'api', to: 'api', label: 'Validate', kind: 'call' },
+        { from: 'api', to: 'db', label: 'Insert order', kind: 'call' },
+        { from: 'db', to: 'api', label: 'Order id', kind: 'reply' },
+        { from: 'api', to: 'browser', label: '201 Created', kind: 'reply' },
+      ],
     };
   if (kind === 'diagram-key')
     return {

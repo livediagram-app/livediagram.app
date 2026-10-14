@@ -260,6 +260,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|StackPadding': 'Someone changed the space inside the edge of a stack.',
   'Element|Changed|StackAlign':
     'Someone changed whether the things in a stack line up at the start, the centre or the end.',
+  'Element|Changed|SequenceParticipants':
+    'Someone added, renamed, reordered or removed a participant in a sequence diagram.',
+  'Element|Changed|SequenceMessages':
+    'Someone added, edited, reordered or removed a message in a sequence diagram.',
+  'Element|Changed|SequenceNumbered':
+    'Someone switched the message numbers of a sequence diagram on or off.',
+  'Element|Changed|SequenceAnim':
+    'Someone changed how a sequence diagram plays in, or its speed or repeat.',
   'Element|Changed|HubSpokes': 'Someone switched the spokes of a hub and spoke graphic on or off.',
   'Element|Changed|PyramidVariant':
     'Someone switched a pyramid between pointing up, pointing down and a funnel.',

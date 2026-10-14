@@ -439,6 +439,8 @@ export function selfLabelled(el: BoxedElement): boolean {
     el.shape === 'hub' ||
     // A diagram key writes its title above its rows (docs/specs/009-elements/diagram-key.md).
     el.shape === 'diagram-key' ||
+    // A sequence diagram's names are in its picture (docs/specs/009-elements/sequence-diagram.md).
+    el.shape === 'sequence' ||
     // A person node writes its name beside its initials (docs/specs/009-elements/org-chart.md).
     isPersonNode(el)
   );

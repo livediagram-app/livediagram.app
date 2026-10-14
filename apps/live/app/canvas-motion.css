@@ -1082,6 +1082,44 @@
   animation: lvd-pointer-tip-pulse 1.6s ease-out infinite;
 }
 
+/* A sequence diagram's Play (docs/specs/009-elements/sequence-diagram.md "Animation"): the picture is uncovered top
+ * to bottom, 0.4 s per message scaled by Speed (--lvd-seq-dur, set by the face), so messages appear in the order they
+ * happen. Once, or with Repeat a reveal, hold and clear on a loop. A clip-path on one layer per diagram. */
+@keyframes lvd-seq-play {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes lvd-seq-play-loop {
+  0% {
+    clip-path: inset(0 0 100% 0);
+  }
+  70%,
+  92% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+}
+.lvd-seq-play {
+  animation: lvd-seq-play var(--lvd-seq-dur, 2s) linear 1 both;
+}
+.lvd-seq-play-loop {
+  animation: lvd-seq-play-loop calc(var(--lvd-seq-dur, 2s) / 0.7) linear infinite both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lvd-seq-play,
+  .lvd-seq-play-loop {
+    animation: none;
+  }
+}
+
 @keyframes lvd-concept-flow {
   to {
     stroke-dashoffset: -24;

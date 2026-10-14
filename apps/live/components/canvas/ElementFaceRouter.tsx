@@ -55,6 +55,7 @@ import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
 import { ChipFace } from '@/components/canvas/ChipFace';
 import { PersonNodeFace } from '@/components/canvas/PersonNodeFace';
 import { DiagramKeyFace } from '@/components/canvas/DiagramKeyFace';
+import { SequenceFace } from '@/components/canvas/SequenceFace';
 import { BoundaryFace } from '@/components/canvas/BoundaryFace';
 import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
@@ -499,6 +500,9 @@ export function ElementFaceRouter({
           editable={isSelected && !readOnly && !isLocked}
           onSetRole={(value) => onSetPageHeading(element.id, 'pageSubtitle', value)}
         />
+      ) : element.type === 'shape' && element.shape === 'sequence' ? (
+        // A sequence diagram (docs/specs/009-elements/sequence-diagram.md): the export's picture, fitted.
+        <SequenceFace element={element} paper={cardFill} />
       ) : element.type === 'shape' && element.shape === 'diagram-key' ? (
         // A diagram key (docs/specs/009-elements/diagram-key.md): its title, swatches and meanings.
         <DiagramKeyFace

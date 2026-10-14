@@ -531,6 +531,26 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The sequence diagram (docs/specs/009-elements/sequence-diagram.md): participants and messages, laid out as UML.
+    id: 'tools:sequence',
+    blurb: 'Who calls whom, in order',
+    caption: 'Sequence',
+    section: 'build',
+    label: 'Add Sequence Diagram',
+    description:
+      'Sequence diagram. Participants side by side and the messages between them in order; add a message by typing a row and the diagram lays itself out.',
+    action: { type: 'shape', kind: 'sequence' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="2" y="2" width="6" height="4" rx="1" />
+        <rect x="16" y="2" width="6" height="4" rx="1" />
+        <path d="M5 6v16M19 6v16" strokeDasharray="2 2" />
+        <path d="M5 10h13M15.5 8l2.5 2-2.5 2" />
+        <path d="M19 16H6M8.5 14 6 16l2.5 2" strokeDasharray="2 1.5" />
+      </Glyph>
+    ),
+  },
+  {
     // Page (docs/specs/009-elements/page-element.md). Sits first in Write: it is the largest writing
     // surface, and the group reads shortest-to-longest from there. Called
     // Page, not Document, so the palette and the selection toolbar agree —

@@ -117,6 +117,7 @@ export const SHAPE_KINDS = new Set<string>([
   'pointer-note',
   'diagram-key',
   'stack',
+  'sequence',
   'boundary',
   'layer-stack',
   'pyramid',

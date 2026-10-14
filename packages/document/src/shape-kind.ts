@@ -49,6 +49,8 @@ export type ShapeKind =
   | 'diagram-key'
   // Stack (docs/specs/009-elements/stack.md): a container that lays out what it holds in a row, column or grid.
   | 'stack'
+  // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): participants and messages laid out as UML.
+  | 'sequence'
   // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
   | 'boundary'
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): one element laying out its own rows

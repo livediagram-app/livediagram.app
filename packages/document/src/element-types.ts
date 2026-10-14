@@ -473,6 +473,13 @@ export type ShapeElement = {
   stackGap?: number;
   stackPadding?: number;
   stackColumns?: number;
+  // A sequence diagram's rows, Numbered and Play (docs/specs/009-elements/sequence-diagram.md).
+  sequenceParticipants?: import('./sequence-element').SequenceElementParticipant[];
+  sequenceMessages?: import('./sequence-element').SequenceElementMessage[];
+  sequenceNumbered?: boolean;
+  sequenceAnim?: 'play';
+  sequenceAnimSpeed?: AnimationSpeed;
+  sequenceAnimRepeat?: boolean;
   // A mind node drawn as a person (docs/specs/009-elements/org-chart.md); absent = an ordinary mind node.
   mindLook?: import('./person-node').MindLook;
   // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.

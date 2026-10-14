@@ -212,7 +212,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Build',
     group: 1,
     description:
-      'The structural elements: mind nodes, org charts, flowcharts, lanes, frames, stacks, boundaries, a diagram key, timelines, tables, and Sankey diagrams.',
+      'The structural elements: mind nodes, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, a diagram key, timelines, tables, and Sankey diagrams.',
     icon: <BuildTabIcon />,
   },
   {
