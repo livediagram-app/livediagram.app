@@ -57,7 +57,8 @@ const WORDS =
   'h-9 w-full min-w-0 rounded-md border border-slate-200 bg-white px-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:ring-brand-500/30';
 const ROW_TOOL =
   'touch-target relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-400 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:cursor-default disabled:opacity-30 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-200';
-// Move Up and Move Down show on a row's hover or focus with a mouse, and always on a touch screen.
+// Move Up and Move Down show on a row's hover or focus with a mouse, and always on a touch screen. On a phone the
+// words and these tools take a second line, so From and To keep the first line's width.
 const REVEAL =
   'opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100';
 const ADD_ROW =
@@ -131,14 +132,14 @@ export function SequenceMessageList({
               >
                 <span
                   aria-hidden
-                  className="text-right text-xs font-medium tabular-nums text-slate-400 dark:text-slate-500"
+                  className="text-right text-xs font-medium tabular-nums text-slate-500 dark:text-slate-400"
                 >
                   {n}
                 </span>
                 {(['from', 'to'] as const).map((end) => (
                   <Select
                     key={end}
-                    className={`min-w-0 ${end === 'to' ? 'order-4' : 'order-2'}`}
+                    className={`min-w-0 ${end === 'to' ? 'order-4 col-span-2 sm:col-span-1' : 'order-2'}`}
                     selectClassName="h-9 !text-sm"
                     aria-label={`Message ${n} ${end}`}
                     value={m[end]}
@@ -169,7 +170,7 @@ export function SequenceMessageList({
                   ref={(el) => {
                     words.current[i] = el;
                   }}
-                  className={`${WORDS} order-last col-span-4 col-start-2 sm:order-5 sm:col-span-1 sm:col-start-auto`}
+                  className={`${WORDS} order-5 col-span-3 col-start-2 sm:col-span-1 sm:col-start-auto`}
                   value={m.label}
                   maxLength={SEQ_MESSAGE_LABEL_MAX}
                   placeholder={
@@ -194,7 +195,7 @@ export function SequenceMessageList({
                     }
                   }}
                 />
-                <div className="order-5 flex items-center justify-end sm:order-6">
+                <div className="order-6 flex items-center justify-end">
                   <span className={`flex ${REVEAL}`}>
                     <button
                       type="button"
@@ -237,7 +238,7 @@ export function SequenceMessageList({
       >
         <PlusIcon />
         Add Message
-        <span className="ml-auto text-[11px] font-normal tabular-nums text-slate-400 dark:text-slate-500">
+        <span className="ml-auto text-[11px] font-normal tabular-nums text-slate-500 dark:text-slate-400">
           {messages.length} of {SEQ_MESSAGES_MAX}
         </span>
       </button>

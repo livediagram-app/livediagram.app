@@ -12,7 +12,7 @@ import {
   SEQ_PARTICIPANT_LABEL_MAX,
   type SequenceElementParticipant,
 } from '@livediagram/document';
-import { lucideGlyph, Tooltip } from '@livediagram/ui';
+import { lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@livediagram/ui';
 import {
   lucideChevronLeft,
   lucideChevronRight,
@@ -202,7 +202,7 @@ export function SequenceParticipantStrip({
                   onClick={() => !on && patch((p) => ({ ...p, actor: actor || undefined }))}
                   className={`flex h-7 cursor-pointer items-center gap-1.5 rounded px-2 text-xs font-medium transition ${
                     on
-                      ? 'bg-brand-500 text-white'
+                      ? `bg-brand-700 text-white ${SOLID_BRAND_DARK}`
                       : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
                   }`}
                 >
