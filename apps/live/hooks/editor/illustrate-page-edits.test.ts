@@ -24,6 +24,7 @@ function harness(tab: Tab) {
   const edits = () =>
     illustratePageEdits({
       tabId: tab.id,
+      tab: tabs[0]!,
       current: illustratePagesOf(tabs[0]!),
       elements: tabs[0]!.elements,
       commitTabs,
@@ -499,6 +500,27 @@ describe('Fit to Content page edits', () => {
     expect(pages).toHaveLength(2);
     expect(h.toastInfo).toHaveBeenCalledWith('Split into 2 pages. Undo puts it back.');
     expect(h.onGoTo).toHaveBeenLastCalledWith(pages[0]!.id);
+  });
+
+  it('says what a split did and goes to its first page even when the commit runs later', () => {
+    const tab = fitTab([box('a', -1200), box('b', 1200)]);
+    const later: ((ts: Tab[]) => Tab[])[] = [];
+    const toastInfo = vi.fn();
+    const onGoTo = vi.fn();
+    const edits = illustratePageEdits({
+      tabId: tab.id,
+      tab,
+      current: illustratePagesOf(tab),
+      elements: tab.elements,
+      commitTabs: (map) => void later.push(map),
+      onGoTo,
+      onLayoutPlaced: vi.fn(),
+      toastInfo,
+    });
+    edits.splitPage('f');
+    expect(toastInfo).toHaveBeenCalledWith('Split into 2 pages. Undo puts it back.');
+    const [after] = later[0]!([tab]);
+    expect(onGoTo).toHaveBeenLastCalledWith(illustratePagesOf(after!)[0]!.id);
   });
 
   it('says there is nothing to split on a page that is one group', () => {

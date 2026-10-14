@@ -365,7 +365,7 @@ export function EditorCanvasHost() {
     assessCleanupKind,
   } = useEditorContext();
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
-  const { setPointerTip } = usePointerNoteSetters(commitElements);
+  const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
   // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
   const drawMode = editorMode.mode === 'draw';
