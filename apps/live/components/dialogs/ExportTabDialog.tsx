@@ -123,6 +123,8 @@ type ExportTabDialogProps = {
   documentTabs?: readonly Tab[];
   // Fetch tabs' content (a tab window's tab, which arrives only when opened or fetched); resolves to the failures.
   loadTabs?: (only: readonly string[]) => Promise<string[]>;
+  // The tabs whose content has arrived, so the export waits for a tab still being fetched elsewhere.
+  loadedTabIds?: ReadonlySet<string>;
 };
 
 const NO_DOCUMENT_TABS: readonly Tab[] = [];
@@ -265,6 +267,7 @@ export function ExportTabDialog({
   pages,
   documentTabs,
   loadTabs,
+  loadedTabIds,
 }: ExportTabDialogProps) {
   // A Board, Sheet or Dashboard tab offers only its formats and exports as laid out; a plan view anywhere draws as its
   // chart (docs/specs/026-plan/plan-tabs.md "Export").
@@ -377,6 +380,7 @@ export function ExportTabDialog({
     tab: imageTab,
     tabs: documentTabs ?? NO_DOCUMENT_TABS,
     loadTabs,
+    loadedTabIds,
     imageContext,
     active: !!active && !isTextFormat(active),
     items: planOpts,

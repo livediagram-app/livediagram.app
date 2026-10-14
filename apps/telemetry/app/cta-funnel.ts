@@ -47,6 +47,7 @@ export const SURFACE_LABELS: Record<CtaSurface, string> = {
   Feature: 'Feature Pages',
   Compare: 'Comparison Pages',
   Faq: 'FAQ',
+  Ai: 'Build with AI',
   Status: 'Status Page',
   Dashboard: 'Telemetry Dashboard',
   Help: 'Help Centre',

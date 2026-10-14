@@ -1,7 +1,6 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
-import { isIconCatalogsLoaded, subscribeIconCatalogs } from '@/lib/icon-registry';
+import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { catalogueStripGroups } from './catalogue-strip-groups';
 import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
@@ -36,8 +35,9 @@ const OPENERS: Record<string, Opener> = {
 
 // Drawn at render, so a catalogue group's artwork (its first entry) appears once the catalogue chunk lands.
 function OpenerIcon({ category, group }: { category: string; group?: string | undefined }) {
-  // Redraws as the catalogues arrive (the editor starts the load as it opens).
-  useSyncExternalStore(subscribeIconCatalogs, isIconCatalogsLoaded, () => false);
+  // Starts the load (or retries a failed one) and redraws as the catalogues arrive; subscribing alone left the
+  // AWS opener blank for good when the editor's one prefetch failed.
+  useIconCatalogs();
   if (group)
     return <>{catalogueStripGroups(category)?.find((g) => g.id === group)?.icon ?? null}</>;
   return <>{PALETTE_CATEGORIES.find((c) => c.id === category)?.icon ?? null}</>;

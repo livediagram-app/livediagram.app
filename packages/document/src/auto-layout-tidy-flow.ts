@@ -18,7 +18,7 @@ export const TIDY_RANK_GAP = 56;
 export const TIDY_SIBLING_GAP = 48;
 // Room a label needs either side of it along its line, and the width one character takes at the
 // label's default 12 px (a measured average; a label is a word or two, so an estimate is enough).
-const LABEL_PAD = 28;
+export const LABEL_PAD = 28;
 const LABEL_CHAR_PX = 6.6;
 const LABEL_MAX_PX = 160;
 const LABEL_LINE_PX = 18;

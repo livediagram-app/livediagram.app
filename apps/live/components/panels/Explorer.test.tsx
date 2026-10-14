@@ -91,6 +91,12 @@ describe('Explorer', () => {
     );
   });
 
+  it('is never faded by Panel opacity, so its menus stay readable', () => {
+    show();
+    expect(document.querySelector('[data-tour-id="explorer"]')).not.toBeNull();
+    expect(document.querySelector('[data-tour-id="explorer"][data-panel-translucent]')).toBeNull();
+  });
+
   it('carries the product links in its footer', () => {
     show();
     const links = screen.getByRole('navigation', { name: 'Go to' });

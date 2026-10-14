@@ -10,14 +10,14 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   BROWSER_CHROME,
-  CHAIR_GEOMETRY,
+  CHAIR_ART,
   SHAPE_GEOMETRY_KINDS,
   shapeGeometry,
   type ShapeElement,
   type ShapeKind,
 } from '@livediagram/document';
 import { BrowserChrome } from './boxed-element-overlays';
-import { ChairView } from './collab/ChairView';
+import { FurnitureView } from './collab/FurnitureView';
 import { ShapeSvgOverlay } from './shape-svg-overlay';
 
 afterEach(cleanup);
@@ -86,23 +86,38 @@ describe('the fixed-pixel drawings read the table too', () => {
     expect(marks(container.querySelector('svg')!)).toEqual([...BROWSER_CHROME.nav.paths]);
   });
 
-  it('ChairView draws the table chair', () => {
-    const chair = {
-      id: 'c',
-      type: 'shape',
-      shape: 'chair',
-      x: 0,
-      y: 0,
-      width: 76,
-      height: 84,
-    } as ShapeElement;
-    const { container } = render(<ChairView element={chair} sitters={[]} />);
-    const svg = container.querySelector('svg')!;
-    expect(svg.getAttribute('viewBox')).toBe(CHAIR_GEOMETRY.viewBox);
-    expect(marks(svg)).toEqual([
-      CHAIR_GEOMETRY.slat,
-      CHAIR_GEOMETRY.legs,
-      CHAIR_GEOMETRY.stretcher,
-    ]);
+  it('FurnitureView draws the table chair, upright at every facing', () => {
+    const chair = (chairFacing: 'n' | 'e' | 's' | 'w') =>
+      ({
+        id: 'c',
+        type: 'shape',
+        shape: 'chair',
+        x: 0,
+        y: 0,
+        width: 76,
+        height: 84,
+        chairFacing,
+      }) as ShapeElement;
+    const draw = (facing: 'n' | 'e' | 's' | 'w') => {
+      const { container, unmount } = render(
+        <FurnitureView element={chair(facing)} stroke="#94a3b8" sitters={[]} />,
+      );
+      const svg = container.querySelector('svg')!;
+      const out = { svg: svg.outerHTML, viewBox: svg.getAttribute('viewBox'), paths: marks(svg) };
+      unmount();
+      return out;
+    };
+    const front = draw('n');
+    expect(front.viewBox).toBe('0 0 64 72');
+    expect(front.paths).toEqual(
+      CHAIR_ART.front.parts.flatMap((p) => (p.tag === 'path' ? [p.d] : [])),
+    );
+    expect(draw('s').paths).toEqual(
+      CHAIR_ART.back.parts.flatMap((p) => (p.tag === 'path' ? [p.d] : [])),
+    );
+    // Never rotated; facing right mirrors the side drawing.
+    for (const f of ['n', 'e', 's', 'w'] as const) expect(draw(f).svg).not.toMatch(/rotate/);
+    expect(draw('w').svg).toContain('scale(-1 1)');
+    expect(draw('n').svg).toContain('Empty chair');
   });
 });

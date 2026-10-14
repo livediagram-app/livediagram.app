@@ -7,11 +7,17 @@ import {
   ANIMATION_SET_NAME,
   DEFAULT_ANIMATION_SPEED,
   PIE_LOOPING_ANIMS,
+  PROGRESS_LOOPING_ANIMS,
+  RATING_LOOPING_ANIMS,
   SANKEY_LOOPING_ANIMS,
   animLoops,
   animationSetsOf,
   isChartShape,
+  isConceptShape,
+  isProgressShape,
+  isRatingShape,
   isSankeyShape,
+  type ConceptShape,
   type AnimationSetId,
   type Element,
   type ShapeElement,
@@ -22,7 +28,12 @@ import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { AnimationMenuGlyph } from '@/components/palette/context-menu-icons';
 import { FlowTiles, IconAnimationTiles } from '@/components/palette/context-menu-tiles';
 import { PieAnimTiles } from '@/components/palette/context-menu-rows';
-import { SankeyAnimTiles } from '@/components/palette/context-menu-data-rows';
+import {
+  ProgressAnimTiles,
+  RatingAnimTiles,
+  SankeyAnimTiles,
+} from '@/components/palette/context-menu-data-rows';
+import { ConceptAnimTiles, SequenceAnimTiles } from '@/components/palette/ElementAnimationTiles';
 import { AnimationSetTiles } from '@/components/palette/AnimationSetTiles';
 import { setAnimationState } from '@/lib/animation-set-writes';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -45,13 +56,22 @@ type Handlers = Pick<
   | 'onSetFlowSpeed'
   | 'onSetFlowRepeat'
   | 'onPreviewArrowFlow'
+  | 'onSetProgressAnim'
+  | 'onSetProgressAnimSpeed'
+  | 'onSetProgressAnimRepeat'
+  | 'onSetRatingAnim'
+  | 'onSetRatingAnimSpeed'
+  | 'onSetRatingAnimRepeat'
+  | 'elementStyle'
   | 'sankey'
 >;
 
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
 
 // The categories in menu order. Body sets come before the words they carry; arrows come last.
-type Category = AnimationSetId | 'icon' | 'chart' | 'sankey' | 'arrow';
+type OwnCategory =
+  'icon' | 'chart' | 'sankey' | 'progress' | 'rating' | 'concept' | 'sequence' | 'arrow';
+type Category = AnimationSetId | OwnCategory;
 const ORDER: readonly Category[] = [
   'shape',
   'sticky',
@@ -61,15 +81,37 @@ const ORDER: readonly Category[] = [
   'icon',
   'chart',
   'sankey',
+  'progress',
+  'rating',
+  'concept',
+  'sequence',
   'text',
   'arrow',
 ];
-const OWN_NAME: Record<'icon' | 'chart' | 'sankey' | 'arrow', string> = {
+const OWN_NAME: Record<OwnCategory, string> = {
   icon: 'Icon',
   chart: 'Chart',
   sankey: 'Sankey',
+  progress: 'Progress',
+  rating: 'Rating',
+  concept: 'Concept',
+  sequence: 'Sequence',
   arrow: 'Arrow',
 };
+
+// The element-owned category a shape takes, if any (each read and written by its own tiles below).
+function ownCategoryOf(el: Element): OwnCategory | undefined {
+  if (el.type === 'arrow') return 'arrow';
+  if (el.type !== 'shape') return undefined;
+  if (el.shape === 'icon') return 'icon';
+  if (isChartShape(el.shape)) return 'chart';
+  if (isSankeyShape(el.shape)) return 'sankey';
+  if (isProgressShape(el.shape)) return 'progress';
+  if (isRatingShape(el.shape)) return 'rating';
+  if (isConceptShape(el.shape)) return 'concept';
+  if (el.shape === 'sequence') return 'sequence';
+  return undefined;
+}
 
 const nameOf = (c: Category) =>
   c in OWN_NAME ? OWN_NAME[c as keyof typeof OWN_NAME] : ANIMATION_SET_NAME[c as AnimationSetId];
@@ -78,10 +120,8 @@ const nameOf = (c: Category) =>
 export function animationCategoriesOf(elements: readonly Element[]): Category[] {
   const present = new Set<Category>(animationSetsOf(elements));
   for (const el of elements) {
-    if (el.type === 'arrow') present.add('arrow');
-    if (el.type === 'shape' && el.shape === 'icon') present.add('icon');
-    if (el.type === 'shape' && isChartShape(el.shape)) present.add('chart');
-    if (el.type === 'shape' && isSankeyShape(el.shape)) present.add('sankey');
+    const own = ownCategoryOf(el);
+    if (own) present.add(own);
   }
   return ORDER.filter((c) => present.has(c));
 }
@@ -187,6 +227,38 @@ function CategoryBody({
         onSetRepeat={(v) => set({ sankeyAnimRepeat: v })}
       />
     );
+  }
+  if (category === 'progress' || category === 'rating') {
+    const el = elements.find((e): e is ShapeElement => ownCategoryOf(e) === category)!;
+    return category === 'progress' ? (
+      <ProgressAnimTiles
+        anim={el.progressAnim ?? null}
+        speed={el.progressAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
+        repeat={animLoops(el.progressAnim, el.progressAnimRepeat, PROGRESS_LOOPING_ANIMS)}
+        onSet={h.onSetProgressAnim}
+        onSetSpeed={h.onSetProgressAnimSpeed}
+        onSetRepeat={h.onSetProgressAnimRepeat}
+      />
+    ) : (
+      <RatingAnimTiles
+        anim={el.ratingAnim ?? null}
+        speed={el.ratingAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
+        repeat={animLoops(el.ratingAnim, el.ratingAnimRepeat, RATING_LOOPING_ANIMS)}
+        onSet={h.onSetRatingAnim}
+        onSetSpeed={h.onSetRatingAnimSpeed}
+        onSetRepeat={h.onSetRatingAnimRepeat}
+      />
+    );
+  }
+  if (category === 'concept') {
+    const el = elements.find(
+      (e): e is ShapeElement & { shape: ConceptShape } => ownCategoryOf(e) === 'concept',
+    )!;
+    return <ConceptAnimTiles target={el} ops={h.elementStyle} />;
+  }
+  if (category === 'sequence') {
+    const el = elements.find((e): e is ShapeElement => ownCategoryOf(e) === 'sequence')!;
+    return <SequenceAnimTiles target={el} ops={h.elementStyle} />;
   }
   if (category === 'arrow') {
     const arrow = elements.find((el) => el.type === 'arrow');

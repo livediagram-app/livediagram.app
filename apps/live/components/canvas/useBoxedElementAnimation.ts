@@ -118,8 +118,8 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
       ? 'lvd-anim-sticker-gradient'
       : `lvd-anim-text-${animation}`;
   // Text wears it on its glyphs; drawn art wears it on the drawing, which the
-  // art's own view mounts (StickerView, ChairView), not on the label under it.
-  // A sticker and a chair mount it on their art (StickerView, ChairView); an annotation pin and a
+  // art's own view mounts (StickerView, FurnitureView), not on the label under it.
+  // A sticker and a chair mount it on their art (StickerView, FurnitureView); an annotation pin and a
   // timeline rail have no art view to mount it, so it sits on the element itself, where a
   // drop-shadow follows the drawing's silhouette just the same over its transparent box.
   const hasArtView =

@@ -13,10 +13,10 @@
 // the canvas: a card is composed at its kind's default size and scaled to the
 // box, so a big one has bigger type rather than more padding.
 
-import { DEFAULT_CHAIR_FACING } from './collab-shapes';
 import { fenceParts, FENCE_RAIL_OPACITY } from './fence';
 import {
   FURNITURE_ART,
+  FURNITURE_FACE_SHADE,
   FURNITURE_GLINT,
   FURNITURE_LINE_STROKE,
   FURNITURE_PANEL_STROKE,
@@ -28,7 +28,7 @@ import {
   seatingFacing,
   type FurniturePart,
 } from './seating';
-import { CHAIR_FACING_ROTATION, CHAIR_GEOMETRY, chairSeatFill } from './shape-geometry';
+import { chairSeatFill } from './shape-geometry';
 import { REACTION_DEFAULT, REACTION_EMOJI, REACTION_HUES } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { formatTimerClock } from './session';
@@ -167,33 +167,7 @@ export function svgBehaviourFace(
       return picker(el, cx, cy, title, color, surface);
     case 'reaction-pad':
       return reactionPad(el, cx, cy, title, color);
-    case 'chair': {
-      // The chair itself (docs/specs/009-elements/chair.md), from the shared table the canvas's
-      // ChairView draws (shape-geometry.ts): backrest, slat, seat, legs and
-      // stretcher, plus the contact shadow that sits it on the canvas rather
-      // than floating it over. Turned whole for its facing, about the box
-      // centre, exactly as the canvas rotates its svg.
-      const g = CHAIR_GEOMETRY;
-      const seat = xmlEscape(chairSeatFill(el.fillColor, stroke));
-      const line = xmlEscape(stroke);
-      const panel = (p: { x: number; y: number; width: number; height: number; rx: number }) =>
-        `<rect x="${p.x}" y="${p.y}" width="${p.width}" height="${p.height}" rx="${p.rx}" fill="${seat}" stroke="${line}" stroke-width="${g.panelStrokeWidth}"/>`;
-      const rail = (d: string) =>
-        `<path d="${d}" stroke="${line}" stroke-width="${g.railStrokeWidth}" opacity="${g.railOpacity}" fill="none"/>`;
-      const chair =
-        `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" viewBox="${g.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
-        `<ellipse cx="${g.shadow.cx}" cy="${g.shadow.cy}" rx="${g.shadow.rx}" ry="${g.shadow.ry}" fill="${g.shadow.fill}" opacity="${g.shadow.opacity}"/>` +
-        panel(g.back) +
-        rail(g.slat) +
-        panel(g.seat) +
-        `<path d="${g.legs}" stroke="${line}" stroke-width="${g.legStrokeWidth}" stroke-linecap="round" fill="none"/>` +
-        rail(g.stretcher) +
-        `</svg>`;
-      const turn = CHAIR_FACING_ROTATION[el.chairFacing ?? DEFAULT_CHAIR_FACING];
-      return turn
-        ? `<g transform="rotate(${turn} ${r2(el.x + el.width / 2)} ${r2(el.y + el.height / 2)})">${chair}</g>`
-        : chair;
-    }
+    case 'chair':
     case 'desk':
     case 'sofa':
       return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
@@ -494,10 +468,10 @@ function fenceArt(el: Face, stroke: string): string {
     .join('');
 }
 
-// A desk or a sofa (docs/specs/009-elements/chair.md "Desk and sofa"), from the FURNITURE_ART table
-// FurnitureView draws, turned for its facing exactly as the canvas turns it.
+// A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"), from the FURNITURE_ART table
+// FurnitureView draws: the drawing for its facing, mirrored for facing right, exactly as the canvas.
 function furnitureArt(el: Face, seat: string, stroke: string): string {
-  if (el.shape !== 'desk' && el.shape !== 'sofa') return '';
+  if (el.shape !== 'chair' && el.shape !== 'desk' && el.shape !== 'sofa') return '';
   const art = FURNITURE_ART[el.shape];
   const facing = seatingFacing({ shape: el.shape, chairFacing: el.chairFacing });
   const frame = furnitureFrame(art, facing);
@@ -517,6 +491,7 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
       case 'shadow':
         return `fill="${FURNITURE_SHADOW.fill}" opacity="${FURNITURE_SHADOW.opacity}"`;
       case 'panel':
+      case 'face':
         return `fill="${seat}" stroke="${line}" stroke-width="${FURNITURE_PANEL_STROKE}"`;
       case 'line':
         return `fill="none" stroke="${line}" stroke-width="${FURNITURE_LINE_STROKE}" stroke-linecap="round"`;
@@ -528,9 +503,16 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
         return `fill="none" stroke="${FURNITURE_GLINT.stroke}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_GLINT.opacity}" stroke-linecap="round"`;
     }
   })();
+  // A face toward the room is the panel, shaded with its stroke colour.
+  const shade = `fill="${line}" opacity="${FURNITURE_FACE_SHADE}"`;
   switch (p.tag) {
     case 'rect':
-      return `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" ${paint}/>`;
+      return (
+        `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" ${paint}/>` +
+        (p.role === 'face'
+          ? `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" ${shade}/>`
+          : '')
+      );
     case 'ellipse':
       return `<ellipse cx="${p.cx}" cy="${p.cy}" rx="${p.rx}" ry="${p.ry}" ${paint}/>`;
     case 'path':

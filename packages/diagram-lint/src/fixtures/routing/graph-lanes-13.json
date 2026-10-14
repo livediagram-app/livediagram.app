@@ -1,0 +1,166 @@
+{
+  "graph": {
+    "style": "lanes",
+    "nodes": [
+      {
+        "id": "apply",
+        "label": "Submit application",
+        "group": "cand",
+        "shape": "stadium"
+      },
+      {
+        "id": "screen",
+        "label": "Screen CV",
+        "group": "rec"
+      },
+      {
+        "id": "phone",
+        "label": "Phone interview",
+        "group": "rec"
+      },
+      {
+        "id": "pass",
+        "label": "Progress to onsite?",
+        "group": "hm",
+        "shape": "diamond"
+      },
+      {
+        "id": "onsite",
+        "label": "Onsite interviews",
+        "group": "panel"
+      },
+      {
+        "id": "attend",
+        "label": "Attend onsite",
+        "group": "cand"
+      },
+      {
+        "id": "debrief",
+        "label": "Debrief",
+        "group": "panel"
+      },
+      {
+        "id": "hire",
+        "label": "Hire decision?",
+        "group": "hm",
+        "shape": "diamond"
+      },
+      {
+        "id": "offer",
+        "label": "Make offer",
+        "group": "rec"
+      },
+      {
+        "id": "reject",
+        "label": "Send rejection",
+        "group": "rec"
+      },
+      {
+        "id": "decide",
+        "label": "Accept or decline?",
+        "group": "cand",
+        "shape": "diamond"
+      },
+      {
+        "id": "accept",
+        "label": "Accepts offer",
+        "group": "cand",
+        "shape": "stadium"
+      },
+      {
+        "id": "decline",
+        "label": "Declines offer",
+        "group": "cand",
+        "shape": "stadium"
+      }
+    ],
+    "edges": [
+      {
+        "from": "apply",
+        "to": "screen"
+      },
+      {
+        "from": "screen",
+        "to": "phone",
+        "label": "CV fits"
+      },
+      {
+        "from": "screen",
+        "to": "reject",
+        "label": "no fit"
+      },
+      {
+        "from": "phone",
+        "to": "pass"
+      },
+      {
+        "from": "pass",
+        "to": "onsite",
+        "label": "yes"
+      },
+      {
+        "from": "pass",
+        "to": "reject",
+        "label": "no"
+      },
+      {
+        "from": "onsite",
+        "to": "attend",
+        "label": "invite"
+      },
+      {
+        "from": "attend",
+        "to": "debrief"
+      },
+      {
+        "from": "debrief",
+        "to": "hire"
+      },
+      {
+        "from": "hire",
+        "to": "offer",
+        "label": "yes"
+      },
+      {
+        "from": "hire",
+        "to": "reject",
+        "label": "no"
+      },
+      {
+        "from": "offer",
+        "to": "decide"
+      },
+      {
+        "from": "decide",
+        "to": "accept",
+        "label": "accept"
+      },
+      {
+        "from": "decide",
+        "to": "decline",
+        "label": "decline"
+      }
+    ],
+    "groups": [
+      {
+        "id": "cand",
+        "label": "Candidate"
+      },
+      {
+        "id": "rec",
+        "label": "Recruiter"
+      },
+      {
+        "id": "hm",
+        "label": "Hiring manager"
+      },
+      {
+        "id": "panel",
+        "label": "Panel"
+      }
+    ],
+    "title": "Hiring process",
+    "subtitle": "From application to offer, by who does each step",
+    "key": true
+  }
+}

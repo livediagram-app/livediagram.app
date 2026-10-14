@@ -38,6 +38,9 @@ describe('WebRowsMenuSection (docs/specs/009-elements/web-components-and-no-grou
     expect(hasWebRowsSection(createShape('site-header', 0, 0))).toBe(true);
     expect(hasWebRowsSection(createShape('banner', 0, 0))).toBe(false);
     expect(hasWebRowsSection(createShape('square', 0, 0))).toBe(false);
+    // docs/specs/009-elements/concept-graphics.md "Editing": chevrons edit their stages on the canvas instead.
+    expect(hasWebRowsSection(createShape('cycle', 0, 0))).toBe(true);
+    expect(hasWebRowsSection(createShape('chevrons', 0, 0))).toBe(false);
   });
 
   it('adds a step and removes one', () => {

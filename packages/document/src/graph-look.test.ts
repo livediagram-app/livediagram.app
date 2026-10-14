@@ -258,7 +258,7 @@ describe('key meanings', () => {
 });
 
 describe('lanes', () => {
-  it('draws each group as a lane, one under another, the flow left to right', () => {
+  it('draws each group as a lane, one under another, a lone hand-off dropping straight down', () => {
     const els = lay({
       style: 'lanes',
       nodes: [
@@ -283,8 +283,9 @@ describe('lanes', () => {
       'Hiring manager',
     ]);
     expect(lanes[1]!.y).toBeGreaterThan(lanes[0]!.y + lanes[0]!.height);
-    expect(box(els, 'b').x).toBeGreaterThan(box(els, 'a').x);
-    expect(box(els, 'c').x).toBeGreaterThan(box(els, 'b').x);
+    // Each hand-off is its step's only way out and the next step's only way in: a staircase, one column.
+    expect(midX(box(els, 'b'))).toBe(midX(box(els, 'a')));
+    expect(midX(box(els, 'c'))).toBe(midX(box(els, 'b')));
     for (const [id, lane] of [
       ['a', 0],
       ['b', 1],
@@ -294,6 +295,116 @@ describe('lanes', () => {
       expect(b.y).toBeGreaterThanOrEqual(lanes[lane]!.y);
       expect(b.y + b.height).toBeLessThanOrEqual(lanes[lane]!.y + lanes[lane]!.height);
     }
+  });
+
+  it('steps right within a lane, and for a hand-off that is not a lone one', () => {
+    const els = lay({
+      style: 'lanes',
+      nodes: [
+        { id: 'a', label: 'Apply', group: 'cand' },
+        { id: 'b', label: 'Screen', group: 'rec' },
+        { id: 'c', label: 'Call', group: 'rec' },
+        { id: 'd', label: 'Interview', group: 'hm' },
+        { id: 'e', label: 'Offer', group: 'rec' },
+      ],
+      groups: [
+        { id: 'cand', label: 'Candidate' },
+        { id: 'rec', label: 'Recruiter' },
+        { id: 'hm', label: 'Hiring manager' },
+      ],
+      edges: [
+        { from: 'a', to: 'b' },
+        { from: 'b', to: 'c' },
+        { from: 'c', to: 'd' },
+        { from: 'c', to: 'e' },
+      ],
+    });
+    expect(midX(box(els, 'b'))).toBe(midX(box(els, 'a')));
+    expect(box(els, 'c').x).toBeGreaterThan(box(els, 'b').x);
+    // c has two ways out: neither hand-off keeps its column.
+    expect(box(els, 'd').x).toBeGreaterThan(box(els, 'c').x);
+  });
+
+  it('gives a staircase hand-off its column back when another step of its lane shares it', () => {
+    const els = lay({
+      style: 'lanes',
+      nodes: [
+        { id: 'a', label: 'Apply', group: 'cand' },
+        { id: 'x', label: 'Prepare', group: 'rec' },
+        { id: 'y', label: 'Wait', group: 'rec' },
+        { id: 'b', label: 'Screen', group: 'rec' },
+      ],
+      groups: [
+        { id: 'cand', label: 'Candidate' },
+        { id: 'rec', label: 'Recruiter' },
+      ],
+      edges: [
+        { from: 'x', to: 'y' },
+        { from: 'a', to: 'b' },
+      ],
+    });
+    // b would share column 0 with x in its lane: it takes a column of its own.
+    expect(box(els, 'b').x).toBeGreaterThan(box(els, 'x').x + box(els, 'x').width);
+  });
+
+  it('branches a decision: the level exit on its point, the others from its top or bottom', () => {
+    const els = lay({
+      style: 'lanes',
+      nodes: [
+        { id: 'start', label: 'Start', group: 'mid' },
+        { id: 'd', label: 'Approve?', shape: 'diamond', group: 'mid' },
+        { id: 'up', label: 'Escalate', group: 'top' },
+        { id: 'on', label: 'Proceed', group: 'mid' },
+        { id: 'down', label: 'Reject', group: 'low' },
+      ],
+      groups: [
+        { id: 'top', label: 'Top' },
+        { id: 'mid', label: 'Middle' },
+        { id: 'low', label: 'Low' },
+      ],
+      edges: [
+        { from: 'start', to: 'd' },
+        { from: 'd', to: 'up', label: 'unsure' },
+        { from: 'd', to: 'on', label: 'yes' },
+        { from: 'd', to: 'down', label: 'no' },
+      ],
+    });
+    const from = (to: string) => {
+      const a = arrowTo(els, 'd', to);
+      return a.from.kind === 'pinned' ? a.from.anchor : null;
+    };
+    expect(from('on')).toBe('e');
+    expect(from('up')).toBe('n');
+    expect(from('down')).toBe('s');
+  });
+
+  it('keeps an exit on the point when its side is taken or its step lies too near', () => {
+    const els = lay({
+      style: 'lanes',
+      nodes: [
+        { id: 'p', label: 'Phone', group: 'top' },
+        { id: 'd', label: 'Pass?', shape: 'diamond', group: 'mid' },
+        { id: 'r', label: 'Reject', group: 'top' },
+        { id: 'o', label: 'Onsite', group: 'mid' },
+      ],
+      groups: [
+        { id: 'top', label: 'Top' },
+        { id: 'mid', label: 'Middle' },
+      ],
+      edges: [
+        { from: 'p', to: 'd' },
+        { from: 'd', to: 'r', label: 'no' },
+        { from: 'd', to: 'o', label: 'yes' },
+      ],
+    });
+    // The staircase from Phone arrives at the top: "no" stays on the point with "yes".
+    const anchor = (to: string) => {
+      const a = arrowTo(els, 'd', to);
+      return a.from.kind === 'pinned' ? a.from.anchor : null;
+    };
+    expect(arrowTo(els, 'p', 'd').to).toMatchObject({ anchor: 'n' });
+    expect(anchor('r')).not.toBe('n');
+    expect(anchor('o')).not.toBe('s');
   });
 
   it('gives nodes outside every group an unnamed lane of their own', () => {

@@ -141,6 +141,7 @@ const TIDY_MEMO_MAX = 256;
 
 export function illustratePageEdits({
   tabId,
+  tab,
   current,
   elements,
   layers,
@@ -153,6 +154,9 @@ export function illustratePageEdits({
   theme,
 }: {
   tabId: string;
+  // The tab as it is now: what an edit will do (a duplicate's id, how many pages a split makes, whether Tidy Up moves
+  // anything) is read from it before committing, never from inside the commit's updater, which React may run later.
+  tab: Tab;
   current: readonly IllustratePage[];
   // The tab's elements now, to count a page's content.
   elements: Tab['elements'];
@@ -366,12 +370,13 @@ export function illustratePageEdits({
     track('Tab', 'Changed', 'PageDuplicated');
     const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
     const id = nextIllustratePageId(current);
-    let created: string | undefined;
-    commitTab((t) => {
-      const out = edited(t, pageDuplicated(t, pageId, id, flow));
-      if (out) created = target.flow ? out.pages?.find((p) => p.flow === flow)?.id : id;
-      return out;
-    });
+    const out = edited(tab, pageDuplicated(tab, pageId, id, flow));
+    const created = out
+      ? target.flow
+        ? out.pages?.find((p) => p.flow === flow)?.id
+        : id
+      : undefined;
+    if (out) commitTab((t) => (t === tab ? out : edited(t, pageDuplicated(t, pageId, id, flow))));
     if (created) onGoTo(created);
     if (target.flow) {
       debugLog('[illustrate-page] article duplicated', { tabId, flow: target.flow });
@@ -421,16 +426,13 @@ export function illustratePageEdits({
       debugLog('[illustrate-page] split refused: page limit', { tabId, pageId });
       return;
     }
-    // Read inside the commit (it runs at once), as Duplicate reads its copy's id.
-    let made = 0;
-    let first: string | undefined;
-    commitTab((t) => {
-      const before = illustratePagesOf(t);
-      const out = withPageSplit(t, pageId);
-      made = out ? out.pages.length - before.length + 1 : 0;
-      first = out?.pages[before.findIndex((p) => p.id === pageId)]?.id;
-      return out;
-    });
+    // Read from the tab as it is, as Duplicate reads its copy's id.
+    const before = illustratePagesOf(tab);
+    const split = withPageSplit(tab, pageId);
+    const made = split ? split.pages.length - before.length + 1 : 0;
+    const first = split?.pages[before.findIndex((p) => p.id === pageId)]?.id;
+    // The split names its new pages afresh each time, so the one read is the one stored (unless the tab moved on).
+    if (made > 0) commitTab((t) => (t === tab ? split : withPageSplit(t, pageId)));
     if (made === 0) {
       toastInfo('This page is one group: nothing to split.');
       debugLog('[illustrate-page] split: one group', { tabId, pageId });
@@ -509,12 +511,9 @@ export function illustratePageEdits({
   };
   const tidyPage = (pageId: string) => {
     if (!mayEdit() || refusedLocked(pageId, 'tidy', false)) return;
-    let changed = false;
-    commitTab((t) => {
-      const out = tidied(t, pageId);
-      changed = out !== null;
-      return out;
-    });
+    const out = tidied(tab, pageId);
+    const changed = out !== null;
+    if (out) commitTab((t) => (t === tab ? out : tidied(t, pageId)));
     if (localPreview()?.tabId === tabId) clearLocalPreview(changed ? 'landed' : 'cancelled');
     if (!changed) {
       toastInfo('This page is already tidy.');
@@ -562,7 +561,7 @@ export function illustratePageEdits({
   return {
     // Apply to All and the page format painter (docs/specs/007-editor/illustrate-pages.md
     // "Copying a background").
-    ...backgroundCopyEdits({ tabId, current, commitTab, toastInfo }),
+    ...backgroundCopyEdits({ tabId, current, commitTab, toastInfo, mayEdit }),
     tidyPage,
     canTidy,
     previewTidy,

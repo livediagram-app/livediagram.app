@@ -125,22 +125,22 @@ No migration: a new kind.
 
 ## Errors and edge cases
 
-| #   | Case                                     | Handling                                                                              |
-| --- | ---------------------------------------- | ------------------------------------------------------------------------------------- |
-| E1  | No flows / all set aside                 | Dashed outline, "No flows yet" (+ "Double-click to add flows" for an Editor) (`D168`) |
-| E2  | Loop                                     | The closing flow set aside, `loop` reason                                             |
-| E3  | Value text not a number                  | Stored as 0, `value` reason                                                           |
-| E4  | Huge vs tiny flow                        | Tiny band drawn 1px                                                                   |
-| E5  | Crowded labels                           | Collision pass hides; readout still names                                             |
-| E6  | Paste past 200 rows                      | Sliced to 200                                                                         |
-| E7  | Text line unreadable                     | Named in `unread`, nothing else lost                                                  |
-| E8  | Element deleted while dialog open        | The dialog renders null and closes itself                                             |
-| E9  | Locked diagram                           | No menu sections, no dialog (`canEditSankey`)                                         |
-| E10 | Leftover name equals a written node      | Leftovers join that node, in its colour                                               |
-| E11 | Leftover name equals the node keeping it | No leftover for that node (it would flow into itself)                                 |
-| E12 | 200 stored flows                         | Leftovers fall past the cap and are set aside                                         |
-| E13 | Overspending node (out > in)             | No leftover; listed in the balance notes                                              |
-| E14 | A row's From typed in Add a Flow         | Stays in Add a Flow until focus leaves the table                                      |
+| #   | Case                                     | Handling                                                                                                                          |
+| --- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| E1  | No flows / all set aside                 | Dashed outline, "No flows yet" (+ "Double-click to add flows" for an Editor) (`D168`)                                             |
+| E2  | Loop                                     | The closing flow set aside, `loop` reason                                                                                         |
+| E3  | Value text not a number                  | Stored as 0, `value` reason                                                                                                       |
+| E4  | Huge vs tiny flow                        | Tiny band drawn 1px                                                                                                               |
+| E5  | Crowded labels                           | Collision pass hides; readout still names                                                                                         |
+| E6  | Paste past 200 rows                      | Sliced to 200                                                                                                                     |
+| E7  | Text line unreadable                     | Named in `unread`, nothing else lost                                                                                              |
+| E8  | Element deleted while dialog open        | The dialog renders null and closes itself (`useCloseVanishedDialogs`), so an undo that brings the element back does not reopen it |
+| E9  | Locked diagram                           | No menu sections, no dialog (`canEditSankey`)                                                                                     |
+| E10 | Leftover name equals a written node      | Leftovers join that node, in its colour                                                                                           |
+| E11 | Leftover name equals the node keeping it | No leftover for that node (it would flow into itself)                                                                             |
+| E12 | 200 stored flows                         | Leftovers fall past the cap and are set aside                                                                                     |
+| E13 | Overspending node (out > in)             | No leftover; listed in the balance notes                                                                                          |
+| E14 | A row's From typed in Add a Flow         | Stays in Add a Flow until focus leaves the table                                                                                  |
 
 ## Security and trust
 

@@ -182,7 +182,7 @@ export type BoxedElementViewProps = {
   // document, so a disconnected sitter vacates for free.
   chairSitters?: (
     elementId: string,
-  ) => import('@/components/canvas/collab/ChairView').ChairSitter[];
+  ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
   // The viewer's current mode, so a Selection Mode button offering it renders
   // disabled (docs/specs/009-elements/mode-button.md).
   activeMode?: import('@livediagram/document').SelectionMode;

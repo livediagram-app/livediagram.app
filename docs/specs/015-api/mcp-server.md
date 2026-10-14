@@ -454,9 +454,19 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   `muted` (outlined and dashed, the exception idiom) or `plain`. `icon` puts an icon (an id from `search_icons`) on
   the box; an id that names none is refused.
 - **Flow lines are elbows.** `lines` defaults to `angled` for flow, lanes and tree; every edge to a later rank bends
-  twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus; a labelled
-  arrow keeps its own ends, and its label sits on a run no other labelled arrow shares (the drop into its target,
-  else the leg out of its source, else its longest run), one line wide.
+  twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus, as long as
+  they are drawn alike: where solid and dashed lines meet at one end of a node, the lines of the style most of them
+  have share it and the rest keep their own ends, leaving from that side's quarter toward their other end, beside the
+  trunk rather than on it, so a dashed event line never rides a solid call's trunk; a labelled
+  arrow keeps its own ends, unless arrows into one node (or out of one) say the same thing in the same line: those
+  join one bus too, each label on its own leg (several services that each "publish" to one event bus), and its label
+  sits on a run no other labelled arrow shares (the drop into its target,
+  else the leg out of its source, else its longest run), one line wide. Runs are read as drawn, those on one line
+  as one, and a run takes the label only when its plate there touches no box: long enough along it, clear beside it,
+  and off every frame's and lane's border and heading; where the middle of a run is not clear, a point a quarter or a
+  third of the way along it is tried before the next run.
+  The gap between two ranks fits the widest label crossing it, as Tidy Up's does (its width left to right, its line
+  height either side of the jog top to bottom), so a caption is never longer than its edge.
 - **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
   the spine (the one labelled yes / ok / true / pass, else the one leading furthest) and lays each other exit whose
   target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.
@@ -466,6 +476,21 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   searched for (the orthogonal router: the cheapest clean path over every pair of sides); the search shares one
   budget per layout (`ROUTER_BUDGET`, grid crossings laid out plus steps taken), and once it is spent the rest take
   their outside tracks, so a dense graph lays out in well under a second (60 boxes and 140 edges in about 0.2 s).
+- **Groups keep their lines clear.** A node outside a group that a member links to sits by that member, not by the
+  middle of the group (a database under the service that owns it), its rank kept in order and its gaps kept. An edge
+  to or from the group itself leaves the frame facing the other end: from the side level with it when it lies under
+  the frame, else from the frame's near side, so it never sweeps along the frame past its members' own drops (the
+  D2 "publish events" bus). An edge between two nodes outside a group is routed round the frame, never through the
+  gaps between its members. A line into a group's first members lands clear of its heading: down the page, a frame
+  whose first member would take a line through the heading's text is widened on the left until it does not.
+- **Lanes stay compact and their decisions branch.** In a `lanes` graph a hand-off to the next lane up or down that is
+  its step's only way out and its next step's only way in drops straight into that lane, in the same column, rather
+  than taking a column of its own, so a chain of hand-offs climbs or descends a staircase instead of stretching across
+  the page. A step with two or more exits (a decision, or any step that branches) keeps the one whose next step sits
+  most nearly level with it on its point toward the flow; each other exit leaves from its top or bottom, toward its
+  next step's lane, and bends once into that step's side, so no two exits leave as parallel stubs. A flow down the
+  page does the same across: of a step's exits leaving its bottom on their own ends (labelled, or drawn unlike the
+  trunk), one whose next step lies clearly to its left or right leaves that side instead.
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
   what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted. `true` names them by default: in a flowchart by ISO 5807
@@ -502,7 +527,10 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   arrows' routing, from the editor's own arrow styles. Angled lines **bend
   twice** along the flow (down, across at half height, down into the child's
   top), the org-chart shape; one whose ends already line up runs straight
-  ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice").
+  ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice"). **No notch in a straight line:** an
+  elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
+  is drawn straight: a few pixels' slant over the length of an edge cannot be seen, and a step that short reads as a
+  notch (two boxes of different widths centred a pixel or two apart).
 
 The flow layout reduces crossings: after ranking, a few up-and-down barycentre
 passes reorder each rank, and a new order is kept only when it crosses fewer

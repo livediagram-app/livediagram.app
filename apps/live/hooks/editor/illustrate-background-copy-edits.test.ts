@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { illustratePagesOf, type IllustratePage, type Tab } from '@livediagram/document';
+import {
+  illustratePagesOf,
+  pageKindOf,
+  pagesSharing,
+  type IllustratePage,
+  type Tab,
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { appliedToAllMessage } from './illustrate-background-copy-edits';
 import { illustratePageEdits } from './illustrate-page-edits';
@@ -17,7 +23,7 @@ const slide = (id: string, extra: Partial<IllustratePage> = {}): IllustratePage 
   ...extra,
 });
 
-function harness(pages: IllustratePage[], tabId = 'deck') {
+function harness(pages: IllustratePage[], tabId = 'deck', mayEdit = () => true) {
   let tabs = [{ id: tabId, name: 'Deck', elements: [], pages } as unknown as Tab];
   const commitTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {
     tabs = map(tabs);
@@ -26,12 +32,14 @@ function harness(pages: IllustratePage[], tabId = 'deck') {
   const edits = () =>
     illustratePageEdits({
       tabId,
+      tab: tabs[0]!,
       current: illustratePagesOf(tabs[0]!),
       elements: tabs[0]!.elements,
       commitTabs,
       onGoTo: vi.fn(),
       onLayoutPlaced: vi.fn(),
       toastInfo,
+      mayEdit,
     });
   const backgrounds = () =>
     Object.fromEntries(illustratePagesOf(tabs[0]!).map((p) => [p.id, p.background]));
@@ -49,6 +57,40 @@ describe('Apply to All', () => {
     expect(h.backgrounds()).toEqual({ a: { fill: dusk }, b: { fill: dusk }, c: { fill: dusk } });
     expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'PageBackgroundAppliedToAll');
     expect(h.toastInfo).toHaveBeenCalledWith('Background applied to 2 slides.');
+  });
+
+  it('counts each page’s reach as the other pages of its kind, outside its own article', () => {
+    const pages: IllustratePage[] = [
+      slide('s1'),
+      slide('s2'),
+      slide('s3'),
+      { id: 'i1', orientation: 'portrait', kind: 'infographic' },
+      { id: 'a1', orientation: 'portrait', kind: 'article', flow: 'f1' },
+      { id: 'a2', orientation: 'portrait', kind: 'article', flow: 'f1' },
+      { id: 'b1', orientation: 'portrait', kind: 'article', flow: 'f2' },
+    ];
+    const h = harness(pages);
+    const laid = illustratePagesOf({ elements: [], pages } as unknown as Tab);
+    for (const p of laid) {
+      const own = pagesSharing(laid, p.id);
+      const direct = laid.filter((q) => pageKindOf(q) === pageKindOf(p) && !own.has(q.id)).length;
+      expect(h.edits().applyToAllReach(p.id), p.id).toBe(direct);
+    }
+    expect(h.edits().applyToAllReach('s1')).toBe(2);
+    expect(h.edits().applyToAllReach('a1')).toBe(1);
+  });
+
+  it('says and counts nothing for someone who may no longer edit', () => {
+    const h = harness(
+      [slide('a', { background: { fill: dusk } }), slide('b')],
+      'deck',
+      () => false,
+    );
+    h.edits().applyBackgroundToAll('a');
+    expect(h.edits().copyBackground('a', 'b')).toBe(false);
+    expect(h.commitTabs).not.toHaveBeenCalled();
+    expect(h.toastInfo).not.toHaveBeenCalled();
+    expect(track).not.toHaveBeenCalled();
   });
 
   it('names the locked slides it left', () => {

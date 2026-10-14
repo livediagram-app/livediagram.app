@@ -12,6 +12,7 @@ import {
   isAnimatedPattern,
   isBoxed,
   type ShapeElement,
+  visibleLayerElements,
 } from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
@@ -390,12 +391,17 @@ function CanvasView(props: CanvasProps) {
   // the mode (adjusted during render so it never publishes a stale one).
   const [avatarStatus, setAvatarStatus] = useState<AvatarStatus | null>(null);
   if (canvasTool !== 'avatar' && avatarStatus !== null) setAvatarStatus(null);
+  // A character walks among what is drawn: a hidden layer's fences, portals and seats are not there.
+  const walkElements = useMemo(
+    () => visibleLayerElements(elements, tabLayers),
+    [elements, tabLayers],
+  );
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
     config: avatarLook.config,
     status: avatarStatus,
     onToggleGender: avatarLook.toggleGender,
-    elements,
+    elements: walkElements,
     mainRef,
     wrapperRef,
     viewportOffset,
@@ -619,6 +625,8 @@ function CanvasView(props: CanvasProps) {
   // illustrate-pages.md "Copying a background"); off every page it stays an empty-canvas press.
   const formatPagePress = (e: React.PointerEvent): boolean => {
     if (canvasTool !== 'format' || e.button !== 0 || !props.onFormatPagePress) return false;
+    // On an element, the press is the element's (arming or painting its look): only the paper is the page's.
+    if ((e.target as HTMLElement | null)?.closest?.('[data-element-id]')) return false;
     const pageId = pageIdAtPress(props.illustratePages, e, wrapperRef, viewportZoom);
     if (!pageId) return false;
     props.onFormatPagePress(pageId);
