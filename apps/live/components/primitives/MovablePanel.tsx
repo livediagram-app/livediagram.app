@@ -58,6 +58,7 @@ export function MovablePanel({
   onDockDragEnd,
   dataTourId,
   layoutChrome = false,
+  opaque = false,
   children,
 }: MovablePanelProps) {
   const minimalChrome = useMinimalChrome();
@@ -199,9 +200,9 @@ export function MovablePanel({
         data-floating-panel=""
         data-tour-id={dataTourId}
         // Panel opacity reaches every panel (docs/specs/007-editor/user-preferences.md), the
-        // popovers included. The buttons that open them are not panels and
+        // popovers included, unless it is `opaque`. The buttons that open them are not panels and
         // stay opaque.
-        data-panel-translucent=""
+        data-panel-translucent={opaque ? undefined : ''}
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -285,8 +286,8 @@ export function MovablePanel({
       data-layout-chrome={layoutChrome ? '' : undefined}
       // Marks the panel as opacity-controlled: globals.css applies the
       // user's --lvd-panel-opacity here (docs/specs/007-editor/user-preferences.md) and restores it to
-      // opaque on hover / focus. The popover branch above carries it too.
-      data-panel-translucent=""
+      // opaque on hover / focus. The popover branch above carries it too. An `opaque` panel never fades.
+      data-panel-translucent={opaque ? undefined : ''}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         // Swallow the right-click so it doesn't bubble to the canvas
