@@ -48,11 +48,15 @@ export function backgroundCopyEdits({
   current,
   commitTab,
   toastInfo,
+  mayEdit = () => true,
 }: {
   tabId: string;
   current: readonly IllustratePage[];
   commitTab: (change: (t: Tab) => Tab | null) => void;
   toastInfo: (message: string) => void;
+  // Whether this person may still edit, asked before anything is said or counted: the commit drops
+  // the edit of someone who no longer may, and a notice or event for it would be untrue.
+  mayEdit?: () => boolean;
 }): BackgroundCopyEdits {
   // The other pages of a page's kind Apply to All reaches, outside its own article.
   const targetsOf = (pageId: string) => {
@@ -66,7 +70,7 @@ export function backgroundCopyEdits({
   const applyBackgroundToAll = (pageId: string) => {
     const source = current.find((p) => p.id === pageId);
     const targets = targetsOf(pageId);
-    if (!source || targets.length === 0) return;
+    if (!source || targets.length === 0 || !mayEdit()) return;
     // A locked page keeps its own (and, for an article, any lock holds its whole article).
     const skipped = targets.filter((p) => pageLockRefuses(current, p.id)).length;
     track('Tab', 'Changed', 'PageBackgroundAppliedToAll');
@@ -88,7 +92,7 @@ export function backgroundCopyEdits({
   const copyBackground = (fromPageId: string, toPageId: string) => {
     const from = current.find((p) => p.id === fromPageId);
     const to = current.find((p) => p.id === toPageId);
-    if (!from || !to || pagesSharing(current, fromPageId).has(toPageId)) return false;
+    if (!from || !to || pagesSharing(current, fromPageId).has(toPageId) || !mayEdit()) return false;
     if (pageLockRefuses(current, toPageId)) {
       toastInfo('That page is locked. Unlock it to change its background.');
       debugLog('[illustrate-page] paint refused: page locked', { tabId, toPageId });
@@ -110,8 +114,32 @@ export function backgroundCopyEdits({
     return true;
   };
 
+  // Every page's title bar asks its reach on every render (a pan, a zoom): counted once per kind and
+  // per article here, then answered per page without a scan, rather than O(pages) a page.
+  let reachOf: Map<string, number> | null = null;
+  const applyToAllReach = (pageId: string) => {
+    if (!reachOf) {
+      const byKind = new Map<PageKind, number>();
+      const byArticle = new Map<string, number>();
+      for (const p of current) {
+        const kind = pageKindOf(p);
+        byKind.set(kind, (byKind.get(kind) ?? 0) + 1);
+        if (p.flow)
+          byArticle.set(`${kind}|${p.flow}`, (byArticle.get(`${kind}|${p.flow}`) ?? 0) + 1);
+      }
+      reachOf = new Map(
+        current.map((p) => {
+          const kind = pageKindOf(p);
+          const own = p.flow ? (byArticle.get(`${kind}|${p.flow}`) ?? 1) : 1;
+          return [p.id, (byKind.get(kind) ?? 0) - own];
+        }),
+      );
+    }
+    return reachOf.get(pageId) ?? 0;
+  };
+
   return {
-    applyToAllReach: (pageId) => targetsOf(pageId).length,
+    applyToAllReach,
     applyBackgroundToAll,
     copyBackground,
   };
