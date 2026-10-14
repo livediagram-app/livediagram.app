@@ -32,7 +32,8 @@ import { track } from '@/lib/telemetry';
 export type GifPhase =
   | { kind: 'idle' }
   | { kind: 'making'; progress: number }
-  | { kind: 'error'; code: GifExportErrorCode };
+  // `from`: the estimate's error clears once an estimate succeeds; a Download's stays until the next one.
+  | { kind: 'error'; code: GifExportErrorCode; from: 'estimate' | 'make' };
 
 export type GifEstimate = { bytes: number; previewUrl: string };
 
@@ -114,9 +115,9 @@ export function useGifExport({
           });
           if (cancelled) return;
           setEstimate({ bytes: estimateGifBytes(sample, frames), previewUrl: preview.urlAt(0) });
-          setPhase((p) => (p.kind === 'error' ? { kind: 'idle' } : p));
+          setPhase((p) => (p.kind === 'error' && p.from === 'estimate' ? { kind: 'idle' } : p));
         } catch (err) {
-          if (!cancelled) setPhase({ kind: 'error', code: errorCode(err) });
+          if (!cancelled) setPhase({ kind: 'error', code: errorCode(err), from: 'estimate' });
         }
       })();
     }, GIF_ESTIMATE_DELAY_MS);
@@ -175,7 +176,7 @@ export function useGifExport({
       onDone();
     } catch (err) {
       if (controller.signal.aborted) setPhase({ kind: 'idle' });
-      else setPhase({ kind: 'error', code: errorCode(err) });
+      else setPhase({ kind: 'error', code: errorCode(err), from: 'make' });
     } finally {
       if (abort.current === controller) abort.current = null;
     }

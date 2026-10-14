@@ -168,6 +168,21 @@ describe('the GIF panel', () => {
     expect(h.download).not.toHaveBeenCalled();
   });
 
+  it('keeps a failed Download’s message up, though the preview’s estimate succeeds after it', async () => {
+    h.encoder.finish.mockRejectedValue(new Error('out of memory'));
+    open();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Download GIF' }));
+    });
+    expect((await screen.findByRole('alert')).textContent).toBe(GIF_ERROR_COPY.failed);
+    // The estimate runs again once the make ends; its success must not wipe the error.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 800));
+    });
+    expect(screen.getByRole('alert').textContent).toBe(GIF_ERROR_COPY.failed);
+    expect(h.download).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['page-missing', new GifExportError('page-missing')],
     ['tainted', new GifExportError('tainted')],
