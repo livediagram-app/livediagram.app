@@ -618,6 +618,36 @@ describe('tree', () => {
   });
 });
 
+describe('person cards', () => {
+  it('draws a node with a role as the template person card: name bold over role, a person icon', () => {
+    const els = lay({
+      style: 'tree',
+      nodes: [
+        { id: 'ceo', label: 'Maya Chen', role: 'Chief Executive' },
+        { id: 'cto', label: 'Ben Ortiz', role: 'CTO', icon: 'laptop' },
+        { id: 'plain', label: 'Board' },
+      ],
+      edges: [
+        { from: 'ceo', to: 'cto' },
+        { from: 'ceo', to: 'plain' },
+      ],
+    });
+    const ceo = box(els, 'ceo') as BoxedElement & {
+      richText?: unknown;
+      iconId?: string;
+      label?: string;
+    };
+    expect(ceo.label).toBe('Maya Chen\nChief Executive');
+    expect(ceo.richText).toEqual([
+      { text: 'Maya Chen', bold: true, size: 'md' },
+      { text: '\nChief Executive' },
+    ]);
+    expect(ceo.iconId).toBe('user');
+    expect((box(els, 'cto') as { iconId?: string }).iconId).toBe('laptop');
+    expect(box(els, 'plain')).not.toHaveProperty('richText');
+  });
+});
+
 describe('storm', () => {
   it('lays an event-storming wall: a column per event, a lane per kind, notes whole, no arrows', () => {
     const policy = 'Whenever an order is placed, authorise the payment straight away';

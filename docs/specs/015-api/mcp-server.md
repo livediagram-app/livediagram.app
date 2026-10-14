@@ -509,7 +509,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
   chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column
   under it, indented, joined by a bus down its lower-left quarter, the compact org chart; its lines carry no
-  arrowheads, as the org-chart template's do, since a tree shows belonging, unless an edge asks with `ends`), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab
+  arrowheads, as the org-chart template's do, since a tree shows belonging, unless an edge asks with `ends`; a node
+  with a `role` draws as the template's person card, its name in bold over the role with a person icon unless it
+  names another, in any style), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab
   and Enter, laid out balanced: the root is the first node nothing enters, a bold round centre; each first-level
   branch tinted in its own hue with its icon; leaves white and edged in their branch's hue, one height for every leaf of the map (the tallest any label needs); a root
   whose label would grow the circle past 260 px takes the next text size down, so the centre stays near the template's; curved connectors in

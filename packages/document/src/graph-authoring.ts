@@ -13,6 +13,7 @@
 // referencing an unknown node id is dropped rather than producing an arrow
 // to nowhere.
 
+import { personCardText } from './person-card';
 import type { ErShape } from './er-heads';
 import { SHAPE_DEFAULT_SIZE } from './factories';
 import { ARROW_THICKNESS_PX } from './arrow-style';
@@ -43,6 +44,9 @@ export type GraphNode = {
   // `label` as its title. What an ER import makes of each table
   // (docs/specs/020-import-export/mermaid.md).
   fields?: EntityField[];
+  // A person's role: the node draws as the org-chart template's person card, the label (the name) in bold over it,
+  // with a person glyph unless the node names its own icon.
+  role?: string;
 };
 
 export type GraphEdge = {
@@ -273,7 +277,15 @@ export function graphToElements(
         ...(n.note ? { note: n.note } : {}),
       };
     }
-    const { width, height } = labelBoxSize(n.label, shape, look, !!(n as { icon?: string }).icon);
+    const role = n.role?.trim();
+    const hasIcon = !!(n as { icon?: string }).icon || !!role;
+    // A person card is as wide as its longer line and a line taller than one.
+    const longer = role && role.length > (n.label ?? '').length ? role : (n.label ?? '');
+    const sized = labelBoxSize(role ? longer : n.label, shape, look, hasIcon);
+    const width = sized.width;
+    const height = role
+      ? sized.height + Math.round(LOOK_FONT_PX[look?.textSize ?? 'sm'] * 1.4)
+      : sized.height;
     return {
       id: n.id,
       type: 'shape' as const,
@@ -286,7 +298,14 @@ export function graphToElements(
       // against. The default 'scale' fills each box, so a short heading came
       // out huge beside a long one set small.
       textSize: look?.textSize ?? ('sm' as const),
-      ...(n.label !== undefined ? { label: n.label } : {}),
+      ...(role
+        ? {
+            ...personCardText(n.label ?? '', role),
+            ...((n as { icon?: string }).icon ? {} : { iconId: 'user' }),
+          }
+        : n.label !== undefined
+          ? { label: n.label }
+          : {}),
       ...(n.link !== undefined ? { link: { kind: 'url' as const, url: n.link } } : {}),
       ...(n.note ? { note: n.note } : {}),
     };

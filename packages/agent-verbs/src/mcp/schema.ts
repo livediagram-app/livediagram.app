@@ -123,8 +123,7 @@ const CONTENT_KINDS =
   'shape "stack": a container that lines up the elements whose centre is inside it; "stackDirection", ' +
   '"stackColumns" (2 to 6, grid), "stackGap" and "stackPadding" (0 to 64), "stackAlign"; place children ' +
   'anywhere inside and the editor lays them out. ' +
-  'An org chart is mind nodes with "mindLook" person: "label" the name, "pageSubtitle" the role, ' +
-  '"mindParentId" the manager, "mindFlow" downward on the root. ' +
+  'An org chart is quickest as a graph with style "tree" and a "role" on each node (see the graph tool). ' +
   'shape "sequence": a UML sequence diagram in one element; "sequenceParticipants" is [{ "id", "label", ' +
   '"actor"? }] (2 to 12, left to right), "sequenceMessages" [{ "from", "to", "label", "kind": call | async | ' +
   'reply }] (up to 60, top to bottom, from === to a self-call), "sequenceNumbered" true numbers them. It lays ' +
@@ -457,6 +456,13 @@ const graphField = z
             .describe(
               'Detail behind the heading: longer explanation, context or a description. ' +
                 "Stored as the element's note, which the editor shows on the element.",
+            ),
+          role: z
+            .string()
+            .optional()
+            .describe(
+              "A person's role: the node draws as the org-chart template's person card, the label (their name) " +
+                'in bold over the role, with a person icon unless "icon" names another.',
             ),
           group: z
             .string()
