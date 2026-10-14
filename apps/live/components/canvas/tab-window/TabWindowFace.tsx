@@ -9,6 +9,7 @@ import {
   TAB_WINDOW_EMPTY,
   TAB_WINDOW_HAIRLINE,
   TAB_WINDOW_RADIUS,
+  tabWindowMayShow,
   type CanvasSurface,
   type ShapeElement,
 } from '@livediagram/document';
@@ -64,7 +65,9 @@ export function TabWindowFace({
 }) {
   const ctx = useTabWindows();
   const tabId = element.windowTabId;
-  const tab = tabId ? ctx?.tabs.find((t) => t.id === tabId) : undefined;
+  // A tab the window may not show (its own, a Plan tab) is unavailable, as the export draws it.
+  const found = tabId ? ctx?.tabs.find((t) => t.id === tabId) : undefined;
+  const tab = found && ctx && tabWindowMayShow(found, ctx.ownTabId) ? found : undefined;
   const state = ctx
     ? tabWindowState(tabId, tab, tabId ? ctx.status(tabId) : 'loaded')
     : { kind: 'unchosen' as const };

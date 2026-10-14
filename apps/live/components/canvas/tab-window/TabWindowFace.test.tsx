@@ -106,6 +106,19 @@ describe('TabWindowFace', () => {
     expect(ctx.open).toHaveBeenCalledWith('flow');
   });
 
+  it('shows its own tab or a Plan tab as not available, asking for nothing, as the export does', () => {
+    const own = show(windowEl('slides'));
+    expect(screen.getByText("This tab isn't available.")).toBeTruthy();
+    expect(own.request).not.toHaveBeenCalled();
+    cleanup();
+    const plan = show(windowEl('board'), {
+      tabs: [tab('slides', 'Slides'), { ...tab('board', 'Board'), opensIn: 'plan' } as never],
+    });
+    expect(screen.getByText("This tab isn't available.")).toBeTruthy();
+    expect(screen.queryByText(/Board/)).toBeNull();
+    expect(plan.request).not.toHaveBeenCalled();
+  });
+
   it('waits, offers Retry, says when the tab is empty or not available', () => {
     show(windowEl('flow'), { status: () => 'loading' });
     expect(screen.getByText('Loading Flow…')).toBeTruthy();

@@ -363,6 +363,8 @@ export function EditorCanvasHost() {
     previewCleanup,
     endCleanupPreview,
     assessCleanupKind,
+    isOutOfScope,
+    tabLoadErrors,
   } = useEditorContext();
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements);
@@ -585,6 +587,8 @@ export function EditorCanvasHost() {
     openTab: selectTab,
     canChoose: can.level === 'edit' && !activeTabLocked,
     commitElements,
+    isOutOfScope,
+    loadErrors: tabLoadErrors,
   });
 
   return (
