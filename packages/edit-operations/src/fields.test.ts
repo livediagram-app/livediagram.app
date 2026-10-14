@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   LIVE_ELEMENT_FIELDS,
   getBuiltInTheme,
+  shapeColorPresets,
   quickSwatchColor,
   type Element,
 } from '@livediagram/document';
@@ -122,6 +123,19 @@ describe('writeFieldsOnto', () => {
     expect(nextOf(write(filled, { fill: null, text: null, label: null }))).not.toHaveProperty(
       'fillColor',
     );
+  });
+
+  it('dresses a shape in its preset’s colours for the theme, a colour named with it winning', () => {
+    const preset = shapeColorPresets(theme).find((p) => p.id === 'tinted')!;
+    expect(nextOf(write(square, { colorPreset: 'tinted' }))).toMatchObject({
+      colorPreset: 'tinted',
+      fillColor: preset.fill,
+      strokeColor: preset.stroke,
+    });
+    expect(nextOf(write(square, { colorPreset: 'tinted', fillColor: '#ff0000' })).fillColor).toBe(
+      '#ff0000',
+    );
+    expect(refusal(square, { colorPreset: 'sparkly' }).hint).toMatch(/^colorPreset takes .*tinted/);
   });
 
   it('takes a known icon id and refuses one that draws a question mark, naming icons like it', () => {
