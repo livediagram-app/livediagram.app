@@ -102,14 +102,50 @@ describe('SessionClusterStrip', () => {
   });
 });
 
+describe('Illustrate: a running Vote or Poll only', () => {
+  // Illustrate passes canStart false and offersTimer false (sessionStripTools runningOnly).
+  const illustrate = { canStart: false, offersTimer: false } as const;
+
+  it('shows nothing while nothing runs, even to an editor', () => {
+    strip(illustrate);
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('shows the running vote and poll so they can be controlled', () => {
+    strip({ ...illustrate, voteRunning: true, pollRunning: true });
+    expect(screen.getByRole('button', { name: 'Open Vote' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Open Poll' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Timer/ })).toBeNull();
+  });
+
+  it('shows only the one that runs', () => {
+    strip({ ...illustrate, pollRunning: true });
+    expect(screen.getByRole('button', { name: 'Open Poll' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Vote/ })).toBeNull();
+  });
+
+  it('never shows a Timer, running or not', () => {
+    strip({ ...illustrate, timer: paused });
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+});
+
 describe('sessionStripTools', () => {
-  it('offers all three in Facilitate, Timer and Vote in Plan, none in Diagram, Draw or Illustrate', () => {
+  it('offers all three in Facilitate, Timer and Vote in Plan, none in Diagram or Draw', () => {
     expect(sessionStripTools('facilitate')).toEqual({ timer: true, vote: true, poll: true });
     expect(sessionStripTools('plan')).toEqual({ timer: true, vote: true, poll: false });
     expect(sessionStripTools(undefined)).toBeNull();
     expect(sessionStripTools('diagram')).toBeNull();
     expect(sessionStripTools('draw')).toBeNull();
-    expect(sessionStripTools('illustrate')).toBeNull();
+  });
+
+  it('offers Illustrate a running Vote or Poll only', () => {
+    expect(sessionStripTools('illustrate')).toEqual({
+      timer: false,
+      vote: true,
+      poll: true,
+      runningOnly: true,
+    });
   });
 
   it('keeps all three on an event-storming board, a workshop that is always Diagram', () => {

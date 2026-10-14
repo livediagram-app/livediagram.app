@@ -378,6 +378,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const clusterInset = elementCovers ? COVERED_CLUSTER_INSET : NO_CLUSTER_INSET;
   // Plan's Timer and Vote, only for a board made for voting (or a session running), never on a Dashboard.
   const planVoting = usePlanVoting(elements, !!props.tabVote || !!props.sessionTools?.timer);
+  const stripTools = sessionStripTools(props.editorMode, props.esBoard === true, planVoting);
   // Plan's card strip shows only while the tab has something that shows cards (items.md "The Plan strip").
   const tabShowsCards = useTabShowsCards(elements);
   // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
@@ -678,10 +679,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ) : null}
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
                 Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
-                chrome a facilitator still needs there. Diagram has all three, Plan its Timer and
-                Vote; Draw and Illustrate keep their bottom bar to their own tools. */}
-            {props.sessionTools &&
-            sessionStripTools(props.editorMode, props.esBoard === true, planVoting) ? (
+                chrome a facilitator still needs there. Facilitate has all three, Plan its Timer and
+                Vote, Illustrate a running Vote or Poll only; Diagram and Draw keep their bottom bar to
+                their own tools. */}
+            {props.sessionTools && stripTools ? (
               <div className="contents">
                 <SessionClusterStrip
                   timer={props.sessionTools.timer}
@@ -699,10 +700,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   voteReviewing={!!props.voteReview}
                   voteButtonRef={voteButtonRef}
                   pollRunning={!!props.pollPanel}
-                  canStart={!readOnly}
-                  offersPoll={
-                    !!sessionStripTools(props.editorMode, props.esBoard === true, planVoting)?.poll
-                  }
+                  canStart={!readOnly && !stripTools.runningOnly}
+                  offersTimer={stripTools.timer}
+                  offersPoll={stripTools.poll}
                   open={
                     activeDockPanel === 'session-timer' ||
                     activeDockPanel === 'session-vote' ||

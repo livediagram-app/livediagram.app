@@ -471,7 +471,8 @@ export function useCanvasChromePanels({
     sessionSegment !== null &&
     (!sessionTools ||
       (sessionSegment === 'session-poll' && !stripTools?.poll) ||
-      (!!readOnly &&
+      (sessionSegment === 'session-timer' && !stripTools?.timer) ||
+      ((!!readOnly || !!stripTools?.runningOnly) &&
         ((sessionSegment === 'session-timer' && !sessionTools.timer) ||
           (sessionSegment === 'session-vote' && !tabVote) ||
           (sessionSegment === 'session-poll' && !pollPanel))));

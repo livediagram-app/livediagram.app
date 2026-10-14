@@ -21,15 +21,25 @@ export type SessionSegment = 'session-timer' | 'session-vote' | 'session-poll';
 // Which tools a mode's strip offers (docs/specs/012-collaboration/session-tools.md "The Session strip"):
 // all three in Facilitate (docs/specs/012-collaboration/facilitate-mode.md), and on an event-storming
 // board, a workshop that is always Diagram and cannot switch; Timer and Vote in Plan, where cards take
-// the dots, only while `planVoting` (usePlanVoting: a board on the tab made for voting, or a session running); none in
-// Diagram, Draw or Illustrate, even while a tool runs.
+// the dots, only while `planVoting` (usePlanVoting: a board on the tab made for voting, or a session running);
+// in Illustrate, Vote and Poll only while one runs (`runningOnly`), so a vote or poll started from a
+// session button there can be watched and ended; none in Diagram or Draw, even while a tool runs.
+export type SessionStripTools = {
+  timer: boolean;
+  vote: boolean;
+  poll: boolean;
+  // Only the buttons of tools that are running, for everyone: nothing is started from the strip.
+  runningOnly?: boolean;
+};
+
 export function sessionStripTools(
   mode: string | undefined,
   esBoard = false,
   planVoting = true,
-): { timer: boolean; vote: boolean; poll: boolean } | null {
+): SessionStripTools | null {
   if (mode === 'facilitate' || esBoard) return { timer: true, vote: true, poll: true };
   if (mode === 'plan') return planVoting ? { timer: true, vote: true, poll: false } : null;
+  if (mode === 'illustrate') return { timer: false, vote: true, poll: true, runningOnly: true };
   return null;
 }
 
@@ -46,6 +56,7 @@ export function SessionClusterStrip({
   voteButtonRef,
   pollRunning,
   canStart,
+  offersTimer = true,
   offersPoll = true,
   open,
   onToggle,
@@ -62,13 +73,15 @@ export function SessionClusterStrip({
   pollRunning: boolean;
   // An editor: the idle tools are offered too, to start one.
   canStart: boolean;
+  // The mode has a Timer button (not in Illustrate).
+  offersTimer?: boolean;
   // The mode has a Poll button (not in Plan).
   offersPoll?: boolean;
   // Which of the strip's popovers is open, if any.
   open: SessionSegment | null;
   onToggle: (segment: SessionSegment, button: HTMLElement) => void;
 }) {
-  const showTimer = canStart || !!timer;
+  const showTimer = offersTimer && (canStart || !!timer);
   const showVote = canStart || voteRunning;
   const showPoll = offersPoll && (canStart || pollRunning);
   if (!showTimer && !showVote && !showPoll) return null;
