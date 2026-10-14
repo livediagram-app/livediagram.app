@@ -64,7 +64,8 @@ words` per message (`->`, `~>`, `-->`). A participant's name is its label (its i
   (case-insensitively) takes the first free ` <n>` suffix from 2, so every written name reads back as its own participant.
 - `parseSequenceText(text, known)`: per line (trimmed; empty and `//` skipped; past `SEQ_TEXT_LINE_MAX` unread):
   `participant|actor <name>` declares; otherwise the first arrow found scanning left to right (longest token at a
-  position: `-->>`, `-->`, `->>`, `->`, `~>`, `-)`) splits From and the rest; To is the longest participant named so
+  position: `-->>`, `-->`, `->>`, `->`, `~>`, `-)`, read a character at a time, at most four per position) splits From
+  (less any spaces and dashes before the arrow, so `A ---> B` reads From `A`) and the rest; To is the longest participant named so
   far whose name the rest starts with, followed by `:` or the line's end, else the rest up to its first `:`; the words
   follow the `:`.
   Names match case-insensitively; a known name keeps its id, a new one takes the next free `p<n>`. Past 12
@@ -141,6 +142,12 @@ Labels pass through the headless renderer's escaping; the picture is our own SVG
 ## Performance and limits
 
 Layout is O(messages) ≤ 60; the picture is built once per change of the rows (memo on the canvas), not per frame.
+
+The Text tab parses on every keystroke. A hostile paste (1,000 lines of 390 dashes, 1,000 lines of 190 ` -` pairs before
+an arrow, a 100,000-character line) parses in 10 ms of CPU on an M-series Mac, 29 ms under coverage, against a 200 ms
+budget (`sequence-text.test.ts`). The arrow scan reads at most four characters per position and the trailing-dash trim
+is a walk back, never a backtracking pattern; trying the six arrows with `startsWith` at every dash cost 40 ms (73 ms
+under coverage, 281 ms on CI).
 
 ## Presentation and UX
 
