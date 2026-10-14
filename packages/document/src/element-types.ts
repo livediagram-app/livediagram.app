@@ -1482,6 +1482,8 @@ const UNTYPED_SHAPES = new Set<string>([
   'plan-card',
   'plan-view',
   'plan-sheet',
+  // A tab window shows another tab (docs/specs/009-elements/tab-window.md); there is nothing to write on it.
+  'tab-window',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {

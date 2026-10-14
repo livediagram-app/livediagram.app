@@ -7,9 +7,8 @@ import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
 import { r2, xmlEscape } from './svg-render-primitives';
 
-/** A window's size as it lands (16:9) and the least it resizes to. */
+/** A window's size as it lands (16:9). */
 export const TAB_WINDOW_SIZE = { width: 640, height: 360 } as const;
-export const TAB_WINDOW_MIN_SIZE = { width: 160, height: 90 } as const;
 /** Its rounded corners. */
 export const TAB_WINDOW_RADIUS = 12;
 /** The frame's hairline when the window has no stroke of its own. */

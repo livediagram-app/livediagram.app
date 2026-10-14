@@ -27,7 +27,7 @@ showing it is up to date.
   a Stroke and Opacity change it like any shape. Its fill is the shown tab's paper; it takes no label.
 - **A window inside the tab it shows** (a slide showing a tab that itself holds a window) is drawn as its **frame
   named for its tab**, never the tab inside it, so windows can never recurse.
-- **Default size**: 640 by 360 (16:9), resizable to at least 160 by 90.
+- **Default size**: 640 by 360 (16:9); it resizes like any element, its words and buttons growing with it.
 
 ## States
 

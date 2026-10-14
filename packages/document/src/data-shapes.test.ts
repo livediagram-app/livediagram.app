@@ -55,7 +55,7 @@ describe('the self-drawing shape family', () => {
     expect(ALL.length).toBeGreaterThan(40);
   });
 
-  it('claims exactly the kinds its members claim, plus the sticker and the label-less web components and concept graphics', () => {
+  it('claims exactly the kinds its members claim, plus the sticker, the label-less web components and concept graphics, and the tab window', () => {
     const fromMembers = new Set(FAMILIES.flatMap((f) => kindsMatching(f.guard)));
     fromMembers.add('sticker');
     // docs/specs/009-elements/web-components-and-no-groups.md: their text is their rows, so there is no label to edit.
@@ -64,6 +64,8 @@ describe('the self-drawing shape family', () => {
     // docs/specs/009-elements/concept-graphics.md: a layer stack and a pyramid draw all their own text.
     fromMembers.add('layer-stack');
     fromMembers.add('pyramid');
+    // docs/specs/009-elements/tab-window.md: a tab window draws another tab and takes no label.
+    fromMembers.add('tab-window');
     expect(kindsMatching(isSelfDrawingShape)).toEqual([...fromMembers].sort());
   });
 

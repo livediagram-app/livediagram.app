@@ -7,12 +7,26 @@ import { tabWindowState, TabWindowFace } from './TabWindowFace';
 
 // docs/specs/009-elements/tab-window.md "States".
 
-vi.mock('next/dynamic', () => ({
-  default: () =>
-    function Drawing({ tab }: { tab: Tab }) {
-      return <div data-testid="drawing">{tab.name}</div>;
-    },
+// The drawing is the renderer's (tested elsewhere): a stub naming its tab. next/dynamic loads for real, behind
+// Suspense, as the editor does.
+vi.mock('./TabWindowDrawing', () => ({
+  TabWindowDrawing: ({ tab }: { tab: Tab }) => <div data-testid="drawing">{tab.name}</div>,
 }));
+vi.mock('next/dynamic', async () => {
+  const React = await import('react');
+  return {
+    default: (load: () => Promise<React.ComponentType<object>>) => {
+      const Lazy = React.lazy(async () => ({ default: await load() }));
+      return function Dynamic(props: object) {
+        return (
+          <React.Suspense fallback={null}>
+            <Lazy {...props} />
+          </React.Suspense>
+        );
+      };
+    },
+  };
+});
 
 afterEach(cleanup);
 
@@ -67,10 +81,11 @@ describe('tabWindowState', () => {
 });
 
 describe('TabWindowFace', () => {
-  it('offers an Editor Choose a Tab, listing the tabs a window may show', () => {
+  it('offers an Editor Choose a Tab, listing the tabs a window may show', async () => {
     const ctx = show(windowEl());
     expect(screen.getByText('Show a tab here')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Choose a Tab' }));
+    await screen.findAllByRole('menuitemradio');
     const options = screen.getAllByRole('menuitemradio').map((o) => o.textContent);
     expect(options).toEqual(['Flow', 'Blank']);
     fireEvent.click(screen.getByRole('menuitemradio', { name: /Flow/ }));
@@ -83,9 +98,9 @@ describe('TabWindowFace', () => {
     expect(screen.queryByRole('button', { name: 'Choose a Tab' })).toBeNull();
   });
 
-  it('draws the shown tab and asks for its content, with Open', () => {
+  it('draws the shown tab and asks for its content, with Open', async () => {
     const ctx = show(windowEl('flow'));
-    expect(screen.getByTestId('drawing').textContent).toBe('Flow');
+    expect((await screen.findByTestId('drawing')).textContent).toBe('Flow');
     expect(ctx.request).toHaveBeenCalledWith('flow');
     fireEvent.click(screen.getByRole('button', { name: 'Open Flow' }));
     expect(ctx.open).toHaveBeenCalledWith('flow');

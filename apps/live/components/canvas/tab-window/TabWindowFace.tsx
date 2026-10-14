@@ -14,11 +14,13 @@ import {
 } from '@livediagram/document';
 import { lucideArrowUpRight } from '@livediagram/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livediagram/ui';
-import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { useTabWindows } from './tab-window-context';
-import { TabWindowTabList } from './TabWindowTabList';
 
 const OpenIcon = lucideGlyph(lucideArrowUpRight, 14);
+
+const TabWindowPicker = dynamic(() => import('./TabWindowPicker').then((m) => m.TabWindowPicker), {
+  ssr: false,
+});
 
 const TabWindowDrawing = dynamic(
   () => import('./TabWindowDrawing').then((m) => m.TabWindowDrawing),
@@ -74,6 +76,10 @@ export function TabWindowFace({
   // The Choose a Tab button the list opens under, while it is open.
   const [pickAnchor, setPickAnchor] = useState<HTMLElement | null>(null);
   const empty = TAB_WINDOW_EMPTY[surface];
+  // Words and buttons grow with the window (they are canvas units, zoomed with the canvas), from their size on a
+  // 220-unit window up to 2.4 times that, so a window placed at its 640 x 360 reads at a slide's usual zoom.
+  const scale = Math.max(1, Math.min(2.4, element.height / 220));
+  const px = (n: number) => Math.round(n * scale);
   const radius = Math.min(TAB_WINDOW_RADIUS, element.width / 2, element.height / 2);
   // A press on a control is its own, never the canvas's (no drag, no marquee, no deselect).
   const own = {
@@ -83,10 +89,12 @@ export function TabWindowFace({
 
   const message = (title: string, action?: React.ReactNode) => (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center"
-      style={{ background: empty.fill, color: empty.ink }}
+      className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center"
+      style={{ background: empty.fill, color: empty.ink, gap: px(8) }}
     >
-      <p className="text-sm font-semibold">{title}</p>
+      <p className="font-semibold" style={{ fontSize: px(14), lineHeight: 1.3 }}>
+        {title}
+      </p>
       {action}
     </div>
   );
@@ -95,7 +103,8 @@ export function TabWindowFace({
       type="button"
       {...own}
       onClick={(e) => setPickAnchor(e.currentTarget)}
-      className="pointer-events-auto rounded-md bg-brand-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+      className="pointer-events-auto rounded-md bg-brand-700 font-semibold text-white transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+      style={{ fontSize: px(12), padding: `${px(6)}px ${px(12)}px` }}
     >
       Choose a Tab
     </button>
@@ -122,7 +131,8 @@ export function TabWindowFace({
             type="button"
             {...own}
             onClick={() => ctx?.retry(state.tabId)}
-            className="pointer-events-auto rounded-md border border-current px-3 py-1 text-xs font-semibold"
+            className="pointer-events-auto rounded-md border border-current font-semibold"
+            style={{ fontSize: px(12), padding: `${px(4)}px ${px(12)}px` }}
           >
             Retry
           </button>,
@@ -145,9 +155,17 @@ export function TabWindowFace({
             type="button"
             aria-label={`Open ${tab.name || 'Untitled tab'}`}
             data-tab-window-open=""
+            style={{
+              right: px(8),
+              top: px(8),
+              height: px(28),
+              gap: px(4),
+              padding: `0 ${px(8)}px`,
+              fontSize: px(12),
+            }}
             {...own}
             onClick={() => ctx.open(tab.id)}
-            className={`pointer-events-auto absolute right-2 top-2 flex h-7 items-center gap-1 rounded-md bg-white/90 px-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-900/10 transition hover:bg-white focus-visible:opacity-100 dark:bg-slate-900/90 dark:text-slate-100 dark:ring-white/15 ${
+            className={`pointer-events-auto absolute flex items-center rounded-md bg-white/90 font-semibold text-slate-700 shadow-sm ring-1 ring-slate-900/10 transition hover:bg-white focus-visible:opacity-100 dark:bg-slate-900/90 dark:text-slate-100 dark:ring-white/15 ${
               selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
             }`}
           >
@@ -157,22 +175,17 @@ export function TabWindowFace({
         </Tooltip>
       ) : null}
       {pickAnchor && ctx?.choose ? (
-        <PortalMenu
+        <TabWindowPicker
           anchor={pickAnchor}
-          placement="below"
+          tabs={ctx.tabs}
+          ownTabId={ctx.ownTabId}
+          shown={tabId}
+          onPick={(id) => {
+            ctx.choose?.(element.id, id);
+            setPickAnchor(null);
+          }}
           onClose={() => setPickAnchor(null)}
-          initialFocus="first"
-        >
-          <TabWindowTabList
-            tabs={ctx.tabs}
-            ownTabId={ctx.ownTabId}
-            shown={tabId}
-            onPick={(id) => {
-              ctx.choose?.(element.id, id);
-              setPickAnchor(null);
-            }}
-          />
-        </PortalMenu>
+        />
       ) : null}
     </div>
   );
