@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import {
   cleanSankeyName,
   SANKEY_MAX_NODES,
@@ -326,7 +326,7 @@ describe('flows as text', () => {
         readSankeyNumber(line);
       }
     });
-    expect(ms).toBeLessThan(50);
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
     expect(parseSankeyText('A [1] ' + 'B'.repeat(SANKEY_LINE_MAX)).unread).toEqual([1]);
     expect(readSankeyNumber('1'.repeat(SANKEY_LINE_MAX + 1))).toBeNaN();
   });
