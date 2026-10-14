@@ -2891,6 +2891,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { commitPath, commitPathEdit } = usePathCommits({
     editsBlocked: structureCreateBlocked,
     commit: logo.drawCommit,
+    elements: () => activeTab.elements,
     styleNewElement: styleMemory.styleNewElement,
     setSelectedId,
   });

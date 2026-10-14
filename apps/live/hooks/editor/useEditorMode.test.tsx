@@ -62,6 +62,24 @@ describe('useEditorMode', () => {
     expect(events).toContainEqual(['Tab', 'Changed', 'PageFitToContent']);
   });
 
+  it('says the board went onto a page even when the commit runs later', () => {
+    tabs = [{ id: 't', name: 'T', elements: [sticky('a', -1500), sticky('b', 1500)] }];
+    const later: ((ts: Tab[]) => Tab[])[] = [];
+    const toastInfo = vi.fn();
+    const hook = renderHook(() =>
+      useEditorMode(tabs[0], {
+        canEdit: true,
+        commitTabs: (map) => void later.push(map),
+        toastInfo,
+      }),
+    );
+    act(() => hook.result.current.setMode('illustrate'));
+    expect(toastInfo).toHaveBeenCalledTimes(1);
+    expect(events).toContainEqual(['Tab', 'Changed', 'PageFitToContent']);
+    tabs = later[0]!(tabs);
+    expect(tabs[0]).toMatchObject({ opensIn: 'illustrate', pages: [{ size: 'fit' }] });
+  });
+
   it('applies what leaving a mode brings in the same edit', () => {
     const h = setup({ id: 't', name: 'T', opensIn: 'illustrate', elements: [] });
     act(() => h.hook.result.current.setMode('diagram', (t) => ({ ...t, name: 'Converted' })));
