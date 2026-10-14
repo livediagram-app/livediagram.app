@@ -20,6 +20,14 @@ export const DUE_SOON_DAYS = 7;
 // Days without a change before a card not yet done is stale.
 export const STALE_DAYS = 14;
 
+// The share done as a whole percent, for "73% done": rounded, except that it reads 100 only when every one is done
+// and 0 only when none is, so 199 of 200 is 99% and 1 of 300 is 1%, never a finished or untouched board that is not.
+export function percentDone(done: number, total: number): number {
+  if (total <= 0 || done <= 0) return 0;
+  if (done >= total) return 100;
+  return Math.min(99, Math.max(1, Math.round((done / total) * 100)));
+}
+
 // The cards a board shows, as its projection placed them (so never archived on an ordinary board, every
 // archived one on an Archive board, every live one on an All Cards board): what its widgets count.
 export function boardItems(projection: BoardProjection): Item[] {

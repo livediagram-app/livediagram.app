@@ -19,6 +19,7 @@ import {
   boardPoints,
   boardTypeCounts,
   dueCounts,
+  percentDone,
   priorityCounts,
   staleCount,
   topVoted,
@@ -118,7 +119,7 @@ export function metricModel(
     case 'progress': {
       if (setup.doneColumnId === undefined)
         return { hero: '–', line: 'No board has a done column yet', visual: null };
-      const pct = total ? Math.round((projection.doneCount / total) * 100) : 0;
+      const pct = percentDone(projection.doneCount, total);
       return {
         hero: String(pct),
         unit: '%',
@@ -219,7 +220,7 @@ export function metricModel(
     }
     case 'points': {
       const { done, total: pts, estimated } = boardPoints(setup, items);
-      const pct = pts ? Math.round((done / pts) * 100) : 0;
+      const pct = percentDone(done, pts);
       return {
         hero: `${done}/${pts}`,
         unit: 'pts',
