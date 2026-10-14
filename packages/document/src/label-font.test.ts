@@ -4,7 +4,11 @@ import {
   LEGEND_FONT_PX,
   NOTE_FONT_PX,
   RUN_XS_PX,
+  TEXT_PX_MAX,
+  TEXT_PX_MIN,
+  labelFontPx,
   legendFontPx,
+  readTextSize,
   runFontPx,
 } from './label-font';
 import { svgPieChart } from './svg-render-charts';
@@ -49,5 +53,24 @@ describe('runFontPx', () => {
     for (const multiline of [false, true]) {
       expect(runFontPx('xs', multiline)).toBeLessThan(runFontPx('sm', multiline));
     }
+  });
+});
+
+// A stored size the structural validator does not check (an import, a hand-written API body) must still draw.
+describe('readTextSize', () => {
+  it('keeps presets and in-range px, clamps px, and reads anything else as md', () => {
+    expect(readTextSize('lg')).toBe('lg');
+    expect(readTextSize('scale')).toBe('scale');
+    expect(readTextSize(18)).toBe(18);
+    expect(readTextSize(1000)).toBe(TEXT_PX_MAX);
+    expect(readTextSize(Number.NaN)).toBe(TEXT_PX_MIN);
+    expect(readTextSize('huge' as never)).toBe('md');
+    expect(readTextSize(undefined)).toBe('md');
+  });
+
+  it('keeps every reader finite and in range for a junk value', () => {
+    expect(labelFontPx(1000)).toBe(TEXT_PX_MAX);
+    expect(labelFontPx('huge' as never)).toBe(LABEL_FONT_PX.md);
+    expect(legendFontPx('huge' as never)).toBe(LEGEND_FONT_PX.md);
   });
 });

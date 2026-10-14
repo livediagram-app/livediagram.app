@@ -2,6 +2,7 @@
 // the canvas (TableView / TableCellView) and the headless SVG emitter (svg-render-table.ts), which
 // each kept their own copy of the table.
 import type { TextSize, TextSizePreset } from './index';
+import { readTextSize } from './label-font';
 
 /**
  * Cell font px per preset (element-space px; the canvas zoom scales it like everything else).
@@ -28,7 +29,8 @@ export function tableCellFontPx(
   fallback = CELL_FONT_PX.md,
 ): number {
   if (size === undefined) return fallback;
-  if (size === 'scale') return scaleCellFontPx(rowH);
-  if (typeof size === 'number') return size;
-  return CELL_FONT_PX[size];
+  const read = readTextSize(size);
+  if (read === 'scale') return scaleCellFontPx(rowH);
+  if (typeof read === 'number') return read;
+  return CELL_FONT_PX[read];
 }

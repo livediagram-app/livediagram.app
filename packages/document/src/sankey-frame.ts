@@ -6,6 +6,7 @@ import { chartMarkInk } from './chart-ink';
 import { chartRamp } from './chart-palettes';
 import { isLightColor } from './colors';
 import type { ShapeElement, TextSize, TextSizePreset } from './index';
+import { readTextSize } from './label-font';
 import {
   sankeyLayout,
   type SankeyLayout,
@@ -48,10 +49,11 @@ export function sankeyLabelHalo(textColor: string): string {
   return isLightColor(textColor) ? '#0f172a' : '#ffffff';
 }
 
-export function sankeyLabelPx(textSize: TextSize | undefined): number {
+export function sankeyLabelPx(stored: TextSize | undefined): number {
+  const textSize = readTextSize(stored);
   // An exact size from the slider draws at that px, as every other label does.
   if (typeof textSize === 'number') return textSize;
-  return SANKEY_LABEL_PX[textSize ?? 'md'];
+  return SANKEY_LABEL_PX[textSize];
 }
 
 export type SankeyBandPaint =

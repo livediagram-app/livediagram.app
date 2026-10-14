@@ -42,6 +42,15 @@ export function isTextSize(v: unknown): v is TextSize {
   return v === 'scale' || v === 'sm' || v === 'md' || v === 'lg';
 }
 
+/** A stored size made safe to draw: a px clamped to the slider's range, a known preset as itself, and anything
+ *  else (an imported or hand-written value the structural validator does not check) as the default, `md`.
+ *  Every reader goes through it, so a stray `textSize: 1000` never draws 1000px text and an unknown preset
+ *  never draws at an undefined size. */
+export function readTextSize(textSize: TextSize | undefined): TextSize {
+  if (typeof textSize === 'number') return clampTextPx(textSize);
+  return textSize === 'scale' || textSize === 'sm' || textSize === 'lg' ? textSize : 'md';
+}
+
 /** A shape / text element's label. */
 export const LABEL_FONT_PX: Record<TextSizePreset, number> = {
   sm: 14,
@@ -85,11 +94,12 @@ export function runFontPx(size: RunSize, multiline = false): number {
  * of writing rather than a name. Absent `textSize` means the default preset,
  * which is `md`. An exact px size draws at that px on either scale.
  */
-export function labelFontPx(textSize: TextSize | undefined, multiline = false): number {
+export function labelFontPx(stored: TextSize | undefined, multiline = false): number {
+  const textSize = readTextSize(stored);
   // An exact size is the same px on every scale: what the slider says is what draws.
   if (isTextPx(textSize)) return textSize;
   const table = multiline ? NOTE_FONT_PX : LABEL_FONT_PX;
-  return table[textSize ?? 'md'];
+  return table[textSize];
 }
 
 /**
@@ -110,7 +120,8 @@ export const LEGEND_FONT_PX: Record<TextSizePreset, number> = {
 };
 
 /** The px a legend row renders at. Absent `textSize` means `md`. */
-export function legendFontPx(textSize: TextSize | undefined): number {
+export function legendFontPx(stored: TextSize | undefined): number {
+  const textSize = readTextSize(stored);
   if (isTextPx(textSize)) return textSize;
-  return LEGEND_FONT_PX[textSize ?? 'md'];
+  return LEGEND_FONT_PX[textSize];
 }
