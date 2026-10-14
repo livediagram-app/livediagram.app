@@ -80,21 +80,21 @@ mode as today:
 
 Facilitate's layout, in order:
 
-| Band        | Categories                                            |
-| ----------- | ----------------------------------------------------- |
-| _(none)_    | Popular                                               |
-| Common      | Shapes, My shapes (with a shape library), Write, Draw |
-| Structure   | Build                                                 |
-| Decorate    | Icons, Stickers, Media                                |
-| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
+| Band        | Categories                                                    |
+| ----------- | ------------------------------------------------------------- |
+| _(none)_    | Popular                                                       |
+| Common      | Shapes, My shapes (with a shape library), Write & Build, Draw |
+| Decorate    | Icons, Stickers, Media                                        |
+| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate           |
 
-- **Popular** (the landing category), fixed: Sticky note, Text, Frame, Arrow, then **Ask**, **Tools**, **Record**
-  and **React** as openers ([Editor modes](../007-editor/editor-modes.md) "Popular"): each draws its category's glyph
+- **Popular** (the landing category), fixed: Square, Sticky note, Text, Frame, Arrow, Image, then behind a divider **Ask**,
+  **Tools**, **Record** and **React** as openers ([Editor modes](../007-editor/editor-modes.md) "Popular"): each draws its category's glyph
   with a chevron and opens that category's tiles in a popover under it, on a desktop and a phone.
-- **Write, Draw and Build hold what a session uses, not what a diagram or a page does.** Write is
-  Text and Sticky note (no Page, no Annotation); Draw is Pencil, Highlighter, Arrow and Line (no
-  Shape Pen, no Polygon); Build is Mind node, Table and Frame (no Lane, no Timeline). Search still
-  finds the six left out and places them, as it does any other mode's tile.
+- **Write & Build and Draw hold what a session uses, not what a diagram or a page does.** Write & Build is Write
+  and Build as one category (Write's place and glyph): Text and Sticky note, then behind a divider Table and Frame
+  (no Page, no Annotation, no Mind node, no Flowchart, no Lane, no Timeline, no Sankey); Draw is Pencil,
+  Highlighter, Arrow and Line (no Shape Pen, no Polygon). Search still finds those left out and places them, as it
+  does any other mode's tile.
 - **The Collaborate elements are six categories, not one.** Each group of
   [Collaborate](../010-palette/palette-top-level-categories.md#collaborate-one-category-fully-grouped)
   is its own category in a **Collaborate** band (the heading names the elements, where Dynamic

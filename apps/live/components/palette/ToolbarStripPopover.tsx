@@ -86,8 +86,8 @@ export function StripPopover({
   right: number;
   isMobile: boolean;
   scale: number;
-  // The small heading over the body.
-  label: ReactNode;
+  // The small heading over the body; absent for a body that names itself.
+  label?: ReactNode;
   // Marks the card for its popover's ownSelector.
   dataAttr: string;
   children: ReactNode;
@@ -123,9 +123,11 @@ export function StripPopover({
       style={isMobile ? undefined : { ...uiUnscaleStyle(scale), right }}
       className={`absolute top-full mt-2 max-h-[calc(100dvh-14rem)] ${isMobile ? 'inset-x-3' : 'w-[26rem]'} origin-top-right animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white px-2 py-2.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
     >
-      <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-        {label}
-      </div>
+      {label ? (
+        <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          {label}
+        </div>
+      ) : null}
       {children}
     </div>
   );

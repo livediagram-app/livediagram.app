@@ -20,7 +20,8 @@ export type PaletteLayoutEntry = {
   label?: string;
   description?: string;
   band?: number;
-  // The tiles, in order, by tile id. Absent = the category's own tiles.
+  // The tiles, in order, by tile id (or opener id, palette-openers). `DIVIDE` between two puts a fixed divider there
+  // for this layout alone (a tile's own `dividerAfter` follows it everywhere). Absent = the category's own tiles.
   tiles?: readonly string[];
   // Offered only on an event-storming board.
   boardOnly?: true;
@@ -28,6 +29,10 @@ export type PaletteLayoutEntry = {
   // palette").
   logoOnly?: true;
 };
+
+// A layout's own fixed divider, between the tiles either side of it (docs/specs/007-editor/toolbar-layout.md "Fixed
+// dividers").
+export const DIVIDE = '|';
 
 export type PaletteLayout = {
   // The category the palette opens on (an event-storming board opens on its notation instead).
@@ -182,14 +187,18 @@ const FACILITATE: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
-      // What a session is most often run with: notes and words, a frame and an arrow to arrange them, then the
-      // session kit as four openers (palette-openers), each its Collaborate category in a popover.
+      // What a session is most often run with: a square, notes and words, a frame and an arrow to arrange them,
+      // then, behind a divider, the session kit as four openers (palette-openers), each its Collaborate category in
+      // a popover.
       id: 'popular',
       tiles: [
+        'shapes:square',
         'tools:sticky',
         'tools:text',
         'tools:frame',
         'tools:arrow',
+        'tools:image',
+        DIVIDE,
         'open:collab-ask',
         'open:collab-tools',
         'open:collab-record',
@@ -198,10 +207,21 @@ const FACILITATE: PaletteLayout = {
     },
     { id: 'shapes' },
     { id: 'my-shapes' },
-    { id: 'write', tiles: tilesExcept('write', 'tools:page', 'tools:annotation') },
+    // Write and Build as one, "Write & Build": words and notes, then a table and a frame to hold them. No Page or
+    // Annotation; and a Sankey reports on a flow, mind maps and flowcharts build a diagram, lanes and timelines lay
+    // one out: a session does not stop for them.
+    {
+      id: 'write',
+      label: 'Write & Build',
+      description: 'Text, sticky notes, tables and frames.',
+      tiles: [
+        ...tilesExcept('write', 'tools:page', 'tools:annotation'),
+        DIVIDE,
+        'tools:table',
+        'tools:frame',
+      ],
+    },
     { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
-    // A Sankey reports on a flow; a session does not stop to chart one.
-    { id: 'build', tiles: tilesExcept('build', 'tools:lane', 'tools:timeline', 'tools:sankey') },
     { id: 'icons' },
     { id: 'stickers' },
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
@@ -261,15 +281,28 @@ export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {
 
 const IDENTITY = new Map(PALETTE_CATEGORIES.map((c) => [c.id, c]));
 
+// The listed tiles and openers; a DIVIDE marks the tile before it as ending a group, in this list only.
+function resolveTiles(ids: readonly string[]): PaletteTileDef[] {
+  const out: PaletteTileDef[] = [];
+  for (const id of ids) {
+    if (id === DIVIDE) {
+      const last = out.at(-1);
+      if (last) out[out.length - 1] = { ...last, dividerAfter: true };
+      continue;
+    }
+    const def = tileById(id) ?? openerById(id);
+    if (def) out.push(def);
+  }
+  return out;
+}
+
 function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
   const identity = IDENTITY.get(entry.id);
   if (!identity) throw new Error(`palette layout names an unknown category: ${entry.id}`);
   const tiles = CATALOGUE_CATEGORIES.has(entry.id)
     ? null
     : entry.tiles
-      ? entry.tiles
-          .map((id) => tileById(id) ?? openerById(id))
-          .filter((t): t is PaletteTileDef => t !== undefined)
+      ? resolveTiles(entry.tiles)
       : tilesForCategory(entry.id);
   return {
     ...identity,

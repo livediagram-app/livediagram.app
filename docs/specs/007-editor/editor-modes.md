@@ -318,31 +318,31 @@ Illustrate's **Write** leaves out **Page** (the page is the canvas there) and
 (they organise a diagram, not a visual page), and its **Components** leaves
 out **Entity**; Diagram's
 **Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
-Docs, Website), keeping Image and Avatar. Facilitate's **Write** also leaves out **Page** and
-**Annotation**, its **Draw** leaves out **Shape Pen** and **Polygon**, and its **Build** leaves out
-**Lane** and **Timeline**: a session needs none of them. Facilitate offers the Collaborate elements as
+Docs, Website), keeping Image and Avatar. Facilitate joins **Write** and **Build** as one category, **Write &
+Build** (Text, Sticky note, Table, Frame: no Page, Annotation, Mind node, Flowchart, Lane, Timeline or Sankey), and
+its **Draw** leaves out **Shape Pen** and **Polygon**: a session needs none of them. Facilitate offers the Collaborate elements as
 six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** and **Navigate**
 ("Collaborate's six" below).
 
-| Category          | Diagram | Illustrate | Plan | Facilitate |
-| ----------------- | ------- | ---------- | ---- | ---------- |
-| Popular           | yes     | yes        | no   | yes        |
-| Plan's seven      | no      | no         | yes  | no         |
-| Logo              | no      | logo page  | no   | no         |
-| Shapes            | yes     | yes        | no   | yes        |
-| My shapes         | yes     | yes        | no   | yes        |
-| Write             | yes     | yes        | no   | yes        |
-| Draw              | yes     | no         | no   | yes        |
-| Build             | yes     | yes        | no   | yes        |
-| Components        | no      | yes        | no   | no         |
-| Devices           | no      | yes        | no   | no         |
-| Event Storming    | board   | no         | no   | no         |
-| Icons             | yes     | yes        | no   | yes        |
-| Stickers          | no      | yes        | no   | yes        |
-| Tech              | yes     | no         | no   | no         |
-| Media             | yes     | yes        | no   | yes        |
-| Data              | no      | yes        | no   | no         |
-| Collaborate's six | no      | no         | no   | yes        |
+| Category          | Diagram | Illustrate | Plan | Facilitate          |
+| ----------------- | ------- | ---------- | ---- | ------------------- |
+| Popular           | yes     | yes        | no   | yes                 |
+| Plan's seven      | no      | no         | yes  | no                  |
+| Logo              | no      | logo page  | no   | no                  |
+| Shapes            | yes     | yes        | no   | yes                 |
+| My shapes         | yes     | yes        | no   | yes                 |
+| Write             | yes     | yes        | no   | yes (Write & Build) |
+| Draw              | yes     | no         | no   | yes                 |
+| Build             | yes     | yes        | no   | in Write            |
+| Components        | no      | yes        | no   | no                  |
+| Devices           | no      | yes        | no   | no                  |
+| Event Storming    | board   | no         | no   | no                  |
+| Icons             | yes     | yes        | no   | yes                 |
+| Stickers          | no      | yes        | no   | yes                 |
+| Tech              | yes     | no         | no   | no                  |
+| Media             | yes     | yes        | no   | yes                 |
+| Data              | no      | yes        | no   | no                  |
+| Collaborate's six | no      | no         | no   | yes                 |
 
 Illustrate offers **Logo** only while the tab has a logo page, and turns to it when one is added
 or pressed into ([Logo pages](logo-pages.md#the-logo-palette)).
@@ -356,7 +356,8 @@ Plan shows no palette: its boards, sheets and dashboards carry their own tools
   never shows a category the new mode leaves out.
 - **Popular** is the landing category of every mode but Plan: the tiles that mode is most
   often built from (twelve at most), listed in its layout entry, fixed (not edited or
-  reordered). An entry may be an **opener** instead of a tile (`palette-openers`): it stands for a whole category, or
+  reordered). A layout may put a divider of its own between two entries (`DIVIDE`), shown on the strip as a
+  tile's own fixed divider is. An entry may be an **opener** instead of a tile (`palette-openers`): it stands for a whole category, or
   one group of a catalogue, and on the strip opens it in a popover under itself, drawn with a chevron as the
   catalogue groups are ([Toolbar layout](toolbar-layout.md) "More"); in the Palette panel it moves the palette to
   that category. An opener places nothing and is not a search result. It replaced the per-browser **Favourites**
@@ -366,7 +367,7 @@ Plan shows no palette: its boards, sheets and dashboards carry their own tools
   - **Illustrate**: Text, Square, Circle, Image, Speech bubble, Pie, Bar,
     Donut, Stat row, Process, Timeline, Callout, each also reachable from
     another category the mode offers.
-  - **Facilitate**: Sticky note, Text, Frame, Arrow, then the session kit as four openers: **Ask**, **Tools**,
+  - **Facilitate**: Square, Sticky note, Text, Frame, Arrow, then, behind a divider, the session kit as four openers: **Ask**, **Tools**,
     **Record**, **React** (each its Collaborate category)
     ([Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette)).
 - Elements already on the canvas are untouched: narrowing the palette only

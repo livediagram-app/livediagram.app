@@ -4,7 +4,6 @@ import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
 import type { Element, PageKind } from '@livediagram/document';
 import { AddPageStripButton } from './AddPageStripButton';
 import {
-  Fragment,
   useEffect,
   useEffectEvent,
   useMemo,
@@ -24,7 +23,6 @@ import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './palette-category-bands';
 import { EsPhotoStripButton } from './EsPhotoStripButton';
-import { PaletteTile } from './PaletteTileGrid';
 import { usePlan } from '@/components/plan/PlanContext';
 import { planCardTile } from './palette-plan-tiles';
 import { EditCardsStripButton } from './EditCardsStripButton';
@@ -39,10 +37,16 @@ import { usePaletteCatalogue } from './usePaletteCatalogue';
 import { DASHBOARD_PALETTE_LANDING, paletteLandingCategory } from './palette-layouts';
 import type { PaletteProps } from './palette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { STRIP_DIVIDER_ATTR } from './useEdgeDividers';
 import { StripPopover, useStripPopover } from './ToolbarStripPopover';
-import { CatalogueGroupTile, catalogueStripGroups, type StripOpen } from './catalogue-strip-groups';
-import { BrowseStartGroup } from './PaletteCategoryBrowser';
+import { catalogueStripGroups } from './catalogue-strip-groups';
+import { StripOpenerPanel } from './StripOpenerPanel';
+import {
+  Divider,
+  groupItems,
+  StripOpenedBody,
+  tileItems,
+  useStripOpeners,
+} from './strip-rail-items';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 import {
   useCoveringBoardId,
@@ -127,17 +131,6 @@ function StripRow({
 function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode }) {
   if (swipe) return <div className="flex min-w-0">{children}</div>;
   return <SnapWidth matchParentParity>{children}</SnapWidth>;
-}
-
-function Divider() {
-  // Hairline margins on a phone, where every pixel of the strip is a tile's.
-  return (
-    <span
-      aria-hidden
-      {...{ [STRIP_DIVIDER_ATTR]: '' }}
-      className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 phone:mx-px dark:bg-slate-700"
-    />
-  );
 }
 
 export function ToolbarPalette(props: Props) {
@@ -260,8 +253,15 @@ export function ToolbarPalette(props: Props) {
   // (docs/specs/007-editor/toolbar-layout.md "More"); a desktop strip shows as many as fit, More the rest.
   const allGroups = category ? catalogueStripGroups(category.id) : null;
   const groups = allGroups && !swipe ? allGroups.slice(0, Math.floor(stripLimit)) : allGroups;
-  // What the More popover opened on: a group tile's or an opener's (palette-openers), or null for More's own.
-  const [opened, setOpened] = useState<StripOpen | null>(null);
+  // What the More popover shows: its own body, or what a group tile or an opener opened (strip-rail-items).
+  const openers = useStripOpeners(more);
+  const { moreShown, openMore } = openers;
+  // The category an opener or group opened, and, for a whole category of tiles (an opener's), its card panel.
+  const openedTab = openers.opened
+    ? tabs.find((t) => t.id === openers.opened!.category)
+    : undefined;
+  const openedPanel =
+    openers.opened && !openers.opened.group && openedTab?.tiles ? openedTab : null;
   // On a phone only My shapes keeps More: the swipe reaches every other category's tiles or groups.
   const showMore = swipe ? category?.id === 'my-shapes' : hasMore;
 
@@ -297,21 +297,6 @@ export function ToolbarPalette(props: Props) {
       })
     : null;
 
-  const openMore = (button: HTMLElement) => {
-    track('UI', 'Opened', 'ToolbarMore');
-    setOpened(null);
-    more.openFrom(button);
-  };
-  // More's own popover, not a group's.
-  const moreShown = moreOpen && opened === null;
-  const isOpen = (key: string) => moreOpen && opened?.key === key;
-  const toggleOpen = (next: StripOpen, anchor: HTMLElement) => {
-    if (isOpen(next.key)) return setMoreOpen(false);
-    track('UI', 'Opened', 'ToolbarMore');
-    setOpened(next);
-    // Centred under its tile (More hangs from its own button's right edge).
-    more.openFrom(anchor, 'centre');
-  };
   // Opening the Search starts a new choice: a tile armed to place (its "Tap to drop" banner) is let go first.
   const beforeSearch = () => {
     if (pendingDraw) tileActions.cancelDraw?.();
@@ -493,90 +478,15 @@ export function ToolbarPalette(props: Props) {
                     scrollable={swipe}
                     railKey={category?.id ?? defaultId}
                     items={
-                      groups
-                        ? groups.map((g) => (
-                            <CatalogueGroupTile
-                              key={g.id}
-                              group={g}
-                              open={isOpen(g.id)}
-                              onToggle={(anchor) =>
-                                toggleOpen(
-                                  {
-                                    key: g.id,
-                                    category: category!.id,
-                                    group: g.id,
-                                    label: g.label,
-                                  },
-                                  anchor,
-                                )
-                              }
-                            />
-                          ))
-                        : [
-                            ...tiles.map((def) => {
-                              const a = def.action;
-                              const tile =
-                                a.type === 'open' ? (
-                                  // An opener: its category (or catalogue group) in a popover under it.
-                                  <CatalogueGroupTile
-                                    group={{ id: def.id, label: def.label, icon: def.icon }}
-                                    open={isOpen(def.id)}
-                                    onToggle={(anchor) =>
-                                      toggleOpen(
-                                        {
-                                          key: def.id,
-                                          category: a.category,
-                                          group: a.group ?? null,
-                                          label: def.label,
-                                        },
-                                        anchor,
-                                      )
-                                    }
-                                  />
-                                ) : (
-                                  <PaletteTile
-                                    def={def}
-                                    actions={tileActions}
-                                    pendingDraw={pendingDraw}
-                                    compact
-                                  />
-                                );
-                              // A fixed divider rides with the tile it follows.
-                              return dividersAfter.has(def.id) ? (
-                                <span key={def.id} className="flex items-center">
-                                  {tile}
-                                  <Divider />
-                                </span>
-                              ) : (
-                                <Fragment key={def.id}>{tile}</Fragment>
-                              );
-                            }),
-                          ]
+                      groups && category
+                        ? groupItems(category.id, groups, openers)
+                        : tileItems(tiles, dividersAfter, tileActions, pendingDraw ?? null, openers)
                     }
                     leavingItems={
-                      leavingGroups
-                        ? leavingGroups.map((g) => (
-                            <CatalogueGroupTile
-                              key={g.id}
-                              group={g}
-                              open={false}
-                              onToggle={() => {}}
-                            />
-                          ))
+                      leavingId && leavingGroups
+                        ? groupItems(leavingId, leavingGroups)
                         : leaving
-                          ? [
-                              ...leaving.tiles.map((def) => (
-                                <span key={def.id} className="flex items-center">
-                                  <PaletteTile
-                                    def={def}
-                                    actions={tileActions}
-                                    pendingDraw={null}
-                                    compact
-                                  />
-                                  {leaving.dividersAfter.has(def.id) ? <Divider /> : null}
-                                </span>
-                              )),
-                            ]
+                          ? tileItems(leaving.tiles, leaving.dividersAfter, tileActions, null)
                           : null
                     }
                   />
@@ -628,23 +538,29 @@ export function ToolbarPalette(props: Props) {
             )}
           </StripRow>
           {moreOpen && category ? (
-            // The category's full Palette body (usePaletteCatalogue).
+            // The category's full Palette body (usePaletteCatalogue), or what a group tile or an opener opened.
             <StripPopover
               right={more.right}
               isMobile={isMobile}
               scale={scale}
-              // A group's or an opener's popover is what it opened, so it names it; More's is the whole category.
-              label={opened?.label ?? category.label}
+              // A category opener's panel names itself; a group's popover is the group; More's is the category.
+              label={openedPanel ? undefined : (openers.opened?.label ?? category.label)}
               dataAttr="data-toolbar-more"
             >
-              <BrowseStartGroup.Provider
-                value={opened?.group ? { id: opened.group, bare: true } : null}
-              >
-                {/* Keyed on what opened it, so another group's tile opens the body afresh on its own. */}
-                <Fragment key={opened?.key ?? ''}>
-                  {(opened ? tabs.find((t) => t.id === opened.category) : category)?.content}
-                </Fragment>
-              </BrowseStartGroup.Provider>
+              {openedPanel ? (
+                <StripOpenerPanel
+                  label={openedPanel.label}
+                  description={openedPanel.description}
+                  tiles={openedPanel.tiles ?? []}
+                  actions={tileActions}
+                  pendingDraw={pendingDraw ?? null}
+                />
+              ) : (
+                <StripOpenedBody
+                  opened={openers.opened}
+                  content={(openers.opened ? openedTab : category)?.content}
+                />
+              )}
             </StripPopover>
           ) : null}
           {search.open && !esBoard && !participant ? (
