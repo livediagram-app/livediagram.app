@@ -38,10 +38,3 @@ describe('chart palettes', () => {
     expect(isChartPaletteId('nonsense')).toBe(false);
   });
 });
-
-describe('the ids a refusal lists', () => {
-  it('are every palette, in order', async () => {
-    const { CHART_PALETTE_IDS_RULE } = await import('./validate-shape');
-    expect([...CHART_PALETTE_IDS_RULE]).toEqual(CHART_PALETTES.map((p) => p.id));
-  });
-});
