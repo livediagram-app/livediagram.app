@@ -5,6 +5,7 @@ import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
 import { AskIcon, BlinkCursor, CleanIcon, PlugIcon, SendIcon, Spinner } from './ai-panel-icons';
 import type { Element } from '@livediagram/document';
+import { AI_MAX_PROMPT_CHARS } from '@livediagram/api-schema';
 import type { AiMode } from '@/lib/api-client';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAiPanelSession } from './useAiPanelSession';
@@ -234,6 +235,8 @@ export function AiPanelContent({
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={PLACEHOLDERS[mode]}
+          // The api refuses a longer prompt (AI_MAX_PROMPT_CHARS).
+          maxLength={AI_MAX_PROMPT_CHARS}
           rows={3}
           disabled={isLoading}
           className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[12px] text-slate-800 placeholder-slate-400 outline-none transition focus:border-brand-400 focus:ring-1 focus:ring-brand-400 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500"

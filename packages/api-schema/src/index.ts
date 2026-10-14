@@ -550,6 +550,11 @@ export type AiMode = 'clean' | 'ask';
 
 export type AiConversationTurn = { role: 'user' | 'assistant'; content: string };
 
+// The bounds POST /api/ai holds a request to (docs/specs/007-editor/ai-assistance.md), shared so the panel can
+// keep within them rather than meet a bare 400.
+export const AI_MAX_PROMPT_CHARS = 1000;
+export const AI_MAX_ELEMENTS = 200;
+
 // Request body for POST /api/ai.
 export type AiRequest = {
   mode: AiMode;
