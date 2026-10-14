@@ -14,7 +14,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 // The Highlighter is a Draw tile (docs/specs/008-canvas/highlighter.md): picking it arms the marker
 // for one stroke and clears the selection, like the pens. It is not a canvas tool.
 
-function setup() {
+function setup(commit = vi.fn()) {
   const selection = createSelectionStore();
   selection.setSelection({ selectedId: 'el-1', multiSelectedIds: new Set(['el-2']) });
   return renderHook(
@@ -27,7 +27,7 @@ function setup() {
         setCanvasTool: vi.fn(),
         activeTab: { id: 't1', name: 'Tab', elements: [] } as unknown as Tab,
         drawMode: false,
-        commit: vi.fn(),
+        commit,
         setSelectedId: selection.setSelectedId,
         setMultiSelectedIds: selection.setMultiSelectedIds,
         setEditingId,
@@ -125,5 +125,22 @@ describe('useShapeDrawing marker', () => {
       variant: 'whiteboard',
       colour: null,
     });
+  });
+});
+
+// docs/specs/009-elements/images.md "Placeholder rendering": an image lands as its empty placeholder,
+// selected, and no picker opens on its own (the placeholder's Select Image button opens it).
+describe('useShapeDrawing image', () => {
+  it('drops the empty placeholder and selects it, opening nothing', () => {
+    const commit = vi.fn();
+    const { result, rerender } = setup(commit);
+    act(() => result.current.drawing.commitDraw({ type: 'image' }, 0, 0, 200, 150));
+    // The selection store does not re-render the hook on its own.
+    rerender({ tool: 'select' });
+    const placed = commit.mock.calls[0]![0]([])[0];
+    expect(placed).toMatchObject({ type: 'image', imageId: null });
+    expect(result.current.selectedId).toBe(placed.id);
+    expect(result.current.editingId).not.toBe(placed.id);
+    expect(result.current.drawing.pendingDraw).toBeNull();
   });
 });
