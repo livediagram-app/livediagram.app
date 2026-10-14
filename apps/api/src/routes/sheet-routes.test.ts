@@ -305,6 +305,27 @@ describe('a Participant (docs/specs/013-workspace/share-roles.md)', () => {
       as,
     );
     expect(cells.status).toBe(200);
+    // A value, never a format (docs/specs/029-sheets/sheet.md "Who may do what"): the bold is dropped and the value
+    // lands; a write of formats alone is refused.
+    const bold = await write(
+      'sheetA00',
+      { kind: 'cells', cells: [{ r: r0!, c: c0!, i: { s: 'Bold?' }, f: { b: true } }] },
+      {},
+      as,
+    );
+    expect(bold.status).toBe(200);
+    expect(JSON.stringify(bold.body)).toContain('Bold?');
+    expect(JSON.stringify(bold.body)).not.toContain('"b":true');
+    expect(
+      (
+        await write(
+          'sheetA00',
+          { kind: 'cells', cells: [{ r: r0!, c: c0!, f: { b: true } }] },
+          {},
+          as,
+        )
+      ).status,
+    ).toBe(403);
     expect(
       (
         await write(
