@@ -488,7 +488,10 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   the frame, else from the frame's near side, so it never sweeps along the frame past its members' own drops (the
   D2 "publish events" bus). An edge between two nodes outside a group is routed round the frame, never through the
   gaps between its members. A line into a group's first members lands clear of its heading: down the page, a frame
-  whose first member would take a line through the heading's text is widened on the left until it does not. The
+  whose first member would take a line through the heading's text is widened on the left until it does not, on the
+  heading's side only: the far side hugs the members (a long heading framed two boxes in twice their room), unless
+  an edge meets the group itself, whose frame then stays centred on its members so that edge stays on their line.
+  A label's plate keeps 6 px off every frame's and lane's border, inside or out, never sitting on the edge. The
   reverse holds too: a group in one row whose members have no lines among them (a row of data stores) seats each
   member by the outside nodes it links to, a database under its service, its order and gaps kept, and its frame
   refits round them; skipped when the refitted frame would cover another node or frame. A member left within a

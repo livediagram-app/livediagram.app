@@ -1,6 +1,6 @@
 // Stacked groups line up (docs/specs/015-api/mcp-server.md "Stacked groups line up").
 import { describe, expect, it } from 'vitest';
-import { layoutClusteredGraph } from './auto-layout-clusters';
+import { FRAME_PAD, layoutClusteredGraph } from './auto-layout-clusters';
 import { isBoxed, type BoxedElement, type DiagramGraph, type Element } from './index';
 
 const ids = () => {
@@ -98,5 +98,33 @@ describe('stacked groups', () => {
     ).filter(isBoxed);
     const [g1, g2] = ['g1', 'g2'].map((id) => byId(els2, id));
     expect(g1!.width).not.toBe(g2!.width);
+  });
+});
+
+describe('a long heading', () => {
+  it('leads its frame in on the heading side only, the far side hugging the members', () => {
+    const els = layoutClusteredGraph(
+      {
+        nodes: [
+          { id: 'top', label: 'Deploy' },
+          { id: 'x', label: 'E2E' },
+          { id: 'y', label: 'Scan' },
+        ],
+        edges: [
+          { from: 'top', to: 'x' },
+          { from: 'top', to: 'y' },
+        ],
+        clusters: [
+          { id: 'g', label: 'Staging verification, run in parallel', members: ['x', 'y'] },
+        ],
+      },
+      { direction: 'TB', makeEdgeId: ids() },
+    );
+    const g = byId(els, 'g');
+    const [x, y] = ['x', 'y'].map((id) => byId(els, id));
+    const right = Math.max(x!.x + x!.width, y!.x + y!.width);
+    expect(g.x + g.width - right).toBe(FRAME_PAD);
+    // The heading side keeps more room than the far side.
+    expect(Math.min(x!.x, y!.x) - g.x).toBeGreaterThan(FRAME_PAD);
   });
 });

@@ -889,8 +889,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
           ) &&
           !holders.some(
             ({ rect, heading }) =>
-              (rectsMeet(plate, rect) && !rectWithin(plate, rect)) ||
-              (heading !== null && rectsMeet(plate, heading)),
+              straddles(plate, rect) || (heading !== null && rectsMeet(plate, heading)),
           ) &&
           // Strict, off every other line too, not only labelled ones: a neighbour's drop struck a label through.
           (!strict ||
@@ -922,8 +921,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
             !boxes.some((b) => rectsMeet(plate, b)) &&
             !holders.some(
               ({ rect, heading }) =>
-                (rectsMeet(plate, rect) && !rectWithin(plate, rect)) ||
-                (heading !== null && rectsMeet(plate, heading)),
+                straddles(plate, rect) || (heading !== null && rectsMeet(plate, heading)),
             ) &&
             !lines.some((l) =>
               l.pts.some((pt, k) => k > 0 && segmentHitsRect(l.pts[k - 1]!, pt, plate)),
@@ -959,6 +957,19 @@ export function placeElbowLabels(elements: Element[]): Element[] {
 }
 
 type Rect = { x: number; y: number; width: number; height: number };
+// How far a label's plate keeps off a frame's or lane's border, in px: inside by a pixel, "HTTPS" read as sitting
+// on the Clients frame's edge.
+const LABEL_BORDER_CLEAR = 6;
+// Whether a plate, grown by LABEL_BORDER_CLEAR, crosses a frame's or lane's border: neither wholly inside it nor clear.
+const straddles = (plate: Rect, rect: Rect) => {
+  const near = {
+    x: plate.x - LABEL_BORDER_CLEAR,
+    y: plate.y - LABEL_BORDER_CLEAR,
+    width: plate.width + 2 * LABEL_BORDER_CLEAR,
+    height: plate.height + 2 * LABEL_BORDER_CLEAR,
+  };
+  return rectsMeet(near, rect) && !rectWithin(near, rect);
+};
 // Whether a segment passes through a rectangle (its interior; touching an edge does not count).
 function segmentHitsRect(a: Pt, b: Pt, r: Rect): boolean {
   const [x0, x1, y0, y1] = [r.x, r.x + r.width, r.y, r.y + r.height];

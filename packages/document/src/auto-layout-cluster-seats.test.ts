@@ -287,8 +287,25 @@ describe('frame headings', () => {
     const heading = frameHeadingRect(byId(els, 'ci'))!;
     for (const id of ['lint', 'unit', 'build'])
       expect(cx(byId(els, id))).toBeGreaterThan(heading.x + heading.width);
-    // Centred in its frame still, so a spine through it runs straight.
+    // The lead on the heading's side only: the far side hugs the members.
     const frame = byId(els, 'ci');
-    expect(Math.abs(cx(byId(els, 'unit')) - cx(frame))).toBeLessThan(1);
+    expect(frame.x + frame.width - (byId(els, 'build').x + byId(els, 'build').width)).toBe(32);
+  });
+
+  it('keeps the frame centred on its members when an edge meets the group itself, so that edge stays on the spine', () => {
+    const els = layoutClusteredGraph(
+      {
+        nodes: ['start', 'lint', 'unit', 'build', 'next'].map((id) => ({ id, label: id })),
+        edges: [
+          ...['lint', 'unit', 'build'].map((to) => ({ from: 'start', to })),
+          { from: 'ci', to: 'next' },
+        ],
+        clusters: [
+          { id: 'ci', label: 'Continuous integration', members: ['lint', 'unit', 'build'] },
+        ],
+      },
+      { direction: 'TB', makeEdgeId: ids },
+    );
+    expect(Math.abs(cx(byId(els, 'unit')) - cx(byId(els, 'ci')))).toBeLessThan(1);
   });
 });

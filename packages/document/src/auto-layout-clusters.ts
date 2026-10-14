@@ -230,10 +230,20 @@ export function layoutClusteredGraph(
   const placedNodes: BoxedElement[] = freeNodes.map((n) => placedById.get(n.id) ?? n);
   const placedFrames: BoxedElement[] = [];
   for (const c of clusters) {
-    const frame = placedById.get(c.id)!;
-    placedFrames.push(frame);
+    const placed = placedById.get(c.id)!;
     const members = memberEls.get(c.id)!;
     const b = bbox(members);
+    // The lead was laid out both sides, so the contracted layout lined the members up on the frame's middle; the
+    // heading needs it on its own side only. Given back on the far side, a long heading no longer framed two boxes
+    // in twice the room they need.
+    // An edge to or from the group itself leaves its frame's middle, which must stay on the members' line: kept
+    // centred there.
+    const framed = graph.edges.some((e) => e.from === c.id || e.to === c.id);
+    const frame =
+      (direction ?? 'TB') === 'TB' && !framed
+        ? { ...placed, width: placed.width - lead.get(c.id)! }
+        : placed;
+    placedFrames.push(frame);
     const dx = frame.x + FRAME_PAD + lead.get(c.id)! - b.x;
     const dy = frame.y + FRAME_TOP - b.y;
     for (const m of members) placedNodes.push({ ...m, x: m.x + dx, y: m.y + dy });
