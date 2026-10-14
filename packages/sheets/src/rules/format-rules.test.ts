@@ -297,6 +297,20 @@ describe('the static render', () => {
             opts: [{ v: 'Done', c: '#00ff00' }],
           },
         },
+        {
+          k: 'vrule',
+          id: 'arr001',
+          rule: {
+            id: 'arr001',
+            r1: R(0),
+            c1: C(3),
+            r2: R(0),
+            c2: C(3),
+            is: 'list',
+            opts: [{ v: 'Done' }],
+            show: 'arrow',
+          },
+        },
       ],
     });
     b.wb.updateSheet(sheet);
@@ -306,8 +320,13 @@ describe('the static render', () => {
     expect(at(0, 1)?.text).toBe('☑');
     expect(at(1, 1)?.text).toBe('☐');
     expect(at(2, 1)?.text).toBe('☐');
-    expect(at(0, 2)).toMatchObject({ text: 'Done', fill: '#00ff00' });
-    expect(at(1, 2)?.fill).toBeUndefined();
+    // A chip is a pill in its option's colour, never the cell's fill; a value with no option's colour a plain pill.
+    expect(at(0, 2)).toMatchObject({ text: 'Done', chip: { color: '#00ff00' } });
+    expect(at(0, 2)?.fill).toBeUndefined();
+    expect(at(1, 2)).toMatchObject({ text: 'Other', chip: {} });
+    // An arrow dropdown draws its arrow, even empty.
+    expect(at(0, 3)).toMatchObject({ text: '', arrow: true });
+    expect(at(0, 3)?.chip).toBeUndefined();
   });
 });
 

@@ -61,6 +61,24 @@ describe('the image of a Plan tab', () => {
     expect(bare.tab.elements[1]).toMatchObject({ x: 400, y: 50 + 40 + 120 });
   });
 
+  it('grows a Sheet tab’s Sheet to the grid its cells fill, never shrinking it', () => {
+    const sheet = shape('s', 'plan-sheet', {
+      x: 0,
+      y: 0,
+      width: 960,
+      height: 560,
+      planSheet: { sheetId: 'sheet-1' },
+    });
+    const tab: Tab = { id: 't', name: 'S', kind: 'sheet', elements: [sheet] };
+    const wide = planImageOf(tab, {
+      ...input,
+      sheetContent: (id) => (id === 'sheet-1' ? { width: 1400, height: 300 } : null),
+    })!;
+    expect(wide.tab.elements[0]).toMatchObject({ width: 46 + 1400, height: 560 });
+    const unknown = planImageOf(tab, { ...input, sheetContent: () => null })!;
+    expect(unknown.tab.elements[0]).toMatchObject({ width: 960, height: 560 });
+  });
+
   it('never shrinks a Sheet larger than the growth limit', () => {
     const big = shape('s', 'plan-sheet', {
       x: 0,

@@ -345,11 +345,16 @@ export const mcpChangeSheet = mcpTool('change_sheet', {
   behaviour: 'destructive',
   title: 'Change a sheet',
   description:
-    'Change a sheet, in order: set {at, rows} writes rows of values from a cell (text read as typed in en-GB, a ' +
-    'leading = a formula), clear {range}, format {range, format}, insert_rows {at, count}, insert_cols {at, ' +
-    'count}, delete_rows {rows}, delete_cols {cols}, rename {title}, sort {by, range}, freeze {rows, cols}. ' +
-    'Cells by A1, rows by number, columns by letter. A formula that cannot be read is refused, naming the cell. ' +
-    'Everyone with the document open sees each change at once.',
+    'Change a sheet, in order: design {design} lays an empty sheet out as a template is (heading, tables with ' +
+    'totals, formats, dropdown and checkbox columns, fields, notes, charts; in a look and an accent, widths fitted, ' +
+    'header frozen), set {at, rows} writes rows of values from a cell (text read as typed in en-GB, a leading = a ' +
+    'formula), clear {range}, format {range, format}, border {range, sides}, merge {range}, unmerge {range}, ' +
+    'resize {cols or rows, px or fit}, insert_rows {at, count}, insert_cols {at, count}, delete_rows {rows}, ' +
+    'delete_cols {cols}, rename {title}, sort {by, range}, freeze {rows, cols}, filter {range}, validate {range, ' +
+    'rule} (dropdowns, checkboxes, number, date and text rules), conditional_format {range, when or scale, style}, ' +
+    'chart {type, range} (a chart over the cells, read live), clear_charts {range}. Cells by A1, rows by number, columns by letter. A ' +
+    'formula that cannot be read is refused, naming the cell. Everyone with the document open sees each change at ' +
+    'once.',
   inputSchema: changeSheetShape,
   outputSchema: changeSheetOutput,
 });
@@ -358,9 +363,10 @@ export const mcpAddSheet = mcpTool('add_sheet', {
   behaviour: 'write',
   title: 'Add a sheet',
   description:
-    'Put a new Sheet (a spreadsheet) on a tab, beside what the tab holds, titled uniquely on the tab, blank or ' +
-    'filled from A1 with rows of values or CSV text read as typed. Then read and change it with read_sheet and ' +
-    'change_sheet.',
+    'Put a new Sheet (a spreadsheet) on a tab, beside what the tab holds, titled uniquely on the tab: blank, ' +
+    'filled from A1 with rows of values or CSV text read as typed, or laid out from a design as a template is ' +
+    '(change_sheet’s design), the Sheet sized to show it. Then read and change it with read_sheet and change_sheet. ' +
+    'A document of its own sheet is create_document with the blank-spreadsheet template, its sheet "Sheet 1".',
   inputSchema: addSheetShape,
   outputSchema: addSheetOutput,
 });

@@ -81,15 +81,18 @@ describe('the sheet tools', () => {
     const { handler } = api();
     const result = await call(handler, 'change_sheet', {
       sheet: 'Costs',
-      changes: [{ op: 'merge' }],
+      changes: [{ op: 'explode' }],
     });
     expect(result.isError).toBe(true);
   });
 
-  it('take the first cells of a new sheet as rows or CSV, not both', async () => {
+  it('take the first cells of a new sheet as rows, CSV or a design, one of them', async () => {
     const { handler } = api();
+    const words = 'Give the first cells as rows, csv or a design, one of them.';
     const result = await call(handler, 'add_sheet', { rows: [['a']], csv: 'a' });
-    expect(result.content[0]!.text).toBe('Give the first cells as rows or as csv, not both.');
+    expect(result.content[0]!.text).toBe(words);
+    const design = { heading: 'H', blocks: [{ kind: 'note', text: 'x' }] };
+    expect((await call(handler, 'add_sheet', { csv: 'a', design })).content[0]!.text).toBe(words);
   });
 
   it('refuse a new sheet on a tab the document lacks', async () => {

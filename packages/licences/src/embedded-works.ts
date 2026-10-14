@@ -161,7 +161,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     licence: 'OFL-1.1',
     carrier: 'the MCP server and the CLI (font)',
     homepage: 'https://github.com/rsms/inter',
-    trigger: { assets: /(^|-)Inter-Regular\.ttf$/ },
+    trigger: { assets: /(^|-)Inter-(Regular\.ttf|Bold\.otf)$/ },
     texts: text('inter-3.19-LICENSE.txt'),
   },
   // draw.io's view geometry (routes, perimeters, label points) ported into the draw.io importer.

@@ -82,4 +82,4 @@ export type LoopbackRequest = {
 };
 export type LoopbackServer = { port: number; next(): Promise<LoopbackRequest>; close(): void };
 
-export type CliAsset = 'resvg.wasm' | 'Inter-Regular.ttf';
+export type CliAsset = 'resvg.wasm' | 'Inter-Regular.ttf' | 'Inter-Bold.otf';

@@ -8,7 +8,8 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./fonts/Inter-Regular.ttf": "./fonts/Inter-Regular.ttf"
+    "./fonts/Inter-Regular.ttf": "./fonts/Inter-Regular.ttf",
+    "./fonts/Inter-Bold.otf": "./fonts/Inter-Bold.otf"
   },
   "scripts": {
     "lint": "eslint .",
