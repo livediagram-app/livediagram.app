@@ -490,7 +490,9 @@ export function ElementFaceRouter({
         <BoundaryFace
           element={element}
           labelNode={labelNode}
-          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+          // Its own accent, never a remote selector's: the tab, tint and title are its content, and the wrapper's
+          // outline already shows who has it selected.
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
           ink={textColor}
           fontFamily={fontFamily}
           editable={isSelected && !readOnly && !isLocked}
@@ -515,7 +517,10 @@ export function ElementFaceRouter({
           kind={element.shape}
           element={element}
           labelNode={labelNode}
-          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+          // Its own accent, never a remote selector's: a card's header band, media and tags (a banner's bar, a stat
+          // row's numbers) are its content, so a collaborator's selection recoloured the whole face; the wrapper's
+          // outline already shows who has it selected.
+          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
           fill={element.fillColor ?? defaultFillColor(element, surface)}
           textColor={textColor}
           fontFamily={fontFamily}
