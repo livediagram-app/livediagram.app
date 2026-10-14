@@ -379,6 +379,12 @@ export class DocumentRoom implements DurableObject {
       this.closeSessionsForAccessChange(close);
       return new Response(null, { status: 204 });
     }
+    // Internal, like /broadcast: the document was removed for good (a Trash purge, Take Offline, account
+    // deletion), so everything the room kept about it goes too (docs/specs/015-api/api.md "Purging a room").
+    if (request.method === 'POST' && url.pathname === '/purge') {
+      await this.purge();
+      return new Response(null, { status: 204 });
+    }
     if (url.pathname === '/presence' && (request.method === 'PUT' || request.method === 'DELETE')) {
       return this.handleAgentPresence(request, url);
     }
@@ -635,6 +641,25 @@ export class DocumentRoom implements DurableObject {
       closed++;
     }
     console.info('[room-access] closed', { match: close.match, closed });
+  }
+
+  // The document is gone for good: end every session, then drop everything stored here, which includes the
+  // collaboration ledger's comment, idea and answer text, the order state, the poll, the baton and the alarm.
+  // The ledger's queued writes land first, so none of them can re-create a key after the wipe.
+  private async purge(): Promise<void> {
+    for (const ws of this.state.getWebSockets()) {
+      try {
+        ws.close(DOCUMENT_TRASHED_CLOSE, 'document-purged');
+      } catch {
+        // Already gone.
+      }
+      this.opRates.delete(ws);
+    }
+    this.opLog = [];
+    await this.ledger.settled();
+    await this.state.storage.deleteAlarm();
+    await this.state.storage.deleteAll();
+    console.info('[room] purged');
   }
 
   // After a document-trashed op has gone out, close every socket

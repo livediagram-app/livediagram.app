@@ -161,7 +161,9 @@ document holds goes, a tab still linked elsewhere stays exactly where it is.
 
 The api worker's daily `0 3 * * *` cron purges every document that has been in
 the Trash for 30 days or more, through the same removal that deletes a document
-today (`documentRemovalStatements`), plus its snapshot and its Timeline events.
+today (`documentRemovalStatements`), plus its snapshot, its Timeline events and
+its realtime room's storage ([API](../015-api/api.md) "Purging a room"), where the
+collaboration ledger kept the text of its comments, ideas and answers.
 The purge is set-based and capped per run, so a backlog drains over a few days
 rather than overrunning one invocation. It logs how many it purged.
 

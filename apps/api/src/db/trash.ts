@@ -8,6 +8,7 @@
 import { TRASH_RETENTION_MS, trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { documentRemovalStatements } from './document-removal';
+import { purgeRooms } from '../room-purge-client';
 import { snapshotKeys } from './documents';
 import { documentsTimelineSweepStatement } from './timeline';
 
@@ -177,6 +178,8 @@ export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
       ...documentRemovalStatements(env, { ids: doomed }),
     ]);
     purged += results[results.length - 1]?.meta.changes ?? 0;
+    // Their rooms' storage goes too (the ledger keeps comment and idea text). Best effort.
+    await purgeRooms(env, doomed);
     // Best effort, like deleteDocument's: a snapshot left behind is an orphan
     // R2 object, never a reason to fail the purge that already landed.
     if (env.IMAGES) {

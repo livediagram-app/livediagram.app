@@ -424,6 +424,7 @@ The api worker reaches the DO through its stub (`env.DOCUMENT_ROOM.get(...).fetc
 - **`PUT /presence`**, **`DELETE /presence`**: an agent's presence entry with its expiry ([Agent presence](../024-agents/agent-presence.md#presence)).
 - **`POST /qa`**: one Q&A board write, above.
 - **`GET /ledger?tab=<tabId>&epoch=<epoch>`**: the tab's collaboration ledger, or an empty one when `epoch` isn't the room's current epoch (the saver's cursor can't be interpreted then).
+- **`POST /purge`** (**Purging a room**): the document was removed for good, so the room closes every socket (`DOCUMENT_TRASHED_CLOSE`, reason `document-purged`), waits for the ledger's queued writes, drops its alarm and deletes all of its storage: the ledger with its comment, idea and answer text, the order state, the poll, the baton, selections and agent entries. The api calls it (`purgeRooms`, `room-purge-client.ts`, 10 rooms at a time, 3 s each, best-effort and logged as `[room-purge]`) after every removal for good: the Trash purge (by hand, emptying the Trash, and the daily cron), Take Offline (`deleteDocument`) and account deletion (`deleteAccount`), each after its D1 batch has landed.
 
 ### Conflict model
 
