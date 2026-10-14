@@ -2,6 +2,9 @@
 // clear").
 import { describe, expect, it } from 'vitest';
 import { layoutClusteredGraph } from './auto-layout-clusters';
+import { seatMembersByNeighbours } from './auto-layout-cluster-members';
+import { SIBLING_GAP } from './auto-layout-shared';
+import { NOTCH_MAX } from './graph-notches';
 import type { BoxedElement, DiagramGraph, Element } from './index';
 
 const ids = () => {
@@ -57,5 +60,41 @@ describe('a row of members seats by its outside nodes', () => {
       { direction: 'TB', makeEdgeId: ids() },
     );
     expect(Math.abs(cx(byId(els, 'cdb')) - cx(byId(els, 'c')))).toBeGreaterThan(1);
+  });
+});
+
+describe('a member within a notch of its spot', () => {
+  it('sits on it when the gap to its neighbour shrinks by no more than a notch', () => {
+    const box = (id: string, x: number, y: number): BoxedElement =>
+      ({ id, type: 'shape', shape: 'square', x, y, width: 100, height: 60 }) as BoxedElement;
+    // Two services whose stores want spots 8 px closer than a store's spacing: pooled, each sat 4 px off.
+    const want0 = 50;
+    const want1 = want0 + 100 + SIBLING_GAP - 8;
+    const nodes = [
+      box('s0', want0 - 50, 0),
+      box('s1', want1 - 50, 0),
+      box('m0', 0, 300),
+      box('m1', 400, 300),
+    ];
+    const frames = [box('g', -40, 240, 600, 160)];
+    seatMembersByNeighbours(
+      nodes,
+      frames,
+      new Map([
+        ['m0', 'g'],
+        ['m1', 'g'],
+      ]),
+      {
+        nodes: [],
+        edges: [
+          { from: 's0', to: 'm0' },
+          { from: 's1', to: 'm1' },
+        ],
+      },
+      'TB',
+      32,
+    );
+    expect(cx(nodes[2]!)).toBe(want0);
+    expect(Math.abs(cx(nodes[3]!) - want1)).toBeLessThanOrEqual(NOTCH_MAX);
   });
 });

@@ -6,6 +6,7 @@
 import { SIBLING_GAP } from './auto-layout-shared';
 import { legalise, rankOffsets } from './auto-layout-placement';
 import { headingLead } from './auto-layout-cluster-seats';
+import { NOTCH_MAX } from './graph-notches';
 import type { LayoutDirection } from './auto-layout';
 import type { DiagramGraph } from './graph-authoring';
 import type { BoxedElement } from './index';
@@ -58,6 +59,7 @@ export function seatMembersByNeighbours(
     }
     // All wanting one spot (a row fed by one node) is what the contracted layout already placed them by.
     if (new Set([...want.values()].map(Math.round)).size < 2) return;
+    const own = new Map(want);
 
     const order = [...members].sort((a, b) => crossOf(a, direction) - crossOf(b, direction));
     const ids = order.map((m) => m.id);
@@ -73,9 +75,21 @@ export function seatMembersByNeighbours(
         want.set(ids[i]!, want.get(ids[i - 1]!)! + offsets[i]! - offsets[i - 1]!);
     for (let i = first - 1; i >= 0; i--)
       want.set(ids[i]!, want.get(ids[i + 1]!)! - offsets[i + 1]! + offsets[i]!);
-    const seated = [...legalise(ids, want, offsets)].map(([id, c]) =>
-      atCross(byId.get(id)!, c, direction),
-    );
+    const placed = legalise(ids, want, offsets);
+    // A member within a notch of its own spot sits on it, its gap to the next shrinking by no more than that: pooled
+    // with neighbours that wanted one spot, a store sat 5 px off its service and its line was drawn as a slant.
+    ids.forEach((id, i) => {
+      const target = own.get(id);
+      const at = placed.get(id)!;
+      if (target === undefined || target === at || Math.abs(target - at) > NOTCH_MAX) return;
+      const j = target > at ? i + 1 : i - 1;
+      const other = ids[j];
+      const fits =
+        other === undefined ||
+        Math.abs(placed.get(other)! - target) >= Math.abs(offsets[j]! - offsets[i]!) - NOTCH_MAX;
+      if (fits) placed.set(id, target);
+    });
+    const seated = [...placed].map(([id, c]) => atCross(byId.get(id)!, c, direction));
 
     const lo = (els: BoxedElement[]) => Math.min(...els.map((m) => crossLo(m, direction)));
     const hi = (els: BoxedElement[]) =>

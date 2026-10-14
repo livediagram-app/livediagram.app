@@ -487,7 +487,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   whose first member would take a line through the heading's text is widened on the left until it does not. The
   reverse holds too: a group in one row whose members have no lines among them (a row of data stores) seats each
   member by the outside nodes it links to, a database under its service, its order and gaps kept, and its frame
-  refits round them; skipped when the refitted frame would cover another node or frame.
+  refits round them; skipped when the refitted frame would cover another node or frame. A member left within a
+  notch (6 px) of its spot sits on it, its gap shrinking by no more than that, so its line drops straight rather
+  than as a slant.
 - **Stacked groups line up.** Groups that follow one another down the flow, no two side by side (a pipeline's
   stages), keep the spine straight: a group with one entry (the one member a line from outside reaches) moves,
   frame and members together, until that entry sits on the line of what feeds it, so the spine runs straight
