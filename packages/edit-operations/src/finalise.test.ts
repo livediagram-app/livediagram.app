@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@livediagram/document';
 import { lines } from './fixtures/outcomes';
 import { run } from './fixtures/run';
+import { applyEditOperations } from './apply';
 import { containersBehindMembers } from './finalise';
+import { validateEditOperations } from './parse-json';
 
 const box = (id: string, x: number, y: number, size: number, shape = 'square'): Element =>
   ({ id, type: 'shape', shape, x, y, width: size, height: size }) as Element;
@@ -67,5 +69,78 @@ describe('workshop landings', () => {
 
   it('prints a note an operation moved itself as its own change', () => {
     expect(lines(run('move named by=0,37', wall()))).toEqual([]);
+  });
+});
+
+describe('agenda fit', () => {
+  const eight = Array.from({ length: 8 }, (_, i) => ({ label: `Step ${i + 1}`, minutes: 15 }));
+  const apply = (tab: Tab, operations: unknown[]) => {
+    const parsed = validateEditOperations(operations);
+    if ('errors' in parsed) throw new Error('bad operations');
+    const out = applyEditOperations(tab, parsed.operations, {});
+    if ('errors' in out) throw new Error(JSON.stringify(out.errors));
+    return out.tab.elements.find((el) => el.id === 'ag')!;
+  };
+  const empty: Tab = { id: 't', name: 'T', elements: [] };
+  const added = {
+    id: 'ag',
+    type: 'shape',
+    shape: 'agenda',
+    x: 0,
+    y: 0,
+    width: 440,
+    height: 300,
+    agendaItems: eight,
+  };
+
+  it('grows an added agenda down to draw every segment, keeping its top', () => {
+    const el = apply(empty, [{ op: 'add', element: added }]);
+    expect(el.type === 'shape' && [el.y, el.height > 300]).toEqual([0, true]);
+    const roomy = apply(empty, [{ op: 'add', element: { ...added, height: 900 } }]);
+    expect(roomy.type === 'shape' && roomy.height).toBe(900);
+  });
+
+  it('grows an agenda given more segments, but not one only moved', () => {
+    const tab: Tab = { ...empty, elements: [{ ...added, agendaItems: [] } as unknown as Element] };
+    const grown = apply(tab, [{ op: 'set', target: 'ag', fields: { agendaItems: eight } }]);
+    expect(grown.type === 'shape' && grown.height).toBeGreaterThan(300);
+    const tall: Tab = { ...empty, elements: [added as unknown as Element] };
+    const moved = apply(tall, [{ op: 'set', target: 'ag', fields: { x: 50 } }]);
+    expect(moved.type === 'shape' && moved.height).toBe(300);
+  });
+});
+
+describe('sticky border', () => {
+  const note = {
+    id: 'n',
+    type: 'sticky',
+    x: 0,
+    y: 0,
+    width: 200,
+    height: 100,
+    label: 'Hi',
+    fillColor: '#fde68a',
+    textSize: 'md',
+  };
+  const after = (fields: Record<string, unknown>) => {
+    const parsed = validateEditOperations([{ op: 'set', target: 'n', fields }]);
+    if ('errors' in parsed) throw new Error('bad operations');
+    const out = applyEditOperations(
+      { id: 't', name: 'T', elements: [note as unknown as Element] },
+      parsed.operations,
+      {},
+    );
+    if ('errors' in out) throw new Error('rejected');
+    return { el: out.tab.elements[0] as Element & { strokeColor?: string }, out };
+  };
+
+  it('keeps the border of a note whose fill the edit left alone, and reports only the label', () => {
+    const { el, out } = after({ label: 'Who helped?' });
+    expect(el.strokeColor).toBeUndefined();
+    expect(out.results[0]!.changes?.map((c) => c.key)).toEqual(['label']);
+  });
+
+  it('gives a note a new fill the borderless look', () => {
+    expect(after({ fillColor: '#bae6fd' }).el.strokeColor).toBe('transparent');
   });
 });

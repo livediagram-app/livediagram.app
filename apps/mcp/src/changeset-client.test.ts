@@ -12,6 +12,7 @@ import {
   changesetErrorText,
   editsBase,
   mcpOpsToEditOperations,
+  mcpResultText,
   replaceBodyFrom,
 } from './changeset-client';
 import { connectTestClient } from './mcp-test-client';
@@ -298,5 +299,18 @@ describe('the tools on changesets', () => {
     expect(JSON.stringify(result.content)).toContain('held by Bea');
     const events = sent.filter((s) => s.path === '/events').map((s) => JSON.stringify(s.body));
     expect(events.some((e) => e.includes('"Error"'))).toBe(false);
+  });
+});
+
+describe('mcpResultText', () => {
+  it('leaves off the CLI revert line no MCP tool runs, keeping the rest', () => {
+    expect(
+      mcpResultText(
+        '+ a\nrev 1→2 · cs_1 · lint clean · revert: livediagram changeset revert doc_1 cs_1',
+      ),
+    ).toBe('+ a\nrev 1→2 · cs_1 · lint clean');
+    expect(mcpResultText('dry run · rev 4 · lint clean · nothing written')).toBe(
+      'dry run · rev 4 · lint clean · nothing written',
+    );
   });
 });

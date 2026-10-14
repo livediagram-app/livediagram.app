@@ -105,8 +105,8 @@ const STYLE_FIELDS =
   'Facilitation kinds and what they hold: "session-button" a "session" ({"tool": "timer" with "minutes", ' +
   '"stopwatch", "vote" with "dots", or "poll" with "question" and "options"}), drawn as what pressing it does ' +
   'unless it has a label; "agenda" its "agendaItems" ([{"label", "minutes"}]); "checklist" its "checklistItems" ' +
-  '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout or page its "pageTitle" and ' +
-  '"pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). The entries of a "qa-board", ' +
+  '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout its "pageTitle" over its "label" ' +
+  '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). The entries of a "qa-board", ' +
   '"idea-box" and "temperature" are the people\u2019s, never an edit\u2019s: starter questions or ideas go on ' +
   'stickies beside them. ';
 
@@ -121,7 +121,8 @@ const ELEMENT_SCHEMA_HINT =
   `${shapeKinds}. The default box is "square" (there is NO "rectangle"); use ` +
   '"diamond" for a decision, "cylinder" for a datastore, "stadium" for start/end. ' +
   'type "text" is BARE text with no box; use it only for a title, caption, or ' +
-  'legend, never for a node. type "arrow" needs "from" and "to" endpoints, each ' +
+  'legend, never for a node; it is centred in its box, so a left-aligned heading or caption sets ' +
+  '"textAlignX": "left". type "arrow" needs "from" and "to" endpoints, each ' +
   'either { "kind": "pinned", "elementId", "anchor" } (anchors: ' +
   `${anchors}; preferred, so arrows track their shapes) or ` +
   '{ "kind": "free", "x", "y" }; an arrow may carry a "label". ' +

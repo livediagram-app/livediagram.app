@@ -41,6 +41,12 @@ export async function submitChangeset(
   );
 }
 
+// The api's result text as the model reads it: its footer's revert line names the CLI command, which no
+// MCP tool runs, so it is left off rather than sending the model to a command it cannot reach.
+export function mcpResultText(text: string): string {
+  return text.replace(/ · revert: livediagram changeset revert \S+ \S+/g, '');
+}
+
 // One op of `update_document`'s ops mode, as the model sends it.
 export type McpOp = {
   op: 'add' | 'update' | 'remove';

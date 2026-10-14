@@ -6,6 +6,7 @@
 import type { EditRejection } from '@livediagram/api-schema';
 import {
   MAX_ELEMENTS_PER_TAB,
+  agendaFitHeight,
   coerceShapeKind,
   deriveContainers,
   isContainer,
@@ -56,6 +57,15 @@ function normaliseTouched(state: EditState, log: EditLog): void {
     // nothing but where it is and how big.
     if (!el || (!!state.before.has(id) && written.every((key) => GEOMETRY.has(key)))) continue;
     const normalised = normaliseElement(el) as Raw;
+    // A sticky's borderless look comes with the fill it is given: an existing note whose fill this edit
+    // left alone keeps the border it had, so a relabelled note looks like its neighbours.
+    if (
+      normalised.type === 'sticky' &&
+      state.before.has(id) &&
+      (el as Raw).strokeColor === undefined &&
+      !written.includes('fillColor')
+    )
+      delete normalised.strokeColor;
     noteCoercions(state, el as unknown as Raw, normalised, log, operation);
     if (normalised.type === 'shape') {
       const shape = coerceShapeKind(normalised.shape);
@@ -67,6 +77,18 @@ function normaliseTouched(state: EditState, log: EditLog): void {
         });
         log('[edit-ops] coerced', { operation, field: 'shape' });
         normalised.shape = shape;
+      }
+      // An agenda given its segments grows down to draw every one, as a label grows its box, rather
+      // than the face leaving the last off (docs/specs/012-collaboration/agenda.md "The face").
+      if (
+        normalised.shape === 'agenda' &&
+        (!state.before.has(id) || written.includes('agendaItems'))
+      ) {
+        const height = agendaFitHeight(normalised as unknown as BoxedElement);
+        if (height !== normalised.height) {
+          normalised.height = height;
+          log('[edit-ops] agenda fitted', { operation, height });
+        }
       }
     }
     replaceElement(state, normalised as unknown as Element);

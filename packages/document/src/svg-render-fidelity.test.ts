@@ -41,6 +41,15 @@ describe('Behaviour face export', () => {
       }),
     );
     expect(poll).toContain('>Ship it?<');
+    // The kicker names the shape of its answers.
+    expect(poll).toContain('>ASK · 2 OPTIONS<');
+    const yesNo = svgOf(
+      shape('session-button', {
+        session: { tool: 'poll', style: 'yesNo', question: 'Ship it?' },
+        label: '',
+      }),
+    );
+    expect(yesNo).toContain('>ASK · YES / NO<');
     expect(poll).toContain('rx="1"');
     const watch = svgOf(shape('session-button', { session: { tool: 'stopwatch' }, label: 'Lap' }));
     expect(watch).toContain('>Lap<');
