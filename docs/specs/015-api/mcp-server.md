@@ -512,7 +512,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   most nearly level with it on its point toward the flow; each other exit leaves from its top or bottom, toward its
   next step's lane, and bends once into that step's side, so no two exits leave as parallel stubs. A flow down the
   page does the same across: of a step's exits leaving its bottom on their own ends (labelled, or drawn unlike the
-  trunk), one whose next step lies clearly to its left or right leaves that side instead.
+  trunk), one whose next step lies clearly to its left or right leaves that side instead. A step with exactly two
+  exits whose next steps lie clearly either side of it, neither ahead, sends both out of their sides (accept up,
+  decline down; yes left, no right): kept on the point, one left by a corner and the other by the tip, lopsided.
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
   an edit, as one: one miniature per shape kind the graph uses, with

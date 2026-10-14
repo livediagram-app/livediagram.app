@@ -152,9 +152,16 @@ export function branchExits(elements: Element[], opts: BranchOptions): Element[]
       const t = boxes.get(pinned(a.to)!)!;
       return (tb ? t.x + t.width / 2 : t.y + t.height / 2) - centre;
     };
+    // Two exits whose next steps lie clearly either side, neither ahead, both leave by their sides: kept, one left by
+    // the point and the other by a corner, lopsided (a decision's accept up, decline straight on).
+    const clearly = (a: ArrowElement) => Math.abs(off(a)) > half + BRANCH_CLEAR;
+    const split =
+      exits.length === 2 &&
+      exits.every(clearly) &&
+      Math.sign(off(exits[0]!)) !== Math.sign(off(exits[1]!));
     let onPoint = exits.length;
     for (const a of [...exits].sort((p, q) => Math.abs(off(q)) - Math.abs(off(p)))) {
-      if (onPoint < 2) break;
+      if (onPoint < 2 && !split) break;
       if (opts.eligible && !opts.eligible(a)) continue;
       const anchor = off(a) < 0 ? before : after;
       if (Math.abs(off(a)) <= half + BRANCH_CLEAR || used.has(`${id}:${anchor}`)) continue;

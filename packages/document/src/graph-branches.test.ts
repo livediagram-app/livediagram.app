@@ -160,6 +160,21 @@ describe('branchExits', () => {
     expect(fromAnchor(out, 'l')).toBe('w');
   });
 
+  it('sends two exits clearly either side out of their two sides, none left on the point', () => {
+    // A decision whose accept lies above and decline below, the flow running right: up and down, not tip and corner.
+    const out = branchExits(
+      [
+        box('s', 0, 0),
+        box('up', 300, -200),
+        box('down', 300, 200),
+        arrow('a', 's', 'up', { label: 'Accept' }, ['e', 'w']),
+        arrow('d', 's', 'down', { label: 'Decline' }, ['e', 'w']),
+      ],
+      { axis: 'LR' },
+    );
+    expect([fromAnchor(out, 'a'), fromAnchor(out, 'd')]).toEqual(['n', 's']);
+  });
+
   it('keeps one exit on the point, an exit too near, an ineligible one and one whose side is taken', () => {
     const near = branchExits(
       [
