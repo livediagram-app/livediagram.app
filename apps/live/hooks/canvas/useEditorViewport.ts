@@ -111,10 +111,10 @@ type EditorViewportApi = {
     // canvas so a narrow window still has a band to reveal into.
     opts?: { center?: boolean; sideMargin?: number },
   ) => void;
-  // Centre a canvas point at somebody else's zoom (docs/specs/012-collaboration/bring-focus.md).
-  centreOn: (at: { x: number; y: number }, zoom: number) => void;
-  // Is that point already what this view is showing, at about that zoom?
-  isCentredOn: (at: { x: number; y: number }, zoom: number) => boolean;
+  // Centre a canvas point, keeping our own zoom (docs/specs/012-collaboration/bring-focus.md).
+  centreOn: (at: { x: number; y: number }) => void;
+  // Is that point already in the middle of this view?
+  isCentredOn: (at: { x: number; y: number }) => boolean;
 };
 
 // How long a Focus glide takes (docs/specs/026-plan/plan-board.md "Focus").
@@ -311,25 +311,24 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     setViewportOffset(offset);
   }, [depsRef, setViewportOffset, setViewportZoom]);
 
-  // Centre a canvas point at a given zoom (docs/specs/012-collaboration/bring-focus.md). The zoom is somebody
-  // else's, so this cannot go through fitToBounds, which derives one; the
-  // point of Bring Focus is that everyone ends up seeing the same amount of
-  // canvas as the person who pressed.
+  // Centre a canvas point at the zoom we already have (docs/specs/012-collaboration/bring-focus.md). Only
+  // the pan moves: the presser's zoom on somebody else's screen size shows a
+  // different amount of canvas, so copying it left the element too big or too
+  // small to read, and the zoom somebody chose for their own screen is theirs.
   const centreOn = useCallback(
-    (at: { x: number; y: number }, zoom: number) => {
+    (at: { x: number; y: number }) => {
       const node = canvasMainRef.current;
       if (!node) return;
       // offsetWidth/Height rather than the transformed rect, for the reason
       // fitToBounds gives below.
       const rect = { width: node.offsetWidth, height: node.offsetHeight };
-      setViewportZoom(zoom);
       // The offset is in CANVAS units, not screen ones: the zoom is applied
       // separately about the viewport's own centre, which is why
       // computeFitToScreen's offset has no zoom factor in it either. Multiplying
       // by the zoom here put everyone in the top-left corner of the canvas.
       setViewportOffset({ x: rect.width / 2 - at.x, y: rect.height / 2 - at.y });
     },
-    [setViewportOffset, setViewportZoom],
+    [setViewportOffset],
   );
 
   // The inverse question: is this view ALREADY the one centreOn would give?
@@ -339,7 +338,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // The rule itself is shared with the presser's side of the press, which asks
   // the same thing of everyone else's published viewport.
   const isCentredOn = useCallback(
-    (at: { x: number; y: number }, zoom: number) => {
+    (at: { x: number; y: number }) => {
       const node = canvasMainRef.current;
       if (!node) return false;
       return viewIsCentredOn(
@@ -349,7 +348,6 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
           zoom: zoomRef.current,
         },
         at,
-        zoom,
       );
     },
     [viewportOffsetRef, zoomRef],

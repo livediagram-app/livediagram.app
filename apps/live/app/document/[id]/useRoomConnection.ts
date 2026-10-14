@@ -130,12 +130,8 @@ export function useRoomConnection(opts: {
   // written, so there is nothing here to persist, order, or undo.
   receiveReaction: (elementId: string, reaction: string) => void;
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): somebody is asking the room to come and look.
-  receiveFocusHere: (
-    from: string,
-    tabId: string,
-    at: { x: number; y: number },
-    zoom: number,
-  ) => void;
+  // The op also carries the presser's zoom, which is not used: taking it keeps your own.
+  receiveFocusHere: (from: string, tabId: string, at: { x: number; y: number }) => void;
   // The facilitator baton (docs/specs/012-collaboration/facilitator.md): the room's answer, and the token we
   // present on every hello so a refresh keeps it.
   receiveFacilitator: (msg: {
@@ -522,7 +518,7 @@ export function useRoomConnection(opts: {
         // No tab check: the invitation names its own tab and taking it is
         // what switches you, so one sent from another tab is exactly the
         // case this element exists for.
-        receiveFocusHere(from, op.tabId, op.at, op.zoom);
+        receiveFocusHere(from, op.tabId, op.at);
       } else if (op.kind === 'tab-focus') {
         setRemoteTabFocus((prev) => {
           const next = new Map(prev);

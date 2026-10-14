@@ -302,9 +302,12 @@ panes are disabled under a note naming them.
 workshop that is always Diagram; **Plan** has Timer and
 Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) only on a tab with a board made for voting,
 one taking a card type with a **Votes** field (a Retro's Notes and Ideas, or a type someone gave Votes), and never on
-a Dashboard tab, a timer or vote already running keeping its button so it can be stopped; Plan has no Poll; **Diagram**,
-**Draw** and **Illustrate** have no strip, keeping their bottom bar to their own tools, even while a
-tool runs (a session button on the canvas still starts one there). A popover whose button
+a Dashboard tab, a timer or vote already running keeping its button so it can be stopped; Plan has no Poll;
+**Illustrate** shows a **Vote** or **Poll** button **only while one runs**, for everyone (an
+editor included), so a vote or poll started from a session button on a page can be watched and
+ended, and nothing is started from the strip there (the session buttons on the page do that); it
+never shows a Timer; **Diagram** and **Draw** have no strip, keeping their bottom bar to their own
+tools, even while a tool runs (a session button on the canvas still starts one there). A popover whose button
 leaves (a mode switch) closes.
 
 Order, left to right: Timer, Vote, Poll. **On a phone** the strip stays in the cluster's one row, between Undo and Redo and Layers: the cluster's buttons share the row's width, each from 36px up to the usual 44px (always 44px tall to tap), with 6px gaps, so Undo, Redo, the three tools, Layers, the theme brush and Fit fill the row on a 360px screen and up. On a narrower one the cluster wraps from the right, so Undo is never pushed off the screen. Each segment opens its

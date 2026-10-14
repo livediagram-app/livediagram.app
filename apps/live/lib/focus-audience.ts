@@ -14,17 +14,15 @@ export type FocusView = {
   zoom: number;
 };
 
-// Within a twentieth of the zoom: close enough to be seeing the same amount of
-// canvas, loose enough to survive a nudge of the slider.
-const ZOOM_TOLERANCE = 0.05;
-// And within a tenth of the viewport of the point, measured on screen: a
+// Zoom is not part of the question: taking an invitation keeps your own zoom,
+// so somebody at any zoom with the point in the middle is already there.
+// Within a tenth of the viewport of the point, measured on screen: a
 // tenth of a canvas at 10% zoom is not a difference anybody can see.
 const CENTRE_SLACK = 0.1;
 
-/** Is that canvas point already at the middle of this view, at about that zoom? */
-export function viewIsCentredOn(view: FocusView, at: { x: number; y: number }, zoom: number) {
+/** Is that canvas point already at the middle of this view? */
+export function viewIsCentredOn(view: FocusView, at: { x: number; y: number }) {
   if (view.size.width <= 0 || view.size.height <= 0) return false;
-  if (Math.abs(view.zoom - zoom) > zoom * ZOOM_TOLERANCE) return false;
   // The pan is in CANVAS units (the zoom is applied separately, about the
   // viewport's own centre), so the point in the middle of the view is
   // size/2 - pan. Scaling the difference converts "how far off" into the
@@ -55,7 +53,6 @@ export function focusPressOutcome({
   size,
   tabId,
   at,
-  zoom,
 }: {
   /** Whether the op actually went out (no room, no publish). */
   sent: boolean;
@@ -69,7 +66,6 @@ export function focusPressOutcome({
   size: { width: number; height: number };
   tabId: string;
   at: { x: number; y: number };
-  zoom: number;
 }): FocusPressOutcome {
   if (!sent || peerIds.length === 0) return 'alone';
   const everyoneIsHere = peerIds.every((id) => {
@@ -77,7 +73,7 @@ export function focusPressOutcome({
     // Somebody we have never heard from might be anywhere, so they count as
     // asked rather than as already there.
     if (!view || view.tabId !== tabId) return false;
-    return viewIsCentredOn({ size, pan: view.pan, zoom: view.zoom }, at, zoom);
+    return viewIsCentredOn({ size, pan: view.pan, zoom: view.zoom }, at);
   });
   return everyoneIsHere ? 'already-there' : 'asked';
 }
