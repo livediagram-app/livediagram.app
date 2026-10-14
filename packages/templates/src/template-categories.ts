@@ -255,6 +255,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   // Quizzes and Games: the lighter end of running a room.
   'pub-quiz': 'games',
   'icebreaker-questions': 'games',
+  'virtual-office': 'meetings',
   'two-truths-and-a-lie': 'games',
   'would-you-rather': 'games',
   'people-bingo': 'games',

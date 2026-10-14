@@ -91,6 +91,8 @@ export type TemplateKind =
   // scoreboard, icebreakers spun on Pickers, and three party games run on polls, timers and reaction pads.
   | 'pub-quiz'
   | 'icebreaker-questions'
+  // A whole office to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
+  | 'virtual-office'
   | 'two-truths-and-a-lie'
   | 'would-you-rather'
   | 'people-bingo'
@@ -731,6 +733,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Icebreaker Questions',
     description:
       'Spin a question and a person, two minutes each on the clock, then everyone says hello on the wall.',
+    extra: true,
+  },
+  {
+    kind: 'virtual-office',
+    title: 'Virtual Office',
+    description:
+      'Rooms to walk round in Avatar mode: a reception, desks, a meeting room, a kitchen with coffee, a lounge and a focus room.',
     extra: true,
   },
   {

@@ -135,6 +135,20 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'town-hall': ['q&a', 'questions', 'all hands', 'ama', 'ask me anything', 'meeting'],
   // Quizzes & Games.
   'pub-quiz': ['quiz', 'trivia', 'quiz night', 'game', 'teams', 'fun', 'social'],
+  'virtual-office': [
+    'office',
+    'virtual office',
+    'remote',
+    'hybrid',
+    'team space',
+    'rooms',
+    'avatar',
+    'walk',
+    'coffee',
+    'water cooler',
+    'meeting room',
+    'desks',
+  ],
   'icebreaker-questions': [
     'icebreaker',
     'warm up',
