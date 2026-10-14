@@ -14,8 +14,8 @@ import type { useStripPopover } from './ToolbarStripPopover';
 // "More"), kept out of ToolbarPalette: a catalogue's groups, or a category's tiles with its openers
 // (palette-openers) and fixed dividers.
 
-// What a tile's presets popover says under its name.
-const PRESETS_DESCRIPTION = 'Start from a preset, then switch any part on or off.';
+// What a tile's presets popover says under its name when the tile says nothing of its own.
+const PRESETS_DESCRIPTION = 'Start from a preset, then change any of it.';
 
 export function Divider() {
   // Hairline margins on a phone, where every pixel of the strip is a tile's.
@@ -101,7 +101,7 @@ export function tileItems(
                 category: def.section,
                 group: null,
                 label: def.caption ?? def.label,
-                variants: { description: PRESETS_DESCRIPTION, tiles: variants },
+                variants: { description: def.variantsHint ?? PRESETS_DESCRIPTION, tiles: variants },
               },
               anchor,
             )

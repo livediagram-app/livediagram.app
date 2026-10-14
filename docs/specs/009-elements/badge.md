@@ -82,6 +82,22 @@ Pulse and Heartbeat suit "New" and alerts. Its text is too small to animate on i
 | Plan       | none                                    |
 | Facilitate | none (Search still finds and places it) |
 
+## Badge presets
+
+As with the Card ([The card](card.md) "Card presets"), the Badge tile on the Toolbar strip is an opener with a caret
+whose popover offers presets; elsewhere it places the New badge as before.
+
+| Preset  | Variant   | Text  | Look                     |
+| ------- | --------- | ----- | ------------------------ |
+| New     | (none)    | New   | Solid                    |
+| Beta    | `beta`    | Beta  | Tinted                   |
+| Version | `version` | v2.1  | Outline                  |
+| Count   | `count`   | 3×    | Ink                      |
+| Draft   | `draft`   | Draft | Quiet                    |
+| Warning | `warning` | PII   | Solid, in rose (#e11d48) |
+
+Each is an ordinary badge: its text, look and colour change afterwards like any badge's.
+
 ## The menu
 
 A **Badge** section (Tools flyout), closed until opened: the five looks as tiles. The attachment point is changed by

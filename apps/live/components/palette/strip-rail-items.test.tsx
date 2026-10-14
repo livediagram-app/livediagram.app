@@ -7,7 +7,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { tileItems, type useStripOpeners } from './strip-rail-items';
 import { tileById } from './palette-tile-defs';
-import { CARD_PRESET_TILES } from './palette-card-presets';
+import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
 afterEach(cleanup);
@@ -49,5 +49,38 @@ describe('a tile with presets on the strip', () => {
     for (const t of CARD_PRESET_TILES)
       expect(t.action).toMatchObject({ type: 'shape', kind: 'card' });
     expect(new Set(CARD_PRESET_TILES.map((t) => t.id)).size).toBe(6);
+  });
+
+  it('opens the Badge presets too, six badges each with its own variant', () => {
+    const toggleOpen = vi.fn();
+    const openers = { isOpen: () => false, toggleOpen } as unknown as ReturnType<
+      typeof useStripOpeners
+    >;
+    render(
+      <>
+        {tileItems(
+          [tileById('components:badge')!],
+          new Set(),
+          {} as PaletteTileActions,
+          null,
+          openers,
+        )}
+      </>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Badge' }));
+    expect(toggleOpen).toHaveBeenCalledWith(
+      expect.objectContaining({ variants: expect.objectContaining({ tiles: BADGE_PRESET_TILES }) }),
+      expect.any(HTMLElement),
+    );
+    expect(BADGE_PRESET_TILES.map((t) => t.caption)).toEqual([
+      'New',
+      'Beta',
+      'Version',
+      'Count',
+      'Draft',
+      'Warning',
+    ]);
+    for (const t of BADGE_PRESET_TILES)
+      expect(t.action).toMatchObject({ type: 'shape', kind: 'badge' });
   });
 });
