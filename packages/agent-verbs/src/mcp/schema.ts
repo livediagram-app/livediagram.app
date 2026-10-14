@@ -100,7 +100,9 @@ const STYLE_FIELDS =
   Object.entries(ELEMENT_FIELD_VALUES)
     .map(([key, values]) => `"${key}" (${values.join(', ')})`)
     .join(', ') +
-  '; "textBold", "textItalic" (true/false); "colorPreset" (a shape\u2019s look from the theme: theme, soft, ' +
+  '; "textBold", "textItalic" (true/false); "colorPreset" (a shape\u2019s look from the theme, its border\u2019s ' +
+  'width and style included, so it outranks a "strokeStyle" given with it; ghost and outline are dashed, dotted ' +
+  'and dash-dot as named: theme, soft, ' +
   'tinted, solid, bold, ghost, paper, muted, slate, inked, hairline, outline, dotted, dash-dot, frame, info, ' +
   'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; "note" (detail ' +
   'shown on the element); on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
