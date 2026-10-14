@@ -326,7 +326,8 @@ export function layoutGraph(
       laid = sideRejoins(laid, axis, routes);
     if (stacked.size) laid = stackBuses(laid, stacked, routes);
     if (style === 'flow' || style === 'lanes') laid = routeLoops(laid, axis, flat, routes);
-    laid = withoutNotches(placeElbowLabels(applyRoutes(laid, routes)));
+    // Straightened first, so each label is placed on the line as it is drawn.
+    laid = placeElbowLabels(withoutNotches(applyRoutes(laid, routes)));
   }
   return withHeaderAndKey(laid, {
     ...(g.title ? { title: g.title } : {}),

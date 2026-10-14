@@ -416,7 +416,7 @@ function crossesABox(arrow: ArrowElement, elements: Element[], solid: RectGrid):
 
 // Whether the segment a→b passes through `box` shrunk by `inset` (positive: grazing is not hitting; negative: the
 // box grown, a clearance).
-function segmentHitsBox(a: Pt, b: Pt, box: BoxedElement, inset = 4): boolean {
+export function segmentHitsBox(a: Pt, b: Pt, box: BoxedElement, inset = 4): boolean {
   const x0 = box.x + inset;
   const x1 = box.x + box.width - inset;
   const y0 = box.y + inset;

@@ -530,7 +530,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice"). **No notch in a straight line:** an
   elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
   is drawn straight: a few pixels' slant over the length of an edge cannot be seen, and a step that short reads as a
-  notch (two boxes of different widths centred a pixel or two apart).
+  notch (two boxes of different widths centred a pixel or two apart). An elbow whose straight line would cross a box
+  it was routed round keeps its bends, and lines are straightened before their labels are placed, so a label sits
+  on the line as it is drawn.
 
 The flow layout reduces crossings: after ranking, a few up-and-down barycentre
 passes reorder each rank, and a new order is kept only when it crosses fewer
