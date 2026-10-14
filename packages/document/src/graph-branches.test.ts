@@ -330,3 +330,40 @@ describe('labels slide along their run', () => {
     }
   });
 });
+
+describe('labels off other lines', () => {
+  it('moves a label off a run another, unlabelled line crosses', async () => {
+    const { placeElbowLabels } = await import('./graph-look');
+    const { withOrthogonalBends } = await import('./arrow-orthogonal');
+    // s's right side to t's top: one bend, then a drop that an unlabelled line crosses at its middle.
+    const els = withOrthogonalBends(
+      [
+        box('s', 0, 0),
+        box('t', 400, 300),
+        arrow('a', 's', 't', { label: 'deploys to staging', arrowStyle: 'angled' }, ['e', 'n']),
+        {
+          id: 'b',
+          type: 'arrow',
+          from: { kind: 'free', x: 300, y: 165 },
+          to: { kind: 'free', x: 600, y: 165 },
+        } as ArrowElement,
+      ],
+      'TB',
+    );
+    const placed = placeElbowLabels(els);
+    const a = placed.find((e) => e.id === 'a') as ArrowElement;
+    const pts = arrowRoutePoints(a, placed);
+    const lens = pts.slice(1).map((p, i) => Math.hypot(p.x - pts[i]!.x, p.y - pts[i]!.y));
+    let left = a.labelOffset!.t * lens.reduce((s, l) => s + l, 0);
+    let y = pts[0]!.y;
+    for (let i = 0; i < lens.length; i++) {
+      if (left <= lens[i]!) {
+        y = pts[i]!.y + ((pts[i + 1]!.y - pts[i]!.y) * left) / lens[i]!;
+        break;
+      }
+      left -= lens[i]!;
+    }
+    // The plate (22px tall) is clear of the crossing line at y = 165.
+    expect(Math.abs(y - 165)).toBeGreaterThan(11);
+  });
+});

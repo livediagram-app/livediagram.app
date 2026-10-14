@@ -463,7 +463,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   sits on a run no other labelled arrow shares (the drop into its target,
   else the leg out of its source, else its longest run), one line wide. Runs are read as drawn, those on one line
   as one, and a run takes the label only when its plate there touches no box: long enough along it, clear beside it,
-  and off every frame's and lane's border and heading; where the middle of a run is not clear, a point a quarter or a
+  and off every frame's and lane's border and heading, and, where any run allows, off every other line too (a
+  neighbour's drop struck a label through); where the middle of a run is not clear, a point a quarter or a
   third of the way along it is tried before the next run.
   The gap between two ranks fits the widest label crossing it, as Tidy Up's does (its width left to right, its line
   height either side of the jog top to bottom), so a caption is never longer than its edge.

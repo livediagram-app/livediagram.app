@@ -195,3 +195,27 @@ describe('quarter fans (docs/specs/008-canvas/arrow-anchors.md)', () => {
     expect(arrowEndpointSpread('b', 'to', elements)).toEqual({ x: 0, y: 7 });
   });
 });
+
+describe('ties in the fan', () => {
+  it('puts the nearer of two arrows from one column on the side they come from, so neither crosses', () => {
+    // Two steps in one column left of the target, both arriving on its top: the nearer (lower) takes the left slot.
+    const target = box('t', 300, 300);
+    const far = box('far', 0, 0);
+    const near = box('near', 0, 150);
+    const fromFar = arrow(pinned('far', 'e'), pinned('t', 'n'), 'a-far');
+    const fromNear = arrow(pinned('near', 'e'), pinned('t', 'n'), 'z-near');
+    const elements: Element[] = [target, far, near, fromFar, fromNear];
+    const xNear = arrowEndpointSpread('z-near', 'to', elements).x;
+    const xFar = arrowEndpointSpread('a-far', 'to', elements).x;
+    expect(xNear).toBeLessThan(xFar);
+    // And mirrored: from the right, the nearer takes the right slot, whatever the ids.
+    const farR = box('farR', 600, 0);
+    const nearR = box('nearR', 600, 150);
+    const r1 = arrow(pinned('farR', 'w'), pinned('t', 'n'), 'z-farR');
+    const r2 = arrow(pinned('nearR', 'w'), pinned('t', 'n'), 'a-nearR');
+    const right: Element[] = [target, farR, nearR, r1, r2];
+    expect(arrowEndpointSpread('a-nearR', 'to', right).x).toBeGreaterThan(
+      arrowEndpointSpread('z-farR', 'to', right).x,
+    );
+  });
+});

@@ -791,6 +791,10 @@ export function placeElbowLabels(elements: Element[]): Element[] {
   // The route as it is drawn (the renderer's own points, bends squared onto the line), which the label's `t` measures.
   const pathOf = (a: ArrowElement): Pt[] => arrowRoutePoints(a, elements);
   const paths = new Map(labelled.map((a) => [a.id, pathOf(a)]));
+  // Every line as drawn, the ones a label must keep off.
+  const lines = elements
+    .filter((el): el is ArrowElement => el.type === 'arrow')
+    .map((el) => ({ id: el.id, pts: paths.get(el.id) ?? pathOf(el) }));
   // The boxes a label must clear: every boxed element but the frames and lanes that hold them.
   const isHolder = (el: Element) =>
     el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
@@ -849,7 +853,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
     // its middle first, then a quarter or a third of the way from either end (a short drop between two lanes is
     // clear inside one of them, not across the gap). On a level run that also means the run is long enough; on an
     // upright one, that nothing stands beside it. Null when no point of the run holds it.
-    const spot = (i: number): number | null => {
+    const spot = (i: number, strict = true): number | null => {
       const level = Math.abs(pts[i]!.y - pts[i + 1]!.y) < 1;
       if (lens[i]! < (level ? width + LABEL_RUN_MARGIN : LABEL_CLEAR + LABEL_RUN_MARGIN))
         return null;
@@ -884,7 +888,14 @@ export function placeElbowLabels(elements: Element[]): Element[] {
             ({ rect, heading }) =>
               (rectsMeet(plate, rect) && !rectWithin(plate, rect)) ||
               (heading !== null && rectsMeet(plate, heading)),
-          );
+          ) &&
+          // Strict, off every other line too, not only labelled ones: a neighbour's drop struck a label through.
+          (!strict ||
+            !lines.some(
+              (l) =>
+                l.id !== a.id &&
+                l.pts.some((p, k) => k > 0 && segmentHitsRect(l.pts[k - 1]!, p, plate)),
+            ));
         if (clear) return f;
       }
       return null;
@@ -892,11 +903,12 @@ export function placeElbowLabels(elements: Element[]): Element[] {
     const holds = (i: number) => spot(i) !== null;
     const seg =
       [last, 0, ...byLength].find((i) => holds(i) && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
-      // Beside another labelled line is better than over a box.
+      // Beside another labelled line is better than over a box; over another line better still than over a box.
       byLength.find(holds) ??
+      byLength.find((i) => spot(i, false) !== null) ??
       byLength[0]!;
     const before = lens.slice(0, seg).reduce((s, l) => s + l, 0);
-    const along = (spot(seg) ?? 0.5) * lens[seg]!;
+    const along = (spot(seg) ?? spot(seg, false) ?? 0.5) * lens[seg]!;
     placed.set(a.id, {
       ...a,
       labelOffset: { t: Number(((before + along) / total).toFixed(4)), offset: 0 },
@@ -907,6 +919,29 @@ export function placeElbowLabels(elements: Element[]): Element[] {
 }
 
 type Rect = { x: number; y: number; width: number; height: number };
+// Whether a segment passes through a rectangle (its interior; touching an edge does not count).
+function segmentHitsRect(a: Pt, b: Pt, r: Rect): boolean {
+  const [x0, x1, y0, y1] = [r.x, r.x + r.width, r.y, r.y + r.height];
+  let [t0, t1] = [0, 1];
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  for (const [p, q] of [
+    [-dx, a.x - x0],
+    [dx, x1 - a.x],
+    [-dy, a.y - y0],
+    [dy, y1 - a.y],
+  ] as const) {
+    if (p === 0) {
+      if (q <= 0) return false;
+      continue;
+    }
+    const t = q / p;
+    if (p < 0) t0 = Math.max(t0, t);
+    else t1 = Math.min(t1, t);
+    if (t0 >= t1) return false;
+  }
+  return true;
+}
 const rectsMeet = (a: Rect, b: Rect) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 const rectWithin = (a: Rect, b: Rect) =>

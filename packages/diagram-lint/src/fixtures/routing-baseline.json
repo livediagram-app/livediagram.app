@@ -197,7 +197,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1933×1528"
+    "extent": "1933×1520"
   },
   "mermaid-sequencediagram-2": {
     "shared": 0,
@@ -217,7 +217,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1443×1396"
+    "extent": "1443×1380"
   },
   "mermaid-sequencediagram-4": {
     "shared": 0,
@@ -227,7 +227,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1697×1382"
+    "extent": "1697×1374"
   },
   "mermaid-sequencediagram-5": {
     "shared": 0,
@@ -237,7 +237,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1933×1528"
+    "extent": "1933×1520"
   },
   "mermaid-statediagram-1": {
     "shared": 228,
