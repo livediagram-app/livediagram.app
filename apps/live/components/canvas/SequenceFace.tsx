@@ -9,6 +9,13 @@ import {
 /** Seconds of the Play wipe per message at Normal speed (docs/specs/009-elements/sequence-diagram.md "Animation"). */
 export const SEQ_PLAY_S_PER_MESSAGE = 0.4;
 
+/** What the picture says to a screen reader: its participants and how many messages pass between them. */
+export function sequenceLabel(element: ShapeElement): string {
+  const names = (element.sequenceParticipants ?? []).map((p) => p.label || p.id).join(', ');
+  const n = element.sequenceMessages?.length ?? 0;
+  return `Sequence diagram: ${names}; ${n} ${n === 1 ? 'message' : 'messages'}`;
+}
+
 // The sequence diagram (docs/specs/009-elements/sequence-diagram.md): the export's own picture (sequenceDrawing, the
 // shared layout drawn by the headless renderer), fitted into the box with its aspect kept, so canvas and export agree.
 // The markup is built by our renderer from bounded, escaped rows, never from raw input. Play wipes it in from the top.
@@ -42,7 +49,8 @@ export const SequenceFace = memo(function SequenceFace({
     : undefined;
   return (
     <div
-      aria-hidden
+      role="img"
+      aria-label={sequenceLabel(element)}
       data-sequence-picture
       className={`pointer-events-none absolute inset-0 ${
         play ? (element.sequenceAnimRepeat ? 'lvd-seq-play-loop' : 'lvd-seq-play') : ''

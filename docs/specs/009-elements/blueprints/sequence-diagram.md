@@ -23,16 +23,23 @@ Banned: "lifeline" for the element (it is one participant's line), "Mermaid" in 
 
 - `sequenceDiagramOf(el)`: `{ autonumber: sequenceNumbered, participants, items }` with one message item per message
   whose `from` and `to` name participants (others dropped), `style` = `kind`.
-- `sequencePicture(el)`: `layoutSequence(sequenceDiagramOf(el), { makeId })` with ids `seq-<n>` (deterministic, so the
-  picture is stable), drawn with `renderElementsToSvg` on no background; cached by the element's rows. Fitted into the
-  element's box by `preserveAspectRatio="xMidYMid meet"`.
+- `sequenceDrawing(el, paper)`: `layoutSequence(sequenceDiagramOf(el), { makeId })` with ids `seq-<n>` (deterministic,
+  so the picture is stable), drawn with `renderElementsToSvg` on `paper` (the element's resolved fill, so its ink reads
+  on it in either theme) and then stripped of the paper rect, since the element's own box is the paper. Cached by the
+  rows, Numbered and the paper, at most 64 entries (the oldest dropped first).
+- `svgSequencePicture(el, paper)`: that drawing nested as an `<svg>` at the element's box with
+  `preserveAspectRatio="xMidYMid meet"`, for exports; the canvas face shows the same markup at 100% of the box.
 - `withSequenceRows(el, { participants?, messages? })`: participants bounded to 12 (labels 40), ids kept unique
   (`p<n>`); messages bounded to 60 (labels 80) and filtered to known participants; a participant list under 2 is
   ignored.
 - `nextMessageAfter(el, index)`: from the message's `to`, to the participant after it (wrapping), kind Call, label "".
-- Play: the face wraps the picture in `.lvd-seq-play` with `--lvd-seq-n` (messages) and `--lvd-seq-speed`; CSS
-  `clip-path: inset(0 0 100% 0)` to `inset(0)` over `n * 0.4 s * speed`, linear, `both`, once (or `infinite` with
-  Repeat and a 1.5 s hold); reduced motion `animation: none`.
+- `withSequenceNumbered(el, on)`: `true` stored, off absent.
+- `withSequenceAnim(el, { anim?, speed?, repeat? })`: `'play'` or absent; the default speed (`DEFAULT_ANIMATION_SPEED`)
+  stored as absent; Repeat `true` or absent.
+- Play: the face sets `--lvd-seq-dur` = `messages * 0.4 s * ANIMATION_SPEED_FACTOR[speed]` and the class
+  `.lvd-seq-play` (once: `clip-path: inset(0 0 100% 0)` to `inset(0 0 0 0)`, linear, `both`) or `.lvd-seq-play-loop`
+  (Repeat: `infinite` over `dur / 0.7`, revealed by 70%, held to 92%, faded out by 100%); reduced motion
+  `animation: none`.
 
 ### Invariants
 
@@ -56,7 +63,13 @@ export function withSequenceRows<T extends Element>(
   rows: { participants?: SequenceElementParticipant[]; messages?: SequenceElementMessage[] },
 ): T;
 export function nextMessageAfter(el: ShapeElement, index: number): SequenceElementMessage;
-export function svgSequencePicture(el: ShapeElement): string; // an <svg> sized to the element's box
+export function withSequenceNumbered<T extends Element>(el: T, on: boolean): T;
+export function withSequenceAnim<T extends Element>(
+  el: T,
+  patch: { anim?: 'play' | null; speed?: AnimationSpeed; repeat?: boolean },
+): T;
+export function sequenceDrawing(el: ShapeElement, paper?: string): string; // natural size, no paper
+export function svgSequencePicture(el: BoxedElement & { type: 'shape' }, paper?: string): string; // fitted
 ```
 
 Validation: participants 2 to 12 (`id` ≤ 24, label ≤ 40, `actor` boolean); messages ≤ 60 (`from`/`to` ≤ 24, label ≤ 80,
@@ -89,8 +102,12 @@ Layout is O(messages) ≤ 60; the picture is built once per change of the rows (
 
 ## Presentation and UX
 
-- D194: 560 × 340; participants Browser, API, Database; messages `GET /orders` (call, Browser → API), `validate`
-  (call, API → API), `SELECT orders` (call, API → Database), `rows` (reply), `200 OK` (reply).
+- D194: 560 × 340; participants Browser, API, Database; messages `Place order` (call, Browser → API), `Validate`
+  (call, API → API), `Insert order` (call, API → Database), `Order id` (reply, Database → API), `201 Created` (reply,
+  API → Browser).
+- The Sequence section lists Participants (name, Actor, ↑ ↓ ×, Add Participant) and Messages (From, To, kind; label,
+  ↑ ↓ ×; Add Message). Words commit on blur; Enter commits and adds the next message, focused.
+- On the palette strip Build now holds exactly twelve tiles, so its divider gives way (the strip's rule).
 
 ## Accessibility
 
@@ -99,7 +116,8 @@ labelled inputs.
 
 ## Observability
 
-`Element·Added·Sequence`; `Element·Changed·SequenceRows`, `SequenceNumbered`, `SequenceAnim`.
+`Element·Added·Sequence`; `Element·Changed·SequenceParticipants`, `SequenceMessages`, `SequenceNumbered`,
+`SequenceAnim`.
 
 ## Testing
 
@@ -108,6 +126,7 @@ labelled inputs.
 | Writes, bounds (I1), next | `packages/document/src/sequence-element.test.ts`            |
 | Picture and export (I2)   | same                                                        |
 | Menu rows, Enter adds     | `apps/live/components/palette/SequenceMenuSection.test.tsx` |
+| Face label, Play class    | `apps/live/components/canvas/SequenceFace.test.tsx`         |
 
 ## Constants and configuration
 
@@ -116,3 +135,4 @@ labelled inputs.
 | Participants max | 12    | Spec       |
 | Messages max     | 60    | Spec       |
 | Play beat        | 0.4 s | D194       |
+| Drawing cache    | 64    | Blueprint  |
