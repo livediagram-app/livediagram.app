@@ -66,7 +66,7 @@ export function ColorTile({
             type="button"
             onClick={() => painter.copy(value)}
             aria-label={`Copy ${label} colour`}
-            className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded bg-white/85 text-slate-600 shadow-sm transition hover:text-brand-600 dark:bg-slate-900/80 dark:text-slate-200"
+            className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded bg-white/85 text-slate-600 shadow-sm transition hover:text-brand-700 dark:bg-slate-900/80 dark:text-slate-200"
           >
             <CopyIcon size={9} />
           </button>

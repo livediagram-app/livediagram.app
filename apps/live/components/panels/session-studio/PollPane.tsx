@@ -226,7 +226,7 @@ export function PollComposerBody({
             <button
               type="button"
               onClick={() => addOption(true)}
-              className="ml-6 self-start rounded-md px-1.5 py-0.5 text-[11px] font-semibold text-brand-600 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
+              className="ml-6 self-start rounded-md px-1.5 py-0.5 text-[11px] font-semibold text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
             >
               + Add answer
             </button>

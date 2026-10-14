@@ -50,15 +50,14 @@ describe('LikeButton', () => {
 
     await click();
     expect(button().getAttribute('aria-pressed')).toBe('true');
-    expect(button().textContent).toBe('5');
+    expect(button().textContent).toBe('Like (5 likes)');
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe('/api/community/posts/post123456/like');
     expect(init?.method).toBe('PUT');
     expect((init?.headers as Record<string, string>)['X-Community-Key']).toMatch(/^[0-9a-f-]{36}$/);
 
     await act(async () => resolve(Response.json({ likeCount: 9, liked: true })));
-    expect(button().textContent).toBe('9');
-    expect(button().getAttribute('aria-label')).toBe('Like (9 likes)');
+    expect(button().textContent).toBe('Like (9 likes)');
   });
 
   it('rolls back when the request fails', async () => {
@@ -66,7 +65,7 @@ describe('LikeButton', () => {
     await act(async () => root.render(<Harness />));
     await click();
     expect(button().getAttribute('aria-pressed')).toBe('false');
-    expect(button().textContent).toBe('4');
+    expect(button().textContent).toBe('Like (4 likes)');
     expect(button().disabled).toBe(false);
   });
 

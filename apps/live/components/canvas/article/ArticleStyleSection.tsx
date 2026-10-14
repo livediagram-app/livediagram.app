@@ -247,7 +247,7 @@ function LookCard({
         ))}
         <span className="mt-1 block text-[9px] font-medium text-slate-500">{look.label}</span>
         {selected ? (
-          <span className="absolute right-0.5 top-0.5 text-brand-600 dark:text-brand-600">
+          <span className="absolute right-0.5 top-0.5 text-brand-700 dark:text-brand-600">
             <CheckIcon className="h-3 w-3" />
           </span>
         ) : null}

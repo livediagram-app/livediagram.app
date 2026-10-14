@@ -14,8 +14,8 @@ A single brand hue with a full 50–950 ramp. Built on Tailwind's `sky` scale.
 | `brand-300`     | `#7DD3FC`     | Decorative accents, secondary indicators                   |
 | `brand-400`     | `#38BDF8`     | Light brand surfaces, illustrations                        |
 | **`brand-500`** | **`#0EA5E9`** | **Primary brand color — accents, focus rings, decoration** |
-| `brand-600`     | `#0284C7`     | Wordmark, brand ink on tinted fills                        |
-| `brand-700`     | `#0369A1`     | **Solid fills under white text**, emphasised text          |
+| `brand-600`     | `#0284C7`     | Decorative accents with no text, dark-mode fills           |
+| `brand-700`     | `#0369A1`     | **Solid fills under white text**, **all light brand ink**  |
 | `brand-800`     | `#075985`     | Hover on a solid fill, high-contrast emphasis              |
 | `brand-900`     | `#0C4A6E`     | Dark mode brand text                                       |
 | `brand-950`     | `#082F49`     | Dark mode surfaces                                         |
@@ -65,7 +65,13 @@ Reserved for status — never used decoratively.
   reads every app's and package's source and fails a light `bg-brand-500` or `bg-brand-600` under white text. Tinted
   fills (`brand-500/10`) and decoration with no text on it (progress bars, dots, underlines) keep `brand-500`.
 - **Secondary actions** use a `slate-200` border with `slate-700` text on white. No filled neutrals as buttons.
-- **Links** are `brand-600` with underline on hover.
+- **Brand ink** (links, the wordmark's "live" half, eyebrows, active pills and tabs, and glyphs that carry meaning:
+  checks, row icons, icon chips on a `brand-50` / `brand-100` tint) is `brand-700` in light mode, and a hover that
+  deepens it goes to `brand-800`. `brand-700` reads 5.9:1 on white, 5.6:1 on `brand-50` and 5.2:1 on `brand-100`;
+  `brand-600` is 4.1:1 on white and 3.9:1 on `slate-50`, and `brand-500` 2.8:1, both under AA's 4.5:1 for small text.
+  `apps/live/app/light-palette.test.ts` fails a light `text-brand-500` or `text-brand-600` in any app's or package's
+  source, outside a short list of decorative uses with no text (a loading spinner, a drag ghost, a sparkline).
+- **Links** are `brand-700` with underline on hover.
 - **Focus rings** are 2px `brand-500` with a 2px `brand-100` halo for accessibility.
 - **Selection / collaborator highlights** on the canvas use `brand-200`–`brand-300` tints. Individual collaborator cursors may shift hue (per-user color), but the default user's selection stays in the brand range.
 - **Page background**: `slate-50`. **Canvas background**: pure white (`#FFFFFF`) so what's on the canvas reads cleanly.
@@ -117,7 +123,7 @@ part of the chrome rather than a sticker on it.
 | `brand-950` | `#142538`  | Deepest accent surfaces                          |
 
 The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark mode. Light mode uses
-`brand-600`, and the logo mark switches between its own light and dark prism palettes ([Brand mark](./brand-mark.md)).
+`brand-700`, and the logo mark switches between its own light and dark prism palettes ([Brand mark](./brand-mark.md)).
 
 ### Rules
 
@@ -155,17 +161,21 @@ The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark 
 ## Accessibility
 
 - All text/background pairings must meet **WCAG AA** contrast (4.5:1 for body, 3:1 for large text and UI controls).
-- `brand-500` on white meets AA for large text only — for small text, use `brand-700` or darker.
+- `brand-500` and `brand-600` on white fail AA for small text (2.8:1, 4.1:1); light brand ink is `brand-700` or darker
+  ([Usage rules](#usage-rules)).
+- **Muted text in light mode** is `slate-500` on white or `slate-50` (4.8:1, 4.6:1) and `slate-600` on `slate-100` or a
+  tint, never `slate-400` (2.6:1), which stays for icons, placeholders and disabled controls. The public sites
+  (marketing, help, community, telemetry) and the New Document wizard follow it; the editor's own chrome is still being
+  brought in line.
 - Never rely on color alone to convey status; pair semantic colors with an icon or label.
 - **Contrast guard (dark mode).** A Playwright audit (`apps/live/e2e/contrast-audit.spec.ts`) walks every visible
   text node on the New Document wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
   the real background under it, and fails below 4.5:1 (3:1 for large text: 24px, or 18.66px bold). It has no
   allow-list. It covers **dark mode only**: light mode's colours are owned by Thomas
-  ([@tommcclean](https://github.com/tommcclean)) under [#74](https://github.com/livediagram-app/livediagram.app/issues/74),
-  which stays open for the light half's brand-coloured text on white (the wordmark, `brand-600` links and pills).
-- **Contrast guard (light mode, solid fills).** The fill half of #74 is settled: white text on a solid brand fill is
-  `brand-700` ([Usage rules](#usage-rules)), held by `apps/live/app/light-palette.test.ts`, which reads every app's and
-  package's source and checks the light ramp's ratios under white.
+  ([@tommcclean](https://github.com/tommcclean)) under [#74](https://github.com/livediagram-app/livediagram.app/issues/74).
+- **Contrast guard (light mode, brand ramp).** #74's light half is settled: white text on a solid brand fill and brand
+  ink on white are both `brand-700` ([Usage rules](#usage-rules)), held by `apps/live/app/light-palette.test.ts`, which
+  reads every app's and package's source and checks the light ramp's ratios against white.
 
 ## Tailwind integration
 

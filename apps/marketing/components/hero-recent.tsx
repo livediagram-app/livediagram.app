@@ -120,7 +120,7 @@ function RecentTile({
           <TeamIcon
             size={12}
             data-team-mark=""
-            className="shrink-0 text-slate-400 transition-colors group-hover/tile:text-brand-500 dark:text-slate-500 dark:group-hover/tile:text-brand-400"
+            className="shrink-0 text-slate-400 transition-colors group-hover/tile:text-brand-700 dark:text-slate-500 dark:group-hover/tile:text-brand-400"
           />
         ) : null}
         <span className="truncate">{diagram.name || 'Untitled diagram'}</span>

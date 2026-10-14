@@ -83,7 +83,8 @@ export function StickyWindowBar({
 
   return (
     <div
-      aria-hidden={!stuck}
+      // Hidden and out of the tab order until it fades in: aria-hidden alone left its buttons focusable.
+      inert={!stuck}
       className={
         'fixed inset-x-0 top-24 z-30 flex justify-center px-2 transition-all duration-short sm:px-4 ' +
         (stuck ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-3 opacity-0')

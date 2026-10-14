@@ -155,7 +155,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
                   <ul className="mt-4 space-y-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
                     {alt.usBest.map((point) => (
                       <li key={point} className="flex gap-2.5">
-                        <span className="mt-0.5 shrink-0 text-brand-600 dark:text-brand-300">
+                        <span className="mt-0.5 shrink-0 text-brand-700 dark:text-brand-300">
                           <CheckIcon />
                         </span>
                         <span>{point}</span>

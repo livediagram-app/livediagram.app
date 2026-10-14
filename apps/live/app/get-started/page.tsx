@@ -233,7 +233,7 @@ function GetStartedContent() {
           Already have an account?{' '}
           <Link
             href={authHrefWithReturn('/sign-in/', searchParams.get('redirect_url'))}
-            className="font-medium text-brand-600 hover:underline dark:text-brand-400"
+            className="font-medium text-brand-700 hover:underline dark:text-brand-400"
           >
             Sign in
           </Link>

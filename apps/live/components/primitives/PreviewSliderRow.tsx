@@ -80,7 +80,7 @@ export function SliderRowAction({ label, onClick }: { label: string; onClick: ()
     <button
       type="button"
       onClick={onClick}
-      className="rounded px-1 text-[10px] font-semibold text-brand-600 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
+      className="rounded px-1 text-[10px] font-semibold text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
     >
       {label}
     </button>

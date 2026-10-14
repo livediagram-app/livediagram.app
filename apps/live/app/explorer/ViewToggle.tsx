@@ -86,7 +86,7 @@ function ToggleButton({
         className={
           'flex h-7 w-7 items-center justify-center rounded transition ' +
           (active
-            ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300'
+            ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-300'
             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200')
         }
       >

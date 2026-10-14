@@ -29,10 +29,12 @@ function SidebarCard({ subArticles }: { subArticles?: Article[] }) {
       {hasSubArticles && (
         <>
           <div className="toc-divider my-4 border-t border-slate-200 dark:border-slate-800" />
-          <h3 className="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">
+          <h3 className="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
             Learn More
           </h3>
-          <p className="mb-3 text-[11px] text-slate-400">Related guides on this topic</p>
+          <p className="mb-3 text-[11px] text-slate-500 dark:text-slate-400">
+            Related guides on this topic
+          </p>
           <ul className="space-y-1.5 pointer-coarse:space-y-0">
             {subArticles!.map((a, i) => (
               <li key={a.slug}>
@@ -138,7 +140,7 @@ export function ArticleLayout({
               {description}
             </p>
           )}
-          <div className="flex items-center gap-4 text-xs text-slate-400">
+          <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
             {readingTime > 0 && (
               <span className="flex items-center gap-1.5">
                 <ClockIcon className="h-3.5 w-3.5" />
@@ -220,7 +222,7 @@ export function ArticleLayout({
                   Thanks for your feedback.{' '}
                   <a
                     href="/help/contact/"
-                    className="text-brand-600 underline underline-offset-2 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
+                    className="text-brand-700 underline underline-offset-2 hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"
                   >
                     Need more help?
                   </a>

@@ -208,7 +208,7 @@ export function CommunityGuide() {
             <span className="shrink-0">{step.art}</span>
             <span className="flex min-w-0 flex-col gap-0.5">
               <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">
-                <span className="mr-1 text-brand-600 dark:text-brand-300">{i + 1}.</span>
+                <span className="mr-1 text-brand-700 dark:text-brand-300">{i + 1}.</span>
                 {step.title}
               </span>
               <span className={STEP_CAPTION}>{step.caption}</span>

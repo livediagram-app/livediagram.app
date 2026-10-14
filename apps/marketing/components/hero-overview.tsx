@@ -74,7 +74,7 @@ function OverviewFrame({ scene, onOpen }: { scene: OverviewScene; onOpen: (key: 
       className="group/frame flex w-[42%] flex-col text-left sm:w-[calc((100%-6rem)/4)] sm:max-w-[13rem]"
     >
       {/* The frame's name, above its top-left corner, as the editor labels a frame. */}
-      <span className="mb-1.5 flex items-center gap-1 px-0.5 text-[9px] font-semibold text-slate-500 transition-colors group-hover/frame:text-brand-600 sm:text-xs dark:text-slate-400 dark:group-hover/frame:text-brand-300">
+      <span className="mb-1.5 flex items-center gap-1 px-0.5 text-[9px] font-semibold text-slate-500 transition-colors group-hover/frame:text-brand-700 sm:text-xs dark:text-slate-400 dark:group-hover/frame:text-brand-300">
         <Icon size={11} className="shrink-0" />
         {scene.label}
         <span

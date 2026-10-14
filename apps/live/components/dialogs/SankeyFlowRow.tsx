@@ -108,7 +108,7 @@ export function SankeyFlowRow({
               type="button"
               aria-label={`Send on from ${to.trim()}`}
               onClick={onCarryOn}
-              className="touch-target relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-brand-600 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
+              className="touch-target relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
             >
               <PlusIcon />
             </button>

@@ -138,7 +138,7 @@ export function ToolbarMenuButton({ mode, tab }: { mode: HeroMode; tab: string }
       <span className="flex h-6 w-6 items-center justify-center">
         <MenuIcon size={11} />
       </span>
-      <span className="flex h-6 items-center gap-0.5 rounded bg-brand-50 px-1.5 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+      <span className="flex h-6 items-center gap-0.5 rounded bg-brand-50 px-1.5 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
         <Icon size={11} />
         <ChevronDownIcon size={7} />
       </span>
@@ -170,7 +170,7 @@ function StripTile({ tile, index }: { tile: Tile; index: number }) {
     <span
       className={`relative h-6 w-6 shrink-0 items-center justify-center rounded ${
         index < NARROW_TILES ? 'flex' : 'hidden @[600px]:flex'
-      } ${tile.active ? 'bg-brand-50 text-brand-600 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:text-brand-300 dark:ring-brand-500/40' : ''}`}
+      } ${tile.active ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:text-brand-300 dark:ring-brand-500/40' : ''}`}
     >
       {tile.glyph}
       {tile.hint ? (
@@ -189,7 +189,7 @@ function StripTile({ tile, index }: { tile: Tile; index: number }) {
 export function ToolbarStrip({ mode }: { mode: HeroMode }) {
   const { Icon } = HERO_MODE[mode];
   const pill =
-    'flex h-6 items-center gap-1 rounded bg-brand-50 px-1.5 text-[9px] font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-300';
+    'flex h-6 items-center gap-1 rounded bg-brand-50 px-1.5 text-[9px] font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-300';
   const strip =
     'flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white p-0.5 text-slate-600 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300';
   // A Plan board's bar is for a wide window; on a phone the strip carries only the menu and mode.
@@ -261,7 +261,7 @@ export function ToolbarStrip({ mode }: { mode: HeroMode }) {
               <EllipsisIcon size={10} />
               <ChevronDownIcon size={7} />
             </span>
-            <span className="hidden h-6 w-6 items-center justify-center rounded bg-brand-50 text-brand-600 @[600px]:flex dark:bg-brand-500/15 dark:text-brand-300">
+            <span className="hidden h-6 w-6 items-center justify-center rounded bg-brand-50 text-brand-700 @[600px]:flex dark:bg-brand-500/15 dark:text-brand-300">
               <SearchIcon size={10} />
             </span>
           </>

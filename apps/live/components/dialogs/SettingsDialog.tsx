@@ -243,7 +243,7 @@ export function SettingsDialog({
           <button
             type="button"
             onClick={() => setSelectedId(backTo?.id ?? null)}
-            className="-ml-1.5 flex items-center gap-0.5 rounded-md py-1 pr-2 pl-1 text-sm font-medium text-brand-600 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
+            className="-ml-1.5 flex items-center gap-0.5 rounded-md py-1 pr-2 pl-1 text-sm font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
           >
             <NavChevron direction="back" />
             {backTo?.label ?? 'Settings'}

@@ -157,7 +157,7 @@ export function TrendChart({
           ))}
         </div>
       </div>
-      <div className="mt-2 flex justify-between text-[10px] text-slate-400">
+      <div className="mt-2 flex justify-between text-[10px] text-slate-500 dark:text-slate-400">
         <span>{fmtDay(days[0] ?? 0)}</span>
         <span className="text-slate-500 dark:text-slate-400">
           Peak {peak.toLocaleString()} · Avg{' '}

@@ -149,7 +149,7 @@ export function StartBlankMenu({
               onClick={close}
               className="group/blank flex items-start gap-2.5 rounded-lg px-3 py-2 transition hover:bg-slate-100 focus-visible:bg-slate-100 dark:hover:bg-slate-700 dark:focus-visible:bg-slate-700"
             >
-              <span className="mt-0.5 shrink-0 text-slate-500 group-hover/blank:text-brand-600 dark:text-slate-400 dark:group-hover/blank:text-brand-300">
+              <span className="mt-0.5 shrink-0 text-slate-500 group-hover/blank:text-brand-700 dark:text-slate-400 dark:group-hover/blank:text-brand-300">
                 <Icon size={16} aria-hidden />
               </span>
               <span className="flex min-w-0 flex-col gap-0.5">

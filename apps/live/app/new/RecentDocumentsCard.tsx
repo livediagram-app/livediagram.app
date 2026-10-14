@@ -96,7 +96,7 @@ export function RecentDocumentsCard({
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="flex min-w-0 items-center gap-1 text-xs font-medium text-slate-700 group-hover:text-brand-700 dark:text-slate-200 dark:group-hover:text-brand-200">
                   {d.teamName != null ? (
-                    <span className="shrink-0 text-slate-400 group-hover:text-brand-500">
+                    <span className="shrink-0 text-slate-400 group-hover:text-brand-700">
                       <TeamIcon size={12} />
                       <span className="sr-only">{`${d.teamName} team: `}</span>
                     </span>
@@ -131,7 +131,7 @@ export function RecentDocumentsCard({
 
 function ClockIcon() {
   return (
-    <Glyph size={16} units={16} className="shrink-0 text-brand-500 dark:text-brand-400">
+    <Glyph size={16} units={16} className="shrink-0 text-brand-700 dark:text-brand-400">
       <circle cx="8" cy="8" r="6" />
       <path d="M8 5v3l2 1.5" />
     </Glyph>
@@ -143,7 +143,7 @@ function ChevronRight() {
     <Glyph
       size={12}
       units={12}
-      className="shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand-500 dark:text-slate-600"
+      className="shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand-700 dark:text-slate-600"
     >
       <path d="M4.5 2.5L8 6l-3.5 3.5" />
     </Glyph>

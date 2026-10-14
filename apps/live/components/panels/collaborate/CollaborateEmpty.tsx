@@ -17,7 +17,7 @@ export function CollaborateEmpty({ side, kind }: { side: CollaborateSide; kind: 
     <div className="flex animate-fade-in flex-col items-center gap-1.5 px-3 py-5 text-center">
       <span
         aria-hidden
-        className="mb-1 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-500 dark:bg-brand-500/15 dark:text-brand-300"
+        className="mb-1 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
       >
         {side === 'open' ? <SparklesGlyph /> : <CircleCheckGlyph />}
       </span>

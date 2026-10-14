@@ -142,7 +142,7 @@ export function AvatarPanel({
               type="button"
               onClick={onRandomise}
               aria-label="Randomise avatar"
-              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-white hover:text-brand-600 dark:hover:bg-slate-900 dark:hover:text-brand-300"
+              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-white hover:text-brand-700 dark:hover:bg-slate-900 dark:hover:text-brand-300"
             >
               <RefreshIcon />
             </button>

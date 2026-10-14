@@ -52,7 +52,7 @@ export function MetricCard({
           </span>
           <div>
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{m.title}</p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {m.category} · {eventLabel({ action: m.action, type: iconType })}
             </p>
           </div>

@@ -129,7 +129,7 @@ export function SiteFooter() {
                     href={`https://github.com/${c.login}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-medium text-slate-500 hover:text-brand-600 pointer-coarse:py-3 dark:text-slate-400 dark:hover:text-brand-200"
+                    className="inline-flex items-center gap-1 font-medium text-slate-500 hover:text-brand-700 pointer-coarse:py-3 dark:text-slate-400 dark:hover:text-brand-200"
                   >
                     {/* Decorative: the name beside it carries the link's meaning. */}
                     <img

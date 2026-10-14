@@ -46,7 +46,7 @@ export function AlternativeCard({ alt }: { alt: Alternative }) {
                 key={chip}
                 className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200"
               >
-                <span className="text-brand-600 dark:text-brand-300">
+                <span className="text-brand-700 dark:text-brand-300">
                   <CheckIcon />
                 </span>
                 {chip}

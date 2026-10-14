@@ -228,7 +228,7 @@ export function PageContentsPanel({
                   {row.number}
                 </span>
                 {isHere ? (
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-300">
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
                     Here
                   </span>
                 ) : null}

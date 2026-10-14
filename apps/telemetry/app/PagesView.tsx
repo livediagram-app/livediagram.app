@@ -59,7 +59,9 @@ export function PagesView({
       <LandingFunnel summary={summary} active={active} />
 
       <section className="mt-12">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Top pages</h3>
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Top pages
+        </h2>
         <div className="mt-3">
           <CardColumns>
             {rankings.map((r) => (

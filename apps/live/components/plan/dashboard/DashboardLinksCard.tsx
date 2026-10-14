@@ -34,7 +34,7 @@ const PlusGlyph = lucideGlyph(lucidePlus, 14);
 const ROW_HIT =
   'flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-300';
 const ICON_WELL =
-  'flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition group-hover/link:bg-brand-50 group-hover/link:text-brand-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover/link:bg-brand-500/15 dark:group-hover/link:text-brand-300';
+  'flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition group-hover/link:bg-brand-50 group-hover/link:text-brand-700 dark:bg-slate-800 dark:text-slate-400 dark:group-hover/link:bg-brand-500/15 dark:group-hover/link:text-brand-300';
 // Shown on hover or focus; always on a screen with no hover (a phone).
 const ON_HOVER =
   'opacity-0 transition group-hover/link:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';

@@ -42,7 +42,7 @@ export function CommunityPublishedConfirmation({
     <>
       {/* It replaces the form the person just submitted: announced as it appears, with focus on Done. */}
       <div role="status" className="flex flex-col items-center gap-3 px-6 pt-8 pb-6 text-center">
-        <span className="flex h-16 w-16 animate-fade-in items-center justify-center rounded-full bg-brand-50 text-brand-500 dark:bg-brand-500/15 dark:text-brand-300">
+        <span className="flex h-16 w-16 animate-fade-in items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
           <SparklesIcon />
         </span>
         <h2 id={titleId} className="text-lg font-semibold text-slate-900 dark:text-slate-50">

@@ -70,7 +70,7 @@ export function SkeletonTiles({ count, from = 0 }: { count: number; from?: numbe
 export function SearchingStatus({ query }: { query: string }) {
   return (
     <p className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-      <span className="relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 ring-1 ring-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:ring-brand-500/30">
+      <span className="relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 ring-1 ring-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:ring-brand-500/30">
         <span className="lvd-search-lens flex">
           <SearchIcon size={13} />
         </span>

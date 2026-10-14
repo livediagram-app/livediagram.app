@@ -239,7 +239,7 @@ function ChipListbox({
               index === active ? 'bg-slate-100 dark:bg-slate-800' : ''
             } ${index === 0 ? 'border-b border-slate-100 dark:border-slate-800' : ''}`}
           >
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center text-brand-600 dark:text-brand-300">
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center text-brand-700 dark:text-brand-300">
               {option.selected ? <CheckIcon size={12} /> : null}
             </span>
             <span className="truncate">{option.label}</span>

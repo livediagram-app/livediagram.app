@@ -182,7 +182,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
               pinned because the trimmed name no longer props it open. */}
           <span className="text-optical-centre">{tab.name}</span>
           {beside ? (
-            <span className="flex items-center text-brand-500 dark:text-brand-300">
+            <span className="flex items-center text-brand-700 dark:text-brand-300">
               <SideBySideIcon size={12} />
               <span className="sr-only">, open side by side</span>
             </span>
