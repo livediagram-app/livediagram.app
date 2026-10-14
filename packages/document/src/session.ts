@@ -10,6 +10,7 @@
 
 import type { Element, Layer } from './index';
 import { resolveLayerId, tabLayers } from './layers';
+import { isCollabPanelShape } from './collab-shapes';
 
 // --- Timer -----------------------------------------------------------------
 
@@ -217,7 +218,14 @@ export function voteKeyOf(element: Element): string {
 
 export function isVotable(element: Element): boolean {
   if (element.type === 'sticky' || element.type === 'image') return true;
-  return element.type === 'shape' && !NON_VOTABLE_SHAPES.has(element.shape);
+  // The collaboration panels (estimate, quiz, idea box, ...) are controls for the same reason as the Behaviour
+  // elements above: their buttons let the press through to the element, so pressing an estimate mid-vote both
+  // answered and spent a dot.
+  return (
+    element.type === 'shape' &&
+    !NON_VOTABLE_SHAPES.has(element.shape) &&
+    !isCollabPanelShape(element.shape)
+  );
 }
 
 // Can this element take a dot in THIS vote? The kind rule above, plus

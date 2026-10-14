@@ -88,6 +88,13 @@ describe('isVotable', () => {
     }
   });
 
+  // The collaboration panels are controls too: a press on one answers it.
+  it('rejects the collaboration panels', () => {
+    for (const kind of ['estimate', 'temperature', 'done-check', 'quiz', 'idea-box'] as const) {
+      expect(isVotable(shape(kind, { shape: kind } as Partial<ShapeElement>))).toBe(false);
+    }
+  });
+
   it('rejects frames (section backdrops) and non-content kinds', () => {
     expect(isVotable(shape('f', { shape: 'frame' }))).toBe(false);
     expect(isVotable({ id: 't', type: 'text', x: 0, y: 0, width: 1, height: 1, label: 'x' })).toBe(
