@@ -18,6 +18,18 @@ function tab(pages: object[], elements: Tab['elements'] = []): Tab {
 }
 
 describe('an Illustrate tab drawn as its pages', () => {
+  it('embeds a page’s picture background from the image resolver', () => {
+    const id = 'a'.repeat(32);
+    const t = tab([
+      portrait('a', { background: { fill: { kind: 'image', imageId: id, tone: '#336699' } } }),
+    ]);
+    const page = laidOutPagesOf(t)[0]!;
+    const svg = renderPageToSvg(t, page, {
+      resolveImageHref: (imageId) => (imageId === id ? 'data:image/png;base64,QUJD' : undefined),
+    });
+    expect(svg).toContain('data:image/png;base64,QUJD');
+  });
+
   it('has pages only in Illustrate', () => {
     expect(laidOutPagesOf({ id: 't', name: 'T', elements: [] } as Tab)).toEqual([]);
     expect(laidOutPagesOf(tab([portrait('a')])).map((p) => p.id)).toEqual(['a']);

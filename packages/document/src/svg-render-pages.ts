@@ -68,7 +68,11 @@ export function renderPageToSvg(
   opts: RenderOpts & { writingSvg?: (page: LaidOutPage) => string | undefined } = {},
 ): string {
   const { writingSvg = pagesWithWriting(tab).writing, ...rest } = opts;
-  const frame = pageExportFrame(page, { idPrefix: `pg-${page.index}` });
+  // The page's own picture too, from the same resolver as its image elements.
+  const frame = pageExportFrame(page, {
+    idPrefix: `pg-${page.index}`,
+    imageHref: opts.resolveImageHref,
+  });
   const writing = writingSvg(page);
   return renderElementsToSvg(tab, {
     ...rest,
