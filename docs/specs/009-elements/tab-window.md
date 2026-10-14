@@ -66,13 +66,13 @@ knows it, else "Tab Window".
 
 ## Palette
 
-| Mode       | Where                                   |
-| ---------- | --------------------------------------- |
-| Illustrate | **Media**: Tab Window, after Video      |
-| Diagram    | none (Search still finds and places it) |
-| Draw       | none                                    |
-| Facilitate | none                                    |
-| Plan       | none                                    |
+| Mode       | Where                                                 |
+| ---------- | ----------------------------------------------------- |
+| Illustrate | **Media**: Tab Window, after Image, before the embeds |
+| Diagram    | none (Search still finds and places it)               |
+| Draw       | none                                                  |
+| Facilitate | none                                                  |
+| Plan       | none                                                  |
 
 A window placed or pasted on any tab still draws there.
 

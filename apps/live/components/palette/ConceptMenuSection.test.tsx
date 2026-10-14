@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
-// A concept graphic's menu section (docs/specs/009-elements/concept-graphics.md "Rows" and "Animation").
+// A concept graphic's menu section (docs/specs/009-elements/concept-graphics.md): a hub's spokes and a pyramid's
+// variant. Its animation is the Animation row's Concept category (ElementAnimationTiles.test.tsx).
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -45,25 +46,19 @@ describe('ConceptMenuSection', () => {
     fireEvent.click(screen.getByRole('button', { name: /Spokes/ }));
     expect(ops.commit).toHaveBeenCalledWith(expect.any(Function), 'HubSpokes');
     expect(lastMap()(make('hub')).hubSpokes).toBe(false);
-    cleanup();
+  });
+
+  it('has no section for a kind with no settings, and never offers an animation', () => {
     show(make('chevrons'));
-    expect(screen.queryByRole('button', { name: /Spokes/ })).toBeNull();
-    expect(screen.getByText('Chevrons')).toBeTruthy();
+    expect(screen.queryByText('Chevrons')).toBeNull();
+    cleanup();
+    show(make('hub'));
+    expect(screen.queryByRole('button', { name: /Animation/ })).toBeNull();
   });
 
   it('switches a pyramid to a funnel', () => {
     const { lastMap } = show(make('pyramid'));
     fireEvent.click(screen.getByRole('button', { name: 'Funnel' }));
     expect(lastMap()(make('pyramid')).pyramidVariant).toBe('funnel');
-  });
-
-  it('offers Flow on a cycle only, and shows Speed and Repeat once one is picked', () => {
-    show(make('layer-stack'));
-    expect(screen.queryByRole('button', { name: 'Flow Animation' })).toBeNull();
-    cleanup();
-    const { lastMap } = show(make('cycle'));
-    fireEvent.click(screen.getByRole('button', { name: 'Flow Animation' }));
-    expect(lastMap()(make('cycle')).conceptAnim).toBe('flow');
-    expect(screen.getByText('Repeat')).toBeTruthy();
   });
 });

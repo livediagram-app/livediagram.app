@@ -302,6 +302,8 @@ function ExplorerImpl({
       title="Explorer"
       dataTourId="explorer"
       layoutChrome
+      // Never faded by Panel opacity: its menus open outside it (docs/specs/007-editor/user-preferences.md).
+      opaque
       position={position}
       // On mobile the panel becomes a full-width top banner (matches
       // the Palette's banner pattern) so users can switch documents

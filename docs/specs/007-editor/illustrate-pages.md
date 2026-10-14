@@ -424,7 +424,8 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
   matches the browser's own first frame). The PNG and PDF paint it onto the page
   (`paintMotionFrame`, `page-motion-canvas.ts`); the SVG embeds a picture of the gradient with the
   frame over it (a JPEG, 29 to 141 KiB for a 1920 x 1080 slide, about a fiftieth of a see-through
-  PNG), laid over the fill and under the pattern (`pageExportFrame`'s `overFill`). A deck repeats
+  PNG), laid over the fill and its pattern as the slide on screen and the PNG and PDF draw it
+  (`pageExportFrame`'s `overBackground`). A deck repeats
   one background, so an export paints each background once (the PDF and a zip of pages keep the
   last two painted, as a 1920 x 1080 slide at 2x is 33 MB of pixels; the SVG keeps its last eight
   pictures).
@@ -531,7 +532,9 @@ given in one go rather than page by page.
   (as a shape's look onto an arrow is). Painting crosses kinds (a slide's background onto an
   infographic page), except a picture onto a logo page ("A logo page takes no picture background.");
   a locked target says so ("That page is locked. Unlock it to change its background.") and is left
-  as it is. A press off every page still ends the tool.
+  as it is. A refused paint keeps a Paint once brush (only a paint empties it), and a brush whose
+  page has gone (deleted, undone) empties at the next press, as an element's does. A press off every
+  page still ends the tool.
 - **Agents** give every page of a kind one background with `change_pages`'s
   `apply_background_to_all` ([Illustrate for agents](../024-agents/illustrate-for-agents.md)).
 - **Share roles**: as any background, an Editor's alone. A Participant's or a Viewer's press on a
@@ -630,7 +633,8 @@ swipe, with no X.
 
 - **Ninety-two layouts**, each a complete, editable starting point in the tab's theme: a layout is built without
   colours where it means the theme's, and placing it (in the editor or by an agent) fills each of those from the
-  tab's built-in theme (`themedForTab`), keeping the colours it sets itself. Most open with
+  tab's built-in theme (`themedForTab`), keeping the colours it sets itself; on a dark page (a dark fill), from the
+  theme's dark half, so its words are light there. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
   **wide** one sets things side by side:
   1. **Title Page**: an eyebrow line, a large title over a short accent rule, a subtitle, an image

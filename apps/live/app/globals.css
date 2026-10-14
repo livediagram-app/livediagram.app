@@ -156,6 +156,9 @@
      8 seconds, and a coffee's steam. Looping; reduced motion stops them. */
   --animate-avatar-sip: avatar-sip 8s ease-in-out infinite;
   --animate-avatar-steam: avatar-steam 2.4s ease-out infinite;
+  /* An Away Avatar-mode character's Zz (docs/specs/008-canvas/avatar-mode.md "Status"): rising and fading.
+     Looping; reduced motion stops it. */
+  --animate-avatar-zz: avatar-zz 3s ease-out infinite;
   --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
   /* The template picker's open shelf arriving (docs/specs/008-canvas/canvas-and-palette.md
      "Templates section"): a longer rise than fly-up-in, so opening a tile below
@@ -268,6 +271,20 @@
   }
   100% {
     transform: translateY(-4px);
+    opacity: 0;
+  }
+}
+
+@keyframes avatar-zz {
+  0% {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-8px);
     opacity: 0;
   }
 }
@@ -525,13 +542,15 @@
 @media (prefers-reduced-motion: reduce) {
   [class*='animate-nudge-'],
   .animate-avatar-sip,
-  .animate-avatar-steam {
+  .animate-avatar-steam,
+  .animate-avatar-zz {
     animation: none !important;
   }
 }
 :root.reduce-motion [class*='animate-nudge-'],
 :root.reduce-motion .animate-avatar-sip,
-:root.reduce-motion .animate-avatar-steam {
+:root.reduce-motion .animate-avatar-steam,
+:root.reduce-motion .animate-avatar-zz {
   animation: none !important;
 }
 

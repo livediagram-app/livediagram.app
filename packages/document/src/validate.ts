@@ -219,6 +219,8 @@ export function coerceShapeKind(shape: unknown): ShapeKind {
 
 // Every stored element carries an id and a known type, and any colour bindings it has are named.
 const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
+  // A label is text: every renderer reads it as a string.
+  { field: 'label', valid: (v) => typeof v === 'string', rule: 'a string' },
   // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md): a slot 1-6 or absent. A junk
   // slot has no business being written into a document, though the re-derive would ignore it.
   { field: 'strokeSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },

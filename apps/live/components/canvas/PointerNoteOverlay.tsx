@@ -53,6 +53,11 @@ export function PointerNoteOverlay({
     setDragTip(null);
     if (t.x !== s.tip.x || t.y !== s.tip.y) commit(t);
   };
+  // A drag the browser takes back (a gesture, a lost capture) stores nothing and puts the tip back where it was.
+  const onPointerCancel = () => {
+    start.current = null;
+    setDragTip(null);
+  };
   // Arrow keys nudge the tip (Shift for 10 px), committing each press.
   const onKeyDown = (e: KeyboardEvent<SVGCircleElement>) => {
     const step = e.shiftKey ? 10 : 1;
@@ -119,6 +124,8 @@ export function PointerNoteOverlay({
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+          onLostPointerCapture={onPointerCancel}
           onKeyDown={onKeyDown}
         />
       ) : null}

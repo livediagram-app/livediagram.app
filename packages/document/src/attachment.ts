@@ -141,6 +141,13 @@ export function settleChips(
   const hostList = () => (hosts ??= next.filter((el): el is Boxed => canHost(el)));
   let changed = false;
   const out: Element[] = [];
+  // The number the next new unnumbered step takes, counted on as each is numbered, so several new in one write (an
+  // agent's create) are 1, 2, 3 rather than all one number.
+  let nextNumber: number | null = null;
+  const takeStepNumber = () => {
+    nextNumber ??= Number(nextStepNumber(next));
+    return String(nextNumber++);
+  };
   for (const el of next) {
     if (isPointerNote(el)) {
       // A pointer note (docs/specs/009-elements/blueprints/pointer-note.md "Settling"): its tip, not its box, holds.
@@ -175,7 +182,7 @@ export function settleChips(
     }
     // 2. A new step takes the next number, and every step's number is half its disc.
     if (chip.shape === 'step') {
-      if (!before && !chip.label?.trim()) chip = { ...chip, label: nextStepNumber(next) };
+      if (!before && !chip.label?.trim()) chip = { ...chip, label: takeStepNumber() };
       const px = stepFontPx(Math.min(chip.width, chip.height));
       if (chip.textSize !== px) chip = { ...chip, textSize: px };
     }
@@ -197,7 +204,8 @@ export function settleChips(
           !!hostBefore && isBoxedEl(hostBefore) && sameBox(hostBefore, host as Boxed);
         if (moved && hostStill && dist(centreOf(chip), target) > ATTACH_SNAP_PX)
           chip = detached(chip);
-        else chip = centredOn(chip, target);
+        // A locked chip already placed is not moved, its host's move included, as a drag leaves it where it is.
+        else if (!(chip.locked === true && before)) chip = centredOn(chip, target);
       }
     }
     // 4. A new or moved chip that lands on a point takes it.

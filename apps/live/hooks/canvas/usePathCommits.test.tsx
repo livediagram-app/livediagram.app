@@ -15,17 +15,29 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function setup(initial: Element[] = [], editsBlocked = false) {
+// `deferred`: the commit keeps its updater to run later, as React may.
+function setup(initial: Element[] = [], editsBlocked = false, deferred = false) {
   let els = initial;
+  const later: ((e: Element[]) => Element[])[] = [];
   const commit = vi.fn((map: (e: Element[]) => Element[]) => {
-    els = map(els);
+    if (deferred) later.push(map);
+    else els = map(els);
   });
   const dress = <T extends Element>(el: T): T => ({ ...el, strokeWidth: 'thick' });
   const setSelectedId = vi.fn();
   const { result } = renderHook(() =>
-    usePathCommits({ editsBlocked, commit, styleNewElement: dress, setSelectedId }),
+    usePathCommits({
+      editsBlocked,
+      commit,
+      elements: () => els,
+      styleNewElement: dress,
+      setSelectedId,
+    }),
   );
-  return { api: result.current, commit, els: () => els, setSelectedId };
+  const flush = () => {
+    for (const map of later.splice(0)) els = map(els);
+  };
+  return { api: result.current, commit, els: () => els, setSelectedId, flush };
 }
 
 describe('usePathCommits', () => {
@@ -73,6 +85,19 @@ describe('usePathCommits', () => {
     expect(s.els()[0]).toMatchObject({ id: open.id, closed: true, strokeColor: '#f00' });
     expect((s.els()[0] as typeof open).nodes).toHaveLength(3);
     expect(s.setSelectedId).toHaveBeenCalledWith(open.id);
+  });
+
+  it('selects the continued path even when the commit runs later', () => {
+    const open = createPath([corner(0, 0), corner(10, 0)], false);
+    const s = setup([open], false, true);
+    s.api.commitPath({
+      anchors: [corner(0, 0), corner(10, 0), corner(10, 10)],
+      closed: false,
+      continuing: { id: open.id },
+    });
+    expect(s.setSelectedId).toHaveBeenCalledWith(open.id);
+    s.flush();
+    expect(s.els().map((e) => e.id)).toEqual([open.id]);
   });
 
   it('lands a continuation as a new path when the original has gone', () => {

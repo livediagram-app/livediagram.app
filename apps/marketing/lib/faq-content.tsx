@@ -476,12 +476,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool
             and, after a one-time authorisation, it can find, read, create and edit the documents in
             your account, including writing articles, building slide decks and designing logos. Its
-            changes appear live for anyone on the tab, outlined so you can see them and undo them.
-            See <a href="/features/diagrams#build-diagrams-with-ai">AI and MCP</a>.
+            changes appear live for anyone on the tab, outlined so you can see them and undo them.{' '}
+            <a href="/ai">Build with AI</a> walks you through connecting Claude, ChatGPT, Cursor and
+            more.
           </>
         ),
         aText:
-          'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account, including writing articles, building slide decks and designing logos. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. See AI and MCP.',
+          'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account, including writing articles, building slide decks and designing logos. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
       },
       {
         q: 'Is there AI built into the editor?',

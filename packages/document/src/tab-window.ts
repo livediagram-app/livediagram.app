@@ -61,6 +61,15 @@ export type TabWindowDrawing = {
 /** What an export knows of a window's tab: its name, and its drawing when there is one. */
 export type TabWindowArt = { name: string; drawing?: TabWindowDrawing };
 
+/** A window drawn inside another tab, named for the tab it shows (no drawing: it is a frame there), as the canvas and
+ *  the export both draw it. */
+export function tabWindowNames(tabs: readonly { id: string; name: string }[]): ResolveTabWindow {
+  return (el) => {
+    const t = el.windowTabId ? tabs.find((x) => x.id === el.windowTabId) : undefined;
+    return t ? { name: t.name || 'Untitled tab' } : undefined;
+  };
+}
+
 /** Resolves a window to what its tab is, or undefined for a window with no tab (or one the caller doesn't know). */
 export type ResolveTabWindow = (el: BoxedElement & { type: 'shape' }) => TabWindowArt | undefined;
 

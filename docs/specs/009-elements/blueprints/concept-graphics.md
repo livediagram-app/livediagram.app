@@ -10,8 +10,11 @@ Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.m
 | `packages/document/src/shape-variants.ts`                                                            | `pyramid` + `funnel` / `inverted` variants                                   |
 | `apps/live/components/canvas/ConceptFace.tsx`                                                        | Canvas face: rows, in-place lines, the Cycle's centre label                  |
 | `apps/live/app/canvas-motion.css`                                                                    | `lvd-concept-*` keyframes                                                    |
-| `apps/live/components/palette/ConceptMenuSection.tsx`                                                | Variant tiles, Concept animation (tiles, Speed, Repeat)                      |
-| `apps/live/components/palette/context-menu-web-editors.tsx`                                          | The Rows editor (label + note)                                               |
+| `apps/live/components/palette/ConceptMenuSection.tsx`                                                | Variant tiles, a hub's Spokes; none for a kind with neither                  |
+| `apps/live/components/palette/context-menu-web-editors.tsx`                                          | The Rows editor (label + note); none for chevrons                            |
+| `apps/live/components/canvas/ConceptRowBar.tsx`                                                      | `ChevronStageControls` (hover zones, bars) and `ConceptRowBar`               |
+| `apps/live/hooks/ui/useGraceHover.ts`                                                                | The hovered stage, cleared `HOVER_GRACE_MS` after the pointer leaves         |
+| `apps/live/lib/move-row.ts`                                                                          | `moveRow`, shared by the Rows editor and the stage bar                       |
 | `apps/live/components/palette/palette-categories.tsx`, `palette-tile-defs.tsx`, `palette-layouts.ts` | The Concepts category                                                        |
 
 ## Domain and naming
@@ -67,7 +70,8 @@ for every row.
   of side `(R - r) * 1.2` about the centre.
 
 - `hubLayout(w, h, n)`: `S = min(w, h) / 2`; satellite radius `r = min(S * 0.25, S * sin(π / n) * 0.6)`; ring
-  `R = S - r - 2`; hub radius `H = max(16, min(S * 0.34, R - r - 10))`; satellite `i` at `-90° + i * 360° / n`;
+  `R = S - r - 2`; hub radius `H = max(lo, min(S * 0.34, R - r - 10))` with `lo = min(16, max((R - r) / 2, R - r - 4))`, so on a small hub the
+  disc never reaches its satellites and every spoke runs outward; satellite `i` at `-90° + i * 360° / n`;
   spoke `i` from the hub's edge to the satellite's edge along their line; satellite label rect the disc's box inset 2 px each side; hub
   label rect a square of side `H * 1.4` about the centre; label px `round(clamp(r * 0.3, 10, 14))`.
 - `onionLayout(w, h, n)`: `S = min(w, h) / 2`; ring `k` (0 = core) has radius `S * (k + 1) / n`; drawn outermost
@@ -78,7 +82,7 @@ for every row.
   `p = min(ch * 0.35, w / n / 3)`; stage width `sw = (w + (n - 1) * (p - 4)) / n`; stage `i` from `x0 = i * (sw - p + 4)`;
   points: top-left, `(x0 + sw - p, 0)`, the point `(x0 + sw, ch / 2)`, `(x0 + sw - p, ch)`, bottom-left, and for `i > 0`
   the notch `(x0 + p, ch / 2)`; label rect from `x0 + (i > 0 ? p : 0) + 4` to `x0 + sw - p - 4`, the full height; note
-  rect from `x0` to `x0 + sw - p`, `y = ch + 8` to `h`; label px `round(clamp(ch * 0.24, 10, 18))`, note px
+  rect from `x0 + (i > 0 ? p : 0)` to `x0 + sw - p` (centred under the label), `y = ch + 8` to `h`; label px `round(clamp(ch * 0.24, 10, 18))`, note px
   `round(clamp(labelPx * 0.8, 10, 14))`.
 
 ### Writes
@@ -168,9 +172,19 @@ element is still.
   12,400 / Signed up 3,100 / Activated 820 / Retained 210; cycle 300 × 300 Plan / Do / Check / Act, centre "Weekly loop". Round 2 (D188): hub 340 × 320 Payments / Stock / Email / Search / Analytics / Support,
   centre "Orders"; onion 320 × 320 Domain / Application / Adapters / Infrastructure; chevrons 600 × 150 Commit /
   Build / Test / Release with notes "push to main", "2 min", "8,400 tests", "manual gate".
-- Menu (Tools flyout): **Rows** (label + note per row where drawn, ↑ ↓ ×, Add Layer / Tier / Step), **Pyramid**
-  variant tiles (Pyramid, Inverted, Funnel), **Animation** in a Concept section (None, Build, Pulse, Flow on a Cycle;
-  Speed; Repeat).
+- Chevron stage bars (`ChevronStageControls`, only while `editable`: selected, unlocked, an Editor): one transparent
+  zone per stage (its outline's bounding box) under the stages arms the hover; the hovered stage's `ConceptRowBar` is
+  drawn over the stages, centred on the stage's label box, `BAR_INSET_PX` (6) screen px inside its top, scaled by
+  `barScale` about its top centre: `1 / zoom`, shrunk to fit the stage's pitch (the step between stage boxes, as
+  neighbours overlap at their points) and the band above the name (`box.height / 2 - NAME_HALF_HEIGHT * labelPx`, bar
+  height plus inset), or not drawn below `BAR_MIN_SCALE` of `1 / zoom`; its pointer-down stops propagation. Every stage's bar shows when
+  `isMobileViewportSync()`. Move writes `moveRow`, Delete filters the row, Add Note (only while no row has a note) sets
+  that row's `note: 'Note'`, all through `onSetRows` (`withWebRows`).
+- Menu (Tools flyout): **Rows** for every kind but chevrons (label + note per row where drawn, ↑ ↓ ×, Add Layer /
+  Tier / Step), **Pyramid**
+  variant tiles (Pyramid, Inverted, Funnel). **Animation** is the Animation row's Concept section
+  (`ElementAnimationTiles.tsx` `ConceptAnimTiles`: None, Build, Pulse, Flow on a Cycle; Speed; Repeat); a concept
+  graphic takes no Shape set (`animation-membership.ts` `hasOwnBodySet`).
 - Ring: Add Layer / Add Tier / Add Step.
 - Palette **Concepts** category (Structure band, rows with blurbs): Layer Stack, Pyramid, Funnel, Cycle.
 
@@ -189,23 +203,29 @@ In-place edits commit on blur (INP); animations are compositor-only except Flow'
 
 ## Testing
 
-| Rule                                           | Test file                                                  |
-| ---------------------------------------------- | ---------------------------------------------------------- |
-| Bounds (I1), ramp, layouts per kind (I2)       | `packages/document/src/concept.test.ts`                    |
-| Writes, anims offered (I3), validation         | same                                                       |
-| Export draws rows, notes, arcs                 | same                                                       |
-| Face, in-place commit                          | `apps/live/components/canvas/ConceptFace.test.tsx`         |
-| Menu section                                   | `apps/live/components/palette/ConceptMenuSection.test.tsx` |
-| Motion budget (loops infinite, reduced motion) | existing CSS motion-budget test                            |
+| Rule                                             | Test file                                                        |
+| ------------------------------------------------ | ---------------------------------------------------------------- |
+| Bounds (I1), ramp, layouts per kind (I2)         | `packages/document/src/concept.test.ts`                          |
+| Writes, anims offered (I3), validation           | same                                                             |
+| Export draws rows, notes, arcs                   | same                                                             |
+| Face, in-place commit                            | `apps/live/components/canvas/ConceptFace.test.tsx`               |
+| Menu section                                     | `apps/live/components/palette/ConceptMenuSection.test.tsx`       |
+| Chevron stage bars (hover, phone, roles, writes) | `apps/live/components/canvas/ConceptRowBar.test.tsx`             |
+| No Rows section for chevrons                     | `apps/live/components/palette/context-menu-web-editors.test.tsx` |
+| Motion budget (loops infinite, reduced motion)   | existing CSS motion-budget test                                  |
 
 ## Constants and configuration
 
-| Name                | Value  | Provenance / safe range |
-| ------------------- | ------ | ----------------------- |
-| `CONCEPT_LABEL_MAX` | 60     | Spec                    |
-| `CONCEPT_NOTE_MAX`  | 40     | Spec                    |
-| Ramp floor          | 0.22   | Spec                    |
-| Stack band share    | 0.62   | Spec                    |
-| Funnel tip          | 0.35   | Spec                    |
-| Build stagger       | 0.18 s | D187; 0.1 to 0.3        |
-| Pulse beat          | 0.6 s  | D187; 0.4 to 1          |
+| Name                | Value  | Provenance / safe range                                                |
+| ------------------- | ------ | ---------------------------------------------------------------------- |
+| `CONCEPT_LABEL_MAX` | 60     | Spec                                                                   |
+| `CONCEPT_NOTE_MAX`  | 40     | Spec                                                                   |
+| Ramp floor          | 0.22   | Spec                                                                   |
+| Stack band share    | 0.62   | Spec                                                                   |
+| Funnel tip          | 0.35   | Spec                                                                   |
+| Build stagger       | 0.18 s | D187; 0.1 to 0.3                                                       |
+| Pulse beat          | 0.6 s  | D187; 0.4 to 1                                                         |
+| `BAR_INSET_PX`      | 6      | Clears the stage's top edge; 4 to 10                                   |
+| `BAR_MIN_SCALE`     | 0.75   | Smallest pressable bar (18px buttons); 0.6 to 0.9                      |
+| `NAME_HALF_HEIGHT`  | 0.75   | A centred name's half height plus clearance, in font sizes; 0.6 to 0.9 |
+| `HOVER_GRACE_MS`    | 250    | Same as the table's axis triggers; 150 to 400                          |

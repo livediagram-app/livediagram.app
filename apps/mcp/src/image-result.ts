@@ -159,12 +159,22 @@ export async function tabPreview(
 ): Promise<ImageBlock> {
   // An Illustrate tab draws as its pages (svg-render-pages.ts), as the editor exports them.
   if (laidOutPagesOf(tab).length > 0) {
-    const resolveImageHref = auth ? await buildImageResolver(auth.env, auth.token, tab) : undefined;
-    const drawWith = { resolveImageHref, resolveIconArt: resolveIconExportArt, resolveStickerArt };
-    const [svg, fonts] = [
-      page ? renderPageToSvg(tab, page, drawWith) : renderPagesToSvg(tab, drawWith)!,
-      await previewFonts(tabFontIds(tab)),
-    ];
+    // Its pictures, its Plan cards and sheets (a sheet or a sheet-linked chart on a page draws what it holds, as on any
+    // tab) and its faces, fetched together rather than one after another.
+    const [resolveImageHref, content, fonts] = await Promise.all([
+      auth ? buildImageResolver(auth.env, auth.token, tab) : undefined,
+      planContentFor(tab, auth, undefined),
+      previewFonts(tabFontIds(tab)),
+    ]);
+    const { sheetJson, ...withContent } = content;
+    const live = sheetJson ? { ...tab, elements: chartsReadLive(tab.elements, sheetJson) } : tab;
+    const drawWith = {
+      resolveImageHref,
+      resolveIconArt: resolveIconExportArt,
+      resolveStickerArt,
+      ...withContent,
+    };
+    const svg = page ? renderPageToSvg(live, page, drawWith) : renderPagesToSvg(live, drawWith)!;
     return { type: 'image', data: await svgToPngBase64(svg, fonts), mimeType: 'image/png' };
   }
   // A Plan tab as the editor exports it: a Dashboard laid out, its pictures drawn from the cards.

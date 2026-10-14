@@ -966,7 +966,7 @@ export const articles: Article[] = [
     title: 'Avatar Mode',
     description: 'Walk a pixel character around the canvas while you talk through it.',
     keywords:
-      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button',
+      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },

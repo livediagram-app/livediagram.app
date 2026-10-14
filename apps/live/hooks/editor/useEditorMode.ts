@@ -20,7 +20,7 @@ import {
   type EditorMode,
   type Tab,
 } from '@livediagram/document';
-import { resolveEditorMode, type EditorModeTab } from '@/lib/editor-mode-store';
+import { resolveEditorMode } from '@/lib/editor-mode-store';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
@@ -63,7 +63,7 @@ export function switchedTab(
 }
 
 export function useEditorMode(
-  tab: (EditorModeTab & Pick<Tab, 'elements'>) | undefined,
+  tab: Tab | undefined,
   deps: {
     canEdit: boolean;
     commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
@@ -81,14 +81,11 @@ export function useEditorMode(
       // Never into or out of Plan (crossesPlan) unless the tab is empty: the mode menu offers a new tab in it instead.
       if (!canSwitch || !tabId || next === mode || (crossesPlan(mode, next) && !crossPlan)) return;
       trackModeSwitch(next);
-      let paged = false;
+      // Whether the board goes onto a page is read from the tab as it is, not from inside the commit's updater,
+      // which React may run after this returns (the toast and its event would be lost).
+      const paged = !!tab && switchedTab(tab, next, alsoChange).pagedContent;
       commitTabs((ts) =>
-        ts.map((t) => {
-          if (t.id !== tabId) return t;
-          const out = switchedTab(t, next, alsoChange);
-          paged = out.pagedContent;
-          return out.tab;
-        }),
+        ts.map((t) => (t.id === tabId ? switchedTab(t, next, alsoChange).tab : t)),
       );
       if (paged) {
         toastInfo(`Put onto a page that fits it. Undo switches back to ${editorModeLabel(mode)}.`);
@@ -96,7 +93,7 @@ export function useEditorMode(
       }
       debugLog('[editor-mode] switched', { tabId, from: mode, to: next, paged });
     },
-    [canSwitch, crossPlan, tabId, mode, commitTabs, toastInfo],
+    [canSwitch, crossPlan, tab, tabId, mode, commitTabs, toastInfo],
   );
   return {
     mode,

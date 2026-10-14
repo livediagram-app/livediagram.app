@@ -136,6 +136,9 @@ type ChromeExtras = {
   // Say something from the Avatar panel (docs/specs/008-canvas/avatar-mode.md "The message popover"): absent for
   // a Viewer, who may not speak. Answers whether the message went; `avatarSpeechCooling` holds Send meanwhile.
   onSendAvatarMessage?: (text: string) => boolean;
+  // Your status (docs/specs/008-canvas/avatar-mode.md "Status"), set from the Avatar panel.
+  avatarStatus?: import('@/lib/avatar-status').AvatarStatus | null;
+  onSetAvatarStatus?: (status: import('@/lib/avatar-status').AvatarStatus | null) => void;
   avatarSpeechCooling?: boolean;
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
   // persists per browser, like the avatar's costume) and edited down here.

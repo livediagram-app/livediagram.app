@@ -121,6 +121,20 @@ describe('a page’s frame', () => {
     const els = [inside, outside, arrow, away];
     expect(els.filter((el) => frame.reaches(el, els)).map((el) => el.id)).toEqual(['in', 'ar']);
   });
+
+  it('never holds an article’s note marker, on the page or not', () => {
+    const r = a4!.rect;
+    const note = {
+      id: 'n',
+      type: 'annotation',
+      x: r.x + 10,
+      y: r.y + 10,
+      width: 32,
+      height: 32,
+      articleNote: { kind: 'comment' },
+    } as unknown as Element;
+    expect(pageExportFrame(a4!).reaches(note, [note])).toBe(false);
+  });
 });
 
 describe('markup over the paper', () => {
@@ -138,12 +152,13 @@ describe('markup over the paper', () => {
         },
       },
     ]);
-    const svg = pageExportFrame(page!, { overFill: '<image id="frame"/>' }).backgroundSvg;
+    // Over the pattern too, as the slide on screen and the PNG and PDF draw it.
+    const svg = pageExportFrame(page!, { overBackground: '<image id="frame"/>' }).backgroundSvg;
     const fill = svg.indexOf('-fill)"');
     const frame = svg.indexOf('<image id="frame"/>');
     expect(fill).toBeGreaterThan(-1);
-    expect(frame).toBeGreaterThan(fill);
-    expect(svg.indexOf('<pattern')).toBeGreaterThan(frame);
+    expect(svg.indexOf('-pattern)"')).toBeGreaterThan(fill);
+    expect(frame).toBeGreaterThan(svg.indexOf('-pattern)"'));
   });
 });
 

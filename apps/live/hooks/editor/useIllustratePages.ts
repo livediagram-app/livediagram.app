@@ -275,6 +275,7 @@ export function useIllustratePages(deps: {
     // eslint-disable-next-line react-hooks/refs
     edit: illustratePageEdits({
       tabId,
+      tab: activeTab,
       current,
       elements: activeTab.elements,
       layers: activeTab.layers,

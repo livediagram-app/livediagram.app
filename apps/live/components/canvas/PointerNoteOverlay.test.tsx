@@ -56,6 +56,21 @@ describe('PointerNoteOverlay', () => {
     expect(onSetTip).toHaveBeenCalledWith('n', { x: 100 + 6, y: 50 + 140 });
   });
 
+  it('puts the tip back and stores nothing when the browser cancels the drag', () => {
+    const { onSetTip, container } = show(note());
+    const handle = screen.getByRole('button', { name: 'Move pointer tip' });
+    handle.setPointerCapture = () => {};
+    fireEvent.pointerDown(handle, { clientX: 10, clientY: 10, pointerId: 1 });
+    fireEvent.pointerMove(handle, { clientX: 40, clientY: 30, pointerId: 1 });
+    fireEvent.pointerCancel(handle, { pointerId: 1 });
+    expect(container.querySelector('[data-pointer-tip]')!.getAttribute('cx')).toBe('-24');
+    // A later move without a press drags nothing.
+    fireEvent.pointerMove(handle, { clientX: 80, clientY: 80, pointerId: 1 });
+    fireEvent.pointerUp(handle, { clientX: 80, clientY: 80, pointerId: 1 });
+    expect(container.querySelector('[data-pointer-tip]')!.getAttribute('cx')).toBe('-24');
+    expect(onSetTip).not.toHaveBeenCalled();
+  });
+
   it('nudges the tip with the arrow keys, ten at a time with Shift', () => {
     const { onSetTip } = show(note());
     const handle = screen.getByRole('button', { name: 'Move pointer tip' });

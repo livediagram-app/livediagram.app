@@ -83,6 +83,22 @@ describe('MovablePanel at a UI scale', () => {
   });
 });
 
+describe('Panel opacity (docs/specs/007-editor/user-preferences.md)', () => {
+  it('lets a panel fade unless it is opaque, docked or as a popover', () => {
+    expect(panel(null).hasAttribute('data-panel-translucent')).toBe(true);
+    cleanup();
+    expect(panel(null, { opaque: true }).hasAttribute('data-panel-translucent')).toBe(false);
+    cleanup();
+    const pop = panel(null, {
+      opaque: true,
+      asPopover: true,
+      popoverOpen: true,
+      popoverAnchor: { top: 40, left: 100, arrowOffset: 30 },
+    });
+    expect(pop.hasAttribute('data-panel-translucent')).toBe(false);
+  });
+});
+
 describe('useUiScale', () => {
   it('is 1 with no provider', () => {
     let seen = 0;

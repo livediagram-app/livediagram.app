@@ -16,16 +16,25 @@ function ToolsFlyout({
   section,
   flyoutH,
   sceneH,
+  row = 'Tools',
   children,
 }: {
   section: string;
   flyoutH: number;
   sceneH: number;
+  // The menu row the flyout hangs from.
+  row?: 'Tools' | 'Animation';
   children: React.ReactNode;
 }) {
   return (
     <Scene w={420} h={sceneH} bg="plain">
-      <Menu x={20} y={24} w={112} items={['Style', 'Tools', 'Animation']} active={1} />
+      <Menu
+        x={20}
+        y={24}
+        w={112}
+        items={['Style', 'Tools', 'Animation']}
+        active={row === 'Tools' ? 1 : 2}
+      />
       <Panel x={144} y={24} w={256} h={flyoutH}>
         <Label x={160} y={42} size={11} weight={700} tone="strong">
           {section}
@@ -126,11 +135,10 @@ export function ChecklistMenu() {
   );
 }
 
-/** Tools → Progress: the Percentage slider and the four fill-animation tiles. */
+/** Tools → Progress: the Percentage slider. */
 export function ProgressMenu() {
-  const anims = ['None', 'Fill', 'Pulse', 'Stripes'];
   return (
-    <ToolsFlyout section="Progress" flyoutH={150} sceneH={196}>
+    <ToolsFlyout section="Progress" flyoutH={80} sceneH={128}>
       <Label x={158} y={72} size={10} tone="muted">
         Percentage
       </Label>
@@ -140,6 +148,15 @@ export function ProgressMenu() {
       <rect x={158} y={84} width={228} height={5} rx={2.5} className="fill-slate-200" />
       <rect x={158} y={84} width={160} height={5} rx={2.5} className="fill-brand-500" />
       <circle cx={318} cy={86.5} r={7} className="fill-white stroke-brand-500" strokeWidth={2} />
+    </ToolsFlyout>
+  );
+}
+
+/** Animation for a progress bar or ring: its one category, so the fill's tiles show inline. */
+export function ProgressAnimationMenu() {
+  const anims = ['None', 'Fill', 'Pulse', 'Stripes'];
+  return (
+    <ToolsFlyout section="Animation" row="Animation" flyoutH={100} sceneH={146}>
       {anims.map((a, i) => {
         const tx = 158 + i * 58;
         // None, so the flyout is complete: an animation would add Speed and Repeat rows below.
@@ -148,18 +165,18 @@ export function ProgressMenu() {
           <g key={a}>
             <rect
               x={tx}
-              y={108}
+              y={66}
               width={54}
               height={50}
               rx={7}
               className={on ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'}
               strokeWidth={1.4}
             />
-            <rect x={tx + 9} y={122} width={36} height={8} rx={4} className="fill-slate-200" />
+            <rect x={tx + 9} y={80} width={36} height={8} rx={4} className="fill-slate-200" />
             {a !== 'None' && (
               <rect
                 x={tx + 9}
-                y={122}
+                y={80}
                 width={a === 'Fill' ? 22 : 30}
                 height={8}
                 rx={4}
@@ -168,7 +185,7 @@ export function ProgressMenu() {
             )}
             <Label
               x={tx + 27}
-              y={146}
+              y={104}
               anchor="middle"
               size={10}
               weight={on ? 700 : 500}
