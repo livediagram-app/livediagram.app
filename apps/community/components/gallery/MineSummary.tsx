@@ -27,7 +27,7 @@ export function MineSummary({ totals }: { totals: CommunityMineTotals }) {
             key={s.one}
             className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"
           >
-            <span aria-hidden className="flex text-brand-600 dark:text-brand-300">
+            <span aria-hidden className="flex text-brand-700 dark:text-brand-300">
               {s.icon}
             </span>
             <dt className="sr-only">{s.many}</dt>

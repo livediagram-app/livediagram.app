@@ -139,7 +139,7 @@ export function SettingsRowShell({
 
 function InfoGlyph() {
   return (
-    <Glyph size={12} units={12} className="mt-0.5 shrink-0 text-brand-500 dark:text-brand-400">
+    <Glyph size={12} units={12} className="mt-0.5 shrink-0 text-brand-700 dark:text-brand-400">
       <circle cx="6" cy="6" r="5" />
       <path d="M6 5.4v3M6 3.6h.01" />
     </Glyph>

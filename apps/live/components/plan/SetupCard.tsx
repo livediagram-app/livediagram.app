@@ -65,7 +65,7 @@ export function SetupCard({
           <header className="flex shrink-0 items-start gap-3.5 px-6 pt-6">
             <span
               aria-hidden
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
             >
               {icon}
             </span>

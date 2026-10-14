@@ -82,7 +82,7 @@ export function StackDeck({
             </span>
             <div>
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {count} {count === 1 ? noun.replace(/s$/, '') : noun} · click to open
               </p>
             </div>

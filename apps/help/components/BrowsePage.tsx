@@ -52,6 +52,9 @@ export function BrowsePage({
         <p className="mb-8 text-base leading-relaxed text-slate-500 md:text-lg dark:text-slate-400">
           {lede}
         </p>
+        {/* The cards title themselves with h3, so the grid gets the h2 between them and the page's h1
+            that a screen reader's heading list (and Lighthouse's heading-order audit) expects. */}
+        <h2 className="sr-only">Guides</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">{children}</div>
       </div>
     </div>

@@ -115,7 +115,7 @@ const TEMPLATE_GROUPS = SHEET_TEMPLATE_GROUPS.map((group) => ({
 }));
 
 const iconChip = (icon: ReactNode) => (
-  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
     {icon}
   </span>
 );

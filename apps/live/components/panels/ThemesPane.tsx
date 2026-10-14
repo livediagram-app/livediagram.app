@@ -120,7 +120,7 @@ export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
           <button
             type="button"
             onClick={() => setBuilding('new')}
-            className="flex min-h-[7rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:text-slate-400"
+            className="flex min-h-[7rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-700 dark:border-slate-600 dark:text-slate-400"
           >
             <PlusIcon size={20} />
             <span className="text-xs font-medium">New theme</span>

@@ -155,7 +155,7 @@ const TONES: Record<PaneTone, string> = {
   slate:
     'from-slate-50 to-slate-100 text-slate-500 ring-slate-200/80 dark:from-slate-800 dark:to-slate-800/60 dark:text-slate-300 dark:ring-slate-700',
   brand:
-    'from-brand-50 to-brand-100/70 text-brand-600 ring-brand-200/70 dark:from-brand-500/20 dark:to-brand-500/10 dark:text-brand-200 dark:ring-brand-400/25',
+    'from-brand-50 to-brand-100/70 text-brand-700 ring-brand-200/70 dark:from-brand-500/20 dark:to-brand-500/10 dark:text-brand-200 dark:ring-brand-400/25',
   amber:
     'from-amber-50 to-amber-100/70 text-amber-600 ring-amber-200/70 dark:from-amber-500/20 dark:to-amber-500/10 dark:text-amber-200 dark:ring-amber-400/25',
   emerald:
@@ -272,7 +272,7 @@ export function PaneCard({
 // A folder's picture for its card: the folder glyph large on its tone, and what it holds.
 export function FolderPreview({ icon, count }: { icon: ReactNode; count: string }) {
   return (
-    <span className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-50 via-white to-sky-50 text-brand-500 dark:from-brand-500/20 dark:via-slate-900 dark:to-sky-500/10 dark:text-brand-300 [&_svg]:h-9 [&_svg]:w-9">
+    <span className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-50 via-white to-sky-50 text-brand-700 dark:from-brand-500/20 dark:via-slate-900 dark:to-sky-500/10 dark:text-brand-300 [&_svg]:h-9 [&_svg]:w-9">
       {icon}
       <span className="absolute bottom-1.5 left-2 rounded-full bg-white/90 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 shadow-sm dark:bg-slate-800/90 dark:text-slate-300">
         {count}

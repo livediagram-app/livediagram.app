@@ -61,7 +61,7 @@ export function ThemeCard({
           type="button"
           onClick={onCopy}
           aria-label={`Copy ${theme.label} to a new theme`}
-          className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded-md bg-white/90 px-1.5 py-1 text-[10px] font-semibold text-slate-600 opacity-0 shadow-sm transition hover:text-brand-600 focus:opacity-100 group-hover:opacity-100 dark:bg-slate-900/85 dark:text-slate-200 [@media(hover:none)]:opacity-100"
+          className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded-md bg-white/90 px-1.5 py-1 text-[10px] font-semibold text-slate-600 opacity-0 shadow-sm transition hover:text-brand-700 focus:opacity-100 group-hover:opacity-100 dark:bg-slate-900/85 dark:text-slate-200 [@media(hover:none)]:opacity-100"
         >
           <CopyIcon size={11} />
           Copy
@@ -117,7 +117,7 @@ export function CustomThemeCard({
           type="button"
           onClick={onEdit}
           aria-label={`Edit ${theme.name}`}
-          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-600 dark:bg-slate-800/90 dark:text-slate-300"
+          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-700 dark:bg-slate-800/90 dark:text-slate-300"
         >
           <PencilIcon size={12} />
         </button>
@@ -125,7 +125,7 @@ export function CustomThemeCard({
           type="button"
           onClick={onDelete}
           aria-label={`Delete ${theme.name}`}
-          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-600 dark:bg-slate-800/90 dark:text-slate-300"
+          className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-700 dark:bg-slate-800/90 dark:text-slate-300"
         >
           <TrashIcon size={12} />
         </button>
@@ -145,7 +145,7 @@ export function NewThemeCard({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       className="group flex flex-col gap-1 rounded-md border border-dashed border-slate-300 p-1.5 text-left transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
-      <span className="flex h-20 w-full items-center justify-center rounded-md bg-slate-50 text-slate-400 transition group-hover:text-brand-500 dark:bg-slate-800/60 dark:group-hover:text-brand-300">
+      <span className="flex h-20 w-full items-center justify-center rounded-md bg-slate-50 text-slate-400 transition group-hover:text-brand-700 dark:bg-slate-800/60 dark:group-hover:text-brand-300">
         <PlusIcon size={18} />
       </span>
       <span className="w-full truncate text-center text-[10px] font-medium text-slate-600 dark:text-slate-300">

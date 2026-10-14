@@ -354,8 +354,8 @@ export function HeroIllustration() {
                   aria-hidden
                   className={`mx-0.5 transition-colors ${
                     i === active
-                      ? 'text-brand-500'
-                      : 'text-slate-400 group-hover/dot:text-brand-500 dark:text-slate-500'
+                      ? 'text-brand-700'
+                      : 'text-slate-400 group-hover/dot:text-brand-700 dark:text-slate-500'
                   }`}
                 />
               ) : (
@@ -399,7 +399,7 @@ function StageArrow({
       onClick={onClick}
       aria-label={side === 'left' ? 'Previous example' : 'Next example'}
       style={side === 'left' ? { left: EDGE } : { right: EDGE }}
-      className={`touch-target absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-600 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:scale-105 hover:border-brand-300 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 motion-reduce:transition-none motion-reduce:hover:scale-100 sm:h-11 sm:w-11 dark:border-slate-700 dark:bg-slate-800/95 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-brand-300 ${
+      className={`touch-target absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-600 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:scale-105 hover:border-brand-300 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 motion-reduce:transition-none motion-reduce:hover:scale-100 sm:h-11 sm:w-11 dark:border-slate-700 dark:bg-slate-800/95 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-brand-300 ${
         side === 'left'
           ? '-translate-x-1/2 sm:-translate-x-full'
           : 'translate-x-1/2 sm:translate-x-full'

@@ -8,7 +8,8 @@ import { Glyph } from '@livediagram/ui';
 // one metric. Every other view is a closer look at one area, so those sit
 // together in a bar titled "Detail".
 // Both halves are one tablist, so keyboard and screen-reader users still get a
-// single set of tabs. Always one row: the Detail bar takes the rest of the
+// single set of tabs: a tablist owns only tabs, so nothing between it and them
+// carries a role, and the chevrons below stay out of the accessibility tree. Always one row: the Detail bar takes the rest of the
 // width and becomes a carousel when its tabs outgrow it (a second row read as
 // a separate control).
 //
@@ -131,14 +132,17 @@ export function ViewTabs<K extends string>({
       <div className={`${bar} min-w-0 flex-1`}>
         <span
           aria-hidden
-          className="hidden shrink-0 pl-2 pr-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 sm:inline"
+          className="hidden shrink-0 pl-2 pr-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 sm:inline"
         >
           Detail
         </span>
         {overflow ? (
+          // A pointer's way along the carousel. Keyboard and screen-reader users never need it (a
+          // focused tab scrolls itself into view), and a tablist may own nothing but tabs.
           <button
             type="button"
-            aria-label="Scroll views left"
+            aria-hidden
+            tabIndex={-1}
             disabled={!canLeft}
             onClick={() => nudge('left')}
             className={arrowClass(canLeft)}
@@ -149,8 +153,6 @@ export function ViewTabs<K extends string>({
 
         <div
           ref={scrollerRef}
-          role="group"
-          aria-label="Detail"
           onScroll={measure}
           className="flex min-w-0 gap-1 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
@@ -174,7 +176,8 @@ export function ViewTabs<K extends string>({
         {overflow ? (
           <button
             type="button"
-            aria-label="Scroll views right"
+            aria-hidden
+            tabIndex={-1}
             disabled={!canRight}
             onClick={() => nudge('right')}
             className={arrowClass(canRight)}

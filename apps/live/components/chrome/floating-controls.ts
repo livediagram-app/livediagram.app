@@ -10,7 +10,7 @@ export const FLOATING_CONTROL_SIZE = 24;
 // How far, in screen px, a control sits beyond the element edge.
 export const FLOATING_CONTROL_GAP = 12;
 export const FLOATING_CONTROL_CLASS =
-  'rounded-full border border-brand-200 bg-white text-brand-600 shadow-md dark:border-brand-500/50 dark:bg-slate-900 dark:text-brand-200';
+  'rounded-full border border-brand-200 bg-white text-brand-700 shadow-md dark:border-brand-500/50 dark:bg-slate-900 dark:text-brand-200';
 // Shared hover treatment so every floating control lights up the same
 // way on pointer-over.
 export const FLOATING_CONTROL_HOVER_CLASS =

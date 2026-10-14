@@ -80,8 +80,8 @@ describe('the dark palette tokens', () => {
 describe('the wordmark', () => {
   const brand = readFileSync(`${REPO}packages/ui/src/Brand.tsx`, 'utf8');
 
-  it('lights its "live" half sky in dark mode, and keeps brand-600 in light', () => {
-    expect(brand).toMatch(/'text-brand-600 dark:text-sky-400'/);
+  it('lights its "live" half sky in dark mode, and is brand-700 in light (#74)', () => {
+    expect(brand).toMatch(/'text-brand-700 dark:text-sky-400'/);
   });
 });
 

@@ -134,7 +134,7 @@ export function ModeMenu({
               </span>
               <span className="flex w-5 shrink-0 justify-end">
                 {checked ? (
-                  <CheckIcon aria-hidden className="text-brand-600 dark:text-brand-400" />
+                  <CheckIcon aria-hidden className="text-brand-700 dark:text-brand-400" />
                 ) : action === 'new-tab' ? (
                   <OpenIcon aria-hidden data-new-tab-mark className="text-slate-400" />
                 ) : null}

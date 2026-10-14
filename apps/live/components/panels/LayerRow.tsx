@@ -193,7 +193,7 @@ export function LayerRow({
         pressed={locked}
         className={
           locked
-            ? 'text-brand-600 dark:text-brand-300'
+            ? 'text-brand-700 dark:text-brand-300'
             : `text-slate-400 dark:text-slate-400 ${active ? '' : REVEAL}`
         }
         onClick={() => onToggleLock(layer.id)}

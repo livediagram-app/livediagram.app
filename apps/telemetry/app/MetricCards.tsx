@@ -61,9 +61,9 @@ export function MetricGroups({
     <div className="mt-6 flex flex-col gap-8">
       {groups.map((group) => (
         <section key={group.title}>
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             {group.title}
-          </h3>
+          </h2>
           <div className={`mt-3 ${GRID}`}>
             {group.metrics.map((item) => {
               if (!isStack(item)) {

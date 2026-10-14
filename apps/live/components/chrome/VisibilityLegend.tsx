@@ -46,7 +46,7 @@ const LOOK: Record<
     reach: 'Team',
     stop: 'bg-brand-700 text-white ring-brand-200 dark:bg-brand-600 dark:ring-brand-500/40',
     hero: 'from-brand-50 to-white dark:from-brand-500/15 dark:to-slate-900',
-    ink: 'text-brand-600 dark:text-brand-300',
+    ink: 'text-brand-700 dark:text-brand-300',
     eyebrow: 'text-brand-700 dark:text-brand-300',
   },
   community: {

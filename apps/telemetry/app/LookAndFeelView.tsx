@@ -133,7 +133,7 @@ function CustomThemeCard({
       <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
         Custom Theme Builder
       </h3>
-      <p className="mt-0.5 text-xs text-slate-400">
+      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
         Building, applying, and tweaking bespoke palettes
       </p>
       {anyData ? (
@@ -145,7 +145,7 @@ function CustomThemeCard({
                 key={m.label}
                 className="rounded-lg border border-slate-200 p-3 dark:border-slate-700"
               >
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   {m.label}
                 </p>
                 <div className="mt-1 flex items-end justify-between gap-2">

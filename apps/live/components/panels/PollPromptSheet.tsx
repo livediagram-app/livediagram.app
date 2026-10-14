@@ -98,7 +98,7 @@ export function PollPromptSheet({
 
         <div className="flex flex-col gap-3 p-4">
           <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-300">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
               Quick poll
             </span>
             <h2 className="text-base font-semibold leading-snug text-slate-800 dark:text-slate-100">

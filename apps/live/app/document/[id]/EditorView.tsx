@@ -573,7 +573,7 @@ export function EditorView() {
                                       <span className="text-brand-300" aria-hidden>
                                         |
                                       </span>
-                                      <span className="text-brand-500 dark:text-brand-300">
+                                      <span className="text-brand-700 dark:text-brand-300">
                                         Cancel
                                       </span>
                                     </button>

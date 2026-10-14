@@ -222,7 +222,7 @@ export function IconsArt() {
                 y={y + 3}
                 className={
                   picked
-                    ? 'text-brand-600 dark:text-brand-300'
+                    ? 'text-brand-700 dark:text-brand-300'
                     : 'text-slate-600 dark:text-slate-300'
                 }
               >
@@ -275,7 +275,7 @@ export function RichTextArt() {
           <span className="flex h-[15px] w-[15px] items-center justify-center rounded font-bold">
             B
           </span>
-          <span className="flex h-[15px] w-[15px] items-center justify-center rounded bg-brand-50 font-semibold text-brand-600 italic dark:bg-brand-500/20 dark:text-brand-300">
+          <span className="flex h-[15px] w-[15px] items-center justify-center rounded bg-brand-50 font-semibold text-brand-700 italic dark:bg-brand-500/20 dark:text-brand-300">
             I
           </span>
           <span className="flex h-[15px] w-[15px] items-center justify-center rounded underline">

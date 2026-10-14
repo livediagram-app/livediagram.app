@@ -21,7 +21,7 @@ export function Redirect({ href, label }: { href: string; label: string }) {
         If you are not redirected automatically,{' '}
         <a
           href={href}
-          className="text-brand-600 underline hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
+          className="text-brand-700 underline hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"
         >
           read the {label} here
         </a>

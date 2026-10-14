@@ -84,7 +84,7 @@ function InlineCreateTile({
         {/* Quieter than a destination row at rest (lighter border, a faint
             fill, grey text): it is an action, not one of the options, and
             it only takes on colour when the pointer reaches it. */}
-        <span className="shrink-0 text-slate-300 transition group-hover:text-brand-500 dark:text-slate-600">
+        <span className="shrink-0 text-slate-300 transition group-hover:text-brand-700 dark:text-slate-600">
           {icon}
         </span>
         <span className={`${row ? 'min-w-0 flex-1' : 'w-full'} truncate text-xs font-medium`}>
@@ -102,7 +102,7 @@ function InlineCreateTile({
           : 'flex flex-col items-center justify-center gap-1.5 p-3'
       } rounded-lg border border-brand-300 bg-brand-50/40 dark:border-brand-500/50 dark:bg-brand-500/10`}
     >
-      <span className="shrink-0 text-brand-500 dark:text-brand-400">{icon}</span>
+      <span className="shrink-0 text-brand-700 dark:text-brand-400">{icon}</span>
       <input
         type="text"
         autoFocus
@@ -275,7 +275,7 @@ export function PlacementCard({
       }`}
     >
       <span
-        className={`shrink-0 ${selected ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400'}`}
+        className={`shrink-0 ${selected ? 'text-brand-700 dark:text-brand-300' : 'text-slate-400'}`}
       >
         {icon}
       </span>

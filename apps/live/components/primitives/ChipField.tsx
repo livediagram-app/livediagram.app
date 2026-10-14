@@ -131,7 +131,7 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
               className={`flex h-4 w-4 items-center justify-center rounded-full transition ${
                 chipStyle
                   ? 'hover:bg-black/10 dark:hover:bg-white/15'
-                  : 'text-brand-500 hover:bg-brand-100 hover:text-brand-700 dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-brand-100'
+                  : 'text-brand-700 hover:bg-brand-100 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-brand-100'
               }`}
             >
               <CloseIcon size={10} />

@@ -202,7 +202,7 @@ export function ProductNav({
                 <span
                   className={`mt-0.5 shrink-0 ${
                     isCurrent
-                      ? 'text-brand-600 dark:text-brand-300'
+                      ? 'text-brand-700 dark:text-brand-300'
                       : 'text-slate-500 dark:text-slate-400'
                   }`}
                 >

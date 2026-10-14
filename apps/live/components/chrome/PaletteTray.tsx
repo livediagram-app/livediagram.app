@@ -113,7 +113,7 @@ export function PaletteTray({
         className="pointer-events-auto flex min-w-0 max-w-full animate-fade-in items-center gap-2 rounded-b-xl border border-t-0 border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-[0_6px_10px_-6px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
         onPointerDown={(e) => e.stopPropagation()}
       >
-        <span className="flex shrink-0 items-center text-brand-600 dark:text-brand-300">
+        <span className="flex shrink-0 items-center text-brand-700 dark:text-brand-300">
           {lead}
         </span>
         <span className="min-w-0 truncate">{children}</span>

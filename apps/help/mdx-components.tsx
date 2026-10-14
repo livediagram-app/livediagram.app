@@ -30,7 +30,7 @@ function Step({ n, children }: { n: number; children: ReactNode }) {
 function Tip({ children }: { children: ReactNode }) {
   return (
     <div className="my-5 flex gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 dark:border-brand-500/30 dark:bg-brand-500/15">
-      <TipIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-500 dark:text-brand-300" />
+      <TipIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-700 dark:text-brand-300" />
       <div className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 [&>p]:mb-0">
         {children}
       </div>
@@ -152,7 +152,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     a: ({ href, children }) => (
       <a
         href={href}
-        className="text-brand-600 underline underline-offset-2 transition-colors hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
+        className="text-brand-700 underline underline-offset-2 transition-colors hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"
       >
         {children}
       </a>

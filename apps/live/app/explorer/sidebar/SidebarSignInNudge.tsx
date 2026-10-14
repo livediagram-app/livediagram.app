@@ -13,7 +13,7 @@ export function SidebarSignInNudge() {
       href={signInHref}
       className="mt-3 flex items-start gap-2 rounded-lg border border-slate-200 bg-gradient-to-br from-brand-50 to-white p-3 text-left transition hover:border-brand-300 hover:from-brand-100 dark:border-slate-700 dark:from-slate-800 dark:to-slate-800/40 dark:hover:border-brand-500/50 dark:hover:from-brand-500/15"
     >
-      <span className="mt-0.5 shrink-0 text-brand-600 dark:text-brand-400">
+      <span className="mt-0.5 shrink-0 text-brand-700 dark:text-brand-400">
         <SignInIcon />
       </span>
       <span>

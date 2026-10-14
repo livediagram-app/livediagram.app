@@ -265,7 +265,7 @@ export function SlideDeckPanel({
       >
         {deck.slides.length === 0 ? (
           <div className="flex flex-col items-center gap-2 px-2 py-5 text-center">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-200">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
               <SlideDeckIcon />
             </span>
             <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">

@@ -60,7 +60,6 @@ function ModeCard({
       data-new-mode={mode}
       aria-pressed={selected}
       aria-keyshortcuts={String(index + 1)}
-      aria-label={`${label}: ${PITCH[mode]}`}
       onClick={onChoose}
       className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white text-left transition duration-micro ease-out hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-xl hover:shadow-brand-900/10 focus-visible:-translate-y-0.5 focus-visible:border-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:bg-slate-900 dark:hover:border-brand-400 dark:hover:shadow-black/40 ${modeCardSpan(index)} ${
         selected
@@ -80,12 +79,15 @@ function ModeCard({
         <span className="flex items-center gap-2.5">
           <span
             aria-hidden
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition group-hover:bg-brand-700 group-hover:text-white dark:bg-brand-500/15 dark:text-brand-300"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white dark:bg-brand-500/15 dark:text-brand-300"
           >
             <Icon size={16} />
           </span>
           <span className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">
             {label}
+            {/* The card is named by its own text, "Plan: Track work…", so everything it shows is in its
+                name (WCAG 2.5.3); the colon only separates the two for a screen reader. */}
+            <span className="sr-only">: </span>
           </span>
           {/* The card's number key, as the keyboard picks it (aria-keyshortcuts carries it for assistive technology);
               left off a phone, which has no keys to press. */}

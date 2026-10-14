@@ -301,7 +301,7 @@ export function TableCellView({
               if (cs.link) onFollowLink?.(cs.link);
             }}
             aria-label="Follow cell link"
-            className="pointer-events-auto absolute right-0.5 top-0.5 z-[var(--z-panel)] flex h-4 w-4 items-center justify-center rounded text-brand-600 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
+            className="pointer-events-auto absolute right-0.5 top-0.5 z-[var(--z-panel)] flex h-4 w-4 items-center justify-center rounded text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
           >
             <CellLinkIcon />
           </button>
