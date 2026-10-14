@@ -141,10 +141,20 @@ export function useEditorImages(deps: EditorImagesDeps) {
             ownerId,
             documentId,
             shareCode: sessionShareCode,
-            onOpenPicker: isReadOnly || embedMode ? undefined : openImagePickerFor,
+            // Offered only where the picker opens: a locked tab refuses it, so its empty images
+            // show no Select Image button that would do nothing.
+            onOpenPicker: isReadOnly || embedMode || editsBlocked ? undefined : openImagePickerFor,
           }
         : undefined,
-    [documentId, ownerId, sessionShareCode, isReadOnly, embedMode, openImagePickerFor],
+    [
+      documentId,
+      ownerId,
+      sessionShareCode,
+      isReadOnly,
+      embedMode,
+      editsBlocked,
+      openImagePickerFor,
+    ],
   );
 
   // Apply the picker's selection: set imageId + natural dimensions on
