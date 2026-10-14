@@ -222,6 +222,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   badge: { width: 40, height: 24 },
   // Step number (docs/specs/009-elements/step-number.md): a small disc.
   step: { width: 28, height: 28 },
+  // Boundary (docs/specs/009-elements/boundary.md): room for a few nodes inside.
+  boundary: { width: 480, height: 300 },
   // Three 150px cards and two 16px gaps.
   'stat-row': { width: 482, height: 96 },
   process: { width: 420, height: 110 },
@@ -598,6 +600,20 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       borderRadius: 'lg',
     };
   }
+  // Boundary (docs/specs/009-elements/boundary.md): a titled, dashed container.
+  if (kind === 'boundary')
+    return {
+      ...base,
+      label: 'Region',
+      strokeStyle: 'dashed',
+      borderRadius: 'md',
+      textSize: 'sm',
+      textBold: true,
+      // The title sits in its tab or corner (boundaryLayout), so the label takes the region whole.
+      textAlignX: 'left',
+      textAlignY: 'middle',
+      padding: 'none',
+    };
   // Badge (docs/specs/009-elements/badge.md): a word to start from; a step takes its number when it lands
   // (settleChips), so it starts with none.
   // Their text is centred with no padding: the face is the pill, the label its word.

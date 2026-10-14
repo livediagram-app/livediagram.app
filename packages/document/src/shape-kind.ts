@@ -43,6 +43,8 @@ export type ShapeKind =
   // point on a host element (`attachedTo` / `attachAt`) and travel with it.
   | 'badge'
   | 'step'
+  // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
+  | 'boundary'
   // Stat row: KPI cards, a big value over a caption each, in `stats`.
   | 'stat-row'
   // Process steps: numbered circles joined by arrows, captions in

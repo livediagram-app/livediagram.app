@@ -615,6 +615,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'CardSlots',
       'ChipLook',
       'ChipDetach',
+      'BoundaryStyle',
     ],
   },
   // The element menu's whole-tab writes (apps/live/lib/element-style-ops.ts `commitTab`).

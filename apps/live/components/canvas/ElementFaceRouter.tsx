@@ -50,6 +50,7 @@ import { loadCollabFaceRouter, loadTableView } from '@/lib/editor-deferred-code'
 import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
 import { ChipFace } from '@/components/canvas/ChipFace';
+import { BoundaryFace } from '@/components/canvas/BoundaryFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -466,6 +467,18 @@ export function ElementFaceRouter({
           onLinkCell={onLinkCell}
           onFollowLink={onFollowLink}
           fontFamily={fontFamily}
+        />
+      ) : element.type === 'shape' && element.shape === 'boundary' ? (
+        // A boundary (docs/specs/009-elements/boundary.md): its tint, and its title in its tab or corner. It draws
+        // its own icon, so this sits before the generic inline-icon layout.
+        <BoundaryFace
+          element={element}
+          labelNode={labelNode}
+          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+          ink={textColor}
+          fontFamily={fontFamily}
+          editable={isSelected && !readOnly && !isLocked}
+          onSetMeta={(value) => onSetPageHeading(element.id, 'pageSubtitle', value)}
         />
       ) : element.type === 'shape' && isChipShape(element.shape) ? (
         // A badge or step number (docs/specs/009-elements/badge.md): its pill or disc under its own label.

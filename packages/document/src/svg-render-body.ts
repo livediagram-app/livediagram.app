@@ -37,6 +37,7 @@ import { svgWebComponent } from './svg-render-web';
 import { isWebComponentShape } from './web-components';
 import { isChipShape } from './chip';
 import { svgChip } from './svg-render-chip';
+import { svgBoundary } from './svg-render-boundary';
 import type { BoxedElement, ShapeKind } from './index';
 import { defaultTextColor, type CanvasSurface } from './colors';
 import type { ResolveIconArt } from './svg-render-describe';
@@ -50,6 +51,7 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     BEHAVIOUR_FACE_SHAPES.has(kind) ||
     isWebComponentShape(kind) ||
     isChipShape(kind) ||
+    kind === 'boundary' ||
     kind === 'entity' ||
     kind === 'page' ||
     kind === 'lane' ||
@@ -103,6 +105,15 @@ export function svgElementBody(
   if (isRatingShape(el.shape)) return svgRating(el, stroke);
   if (isRailShape(el.shape)) return svgTimelineRail(el, stroke, labelColor, fontFamily);
   if (el.shape === 'entity') return svgEntityRows(el, labelColor, fontFamily);
+  // A boundary's tint and title (docs/specs/009-elements/boundary.md).
+  if (el.shape === 'boundary')
+    return svgBoundary(el, {
+      stroke,
+      labelColor,
+      label,
+      fontFamily,
+      resolveIconArt: o.resolveIconArt,
+    });
   // A badge or step number's pill or disc (docs/specs/009-elements/badge.md); its label draws over it as usual.
   if (isChipShape(el.shape))
     return svgChip(el, { stroke, fill, ink: el.textColor ?? defaultTextColor(el, o.surface) });

@@ -43,6 +43,18 @@ export const SHAPE_ANIMATIONS: readonly ShapeAnimation[] = [
   'swing',
 ];
 
+// The Shape set's motions a CONTAINER is offered (docs/specs/009-elements/boundary.md "Animation"): the ones that
+// light or trace it, never the ones that move it, since a container that floats while its contents stay still looks
+// broken.
+export const CONTAINER_ANIMATIONS: readonly ShapeAnimation[] = [
+  'blink',
+  'glow',
+  'trace',
+  'gradient',
+  'shimmer',
+  'highlight',
+];
+
 export type StickyAnimation =
   | 'flutter'
   | 'sway'

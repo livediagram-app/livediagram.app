@@ -428,7 +428,9 @@ export function selfLabelled(el: BoxedElement): boolean {
     (isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
     isCollabPanelShape(el.shape) ||
     (BEHAVIOUR_FACE_SHAPES.has(el.shape) && el.shape !== 'chair') ||
-    isWebComponentShape(el.shape)
+    isWebComponentShape(el.shape) ||
+    // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
+    el.shape === 'boundary'
   );
 }
 

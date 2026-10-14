@@ -159,6 +159,7 @@ export const ELEMENT_FIELD_NAMES = {
     'attachedTo',
     'attachAt',
     'stepSequence',
+    'boundaryStyle',
     'stats',
     'processSteps',
     'navLinks',

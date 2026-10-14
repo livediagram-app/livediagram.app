@@ -45,6 +45,7 @@ import { isCodeThemeId } from './code-themes';
 import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
 import { isChipLook } from './chip';
 import { isAttachPoint } from './attachment';
+import { isBoundaryStyle } from './boundary';
 import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow, isMindSpacing } from './mind-flow';
 import {
@@ -273,6 +274,8 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'attachedTo', valid: isNonEmptyStr, rule: 'an element id' },
   { field: 'attachAt', valid: isAttachPoint, rule: oneOfRule(ATTACH_POINTS_RULE) },
   flag('stepSequence'),
+  // Boundary (docs/specs/009-elements/boundary.md).
+  { field: 'boundaryStyle', valid: isBoundaryStyle, rule: oneOfRule(['tab', 'inset', 'c4']) },
   {
     field: 'tags',
     valid: rowsOf(CARD_TAGS_MAX, isStrUpTo(CARD_TAG_MAX)),

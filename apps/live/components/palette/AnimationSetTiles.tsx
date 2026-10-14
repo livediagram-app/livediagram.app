@@ -27,6 +27,7 @@ import { useRevertOnUnmount } from '@/components/primitives/hover-preview';
 
 export function AnimationSetTiles({
   set,
+  values,
   current,
   legacy = false,
   speed,
@@ -38,6 +39,8 @@ export function AnimationSetTiles({
   onPreviewEnd,
 }: {
   set: AnimationSetId;
+  // The set's values this element is offered, when not the whole set (a boundary's container subset).
+  values?: readonly string[];
   // The stored value, which may be a kept value the set no longer offers.
   current: string | null;
   // `current` is a text element's legacy body animation: always the kept tile, even when the set
@@ -65,7 +68,7 @@ export function AnimationSetTiles({
     gateSet(v);
   };
   const tiles: { v: string | null; isKept: boolean }[] = [
-    ...withNone(ANIMATION_SET_VALUES[set]).map((v) => ({ v, isKept: false })),
+    ...withNone(values ?? ANIMATION_SET_VALUES[set]).map((v) => ({ v, isKept: false })),
     ...(kept ? [{ v: kept, isKept: true }] : []),
   ];
   return (

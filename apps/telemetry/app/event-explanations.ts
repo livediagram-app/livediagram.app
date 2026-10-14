@@ -238,6 +238,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone changed how a badge or step number looks (solid, ink, outline, tinted or quiet).',
   'Element|Changed|ChipDetach':
     'Someone let a badge or step number go from the element it was attached to.',
+  'Element|Changed|BoundaryStyle':
+    "Someone changed where a boundary shows its title: in a tab on its edge, inside its corner, or C4's bottom-left.",
   'Element|Changed|RenumberSteps':
     'Someone renumbered every step number on a tab in reading order.',
   'Element|Changed|StepSequence':

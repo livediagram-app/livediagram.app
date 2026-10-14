@@ -17,6 +17,7 @@ import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
 import type { AttachPoint } from './attachment';
+import type { BoundaryStyle } from './boundary';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
@@ -460,6 +461,8 @@ export type ShapeElement = {
   attachedTo?: ElementId;
   attachAt?: AttachPoint;
   stepSequence?: boolean;
+  // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
+  boundaryStyle?: BoundaryStyle;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), bounded in validate.ts: a stat row's KPI
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.

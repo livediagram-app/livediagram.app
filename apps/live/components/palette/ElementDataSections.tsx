@@ -16,6 +16,7 @@
 import dynamic from 'next/dynamic';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
+import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
 import {
   isChipShape,
   animLoops,
@@ -225,6 +226,7 @@ export function ElementDataSections({
   const showTools =
     hasWebRowsSection(target) ||
     isChip ||
+    shapeTarget?.shape === 'boundary' ||
     isProgress ||
     isRail ||
     isRating ||
@@ -431,6 +433,14 @@ export function ElementDataSections({
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
             steps, a header's links: add / remove / reorder. */}
+          {/* A boundary's style (docs/specs/009-elements/boundary.md). */}
+          {shapeTarget?.shape === 'boundary' ? (
+            <BoundaryMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+            />
+          ) : null}
           {/* A badge's or step number's look, Detach, Renumber, Play in Order (docs/specs/009-elements/badge.md). */}
           {shapeTarget && isChip ? (
             <ChipMenuSection

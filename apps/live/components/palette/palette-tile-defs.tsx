@@ -1508,6 +1508,22 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The boundary (docs/specs/009-elements/boundary.md): a titled, tinted container for regions and systems.
+    id: 'tools:boundary',
+    blurb: 'A titled zone: a region, a VPC, a system',
+    section: 'build',
+    label: 'Add Boundary',
+    description:
+      'Boundary. A titled, tinted container for a cloud region, a network or a system. It carries what is inside it, and nested boundaries tint deeper.',
+    action: { type: 'shape', kind: 'boundary' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="3" y="6" width="18" height="15" rx="2" strokeDasharray="3 2.5" />
+        <rect x="5" y="3.5" width="9" height="5" rx="1.5" />
+      </Glyph>
+    ),
+  },
+  {
     id: 'tools:annotation',
     blurb: 'A marker that holds a note',
     section: 'tools',

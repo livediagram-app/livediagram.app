@@ -80,6 +80,8 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // A lane (docs/specs/009-elements/lane.md) is a filled band with a gutter drawn on top — CSS box
     // path, same as the rest of this list.
     kind !== 'lane' &&
+    // A boundary (docs/specs/009-elements/boundary.md) is a CSS box like the lane, its face drawn on top.
+    kind !== 'boundary' &&
     // A record (docs/specs/009-elements/entity.md) is a filled box with rows drawn on top.
     kind !== 'entity' &&
     // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) are filled rounded

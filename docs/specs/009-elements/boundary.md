@@ -18,7 +18,7 @@ follow each other.
 
 - **The title is the label.** Double-click edits it.
 - **Style** (`boundaryStyle`), one of three:
-  - **Tab** (the default): the title in a small tab sitting on the top edge, outlined in the accent, with the icon
+  - **Tab** (the default): the title in a small tab sitting on the top edge, filled with the accent, with the icon
     before it. The cloud-vendor look.
   - **Inset**: the title inside the top-left corner in the accent's colour, with the icon before it and the meta
     line after it. The look for a zone nested in another, so the titles do not stack up on the edges.
@@ -32,10 +32,9 @@ follow each other.
 
 ## Tint that deepens
 
-A boundary with no `fillColor` paints a tint of its accent: 6% opacity for a boundary on the canvas, 12% for one
-inside another boundary, 18% for three deep and beyond. The depth is derived from containment (how many boundaries
-hold it), so dragging a boundary into another deepens its tint and dragging it out lightens it, with nothing stored.
-An explicit `fillColor` wins. The tint follows the accent, so a theme switch carries it.
+A boundary with no `fillColor` washes its area with 6% of its accent. A boundary inside another stacks its wash on
+the outer one, so the deeper a zone is nested the deeper it reads, with nothing to compute or store. An explicit
+`fillColor` wins. The tint follows the accent, so a theme switch carries it.
 
 ## A container
 

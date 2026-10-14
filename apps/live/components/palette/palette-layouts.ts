@@ -176,6 +176,7 @@ const ILLUSTRATE: PaletteLayout = {
         'tools:flowchart',
         'tools:lane',
         'tools:frame',
+        'tools:boundary',
       ),
     },
     // The web blocks, without the data-model Entity.

@@ -319,7 +319,9 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
   // did nothing, and the headless renderer (exports, the minimap) never got
   // the memo and filled every frame with the shape default, so a frame that
   // was transparent on the canvas exported pale blue.
-  if (element.type === 'shape' && element.shape === 'frame') return 'transparent';
+  // A boundary's face paints its tint, deeper as it nests (docs/specs/009-elements/boundary.md).
+  if (element.type === 'shape' && (element.shape === 'frame' || element.shape === 'boundary'))
+    return 'transparent';
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.fill;
   if (surface === 'dark') {

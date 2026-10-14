@@ -114,6 +114,7 @@ export const SHAPE_KINDS = new Set<string>([
   'card',
   'badge',
   'step',
+  'boundary',
   'stat-row',
   'process',
   'site-header',

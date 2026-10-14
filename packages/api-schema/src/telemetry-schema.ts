@@ -441,6 +441,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'FlowchartStep',
     // Lane (docs/specs/009-elements/lane.md).
     'Lane',
+    // Boundary (docs/specs/009-elements/boundary.md): a Build container beside Frame and Lane.
+    'Boundary',
     // Entity (docs/specs/009-elements/entity.md).
     'Entity',
     'Checklist',

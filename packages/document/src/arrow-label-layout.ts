@@ -10,6 +10,7 @@
 // Pure and shared: the canvas and every export lay labels out through here,
 // so an exported label wraps at the same words and sits at the same spot.
 
+import { isContainerKind } from './containment';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { arrowLabelFontSize } from './arrow-label';
 import { longestWordWidth, wrapBalanced, type TextMeasure } from './arrow-label-wrap';
@@ -313,7 +314,7 @@ function placementOf(
 // ---------------------------------------------------------------------
 
 function isObstacle(el: BoxedElement): boolean {
-  return !(el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane'));
+  return !(el.type === 'shape' && isContainerKind(el.shape));
 }
 
 function hitsAny(rect: Rect, boxes: Rect[]): boolean {
