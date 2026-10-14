@@ -47,6 +47,24 @@ describe('withExactEnds', () => {
     expect(byId(els, 'x')).toBe(els[4]);
   });
 
+  it('keeps a decision\'s labelled exits on their own ends: two decisions\' "no" never share one bus', () => {
+    const diamond = (id: string, x: number) =>
+      ({ ...box(id, x, 0), shape: 'diamond' }) as BoxedElement;
+    const els = withExactEnds([
+      diamond('fit', 0),
+      diamond('hire', 300),
+      box('reject', 150, 200),
+      arrow('n1', 'fit', 'reject', { label: 'no' }),
+      arrow('n2', 'hire', 'reject', { label: 'no' }),
+      arrow('p1', 'a', 'bus', { label: 'publish' }),
+      arrow('p2', 'b', 'bus', { label: 'publish' }),
+    ]);
+    expect(byId(els, 'n1').exactEnd).toBeUndefined();
+    expect(byId(els, 'n2').exactEnd).toBeUndefined();
+    // Steps saying the same thing into one node still merge.
+    expect(byId(els, 'p1')).toMatchObject({ exactEnd: true });
+  });
+
   it('merges a fan out of one node that says the same thing', () => {
     const els = withExactEnds([
       arrow('a', 'src', 'x', { label: 'reads' }),

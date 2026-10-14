@@ -13,7 +13,8 @@ const saying = (a: ArrowElement) => `${a.label?.trim().toLowerCase() ?? ''}|${a.
 // and dashed meet at one end of a node, the style most of them have (solid on a tie) shares it and the rest keep their
 // own ends, so a dashed event line never rides a solid call's trunk. A labelled arrow keeps its own ends, as a label on
 // a shared line could not say which line it names, unless the arrows meeting there all say the same thing in the same
-// line (services that each "publish" to one bus): those merge, and each label sits on its own leg.
+// line (services that each "publish" to one bus): those merge, and each label sits on its own leg. A decision's
+// labelled exits never merge so: each names its own decision's branch.
 export function withExactEnds(elements: Element[]): Element[] {
   const arrows = elements.filter((el): el is ArrowElement => el.type === 'arrow');
   const line = (a: ArrowElement) => a.strokeStyle ?? 'solid';
@@ -31,9 +32,18 @@ export function withExactEnds(elements: Element[]): Element[] {
     [...styles.get(key)!].sort(
       ([p, n], [q, k]) => k - n || (p === 'solid' ? -1 : q === 'solid' ? 1 : p < q ? -1 : 1),
     )[0]![0];
+  // A decision's exit label names its own decision's branch: two decisions' "no" merged into one bus could not say
+  // which was which (lanes' two rejections, one trunk), so a labelled exit out of a decision keeps its own ends.
+  const shapeOf = new Map(
+    elements.filter(isBoxed).map((b) => [b.id, (b as { shape?: string }).shape]),
+  );
+  const fromDecision = (a: ArrowElement) => {
+    const id = pinned(a.from);
+    return id !== null && shapeOf.get(id) === 'diamond';
+  };
   const exact = (side: 'from' | 'to', a: ArrowElement) =>
     line(a) === dominant(at(side, a)) &&
-    (!a.label?.trim() || (said.get(`${at(side, a)}:${saying(a)}`) ?? 0) > 1);
+    (!a.label?.trim() || (!fromDecision(a) && (said.get(`${at(side, a)}:${saying(a)}`) ?? 0) > 1));
   const merged = elements.map((el) => {
     if (el.type !== 'arrow') return el;
     const [start, end] = [exact('from', el), exact('to', el)];
