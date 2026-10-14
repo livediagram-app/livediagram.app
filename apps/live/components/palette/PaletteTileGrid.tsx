@@ -278,6 +278,7 @@ function TileButton({
       active={tileActive(def, pendingDraw)}
       shortcut={def.shortcut}
       hideCaption={compact}
+      stripTile={compact}
       shortcutAlwaysVisible={compact}
       finishAction={a}
     >

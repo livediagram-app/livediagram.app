@@ -260,7 +260,8 @@ export function PaletteDropdown({
     variant === 'flush'
       ? 'rounded-none border-0 px-3.5 py-3'
       : variant === 'toolbar'
-        ? 'h-9 rounded-md border-0 px-2'
+        ? // A phone's strip tucks the caret in a little closer.
+          'h-9 rounded-md border-0 px-2 phone:gap-1'
         : 'h-[26px] rounded-md border px-2';
   const trigger = (
     <button

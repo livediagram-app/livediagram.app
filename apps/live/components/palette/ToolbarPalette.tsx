@@ -454,7 +454,8 @@ export function ToolbarPalette(props: Props) {
                             onChange={onCanvasToolChange}
                             options={canvasToolOptions}
                           />
-                          <Divider />
+                          {/* A phone's strip runs the two pickers together, sparing the room for tiles. */}
+                          {swipe ? null : <Divider />}
                         </>
                       )}
                       {/* The category picker sits between the selection mode and the

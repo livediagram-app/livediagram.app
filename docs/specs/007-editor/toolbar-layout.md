@@ -264,7 +264,8 @@ their bottom-row buttons. What changes to fit the width:
   left-aligned rather than centred, so the two read as separate toolbars on
   one row. There is no room for a corner card above a strip that needs the
   whole top row.
-- **The category picker is icon-only**, like the selection mode.
+- **The category picker is icon-only**, like the selection mode, and the two sit together with no divider between
+  them, each caret 4px from its glyph. The strip's tiles are 32px wide (36px elsewhere), so more fit in view.
 - **The tiles swipe.** The strip holds the whole current category and fills the row to the
   right gutter; only its tiles scroll sideways, under a finger, while the selection mode, the
   category picker and More stay put. The scrollbar is hidden ([Scrollbars](../004-interface-design/scrollbars.md)):
