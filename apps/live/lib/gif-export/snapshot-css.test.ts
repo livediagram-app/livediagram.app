@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { collectCss, pinRules } from './snapshot-css';
+import { collectCss, pinRules, withFullMotion } from './snapshot-css';
 
 // docs/specs/020-import-export/blueprints/animated-gif-export.md "The snapshot", steps 5 and 7.
 const style = (cssText: string) => ({ cssText });
@@ -69,5 +69,60 @@ describe('collecting the stylesheets', () => {
       },
     };
     expect(collectCss([locked, { cssRules: [style('.a{}')] }])).toBe('.a{}');
+  });
+});
+
+describe('reading in full motion', () => {
+  const classes = (initial: string[]) => {
+    const set = new Set(initial);
+    return {
+      set,
+      classList: {
+        contains: (c: string) => set.has(c),
+        add: (c: string) => void set.add(c),
+        remove: (c: string) => void set.delete(c),
+      },
+    };
+  };
+
+  it('lifts Reduce Motion for the read and puts it back', () => {
+    const reduce = {
+      cssText: '',
+      cssRules: [],
+      media: { mediaText: '(prefers-reduced-motion: reduce)' },
+    };
+    const safe = {
+      cssText: '',
+      cssRules: [],
+      media: { mediaText: '(prefers-reduced-motion: no-preference)' },
+    };
+    const wide = { cssText: '', cssRules: [], media: { mediaText: '(min-width: 600px)' } };
+    const layer = { cssText: '@layer x', cssRules: [safe] };
+    const html = classes(['dark', 'reduce-motion']);
+    const seen = withFullMotion([{ cssRules: [reduce, layer, wide] }], html, () => ({
+      reduce: reduce.media.mediaText,
+      safe: safe.media.mediaText,
+      wide: wide.media.mediaText,
+      reduced: html.set.has('reduce-motion'),
+    }));
+    expect(seen).toEqual({
+      reduce: 'not all',
+      safe: 'all',
+      wide: '(min-width: 600px)',
+      reduced: false,
+    });
+    expect(reduce.media.mediaText).toBe('(prefers-reduced-motion: reduce)');
+    expect(safe.media.mediaText).toBe('(prefers-reduced-motion: no-preference)');
+    expect(html.set.has('reduce-motion')).toBe(true);
+  });
+
+  it('puts it back when the read throws, and leaves a page without it alone', () => {
+    const html = classes([]);
+    expect(() =>
+      withFullMotion([], html, () => {
+        throw new Error('read failed');
+      }),
+    ).toThrow('read failed');
+    expect(html.set.has('reduce-motion')).toBe(false);
   });
 });

@@ -69,3 +69,48 @@ function groupPrelude(rule: RuleLike): string | null {
   const head = /^@(media|supports|layer|container)\b[^{]*/i.exec(rule.cssText);
   return head ? head[0].trim() : null;
 }
+
+// The app's own Reduce Motion (hooks/ui/useReduceMotion): a class on <html>.
+export const REDUCE_MOTION_CLASS = 'reduce-motion';
+
+type MediaRuleLike = { media: { mediaText: string }; cssRules?: ArrayLike<RuleLike> };
+
+/** Run `read` with the page in full motion: every `prefers-reduced-motion` block answering as on a screen with no
+ *  preference, and the app's Reduce Motion class off, so computed styles name every animation the GIF plays. All in
+ *  one task, restored before returning, so the screen never paints the change. */
+export function withFullMotion<T>(
+  sheets: Iterable<{ cssRules: ArrayLike<RuleLike> }>,
+  html: {
+    classList: { contains(c: string): boolean; add(c: string): void; remove(c: string): void };
+  },
+  read: () => T,
+): T {
+  const flipped: [MediaRuleLike, string][] = [];
+  const visit = (rules: ArrayLike<RuleLike>) => {
+    for (let i = 0; i < rules.length; i += 1) {
+      const rule = rules[i]!;
+      const media = rule.media?.mediaText ?? '';
+      if (/prefers-reduced-motion/.test(media)) {
+        const full =
+          /prefers-reduced-motion\s*:\s*no-preference/.test(media) && !/\bnot\b/.test(media);
+        flipped.push([rule as MediaRuleLike, media]);
+        rule.media!.mediaText = full ? 'all' : 'not all';
+      } else if (rule.cssRules) visit(rule.cssRules);
+    }
+  };
+  for (const sheet of sheets) {
+    try {
+      visit(sheet.cssRules);
+    } catch {
+      // A cross-origin sheet (the webfonts) has no motion rules to lift.
+    }
+  }
+  const reduced = html.classList.contains(REDUCE_MOTION_CLASS);
+  if (reduced) html.classList.remove(REDUCE_MOTION_CLASS);
+  try {
+    return read();
+  } finally {
+    if (reduced) html.classList.add(REDUCE_MOTION_CLASS);
+    for (const [rule, media] of flipped) rule.media.mediaText = media;
+  }
+}

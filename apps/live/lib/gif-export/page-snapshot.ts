@@ -6,7 +6,7 @@ import { debugLog } from '@/lib/debug-log';
 import { GifExportError } from './gif-export-error';
 import { GIF_OMIT_SELECTOR } from './gif-omit';
 import { inlineMedia, type ImageInliner } from './snapshot-media';
-import { pinRules, type AnimatedNode } from './snapshot-css';
+import { pinRules, REDUCE_MOTION_CLASS, withFullMotion, type AnimatedNode } from './snapshot-css';
 
 export type PageSnapshot = {
   /** Something on the page moves (a still page is one frame). */
@@ -33,8 +33,6 @@ const INHERITED = [
   '-webkit-font-smoothing',
   'text-rendering',
 ];
-// The editor's own Reduce Motion (lib/motion-preference): never in a GIF.
-const REDUCE_MOTION_CLASS = 'reduce-motion';
 // The page's own animation markers.
 const PAGE_SELECTOR = '[data-illustrate-page-id]';
 const ELEMENT_SELECTOR = '[data-element-id]';
@@ -82,22 +80,26 @@ export async function snapshotPage(
       gone.add(el);
   }
 
-  // Every CSS animation left on the page, by its node in the clone (one tag a node, a row a pseudo-element).
-  const animated: AnimatedNode[] = [];
-  for (let i = 0; i < live.length; i += 1) {
-    const el = live[i]!;
-    if (gone.has(el)) continue;
-    let id = -1;
-    for (const pseudo of PSEUDOS) {
-      const style = view.getComputedStyle(el, pseudo || null);
-      if (!style.animationName || style.animationName === 'none') continue;
-      if (id < 0) {
-        id = i;
-        twins[i]!.setAttribute(TAG, String(id));
+  // Every CSS animation left on the page, by its node in the clone (one tag a node, a row a pseudo-element), read
+  // in full motion: Reduce Motion never stills a GIF.
+  const animated: AnimatedNode[] = withFullMotion(doc.styleSheets, doc.documentElement, () => {
+    const rows: AnimatedNode[] = [];
+    for (let i = 0; i < live.length; i += 1) {
+      const el = live[i]!;
+      if (gone.has(el)) continue;
+      let id = -1;
+      for (const pseudo of PSEUDOS) {
+        const style = view.getComputedStyle(el, pseudo || null);
+        if (!style.animationName || style.animationName === 'none') continue;
+        if (id < 0) {
+          id = i;
+          twins[i]!.setAttribute(TAG, String(id));
+        }
+        rows.push({ id, pseudo, delaysMs: parseDelays(style.animationDelay) });
       }
-      animated.push({ id, pseudo, delaysMs: parseDelays(style.animationDelay) });
     }
-  }
+    return rows;
+  });
 
   // Media first, while the twins still line up with the live tree.
   await inlineMedia(live, twins, images, (el) => gone.has(el));
