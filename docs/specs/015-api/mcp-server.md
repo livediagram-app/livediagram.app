@@ -619,7 +619,9 @@ wrongly:
   fill its box, so a lane or entity title came out as one giant word across
   its contents and a sticky's note filled it edge to edge; a box drawn in the
   editor never arrives that way. This applies to every element on these paths,
-  not only the six.
+  not only the six. As graph input sizes its text by count, so do raw boxes: on a list of more than 12 labelled
+  boxes, a box that gives no `textSize` takes `sm` rather than `md`, so a hand-placed architecture of twenty boxes
+  does not wrap its names mid-word ("ElastiCa / che").
 - A **table**'s ragged rows are padded to the widest (`normalizeTable`, the same
   pass the editor runs on load), so every row renders.
 - An unknown **codeLanguage** becomes `plain` and an unknown **codeTheme** is

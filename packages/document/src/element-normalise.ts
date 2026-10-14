@@ -7,6 +7,7 @@
 // tidied. Input is untrusted JSON: anything not shaped like the field it claims
 // to be is left for isValidTab to judge.
 
+import { LOOK_MD_MAX_NODES } from './look-size';
 import { CODE_LANGUAGES } from './data-shapes';
 import { isCodeThemeId } from './code-themes';
 import { variantFitsKind } from './chart-types';
@@ -244,11 +245,40 @@ export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
   return { ...unpacked, ...patch };
 }
 
+// Raw boxes take the graph look's text size by count (look-size.ts): past LOOK_MD_MAX_NODES labelled boxes, one that
+// gives no `textSize` takes `sm` before the factory's `md` fills in, so twenty hand-placed boxes do not wrap their
+// names mid-word.
+const PLAIN_BOX_EXCLUDED = new Set([
+  'frame',
+  'lane',
+  'boundary',
+  'entity',
+  'code-block',
+  'bar-chart',
+  'pie-chart',
+  'line-chart',
+  'sankey',
+  'legend',
+]);
+const isPlainBox = (el: unknown): el is Raw =>
+  isRecord(el) &&
+  el.type === 'shape' &&
+  typeof el.label === 'string' &&
+  el.label.trim() !== '' &&
+  !PLAIN_BOX_EXCLUDED.has(String(el.shape));
+function withLookTextSize(elements: unknown[]): unknown[] {
+  if (elements.filter(isPlainBox).length <= LOOK_MD_MAX_NODES) return elements;
+  return elements.map((el) =>
+    isPlainBox(el) && el.textSize === undefined ? { ...el, textSize: 'sm' } : el,
+  );
+}
+
 export function normaliseElements<T>(elements: T): T {
   if (!Array.isArray(elements)) return elements;
+  const sized = withLookTextSize(elements);
   // An agent's badges and step numbers land fitted, numbered and on their hosts' points, as the editor's commits
   // keep them (docs/specs/009-elements/badge.md "Agents").
-  const normalised = lanesToFront(elements.map(normaliseElement));
+  const normalised = lanesToFront(sized.map(normaliseElement));
   // Only a list of element records is settled; anything else is left for validation to refuse.
   if (!normalised.every(isRecord)) return normalised as T;
   return settleChips([], normalised as DocElement[]) as T;

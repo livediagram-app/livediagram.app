@@ -81,7 +81,8 @@ export type GraphInput = {
 };
 
 // Up to this many nodes a graph's text is `md`, the template's size; past it `sm`, so a large system still fits.
-export const LOOK_MD_MAX_NODES = 12;
+export { LOOK_MD_MAX_NODES } from './look-size';
+import { LOOK_MD_MAX_NODES } from './look-size';
 // Auto direction lays a graph out both ways up to this size (two layouts' cost) and keeps the one whose aspect is
 // nearer LANDSCAPE; past it, down.
 export const AUTO_DIRECTION_MAX_NODES = 150;
