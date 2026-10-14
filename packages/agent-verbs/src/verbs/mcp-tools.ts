@@ -382,7 +382,8 @@ export const mcpChangePages = mcpTool('change_pages', {
     'is switched into Illustrate. The answer gives every page with its rectangle in canvas coordinates, the ' +
     "same as an element's x and y in update_document (the layout view prints positions from the content's " +
     'corner instead). A layout fills a page with sample text: read_document view "pages" lists it, with each ' +
-    "list's items, to replace. Articles are written with write_article. " +
+    "list's items, to replace. A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
+    'mocha, ocean, forest...), a page\u2019s background its own. Articles are written with write_article. ' +
     'Everyone with the document open sees it at once.',
   inputSchema: changePagesShape,
   outputSchema: changePagesOutput,
