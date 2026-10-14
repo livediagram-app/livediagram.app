@@ -41,7 +41,7 @@ import type { PaletteProps } from './palette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { STRIP_DIVIDER_ATTR } from './useEdgeDividers';
 import { StripPopover, useStripPopover } from './ToolbarStripPopover';
-import { CatalogueGroupTile, catalogueStripGroups } from './catalogue-strip-groups';
+import { CatalogueGroupTile, catalogueStripGroups, type StripOpen } from './catalogue-strip-groups';
 import { BrowseStartGroup } from './PaletteCategoryBrowser';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 import {
@@ -260,8 +260,8 @@ export function ToolbarPalette(props: Props) {
   // (docs/specs/007-editor/toolbar-layout.md "More"); a desktop strip shows as many as fit, More the rest.
   const allGroups = category ? catalogueStripGroups(category.id) : null;
   const groups = allGroups && !swipe ? allGroups.slice(0, Math.floor(stripLimit)) : allGroups;
-  // The group the More popover opened on: a group tile's, or null for More's own (the group grid).
-  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  // What the More popover opened on: a group tile's or an opener's (palette-openers), or null for More's own.
+  const [opened, setOpened] = useState<StripOpen | null>(null);
   // On a phone only My shapes keeps More: the swipe reaches every other category's tiles or groups.
   const showMore = swipe ? category?.id === 'my-shapes' : hasMore;
 
@@ -299,15 +299,16 @@ export function ToolbarPalette(props: Props) {
 
   const openMore = (button: HTMLElement) => {
     track('UI', 'Opened', 'ToolbarMore');
-    setOpenGroup(null);
+    setOpened(null);
     more.openFrom(button);
   };
   // More's own popover, not a group's.
-  const moreShown = moreOpen && openGroup === null;
-  const toggleGroup = (id: string, anchor: HTMLElement) => {
-    if (moreOpen && openGroup === id) return setMoreOpen(false);
+  const moreShown = moreOpen && opened === null;
+  const isOpen = (key: string) => moreOpen && opened?.key === key;
+  const toggleOpen = (next: StripOpen, anchor: HTMLElement) => {
+    if (isOpen(next.key)) return setMoreOpen(false);
     track('UI', 'Opened', 'ToolbarMore');
-    setOpenGroup(id);
+    setOpened(next);
     // Centred under its tile (More hangs from its own button's right edge).
     more.openFrom(anchor, 'centre');
   };
@@ -497,20 +498,49 @@ export function ToolbarPalette(props: Props) {
                             <CatalogueGroupTile
                               key={g.id}
                               group={g}
-                              open={moreOpen && openGroup === g.id}
-                              onToggle={(anchor) => toggleGroup(g.id, anchor)}
+                              open={isOpen(g.id)}
+                              onToggle={(anchor) =>
+                                toggleOpen(
+                                  {
+                                    key: g.id,
+                                    category: category!.id,
+                                    group: g.id,
+                                    label: g.label,
+                                  },
+                                  anchor,
+                                )
+                              }
                             />
                           ))
                         : [
                             ...tiles.map((def) => {
-                              const tile = (
-                                <PaletteTile
-                                  def={def}
-                                  actions={tileActions}
-                                  pendingDraw={pendingDraw}
-                                  compact
-                                />
-                              );
+                              const a = def.action;
+                              const tile =
+                                a.type === 'open' ? (
+                                  // An opener: its category (or catalogue group) in a popover under it.
+                                  <CatalogueGroupTile
+                                    group={{ id: def.id, label: def.label, icon: def.icon }}
+                                    open={isOpen(def.id)}
+                                    onToggle={(anchor) =>
+                                      toggleOpen(
+                                        {
+                                          key: def.id,
+                                          category: a.category,
+                                          group: a.group ?? null,
+                                          label: def.label,
+                                        },
+                                        anchor,
+                                      )
+                                    }
+                                  />
+                                ) : (
+                                  <PaletteTile
+                                    def={def}
+                                    actions={tileActions}
+                                    pendingDraw={pendingDraw}
+                                    compact
+                                  />
+                                );
                               // A fixed divider rides with the tile it follows.
                               return dividersAfter.has(def.id) ? (
                                 <span key={def.id} className="flex items-center">
@@ -603,13 +633,17 @@ export function ToolbarPalette(props: Props) {
               right={more.right}
               isMobile={isMobile}
               scale={scale}
-              // A group's popover is that group alone, so it names it; More's is the whole category.
-              label={allGroups?.find((g) => g.id === openGroup)?.label ?? category.label}
+              // A group's or an opener's popover is what it opened, so it names it; More's is the whole category.
+              label={opened?.label ?? category.label}
               dataAttr="data-toolbar-more"
             >
-              <BrowseStartGroup.Provider value={openGroup ? { id: openGroup, bare: true } : null}>
-                {/* Keyed on the group, so another group's tile opens the browse afresh on it. */}
-                <Fragment key={openGroup ?? ''}>{category.content}</Fragment>
+              <BrowseStartGroup.Provider
+                value={opened?.group ? { id: opened.group, bare: true } : null}
+              >
+                {/* Keyed on what opened it, so another group's tile opens the body afresh on its own. */}
+                <Fragment key={opened?.key ?? ''}>
+                  {(opened ? tabs.find((t) => t.id === opened.category) : category)?.content}
+                </Fragment>
               </BrowseStartGroup.Provider>
             </StripPopover>
           ) : null}

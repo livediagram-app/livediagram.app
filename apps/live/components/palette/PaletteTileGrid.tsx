@@ -1,3 +1,4 @@
+import { requestPaletteCategory } from '@/lib/palette-category-request';
 import type {
   ComponentKind,
   EstimateScale,
@@ -127,6 +128,9 @@ export function tileHandler(
       return () => actions.addTechIcon(a.iconId);
     case 'marker':
       return () => (a.once ? actions.beginMarker(a.penId, true) : actions.beginMarker(a.penId));
+    case 'open':
+      // Off the strip (which opens its popover itself) an opener moves the palette to its category.
+      return () => requestPaletteCategory(a.category);
   }
 }
 

@@ -150,6 +150,8 @@ type PaletteTileAction =
       plan?: string;
     }
   | { type: 'text' }
+  // An opener (palette-openers): stands for a category, or one group of a catalogue, and opens it; places nothing.
+  | { type: 'open'; category: string; group?: string }
   | { type: 'freehand' }
   // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md), the recognising pen
   // (docs/specs/008-canvas/two-pens.md) and the click-to-place vertex tool (docs/specs/008-canvas/polygon-tool.md)

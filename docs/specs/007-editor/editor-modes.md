@@ -354,18 +354,20 @@ Plan shows no palette: its boards, sheets and dashboards carry their own tools
   event-storming board
   (the layout's `landing`). Switching mode re-lands the palette there, so it
   never shows a category the new mode leaves out.
-- **Popular** is the landing category of every mode but Plan: twelve tiles that mode is most
-  often built from, listed in its layout entry, fixed (not edited or
-  reordered). It replaced the per-browser **Favourites**
+- **Popular** is the landing category of every mode but Plan: the tiles that mode is most
+  often built from (twelve at most), listed in its layout entry, fixed (not edited or
+  reordered). An entry may be an **opener** instead of a tile (`palette-openers`): it stands for a whole category, or
+  one group of a catalogue, and on the strip opens it in a popover under itself, drawn with a chevron as the
+  catalogue groups are ([Toolbar layout](toolbar-layout.md) "More"); in the Palette panel it moves the palette to
+  that category. An opener places nothing and is not a search result. It replaced the per-browser **Favourites**
   ([Palette Favourites](../010-palette/palette-favourites.md), removed).
-  - **Diagram**: Square, Circle, Diamond, Text, Arrow, Frame, Sticky note,
-    Image, Shape pen, Table, Code block, Entity (what were the default
-    Favourites).
+  - **Diagram**: Square, Circle, Diamond, Text, Arrow, Frame, Mind node, Flowchart node, Sankey, Table, the
+    **AWS** opener (Technology's AWS marks), Entity.
   - **Illustrate**: Text, Square, Circle, Image, Speech bubble, Pie, Bar,
     Donut, Stat row, Process, Timeline, Callout, each also reachable from
     another category the mode offers.
-  - **Facilitate**: Sticky note, Text, Frame, Arrow, Timer button, Vote button, Poll button,
-    Reveal zone, Agenda, Idea box, Q&A board, Temperature check
+  - **Facilitate**: Sticky note, Text, Frame, Arrow, then the session kit as four openers: **Ask**, **Tools**,
+    **Record**, **React** (each its Collaborate category)
     ([Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette)).
 - Elements already on the canvas are untouched: narrowing the palette only
   changes what is offered to add.

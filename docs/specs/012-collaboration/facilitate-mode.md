@@ -88,9 +88,9 @@ Facilitate's layout, in order:
 | Decorate    | Icons, Stickers, Media                                |
 | Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
 
-- **Popular** (the landing category), twelve fixed tiles: Sticky note, Text, Frame, Arrow,
-  Timer button, Vote button, Poll button, Reveal zone, Agenda, Idea box, Q&A board, Temperature
-  check.
+- **Popular** (the landing category), fixed: Sticky note, Text, Frame, Arrow, then **Ask**, **Tools**, **Record**
+  and **React** as openers ([Editor modes](../007-editor/editor-modes.md) "Popular"): each draws its category's glyph
+  with a chevron and opens that category's tiles in a popover under it, on a desktop and a phone.
 - **Write, Draw and Build hold what a session uses, not what a diagram or a page does.** Write is
   Text and Sticky note (no Page, no Annotation); Draw is Pencil, Highlighter, Arrow and Line (no
   Shape Pen, no Polygon); Build is Mind node, Table and Frame (no Lane, no Timeline). Search still
@@ -113,7 +113,7 @@ Facilitate's layout, in order:
 - Technology, Components, Devices, Data and Event Storming are not offered: they build diagrams
   and pages, not sessions.
 - A **Participant** gets the participant palette Facilitate's landing category gives
-  ([Participant share role](#share-roles)): sticky notes and text from Popular, and an image.
+  ([Participant share role](#share-roles)): sticky notes and text, and an image.
 
 ## The Session strip per mode
 

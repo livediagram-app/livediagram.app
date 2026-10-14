@@ -12,6 +12,10 @@ import { techBrowseGroups } from './TechPickerTab';
 
 export type StripGroup = { id: string; label: string; icon: ReactNode };
 
+// What a strip popover opened on: a catalogue's group, or an opener (palette-openers) for a category or one of its
+// groups. `key` is the tile that opened it.
+export type StripOpen = { key: string; category: string; group: string | null; label: string };
+
 /** The category's groups when it is a grouped catalogue, else null (its strip shows tiles). Empty groups (the
  *  catalogue chunk still in flight) are left out, so the strip shows nothing until there is something to open. */
 export function catalogueStripGroups(categoryId: string): StripGroup[] | null {

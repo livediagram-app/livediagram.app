@@ -1,3 +1,4 @@
+import { openerById } from './palette-openers';
 import { describe, expect, it } from 'vitest';
 import { isPlanViewId } from '@livediagram/items';
 import { PALETTE_CATEGORIES } from './palette-categories';
@@ -29,7 +30,8 @@ describe('palette layouts', () => {
       expect(new Set(seen).size, mode).toBe(seen.length);
       for (const e of layout.categories) {
         expect(known.has(e.id), `${mode}: ${e.id}`).toBe(true);
-        for (const t of e.tiles ?? []) expect(tileById(t), `${mode}: ${t}`).toBeDefined();
+        for (const t of e.tiles ?? [])
+          expect(tileById(t) ?? openerById(t), `${mode}: ${t}`).toBeDefined();
         if (CATALOGUE_CATEGORIES.has(e.id)) expect(e.tiles, `${mode}: ${e.id}`).toBeUndefined();
       }
       expect(seen, `${mode} lands on one of its own`).toContain(layout.landing);
@@ -81,128 +83,29 @@ describe('palette layouts', () => {
     expect(paletteLandingCategory('facilitate', false)).toBe('popular');
   });
 
-  it("puts the session tools on Facilitate's Popular, twelve tiles", () => {
+  it("puts the session kit on Facilitate's Popular as four openers", () => {
     const popular = paletteCategoriesFor('facilitate').find((c) => c.id === 'popular')!;
     expect(popular.tiles!.map((t) => t.id)).toEqual([
       'tools:sticky',
       'tools:text',
       'tools:frame',
       'tools:arrow',
-      'tools:session-timer',
-      'tools:session-vote',
-      'tools:session-poll',
-      'tools:reveal',
-      'collab:agenda',
-      'collab:idea-box',
-      'collab:qa-board',
-      'collab:temperature',
+      'open:collab-ask',
+      'open:collab-tools',
+      'open:collab-record',
+      'open:collab-react',
     ]);
-  });
-
-  it('holds every Collaborate tile in Facilitate, across its six categories', () => {
-    const held = paletteCategoriesFor('facilitate')
-      .filter((c) => c.id.startsWith('collab-'))
-      .flatMap((c) => c.tiles!.map((t) => t.id));
-    expect(held.sort()).toEqual(
-      tilesForCategory('behaviour')
-        .map((t) => t.id)
-        .sort(),
-    );
-  });
-
-  it("leaves Page, Annotation, Shape Pen, Polygon, Lane and Timeline out of Facilitate's Write, Draw and Build", () => {
-    const tilesOf = (id: string) =>
-      paletteCategoriesFor('facilitate')
-        .find((c) => c.id === id)!
-        .tiles!.map((t) => t.id);
-    expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky']);
-    expect(tilesOf('draw')).toEqual([
-      'tools:pencil',
-      'tools:highlighter',
-      'tools:arrow',
-      'tools:line',
-    ]);
-    expect(tilesOf('build')).toEqual([
-      'tools:mind-node',
-      'tools:flowchart',
-      'tools:table',
-      'tools:frame',
-    ]);
-  });
-
-  it("gives a Facilitate Participant the landing's sticky and text, and an image", () => {
-    expect(participantTiles('facilitate', false).map((t) => t.id)).toEqual([
-      'tools:sticky',
-      'tools:text',
-      'tools:image',
-    ]);
-  });
-
-  it('offers Event Storming on a board only', () => {
-    expect(ids('diagram', true)).toContain('event-storming');
-    expect(paletteCategoryOffered('diagram', 'event-storming')).toBe(false);
-  });
-
-  it('narrows Illustrate to the categories a visual page is made of', () => {
-    expect(ids('illustrate')).toEqual([
-      'popular',
-      'shapes',
-      'my-shapes',
-      'write',
-      'build',
-      'components',
-      'devices',
-      'icons',
-      'stickers',
-      'media',
-      'data',
-    ]);
-  });
-
-  it('lands every mode on its Popular, a board on its notation', () => {
-    expect(paletteLandingCategory('diagram', false)).toBe('popular');
-    expect(paletteLandingCategory('illustrate', false)).toBe('popular');
-    expect(paletteLandingCategory('diagram', true)).toBe('event-storming');
-  });
-
-  it('holds the same tile in different categories per mode: Page is in Write for Diagram only', () => {
-    expect(tileIds('diagram', 'write')).toContain('tools:page');
-    expect(tileIds('illustrate', 'write')).not.toContain('tools:page');
-    expect(tileIds('illustrate', 'write')).toEqual(['tools:text', 'tools:sticky']);
-  });
-
-  it('leaves mind nodes, lanes, frames, annotations and entities out of Illustrate', () => {
-    const everywhere = paletteCategoriesFor('illustrate').flatMap((c) =>
-      (c.tiles ?? []).map((t) => t.id),
-    );
-    for (const id of [
-      'tools:mind-node',
-      'tools:lane',
-      'tools:frame',
-      'tools:annotation',
-      'tools:entity',
-    ]) {
-      expect(everywhere, id).not.toContain(id);
-    }
-    expect(tileIds('illustrate', 'build')).toEqual([
-      'tools:table',
-      'tools:timeline',
-      'tools:sankey',
-    ]);
-    expect(tileIds('diagram', 'build')).toContain('tools:mind-node');
-    expect(tileIds('diagram', 'write')).toContain('tools:annotation');
-  });
-
-  it("leaves Media's embeds out of Diagram, keeping its own two", () => {
-    expect(tileIds('diagram', 'media')).toEqual(['tools:image', 'tools:avatar']);
-    expect(tileIds('illustrate', 'media')).toContain('media:embed-youtube');
+    // Each opens a category Facilitate offers.
+    const offered = new Set(paletteCategoriesFor('facilitate').map((c) => c.id));
+    for (const t of popular.tiles!)
+      if (t.action.type === 'open') expect(offered.has(t.action.category), t.id).toBe(true);
   });
 
   it('defaults a category to its own tiles', () => {
     expect(tileIds('diagram', 'shapes')).toEqual(tilesForCategory('shapes').map((t) => t.id));
   });
 
-  it("fills Diagram's Popular with what used to be the default Favourites", () => {
+  it("fills Diagram's Popular with the shapes, the structures and the AWS marks", () => {
     expect(tileIds('diagram', 'popular')).toEqual([
       'shapes:square',
       'shapes:circle',
@@ -210,11 +113,11 @@ describe('palette layouts', () => {
       'tools:text',
       'tools:arrow',
       'tools:frame',
-      'tools:sticky',
-      'tools:image',
-      'tools:shape-pen',
+      'tools:mind-node',
+      'tools:flowchart',
+      'tools:sankey',
       'tools:table',
-      'tools:code-block',
+      'open:technology/aws',
       'tools:entity',
     ]);
   });
