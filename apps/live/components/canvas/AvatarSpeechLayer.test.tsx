@@ -112,6 +112,23 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
     expect(onCancel).toHaveBeenCalled();
   });
 
+  it('refuses a key typed past the limit, but trims text dropped in at once', () => {
+    layer([], { head: { x: 0, y: 0 }, coolingDown: false, onSend: () => true, onCancel: () => {} });
+    const box = screen.getByRole('textbox', { name: 'Message' }) as HTMLTextAreaElement;
+    const put = (value: string, inputType: string) => {
+      // Through the native setter, as a browser writes it, so React sees the change.
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(box, value);
+      box.dispatchEvent(new InputEvent('input', { bubbles: true, inputType }));
+    };
+    const fifty = Array.from({ length: 50 }, (_, i) => `w${i}`).join(' ');
+    put(fifty, 'insertText');
+    put(`${fifty} x`, 'insertText');
+    expect(box.value).toBe(fifty);
+    put('', 'deleteContentBackward');
+    put(`${fifty} and more besides`, 'insertFromDrop');
+    expect(box.value).toBe(fifty);
+  });
+
   it('holds Send while cooling down, and says so', () => {
     layer([], { head: { x: 0, y: 0 }, coolingDown: true, onSend: () => true, onCancel: () => {} });
     fireEvent.change(screen.getByRole('textbox', { name: 'Message' }), { target: { value: 'hi' } });

@@ -39,7 +39,10 @@ export function clampSayText(text: string): string {
     }
     out = out.slice(0, end);
   }
-  return out.length > AVATAR_SAY_MAX_CHARS ? out.slice(0, AVATAR_SAY_MAX_CHARS) : out;
+  if (out.length <= AVATAR_SAY_MAX_CHARS) return out;
+  // Cut by UTF-16 unit, never between the halves of an emoji: a lone high surrogate draws as a box.
+  const cut = out.slice(0, AVATAR_SAY_MAX_CHARS);
+  return /[\uD800-\uDBFF]$/.test(cut) ? cut.slice(0, -1) : cut;
 }
 
 /** Whether a draft is within both limits as it stands. */

@@ -40,6 +40,11 @@ describe('clampSayText (docs/specs/008-canvas/avatar-mode.md "Typing a message")
     expect(clamped).toBe(words(50));
   });
 
+  it('never cuts an emoji in half at the character limit', () => {
+    const clamped = clampSayText(`${'a'.repeat(299)}😀 b`);
+    expect(clamped).toBe('a'.repeat(299));
+  });
+
   it('keeps a trailing space while under the limits', () => {
     expect(clampSayText('hello ')).toBe('hello ');
   });

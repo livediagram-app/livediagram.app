@@ -55,12 +55,13 @@ export type SpeechBubble = {
 
 /**
  * A draft after an edit (docs/specs/008-canvas/avatar-mode.md "Typing a message"): newlines become spaces; typing
- * past either limit is refused (the previous draft stands, so nothing written vanishes); a paste is clamped.
+ * past either limit is refused (the previous draft stands, so nothing written vanishes); text put in at once (a
+ * paste, a drop, an autocorrection, composed text) is clamped.
  */
-export function nextDraft(prev: string, value: string, pasted: boolean): string {
+export function nextDraft(prev: string, value: string, atOnce: boolean): string {
   const cleaned = value.replace(/[\r\n\t]+/g, ' ');
   if (withinSayLimits(cleaned)) return cleaned;
-  return pasted ? clampSayText(cleaned) : prev;
+  return atOnce ? clampSayText(cleaned) : prev;
 }
 
 /** How long a message stays up, from its length. */
