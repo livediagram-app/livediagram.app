@@ -19,6 +19,16 @@
     "collisions": 0,
     "extent": "1032×1115"
   },
+  "graph-flow-13-bus": {
+    "shared": 3897,
+    "crossed": 0,
+    "strikes": 1,
+    "kinks": 0,
+    "crossings": 3,
+    "behind": 0,
+    "collisions": 1,
+    "extent": "1876×1084"
+  },
   "graph-flow-13": {
     "shared": 1440,
     "crossed": 0,
