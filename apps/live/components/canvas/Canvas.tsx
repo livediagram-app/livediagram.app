@@ -81,7 +81,7 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 // person rather than by whatever size of pad last set one off.
 const AVATAR_BURST_PX = 120;
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
-import { AVATAR_SPAWN_GAP, type AvatarPoint } from '@/lib/avatar-walk';
+import { avatarSpawnFromButton, type AvatarPoint } from '@/lib/avatar-walk';
 import { CHAIR_SITTER_FACING, DEFAULT_CHAIR_FACING, chairSeatPoint } from '@livediagram/document';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
@@ -357,14 +357,9 @@ function CanvasView(props: CanvasProps) {
   // later entry from the palette spawns at the viewport centre as before.
   const avatarSpawnRef = useRef<AvatarPoint | null>(null);
   const pressModeButton = (element: ShapeElement) => {
-    if ((element.mode ?? DEFAULT_BUTTON_MODE) === 'avatar') {
-      // Feet just below the button, centred on it: standing ON the button would
-      // read as the character having pressed itself out of existence.
-      avatarSpawnRef.current = {
-        x: element.x + element.width / 2,
-        y: element.y + element.height + AVATAR_SPAWN_GAP,
-      };
-    }
+    // Feet just below the button, centred on it, and only for a press that enters the mode.
+    const spawn = avatarSpawnFromButton(element, element.mode ?? DEFAULT_BUTTON_MODE, canvasTool);
+    if (spawn) avatarSpawnRef.current = spawn;
     props.onPressModeButton?.(element);
   };
   // Declared before the hook that fills it: the walk hook's chair callback

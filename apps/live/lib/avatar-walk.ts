@@ -13,6 +13,19 @@ import { isBoxed, type Element } from '@livediagram/document';
 // it reads as standing in front of it rather than on top of it.
 export const AVATAR_SPAWN_GAP = 12;
 
+// Where pressing a Selection Mode button should put the character on entry (docs/specs/008-canvas/avatar-mode.md
+// "Entering from a button"): feet just below the button, centred on it. Null for a button of another mode, and for
+// a press made IN Avatar mode, which leaves it: a spawn point set then outlived the walk, so the next entry from
+// the palette put the character back at the button.
+export function avatarSpawnFromButton(
+  button: { x: number; y: number; width: number; height: number; mode?: string },
+  buttonMode: string,
+  currentTool: string,
+): AvatarPoint | null {
+  if (buttonMode !== 'avatar' || currentTool === 'avatar') return null;
+  return { x: button.x + button.width / 2, y: button.y + button.height + AVATAR_SPAWN_GAP };
+}
+
 // How far a shoved character slides, in canvas px (docs/specs/008-canvas/avatar-mode.md). Far enough to be
 // unmistakably a push, short enough that nobody gets flung across the canvas.
 export const AVATAR_SHOVE_DISTANCE = 70;
