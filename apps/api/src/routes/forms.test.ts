@@ -249,7 +249,8 @@ describe('the public form (docs/specs/030-forms/forms.md "Filling in a form")', 
       state: 'closed',
       heading: 'Bug Report',
       message: 'See you next year.',
-      accent: '#dc2626',
+      // A chosen form colour wins over the theme's, in both halves.
+      look: { accent: { light: '#dc2626', dark: '#dc2626' } },
     });
     writeForm(form({ limit: 1 }));
     await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'One' } });
