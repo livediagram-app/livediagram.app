@@ -19,6 +19,12 @@ import type { SheetsRoomOp } from './sheets';
 // character, walk cycle, hop, and flag wave the sender sees. Deliberately
 // small — this goes out at cursor rates.
 
+// The statuses a character can show in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), the one list both
+// ends of the wire read: the editor's picker and labels are keyed to it, so a status can never be sent that a
+// receiver's type does not name.
+export const AVATAR_STATUS_IDS = ['available', 'focus', 'meeting', 'away'] as const;
+export type AvatarStatus = (typeof AVATAR_STATUS_IDS)[number];
+
 export type AvatarPresence = {
   x: number;
   y: number;
@@ -57,7 +63,7 @@ export type AvatarPresence = {
   holding?: 'water' | 'coffee' | null;
   // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none. Presence for the session only;
   // a receiver draws only a status it knows. Optional so an older client's packet parses as no status.
-  status?: 'available' | 'focus' | 'meeting' | 'away' | null;
+  status?: AvatarStatus | null;
 };
 
 // Room op kinds that are ephemeral signals: they mutate no document state,

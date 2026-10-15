@@ -22,14 +22,25 @@ const walker = (status: 'available' | 'focus' | 'meeting' | 'away' | null, name?
 
 // docs/specs/008-canvas/avatar-mode.md "Status"
 describe('a character’s status', () => {
+  // Read out where assistive tech can reach it: never under the character's aria-hidden drawing.
+  const exposed = (el: HTMLElement) => el.closest('[aria-hidden="true"]') === null;
+
   it('puts a peer’s status in their name chip, read with their name', () => {
-    const { getByLabelText } = walker('meeting', 'Sam');
-    expect(getByLabelText('Sam, In a Meeting')).toBeTruthy();
+    const { getByText } = walker('meeting', 'Sam');
+    expect(exposed(getByText('Sam, In a Meeting'))).toBe(true);
   });
 
-  it('shows your own status alone above your head', () => {
-    const { getByLabelText } = walker('available');
-    expect(getByLabelText('Available')).toBeTruthy();
+  it('shows your own status alone above your head, read as yours', () => {
+    const { getByText } = walker('available');
+    expect(exposed(getByText('Your status: Available'))).toBe(true);
+  });
+
+  it('ends a long name in an ellipsis inside the chip', () => {
+    const { getByText } = walker('meeting', 'Alexandria Montgomery-Smythe');
+    const name = getByText('Alexandria Montgomery-Smythe');
+    // Its own box beside the status dot: bare text in the flex chip clips mid-letter with no ellipsis.
+    expect(name.tagName).toBe('SPAN');
+    expect(name.className).toContain('truncate');
   });
 
   it('fades an Away character and floats a Zz over it', () => {
