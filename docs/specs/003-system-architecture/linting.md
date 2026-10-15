@@ -29,6 +29,7 @@ is the whole of what the repo enforces.
 - **typescript-eslint's recommended type-checked rules**, as oxlint's type-aware `typescript/*`
   rules (see [Type-aware rules](#type-aware-rules)). They turn on one rule at a time, each at zero
   findings ([#711](https://github.com/livediagram-app/livediagram.app/issues/711)); on so far:
+  - `await-thenable`
   - `no-array-delete`
   - `no-duplicate-type-constituents`
   - `no-for-in-array`
