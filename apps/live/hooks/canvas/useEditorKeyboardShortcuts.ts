@@ -31,6 +31,7 @@ import {
 } from './editor-shortcut-keys';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { isTypingTarget } from '@/lib/typing-target';
+import { avatarActionForKey } from '@/lib/avatar-action-keys';
 
 // Re-exported so existing importers (the unit test) keep resolving.
 export { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
@@ -367,6 +368,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.onCycleEditorMode();
         return;
       }
+
+      // Walking, the Avatar Panel's action keys are the character's (docs/specs/008-canvas/avatar-mode.md
+      // "Keyboard actions", useAvatarActionKeys): S spins rather than searching, 1 throws confetti rather than
+      // picking Select. V / H / K / I / Z and Escape stay the way out.
+      if (live.canvasTool === 'avatar' && avatarActionForKey(e)) return;
 
       // A whiteboard's keys are its dock's, and only these
       // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the diagram tab's element and
