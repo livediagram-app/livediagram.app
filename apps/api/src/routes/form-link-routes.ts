@@ -112,7 +112,10 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
     const problem = await responsesProblem(env, documentId, form, types);
     if (problem) return conflict('form_destination_missing');
     // A form not ready to fill in (no questions, an unworded one, a broken mapping or rule) is not published.
-    const problems = publishProblems(form, destinationType(form.destination, types));
+    const problems = publishProblems(
+      form,
+      form.sheet ? undefined : destinationType(form.destination, types),
+    );
     if (problems.length) return json({ error: 'form_not_ready', problems }, { status: 409 });
     if ((await countSuspendedFormLinks(env, documentId)) >= FORM_SUSPENSIONS_MAX)
       return forbidden('form_suspensions');

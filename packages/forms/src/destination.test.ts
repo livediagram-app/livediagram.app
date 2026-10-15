@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { ItemTypeDef, PlanBoardSetup } from '@livediagram/items';
-import { DESTINATION_PROBLEM_TEXT, destinationProblem, destinationType } from './destination';
+import {
+  DESTINATION_PROBLEM_TEXT,
+  destinationProblem,
+  destinationType,
+  sheetDestinationProblem,
+} from './destination';
 
 const type = (id: string): ItemTypeDef => ({
   id,
@@ -53,5 +58,14 @@ describe('destinationType', () => {
     expect(destinationType(dest, types)?.id).toBe('bug');
     expect(destinationType({ ...dest, typeId: 'x' }, types)).toBeUndefined();
     expect(destinationType(undefined, types)).toBeUndefined();
+  });
+});
+
+describe('sheetDestinationProblem', () => {
+  it('holds while its sheet is on its tab', () => {
+    const at = { tabId: 't', sheetId: 'AbCdEf123456' };
+    expect(sheetDestinationProblem(at, [at])).toBeNull();
+    expect(sheetDestinationProblem(at, [{ ...at, tabId: 'u' }])).toBe('sheet_missing');
+    expect(DESTINATION_PROBLEM_TEXT.sheet_missing).toMatch(/sheet was removed/);
   });
 });

@@ -348,6 +348,21 @@ describe('the sheet store client', () => {
     await s.settle();
     expect(s.sheet('sheet0003')).toBeUndefined();
   });
+  it('waits for a new tab to be saved: a create refused as tab_not_found is tried again', async () => {
+    vi.useFakeTimers();
+    try {
+      srv.api.createSheet.mockRejectedValueOnce(new ApiError('sheet create', 404, 'tab_not_found'));
+      s.create({ id: 'sheet0004', tabId: 't9', title: 'New', layout: emptyLayout(rand, 2, 2) });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(s.sheet('sheet0004')).toBeTruthy();
+      await vi.advanceTimersByTimeAsync(1000);
+      await s.settle();
+      expect(srv.api.createSheet).toHaveBeenCalledTimes(2);
+      expect(s.sheet('sheet0004')).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
   it('deletes a sheet with its element, and Undo makes it again as it was', async () => {
     s.write('sheet0001', set(0, 0, 7));
     await s.settle();

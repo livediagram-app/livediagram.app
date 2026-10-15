@@ -54,6 +54,8 @@ function Harness({ canEdit }: { canEdit: boolean }) {
     startForm: vi.fn(),
     newFormFor: vi.fn(),
     setDestinationType: vi.fn(),
+    setResponsesTo: vi.fn(),
+    newResponsesSheet: vi.fn(),
     changeForm: (fn) => setForm((f) => fn(f)),
     renameForm: (name) => setForm((f) => ({ ...f, heading: name })),
     addFieldFor: vi.fn(() => null),

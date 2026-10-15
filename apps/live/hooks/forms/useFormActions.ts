@@ -15,7 +15,8 @@ import {
   type FormQuestion,
   type StarterId,
 } from '@livediagram/forms';
-import { isDefaultTabName, type Tab } from '@livediagram/document';
+import { createShape, isDefaultTabName, type Element, type Tab } from '@livediagram/document';
+import { placeNewSheet } from '@/lib/sheet-seeds';
 import { newCustomFieldId, newItemTypeId, type ItemTypeDef } from '@livediagram/items';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
 import { track } from '@/lib/telemetry';
@@ -50,6 +51,14 @@ export type FormActions = {
   // Responses Go To's Card Type: the destination's type, its board renamed "<Type> Responses" while on its automatic
   // name (withAutoBoardName), one step.
   setDestinationType: (typeId: string) => void;
+  // Responses Go To's Board or Sheet (docs/specs/030-forms/forms.md "Responses to a Sheet"): to a Sheet, the given one
+  // (or the document's first); to a Board, the sheet let go (the board destination was kept).
+  setResponsesTo: (
+    to: { kind: 'board' } | { kind: 'sheet'; tabId: string; sheetId: string },
+  ) => void;
+  // New Sheet: a Sheet tab "<Form> Responses" after this one, a blank sheet on it the destination, opened so the sheet
+  // is made.
+  newResponsesSheet: () => void;
 };
 
 const blankForm = (name: string): FormDefinition => ({
@@ -303,6 +312,53 @@ export function useFormActions({
     );
   }, [activeId, commitTabs, live]);
 
+  const setResponsesTo = useCallback<FormActions['setResponsesTo']>(
+    (to) =>
+      commitTabs((ts) =>
+        ts.map((t) => {
+          if (t.id !== activeId) return t;
+          const form = readForm(t.form) ?? blankForm(t.name);
+          const { sheet: _gone, ...rest } = form;
+          return {
+            ...t,
+            form:
+              to.kind === 'sheet'
+                ? { ...rest, sheet: { tabId: to.tabId, sheetId: to.sheetId } }
+                : rest,
+          };
+        }),
+      ),
+    [activeId, commitTabs],
+  );
+
+  const newResponsesSheet = useCallback<FormActions['newResponsesSheet']>(() => {
+    const { tabs: now } = live.current;
+    const formTab = now.find((t) => t.id === activeId);
+    if (!formTab || formTab.locked) return;
+    const form = readForm(formTab.form) ?? blankForm(formTab.name);
+    const name = `${form.heading} Responses`.slice(0, 80);
+    const { sheetId } = placeNewSheet({ title: name, blank: true });
+    const sheetTab: Tab = {
+      id: crypto.randomUUID(),
+      name,
+      elements: [{ ...createShape('plan-sheet', 0, 0), planSheet: { sheetId } } as Element],
+      defaultTextSize: 'sm',
+      kind: 'sheet',
+      opensIn: 'plan',
+      ...(formTab.theme ? { theme: formTab.theme } : {}),
+    };
+    commitTabs((ts) => {
+      const next = ts.map((t) =>
+        t.id === activeId ? { ...t, form: { ...form, sheet: { tabId: sheetTab.id, sheetId } } } : t,
+      );
+      next.splice(next.findIndex((t) => t.id === activeId) + 1, 0, sheetTab);
+      return next;
+    });
+    live.current.markTabLoaded?.(sheetTab.id);
+    // A placed sheet is made when its tab first draws it: opened, it exists for the first response.
+    live.current.openTab?.(sheetTab.id);
+  }, [activeId, commitTabs, live]);
+
   const setDestinationType = useCallback<FormActions['setDestinationType']>(
     (typeId) => {
       const { tabs: now, itemTypes: slice } = live.current;
@@ -337,6 +393,8 @@ export function useFormActions({
       newResponsesBoard,
       newCardType,
       setDestinationType,
+      setResponsesTo,
+      newResponsesSheet,
     }),
     [
       startForm,
@@ -348,6 +406,8 @@ export function useFormActions({
       newResponsesBoard,
       newCardType,
       setDestinationType,
+      setResponsesTo,
+      newResponsesSheet,
     ],
   );
 }

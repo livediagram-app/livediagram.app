@@ -11,7 +11,7 @@ import { track } from '@/lib/telemetry';
 
 export const PREVIEW_NO_DESTINATION =
   'Preview can’t add its card until Responses Go To names a board and column.';
-export const PREVIEW_FAILED = 'Preview couldn’t add its card. Try again.';
+export const PREVIEW_FAILED = 'Preview couldn’t be sent. Try again.';
 
 export async function sendPreview({
   form,
@@ -34,10 +34,6 @@ export async function sendPreview({
 }): Promise<SubmitOutcome> {
   const checked = checkResponse(form, state);
   if (!checked.ok) return { kind: 'invalid', errors: checked.errors };
-  if (problem || !type || !form.destination || !addItems) {
-    debugLog('[forms] form.preview.no_destination', { problem });
-    return { kind: 'failed', message: PREVIEW_NO_DESTINATION };
-  }
   if (sendToLink) {
     const sent = await sendToLink(state);
     // The api counts it (Form·Sent·Preview, server-side).
@@ -47,6 +43,12 @@ export async function sendPreview({
       console.warn('[forms] form.preview.failed');
       return { kind: 'failed', message: PREVIEW_FAILED };
     }
+  }
+  // A Sheet's row is the api's to write: with no way to reach it there is nothing to add.
+  if (form.sheet) return { kind: 'failed', message: PREVIEW_FAILED };
+  if (problem || !type || !form.destination || !addItems) {
+    debugLog('[forms] form.preview.no_destination', { problem });
+    return { kind: 'failed', message: PREVIEW_NO_DESTINATION };
   }
   const card = responseCard(form, tabId, checked.answers, type, null, true);
   const made = await addItems([

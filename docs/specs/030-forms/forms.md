@@ -390,6 +390,35 @@ On submit the api, in one write:
   responses (`form_full`; the page says the form has just closed); the Form tab's status bar says "Responses are
   paused: this document holds as many cards as it can."
 
+## Responses to a Sheet
+
+Responses Go To opens on a switch: **Cards on a Board** (above: a card each, answers mapped to fields) or **Rows in a
+Sheet** (a row each, a column per question, no mapping; `form.sheet`: `{ tabId, sheetId }`). Switching keeps the
+board settings, for switching back.
+
+- **Choosing the sheet**: **Sheet** lists the document's Sheet tabs' sheets by their tab's name ("Budget", "Budget 2"
+  for a second on it), its last choice **+ New Sheet**: a Sheet tab "<Form> Responses" after the Form tab (in its
+  theme), a blank sheet on it the destination, opened so the sheet is made. Picking Rows in a Sheet with no sheet
+  yet makes one the same way. A sentence reads it back: "Each response becomes a row on **Budget**, a column per
+  question. No mapping needed." A sheet no longer on its tab says "Its sheet was removed. Choose where responses go."
+  and pauses the form, as a broken board destination does.
+- **In the builder**: a question's footer reads "Its own column in the sheet" in place of the Answer goes to badge.
+- **The row** (`responseRowWrite`, `@livediagram/forms`): the sheet's first row holds the headers, **#**,
+  **Submitted** and each question's wording (a repeated wording gets " (2)"); a question finds its column by its
+  header, ignoring case, and one with none takes the next free column after the last header (columns added in one
+  insert when the sheet has too few). Headers the form writes are bold, and a sheet given its first headers has row 1
+  frozen. The response takes the first row after the last row holding anything (rows added when there are none).
+  Its cells: the response number, the time ("2026-10-15 14:03 UTC"; the api knows no one's zone), and each answer: a
+  Number or Rating as a number, a Checkbox as true or false, the rest as text (several picks "Vegan, Halal"); an
+  unanswered question leaves its cell empty.
+- **Stored** through the sheet store's own write (`storeSheetWrite`: validation, caps, the rev guard, the relay),
+  unchecked against the sheet's validation rules so a response always lands; by the form's person ("<Form> form").
+  A sheet too full refuses as `form_full`; the number stays claimed whatever happens.
+- **Preview**: a published form's preview is a counted row (its number, "· Preview" after its time); an unpublished
+  form's preview is written by the api too (`.../form-preview` with no link), its # reading **Preview**.
+- **Elsewhere**: the response count opens the sheet's tab; the Inbox names the sheet's tab; no board shows the
+  form's Form strip. Publishing checks no mappings for a sheet form.
+
 ## Hearing about responses
 
 - **The board's Form strip**: a board on a Board tab that a form sends its responses to shows, leading its widgets

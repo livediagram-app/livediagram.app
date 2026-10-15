@@ -178,6 +178,23 @@ none), `broken_mapping` (a `goesTo` whose `effectiveTarget` is broken; judged on
 destination's own problem speaks). `PUBLISH_PROBLEM_TEXT` the dialog's lines. The publish route answers 409
 `form_not_ready` with `problems`; Share Form lists them (`notReady`, `onShow`).
 
+## 6c. Responses to a Sheet (`sheet-row.ts`; api `forms/sheet-response.ts`)
+
+`FormDefinition.sheet?: FormSheetDestination` (`{ tabId, sheetId }`, read when both match `TAB_ID` and
+`SHEET_ID_PATTERN`). `sheetHeaders(form)` (`#`, `Submitted`, prompts made distinct), `submittedText(at)` (UTC),
+`responseRowWrite({ form, answers, number, preview, at, layout, header, usedRows, rand? })` → one `SheetWrite`: header
+row inserted if none, missing headers in one `insertCols` after the last header (`f: { b: true }`), `freeze rows 1`
+when the sheet had no headers, the row after the last used (rows inserted as needed); `cells` kind when nothing needs
+the layout. `sheetDestinationProblem(sheet, sheets)` → `sheet_missing`. Api: `responsesProblem(env, docId, form,
+types)` (sheet head on its tab, else the board check) for publishing and the public read; `respond` branches on
+`form.sheet` (`sheetThere`, claim, `writeResponseRow`, `accepted`); `previewToSheet` for an unlinked preview;
+`writeResponseRow` reads the header cells and `usedSheetRows` (`SELECT DISTINCT row_id`) and stores through
+`storeSheetWrite(ctx, documentId, sheetId, { write, unchecked: true }, by, null)`, the route's write path factored
+out. The sheet store retries a create refused `tab_not_found` (`CREATE_TAB_RETRIES` 4, `CREATE_TAB_RETRY_MS` 800 ms
+a step), for a sheet on a tab not saved yet. Live: `sheetsOf(tabs)`, `setResponsesTo`, `newResponsesSheet`
+(`placeNewSheet` on a new Sheet tab, opened), `DestinationPicker` (`SheetDestination` / `BoardDestination`),
+`sendPreview` (the api first; a sheet with no link fails), `formsFeeding` skips sheet forms.
+
 ## 7. Starters (`starters.ts`)
 
 `FORM_STARTERS` as the spec's table (`id`, `name`, `line`, `telemetry`, `readyType?`, `accent` (its picture and a
@@ -325,6 +342,8 @@ editor modules: `forms-public.ts`, the shared controls and `@livediagram/ui`.
 | The form page wears the look                                                                      | `apps/live/components/forms/respond/FormRespondPage.test.tsx`                                     |
 | Starters valid, mappings resolve, fields reused                                                   | `starters.test.ts`                                                                                |
 | The board's Form strip: forms feeding a tab, the pill, no Copy Link without sharing               | `apps/live/components/forms/FormBoardStrip.test.tsx`                                              |
+| Sheet rows: headers, columns found and added, the row, kinds, growth, counted previews            | `packages/forms/src/sheet-row.test.ts`, `apps/api/src/routes/forms.test.ts`                       |
+| The sheet store retries a create waiting for its tab                                              | `apps/live/components/sheets/sheet-store-client.test.ts`                                          |
 | What stops publishing                                                                             | `packages/forms/src/publish-check.test.ts`, `apps/live/components/forms/ShareFormDialog.test.tsx` |
 | Sections shown by earlier answers, broken rules, the check dropping hidden answers, reading rules | `packages/forms/src/branching.test.ts`                                                            |
 | Destination problems; public projection; closed reasons                                           | `destination.test.ts`, `public.test.ts`                                                           |

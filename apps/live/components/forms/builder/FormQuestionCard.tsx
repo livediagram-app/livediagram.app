@@ -223,23 +223,30 @@ export function FormQuestionCard({
         ) : null}
       </div>
       <div className="flex flex-wrap items-center gap-1 border-t border-slate-100 px-4 py-2 dark:border-slate-800">
-        <button
-          type="button"
-          aria-haspopup="dialog"
-          aria-expanded={!!goesTo}
-          onClick={(e) => {
-            const button = e.currentTarget;
-            setGoesTo((open) => (open ? null : button));
-          }}
-          className={`mr-auto flex min-h-8 min-w-0 max-w-[60%] cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium leading-5 transition max-sm:max-w-full ${
-            target.broken
-              ? 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200'
-              : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300'
-          }`}
-        >
-          <span className="shrink-0 text-slate-400">Answer goes to</span>
-          <span className="min-w-0 truncate">{targetLabel(target)}</span>
-        </button>
+        {/* A Sheet takes every answer in its own column: nothing to map. */}
+        {b.form.sheet ? (
+          <span className="mr-auto text-[12px] text-slate-500 dark:text-slate-400">
+            Its own column in the sheet
+          </span>
+        ) : (
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded={!!goesTo}
+            onClick={(e) => {
+              const button = e.currentTarget;
+              setGoesTo((open) => (open ? null : button));
+            }}
+            className={`mr-auto flex min-h-8 min-w-0 max-w-[60%] cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium leading-5 transition max-sm:max-w-full ${
+              target.broken
+                ? 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200'
+                : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300'
+            }`}
+          >
+            <span className="shrink-0 text-slate-400">Answer goes to</span>
+            <span className="min-w-0 truncate">{targetLabel(target)}</span>
+          </button>
+        )}
         {goesTo ? (
           <FormSheet anchor={goesTo} name="Answer Goes To" onClose={() => setGoesTo(null)}>
             <AnswerGoesTo question={q} onChosen={() => setGoesTo(null)} />

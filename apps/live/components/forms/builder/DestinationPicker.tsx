@@ -14,7 +14,7 @@ import { boardAddTypes } from '@livediagram/items';
 import { PencilIcon, Select, Tooltip } from '@livediagram/ui';
 import { usePlan } from '@/components/plan/PlanContext';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
-import { boardsOf } from '@/hooks/forms/form-start';
+import { boardsOf, sheetsOf } from '@/hooks/forms/form-start';
 import { patchForm } from '@/hooks/forms/form-edits';
 import { useFormBuilder } from './form-builder-context';
 
@@ -22,6 +22,95 @@ import { useFormBuilder } from './form-builder-context';
 const NEW = '__new';
 
 export function DestinationPicker({ tabs }: { tabs: readonly Tab[] }) {
+  const b = useFormBuilder();
+  const sheets = sheetsOf(tabs);
+  const toSheet = !!b.form.sheet;
+  const tab = (on: boolean, label: string, pick: () => void) => (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={on}
+      disabled={!b.canEdit}
+      onClick={pick}
+      className={`flex h-7 flex-1 cursor-pointer items-center justify-center rounded-md text-[12px] font-semibold transition disabled:cursor-default ${
+        on
+          ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50'
+          : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
+      }`}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div className="flex flex-col gap-3">
+      {/* A board makes a card per response, its answers mapped to fields; a Sheet a row, a column per question. */}
+      <div
+        role="radiogroup"
+        aria-label="Responses become"
+        className="flex gap-0.5 rounded-lg border border-slate-200 p-0.5 dark:border-slate-700"
+      >
+        {tab(!toSheet, 'Cards on a Board', () => b.actions.setResponsesTo({ kind: 'board' }))}
+        {tab(toSheet, 'Rows in a Sheet', () => {
+          const first = sheets[0];
+          if (first) b.actions.setResponsesTo({ kind: 'sheet', ...first });
+          else b.actions.newResponsesSheet();
+        })}
+      </div>
+      {toSheet ? <SheetDestination tabs={tabs} /> : <BoardDestination tabs={tabs} />}
+    </div>
+  );
+}
+
+// Rows in a Sheet: which sheet (New Sheet the last choice), and a sentence reading it back.
+function SheetDestination({ tabs }: { tabs: readonly Tab[] }) {
+  const b = useFormBuilder();
+  const sheets = sheetsOf(tabs);
+  const at = b.form.sheet;
+  const current = sheets.find((s) => s.sheetId === at?.sheetId && s.tabId === at?.tabId);
+  return (
+    <div className="flex flex-col gap-3">
+      <SettingsField label="Sheet">
+        <Select
+          className="w-full"
+          selectClassName="text-[13px]"
+          value={current?.sheetId ?? ''}
+          disabled={!b.canEdit}
+          onChange={(e) => {
+            if (e.target.value === NEW) return b.actions.newResponsesSheet();
+            const s = sheets.find((x) => x.sheetId === e.target.value);
+            if (s) b.actions.setResponsesTo({ kind: 'sheet', tabId: s.tabId, sheetId: s.sheetId });
+          }}
+        >
+          <option value="" disabled>
+            {sheets.length ? 'Choose a sheet…' : 'No sheets yet'}
+          </option>
+          {sheets.map((s) => (
+            <option key={s.sheetId} value={s.sheetId}>
+              {s.name}
+            </option>
+          ))}
+          {b.canEdit ? <option value={NEW}>+ New Sheet</option> : null}
+        </Select>
+      </SettingsField>
+      {current ? (
+        <p className="rounded-lg bg-slate-50 px-3 py-2 text-[13px] leading-relaxed text-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
+          Each response becomes a row on <strong>{current.name}</strong>, a column per question. No
+          mapping needed.
+        </p>
+      ) : (
+        <p
+          role="status"
+          className="rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100"
+        >
+          {DESTINATION_PROBLEM_TEXT.sheet_missing}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Cards on a Board: the board, the card type (with its editor) and the column, and a sentence reading it back.
+function BoardDestination({ tabs }: { tabs: readonly Tab[] }) {
   const b = useFormBuilder();
   const plan = usePlan();
   const dest = b.form.destination;

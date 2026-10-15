@@ -117,8 +117,12 @@ export function responseRowWrite(input: SheetRowInput): SheetWrite {
     const c = cols[next]!;
     next += 1;
     colOf.set(w.key, c);
-    cells.push({ r: headerRow, c, i: { s: w.header } });
+    // A header the form writes is bold, so the first row reads as the table's head.
+    cells.push({ r: headerRow, c, i: { s: w.header }, f: { b: true } });
   }
+
+  // A sheet with no headers yet keeps its new header row in view as it fills.
+  if (lastHeader < 0) changes.push({ k: 'freeze', rows: 1 });
 
   // The first row after the last one holding anything (never the header row).
   let last = 0;

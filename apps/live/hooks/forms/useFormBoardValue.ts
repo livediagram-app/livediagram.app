@@ -11,7 +11,10 @@ export function formsFeeding(tabs: readonly Tab[], boardTabId: string) {
   return tabs.flatMap((t) => {
     if (t.kind !== 'form') return [];
     const form = readForm(t.form);
-    return form?.destination?.tabId === boardTabId ? [{ tabId: t.id, heading: form.heading }] : [];
+    // A form sending its responses to a Sheet feeds no board.
+    return !form?.sheet && form?.destination?.tabId === boardTabId
+      ? [{ tabId: t.id, heading: form.heading }]
+      : [];
   });
 }
 

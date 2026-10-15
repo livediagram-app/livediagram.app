@@ -14,6 +14,7 @@ import {
   destinationType,
   publicForm,
   publishProblems,
+  sheetDestinationProblem,
   readForm,
   type FormDefinition,
 } from '@livediagram/forms';
@@ -27,7 +28,7 @@ import { usePlan } from '@/components/plan/PlanContext';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { FormActions } from '@/hooks/forms/useFormActions';
 import { useFormLink } from '@/hooks/forms/useFormLink';
-import { boardsOf } from '@/hooks/forms/form-start';
+import { boardsOf, sheetsOf } from '@/hooks/forms/form-start';
 import { sendPreview } from '@/hooks/forms/form-preview';
 import { apiSendFormPreview } from '@/lib/api/forms';
 import { FormBuilderContext, type FormBuilderValue } from './builder/form-builder-context';
@@ -111,15 +112,21 @@ export function FormPage({
     share,
     enabled: online && !!documentId,
   });
-  const destTab = tabs.find((t) => t.id === form.destination?.tabId);
-  const problem = destinationProblem(
-    form.destination,
-    destTab ? boardsOf(destTab).map((b) => b.setup) : [],
-    types,
-  );
+  // Where responses go: a Sheet (a row each) when the form names one, else its board.
+  const destTab = tabs.find((t) => t.id === (form.sheet?.tabId ?? form.destination?.tabId));
+  const problem = form.sheet
+    ? sheetDestinationProblem(form.sheet, sheetsOf(tabs))
+    : destinationProblem(
+        form.destination,
+        destTab ? boardsOf(destTab).map((b) => b.setup) : [],
+        types,
+      );
   const type = destinationType(form.destination, types);
   // What else stops publishing (docs/specs/030-forms/forms.md "Publishing and the form link").
-  const notReady = useMemo(() => publishProblems(form, type), [form, type]);
+  const notReady = useMemo(
+    () => publishProblems(form, form.sheet ? undefined : type),
+    [form, type],
+  );
 
   // Responses Go To or Settings, from wherever a fix is offered (out of Preview first).
   const openSettings = useCallback((section: FormSettingsSection | null) => {
@@ -254,7 +261,7 @@ export function FormPage({
                             preview
                             {...(canEdit
                               ? {
-                                  previewNote: `This was a preview: its card, marked Preview, is on ${destTab?.name ?? 'the board'}.`,
+                                  previewNote: `This was a preview: its ${form.sheet ? 'row' : 'card'}, marked Preview, is on ${destTab?.name ?? (form.sheet ? 'the sheet' : 'the board')}.`,
                                   submit: async (state) => {
                                     const outcome = await sendPreview({
                                       form,
@@ -263,9 +270,10 @@ export function FormPage({
                                       problem,
                                       addItems: plan?.addItems,
                                       state,
-                                      // A published form counts it as a response.
+                                      // A published form counts it as a response; a Sheet's row is
+                                      // always written by the api.
                                       sendToLink:
-                                        published && documentId
+                                        (published || !!form.sheet) && documentId
                                           ? (s) =>
                                               apiSendFormPreview(
                                                 ownerId,

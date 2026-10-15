@@ -106,4 +106,14 @@ describe('sendPreview', () => {
     expect(await result).toEqual({ kind: 'sent' });
     expect(made[0]!.fields['title']).toBe('Preview: Login fails');
   });
+
+  it('sends a Sheet form’s preview through the api, and fails with no way to reach it', async () => {
+    const toSheet = { ...form, sheet: { tabId: 'st', sheetId: 'AAAAAAAAAAA1' } };
+    expect(
+      await send({ form: toSheet, sendToLink: async () => ({ kind: 'sent' }) }).result,
+    ).toEqual({ kind: 'sent' });
+    const { made, result } = send({ form: toSheet });
+    expect(await result).toEqual({ kind: 'failed', message: PREVIEW_FAILED });
+    expect(made).toEqual([]);
+  });
 });

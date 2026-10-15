@@ -62,10 +62,12 @@ describe('sheetHeaders', () => {
 });
 
 describe('responseRowWrite', () => {
-  it('writes the headers and the first response under them, each answer as its kind', () => {
+  it('writes the headers (bold, their row frozen) and the first response under them, each answer as its kind', () => {
     const w = responseRowWrite(base());
-    expect(w.kind).toBe('cells');
-    const cells = w.kind === 'cells' ? w.cells : [];
+    expect(w.kind).toBe('layout');
+    const cells = w.kind === 'title' ? [] : (w.cells ?? []);
+    expect(w.kind === 'layout' && w.changes).toEqual([{ k: 'freeze', rows: 1 }]);
+    expect(cells.filter((c) => c.r === 'r1').every((c) => c.f?.b === true)).toBe(true);
     expect(cells.filter((c) => c.r === 'r1').map((c) => c.i)).toEqual(
       ['#', 'Submitted', 'Name', 'Age', 'Agree', 'Diet', 'name (2)'].map((s) => ({ s })),
     );
@@ -108,8 +110,8 @@ describe('responseRowWrite', () => {
     const w = responseRowWrite(base({ layout: { rows: [], cols: ['ca'] } }));
     expect(w.kind).toBe('layout');
     if (w.kind !== 'layout') return;
-    expect(w.changes.map((c) => c.k)).toEqual(['insertRows', 'insertCols', 'insertRows']);
-    const [headerRow, cols, row] = w.changes as { ids: string[]; after: string | null }[];
+    expect(w.changes.map((c) => c.k)).toEqual(['insertRows', 'insertCols', 'freeze', 'insertRows']);
+    const [headerRow, cols, , row] = w.changes as { ids: string[]; after: string | null }[];
     expect(headerRow!.after).toBeNull();
     expect(cols!.ids).toHaveLength(6);
     expect(row!.after).toBe(headerRow!.ids[0]);
@@ -119,7 +121,7 @@ describe('responseRowWrite', () => {
 
   it('numbers a counted preview, marking its time', () => {
     const w = responseRowWrite({ ...base({ preview: true, number: 9 }), rand: undefined });
-    const cells = w.kind === 'cells' ? w.cells : [];
+    const cells = w.kind === 'title' ? [] : (w.cells ?? []);
     expect(
       cells
         .filter((c) => c.r === 'r2')
@@ -140,6 +142,17 @@ describe('responseRowWrite', () => {
     );
     const cells = w.kind === 'title' ? [] : (w.cells ?? []);
     expect(cells.find((c) => c.i && 'n' in c.i)?.c).toBe('ca');
+  });
+
+  it('writes only the row once every header is there and the sheet has room', () => {
+    const header = new Map(
+      ['#', 'Submitted', 'Name', 'Age', 'Agree', 'Diet', 'name (2)'].map(
+        (h, i) => [['ca', 'cb', 'cc', 'cd', 'ce', 'cf', 'cg'][i]!, h] as const,
+      ),
+    );
+    const w = responseRowWrite(base({ header, usedRows: new Set(['r1']) }));
+    expect(w.kind).toBe('cells');
+    expect(w.kind === 'cells' && w.cells.every((c) => c.r === 'r2')).toBe(true);
   });
 
   it('reads the time in UTC', () => {

@@ -211,3 +211,21 @@ export function withAutoBoardName(
     ),
   };
 }
+
+// The document's sheets a form can send its responses to (docs/specs/030-forms/forms.md "Responses to a Sheet"): each
+// Sheet tab's sheets, named after the tab ("Budget", or "Budget 2" for a second sheet on it).
+export function sheetsOf(tabs: readonly Tab[]): { tabId: string; sheetId: string; name: string }[] {
+  return tabs.flatMap((t) => {
+    if (t.kind !== 'sheet') return [];
+    const ids = t.elements.flatMap((el) =>
+      el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet
+        ? [el.planSheet.sheetId]
+        : [],
+    );
+    return ids.map((sheetId, i) => ({
+      tabId: t.id,
+      sheetId,
+      name: i === 0 ? t.name : `${t.name} ${i + 1}`,
+    }));
+  });
+}

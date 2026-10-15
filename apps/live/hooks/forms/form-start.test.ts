@@ -7,6 +7,7 @@ import {
   planFormStart,
   responsesBoardSetup,
   responsesBoardTab,
+  sheetsOf,
   uniqueTypeLabel,
   withAutoBoardName,
   withBoardTaking,
@@ -162,5 +163,25 @@ describe('withAutoBoardName', () => {
     expect(withAutoBoardName(same, { heading: 'Survey', from: 'Contact', to: 'Contact' })).toBe(
       same,
     );
+  });
+});
+
+describe('sheetsOf', () => {
+  it('lists each Sheet tab’s sheets, a second one numbered', () => {
+    const sheet = (sheetId: string) =>
+      ({ ...createShape('plan-sheet', 0, 0), planSheet: { sheetId } }) as Element;
+    const tabs: Tab[] = [
+      {
+        id: 's',
+        name: 'Budget',
+        kind: 'sheet',
+        elements: [sheet('AAAAAAAAAAA1'), sheet('AAAAAAAAAAA2')],
+      },
+      { id: 'b', name: 'Board', kind: 'board', elements: [sheet('AAAAAAAAAAA3')] },
+    ];
+    expect(sheetsOf(tabs)).toEqual([
+      { tabId: 's', sheetId: 'AAAAAAAAAAA1', name: 'Budget' },
+      { tabId: 's', sheetId: 'AAAAAAAAAAA2', name: 'Budget 2' },
+    ]);
   });
 });
