@@ -8,6 +8,7 @@ import { createShape, type Element } from '@livediagram/document';
 import { boundaryTourSteps } from './boundary-tour-steps';
 import { diagramKeyTourSteps } from './diagram-key-tour-steps';
 import { ELEMENT_TOUR_DEFS } from './element-tour-defs';
+import type { ElementTourApi } from './element-tour-api';
 import { entityTourSteps } from './entity-tour-steps';
 import { laneTourSteps } from './lane-tour-steps';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
@@ -17,9 +18,10 @@ import { tabWindowTourSteps } from './tab-window-tour-steps';
 import type { TourStepOf } from './tour-step';
 
 const env: MenuTourEnv = { elementId: 'el', hasMore: true, touch: false };
-const ids = (steps: TourStepOf<unknown>[]) => steps.map((s) => s.id);
-const step = (steps: TourStepOf<unknown>[], id: string) => steps.find((s) => s.id === id)!;
-const ringed = (s: TourStepOf<unknown>) => s.selector!(undefined);
+type Step = TourStepOf<ElementTourApi>;
+const ids = (steps: Step[]) => steps.map((s) => s.id);
+const step = (steps: Step[], id: string) => steps.find((s) => s.id === id)!;
+const ringed = (s: Step) => s.selector!({} as ElementTourApi);
 
 describe('menuStep', () => {
   it('rings More while it shows, and the element where a power user right-clicks instead', () => {
@@ -96,7 +98,7 @@ describe('diagramKeyTourSteps', () => {
     const steps = diagramKeyTourSteps({ elementId: 'el', touch: false, firstRowId: 'line:dashed' });
     expect(ids(steps)).toEqual(['key', 'meaning', 'title', 'outro']);
     expect(ringed(step(steps, 'meaning'))).toBe(
-      '[data-element-id="el"] [data-key-row="line\\:dashed"]',
+      '[data-element-id="el"] [data-key-meaning="line\\:dashed"]',
     );
     expect(ids(diagramKeyTourSteps({ elementId: 'el', touch: true, firstRowId: null }))).toEqual([
       'key',

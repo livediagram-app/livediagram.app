@@ -7,7 +7,7 @@ import type { TourStepOf } from './tour-step';
 // that build themselves from the tab, a row's meaning written in place, and its title. A key has no menu section.
 
 export type DiagramKeyTourContext = Pick<MenuTourEnv, 'elementId' | 'touch'> & {
-  // Its first row's id (`data-key-row`), or null for a key with nothing to list yet.
+  // Its first row's id (its meaning is `data-key-meaning`), or null for a key with nothing to list yet.
   firstRowId: string | null;
 };
 
@@ -25,7 +25,7 @@ export function diagramKeyTourSteps(ctx: DiagramKeyTourContext): TourStepOf<Elem
           'meaning',
           'Say What It Means',
           `${pressWord(ctx)} a row's words to write its meaning: Async call, Data flow. Enter keeps it, Escape puts it back.`,
-          inElement(id, `[data-key-row="${escapeId(ctx.firstRowId)}"]`),
+          inElement(id, `[data-key-meaning="${escapeId(ctx.firstRowId)}"]`),
         )
       : onGraphic(
           'empty',

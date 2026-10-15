@@ -93,9 +93,12 @@ describe('ELEMENT_TOUR_DEFS', () => {
     const pie = createShape('pie-chart', 0, 0) as Element;
     const env = { hasMore: true, touch: false, elements: [pie] };
     expect(ELEMENT_TOUR_DEFS.chart.steps(pie, env)[0]!.body).toContain('Pie chart');
-    const line = createShape('line-chart', 0, 0) as Element;
+    const line = createShape('line-chart', 0, 0) as ShapeElement;
     expect(ELEMENT_TOUR_DEFS.chart.steps(line, env).map((s) => s.id)).toContain('data');
-    const fromSheet = { ...line, chartSource: { sheetId: 's', range: 'A1:B2' } } as Element;
+    const fromSheet: ShapeElement = {
+      ...line,
+      chartSource: { sheetId: 's', range: { r1: 'a', c1: 'a', r2: 'b', c2: 'b' } },
+    };
     expect(ELEMENT_TOUR_DEFS.chart.steps(fromSheet, env).map((s) => s.id)).not.toContain('data');
   });
 

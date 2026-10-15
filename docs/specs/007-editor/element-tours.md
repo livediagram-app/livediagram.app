@@ -395,7 +395,7 @@ On a selected boundary, from `boundary-tour-steps.ts`.
 On a selected diagram key, from `diagram-key-tour-steps.ts`. It has no menu section, so no menu step.
 
 1. **It Builds Itself**: rings the key; a row for every line style the tab's arrows use and every mapped tag colour.
-2. **Say What It Means** (a key with rows): rings its first row (`data-key-row`); click (tap) the words to write the
+2. **Say What It Means** (a key with rows): rings its first row's meaning (`data-key-meaning`); click (tap) the words to write the
    meaning, Enter keeps it, Escape puts it back. An empty key instead has **Nothing to Key Yet** on the key: two
    arrows in different line styles bring their rows.
 3. **Its Title**: rings the key; "Key" by default, double-click (double-tap) to rename; it grows downward on its own.
