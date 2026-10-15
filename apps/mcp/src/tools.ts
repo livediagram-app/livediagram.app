@@ -443,6 +443,11 @@ export function registerTools(server: McpServer, env: Env): void {
       token,
       `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
     );
+    // An edit that changed nothing records no changeset and so carries no lint: the tab's own lint is read instead, so
+    // the answer still says what is wrong with it rather than "lint unavailable".
+    const lint =
+      answer.lint ??
+      (answer.changeset ? null : (await lintReportsOf(env, token, args.documentId, [tabId]))[0]!);
     return imageResult(
       {
         id: args.documentId,
@@ -452,12 +457,12 @@ export function registerTools(server: McpServer, env: Env): void {
         changesetId: answer.changeset?.id ?? null,
         rev: next.rev,
         text: mcpResultText(answer.text, contentOrigin(tab.elements)),
-        lint: lintLineOf(answer.lint),
+        lint: lintLineOf(lint),
         ...(graphNotes ? { notes: graphNotes } : {}),
       },
       next,
       { env, token },
-      [lintTextOf(answer.lint)],
+      [lintTextOf(lint)],
     );
   });
 

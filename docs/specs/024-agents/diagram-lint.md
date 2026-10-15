@@ -67,7 +67,8 @@ I group-split-edges  core: 12 of 13 arrows cross its border  fix: group by owner
   ([Document views](document-views.md)); the CLI's `tab lint` reads it.
 - The CLI lints a graph or Mermaid file locally, before anything is written (`graph lint`).
 - The MCP appends the summary line to the result of every tool that writes a tab's elements: `create_document`,
-  `add_tab` and `update_document`.
+  `add_tab` and `update_document`. An `update_document` whose edit changed nothing records no changeset and so has
+  no changeset lint: it reads the tab's lint view instead, so the answer still lists what is wrong with the tab.
 
 ## Properties
 
