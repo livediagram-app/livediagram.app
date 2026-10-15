@@ -3,6 +3,7 @@
 // Under the form's heading in the builder (docs/specs/030-forms/forms.md "Hearing about responses"): the response
 // count with how many are new to this reader, View on Board, and the notices that say the form takes no responses
 // (paused: its destination broke; suspended after reports; closed).
+import type { ReactNode } from 'react';
 import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@livediagram/forms';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 
@@ -14,6 +15,7 @@ export function FormStatusBar({
   boardName,
   onViewBoard,
   onFix,
+  controls,
 }: {
   link: FormLinkState;
   problem: DestinationProblem | null;
@@ -23,6 +25,8 @@ export function FormStatusBar({
   boardName: string | null;
   onViewBoard: (() => void) | null;
   onFix: () => void;
+  // At its end, an Editor's: the form's cog (and Preview on a phone, which has no menu box).
+  controls?: ReactNode;
 }) {
   const data = link.link;
   const live = data?.link ?? null;
@@ -71,15 +75,18 @@ export function FormStatusBar({
             </span>
           ) : null}
         </span>
-        {onViewBoard && boardName ? (
-          <button
-            type="button"
-            onClick={onViewBoard}
-            className="ml-auto cursor-pointer font-semibold text-brand-700 hover:underline dark:text-brand-300"
-          >
-            View on {boardName} →
-          </button>
-        ) : null}
+        <span className="ml-auto flex items-center gap-1">
+          {onViewBoard && boardName ? (
+            <button
+              type="button"
+              onClick={onViewBoard}
+              className="mr-1 cursor-pointer font-semibold text-brand-700 hover:underline dark:text-brand-300"
+            >
+              View on {boardName} →
+            </button>
+          ) : null}
+          {controls}
+        </span>
       </div>
       {live && problem ? (
         <div

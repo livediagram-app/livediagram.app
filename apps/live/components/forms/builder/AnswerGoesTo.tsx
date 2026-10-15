@@ -17,10 +17,20 @@ import { PlusIcon } from '@livediagram/ui';
 import { setTarget } from '@/hooks/forms/form-edits';
 import { useFormBuilder } from './form-builder-context';
 
-export function AnswerGoesTo({ question: q }: { question: FormQuestion }) {
+export function AnswerGoesTo({
+  question: q,
+  onChosen,
+}: {
+  question: FormQuestion;
+  // A target was picked (its popover closes).
+  onChosen?: () => void;
+}) {
   const b = useFormBuilder();
   const target = effectiveTarget(q, b.type);
-  const choose = (t: AnswerTarget) => b.actions.changeForm((f) => setTarget(f, q.id, t));
+  const choose = (t: AnswerTarget) => {
+    b.actions.changeForm((f) => setTarget(f, q.id, t));
+    onChosen?.();
+  };
   const titleBy = titleTakenBy(b.form, q);
   const fields = fieldChoices(b.form, q, b.type);
   const atLimit = (b.type?.custom?.length ?? 0) >= 12;
@@ -120,7 +130,7 @@ export function AnswerGoesTo({ question: q }: { question: FormQuestion }) {
       ) : (
         <button
           type="button"
-          onClick={() => b.openPanel('destination')}
+          onClick={() => b.openSettings('destination')}
           className="text-left text-[12px] font-medium text-brand-700 underline underline-offset-2 dark:text-brand-300"
         >
           Choose where responses go to map answers to card fields.

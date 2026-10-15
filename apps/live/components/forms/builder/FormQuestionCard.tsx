@@ -3,8 +3,9 @@
 // One question in the builder (docs/specs/030-forms/forms.md "The form card, top to bottom"). Unselected, it is
 // exactly what respondents see (drawn disabled). Selected (a click, or Enter on it), it shows its editing chrome: an
 // accent bar at its left, the prompt and help as editable text, its type, the options of a choice question, the
-// answer control as respondents see it, and a footer: where its answer goes, Required, Duplicate, Delete and Move.
-import { useEffect, useRef, type PointerEvent } from 'react';
+// answer control as respondents see it, its own settings, and a footer: where its answer goes (a badge opening Answer
+// Goes To), Move, Duplicate, Delete and Required. Everything about a question is edited in its card.
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import {
   HELP_MAX,
   PROMPT_MAX,
@@ -31,6 +32,9 @@ import { QuestionView } from '../QuestionView';
 import { DraftText, type DraftTextHandle } from './DraftText';
 import { OptionsEditor } from './OptionsEditor';
 import { QuestionTypeMenu, TypeButtonFace } from './QuestionTypeMenu';
+import { AnswerGoesTo } from './AnswerGoesTo';
+import { FormSheet } from './FormSheet';
+import { QuestionSettings, hasQuestionSettings } from './QuestionSettings';
 import { useFormBuilder } from './form-builder-context';
 import { targetLabel } from './target-label';
 
@@ -58,6 +62,8 @@ export function FormQuestionCard({
   const selected = b.canEdit && b.selectedId === q.id;
   const promptRef = useRef<DraftTextHandle>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  // Answer Goes To, open under its badge.
+  const [goesTo, setGoesTo] = useState<HTMLButtonElement | null>(null);
   // A question just added takes focus on its prompt.
   useEffect(() => {
     if (b.focusId !== q.id || !selected) return;
@@ -209,20 +215,35 @@ export function FormQuestionCard({
             </div>
           )}
         </div>
+        {hasQuestionSettings(q) ? (
+          <div className="mx-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50">
+            <QuestionSettings question={q} />
+          </div>
+        ) : null}
       </div>
       <div className="flex flex-wrap items-center gap-1 border-t border-slate-100 px-4 py-2 dark:border-slate-800">
         <button
           type="button"
-          onClick={() => b.openPanel('question')}
-          className={`mr-auto flex h-8 max-w-[60%] cursor-pointer items-center gap-1.5 truncate rounded-full border px-3 text-[12px] font-medium transition ${
+          aria-haspopup="dialog"
+          aria-expanded={!!goesTo}
+          onClick={(e) => {
+            const button = e.currentTarget;
+            setGoesTo((open) => (open ? null : button));
+          }}
+          className={`mr-auto flex min-h-8 min-w-0 max-w-[60%] cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium leading-5 transition max-sm:max-w-full ${
             target.broken
               ? 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200'
               : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300'
           }`}
         >
-          <span className="text-optical-centre text-slate-400">Answer goes to</span>
-          <span className="text-optical-centre truncate">{targetLabel(target)}</span>
+          <span className="shrink-0 text-slate-400">Answer goes to</span>
+          <span className="min-w-0 truncate">{targetLabel(target)}</span>
         </button>
+        {goesTo ? (
+          <FormSheet anchor={goesTo} name="Answer Goes To" onClose={() => setGoesTo(null)}>
+            <AnswerGoesTo question={q} onChosen={() => setGoesTo(null)} />
+          </FormSheet>
+        ) : null}
         <Tooltip label="Move Up">
           <button
             type="button"

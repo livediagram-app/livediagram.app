@@ -69,7 +69,7 @@ function Harness({ canEdit }: { canEdit: boolean }) {
     clearFocus: () => setFocus(null),
     type: BUG,
     types: [BUG],
-    openPanel: vi.fn(),
+    openSettings: vi.fn(),
   };
   return (
     <FormBuilderContext.Provider value={value}>

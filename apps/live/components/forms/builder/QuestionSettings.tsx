@@ -1,8 +1,8 @@
 'use client';
 
-// A question's own settings in the side panel (docs/specs/030-forms/forms.md "Question types"): its placeholder, a
-// Number's bounds and Whole Numbers Only, a Multiple Choice's fewest and most picks, a Single Choice's Show as
-// Dropdown, a Rating's scale, style and end labels, and Required. Each change one undo step.
+// A question's own settings, inside its selected card (docs/specs/030-forms/forms.md "Question types"): its
+// placeholder, a Number's bounds and Whole Numbers Only, a Multiple Choice's fewest and most picks, a Single Choice's
+// Show as Dropdown, a Rating's scale, style and end labels. Each change one undo step.
 import {
   PLACEHOLDER_MAX,
   RATING_SCALE_DEFAULT,
@@ -198,13 +198,10 @@ export function QuestionSettings({ question: q }: { question: FormQuestion }) {
           ) : null}
         </>
       ) : null}
-      <SwitchRow
-        checked={!!q.required}
-        onChange={(on) => set({ required: on || undefined })}
-        className="py-1 text-[13px]"
-      >
-        Required
-      </SwitchRow>
     </div>
   );
 }
+
+// Whether a question has settings beyond its card's own controls (Required sits in the card's footer).
+export const hasQuestionSettings = (q: FormQuestion): boolean =>
+  ['short', 'paragraph', 'number', 'email', 'link', 'multi', 'single', 'rating'].includes(q.type);

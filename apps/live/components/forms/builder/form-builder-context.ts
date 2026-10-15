@@ -6,8 +6,7 @@ import { createContext, useContext } from 'react';
 import type { FormDefinition } from '@livediagram/forms';
 import type { ItemTypeDef } from '@livediagram/items';
 import type { FormActions } from '@/hooks/forms/useFormActions';
-
-export type FormPanelTab = 'question' | 'destination' | 'settings';
+import type { FormSettingsSection } from './FormSettingsButton';
 
 export type FormBuilderValue = {
   form: FormDefinition;
@@ -22,8 +21,8 @@ export type FormBuilderValue = {
   // The destination's card type, when it resolves; the document's types.
   type: ItemTypeDef | undefined;
   types: readonly ItemTypeDef[];
-  // Opens the side panel on a tab (a question's Answer Goes To chip opens the Question tab).
-  openPanel: (tab: FormPanelTab) => void;
+  // Opens the status bar's cog on a section (Answer Goes To's "choose where responses go" opens Responses Go To).
+  openSettings: (section: FormSettingsSection | null) => void;
 };
 
 export const FormBuilderContext = createContext<FormBuilderValue | null>(null);

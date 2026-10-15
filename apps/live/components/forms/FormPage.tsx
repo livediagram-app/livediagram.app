@@ -1,8 +1,10 @@
 'use client';
 
 // A Form tab's page (docs/specs/030-forms/forms.md "Building a form"): drawn over the canvas area, as a Dashboard
-// is (CanvasCover). An Editor builds the form in place, the Form panel beside it; Preview (and everyone who may not
-// edit) sees it exactly as the form link draws it. The top right holds Preview and Share Form; the menu box, its name.
+// is (CanvasCover). An Editor builds the form in place, every setting inside it: a question's in its card, Responses
+// Go To and Settings under the status bar's cog. Preview (and everyone who may not edit) sees it exactly as the form
+// link draws it. The menu box holds its name and Preview (the status bar does on a phone, which has no menu box); the
+// header's Share is Share Form (lib/form-share-store.ts).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { formLook, type Tab } from '@livediagram/document';
@@ -14,35 +16,27 @@ import {
   readForm,
   type FormDefinition,
 } from '@livediagram/forms';
-import { Button, lucideGlyph, Tooltip, useMediaQuery } from '@livediagram/ui';
-import { lucideEye, lucideSettings, lucideShare2 } from '@livediagram/icons/lucide';
+import { lucideGlyph, Tooltip } from '@livediagram/ui';
+import { lucideEye } from '@livediagram/icons/lucide';
 import { CanvasCover } from '@/components/plan/MaximisedPlanLayer';
 import { DashboardMenuName } from '@/components/plan/dashboard/DashboardMenuName';
-import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
+import { useMenuNameSlot } from '@/components/plan/menu-name-slot';
+import { setFormShareHost } from '@/lib/form-share-store';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { FormActions } from '@/hooks/forms/useFormActions';
 import { useFormLink } from '@/hooks/forms/useFormLink';
 import { boardsOf } from '@/hooks/forms/form-start';
 import { sendPreview } from '@/hooks/forms/form-preview';
-import {
-  FormBuilderContext,
-  type FormBuilderValue,
-  type FormPanelTab,
-} from './builder/form-builder-context';
+import { FormBuilderContext, type FormBuilderValue } from './builder/form-builder-context';
 import { FormBuilderColumn } from './builder/FormBuilderColumn';
-import { FormSidePanel } from './builder/FormSidePanel';
+import { FormSettingsButton, type FormSettingsSection } from './builder/FormSettingsButton';
 import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
 import { FormFill } from './respond/FormFill';
 import { formLookProps } from './form-look';
 
 const EyeIcon = lucideGlyph(lucideEye, 16);
-const ShareIcon = lucideGlyph(lucideShare2, 16);
-const PanelIcon = lucideGlyph(lucideSettings, 16);
-
-// Wide enough for the form and its panel side by side; narrower, the panel is a sheet.
-const WIDE_QUERY = '(min-width: 1100px)';
 
 export function FormPage({
   tab,
@@ -93,10 +87,10 @@ export function FormPage({
   const [preview, setPreview] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
-  const [panelTab, setPanelTab] = useState<FormPanelTab>('question');
-  const [sheetOpen, setSheetOpen] = useState(false);
+  // The cog's panel: the section it opened on (null, both closed), or false while shut.
+  const [settings, setSettings] = useState<FormSettingsSection | null | false>(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const wide = useMediaQuery(WIDE_QUERY);
+  const nameSlot = useMenuNameSlot();
   const scrollRef = useRef<HTMLDivElement>(null);
   const building = canEdit && !preview;
 
@@ -124,16 +118,13 @@ export function FormPage({
   );
   const type = destinationType(form.destination, types);
 
-  const openPanel = useCallback(
-    (to: FormPanelTab) => {
-      setPanelTab(to);
-      if (!wide) setSheetOpen(true);
-    },
-    [wide],
-  );
+  // Responses Go To or Settings, from wherever a fix is offered (out of Preview first).
+  const openSettings = useCallback((section: FormSettingsSection | null) => {
+    setPreview(false);
+    setSettings(section);
+  }, []);
   const select = useCallback((id: string | null, focus = false) => {
     setSelectedId(id);
-    if (id) setPanelTab('question');
     if (focus) setFocusId(id);
   }, []);
   // Preview and back start at the form's top.
@@ -161,11 +152,35 @@ export function FormPage({
       clearFocus: () => setFocusId(null),
       type,
       types,
-      openPanel,
+      openSettings,
     }),
-    [form, building, actions, selectedId, select, focusId, type, types, openPanel],
+    [form, building, actions, selectedId, select, focusId, type, types, openSettings],
   );
   const viewBoard = destTab ? () => openTab(destTab.id) : null;
+  // The header's Share is this form's while an Editor has it open (lib/form-share-store.ts).
+  const published = !!link.link?.link;
+  useEffect(() => {
+    if (!canEdit) return;
+    setFormShareHost({ published, open: () => setShareOpen(true) });
+    return () => setFormShareHost(null);
+  }, [canEdit, published]);
+  const previewButton = (
+    <Tooltip label={preview ? 'Back to Editing (Esc)' : 'Preview the form as respondents see it'}>
+      <button
+        type="button"
+        aria-pressed={preview}
+        onClick={() => setPreview((p) => !p)}
+        className={`ml-1 flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium transition ${
+          preview
+            ? 'bg-brand-700 text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700'
+            : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+        }`}
+      >
+        <EyeIcon aria-hidden />
+        {preview ? 'Back to Editing' : 'Preview'}
+      </button>
+    </Tooltip>
+  );
   const shown = publicForm(form);
 
   return (
@@ -176,56 +191,7 @@ export function FormPage({
         kindLabel="Form"
         onRename={canEdit ? (name) => actions.renameForm(name) : undefined}
       />
-      {canvas
-        ? createPortal(
-            <div
-              data-floating-panel=""
-              className={`pointer-events-auto absolute right-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 p-1 ${TOOLBAR_CARD}`}
-            >
-              {canEdit ? (
-                <Tooltip
-                  label={
-                    preview ? 'Back to Editing (Esc)' : 'Preview the form as respondents see it'
-                  }
-                >
-                  <button
-                    type="button"
-                    aria-pressed={preview}
-                    onClick={() => setPreview((p) => !p)}
-                    className={`flex h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition ${
-                      preview
-                        ? 'bg-brand-700 text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700'
-                        : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-                    }`}
-                  >
-                    <EyeIcon aria-hidden />
-                    {preview ? 'Back to Editing' : 'Preview'}
-                  </button>
-                </Tooltip>
-              ) : null}
-              {building && !wide ? (
-                <Tooltip label="Form Panel">
-                  <button
-                    type="button"
-                    aria-label="Form Panel"
-                    aria-expanded={sheetOpen}
-                    onClick={() => setSheetOpen((o) => !o)}
-                    className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-                  >
-                    <PanelIcon aria-hidden />
-                  </button>
-                </Tooltip>
-              ) : null}
-              {canEdit ? (
-                <Button size="sm" onClick={() => setShareOpen(true)} className="h-9">
-                  <ShareIcon aria-hidden />
-                  Share Form
-                </Button>
-              ) : null}
-            </div>,
-            canvas,
-          )
-        : null}
+      {canEdit && nameSlot ? createPortal(previewButton, nameSlot) : null}
       {canvas
         ? createPortal(
             <CanvasCover layout={layout} marker={{ 'data-form-page': '' }}>
@@ -233,7 +199,7 @@ export function FormPage({
                 <div
                   role="region"
                   aria-label={`${form.heading} form`}
-                  className="flex h-full min-h-0 gap-4 px-3 pt-3 max-sm:px-2"
+                  className="flex h-full min-h-0 px-3 pt-3 max-sm:px-2"
                 >
                   <div
                     ref={scrollRef}
@@ -247,10 +213,24 @@ export function FormPage({
                         canEdit={canEdit}
                         boardName={destTab?.name ?? null}
                         onViewBoard={viewBoard}
-                        onFix={() => {
-                          setPreview(false);
-                          openPanel('destination');
-                        }}
+                        onFix={() => openSettings('destination')}
+                        controls={
+                          canEdit ? (
+                            <>
+                              {/* A phone has no menu box: Preview rides here instead. */}
+                              {nameSlot ? null : previewButton}
+                              {building ? (
+                                <FormSettingsButton
+                                  tabs={tabs}
+                                  link={link}
+                                  open={settings}
+                                  onOpen={setSettings}
+                                  onClose={() => setSettings(false)}
+                                />
+                              ) : null}
+                            </>
+                          ) : null
+                        }
                       />
                       {!canEdit ? (
                         <p className="rounded-xl bg-white/80 px-4 py-2.5 text-[13px] text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
@@ -289,22 +269,6 @@ export function FormPage({
                       )}
                     </div>
                   </div>
-                  {building && wide ? (
-                    <div className="w-[340px] shrink-0 pb-24">
-                      <FormSidePanel tab={panelTab} onTab={setPanelTab} tabs={tabs} link={link} />
-                    </div>
-                  ) : null}
-                  {building && !wide && sheetOpen ? (
-                    <div className="absolute inset-x-2 bottom-2 top-16 z-[4] sm:left-auto sm:w-[380px]">
-                      <FormSidePanel
-                        tab={panelTab}
-                        onTab={setPanelTab}
-                        tabs={tabs}
-                        link={link}
-                        onClose={() => setSheetOpen(false)}
-                      />
-                    </div>
-                  ) : null}
                 </div>
               </FormBuilderContext.Provider>
             </CanvasCover>,
@@ -318,8 +282,7 @@ export function FormPage({
         problem={problem}
         onFixDestination={() => {
           setShareOpen(false);
-          setPreview(false);
-          openPanel('destination');
+          openSettings('destination');
         }}
       />
     </>

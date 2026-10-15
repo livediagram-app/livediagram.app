@@ -11,6 +11,7 @@ import {
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
+import { useFormShareHost } from '@/lib/form-share-store';
 
 // The autosave's sync state. No header pill shows it any more: the failure
 // states each raise a toast (editor-persistence.ts), so silent failures
@@ -92,6 +93,7 @@ export function EditorHeader({
   rolePill,
   present,
 }: EditorHeaderProps) {
+  const formShare = useFormShareHost();
   const [editing, setEditing] = useState(false);
 
   // The command palette requests a rename by bumping renameNonce. Each request is
@@ -208,7 +210,33 @@ export function EditorHeader({
             </button>
           </HoverCard>
         ) : null}
-        {showShare ? (
+        {formShare ? (
+          // On a Form tab an Editor's Share is the form's (lib/form-share-store.ts): one share button, never two.
+          <HoverCard
+            title="Share Form"
+            description={
+              formShare.published
+                ? 'Copy the form’s link, or close it.'
+                : 'Publish the form and copy its link.'
+            }
+          >
+            <button
+              type="button"
+              onClick={formShare.open}
+              className={`${HEADER_ACTION_BTN} ${
+                formShare.published
+                  ? `bg-brand-700 text-white hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`
+                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
+              }`}
+              aria-pressed={formShare.published}
+            >
+              <HeaderGlyph>
+                <ShareIcon />
+              </HeaderGlyph>
+              <span>Share Form</span>
+            </button>
+          </HoverCard>
+        ) : showShare ? (
           <HoverCard
             title={shareable ? 'Shared' : 'Share'}
             description={shareable ? 'Click to manage links.' : 'Invite collaborators with a link.'}
