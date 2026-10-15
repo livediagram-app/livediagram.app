@@ -96,6 +96,10 @@ whose popover offers presets; elsewhere it places the New badge as before.
 | Draft   | `draft`   | Draft | Quiet                    |
 | Warning | `warning` | PII   | Solid, in rose (#e11d48) |
 
+A preset's own colour is the badge's as it lands, on any tab: the tab's theme and the style the board remembers for
+badges dress a new badge first, and the preset's colour is put back over them (`withVariantColours`), so the Warning
+badge is rose whatever the theme. It is a plain colour, not a swatch, so a later theme change leaves it rose too.
+
 **Each tile is the badge it adds**: its own text in its own look and colours, drawn by the canvas's colour rule
 (`chipColours`) over the tab theme's element colours (the Default theme's sky without one), and a preset's own colour
 (the Warning's rose) wins, as on the canvas. So the tiles are untinted: the palette's theme fill never paints over a
