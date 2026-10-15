@@ -3,7 +3,14 @@
 // colour without one. Pure drawing, shared by the builder, Preview and the form page.
 import type { FormCover } from '@livediagram/forms';
 import { pageSheetStyle } from '@/lib/illustrate-page-paint';
-import { PageMotionLayer } from '@/components/canvas/PageMotionLayer';
+import dynamic from 'next/dynamic';
+
+// A moving cover's motion, fetched only when a cover moves: every motion's drawing stays out of the form page's
+// first load (most covers are still).
+const PageMotionLayer = dynamic(
+  () => import('@/components/canvas/PageMotionLayer').then((m) => m.PageMotionLayer),
+  { ssr: false },
+);
 
 // The motion's drawing box: the form card's own width by the band's height (forms.css clips any overhang).
 const BAND_W = 640;
