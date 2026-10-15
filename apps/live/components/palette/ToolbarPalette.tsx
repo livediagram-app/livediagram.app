@@ -54,6 +54,7 @@ import {
   useSheetCovering,
 } from '@/hooks/plan/plan-cover-store';
 import { BoardCardsStrip } from './BoardCardsStrip';
+import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
@@ -157,6 +158,8 @@ export function ToolbarPalette(props: Props) {
   const search = useStripPopover(rootRef, TOOLBAR_SEARCH_SELECTOR);
   // Diagram's category bar and its flyout (CategoryBar).
   const bar = useCategoryBar(rootRef);
+  // Icons, Stickers and Tech reopen on the group they were left on, for the page load (BrowseMemory).
+  const browseMemory = useBrowseMemory();
   const moreOpen = more.open;
   const setMoreOpen = more.setOpen;
   const { tabs, tileActions, canvasToolOptions, onCanvasToolChange, editorMode } =
@@ -405,239 +408,248 @@ export function ToolbarPalette(props: Props) {
         e.stopPropagation();
       }}
     >
-      <PaletteGroupProvider>
-        <PaletteTintProvider tint={themeTint}>
-          {/* Whole-pixel wide where centred (see CardWidth). */}
-          <StripRow leading={leading} leadingRef={leadingRef}>
-            {boardCards && coveringBoard ? (
-              <BoardCardsStrip
-                boardId={coveringBoard}
-                elements={props.tabElements ?? []}
-                actions={tileActions}
-                pendingDraw={pendingDraw}
-              />
-            ) : sheetFilling ? null : (
-              <CardWidth swipe={swipe}>
-                {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
+      <BrowseMemoryContext.Provider value={browseMemory}>
+        <PaletteGroupProvider>
+          <PaletteTintProvider tint={themeTint}>
+            {/* Whole-pixel wide where centred (see CardWidth). */}
+            <StripRow leading={leading} leadingRef={leadingRef}>
+              {boardCards && coveringBoard ? (
+                <BoardCardsStrip
+                  boardId={coveringBoard}
+                  elements={props.tabElements ?? []}
+                  actions={tileActions}
+                  pendingDraw={pendingDraw}
+                />
+              ) : sheetFilling ? null : (
+                <CardWidth swipe={swipe}>
+                  {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
                 full-width row around it, so the ring frames the strip. */}
-                <div
-                  ref={cardRef}
-                  data-tour-id="palette"
-                  // Chrome, not canvas: a paste, a drop or a drag ghost over the strip treats it like
-                  // any panel (lib/canvas-pointer.ts, PaletteDragGhost, usePaletteDrop).
-                  data-floating-panel=""
-                  // Slides across with the rest of the chrome when a split moves the editor
-                  // (docs/specs/007-editor/split-view.md).
-                  data-split-chrome=""
-                  // Beside the menu card only the rail gives way (and scrolls): the
-                  // selection mode, the category picker and More keep their size.
-                  className={
-                    swipe
-                      ? `${CARD_CLASS} min-w-0 [&>:not([data-strip-rail])]:shrink-0`
-                      : CARD_CLASS
-                  }
-                >
-                  {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
+                  <div
+                    ref={cardRef}
+                    data-tour-id="palette"
+                    // Chrome, not canvas: a paste, a drop or a drag ghost over the strip treats it like
+                    // any panel (lib/canvas-pointer.ts, PaletteDragGhost, usePaletteDrop).
+                    data-floating-panel=""
+                    // Slides across with the rest of the chrome when a split moves the editor
+                    // (docs/specs/007-editor/split-view.md).
+                    data-split-chrome=""
+                    // Beside the menu card only the rail gives way (and scrolls): the
+                    // selection mode, the category picker and More keep their size.
+                    className={
+                      swipe
+                        ? `${CARD_CLASS} min-w-0 [&>:not([data-strip-rail])]:shrink-0`
+                        : CARD_CLASS
+                    }
+                  >
+                    {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
                 notation is the palette there. */}
-                  {/* ...and lead with the board's own control instead, as the Event Storming
+                    {/* ...and lead with the board's own control instead, as the Event Storming
                 category's body does. */}
-                  {esBoard && !participant && props.esBoardControls?.onImportPhoto ? (
-                    <>
-                      <EsPhotoStripButton controls={props.esBoardControls} />
-                      <Divider />
-                    </>
-                  ) : null}
-                  {esBoard && !participant ? null : (
-                    <>
-                      {dashboardTab ? null : (
-                        <>
-                          <PaletteDropdown
-                            ariaLabel="Selection mode"
-                            dataTourId="canvas-tool"
-                            hoverCardTitle="Selection Mode"
-                            hoverCardDescription="Choose how the pointer acts on the canvas."
-                            value={canvasTool}
-                            variant="toolbar"
-                            iconOnly
-                            autoHeight
-                            grid
-                            menuClassName=""
-                            groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
-                            onChange={onCanvasToolChange}
-                            options={canvasToolOptions}
-                          />
-                          {/* A phone's strip runs the two pickers together, sparing the room for tiles. */}
-                          {swipe ? null : <Divider />}
-                        </>
-                      )}
-                      {categoryBar ? (
-                        <CategoryBarButtons
-                          bar={bar}
-                          categories={barCategories}
-                          labels={barLabels}
-                        />
-                      ) : (
-                        <>
-                          {/* The category picker sits between the selection mode and the
-                    tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
-                    Its width follows its label's text, which is fractional:
-                    snapped, so the tiles after it stay on whole pixels. */}
-                          <SnapWidth>
+                    {esBoard && !participant && props.esBoardControls?.onImportPhoto ? (
+                      <>
+                        <EsPhotoStripButton controls={props.esBoardControls} />
+                        <Divider />
+                      </>
+                    ) : null}
+                    {esBoard && !participant ? null : (
+                      <>
+                        {dashboardTab ? null : (
+                          <>
                             <PaletteDropdown
-                              ariaLabel="Palette category"
-                              dataTourId="palette-category"
-                              value={category?.id ?? defaultId}
+                              ariaLabel="Selection mode"
+                              dataTourId="canvas-tool"
+                              hoverCardTitle="Selection Mode"
+                              hoverCardDescription="Choose how the pointer acts on the canvas."
+                              value={canvasTool}
                               variant="toolbar"
-                              // A phone shows the category's icon alone, so the
-                              // strip has room for more tiles.
-                              iconOnly={isMobile}
+                              iconOnly
                               autoHeight
                               grid
                               menuClassName=""
-                              groupLabels={CATEGORY_BANDS}
-                              onChange={switchCategory}
-                              options={tabs.map((tab) => ({
-                                id: tab.id,
-                                label: tab.label,
-                                icon: tab.icon,
-                                group: tab.group,
-                                fullWidth: tab.fullWidth,
-                              }))}
+                              groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
+                              onChange={onCanvasToolChange}
+                              options={canvasToolOptions}
                             />
-                          </SnapWidth>
-                        </>
-                      )}
-                      <Divider />
-                    </>
-                  )}
-                  {categoryBar ? null : (
-                    <>
-                      <ToolbarStripRail
-                        scrollable={swipe}
-                        railKey={category?.id ?? defaultId}
-                        items={
-                          groups && category
-                            ? groupItems(category.id, groups, openers)
-                            : tileItems(
-                                tiles,
-                                dividersAfter,
-                                tileActions,
-                                pendingDraw ?? null,
-                                openers,
-                              )
-                        }
-                        leavingItems={
-                          leavingId && leavingGroups
-                            ? groupItems(leavingId, leavingGroups)
-                            : leaving
-                              ? tileItems(leaving.tiles, leaving.dividersAfter, tileActions, null)
-                              : null
-                        }
-                      />
-                      {/* Outside the rail so it rides the rail's width change rather
+                            {/* A phone's strip runs the two pickers together, sparing the room for tiles. */}
+                            {swipe ? null : <Divider />}
+                          </>
+                        )}
+                        {categoryBar ? (
+                          <CategoryBarButtons
+                            bar={bar}
+                            categories={barCategories}
+                            labels={barLabels}
+                            scrollable={swipe}
+                          />
+                        ) : (
+                          <>
+                            {/* The category picker sits between the selection mode and the
+                    tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
+                    Its width follows its label's text, which is fractional:
+                    snapped, so the tiles after it stay on whole pixels. */}
+                            <SnapWidth>
+                              <PaletteDropdown
+                                ariaLabel="Palette category"
+                                dataTourId="palette-category"
+                                value={category?.id ?? defaultId}
+                                variant="toolbar"
+                                // A phone shows the category's icon alone, so the
+                                // strip has room for more tiles.
+                                iconOnly={isMobile}
+                                autoHeight
+                                grid
+                                menuClassName=""
+                                groupLabels={CATEGORY_BANDS}
+                                onChange={switchCategory}
+                                options={tabs.map((tab) => ({
+                                  id: tab.id,
+                                  label: tab.label,
+                                  icon: tab.icon,
+                                  group: tab.group,
+                                  fullWidth: tab.fullWidth,
+                                }))}
+                              />
+                            </SnapWidth>
+                          </>
+                        )}
+                        {/* The bar ends on its last category; Search brings its own divider. */}
+                        {categoryBar ? null : <Divider />}
+                      </>
+                    )}
+                    {categoryBar ? null : (
+                      <>
+                        <ToolbarStripRail
+                          scrollable={swipe}
+                          railKey={category?.id ?? defaultId}
+                          items={
+                            groups && category
+                              ? groupItems(category.id, groups, openers)
+                              : tileItems(
+                                  tiles,
+                                  dividersAfter,
+                                  tileActions,
+                                  pendingDraw ?? null,
+                                  openers,
+                                )
+                          }
+                          leavingItems={
+                            leavingId && leavingGroups
+                              ? groupItems(leavingId, leavingGroups)
+                              : leaving
+                                ? tileItems(leaving.tiles, leaving.dividersAfter, tileActions, null)
+                                : null
+                          }
+                        />
+                        {/* Outside the rail so it rides the rail's width change rather
                 than popping out and back in with the tiles. Only there when
                 the category has more than the strip shows. On a phone only for My shapes (showMore). */}
-                      {showMore ? (
-                        <>
-                          <Divider />
-                          {moreShown ? (
-                            moreButton
-                          ) : (
-                            <HoverCard
-                              title={`More ${category?.label ?? ''}`.trim()}
-                              description={category?.description ?? 'Everything in this category.'}
-                            >
-                              {moreButton}
-                            </HoverCard>
-                          )}
-                        </>
-                      ) : null}
-                    </>
-                  )}
-                  {/* Not on a phone: the strip has no room to spare, and the row's own + (after the
+                        {showMore ? (
+                          <>
+                            <Divider />
+                            {moreShown ? (
+                              moreButton
+                            ) : (
+                              <HoverCard
+                                title={`More ${category?.label ?? ''}`.trim()}
+                                description={
+                                  category?.description ?? 'Everything in this category.'
+                                }
+                              >
+                                {moreButton}
+                              </HoverCard>
+                            )}
+                          </>
+                        ) : null}
+                      </>
+                    )}
+                    {/* Not on a phone: the strip has no room to spare, and the row's own + (after the
                     last page) adds one there. */}
-                  {category?.id === 'plan-cards' && plan?.canEdit && !isMobile ? (
-                    <>
-                      <Divider />
-                      <EditCardsStripButton />
-                    </>
-                  ) : null}
-                  {props.onAddPage && !isMobile ? (
-                    <>
-                      <Divider />
-                      <AddPageStripButton onAdd={props.onAddPage} suggested={props.lastPageKind} />
-                    </>
-                  ) : null}
-                  {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
+                    {category?.id === 'plan-cards' && plan?.canEdit && !isMobile ? (
+                      <>
+                        <Divider />
+                        <EditCardsStripButton />
+                      </>
+                    ) : null}
+                    {props.onAddPage && !isMobile ? (
+                      <>
+                        <Divider />
+                        <AddPageStripButton
+                          onAdd={props.onAddPage}
+                          suggested={props.lastPageKind}
+                        />
+                      </>
+                    ) : null}
+                    {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
                     "Search: every element type"). Not on an event-storming board, whose notation is
                     its palette. */}
-                  {esBoard || participant ? null : (
-                    <>
-                      <Divider />
-                      <div ref={searchButtonRef} className="flex">
-                        <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardWidth>
-            )}
-          </StripRow>
-          {categoryBar ? (
-            <CategoryBarFlyout
-              bar={bar}
-              categories={barCategories}
-              actions={tileActions}
-              pendingDraw={pendingDraw ?? null}
-              isMobile={isMobile}
-              scale={scale}
-            />
-          ) : null}
-          {moreOpen && category && !categoryBar ? (
-            // The category's full Palette body (usePaletteCatalogue), or what a group tile or an opener opened.
-            <StripPopover
-              right={more.right}
-              isMobile={isMobile}
-              scale={scale}
-              // A category opener's panel names itself; a group's popover is the group; More's is the category.
-              label={openedPanel ? undefined : (openers.opened?.label ?? category.label)}
-              dataAttr="data-toolbar-more"
-            >
-              {openedPanel ? (
-                <StripOpenerPanel
-                  label={openedPanel.label}
-                  description={openedPanel.description}
-                  tiles={openedPanel.tiles ?? []}
-                  actions={tileActions}
-                  pendingDraw={pendingDraw ?? null}
-                />
-              ) : (
-                <StripOpenedBody
-                  opened={openers.opened}
-                  content={(openers.opened ? openedTab : category)?.content}
-                />
+                    {esBoard || participant ? null : (
+                      <>
+                        <Divider />
+                        <div ref={searchButtonRef} className="flex">
+                          <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CardWidth>
               )}
-            </StripPopover>
-          ) : null}
-          {search.open && !esBoard && !participant ? (
-            <StripPopover
-              right={search.right}
-              isMobile={isMobile}
-              scale={scale}
-              label="Search Elements"
-              dataAttr="data-toolbar-search"
-            >
-              <ToolbarSearchPanel
-                mode={editorMode}
+            </StripRow>
+            {categoryBar ? (
+              <CategoryBarFlyout
+                bar={bar}
+                categories={barCategories}
                 actions={tileActions}
-                pendingDraw={pendingDraw}
-                planCardTiles={editorMode === 'plan' && plan ? planCardTiles : undefined}
-                tabElements={props.tabElements ?? []}
+                pendingDraw={pendingDraw ?? null}
+                isMobile={isMobile}
+                scale={scale}
               />
-            </StripPopover>
-          ) : null}
-        </PaletteTintProvider>
-      </PaletteGroupProvider>
+            ) : null}
+            {moreOpen && category && !categoryBar ? (
+              // The category's full Palette body (usePaletteCatalogue), or what a group tile or an opener opened.
+              <StripPopover
+                right={more.right}
+                isMobile={isMobile}
+                scale={scale}
+                // A category opener's panel names itself; a group's popover is the group; More's is the category.
+                label={openedPanel ? undefined : (openers.opened?.label ?? category.label)}
+                dataAttr="data-toolbar-more"
+              >
+                {openedPanel ? (
+                  <StripOpenerPanel
+                    label={openedPanel.label}
+                    description={openedPanel.description}
+                    tiles={openedPanel.tiles ?? []}
+                    actions={tileActions}
+                    pendingDraw={pendingDraw ?? null}
+                  />
+                ) : (
+                  <StripOpenedBody
+                    opened={openers.opened}
+                    content={(openers.opened ? openedTab : category)?.content}
+                  />
+                )}
+              </StripPopover>
+            ) : null}
+            {search.open && !esBoard && !participant ? (
+              <StripPopover
+                right={search.right}
+                isMobile={isMobile}
+                scale={scale}
+                label="Search Elements"
+                dataAttr="data-toolbar-search"
+              >
+                <ToolbarSearchPanel
+                  mode={editorMode}
+                  actions={tileActions}
+                  pendingDraw={pendingDraw}
+                  planCardTiles={editorMode === 'plan' && plan ? planCardTiles : undefined}
+                  tabElements={props.tabElements ?? []}
+                />
+              </StripPopover>
+            ) : null}
+          </PaletteTintProvider>
+        </PaletteGroupProvider>
+      </BrowseMemoryContext.Provider>
     </div>
   );
 }

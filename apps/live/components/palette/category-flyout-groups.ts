@@ -25,6 +25,12 @@ export function flyoutColumns(categoryId: string): number {
 // dividers would split twelve tiles into groups of one and three.
 const UNGROUPED: ReadonlySet<string> = new Set(['popular']);
 
+/** A card category's columns: one for a short list (Media's two), so its flyout is narrow; two otherwise. */
+export const SHORT_CARD_LIST = 3;
+export function flyoutCardColumns(tileCount: number): 1 | 2 {
+  return tileCount <= SHORT_CARD_LIST ? 1 : 2;
+}
+
 // The line under a flyout's name: what the category is for, short enough for one line at 26rem. A category not
 // listed falls back to its own description.
 const TAGLINES: Readonly<Record<string, string>> = {

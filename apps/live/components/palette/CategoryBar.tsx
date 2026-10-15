@@ -2,34 +2,57 @@
 
 import {
   Fragment,
+  useEffect,
   useRef,
   useState,
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
 } from 'react';
-import { HoverCard } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { StripPopover, useStripPopover } from './ToolbarStripPopover';
 import { CategoryFlyout, type FlyoutCategory } from './CategoryFlyout';
-import { flyoutLayout, flyoutTagline } from './category-flyout-groups';
+import { flyoutCardColumns, flyoutLayout } from './category-flyout-groups';
+import { opensSide } from './category-flyout-items';
+import { CategoryFlyoutSide, sidePlacement, type SideOpen } from './CategoryFlyoutSide';
+import type { PaletteTileDef } from './palette-tile-defs';
 import { StripOpenedBody, Divider } from './strip-rail-items';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
 // Diagram's category bar (docs/specs/007-editor/toolbar-layout.md "Diagram's category bar"): the strip shows the
-// mode's categories rather than one category's tiles, each a button with its glyph and name. Pressing one opens its
-// flyout (CategoryFlyout) centred under it; while one is open, pointing at another moves the flyout there, as a
-// menu bar does. The arrow keys walk the bar, and Down or Enter opens a category with its first tile focused.
+// mode's categories rather than one category's tiles, each a button with its glyph and name. With a mouse, resting
+// on one opens its flyout (CategoryFlyout) centred under it, pointing at another moves the flyout there, and leaving
+// both the bar and the flyout closes it. A tap or a click opens it too. The arrow keys walk the bar, and Down or
+// Enter opens a category with its first tile focused.
 
-// The bar's buttons and its flyout: a press on either never counts as outside the flyout.
-const BAR_SELECTOR = '[data-category-flyout], [data-category-bar-button]';
+// The bar's buttons, its flyout and the flyout's side panel: a press on any never counts as outside the flyout.
+const BAR_SELECTOR =
+  '[data-category-flyout], [data-category-flyout-side], [data-category-bar-button]';
 
-// The flyout's design width: wide enough for five picture tiles, or two cards with their blurbs.
+// The flyout's design width: five picture tiles, two cards with their blurbs, or one column of cards for a short
+// list (Media's two), so a small category is a small flyout.
 const GRID_PX = 416;
 const CARDS_PX = 576;
-const widthPx = (c: FlyoutCategory) =>
-  c.tiles && flyoutLayout(c.id) === 'cards' ? CARDS_PX : GRID_PX;
+const CARD_COLUMN_PX = 304;
+const WIDTH_CLASS: Readonly<Record<number, string>> = {
+  [GRID_PX]: 'w-[26rem]',
+  [CARDS_PX]: 'w-[36rem]',
+  [CARD_COLUMN_PX]: 'w-[19rem]',
+};
+const widthPx = (c: FlyoutCategory) => {
+  if (!c.tiles || flyoutLayout(c.id) !== 'cards') return GRID_PX;
+  return flyoutCardColumns(c.tiles.length) === 1 ? CARD_COLUMN_PX : CARDS_PX;
+};
+
+// Hover intent, at design time (docs/specs/004-interface-design/motion.md has no token for a wait): a pointer resting
+// this long on a closed bar opens the category, so sweeping across the bar to the canvas opens nothing; and the
+// flyout waits this long after the pointer leaves before closing, so a diagonal path from a button into the flyout,
+// across the gap or a corner of the canvas, keeps it open.
+export const HOVER_OPEN_MS = 120;
+export const HOVER_CLOSE_MS = 300;
+// Resting on a presets tile this long opens its side panel; a click opens it at once.
+const SIDE_OPEN_MS = 150;
 
 export type BarCategory = FlyoutCategory & { group?: number | undefined };
 
@@ -49,18 +72,69 @@ export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
     setViaKeyboard(keyboard);
     popover.openFrom(button, 'centre', widthPx(category));
   };
+  // Hover intent's pending open or close, one at a time.
+  const timer = useRef<number | null>(null);
+  const clearTimer = () => {
+    if (timer.current !== null) window.clearTimeout(timer.current);
+    timer.current = null;
+  };
+  useEffect(() => clearTimer, []);
+  // A tile dragged out of the flyout: it stays open until the drop, since closing it would unmount the tile mid-drag.
+  const dragging = useRef(false);
+  const close = (refocus: boolean) => {
+    clearTimer();
+    popover.setOpen(false);
+    if (refocus && openId) buttons.current.get(openId)?.focus();
+  };
   return {
     popover,
     openId: popover.open ? openId : null,
     viaKeyboard,
     buttons,
     isOpen,
-    open,
-    close: (refocus: boolean) => {
-      popover.setOpen(false);
-      if (refocus && openId) buttons.current.get(openId)?.focus();
+    open: (category: FlyoutCategory, keyboard: boolean) => {
+      clearTimer();
+      open(category, keyboard);
+    },
+    close,
+    /** The mouse came onto a bar button: open its category after a beat, or at once while another is open. */
+    hoverButton: (category: FlyoutCategory) => {
+      clearTimer();
+      if (isOpen(category.id)) return;
+      if (popover.open) open(category, false);
+      else timer.current = window.setTimeout(() => open(category, false), HOVER_OPEN_MS);
+    },
+    /** The mouse came onto the flyout: it stays. */
+    hoverFlyout: clearTimer,
+    /** The mouse left a button or the flyout: close after a grace, unless a tile is being dragged out or a search
+     *  has been typed into (the pointer drifting off would throw the query away). */
+    leave: () => {
+      clearTimer();
+      timer.current = window.setTimeout(() => {
+        timer.current = null;
+        if (dragging.current || typedSearch()) return;
+        popover.setOpen(false);
+      }, HOVER_CLOSE_MS);
+    },
+    dragStarted: () => {
+      clearTimer();
+      dragging.current = true;
+    },
+    dragEnded: () => {
+      dragging.current = false;
+      close(false);
     },
   };
+}
+
+// The flyout's search field (Icons, Technology) holds a query the person typed.
+function typedSearch(): boolean {
+  const field = document.activeElement;
+  return (
+    field instanceof HTMLInputElement &&
+    !!field.closest('[data-category-flyout], [data-category-flyout-side]') &&
+    field.value.trim() !== ''
+  );
 }
 
 export type CategoryBarState = ReturnType<typeof useCategoryBar>;
@@ -70,11 +144,15 @@ export function CategoryBarButtons({
   bar,
   categories,
   labels,
+  scrollable = false,
 }: {
   bar: CategoryBarState;
   categories: readonly BarCategory[];
   // Names beside the glyphs; off where the window is too narrow for them (and on a phone).
   labels: boolean;
+  // A phone's strip: the bar is the part that gives way and swipes sideways, as the tile rail does, so the
+  // selection mode and Search beside it stay in reach (docs/specs/007-editor/toolbar-layout.md "On a phone").
+  scrollable?: boolean;
 }) {
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
     const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
@@ -92,7 +170,16 @@ export function CategoryBarButtons({
     }
   };
   return (
-    <div role="toolbar" aria-label="Palette categories" className="flex items-center">
+    <div
+      role="toolbar"
+      aria-label="Palette categories"
+      {...(scrollable ? { 'data-strip-rail': '' } : {})}
+      className={`flex items-center ${
+        scrollable
+          ? 'min-w-0 -my-[3px] overflow-x-auto overflow-y-hidden overscroll-x-contain py-[3px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+          : ''
+      }`}
+    >
       {categories.map((c, i) => {
         const open = bar.isOpen(c.id);
         const bandChange = i > 0 && categories[i - 1]!.group !== c.group;
@@ -110,16 +197,21 @@ export function CategoryBarButtons({
             aria-haspopup="dialog"
             aria-expanded={open}
             onClick={(e) => {
-              if (open) bar.close(false);
-              // A keyboard press (Enter, Space) reports no pointer position.
-              else bar.open(c, e.detail === 0);
+              // A keyboard press (Enter, Space) reports no pointer position, and toggles.
+              const keyboard = e.detail === 0;
+              // A click on a category the hover already opened leaves it open: the click was on its way there.
+              if (open && keyboard) bar.close(false);
+              else if (!open) bar.open(c, keyboard);
             }}
             onPointerEnter={(e) => {
-              if (e.pointerType === 'mouse' && bar.openId && !open) bar.open(c, false);
+              if (e.pointerType === 'mouse') bar.hoverButton(c);
+            }}
+            onPointerLeave={(e) => {
+              if (e.pointerType === 'mouse') bar.leave();
             }}
             onKeyDown={(e) => onKeyDown(e, i)}
             className={`relative flex h-9 shrink-0 touch-target-y items-center gap-1.5 rounded-lg transition ${
-              labels ? 'pl-2 pr-2.5' : 'w-9 justify-center phone:w-8'
+              labels ? 'pl-2 pr-2.5' : 'w-9 justify-center phone:w-11'
             } ${
               open
                 ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
@@ -142,17 +234,11 @@ export function CategoryBarButtons({
             />
           </button>
         );
+        // No hover card: resting on a button opens its flyout, which names it.
         return (
           <Fragment key={c.id}>
             {bandChange ? <Divider /> : null}
-            {open || bar.openId ? (
-              // No hover card while a flyout is open: the flyout already names it.
-              button
-            ) : (
-              <HoverCard title={c.label} description={flyoutTagline(c.id, c.description)}>
-                {button}
-              </HoverCard>
-            )}
+            {button}
           </Fragment>
         );
       })}
@@ -160,7 +246,7 @@ export function CategoryBarButtons({
   );
 }
 
-/** The open category's flyout, hung under its button and gliding to the next one. */
+/** The open category's flyout, hung under its button and gliding to the next one, and its side panel. */
 export function CategoryBarFlyout({
   bar,
   categories,
@@ -176,41 +262,99 @@ export function CategoryBarFlyout({
   isMobile: boolean;
   scale: number;
 }) {
+  // The side panel (CategoryFlyoutSide) and the category it belongs to: a switch of category drops it.
+  const [side, setSide] = useState<(SideOpen & { category: string }) | null>(null);
+  // Its own hover intent: resting on a presets tile opens its panel, resting on another tile closes it.
+  const sideTimer = useRef<number | null>(null);
+  const clearSideTimer = () => {
+    if (sideTimer.current !== null) window.clearTimeout(sideTimer.current);
+    sideTimer.current = null;
+  };
+  useEffect(() => clearSideTimer, []);
   const category = categories.find((c) => c.id === bar.openId);
   if (!category) return null;
-  // An opener's body: the category it stands for, at its group (Popular's AWS opens Technology's AWS marks).
+  const openSide = side && side.category === category.id ? side : null;
+  const showSide = (def: PaletteTileDef, el: HTMLElement) => {
+    clearSideTimer();
+    const placed = sidePlacement(el, def);
+    if (placed) setSide({ ...placed, category: category.id });
+  };
+  const onItemHover = (def: PaletteTileDef | null, el: HTMLElement | null) => {
+    clearSideTimer();
+    if (def && el && opensSide(def)) {
+      if (openSide?.def.id !== def.id)
+        sideTimer.current = window.setTimeout(() => showSide(def, el), SIDE_OPEN_MS);
+    } else if (openSide) {
+      sideTimer.current = window.setTimeout(() => setSide(null), HOVER_CLOSE_MS);
+    }
+  };
+  // An opener's body: the category it stands for, at its group (an AWS opener opens Technology's AWS marks).
   const openBody = (categoryId: string, group: string | null): ReactNode => (
     <StripOpenedBody
       opened={{ key: `${categoryId}/${group ?? ''}`, category: categoryId, group, label: '' }}
       content={categories.find((c) => c.id === categoryId)?.content ?? null}
     />
   );
+  // The flyout and the side panel count as one surface for hover intent, drags and Escape.
+  const surface = {
+    onPointerEnter: (e: React.PointerEvent) => {
+      if (e.pointerType === 'mouse') bar.hoverFlyout();
+    },
+    onPointerLeave: (e: React.PointerEvent) => {
+      if (e.pointerType === 'mouse') bar.leave();
+    },
+    onDragStart: bar.dragStarted,
+    onDragEnd: bar.dragEnded,
+  };
+  const width = widthPx(category);
   return (
-    <StripPopover
-      right={bar.popover.right}
-      isMobile={isMobile}
-      scale={scale}
-      dataAttr="data-category-flyout"
-      widthClass={widthPx(category) === CARDS_PX ? 'w-[36rem]' : 'w-[26rem]'}
-      glide
-      bare
-    >
-      <div
-        onKeyDown={(e) => {
-          // Escape closes it (the popover's own listener) and hands the focus back to its button.
-          if (e.key === 'Escape') bar.close(true);
-        }}
+    <>
+      <StripPopover
+        right={bar.popover.right}
+        isMobile={isMobile}
+        scale={scale}
+        dataAttr="data-category-flyout"
+        widthClass={WIDTH_CLASS[width] ?? 'w-[26rem]'}
+        glide
+        bare
       >
-        {/* Keyed on the category, so a drill into one never carries over to the next. */}
-        <CategoryFlyout
-          key={category.id}
-          category={category}
+        <div
+          {...surface}
+          onKeyDown={(e) => {
+            // Escape closes it (the popover's own listener) and hands the focus back to its button.
+            if (e.key === 'Escape') bar.close(true);
+          }}
+        >
+          <CategoryFlyout
+            key={category.id}
+            category={category}
+            actions={actions}
+            pendingDraw={pendingDraw}
+            focusFirst={bar.viaKeyboard}
+            sideOpenId={openSide?.def.id ?? null}
+            onSide={(def, el) => (openSide?.def.id === def.id ? setSide(null) : showSide(def, el))}
+            onItemHover={onItemHover}
+          />
+        </div>
+      </StripPopover>
+      {openSide ? (
+        <CategoryFlyoutSide
+          key={openSide.def.id}
+          side={openSide}
+          isMobile={isMobile}
+          scale={scale}
           actions={actions}
           pendingDraw={pendingDraw}
-          focusFirst={bar.viaKeyboard}
           openBody={openBody}
+          hoverHandlers={{
+            ...surface,
+            onPointerEnter: (e) => {
+              clearSideTimer();
+              surface.onPointerEnter(e);
+            },
+          }}
         />
-      </div>
-    </StripPopover>
+      ) : null}
+    </>
   );
 }

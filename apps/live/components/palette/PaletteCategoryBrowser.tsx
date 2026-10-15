@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, type ReactNode, useContext, useRef, useState } from 'react';
+import { createContext, type ReactNode, useContext, useMemo, useRef, useState } from 'react';
 import { NoMatches } from '@livediagram/ui';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { ToolsBreadcrumb, ToolsCategoryGrid, type ToolsCategory } from './palette-tools-nav';
@@ -28,6 +28,27 @@ export type BrowserCategory<T> = ToolsCategory & { items: T[] };
 // so a host shows another group by remounting it. `bare` shows the group's entries alone, without the search or the
 // breadcrumb: the strip's group popover, where the strip itself is the way between groups.
 export const BrowseStartGroup = createContext<{ id: string; bare: boolean } | null>(null);
+
+// The group each browse last had open, by its root ("Icons", "Tech"), for a host that unmounts the browse between
+// visits (the Toolbar strip's popovers): going back to Icons reopens the group you left it on, rather than the grid.
+// The host keeps it for the page load; no host means every visit starts on the grid. A query is not kept.
+export type BrowseMemory = {
+  get: (root: string) => string | null;
+  set: (root: string, group: string | null) => void;
+};
+export const BrowseMemoryContext = createContext<BrowseMemory | null>(null);
+
+/** A browse memory for the page load. Stable across renders, so it never re-renders its consumers. */
+export function useBrowseMemory(): BrowseMemory {
+  const groups = useRef(new Map<string, string | null>());
+  return useMemo(
+    () => ({
+      get: (root) => groups.current.get(root) ?? null,
+      set: (root, group) => void groups.current.set(root, group),
+    }),
+    [],
+  );
+}
 
 type Props<T> = {
   // Breadcrumb root — the tab's own name, so "Icons › People" reads true.
@@ -79,8 +100,17 @@ export function PaletteCategoryBrowser<T>({
 }: Props<T>) {
   // null = the category grid. Opening the tab starts there, so you see every
   // category at once rather than one arbitrary group's contents; a strip's group tile opens on its group.
+  // A host's remembered group comes next (BrowseMemory).
   const startGroup = useContext(BrowseStartGroup);
-  const [openId, setOpenId] = useState<string | null>(startGroup?.id ?? null);
+  const memory = useContext(BrowseMemoryContext);
+  const [openId, setOpenIdState] = useState<string | null>(
+    startGroup?.id ?? memory?.get(root) ?? null,
+  );
+  const setOpenId = (id: string | null) => {
+    setOpenIdState(id);
+    // A bare group popover is the strip's own way between groups, not a visit to remember.
+    if (!startGroup?.bare) memory?.set(root, id);
+  };
   // One 'Searched' event per mount, on the first keystroke — the same
   // engagement-signal pattern as the editor's Search panel.
   const searchedRef = useRef(false);
