@@ -18,6 +18,7 @@ import { json } from '../responses';
 import { createMany } from '../routes/item-routes';
 import { relay } from '../routes/item-route-kit';
 import type { RouteContext } from '../routes/context';
+import { reportServerEvent } from '../server-telemetry';
 import { boardsOnTab, readFormTab } from './form-tab';
 
 // How many responses one form takes an hour from everyone (docs/specs/030-forms/forms.md "Abuse and limits").
@@ -55,6 +56,7 @@ function isClosed(form: FormDefinition, link: FormLinkRow, now: number): boolean
 }
 
 export async function respond(ctx: RouteContext, code: string): Promise<Response> {
+  const { env } = ctx;
   const text = await ctx.request.text();
   if (text.length > RESPONSE_BODY_MAX) return refuse({ error: 'form_busy' }, 413);
   let body: { answers?: unknown; other?: unknown; website?: unknown };
@@ -72,6 +74,7 @@ export async function respond(ctx: RouteContext, code: string): Promise<Response
   // The hidden field: a person never fills it, so a bot learns nothing from the answer it gets.
   if (typeof body.website === 'string' && body.website.trim() !== '') {
     console.info('[forms] form.response.dropped', { documentId: doc.id });
+    ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', 'Dropped'));
     const accepted: FormResponseAccepted = { number: 0 };
     return json(accepted, { status: 201 });
   }
@@ -136,6 +139,7 @@ export async function respond(ctx: RouteContext, code: string): Promise<Response
   }
   relay(ctx, doc.id, made.items, [], made.rev);
   console.info('[forms] form.response.accepted', { documentId: doc.id, number });
+  ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', 'Response'));
   ctx.waitUntil?.(
     notifyFormResponse(
       ctx.env,

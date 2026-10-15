@@ -2,6 +2,7 @@
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@livediagram/api-schema';
+import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livediagram/forms';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
@@ -1034,6 +1035,71 @@ export const SHEETS: MetricStack = {
     SHEET_CSV_IMPORTED,
     SHEET_CSV_EXPORTED,
     SHEET_DELETED,
+  ],
+};
+
+// Forms (docs/specs/030-forms/forms.md "Telemetry"): forms started and built, published, opened and closed, and the
+// responses and reports their links take. Never a form's words.
+export const FORMS_CREATED = chart(
+  'Form',
+  'Created',
+  'Forms Started',
+  'A Form tab started from Start Planning, by its starter.',
+  { types: FORM_STARTERS.map((s) => s.telemetry) },
+);
+
+export const FORM_QUESTIONS_ADDED = chart(
+  'Form',
+  'Added',
+  'Form Questions Added',
+  'A question added to a form, by its type.',
+  { types: Object.values(QUESTION_TYPE_TELEMETRY) },
+);
+
+export const FORMS_PUBLISHED = chart(
+  'Form',
+  'Shared',
+  'Forms Published',
+  'A form published: its public link made from Share Form.',
+  { types: ['Link'] },
+);
+
+export const FORMS_OPENED_CLOSED = chart(
+  'Form',
+  'Toggled',
+  'Forms Opened and Closed',
+  'Accepting Responses switched on or off for a published form.',
+  { types: ['Open', 'Closed'] },
+);
+
+export const FORM_RESPONSES = chart(
+  'Form',
+  'Sent',
+  'Form Responses',
+  "A response sent through a form link and made into a card (Response), or dropped because it filled the form's hidden field (Dropped). Counted by the api.",
+  { types: ['Response', 'Dropped'] },
+);
+
+export const FORM_REPORTS = chart(
+  'Form',
+  'Reported',
+  'Forms Reported',
+  'A form reported by someone it was sent to, by the reason given. Three networks reporting one link suspend it.',
+  { types: ['Spam', 'Phishing', 'Offensive', 'Other'] },
+);
+
+export const FORMS: MetricStack = {
+  stack: true,
+  title: 'Forms',
+  blurb:
+    'Form tabs: forms started and built, published, opened and closed, and the responses and reports their links take.',
+  members: [
+    FORMS_CREATED,
+    FORM_QUESTIONS_ADDED,
+    FORMS_PUBLISHED,
+    FORMS_OPENED_CLOSED,
+    FORM_RESPONSES,
+    FORM_REPORTS,
   ],
 };
 

@@ -27,6 +27,7 @@ import {
   placementDefaultTelemetryType,
 } from '@livediagram/api-schema';
 import { countedVerbs, SYNC_WATCH_TYPE } from '@livediagram/agent-verbs';
+import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livediagram/forms';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
@@ -458,6 +459,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'ViewRestored',
       'SheetRestored',
     ],
+  },
+  // A form started names its starter, a question added its type (docs/specs/030-forms/forms.md "Telemetry").
+  'apps/live/hooks/forms/useFormActions.ts Form·Created': {
+    values: FORM_STARTERS.map((s) => s.telemetry),
+  },
+  'apps/live/components/forms/builder/FormAddBar.tsx Form·Added': {
+    values: Object.values(QUESTION_TYPE_TELEMETRY),
   },
   // A Sheet change names its kind (api-schema SHEET_CHANGE_KINDS); a formula's first use of a function, its name.
   'apps/live/components/sheets/sheet-controller.tsx Sheet·Changed': {

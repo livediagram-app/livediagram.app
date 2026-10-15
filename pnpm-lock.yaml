@@ -720,6 +720,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../../packages/forms
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons

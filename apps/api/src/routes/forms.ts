@@ -20,9 +20,17 @@ import { communityNetwork } from '../community-network';
 import { addFormReport, countSuspendedFormLinks, suspendFormLink } from '../db';
 import { notifyFormSuspended } from '../email/notifications';
 import { boardsOnTab, formBackdrop } from '../forms/form-tab';
+import { reportServerEvent } from '../server-telemetry';
 import { openFormLink, respond } from '../forms/respond';
 import { json, methodNotAllowed, notFound } from '../responses';
 import { readOptionalBody, type RouteContext } from './context';
+
+const REASON_TYPES: Record<FormReportReason, string> = {
+  spam: 'Spam',
+  phishing: 'Phishing',
+  offensive: 'Offensive',
+  other: 'Other',
+};
 
 // Reports from this many distinct networks suspend a link for good (= Community's rule).
 export const FORM_REPORTS_TO_SUSPEND = 3;
@@ -61,7 +69,7 @@ async function read(ctx: RouteContext, code: string): Promise<Response> {
   return json(body, { headers: { 'Cache-Control': 'no-store' } });
 }
 
-async function report(ctx: RouteContext, code: string): Promise<Response> {
+async function fileReport(ctx: RouteContext, code: string): Promise<Response> {
   const opened = await openFormLink(ctx, code);
   if (!opened) return formNotFound();
   const body = await readOptionalBody(ctx.request);
@@ -89,7 +97,13 @@ async function report(ctx: RouteContext, code: string): Promise<Response> {
     },
     now,
   );
-  if (added) console.info('[forms] form.reported', { documentId: opened.doc.id, reason });
+  if (added) {
+    console.info('[forms] form.reported', { documentId: opened.doc.id, reason });
+    // The reason is a preset value (FORM_REPORT_REASONS), never the note.
+    const { env } = ctx;
+    const type = REASON_TYPES[reason as FormReportReason];
+    ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Reported', type));
+  }
   if (distinct >= FORM_REPORTS_TO_SUSPEND && (await suspendFormLink(ctx.env, code, now))) {
     const suspensions = await countSuspendedFormLinks(ctx.env, opened.doc.id);
     console.warn('[forms] form.suspended', { documentId: opened.doc.id, suspensions });
@@ -120,7 +134,7 @@ export async function handleForms(ctx: RouteContext): Promise<Response> {
   }
   if (segments.length === 4 && segments[3] === 'reports') {
     if (request.method !== 'POST') return methodNotAllowed();
-    return known ? report(ctx, code) : formNotFound();
+    return known ? fileReport(ctx, code) : formNotFound();
   }
   return notFound();
 }
