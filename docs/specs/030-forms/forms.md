@@ -596,14 +596,22 @@ with the ones there are. Question types go by their ids (`short`, `paragraph`, `
   **questions** (or **sections** of them), named by `name` (the form's heading and the tab's), in the document's
   theme unless given one. With no `documentId` it makes a new document named after the form first, its one tab the
   Form tab (and a responses tab after it). **Responses go** (`respondsTo`):
-  - `{ to: "board" }`: to a new Board tab "<Form> Responses" (New, In Progress, Done), as + New Board does; with
+  - `{ to: "board" }`: to a new Board tab "<Form> Responses" (New, In Progress, Done) taking the form's card type
+    alone, so it shows only responses; with
     `board`, an existing one, its first column unless `column` names one, its card type `cardType` (by name) or the
     board's first;
-  - `{ to: "sheet" }`: to a new Sheet tab "<Form> Responses", as + New Sheet does; with `sheet`, an existing one;
+  - `{ to: "sheet" }`: to a new Sheet tab "<Form> Responses", as + New Sheet does, its sheet named after the tab and
+    given its header row at once (`#`, `Submitted`, each question; bold, frozen), as the first response would write
+    it, so it reads as the form's before anyone answers; with `sheet`, an existing one;
   - left out: a starter's own way; for questions, a new board.
-    A board form's card type is the one named, or a new type named after the form (as + New Card Type), which a board
-    confining its types also takes. A question's `goesTo` (`title`, `description`, or a field's name) maps its answer:
-    a name the card type lacks makes that field, of the kind the question's type makes (New Field), options included.
+    A board form's card type is the one named (one the document lacks is the ready-made type of that name, brought in,
+    else a new type of that name), or a new type named after the form (as + New Card Type), which a board confining
+    its types also takes. A question's `goesTo` (`title`, `description`, or a field's name) maps its answer: a name
+    the card type lacks makes that field, of the kind the question's type makes (New Field), options included; a
+    choice with **Other** gets a text field (Long Text for Multiple Choice), as its Other answer is no option of a
+    choice field. A Close On time with no offset is UTC. Each problem `read_form` lists names its question or section.
+    `read_form`'s picture flows a long form into a second column, a section heading never ending a column without its
+    first question, and says how many questions it could not fit.
 - **`change_form`** (destructive, as it deletes): up to 50 changes in order, applied as one write and one undo step
   for people: `add_question` `{ question, section?, after? }`, `set_question` `{ question, set }` (a type change
   keeps what the new type can use, as the type button does), `delete_question`, `move_question`
