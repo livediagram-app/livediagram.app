@@ -7,6 +7,7 @@ import { trustedHtml } from '@livediagram/ui';
 
 import type { CSSProperties, ReactNode } from 'react';
 import { stickerArt, type StickerDef } from '@livediagram/icons';
+import { seededRandom } from '@livediagram/document';
 import { at } from '@/components/art-tokens';
 
 // Draw mode's hand face, the self-hosted Caveat subset (app/hero-scenes/draw.css).
@@ -37,15 +38,10 @@ export type Ink = keyof typeof INKS;
 
 const r = (n: number) => Math.round(n * 10) / 10;
 
-// A small deterministic generator (mulberry32), so a seed always wobbles the same way.
+// A deterministic jitter in [-amount, amount), so a seed always wobbles the same way.
 function wobble(seed: number) {
-  let t = seed >>> 0;
-  return (amount: number) => {
-    t = (t + 0x6d2b79f5) >>> 0;
-    let x = Math.imul(t ^ (t >>> 15), 1 | t);
-    x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
-    return (((x ^ (x >>> 14)) >>> 0) / 4294967296 - 0.5) * 2 * amount;
-  };
+  const random = seededRandom(seed);
+  return (amount: number) => (random() - 0.5) * 2 * amount;
 }
 
 // A hand-drawn box: each side a slightly bowed line, the pen overshooting where it closes.

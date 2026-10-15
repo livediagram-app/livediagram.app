@@ -69,8 +69,8 @@ export type SketchSegment =
 export type SketchOutline = { segments: SketchSegment[]; area: Pt[] | null };
 // area: the closed polygon hatching fills; null for an open outline (an arrow, a limb).
 
-export function sketchSeed(id: string): number; // FNV-1a 32-bit of the id
-export function sketchRandom(seed: number): () => number; // mulberry32, [0, 1)
+export const sketchSeed: (id: string) => number; // fnv1aString (string-hash.ts): FNV-1a 32-bit of the id
+export const sketchRandom: (seed: number) => () => number; // seededRandom (seeded-random.ts): mulberry32, [0, 1)
 export function outlineOfRect(x, y, w, h, radius): SketchOutline; // 4 lines + 4 corner arcs when radius > 0
 export function outlineOfEllipse(cx, cy, rx, ry): SketchOutline; // one closed curve
 export function outlineOfPolygon(points: Pt[]): SketchOutline; // lines
