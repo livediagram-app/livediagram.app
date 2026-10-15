@@ -21,6 +21,7 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   hub: createShape('hub', 0, 0) as Element,
   onion: createShape('onion', 0, 0) as Element,
   chevrons: createShape('chevrons', 0, 0) as Element,
+  'mind-node': createShape('mind-node', 0, 0) as Element,
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {
@@ -34,7 +35,11 @@ describe('ELEMENT_TOUR_DEFS', () => {
   it.each(ELEMENT_TOUR_KINDS)(
     'gives the %s tour steps on its element, ending on a closing card',
     (kind) => {
-      const steps = ELEMENT_TOUR_DEFS[kind].steps(SAMPLE[kind], { hasMore: true, touch: false });
+      const steps = ELEMENT_TOUR_DEFS[kind].steps(SAMPLE[kind], {
+        hasMore: true,
+        touch: false,
+        elements: [SAMPLE[kind]],
+      });
       expect(steps.length).toBeGreaterThan(2);
       expect(steps.at(-1)?.card).toBe('outro');
       expect(steps.filter((s) => s.card === 'welcome')).toEqual([]);

@@ -109,3 +109,14 @@ describe('the Chevrons element tour kind', () => {
     expect(canTourElement({ level: 'participate' }, chevrons, 'chevrons')).toBe(false);
   });
 });
+
+describe('the Mind Map element tour kind', () => {
+  it('tours a mind node, but not a person node (an org chart), for an Editor only', () => {
+    const node = createShape('mind-node', 0, 0) as Element;
+    expect(elementTourKindOf(node)).toBe('mind-node');
+    expect(elementTourKindOf({ ...node, mindLook: 'person' } as Element)).not.toBe('mind-node');
+    expect(canTourElement({ level: 'edit' }, node, 'mind-node')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, node, 'mind-node')).toBe(false);
+    expect(canTourElement({ level: 'edit' }, { ...node, locked: true }, 'mind-node')).toBe(false);
+  });
+});

@@ -28,10 +28,12 @@ export const HELP_ARTICLES = {
   autoAttachArrows: 'palette/auto-attach-arrows',
   // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
   // surface that links its article (the link picker, when it is restricted to
-  // a URL). Mind maps, lanes and entities had keys here and no placement, so
-  // they were removed; their articles are still in the help centre. The mind
-  // map's Edit Outline dialog links its own sub-article from its header.
+  // a URL). Lanes and entities had keys here and no placement, so they were
+  // removed; their articles are still in the help centre. The mind map's Edit
+  // Outline dialog links its own sub-article from its header, and the mind
+  // map's element tour (docs/specs/007-editor/element-tours.md) links its article.
   embedElements: 'palette/embed-elements',
+  mindMaps: 'palette/mind-maps',
   mindMapOutline: 'palette/mind-maps/edit-outline',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
@@ -345,6 +347,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   layers: {
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
+  },
+  mindMaps: {
+    title: 'Learn about mind maps',
+    description: 'Growing a map with Tab and Enter, its branching shapes, spacing and Tidy Map.',
   },
   mindMapOutline: {
     title: 'Learn about editing an outline',

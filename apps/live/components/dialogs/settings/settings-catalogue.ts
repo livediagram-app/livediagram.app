@@ -1256,6 +1256,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a chevron process.',
         helpArticle: 'conceptGraphics',
       }),
+      elementTourSwitch('mind-node', {
+        label: 'Mind Map Tour',
+        event: { category: 'UI', on: 'MindMapTourSeenOff', off: 'MindMapTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial mind map node tab enter child sibling branch tidy outline replay',
+        description: 'The first time you select a mind map node.',
+        helpArticle: 'mindMaps',
+      }),
     ],
   },
   {

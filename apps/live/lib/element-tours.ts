@@ -18,6 +18,7 @@ export const ELEMENT_TOUR_KINDS = [
   'hub',
   'onion',
   'chevrons',
+  'mind-node',
 ] as const;
 
 export type ElementTourKind = (typeof ELEMENT_TOUR_KINDS)[number];
@@ -32,6 +33,7 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   hub: 'hub and spoke',
   onion: 'onion',
   chevrons: 'chevron process',
+  'mind-node': 'mind map node',
 };
 
 // The toured kind an element is, or null when its type has no tour.
@@ -45,6 +47,7 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el.shape === 'hub') return 'hub';
   if (el.shape === 'onion') return 'onion';
   if (el.shape === 'chevrons') return 'chevrons';
+  if (el.shape === 'mind-node' && (el as ShapeElement).mindLook !== 'person') return 'mind-node';
   return null;
 }
 
@@ -67,6 +70,8 @@ export function canTourElement(
     case 'cycle':
     case 'funnel':
     case 'pyramid':
+      return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
+    case 'mind-node':
       return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
   }
 }

@@ -9,7 +9,8 @@ with a centred card) and [Show Me](show-me.md) (never offered, started from a bu
 tour offers itself, but quietly: a small toolbar that waits beside the selection, never a card over the canvas.
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
-[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion and chevron process.
+[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion and chevron process; and the
+[mind node](../009-elements/mind-node.md).
 
 ## Domain language
 
@@ -219,6 +220,26 @@ the canvas, not in a Rows section.
 6. **Run the Pipeline**: plays **Pulse** along the stages as a preview while the step is up.
 7. **That Is a Chevron Process**: the closing card.
 
+## The Mind Map tour
+
+On a selected mind node (not a person node: that is the org chart's), from `mind-node-tour-steps.ts`. It points at the
+node and its selection toolbar; it never grows the map itself.
+
+1. **A Node That Knows Its Parent**: rings the node; every node grown from it is joined to it, and the map keeps
+   itself tidy.
+2. **Grow a Child**: rings the toolbar's **Add Child**. With a keyboard: "Tab, or Add Child here", and typing names
+   the new node; on a touch screen, the button alone.
+3. **Add a Sibling**: rings **Add Sibling**. With a keyboard it names Enter and Shift+Enter (a new line while typing);
+   on a touch screen, the button alone.
+4. **Move a Whole Branch** (a node with nodes grown from it; otherwise **Branches Move as One**): rings the node;
+   dragging it carries its branch.
+5. **The Mind Map Menu** (only while More shows): rings More. Branching (the shape it grows in), Spacing, Tidy Map
+   and Edit Outline.
+6. **That Is a Mind Map**: the closing card, with **Mind Maps Help**.
+
+The steps' environment carries the tab's elements, so a step can read past its own element (here, whether the node has
+children).
+
 ## Share roles
 
 | Role        | Element tours                                                                                  |
@@ -228,11 +249,12 @@ the canvas, not in a Rows section.
 | Viewer      | Never offered                                                                                  |
 
 The gate is the toured kind's own edit check on the session's `can` (for a Sankey, `canEditSankey`; for a concept
-graphic, an Editor on an unlocked element, since its rows are structure), never `isReadOnly` alone.
+graphic or a mind node, an Editor on an unlocked element, since its rows and its Mind Map menu are an Editor's), never
+`isReadOnly` alone.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `MindMapTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -247,7 +269,7 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   `...Outro`; the Hub's `HubTourStepHub`, `...Satellites`, `...Edit`, `...Add`, `...Spokes`, `...Animate` and
   `...Outro`; the Onion's `OnionTourStepRings`, `...Core`, `...Outer`, `...Add`, `...Rows`, `...Animate` and
   `...Outro`; the Chevrons' `ChevronsTourStepStages`, `...Edit`, `...Bar`, `...Notes`, `...Add`, `...Animate` and
-  `...Outro`.
+  `...Outro`; the Mind Map's `MindMapTourStepNode`, `...Child`, `...Sibling`, `...Branch`, `...Menu` and `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.
@@ -276,6 +298,7 @@ help article's tour section; and a section here.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
   `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`, `chevrons-tour-steps.ts`: each kind's own.
+- `apps/live/components/tour/mind-node-tour-steps.ts`: the Mind Map tour's steps.
 - `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
 - `apps/live/lib/concept-tour-preview.ts`: what a step shows on a concept graphic: an animation previewed, or a
   chevron stage's bar held open.

@@ -1191,6 +1191,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Chevrons tour, offered beside a selected chevron process.',
   'UI|Ended|ChevronsTourSkipped':
     'Someone left the Chevrons tour before its end, or the chevron process it was on went away.',
+  'UI|Ended|MindMapTourCompleted':
+    'Someone reached the end of the Mind Map tour, offered beside a selected mind map node.',
+  'UI|Ended|MindMapTourSkipped':
+    'Someone left the Mind Map tour before its end, or the mind map node it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1327,6 +1331,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Onion tour was offered, as a small Tour toolbar beside a selected onion (counted once per visit).',
   'UI|Opened|ChevronsTourOffer':
     'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit).',
+  'UI|Opened|MindMapTourOffer':
+    'The Mind Map tour was offered, as a small Tour toolbar beside a selected mind map node (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
@@ -1419,6 +1425,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected onion, starting its tour.',
   'UI|Started|ChevronsTour':
     'Someone pressed Play on the Tour toolbar beside a selected chevron process, starting its tour.',
+  'UI|Started|MindMapTour':
+    'Someone pressed Play on the Tour toolbar beside a selected mind map node, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1616,6 +1624,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Chevrons Tour" in Settings, so it is offered again.',
   'UI|Toggled|ChevronsTourSeenOn':
     'Someone switched off Tours › Element Tours › "Chevrons Tour" in Settings, so it is not offered.',
+  'UI|Toggled|MindMapTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Mind Map Tour" in Settings, so it is offered again.',
+  'UI|Toggled|MindMapTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Mind Map Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -1803,6 +1815,18 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Chevrons tour reached its "Run the Pipeline" step, playing the Pulse animation on the process.',
   'UI|View|ChevronsTourStepOutro':
     'The Chevrons tour reached its closing "That Is a Chevron Process" card.',
+  'UI|View|MindMapTourStepNode':
+    'The Mind Map tour reached its "A Node That Knows Its Parent" step, on the selected node.',
+  'UI|View|MindMapTourStepChild':
+    'The Mind Map tour reached its "Grow a Child" step, on the toolbar\'s Add Child.',
+  'UI|View|MindMapTourStepSibling':
+    'The Mind Map tour reached its "Add a Sibling" step, on the toolbar\'s Add Sibling.',
+  'UI|View|MindMapTourStepBranch':
+    'The Mind Map tour reached its branch-moving step, on the selected node.',
+  'UI|View|MindMapTourStepMenu':
+    'The Mind Map tour reached its "The Mind Map Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|MindMapTourStepOutro':
+    'The Mind Map tour reached its closing "That Is a Mind Map" card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':

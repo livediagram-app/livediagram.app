@@ -12,6 +12,7 @@ import { cycleTourSteps } from './cycle-tour-steps';
 import { hubTourSteps } from './hub-tour-steps';
 import { onionTourSteps } from './onion-tour-steps';
 import { chevronsTourSteps } from './chevrons-tour-steps';
+import { mindNodeTourSteps } from './mind-node-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -26,6 +27,8 @@ export type ElementTourEnv = {
   hasMore: boolean;
   // A touch screen: taps where a mouse clicks.
   touch: boolean;
+  // The tab's elements, for a tour that reads past its own element (a mind node's children).
+  elements: readonly Element[];
 };
 
 export type ElementTourDef = {
@@ -113,6 +116,19 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     helpArticle: 'conceptGraphics',
     helpLabel: 'Concept Graphics Help',
     steps: (el, env) => chevronsTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
+  },
+  'mind-node': {
+    token: 'MindMapTour',
+    eyebrow: 'Mind map tour',
+    helpArticle: 'mindMaps',
+    helpLabel: 'Mind Maps Help',
+    steps: (el, env) =>
+      mindNodeTourSteps({
+        elementId: el.id,
+        hasChildren: env.elements.some((e) => (e as ShapeElement).mindParentId === el.id),
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
   },
 };
 

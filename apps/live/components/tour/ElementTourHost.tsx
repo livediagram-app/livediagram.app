@@ -127,6 +127,7 @@ export function ElementTourHost() {
       d.steps(el, {
         hasMore: document.getElementById('selection-more-actions') !== null,
         touch,
+        elements: activeTabRef.current.elements,
       }),
     );
     setTouring({ id: el.id, kind: k });
