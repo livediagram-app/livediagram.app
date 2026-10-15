@@ -226,7 +226,7 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
                 className={`flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-[12px] font-medium transition disabled:cursor-default ${
                   on
                     ? 'border-brand-500 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
-                    : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300'
+                    : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500'
                 }`}
               >
                 {c.color ? (

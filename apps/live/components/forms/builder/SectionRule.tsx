@@ -50,7 +50,7 @@ export function SectionRule({ section, index }: { section: FormSection; index: n
             ? 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200'
             : rule
               ? 'border-[color-mix(in_srgb,var(--form-accent)_40%,transparent)] bg-[color-mix(in_srgb,var(--form-accent)_8%,transparent)] text-slate-800 dark:text-slate-100'
-              : 'border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-400'
+              : 'border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:border-slate-500'
         }`}
       >
         <BranchIcon aria-hidden className="shrink-0" />
@@ -150,7 +150,7 @@ function RuleEditor({ section, index }: { section: FormSection; index: number })
                     className={`flex h-8 cursor-pointer items-center rounded-full border px-3 text-[12px] font-medium transition ${
                       on
                         ? 'border-brand-500 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300'
+                        : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500'
                     }`}
                   >
                     <span className="text-optical-centre">{a}</span>

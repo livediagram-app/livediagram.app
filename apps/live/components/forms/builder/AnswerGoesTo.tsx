@@ -38,7 +38,7 @@ export function AnswerGoesTo({
     `flex w-full cursor-pointer items-start gap-2.5 rounded-lg border px-3 py-2 text-left text-[13px] transition ${
       on
         ? 'border-brand-400 bg-brand-50 text-brand-900 dark:border-brand-500/60 dark:bg-brand-500/10 dark:text-brand-50'
-        : 'border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800'
+        : 'border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:border-slate-500'
     }`;
   const dot = (on: boolean) => (
     <span

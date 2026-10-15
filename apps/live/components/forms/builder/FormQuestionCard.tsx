@@ -126,7 +126,7 @@ export function FormQuestionCard({
             aria-label={`Move ${promptOf(q)}`}
             onPointerDown={(e) => onGrab(e, q.id)}
             onClick={(e) => e.stopPropagation()}
-            className="absolute left-1/2 top-0.5 z-[1] flex h-5 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 opacity-0 transition hover:text-slate-500 group-hover/q:opacity-100 [@media(hover:none)]:opacity-100 dark:text-slate-600"
+            className="absolute left-1/2 top-0.5 z-[1] flex h-5 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 opacity-0 transition hover:text-slate-500 group-hover/q:opacity-100 [@media(hover:none)]:opacity-100 dark:text-slate-600 dark:hover:text-slate-400"
           >
             <GripIcon className="rotate-90" />
           </button>
@@ -173,7 +173,7 @@ export function FormQuestionCard({
         type="button"
         aria-label={`Move ${promptOf(q)}`}
         onPointerDown={(e) => onGrab(e, q.id)}
-        className="absolute left-1/2 top-0.5 flex h-5 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 hover:text-slate-500 dark:text-slate-600"
+        className="absolute left-1/2 top-0.5 flex h-5 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400"
       >
         <GripIcon className="rotate-90" />
       </button>
@@ -195,7 +195,7 @@ export function FormQuestionCard({
             value={q.type}
             label="Question type"
             onPick={(t) => change((f) => setQuestionType(f, q.id, t))}
-            className="flex h-10 w-48 shrink-0 cursor-pointer items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 hover:border-slate-300 max-sm:w-full dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            className="flex h-10 w-48 shrink-0 cursor-pointer items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 hover:border-slate-300 max-sm:w-full dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500"
           >
             <TypeButtonFace type={q.type} />
           </QuestionTypeMenu>
@@ -266,7 +266,7 @@ export function FormQuestionCard({
             className={`mr-auto flex min-h-8 min-w-0 max-w-[60%] cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium leading-5 transition max-sm:max-w-full ${
               target.broken
                 ? 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200'
-                : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300'
+                : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:text-slate-100 dark:hover:border-slate-500'
             }`}
           >
             <span className="shrink-0 text-slate-400">Answer goes to</span>

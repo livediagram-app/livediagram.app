@@ -105,7 +105,7 @@ export function RatingInput({
                     } ${
                       picked
                         ? 'border-transparent text-[var(--form-on-accent,white)]'
-                        : 'form-ink border-slate-300 bg-white text-slate-700 enabled:hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200'
+                        : 'form-ink border-slate-300 bg-white text-slate-700 enabled:hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500'
                     }`
               }
               style={
