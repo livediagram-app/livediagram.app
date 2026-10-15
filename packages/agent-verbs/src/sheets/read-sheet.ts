@@ -89,10 +89,9 @@ export async function readSheet(
   const cells: ReadCell[] = [];
   let chars = 0;
   let cut: string | null = null;
-  read.rows.forEach((row, i) => {
-    if (cut) return;
-    row.forEach((cell, j) => {
-      if (cut || (cell.input === '' && (cell.value === null || cell.value === ''))) return;
+  rows: for (const [i, row] of read.rows.entries()) {
+    for (const [j, cell] of row.entries()) {
+      if (cell.input === '' && (cell.value === null || cell.value === '')) continue;
       const at = formatA1(start.r1 + i, start.c1 + j);
       const out: ReadCell = {
         at,
@@ -110,10 +109,13 @@ export async function readSheet(
           out.invalid = ruleMessage(rule, ctx);
       }
       chars += JSON.stringify(out).length;
-      if (chars > SHEET_READ_CHARS_MAX) cut = at;
-      else cells.push(out);
-    });
-  });
+      if (chars > SHEET_READ_CHARS_MAX) {
+        cut = at;
+        break rows;
+      }
+      cells.push(out);
+    }
+  }
   const extent = wb.extent(id);
   const lastRow = start.r1 + read.rows.length;
   const note = cut
