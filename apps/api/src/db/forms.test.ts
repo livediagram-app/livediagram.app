@@ -4,8 +4,10 @@ import {
   claimFormEmail,
   claimResponseNumber,
   createFormLink,
+  deleteFormLink,
   generateFormCode,
   getFormLink,
+  getLiveFormLink,
   markFormSeen,
 } from './forms';
 import { readActivity } from './collab-index';
@@ -88,7 +90,7 @@ describe('the Inbox read (docs/specs/030-forms/forms.md "Hearing about responses
   });
 });
 
-describe('claimResponseNumber (docs/specs/030-forms/forms.md "Publishing and the form link")', () => {
+describe('claimResponseNumber and deleteFormLink (docs/specs/030-forms/forms.md "Publishing and the form link")', () => {
   const setup = () => {
     const { env, sql } = sqliteD1();
     sql.exec(
@@ -107,5 +109,19 @@ describe('claimResponseNumber (docs/specs/030-forms/forms.md "Publishing and the
     expect((await getFormLink(env, code))!.responses).toBe(3);
     // A preview passes the limit.
     expect(await claimResponseNumber(env, code, 5000, 500, null)).toBe(4);
+  });
+
+  it('keeps a deleted link so the next one carries its numbers on, its code answering no more', async () => {
+    const env = setup();
+    const first = (await createFormLink(env, 'd', 't', 1))!;
+    await claimResponseNumber(env, first.code, 5000, 500);
+    await claimResponseNumber(env, first.code, 5000, 500);
+    await deleteFormLink(env, first.code, 6000);
+    expect(await getLiveFormLink(env, 'd', 't')).toBeNull();
+    expect(await getFormLink(env, first.code)).toMatchObject({ deleted_at: 6000, open: 0 });
+    expect(await claimResponseNumber(env, first.code, 7000, 500)).toBeNull();
+    const second = (await createFormLink(env, 'd', 't', 8000))!;
+    expect(second.code).not.toBe(first.code);
+    expect(await claimResponseNumber(env, second.code, 9000, 500)).toBe(3);
   });
 });

@@ -41,10 +41,10 @@ export function formPerson(code: string, form: Pick<FormDefinition, 'heading'>):
 }
 
 // The live link a public request names, with its document and form; null for anything that is not there now (an
-// unknown or suspended code, a trashed document, a tab gone or no longer a Form tab), all answered alike.
+// unknown, suspended or deleted code, a trashed document, a tab gone or no longer a Form tab), all answered alike.
 export async function openFormLink(ctx: RouteContext, code: string) {
   const link = await getFormLink(ctx.env, code);
-  if (!link || link.suspended_at !== null) return null;
+  if (!link || link.suspended_at !== null || link.deleted_at !== null) return null;
   const doc = await getDocument(ctx.env, link.document_id);
   if (!doc) return null;
   const formTab = await readFormTab(ctx.env, link.document_id, link.tab_id);
