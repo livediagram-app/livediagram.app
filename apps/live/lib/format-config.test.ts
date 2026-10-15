@@ -130,6 +130,7 @@ describe('filterPaintedFields', () => {
       'arrowheadColor',
       'arrowheadShape',
       'arrowheadSize',
+      'arrowheadStartShape',
       'routeBehind',
       'strokeColor',
       'strokeStyle',
