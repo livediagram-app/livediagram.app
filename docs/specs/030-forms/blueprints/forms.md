@@ -159,6 +159,17 @@ and the question has no Other. `effectiveTarget(q, type)` resolves `goesTo` or f
 - `status`: the destination's. `fromForm`: `fromFormValue(tabId, number)`, read by `readFromForm`; none when `number`
   is null.
 
+## 6a. Sections shown sometimes (`branching.ts`)
+
+`FormSection.showIf?: SectionRule` (`{ questionId, anyOf }`), read on a later section only (`anyOf` through
+`readOptions`; an empty or malformed rule is dropped) and carried by `publicForm`. `ruleChoices(q)` (options;
+`CHECKBOX_TICKED` / `CHECKBOX_UNTICKED`), `ruleQuestions(form, index)` (earlier single, multi, checkbox questions with
+choices), `ruleQuestion(form, index, rule)` (null when broken), `sectionsShown(form, answers)` (progressive: a rule reads
+only questions of shown sections), `shownQuestions`. `checkResponse`'s default questions are `shownQuestions(form,
+body.answers)`, so the api and the page check and keep only what shows. Live: `useFormFill` steps Next/Back over hidden
+sections and reports `position` / `count`; `builder/SectionRule.tsx` is the badge and editor; `updateSection` takes
+`showIf` (an empty `anyOf` clears it).
+
 ## 7. Starters (`starters.ts`)
 
 `FORM_STARTERS` as the spec's table (`id`, `name`, `line`, `telemetry`, `readyType?`, `accent` (its picture and a
@@ -304,6 +315,7 @@ editor modules: `forms-public.ts`, the shared controls and `@livediagram/ui`.
 | Preview makes the card, refuses as the api does, needs a destination                              | `apps/live/hooks/forms/form-preview.test.ts`                             |
 | The form page wears the look                                                                      | `apps/live/components/forms/respond/FormRespondPage.test.tsx`            |
 | Starters valid, mappings resolve, fields reused                                                   | `starters.test.ts`                                                       |
+| Sections shown by earlier answers, broken rules, the check dropping hidden answers, reading rules | `packages/forms/src/branching.test.ts`                                   |
 | Destination problems; public projection; closed reasons                                           | `destination.test.ts`, `public.test.ts`                                  |
 | The two field kinds: catalogue, card text, CSV, agents                                            | `packages/items/src/form-field-kinds.test.ts`                            |
 | Form tab kind always Plan                                                                         | `packages/document/src/dashboard.test.ts`                                |

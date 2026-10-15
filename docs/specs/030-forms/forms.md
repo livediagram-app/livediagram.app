@@ -87,10 +87,11 @@ opens it, in one undo step.
 An **Editor** builds the form **in place**, and everything about it is edited there, on a phone as on a desktop: no
 side panel. The Form tab shows the form as respondents will see it, centred in a column 640 px wide (full width less
 16 px gutters on a phone), on the tab theme's background. Above it sits the **status bar** (see
-[Hearing about responses](#hearing-about-responses)), which ends with the help link and the form's **cog**.
+[Hearing about responses](#hearing-about-responses)), which ends with **Preview** (**Back to Editing** while
+previewing), the help link and the form's **cog**.
 
-- **The menu box** (top left, with the menu and the tab's name) holds **Preview**; a phone, which has no menu box,
-  shows Preview at the end of the status bar instead.
+- The answer controls the builder draws (unselected questions, and a selected one's control) are a picture of the
+  form: they show a not-allowed cursor and take no input; a press on one selects its question.
 - **Share Form** is the header's Share button: on a Form tab, for someone who may edit it, the header's **Share** is
   **Share Form** (filled once the form is published), so the page never shows two share buttons. Everyone else keeps
   the document's Share.
@@ -116,7 +117,8 @@ side panel. The Form tab shows the form as respondents will see it, centred in a
   what respondents see. Text is saved as typing pauses (half a second) and when a field is left, so typing is one
   undo step a pause, not one a key.
 - **Sections**: a form with more than one section draws each as a block with its own title and description,
-  headed "Section 2 of 3". The first section's title and description are the form's heading and description.
+  headed "Section 2 of 3". The first section's title and description are the form's heading and description. A later
+  section's block ends with its rule's badge ([Showing a section only sometimes](#showing-a-section-only-sometimes)).
 - **Add bar**: under the selected question (or at the end when none is), a pill with **Add <Type>** (the selected
   question's type, as people tend to ask runs of the same kind; Short Answer with none), an arrow listing every type,
   and **Add Section**, which splits the form after the selected question (else adds an empty section at the end). The
@@ -126,6 +128,28 @@ side panel. The Form tab shows the form as respondents will see it, centred in a
   reorder it, between sections too: a line in the form colour marks where it will land, the page scrolls near its
   edges and Escape cancels. Alt+Up and Alt+Down move the selected question from the keyboard.
 
+### Showing a section only sometimes
+
+A section after the first can show **only when an earlier answer is** one of some answers (a form branching on "Are
+you coming?"):
+
+- **The rule** (`showIf`): one earlier **Single Choice**, **Multiple Choice** or **Checkbox** question, and the answers
+  that show the section (any of: a choice's options; a Checkbox's **Ticked** or **Not Ticked**). A Multiple Choice
+  matches when any pick is one of them; a Checkbox left alone reads as Not Ticked; an unanswered choice matches none.
+- **In the builder**: under a later section's description, a badge reads the rule back ("Always shown", or "Shown
+  when Coming? is Yes or Maybe") and opens its editor (a popover; a sheet on a phone): **Always**, or **Only when an
+  earlier answer is…** with the question (a select of the earlier questions that fit) and the answers (toggle chips,
+  at least one). With no fitting earlier question it says to add one first. Unpicking every answer clears the rule.
+- **A broken rule** (its question deleted, moved after the section, changed to a type that does not fit, or none of
+  its answers still offered) shows the section always, and the badge says "Always shown: its question was removed or
+  changed" (amber) until a rule is chosen again.
+- **Filling in**: which sections show is worked out from the answers so far, section by section, and a rule reads
+  only answers from sections that show, so a hidden section's answers never decide another's. **Next** and **Back**
+  step over a hidden section, the progress counts only the sections that show ("Section 2 of 3"), and the last
+  section that shows ends with **Submit** (changing an answer can change which that is).
+- **On the api**: a response is checked against, and keeps, only the questions of the sections its answers show; a
+  hidden section's required questions are not asked and its answers are dropped.
+
 ### Responses Go To and Settings
 
 The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a sheet on a phone), switching between
@@ -134,7 +158,7 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
 - **Responses Go To** (the destination): **Board** (the document's Board tabs, its last choice **+ New Board**: a
   Board tab after this one, "<Form> Responses", New, In Progress, Done), **Card Type** (the types that board takes,
   its last choice **+ New Card Type**: a type named after the form, which a board confining its types also takes),
-  **Column** (the board's columns, as chips). A sentence under it reads the result back: "Each response becomes a
+  **Column** (the board's columns, as chips); a pencil beside Card Type opens that type's editor (its fields), to shape it before mapping answers. A sentence under it reads the result back: "Each response becomes a
   **Bug** card in **New** on **Bugs**." A destination that no longer holds says why instead.
 - **Settings**: **Accepting Responses** (the link's switch; dimmed until published), **Close On** (a date and time,
   with Clear; a time already past says the form is closed) beside **Response Limit** (1 to 2,000), **Confirmation
@@ -184,18 +208,18 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
 
 ### Question types
 
-| Type                | The respondent sees                              | Settings                                                                      | Kept as                       |
-| ------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------- |
-| **Short Answer**    | A one-line text box                              | Placeholder                                                                   | Text, up to 200 characters    |
-| **Paragraph**       | A growing text area                              | Placeholder                                                                   | Text, up to 2,000 characters  |
-| **Number**          | A number box                                     | Minimum, Maximum, Whole Numbers Only                                          | A number                      |
-| **Email**           | An email box                                     |                                                                               | An email address              |
-| **Link**            | A web address box                                |                                                                               | An `https://` URL             |
-| **Date**            | A date picker                                    |                                                                               | A date (`YYYY-MM-DD`)         |
-| **Single Choice**   | Radio buttons (or a dropdown past 7 options)     | Options (2 to 20), Show as Dropdown                                           | One option                    |
-| **Multiple Choice** | Checkboxes                                       | Options (2 to 20), Minimum and Maximum Picks                                  | A list of options             |
-| **Rating**          | Stars, or numbered buttons on a scale            | Scale 3 to 10 (5 by default), Stars or Numbers, Low and High labels (Numbers) | A whole number 1 to the scale |
-| **Checkbox**        | One checkbox beside the prompt ("I agree to...") |                                                                               | true or false                 |
+| Type                | The respondent sees                                                              | Settings                                                                      | Kept as                       |
+| ------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------- |
+| **Short Answer**    | A one-line text box                                                              | Placeholder                                                                   | Text, up to 200 characters    |
+| **Paragraph**       | A growing text area                                                              | Placeholder                                                                   | Text, up to 2,000 characters  |
+| **Number**          | A number box                                                                     | Minimum, Maximum, Whole Numbers Only                                          | A number                      |
+| **Email**           | An email box                                                                     |                                                                               | An email address              |
+| **Link**            | A web address box                                                                |                                                                               | An `https://` URL             |
+| **Date**            | A date picker                                                                    |                                                                               | A date (`YYYY-MM-DD`)         |
+| **Single Choice**   | Radio buttons (or a dropdown past 7 options)                                     | Options (2 to 20), Show as Dropdown                                           | One option                    |
+| **Multiple Choice** | Checkboxes                                                                       | Options (2 to 20), Minimum and Maximum Picks                                  | A list of options             |
+| **Rating**          | Stars, or numbered buttons on a scale (Numbers' labels under the first and last) | Scale 3 to 10 (5 by default), Stars or Numbers, Low and High labels (Numbers) | A whole number 1 to the scale |
+| **Checkbox**        | One checkbox beside the prompt ("I agree to...")                                 |                                                                               | true or false                 |
 
 - A prompt is 1 to 200 characters ("Untitled Question" until typed); help text up to 500.
 - Options are 1 to 40 characters (a Choice field's limit, as a question's options may become its field's), unique
@@ -301,7 +325,8 @@ no editor code loaded (its own small bundle).
   system). The Report This Form panel keeps livediagram's own look. A footer: "Made with livediagram" linking to the marketing site, and
   **Report This Form** (below).
 - **Sections**: one section at a time, a progress bar across the top ("Section 2 of 3"), **Back** and **Next**; Next
-  checks only that section's questions. The last section's button is **Submit**.
+  checks only that section's questions. The last section's button is **Submit**. Sections that do not show for the
+  answers so far are stepped over and not counted ([Showing a section only sometimes](#showing-a-section-only-sometimes)).
 - **Answers are kept while filling in**: in the browser's session storage per form, so a reload or a wrong Back keeps
   what was typed; cleared on submit. **Submit Another Response** starts afresh.
 - **Checking answers**: each field is checked when it loses focus (an empty one only on Next or Submit, so tabbing
@@ -362,8 +387,8 @@ On submit the api, in one write:
   response") until it is opened in this browser, or until a week has passed. What has been opened is kept per browser.
 - **On the Form tab**: the **status bar** over the form: its state (**Not Published**, **Accepting Responses**,
   **Paused**, **Closed**, **Suspended**, or **Draft** for an offline document), the count ("14 responses · 3 new",
-  new to this reader) and **View on <Board> →**, which opens the destination's tab. The count is read when the tab
-  opens and every 30 seconds while it is shown.
+  new to this reader), which opens the destination's tab (its tooltip names it). The count is read when the tab opens
+  and every 30 seconds while it is shown.
 - **Inbox**: a **Form Responses** section in the Explorer's [Inbox](../013-workspace/inbox.md) lists each live
   form, in a document the reader owns or reaches through a team, that has responses the reader has not seen: "3 new
   responses to **Bug Report**", its document's chip, newest response first; a row opens the destination board (the
@@ -382,7 +407,7 @@ On submit the api, in one write:
 | See the Form tab (as a Preview, no editing chrome)       | ✓                                      | ✓           | ✓      |
 | Build: questions, sections, mappings, destination, look  | ✓                                      |             |        |
 | Publish, open, close, delete the link, see the form link | ✓                                      |             |        |
-| See the response count and View on Board                 | ✓                                      | ✓           | ✓      |
+| See the response count, which opens the destination      | ✓                                      | ✓           | ✓      |
 | Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no
