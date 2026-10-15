@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { hexFill, hexInk, readColour, readFill, readInk } from './colour';
 
 describe('readColour', () => {
@@ -43,7 +43,7 @@ describe('readColour on hostile values', () => {
       read = readColour(`light-dark(a${' '.repeat(100_000)}`);
     });
     expect(read).toEqual(readColour(undefined));
-    expect(spent).toBeLessThan(20);
+    expect(spent).toBeLessThan(cpuBudgetMs(20));
   });
 
   it('still reads light-dark() with spaces around its first colour', () => {

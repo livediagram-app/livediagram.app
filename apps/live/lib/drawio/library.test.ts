@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { deflateRawSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { cpuMsOfAsync } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOfAsync } from '@livediagram/vitest-config/cpu-time';
 import { contentBounds, type ArrowElement, type ShapeElement } from '@livediagram/document';
 import { importDrawio } from './import';
 import { importDrawioLibrary } from './library';
@@ -138,7 +138,7 @@ describe('importDrawioLibrary on hostile text', () => {
       read = await importDrawioLibrary({ kind: 'text', text });
     });
     expect(read).toMatchObject({ ok: false });
-    expect(spent).toBeLessThan(50);
+    expect(spent).toBeLessThan(cpuBudgetMs(50));
   });
 
   it('reads a library after a BOM and whitespace, with whitespace after it', async () => {

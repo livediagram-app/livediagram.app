@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { svgElements } from './svg-tokens';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 
 describe('svgElements', () => {
   it('reads each element tag and its attributes', () => {
@@ -50,6 +50,6 @@ describe('svgElements', () => {
       svgElements('<path'.repeat(12_500));
       svgElements('<a b="'.repeat(12_500));
     });
-    expect(spent).toBeLessThan(500);
+    expect(spent).toBeLessThan(cpuBudgetMs(500));
   });
 });

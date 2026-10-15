@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { outlineOfBox, outlineOfPath, sketchHatching, sketchSeed, sketchStrokes } from './sketch';
 
 // docs/specs/008-canvas/finish.md "Performance": one element's strokes and hatching under 0.2 ms at an
@@ -30,8 +30,8 @@ const sketchBox = (kind: string, w: number, h: number) => () => {
 
 describe('sketch budgets', () => {
   it('an ordinary shape stays under 0.2 ms (x10 for CI and coverage)', () => {
-    expect(fastest(sketchBox('square', 400, 300))).toBeLessThan(2);
-    expect(fastest(sketchBox('circle', 400, 300))).toBeLessThan(2);
+    expect(fastest(sketchBox('square', 400, 300))).toBeLessThan(cpuBudgetMs(2));
+    expect(fastest(sketchBox('circle', 400, 300))).toBeLessThan(cpuBudgetMs(2));
     const cloud = () => {
       const o = outlineOfPath(
         'M 89 300 C 7 300, -29 214, 28 165 C -9 95, 69 35, 126 73 C 146 -19, 281 -30, 296 73 C 368 35, 430 116, 374 176 C 430 219, 389 300, 306 300 Z',
@@ -39,11 +39,11 @@ describe('sketch budgets', () => {
       sketchStrokes(o, seed);
       sketchHatching(o.area!, seed, 2);
     };
-    expect(fastest(cloud)).toBeLessThan(2);
+    expect(fastest(cloud)).toBeLessThan(cpuBudgetMs(2));
   });
 
   it('the largest shape stays under 2 ms (x10 for CI and coverage)', () => {
-    expect(fastest(sketchBox('square', 20000, 20000), 3, 20)).toBeLessThan(20);
-    expect(fastest(sketchBox('circle', 20000, 20000), 3, 20)).toBeLessThan(20);
+    expect(fastest(sketchBox('square', 20000, 20000), 3, 20)).toBeLessThan(cpuBudgetMs(20));
+    expect(fastest(sketchBox('circle', 20000, 20000), 3, 20)).toBeLessThan(cpuBudgetMs(20));
   });
 });
