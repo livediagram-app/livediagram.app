@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 
 import type { CommunityShareInfo } from '@livediagram/api-schema';
 import { connectRoom, type ShareLink, type ShareRole } from '@/lib/api-client';
+import { mayShareDocument } from './editor-page-helpers';
 import { useChangesetSeen } from './useChangesetSeen';
 import { useLatest } from '@/hooks/ui/useLatest';
 
@@ -108,7 +109,15 @@ export function useEditorRealtime() {
   // sees the Community bar instead of the identity prompt. Null for every other session.
   const [sessionCommunity, setSessionCommunity] = useState<CommunitySession | null>(null);
 
+  // Owner, or a joined member of the document's team: see mayShareDocument.
+  const canShareDocument = mayShareDocument({
+    isOwner,
+    teamId: documentTeamId,
+    sessionShareCode,
+  });
+
   return {
+    canShareDocument,
     sessionCommunity,
     setSessionCommunity,
     roomRef,

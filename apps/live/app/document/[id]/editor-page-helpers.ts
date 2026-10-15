@@ -243,6 +243,20 @@ export function resolveDocumentSession(input: {
   };
 }
 
+// May this session share the document (the header's Share button, the Share command, the share-link
+// list)? Its owner, and on a TEAM document every joined member
+// (docs/specs/013-workspace/team-shared-documents.md: the team's library belongs to all of them). A
+// team document opened without a share code was let in by the api as owner or joined member, so no
+// code plus a team id is membership; a share-link visitor carries a code and stays a visitor, who
+// gets Make a Copy instead.
+export function mayShareDocument(input: {
+  isOwner: boolean;
+  teamId: string | null;
+  sessionShareCode: string | null;
+}): boolean {
+  return input.isOwner || (input.teamId !== null && input.sessionShareCode === null);
+}
+
 // Drop entries whose key isn't in `present`, returning the SAME map
 // reference when nothing was removed. The realtime presence handler
 // prunes its remote tab-focus / selection / cursor maps with this when
