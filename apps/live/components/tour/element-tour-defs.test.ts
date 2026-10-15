@@ -29,6 +29,14 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
     label: 'Ana Kim',
   } as Element,
   sequence: createShape('sequence', 0, 0) as Element,
+  chart: createShape('line-chart', 0, 0) as Element,
+  stack: createShape('stack', 0, 0) as Element,
+  entity: createShape('entity', 0, 0) as Element,
+  'tab-window': createShape('tab-window', 0, 0) as Element,
+  lane: createShape('lane', 0, 0) as Element,
+  boundary: createShape('boundary', 0, 0) as Element,
+  'diagram-key': createShape('diagram-key', 0, 0) as Element,
+  portal: createShape('portal', 0, 0) as Element,
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {
@@ -57,6 +65,38 @@ describe('ELEMENT_TOUR_DEFS', () => {
     const api = { closeSequence: vi.fn() } as unknown as ElementTourApi;
     ELEMENT_TOUR_DEFS.sequence.onDone?.(api);
     expect(api.closeSequence).toHaveBeenCalled();
+  });
+
+  it('puts away the Chart data dialog on Done', () => {
+    const api = { closeChartData: vi.fn() } as unknown as ElementTourApi;
+    ELEMENT_TOUR_DEFS.chart.onDone?.(api);
+    expect(api.closeChartData).toHaveBeenCalled();
+  });
+
+  it('reads past its element where a tour needs to: a stack its first child', () => {
+    const stack = { ...createShape('stack', 0, 0), width: 400, height: 200 } as Element;
+    const kid = { ...createShape('square', 40, 40), width: 80, height: 80 } as Element;
+    const steps = ELEMENT_TOUR_DEFS.stack.steps(stack, {
+      hasMore: true,
+      touch: false,
+      elements: [stack, kid],
+    });
+    expect(steps.map((s) => s.id)).toContain('child');
+    expect(
+      ELEMENT_TOUR_DEFS.stack
+        .steps(stack, { hasMore: true, touch: false, elements: [stack] })
+        .map((s) => s.id),
+    ).toContain('drop');
+  });
+
+  it('reads a chart as its own type, and a sheet chart as having no data of its own', () => {
+    const pie = createShape('pie-chart', 0, 0) as Element;
+    const env = { hasMore: true, touch: false, elements: [pie] };
+    expect(ELEMENT_TOUR_DEFS.chart.steps(pie, env)[0]!.body).toContain('Pie chart');
+    const line = createShape('line-chart', 0, 0) as Element;
+    expect(ELEMENT_TOUR_DEFS.chart.steps(line, env).map((s) => s.id)).toContain('data');
+    const fromSheet = { ...line, chartSource: { sheetId: 's', range: 'A1:B2' } } as Element;
+    expect(ELEMENT_TOUR_DEFS.chart.steps(fromSheet, env).map((s) => s.id)).not.toContain('data');
   });
 
   it('puts away the Sankey Flows dialog on Done', () => {

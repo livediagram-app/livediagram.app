@@ -36,6 +36,8 @@ const api = (): SankeyElementTourApi => ({
   showText: vi.fn(),
   previewConcept: vi.fn(),
   showStageBar: vi.fn(),
+  openChartData: vi.fn(),
+  closeChartData: vi.fn(),
   openSequence: vi.fn(),
   closeSequence: vi.fn(),
   showSequenceTab: vi.fn(),

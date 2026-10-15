@@ -2,7 +2,14 @@
 // its steps on the selected element, its closing card's eyebrow and help link, its telemetry token, and what it puts
 // away on Done. ElementTourHost runs whichever the selected element's kind names; this module is loaded with it, so
 // none of it is in the editor's first load.
-import type { Element, ShapeElement } from '@livediagram/document';
+import {
+  boundaryStyleOf,
+  chartTypeOf,
+  stackChildren,
+  stackSettingsOf,
+  type Element,
+  type ShapeElement,
+} from '@livediagram/document';
 import type { ElementTourKind } from '@/lib/element-tours';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { layerStackTourSteps } from './layer-stack-tour-steps';
@@ -16,6 +23,15 @@ import { mindNodeTourSteps } from './mind-node-tour-steps';
 import { flowchartTourSteps } from './flowchart-tour-steps';
 import { orgChartTourSteps } from './org-chart-tour-steps';
 import { sequenceTourSteps } from './sequence-tour-steps';
+import { chartTourSteps } from './chart-tour-steps';
+import { stackTourSteps } from './stack-tour-steps';
+import { entityTourSteps } from './entity-tour-steps';
+import { tabWindowTourSteps } from './tab-window-tour-steps';
+import { laneTourSteps } from './lane-tour-steps';
+import { boundaryTourSteps } from './boundary-tour-steps';
+import { diagramKeyTourSteps } from './diagram-key-tour-steps';
+import { portalTourSteps } from './portal-tour-steps';
+import { inElement } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -48,6 +64,10 @@ export type ElementTourDef = {
 };
 
 const conceptRows = (el: Element) => (el as ShapeElement).conceptRows ?? [];
+
+// Whether a part of the element is on screen when Play is pressed (a tab window's Open button, a linked portal's).
+const inDom = (selector: string) =>
+  typeof document !== 'undefined' && document.querySelector(selector) !== null;
 
 export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
   sankey: {
@@ -177,6 +197,107 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
         touch: env.touch,
       }),
     onDone: (api) => api.closeSequence(),
+  },
+  chart: {
+    token: 'ChartTour',
+    eyebrow: 'Chart tour',
+    helpArticle: 'dataElements',
+    helpLabel: 'Data Elements Help',
+    steps: (el, env) =>
+      chartTourSteps({
+        elementId: el.id,
+        type: chartTypeOf(el as ShapeElement) ?? 'column',
+        fromSheet: !!(el as ShapeElement).chartSource,
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+    onDone: (api) => api.closeChartData(),
+  },
+  stack: {
+    token: 'StackTour',
+    eyebrow: 'Stack tour',
+    helpArticle: 'stacks',
+    helpLabel: 'Stacks Help',
+    steps: (el, env) =>
+      stackTourSteps({
+        elementId: el.id,
+        direction: stackSettingsOf(el as ShapeElement).direction,
+        firstChildId: stackChildren(env.elements, el as ShapeElement)[0]?.id ?? null,
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+  },
+  entity: {
+    token: 'EntityTour',
+    eyebrow: 'Entity tour',
+    helpArticle: 'entities',
+    helpLabel: 'Entities Help',
+    steps: (el, env) =>
+      entityTourSteps({
+        elementId: el.id,
+        hasFields: ((el as ShapeElement).entityFields ?? []).length > 0,
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+  },
+  'tab-window': {
+    token: 'TabWindowTour',
+    eyebrow: 'Tab window tour',
+    helpArticle: 'tabWindows',
+    helpLabel: 'Tab Windows Help',
+    steps: (el, env) =>
+      tabWindowTourSteps({
+        elementId: el.id,
+        chosen: inDom(inElement(el.id, '[data-tab-window-open]')),
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+  },
+  lane: {
+    token: 'LaneTour',
+    eyebrow: 'Lane tour',
+    helpArticle: 'lanes',
+    helpLabel: 'Lanes Help',
+    steps: (el, env) => laneTourSteps({ elementId: el.id, hasMore: env.hasMore, touch: env.touch }),
+  },
+  boundary: {
+    token: 'BoundaryTour',
+    eyebrow: 'Boundary tour',
+    helpArticle: 'boundaries',
+    helpLabel: 'Boundaries Help',
+    steps: (el, env) =>
+      boundaryTourSteps({
+        elementId: el.id,
+        style: boundaryStyleOf(el as ShapeElement),
+        hasMeta: !!(el as ShapeElement).pageSubtitle,
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+  },
+  'diagram-key': {
+    token: 'DiagramKeyTour',
+    eyebrow: 'Diagram key tour',
+    helpArticle: 'diagramKeys',
+    helpLabel: 'Diagram Keys Help',
+    steps: (el, env) =>
+      diagramKeyTourSteps({
+        elementId: el.id,
+        firstRowId: (el as ShapeElement).keyRows?.[0]?.id ?? null,
+        touch: env.touch,
+      }),
+  },
+  portal: {
+    token: 'PortalTour',
+    eyebrow: 'Portal tour',
+    helpArticle: 'portals',
+    helpLabel: 'Portals Help',
+    steps: (el, env) =>
+      portalTourSteps({
+        elementId: el.id,
+        linked: inDom(inElement(el.id, 'button[aria-label*=": go to"]')),
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
   },
 };
 

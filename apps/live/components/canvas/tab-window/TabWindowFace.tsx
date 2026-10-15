@@ -109,6 +109,7 @@ export function TabWindowFace({
     <button
       type="button"
       {...own}
+      data-tab-window-choose=""
       onClick={(e) => setPickAnchor(e.currentTarget)}
       className="pointer-events-auto rounded-md bg-brand-700 font-semibold text-white transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
       style={{ fontSize: px(12), padding: `${px(6)}px ${px(12)}px` }}
