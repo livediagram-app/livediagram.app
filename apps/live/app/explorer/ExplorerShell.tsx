@@ -25,6 +25,7 @@ import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
+import { teamFolderPath } from './routes';
 import { searchPanelSources } from '@/components/panels/search-panel-sources';
 
 // Lazy-load SearchPanel — same rationale as the editor route: it's
@@ -334,9 +335,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           onSelectTeamFolder={(teamId, folderId) => {
             // Full load rather than go(): the team page reads the
             // folder deep-link param at mount (docs/specs/013-workspace/team-shared-documents.md).
-            window.location.assign(
-              `/explorer/team?id=${encodeURIComponent(teamId)}&folder=${encodeURIComponent(folderId)}`,
-            );
+            window.location.assign(teamFolderPath(teamId, folderId));
           }}
           helpItems={HELP_SEARCH_ITEMS}
           settingItems={SETTINGS_SEARCH_ITEMS}

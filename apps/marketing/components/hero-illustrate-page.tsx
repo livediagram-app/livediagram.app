@@ -17,15 +17,6 @@ import { TimelinePage } from './hero-infographic-timeline';
 
 // The article's page: A4 portrait at the mock's scale (210 x 297).
 export const PAGE = { x: 85, y: -24, w: 210, h: 297 };
-// The gap between the article's pages in its row.
-const PAGE_GAP = 30;
-
-// Where page 2 sits: beside page 1 in the row, or under it on a phone (the portrait layout).
-export function secondPageAt(portrait: boolean) {
-  return portrait
-    ? { x: PAGE.x, y: PAGE.y + PAGE.h + PAGE_GAP - 4 }
-    : { x: PAGE.x + PAGE.w + PAGE_GAP, y: PAGE.y };
-}
 
 // The row: three pages with a gutter, starting just past the window's left edge, by less than the
 // cover's margin, so the overview's thumbnail (a 600 by 400 crop) still shows the cover's
