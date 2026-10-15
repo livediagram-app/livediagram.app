@@ -49,3 +49,18 @@ describe('element tours', () => {
     expect(again.elementToursSeen).toBe(false);
   });
 });
+
+describe('element tour kinds of the concept graphics', () => {
+  it('tours a pyramid and an inverted one as the Pyramid, never a funnel', () => {
+    const pyramid = createShape('pyramid', 0, 0) as Element;
+    expect(elementTourKindOf(pyramid)).toBe('pyramid');
+    expect(elementTourKindOf({ ...pyramid, pyramidVariant: 'inverted' } as Element)).toBe(
+      'pyramid',
+    );
+    expect(elementTourKindOf({ ...pyramid, pyramidVariant: 'funnel' } as Element)).not.toBe(
+      'pyramid',
+    );
+    expect(canTourElement({ level: 'edit' }, pyramid, 'pyramid')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, pyramid, 'pyramid')).toBe(false);
+  });
+});

@@ -10,6 +10,7 @@ import type { ElementTourApi } from './element-tour-api';
 const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   sankey: createShape('sankey', 0, 0) as Element,
   'layer-stack': createShape('layer-stack', 0, 0) as Element,
+  pyramid: createShape('pyramid', 0, 0) as Element,
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {

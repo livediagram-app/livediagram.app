@@ -6,6 +6,7 @@ import type { Element, ShapeElement } from '@livediagram/document';
 import type { ElementTourKind } from '@/lib/element-tours';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { layerStackTourSteps } from './layer-stack-tour-steps';
+import { pyramidTourSteps } from './pyramid-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -59,6 +60,19 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     helpArticle: 'conceptGraphics',
     helpLabel: 'Concept Graphics Help',
     steps: (el, env) => layerStackTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
+  },
+  pyramid: {
+    token: 'PyramidTour',
+    eyebrow: 'Pyramid tour',
+    helpArticle: 'conceptGraphics',
+    helpLabel: 'Concept Graphics Help',
+    steps: (el, env) =>
+      pyramidTourSteps({
+        elementId: el.id,
+        rows: conceptRows(el),
+        inverted: (el as ShapeElement).pyramidVariant === 'inverted',
+        ...env,
+      }),
   },
 };
 

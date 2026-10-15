@@ -8,8 +8,8 @@ It sits between the mode tours (the [Diagram tour](editor-tour.md) and its sibli
 with a centred card) and [Show Me](show-me.md) (never offered, started from a button on one surface). An element
 tour offers itself, but quietly: a small toolbar that waits beside the selection, never a card over the canvas.
 
-The toured kinds: the [Sankey diagram](../009-elements/sankey.md) and the
-[layer stack](../009-elements/concept-graphics.md).
+The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
+[concept graphics](../009-elements/concept-graphics.md) layer stack and pyramid.
 
 ## Domain language
 
@@ -126,6 +126,23 @@ tour.
 8. **That Is a Layer Stack** (closing card): it exports as drawn, every change one undo step; **Done** and the
    **Concept Graphics Help** link.
 
+## The Pyramid tour
+
+On the selected Pyramid or Inverted pyramid (a Funnel has its own tour), from `pyramid-tour-steps.ts`. The words follow
+the variant: an Inverted pyramid's first tier is the widest, along the top, and it builds from the top down.
+
+1. **Tiers Cut From One Triangle**: rings the pyramid. The first tier is the apex (Inverted: the widest, along the
+   top); every tier is cut from one triangle, so the edges line up as one silhouette.
+2. **Type Over a Tier**: rings the first tier's name. A name too long for its tier is shortened, never spilling out.
+3. **Add a Tier**: the "+" ring open on **Add Tier**; a new tier at the base (Inverted: the point), up to six.
+4. **Pyramid, Inverted or Funnel** (only while More shows): rings More. Shape switches between the three, keeping every
+   tier; Rows reorders them.
+5. **From the Accent Down**: rings the last tier. The apex (Inverted: the top) takes the accent, each tier after it
+   steps toward the fill.
+6. **Build It Up** (Inverted: **Build It Down**): plays Build on it as a preview, from the base up (Inverted: from the
+   top down).
+7. **That Is a Pyramid** (Inverted: **That Is an Inverted Pyramid**): the closing card.
+
 ## Share roles
 
 | Role        | Element tours                                                                                  |
@@ -139,7 +156,7 @@ graphic, an Editor on an unlocked element, since its rows are structure), never 
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -147,7 +164,8 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
 - **Stage views**: `UI` · `View` · `<Kind>TourStep<Id>` once per step entry: the Sankey's `SankeyTourStepBands`,
   `...Leftover`, `...Style`, `...Flows`, the dialog's `...FlowsNodes`, `...FlowsRows`, `...FlowsAdd`,
   `...FlowsBalance`, `...FlowsText`, `...FlowsImport`, `...FlowsPreview` and `...Outro`; the Layer Stack's
-  `LayerStackTourStepLayers`, `...Edit`, `...Notes`, `...Add`, `...Rows`, `...Colours`, `...Animate` and `...Outro`.
+  `LayerStackTourStepLayers`, `...Edit`, `...Notes`, `...Add`, `...Rows`, `...Colours`, `...Animate` and `...Outro`;
+  the Pyramid's `PyramidTourStepTiers`, `...Edit`, `...Add`, `...Shape`, `...Colours`, `...Animate` and `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.
@@ -174,7 +192,7 @@ help article's tour section; and a section here.
 - `apps/live/components/tour/element-tour-api.ts`: what a step may do on its element.
 - `apps/live/components/tour/ElementTourOffer.tsx`: the offer toolbar.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
-- `apps/live/components/tour/concept-element-tour-steps.ts`, `layer-stack-tour-steps.ts`: the concept graphics'
-  shared steps, and the Layer Stack's.
+- `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
+  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`: each kind's own.
 - `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
 - `apps/live/lib/concept-tour-preview.ts`: the animation a step previews on a concept graphic.

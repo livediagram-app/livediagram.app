@@ -1210,6 +1210,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a layer stack.',
         helpArticle: 'conceptGraphics',
       }),
+      elementTourSwitch('pyramid', {
+        label: 'Pyramid Tour',
+        event: { category: 'UI', on: 'PyramidTourSeenOff', off: 'PyramidTourSeenOn' },
+        keywords: 'tour walkthrough tutorial pyramid tiers triangle inverted concept rows replay',
+        description: 'The first time you select a pyramid.',
+        helpArticle: 'conceptGraphics',
+      }),
     ],
   },
   {
