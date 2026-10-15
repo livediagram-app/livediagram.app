@@ -8,7 +8,7 @@ import {
   type FormDefinition,
 } from '@livediagram/forms';
 import { normaliseBoardSetup, type ItemTypeDef, type PlanBoardSetup } from '@livediagram/items';
-import { documentLinksTab, getTab, readSheetHead } from '../db';
+import { deleteFormLink, documentLinksTab, getTab, liveFormLinksOf, readSheetHead } from '../db';
 import type { FormSheetDestination } from '@livediagram/forms';
 import type { Env, TabDTO } from '../types';
 
@@ -69,4 +69,24 @@ export async function responsesProblem(
   }
   const boards = form.destination ? await boardsOnTab(env, documentId, form.destination.tabId) : [];
   return destinationProblem(form.destination, boards, types);
+}
+
+// A board or sheet tab deleted (docs/specs/030-forms/forms.md "Publishing and the form link"): each live form whose
+// responses went there is unpublished, its link deleted, as its responses would have nowhere to go. Answers how many.
+export async function unpublishFormsFeeding(
+  env: Env,
+  documentId: string,
+  tabId: string,
+): Promise<number> {
+  let unpublished = 0;
+  for (const link of await liveFormLinksOf(env, documentId)) {
+    if (link.tab_id === tabId) continue;
+    const found = await readFormTab(env, documentId, link.tab_id);
+    const to = found?.form.sheet?.tabId ?? found?.form.destination?.tabId;
+    if (to !== tabId) continue;
+    await deleteFormLink(env, link.code);
+    console.info('[forms] form.unpublished.destination_deleted', { documentId });
+    unpublished += 1;
+  }
+  return unpublished;
 }

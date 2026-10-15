@@ -225,6 +225,27 @@ describe('publishing (docs/specs/030-forms/forms.md "Publishing and the form lin
     expect((await pub('GET', code)).status).toBe(404);
     expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM form_links').get()).toEqual({ n: 0 });
   });
+
+  // The user's call (2026-10-15): deleting the board a form sends to unpublishes the form.
+  it('unpublishes a form whose board is deleted', async () => {
+    const code = await publish();
+    const del = async (tab: string) => {
+      const pending: Promise<unknown>[] = [];
+      const res = await handleDocuments(
+        makeTestRouteContext('DELETE', `/api/documents/d1/tabs/${tab}`, {
+          env: sql.env,
+          owner: 'owner',
+          waitUntil: (p) => void pending.push(p),
+        }),
+      );
+      await Promise.all(pending);
+      return res.status;
+    };
+    expect((await pub('GET', code)).status).toBe(200);
+    expect(await del('board')).toBe(204);
+    expect((await pub('GET', code)).status).toBe(404);
+    expect((await owner('GET', 'form-link')).body).toMatchObject({ link: null });
+  });
 });
 
 describe('the public form (docs/specs/030-forms/forms.md "Filling in a form")', () => {

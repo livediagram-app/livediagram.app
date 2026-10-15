@@ -15,6 +15,7 @@ export function EllipsisMenuButton({
   onClose,
   canvas,
   canDelete,
+  deleteMessage,
   canClearContent,
   locked,
   otherDocuments,
@@ -43,6 +44,8 @@ export function EllipsisMenuButton({
   // canvas right-click menu, i.e. one unified menu rather than two.
   canvas?: CanvasMenuActions;
   canDelete: boolean;
+  // Delete's confirmation (deleteTabMessage): it warns when forms send their responses to this tab.
+  deleteMessage?: string;
   canClearContent: boolean;
   locked: boolean;
   // Viewer identity, forwarded to the menu's Add to Document thumbnails.
@@ -105,6 +108,7 @@ export function EllipsisMenuButton({
             onRemoveFromFolder={onRemoveFromFolder}
             onDelete={onDelete}
             canDelete={canDelete}
+            deleteMessage={deleteMessage}
             canClearContent={canClearContent}
           />
         </MenuErrorBoundary>

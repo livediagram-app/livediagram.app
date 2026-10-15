@@ -348,6 +348,11 @@ number).
 - **Live**: the form link always shows the form as its Form tab holds it now. A question added, reworded or removed
   takes effect for the next person to open the link; a respondent already filling it in submits against what they
   saw, and an answer to a question since removed is dropped, never refused.
+- A Board or Sheet tab a form sends its responses to warns before it is deleted: Delete's confirmation reads "Delete
+  this tab? The form “<Form>” sends its responses here: deleting it unpublishes that form, and people with the link
+  can no longer fill it in. …" ("<n> forms send their responses here … unpublishes them" for several). Deleting it
+  unpublishes each such form in the same request (its link deleted on the api, whoever deletes the tab); an undo
+  brings the tab back but not the link, and publishing again makes a new one.
 - A Form tab deleted deletes its form link in the same request. A document copied, a tab duplicated or a document
   restored from a file copies the form **unpublished**: a copy never answers the original's link.
 - A copy keeps its destination: a duplicated tab's still names the document's board; a copied document's names a tab

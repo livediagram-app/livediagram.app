@@ -59,6 +59,7 @@ export function PortalMenu({
   onDelete,
   canClearContent,
   canDelete,
+  deleteMessage,
 }: {
   // Positioned EITHER above an anchor button (tab ellipsis) OR at a screen
   // point (canvas right-click / footer button). Exactly one is provided.
@@ -92,6 +93,8 @@ export function PortalMenu({
   onRemoveFromFolder: () => void;
   onDelete: () => void;
   canDelete: boolean;
+  // Delete's confirmation (deleteTabMessage): it warns when forms send their responses to this tab.
+  deleteMessage?: string;
   canClearContent: boolean;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
@@ -421,7 +424,10 @@ export function PortalMenu({
         anchor={deleteRow}
         // A tab added to another document lives on there (docs/specs/006-document/tab-document-many-to-many.md),
         // and the menu can't tell which tabs are, so the copy says so rather than overclaiming.
-        message="Delete this tab? Unless another document also holds it, its content can't be recovered."
+        message={
+          deleteMessage ??
+          "Delete this tab? Unless another document also holds it, its content can't be recovered."
+        }
         confirmLabel="Delete"
         onConfirm={() => {
           setConfirmingDelete(false);

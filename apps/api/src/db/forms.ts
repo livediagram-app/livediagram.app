@@ -53,6 +53,19 @@ export async function getLiveFormLink(
     .first<FormLinkRow>();
 }
 
+// The document's live links (not suspended), each with its Form tab: few, one a Form tab at most.
+export async function liveFormLinksOf(
+  env: Env,
+  documentId: string,
+): Promise<{ code: string; tab_id: string }[]> {
+  const res = await env.DB.prepare(
+    'SELECT code, tab_id FROM form_links WHERE document_id = ? AND suspended_at IS NULL',
+  )
+    .bind(documentId)
+    .all<{ code: string; tab_id: string }>();
+  return res.results ?? [];
+}
+
 // The link a code names, suspended or not.
 export async function getFormLink(env: Env, code: string): Promise<FormLinkRow | null> {
   return env.DB.prepare(`SELECT ${COLS} FROM form_links WHERE code = ?`)
