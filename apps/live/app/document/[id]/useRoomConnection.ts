@@ -51,6 +51,7 @@ import {
   resetArticlePeers,
   syncArticlePeople,
 } from '@/lib/article/article-carets-store';
+import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 // Realtime room: one WebSocket per document, opened for every document saved on
 // the server (docs/specs/024-agents/agent-changesets.md "Rooms for personal documents"). Lifted out of editor-page.tsx verbatim — the
@@ -116,9 +117,7 @@ export function useRoomConnection(opts: {
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking, latest sample each.
   // Only read while somebody is being followed; kept for everyone because the
   // op is unsolicited (see the RoomOp comment).
-  setRemoteViewports: Dispatch<
-    SetStateAction<Map<string, { tabId: string; pan: { x: number; y: number }; zoom: number }>>
-  >;
+  setRemoteViewports: Dispatch<SetStateAction<Map<string, RemoteViewport>>>;
   setDocumentName: Dispatch<SetStateAction<string>>;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   // Live poll (docs/specs/012-collaboration/live-poll.md) inbound handlers, owned by useLivePoll. Stable
@@ -497,7 +496,7 @@ export function useRoomConnection(opts: {
         // 10 Hz stream needs no coalescing.
         setRemoteViewports((prev) => {
           const next = new Map(prev);
-          next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom });
+          next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom, size: op.size });
           return next;
         });
       } else if (op.kind === 'avatar-push') {

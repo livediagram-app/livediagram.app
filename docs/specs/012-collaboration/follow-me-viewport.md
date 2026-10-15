@@ -19,7 +19,7 @@ move the audience to the pointer.
 
 ## Wire
 
-A new **`viewport` RoomOp**: `{ kind: 'viewport', tabId, pan: {x, y}, zoom }`.
+A new **`viewport` RoomOp**: `{ kind: 'viewport', tabId, pan: {x, y}, zoom, size?: {width, height} }`. `size` is the sender's canvas, read by [Bring Focus](bring-focus.md) to judge whether a peer is already looking at a point; Follow Me does not use it.
 
 Ephemeral presence exactly like `cursor` / `laser` / `avatar`: throttled, never
 logged, never ordered (no `seq`), never replayed to a reconnecting client.

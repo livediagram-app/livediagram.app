@@ -7,6 +7,7 @@ import { RELATIVE_TICK_MS } from '@/lib/relative-time';
 // What presence statuses render from: each peer's last-seen instant and the clock they are read at.
 export type PresenceClock = { now: number; lastSeen: ReadonlyMap<string, number> };
 import type { LaserPoint } from '@/lib/laser-buffer';
+import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 // Realtime presence state for the document room: who's connected, each
 // peer's last-seen timestamp, and their tab focus / selection / cursor /
@@ -105,9 +106,7 @@ export function usePresenceState() {
   // the op itself, like cursors.
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking. Unsolicited, so it is
   // collected for everyone and read only while somebody is being followed.
-  const [remoteViewports, setRemoteViewports] = useState<
-    Map<string, { tabId: string; pan: { x: number; y: number }; zoom: number }>
-  >(new Map());
+  const [remoteViewports, setRemoteViewports] = useState<Map<string, RemoteViewport>>(new Map());
   const [remoteAvatars, setRemoteAvatars] = useState<
     Map<string, { tabId: string; avatar: AvatarPresence }>
   >(new Map());

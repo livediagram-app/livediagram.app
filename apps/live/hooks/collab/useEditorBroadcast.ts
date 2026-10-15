@@ -83,7 +83,11 @@ type EditorBroadcastApi = {
   // for everyone rather than only the person who pressed it.
   broadcastReaction: (elementId: string, reaction: string) => void;
   // Publish where we are looking (docs/specs/012-collaboration/follow-me-viewport.md), for anyone following us.
-  broadcastViewport: (pan: { x: number; y: number }, zoom: number) => void;
+  broadcastViewport: (
+    pan: { x: number; y: number },
+    zoom: number,
+    size: { width: number; height: number },
+  ) => void;
   // Ask everyone else to come and look at a point (docs/specs/012-collaboration/bring-focus.md). Returns whether
   // it went out, so the presser can be told when nobody is listening rather
   // than watching a button do nothing.
@@ -194,7 +198,11 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
 
   // Viewport (docs/specs/012-collaboration/follow-me-viewport.md): where we are looking. Same presence gate as the
   // cursor — no room, no publish — on its own slower throttle.
-  const broadcastViewport = (pan: { x: number; y: number }, zoom: number) => {
+  const broadcastViewport = (
+    pan: { x: number; y: number },
+    zoom: number,
+    size: { width: number; height: number },
+  ) => {
     if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
@@ -203,7 +211,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     lastViewportSentRef.current = now;
     deps.roomRef.current?.send({
       kind: 'op',
-      op: { kind: 'viewport', tabId: deps.activeId, pan, zoom },
+      op: { kind: 'viewport', tabId: deps.activeId, pan, zoom, size },
     });
   };
 

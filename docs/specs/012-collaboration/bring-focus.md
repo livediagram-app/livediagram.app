@@ -51,7 +51,7 @@ lost, and the cost of the extra click is one click.
   to break out. If you want to stay on somebody's shoulder, that is Follow Me
   and it already exists.
 - **Nobody already there is asked.** If your view is already on that tab,
-  showing that point at about that zoom, the invitation never appears. A press
+  showing that point in its middle, the invitation never appears. A press
   gets repeated (to catch a latecomer, or because half the room said no the
   first time), and a repeat has to reach the people who declined without
   putting a dialog over the people who came. Their view is the difference
@@ -74,7 +74,11 @@ The op still carries the presser's `zoom` (the wire is unchanged, so clients
 from before this rule keep working); a receiver ignores it.
 
 If the element is on another tab, **taking it switches you there first**, through the
-same tab-switch Follow Me uses.
+same tab-switch Follow Me uses. You have no zoom of your own for that canvas yet,
+and the one fitted to the tab you left can be far too far in or out for this one
+(a huge board fitted at 8% leaves a small diagram unreadable), so the tab enters
+as any tab does, fitted to its content, and the point is then centred at that
+fitted zoom.
 
 ## Wire
 
@@ -107,12 +111,14 @@ renamed participant's invitation reads correctly.
 - **The presser is told what the press did**, rather than watching a button do
   nothing visible. Three sentences, because there are three outcomes: "Asked
   everyone else to look here", "Everyone else is already looking at it" (every
-  peer whose view we know is on that tab, on that point, at about that zoom),
+  peer whose view we know is on that tab with that point in its middle, judged
+  on their own canvas size, which their `viewport` op carries),
   and "Nobody else is on this canvas right now" when the room is empty.
   Already looking at it ignores zoom, for the same reason taking it does. Saying
   the last one to a presser looking at a row of avatars reads as the feature
   being broken, which is why the middle one exists. A peer who has published no
-  viewport counts as asked, not as already there: unknown is not the same as
+  viewport, or one without a size (a client from before it was sent), counts
+  as asked, not as already there: unknown is not the same as
   present, and erring that way is the harmless direction.
 - **You never invite yourself.** The presser's own view does not move; they are
   already looking at it.

@@ -12,7 +12,13 @@ import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 
-export type RemoteViewport = { tabId: string; pan: { x: number; y: number }; zoom: number };
+// A peer's last published `viewport` op. `size` is their canvas, missing from a client from before it was sent.
+export type RemoteViewport = {
+  tabId: string;
+  pan: { x: number; y: number };
+  zoom: number;
+  size?: { width: number; height: number };
+};
 
 type Pan = { x: number; y: number };
 

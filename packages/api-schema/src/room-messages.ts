@@ -603,18 +603,29 @@ export type RoomOp =
   // presenter reloads mid-follow, all for three numbers on an
   // already-throttled channel. The cost is accepted and written down: a room
   // where nobody follows anybody still carries these while people scroll.
-  | { kind: 'viewport'; tabId: string; pan: { x: number; y: number }; zoom: number }
+  //
+  // `size` is the sender's canvas, so Bring Focus can tell a presser whether
+  // the room is already looking at a point on each viewer's own screen
+  // (docs/specs/012-collaboration/bring-focus.md). Optional: a client from before it
+  // sends none, and a viewport without one counts as unknown.
+  | {
+      kind: 'viewport';
+      tabId: string;
+      pan: { x: number; y: number };
+      zoom: number;
+      size?: { width: number; height: number };
+    }
   // Who the sender follows (a presence id), or null when they stop: to the room, never relayed.
   | { kind: 'follow'; target: string | null }
   // --- Bring Focus (docs/specs/012-collaboration/bring-focus.md) ----------------------------------------
   // Somebody pressed a Bring Focus element: offer everyone else a jump to it.
   //
-  // Carries the element's CENTRE and the presser's zoom, not the presser's
-  // pan. Two people rarely have the same window size, so copying a pan lands
-  // the element off-centre (or off-screen) for anyone whose canvas is a
-  // different shape; centring the point is the correct translation of "come
-  // and look at this", and the zoom is what makes their view show the same
-  // amount of canvas.
+  // Carries the element's CENTRE, not the presser's pan. Two people rarely
+  // have the same window size, so copying a pan lands the element off-centre
+  // (or off-screen) for anyone whose canvas is a different shape; centring the
+  // point is the correct translation of "come and look at this". The
+  // presser's `zoom` still rides along for clients from before receivers kept
+  // their own zoom; a receiver ignores it.
   //
   // No sender name: the envelope already identifies the sender and the
   // receiver resolves the name from the presence list it holds, so a renamed
