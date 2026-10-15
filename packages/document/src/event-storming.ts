@@ -276,6 +276,21 @@ export function isEventStormingTab(tab: { kind?: string; layers?: Layer[] } | un
   );
 }
 
+// What makes a sticky a workshop note of `kind` as the board draws it (docs/specs/021-event-storming/event-storming.md
+// "Agents"): its kind, its paper, its silhouette, held at that size, its text scaled and centred. A storm graph's notes
+// and an agent's `add sticky esKind=…` share it, so an added note never comes out a plain amber sticky.
+export function eventStormingNoteFields(kind: EventStormingNoteKind) {
+  return {
+    esKind: kind,
+    fillColor: eventStormingNote(kind).fill,
+    ...eventStormingNoteSize(kind),
+    fixedSize: true,
+    textSize: 'scale' as const,
+    textAlignX: 'center' as const,
+    textAlignY: 'middle' as const,
+  };
+}
+
 // Change a workshop note's KIND (docs/specs/021-event-storming/event-storming.md). A verb, not styling: the kind IS
 // the notation, so changing it re-paints the paper, re-cuts the silhouette and
 // keeps the note where its author put it — centred on where it was, because a

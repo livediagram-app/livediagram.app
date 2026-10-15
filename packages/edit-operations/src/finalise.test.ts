@@ -147,3 +147,21 @@ describe('sticky border', () => {
     expect(after({ fill: '#bae6fd' }).el.strokeColor).toBe('transparent');
   });
 });
+
+describe("a diagram key's rows", () => {
+  it('follow the lines an edit draws, as the editor settles them', () => {
+    const tab: Tab = {
+      id: 't',
+      name: 'T',
+      elements: [
+        box('a', 0, 0, 60),
+        box('b', 200, 0, 60),
+        { ...box('k', 0, 200, 100, 'diagram-key') },
+      ],
+    } as Tab;
+    const out = run('connect a -> b\nset a->b border=dashed', tab);
+    if (!('tab' in out)) throw new Error(JSON.stringify(out));
+    const key = out.tab.elements.find((el) => el.id === 'k') as { keyRows?: { id: string }[] };
+    expect(key.keyRows?.map((r) => r.id)).toEqual(['line:dashed']);
+  });
+});

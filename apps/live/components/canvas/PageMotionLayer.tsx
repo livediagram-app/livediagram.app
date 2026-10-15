@@ -13,6 +13,7 @@ import type { PageMotion } from '@livediagram/document';
 import { motionPaint } from '@/lib/page-motion';
 import {
   motionParts,
+  waveLine,
   wavePath,
   type MotionAnim,
   type MotionBox,
@@ -89,6 +90,7 @@ function animVars(anim: MotionAnim | undefined): Vars {
     ...(anim.dl !== undefined ? { '--pm-dl': `${anim.dl}s` } : {}),
     ...(anim.x !== undefined ? { '--pm-x': `${anim.x}px` } : {}),
     ...(anim.y !== undefined ? { '--pm-y': `${anim.y}px` } : {}),
+    ...(anim.r !== undefined ? { '--pm-r': `${anim.r}deg` } : {}),
     ...(anim.rest !== undefined ? { '--pm-rest': anim.rest } : {}),
   };
 }
@@ -140,6 +142,18 @@ function fillCss(fill: MotionFill): CSSProperties {
       };
     case 'ring':
       return { border: `${fill.width}px solid ${alpha(fill.color, fill.a)}` };
+    case 'streak':
+      return {
+        background: `linear-gradient(90deg, transparent, ${alpha(fill.color, fill.a)})`,
+      };
+    case 'sweep':
+      return {
+        background: `conic-gradient(from 0deg, transparent 0deg 270deg, ${alpha(fill.color, fill.a)} 360deg)`,
+      };
+    case 'bar':
+      return {
+        background: `linear-gradient(0deg, ${alpha(fill.from, fill.a * 0.15)}, ${alpha(fill.to, fill.a)})`,
+      };
   }
 }
 
@@ -174,10 +188,20 @@ function Wave({ part }: { part: MotionWave }) {
       viewBox={`0 0 ${w * 2} ${h}`}
       style={animVars(part.anim)}
     >
-      <path
-        d={wavePath(w, h, part.amp, part.base, part.periods)}
-        fill={alpha(part.color, part.a)}
-      />
+      {part.stroke ? (
+        <path
+          d={waveLine(w, part.amp, part.base, part.periods)}
+          fill="none"
+          stroke={alpha(part.color, part.a)}
+          strokeWidth={part.stroke}
+          strokeLinecap="round"
+        />
+      ) : (
+        <path
+          d={wavePath(w, h, part.amp, part.base, part.periods)}
+          fill={alpha(part.color, part.a)}
+        />
+      )}
     </svg>
   );
 }

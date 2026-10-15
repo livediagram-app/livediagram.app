@@ -370,6 +370,8 @@ export type ShapeElement = {
   chartLegend?: boolean;
   // Show Values (docs/specs/009-elements/pie-chart.md): each mark's number printed on the chart. Absent = off.
   chartValues?: boolean;
+  // Show Axis (docs/specs/009-elements/pie-chart.md): the value axis, its tick labels and gridlines. Absent = off.
+  chartAxis?: boolean;
   // Legend placement (docs/specs/009-elements/pie-chart.md); ignored when `chartLegend` is false. Missing /
   // undefined === 'right', the historical default.
   chartLegendPosition?: ChartLegendPosition;

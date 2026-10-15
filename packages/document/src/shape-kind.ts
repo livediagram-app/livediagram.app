@@ -155,6 +155,9 @@ export type ShapeKind =
   | 'quiz'
   | 'stadium'
   | 'actor'
+  // UML final state (docs/specs/008-canvas/canvas-and-palette.md "UML"): a ring around a solid dot, one element, so the
+  // bullseye moves, pins and lints as one stop.
+  | 'final-state'
   | 'cloud'
   | 'triangle'
   | 'trapezoid'

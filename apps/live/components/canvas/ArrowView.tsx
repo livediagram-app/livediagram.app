@@ -159,7 +159,7 @@ function ArrowViewImpl({
   const longPress = useLongPress(contextSelectBeside);
   // Endpoints / path / midpoint / handle points / label placement — the
   // pure per-render frame, resolved in arrow-view-frame.ts.
-  const { from, to, pathD, curveAnchors, curveControl, elbowPoint } = frame;
+  const { from, to, pathD, dashOffset, curveAnchors, curveControl, elbowPoint } = frame;
   // While editing, the label follows the draft text: laid out live so the
   // editor, its wrap and the knockout move as you type.
   const [draft, setDraft] = useState<string | null>(null);
@@ -385,6 +385,8 @@ function ArrowViewImpl({
         strokeDasharray={
           flowPathDash ?? BORDER_DASH_ARRAY[arrow.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
         }
+        // A shared end's pattern anchored there (arrow-dash.ts); a flowing arrow marches its own.
+        strokeDashoffset={flowPathDash ? undefined : dashOffset}
         markerStart={
           arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? startMarker : undefined
         }

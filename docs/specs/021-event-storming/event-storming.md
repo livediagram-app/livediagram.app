@@ -1566,6 +1566,10 @@ An agent builds a board through the MCP's graph input with `style: "storm"` ([MC
   `domain-event`), real stationery: the kind's fill and silhouette, fixed size, text fitted and kept whole (a
   sticky's label is its content, so the 40-character heading cap does not apply), a slight hand-placed tilt
   within `ES_MAX_TILT_DEG`, on the board's one layer.
+- **A note added later is the same note.** An edit `add sticky label="Courier" esKind=actor` (or a raw sticky given
+  `esKind`) is that kind's note, its fill, silhouette, fixed size and centred, scaled text set as a storm board's are
+  (`eventStormingNoteFields`), and it lands on its kind's lane; a field the call names itself (`text=`, `fill=`)
+  keeps its value.
 - **Edges place, they do not draw.** An edge says one note leads to another (an actor issues a command, a command
   makes an event, an event triggers a policy, a policy issues the next command). The board carries no arrows:
   adjacency is the notation.

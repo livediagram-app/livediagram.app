@@ -189,6 +189,9 @@ export type EditorContextMenuProps = {
   onSetChartLegend: (value: boolean) => void;
   // Show Values (docs/specs/009-elements/pie-chart.md).
   onSetChartValues: (value: boolean) => void;
+  // Show Axis and Right Axis (docs/specs/009-elements/pie-chart.md): the value axis, and the series on a second.
+  onSetChartAxis: (value: boolean) => void;
+  onSetChartRightAxis: (index: number | null) => void;
   onSetChartLegendPosition: (position: ChartLegendPosition) => void;
   // Chart type (docs/specs/009-elements/pie-chart.md "Chart types"): Column, Bar, Line, Area, Scatter, Pie, Doughnut.
   onSetChartType: (type: ChartType) => void;

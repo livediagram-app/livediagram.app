@@ -378,8 +378,8 @@ drawing only, never stored:
 ### Animated backgrounds
 
 A slide page's Background has a fourth category, **Animated**, after Solid, Gradient and Image (the
-four share the category control's width, each a quarter). Its **Motion** carousel holds eighteen
-motions, six to a page (two rows of three) with the carousel's arrows and page dots, opening on
+four share the category control's width, each a quarter). Its **Motion** carousel holds twenty-four
+motions, six to a page across four pages (two rows of three) with the carousel's arrows and page dots, opening on
 the page holding the slide's motion; each tile plays in the tab theme's colours, 16:9 like the
 slide: **Aurora** (soft lights wandering, in the theme's colour and two companion hues turned
 either way round the colour wheel), **Mesh** (the page's colours turning slowly into each other),
@@ -390,8 +390,14 @@ answered by a softer one), **Beams** (shafts of light gliding past at a slant), 
 **Drift**, **Ripple** and **Ribbons** (with Aurora, the animated canvas styles' five, made for a
 slide), **Sunburst** (rays turning slowly from below), **Fireflies** (small lights drifting and
 glowing), **Snowfall** (flakes of three sizes falling and drifting), **Lava** (big soft blobs
-rising and sinking), **Dot Wave** (a grid of dots swelling in a wave corner to corner) and
-**Clouds** (soft clouds drifting across, the nearer faster). Under them, **Colours** offers six
+rising and sinking), **Dot Wave** (a grid of dots swelling in a wave corner to corner),
+**Clouds** (soft clouds drifting across, the nearer faster), **Warp** (stars streaking out from
+the centre, lengthening as they speed up), **Orbits** (planets circling a glowing sun on faint
+rings, the outer ones slower), **Radar** (a sweep turning over rings and cross hairs, each blip
+lighting as the sweep reaches it and fading over the rest of the turn), **Equaliser** (bars along
+the bottom rising and falling to their own beats, tallest in the middle), **Confetti** (pieces in
+the theme's colours fluttering down, swaying and spinning) and **Threads** (fine lines of light
+weaving past each other at their own paces). Under them, **Colours** offers six
 theme colourings (Theme Deep, Night, Vivid, Bright, Soft and Mist, each a pair of stops drawn from
 the theme's accent and its second colour); a press recolours the chosen motion, and the colouring
 carries to the next motion picked. The row ends in **Custom colours** (the rainbow swatch, shown while the slide has
@@ -414,7 +420,8 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
 - **Where it moves**: on the slide on screen and while presenting, its moving parts over the
   gradient and under everything on the slide. In an export, a thumbnail and with Reduce Motion on
   it is still: under Reduce Motion each part rests where it stands, a finished background in
-  itself.
+  itself (a streak still points its way, a planet keeps its place on its orbit, each bar stands at
+  its own height and the confetti hangs scattered down the slide).
 - **In an export** (PDF, PNG and SVG, and the export's preview) the slide's background is its first
   frame: every part where it stands as the slide opens, never the bare gradient. The parts are
   described once (`motionParts`, `apps/live/lib/page-motion-parts.ts`), so the moving layer and the

@@ -216,6 +216,9 @@ export function LineDataSummary({
               style={{ backgroundColor: s.color ?? palette[i % palette.length]! }}
             />
             <span className="truncate">{s.name || `Series ${i + 1}`}</span>
+            {s.axis === 'right' ? (
+              <span className="shrink-0 text-slate-500 dark:text-slate-400">(right)</span>
+            ) : null}
           </div>
         ))}
       </div>

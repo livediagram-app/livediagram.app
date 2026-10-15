@@ -8,6 +8,7 @@ import type {
   Tab,
   TableElement,
 } from './index';
+import { createPinnedArrow, createShape } from './factories';
 import { tableHeaderColours } from './table-header-colours';
 import { freehandPenStroke, penStrokePath } from './pen-stroke';
 import { r2 } from './svg-render-primitives';
@@ -804,6 +805,21 @@ describe('renderElementsToSvg — element shadows (docs/specs/008-canvas/element
 // label whatever the caption was styled as, so a diagram whose captions had
 // been sized or coloured came out of an export looking like a different
 // diagram. These pin that the styling reaches the file.
+describe('a shared end in an export', () => {
+  it("anchors a dashed bus arrow's pattern at its end, as the canvas does", () => {
+    const a = { ...createShape('square', 0, 0), id: 'a' };
+    const b = { ...createShape('square', 0, 300), id: 'b' };
+    const bus = {
+      ...createPinnedArrow('a', 's', 'b', 'n'),
+      id: 'x',
+      strokeStyle: 'dashed' as const,
+      exactEnd: true,
+    };
+    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [a, b, bus] } as Tab);
+    expect(svg).toMatch(/stroke-dasharray="6 5" stroke-dashoffset="[\d.]+"/);
+  });
+});
+
 describe('arrow captions in an export', () => {
   const captioned = (o: Partial<ArrowElement>) =>
     renderElementsToSvg(
