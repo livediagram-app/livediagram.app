@@ -410,6 +410,9 @@ export function withConceptAnim<T extends Element>(
   patch: { anim?: ConceptAnim | null; speed?: AnimationSpeed; repeat?: boolean },
 ): T {
   if (el.type !== 'shape' || !isConceptShape(el.shape)) return el;
+  // An animation its kind cannot play is not written (Flow picked across a cycle and a layer stack lands on the cycle
+  // alone), so a stored value always plays.
+  if (patch.anim && !conceptAnimsFor(el.shape).includes(patch.anim)) return el;
   const next = { ...el } as T & {
     conceptAnim?: ConceptAnim;
     conceptAnimSpeed?: AnimationSpeed;

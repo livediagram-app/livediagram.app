@@ -98,6 +98,9 @@ describe('concept writes and animation', () => {
   it('offers Flow only on a cycle (I3)', () => {
     expect(conceptAnimOf(withConceptAnim(make('cycle'), { anim: 'flow' }))).toBe('flow');
     expect(conceptAnimOf(withConceptAnim(make('layer-stack'), { anim: 'flow' }))).toBeNull();
+    // Nor is it stored, so a selection of both picks Flow for the cycle alone.
+    const stack = make('layer-stack');
+    expect(withConceptAnim(stack, { anim: 'flow' })).toBe(stack);
     expect(conceptAnimOf(withConceptAnim(make('pyramid'), { anim: 'build' }))).toBe('build');
   });
 

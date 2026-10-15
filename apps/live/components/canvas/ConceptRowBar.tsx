@@ -1,4 +1,4 @@
-import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
+import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { Glyph, Tooltip } from '@livediagram/ui';
 import {
   CONCEPT_ROWS,
@@ -9,7 +9,9 @@ import {
 } from '@livediagram/document';
 import { FLOATING_CONTROL_CLASS } from '@/components/chrome/floating-controls';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
+import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useGraceHover } from '@/hooks/ui/useGraceHover';
+import { track } from '@/lib/telemetry';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { moveRow } from '@/lib/move-row';
 
@@ -175,7 +177,8 @@ function boxOf(stage: ChevronLayout['stages'][number]): LayoutRect {
 /**
  * A selected, editable chevron process's stages (`children`) between their hover zones and their bars. Each zone sits
  * under the stages, so the words stay editable and a press still reaches the element; the bars sit over them. Leaving
- * a zone clears the hover after a grace, so the pointer can reach the bar. On a phone (no hover) every bar shows.
+ * a zone clears the hover after a grace, so the pointer can reach the bar. On a phone or any touch screen (no hover)
+ * every bar shows.
  */
 export function ChevronStageControls({
   stages,
@@ -197,7 +200,29 @@ export function ChevronStageControls({
   children: ReactNode;
 }) {
   const hover = useGraceHover<number>();
-  const all = isMobileViewportSync();
+  // Every bar shows where there is no hover to reveal one: a phone, and any touch screen (a tablet is wide).
+  const coarse = useCoarsePointer();
+  const all = coarse || isMobileViewportSync();
+  const zones = useRef<(HTMLDivElement | null)[]>([]);
+  // A stage moved, deleted or given a note: the same event the menu's row editor sends (useWebComponentSetters).
+  const setRows = (next: WebRows) => {
+    onSetRows(next);
+    track('Element', 'Changed', 'ConceptRows');
+  };
+  const overName = (e: ReactPointerEvent) => {
+    const at = zones.current.findIndex((z) => {
+      const r = z?.getBoundingClientRect();
+      return (
+        !!r &&
+        e.clientX >= r.left &&
+        e.clientX <= r.right &&
+        e.clientY >= r.top &&
+        e.clientY <= r.bottom
+      );
+    });
+    // Every move, so a grace begun by leaving the zone is cancelled; the same stage again does not re-render.
+    if (at >= 0) hover.enter(at);
+  };
   const { min, noun } = CONCEPT_ROWS.chevrons;
   const n = rows.length;
   // Neighbouring chevrons overlap at their points, so a stage's own room is the step from one stage to the next.
@@ -208,6 +233,9 @@ export function ChevronStageControls({
       {rows.map((_, i) => (
         <div
           key={i}
+          ref={(el) => {
+            zones.current[i] = el;
+          }}
           data-concept-row-zone={i}
           className="absolute"
           style={rectStyle(boxOf(stages[i]!))}
@@ -215,14 +243,20 @@ export function ChevronStageControls({
           onPointerLeave={hover.leave}
         />
       ))}
-      {children}
+      {/* The names lie over their zones, so a pointer on a name has left its zone: the stage under it is found from
+          the zones' boxes, and leaving the names starts the same grace as leaving a zone. */}
+      <div className="contents" onPointerMove={overName} onPointerLeave={hover.leave}>
+        {children}
+      </div>
       {rows.map((_, i) =>
         all || hover.hovered === i ? (
           <ConceptRowBar
             key={i}
             rect={{ ...stages[i]!.label, y: boxOf(stages[i]!).y }}
             room={{
-              width: pitch,
+              // The bar is centred on the stage's words, which sit inset from its point: its room is the narrower of
+              // those and the step to the next stage, so a full bar never runs onto a neighbour.
+              width: Math.min(pitch, stages[i]!.label.width),
               height: boxOf(stages[i]!).height / 2 - NAME_HALF_HEIGHT * labelPx,
             }}
             index={i}
@@ -234,17 +268,17 @@ export function ChevronStageControls({
             onPointerLeave={hover.leave}
             onMove={(to) => {
               hover.set(all ? null : to);
-              onSetRows({ conceptRows: moveRow(rows, i, to) });
+              setRows({ conceptRows: moveRow(rows, i, to) });
             }}
             onRemove={() => {
               hover.set(null);
-              onSetRows({ conceptRows: rows.filter((_, j) => j !== i) });
+              setRows({ conceptRows: rows.filter((_, j) => j !== i) });
             }}
             onAddNote={
               notes
                 ? undefined
                 : () =>
-                    onSetRows({
+                    setRows({
                       conceptRows: rows.map((r, j) => (j === i ? { ...r, note: 'Note' } : r)),
                     })
             }

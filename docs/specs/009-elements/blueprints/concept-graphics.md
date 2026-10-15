@@ -109,7 +109,8 @@ Each row element carries `--i` (its index in reading order) and the face `--n` a
 
 - I1: row count within the kind's bounds after any write.
 - I2: canvas and export place every row from the same layout call.
-- I3: a stored `conceptAnim` the kind does not offer (flow on a stack) renders as none.
+- I3: a stored `conceptAnim` the kind does not offer (flow on a stack) renders as none, and `withConceptAnim` never
+  writes one: a pick across kinds lands only on those that offer it.
 
 ## Interfaces and contracts
 

@@ -12,10 +12,14 @@ import {
   type ConceptShape,
   type ShapeElement,
   type WebRows,
+  chevronLayout,
 } from '@livediagram/document';
 import { ConceptFace } from './ConceptFace';
 import { BAR_MIN_SCALE, barScale, barWidthPx } from './ConceptRowBar';
 import { HOVER_GRACE_MS } from '@/hooks/ui/useGraceHover';
+import { track } from '@/lib/telemetry';
+
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 afterEach(() => {
   cleanup();
@@ -47,8 +51,19 @@ function show(element = chevrons(), editable = true) {
   return { onSetRows, zone, rows, element };
 }
 
-const phone = (on: boolean) =>
-  vi.stubGlobal('matchMedia', (q: string) => ({ matches: on, media: q }) as MediaQueryList);
+// A media query answered: `on` for the phone query, `touch` for "no hover" (a phone or a tablet).
+const media = ({ on = false, touch = on }: { on?: boolean; touch?: boolean }) =>
+  vi.stubGlobal(
+    'matchMedia',
+    (q: string) =>
+      ({
+        matches: q === '(hover: none)' ? touch : on,
+        media: q,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }) as unknown as MediaQueryList,
+  );
+const phone = (on: boolean) => media({ on });
 
 describe('chevron stage controls', () => {
   it('shows only the hovered stage its controls, and keeps them a moment after the pointer leaves', () => {
@@ -61,6 +76,29 @@ describe('chevron stage controls', () => {
     ]);
     fireEvent.pointerLeave(zone(1));
     expect(screen.queryAllByRole('toolbar')).toHaveLength(1);
+    act(() => vi.advanceTimersByTime(HOVER_GRACE_MS));
+    expect(screen.queryAllByRole('toolbar')).toHaveLength(0);
+  });
+
+  it('keeps the controls while the pointer is on a stage name, which lies over its zone', () => {
+    vi.useFakeTimers();
+    const { zone } = show();
+    const at = { left: 100, right: 200, top: 0, bottom: 80 };
+    zone(1).getBoundingClientRect = () =>
+      ({ ...at, x: 100, y: 0, width: 100, height: 80 }) as DOMRect;
+    fireEvent.pointerEnter(zone(1));
+    // Onto the name: the zone sees the pointer leave, the names see it move over stage 2.
+    fireEvent.pointerLeave(zone(1));
+    // A node of the stages drawn over the zones (whatever wraps them).
+    const drawn = zone(1).parentElement!.querySelector(':scope > :not([data-concept-row-zone])')!;
+    const name = drawn.querySelector('*') ?? drawn;
+    fireEvent.pointerMove(name, { clientX: 150, clientY: 40 });
+    act(() => vi.advanceTimersByTime(HOVER_GRACE_MS * 2));
+    expect(screen.getAllByRole('toolbar').map((t) => t.getAttribute('aria-label'))).toEqual([
+      'Stage 2',
+    ]);
+    // Off the names altogether: gone after the grace.
+    fireEvent.pointerLeave(name);
     act(() => vi.advanceTimersByTime(HOVER_GRACE_MS));
     expect(screen.queryAllByRole('toolbar')).toHaveLength(0);
   });
@@ -93,6 +131,14 @@ describe('chevron stage controls', () => {
     expect(rows()).toEqual(element.conceptRows!.slice(1));
   });
 
+  it('records a stage edit as the menu row editor did', () => {
+    vi.mocked(track).mockClear();
+    const { zone } = show();
+    fireEvent.pointerEnter(zone(1));
+    fireEvent.click(screen.getByRole('button', { name: 'Move stage left' }));
+    expect(track).toHaveBeenCalledWith('Element', 'Changed', 'ConceptRows');
+  });
+
   it('offers Add Note only while no stage has a note', () => {
     const { zone } = show();
     fireEvent.pointerEnter(zone(0));
@@ -108,6 +154,25 @@ describe('chevron stage controls', () => {
     phone(true);
     show();
     expect(screen.getAllByRole('toolbar')).toHaveLength(chevrons().conceptRows!.length);
+  });
+
+  it("shows every stage's controls on a tablet too, which is wide but has no hover", () => {
+    media({ touch: true });
+    show();
+    expect(screen.getAllByRole('toolbar')).toHaveLength(chevrons().conceptRows!.length);
+  });
+
+  it('keeps a full bar within its stage, clear of the next one', () => {
+    phone(true);
+    // Three stages 400 wide: a later stage's words are 63 wide, under a full bar's 82, though its step is 120.
+    const rows = [{ label: 'A' }, { label: 'B' }, { label: 'C' }];
+    show({ ...chevrons(rows), width: 400, height: 200 });
+    const { stages } = chevronLayout(400, 200, rows.length, false);
+    screen.getAllByRole('toolbar').forEach((bar, i) => {
+      const scale = Number(/scale\(([\d.]+)\)/.exec(bar.style.transform)![1]);
+      const width = scale * barWidthPx(bar.querySelectorAll('button').length);
+      expect(width).toBeLessThanOrEqual(stages[i]!.label.width + 0.5);
+    });
   });
 
   it('shows none unless the element is selected and editable', () => {

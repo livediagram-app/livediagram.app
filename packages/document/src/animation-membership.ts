@@ -22,9 +22,11 @@ function hasOwnShapeSet(el: Element): boolean {
   );
 }
 
-// Shapes whose rows are what moves, not the box (Concept, Sequence), so they take their own set instead of Shape. Their
-// words still take the Text set, unlike hasOwnShapeSet's.
-function hasOwnBodySet(el: Element): boolean {
+// Shapes whose rows are what moves, not the box (Concept, Sequence), so they take their own set instead of Shape. One
+// that carries words of its own beyond its rows (a layer stack, pyramid, onion or chevrons) takes the Text set too; a
+// self-labelled one (sequence, cycle, hub) does not. A Shape `animation` stored on one before it had its own set no
+// longer plays: the menu has no Shape category on it to change or clear it.
+export function hasOwnBodySet(el: Element): boolean {
   return el.type === 'shape' && (isConceptShape(el.shape) || el.shape === 'sequence');
 }
 

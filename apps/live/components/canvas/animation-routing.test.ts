@@ -33,6 +33,18 @@ describe('wrapperShapeAnimation', () => {
     expect(wrapperShapeAnimation(sticky('bounce'))).toBe('bounce');
     expect(wrapperShapeAnimation(sticky('flutter'))).toBeUndefined();
   });
+  it('drops a Shape value on a concept graphic or sequence, which animate by their own fields', () => {
+    for (const shape of ['chevrons', 'cycle', 'sequence'] as const)
+      expect(
+        wrapperShapeAnimation({ ...createShape(shape, 0, 0), animation: 'pulse' }),
+        shape,
+      ).toBeUndefined();
+    // An icon keeps its old value playing, as before.
+    expect(wrapperShapeAnimation({ ...createShape('icon', 0, 0), animation: 'pulse' })).toBe(
+      'pulse',
+    );
+  });
+
   it('drops a text element’s legacy value once it has a Text animation', () => {
     const text = { ...createText(0, 0), animation: 'glow' as const };
     expect(wrapperShapeAnimation(text)).toBe('glow');
