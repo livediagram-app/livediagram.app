@@ -85,6 +85,40 @@ describe('the space templates', () => {
     }
   });
 
+  it('opens each booth onto floor wide enough to walk', () => {
+    const els = build('coworking-space');
+    const rooms = els.filter((e) => e.type === 'shape' && e.shape === 'room') as (Element & {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      label: string;
+      roomDoor?: 'n' | 's' | 'e' | 'w';
+    })[];
+    const walls = rooms.flatMap((r) => roomWalls(r));
+    // Distance from a point to a wall segment.
+    const dist = (p: { x: number; y: number }, w: (typeof walls)[number]) => {
+      const [dx, dy] = [w.b.x - w.a.x, w.b.y - w.a.y];
+      const t = Math.max(
+        0,
+        Math.min(1, ((p.x - w.a.x) * dx + (p.y - w.a.y) * dy) / (dx * dx + dy * dy || 1)),
+      );
+      return Math.hypot(p.x - (w.a.x + t * dx), p.y - (w.a.y + t * dy));
+    };
+    for (const booth of rooms.filter((r) => r.label.startsWith('Booth'))) {
+      // A step of 60 px out through the doorway, from its middle: clear of every wall by a Tall character's reach.
+      const step = { n: [0, -60], s: [0, 60], e: [60, 0], w: [-60, 0] }[booth.roomDoor ?? 's'];
+      const mid = {
+        n: { x: booth.x + booth.width / 2, y: booth.y },
+        s: { x: booth.x + booth.width / 2, y: booth.y + booth.height },
+        e: { x: booth.x + booth.width, y: booth.y + booth.height / 2 },
+        w: { x: booth.x, y: booth.y + booth.height / 2 },
+      }[booth.roomDoor ?? 's'];
+      const outside = { x: mid.x + step[0]!, y: mid.y + step[1]! };
+      expect(Math.min(...walls.map((w) => dist(outside, w))), booth.label).toBeGreaterThan(24);
+    }
+  });
+
   it('gives the coworking space eight desks and two single-seat booths', () => {
     const els = build('coworking-space');
     expect(count(els, 'desk')).toBe(8);
