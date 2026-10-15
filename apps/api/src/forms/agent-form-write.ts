@@ -32,6 +32,9 @@ export async function writeAgentForm(
   const form = readForm(body['form']);
   if (!form)
     return refused(400, 'invalid_body', '"form" is a form: a heading and sections of questions');
+  const theme = body['theme'];
+  if (theme !== undefined && !(typeof theme === 'string' && theme.trim() && theme.length <= 64))
+    return refused(400, 'invalid_body', '"theme" is a theme id');
   const rev = body['rev'];
   if (rev !== undefined && !(typeof rev === 'number' && Number.isSafeInteger(rev) && rev >= 0))
     return refused(400, 'invalid_body', '"rev" is the tab revision you read');
@@ -60,7 +63,13 @@ export async function writeAgentForm(
       }
     }
     const name = capStoredName(form.heading, null, 'tab');
-    const next: Tab = { ...stored.tab, name, form };
+    // The form wears its tab's look: a theme given is the tab's.
+    const next: Tab = {
+      ...stored.tab,
+      name,
+      form,
+      ...(typeof theme === 'string' ? { theme } : {}),
+    };
     let written: number;
     try {
       written = await upsertTabAtRev(env, documentId, next, stored.orderIndex, stored.rev);
@@ -73,7 +82,11 @@ export async function writeAgentForm(
       }
       throw err;
     }
-    const op: RoomOp = { kind: 'tab-meta', tabId, patch: { name, form } };
+    const op: RoomOp = {
+      kind: 'tab-meta',
+      tabId,
+      patch: { name, form, ...(typeof theme === 'string' ? { theme } : {}) },
+    };
     await relayIllustrate(env, documentId, [op], '[forms] agent');
     console.info('[forms] agent.written', where);
     return { status: 200, body: { tabId, rev: written, name } };

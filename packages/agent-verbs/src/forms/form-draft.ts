@@ -63,6 +63,8 @@ export interface FormDraft {
   changedBoards: Map<string, BoardRef>;
   // What was done, a line a change, as the answer says it.
   lines: string[];
+  // The Form tab's theme was changed (set_form theme): written with the form.
+  themeChanged?: true;
   newId: (prefix: 'q' | 's') => string;
 }
 

@@ -171,6 +171,12 @@ describe('changeForm', () => {
     ]);
   });
 
+  it('writes a new theme with the form, as the tab’s', async () => {
+    const { client, writes } = api();
+    await changeForm(client, 'doc', undefined, [{ op: 'set_form', theme: 'forest' }], 'mcp');
+    expect(writes[0]!.body).toMatchObject({ theme: 'forest', rev: 7 });
+  });
+
   it('keeps a live form locked but for its settings, writing nothing', async () => {
     const { client, writes } = api(LINK);
     const locked = await changeForm(
@@ -242,7 +248,12 @@ describe('a sheet form’s sheet', () => {
     ]);
     const { client } = api(
       null,
-      { '/documents/doc/tabs/form': { tab: formTabBody(sheetForm) } },
+      {
+        '/documents/doc/tabs/form': { tab: formTabBody(sheetForm) },
+        '/documents/doc/tabs/budget': {
+          tab: { id: 'budget', kind: 'sheet', elements: [], rev: 1 },
+        },
+      },
       server.routes,
     );
     const r = await changeForm(

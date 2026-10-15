@@ -479,11 +479,13 @@ showIfBroken?, questions: [{ id, type, typeName, prompt, …settings, goesTo?, g
   form's `no_destination` read as none) → `closed`, else a destination problem → `paused`, else `accepting`. After a
   write the answer is built from the draft (no second read). The MCP turns `code` into `link` (`formLinkUrl`), the
   CLI into `${host}/form/<code>`.
+- **Theme**: `set_form` `theme` sets the draft's `formTab.theme`; `add_form` makes the tab in it, `change_form` sends
+  it with the form (`{ form, rev, theme }`), and the route writes it on the tab and relays it in the `tab-meta`.
 - **Settings**: `closesAt` an ISO time; one with no offset is UTC (a `Z` appended before `Date.parse`).
 - **Sheet columns** (`syncSheetHeaders`): a new responses sheet is given every header, then `freeze` 1 and `rename`
   its tab's name; an existing sheet form's sheet, when the form asks for a header it did not (`sheetHeaders` of the
   form as read against the form as changed) or its sheet changed, is read (`A1:ZZ1`) and given the headers it lacks
-  after its last one (bold), never over one. A failed sync is said in `made`, never fatal. Read answers carry each
+  after its last one (bold, `resize` fit), never over one. A failed sync is said in `made`, never fatal. Read answers carry each
   question's `column` on a sheet form.
 - **Placing a question**: `before` a question (its index), else `after` one (its index + 1), else the end of
   `section` (`placeQuestion`); `move_question` needs one of them.

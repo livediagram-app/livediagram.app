@@ -87,7 +87,7 @@ export type FormChange =
       showIf?: SectionRuleInput | null;
     }
   | { op: 'delete_section'; section: SectionRef }
-  | { op: 'set_form'; heading?: string; description?: string; cover?: unknown }
+  | { op: 'set_form'; heading?: string; description?: string; cover?: unknown; theme?: string }
   | {
       op: 'settings';
       closesAt?: string | null;
@@ -306,6 +306,14 @@ function setForm(d: FormDraft, c: Extract<FormChange, { op: 'set_form' }>): Form
         'A cover is {color: "#hex"} or {gradient: ["#hex", "#hex"], angle?, motion?}, and pattern?: dots, grid or lines.',
       );
     patch.cover = cover;
+  }
+  if (c.theme !== undefined) {
+    const theme = c.theme.trim();
+    if (!theme || theme.length > 64)
+      return refuse('invalid_value', 'theme is a theme id (mocha, ocean, forest...).');
+    // The form wears its tab's look: the tab's theme changes with it.
+    d.formTab = { ...d.formTab, theme };
+    d.themeChanged = true;
   }
   d.form = patchForm(d.form, patch);
   d.lines.push('changed the form');

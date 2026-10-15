@@ -630,6 +630,18 @@ describe('an agent’s form write (docs/specs/030-forms/forms.md "Agents")', () 
     });
   });
 
+  it('gives the tab a theme sent with the form, and tells open editors', async () => {
+    expect((await owner('POST', 'form', { body: { form: form(), theme: 'forest' } })).status).toBe(
+      200,
+    );
+    const row = sql.sql.prepare(`SELECT data FROM tabs WHERE id = 'ftab'`).get() as {
+      data: string;
+    };
+    expect(JSON.parse(row.data).theme).toBe('forest');
+    expect(relayed.at(-1)?.op).toMatchObject({ kind: 'tab-meta', patch: { theme: 'forest' } });
+    expect((await owner('POST', 'form', { body: { form: form(), theme: 7 } })).status).toBe(400);
+  });
+
   it('refuses a form changed since it was read, naming the revision', async () => {
     const res = await write(form({ heading: 'X' }), { rev: stored().rev - 1 });
     expect(res.status).toBe(409);

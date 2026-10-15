@@ -229,7 +229,8 @@ export const readFormShape = {
     .boolean()
     .optional()
     .describe(
-      'Also attach a PNG of the form as respondents see it, on its tab’s look (about a thousand tokens).',
+      'Also attach a PNG of the form on its tab’s look, every page in turn as Preview reviews them (respondents ' +
+        'see one page at a time; a page shown only sometimes is marked). About a thousand tokens.',
     ),
 };
 
@@ -423,12 +424,18 @@ const change = z.discriminatedUnion('op', [
       .optional()
       .describe(`The form’s heading and its tab’s name, up to ${FORM_HEADING_MAX}.`),
     description: z.string().optional(),
+    theme: z
+      .string()
+      .optional()
+      .describe(
+        'The Form tab’s theme (mocha, ocean, forest...): the form’s colour, font and finish follow it.',
+      ),
     cover: cover
       .nullable()
       .optional()
       .describe(
-        'The cover band; null removes it. The form’s own colour (bars, buttons) is its tab theme’s: pick the tab’s ' +
-          'theme to match a cover.',
+        'The cover band; null removes it. The form’s own colour (bars, buttons) is its tab theme’s: set theme to ' +
+          'match a cover.',
       ),
   }),
   z.object({ op: z.literal('settings'), ...settings }),

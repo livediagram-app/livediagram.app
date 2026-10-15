@@ -196,6 +196,8 @@ async function syncSheetHeaders(
     const to = columnLetters(lastCol + missing.length - 1);
     changes.push({ op: 'set', at: `${from}1`, rows: [missing] });
     changes.push({ op: 'format', range: `${from}1:${to}1`, format: { bold: true } });
+    // Widths fitted to the headers, so a long question never runs over the column beside it.
+    changes.push({ op: 'resize', cols: `${from}:${to}`, fit: true });
   }
   if (fresh) changes.push({ op: 'freeze', rows: 1 }, { op: 'rename', title: fresh.title });
   if (!changes.length) return;
@@ -351,8 +353,11 @@ function startFromQuestions(
     // The first section given is the form's first when no questions came before it.
     const first = i === 0 && !input.questions?.length;
     // The first page's title and description are the form's heading and description.
-    if (first && s.description?.trim() && !d.form.description)
-      d.form = { ...d.form, description: s.description.trim() };
+    if (first && s.description?.trim()) {
+      if (!d.form.description) d.form = { ...d.form, description: s.description.trim() };
+      else if (s.description.trim() !== d.form.description)
+        d.lines.push(`the first page shows the form's description, not its own description`);
+    }
     if (first && s.title?.trim() && s.title.trim() !== d.form.heading)
       d.lines.push(
         `the first page shows the form's heading ("${d.form.heading}"), not its own title "${s.title.trim()}"`,
@@ -410,6 +415,7 @@ export async function addForm(
         const refused = applyFormChanges(d, [{ op: 'settings', ...input.settings }]);
         if (refused) return refused;
       }
+      const tabTheme = d.formTab.theme ?? theme;
       const tab: Tab = {
         id: tabId,
         name: d.form.heading,
@@ -418,7 +424,7 @@ export async function addForm(
         kind: 'form',
         opensIn: 'plan',
         form: d.form,
-        ...(theme ? { theme } : {}),
+        ...(tabTheme ? { theme: tabTheme } : {}),
       };
       const documentId = world.documentId;
       if (!input.documentId) {
@@ -450,7 +456,7 @@ export async function addForm(
           replace: {
             form: d.form as unknown as Record<string, unknown>,
             name: d.form.heading,
-            ...(theme ? { theme } : {}),
+            ...(tabTheme ? { theme: tabTheme } : {}),
           },
           summary: `Add the ${d.form.heading} form`,
         },
@@ -495,7 +501,11 @@ export async function changeForm(
       await api.json(`${tabPath(documentId, read.tab.id)}/form`, {
         method: 'POST',
         headers: { [CLIENT_HEADER]: client },
-        body: JSON.stringify({ form: d.form, rev: read.tab.rev }),
+        body: JSON.stringify({
+          form: d.form,
+          rev: read.tab.rev,
+          ...(d.themeChanged && d.formTab.theme ? { theme: d.formTab.theme } : {}),
+        }),
       });
       const made = await writeAround(api, d, client, false, read.form);
       return doneFrom(d, read.tab.id, read.link, made);
