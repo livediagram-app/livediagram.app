@@ -5,7 +5,8 @@
 // and approves. On approve the page mints an API token (Clerk-authed, as the consent page does) and hands it to the
 // MCP worker for the waiting CLI to collect; on cancel it refuses the code, so the CLI stops waiting. No help link:
 // the CLI's own README documents it.
-import { Suspense, useState } from 'react';
+import { Suspense, use, useState } from 'react';
+import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { apiExchangeOauthToken, apiRevokeToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
@@ -79,8 +80,9 @@ function Device() {
       </OauthShell>
     );
   if (!isSignedIn || !clerkUserId) {
-    const back =
-      typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
+    // The browser's own address: this branch renders in the browser only (`use(browser())`, under the page's Suspense).
+    use(browser());
+    const back = window.location.pathname + window.location.search;
     return (
       <OauthShell>
         <h1 className={HEADING}>Sign in to connect the livediagram CLI</h1>

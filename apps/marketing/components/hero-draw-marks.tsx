@@ -1,3 +1,4 @@
+import { trustedHtml } from '@livediagram/ui';
 // The hand-drawn marks the hero's Draw window is made of (components/hero-draw-board.tsx), in the
 // look Draw mode gives them (docs/specs/023-draw-mode/draw-mode.md): marker strokes that wobble and
 // overshoot their corners, stickies on the editor's pad colours with the paper-peel shadow, the
@@ -270,7 +271,7 @@ export function Sticker({
           height={size}
           viewBox={viewBox}
           overflow="visible"
-          dangerouslySetInnerHTML={{ __html: markup }}
+          dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
         />
       </g>
     </g>

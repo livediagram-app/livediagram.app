@@ -1330,72 +1330,58 @@
   }
 }
 
-/* The animation targets the canvas SURFACE, never the content wrapper inside
-   it. That wrapper carries the pan/zoom transform
-   (`scale(z) translate(x, y)`), and a CSS animation on `transform` REPLACES
-   the inline one for its whole duration — so animating it dropped every slide
-   to unzoomed, untranslated top-left for 420ms and read as a broken load.
-   The surface has no transform of its own, so it is free to carry this one,
-   and moving it takes the slide's backdrop along with its content, which is
-   what a slide sliding away should look like anyway. */
-html[data-presenting] [data-canvas-a11y-root] {
-  will-change: transform, opacity;
-}
+/* Slide moves and the entrance are React View Transitions (docs/specs/012-collaboration/presentation-mode.md
+   "Motion"; components/canvas/slide-transition.ts). The browser takes a picture of the canvas SURFACE before and
+   after, and these classes animate the two pictures, so the canvas's content wrapper (which carries the pan/zoom
+   transform) is never animated, and a hundred-element slide moves exactly like a one-element one. Reduced motion
+   starts no transition at all (lib/view-transition.ts), so it needs nothing here. */
 
-/* Entering: the deck arrives as a card over the editor. */
-html[data-presenting][data-slide-transition='none'][data-slide-move] [data-canvas-a11y-root] {
-  /* Cut straight to it. No animation at all, so nothing to wait on. */
-  animation: none;
-}
-html[data-presenting][data-slide-transition='fade'][data-slide-move] [data-canvas-a11y-root] {
-  animation: lvd-slide-fade var(--lvd-slide-ms, 380ms) ease;
-}
-
-html[data-presenting][data-slide-transition='slide'][data-slide-move='in'] [data-canvas-a11y-root],
-html[data-presenting]:not([data-slide-transition]) [data-slide-move='in'] [data-canvas-a11y-root] {
-  animation: lvd-slide-in var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1);
-}
-/* Advancing: the new slide travels in from the RIGHT edge, all the way across
-   the screen. A gentle 6% nudge was the first attempt and read as a wobble
-   rather than as a slide — a deck changing slides is a big, obvious movement,
-   and because the animated node is the canvas SURFACE it takes the backdrop
-   with it, so the whole screen moves rather than what's on the canvas sliding around
-   inside a stationary frame.
-
-   The curve is a plain decelerate. The first two attempts used easing with a
-   long slow tail (0.22, 1, 0.36, 1 and friends), which reads as rubber-banding
-   — the slide appears to arrive, then keeps creeping. A deck slide should land
-   and stop. */
-html[data-presenting][data-slide-transition='slide'][data-slide-move='forward']
-  [data-canvas-a11y-root] {
-  animation: lvd-slide-forward var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1);
-}
-/* Going back mirrors it, so the direction always says which way you are
-   travelling through the deck. */
-html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
-  [data-canvas-a11y-root] {
-  animation: lvd-slide-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* The first slide holds back until fullscreen has landed and the slide is fitted to it (slide-transition.ts),
-   so the card never arrives and then jumps when the screen resizes under it. */
+/* The first slide holds back until fullscreen has landed and the slide is fitted to it, then arrives as a
+   `slide-in` (PresentationHost), so the card never arrives and then jumps when the screen resizes under it. */
 html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
   opacity: 0;
+}
+
+/* The pictures move; the group they sit in stays put. */
+::view-transition-group(.slide-in),
+::view-transition-group(.slide-forward),
+::view-transition-group(.slide-back),
+::view-transition-group(.slide-fade) {
   animation: none;
 }
 
-/* The outgoing slide: a snapshot of the surface leaving the other way as the new slide arrives, so the deck
-   reads as one strip of slides moving together rather than a slide appearing over a blank. */
-html[data-presenting][data-slide-transition='slide']
-  [data-slide-ghost][data-slide-leave='forward'] {
-  animation: lvd-slide-out-forward var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* Entering: the deck arrives as a card over the editor. The old picture is the surface held hidden. */
+::view-transition-old(.slide-in) {
+  animation: none;
+  opacity: 0;
 }
-html[data-presenting][data-slide-transition='slide'] [data-slide-ghost][data-slide-leave='back'] {
-  animation: lvd-slide-out-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+::view-transition-new(.slide-in) {
+  animation: lvd-slide-in var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Advancing: the new slide travels in from the RIGHT edge, all the way across the screen, while the old one leaves
+   to the left, so the deck reads as one strip of slides moving together. A gentle 6% nudge was the first attempt
+   and read as a wobble rather than as a slide. The curve is a plain decelerate: easing with a long slow tail
+   (0.22, 1, 0.36, 1 and friends) reads as rubber-banding, the slide arriving and then creeping. */
+::view-transition-old(.slide-forward) {
+  animation: lvd-slide-out-forward var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+::view-transition-new(.slide-forward) {
+  animation: lvd-slide-forward var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+/* Going back mirrors it, so the direction always says which way you are travelling through the deck. */
+::view-transition-old(.slide-back) {
+  animation: lvd-slide-out-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+::view-transition-new(.slide-back) {
+  animation: lvd-slide-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 /* A fade crosses the two: the old slide fades out as the new one fades in. */
-html[data-presenting][data-slide-transition='fade'] [data-slide-ghost] {
-  animation: lvd-slide-fade-out var(--lvd-slide-ms, 380ms) ease forwards;
+::view-transition-old(.slide-fade) {
+  animation: lvd-slide-fade-out var(--lvd-slide-ms, 380ms) ease both;
+}
+::view-transition-new(.slide-fade) {
+  animation: lvd-slide-fade var(--lvd-slide-ms, 380ms) ease both;
 }
 
 @keyframes lvd-slide-out-forward {
@@ -1454,23 +1440,6 @@ html[data-presenting][data-slide-transition='fade'] [data-slide-ghost] {
   }
   to {
     transform: translateX(0);
-  }
-}
-
-/* Reduced motion still gets a transition, because "the slide changed" has to
-   be legible — it just loses the travel. Same durations, so the deck feels
-   the same to drive. */
-@media (prefers-reduced-motion: reduce) {
-  /* Whatever the transition setting says, reduced motion gets the fade: the
-     deck still reads as changing slides, without the travel. */
-  html[data-presenting][data-slide-move] [data-canvas-a11y-root] {
-    animation: lvd-slide-fade 380ms ease;
-  }
-  html[data-presenting] [data-slide-ghost] {
-    animation: lvd-slide-fade-out 380ms ease forwards;
-  }
-  html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
-    animation: none;
   }
 }
 

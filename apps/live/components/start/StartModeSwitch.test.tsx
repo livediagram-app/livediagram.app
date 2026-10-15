@@ -6,6 +6,8 @@ import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-
 import { StartModeSwitch } from './StartModeSwitch';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const transition = vi.hoisted(() => vi.fn((_type: string, change: () => void) => change()));
+vi.mock('@/lib/view-transition', () => ({ startTypedTransition: transition }));
 vi.mock('@/hooks/ui/useConfirm', () => ({ useConfirm: () => async () => true }));
 afterEach(cleanup);
 
@@ -31,6 +33,14 @@ describe('StartModeSwitch', () => {
     expect(screen.getByRole('menu').className).toMatch(/top-full/);
     fireEvent.click(screen.getByRole('menuitemradio', { name: /Illustrate/ }));
     expect(setMode).toHaveBeenCalledWith('illustrate');
+  });
+
+  it('switches inside a start-mode transition, so the start cross-fades', () => {
+    const setMode = mount('diagram');
+    fireEvent.click(screen.getByRole('button', { name: /^Tab mode: Diagram/ }));
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Illustrate/ }));
+    expect(transition).toHaveBeenCalledWith('start-mode', expect.any(Function));
+    expect(setMode).toHaveBeenCalledOnce();
   });
 
   it('shows nothing to someone who cannot edit', () => {

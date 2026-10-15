@@ -23,7 +23,7 @@ import {
   lucideSearch,
   lucideShapes,
 } from '@livediagram/icons/lucide';
-import { lucideGlyph, Tooltip, useEscape } from '@livediagram/ui';
+import { lucideGlyph, Tooltip, useEscape, trustedHtml } from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
@@ -295,7 +295,7 @@ export function PageContentsPanel({
                         viewBox={thumb.viewBox}
                         preserveAspectRatio="xMidYMid slice"
                         // Our own renderer's output (every label is xmlEscaped inside it).
-                        dangerouslySetInnerHTML={{ __html: thumb.markup }}
+                        dangerouslySetInnerHTML={{ __html: trustedHtml(thumb.markup) }}
                       />
                     ) : null}
                   </span>

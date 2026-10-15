@@ -1,5 +1,7 @@
 'use client';
 
+import { trustedHtml } from '@livediagram/ui';
+
 // A layout previewed on its page while its tile is hovered (docs/specs/007-editor/
 // illustrate-pages.md "Layouts"): the layout built for the page, drawn over the whole sheet in the
 // page's own background so it covers what is there now, through the same renderer the exports
@@ -106,7 +108,7 @@ export function InfographicLayoutPreview({
         height={rect.height}
         viewBox={`${rect.x} ${rect.y} ${rect.width} ${rect.height}`}
         // Our own renderer's output (every label is xmlEscaped inside it).
-        dangerouslySetInnerHTML={{ __html: markup }}
+        dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
       />
     </div>
   );

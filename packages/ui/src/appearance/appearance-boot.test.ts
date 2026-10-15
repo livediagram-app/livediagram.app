@@ -37,7 +37,9 @@ describe.each(APPS)('the %s root layout', (app) => {
   const layout = layoutOf(app);
 
   it('inlines the appearance script', () => {
-    expect(layout).toMatch(/dangerouslySetInnerHTML=\{\{ __html: APPEARANCE_BOOT_SCRIPT \}\}/);
+    expect(layout).toMatch(
+      /dangerouslySetInnerHTML=\{\{ __html: trustedHtml\(APPEARANCE_BOOT_SCRIPT\) \}\}/,
+    );
   });
 
   it('stays a server component, so the script runs before hydration', () => {

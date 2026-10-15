@@ -16,7 +16,8 @@
 
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
-import { useRef, useState } from 'react';
+import { use, useRef, useState } from 'react';
+import { browser } from 'react-dom';
 import { resolveFinish, type BackgroundPattern, type Finish } from '@livediagram/document';
 import {
   useEscape,
@@ -327,9 +328,10 @@ export function CanvasThemeDialog({
 // as it can in view. Null without a brush on screen, or on a phone (below 640 px), where it stays a dialog.
 const BRUSH_GAP_PX = 8;
 function useBrushAnchor(): { right: number; bottom: number } | null {
-  // Read once as it opens (the dialog is client-only, loaded with ssr off): the brush does not move while it is open.
+  // Read once as it opens, in the browser only (use(browser())): the brush does not move while it is open.
+  use(browser());
   const [anchor] = useState<{ right: number; bottom: number } | null>(() => {
-    if (typeof window === 'undefined' || window.innerWidth < 640) return null;
+    if (window.innerWidth < 640) return null;
     const brush = document.querySelector<HTMLElement>('[data-tour-id="canvas-theme"]');
     const box = brush?.getBoundingClientRect();
     if (!box || box.width === 0) return null;

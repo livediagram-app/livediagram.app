@@ -19,7 +19,13 @@ import {
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
-import { MenuTreeContext, useClickOutside, useControlMenu, Portal } from '@livediagram/ui';
+import {
+  MenuTreeContext,
+  useClickOutside,
+  useControlMenu,
+  Portal,
+  trustedHtml,
+} from '@livediagram/ui';
 
 // The menu's width (w-64) and its gap from the panel and the viewport edges, in px.
 const MENU_WIDTH = 256;
@@ -132,12 +138,8 @@ export function LayerRowMenu({
   const locked = isLayerLocked(layer);
   const visible = isLayerVisible(layer);
   const plural = elementCount === 1 ? 'element' : 'elements';
-  // The confirm popover anchors to the row that asked.
-  const clearRef = useRef<HTMLDivElement>(null);
-  const deleteRef = useRef<HTMLDivElement>(null);
-  const ask = (kind: 'delete' | 'clear', row: HTMLElement | null) => {
-    if (row) setConfirm({ kind, anchor: row });
-  };
+  // The confirm popover anchors to the row that asked: the click names it.
+  const ask = (kind: 'delete' | 'clear', row: HTMLElement) => setConfirm({ kind, anchor: row });
   // Run a one-shot verb and close: the result shows on the canvas and in the panel.
   const thenClose = (fn: () => void) => () => {
     onClose();
@@ -170,7 +172,7 @@ export function LayerRowMenu({
                   preserveAspectRatio="xMidYMid meet"
                   className="h-full w-full"
                   aria-hidden
-                  dangerouslySetInnerHTML={{ __html: thumbMarkup }}
+                  dangerouslySetInnerHTML={{ __html: trustedHtml(thumbMarkup) }}
                 />
               ) : null}
             </span>
@@ -238,27 +240,23 @@ export function LayerRowMenu({
           />
           <MenuGroupSeparator />
           <MenuActionRow plain icon={<RenameIcon />} label="Rename" onClick={thenClose(onRename)} />
-          <div ref={clearRef}>
-            <MenuActionRow
-              plain
-              icon={<ClearIcon />}
-              label="Clear Layer"
-              disabled={elementCount === 0}
-              onClick={() => ask('clear', clearRef.current)}
-            />
-          </div>
-          <div ref={deleteRef}>
-            <MenuActionRow
-              plain
-              icon={<DeleteIcon />}
-              label="Delete Layer"
-              disabled={!canDelete}
-              onClick={
-                // An empty layer goes straight away; a populated one asks first.
-                elementCount === 0 ? thenClose(onDelete) : () => ask('delete', deleteRef.current)
-              }
-            />
-          </div>
+          <MenuActionRow
+            plain
+            icon={<ClearIcon />}
+            label="Clear Layer"
+            disabled={elementCount === 0}
+            onClick={(e) => ask('clear', e.currentTarget)}
+          />
+          <MenuActionRow
+            plain
+            icon={<DeleteIcon />}
+            label="Delete Layer"
+            disabled={!canDelete}
+            onClick={
+              // An empty layer goes straight away; a populated one asks first.
+              elementCount === 0 ? thenClose(onDelete) : (e) => ask('delete', e.currentTarget)
+            }
+          />
         </div>
       </MenuTreeContext.Provider>
       {confirm ? (

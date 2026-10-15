@@ -1,15 +1,14 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  restartMove,
-  sendOff,
   SETTLE_FAILSAFE_MS,
-  snapshotOutgoing,
+  SLIDE_VIEW_TRANSITION_UPDATE,
+  slideTransitionType,
   whenScreenSettles,
 } from './slide-transition';
 
-// docs/specs/012-collaboration/presentation-mode.md "Motion": the outgoing slide leaves as the new one arrives, a
-// move restarts its animation, and the first slide waits for the screen to settle.
+// docs/specs/012-collaboration/presentation-mode.md "Motion": a move runs as a transition typed by its direction,
+// the surface animates for those types alone, and the first slide waits for the screen to settle.
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -17,64 +16,33 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-function surface(width = 800, height = 450) {
-  const el = document.createElement('div');
-  el.setAttribute('data-canvas-a11y-root', '');
-  el.innerHTML = '<svg><rect id="r" /></svg><p>Slide one</p>';
-  el.getBoundingClientRect = () => ({ left: 10, top: 20, width, height }) as DOMRect;
-  document.body.appendChild(el);
-  return el;
-}
-
-describe('snapshotOutgoing', () => {
-  it('copies the surface, fixed where it stands, as no surface at all', () => {
-    const ghost = snapshotOutgoing(surface(), 'slide')!;
-    expect(ghost.textContent).toBe('Slide one');
-    expect(ghost.hasAttribute('data-canvas-a11y-root')).toBe(false);
-    expect(ghost.getAttribute('aria-hidden')).toBe('true');
-    expect(ghost.style.position).toBe('fixed');
-    expect(ghost.style.left).toBe('10px');
-    expect(ghost.style.width).toBe('800px');
+describe('slideTransitionType', () => {
+  it('travels the way the deck moves', () => {
+    expect(slideTransitionType('slide', 2, 3)).toBe('slide-forward');
+    expect(slideTransitionType('slide', 3, 2)).toBe('slide-back');
+    expect(slideTransitionType('slide', 0, 5)).toBe('slide-forward');
   });
 
-  it('takes nothing for a cut, a missing surface or one with no size', () => {
-    expect(snapshotOutgoing(surface(), 'none')).toBeNull();
-    expect(snapshotOutgoing(null, 'slide')).toBeNull();
-    expect(snapshotOutgoing(surface(0, 0), 'slide')).toBeNull();
+  it('crosses the two with Fade, whichever way', () => {
+    expect(slideTransitionType('fade', 2, 3)).toBe('slide-fade');
+    expect(slideTransitionType('fade', 3, 2)).toBe('slide-fade');
+  });
+
+  it('cuts with None, and does not animate a move that goes nowhere', () => {
+    expect(slideTransitionType('none', 2, 3)).toBeNull();
+    expect(slideTransitionType('slide', 2, 2)).toBeNull();
   });
 });
 
-describe('sendOff', () => {
-  it('leaves the way the deck moves and is gone once its own animation ends', () => {
-    const ghost = snapshotOutgoing(surface(), 'slide')!;
-    sendOff(ghost, 'forward');
-    expect(ghost.getAttribute('data-slide-leave')).toBe('forward');
-    expect(document.body.contains(ghost)).toBe(true);
-    // One bubbling from inside the copy is not its own.
-    ghost.querySelector('p')!.dispatchEvent(new Event('animationend', { bubbles: true }));
-    expect(document.body.contains(ghost)).toBe(true);
-    ghost.dispatchEvent(new Event('animationend'));
-    expect(document.body.contains(ghost)).toBe(false);
-  });
-
-  it('is removed by the failsafe when the animation never ends', () => {
-    vi.useFakeTimers();
-    const ghost = snapshotOutgoing(surface(), 'slide')!;
-    sendOff(ghost, 'back');
-    vi.advanceTimersByTime(2000);
-    expect(document.body.contains(ghost)).toBe(false);
-  });
-});
-
-describe('restartMove', () => {
-  it('sets the move afresh even when it travels the same way as the last', () => {
-    const root = document.documentElement;
-    const el = surface();
-    const removed = vi.spyOn(root, 'removeAttribute');
-    root.setAttribute('data-slide-move', 'forward');
-    restartMove(root, el, 'forward');
-    expect(removed).toHaveBeenCalledWith('data-slide-move');
-    expect(root.getAttribute('data-slide-move')).toBe('forward');
+describe('SLIDE_VIEW_TRANSITION_UPDATE', () => {
+  it('animates the surface for the slide types alone', () => {
+    expect(SLIDE_VIEW_TRANSITION_UPDATE).toEqual({
+      'slide-in': 'slide-in',
+      'slide-forward': 'slide-forward',
+      'slide-back': 'slide-back',
+      'slide-fade': 'slide-fade',
+      default: 'none',
+    });
   });
 });
 

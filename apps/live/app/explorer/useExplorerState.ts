@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { use, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { browser } from 'react-dom';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -39,7 +40,6 @@ import { useActivityFeed } from './useActivityFeed';
 import { useExplorerMoves } from './useExplorerMoves';
 import { useExplorerPane } from './useExplorerPane';
 import { useSidebarExpansion } from './sidebar/useSidebarExpansion';
-import { useHydrated } from '@/hooks/ui/useHydrated';
 import { MY_DOCUMENTS_EXPAND_KEY } from './sidebar/sidebar-structure';
 import type { SelectedNode } from './views';
 import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-tree';
@@ -83,7 +83,10 @@ export function useExplorerState() {
   // prerenders this shell, and that render must match the HTML (the sidebar's Minimal chrome, the
   // appearance control's power-user wording).
   const prefs = useCachedPreferences();
-  const hydrated = useHydrated();
+  // The shell renders in the browser only (docs/specs/003-system-architecture/react-state-and-effects.md
+  // "Rendering in the browser only"): the prerender shows the layout's Suspense fallback, so the URL and the
+  // device's state are read from the first render on.
+  use(browser());
   // Owner id resolution mirrors new/page.tsx + editor-page.tsx: a
   // signed-in user is keyed by Clerk userId, a guest is keyed by the
   // localStorage UUID (minted on first visit). Null until Clerk has
@@ -174,10 +177,8 @@ export function useExplorerState() {
   // it means. Opened during render, once per link. The params stay while
   // Settings is open, so a page left for Google and reached again with Back
   // reopens it (docs/specs/007-editor/user-preferences.md), and go when it closes.
-  // Read once hydrated: the page is prerendered without a query string, so opening Settings in the
-  // render that hydrates it would not match the HTML it hydrates.
-  const settingsLink = hydrated ? (searchParams?.get('settings') ?? null) : null;
-  const sectionLink = hydrated ? (searchParams?.get('section') ?? null) : null;
+  const settingsLink = searchParams?.get('settings') ?? null;
+  const sectionLink = searchParams?.get('section') ?? null;
   const [settingsLinkSeen, setSettingsLinkSeen] = useState<string | null>(null);
   if (settingsLink !== settingsLinkSeen) {
     setSettingsLinkSeen(settingsLink);

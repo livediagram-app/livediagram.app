@@ -1,9 +1,8 @@
 'use client';
 
-// Mounts the presentation (docs/specs/012-collaboration/presentation-mode.md) over the editor, and owns the two pieces
-// of state that belong to a RUNNING deck rather than to the deck itself: which
-// way the last move travelled (so the slide transition knows which way to
-// slide) and the transition's own tick.
+// Mounts the presentation (docs/specs/012-collaboration/presentation-mode.md) over the editor, and owns the state
+// that belongs to a RUNNING deck rather than to the deck itself: which way the last move travelled (for the HUD),
+// the slide last asked for, and whether the first slide has arrived.
 //
 // Split out of EditorView so the view stays a layout: this is the whole of
 // "there is a presentation happening" in one place, and it renders nothing at
@@ -20,14 +19,8 @@ import { planPalette } from '@/components/plan/plan-palette';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
-import {
-  restartMove,
-  sendOff,
-  SLIDE_SURFACE_SELECTOR,
-  snapshotOutgoing,
-  whenScreenSettles,
-  type SlideMove,
-} from './slide-transition';
+import { startTypedTransition } from '@/lib/view-transition';
+import { slideTransitionType, whenScreenSettles } from './slide-transition';
 
 // Drawn only while presenting; fetched once the editor is idle (lib/editor-deferred-code.ts), and a deck
 // starts only once it is in (useSlideDeck). This lazy wrapper is the fallback for a presentation entered
@@ -41,26 +34,29 @@ const ItemSlideView = dynamic(
   { ssr: false },
 );
 
-// Matches the CSS in globals.css (.lvd-slide-*), so the class is removed the
-// moment the animation ends rather than being left on the node.
 export function PresentationHost() {
   const { slideDeck, canvasTool, setCanvasTool } = useEditorContext();
   const plan = usePlan();
   const surface = useCanvasSurface();
   const at = slideDeck?.presentingAt ?? null;
+  const presenting = at !== null;
   // The slide on screen ('end' for the end state): a peer's edit can move the
   // slide's place in the run without the slide changing, which is no move.
   const shown = at === null ? null : (slideDeck?.runnable[at]?.slide.id ?? 'end');
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const prevAt = useRef<number | null>(null);
   const prevShown = useRef<string | null>(null);
+  // The slide last asked for. React holds a transition while a View Transition runs, so `at` lags behind quick
+  // presses; a step counts from here instead, and every press lands (presentation-mode.md "Motion").
+  const asked = useRef<number | null>(null);
   // Device-local presenter settings (docs/specs/012-collaboration/presentation-mode.md). Owned by the deck hook, because
   // the camera reads them too.
   const config = slideDeck?.config;
   const configRef = useLatest(config);
-  // The outgoing slide, snapshotted the moment a move is asked for (before the new slide replaces it on the
-  // canvas), sent off once the move lands (slide-transition.ts).
-  const outgoing = useRef<HTMLElement | null>(null);
+  // Whether the first slide has arrived: until the screen settles it is held hidden (`pending`), then revealed as a
+  // `slide-in` transition. Reset as the deck ends, so the next one arrives the same way.
+  const [revealed, setRevealed] = useState(false);
+  if (!presenting && revealed) setRevealed(false);
   // The overlay holds the deck's keys, so it draws in the very commit the first slide does: the loaded
   // component itself when its code is in, never a lazy wrapper that waits a frame (and drops a key pressed
   // in it). Chosen once per presentation, so it never swaps (and remounts) mid-deck.
@@ -69,20 +65,17 @@ export function PresentationHost() {
     setOverlay(() => loadedPresentationOverlay() ?? LazyPresentationOverlay);
   if (at === null && Overlay !== null) setOverlay(null);
 
-  // Drive the canvas's transition class. The canvas underneath is the thing
-  // that actually moves — one transform on one layer, so a hundred-element
-  // slide costs exactly what a one-element slide does.
-  //
-  // A LAYOUT effect: the new slide is already on the canvas when this runs, so setting the move after paint showed
-  // one frame of it at rest before it jumped off-screen to slide in.
+  // The deck's marks on <html> and the direction of travel. A LAYOUT effect: it runs in the commit that put the new
+  // slide on the canvas, before the browser takes its picture of it. The move itself animates as a View Transition
+  // (onGo below), so nothing here drives an animation.
   useLayoutEffect(() => {
+    if (asked.current === at) asked.current = null;
     const root = document.documentElement;
     if (at === null) {
       root.removeAttribute('data-presenting');
-      root.removeAttribute('data-slide-move');
       prevAt.current = null;
       prevShown.current = null;
-      outgoing.current = null;
+      asked.current = null;
       return;
     }
     const before = prevAt.current;
@@ -92,58 +85,26 @@ export function PresentationHost() {
     root.setAttribute('data-presenting', '');
     const cfg = configRef.current;
     if (cfg) {
-      root.setAttribute('data-slide-transition', cfg.transition);
-      // The chosen speed drives the animation's duration through a variable,
-      // so the keyframes stay one definition rather than three.
+      // The chosen speed drives the animation's duration through a variable the View Transition's
+      // pseudo-elements inherit, so the keyframes stay one definition rather than three.
       root.style.setProperty('--lvd-slide-ms', `${slideDurationMs(cfg)}ms`);
       root.toggleAttribute('data-hide-pointer', cfg.hidePointer);
     }
-    const surface = document.querySelector(SLIDE_SURFACE_SELECTOR);
-    const ghost = outgoing.current;
-    outgoing.current = null;
-    // Cleared on the animation's OWN end event, not on a timer. A timer has to
-    // guess the duration, and guessing even slightly short yanked the
-    // attribute mid-animation — the element snapped from wherever it had got
-    // to straight to its resting place, which is the little bounce at the end
-    // of a transition that reads as rubber-banding.
-    // The surface's OWN animation: an animationend bubbling up from an element inside it (a note's entrance, a
-    // looping sticker) must not end the slide move early.
-    const done = (e?: Event) => {
-      if (e && e.target !== surface) return;
-      root.removeAttribute('data-slide-move');
-    };
-    let failsafe = 0;
-    const begin = (move: SlideMove) => {
-      restartMove(root, surface, move);
-      // Belt and braces: if the surface is missing or the animation never runs
-      // (reduced motion with animations disabled outright, a hidden tab), the
-      // attribute must not stick and block the next transition.
-      failsafe = window.setTimeout(() => done(), 1200);
-    };
-    surface?.addEventListener('animationend', done);
-    surface?.addEventListener('animationcancel', done);
-    let cancelSettle = () => {};
-    if (before === null) {
-      // Entering: the first slide arrives as a card rather than a page swap, once fullscreen has landed and the
-      // slide been fitted to it; until then it holds back, so the card never arrives and then jumps.
-      root.setAttribute('data-slide-move', 'pending');
-      cancelSettle = whenScreenSettles(() => begin('in'));
-    } else if (shown !== shownBefore) {
-      const dir = at > before ? 'forward' : 'back';
-      setDirection(dir);
-      begin(dir);
-      // The outgoing slide leaves the other way as the new one arrives.
-      if (ghost) sendOff(ghost, dir);
-    }
-    // The same slide at a new place (a peer's edit) moves nothing, but the
-    // listeners above still clear a move already under way.
-    return () => {
-      cancelSettle();
-      surface?.removeEventListener('animationend', done);
-      surface?.removeEventListener('animationcancel', done);
-      window.clearTimeout(failsafe);
-    };
+    // The same slide at a new place (a peer's edit) moves nothing.
+    if (before !== null && shown !== shownBefore) setDirection(at > before ? 'forward' : 'back');
   }, [at, shown, configRef]);
+
+  // The entrance: the first slide is held hidden until fullscreen has landed and the slide is fitted to it, so the
+  // card never arrives and then jumps; then it is revealed as a `slide-in` transition (a cut under reduced motion).
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    if (!presenting || revealed) {
+      root.removeAttribute('data-slide-move');
+      return;
+    }
+    root.setAttribute('data-slide-move', 'pending');
+    return whenScreenSettles(() => startTypedTransition('slide-in', () => setRevealed(true)));
+  }, [presenting, revealed]);
 
   // Leaving the mode must always clean up, including on unmount (a navigation
   // away mid-presentation would otherwise leave the attribute on <html>).
@@ -151,7 +112,6 @@ export function PresentationHost() {
     () => () => {
       document.documentElement.removeAttribute('data-presenting');
       document.documentElement.removeAttribute('data-slide-move');
-      document.documentElement.removeAttribute('data-slide-transition');
       document.documentElement.removeAttribute('data-hide-pointer');
       document.documentElement.style.removeProperty('--lvd-slide-ms');
     },
@@ -162,6 +122,18 @@ export function PresentationHost() {
   // An item slide is the card itself, drawn over the canvas (docs/specs/012-collaboration/presentation-mode.md
   // "Item slides").
   const itemId = slideDeck.runnable[at]?.slide.itemId;
+  // A move: a step (one slide either way) counts from the slide last asked for, a jump is taken as given; then it
+  // runs as a transition typed by its direction, or plainly for None (startTypedTransition cuts under reduced motion).
+  const go = (next: number) => {
+    const from = asked.current ?? at;
+    const step = next - at;
+    const target =
+      Math.abs(step) === 1 ? Math.min(Math.max(0, from + step), slideDeck.runnable.length) : next;
+    asked.current = target;
+    const type = slideTransitionType(config.transition, from, target);
+    if (type) startTypedTransition(type, () => slideDeck.setPresentingAt(target));
+    else slideDeck.setPresentingAt(target);
+  };
   return (
     <>
       {itemId ? (
@@ -177,15 +149,7 @@ export function PresentationHost() {
         onSetCanvasTool={setCanvasTool}
         steps={slideDeck.runnable}
         at={at}
-        onGo={(next) => {
-          // Snapshotted now, while the canvas still shows the slide being left.
-          if (next !== at)
-            outgoing.current = snapshotOutgoing(
-              document.querySelector(SLIDE_SURFACE_SELECTOR),
-              config.transition,
-            );
-          slideDeck.setPresentingAt(next);
-        }}
+        onGo={go}
         onExit={slideDeck.exitPresentation}
         direction={direction}
         config={config}

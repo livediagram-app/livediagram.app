@@ -1,77 +1,43 @@
-// The slide transition's moving parts (docs/specs/012-collaboration/presentation-mode.md "Motion"), as DOM helpers
-// PresentationHost drives. Kept apart so the host stays the "a deck is running" switchboard and these stay testable.
-//
-// Three things make a deck feel smooth rather than janky, each learnt from watching it:
-// - The outgoing slide LEAVES while the incoming one arrives. There is one canvas, so the outgoing slide is a
-//   snapshot of the surface taken just before the move (`snapshotOutgoing`), animated away and removed.
-// - A move restarts its animation even when it travels the same way as the last (`restartMove`). Setting an
-//   attribute to the value it already holds starts nothing, so a quick second press used to cut without motion.
-// - The first slide waits for the screen to settle (`whenScreenSettles`): going fullscreen resizes the canvas, and
-//   the refit that follows used to land mid-entrance, the card arriving and then jumping.
+// The slide transition's moving parts (docs/specs/012-collaboration/presentation-mode.md "Motion"), for
+// PresentationHost. A move runs as a React View Transition typed by its direction: the canvas <main> sits in a
+// <ViewTransition> whose `update` animates for these types alone (SLIDE_VIEW_TRANSITION_UPDATE), so the browser
+// animates a picture of the surface before and after, with no copy in the DOM. The first slide waits for the screen
+// to settle (`whenScreenSettles`): going fullscreen resizes the canvas, and the refit that follows used to land
+// mid-entrance, the card arriving and then jumping.
 
-// The node the transition animates: the canvas surface.
+import type { SlideTransition } from '@/lib/presentation-config';
+
+// The node a slide transition captures: the canvas surface.
 export const SLIDE_SURFACE_SELECTOR = '[data-canvas-a11y-root]';
-
-// Under the presentation's click catcher (z-60) and HUD, over the editor the surface sits in.
-const GHOST_Z = 59;
-// Longest a snapshot may stay if its animation never ends (a hidden tab): past any transition speed.
-const GHOST_FAILSAFE_MS = 1500;
 // Longest the first slide waits for fullscreen to land before it arrives anyway (a refused request).
 export const SETTLE_FAILSAFE_MS = 600;
 
-export type SlideMove = 'in' | 'forward' | 'back';
+export const SLIDE_TRANSITION_TYPES = [
+  'slide-in',
+  'slide-forward',
+  'slide-back',
+  'slide-fade',
+] as const;
+export type SlideTransitionType = (typeof SLIDE_TRANSITION_TYPES)[number];
 
-/** Sets the move on the root so its animation starts afresh, even if the last move travelled the same way. */
-export function restartMove(root: HTMLElement, surface: Element | null, move: SlideMove): void {
-  root.removeAttribute('data-slide-move');
-  // Reading layout here makes the browser drop the old animation before the attribute comes back.
-  if (surface instanceof HTMLElement) void surface.offsetWidth;
-  root.setAttribute('data-slide-move', move);
-}
+/** The surface's View Transition classes, by transition type: the slide types animate, nothing else does. */
+export const SLIDE_VIEW_TRANSITION_UPDATE: Record<SlideTransitionType | 'default', string> = {
+  'slide-in': 'slide-in',
+  'slide-forward': 'slide-forward',
+  'slide-back': 'slide-back',
+  'slide-fade': 'slide-fade',
+  default: 'none',
+};
 
-/** A copy of the surface as it is now, fixed where it stands, to animate the outgoing slide away. Null when there
- *  is nothing to copy or the transition does not move (None). */
-export function snapshotOutgoing(surface: Element | null, transition: string): HTMLElement | null {
-  if (!(surface instanceof HTMLElement) || transition === 'none') return null;
-  const rect = surface.getBoundingClientRect();
-  if (rect.width === 0 || rect.height === 0) return null;
-  const ghost = surface.cloneNode(true) as HTMLElement;
-  // Not the surface: no selector, focus or reader may find it.
-  ghost.removeAttribute('data-canvas-a11y-root');
-  ghost.setAttribute('data-slide-ghost', '');
-  ghost.setAttribute('aria-hidden', 'true');
-  ghost.inert = true;
-  Object.assign(ghost.style, {
-    position: 'fixed',
-    left: `${rect.left}px`,
-    top: `${rect.top}px`,
-    width: `${rect.width}px`,
-    height: `${rect.height}px`,
-    margin: '0',
-    pointerEvents: 'none',
-    zIndex: String(GHOST_Z),
-  });
-  return ghost;
-}
-
-/** Puts the snapshot on screen leaving the way the deck moves, and removes it once it has gone. */
-export function sendOff(ghost: HTMLElement, move: 'forward' | 'back'): () => void {
-  ghost.setAttribute('data-slide-leave', move);
-  document.body.appendChild(ghost);
-  let gone = false;
-  const remove = () => {
-    if (gone) return;
-    gone = true;
-    ghost.remove();
-    window.clearTimeout(failsafe);
-  };
-  const onEnd = (e: Event) => {
-    if (e.target === ghost) remove();
-  };
-  ghost.addEventListener('animationend', onEnd);
-  ghost.addEventListener('animationcancel', onEnd);
-  const failsafe = window.setTimeout(remove, GHOST_FAILSAFE_MS);
-  return remove;
+/** The type a move from slide `from` to slide `to` runs as, or null when it does not animate (None, or no move). */
+export function slideTransitionType(
+  transition: SlideTransition,
+  from: number,
+  to: number,
+): Exclude<SlideTransitionType, 'slide-in'> | null {
+  if (transition === 'none' || from === to) return null;
+  if (transition === 'fade') return 'slide-fade';
+  return to > from ? 'slide-forward' : 'slide-back';
 }
 
 /** Calls `ready` once the screen has settled for the first slide: at once where there is no fullscreen to wait for,

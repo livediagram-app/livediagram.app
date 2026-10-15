@@ -7,6 +7,9 @@ import { Glyph } from './icons/Glyph';
 import { lucideGlyph } from './icons/lucide-glyph';
 import { REPO_URL } from './site';
 
+// NEXT_PUBLIC_BUILD_YEAR (docs/specs/016-platform/nextjs.md "One configuration"); empty outside a Next build.
+const buildYear = () => process.env.NEXT_PUBLIC_BUILD_YEAR ?? '';
+
 // The public site footer shared by the marketing landing page, the help centre, the telemetry dashboard and the
 // Community. Brand + tagline on top, the site links grouped into titled columns below, and a thin legal/credits
 // strip at the bottom crediting the human contributors by their avatars. Only the key links carry an icon (the
@@ -117,7 +120,9 @@ export function SiteFooter() {
       <div className="border-t border-slate-100 dark:border-slate-800">
         <div className="mx-auto flex max-w-6xl flex-col gap-1.5 px-6 py-4 text-xs text-slate-500 sm:flex-row dark:text-slate-400 sm:items-center sm:justify-between">
           <p>
-            <span>&copy; {new Date().getFullYear()} livediagram. MIT licensed.</span>
+            {/* The build's year, inlined at build (@livediagram/next-config), never the clock: the prerender and
+                the browser render the same text whatever the date. */}
+            <span>{`© ${buildYear() ? `${buildYear()} ` : ''}livediagram. MIT licensed.`}</span>
           </p>
           <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
             <span className="inline-flex items-center gap-1.5">

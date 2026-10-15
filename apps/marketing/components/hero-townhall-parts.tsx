@@ -1,3 +1,4 @@
+import { trustedHtml } from '@livediagram/ui';
 import type { CSSProperties, ReactNode } from 'react';
 import { stickerArt } from '@livediagram/icons';
 import { FONT } from '@/components/art-tokens';
@@ -179,7 +180,7 @@ export function Sticker({
       height={size}
       viewBox={art.viewBox}
       overflow="visible"
-      dangerouslySetInnerHTML={{ __html: art.markup }}
+      dangerouslySetInnerHTML={{ __html: trustedHtml(art.markup) }}
     />
   );
 }

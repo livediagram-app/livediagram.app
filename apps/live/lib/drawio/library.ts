@@ -3,6 +3,7 @@
 // mxGraphModel snippet, usually compressed) or `{ data, w, h, title }` (an image). Each item
 // converts through the same mapping as a page, its elements moved to start at (0, 0). Never throws.
 
+import { parseInert } from '@livediagram/ui/trusted-types';
 import {
   contentBounds,
   duplicateElements,
@@ -90,7 +91,7 @@ function fromOrigin(elements: Element[]): Element[] {
 
 async function snippetModel(xml: string, budget: ByteBudget): Promise<globalThis.Element> {
   const text = xml.trimStart().startsWith('<') ? xml : await decompressDiagram(xml.trim(), budget);
-  const doc = new DOMParser().parseFromString(text.trim(), 'application/xml');
+  const doc = parseInert(text.trim(), 'application/xml');
   const root = doc.documentElement;
   if (doc.getElementsByTagName('parsererror').length > 0 || root.localName !== 'mxGraphModel') {
     throw new Error('not a model');

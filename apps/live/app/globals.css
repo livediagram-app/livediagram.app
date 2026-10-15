@@ -503,7 +503,7 @@
  * moving (docs/specs/004-interface-design/motion.md "Reduced motion").
  *
  * Animations collapse to 0.01ms rather than 0, so animationend still fires for
- * the JS that waits on it (PresentationHost). Transitions collapse to 0s: every
+ * the JS that waits on it (a split pane closing). Transitions collapse to 0s: every
  * element's transition-property defaults to `all`, so any non-zero duration on
  * `*` would turn every style write into a transition, and a position written
  * and measured in the same frame would read back the old value (the tab
@@ -846,16 +846,12 @@
 /* Presenting a slide deck (docs/specs/012-collaboration/presentation-mode.md).
 
    The SLIDE is the canvas itself, narrowed to one slide's elements and framed
-   to their bounds by useEditorState. These rules are only the motion and the
-   frame around it, driven by two attributes the PresentationHost sets on
-   <html>: `data-presenting` while a deck is running, and `data-slide-move`
-   for the length of one transition.
-
-   Everything animates ONE layer — the canvas's content wrapper — with a
-   transform and an opacity. Per-element animation was the alternative and is
-   the wrong shape: a hundred-element slide would cost a hundred times what a
-   one-element slide does, for a move the audience reads as a single card
-   sliding. */
+   to their bounds by useEditorState. These rules are only the frame around
+   it, driven by the attributes the PresentationHost sets on <html>:
+   `data-presenting` while a deck is running, and `data-slide-move="pending"`
+   while the first slide waits for the screen to settle. The motion itself is a
+   View Transition of the canvas surface (canvas-motion.css): one picture moves,
+   so a hundred-element slide costs what a one-element slide does. */
 
 /* Chrome hiding is NOT done here: presenting reports zenMode, so the editor's
    own zen treatment (docs/specs/007-editor/zen-mode.md) takes the header, tab bar, palette and panels
@@ -991,4 +987,20 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   transition-property: background-color, border-color, color, fill, stroke, opacity;
   transition-duration: 250ms;
   transition-timing-function: ease-out;
+}
+
+/* View Transitions (docs/specs/004-interface-design/motion.md "View Transitions"). The document root takes no part,
+   so only a named surface is captured: the rest of the page neither cross-fades nor freezes into a picture. Reduced
+   motion adds nothing here: the handlers start no View Transition then (lib/view-transition.ts). */
+html {
+  view-transition-name: none;
+}
+
+/* The start's mode switch (docs/specs/007-editor/start-diagramming.md "Changing mode"): the browser's own
+   cross-fade, on the short token and the ease-out curve, so the panel turns in place. */
+::view-transition-group(.start-mode),
+::view-transition-old(.start-mode),
+::view-transition-new(.start-mode) {
+  animation-duration: var(--transition-duration-short);
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }

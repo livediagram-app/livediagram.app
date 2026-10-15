@@ -48,16 +48,23 @@ function onCi() {
 }
 
 /**
+ * The variable the shared Vitest config hands its workers when the run collects coverage (`--coverage`):
+ * instrumented code runs the same work slower, wherever it runs.
+ */
+export const UNDER_COVERAGE_ENV = 'LIVEDIAGRAM_COVERAGE';
+
+/**
  * A speed test's CPU budget: `ms` as written on a developer's machine, `ms x CI_CPU_HEADROOM` on
  * CI (`CI` is `true` or `1`, as GitHub Actions sets it; `CI=false` or `CI=0`, which some shells and
  * images export to turn CI behaviour off, is a developer's machine). The written number stays the
  * product's own budget and holds wherever it is meaningful; CI still fails a slide past three times
  * it. Three is enough beside a 4x slower runner because a budget is written with its own room over
- * the local timing (Tidy Up: 100 ms against 24 measured).
+ * the local timing (Tidy Up: 100 ms against 24 measured). The same headroom applies under coverage
+ * (`UNDER_COVERAGE_ENV`, the pre-push hook's run): the instrumentation is what slows the work.
  *
  * @param {number} ms
  * @returns {number}
  */
 export function cpuBudgetMs(ms) {
-  return onCi() ? ms * CI_CPU_HEADROOM : ms;
+  return onCi() || process.env[UNDER_COVERAGE_ENV] ? ms * CI_CPU_HEADROOM : ms;
 }

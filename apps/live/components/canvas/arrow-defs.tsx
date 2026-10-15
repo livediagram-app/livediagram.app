@@ -30,6 +30,11 @@ export function markersTakeLineColour(): boolean {
   return contextStroke;
 }
 
+/** Forgets the answer, so a test can ask again under a different CSS.supports. */
+export function resetMarkersTakeLineColourForTests(): void {
+  contextStroke = null;
+}
+
 // Inner geometry for one arrowhead shape, drawn in the marker's
 // 0..10 viewBox with the attachment point at x≈9. `context-stroke`
 // is the canonical SVG2 way to inherit the referencing line's colour

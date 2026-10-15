@@ -6,7 +6,8 @@
 // (Clerk-authed) and hand it to the MCP's /oauth/complete bound to a one-time
 // PKCE code, then bounce the browser to the client's redirect. Signed-in only;
 // absent end-to-end without Clerk.
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, use, useEffect, useState } from 'react';
+import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { CLI_CLIENT_ID } from '@livediagram/api-schema';
 import { OAUTH_PRIMARY, OauthHelpLink, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
@@ -93,8 +94,9 @@ function Consent() {
     // Return here after sign-in. The sign-in page reads `redirect_url` (NOT
     // `redirect`) and validates it as a safe internal path before bouncing
     // back — /oauth/consent?... qualifies, so the user lands back on consent.
-    const back =
-      typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
+    // The browser's own address: this branch renders in the browser only (`use(browser())`, under the page's Suspense).
+    use(browser());
+    const back = window.location.pathname + window.location.search;
     return (
       <OauthShell>
         <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">

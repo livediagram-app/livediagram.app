@@ -215,7 +215,8 @@ fixture, which collects every `pageerror` and `console.error` the page raises,
 minus known benign noise (a favicon or manifest 404, dev-server Fast Refresh
 chatter, Chromium's generic "Failed to load resource" line, and the blocked
 model fetches of the photo tests). A test that takes `pageErrors` ends with
-**`expectNoPageErrors(pageErrors)`**, which fails naming what leaked.
+**`expectNoPageErrors(pageErrors)`**, which fails naming what leaked. A Trusted Types violation is one of them:
+the page logs `[trusted-types] violation` as an error ([Trusted Types](../016-platform/trusted-types.md)).
 
 The same `test` sets the editor's debug flag (`livediagram:debug` = `*`) on its browser
 context before any page loads, so the production build the suite drives writes its trace lines
