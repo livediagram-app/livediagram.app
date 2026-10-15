@@ -6,6 +6,7 @@ import { isPlanTabKind } from './tab-kind';
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { SKETCH_FACE_FILTER } from './svg-render-sketch';
 
 /** A window's size as it lands (16:9). */
 export const TAB_WINDOW_SIZE = { width: 640, height: 360 } as const;
@@ -80,23 +81,28 @@ export function svgTabWindow(
   art: TabWindowArt | undefined,
   stroke: string | undefined,
   surface: CanvasSurface = 'light',
+  // Under Sketch the frame is drawn by hand; the tab it shows keeps its own finish (docs/specs/008-canvas/finish.md).
+  sketched = false,
+  // The element's resolved face, for the empty frame's message, as on the canvas.
+  fontFamily = 'system-ui, sans-serif',
 ): string {
   const id = `tw-${el.id}`.replace(/[^a-zA-Z0-9-]/g, '');
   const box = `x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"`;
   const radius = Math.min(TAB_WINDOW_RADIUS, el.width / 2, el.height / 2);
   const rect = (fill: string, extra = '') =>
     `<rect ${box} rx="${r2(radius)}" fill="${xmlEscape(fill)}"${extra}/>`;
-  const edge = rect(
+  const hairline = rect(
     'none',
     ` stroke="${xmlEscape(stroke ?? TAB_WINDOW_HAIRLINE)}" stroke-width="1"`,
   );
+  const edge = sketched ? `<g filter="url(#${SKETCH_FACE_FILTER.id})">${hairline}</g>` : hairline;
   const drawing = art?.drawing;
   if (!drawing) {
     const name = art?.name ?? 'Tab Window';
     const size = Math.max(10, Math.min(16, el.height / 6));
     return (
       rect(TAB_WINDOW_EMPTY[surface].fill) +
-      `<text x="${r2(el.x + el.width / 2)}" y="${r2(el.y + el.height / 2)}" font-family="system-ui, sans-serif" font-size="${r2(size)}" font-weight="600" fill="${TAB_WINDOW_EMPTY[surface].ink}" text-anchor="middle" dominant-baseline="central">${xmlEscape(name)}</text>` +
+      `<text x="${r2(el.x + el.width / 2)}" y="${r2(el.y + el.height / 2)}" font-family="${xmlEscape(fontFamily)}" font-size="${r2(size)}" font-weight="600" fill="${TAB_WINDOW_EMPTY[surface].ink}" text-anchor="middle" dominant-baseline="central">${xmlEscape(name)}</text>` +
       edge
     );
   }

@@ -66,6 +66,9 @@ element leaves unset, plus how a line is drawn (Sketch).
   (Caveat). A font picked on the element or the tab wins, so a typeface picked in Tab Style shows on a Sketch tab.
   Sketch picked on the element itself is more specific than the tab's font: that element is written by hand even
   on a tab with a typeface (Style → Finish on one heading of a Boardroom slide); its own font still wins. A code block keeps its monospace font.
+  The face covers every word on the element, not only its label: a face that writes its own (a progress value, a
+  panel's rows, a button, a quiz) is lettered in it too, on the canvas and in exports. The same holds for a tab's
+  font and Professional's Inter.
 - **Arrows** are drawn as hand-drawn lines; a triangle, hollow triangle or line arrowhead is drawn as two loose
   strokes. Circle and diamond heads keep their shapes, because they carry meaning (UML composition, ER
   cardinality).
@@ -77,8 +80,22 @@ element leaves unset, plus how a line is drawn (Sketch).
   both draw it (an SVG displacement filter, defined once per export and only when something needs it).
 - **Sequence diagrams** draw their participants' boxes and their message lines by hand too, since they are the
   same boxes and arrows the canvas draws ([The sequence diagram](../009-elements/sequence-diagram.md) "Look").
-- **Not affected:** freehand strokes (already hand-drawn), images, and the faces of self-painting elements
-  (charts, checklists, progress, code) other than their lettering.
+- **Every other face is drawn by hand too.** Whatever an element draws beyond its sketched body is split into two
+  layers: charts, legends, progress, rating, timeline rails, checklists, code blocks, concept graphics, Sankey,
+  badges, steps, cards, pointer notes, stacks, boundaries, diagram keys, people, web components, office furniture
+  and rooms, Plan boards, cards, views and sheets, collaboration panels, buttons, pickers, reveals, portals, quizzes,
+  a tab window's frame, link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
+  rows, a page's fold, a browser's chrome and an inline icon beside a label.
+  - Its **ink** (fills, outlines, bars, discs, rules, glyphs) is drawn through the same wobble as icons.
+  - Its **words** sit above the ink, crisp, in the element's font. The wobble mangles small figures ("4,000" reads
+    "2,0/0"), so words never go through it; under Sketch they are already written by hand.
+
+  The two layers line up exactly, so a face reads and behaves as in any finish: its controls are pressed and typed
+  into as before. The ink is a still copy of the face, so a hover or press tint on a face's own control is not
+  drawn on a Sketch tab. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
+  and a tab window's content keeps the finish of the tab it shows. Exports draw the same two layers.
+
+- **Not affected:** freehand strokes (already hand-drawn) and images (photos, not drawings).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, never the wobble, so a
   sketched element is selected, connected and aligned exactly as a Flexible one.
 
@@ -135,3 +152,8 @@ only when something on it is sketched (0.7 ms for 2,000 elements), and an elemen
 own backdrop flag flips. Generating one element's strokes and hatching stays under
 0.2 ms at worst-case sizes, so a 500-element sketched tab costs under 100 ms to draw from cold and nothing per
 drag frame for unmoved elements ([Canvas performance](canvas-performance.md)).
+
+A sketched face costs one still copy of its DOM, taken once it settles (so a zoom, which restyles faces every
+frame, copies each once afterwards), and one light wobble filter. On a Sketch tab of 200 charts, copying every face
+takes 6-14 ms, a pan costs nothing, and a zoom keeps every task under 50 ms; the icons' heavier two-pass wobble
+broke that budget on faces, so faces take one pass.

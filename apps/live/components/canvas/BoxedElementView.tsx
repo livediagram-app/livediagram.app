@@ -26,6 +26,7 @@ import {
   type TextSize,
   withTagAccent,
   rotationOf,
+  finishSplitsFace,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
@@ -51,6 +52,7 @@ import { describeVariant, editingLook } from '@/components/canvas/element-varian
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
+import { SketchFace } from '@/components/canvas/SketchFace';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
@@ -493,6 +495,10 @@ function BoxedElementViewImpl({
         width: textHug.box?.width ?? element.width,
         height: textHug.box?.height ?? mindFit.height ?? element.height,
         color: textColor,
+        // Every word on the element in its face, so a face that writes its own (a progress value, a panel's
+        // rows, a button) wears the tab's font and finish like its label does (docs/specs/008-canvas/finish.md).
+        // Unset when nothing picks one, so the editor default still applies.
+        ...(fontFamily ? { fontFamily } : {}),
         // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): elements off the votable layer stay
         // VISIBLE — you still need the canvas's context to judge what
         // you're voting on — but drop back so the votable set reads as the
@@ -542,179 +548,187 @@ function BoxedElementViewImpl({
           stroke={remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface)}
         />
       ) : null}
-      <AccentEdgeOverlay
-        element={withTagAccent(element, tagColours)}
-        stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-      />
-      {element.type === 'shape' && element.shape === 'pointer-note' ? (
-        <PointerNoteOverlay
-          element={element}
+      {/* Under Sketch everything the element draws over its body is drawn by hand, its words crisp
+          (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"). */}
+      <SketchFace active={finish === 'sketch' && finishSplitsFace(element)}>
+        <AccentEdgeOverlay
+          element={withTagAccent(element, tagColours)}
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-          editable={isSelected && !readOnly && !isLocked}
-          onSetTip={onSetPointerTip}
         />
-      ) : null}
-      <ShapeContentRouter
-        element={element}
-        isEditing={isEditing}
-        artAnimClass={artAnimClass}
-        accent={accent}
-        textColor={textColor}
-        remoteBorderColor={remoteBorderColor}
-        isLocked={isLocked}
-        isSelected={isSelected}
-        readOnly={readOnly}
-        onSetRailLabel={onSetRailLabel}
-        onToggleChecklistItem={onToggleChecklistItem}
-        chartPalette={chartPalette}
-        fontFamily={fontFamily}
-        svgAnim={svgAnim}
-      />
-      {/* CSS-rendered shapes (square / circle / stadium / browser) paint
+        {element.type === 'shape' && element.shape === 'pointer-note' ? (
+          <PointerNoteOverlay
+            element={element}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            editable={isSelected && !readOnly && !isLocked}
+            onSetTip={onSetPointerTip}
+          />
+        ) : null}
+        <ShapeContentRouter
+          element={element}
+          isEditing={isEditing}
+          artAnimClass={artAnimClass}
+          accent={accent}
+          textColor={textColor}
+          remoteBorderColor={remoteBorderColor}
+          isLocked={isLocked}
+          isSelected={isSelected}
+          readOnly={readOnly}
+          onSetRailLabel={onSetRailLabel}
+          onToggleChecklistItem={onToggleChecklistItem}
+          chartPalette={chartPalette}
+          fontFamily={fontFamily}
+          svgAnim={svgAnim}
+        />
+        {/* CSS-rendered shapes (square / circle / stadium / browser) paint
           their border via the wrapper's CSS `border`, which can't draw the
           composite dash patterns. When one of those is picked, stroke the
           outline here instead (element-variant drops the CSS border to
           match). Solid / dashed / dotted stay on the cheaper CSS path. */}
-      {element.type === 'shape' &&
-      !sketch &&
-      !isSvgRenderedShape(element.shape) &&
-      !remoteBorderColor &&
-      !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
-        <BoxBorderOverlay
-          shape={element.shape}
-          width={element.width}
-          height={element.height}
-          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-          strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
-          dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
-          radiusPx={cornerPx}
-        />
-      ) : null}
-      {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
-      {element.type === 'shape' && element.shape === 'entity' ? (
-        <EntityView element={element} textColor={textColor} fontFamily={fontFamily} />
-      ) : null}
-      {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
+        {element.type === 'shape' &&
+        !sketch &&
+        !isSvgRenderedShape(element.shape) &&
+        !remoteBorderColor &&
+        !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
+          <BoxBorderOverlay
+            shape={element.shape}
+            width={element.width}
+            height={element.height}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
+            dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
+            radiusPx={cornerPx}
+          />
+        ) : null}
+        {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
+        {element.type === 'shape' && element.shape === 'entity' ? (
+          <EntityView element={element} textColor={textColor} fontFamily={fontFamily} />
+        ) : null}
+        {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
           drawn for its facing, plus whoever presence says is sitting in it. */}
-      {element.type === 'shape' && isFurnitureViewShape(element.shape) ? (
-        <FurnitureView
-          element={element}
-          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-          fill={own.fill ?? defaultFillColor(element, surface)}
-          sitters={chairSitters?.(element.id) ?? []}
-          animClass={artAnimClass}
-        />
-      ) : null}
-      {/* A room (docs/specs/009-elements/office.md "Room"): its floor, walls and doorway, its name on the
+        {element.type === 'shape' && isFurnitureViewShape(element.shape) ? (
+          <FurnitureView
+            element={element}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            fill={own.fill ?? defaultFillColor(element, surface)}
+            sitters={chairSitters?.(element.id) ?? []}
+            animClass={artAnimClass}
+          />
+        ) : null}
+        {/* A room (docs/specs/009-elements/office.md "Room"): its floor, walls and doorway, its name on the
           back wall (the ordinary label, which sits there). */}
-      {element.type === 'shape' && element.shape === 'room' ? (
-        <RoomView
-          element={element}
-          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-          floor={own.fill ?? defaultFillColor(element, surface)}
-          animClass={artAnimClass}
-        />
-      ) : null}
-      {/* A fence (docs/specs/009-elements/fence.md): posts and rails. */}
-      {element.type === 'shape' && element.shape === 'fence' ? (
-        <FenceView
-          element={element}
-          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-          animClass={artAnimClass}
-        />
-      ) : null}
-      {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
-      {element.type === 'shape' && element.shape === 'lane' ? (
-        <LaneGutter
-          stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
-          headerFill={element.headerFill}
-          headerSize={element.headerSize}
-          titleOrientation={element.titleOrientation}
-          width={element.width}
-          height={element.height}
-          onCommitSize={onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined}
-          onSnapSeam={onSnapSeam}
-          elementId={element.id}
-          elementX={element.x}
-          elementY={element.y}
-          alignX={alignX}
-          alignY={alignY}
-        />
-      ) : null}
-      {/* A Page's turned-back bottom-right corner (docs/specs/009-elements/page-element.md). */}
-      {element.type === 'shape' && element.shape === 'page' ? (
-        <PageCornerFold
-          width={element.width}
-          height={element.height}
-          fill={element.fillColor ?? '#ffffff'}
-          stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
-        />
-      ) : null}
-      {/* Browser-only HTML chrome overlay. SVG handles only the
+        {element.type === 'shape' && element.shape === 'room' ? (
+          <RoomView
+            element={element}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            floor={own.fill ?? defaultFillColor(element, surface)}
+            animClass={artAnimClass}
+          />
+        ) : null}
+        {/* A fence (docs/specs/009-elements/fence.md): posts and rails. */}
+        {element.type === 'shape' && element.shape === 'fence' ? (
+          <FenceView
+            element={element}
+            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            animClass={artAnimClass}
+          />
+        ) : null}
+        {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
+        {element.type === 'shape' && element.shape === 'lane' ? (
+          <LaneGutter
+            stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
+            headerFill={element.headerFill}
+            headerSize={element.headerSize}
+            titleOrientation={element.titleOrientation}
+            width={element.width}
+            height={element.height}
+            onCommitSize={
+              onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined
+            }
+            onSnapSeam={onSnapSeam}
+            elementId={element.id}
+            elementX={element.x}
+            elementY={element.y}
+            alignX={alignX}
+            alignY={alignY}
+          />
+        ) : null}
+        {/* A Page's turned-back bottom-right corner (docs/specs/009-elements/page-element.md). */}
+        {element.type === 'shape' && element.shape === 'page' ? (
+          <PageCornerFold
+            width={element.width}
+            height={element.height}
+            fill={element.fillColor ?? '#ffffff'}
+            stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          />
+        ) : null}
+        {/* Browser-only HTML chrome overlay. SVG handles only the
           outer frame + divider so the user's border style applies;
           the dots / nav / URL bar render here so their geometry is
           fixed-pixel and doesn't deform with the box's aspect
           ratio. */}
-      {element.type === 'shape' && element.shape === 'browser' ? (
-        <BrowserChrome
-          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-        />
-      ) : null}
+        {element.type === 'shape' && element.shape === 'browser' ? (
+          <BrowserChrome
+            stroke={
+              remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
+            }
+          />
+        ) : null}
 
-      {/* Whatever this element shows in place of a plain label: a pressable
+        {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
-      <ElementFaceRouter
-        hitLine={hitLine}
-        element={element}
-        isEditing={isEditing}
-        isSelected={isSelected}
-        readOnly={readOnly}
-        writable={writable}
-        fontFamily={fontFamily}
-        activeMode={activeMode}
-        collab={collab}
-        commentActions={commentActions}
-        actionSelfId={actionSelfId}
-        actionActions={actionActions}
-        commentSelfId={commentSelfId}
-        imageContext={imageContext}
-        tabSummaries={tabSummaries}
-        tabTimer={tabTimer}
-        timerControls={timerControls}
-        timerState={timerState}
-        sessionStartBlocked={sessionStartBlocked}
-        sessionRunBy={sessionRunBy}
-        revealedForMe={revealedForMe}
-        onCommitTable={onCommitTable}
-        onEnterPortal={onEnterPortal}
-        onFireReaction={onFireReaction}
-        onFollowLink={onFollowLink}
-        onLinkCell={onLinkCell}
-        onPressModeButton={onPressModeButton}
-        onPressFocusButton={onPressFocusButton}
-        onPressSessionButton={onPressSessionButton}
-        onRollPicker={onRollPicker}
-        onSetPageHeading={onSetPageHeading}
-        onSetWebRows={onSetWebRows}
-        onSetHeroCaptionLine={onSetHeroCaptionLine}
-        onSetSessionConfig={onSetSessionConfig}
-        onOpenElementSettings={onOpenElementSettings}
-        onToggleReveal={onToggleReveal}
-        label={label}
-        labelNode={labelNode}
-        // Clear of the indicators and on the label body (a cylinder's, under its lid).
-        contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
-        textColor={textColor}
-        textSize={textSize}
-        alignX={alignX}
-        alignY={alignY}
-        isLocked={isLocked}
-        remoteBorderColor={remoteBorderColor}
-        inlineIcon={inlineIcon}
-        marker={marker}
-        iconCaptionBand={iconCaptionBand}
-        labelFrame={labelFrame}
-      />
+        <ElementFaceRouter
+          hitLine={hitLine}
+          element={element}
+          isEditing={isEditing}
+          isSelected={isSelected}
+          readOnly={readOnly}
+          writable={writable}
+          fontFamily={fontFamily}
+          activeMode={activeMode}
+          collab={collab}
+          commentActions={commentActions}
+          actionSelfId={actionSelfId}
+          actionActions={actionActions}
+          commentSelfId={commentSelfId}
+          imageContext={imageContext}
+          tabSummaries={tabSummaries}
+          tabTimer={tabTimer}
+          timerControls={timerControls}
+          timerState={timerState}
+          sessionStartBlocked={sessionStartBlocked}
+          sessionRunBy={sessionRunBy}
+          revealedForMe={revealedForMe}
+          onCommitTable={onCommitTable}
+          onEnterPortal={onEnterPortal}
+          onFireReaction={onFireReaction}
+          onFollowLink={onFollowLink}
+          onLinkCell={onLinkCell}
+          onPressModeButton={onPressModeButton}
+          onPressFocusButton={onPressFocusButton}
+          onPressSessionButton={onPressSessionButton}
+          onRollPicker={onRollPicker}
+          onSetPageHeading={onSetPageHeading}
+          onSetWebRows={onSetWebRows}
+          onSetHeroCaptionLine={onSetHeroCaptionLine}
+          onSetSessionConfig={onSetSessionConfig}
+          onOpenElementSettings={onOpenElementSettings}
+          onToggleReveal={onToggleReveal}
+          label={label}
+          labelNode={labelNode}
+          // Clear of the indicators and on the label body (a cylinder's, under its lid).
+          contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
+          textColor={textColor}
+          textSize={textSize}
+          alignX={alignX}
+          alignY={alignY}
+          isLocked={isLocked}
+          remoteBorderColor={remoteBorderColor}
+          inlineIcon={inlineIcon}
+          marker={marker}
+          iconCaptionBand={iconCaptionBand}
+          labelFrame={labelFrame}
+        />
+      </SketchFace>
 
       {shapeHit && element.type === 'shape' ? (
         <ShapeHitOutline
