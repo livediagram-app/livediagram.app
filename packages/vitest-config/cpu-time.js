@@ -41,14 +41,23 @@ export async function cpuMsOfAsync(fn) {
  */
 export const CI_CPU_HEADROOM = 3;
 
+/** Whether this run is on CI: `CI` says so (`true` or `1`), never merely by being set. */
+function onCi() {
+  const ci = (process.env.CI ?? '').toLowerCase();
+  return ci === 'true' || ci === '1';
+}
+
 /**
  * A speed test's CPU budget: `ms` as written on a developer's machine, `ms x CI_CPU_HEADROOM` on
- * CI (`CI` set, as GitHub Actions sets it). The written number stays the product's own budget and
- * holds wherever it is meaningful; CI still fails a slide past three times it.
+ * CI (`CI` is `true` or `1`, as GitHub Actions sets it; `CI=false` or `CI=0`, which some shells and
+ * images export to turn CI behaviour off, is a developer's machine). The written number stays the
+ * product's own budget and holds wherever it is meaningful; CI still fails a slide past three times
+ * it. Three is enough beside a 4x slower runner because a budget is written with its own room over
+ * the local timing (Tidy Up: 100 ms against 24 measured).
  *
  * @param {number} ms
  * @returns {number}
  */
 export function cpuBudgetMs(ms) {
-  return process.env.CI ? ms * CI_CPU_HEADROOM : ms;
+  return onCi() ? ms * CI_CPU_HEADROOM : ms;
 }
