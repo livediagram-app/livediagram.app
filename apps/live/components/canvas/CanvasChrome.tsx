@@ -29,7 +29,7 @@ import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
-import { showsSlidesButton, SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
+import { showsSlidesButton, SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
 import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
 import {
@@ -46,7 +46,8 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 // little more in, and past the element's bottom scrollbar up.
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
-import { ContentsClusterButton } from './ContentsClusterButton';
+import { ContentsClusterSegment } from './ContentsClusterSegment';
+import { PagesClusterStrip } from './PagesClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
@@ -724,28 +725,30 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 />
               </div>
             ) : null}
-            {/* Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): in Illustrate mode, every
-                page one press away, for every role and on a phone too. */}
+            {/* Contents and Slides (docs/specs/007-editor/illustrate-pages.md "Contents", "Slides"): in Illustrate
+                mode, one strip where Layers would be. Contents for every role and on a phone too; Slides on a
+                desktop only, as the Slide Deck itself is, and an Editor's, since building and presenting a deck
+                runs the session (docs/specs/013-workspace/share-roles.md), once a page is a slide: before that
+                the deck has nothing to hold. */}
             {!zenMode && props.illustratePages ? (
-              <ContentsClusterButton
-                popoverOpen={activeDockPanel === 'contents'}
-                onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
-              />
-            ) : null}
-            {/* Slides (docs/specs/007-editor/illustrate-pages.md "Slides"): in Illustrate mode, where
-                Layers would be, the deck one press away. */}
-            {/* Desktop only, as the Slide Deck itself is; an Editor's, since building and presenting a deck
-                runs the session (docs/specs/013-workspace/share-roles.md). Only once a page is a slide: before
-                that the deck has nothing to hold. */}
-            {!zenMode &&
-            !isMobile &&
-            !readOnly &&
-            props.illustratePages &&
-            showsSlidesButton(props.illustratePages.pages) &&
-            props.slideDeck ? (
-              <SlidesClusterButton
-                popoverOpen={activeDockPanel === 'slides'}
-                onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
+              <PagesClusterStrip
+                contents={
+                  <ContentsClusterSegment
+                    popoverOpen={activeDockPanel === 'contents'}
+                    onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
+                  />
+                }
+                slides={
+                  !isMobile &&
+                  !readOnly &&
+                  showsSlidesButton(props.illustratePages.pages) &&
+                  props.slideDeck ? (
+                    <SlidesClusterSegment
+                      popoverOpen={activeDockPanel === 'slides'}
+                      onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
+                    />
+                  ) : null
+                }
               />
             ) : null}
             {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): in Plan

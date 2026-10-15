@@ -231,7 +231,7 @@ function Card(item: ItemProps) {
       </span>
       {side ? (
         <ChevronRightIcon
-          className={`h-3.5 w-3.5 shrink-0 transition group-hover:translate-x-0.5 ${active ? 'text-brand-600' : 'text-slate-400 group-hover:text-slate-600'}`}
+          className={`h-3.5 w-3.5 shrink-0 transition group-hover:translate-x-0.5 ${active ? 'text-brand-700 dark:text-brand-200' : 'text-slate-400 group-hover:text-slate-600'}`}
         />
       ) : null}
     </button>
