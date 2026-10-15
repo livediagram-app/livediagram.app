@@ -554,8 +554,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   may point at a group id. With groups, `style` is flow. A node may name its
   group itself (`group`), the shape a model reaches for first; it joins that
   group's members, and a group id nothing declares is created with the id as its
-  label. `members` is then optional. Groups do not nest: a group listed as another's member is refused, naming
-  both, rather than dropped; and a `lanes` graph refuses a node in no group, which would otherwise land in an
+  label. `members` is then optional. Nodes and groups share one set of ids: an id naming both is refused, naming
+  it, since each becomes an element of that id. Groups do not nest: a group listed as another's member is refused,
+  naming both, rather than dropped; and a `lanes` graph refuses a node in no group, which would otherwise land in an
   unlabelled lane of its own (`graphShapeError`). The api's `replace` with a `graph` refuses the same, so every
   caller of graph input is held to it (`graphBodyIssue`).
 - `lines` (`angled` for flow, lanes and tree, `curved` for mindmap and cycle): the

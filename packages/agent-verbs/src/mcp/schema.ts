@@ -538,7 +538,7 @@ const graphField = z
     groups: z
       .array(
         z.object({
-          id: z.string().describe('Unique id (an edge may point at a group).'),
+          id: z.string().describe("Unique id, never also a node's (an edge may point at a group)."),
           label: z.string().optional().describe("The group's heading, drawn on its frame."),
           members: z
             .array(z.string())

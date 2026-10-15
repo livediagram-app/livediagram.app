@@ -265,6 +265,27 @@ describe('graphShapeError', () => {
     { id: 'a', label: 'A' },
     { id: 'b', label: 'B' },
   ];
+  it('refuses an id that names both a node and a group, naming it', () => {
+    const graph = {
+      style: 'lanes' as const,
+      nodes: [
+        { id: 'panel', label: 'Onsite', group: 'panel' },
+        { id: 'b', group: 'rec' },
+      ],
+      edges: [],
+      groups: [
+        { id: 'panel', label: 'Panel' },
+        { id: 'rec', label: 'Recruiter' },
+      ],
+    };
+    expect(resolveGraphInput({ graph }).error).toBe(
+      'id "panel" names both a node and a group: nodes and groups share one set of ids; give each its own',
+    );
+    // A group declared only by a node's `group` counts too.
+    expect(
+      resolveGraphInput({ graph: { nodes: [{ id: 'x', group: 'x' }], edges: [] } }).error,
+    ).toMatch(/^id "x" names both a node and a group/);
+  });
   it('refuses a group nested in another, naming both', () => {
     const r = resolveGraphInput({
       graph: {
