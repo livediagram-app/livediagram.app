@@ -25,22 +25,23 @@ Every render-time read of a browser global is converted; reads in effects, handl
 module code that render does not consume stay as they are. A component whose prerendered HTML matters (an LCP
 page) never suspends whole: its URL reads use an external store whose server snapshot is "nothing" instead.
 
-| Site                                                                          | Reads                               | Becomes                                                                          |
-| ----------------------------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------- |
-| `apps/live/app/explorer/useExplorerState.ts` (was `useHydrated`)              | the URL, preferences                | `use(browser())`; `useHydrated` is removed                                       |
-| `apps/live/app/oauth/consent/page.tsx`, `apps/live/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense             |
-| `apps/live/app/new/page.tsx` (`initialPlacement`)                             | `location.search`                   | `useSyncExternalStore` (`placementContextFromSearch`), like the bypass           |
-| `apps/live/components/panels/TeamSharedDocuments.tsx` (`spot`)                | `location.search`                   | `use(browser())` before the state                                                |
-| `ShareDialog`, `TeamInviteLinkDialog`, `CommunityPublishedConfirmation`       | `location.origin`                   | `use(browser())`, then `window.location.origin`                                  |
-| `CanvasThemeDialog` (`useBrushAnchor`)                                        | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                        |
-| `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`     | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers) |
-| `CardFinderPanel` (`finePointer`)                                             | `(pointer: fine)`                   | `useMediaQuery('(pointer: fine)')`                                               |
-| `arrow-handles.tsx` (`COARSE_POINTER`, was a module constant)                 | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                              |
-| `EditorContextMenu` (`anchorBottom`)                                          | `innerHeight`                       | `useViewportHeight()`                                                            |
-| `StartAgainTray` (`pillPlace` default argument)                               | `innerHeight`                       | a required argument; the caller passes `useViewportHeight()`                     |
-| `useViewportWidth`, `useViewportHeight`                                       | `innerWidth`, `innerHeight`         | `useSyncExternalStore` on `resize`, 0 in the prerender                           |
-| `EditorCanvasHost` (`openUp`, in the context-menu handler)                    | `innerHeight`                       | the guard goes: a handler runs in the browser                                    |
-| `packages/ui/src/SiteFooter.tsx`                                              | the clock (`new Date()`)            | `NEXT_PUBLIC_BUILD_YEAR`                                                         |
+| Site                                                                          | Reads                               | Becomes                                                                           |
+| ----------------------------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
+| `apps/live/app/explorer/useExplorerState.ts` (was `useHydrated`)              | the URL, preferences                | `use(browser())`; `useHydrated` is removed                                        |
+| `apps/live/app/oauth/consent/page.tsx`, `apps/live/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense              |
+| `apps/live/app/new/page.tsx` (`initialPlacement`)                             | `location.search`                   | `useSyncExternalStore` (`placementContextFromSearch`), like the bypass            |
+| `apps/live/components/panels/TeamSharedDocuments.tsx` (`spot`)                | `location.search`                   | `use(browser())` before the state                                                 |
+| `ShareDialog`, `TeamInviteLinkDialog`, `CommunityPublishedConfirmation`       | `location.origin`                   | `use(browser())`, then `window.location.origin`                                   |
+| `CanvasThemeDialog` (`useBrushAnchor`)                                        | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                         |
+| `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`     | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers)  |
+| `apps/live/app/document/[id]/page.tsx`, `apps/live/app/embed/page.tsx`        | (the editor suspends)               | `<Suspense fallback={<OpeningScreen />}>`: the screen the prerender always showed |
+| `CardFinderPanel` (`finePointer`)                                             | `(pointer: fine)`                   | `useMediaQuery('(pointer: fine)')`                                                |
+| `arrow-handles.tsx` (`COARSE_POINTER`, was a module constant)                 | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                               |
+| `EditorContextMenu` (`anchorBottom`)                                          | `innerHeight`                       | `useViewportHeight()`                                                             |
+| `StartAgainTray` (`pillPlace` default argument)                               | `innerHeight`                       | a required argument; the caller passes `useViewportHeight()`                      |
+| `useViewportWidth`, `useViewportHeight`                                       | `innerWidth`, `innerHeight`         | `useSyncExternalStore` on `resize`, 0 in the prerender                            |
+| `EditorCanvasHost` (`openUp`, in the context-menu handler)                    | `innerHeight`                       | the guard goes: a handler runs in the browser                                     |
+| `packages/ui/src/SiteFooter.tsx`                                              | the clock (`new Date()`)            | `NEXT_PUBLIC_BUILD_YEAR`                                                          |
 
 What stays, with where it runs, is the allow-list in `apps/live/render-browser-globals.test.ts`.
 
