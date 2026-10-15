@@ -343,6 +343,14 @@ every control inside it natively, including ones added later. Hiding the panel
 would teach a different editor to every participant, and somebody who had never
 seen the timer would not know there was one.
 
+A **session button** on the canvas has no popover, so its face carries the reason: while somebody else
+facilitates, an Editor's Vote or Poll button is drawn disabled and reads "{name} is facilitating this session;
+ask them to start it.", and a Timer element shows its clock without its controls and reads "{name} is
+facilitating this session; ask them to run the timer." (screen-reader text, as the button's label is). The
+name is the roster's, else the holder's as last seen, so the 90 seconds an absent holder keeps the baton
+still name them rather than "Someone else". A Participant or a Viewer, who could never start one, is told
+"Only people with edit access can start this." instead.
+
 The **card-level** verbs — an idea box's Reveal, an estimate's Clear, a done
 check's Reset Everyone, the roll call, the picker's spin, a reveal zone's cover
 and a Bring Focus press — go the other way: while somebody else facilitates the

@@ -256,6 +256,7 @@ export function ElementFaceRouter({
           timer={tabTimer ?? null}
           durationMs={(element.session.minutes ?? 5) * 60_000}
           readOnly={!timerControls.pause}
+          runBy={sessionRunBy ?? null}
           borderPx={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           onStart={
             onPressSessionButton && !sessionStartBlocked

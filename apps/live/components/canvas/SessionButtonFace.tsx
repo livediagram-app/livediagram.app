@@ -140,16 +140,17 @@ export function SessionButtonFace({
     );
   }
   if (!onPress || !canStart) {
+    const name = text || `${derived.kicker} ${derived.action}`;
     return (
       <div
         aria-disabled
-        aria-label={
+        aria-label={`${name}. ${
           canStart
-            ? `${text || `${derived.kicker} ${derived.action}`}. ${TOOL_BLURB[plan.tool]}`
+            ? TOOL_BLURB[plan.tool]
             : runBy
-              ? `${text || `${derived.kicker} ${derived.action}`}. ${runBy} is facilitating this session; ask them to start it.`
-              : `${text || `${derived.kicker} ${derived.action}`}. Only people with edit access can start this.`
-        }
+              ? `${runBy} is facilitating this session; ask them to start it.`
+              : 'Only people with edit access can start this.'
+        }`}
         className={`pointer-events-auto cursor-default opacity-60 ${layout}`}
       >
         {inner}
