@@ -48,8 +48,8 @@ editor carried 247 findings and 73 suppressions; at zero they are errors, so no 
   Presence statuses read a snapshot the presence tick republishes, and a returning peer republishes at
   once. A reading by the day (due and overdue counts, the calendar's month, the Gantt's today line) uses
   `useToday()`, a store that moves on at local midnight and when the page is shown again. Nothing reads
-  the clock (`Date.now()`, `new Date()`) while rendering; a static page's copyright year is read once,
-  as its module loads.
+  the clock (`Date.now()`, `new Date()`) while rendering; a static page's copyright year is the build's,
+  inlined at build (`@livediagram/next-config`).
 - **Effect dependencies are complete.** A dependency that must not retrigger the effect is read through
   an effect event, not omitted.
 - **A handler decides before it commits.** A state updater (the function a commit or a `setX` takes) may
