@@ -40,10 +40,12 @@ describe('formsFeeding', () => {
 
   it('warns in Delete’s confirmation, one form or several, and not for any other tab', () => {
     expect(deleteTabWarning(tabs, 'board')).toBe(
-      'Unpublishes the form “Bugs”: its link stops working.',
+      '“Bugs” sends its responses here: it stops taking them, and is unpublished if it was published.',
     );
     const two = [...tabs, formTab('f3', 'More', { board: 'board' })];
-    expect(deleteTabWarning(two, 'board')).toBe('Unpublishes 2 forms: their links stop working.');
+    expect(deleteTabWarning(two, 'board')).toBe(
+      '2 forms send their responses here: they stop taking them, and any published are unpublished.',
+    );
     expect(deleteTabWarning(tabs, 'f1')).toBeUndefined();
   });
 

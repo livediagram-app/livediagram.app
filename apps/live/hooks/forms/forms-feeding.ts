@@ -21,6 +21,6 @@ export function deleteTabWarning(tabs: readonly Tab[], tabId: string): string | 
   const forms = formsFeeding(tabs, tabId);
   if (forms.length === 0) return undefined;
   return forms.length === 1
-    ? `Unpublishes the form “${forms[0]!.heading}”: its link stops working.`
-    : `Unpublishes ${forms.length} forms: their links stop working.`;
+    ? `“${forms[0]!.heading}” sends its responses here: it stops taking them, and is unpublished if it was published.`
+    : `${forms.length} forms send their responses here: they stop taking them, and any published are unpublished.`;
 }
