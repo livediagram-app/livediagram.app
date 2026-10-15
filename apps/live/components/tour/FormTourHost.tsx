@@ -54,6 +54,8 @@ export function FormTourHost() {
 
   // The Form tab the tour began on: the destination step leaves it and comes back.
   const formTabRef = useRef<string | null>(null);
+  // Where its responses go, fixed as the tour starts: on that tab the form is not the tab open, so it cannot be read.
+  const destTabRef = useRef<string | null>(null);
   const apiRef = useLatest<FormTourApi>({
     destination: () => (destTabId && destKind ? { tabId: destTabId, kind: destKind } : null),
     openTab: (id) => selectTab(id),
@@ -106,6 +108,7 @@ export function FormTourHost() {
   const endTour = (outcome: TourOutcome) => {
     apiRef.current.backToForm();
     formTabRef.current = null;
+    destTabRef.current = null;
     const next = rebaseUserPreferences(ctx.userPreferences, {
       ...ctx.userPreferences,
       formTourSeen: true,
@@ -128,6 +131,7 @@ export function FormTourHost() {
         setArmed(false);
         setRerun(false);
         formTabRef.current = tab.id;
+        destTabRef.current = destTabId;
         setShape({ destination: destKind, hasQuestions });
         debugLog('[form-tour] offer');
         engineRef.current.start();
@@ -146,6 +150,7 @@ export function FormTourHost() {
     otherTour,
     engineRef,
     tab.id,
+    destTabId,
     destKind,
     hasQuestions,
   ]);
@@ -165,11 +170,11 @@ export function FormTourHost() {
   useEffect(() => {
     if (!active) return;
     const here = tab.id;
-    if (!canWork || (here !== formTabRef.current && here !== destTabId)) {
+    if (!canWork || (here !== formTabRef.current && here !== destTabRef.current)) {
       engineRef.current.stop();
       endTourRef.current('skipped');
     }
-  }, [active, canWork, tab.id, destTabId, engineRef, endTourRef]);
+  }, [active, canWork, tab.id, engineRef, endTourRef]);
 
   useEffect(() => () => setActiveTour('form', false), []);
 

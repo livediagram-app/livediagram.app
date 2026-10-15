@@ -176,6 +176,17 @@ describe('FormTourHost steps', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'FormTourCompleted');
   });
 
+  // The reported bug: opening the sheet for the destination step ended the tour, as the sheet holds no form to read.
+  it('keeps running on the tab its responses go to', () => {
+    const tab = formTab({ ...FORM, sheet: { tabId: 'sheet1', sheetId: 'AAAAAAAAAAA1' } });
+    const r = start(tab);
+    act(() => stage.engine!.next());
+    editor({ activeTab: { id: 'sheet1', kind: 'sheet', locked: false } });
+    r.rerender(<FormTourHost />);
+    expect(track).not.toHaveBeenCalledWith('UI', 'Ended', 'FormTourSkipped');
+    expect(stage.engine?.active).toBe(true);
+  });
+
   it('ends as skipped when the person opens a tab that is neither the form nor its destination', () => {
     const r = start();
     act(() => stage.engine!.next());
