@@ -20,7 +20,7 @@ const ids = (selector: string, state = stateOf()) => {
 const refusal = (selector: string, state = stateOf()): EditRejection => {
   const out = resolveSelector(state, selector, 1);
   if (!('rejection' in out))
-    throw new Error(`expected a refusal, got ${out.els.map((el) => el.id)}`);
+    throw new Error(`expected a refusal, got ${out.els.map((el) => el.id).join(', ')}`);
   return out.rejection;
 };
 const withElements = (...extra: Element[]): Tab => {
