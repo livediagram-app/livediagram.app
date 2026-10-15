@@ -63,3 +63,38 @@ describe('a row of stores under a row of services', () => {
     expect(last.id).toBe('kafka');
   });
 });
+
+describe('a group after a loop', () => {
+  it('ranks a group below the step that feeds it, a retry loop before it notwithstanding', () => {
+    const els = layoutGraph(
+      {
+        direction: 'down',
+        groups: [{ id: 'notif', label: 'Notifications', members: ['email'] }],
+        nodes: [
+          { id: 'cart', label: 'Review cart' },
+          { id: 'card', label: 'Enter card' },
+          { id: 'ok', label: 'Paid?', shape: 'diamond' },
+          { id: 'err', label: 'Show error' },
+          { id: 'placed', label: 'Place order' },
+          { id: 'email', label: 'Email receipt' },
+        ],
+        edges: [
+          { from: 'cart', to: 'card' },
+          { from: 'card', to: 'ok' },
+          { from: 'ok', to: 'err', label: 'No' },
+          { from: 'err', to: 'card', label: 'Retry' },
+          { from: 'ok', to: 'placed', label: 'Yes' },
+          { from: 'placed', to: 'email' },
+        ],
+      },
+      {
+        makeEdgeId: (() => {
+          let n = 0;
+          return () => `e${n++}`;
+        })(),
+      },
+    );
+    expect(boxOf(els, 'notif').y).toBeGreaterThan(boxOf(els, 'placed').y);
+    expect(boxOf(els, 'card').y).toBeGreaterThan(boxOf(els, 'cart').y);
+  });
+});

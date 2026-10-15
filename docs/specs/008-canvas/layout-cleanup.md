@@ -52,8 +52,10 @@ off", not "this diagram has no layout".
 element model so importers and the editor share it — see GitHub issue #12). A
 **structural layout**: it reads the arrow graph, splits it into connected components,
 and computes brand-new positions — a layered (Sugiyama-style) layout for DAG-ish
-components, with cycle-breaking for cyclic graphs; direction is inferred from the
-elements' current rough positions. It can legitimately relocate an element across the
+components, with cycle-breaking for cyclic graphs (when a loop stalls the order it resumes from the loop's entry: a
+waiting node some placed node already feeds, with the fewest predecessors still to come, so a node or group the loop
+does not hold is never ranked ahead of what feeds it); direction is inferred from the elements' current rough
+positions. It can legitimately relocate an element across the
 canvas. This is also the routine importers lean on (Markdown import, a future Mermaid
 import) to place nodes they never drew.
 
