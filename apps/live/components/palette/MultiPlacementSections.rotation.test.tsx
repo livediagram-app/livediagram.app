@@ -24,7 +24,7 @@ function menu(sel: Element[]) {
       sel={sel}
       boxedSel={boxed}
       morphable={[]}
-      sectionProps={() => ({ open: true, onToggle: () => {} })}
+      sectionProps={() => ({ open: true, onToggle: () => {}, flush: true })}
       onClose={() => {}}
     />,
   );
