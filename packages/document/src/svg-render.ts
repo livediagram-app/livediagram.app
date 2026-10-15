@@ -188,7 +188,11 @@ export function contentBounds(
 export { svgIconShape } from './svg-render-image-icon';
 
 export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): string {
-  const out = svgBoxedFace(source, opts);
+  // Every word on the element in its face, so a face that writes its own (a panel's rows, a button) wears the tab's
+  // font and finish as on the canvas; a word that names its own face keeps it.
+  const face = exportFontFamily(source, opts.tabFont, opts.tabFinish);
+  const drawn = svgBoxedFace(source, opts);
+  const out = face ? drawn.replace(/^<g/, `<g font-family="${xmlEscape(face)}"`) : drawn;
   // Under Sketch a face is drawn by hand, its words crisp (docs/specs/008-canvas/finish.md "Every other face is
   // drawn by hand too"). A tab window shows another tab in that tab's own finish: only its frame is drawn by hand.
   if (
@@ -260,6 +264,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       shape.stroke,
       el.textColor ?? '#1e293b',
       opts.chartPalette,
+      fontFamily,
     )}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'plan-sheet') {
@@ -283,7 +288,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   if (el.type === 'shape' && el.shape === 'tab-window') {
     // Another tab of the document, fitted inside its frame (docs/specs/009-elements/tab-window.md "Exports"); its frame
     // named for its tab where the caller has no drawing.
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgTabWindow(el, opts.resolveTabWindow?.(el), el.strokeColor, surface, finish === 'sketch')}</g>`;
+    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgTabWindow(el, opts.resolveTabWindow?.(el), el.strokeColor, surface, finish === 'sketch', fontFamily)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
     // The themed to-do card with its rows + done-count footer (docs/specs/009-elements/checklist.md).
@@ -292,6 +297,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       shape.fill,
       shape.stroke,
       el.textColor ?? '#1e293b',
+      fontFamily,
     )}</g>`;
   }
   if (shape.kind === 'image') {

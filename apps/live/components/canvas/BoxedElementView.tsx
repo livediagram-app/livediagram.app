@@ -495,6 +495,10 @@ function BoxedElementViewImpl({
         width: textHug.box?.width ?? element.width,
         height: textHug.box?.height ?? mindFit.height ?? element.height,
         color: textColor,
+        // Every word on the element in its face, so a face that writes its own (a progress value, a panel's
+        // rows, a button) wears the tab's font and finish like its label does (docs/specs/008-canvas/finish.md).
+        // Unset when nothing picks one, so the editor default still applies.
+        ...(fontFamily ? { fontFamily } : {}),
         // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): elements off the votable layer stay
         // VISIBLE — you still need the canvas's context to judge what
         // you're voting on — but drop back so the votable set reads as the

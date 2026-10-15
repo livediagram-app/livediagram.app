@@ -126,3 +126,31 @@ describe('svgSketchArtDefs', () => {
     expect(faces).toContain('numOctaves="1"');
   });
 });
+
+describe('a face\'s words under Sketch (docs/specs/008-canvas/finish.md "Lettering")', () => {
+  const words = (kind: string) =>
+    renderElementsToSvg(
+      tabOf([{ ...createShape(kind as never, 0, 0), id: 'x' } as Element], 'sketch'),
+    );
+
+  it('writes a checklist, a legend and an empty tab window by hand', () => {
+    for (const kind of ['checklist', 'legend', 'tab-window']) {
+      const svg = words(kind);
+      expect(svg, kind).not.toContain('font-family="system-ui');
+      expect(svg, kind).toMatch(/<text[^>]*font-family="[^"]*Caveat/);
+    }
+  });
+
+  it('gives words that name no face the element’s, through its group', () => {
+    for (const kind of ['idea-box', 'quiz', 'mode-button', 'picker', 'reaction-pad']) {
+      expect(words(kind), kind).toMatch(/<g font-family="[^"]*Caveat/);
+    }
+  });
+
+  it('leaves a Flexible tab with no font to the default face', () => {
+    const svg = renderElementsToSvg(
+      tabOf([{ ...createShape('idea-box', 0, 0), id: 'x' } as Element]),
+    );
+    expect(svg).not.toContain('Caveat');
+  });
+});

@@ -66,6 +66,9 @@ element leaves unset, plus how a line is drawn (Sketch).
   (Caveat). A font picked on the element or the tab wins, so a typeface picked in Tab Style shows on a Sketch tab.
   Sketch picked on the element itself is more specific than the tab's font: that element is written by hand even
   on a tab with a typeface (Style → Finish on one heading of a Boardroom slide); its own font still wins. A code block keeps its monospace font.
+  The face covers every word on the element, not only its label: a face that writes its own (a progress value, a
+  panel's rows, a button, a quiz) is lettered in it too, on the canvas and in exports. The same holds for a tab's
+  font and Professional's Inter.
 - **Arrows** are drawn as hand-drawn lines; a triangle, hollow triangle or line arrowhead is drawn as two loose
   strokes. Circle and diamond heads keep their shapes, because they carry meaning (UML composition, ER
   cardinality).
