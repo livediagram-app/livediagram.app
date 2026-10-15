@@ -86,7 +86,9 @@ under the pointer as a category is switched.
   button over 200 ms (the `short` motion token), as a menu bar does.
 - **Leaving both the bar and the flyout closes it after 300 ms**, so a diagonal path from a button into the flyout,
   across the gap or a corner of the canvas, keeps it. It stays open while a tile is being dragged out of it
-  (closing would unmount the tile mid-drag; it closes on the drop), and while its search field holds a query.
+  (closing would unmount the tile mid-drag; it closes on the drop), faded to 30% and letting a drop over it land on
+  the canvas it covers (`data-drop-through`, read by the canvas's drop guard; not `pointer-events: none`, which on a
+  drag's own source stalls the drag), and while its search field holds a query.
 - **A click or a tap opens it too.** A click on a category the hover already opened leaves it open (the click was
   on its way there); a second press from the keyboard closes it.
 - **The keyboard:** Left and Right walk the bar (wrapping), and an open flyout follows the focus. Down, Enter or
@@ -115,6 +117,8 @@ Shapes`; `Pens`, `Outlines`, `Connectors`; `Diagrams`, `Layout and Parts`; `Char
   category of three tiles or fewer, such as Media). A shortcut shows as a key cap beside the name.
 - **A footer** saying what the pointed-at tile does and its key, without the hover card's wait; before anything is
   pointed at, "Click to add one, or drag it onto the canvas."
+- Under Minimal Chrome ([Power user mode](power-user-mode.md)) a picture tile shows its icon alone, named by a
+  Tooltip; a card keeps its name, which is its content.
 - Every tile places, arms, drags onto the canvas (with the canvas ghost), shows its armed and refused states and
   draws in the tab theme's tint and finish, as the strip's own tile does (`useTileGlyph`, shared with `IconButton`).
 - **Widths:** 26rem for a picture grid, 36rem for two columns of cards, 19rem for one, 37.5rem for a catalogue's
