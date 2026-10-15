@@ -127,7 +127,9 @@ export function buildTwoTruthsAndALie(cx: number, cy: number): Element[] {
       ...sessionButton({
         tool: 'poll',
         style: 'choice',
-        question: `Which is ${p.name}’s lie?`,
+        // Generic, as the spec has it: the names are placeholders the players write over, and a Participant can
+        // never rewrite a poll's question, so a named one would ask about someone who is not playing.
+        question: 'Which one is the lie?',
         options: ['1', '2', '3'],
       }),
       x: x0 + rowW - BUTTON_W,

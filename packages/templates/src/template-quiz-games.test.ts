@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { POLL_OPTION_MAX } from '@livediagram/api-schema';
 import {
   quizPhase,
   sessionButtonPlan,
@@ -78,8 +79,16 @@ describe('quiz and game templates', () => {
       shapes(buildTemplate(kind, 0, 0), 'session-button').filter((b) => b.session?.tool === 'poll');
     expect(polls('would-you-rather')).toHaveLength(6);
     for (const p of polls('would-you-rather')) {
-      for (const o of p.session!.options!) expect(o.length).toBeLessThanOrEqual(60);
+      // The wire's own limit, so a lower one is caught here rather than cut short on the server.
+      for (const o of p.session!.options!) expect(o.length).toBeLessThanOrEqual(POLL_OPTION_MAX);
     }
+    // One generic question each: the players' names are placeholders written over, and no Participant can rewrite
+    // a poll's question.
+    expect(polls('two-truths-and-a-lie').map((p) => p.session!.question)).toEqual([
+      'Which one is the lie?',
+      'Which one is the lie?',
+      'Which one is the lie?',
+    ]);
     expect(polls('two-truths-and-a-lie').map((p) => p.session!.options)).toEqual([
       ['1', '2', '3'],
       ['1', '2', '3'],
