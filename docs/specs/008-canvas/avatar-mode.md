@@ -118,7 +118,9 @@ who is free to talk, who is heads-down, who has stepped away.
   status. A peer's dot sits at the start of their name chip; yours sits above your head, where your chip would be.
 - **For the session only**: it is never stored, so an "In a Meeting" set yesterday does not greet anyone today.
   Leaving the mode clears it, like the character itself.
-- A screen reader hears a peer's status with their name ("Sam, Focusing"), and your own on its own.
+- A screen reader hears a peer's status with their name ("Sam, Focusing"), and your own as yours ("Your status:
+  Focusing"), as visually hidden text beside the character, which is itself hidden from assistive tech. A long name
+  in the chip ends in an ellipsis, and the chip and the Zz always draw over the character, faded or not.
 - Under reduced motion the "Zz" holds still.
 - Telemetry: `UI · Changed · AvatarStatus` on a change, never which.
 
