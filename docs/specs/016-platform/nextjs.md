@@ -27,7 +27,6 @@ shared configuration, and which Next.js features they use or decline, with the r
 | `reactCompiler`                            | `true`, Rust port (`experimental.turbopackRustReactCompiler`) | [React state and effects](../003-system-architecture/react-state-and-effects.md) "The React Compiler" |
 | `experimental.turbopackGc`                 | `true`                                                        | Drops unreachable work from Turbopack's memory and disk cache                                         |
 | `experimental.turbopackLazyDynamicImports` | `true`                                                        | Dev compiles a dynamic import when the browser asks for it                                            |
-| `experimental.reactBrowserBailout`         | `true`                                                        | Next's client-rendering bailouts suspend through `browser()`                                          |
 | `experimental.agentUpgrade`                | `'latest'`                                                    | Coding agents are pointed at new stable releases                                                      |
 | `agentRules`                               | `false`                                                       | `next dev` writes no `AGENTS.md`: the repository's agent files are written by hand                    |
 | `env.NEXT_PUBLIC_BUILD_YEAR`               | the build's year                                              | The footer's year, the same in the prerender and the browser                                          |
@@ -49,6 +48,7 @@ shared configuration, and which Next.js features they use or decline, with the r
 | Feature                                                                     | Verdict  | Why                                                                            |
 | --------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------ |
 | `<ViewTransition>`, `addTransitionType`, `transitionTypes` on `next/link`   | Used     | [Motion](../004-interface-design/motion.md) "View Transitions"                 |
+| `reactBrowserBailout` (client-rendering bailouts through `browser()`)       | Used     | On by default since 16.4                                                       |
 | Turbopack file-system cache, `turbopackGc`, lazy dynamic imports            | Used     | Above                                                                          |
 | Bundle analyzer and its `next-bundle-optimizer` skill                       | Used     | [Web performance](web-performance.md) "Measuring"                              |
 | Cache Components, `partialPrefetching`, `ensureStatic`, `cachedNavigations` | Declined | `output: 'export'` cannot enable them ("PPR cannot be enabled in export mode") |

@@ -41,7 +41,6 @@ export function livediagramNextConfig({
             turbopackRustReactCompiler: true,
             turbopackGc: true,
             turbopackLazyDynamicImports: true,
-            reactBrowserBailout: true,
           }
         : {}),
     },
@@ -54,8 +53,8 @@ export function livediagramNextConfig({
 - **App configs**: `marketing`, `help`, `community`, `telemetry` spread `livediagramNextConfig()`; `live` spreads
   `livediagramNextConfig({ exportInDev: false })`. Each adds only `basePath`, `assetPrefix`, `trailingSlash`,
   `pageExtensions`, `transpilePackages` and (help) the MDX wrapper.
-- `reactBrowserBailout` stays only if the Phase 7 measurement shows the prerendered HTML unchanged or better and no
-  hydration error; otherwise it is removed here and declined in the spec.
+- `experimental.reactBrowserBailout` (Next's client-rendering bailouts through `browser()`) is on by default in 16.4.1, so
+  it is not set.
 
 ### Dev
 
