@@ -82,7 +82,13 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       id: 'meetings',
       name: 'Meetings',
       line: 'Agendas, Q&A and open discussion with the room.',
-      kinds: ['meeting-agenda', 'workshop-board', 'town-hall', 'lean-coffee', 'virtual-office'],
+      kinds: ['meeting-agenda', 'workshop-board', 'town-hall', 'lean-coffee'],
+    },
+    {
+      id: 'spaces',
+      name: 'Spaces',
+      line: 'Offices and halls to walk round together in Avatar mode.',
+      kinds: ['virtual-office', 'coworking-space', 'team-pod', 'all-hands-hall'],
     },
     {
       id: 'games',

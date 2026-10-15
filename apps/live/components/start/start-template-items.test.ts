@@ -61,6 +61,7 @@ describe('Start Facilitating', () => {
       'recommended',
       'retrospectives',
       'meetings',
+      'spaces',
       'games',
       'workshops',
       'planning',

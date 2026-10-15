@@ -6,15 +6,9 @@
 //
 // Pure: takes a centre (cx, cy) and returns a fresh Element[], rooms first so they lie behind the furniture.
 
-import {
-  createShape,
-  createText,
-  type ChairFacing,
-  type Element,
-  type RoomDoor,
-  type ShapeKind,
-} from '@livediagram/document';
+import type { Element } from '@livediagram/document';
 import { heading } from './template-session-parts';
+import { furnishRooms, walkIn, type OfficeRoom } from './template-office-parts';
 
 // The office's footprint: two rows of rooms either side of a corridor.
 const ROW_H = 340;
@@ -24,8 +18,7 @@ const HEAD = 96;
 const WIDTH = 1560;
 const HEIGHT = HEAD + ROW_H * 2 + CORRIDOR;
 
-type Piece = { kind: ShapeKind; x: number; y: number; facing?: ChairFacing; label?: string };
-type RoomSpec = { name: string; x: number; y: number; w: number; door: RoomDoor; pieces: Piece[] };
+type RoomSpec = Omit<OfficeRoom, 'h'>;
 
 // Every room, its doorway onto the corridor, and what is in it, in room-relative px.
 const ROOMS: RoomSpec[] = [
@@ -118,47 +111,17 @@ export function buildVirtualOffice(cx: number, cy: number): Element[] {
   const x0 = cx - WIDTH / 2;
   const y0 = cy - HEIGHT / 2;
   const top = y0 + HEAD;
-  const rooms: Element[] = [];
-  const floor: Element[] = [];
-  const furniture: Element[] = [];
-  for (const room of ROOMS) {
-    const rx = x0 + room.x;
-    const ry = top + room.y;
-    rooms.push({
-      ...createShape('room', rx, ry),
-      width: room.w,
-      height: ROW_H,
-      label: room.name,
-      roomDoor: room.door,
-    });
-    for (const p of room.pieces) {
-      const el: Element = {
-        ...createShape(p.kind, rx + p.x, ry + p.y),
-        ...(p.facing ? { chairFacing: p.facing } : {}),
-        ...(p.label ? { label: p.label } : {}),
-      };
-      (p.kind === 'rug' ? floor : furniture).push(el);
-    }
-  }
-  // At the corridor's end: the way in, and what to do once you are.
-  const corridorY = top + ROW_H;
-  const button: Element = {
-    ...createShape('mode-button', x0 + WIDTH - 104 - 20, corridorY + (CORRIDOR - 96) / 2),
-    label: 'Walk In',
-  };
-  const hint: Element = {
-    ...createText(x0 + WIDTH - 104 - 40 - 520, corridorY + (CORRIDOR - 64) / 2),
-    width: 520,
-    height: 64,
-    label:
-      'Press Walk In (or W) to walk round. Enter says something, a chair or sofa seats you, and the coffee machine makes a coffee.',
-    textSize: 'sm',
-    textAlignX: 'right',
-    textColor: '#475569',
-  };
+  const placed = furnishRooms(
+    ROOMS.map((r) => ({ ...r, h: ROW_H })),
+    x0,
+    top,
+  );
+  const floors = placed.filter(
+    (e) => e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug'),
+  );
+  const furniture = placed.slice(floors.length);
   return [
-    ...rooms,
-    ...floor,
+    ...floors,
     ...heading(
       x0,
       y0,
@@ -169,7 +132,11 @@ export function buildVirtualOffice(cx: number, cy: number): Element[] {
       'Walk in, find a desk, meet round the table and grab a coffee together. Rename the rooms to fit your team.',
     ),
     ...furniture,
-    button,
-    hint,
+    // At the corridor's end: the way in, and what to do once you are.
+    ...walkIn(
+      x0 + WIDTH - 20,
+      top + ROW_H + CORRIDOR / 2,
+      'Press Walk In (or W) to walk round. Enter says something, a chair or sofa seats you, and the coffee machine makes a coffee.',
+    ),
   ];
 }

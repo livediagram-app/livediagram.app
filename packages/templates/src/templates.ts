@@ -93,6 +93,10 @@ export type TemplateKind =
   | 'icebreaker-questions'
   // A whole office to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
   | 'virtual-office'
+  // Its siblings, the spaces to walk round together (docs/specs/012-collaboration/virtual-office-template.md "Spaces").
+  | 'coworking-space'
+  | 'team-pod'
+  | 'all-hands-hall'
   | 'two-truths-and-a-lie'
   | 'would-you-rather'
   | 'people-bingo'
@@ -740,6 +744,27 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Virtual Office',
     description:
       'Rooms to walk round in Avatar mode: a reception, desks, a meeting room, a kitchen with coffee, a lounge and a focus room.',
+    extra: true,
+  },
+  {
+    kind: 'coworking-space',
+    title: 'Coworking Space',
+    description:
+      'An open floor to walk round in Avatar mode: hot desks, two phone booths, a coffee bar and a lounge.',
+    extra: true,
+  },
+  {
+    kind: 'team-pod',
+    title: 'Team Pod',
+    description:
+      'A small team’s corner in Avatar mode: four desks together, a table for the stand-up and a team board.',
+    extra: true,
+  },
+  {
+    kind: 'all-hands-hall',
+    title: 'All-Hands Hall',
+    description:
+      'A hall for town halls and demos in Avatar mode: a stage, rows of seats facing it and Bring Focus.',
     extra: true,
   },
   {

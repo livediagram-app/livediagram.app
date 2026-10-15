@@ -65,3 +65,44 @@ describe('the Virtual Office template', () => {
     }
   });
 });
+
+// docs/specs/012-collaboration/virtual-office-template.md "Spaces"
+describe('the space templates', () => {
+  const build = (kind: 'coworking-space' | 'team-pod' | 'all-hands-hall') =>
+    buildTemplate(kind, 0, 0) as Element[];
+  const count = (els: Element[], shape: string) =>
+    els.filter((e) => e.type === 'shape' && e.shape === shape).length;
+
+  it('each lays its floors first and gives a way in', () => {
+    for (const kind of ['coworking-space', 'team-pod', 'all-hands-hall'] as const) {
+      const els = build(kind);
+      const isFloor = (e: Element) =>
+        e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug');
+      const firstOther = els.findIndex((e) => !isFloor(e));
+      expect(els.slice(firstOther).some(isFloor), kind).toBe(false);
+      expect(count(els, 'mode-button'), kind).toBe(1);
+    }
+  });
+
+  it('gives the coworking space eight desks and two single-seat booths', () => {
+    const els = build('coworking-space');
+    expect(count(els, 'desk')).toBe(8);
+    const rooms = els.filter((e) => e.type === 'shape' && e.shape === 'room').map((e) => e.label);
+    expect(rooms).toEqual(['Coworking', 'Booth 1', 'Booth 2']);
+  });
+
+  it('gives the team pod four desks, a table and a board of four stickies', () => {
+    const els = build('team-pod');
+    expect(count(els, 'desk')).toBe(4);
+    expect(count(els, 'meeting-table')).toBe(1);
+    expect(els.filter((e) => e.type === 'sticky')).toHaveLength(4);
+  });
+
+  it('seats thirty-two facing the stage in the all-hands hall, with Bring Focus', () => {
+    const els = build('all-hands-hall');
+    const chairs = els.filter((e) => e.type === 'shape' && e.shape === 'chair');
+    expect(chairs).toHaveLength(32);
+    expect(chairs.every((c) => c.type === 'shape' && c.chairFacing === 's')).toBe(true);
+    expect(count(els, 'focus-button')).toBe(1);
+  });
+});
