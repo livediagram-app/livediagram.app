@@ -4,6 +4,7 @@
 import type { BarMarks, LineMarks, PieMarks } from './chart-marks';
 import type { LineSeries, PieSlice } from './data-shapes';
 import type { ShapeElement } from './element-types';
+import { glyphWidth } from './graph-authoring';
 import { legendFontPx } from './label-font';
 
 export type ChartValueLabel = {
@@ -23,6 +24,8 @@ export const chartValueFontPx = (textSize: ShapeElement['textSize']) =>
 
 // How far a number stands off its mark.
 const GAP = 6;
+// The air kept between two columns' names, in px.
+const CATEGORY_AIR = 4;
 
 // A number read short: 120000 as 120k, 1500000 as 1.5M, at most one decimal. Under 10,000 it reads in full (1,080),
 // since "1.1k" twice told 1,080 from 1,150 not at all.
@@ -36,6 +39,18 @@ export function shortNumber(v: number): string {
   return `${short(1e3)}k`;
 }
 
+// A column's name cut to its slot, with an ellipsis, so neighbours never overprint; null when the slot holds not even
+// one letter and the ellipsis.
+export function fitCategory(text: string, room: number, fontPx: number): string | null {
+  if (glyphWidth(text, fontPx) <= room) return text;
+  const chars = [...text];
+  for (let n = chars.length - 1; n >= 1; n--) {
+    const cut = `${chars.slice(0, n).join('').trimEnd()}…`;
+    if (glyphWidth(cut, fontPx) <= room) return cut;
+  }
+  return null;
+}
+
 export function barValueLabels(
   marks: BarMarks,
   data: readonly PieSlice[],
@@ -43,6 +58,9 @@ export function barValueLabels(
   fontPx: number,
 ): ChartValueLabel[] {
   const out: ChartValueLabel[] = [];
+  // Each column's share of the baseline, less a little air between neighbours' names.
+  const slot =
+    (marks.baseline.x2 - marks.baseline.x1) / Math.max(1, marks.bars.length) - CATEGORY_AIR;
   marks.bars.forEach((bar, i) => {
     const d = data[i];
     if (!d) return;
@@ -56,12 +74,13 @@ export function barValueLabels(
           }
         : { x: bar.tip.x, y: bar.tip.y - GAP, text: shortNumber(d.value), anchor: 'middle' },
     );
-    // A column names itself under the baseline, so the legend can go.
-    if (!horizontal)
+    // A column names itself under the baseline, so the legend can go; cut to its slot.
+    const name = horizontal ? null : fitCategory(d.label, slot, fontPx);
+    if (name !== null)
       out.push({
         x: bar.tip.x,
         y: marks.baseline.y1 + GAP + fontPx,
-        text: d.label,
+        text: name,
         anchor: 'middle',
         category: true,
       });

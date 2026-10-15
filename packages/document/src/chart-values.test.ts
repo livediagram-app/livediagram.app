@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { glyphWidth } from './graph-authoring';
 import { barMarks, lineMarks, pieMarks } from './chart-marks';
 import {
   barValueLabels,
@@ -49,6 +50,20 @@ describe('value labels', () => {
     const names = labels.filter((l) => l.category);
     expect(names.map((l) => l.text)).toEqual(['Jul', 'Aug', 'Sep']);
     names.forEach((l) => expect(l.y).toBeGreaterThan(marks.baseline.y1));
+  });
+
+  it('cuts a column name to its slot, so neighbours never overprint', () => {
+    const regions = Array.from({ length: 10 }, (_, i) => ({
+      label: `Northern Europe ${i}`,
+      value: 10 + i,
+    }));
+    const marks = barMarks({ x: 0, y: 0, w: 300, h: 200 }, regions, false);
+    const names = barValueLabels(marks, regions, false, 12).filter((l) => l.category);
+    const slot = (marks.baseline.x2 - marks.baseline.x1) / regions.length;
+    for (const n of names) {
+      expect(glyphWidth(n.text, 12)).toBeLessThanOrEqual(slot);
+      expect(n.text.endsWith('…')).toBe(true);
+    }
   });
 
   it('puts a bar value after each bar, and no names', () => {
