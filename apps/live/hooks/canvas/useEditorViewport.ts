@@ -12,7 +12,8 @@ import { isFocusedOnAdd } from '@/hooks/plan/useFocusNewPlanElement';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import type { Selection } from '@/lib/selection-store';
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
+import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
+import { browser } from 'react-dom';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
 import {
   computeFitToScreen,
@@ -121,11 +122,12 @@ type EditorViewportApi = {
 export const FIT_GLIDE_MS = 420;
 
 export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
+  // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser
+  // only"): the editor never renders at build time, and this says so where the address is read.
+  use(browser());
   const [viewport] = useState(() =>
     createViewportStore(
-      typeof window !== 'undefined' && window.innerWidth <= OVERVIEW_ZOOM_BREAKPOINT_PX
-        ? MOBILE_DEFAULT_ZOOM
-        : DESKTOP_DEFAULT_ZOOM,
+      window.innerWidth <= OVERVIEW_ZOOM_BREAKPOINT_PX ? MOBILE_DEFAULT_ZOOM : DESKTOP_DEFAULT_ZOOM,
     ),
   );
   const { setZoom: setViewportZoom, setOffset: setViewportOffset } = viewport;
@@ -270,7 +272,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       offFirstRunRef.current = false;
       return;
     }
-    if (typeof window === 'undefined' || window.innerWidth > OVERVIEW_ZOOM_BREAKPOINT_PX) return;
+    if (window.innerWidth > OVERVIEW_ZOOM_BREAKPOINT_PX) return;
     const sel = deps.readSelection().selectedId;
     if (!sel || prev.has(sel) || !ids.has(sel)) return;
     const el = els.find((e) => e.id === sel);

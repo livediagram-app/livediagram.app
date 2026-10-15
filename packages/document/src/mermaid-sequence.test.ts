@@ -313,6 +313,42 @@ describe('late activations and notes', () => {
     expect(open.to.kind === 'free' && open.to.x).toBe(bar!.x);
   });
 
+  it('sets a note over one active participant beside its bar, and centres one over an idle one', () => {
+    const els = lay(`sequenceDiagram
+  participant A
+  participant B
+  participant C
+  A->>+B: Start
+  Note over B: Makes a verifier and its challenge
+  B-->>-A: Done
+  Note over C: Idle`);
+    const bar = els.find((e) => e.type === 'shape' && (e as { width: number }).width === 14) as {
+      x: number;
+      width: number;
+    };
+    const [busy, idle] = els.filter((e) => e.type === 'sticky') as (Element & {
+      x: number;
+      width: number;
+    })[];
+    expect(busy!.x).toBeGreaterThan(bar.x + bar.width);
+    const c = els.find((e) => e.id === 'C') as { x: number; width: number };
+    expect(idle!.x + idle!.width / 2).toBeCloseTo(c.x + c.width / 2, 0);
+  });
+
+  it('sets a note over the last, active participant on the left of its bar, where there is room', () => {
+    const els = lay(`sequenceDiagram
+  participant A
+  participant B
+  A->>+B: Start
+  Note over B: Checks the request
+  B-->>-A: Done`);
+    const bar = els.find((e) => e.type === 'shape' && (e as { width: number }).width === 14) as {
+      x: number;
+    };
+    const note = els.find((e) => e.type === 'sticky') as Element & { x: number; width: number };
+    expect(note.x + note.width).toBeLessThan(bar.x);
+  });
+
   it('sizes a one-line note to its text and centres it', () => {
     const els = lay(`sequenceDiagram
   participant A

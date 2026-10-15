@@ -1,5 +1,7 @@
 'use client';
 
+import { trustedHtml } from '@livediagram/ui';
+
 // A layout's tile art, every page kind's (docs/specs/007-editor/illustrate-pages.md "Layouts",
 // logo-pages.md "Logo layouts"): the layout built for this page and drawn by the export renderer,
 // in the tab's theme and font on the page's own background, so the tile is exactly what pressing
@@ -47,7 +49,7 @@ export function LayoutRenderThumb({
       className="overflow-hidden rounded-sm shadow-sm ring-1 ring-slate-900/10 dark:ring-white/10 [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
       // Whole pixels, so the render is never resampled across a half pixel.
       style={{ width: Math.round(width), height: Math.round((width * rect.height) / rect.width) }}
-      dangerouslySetInnerHTML={{ __html: markup }}
+      dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
     />
   );
 }

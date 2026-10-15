@@ -68,10 +68,9 @@ one, choosing the first page's kind, the template picker and an AI tool's templa
 a phone (a bottom sheet). **The last page's kind comes first**: the card for the kind of the last page
 leads, ringed in the accent and tagged "Same as last page", and takes focus, so Enter adds another
 of the same, the most likely next page; with no page yet the usual order (Infographic, Article,
-Slide, Logo) stands. Contents' Add Page row leads with it too, highlighted. The **+** is named **Add Page** and shows the popover open as pressed. The Toolbar
-strip ends, after a divider, with the same **+** (Add Page), opening the same
-popover, while in Illustrate mode; not on a phone, where the strip has no room to spare and the
-row's own **+** adds a page.
+Slide, Logo) stands. Contents' Add Page row leads with it too, highlighted. The **+** is named **Add Page** and shows the popover open as pressed. The Toolbar strip has no **+** of
+its own (it once ended with one): it is the palette's category bar ([Toolbar layout](toolbar-layout.md#the-category-bar)),
+and the row's own **+** and Contents' Add Page row add a page.
 
 A tab entering Illustrate mode with no pages stored starts with one page, its kind unchosen.
 
@@ -379,8 +378,8 @@ drawing only, never stored:
 ### Animated backgrounds
 
 A slide page's Background has a fourth category, **Animated**, after Solid, Gradient and Image (the
-four share the category control's width, each a quarter). Its **Motion** carousel holds eighteen
-motions, six to a page (two rows of three) with the carousel's arrows and page dots, opening on
+four share the category control's width, each a quarter). Its **Motion** carousel holds twenty-four
+motions, six to a page across four pages (two rows of three) with the carousel's arrows and page dots, opening on
 the page holding the slide's motion; each tile plays in the tab theme's colours, 16:9 like the
 slide: **Aurora** (soft lights wandering, in the theme's colour and two companion hues turned
 either way round the colour wheel), **Mesh** (the page's colours turning slowly into each other),
@@ -391,8 +390,14 @@ answered by a softer one), **Beams** (shafts of light gliding past at a slant), 
 **Drift**, **Ripple** and **Ribbons** (with Aurora, the animated canvas styles' five, made for a
 slide), **Sunburst** (rays turning slowly from below), **Fireflies** (small lights drifting and
 glowing), **Snowfall** (flakes of three sizes falling and drifting), **Lava** (big soft blobs
-rising and sinking), **Dot Wave** (a grid of dots swelling in a wave corner to corner) and
-**Clouds** (soft clouds drifting across, the nearer faster). Under them, **Colours** offers six
+rising and sinking), **Dot Wave** (a grid of dots swelling in a wave corner to corner),
+**Clouds** (soft clouds drifting across, the nearer faster), **Warp** (stars streaking out from
+the centre, lengthening as they speed up), **Orbits** (planets circling a glowing sun on faint
+rings, the outer ones slower), **Radar** (a sweep turning over rings and cross hairs, each blip
+lighting as the sweep reaches it and fading over the rest of the turn), **Equaliser** (bars along
+the bottom rising and falling to their own beats, tallest in the middle), **Confetti** (pieces in
+the theme's colours fluttering down, swaying and spinning) and **Threads** (fine lines of light
+weaving past each other at their own paces). Under them, **Colours** offers six
 theme colourings (Theme Deep, Night, Vivid, Bright, Soft and Mist, each a pair of stops drawn from
 the theme's accent and its second colour); a press recolours the chosen motion, and the colouring
 carries to the next motion picked. The row ends in **Custom colours** (the rainbow swatch, shown while the slide has
@@ -415,7 +420,8 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
 - **Where it moves**: on the slide on screen and while presenting, its moving parts over the
   gradient and under everything on the slide. In an export, a thumbnail and with Reduce Motion on
   it is still: under Reduce Motion each part rests where it stands, a finished background in
-  itself.
+  itself (a streak still points its way, a planet keeps its place on its orbit, each bar stands at
+  its own height and the confetti hangs scattered down the slide).
 - **In an export** (PDF, PNG and SVG, and the export's preview) the slide's background is its first
   frame: every part where it stands as the slide opens, never the bare gradient. The parts are
   described once (`motionParts`, `apps/live/lib/page-motion-parts.ts`), so the moving layer and the
@@ -1047,7 +1053,8 @@ swipe, with no X.
 ## Contents
 
 In Illustrate mode the bottom-right cluster holds **Contents** (a list glyph, named beside it on a
-desktop), left of the Theme & canvas button, in every Illustrate tab and for every role: finding
+desktop), left of the Theme & canvas button, joined in one frame with **Slides** after it ("Chrome in Illustrate
+mode"), in every Illustrate tab and for every role: finding
 your way round a long document is everyone's. It opens the **Contents** popover above it (a
 bottom sheet on a phone), the way round a big document:
 
@@ -1214,8 +1221,8 @@ is while the rest of the tab is worked on.
 
 ## Getting around the pages
 
-- **A page's label zooms to it**: a press on the label fits that page in the view, as entering the
-  mode fits the first: the page itself fills the view (below the Toolbar strip), whatever its
+- **A page's label zooms to it**: a press on the label fits that page in the view, as landing on
+  the tab fits the page you were on: the page itself fills the view (below the Toolbar strip), whatever its
   shape, not a square around it.
 - **The Map shows the pages**: each page's sheet in its own background (a picture as its tone) with a crisp outline,
   under the content, counted in the Map's bounds (so a tab of empty pages still has a Map), and
@@ -1240,6 +1247,14 @@ is while the rest of the tab is worked on.
   move; a page just added glides into view the same way, and under reduced motion each lands at
   once. A second press mid-glide starts from where the view has got to. For everyone who can see
   the pages; not in zen or isometric view.
+- **Back to the page you were on**: landing on a tab of pages (switching back to it, a reload,
+  entering the mode) fits the page you were last on rather than the first, so moving between tabs
+  never loses your place. The page you are on is the one under the middle of the view (else the
+  nearest), taken once the view has rested for 400 ms (`LAST_ILLUSTRATE_PAGE_SETTLE_MS`), and
+  straight away as you leave the tab or close the page. It is each person's, kept in this browser
+  per document and tab (the latest 200 tabs), never in the document: a collaborator lands on their
+  own page. The first time, or once that page is deleted, landing fits the first page. For everyone
+  who can see the pages, whatever their role.
 - **A page is something in view**: the canvas's "Nothing's in view" nudge counts every page, an
   empty one or an article's, as content, so it never shows while a page is on screen.
 
@@ -1398,7 +1413,7 @@ SlideShown`).
 ## Chrome in Illustrate mode
 
 - **Slides button**: in the bottom-right cluster, where Layers sits in the other modes (left of
-  the brush), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an
+  the brush), joined to Contents in one frame (`PagesClusterStrip`, as Layers and Theme share one), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an
   outside press closes it; the button shows pressed while open). An infographic is likely to be
   presented, so its deck is one press away. Desktop only, as the Slide Deck itself is. Shown only
   while **at least one page is a slide**: until then the deck has nothing to hold, and the

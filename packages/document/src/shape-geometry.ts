@@ -1,7 +1,7 @@
 // The one geometry table for the shapes that are DRAWN rather than boxed.
 //
 // Two renderers paint these: the editor's React overlays (ShapeSvgOverlay,
-// BrowserChrome, ChairView in apps/live) and the headless string emitters
+// BrowserChrome, FurnitureView in apps/live) and the headless string emitters
 // (svg-render-shapes / svg-render-faces here, used by exports, thumbnails,
 // the api's live image and the MCP render). They used to carry their own
 // copies of every path, kept "in sync" by a comment, and the copies drifted
@@ -165,6 +165,15 @@ const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
     rect(22, 14, 56, 72, 14),
     rect(29, 21, 42, 58, 9, 'detail'),
   ),
+  // UML final state: a ring (the line colour, unfilled) round a solid dot (the fill), kept round in any box.
+  'final-state': {
+    viewBox: '0 0 100 100',
+    preserveAspectRatio: 'xMidYMid meet',
+    parts: [
+      { tag: 'circle', role: 'limb', cx: 50, cy: 50, r: 46 },
+      { tag: 'circle', role: 'head', cx: 50, cy: 50, r: 27 },
+    ],
+  },
   // UML actor: an open head over a line body. The viewBox leaves a small
   // clear band under the legs (y 112..130) for the label.
   actor: {

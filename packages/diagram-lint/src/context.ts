@@ -4,7 +4,7 @@
 
 import {
   arrowLabelPass,
-  arrowPolyline,
+  arrowRoutePoints,
   boundsOfPoints,
   buildElementGrid,
   buildElementIndex,
@@ -99,7 +99,8 @@ export function prepareLintContext(
   const drawable = arrows
     .filter((arrow) => !danglingIds.has(arrow.id))
     .map((arrow): DrawableArrow => {
-      const polyline = arrowPolyline(arrow, index);
+      // As drawn: ends sharing an anchor fanned, as the label pass and both renderers place them.
+      const polyline = arrowRoutePoints(arrow, visible);
       return {
         arrow,
         polyline,

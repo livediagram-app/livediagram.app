@@ -5,7 +5,6 @@ import {
   PaletteCategoryBrowser,
   type BrowserCategory,
 } from '@/components/palette/PaletteCategoryBrowser';
-import { HoverCard } from '@livediagram/ui';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { paletteFinishClass } from './palette-tile-finish';
 
@@ -14,9 +13,9 @@ import { paletteFinishClass } from './palette-tile-finish';
 // tile IS the artwork, so what you click is exactly what lands.
 //
 // Deliberately not IconButton: that draws a themed, tinted, captioned tile,
-// and every one of those treatments is wrong for a sticker. It keeps a
-// hover card, though — 220 small pictures can't tell you "Pleading face" from
-// "Weary face" on their own.
+// and every one of those treatments is wrong for a sticker. No hover card: one
+// opened over the browse's breadcrumb as the pointer crossed the grid, hiding the
+// way back. The picture is the answer; its name is the button's label.
 function StickerTile({ sticker, onAdd }: { sticker: StickerDef; onAdd: (id: string) => void }) {
   // Drawn in the tab's finish, as the sticker will land (palette-tile-finish.ts).
   const finishClass = paletteFinishClass(useTabFinish(), {
@@ -24,31 +23,27 @@ function StickerTile({ sticker, onAdd }: { sticker: StickerDef; onAdd: (id: stri
     stickerId: sticker.id,
   });
   // A badge pill takes two of the four columns: at one column's width its word
-  // would be unreadable. The span lives on THIS wrapper, not on the button —
-  // HoverCard wraps its child, so the button is a grandchild of the grid and a
-  // col-span on it would do nothing.
+  // would be unreadable. The span lives on this wrapper, the grid's child.
   const wide = sticker.kind === 'badge';
   return (
     <div className={wide ? 'col-span-2 w-full' : ''}>
-      <HoverCard title={sticker.label} description="Click to add, or drag it onto the canvas.">
-        <button
-          type="button"
-          aria-label={sticker.label}
-          onClick={() => onAdd(sticker.id)}
-          draggable
-          onDragStart={(e) => {
-            e.dataTransfer.setData(STICKER_DND_MIME, sticker.id);
-            e.dataTransfer.effectAllowed = 'copy';
-          }}
-          className={`flex items-center justify-center rounded-lg p-0.5 transition hover:bg-slate-100 dark:hover:bg-slate-800 ${
-            wide ? 'h-11 w-full' : 'h-11 w-11'
-          }`}
-        >
-          <span className={`flex h-full w-full ${finishClass}`}>
-            <StickerArt def={sticker} className="h-full w-full overflow-visible" />
-          </span>
-        </button>
-      </HoverCard>
+      <button
+        type="button"
+        aria-label={sticker.label}
+        onClick={() => onAdd(sticker.id)}
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer.setData(STICKER_DND_MIME, sticker.id);
+          e.dataTransfer.effectAllowed = 'copy';
+        }}
+        className={`flex items-center justify-center rounded-lg p-0.5 transition hover:bg-slate-100 dark:hover:bg-slate-800 ${
+          wide ? 'h-11 w-full' : 'h-11 w-11'
+        }`}
+      >
+        <span className={`flex h-full w-full ${finishClass}`}>
+          <StickerArt def={sticker} className="h-full w-full overflow-visible" />
+        </span>
+      </button>
     </div>
   );
 }

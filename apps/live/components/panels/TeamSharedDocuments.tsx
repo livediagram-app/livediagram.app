@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { use, useMemo, useState } from 'react';
+import { browser } from 'react-dom';
 import type { Folder } from '@livediagram/api-schema';
 import { FolderRow, SkeletonRows } from '@/app/explorer/views';
 import { scopeDocuments, type LibraryLens } from '@/app/explorer/lens/pane-lens';
@@ -84,10 +85,10 @@ export function TeamSharedDocuments({
   });
   // Deep link: /explorer/team?id=<team>&folder=<id> opens with that
   // folder focused (the search panel's team-folder results navigate
-  // here). Safe to read window in the initialiser: the explorer
-  // chrome only mounts post-auth on the client, never in SSG output.
+  // here). The explorer renders in the browser only (use(browser()), docs/specs/003-system-architecture/
+  // react-state-and-effects.md "Rendering in the browser only"), so the initialiser reads the address.
+  use(browser());
   const [spot, setSpot] = useState<Spot>(() => {
-    if (typeof window === 'undefined') return { kind: 'root' };
     const folder = new URLSearchParams(window.location.search).get('folder');
     return folder ? { kind: 'folder', id: folder } : { kind: 'root' };
   });

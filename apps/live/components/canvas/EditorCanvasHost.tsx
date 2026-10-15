@@ -234,6 +234,7 @@ export function EditorCanvasHost() {
     identityOnlyScreenOpen,
     imageContext,
     isOwner,
+    canShareDocument,
     setSearchOpen,
     setShareDialogOpen,
     setSettingsOpen,
@@ -1033,9 +1034,10 @@ export function EditorCanvasHost() {
               onOpenDocument={openDocument}
               onNewDocument={newDocument}
               explorerMenuActions={{
-                // The header's Share gate: owners only (docs/specs/013-workspace/folders.md, docs/specs/015-api/api.md).
+                // The header's Share gate: the owner, or a joined member of the document's team
+                // (docs/specs/013-workspace/folders.md, docs/specs/013-workspace/team-shared-documents.md).
                 onShare:
-                  isOwner && hydrated
+                  canShareDocument && hydrated
                     ? () => {
                         setShareDialogOpen(true);
                         track('UI', 'Opened', 'Share');
@@ -1174,7 +1176,7 @@ export function EditorCanvasHost() {
                         // Open upward when the click is in the bottom fifth of the
                         // viewport so the canvas menu's categories don't run
                         // off-screen (matching the tab menu).
-                        openUp: typeof window !== 'undefined' && sy > window.innerHeight * 0.8,
+                        openUp: sy > window.innerHeight * 0.8,
                       })
               }
               onBeginDrag={beginDrag}

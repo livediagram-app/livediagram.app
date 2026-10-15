@@ -1122,7 +1122,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|SpotlightShape': "Someone changed the Spotlight's shape, in the Spotlight panel.",
   'UI|Changed|SpotlightSize': "Someone changed the Spotlight's size, in the Spotlight panel.",
   'UI|Changed|ToolbarCategory':
-    "Someone switched category in the Toolbar layout's palette strip across the top of the canvas.",
+    "Someone opened a category in the palette strip across the top of the canvas: a category on the category bar (Diagram, Facilitate, Illustrate), or a switch in Plan's category picker.",
   'UI|Changed|WhiteboardDockPositionBottom':
     'Someone put their whiteboard dock at the bottom of the canvas, in Settings > Editor.',
   'UI|Changed|WhiteboardDockPositionTop':
@@ -1232,7 +1232,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|TidyUp':
     "Someone opened Diagram mode's Tidy Up button in the bottom bar, the panel of layout styles and Auto-align. What they then picked counts as a tab being auto-arranged.",
   'UI|Opened|BehaviourGroup':
-    "Someone opened a category inside the palette's Collaborate tab (formerly Behaviours; session tools like polls, votes, and record-keeping elements). No longer recorded: Facilitate mode offers each of those categories directly in the palette.",
+    "Someone opened one of Session's groups (Tools, Record, React, Selection Mode or Navigate) on Facilitate mode's palette strip. Earlier, a category inside the palette's Collaborate tab (formerly Behaviours), before Facilitate offered those categories one by one and then gathered them into Session.",
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
   'UI|Opened|CollabGroup':
@@ -1343,7 +1343,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
   'UI|Searched|BehaviourSearch':
-    "Someone searched within the palette's Collaborate tab (formerly Behaviours). No longer recorded: the Collaborate tab became six palette categories, and the palette's own search finds their tiles.",
+    "Someone searched within Session on Facilitate mode's palette strip, across its groups of session tools. Earlier, a search within the palette's Collaborate tab (formerly Behaviours).",
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',

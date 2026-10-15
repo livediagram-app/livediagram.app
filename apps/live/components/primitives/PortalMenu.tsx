@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, type CSSProperties, type ReactNode } from 'react';
+import { useId, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
 import {
   ChevronDownIcon,
   MENU_LABEL_ATTR,
@@ -235,7 +235,8 @@ export function MenuActionRow({
 }: {
   label: string;
   icon: ReactNode;
-  onClick: () => void;
+  // Handed the click, so a verb that anchors something (a confirm) can anchor it to the row itself.
+  onClick: (event: MouseEvent<HTMLButtonElement>) => void;
   // The label's own look (a font menu draws each font's name in that font).
   labelStyle?: CSSProperties;
   // Sentence-case, 13px, full-contrast: the reading size for a menu

@@ -22,6 +22,8 @@ import {
   type ElementId,
   type Endpoint,
   type Tab,
+  settleDiagramKeys,
+  tagColoursOf,
 } from '@livediagram/document';
 import { kindOf } from './element-text';
 import { ROUTE_KEYS, rerouted } from './operations/connect';
@@ -214,7 +216,13 @@ export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
   const moved = movedBoxes(state.before, landed);
   const rebound = rerouteRebound(landed, rebindArrowAnchorsAfterMove(landed, moved), moved);
   // An element that ends as it began is the element it began as (E1, I2).
-  const elements = containersBehindMembers(lanesToFront(rebound)).map((el) => {
+  // A diagram key's rows follow the tab's lines and tags (docs/specs/009-elements/diagram-key.md), settled here as the
+  // editor settles them on commit: an agent's key otherwise drew its empty hint.
+  const settled = settleDiagramKeys(
+    containersBehindMembers(lanesToFront(rebound)),
+    tagColoursOf(state.tab as { tagColours?: unknown }),
+  );
+  const elements = settled.map((el) => {
     const was = state.before.get(el.id);
     return was && was !== el && sameValue(was, el) ? was : el;
   });

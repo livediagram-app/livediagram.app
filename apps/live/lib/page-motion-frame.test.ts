@@ -1,9 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { cubicBezier, openingPhase, openingPose, poseAt } from './page-motion-frame';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  ANIM_ORIGIN,
+  animOrigin,
+  cubicBezier,
+  openingPhase,
+  openingPose,
+  poseAt,
+} from './page-motion-frame';
 
 // Where an animated background stands as the slide opens (docs/specs/007-editor/
 // illustrate-pages.md "Animated backgrounds"): the export draws this still. The poses were checked
-// against Chrome's own computed transforms for every part of all eighteen motions.
+// against Chrome's own computed transforms for every part of all twenty-four motions.
 
 describe('openingPhase', () => {
   it('opens a loop as far in as its start is below zero', () => {
@@ -85,7 +94,68 @@ describe('poseAt', () => {
   });
 
   it('rests a part that does not move', () => {
-    expect(openingPose(undefined)).toEqual({ tx: 0, ty: 0, scale: 1, rotate: 0, opacity: 1 });
+    expect(openingPose(undefined)).toEqual({
+      tx: 0,
+      ty: 0,
+      scale: 1,
+      sx: 1,
+      sy: 1,
+      rotate: 0,
+      opacity: 1,
+    });
+  });
+
+  it('warps a streak out along its heading, lengthening as it speeds up', () => {
+    const anim = { name: 'warp', d: 1, x: 1000, r: 90 } as const;
+    const start = poseAt(anim, 0);
+    expect(start).toMatchObject({ rotate: 90, sx: 0.2, opacity: 0 });
+    expect(start.tx).toBeCloseTo(0);
+    expect(start.ty).toBeCloseTo(60);
+    const end = poseAt(anim, 1);
+    expect(end).toMatchObject({ sx: 1, opacity: 1 });
+    expect(end.ty).toBeCloseTo(1000);
+    // Easing in: a quarter of the way through, well under a quarter of the way out.
+    expect(poseAt(anim, 0.25).ty).toBeLessThan(250);
+  });
+
+  it('orbits from its starting angle, a full turn a loop', () => {
+    expect(poseAt({ name: 'orbit', d: 1, r: 30 }, 0).rotate).toBe(30);
+    expect(poseAt({ name: 'orbit', d: 1, r: 30 }, 0.5).rotate).toBe(210);
+  });
+
+  it('flashes a blip and fades it over the rest of the turn', () => {
+    expect(poseAt({ name: 'blip', d: 1 }, 0)).toMatchObject({ scale: 1.5, opacity: 1 });
+    expect(poseAt({ name: 'blip', d: 1 }, 0.35).opacity).toBeCloseTo(0.4);
+    expect(poseAt({ name: 'blip', d: 1 }, 1).opacity).toBeCloseTo(0.08);
+  });
+
+  it('raises a bar through its beats, tallest at three fifths', () => {
+    expect(poseAt({ name: 'bars', d: 1 }, 0).sy).toBe(0.25);
+    expect(poseAt({ name: 'bars', d: 1 }, 0.6).sy).toBeCloseTo(1);
+    expect(poseAt({ name: 'bars', d: 1 }, 0.8).sy).toBeCloseTo(0.4);
+  });
+
+  it('tumbles confetti down, swaying either side and spinning', () => {
+    const anim = { name: 'tumble', d: 1, x: 20, y: 400, r: 720 } as const;
+    expect(poseAt(anim, 0.25)).toMatchObject({ tx: 20, ty: 100, rotate: 180 });
+    expect(poseAt(anim, 0.75).tx).toBeCloseTo(-20);
+    expect(poseAt(anim, 1)).toMatchObject({ ty: 400, rotate: 720 });
+  });
+});
+
+describe('animOrigin', () => {
+  const css = readFileSync(join(__dirname, '..', 'app', 'motion-page.css'), 'utf8');
+
+  it('turns a part about its centre unless its loop says otherwise', () => {
+    expect(animOrigin(undefined)).toEqual([0.5, 0.5]);
+    expect(animOrigin({ name: 'turn', d: 1 })).toEqual([0.5, 0.5]);
+    expect(animOrigin({ name: 'warp', d: 1 })).toEqual([0, 0.5]);
+  });
+
+  it.each(Object.entries(ANIM_ORIGIN))('matches the stylesheet for %s', (name, origin) => {
+    const rule = css.match(new RegExp(`\\.pm-${name} \\{([^}]*)\\}`))?.[1] ?? '';
+    const pct = (f: number) => (f === 0 ? '0' : `${f * 100}%`);
+    expect(rule).toContain(`transform-origin: ${pct(origin![0])} ${pct(origin![1])};`);
   });
 });
 

@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ShapePalette, QuickConnect } from '@/components/illustrations/getting-started';
+import { QuickConnect } from '@/components/illustrations/getting-started';
+import { ToolbarCategoryFlyout } from '@/components/illustrations/toolbar-layout';
 
 export const metadata = helpMetadata({
   title: 'Adding Shapes and Arrows',
@@ -15,16 +16,15 @@ Almost every diagram is shapes joined by arrows. livediagram makes both fast: sh
 
 ## Adding shapes
 
-The **Palette**, the strip across the top of the canvas, holds everything you can add. It starts with two dropdowns: the selection mode (Select, Hand, Eraser and the rest) and the category. In Diagram mode it opens on **Popular** (each mode has its own Popular, and Plan mode opens on Cards), the twelve tiles most people reach for: Square, Circle, Diamond, text, an arrow, a frame, a mind node, a flowchart node, a Sankey, a table, the **AWS** icons (press it to pick one) and an entity. See [where each one lives](/help/palette/tools/) for the full map.
+The **Palette**, the strip across the top of the canvas, holds everything you can add. It starts with the selection mode (Select, Hand, Eraser and the rest), then the palette's categories by name: in Diagram mode **Shapes**, **Draw**, **Build**, **Concepts**, **Icons**, **Tech** and **Media** (Plan mode keeps a category dropdown and opens on Cards). Rest the pointer on a category, or click it, and its elements open in a panel underneath. See [where each one lives](/help/palette/tools/) for the full map.
 
-<Figure caption="The Palette strip: the selection-mode and category dropdowns, Popular's tiles, then More and Search.">
-  <ShapePalette />
+<Figure caption="Rest on Shapes and its panel opens under it: the basics, the flowchart shapes and more.">
+  <ToolbarCategoryFlyout />
 </Figure>
 
 <Step n={1}>
-  Pick a tile from **Popular**, or open the category dropdown and choose **Shapes**: the strip shows
-  its first tiles, and **More** (⋯) the full set: square, circle, diamond, cylinder, hexagon,
-  stadium, and many more.
+  Rest on **Shapes** in the palette, or click it: its panel opens with the square, circle, diamond,
+  cylinder, hexagon, stadium and many more, in groups. Click the one you want.
 </Step>
 
 <Step n={2}>
@@ -40,7 +40,7 @@ The **Palette**, the strip across the top of the canvas, holds everything you ca
 
 Common shapes have their own keys, too: `R` square, `O` circle, `D` diamond, `C` cylinder and `G` parallelogram (see [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/)).
 
-The category dropdown groups the rest into bands. In Diagram mode, **Common** holds Shapes, Write and Draw; **Structure** holds Build (frames, lanes, mind maps); and **Decorate** holds Icons, **Tech** (the full-colour cloud and infrastructure marks, see [Technology icons](/help/palette/technology/)) and Media. Stickers live in the **Decorate** band of [Facilitate mode](/help/canvas/facilitate-mode/)'s and Illustrate mode's palettes, and the workshop elements in Facilitate's **Collaborate** band. The wireframing kit (**Components** and **Devices**: browser, phone and laptop frames) and the **Data** charts live in [Illustrate mode](/help/canvas/illustrate/)'s palette.
+The categories sit in groups along the strip, a thin line between each. In Diagram mode **Shapes** and **Draw** come first (Draw holds the words and the pens together: text, notes and comments, then the pencil, highlighter and arrows); then **Build** (frames, lanes, mind maps) and **Concepts** (pyramids, funnels, cycles and the Sankey); then **Icons**, **Tech** (the full-colour cloud and infrastructure marks, see [Technology icons](/help/palette/technology/)) and Media. Stickers are in [Facilitate mode](/help/canvas/facilitate-mode/)'s and Illustrate mode's palettes, and the workshop elements in Facilitate's **Ask** and **Session**. The wireframing kit (**Components** and **Devices**: browser, phone and laptop frames) and the **Data** charts live in [Illustrate mode](/help/canvas/illustrate/)'s palette.
 
 ## Connecting with arrows
 
@@ -60,8 +60,8 @@ The fastest way to draw an arrow is **quick-connect**:
 </Step>
 
 <Step n={3}>
-  To draw a free connector instead, pick **Add Arrow** (in Popular, or the **Draw** category), or
-  press `A`, and drag between any two points.
+  To draw a free connector instead, pick **Add Arrow** (in the **Draw** category), or press `A`, and
+  drag between any two points.
 </Step>
 
 **Duplicate** in the same options drops a connected copy of the shape beside it, the quickest way to grow a flow one step at a time. Turn on **Quick-Add on Hover** in Settings and the options open as soon as you hover a **+**. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).

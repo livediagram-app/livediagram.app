@@ -7,7 +7,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { FINISHES, type Finish } from '@livediagram/document';
-import { Select, lucideGlyph } from '@livediagram/ui';
+import { Select, lucideGlyph, trustedHtml } from '@livediagram/ui';
 import { lucideDices } from '@livediagram/icons/lucide';
 import { FINISH_LABELS } from '@/components/palette/FinishSection';
 import { track } from '@/lib/telemetry';
@@ -183,7 +183,7 @@ function LookCard({
         aria-hidden
         className="block h-20 w-full overflow-hidden [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
         style={{ backgroundColor: paper }}
-        dangerouslySetInnerHTML={{ __html: markup }}
+        dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
       />
       {badge ? (
         <span

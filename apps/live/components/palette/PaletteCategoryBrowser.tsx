@@ -1,10 +1,11 @@
 'use client';
 
-import { createContext, type ReactNode, useContext, useRef, useState } from 'react';
+import { createContext, type ReactNode, useContext, useMemo, useRef, useState } from 'react';
 import { NoMatches } from '@livediagram/ui';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { ToolsBreadcrumb, ToolsCategoryGrid, type ToolsCategory } from './palette-tools-nav';
 import { track } from '@/lib/telemetry';
+import { PaletteCategoryRail } from './PaletteCategoryRail';
 
 // The palette's drill-in browse pattern, once (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories",
 // docs/specs/010-palette/palette-category-browse.md).
@@ -28,6 +29,31 @@ export type BrowserCategory<T> = ToolsCategory & { items: T[] };
 // so a host shows another group by remounting it. `bare` shows the group's entries alone, without the search or the
 // breadcrumb: the strip's group popover, where the strip itself is the way between groups.
 export const BrowseStartGroup = createContext<{ id: string; bare: boolean } | null>(null);
+
+// The group each browse last had open, by its root ("Icons", "Tech"), for a host that unmounts the browse between
+// visits (the Toolbar strip's popovers): going back to Icons reopens the group you left it on, rather than the grid.
+// The host keeps it for the page load; no host means every visit starts on the grid. A query is not kept.
+export type BrowseMemory = {
+  get: (root: string) => string | null;
+  set: (root: string, group: string | null) => void;
+};
+export const BrowseMemoryContext = createContext<BrowseMemory | null>(null);
+
+/** A browse memory for the page load. Stable across renders, so it never re-renders its consumers. */
+export function useBrowseMemory(): BrowseMemory {
+  const groups = useRef(new Map<string, string | null>());
+  return useMemo(
+    () => ({
+      get: (root) => groups.current.get(root) ?? null,
+      set: (root, group) => void groups.current.set(root, group),
+    }),
+    [],
+  );
+}
+
+// How a browse lays itself out: the drill-in grid (a category tile per group, a breadcrumb back), or the two-pane
+// rail (PaletteCategoryRail) the category bar's flyouts use, with every group in view down the side.
+export const BrowseLayoutContext = createContext<'grid' | 'rail'>('grid');
 
 type Props<T> = {
   // Breadcrumb root — the tab's own name, so "Icons › People" reads true.
@@ -79,27 +105,57 @@ export function PaletteCategoryBrowser<T>({
 }: Props<T>) {
   // null = the category grid. Opening the tab starts there, so you see every
   // category at once rather than one arbitrary group's contents; a strip's group tile opens on its group.
+  // A host's remembered group comes next (BrowseMemory).
   const startGroup = useContext(BrowseStartGroup);
-  const [openId, setOpenId] = useState<string | null>(startGroup?.id ?? null);
+  const memory = useContext(BrowseMemoryContext);
+  const [openId, setOpenIdState] = useState<string | null>(
+    startGroup?.id ?? memory?.get(root) ?? null,
+  );
+  const setOpenId = (id: string | null) => {
+    setOpenIdState(id);
+    // A bare group popover is the strip's own way between groups, not a visit to remember.
+    if (!startGroup?.bare) memory?.set(root, id);
+  };
   // One 'Searched' event per mount, on the first keystroke — the same
   // engagement-signal pattern as the editor's Search panel.
   const searchedRef = useRef(false);
   const q = query.trim();
   const matches = q ? search(q) : null;
   const openCategory = categories.find((c) => c.id === openId) ?? null;
+  const layout = useContext(BrowseLayoutContext);
   if (startGroup?.bare && openCategory) return <>{renderItems(openCategory.items)}</>;
+  const onSearch = (next: string) => {
+    onQueryChange(next);
+    if (!searchedRef.current && next.trim()) {
+      searchedRef.current = true;
+      track('UI', 'Searched', telemetry.searchedType);
+    }
+  };
+  if (layout === 'rail')
+    return (
+      <PaletteCategoryRail
+        categories={categories}
+        openId={openId}
+        onOpen={(id) => {
+          if (id !== openId) track('UI', 'Opened', telemetry.openedType);
+          setOpenId(id);
+        }}
+        renderItems={renderItems}
+        query={query}
+        onQueryChange={onSearch}
+        matches={matches}
+        search={searchInput}
+        things={things}
+        loading={loading}
+        loadingMessage={loadingMessage}
+      />
+    );
   return (
     <div className="flex flex-col">
       <div className="mb-2 flex items-center">
         <SearchInput
           value={query}
-          onChange={(next) => {
-            onQueryChange(next);
-            if (!searchedRef.current && next.trim()) {
-              searchedRef.current = true;
-              track('UI', 'Searched', telemetry.searchedType);
-            }
-          }}
+          onChange={onSearch}
           placeholder={searchInput.placeholder}
           ariaLabel={searchInput.ariaLabel}
           clearAriaLabel={searchInput.clearAriaLabel}

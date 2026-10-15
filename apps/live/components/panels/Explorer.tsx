@@ -15,6 +15,7 @@ import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
 import {
   isTreeSection,
   PanelExplorerTree,
+  paneFolderParent,
 } from '@/components/panels/explorer-tree/PanelExplorerTree';
 import {
   PanelTreeProvider,
@@ -115,6 +116,13 @@ function ExplorerImpl({
   // Folder id newly created via the New folder button — used to drop
   // the row into rename mode immediately after the API returns.
   const [pendingRenameFolderId, setPendingRenameFolderId] = useState<string | null>(null);
+  // The folder open in the pane (docs/specs/013-workspace/explorer-structure.md "The pane"), for the section it was
+  // opened in: another section starts at its root. Held here, not in the tree, so the header's New Folder makes the
+  // folder where the reader is looking.
+  const [openFolder, setOpenFolder] = useState<{ section: string; id: string | null }>({
+    section: '',
+    id: null,
+  });
   // Row delete lifecycle (confirm popover, exit animation, optimistic
   // team-row hide + pruning) lives in useExplorerRowDelete.
   const {
@@ -167,6 +175,8 @@ function ExplorerImpl({
     const folder = await onCreateFolder({ name: 'New folder', parentId });
     if (folder) {
       setExpandedFolders((prev) => ({ ...prev, [parentId]: true }));
+      // A folder card's New Subfolder opens that folder, so the new one shows with its name field.
+      openInPane(parentId);
       setPendingRenameFolderId(folder.id);
     }
   };
@@ -176,6 +186,7 @@ function ExplorerImpl({
     const folder = await onTeamFolders.create(teamId, parentId);
     if (folder) {
       setExpandedFolders((prev) => ({ ...prev, [parentId ?? teamId]: true }));
+      openInPane(parentId);
       setPendingRenameFolderId(folder.id);
     }
   };
@@ -236,6 +247,7 @@ function ExplorerImpl({
   // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
   const shown = asPopover === true && popoverOpen === true;
   const [section, pick] = useExplorerPanelSection(groups, { homeOnOpen: sheet, open: shown });
+  const openInPane = (id: string | null) => setOpenFolder({ section: sectionKey(section), id });
   useEffect(() => {
     if (!shown) return;
     document.body.setAttribute('data-explorer-open', '');
@@ -246,15 +258,27 @@ function ExplorerImpl({
     shared: shared.length || undefined,
     browser: offlineDocuments.length || undefined,
   };
-  // New Folder at the root of My documents or of the team shown.
+  // The folder open in the pane, while it is still in the space shown; else the space's root.
+  const paneFolderId =
+    openFolder.section === sectionKey(section)
+      ? paneFolderParent(
+          section.kind === 'team'
+            ? (foldersByTeam.get(section.id) ?? [])
+            : [...foldersByParent.values()].flat(),
+          openFolder.id,
+        )
+      : null;
+  // New Folder in the folder open in the pane, or at the root of My documents or of the team shown.
   const newFolder =
     section.kind === 'mine' && onCreateFolder
       ? () =>
-          void onCreateFolder({ name: 'New folder', parentId: null }).then((folder) => {
-            if (folder) setPendingRenameFolderId(folder.id);
-          })
+          void (paneFolderId
+            ? handleCreateChild(paneFolderId)
+            : onCreateFolder({ name: 'New folder', parentId: null }).then((folder) => {
+                if (folder) setPendingRenameFolderId(folder.id);
+              }))
       : section.kind === 'team' && onTeamFolders
-        ? () => void handleCreateTeamChild(section.id, null)
+        ? () => void handleCreateTeamChild(section.id, paneFolderId)
         : undefined;
 
   const currentCard = current ? (
@@ -382,6 +406,7 @@ function ExplorerImpl({
               onOpenDocument={onOpenDocument}
               onPick={pick}
               onNewFolder={newFolder}
+              inFolder={paneFolderId !== null}
               onLibraryChanged={onLibraryChanged ?? NOOP}
               tree={
                 isTreeSection(section) ? (
@@ -398,6 +423,8 @@ function ExplorerImpl({
                     teams={teams}
                     foldersByTeam={foldersByTeam}
                     documentsByTeam={documentsByTeam}
+                    folderId={paneFolderId}
+                    onOpenFolder={openInPane}
                   />
                 ) : null
               }

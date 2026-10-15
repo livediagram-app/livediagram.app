@@ -31,7 +31,7 @@ const run = (open = true) => {
 function editor(over: Record<string, unknown> = {}) {
   return {
     isReadOnly: false,
-    isOwner: true,
+    canShareDocument: true,
     canCombine: () => false,
     combineSelected: vi.fn(),
     documentId: 'd1',

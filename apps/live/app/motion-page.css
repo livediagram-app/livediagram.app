@@ -202,6 +202,112 @@
   }
 }
 
+/*
+ * The fourth page's loops. Each part's resting transform is its class's own, so under reduced
+ * motion (animation: none) a streak still points its way, a planet keeps its place on its orbit, a
+ * bar stands at its own height and a piece of confetti hangs part way down. --pm-r is a part's
+ * turn: a streak's heading, an orbit's starting angle, a piece of confetti's spin.
+ */
+.pm-warp {
+  transform-origin: 0 50%;
+  transform: rotate(var(--pm-r)) translateX(calc(var(--pm-x) * 0.45)) scaleX(0.6);
+  animation: pm-warp calc(var(--pm-d) / var(--pm-rate, 1)) cubic-bezier(0.42, 0, 1, 1)
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
+}
+.pm-orbit {
+  transform: rotate(var(--pm-r));
+  animation: pm-orbit calc(var(--pm-d) / var(--pm-rate, 1)) linear
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
+}
+.pm-blip {
+  opacity: 0.5;
+  animation: pm-blip calc(var(--pm-d) / var(--pm-rate, 1)) cubic-bezier(0, 0, 0.58, 1)
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
+}
+.pm-bars {
+  transform-origin: 50% 100%;
+  transform: scaleY(var(--pm-rest, 0.5));
+  animation: pm-bars calc(var(--pm-d) / var(--pm-rate, 1)) ease-in-out
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
+}
+.pm-tumble {
+  transform: translate(0, calc(var(--pm-y) * var(--pm-rest, 0.5)))
+    rotate(calc(var(--pm-r) * var(--pm-rest, 0.5)));
+  animation: pm-tumble calc(var(--pm-d) / var(--pm-rate, 1)) ease-in-out
+    calc(var(--pm-dl, 0s) / var(--pm-rate, 1)) infinite;
+}
+@keyframes pm-warp {
+  0% {
+    transform: rotate(var(--pm-r)) translateX(calc(var(--pm-x) * 0.06)) scaleX(0.2);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--pm-r)) translateX(var(--pm-x)) scaleX(1);
+    opacity: 1;
+  }
+}
+@keyframes pm-orbit {
+  from {
+    transform: rotate(var(--pm-r));
+  }
+  to {
+    transform: rotate(calc(var(--pm-r) + 360deg));
+  }
+}
+@keyframes pm-blip {
+  0% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+  35% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.08;
+  }
+}
+@keyframes pm-bars {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+  20% {
+    transform: scaleY(0.9);
+  }
+  40% {
+    transform: scaleY(0.5);
+  }
+  60% {
+    transform: scaleY(1);
+  }
+  80% {
+    transform: scaleY(0.4);
+  }
+}
+@keyframes pm-tumble {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(var(--pm-x), calc(var(--pm-y) * 0.25)) rotate(calc(var(--pm-r) * 0.25));
+  }
+  50% {
+    transform: translate(0, calc(var(--pm-y) * 0.5)) rotate(calc(var(--pm-r) * 0.5));
+  }
+  75% {
+    transform: translate(calc(var(--pm-x) * -1), calc(var(--pm-y) * 0.75))
+      rotate(calc(var(--pm-r) * 0.75));
+  }
+  100% {
+    transform: translate(0, var(--pm-y)) rotate(var(--pm-r));
+  }
+}
+
 /* Reduced motion stops every part where it rests: a still that is a finished background, not a
    frozen mid-step (the global collapse would jump each loop to its last frame). */
 @media (prefers-reduced-motion: reduce) {

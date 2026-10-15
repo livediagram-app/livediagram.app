@@ -96,7 +96,8 @@ top switch and Shift+D (`crossPlan` on `useEditorMode`). The first element close
 shows Plan (or, on a Plan tab, the other modes) as a plain switch: no New tab mark, and choosing its row switches.
 
 A mode change swaps one start for another. The new one **turns in place**: the frame stays still and the old content
-crossfades into the new (the start's mode switch runs the change as a View Transition, `withViewTransition`), so a
+crossfades into the new (the switch runs the change in `startTransition` typed `start-mode`, which the start's
+`<ViewTransition>` cross-fades over `short`), so a
 mode change reads as the same panel turning rather than a second one flying up or its content blinking out
 (`startPanelJustLeft`, a start mounting within 400 ms of another leaving). The new content arrives whole, its rail and
 cards not cascading in until the category or search changes. Without View Transitions, or with reduced motion, the

@@ -65,7 +65,9 @@ const CONTENT_KINDS =
   'Content-carrying kinds: ' +
   'type "sticky": a note whose "label" is its text; the theme never recolours it, so its own ' +
   `"fillColor" + "textColor" are kept (palette pairs, fill/text: ${stickyPairs}); unset it is ` +
-  'the classic amber note. ' +
+  'the classic amber note. A sticky with "esKind" (domain-event, command, actor, policy, read-model, ' +
+  'external-system, aggregate, hotspot) is an event-storming note of that kind (its paper, size and lane on a ' +
+  'storm board): add one to a board with the edit `add sticky label="Courier" esKind=actor`. ' +
   'type "table": "cells" is rows of strings (ragged rows are padded), "headerRow" / ' +
   '"headerColumn" style the first row / column, "zebra" tints alternate rows. ' +
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +
@@ -82,7 +84,10 @@ const CONTENT_KINDS =
   'fills each series down to zero and "scatter" draws points only, at x = each category read as a ' +
   'number; on "pie-chart" "doughnut" opens the middle. "chartValues": true prints each mark\'s ' +
   "number on the chart (a pie's as percentages when its values add up to 100; a column chart also " +
-  'names each column under it, so "chartLegend": false can drop the key). A chart draws no title (a caption is a ' +
+  'names each column under it, so "chartLegend": false can drop the key). "chartAxis": true draws the value axis, ' +
+  'round tick values and gridlines (not on a pie). A "lineSeries" entry with "axis": "right" is drawn against a ' +
+  'scale of its own, labelled on the right, so a series in the thousands and one in the tens both read. ' +
+  'A chart draws no title (a caption is a ' +
   'separate "text" element) and draws sample data when its data is empty. ' +
   'shape "sankey": a Sankey diagram, bands as wide as the amount they carry, laid out in columns ' +
   'by itself. "sankeyFlows" is [{ "from", "to", "value" }] with node NAMES (the nodes are the ' +
@@ -448,7 +453,7 @@ const graphField = z
             .describe(
               `Shape kind (${shapeKinds}); default "square". Use "diamond" for a ` +
                 'decision, "cylinder" for a datastore, "stadium" for start/end. A "circle" with no label is a ' +
-                "small solid dot, a state machine's start or end.",
+                'small solid dot, a state machine\'s start; "final-state" is its end, a bullseye.',
             ),
           note: z
             .string()
@@ -538,7 +543,7 @@ const graphField = z
     groups: z
       .array(
         z.object({
-          id: z.string().describe('Unique id (an edge may point at a group).'),
+          id: z.string().describe("Unique id, never also a node's (an edge may point at a group)."),
           label: z.string().optional().describe("The group's heading, drawn on its frame."),
           members: z
             .array(z.string())

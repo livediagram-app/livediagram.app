@@ -64,7 +64,9 @@ follows) and `scenarios.md` (the scenario bank, ids stable across runs). `token.
 
 ## Ship
 
-20. Render the PR images through the tools, so they show what an assistant now gets: `read_document` with
+20. Render the PR images through the tools, so they show what an assistant now gets: for a before and after pair,
+    take the first round's preview as the before and replay that same call (its args are in the run's `calls.jsonl`)
+    on the branch's server as the after, so the pair differs only by the change; `read_document` with
     `image:true`, or `create_document` from a template.
 21. Push the images to an orphan `pr-assets/<PR number>` branch (`git hash-object -w`, `git mktree`,
     `git commit-tree`, push with `--no-verify`) and link the raw URLs pinned to that commit. Do not fetch a raw URL
@@ -96,3 +98,11 @@ random bytes>`, `created_at` and `expires_at` in ms, `read_only` 0) with `wrangl
   sample content.
 - Timing tests fail under load while a round and the coverage gate share the machine; rerun them alone before
   treating them as real.
+- An evaluator works around a defect and the next round's picture hides it: D2's evaluators labelled one of four bus
+  arrows to dodge the repeated label, which then split the bus. Read the run's `calls.jsonl` for what was asked, not
+  only the final image, and replay the first call to see the defect the agent met.
+- A scenario's hardest critique flips with the fix (swimlanes "too wide" became "reads top to bottom" once hand-offs
+  stacked): run the scenario twice on independent evaluators after a layout change, and keep the change only when
+  both read it better.
+- Measure a new layout pass at 2,000 boxes and 2,000 arrows before the PR: a per-arrow scan of the tab looked free on
+  a fourteen-box diagram and took 1.8 s there (the facing bends, fixed with the element grid).

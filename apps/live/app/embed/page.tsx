@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
+import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import EditorPage from '../document/[id]/editor-page';
 
 // Read-only embed view (docs/specs/013-workspace/embeds.md): the same editor page in embed mode,
@@ -12,6 +14,12 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
+// The editor renders in the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in
+// the browser only"): the prerender holds the opening screen it always showed first.
 export default function Page() {
-  return <EditorPage surface="embed" />;
+  return (
+    <Suspense fallback={<OpeningScreen />}>
+      <EditorPage surface="embed" />
+    </Suspense>
+  );
 }

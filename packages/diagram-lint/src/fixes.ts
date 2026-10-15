@@ -56,6 +56,9 @@ export const fixes = {
       smaller ? `set ${a} text=sm` : `set ${a} label="<text>" note="<text>"`,
       'shorten the label; detail goes in note',
     ),
+  // A card's title or subtitle cut short: the card widened to hold it.
+  cardTextCut: (s: LintSource, a: string, width: number) =>
+    pick(s, `set ${a} width=${width}`, 'shorten the title, or widen the card'),
   // A page's text: grown to hold its lines; two texts over each other moved apart.
   textOverflow: (a: string, height: number) => `set ${a} height=${height}`,
   textOverflowWidth: (a: string, width: number) => `set ${a} width=${width}`,

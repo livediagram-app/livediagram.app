@@ -132,7 +132,7 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 // The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "Choosing a mode"): choose one, Create
 // on the Location step, and land on the editor with the mode's start screen over the canvas
 // (docs/specs/007-editor/start-diagramming.md).
-async function createInMode(page: Page, mode: string): Promise<void> {
+export async function createInMode(page: Page, mode: string): Promise<void> {
   await page.goto('/new');
   await page.getByText('New Document', { exact: false }).waitFor();
   const card = page.locator(`[data-new-mode="${mode}"]`);
@@ -388,4 +388,16 @@ export async function settledBox(
     })
     .toBe(true);
   return box!;
+}
+
+/** A palette tile, from its category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The
+ *  category bar"): opens the category (a press, so it stays open whatever the pointer does next) unless its flyout is
+ *  already showing, and returns the tile. */
+export async function paletteTile(page: Page, name: string, category = 'Shapes'): Promise<Locator> {
+  const flyout = page.locator('[data-category-flyout]');
+  const button = page.locator(`[data-category-bar-button][aria-label="${category}"]`);
+  if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();
+  const tile = flyout.getByRole('button', { name, exact: true }).first();
+  await tile.waitFor();
+  return tile;
 }

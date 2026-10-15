@@ -78,12 +78,26 @@ instant, canvas included, and zero every cascade delay. The budget describes ful
 motion is stricter still.
 
 - **Animations** collapse to 0.01ms rather than 0, so `animationend` still fires for code that
-  waits on it (the presentation host).
+  waits on it (a split pane closing).
 - **Transitions** collapse to 0s, so none is created. Every element's `transition-property`
   defaults to `all`, so any non-zero duration on every element turns every style write into a
   transition. A position written and measured in the same frame then reads back its old value. The
   tab menu's viewport clamp looped on exactly that ("Maximum update depth exceeded"). Nothing waits
   on `transitionend`.
+
+## View Transitions
+
+A state change that swaps a whole surface animates as a React View Transition
+([React state and effects](../003-system-architecture/react-state-and-effects.md) "Animating a state change").
+
+- **Its pace follows its surface.** A chrome surface (the start's mode switch) runs within the ceiling on a motion
+  token; a canvas surface (a slide move) follows its own spec.
+- **Only the named surface moves.** The document root takes no part (`view-transition-name: none` on `<html>`), so
+  the rest of the page neither cross-fades nor freezes into a picture.
+- **Its animation classes** live beside the surface's other motion: the canvas's in `canvas-motion.css`, chrome's in
+  `globals.css`, each on the `::view-transition-old(.<class>)` and `::view-transition-new(.<class>)` pseudo-elements.
+- **Reduced motion starts no View Transition at all.** The collapse rule above matches elements, not the
+  `::view-transition-*` pseudo-elements, so the change itself runs without a transition and appears at once.
 
 ## Dialogs
 

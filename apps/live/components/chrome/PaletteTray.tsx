@@ -48,6 +48,7 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
   useEffect(() => {
     if (!active) return;
     let watched: HTMLElement | null = null;
+    let watchedParent: HTMLElement | null = null;
     const observer =
       typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => update()) : null;
     const update = () => {
@@ -56,6 +57,15 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
         if (watched) observer?.unobserve(watched);
         if (card) observer?.observe(card);
         watched = card;
+      }
+      // Its wrapper too: the strip's card is centred inside a whole-pixel box (SnapWidth's outer box, the card's
+      // grandparent) that takes its new width a beat after the card's, so the card MOVES without resizing again;
+      // that box's resize is the only signal of it (the category bar dropping its names left the tray off-centre).
+      const parent = card?.parentElement?.parentElement ?? null;
+      if (parent !== watchedParent) {
+        if (watchedParent) observer?.unobserve(watchedParent);
+        if (parent) observer?.observe(parent);
+        watchedParent = parent;
       }
       const next = measure(selector);
       setBox((prev) => (same(prev, next) ? prev : next));

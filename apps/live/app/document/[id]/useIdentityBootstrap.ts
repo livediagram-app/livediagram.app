@@ -578,7 +578,9 @@ export function useIdentityBootstrap(opts: {
         setDocumentServerStored(!offline);
         setIsOwner(offline || fetched.ownerId === self.id);
         setSessionRole('edit');
-        if (offline || fetched.ownerId === self.id) {
+        // A team document opened here was let in as owner or joined member, and every joined
+        // member may share it (mayShareDocument), so they get the list too.
+        if (offline || fetched.ownerId === self.id || fetched.teamId) {
           // Prefetch the share-link list so the dialog opens
           // populated — cloud only; an offline document has nothing
           // on the server to share.

@@ -123,6 +123,7 @@ export const ELEMENT_FIELD_NAMES = {
     'chartLegend',
     'chartLegendPosition',
     'chartValues',
+    'chartAxis',
     'chartVariant',
     'lineCategories',
     'lineSeries',

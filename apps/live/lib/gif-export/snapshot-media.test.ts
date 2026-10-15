@@ -10,7 +10,9 @@ import {
 // docs/specs/020-import-export/blueprints/animated-gif-export.md "The snapshot", step 4.
 const okFetch = () =>
   vi.fn(
-    async (src: string) => new Response(new Blob([src], { type: 'image/png' })),
+    // Bytes plus a content type, not a Blob: jsdom's Blob is not Node's, and Node 24's Response stringifies it.
+    async (src: string) =>
+      new Response(new TextEncoder().encode(src), { headers: { 'content-type': 'image/png' } }),
   ) as unknown as typeof fetch;
 
 describe('inlining pictures', () => {

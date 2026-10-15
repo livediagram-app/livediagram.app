@@ -6,7 +6,7 @@
 // React, no DOM.
 
 import type { ChairSitterFacing } from './collab-shapes';
-import type { FurnitureArt, FurniturePart, FurniturePartRole, FurnitureView } from './seating';
+import type { FurnitureArt, FurniturePart, FurniturePartRole, FurnitureDrawing } from './seating';
 import type { ShapeKind } from './shape-kind';
 
 export type OfficeKind =
@@ -86,12 +86,16 @@ const path = (role: FurniturePartRole, d: string, fill?: string): Part => ({
 });
 
 // A drawing that reads the same from every side, so every facing shows it.
-const allSides = (view: FurnitureView): FurnitureArt => ({ front: view, back: view, side: view });
+const allSides = (view: FurnitureDrawing): FurnitureArt => ({
+  front: view,
+  back: view,
+  side: view,
+});
 
 const T = OFFICE_TONES;
 
 // A potted plant: five leaves fanned above a terracotta pot.
-export const PLANT_VIEW: FurnitureView = {
+export const PLANT_VIEW: FurnitureDrawing = {
   width: 56,
   height: 88,
   parts: [
@@ -129,7 +133,7 @@ function bookRow(y: number, offset: number): Part[] {
   return out;
 }
 
-export const BOOKSHELF_VIEW: FurnitureView = {
+export const BOOKSHELF_VIEW: FurnitureDrawing = {
   width: 120,
   height: 132,
   parts: [
@@ -148,7 +152,7 @@ export const BOOKSHELF_VIEW: FurnitureView = {
 };
 
 // A water cooler: a blue bottle upside down on a cooler with hot and cold taps.
-export const WATER_COOLER_VIEW: FurnitureView = {
+export const WATER_COOLER_VIEW: FurnitureDrawing = {
   width: 56,
   height: 112,
   parts: [
@@ -168,7 +172,7 @@ export const WATER_COOLER_VIEW: FurnitureView = {
 };
 
 // A coffee machine with a carafe, on a little counter, a mug beside it.
-export const COFFEE_MACHINE_VIEW: FurnitureView = {
+export const COFFEE_MACHINE_VIEW: FurnitureDrawing = {
   width: 72,
   height: 96,
   parts: [
@@ -189,7 +193,7 @@ export const COFFEE_MACHINE_VIEW: FurnitureView = {
 };
 
 // A rug: an oval in the element's fill with a border, lying on the floor (no shadow: it is the floor).
-export const RUG_VIEW: FurnitureView = {
+export const RUG_VIEW: FurnitureDrawing = {
   width: 200,
   height: 120,
   parts: [
@@ -221,7 +225,7 @@ const near = (cx: number): Part[] => [
 
 // Six chairs round a table, every seat facing it: two beyond (their sitters face you), two in front (their
 // backs to you), one at each end in profile.
-export const MEETING_TABLE_VIEW: FurnitureView & { tableSeats: readonly TableSeat[] } = {
+export const MEETING_TABLE_VIEW: FurnitureDrawing & { tableSeats: readonly TableSeat[] } = {
   width: TW,
   height: TH,
   parts: [

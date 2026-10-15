@@ -143,7 +143,11 @@ test('initials with a tailed capital centre on their cap band', async ({ page })
       'position:fixed;left:40px;top:40px;z-index:99999;display:inline-flex;width:24px;height:24px;' +
       'border-radius:9999px;align-items:center;justify-content:center;background:#4f46e5;color:#fff;' +
       'font-size:10px;font-weight:600;line-height:1';
-    disc.innerHTML = '<span class="text-optical-centre">QW</span>';
+    // Built node by node: the page enforces Trusted Types (docs/specs/016-platform/trusted-types.md).
+    const initials = document.createElement('span');
+    initials.className = 'text-optical-centre';
+    initials.textContent = 'QW';
+    disc.appendChild(initials);
     document.body.appendChild(disc);
   });
   const report = await auditOptical(page);

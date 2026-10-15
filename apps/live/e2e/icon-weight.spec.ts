@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, seedTab, startBlankDocument, test } from './fixtures';
+import {
+  expect,
+  expectNoPageErrors,
+  seedTab,
+  startBlankDocument,
+  test,
+  paletteTile,
+} from './fixtures';
 
 // A line-art icon's weight, end to end (docs/specs/004-interface-design/iconography.md, "Canvas icons"):
 // the context menu's Weight row lands on the element, persists, and draws the chosen on-screen stroke.
@@ -54,10 +61,7 @@ test.describe('Chrome glyph weight', () => {
   }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await startBlankDocument(page);
-    const glyph = page
-      .getByRole('button', { name: 'Add Square', exact: true })
-      .locator('svg.lvd-glyph')
-      .first();
+    const glyph = (await paletteTile(page, 'Add Square')).locator('svg.lvd-glyph').first();
     await expect(glyph).toHaveAttribute('stroke-width', '1.25');
     const child = glyph.locator('> *').first();
     await expect

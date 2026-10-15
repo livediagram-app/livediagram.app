@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { use, useRef, useState } from 'react';
+import { browser } from 'react-dom';
 import { Button } from '@livediagram/ui';
 import type { TeamInviteLink } from '@livediagram/api-schema';
 import { apiGenerateTeamInviteLink, apiRevokeTeamInviteLink } from '@/lib/api-client';
@@ -17,8 +18,7 @@ import { useRelativeNow } from '@/lib/relative-time';
 // the team detail) and gets told when it changes so the rest of the
 // pane stays in sync.
 
-function joinUrlFor(token: string): string {
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+function joinUrlFor(origin: string, token: string): string {
   return `${origin}/join?token=${encodeURIComponent(token)}`;
 }
 
@@ -45,6 +45,9 @@ export function TeamInviteLinkDialog({
   inviteLink: TeamInviteLink | null;
   onInviteLinkChange: (link: TeamInviteLink | null) => void;
 }) {
+  // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser only").
+  use(browser());
+  const origin = window.location.origin;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -97,7 +100,7 @@ export function TeamInviteLinkDialog({
 
   const copy = async () => {
     if (!inviteLink) return;
-    const url = joinUrlFor(inviteLink.token);
+    const url = joinUrlFor(origin, inviteLink.token);
     try {
       await navigator.clipboard.writeText(url);
       // Confirmation + telemetry only on an actual copy — flipping to
@@ -112,7 +115,7 @@ export function TeamInviteLinkDialog({
     }
   };
 
-  const url = inviteLink ? joinUrlFor(inviteLink.token) : '';
+  const url = inviteLink ? joinUrlFor(origin, inviteLink.token) : '';
 
   return (
     <Dialog open={open} onClose={onClose} titleId="invite-link-title" size="sm">

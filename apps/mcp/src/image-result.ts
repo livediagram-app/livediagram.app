@@ -39,7 +39,7 @@ import {
 } from '@livediagram/icons/resolve';
 import { chartsReadLive } from '@livediagram/agent-verbs';
 import { svgToPngBase64 } from './render';
-import { previewFonts } from './preview-fonts';
+import { INTER_ITALIC, previewFonts } from './preview-fonts';
 import { planPreviewFor } from './plan-preview';
 import { apiFetch, apiJson } from './api';
 import type { Env } from './env';
@@ -225,13 +225,26 @@ export async function tabPreview(
 }
 
 // The editor's font ids a tab draws in: its elements' and its own, a sheet's cells', and its articles' heading and body
-// faces (the fonts a preview fetches beyond Inter).
+// faces (the fonts a preview fetches beyond Inter), and Inter's italics when any text is set in italic.
 export function tabFontIds(tab: Tab, sheets?: ReadonlyMap<string, SheetRenderModel>): string[] {
   const articles = Object.values(articlesOf(tab)).flatMap((doc) => {
     const style = resolveArticleStyle(doc.style);
     return [style.headingFont, style.bodyFont];
   });
-  return [...exportFontIds(tab.elements, tab.font, sheets, tab.finish), ...articles];
+  return [
+    ...exportFontIds(tab.elements, tab.font, sheets, tab.finish),
+    ...articles,
+    ...(usesItalic(tab.elements) ? [INTER_ITALIC] : []),
+  ];
+}
+
+// Whether any text is set in italic: an element's or a line's own, or a run's or a cell's inside it.
+function usesItalic(elements: Tab['elements']): boolean {
+  return elements.some(
+    (el) =>
+      (el as { textItalic?: boolean }).textItalic === true ||
+      /"italic":true/.test(JSON.stringify(el)),
+  );
 }
 
 // `notes` are short text blocks after the structured result, such as the lint summary line.

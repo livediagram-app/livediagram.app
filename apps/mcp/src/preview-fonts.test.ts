@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   faceUrlsOf,
+  INTER_ITALIC,
   previewFonts,
   PREVIEW_FONTS_MAX,
   PREVIEW_FONTS_PENDING_MAX_MS,
@@ -45,6 +46,14 @@ describe('preview fonts', () => {
     await previewFonts(['caveat'], fn);
     expect(calls.filter((c) => c.includes('css2'))).toHaveLength(1);
     expect(await previewFonts(['inter'], fn)).toEqual([]);
+  });
+
+  it("fetches Inter's italics when asked, the embedded Inter being upright only", async () => {
+    const { fn, calls } = fetcher();
+    expect(await previewFonts([INTER_ITALIC], fn)).toHaveLength(2);
+    expect(calls.filter((c) => c.includes('css2'))).toEqual([
+      'https://fonts.googleapis.com/css2?family=Inter:ital,wght@1,400;1,700',
+    ]);
   });
 
   it('fetches at most a few families, and tries a failed one again next time', async () => {

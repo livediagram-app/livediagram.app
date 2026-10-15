@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { showsSlidesButton } from './SlidesClusterButton';
+import { showsSlidesButton } from './SlidesClusterSegment';
 
 // docs/specs/007-editor/illustrate-pages.md "Slides button": shown only while at least one page is a slide.
 describe('showsSlidesButton', () => {

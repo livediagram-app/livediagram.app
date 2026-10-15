@@ -4018,6 +4018,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "final-state": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "focus-button": {
             "additionalProperties": false,
             "properties": {
@@ -9658,6 +9673,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "LineSeries": {
     "additionalProperties": false,
     "properties": {
+      "axis": {
+        "const": "right",
+        "type": "string"
+      },
       "color": {
         "type": "string"
       },
@@ -10774,7 +10793,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "snowfall",
       "lava",
       "dot-wave",
-      "clouds"
+      "clouds",
+      "warp",
+      "orbits",
+      "radar",
+      "equaliser",
+      "confetti",
+      "threads"
     ],
     "type": "string"
   },
@@ -12952,6 +12977,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "chairFacing": {
         "$ref": "#/components/schemas/ChairFacing"
       },
+      "chartAxis": {
+        "type": "boolean"
+      },
       "chartLegend": {
         "type": "boolean"
       },
@@ -13622,6 +13650,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "quiz",
       "stadium",
       "actor",
+      "final-state",
       "cloud",
       "triangle",
       "trapezoid",

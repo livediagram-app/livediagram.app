@@ -133,7 +133,7 @@ The account menu's **Account** item opens the host page's own Settings dialog on
 
 ## Share dialog
 
-The "Share this document" modal (`apps/live/components/dialogs/ShareDialog.tsx`, opened from the header Share button, owner-only) follows the same dialog conventions as Settings / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
+The "Share this document" modal (`apps/live/components/dialogs/ShareDialog.tsx`, opened from the header Share button, for the owner and, on a team document, every joined member: [Team shared documents](../013-workspace/team-shared-documents.md)) follows the same dialog conventions as Settings / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
 
 ### The pass metaphor
 

@@ -10,7 +10,7 @@ import {
   RowEyeOffIcon,
   UnlockIcon,
 } from '@/components/panels/layers-panel-icons';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, trustedHtml } from '@livediagram/ui';
 
 // ONE ROW OF THE LAYERS PANEL (docs/specs/006-document/layers.md "The Layers panel"): grip ·
 // preview · name over a meta line · lock · eye · options.
@@ -151,7 +151,7 @@ export function LayerRow({
               preserveAspectRatio="xMidYMid meet"
               className="h-full w-full p-0.5"
               aria-hidden
-              dangerouslySetInnerHTML={{ __html: markup }}
+              dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
             />
           ) : null}
         </span>

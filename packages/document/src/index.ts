@@ -528,6 +528,7 @@ export * from './mind-outline-marks';
 export * from './mind-outline';
 export * from './youtube';
 export * from './arrow-path';
+export * from './arrow-dash';
 export * from './arrow-label';
 export * from './arrow-label-layout';
 export * from './arrow-label-wrap';
@@ -586,6 +587,7 @@ export * from './chart-frame';
 export * from './chart-ink';
 export * from './chart-types';
 export * from './chart-marks';
+export * from './chart-axis';
 export * from './chart-values';
 export * from './chart-source';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
@@ -598,7 +600,7 @@ export * from './quiz';
 export * from './shape-geometry';
 // Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
 export * from './fence';
-// Seating (docs/specs/009-elements/chair.md): the desk and sofa drawings and every seat's feet point.
+// Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
 export * from './office';
 export * from './actor-figure';
@@ -824,3 +826,4 @@ export * from './article-draw-ops';
 export * from './article-layout-estimate';
 export { agendaFitHeight } from './svg-render-agenda';
 export * from './session-button-text';
+export { lineChars } from './svg-render-web';

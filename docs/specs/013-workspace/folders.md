@@ -297,7 +297,7 @@ split by separators:
 
 The panel does not carry the import entry: its header holds only
 **⋯** and **?**, and a row of source icons would crowd it. Importing boards
-from other tools lives on the full-page Explorer (below). 2. **Share** (owners only, the header Share button's gate) and
+from other tools lives on the full-page Explorer (below). 2. **Share** (the owner, or any joined member of a team document's team: the header Share button's gate) and
 **Export** (the active tab, as the tab menu's Export). 3. **Search**, **GitHub** (the open-source repo, new tab), **Licences** (the
 third-party licences page, new tab, see
 [Third-party licences](../002-project-scope/third-party-licences.md)), **Settings**.

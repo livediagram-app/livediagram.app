@@ -1,5 +1,7 @@
 'use client';
 
+import { trustedHtml } from '@livediagram/ui';
+
 // A tab window's drawing (docs/specs/009-elements/tab-window.md "The element"): the tab drawn as the editor shows it
 // (useTabSvg: the export renderer, in this person's appearance, with its photos and the document's cards), zoomed to
 // fit and centred on the tab's paper. Inline rather than an image so the page's typefaces apply, its ids prefixed so
@@ -32,7 +34,7 @@ export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: stri
         aria-hidden="true"
         style={{ display: 'block' }}
         // Our own renderer's output (every label is xmlEscaped inside it).
-        dangerouslySetInnerHTML={{ __html: inner }}
+        dangerouslySetInnerHTML={{ __html: trustedHtml(inner) }}
       />
     </div>
   );

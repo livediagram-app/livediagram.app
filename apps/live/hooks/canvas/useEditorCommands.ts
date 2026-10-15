@@ -81,9 +81,10 @@ export function useEditorCommands(open: boolean): {
   // Draw mode (docs/specs/007-editor/editor-modes.md) has no format painter.
   const whiteboard = ctx.editorMode.mode === 'draw';
   const planMode = ctx.editorMode.mode === 'plan';
+  const facilitateMode = ctx.editorMode.mode === 'facilitate';
   const {
     isReadOnly,
-    isOwner,
+    canShareDocument,
     documentId,
     activeTab,
     deleteSelected,
@@ -181,7 +182,7 @@ export function useEditorCommands(open: boolean): {
       hasAnimation,
       tabHasSteps,
       marker,
-      isOwner,
+      canShare: canShareDocument,
       isOffline,
       workbench: workbenchMode,
       canvasTool,
@@ -193,6 +194,7 @@ export function useEditorCommands(open: boolean): {
       esBoard,
       whiteboard,
       planMode,
+      facilitateMode,
       tabLocked,
       photoImportAvailable,
     }),
@@ -211,7 +213,7 @@ export function useEditorCommands(open: boolean): {
       hasAnimation,
       tabHasSteps,
       marker,
-      isOwner,
+      canShareDocument,
       isOffline,
       workbenchMode,
       canvasTool,
@@ -220,6 +222,7 @@ export function useEditorCommands(open: boolean): {
       esBoard,
       whiteboard,
       planMode,
+      facilitateMode,
       tabLocked,
       photoImportAvailable,
     ],

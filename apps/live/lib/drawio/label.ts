@@ -3,6 +3,7 @@
 // inert document (no scripts, no loads), and only text plus a closed set of
 // formats is read out of it.
 
+import { parseInert } from '@livediagram/ui/trusted-types';
 import { normalizeRuns, type RunHeading, type RunSize, type TextRun } from '@livediagram/document';
 import { htmlFontSizePx } from './text-size';
 import { hexInk } from './colour';
@@ -88,7 +89,7 @@ export function readLabel(
   if (value.trim() === '') return { plain: '' };
 
   const source = nl2Br ? value.replace(/\r\n?|\n/g, '<br>') : value;
-  const body = new DOMParser().parseFromString(source, 'text/html').body;
+  const body = parseInert(source, 'text/html').body;
   const out: Glyph[] = [];
   const endsWithBreak = () => out.length === 0 || out[out.length - 1]!.ch === '\n';
   const push = (text: string, f: Format) => {

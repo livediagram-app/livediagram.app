@@ -28,6 +28,16 @@ describe('sameArrowViewFrame', () => {
     ).toBe(true);
   });
 
+  it("anchors a shared end's dashes there, and sees the offset change", () => {
+    const bus = { ...arrow, strokeStyle: 'dashed' as const, exactEnd: true };
+    const frame = deriveArrowViewFrame(bus, buildElementIndex([a, b, bus]));
+    expect(frame.dashOffset).toBeTypeOf('number');
+    expect(
+      deriveArrowViewFrame(arrow, buildElementIndex([a, b, arrow])).dashOffset,
+    ).toBeUndefined();
+    expect(sameArrowViewFrame(frame, { ...frame, dashOffset: frame.dashOffset! + 1 })).toBe(false);
+  });
+
   it('sees an end that moved', () => {
     const before = deriveArrowViewFrame(arrow, buildElementIndex([a, b, arrow]));
     const after = deriveArrowViewFrame(arrow, buildElementIndex([a, { ...b, y: 30 }, arrow]));

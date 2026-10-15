@@ -797,6 +797,10 @@ export function stackBuses(
 // on a run that is its own, no other labelled arrow running along it: the drop into its target first, then the leg
 // out of its source, then its longest; centred on the run, on the line. Every label is given the width of its text,
 // so a short caption stays on one line on a vertical run.
+// The end an arrow shares as a bus (exact, pinned), or null.
+const busEnd = (a: ArrowElement) =>
+  a.exactEnd && a.to.kind === 'pinned' ? `${a.to.elementId}:${a.to.anchor}` : null;
+
 export function placeElbowLabels(elements: Element[]): Element[] {
   const labelled = elements.filter(
     (el): el is ArrowElement =>
@@ -813,7 +817,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
   // Every line as drawn, the ones a label must keep off.
   const lines = elements
     .filter((el): el is ArrowElement => el.type === 'arrow')
-    .map((el) => ({ id: el.id, pts: paths.get(el.id) ?? pathOf(el) }));
+    .map((el) => ({ id: el.id, pts: paths.get(el.id) ?? pathOf(el), end: busEnd(el) }));
   // The boxes a label must clear: every boxed element but the frames and lanes that hold them.
   const isHolder = (el: Element) =>
     el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
@@ -854,7 +858,34 @@ export function placeElbowLabels(elements: Element[]): Element[] {
   // The plates of the labels placed so far: a later label keeps off them (two "publish" labels off one bus stood
   // over each other).
   const plates: Rect[] = [];
+  // A bus says its label once (§4.7 "The graph look"): the arrows merging into one node's end saying the same thing,
+  // keyed here. The first places it on the drop they share; when that holds it the rest go unlabelled, else each keeps
+  // its own on its leg.
+  const busOf = (a: ArrowElement) =>
+    a.exactEnd && a.to.kind === 'pinned'
+      ? `${a.to.elementId}:${a.to.anchor}:${a.label!.trim().toLowerCase()}|${a.strokeStyle ?? 'solid'}`
+      : null;
+  const busSize = new Map<string, number>();
   for (const a of labelled) {
+    const bus = busOf(a);
+    if (bus) busSize.set(bus, (busSize.get(bus) ?? 0) + 1);
+  }
+  // How many arrows share each bus end, labelled or not.
+  const endSize = new Map<string, number>();
+  for (const el of elements)
+    if (el.type === 'arrow') {
+      const end = busEnd(el);
+      if (end) endSize.set(end, (endSize.get(end) ?? 0) + 1);
+    }
+  const saidOnce = new Set<string>();
+  const unlabelled = new Set<string>();
+  for (const a of labelled) {
+    const bus = busOf(a);
+    if (bus && saidOnce.has(bus)) {
+      unlabelled.add(a.id);
+      continue;
+    }
+    const ownEnd = busEnd(a);
     // Runs on one line are one run: an elbow whose bends fall on its line draws straight, and a label needs the
     // whole of it, not either half.
     const pts = paths
@@ -910,11 +941,13 @@ export function placeElbowLabels(elements: Element[]): Element[] {
             ({ rect, heading }) =>
               straddles(plate, rect) || (heading !== null && rectsIntersect(plate, heading)),
           ) &&
-          // Strict, off every other line too, not only labelled ones: a neighbour's drop struck a label through.
+          // Strict, off every other line too, not only labelled ones: a neighbour's drop struck a label through. A line
+          // of its own bus runs the shared drop with it, its own line there.
           (!strict ||
             !lines.some(
               (l) =>
                 l.id !== a.id &&
+                !(i === last && ownEnd !== null && l.end === ownEnd) &&
                 l.pts.some((p, k) => k > 0 && segmentHitsRect(l.pts[k - 1]!, p, plate)),
             ));
         if (clear && !plates.some((r) => rectsIntersect(plate, r))) return f;
@@ -951,15 +984,27 @@ export function placeElbowLabels(elements: Element[]): Element[] {
       return null;
     };
     const holds = (i: number) => spot(i) !== null;
-    const centred =
-      [last, 0, ...byLength].find((i) => holds(i) && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
-      // Beside another labelled line is better than over a box.
-      byLength.find(holds);
+    // The first of a bus: its drop into the node, the stretch every arrow of the bus shares, or each keeps its own.
+    const onBus =
+      (bus && busSize.get(bus)! > 1) || (ownEnd !== null && endSize.get(ownEnd)! > 1)
+        ? holds(last)
+          ? { centred: last, beside: undefined }
+          : besideSpot(last)
+            ? { centred: undefined, beside: { i: last, at: besideSpot(last) } }
+            : null
+        : null;
+    if (onBus && bus) saidOnce.add(bus);
+    const centred = onBus
+      ? onBus.centred
+      : ([last, 0, ...byLength].find((i) => holds(i) && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
+        // Beside another labelled line is better than over a box.
+        byLength.find(holds));
     // No run holds it on the line: beside one, clear of every line, before over another line or a box.
     const beside =
-      centred === undefined
+      onBus?.beside ??
+      (centred === undefined
         ? byLength.map((i) => ({ i, at: besideSpot(i) })).find(({ at }) => at !== null)
-        : undefined;
+        : undefined);
     const seg =
       centred ?? beside?.i ?? byLength.find((i) => spot(i, false) !== null) ?? byLength[0]!;
     const before = lens.slice(0, seg).reduce((s, l) => s + l, 0);
@@ -992,7 +1037,11 @@ export function placeElbowLabels(elements: Element[]): Element[] {
       labelMaxWidth: Math.ceil(width),
     });
   }
-  return elements.map((el) => placed.get(el.id) ?? el);
+  return elements.map((el) => {
+    if (!unlabelled.has(el.id)) return placed.get(el.id) ?? el;
+    const { label: _label, ...rest } = el as ArrowElement;
+    return rest as ArrowElement;
+  });
 }
 
 // How far a label's plate keeps off a frame's or lane's border, in px: inside by a pixel, "HTTPS" read as sitting

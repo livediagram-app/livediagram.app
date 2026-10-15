@@ -90,7 +90,9 @@ function normaliseChart(el: Raw): Raw {
       const values = Array.isArray(s.values) ? s.values.map(num) : [];
       const fitted =
         count === undefined ? values : Array.from({ length: count }, (_, i) => values[i] ?? 0);
-      return { ...s, name: str(s.name), values: fitted };
+      // A second axis is `right` or nothing.
+      const { axis, ...rest } = s;
+      return { ...rest, name: str(s.name), values: fitted, ...(axis === 'right' ? { axis } : {}) };
     });
   }
   return out;

@@ -243,4 +243,19 @@ describe('the Shapes flyout', () => {
     )!;
     expect(preview.style.color).toBe('rgb(28, 25, 23)');
   });
+
+  // docs/specs/003-system-architecture/react-state-and-effects.md "Fragments and DOM events": the field's focus
+  // comes back through a Fragment ref, with no wrapper node.
+  it('hands the focus back to its field when a shape menu closes on Escape', () => {
+    renderDock();
+    openByPress();
+    fireEvent.keyDown(field(), { key: 'F10', shiftKey: true });
+    const pin = screen.getByRole('button', { name: 'Pin to dock' });
+    pin.focus();
+    fireEvent.keyDown(pin, { key: 'Escape' });
+    expect(document.activeElement).toBe(field());
+    // No bare wrapper node carries the ref: the search box sits straight in the flyout's column.
+    const column = field().closest('[data-shape-search]')!;
+    expect(column.firstElementChild?.attributes.length).toBeGreaterThan(0);
+  });
 });

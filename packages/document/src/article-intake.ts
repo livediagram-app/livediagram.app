@@ -40,6 +40,7 @@ const DRAWING_SHAPES: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
   'entity',
   'stadium',
   'actor',
+  'final-state',
   'cloud',
   'triangle',
   'trapezoid',

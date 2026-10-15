@@ -461,7 +461,11 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   trunk rather than on it, so a dashed event line never rides a solid call's trunk, nor its run across the gap
   between ranks (each line's runs take their own channel there); a labelled
   arrow keeps its own ends, unless arrows into one node (or out of one) say the same thing in the same line: those
-  join one bus too, each label on its own leg (several services that each "publish" to one event bus), never a
+  join one bus too (several services that each "publish" to one event bus), and so does the one labelled arrow
+  among unlabelled ones into one node in its line (an agent that names the bus once, on one of its arrows), the bus
+  saying it once, on the stretch
+  into that node they all share (four "publish" plates, one a leg, read as four different things; a trunk out of one
+  node keeps one on each leg, where each says where it goes), never a
   decision's exits, whose label names that decision's branch (two decisions' "no" on one bus could not say which was
   which), and its label
   sits on a run no other labelled arrow shares (the drop into its target,
@@ -509,7 +513,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - **Lanes stay compact and their decisions branch.** In a `lanes` graph a hand-off to the next lane up or down that is
   its step's only way out and its next step's only way in drops straight into that lane, in the same column, rather
   than taking a column of its own, so a chain of hand-offs climbs or descends a staircase instead of stretching across
-  the page. Next steps one step of the same lane feeds, stacked in one column, spread until each clears that step's
+  the page; never two drops in a row, so the staircase steps right as it goes and the flow still reads left to right
+  (four drops in a row stood the first four steps in one column). Next steps one step of the same lane feeds, stacked in one column, spread until each clears that step's
   points, so its exits can branch. A step with two or more exits (a decision, or any step that branches) keeps the one whose next step sits
   most nearly level with it on its point toward the flow; each other exit leaves from its top or bottom, toward its
   next step's lane, and bends once into that step's side, so no two exits leave as parallel stubs. A flow down the
@@ -543,19 +548,21 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   branch tinted in its own hue with its icon; leaves white and edged in their branch's hue, one height for every leaf of the map (the tallest any label needs); a root
   whose label would grow the circle past 260 px takes the next text size down, so the centre stays near the template's; curved connectors in
   the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group
-  a lane, one under another, its label in the lane's header strip; the flow runs left to right across the lanes and
+  a lane, one under another, its label in the lane's header strip (a heading, a size up from the steps, the strip as
+  wide as the longest title needs up to the swimlane template's, the columns 48 px apart); the flow runs left to right across the lanes and
   a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a
   node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
   edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows
-  out alike, a node with no edge at all at the ring's centre, a node given no
-  shape a circle).
+  out alike, a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows
+  the stops, a node given no shape a circle).
 - `groups`: named clusters drawn as frames around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
   may point at a group id. With groups, `style` is flow. A node may name its
   group itself (`group`), the shape a model reaches for first; it joins that
   group's members, and a group id nothing declares is created with the id as its
-  label. `members` is then optional. Groups do not nest: a group listed as another's member is refused, naming
-  both, rather than dropped; and a `lanes` graph refuses a node in no group, which would otherwise land in an
+  label. `members` is then optional. Nodes and groups share one set of ids: an id naming both is refused, naming
+  it, since each becomes an element of that id. Groups do not nest: a group listed as another's member is refused,
+  naming both, rather than dropped; and a `lanes` graph refuses a node in no group, which would otherwise land in an
   unlabelled lane of its own (`graphShapeError`). The api's `replace` with a `graph` refuses the same, so every
   caller of graph input is held to it (`graphBodyIssue`).
 - `lines` (`angled` for flow, lanes and tree, `curved` for mindmap and cycle): the
@@ -1138,7 +1145,8 @@ Worker (no DOM, no React).
   to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`):
   at most `PREVIEW_FONTS_MAX` (4) families, whatever arrives within `PREVIEW_FONTS_TIMEOUT_MS` (2.5 s), each kept in
   the isolate and the Cache API. A face that cannot be fetched draws in Inter, as before; nothing is sent but the
-  family names.
+  family names. The embedded Inter is upright only, so a tab with any text in italic (an element's, a run's, a
+  cell's) fetches Inter's italics the same way (`INTER_ITALIC`); resvg drew italic it had no face for upright.
 - **No scaled strokes.** resvg ignores `vector-effect="non-scaling-stroke"`, so
   the renderer never relies on it: stretched silhouettes (frames, cylinders,
   device frames) are mapped into the element box point by point

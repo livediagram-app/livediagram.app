@@ -214,7 +214,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'element-indicators': '#f97316',
   snapping: '#22c55e',
   // Palette → Palette Settings
-  popular: '#eab308',
   'panel-opacity': '#64748b',
   'quick-add-on-hover': '#10b981',
   'auto-attach-arrows': '#10b981',

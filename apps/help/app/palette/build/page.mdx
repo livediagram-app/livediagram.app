@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('build')}
 >
 
-The **Build** category (the first of the **Structure** band in the palette's category picker) holds the elements you lay a diagram _out_ with. Everywhere else in the palette you are adding something to the canvas; here you are deciding how the canvas is arranged.
+The **Build** category (on the palette strip after Draw) holds the elements you lay a diagram _out_ with. Everywhere else in the palette you are adding something to the canvas; here you are deciding how the canvas is arranged.
 
 What the first five have in common is that **each one holds other work**. A frame gathers a region, a lane carries the steps in a row, a timeline sequences events along a track, a table organises cells, and a mind node hangs children off itself. You reach for them at the same moment: once you know how the diagram is arranged, before you have decided what goes in it.
 
@@ -35,22 +35,23 @@ What the first five have in common is that **each one holds other work**. A fram
 - A **Diagram Key** lists the line styles and tag colours the tab uses, each with a meaning you type, and keeps itself up to date as the diagram changes. See [Diagram Keys and Tag Colours](/help/palette/diagram-keys/).
 - A **Boundary** is a titled, tinted container for a cloud region, a VPC, a cluster or a C4 system. It carries what sits inside it like a frame, and boundaries nested in each other read deeper. See [Boundaries](/help/palette/boundaries/).
 - A **Timeline** is a track for sequencing events, with points above the line; add more with **Add Point** from its **+** buttons. See [Timeline Rail](/help/palette/tools/data-elements/timeline-rail/).
-- A **Sankey** diagram shows how much moves where: nodes in columns, joined by bands as wide as the amount they carry. It lays itself out from a list of flows you type, paste or import. See [Sankey Diagram](/help/palette/build/sankey-diagram/).
+The **Sankey** diagram, which shows how much moves where, used to sit here too. It has moved to **Concepts**, beside the funnel and the cycle: rather than holding work you place in it, it lays itself out from the flows you give it, as they do. See [Sankey Diagram](/help/palette/build/sankey-diagram/).
 
-The Sankey is the odd one out: rather than holding work you place in it, it lays itself out from the flows you give it.
-
-In Diagram mode three more tiles follow, for the nodes and marks a finished diagram is made of:
+In Diagram mode four more tiles follow, for the nodes and marks a finished diagram is made of:
 
 - A **Card** is one node with a title, a meta line, a body, an icon and tags, each switched on or off. See [Cards and Callouts](/help/palette/cards-and-callouts/).
 - A **Badge** is a small pill of text and a **Step Number** a numbered disc; drop either on a node's corner and it travels with the node. See [Badges and Step Numbers](/help/palette/badges-and-step-numbers/).
+- An **Entity** is a class or a table: a title over its fields, for a data model. See [Entities](/help/palette/entities/).
 
-Build is in the palette in Diagram mode. In Draw mode the palette gives way to the dock, whose shape catalogue still offers the mind node, lane, frame and timeline. In Illustrate mode it holds the Table, the Stack, the Timeline and the Sankey, since mind maps, flowcharts, lanes and frames organise a diagram rather than a page, and Plan mode has no Build category.
+Card and Badge each come in presets: press one and its presets open in a second panel beside Build's.
 
-## Tiles on the strip, rows in More
+Build is in the palette in Diagram mode. In Draw mode the palette gives way to the dock, whose shape catalogue still offers the mind node, lane, frame and timeline. In Illustrate mode it holds the Table, the Stack and the Timeline, since mind maps, flowcharts, lanes and frames organise a diagram rather than a page, and Plan mode has no Build category.
 
-Most catalogue categories show a grid of pictures, because the picture is the explanation. The containers among them are, at tile size, all a rectangle. On the strip they are seven tiles; when the strip is too narrow for them all, **More** lists them as rows with a one-line description each: "Tab adds a child, Enter a sibling" against "A titled band that carries its steps" is what you are actually choosing between, and no icon says that.
+## Cards, not pictures
 
-<Figure caption="Build as More lists it on a narrow screen: its six elements as rows, each with a line on what it does.">
+Shapes show as a grid of pictures, because the picture is the explanation. The containers here are, at tile size, all a rectangle. So Build's [palette panel](/help/palette/toolbar-layout/) lists them as cards with a one-line description each, in two groups, **Diagrams** and **Layout and Parts**: "Tab adds a child, Enter a sibling" against "A titled band that carries its steps" is what you are actually choosing between, and no icon says that.
+
+<Figure caption="Build's elements as cards, each with a line on what it does.">
   <BuildRows />
 </Figure>
 

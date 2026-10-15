@@ -3,6 +3,7 @@
 // <marker> builder, the per-arrow path + label emitter, and the
 // head-reference resolution that keeps heads tangent to curved / angled
 // paths. svg-render re-exports everything so importers keep resolving.
+import { arrowDashOffset } from './arrow-dash';
 import {
   angledElbow,
   arrowPathD,
@@ -204,7 +205,11 @@ export function svgArrow(
     arrow.curvePoints,
   );
   const dash = BORDER_DASH_ARRAY[arrow.strokeStyle ?? 'solid'];
-  const dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
+  // A shared end's pattern is anchored there, so every arrow into it runs in step (arrow-dash.ts).
+  const dashOffset = arrowDashOffset(arrow, from, to);
+  const dashAttr = dash
+    ? ` stroke-dasharray="${dash}"${dashOffset ? ` stroke-dashoffset="${dashOffset}"` : ''}`
+    : '';
   // The line breaks around unrelated boxes it crosses, as on the canvas
   // (docs/specs/008-canvas/arrow-route-behind.md), and around the label knockouts. Both go in one
   // mask, the same one ArrowView mints, so the export shows the same gaps.

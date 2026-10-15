@@ -170,7 +170,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 36,
+    articleCount: 35,
     kind: 'feature',
   },
   {
@@ -1042,15 +1042,6 @@ export const articles: Article[] = [
     categorySlug: 'selection-modes',
   },
   // ---- Palette landings: Elements ----
-  {
-    slug: 'popular',
-    title: 'Popular',
-    description: 'The tiles most reached for, in the grid the palette opens on.',
-    keywords: 'popular common default quick grid landing favourites favorites everyday',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Elements',
-  },
   {
     slug: 'shapes',
     title: 'Shapes',

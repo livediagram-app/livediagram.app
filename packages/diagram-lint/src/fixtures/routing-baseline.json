@@ -17,10 +17,10 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1032×1115"
+    "extent": "934×1020"
   },
   "graph-flow-13-bus": {
-    "shared": 3897,
+    "shared": 3814,
     "crossed": 0,
     "strikes": 1,
     "kinks": 0,
@@ -60,7 +60,7 @@
     "extent": "1218×2326"
   },
   "graph-flow-9": {
-    "shared": 280,
+    "shared": 0,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
@@ -77,27 +77,27 @@
     "crossings": 2,
     "behind": 0,
     "collisions": 0,
-    "extent": "3188×1140"
+    "extent": "3044×1140"
   },
   "graph-lanes-13": {
-    "shared": 12,
+    "shared": 0,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 9,
     "behind": 0,
     "collisions": 0,
-    "extent": "2755×974"
+    "extent": "2587×974"
   },
   "graph-lanes-14": {
-    "shared": 174,
+    "shared": 0,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 1,
     "behind": 0,
     "collisions": 0,
-    "extent": "3518×986"
+    "extent": "3302×986"
   },
   "graph-lanes-15": {
     "shared": 0,
@@ -107,7 +107,7 @@
     "crossings": 4,
     "behind": 0,
     "collisions": 0,
-    "extent": "2965×974"
+    "extent": "3027×974"
   },
   "graph-mindmap-24": {
     "shared": 0,
@@ -160,7 +160,7 @@
     "extent": "1330×753"
   },
   "mermaid-erdiagram-1": {
-    "shared": 30,
+    "shared": 0,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
@@ -170,7 +170,7 @@
     "extent": "972×855"
   },
   "mermaid-erdiagram-2": {
-    "shared": 291,
+    "shared": 165,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
@@ -180,7 +180,7 @@
     "extent": "1144×670"
   },
   "mermaid-erdiagram-3": {
-    "shared": 293,
+    "shared": 165,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
@@ -190,7 +190,7 @@
     "extent": "1144×670"
   },
   "mermaid-erdiagram-4": {
-    "shared": 25,
+    "shared": 0,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
@@ -207,7 +207,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "2309×1502"
+    "extent": "2260×1502"
   },
   "mermaid-sequencediagram-2": {
     "shared": 0,
@@ -227,7 +227,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1500×1380"
+    "extent": "1452×1380"
   },
   "mermaid-sequencediagram-4": {
     "shared": 0,
@@ -237,7 +237,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1697×1374"
+    "extent": "1648×1374"
   },
   "mermaid-sequencediagram-5": {
     "shared": 0,
@@ -247,26 +247,26 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "2309×1502"
+    "extent": "2260×1502"
   },
   "mermaid-statediagram-1": {
-    "shared": 228,
+    "shared": 0,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "2459×252"
+    "extent": "2465×252"
   },
   "mermaid-statediagram-2": {
-    "shared": 96,
+    "shared": 0,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "560×1272"
+    "extent": "560×1278"
   }
 }

@@ -30,7 +30,6 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVote,
-  lucideZap,
 } from '@livediagram/icons/lucide';
 import { topCategorySlug } from '@livediagram/help-registry';
 import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
@@ -1487,13 +1486,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   technology: (
     <Glyph>
       <Prims prims={lucideCpu} />
-    </Glyph>
-  ),
-  // Palette → Popular: a bolt, for the tiles one tap away. Not the tab's own sparkles, which the
-  // AI Tools card already wears here.
-  popular: (
-    <Glyph>
-      <Prims prims={lucideZap} />
     </Glyph>
   ),
   // Two overlapping panels with the back one showing through.

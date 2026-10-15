@@ -58,7 +58,6 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | Page Tidy Up                | `PageTidyUpButton`, `pageTidyUpRoom`, `PAGE_TIDY_UP_TOOLTIP` (`components/canvas/PageTidyUpButton.tsx`); edits `tidyPage`, `previewTidy`; transform `tidyPageElements`, `PageTidyInput` (`apps/live/lib/page-tidy.ts`), its blocks `blocksOf` (`page-tidy-blocks.ts`) and `guard` (`page-tidy-guard.ts`); **block** (an element and what it wholly holds), **twins** (blocks of one size), **frame** (content box or a block's box), **anchor** (a locked, turned or sent-back block)                                                                                                                                                                                         |
 | Add a page                  | `AddPagePopover` (`AddPagePopover.tsx`); `PAGE_KINDS`, `PageKindChoice`, `PageKindCard`, `moveBetweenKindCards` (`page-kind-cards.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | In-page layout card         | `EmptyPageLayouts` (`components/canvas/EmptyPageLayouts.tsx`), `showsLayoutCard` (in `IllustratePages`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| The strip's +               | `AddPageStripButton` (`components/palette/AddPageStripButton.tsx`), `ToolbarPalette` `onAddPage`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | First page's choice card    | `FirstPageChoice` (`components/canvas/FirstPageChoice.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | Page navigator              | `PageNavigator` (`components/canvas/PageNavigator.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Page panel                  | `IllustratePagePanel` (`PagePanelTab` `'page' \| 'background' \| 'layouts' \| 'style' \| 'text'`, `pagePanelTabs`, `PagePreview`, `NameField`, `PanelTabs`, `PageActions`, `ActionButton`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
@@ -74,10 +73,10 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | Page export                 | `pageExportFrame`, `PageExportFrame`, `EXPORT_PAPER` (`apps/live/lib/export-page.ts`); `ImageExportOpts.page`; `exportPagesAsPdf`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Export pages                | `PageScope`, `PageExportFormat`, `DEFAULT_PAGE_SCOPE`, `exportPages`, `exportPageLabel`, `zipEntryName`, `sanitizeFilename` (`apps/live/lib/export-pages.ts`); `writeZip`, `crc32` (`apps/live/lib/zip-writer.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Export page row             | `ExportPagePicker` (scope + page); `ImageExportPanel` `pagePicker`; `ILLUSTRATE_FORMATS`, `ILLUSTRATE_CARD_COPY` (`ExportTabDialog.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| Animated background export  | `motionParts`, `MotionNode`, `MotionBox`, `MotionWave`, `MotionGroup`, `MotionGrid`, `MotionFill`, `MotionAnim`, `wavePath` (`apps/live/lib/page-motion-parts.ts`); `openingPhase`, `openingPose`, `poseAt`, `cubicBezier` (`page-motion-frame.ts`); `paintMotionFrame`, `MotionFrameCache`, `motionFrameHref`, `blurredDisc`, `rgba` (`page-motion-canvas.ts`); `pageGradientLine`, `pageExportFrame`'s `overFill`                                                                                                                                                                                                                                                           |
+| Animated background export  | `motionParts`, `MotionNode`, `MotionBox`, `MotionWave`, `MotionGroup`, `MotionGrid`, `MotionFill`, `MotionAnim`, `wavePath`, `waveLine` (`apps/live/lib/page-motion-parts.ts`; the fourth carousel page's motions in `page-motion-parts-page-four.ts`); `openingPhase`, `openingPose`, `poseAt`, `cubicBezier`, `ANIM_ORIGIN`, `animOrigin` (`page-motion-frame.ts`); `paintMotionFrame`, `MotionFrameCache`, `motionFrameHref`, `blurredDisc`, `rgba` (`page-motion-canvas.ts`); `pageGradientLine`, `pageExportFrame`'s `overFill`                                                                                                                                          |
 | Import formats              | `ImportTabDialog` `formats` (`['json']` in Illustrate mode, from `EditorTabDialogs`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Page slide                  | `Slide.pageId`, `slideFrame(slide, tab)` (`packages/document/src/slide-deck.ts`); `newPageSlide`; `PageSlidePicker`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Slides button               | `SlidesClusterButton`; dock panel `'slides'` (`useDockPopovers`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Slides button               | `SlidesClusterSegment`, in `PagesClusterStrip` after `ContentsClusterSegment`; dock panel `'slides'` (`useDockPopovers`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 "Page" in code and specs; "sheet" only for the drawn view of one. "Layout" is what goes onto one
 page; "template" stays the whole-tab starting point.
@@ -139,6 +138,8 @@ page; "template" stays the whole-tab starting point.
 | `THUMB_W`, `WIDE_THUMB_W`                                              | 120 px, 104 px (the wide card's four columns)                   | `infographic-layout-thumb.tsx`, `infographic-page-layouts-section.tsx`; D29                                                              |
 | `DRAG_THRESHOLD`                                                       | 6 px                                                            | `usePageReorderDrag.ts`; spec "Drag a page's label"                                                                                      |
 | `VIEW_GLIDE_MS`                                                        | 280 ms                                                          | `apps/live/lib/viewport-glide.ts`; spec "The page navigator"                                                                             |
+| `LAST_ILLUSTRATE_PAGE_SETTLE_MS`                                       | 400 ms                                                          | `apps/live/lib/last-illustrate-page.ts`; spec "Back to the page you were on"; D87                                                        |
+| `LAST_ILLUSTRATE_PAGE_MAX`                                             | 200 tabs                                                        | `apps/live/lib/last-illustrate-page.ts`; about 20 KB of local storage; D87                                                               |
 | `NOTICE_GAP_MS`                                                        | 2500 ms                                                         | `page-lock-guard.ts`; the locked-page notice at most this often, D80                                                                     |
 | `PAGINATE_CLUSTER_GAP`                                                 | 120 px                                                          | `illustrate-paginate.ts`; spec "Into pages"                                                                                              |
 | `LANDSCAPE_RATIO`                                                      | 1.1                                                             | `illustrate-paginate.ts`; spec "Into pages"                                                                                              |
@@ -197,6 +198,12 @@ page; "template" stays the whole-tab starting point.
   pages, Turn Into Pages), so an unchosen page is told from a chosen one.
 - No migration: every new field is optional and absent on old data; old pages parse unchanged (as
   unchosen infographic pages, their row on the origin).
+- The page you were last on, per person (`lib/last-illustrate-page.ts`, local storage key
+  `livediagram:v2:last-illustrate-page`, `{ [lastIllustratePageKey(documentId, tabId)]: pageId }`,
+  the key `<documentId>:<tabId>` so a tab id repeated across documents never borrows another's
+  page, the latest `LAST_ILLUSTRATE_PAGE_MAX` = 200 entries, a re-recorded entry moved to the most
+  recent, an unchanged write skipped). Read through `safeJson`; a malformed value or a non-string
+  entry reads as absent. Not a synced preference (capped at 4 KB) and never in the document.
 
 ## Behaviour and state
 
@@ -211,7 +218,16 @@ now; stops a glide), `themeBackgrounds`, `themeAccent`, `articles?` (composed
 in by `useEditorState`), `tabFont`, `layoutPreview` / `setLayoutPreview` (state held here so the
 clip and the overlay share it), and `edit` (absent for a viewer or a locked tab).
 
-On `[on, tabLoaded, tabId]` a frame later `centre()` (frames the first page, at once); on `[on,
+On `[on, tabLoaded, tabId]` a frame later `centre()` (`frameLanding`: the remembered page, else
+the first, at once); `frameFirstPageRef` is handed the same `frameLanding` for the tab-entry fit
+(`useTabEntryEffects`). Back to the page you were on: `useLastIllustratePage` (given `documentId`
+and the viewport store by `useEditorState`) subscribes to the store in a layout effect while on
+with two pages or more; each view change restarts a `LAST_ILLUSTRATE_PAGE_SETTLE_MS` timer, whose
+end writes `pageNearestPoint(pages, computeViewportCenter(canvas size, offset))` under
+`lastIllustratePageKey(documentId, tabId)`. Nothing is written until `frameLanding` has armed the
+key (the view before it may be the last tab's). A pending timer is flushed on the effect's cleanup
+(a tab switch: a layout cleanup, so before anything frames the next tab) and on `pagehide`. On
+`[on,
 tabLoaded, tabId, canEdit]` `putOnAPage()` (Into pages, below), its own effect so an editor role
 resolved after the load still gets the page. After `onGoTo(id)` (add, duplicate, a turn or a new
 size, the page before a deleted one, the first page of a split) the hook frames that page once it
@@ -563,9 +579,8 @@ pageHasOrientation(page)`, then **Background**, then an infographic, slide or lo
 
 - **Add a page**: `AddPageButton` (the + after the last page, at `lastRight + max(GAP / 2,
 (ADD_PAGE_SIZE / 2 + ADD_PAGE_CLEARANCE) / zoom)`, level with the last page's middle,
-  `aria-expanded`, brand-filled while open, `data-add-page-trigger`) and `AddPageStripButton` (in
-  `ToolbarPalette` after a `Divider`, while `onAddPage` is passed, i.e. Illustrate mode with
-  `addPage`, and not on a phone) both open `AddPagePopover`:
+  `aria-expanded`, brand-filled while open, `data-add-page-trigger`) opens `AddPagePopover` (the strip's own +,
+  `AddPageStripButton`, is gone: the strip is the category bar):
   desktop a `Portal`led card under the anchor, centred on it, kept in the window (above it when
   there is no room below), first card focused; phone a `BottomSheet`. Arrow keys cycle the cards
   (`moveBetweenKindCards` in `page-kind-cards.tsx`, shared with `FirstPageChoice`: Left / Right one
@@ -657,21 +672,31 @@ A slide whose fill is a gradient with a `motion` exports its opening frame:
 
 - `motionParts(motion, { w, h }, motionPaint(fill))` (`apps/live/lib/page-motion-parts.ts`) lists
   every part as data: `MotionBox` (`left`, `top`, `width`, `height`, `round?`, `fill: MotionFill`,
-  `halo?`, `anim?`), `MotionWave`, `MotionGroup` (`anim?`, `mask?: 'from-below'`) and `MotionGrid`;
-  `MotionAnim` is `{ name: MotionAnimName, d, dl?, x?, y?, rest? }`, one name per `pm-<name>`
-  keyframes in `app/motion-page.css`. `PageMotionLayer` renders the parts as the moving DOM;
+  `halo?`, `anim?`), `MotionWave` (`stroke?`: a thread, its `waveLine` stroked rather than filled;
+  `periods` even so the line meets itself at the loop), `MotionGroup` (`anim?`, `mask?:
+'from-below'`; an `orbit` group turns about the slide's centre) and `MotionGrid`; `MotionAnim` is
+  `{ name: MotionAnimName, d, dl?, x?, y?, r?, rest? }` (`r` in degrees, `--pm-r`), one name per
+  `pm-<name>` keyframes in `app/motion-page.css`. The fourth page's loops (`warp`, `orbit`, `blip`,
+  `bars`, `tumble`) carry their resting transform in their class, so `animation: none` under
+  reduced motion leaves each part posed. Warp, Orbits, Radar, Equaliser, Confetti and Threads live
+  in `page-motion-parts-page-four.ts`; a Radar blip's `dl` is `-RADAR_TURN x (1 - angle / 360)`, so
+  it is lit as the sweep's edge reaches its angle at any speed. `PageMotionLayer` renders the parts as the moving DOM;
   nothing else defines a part.
 - `openingPose(anim)` (`page-motion-frame.ts`): `openingPhase` = `(-dl / d)` modulo 1 (the speed
   divides both, so it cancels), `reversed` on an odd loop (`sweep` alternates); `poseAt(anim, p)`
   restates each keyframes as tracks eased per step (`ease-in-out` = `cubicBezier(0.42, 0, 0.58, 1)`,
-  `spread` = `cubicBezier(0.2, 0.6, 0.4, 1)`, the rest linear) into `MotionPose { tx, ty, scale,
-rotate, opacity }`.
+  `spread` = `cubicBezier(0.2, 0.6, 0.4, 1)`, the rest linear) into `MotionPose { tx, ty, scale, sx,
+sy, rotate, opacity }` (`warp` eased `cubicBezier(0.42, 0, 1, 1)`, `blip` `cubicBezier(0, 0, 0.58, 1)`), turned
+  and scaled about `animOrigin(anim)`: the centre, or `ANIM_ORIGIN`'s `warp` `[0, 0.5]` and `bars`
+  `[0.5, 1]`, which a test holds to the stylesheet's `transform-origin`.
 - `paintMotionFrame(ctx, motion, fill, rect, cache?)` (`page-motion-canvas.ts`): clipped to
   `rect`, alpha x `paint.strength`; a box is translated to its centre plus the pose, turned, scaled
   and faded, then its fill drawn (`glow` / `fade`: an elliptical radial gradient reaching its sides;
   `bokeh`: reaching its farthest corner; `lines`: 2px bands every `gap` at 45 degrees; `beam`; `mesh`:
   its spots painted bottom layer first; `rays`: 5 of every 12 degrees from straight up; `ring`: a
-  stroke inside the box). A `halo` is the disc of radius plus spread under a Gaussian of half the
+  stroke inside the box; `streak`: clear tail to full head; `sweep`: `createConicGradient` from
+  straight up, clear to three quarters, full at the edge; `bar`: `from` at 15% at its foot to `to`
+  at its top). A `halo` is the disc of radius plus spread under a Gaussian of half the
   blur, `blurredDisc` sampled into 12 stops. A masked group and the grid paint into a layer at the
   context's scale and keep it `destination-in` their mask. The grid projects its lines through
   `rotateX(62deg)` and a perspective of 0.6 x the slide's height from the middle of its band.
@@ -835,6 +860,9 @@ SVG `href` is escaped. The api counts a page picture as an image reference
 - `elementPageSurfaces` and `illustratePageSnapBoxes` run per render: O(elements x pages) and
   O(pages); the provider's value is stable while the entries are, so element views do not
   re-render during a drag that keeps elements on their pages.
+- Remembering the page costs nothing per pan frame beyond a `clearTimeout` / `setTimeout` pair (no
+  render: it follows the viewport store); once settled, one O(pages) nearest-page pass and one
+  local-storage read (at most 200 entries) plus a write only when the page changed.
 - Entering the mode (`withContentOnAPage`) is O(elements): one bounds pass and one anchor-point
   pass over `elementIndexFor` (measured 1.4 ms at 3000 elements, against 67 ms for the clustering
   it replaced; guarded by a 5000-element budget test). `contentClusters` is O(n²) in the split
@@ -919,15 +947,14 @@ at most 100 pages: delete one to split this page."
 No new route or loaded asset; the panel, preview, picker, Add a page popover and the first page's
 card mount on demand. Layout thumbnails, the preview and the kind miniatures are inline SVG (no
 network). No layout shift: the title bar, the navigator and the first page's card are absolutely
-positioned over the canvas; the strip's + is one more fixed 36 px control at the strip's end, there
-for the whole of Illustrate mode.
+positioned over the canvas.
 
 ## Observability
 
 - `debugLog` fingerprints: `[illustrate-page] orientation set`, `size set`, `renamed`,
   `background set`, `moved`, `page added`, `article added`, `duplicated`, `article duplicated`,
   `page removed`, `article removed`, `last page removed`, `first page kind chosen`,
-  `layout placed`, `framed`, `content put onto a page`, `page split`, `split: one group`,
+  `layout placed`, `framed`, `last page recorded`, `content put onto a page`, `page split`, `split: one group`,
   `split refused: page limit`, `size refused: fit to content`, `size refused: not offered for the
 kind`, `turn refused: landscape only`, `pattern refused: a logo page`, `refused: page locked`,
   `lock set`, `started blank`, `re-inked` (`reinked`, `remembered`), `tidied`, `tidy: already tidy`, `press off the pages ignored`; `[page-lock] edit held back`;
@@ -948,6 +975,8 @@ read against the code. Rules no test covers are listed as gaps after the table.
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Page kinds: read, absent is infographic, an article's flow kept or its own id                                                                                               | `packages/document/src/illustrate-page.test.ts` "page kinds"                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | A new page per kind: infographic modelled on the last, article, slide, logo                                                                                                 | `packages/document/src/illustrate-edits.test.ts` "adding"; `apps/live/hooks/editor/illustrate-page-edits.test.ts` "Illustrate page edits: documents", "slide page edits", "logo page edits", "Fit to Content page edits"                                                                                                                                                                                                                                                                      |
+| Back to the page you were on: landing frames it, else the first; nothing recorded before the landing frame; a settling move kept on leaving or closing                      | `apps/live/hooks/editor/useIllustratePages.last-page.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| The remembered page: per document and tab, malformed reads absent, capped at the latest 200, the page under (else nearest) the view's centre                                | `apps/live/lib/last-illustrate-page.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | The first page's choice: offered while alone, unchosen, empty; each kind taken                                                                                              | `packages/document/src/article-pages.test.ts` "the first page's own choice of kind"; `illustrate-page-edits.test.ts` "chooses Slide for the only, empty page", "chooses Logo for the only, empty page"                                                                                                                                                                                                                                                                                        |
 | The kind cards: arrow keys between the four                                                                                                                                 | `apps/live/components/canvas/FirstPageChoice.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | The + after the last page: level with its middle                                                                                                                            | `apps/live/components/canvas/AddPageButton.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -1007,7 +1036,7 @@ read against the code. Rules no test covers are listed as gaps after the table.
 
 Gaps (no unit test; browser-checked or uncovered):
 
-- The Add a Page popover (opening, focus, outside press, the bottom sheet) and the strip's +.
+- The Add a Page popover (opening, focus, outside press, the bottom sheet).
 - The page panel's placement, the bottom sheet, Escape restoring focus to the cog, closing on a
   wheel, following its cog after a move; the name field committing on close.
 - Hover previews on the sheet (backgrounds, layouts), and the layout invite's
@@ -1033,4 +1062,4 @@ Gaps (no unit test; browser-checked or uncovered):
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md), rows D23 to D32, D55 to D58 and D81 to D86.
+See [DEFAULTS.md](DEFAULTS.md), rows D23 to D32, D55 to D58 and D81 to D87.
