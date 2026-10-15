@@ -3,9 +3,6 @@
 // on every render, so a form's destination is read where it is stored, never by parsing the form.
 import type { Tab } from '@livediagram/document';
 
-const DELETE_TAB =
-  "Delete this tab? Unless another document also holds it, its content can't be recovered.";
-
 /** The Form tabs whose responses go to `tabId` (a board, or a sheet: a form sending to a sheet feeds no board, as its
  *  sheet wins over a board it kept), each with its heading. The board's Form strip and Delete's warning both read it. */
 export function formsFeeding(

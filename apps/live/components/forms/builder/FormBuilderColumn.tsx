@@ -6,6 +6,7 @@
 import { Fragment, useCallback, useRef } from 'react';
 import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
 import { lucideClipboardList } from '@livediagram/icons/lucide';
+import type { DestinationProblem } from '@livediagram/forms';
 import { placeQuestion } from '@/hooks/forms/form-edits';
 import { FormAddBar } from './FormAddBar';
 import { FormConnectCard } from './FormConnectCard';
@@ -21,10 +22,13 @@ const QuestionIcon = lucideGlyph(lucideClipboardList, 20);
 export function FormBuilderColumn({
   scrollRef,
   hasDestinations,
+  problem = null,
 }: {
   scrollRef: React.RefObject<HTMLDivElement | null>;
   // Whether the document already has a board or sheet the form could send its responses to.
   hasDestinations: boolean;
+  // Why its board or sheet no longer takes responses, for the connect box to say.
+  problem?: DestinationProblem | null;
 }) {
   const b = useFormBuilder();
   const columnRef = useRef<HTMLDivElement>(null);
@@ -60,7 +64,7 @@ export function FormBuilderColumn({
         />
       ) : null}
       <FormHeaderCard sections={b.form.sections.length} />
-      <FormConnectCard hasExisting={hasDestinations} />
+      <FormConnectCard hasExisting={hasDestinations} problem={problem} />
       {b.form.sections.map((section, s) => (
         <div
           key={section.id}

@@ -259,6 +259,7 @@ export function FormPage({
                           hasDestinations={tabs.some(
                             (t) => t.kind === 'board' || t.kind === 'sheet',
                           )}
+                          problem={problem}
                         />
                       ) : (
                         <div className="mx-auto w-full max-w-[640px]">

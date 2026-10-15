@@ -195,8 +195,9 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
   for each response, to work through. Makes a new board.", Responses Go To's New Board) and **Rows in a Sheet** ("A
   row for each response, to count and compare. Makes a new sheet.", its New Sheet); and, when the document already
   has a Board or Sheet tab, **Or use a board or sheet you already have**, which opens the cog on Responses Go To. It
-  goes as soon as the form names a board or a sheet; a broken destination is the status bar's to report, not the
-  box's. A Participant or Viewer never sees it.
+  goes as soon as the form names a board or a sheet that holds, and comes back when that board or sheet is removed
+  (its tab deleted, its column or card type gone), its line then the reason ("Its sheet was removed. Choose where
+  responses go."). A Participant or Viewer never sees it.
 - **Responses Go To** (the destination): **Board** (the document's Board tabs, its last choice **+ New Board**: a
   Board tab after this one, "<Form> Responses", New, In Progress, Done), **Card Type** (the types that board takes,
   its last choice **+ New Card Type**: a type named after the form, which a board confining its types also takes),

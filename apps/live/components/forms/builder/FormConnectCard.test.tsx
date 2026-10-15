@@ -19,7 +19,14 @@ afterEach(() => {
 
 const BLANK: FormDefinition = { v: 1, heading: 'Feedback', sections: [] };
 
-function setup(over: Partial<FormDefinition> = {}, { canEdit = true, hasExisting = true } = {}) {
+function setup(
+  over: Partial<FormDefinition> = {},
+  {
+    canEdit = true,
+    hasExisting = true,
+    problem = null,
+  }: { canEdit?: boolean; hasExisting?: boolean; problem?: 'sheet_missing' | null } = {},
+) {
   const actions = {
     newResponsesBoard: vi.fn(),
     newResponsesSheet: vi.fn(),
@@ -33,7 +40,7 @@ function setup(over: Partial<FormDefinition> = {}, { canEdit = true, hasExisting
   } as unknown as FormBuilderValue;
   render(
     <FormBuilderContext.Provider value={value}>
-      <FormConnectCard hasExisting={hasExisting} />
+      <FormConnectCard hasExisting={hasExisting} problem={problem} />
     </FormBuilderContext.Provider>,
   );
   return { actions, openSettings };
@@ -84,5 +91,12 @@ describe('FormConnectCard', () => {
   it('offers no Choose Existing when the document has no board or sheet', () => {
     setup({}, { hasExisting: false });
     expect(screen.queryByRole('button', { name: /already have/ })).toBeNull();
+  });
+
+  // The user's report: a removed sheet left the form with nowhere to go and no box to fix it.
+  it('comes back, saying why, when the sheet or board it named was removed', () => {
+    setup({ sheet: { tabId: 't', sheetId: 's' } }, { problem: 'sheet_missing' });
+    expect(box()).toBeTruthy();
+    expect(screen.getByText('Its sheet was removed. Choose where responses go.')).toBeTruthy();
   });
 });

@@ -6,6 +6,7 @@
 // Rows in a Sheet (New Sheet); Choose Existing (when the document has a board or sheet) opens Responses Go To.
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideSquareKanban, lucideTable } from '@livediagram/icons/lucide';
+import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@livediagram/forms';
 import { track } from '@/lib/telemetry';
 import { useFormBuilder } from './form-builder-context';
 
@@ -17,9 +18,17 @@ const CHOICE =
 const CHOICE_ICON =
   'flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-600 transition group-hover/choice:bg-[var(--form-accent)] group-hover/choice:text-white dark:bg-slate-800 dark:text-slate-300';
 
-export function FormConnectCard({ hasExisting }: { hasExisting: boolean }) {
+export function FormConnectCard({
+  hasExisting,
+  problem = null,
+}: {
+  hasExisting: boolean;
+  // Why the board or sheet it named no longer takes responses (its tab deleted, its column gone): the box comes back.
+  problem?: DestinationProblem | null;
+}) {
   const b = useFormBuilder();
-  if (!b.canEdit || b.form.destination || b.form.sheet) return null;
+  const nowhere = !b.form.destination && !b.form.sheet;
+  if (!b.canEdit || (!nowhere && !problem)) return null;
   return (
     <section
       aria-labelledby="form-connect-title"
@@ -34,7 +43,9 @@ export function FormConnectCard({ hasExisting }: { hasExisting: boolean }) {
         Where Should Responses Go?
       </h2>
       <p className="mt-1 text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
-        Choose before you publish: the form can’t take responses until it has somewhere to put them.
+        {problem && !nowhere
+          ? DESTINATION_PROBLEM_TEXT[problem]
+          : 'Choose before you publish: the form can’t take responses until it has somewhere to put them.'}
       </p>
       <div className="mt-4 flex gap-3 max-sm:flex-col">
         <button
