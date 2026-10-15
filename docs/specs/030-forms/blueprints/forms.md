@@ -167,7 +167,7 @@ and the question has no Other. `effectiveTarget(q, type)` resolves `goesTo` or f
 choices), `ruleQuestion(form, index, rule)` (null when broken), `sectionsShown(form, answers)` (progressive: a rule reads
 only questions of shown sections), `shownQuestions`. `checkResponse`'s default questions are `shownQuestions(form,
 body.answers)`, so the api and the page check and keep only what shows. Live: `useFormFill` steps Next/Back over hidden
-sections and reports `position` / `count`; `builder/SectionRule.tsx` is the badge and editor; `updateSection` takes
+sections and reports `position` / `count`; `components/forms/builder/SectionRule.tsx` is the badge and editor; `updateSection` takes
 `showIf` (an empty `anyOf` clears it).
 
 ## 7. Starters (`starters.ts`)
