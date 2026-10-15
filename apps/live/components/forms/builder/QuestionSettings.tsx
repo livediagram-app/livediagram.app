@@ -1,10 +1,9 @@
 'use client';
 
-// A question's own settings, inside its selected card (docs/specs/030-forms/forms.md "Question types"): its
-// placeholder, a Number's bounds and Whole Numbers Only, a Multiple Choice's fewest and most picks, a Single Choice's
+// A question's own settings, inside its selected card (docs/specs/030-forms/forms.md "Question types"): a Number's
+// bounds and Whole Numbers Only, a Multiple Choice's fewest and most picks, a Single Choice's
 // Show as Dropdown, a Rating's scale, style and end labels. Each change one undo step.
 import {
-  PLACEHOLDER_MAX,
   RATING_SCALE_DEFAULT,
   RATING_SCALE_MAX,
   RATING_SCALE_MIN,
@@ -65,23 +64,6 @@ export function QuestionSettings({ question: q }: { question: FormQuestion }) {
   const picks = (q.options?.length ?? 0) + (q.other ? 1 : 0);
   return (
     <div className="flex flex-col gap-3">
-      {q.type === 'short' ||
-      q.type === 'paragraph' ||
-      q.type === 'number' ||
-      q.type === 'email' ||
-      q.type === 'link' ? (
-        <SettingsField label="Placeholder">
-          <div className={FIELD_BOX}>
-            <DraftText
-              value={q.placeholder ?? ''}
-              maxLength={PLACEHOLDER_MAX}
-              label="Placeholder"
-              placeholder="Your answer"
-              onSave={(text) => set({ placeholder: text.trim() || undefined })}
-            />
-          </div>
-        </SettingsField>
-      ) : null}
       {q.type === 'number' ? (
         <>
           <div className="grid grid-cols-2 gap-2">
@@ -204,4 +186,4 @@ export function QuestionSettings({ question: q }: { question: FormQuestion }) {
 
 // Whether a question has settings beyond its card's own controls (Required sits in the card's footer).
 export const hasQuestionSettings = (q: FormQuestion): boolean =>
-  ['short', 'paragraph', 'number', 'email', 'link', 'multi', 'single', 'rating'].includes(q.type);
+  ['number', 'multi', 'single', 'rating'].includes(q.type);

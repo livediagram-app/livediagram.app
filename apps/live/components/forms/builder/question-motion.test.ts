@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { QUESTION_FLIP, leaveThen } from './question-motion';
+import { OPEN_MS, QUESTION_FLIP, growBetween, leaveThen } from './question-motion';
 
 // The builder's question motion (docs/specs/030-forms/forms.md "Building a form").
 
@@ -52,5 +52,38 @@ describe('leaveThen', () => {
     reduce = true;
     leaveThen(document.createElement('div'), done);
     expect(done).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('growBetween', () => {
+  const card = (height: number) => {
+    const node = document.createElement('div');
+    Object.defineProperty(node, 'offsetHeight', { value: height });
+    node.animate = vi.fn(() => ({}) as Animation);
+    return node;
+  };
+
+  it('grows a question from its last height to its new one, clipped', () => {
+    const node = card(288);
+    expect(growBetween(node, 179)).not.toBeNull();
+    expect(node.animate).toHaveBeenCalledWith(
+      [
+        { height: '179px', overflow: 'hidden' },
+        { height: '288px', overflow: 'hidden' },
+      ],
+      expect.objectContaining({ duration: OPEN_MS }),
+    );
+  });
+
+  it('plays nothing under reduced motion, or when the height did not change', () => {
+    const node = card(288);
+    expect(growBetween(node, 288)).toBeNull();
+    reduce = true;
+    expect(growBetween(node, 179)).toBeNull();
+    expect(node.animate).not.toHaveBeenCalled();
+  });
+
+  it('keeps within the motion budget', () => {
+    expect(OPEN_MS).toBeLessThanOrEqual(250);
   });
 });

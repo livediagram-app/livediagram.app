@@ -113,7 +113,7 @@ export function OptionsEditor({
             aria-label={`Remove ${o}`}
             disabled={options.length <= 1}
             onClick={() => remove(i)}
-            className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:opacity-100 group-hover/opt:opacity-100 disabled:hidden dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:opacity-100 group-hover/opt:opacity-100 [@media(hover:none)]:opacity-100 disabled:hidden dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <CloseIcon size={14} />
           </button>

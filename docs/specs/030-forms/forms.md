@@ -103,17 +103,20 @@ previewing), the help link and the form's **cog**.
   **Gradient** (into a light tint of the form colour) or **Dots**; or one of the slide backgrounds' **Gradients**
   ([Illustrate pages](../007-editor/illustrate-pages.md) "Backgrounds"), drawn in their place (a colour or style
   picked after clears it). Without a cover, a 10 px band of the form colour. **Add Cover** / **Change Cover** on
-  hover opens the cover popover, with **Remove Cover**.
+  hover (always shown on a touch screen, which has no hover) opens the cover popover, with **Remove Cover**.
 - **Heading**: the form's name (1 to 80 characters), edited in place; **Description** under it (up to 1,000
   characters, plain text with line breaks and links made clickable), placeholder "Add a description".
 - **Questions**, each a card. The selected one (click, or Tab onto it and Enter) shows its editing chrome: a
   **left accent bar** in the form colour, the prompt as an editable field beside its **type button**, the help text
-  under it ("Description (optional)"), a choice question's options (or the answer control as respondents see it,
-  disabled), its own **settings** in a tinted block (placeholder, bounds and Whole Numbers Only, fewest and most
+  under it ("Description (optional)"), a choice question's options, a text answer's box (Short Answer, Paragraph,
+  Number, Email, Link) as respondents see it with its **placeholder** typed straight into it, grey as it will show
+  ("Placeholder: shown in the box until someone types." under it; emptied, the type's own hint), or any other type's
+  answer control as respondents see it, disabled; its own **settings** in a tinted block (bounds and Whole Numbers Only, fewest and most
   picks, Show as Dropdown, scale, style and end labels: whichever its type has), and a **footer**: **Answer goes to**
   (a badge naming the mapping, opening [Answer Goes To](#mapping-where-an-answer-goes) under itself, a sheet on a
   phone, which closes once a choice is made), **Move Up**, **Move Down**, **Duplicate**, **Delete** and
-  **Required**. Escape lets go of it. Unselected questions show exactly
+  **Required**. Selecting a question grows its card open to the editing chrome, and letting go shrinks it back
+  (220 ms; none under reduced motion). Escape lets go of it. Unselected questions show exactly
   what respondents see. Text is saved as typing pauses (half a second) and when a field is left, so typing is one
   undo step a pause, not one a key.
 - **Sections**: a form with more than one section draws each as a block with its own title and description,
@@ -124,7 +127,8 @@ previewing), the help link and the form's **cog**.
   and **Add Section**, which splits the form after the selected question (else adds an empty section at the end). The
   new question is selected with its prompt focused. A later section's header has **Delete Section**: its questions
   join the section before it.
-- **Drag** a question by its handle (six dots at its top, on hover and on the selected card; mouse, pen or touch) to
+- **Drag** a question by its handle (six dots at its top, on hover, always on a touch screen, and on the selected
+  card; mouse, pen or touch) to
   reorder it, between sections too: a line in the form colour marks where it will land, the page scrolls near its
   edges and Escape cancels. Alt+Up and Alt+Down move the selected question from the keyboard.
 
@@ -216,11 +220,11 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
 
 | Type                | The respondent sees                                                              | Settings                                                                      | Kept as                       |
 | ------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------- |
-| **Short Answer**    | A one-line text box                                                              | Placeholder                                                                   | Text, up to 200 characters    |
-| **Paragraph**       | A growing text area                                                              | Placeholder                                                                   | Text, up to 2,000 characters  |
-| **Number**          | A number box                                                                     | Minimum, Maximum, Whole Numbers Only                                          | A number                      |
-| **Email**           | An email box                                                                     |                                                                               | An email address              |
-| **Link**            | A web address box                                                                |                                                                               | An `https://` URL             |
+| **Short Answer**    | A one-line text box                                                              | Placeholder, typed into its box                                               | Text, up to 200 characters    |
+| **Paragraph**       | A growing text area                                                              | Placeholder, typed into its box                                               | Text, up to 2,000 characters  |
+| **Number**          | A number box                                                                     | Placeholder, typed into its box; Minimum, Maximum, Whole Numbers Only         | A number                      |
+| **Email**           | An email box                                                                     | Placeholder, typed into its box                                               | An email address              |
+| **Link**            | A web address box                                                                | Placeholder, typed into its box                                               | An `https://` URL             |
 | **Date**            | A date picker                                                                    |                                                                               | A date (`YYYY-MM-DD`)         |
 | **Single Choice**   | Radio buttons (or a dropdown past 7 options)                                     | Options (2 to 20), Show as Dropdown                                           | One option                    |
 | **Multiple Choice** | Checkboxes                                                                       | Options (2 to 20), Minimum and Maximum Picks                                  | A list of options             |

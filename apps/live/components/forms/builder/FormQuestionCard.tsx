@@ -5,7 +5,7 @@
 // accent bar at its left, the prompt and help as editable text, its type, the options of a choice question, the
 // answer control as respondents see it, its own settings, and a footer: where its answer goes (a badge opening Answer
 // Goes To), Move, Duplicate, Delete and Required. Everything about a question is edited in its card.
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
 import {
   HELP_MAX,
   PROMPT_MAX,
@@ -36,7 +36,8 @@ import { AnswerGoesTo } from './AnswerGoesTo';
 import { FormSheet } from './FormSheet';
 import { QuestionSettings, hasQuestionSettings } from './QuestionSettings';
 import { useFormBuilder } from './form-builder-context';
-import { leaveThen } from './question-motion';
+import { growBetween, leaveThen } from './question-motion';
+import { PlaceholderField, takesPlaceholder } from './PlaceholderField';
 import { targetLabel } from './target-label';
 
 const GripIcon = lucideGlyph(lucideGripVertical, 16);
@@ -63,6 +64,27 @@ export function FormQuestionCard({
   const selected = b.canEdit && b.selectedId === q.id;
   const promptRef = useRef<DraftTextHandle>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  // Opening for editing, and closing again, grows the card between its two heights (question-motion growBetween). The
+  // card is one element either way, so its last settled height is the one to grow from.
+  const lastHeight = useRef<number | null>(null);
+  const wasSelected = useRef(selected);
+  useLayoutEffect(() => {
+    const node = cardRef.current;
+    if (!node) return;
+    const settle = () => {
+      lastHeight.current = node.offsetHeight;
+    };
+    if (wasSelected.current !== selected && lastHeight.current !== null) {
+      wasSelected.current = selected;
+      const grow = growBetween(node, lastHeight.current);
+      if (grow) {
+        grow.onfinish = settle;
+        return;
+      }
+    }
+    wasSelected.current = selected;
+    if (!node.getAnimations?.().length) settle();
+  });
   // Answer Goes To, open under its badge.
   const [goesTo, setGoesTo] = useState<HTMLButtonElement | null>(null);
   // A question just added takes focus on its prompt.
@@ -104,7 +126,7 @@ export function FormQuestionCard({
             aria-label={`Move ${promptOf(q)}`}
             onPointerDown={(e) => onGrab(e, q.id)}
             onClick={(e) => e.stopPropagation()}
-            className="absolute left-1/2 top-0.5 z-[1] flex h-5 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 opacity-0 transition hover:text-slate-500 group-hover/q:opacity-100 dark:text-slate-600"
+            className="absolute left-1/2 top-0.5 z-[1] flex h-5 w-10 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded text-slate-300 opacity-0 transition hover:text-slate-500 group-hover/q:opacity-100 [@media(hover:none)]:opacity-100 dark:text-slate-600"
           >
             <GripIcon className="rotate-90" />
           </button>
@@ -200,6 +222,9 @@ export function FormQuestionCard({
                 change((f) => updateQuestion(f, q.id, { other: other || undefined }))
               }
             />
+          ) : takesPlaceholder(q) ? (
+            // The answer box as respondents see it, its placeholder typed straight into it.
+            <PlaceholderField question={q} />
           ) : (
             // The control alone, as respondents will see it: the prompt and help are edited just above.
             <div className="cursor-not-allowed opacity-80 [&>*]:pointer-events-none" aria-hidden>

@@ -1,5 +1,6 @@
 // The builder's question motion (docs/specs/030-forms/forms.md "Building a form"; forms.css): the FLIP options for the
-// question list, and the leave a deleted question plays before it goes. Reduced motion plays nothing.
+// question list, the leave a deleted question plays before it goes, and the grow a question plays as it opens for
+// editing or closes again. Reduced motion plays nothing.
 import type { FlipListOptions } from '@/hooks/ui/useFlipList';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 
@@ -35,4 +36,23 @@ export function leaveThen(node: HTMLElement | null, done: () => void): void {
   node.classList.add('form-q-leave');
   node.addEventListener('animationend', finish, { once: true });
   setTimeout(finish, LEAVE_MS + 80);
+}
+
+// The open and close's length and curve, as the question list's moves (forms.css .form-q-move). Safe range 150..250 ms.
+export const OPEN_MS = 220;
+const OPEN_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
+/** Grows (or shrinks) a question from the height it had to the height it has now, clipping while it does; answers the
+ *  animation, or null when there is nothing to play (reduced motion, no change, no Web Animations). */
+export function growBetween(node: HTMLElement, from: number): Animation | null {
+  const to = node.offsetHeight;
+  if (prefersReducedMotion() || Math.abs(to - from) < 1 || typeof node.animate !== 'function')
+    return null;
+  return node.animate(
+    [
+      { height: `${from}px`, overflow: 'hidden' },
+      { height: `${to}px`, overflow: 'hidden' },
+    ],
+    { duration: OPEN_MS, easing: OPEN_EASING },
+  );
 }

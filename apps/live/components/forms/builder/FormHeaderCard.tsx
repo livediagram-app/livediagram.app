@@ -48,8 +48,8 @@ export function FormHeaderCard({ sections }: { sections: number }) {
             onClick={() => setCoverOpen((o) => !o)}
             className={`absolute right-3 cursor-pointer rounded-md bg-white/90 px-2.5 py-1 text-[12px] font-medium text-slate-700 shadow-sm transition hover:bg-white focus-visible:opacity-100 dark:bg-slate-900/90 dark:text-slate-200 ${
               form.cover
-                ? 'bottom-3 opacity-0 group-hover/head:opacity-100'
-                : 'top-4 opacity-0 group-hover/head:opacity-100'
+                ? 'bottom-3 opacity-0 group-hover/head:opacity-100 [@media(hover:none)]:opacity-100'
+                : 'top-4 opacity-0 group-hover/head:opacity-100 [@media(hover:none)]:opacity-100'
             }`}
           >
             {form.cover ? 'Change Cover' : 'Add Cover'}
