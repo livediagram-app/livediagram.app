@@ -89,8 +89,10 @@ under the pointer as a category is switched.
   (closing would unmount the tile mid-drag; it closes on the drop), faded to 30% and letting a drop over it land on
   the canvas it covers (`data-drop-through`, read by the canvas's drop guard; not `pointer-events: none`, which on a
   drag's own source stalls the drag), and while its search field holds a query.
-- **A click or a tap opens it too.** A click on a category the hover already opened leaves it open (the click was
-  on its way there); a second press from the keyboard closes it.
+- **A click or a tap opens it too, and pins it.** A category opened by a press (a click, a tap, the keyboard) is a
+  deliberate open: moving the pointer away doesn't close it; an outside press, Escape or using a tile does, and
+  pointing at another category still moves it there, pinned as it was. A click on a category the hover already opened
+  pins it; a second press from the keyboard closes it.
 - **The keyboard:** Left and Right walk the bar (wrapping), and an open flyout follows the focus. Down, Enter or
   Space opens a category with its first tile focused. In a flyout the arrows walk the tiles by position across its
   groups, Home and End jump to the ends, Escape closes it and hands the focus back to its button.

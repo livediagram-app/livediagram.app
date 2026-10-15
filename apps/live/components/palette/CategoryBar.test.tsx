@@ -91,6 +91,32 @@ describe('hover intent', () => {
     expect(flyout()).toBeNull();
   });
 
+  it('keeps a category opened by a click open when the pointer leaves, until a press outside', () => {
+    show();
+    fireEvent.click(button('Shapes'), { detail: 1 });
+    fireEvent.pointerLeave(button('Shapes'), mouse);
+    wait(HOVER_CLOSE_MS * 2);
+    expect(heading()).toBe('Shapes');
+    // Pointing at another category still moves it there, and it stays pinned.
+    fireEvent.pointerEnter(button('Build'), mouse);
+    expect(heading()).toBe('Build');
+    fireEvent.pointerLeave(button('Build'), mouse);
+    wait(HOVER_CLOSE_MS * 2);
+    expect(heading()).toBe('Build');
+    fireEvent.pointerDown(document.body);
+    expect(flyout()).toBeNull();
+  });
+
+  it('pins a category the hover opened once it is clicked', () => {
+    show();
+    fireEvent.pointerEnter(button('Shapes'), mouse);
+    wait(HOVER_OPEN_MS);
+    fireEvent.click(button('Shapes'), { detail: 1 });
+    fireEvent.pointerLeave(button('Shapes'), mouse);
+    wait(HOVER_CLOSE_MS * 2);
+    expect(heading()).toBe('Shapes');
+  });
+
   it('keeps a click on a category the hover opened from closing it', () => {
     show();
     fireEvent.pointerEnter(button('Shapes'), mouse);
@@ -101,7 +127,8 @@ describe('hover intent', () => {
 
   it('stays open while a tile is dragged out, and closes on the drop', () => {
     show();
-    fireEvent.click(button('Shapes'), { detail: 1 });
+    fireEvent.pointerEnter(button('Shapes'), mouse);
+    wait(HOVER_OPEN_MS);
     const body = flyout()!.firstElementChild!;
     fireEvent.dragStart(within(flyout()!).getByRole('button', { name: 'Add Square' }), {
       dataTransfer: { setData: vi.fn(), setDragImage: vi.fn(), effectAllowed: '' },
@@ -115,7 +142,8 @@ describe('hover intent', () => {
 
   it('stays open while its search holds a query', () => {
     show('facilitate');
-    fireEvent.click(button('Session'), { detail: 1 });
+    fireEvent.pointerEnter(button('Session'), mouse);
+    wait(HOVER_OPEN_MS);
     const field = within(flyout()!).getByRole('textbox') as HTMLInputElement;
     field.focus();
     fireEvent.change(field, { target: { value: 'timer' } });

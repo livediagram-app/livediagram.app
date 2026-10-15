@@ -100,10 +100,11 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   await expect(squares(ownerPage)).toHaveCount(2);
 
   // The owner edits too; the autosave keeps both, and a reload shows both.
-  await ownerPage
-    .getByRole('button', { name: 'Add Square', exact: true })
-    .first()
-    .dragTo(ownerPage.locator(CANVAS), { targetPosition: { x: 300, y: 600 } });
+  await (
+    await paletteTile(ownerPage, 'Add Square')
+  ).dragTo(ownerPage.locator(CANVAS), {
+    targetPosition: { x: 300, y: 600 },
+  });
   await ownerPage.keyboard.press('Escape');
   await expect
     .poll(async () => {

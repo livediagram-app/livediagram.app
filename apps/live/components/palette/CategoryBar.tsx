@@ -77,6 +77,10 @@ export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
     setViaKeyboard(keyboard);
     popover.openFrom(button, 'centre', widthPx(category));
   };
+  // Opened by a press (a click, a tap, the keyboard) rather than a rest of the pointer: a deliberate open, so moving
+  // the pointer away doesn't close it; an outside press, Escape or using a tile does. Pointing at another category
+  // still moves it there, pinned as it was.
+  const pinned = useRef(false);
   // Hover intent's pending open or close, one at a time.
   const timer = useRef<number | null>(null);
   const clearTimer = () => {
@@ -101,6 +105,7 @@ export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
     isOpen,
     open: (category: FlyoutCategory, keyboard: boolean) => {
       clearTimer();
+      pinned.current = true;
       open(category, keyboard);
     },
     close,
@@ -109,14 +114,19 @@ export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
       clearTimer();
       if (isOpen(category.id)) return;
       if (popover.open) open(category, false);
-      else timer.current = window.setTimeout(() => open(category, false), HOVER_OPEN_MS);
+      else
+        timer.current = window.setTimeout(() => {
+          pinned.current = false;
+          open(category, false);
+        }, HOVER_OPEN_MS);
     },
     /** The mouse came onto the flyout: it stays. */
     hoverFlyout: clearTimer,
-    /** The mouse left a button or the flyout: close after a grace, unless a tile is being dragged out or a search
-     *  has been typed into (the pointer drifting off would throw the query away). */
+    /** The mouse left a button or the flyout: close after a grace, unless it was opened by a press, a tile is being
+     *  dragged out, or a search has been typed into (the pointer drifting off would throw the query away). */
     leave: () => {
       clearTimer();
+      if (pinned.current) return;
       timer.current = window.setTimeout(() => {
         timer.current = null;
         if (dragging.current || typedSearch()) return;
@@ -210,9 +220,10 @@ export function CategoryBarButtons({
             onClick={(e) => {
               // A keyboard press (Enter, Space) reports no pointer position, and toggles.
               const keyboard = e.detail === 0;
-              // A click on a category the hover already opened leaves it open: the click was on its way there.
+              // A click on a category the hover already opened keeps it open, now pinned: the click was on its way
+              // there.
               if (open && keyboard) bar.close(false);
-              else if (!open) bar.open(c, keyboard);
+              else bar.open(c, keyboard);
             }}
             onPointerEnter={(e) => {
               if (e.pointerType === 'mouse') bar.hoverButton(c);
