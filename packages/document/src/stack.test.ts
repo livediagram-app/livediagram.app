@@ -62,7 +62,7 @@ describe('a stack', () => {
       x: 90,
       y: 30,
       attachedTo: 'a',
-      attachAt: 'ne',
+      attachAt: 'top-right',
     } as ShapeElement;
     const pin = {
       ...(createShape('comment-pin', 0, 0) as ShapeElement),
