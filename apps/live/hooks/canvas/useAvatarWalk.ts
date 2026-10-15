@@ -643,15 +643,30 @@ export function useAvatarWalk({
     });
   // Take a drink (docs/specs/009-elements/office.md "Using it"): held for DRINK_HOLD_MS, replacing any other,
   // and told to the room at once rather than at the next step.
+  // Whether the loop is publishing this frame (walking, airborne, waving, reacting): then it carries the drink in its
+  // next snapshot, and an idle one here would tell the room the character stopped, cutting off its walk or reaction.
+  const inMotion = () => {
+    const keys = heldRef.current;
+    return (
+      targetRef.current !== null ||
+      keys.up ||
+      keys.down ||
+      keys.left ||
+      keys.right ||
+      liftRef.current > 0 ||
+      waveStartRef.current !== null ||
+      reactionRef.current !== null
+    );
+  };
   const giveDrink = (kind: DrinkKind) => {
     holdingRef.current = kind;
     setDrink((prev) => ({ kind, seq: (prev?.seq ?? 0) + 1 }));
-    if (posRef.current) publishIdle(posRef.current);
+    if (posRef.current && !inMotion()) publishIdle(posRef.current);
   };
   const putDown = useEffectEvent(() => {
     holdingRef.current = null;
     setDrink(null);
-    if (posRef.current) publishIdle(posRef.current);
+    if (posRef.current && !inMotion()) publishIdle(posRef.current);
   });
   useEffect(() => {
     if (!drink) return;

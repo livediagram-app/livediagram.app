@@ -8,11 +8,10 @@
 
 import { boundsOfPoints, rotatePoint, type Rect } from './geometry-primitives';
 import { isBoxed, type BoxedElement, type Element } from './index';
+import { isPointerNote } from './pointer-note';
 
 export function supportsRotation(el: Element): el is BoxedElement {
-  return (
-    isBoxed(el) && el.type !== 'annotation' && !(el.type === 'shape' && el.shape === 'pointer-note')
-  );
+  return isBoxed(el) && el.type !== 'annotation' && !isPointerNote(el);
 }
 
 /** The turn an element is drawn at: its own when it can rotate, else none. */

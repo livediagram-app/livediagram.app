@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import type { DocumentListItem } from '@/lib/api-client';
+import type { ComponentProps } from 'react';
+import type { DocumentListItem, Folder } from '@/lib/api-client';
 import { Explorer } from './Explorer';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -29,7 +30,7 @@ const doc = (id: string, name: string, over: Partial<DocumentListItem> = {}) =>
     ...over,
   }) as DocumentListItem;
 
-function show() {
+function show(over: Partial<ComponentProps<typeof Explorer>> = {}) {
   render(
     <Explorer
       position={null}
@@ -45,9 +46,20 @@ function show() {
       onMoveTo={vi.fn()}
       onOpenDocument={vi.fn()}
       onRenameCurrent={vi.fn()}
+      {...over}
     />,
   );
 }
+
+const folder = (id: string, name: string, parentId: string | null = null): Folder => ({
+  id,
+  name,
+  parentId,
+  ownerId: 'me',
+  teamId: null,
+  createdAt: 1,
+  updatedAt: 1,
+});
 
 beforeAll(() => {
   vi.stubGlobal(
@@ -102,5 +114,38 @@ describe('Explorer', () => {
     const links = screen.getByRole('navigation', { name: 'Go to' });
     expect(links.textContent).toContain('Help');
     expect(links.textContent).not.toContain('Editor');
+  });
+
+  // "The pane": a folder opens in the pane, and New Folder makes the folder there, not at the root.
+  it('makes a new folder inside the folder open in the pane', async () => {
+    const onCreateFolder = vi.fn(async ({ parentId }: { name: string; parentId: string | null }) =>
+      folder('new', 'New folder', parentId),
+    );
+    show({ folders: [folder('f1', 'Projects'), folder('f2', 'Drafts', 'f1')], onCreateFolder });
+    fireEvent.click(screen.getByRole('button', { name: 'My documents' }));
+    fireEvent.click(screen.getByRole('button', { name: 'New Folder' }));
+    expect(onCreateFolder).toHaveBeenLastCalledWith({ name: 'New folder', parentId: null });
+    fireEvent.click(await screen.findByRole('button', { name: 'Projects' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Drafts' }));
+    fireEvent.click(screen.getByRole('button', { name: 'New Subfolder' }));
+    expect(onCreateFolder).toHaveBeenLastCalledWith({ name: 'New folder', parentId: 'f2' });
+    // Back out to the root: New Folder makes a root folder again.
+    fireEvent.click(screen.getByRole('button', { name: /^Projects/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^My documents.*Projects/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'New Folder' }));
+    expect(onCreateFolder).toHaveBeenLastCalledWith({ name: 'New folder', parentId: null });
+  });
+
+  it('opens the folder whose New Subfolder made one, so the new folder shows where it went', async () => {
+    const onCreateFolder = vi.fn(async ({ parentId }: { name: string; parentId: string | null }) =>
+      folder('new', 'New folder', parentId),
+    );
+    show({ folders: [folder('f1', 'Projects')], onCreateFolder, onRenameFolder: vi.fn() });
+    fireEvent.click(screen.getByRole('button', { name: 'My documents' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Menu for Projects' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /New Subfolder/ }));
+    expect(onCreateFolder).toHaveBeenLastCalledWith({ name: 'New folder', parentId: 'f1' });
+    // The pane is now in Projects, under its back bar.
+    expect(await screen.findByRole('button', { name: /^My documents.*Projects/ })).toBeTruthy();
   });
 });

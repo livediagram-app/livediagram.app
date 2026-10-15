@@ -12,9 +12,12 @@ on:
 permissions:
   contents: read
 
+# A pull request's newer push replaces its older run. On main every commit runs to the end, in a
+# group of its own: a shared group keeps only one pending run, so a burst of merges would still drop
+# the middle ones (docs/specs/016-platform/deployment.md "Runs on main are never cancelled").
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Parallel jobs, so a PR waits for the slowest one rather than the sum.
 # None needs another: only the apps build, and nothing depends on an app.

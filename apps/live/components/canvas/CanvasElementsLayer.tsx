@@ -157,7 +157,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onRollPicker,
     collab,
     chairSitters,
-    machineAnswered,
     onOpenComments,
     onOpenAction,
     onOpenNote,
@@ -420,7 +419,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onRollPicker: h.onRollPicker,
       collab,
       chairSitters,
-      machineAnswered,
       // Mode Buttons light up for the mode they hand out, and the canvas-tool union is WIDER than the mode
       // vocabulary: Slide Deck (docs/specs/012-collaboration/presentation-mode.md) has no Mode Button, so it is not a
       // SelectionMode. Narrow rather than widen: a "Switch to Slide Deck" button is exactly what that spec rules out.
@@ -458,7 +456,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       timerControls,
       collab,
       chairSitters,
-      machineAnswered,
       canvasTool,
       imageContext,
     ],

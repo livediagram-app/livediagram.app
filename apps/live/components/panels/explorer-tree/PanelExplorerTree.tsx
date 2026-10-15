@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
 import { sharedToPaneDocument, type PaneDocument, type SelectedNode } from '@/app/explorer/views';
@@ -22,6 +22,17 @@ export const isTreeSection = (s: PanelSection): s is PanelTreeSection =>
   s.kind === 'mine' || s.kind === 'team' || s.kind === 'browser' || s.kind === 'shared';
 
 const NO_FOLDERS: PanelFolder[] = [];
+
+// The folder the pane shows, and so where its New Folder lands: the open one while it is still among the space's
+// folders, else the space's root (a folder deleted or moved away while open).
+export function paneFolderParent(
+  folders: Iterable<{ id: string }>,
+  folderId: string | null,
+): string | null {
+  if (!folderId) return null;
+  for (const f of folders) if (f.id === folderId) return folderId;
+  return null;
+}
 const NO_DOCUMENTS: DocumentListItem[] = [];
 
 // The rows of one of the editor's Explorer sections that hold documents (docs/specs/013-workspace/explorer-structure.md
@@ -39,6 +50,8 @@ export function PanelExplorerTree({
   teams,
   foldersByTeam,
   documentsByTeam,
+  folderId,
+  onOpenFolder,
 }: {
   section: PanelTreeSection;
   // The space's name, the breadcrumb's first step.
@@ -53,6 +66,10 @@ export function PanelExplorerTree({
   teams: { id: string; name: string }[];
   foldersByTeam: Map<string, PanelFolder[]>;
   documentsByTeam: Map<string, DocumentListItem[]>;
+  // The folder open in the pane, null at the space's root. The host holds it, so its header's New Folder makes the
+  // folder in the one open here (paneFolderParent).
+  folderId: string | null;
+  onOpenFolder: (id: string | null) => void;
 }) {
   // The reader's default folders (docs/specs/013-workspace/default-folders.md): the folder menus check and set them.
   const defaultFolders = useDefaultFolderMenus(
@@ -76,12 +93,9 @@ export function PanelExplorerTree({
     }),
     [teamFolders, teamDocuments],
   );
-  // The folder open in the pane, null at the space's root. The host keys this component by section, so a new
-  // section starts at its root.
-  const [folderId, setFolderId] = useState<string | null>(null);
   const draggable = !!tree.onMoveDocumentToFolder;
 
-  const value = { ...tree, defaultFolders, onOpenFolder: setFolderId };
+  const value = { ...tree, defaultFolders, onOpenFolder };
   let body: React.ReactNode;
   if (section.kind === 'browser' || section.kind === 'shared') {
     const docs: PaneDocument[] =
@@ -99,7 +113,7 @@ export function PanelExplorerTree({
     const index = section.kind === 'team' ? teamIndex : ownIndex;
     const byId = new Map([...index.foldersByParent.values()].flat().map((f) => [f.id, f]));
     // A folder deleted (or moved away) while open: back to the root.
-    const here = folderId && byId.has(folderId) ? folderId : null;
+    const here = paneFolderParent(byId.values(), folderId);
     const trail: PanelFolder[] = [];
     for (
       let f = here ? byId.get(here) : undefined;
@@ -119,7 +133,7 @@ export function PanelExplorerTree({
             gap="tight"
             label={trail.at(-2)?.name ?? rootLabel}
             current={trail.at(-1)!.name}
-            onClick={() => setFolderId(trail.at(-2)?.id ?? null)}
+            onClick={() => onOpenFolder(trail.at(-2)?.id ?? null)}
           />
         ) : null}
         {folders.length + docs.length ? (

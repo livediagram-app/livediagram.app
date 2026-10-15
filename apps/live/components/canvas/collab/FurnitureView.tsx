@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { useMachineAnswered } from '@/lib/machine-answer';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import {
   chairSeatFill,
@@ -14,8 +15,6 @@ import {
   FURNITURE_RAIL_STROKE,
   FURNITURE_SHADOW,
   furnitureFrame,
-  furnitureParts,
-  furnitureRing,
   isSeatingShape,
   OFFICE_ART,
   OFFICE_TONES,
@@ -67,7 +66,6 @@ export function FurnitureView({
   stroke,
   fill,
   sitters,
-  answered,
   animClass,
 }: {
   element: ShapeElement;
@@ -75,9 +73,6 @@ export function FurnitureView({
   // The element's fill: a rug's colour (seating and the rest take their seat wash from it).
   fill?: string;
   sitters: ChairSitter[];
-  // Bumped each time your own character gets a drink here, so the machine answers
-  // (docs/specs/009-elements/office.md "Using it").
-  answered?: number;
   animClass?: string;
 }) {
   const kind = element.shape;
@@ -90,7 +85,13 @@ export function FurnitureView({
   const occupied = seating && sitters.length > 0;
   const ringColor = sitters[0]?.color ?? stroke;
   const noun = NOUN[kind];
-  const ring = furnitureRing(art, facing);
+  const { parts, ring, ringUnder = parts.length } = frame.view;
+  // A soft ring in the first sitter's colour, on the seat and under what stands nearer the camera (ringUnder). A
+  // meeting table names its sitters without a ring: which seat a peer took is not in their presence.
+  const ringView =
+    occupied && kind !== 'meeting-table' ? (
+      <ellipse key="ring" {...ring} fill="none" stroke={ringColor} strokeWidth="3" opacity="0.85" />
+    ) : null;
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
       <svg
@@ -105,18 +106,16 @@ export function FurnitureView({
               : `Empty ${noun.toLowerCase()}`
         }
       >
+        {/* The ring rides inside the drawing's own frame, so a mirrored side mirrors it too. */}
         <g transform={frame.transform || undefined}>
-          {furnitureParts(art, facing).map((p, i) => (
-            <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />
-          ))}
+          {parts.map((p, i) => [
+            i === ringUnder ? ringView : null,
+            <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />,
+          ])}
+          {ringUnder >= parts.length ? ringView : null}
         </g>
         {kind === 'water-cooler' || kind === 'coffee-machine' ? (
-          <MachineAnswer kind={kind} answered={answered ?? 0} />
-        ) : null}
-        {occupied && kind !== 'meeting-table' ? (
-          // A soft ring in the first sitter's colour, under the seats. A meeting table names its sitters
-          // without a ring: which seat a peer took is not in their presence.
-          <ellipse {...ring} fill="none" stroke={ringColor} strokeWidth="3" opacity="0.85" />
+          <MachineAnswer kind={kind} id={element.id} />
         ) : null}
       </svg>
       {occupied ? (
@@ -133,18 +132,16 @@ export function FurnitureView({
 
 // The machine answering a drink (docs/specs/009-elements/office.md "Using it"): bubbles rising in the cooler's
 // bottle, or coffee dripping into the carafe, for a moment. Played with the Web Animations API on each bump of
-// `answered`, so it costs nothing until somebody gets a drink, and not at all under reduced motion.
-function MachineAnswer({
-  kind,
-  answered,
-}: {
-  kind: 'water-cooler' | 'coffee-machine';
-  answered: number;
-}) {
+// its count (lib/machine-answer.ts), so it costs nothing until somebody gets a drink, and not at all under reduced
+// motion. A count it already had when it mounted (a tab switched back to) does not play again.
+function MachineAnswer({ kind, id }: { kind: 'water-cooler' | 'coffee-machine'; id: string }) {
+  const answered = useMachineAnswered(id);
   const ref = useRef<SVGGElement>(null);
+  const seen = useRef(answered);
   useEffect(() => {
     const g = ref.current;
-    if (!g || answered === 0 || prefersReducedMotion()) return;
+    if (!g || answered === seen.current || prefersReducedMotion()) return;
+    seen.current = answered;
     const anims = [...g.children].map((child, i) =>
       (child as SVGElement).animate(
         kind === 'water-cooler'

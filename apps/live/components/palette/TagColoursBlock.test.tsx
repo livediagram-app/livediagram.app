@@ -29,6 +29,22 @@ describe('TagColoursBlock', () => {
     expect(onSet).toHaveBeenCalledWith('PCI', null);
   });
 
+  // The picker's leading No Colour sends `transparent`: for a tag, that is clearing it, never a write refused.
+  it("clears a tag's colour from the picker's No Colour", () => {
+    const onSet = vi.fn();
+    render(
+      <TagColoursBlock
+        target={card(['PCI'])}
+        tagColours={[{ tag: 'pci', color: '#d97706' }]}
+        colourPalette={{ presets: [] }}
+        onSetTagColour={onSet}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^PCI/ }));
+    fireEvent.click(screen.getAllByRole('button', { name: /no .*colou?r/i })[0]!);
+    expect(onSet).toHaveBeenCalledWith('PCI', null);
+  });
+
   it('shows nothing for a card with no tags', () => {
     const { container } = render(
       <TagColoursBlock

@@ -24,7 +24,6 @@ import {
   FURNITURE_RAIL_STROKE,
   FURNITURE_SHADOW,
   furnitureFrame,
-  furnitureParts,
   isSeatingShape,
   seatingFacing,
   type FurniturePart,
@@ -203,11 +202,12 @@ export function svgBehaviourFace(
     case 'water-cooler':
     case 'coffee-machine':
       return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
-    // A rug and a room are floor: their own fill, not the seats' wash (docs/specs/009-elements/office.md).
+    // A rug and a room are floor: their own fill, not the seats' wash (docs/specs/009-elements/office.md), resolved
+    // for the paper as the canvas resolves it (deep on a dark tab).
     case 'rug':
-      return furnitureArt(el, el.fillColor ?? RUG_FILL, stroke);
+      return furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
     case 'room':
-      return roomSvg(el, el.fillColor ?? ROOM_FLOOR, stroke);
+      return roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
     case 'fence':
       return fenceArt(el, stroke);
     case 'comment-pin':
@@ -533,7 +533,7 @@ function furnitureArt(el: Face, seat: string, stroke: string): string {
     ? seatingFacing({ shape: el.shape, chairFacing: el.chairFacing })
     : 'n';
   const frame = furnitureFrame(art, facing);
-  const parts = furnitureParts(art, facing)
+  const parts = frame.view.parts
     .map((p) => furniturePart(p, xmlEscape(seat), xmlEscape(stroke)))
     .join('');
   return (

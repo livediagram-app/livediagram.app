@@ -28,22 +28,50 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: deploy-staging
-  # Opposite of production's: a burst of merges should leave staging holding
-  # the LAST one, not queue a deploy per commit. Staging tracks `main`; it is
-  # not a record of every step main took.
-  cancel-in-progress: true
-
 jobs:
-  deploy:
-    name: Staging
+  # Every commit on main runs CI to the end, so their runs can finish out of
+  # order. Only the commit still at main's tip deploys: an older one finishing
+  # last would otherwise put staging behind main until the next merge.
+  latest:
+    name: Still main's tip
     # `workflow_run` fires on failure and cancellation too, so the conclusion
     # has to be checked explicitly — `types: [completed]` means "CI stopped",
     # not "CI passed". The dispatch path has no workflow_run to inspect.
     if: >-
       github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      tip: ${{ steps.tip.outputs.tip }}
+    steps:
+      - id: tip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          # A manual dispatch deploys the default branch, which is the tip by definition.
+          if [ -z "${SHA}" ]; then echo "tip=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          tip="$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq .sha)"
+          if [ "${tip}" = "${SHA}" ]; then
+            echo "tip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "[deploy-staging] skipped ${SHA}: main is at ${tip}, whose own CI run deploys it"
+            echo "tip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    name: Staging
+    needs: latest
+    if: needs.latest.outputs.tip == 'true'
+    # On the job, not the workflow, so a skipped older commit never enters the
+    # group and cancels the tip's deploy. Opposite of production's: a burst of
+    # merges should leave staging holding the LAST one, not queue a deploy per
+    # commit. Staging tracks `main`; it is not a record of every step main took.
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: true
     uses: ./.github/workflows/deploy-reusable.yml
     with:
       # Deploys the `[env.staging]` blocks: `-staging` worker names, staging's

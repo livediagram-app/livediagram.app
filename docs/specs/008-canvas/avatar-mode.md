@@ -12,6 +12,7 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 
 - New `CanvasTool` id `'avatar'`, offered in the canvas-tool picker's **presenter group** next to Laser and Spotlight.
 - Keyboard shortcut **`W`** (walk). `A` is Arrow, `V` / `H` / `K` / `I` / `E` / `Z` are taken.
+- **Where it is offered: Facilitate only.** Avatar is a [Facilitate mode](../012-collaboration/facilitate-mode.md) tool, so the canvas-tool picker, the `W` key and the search panel's `tool:avatar` command offer it only while the tab is in Facilitate; Diagram, Draw, Illustrate and Plan leave it out (`FACILITATE_ONLY_TOOLS` in `canvas-tool-options.tsx`). A [Selection Mode button](../009-elements/mode-button.md) set to Avatar still hands it out in **every** mode: an author who placed one chose to offer the walk on that board, so the button, not the mode, decides. Leaving Facilitate while walking does not end the walk; the usual ways out (a view-tool key, the picker, the button) still work.
 - **Disabled on an empty canvas**, like every tool below Select / Hand: with nothing drawn there is nowhere to walk.
 - Available on **every viewport** (unlike Spotlight): tap-to-walk works fine on touch, it just loses the arrow keys.
 - Available to **view-role** visitors — it is a pure view aid and mutates nothing.
