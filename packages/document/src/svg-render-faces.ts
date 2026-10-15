@@ -24,7 +24,6 @@ import {
   FURNITURE_RAIL_STROKE,
   FURNITURE_SHADOW,
   furnitureFrame,
-  furnitureParts,
   isSeatingShape,
   seatingFacing,
   type FurniturePart,
@@ -534,7 +533,7 @@ function furnitureArt(el: Face, seat: string, stroke: string): string {
     ? seatingFacing({ shape: el.shape, chairFacing: el.chairFacing })
     : 'n';
   const frame = furnitureFrame(art, facing);
-  const parts = furnitureParts(art, facing)
+  const parts = frame.view.parts
     .map((p) => furniturePart(p, xmlEscape(seat), xmlEscape(stroke)))
     .join('');
   return (
