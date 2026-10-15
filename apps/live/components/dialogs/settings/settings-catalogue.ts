@@ -22,6 +22,13 @@ import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import { ILLUSTRATE_TOUR_KINDS, illustrateTourOwed } from '@/lib/illustrate-tour';
 import { PLAN_TOUR_TRACKS, planTourOwed } from '@/lib/plan-tour';
 import {
+  ELEMENT_TOUR_KINDS,
+  elementTourSeen,
+  markElementTourSeen,
+  offerElementTourAgain,
+  type ElementTourKind,
+} from '@/lib/element-tours';
+import {
   readElementIndicatorStyle,
   withElementIndicatorStyle,
   type ElementIndicatorStyle,
@@ -351,6 +358,9 @@ export type SettingsCategorySpec = {
   // A line under a section's heading, for what every row in it shares (Documents' Default Folders,
   // the Tours' "offer again"), said once rather than under each row.
   sectionNotes?: Record<string, { note: string; helpArticle?: HelpArticleKey }>;
+  // Sections drawn as a closed accordion, for rows people rarely look for (the Tours' Element Tours): the heading
+  // opens them, and Settings opened on one of their rows opens them itself.
+  collapsedSections?: readonly string[];
   rows: SettingsRowSpec[];
 };
 
@@ -415,11 +425,12 @@ function panelSwitch(
 function tourSwitch(
   key: TourSeenKey,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
+  section = 'Offer Again',
 ): SettingsToggleRowSpec {
   return {
     kind: 'toggle',
     key,
-    section: 'Offer Again',
+    section,
     ...row,
     read: (p) => p[key] !== true,
     write: (p, v) => ({ ...p, [key]: !v }),
@@ -428,15 +439,35 @@ function tourSwitch(
 
 // A tour of several tracks (lib/tour-tracks.ts): on while any track is still owed. Off answers every track; on
 // forgets those answered, so each offers itself again. Its telemetry tokens are its seen flag's, as above.
-function tourTracksSwitch(
-  key: 'planTourSeen' | 'illustrateTourSeen',
-  tracksKey: 'planTourTracks' | 'illustrateTourKinds',
-  tracks: readonly string[],
-  owed: (p: UserPreferences) => boolean,
+// One element tour's switch (docs/specs/007-editor/element-tours.md "Settings"), nested under Element Tours: on while
+// its kind is still offered; on forgets its answer, off answers it.
+function elementTourSwitch(
+  kind: ElementTourKind,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
 ): SettingsToggleRowSpec {
   return {
-    ...tourSwitch(key, row),
+    kind: 'toggle',
+    key: `elementTour-${kind}`,
+    section: ELEMENT_TOURS_SECTION,
+    parent: 'elementToursSeen',
+    ...row,
+    read: (p) => !elementTourSeen(p, kind),
+    write: (p, v) => (v ? offerElementTourAgain(p, kind) : markElementTourSeen(p, kind)),
+  };
+}
+
+export const ELEMENT_TOURS_SECTION = 'Element Tours';
+
+function tourTracksSwitch(
+  key: 'planTourSeen' | 'illustrateTourSeen' | 'elementToursSeen',
+  tracksKey: 'planTourTracks' | 'illustrateTourKinds' | 'elementTourKinds',
+  tracks: readonly string[],
+  owed: (p: UserPreferences) => boolean,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
+  section?: string,
+): SettingsToggleRowSpec {
+  return {
+    ...tourSwitch(key, row, section),
     read: owed,
     write: (p, v) => {
       if (!v) return { ...p, [key]: true, [tracksKey]: [...tracks] };
@@ -453,7 +484,8 @@ type TourSeenKey =
   | 'drawTourSeen'
   | 'formTourSeen'
   | 'avatarTourSeen'
-  | 'illustrateTourSeen';
+  | 'illustrateTourSeen'
+  | 'elementToursSeen';
 
 // A presenter setting's row (docs/specs/012-collaboration/presentation-mode.md "Settings"): read and written through
 // lib/presentation-config, which keeps the whole config in one preference. The telemetry token is the one the
@@ -1087,7 +1119,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     // offers itself once, in its own mode, and its switch turns itself off once taken or dismissed.
     id: 'tours',
     label: 'Tours',
+    collapsedSections: [ELEMENT_TOURS_SECTION],
     sectionNotes: {
+      [ELEMENT_TOURS_SECTION]: {
+        note: 'The first time you select a complex element, a small Tour toolbar beside it offers to show how it works. Switch one back on to be offered it again.',
+      },
       'Offer Again': {
         note: 'Each tour offers itself once. Switch one back on and close Settings to take it again: it starts straight away if you are in its mode, or the next time you are.',
       },
@@ -1154,6 +1190,28 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           helpArticle: 'illustrateTour',
         },
       ),
+      // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
+      // them all over one per toured kind.
+      tourTracksSwitch(
+        'elementToursSeen',
+        'elementTourKinds',
+        ELEMENT_TOUR_KINDS,
+        (p) => ELEMENT_TOUR_KINDS.some((k) => !elementTourSeen(p, k)),
+        {
+          label: 'Element Tours',
+          event: { category: 'UI', on: 'ElementToursSeenOff', off: 'ElementToursSeenOn' },
+          keywords: 'tour walkthrough tutorial element sankey how to use learn replay',
+          description: 'Every element tour at once.',
+        },
+        ELEMENT_TOURS_SECTION,
+      ),
+      elementTourSwitch('sankey', {
+        label: 'Sankey Diagram Tour',
+        event: { category: 'UI', on: 'SankeyTourSeenOff', off: 'SankeyTourSeenOn' },
+        keywords: 'tour walkthrough tutorial sankey flows bands nodes leftover replay',
+        description: 'The first time you select a Sankey diagram.',
+        helpArticle: 'sankeyDiagram',
+      }),
     ],
   },
   {

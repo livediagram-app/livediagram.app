@@ -346,6 +346,7 @@ export function ShapeContentRouter({
       palette={chartPalette}
       ground={chartGround}
       editable={!readOnly && !isLocked}
+      onCanvas
     />
   ) : element.type === 'shape' && isLineShape(element.shape) ? (
     // Line chart (docs/specs/009-elements/pie-chart.md): multi-series lines + a legend.
