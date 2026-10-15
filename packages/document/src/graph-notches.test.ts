@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { graphFromMermaid, layoutGraph } from './graph-input';
-import { placeElbowLabels } from './graph-look';
+import { placeElbowLabels } from './graph-look-labels';
 import { withoutNotches } from './graph-notches';
 import type { ArrowElement, Element } from './index';
 

@@ -418,7 +418,7 @@ describe('labels slide along their run', () => {
 
 describe('labels off other lines', () => {
   it('moves a label off a run another, unlabelled line crosses', async () => {
-    const { placeElbowLabels } = await import('./graph-look');
+    const { placeElbowLabels } = await import('./graph-look-labels');
     const { withOrthogonalBends } = await import('./arrow-orthogonal');
     // s's right side to t's top: one bend, then a drop that an unlabelled line crosses at its middle.
     const els = withOrthogonalBends(
