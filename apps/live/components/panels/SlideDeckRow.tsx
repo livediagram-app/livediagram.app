@@ -8,18 +8,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { slideName, type Slide } from '@livediagram/document';
 import { lucideFileText } from '@livediagram/icons/lucide';
-import { Glyph, HoverCard, lucideGlyph, Tooltip, trustedHtml } from '@livediagram/ui';
+import { HoverCard, lucideGlyph, Tooltip, trustedHtml } from '@livediagram/ui';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
+import { PlayIcon } from '@/components/primitives/PlayIcon';
 
 const NotesIcon = lucideGlyph(lucideFileText, 11);
-
-export function PlayIcon({ size = 12 }: { size?: number }) {
-  return (
-    <Glyph size={size} units={12} filled>
-      <path d="M3 1.8 10 6l-7 4.2z" />
-    </Glyph>
-  );
-}
 
 export function SlideDeckRow({
   slide,

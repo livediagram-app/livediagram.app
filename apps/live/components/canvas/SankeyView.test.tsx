@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from 'vitest';
-import { fireEvent, render } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
+import { act, fireEvent, render } from '@testing-library/react';
+import { setSankeyTourFocus } from '@/lib/sankey-tour-focus';
 import { createShape, type ShapeElement } from '@livediagram/document';
 import { SankeyView } from './SankeyView';
 
@@ -69,5 +70,50 @@ describe('SankeyView', () => {
     expect(
       container.querySelector<SVGElement>('.lvd-sk-node')!.style.getPropertyValue('--lvd-sk-col'),
     ).toBe('');
+  });
+});
+
+// The Sankey tour lifts a part as a hover would (docs/specs/007-editor/element-tours.md "The Sankey tour").
+describe('SankeyView tour lift', () => {
+  afterEach(() => act(() => setSankeyTourFocus(null)));
+
+  it('reads the lifted band or node on the canvas, over a pointer resting elsewhere', () => {
+    const { container } = render(
+      <SankeyView element={el()} textColor="#0f172a" editable onCanvas />,
+    );
+    act(() => setSankeyTourFocus({ elementId: 's', part: 'band', index: 0 }));
+    expect(container.textContent).toContain('Salary → Budget: 3,200');
+    act(() => setSankeyTourFocus({ elementId: 's', part: 'node', index: 1 }));
+    expect(container.textContent).toContain('Budget: In 4,000 · Out 4,000');
+    const hits = container.querySelectorAll('[stroke="transparent"]');
+    fireEvent.pointerEnter(hits[0]!);
+    expect(container.textContent).toContain('Budget: In 4,000');
+    expect(container.textContent).not.toContain('Salary → Budget:');
+    // The step over, the pointer's hover reads again.
+    act(() => setSankeyTourFocus(null));
+    expect(container.textContent).toContain('Salary → Budget:');
+    fireEvent.pointerLeave(hits[0]!);
+    expect(container.textContent).not.toContain('Salary → Budget:');
+  });
+
+  it('marks its parts for the tour to point at', () => {
+    const { container } = render(<SankeyView element={el()} textColor="#000" editable onCanvas />);
+    expect(container.querySelectorAll('[data-sankey-band]')).toHaveLength(7);
+    expect(container.querySelectorAll('[data-sankey-node]')).toHaveLength(8);
+  });
+
+  it('ignores a lift off the canvas, for another diagram, or past its parts', () => {
+    const preview = render(<SankeyView element={el()} textColor="#000" editable={false} />);
+    act(() => setSankeyTourFocus({ elementId: 's', part: 'band', index: 0 }));
+    expect(preview.container.textContent).not.toContain('Salary → Budget:');
+    preview.unmount();
+    const other = render(
+      <SankeyView element={el({ id: 'x' })} textColor="#000" editable onCanvas />,
+    );
+    expect(other.container.textContent).not.toContain('Salary → Budget:');
+    other.unmount();
+    const { container } = render(<SankeyView element={el()} textColor="#000" editable onCanvas />);
+    act(() => setSankeyTourFocus({ elementId: 's', part: 'band', index: 99 }));
+    expect(container.textContent).not.toContain('→');
   });
 });

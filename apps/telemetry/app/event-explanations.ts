@@ -1163,6 +1163,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of the Tab Style dialog's Show Me tour.",
   'UI|Ended|TabStyleTourSkipped':
     "Someone left the Tab Style dialog's Show Me tour before its end.",
+  'UI|Ended|SankeyTourCompleted':
+    'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
+  'UI|Ended|SankeyTourSkipped':
+    'Someone left the Sankey tour before its end, or the diagram it was on went away.',
   'UI|Ended|SankeyFlowsTourCompleted':
     "Someone reached the end of a Sankey Flows dialog's Show Me tour.",
   'UI|Ended|SankeyFlowsTourSkipped':
@@ -1281,6 +1285,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour".',
   'UI|Opened|AvatarPanel':
     'Someone opened the Avatar panel from its button beside Undo and Redo, in Avatar mode.',
+  'UI|Opened|SankeyTourOffer':
+    'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
     'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour".',
   'UI|Opened|FacilitateTourOffer':
@@ -1357,6 +1363,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the photo import review, starting its tour of checking the notes found on the wall.',
   'UI|Started|TabStyleTour':
     'Someone pressed Show Me in the Tab Style dialog, starting its tour of looks and fine-tuning.',
+  'UI|Started|SankeyTour':
+    'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
     "Someone pressed Show Me in a Sankey's Flows dialog, starting its tour of writing flows.",
   'UI|Started|ShareTour':
@@ -1520,6 +1528,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Avatar Tour" in Settings, marking the Avatar tour as not yet seen.',
   'UI|Toggled|AvatarTourSeenOn':
     'Someone switched off Tours › "Avatar Tour" in Settings, marking the Avatar tour as seen.',
+  'UI|Toggled|ElementToursSeenOff':
+    'Someone switched on Tours › Element Tours in Settings, so every element tour is offered again.',
+  'UI|Toggled|ElementToursSeenOn':
+    'Someone switched off Tours › Element Tours in Settings, so no element tour is offered.',
+  'UI|Toggled|SankeyTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
+  'UI|Toggled|SankeyTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is not offered.',
   'UI|Toggled|DrawTourSeenOff':
     'Someone switched on Tours › "Draw Tour" in Settings, marking the Draw tour as not yet seen.',
   'UI|Toggled|DrawTourSeenOn':
@@ -1606,6 +1622,29 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Avatar tour reached its "Give Someone a Push" step, on the person\'s own character.',
   'UI|View|AvatarTourStepOutro':
     'The Avatar tour reached its closing "You\'re Ready to Roam" card.',
+  'UI|View|SankeyTourStepBands':
+    'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
+  'UI|View|SankeyTourStepLeftover':
+    'The Sankey tour reached its "What Is Left Over" step, lifting a leftover band.',
+  'UI|View|SankeyTourStepStyle':
+    'The Sankey tour reached its "Style It" step, on the selection toolbar\'s More button.',
+  'UI|View|SankeyTourStepFlows':
+    'The Sankey tour reached its "Write the Flows" step, on the whole diagram.',
+  'UI|View|SankeyTourStepFlowsNodes':
+    'The Sankey tour reached its "Your Nodes" step, inside the Flows dialog it opened.',
+  'UI|View|SankeyTourStepFlowsRows':
+    'The Sankey tour reached its "Flows, Step by Step" step, inside the Flows dialog.',
+  'UI|View|SankeyTourStepFlowsAdd':
+    'The Sankey tour reached its "Add a Flow" step, inside the Flows dialog.',
+  'UI|View|SankeyTourStepFlowsBalance':
+    'The Sankey tour reached its "In and Out Differ" step, inside the Flows dialog.',
+  'UI|View|SankeyTourStepFlowsText':
+    'The Sankey tour reached its "Or Type Them" step, on the Flows dialog\'s Text tab.',
+  'UI|View|SankeyTourStepFlowsImport':
+    'The Sankey tour reached its "Import a File" step, inside the Flows dialog.',
+  'UI|View|SankeyTourStepFlowsPreview':
+    'The Sankey tour reached its "Live Preview" step, inside the Flows dialog.',
+  'UI|View|SankeyTourStepOutro': 'The Sankey tour reached its closing "That Is a Sankey" card.',
   'UI|View|DrawTourStepDrawingTools':
     'The Draw tour reached its "Pens and Tools" step, on the dock\'s Drawing tools group.',
   'UI|View|DrawTourStepQuickStyle':

@@ -145,7 +145,7 @@ describe('settings catalogue', () => {
 
   // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
   // the order the tours come.
-  it('gives the six tours a category of their own, a switch each with its own article', () => {
+  it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
       ['tourSeen', 'toggle', 'Diagram Tour', 'diagramTour'],
@@ -154,6 +154,10 @@ describe('settings catalogue', () => {
       ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       ['illustrateTourSeen', 'toggle', 'Illustrate Tour', 'illustrateTour'],
+      // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
+      // linking that element's article.
+      ['elementToursSeen', 'toggle', 'Element Tours', undefined],
+      ['elementTour-sankey', 'toggle', 'Sankey Diagram Tour', 'sankeyDiagram'],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
@@ -171,6 +175,8 @@ describe('settings catalogue', () => {
         ['DrawTourSeenOff', 'DrawTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['IllustrateTourSeenOff', 'IllustrateTourSeenOn'],
+        ['ElementToursSeenOff', 'ElementToursSeenOn'],
+        ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
       ],
     );
   });
@@ -218,6 +224,9 @@ describe('settings catalogue', () => {
     const own: Record<string, string[]> = {
       planTourSeen: ['planTourSeen', 'planTourTracks'],
       illustrateTourSeen: ['illustrateTourSeen', 'illustrateTourKinds'],
+      elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
+      // One element's tour writes the answered list alone (lib/element-tours.ts).
+      'elementTour-sankey': ['elementTourKinds'],
     };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.
