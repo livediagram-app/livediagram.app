@@ -82,6 +82,7 @@ import { useAvatarSpeech } from '@/hooks/canvas/useAvatarSpeech';
 import { useSpeechBubbles } from '@/lib/avatar-speech-store';
 import { headPoint } from '@/lib/avatar-speech';
 import { avatarScale } from '@/lib/avatar-config';
+import { useAvatarActionKeys } from '@/hooks/canvas/useAvatarActionKeys';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 
 // The footprint a burst is scaled against when it comes from the avatar panel
@@ -441,6 +442,17 @@ function CanvasView(props: CanvasProps) {
     // Reaction pad (docs/specs/009-elements/reaction-pad.md): walking onto one is the same act as pressing
     // it, so it runs the same handler.
     onWalkIntoReactionPad: (element) => props.onFireReaction?.(element),
+  });
+  // A fresh seed each press, so pressing the same reaction twice replays rather than continuing.
+  const playAvatarBurst = (reaction: Reaction) => {
+    avatarBurstSeq.current += 1;
+    setAvatarBurst({ reaction, seed: avatarBurstSeq.current });
+  };
+  // The panel's Behaviour and Reactions on the keyboard (docs/specs/008-canvas/avatar-mode.md "Keyboard actions").
+  useAvatarActionKeys({
+    active: canvasTool === 'avatar',
+    onReaction: avatar.playReaction,
+    onBurst: playAvatarBurst,
   });
   // `sitOn` is returned by the very hook whose callback needs it, so the call
   // goes through a ref — declared above, repointed here, read at arrival time.
@@ -1170,12 +1182,7 @@ function CanvasView(props: CanvasProps) {
             }
             avatarSpeechCooling={speech.coolingDown}
             onAvatarReaction={avatar.playReaction}
-            onAvatarBurst={(reaction: Reaction) => {
-              // A fresh seed each  press, so pressing the same reaction twice replays
-              // rather than continuing.
-              avatarBurstSeq.current += 1;
-              setAvatarBurst({ reaction, seed: avatarBurstSeq.current });
-            }}
+            onAvatarBurst={playAvatarBurst}
             offscreenContent={offscreenContent}
             marquee={marquee}
             drawDrag={drawDrag}

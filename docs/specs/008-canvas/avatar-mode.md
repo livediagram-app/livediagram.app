@@ -60,6 +60,19 @@ Contents, top to bottom:
 
 **No colour picker**, deliberately — see above.
 
+## Keyboard actions
+
+Every Behaviour and every Reaction in the panel is also **one key**, so a presenter mid-walk can wave or throw confetti without opening the panel:
+
+- **Behaviour on its initial**: `J` Jumping jacks, `W` Wave, `S` Spin, `C` Cheer, `D` Dance.
+- **Reactions on `1` to `5`**, in the panel's order: Confetti, Sparkles, Hearts, Applause, Fireworks.
+- A key plays exactly what its panel button plays (the same `playReaction` and burst handlers), the panel open or not. Pressing it again restarts the performance or replays the burst, as a second click does.
+- **Plain presses only**: any modifier (Shift+D stays the mode switch, Cmd+C copies) and an autorepeat from a held key do nothing, so holding a key never machine-guns a burst.
+- **Never while typing**: a focused text field (the message composer, a rename, a comment), an open dialog or a focused menu keeps the key, as it does for the arrows and Space.
+- While walking these keys are the character's, so the editor's own meanings stand aside (`S` does not open Search, `1` does not pick Select). `V` / `H` / `K` / `I` / `Z` and `Escape` remain the ways out.
+- The panel shows each key on its button (desktop only, as the message button's `Enter` hint), and the Settings Keyboard reference lists them under **While walking (Avatar mode)**. The key map lives in `lib/avatar-action-keys.ts` (pure, unit-tested); `hooks/canvas/useAvatarActionKeys.ts` plays it.
+- Viewers have the keys too, as they have the panel's actions: nothing they do is a document write.
+
 ## Persistence
 
 **First use rolls a random character.** A browser with nothing stored gets a random gender, clothing, and hair rather than the same default figure everyone else starts as — two people walking onto a canvas shouldn't arrive as twins. **Size is not rolled**: it changes how much of the canvas the character covers, so it starts Regular and stays a deliberate choice. The roll is **pinned to storage the first time the mode is actually entered** (not on editor mount), so it becomes _your_ character rather than re-rolling every time, and a user who never opens Avatar mode never has one written for them. `Reset position`'s sibling behaviour follows: resetting the character rolls a new random one rather than returning the plain default.
