@@ -77,8 +77,22 @@ element leaves unset, plus how a line is drawn (Sketch).
   both draw it (an SVG displacement filter, defined once per export and only when something needs it).
 - **Sequence diagrams** draw their participants' boxes and their message lines by hand too, since they are the
   same boxes and arrows the canvas draws ([The sequence diagram](../009-elements/sequence-diagram.md) "Look").
-- **Not affected:** freehand strokes (already hand-drawn), images, and the faces of self-painting elements
-  (charts, checklists, progress, code) other than their lettering.
+- **Every other face is drawn by hand too.** Whatever an element draws beyond its sketched body is split into two
+  layers: charts, legends, progress, rating, timeline rails, checklists, code blocks, concept graphics, Sankey,
+  badges, steps, cards, pointer notes, stacks, boundaries, diagram keys, people, web components, office furniture
+  and rooms, Plan boards, cards, views and sheets, collaboration panels, buttons, pickers, reveals, portals, quizzes,
+  a tab window's frame, link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
+  rows, a page's fold, a browser's chrome and an inline icon beside a label.
+  - Its **ink** (fills, outlines, bars, discs, rules, glyphs) is drawn through the same wobble as icons.
+  - Its **words** sit above the ink, crisp, in the element's font. The wobble mangles small figures ("4,000" reads
+    "2,0/0"), so words never go through it; under Sketch they are already written by hand.
+
+  The two layers line up exactly, so a face reads and behaves as in any finish: its controls are pressed and typed
+  into as before. The ink is a still copy of the face, so a hover or press tint on a face's own control is not
+  drawn on a Sketch tab. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
+  and a tab window's content keeps the finish of the tab it shows. Exports draw the same two layers.
+
+- **Not affected:** freehand strokes (already hand-drawn) and images (photos, not drawings).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, never the wobble, so a
   sketched element is selected, connected and aligned exactly as a Flexible one.
 

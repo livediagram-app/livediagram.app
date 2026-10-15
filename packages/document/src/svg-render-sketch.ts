@@ -1,7 +1,7 @@
 // A sketched element in the SVG export (docs/specs/008-canvas/finish.md "Sketch"): the same drawing the canvas
 // overlay paints (sketch-element.ts), placed at the element's position. Layers bottom to top: solid fill,
 // pencil shading (the stroke colour, faint), outline, chrome.
-import { finishWobblesArt, resolveFinish, type Finish } from './finish';
+import { finishSplitsFace, finishWobblesArt, resolveFinish, type Finish } from './finish';
 import type { BoxedElement, Element } from './index';
 import { SHAPE_DETAIL_STROKE_PX } from './shape-geometry';
 import { SKETCH_HATCH_OPACITY, sketchElementPaint, type SketchDrawing } from './sketch-element';
@@ -55,7 +55,7 @@ export function svgSketchedBody(
   });
 }
 
-/** The id of the hand-drawn wobble icons and stickers are drawn through under Sketch, in an export. */
+/** The id of the hand-drawn wobble icons, stickers and faces' ink are drawn through under Sketch, in an export. */
 export const SKETCH_ART_FILTER_ID = 'lvd-sketch-art';
 
 /** The wobble's <defs> (the canvas's SketchFilterDefs, the same two passes) when an element on the tab draws through
@@ -63,7 +63,8 @@ export const SKETCH_ART_FILTER_ID = 'lvd-sketch-art';
 export function svgSketchArtDefs(elements: readonly Element[], tabFinish: unknown): string {
   const needs = elements.some(
     (el) =>
-      finishWobblesArt(el as { type: string; shape?: string }) &&
+      (finishWobblesArt(el as { type: string; shape?: string }) ||
+        finishSplitsFace(el as { type: string; shape?: string })) &&
       resolveFinish((el as { finish?: unknown }).finish, tabFinish) === 'sketch',
   );
   if (!needs) return '';
@@ -75,4 +76,40 @@ export function svgSketchArtDefs(elements: readonly Element[], tabFinish: unknow
     `<feDisplacementMap in="SourceGraphic" in2="n2" scale="3" xChannelSelector="G" yChannelSelector="R" result="p2"/>` +
     `<feMerge><feMergeNode in="p1"/><feMergeNode in="p2"/></feMerge></filter></defs>`
   );
+}
+
+// A sketched face (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too") in the export: its ink
+// through the wobble, its words crisp above it. Markup is split by tag, never parsed: a face is our own renderer's
+// output, so its words are always <text> runs and its photos <image>s.
+const WORDS = /<text\b[^>]*>[\s\S]*?<\/text>|<text\b[^>]*\/>/g;
+const PHOTOS =
+  /<image\b[^>]*\/>|<image\b[^>]*>[\s\S]*?<\/image>|<foreignObject\b[\s\S]*?<\/foreignObject>/g;
+const INK_TAGS = /<(rect|circle|ellipse|path|line|polyline|polygon|use)\b/g;
+const HAS_INK = /<(rect|circle|ellipse|path|line|polyline|polygon|use)\b/;
+const HAS_WORDS = /<(text|image|foreignObject)\b/;
+// Shapes that clip, mask or paint (never drawn themselves): hiding one would empty its clip, so they are kept whole.
+const DEFINITIONS = /<(clipPath|mask|defs|pattern|marker)\b[^>]*>[\s\S]*?<\/\1>/g;
+// The hand-drawn body (svgSketchDrawing) is already drawn by hand; it is drawn once, under the face, never wobbled.
+const SKETCHED_BODY = /<g [^>]*data-finish="sketch">[\s\S]*?<\/g>/;
+
+/** Every ink tag in `markup` hidden, leaving its words and photos; definitions untouched. */
+function hideInk(markup: string): string {
+  const kept: string[] = [];
+  const held = markup.replace(DEFINITIONS, (d) => `\u0000${kept.push(d) - 1}\u0000`);
+  return held
+    .replace(INK_TAGS, '<$1 visibility="hidden"')
+    .replace(/\u0000(\d+)\u0000/g, (_, i: string) => kept[Number(i)]!);
+}
+
+/** A face's markup as two layers: the ink copy (words and photos taken out) through the wobble, then the words
+ *  copy (every ink tag hidden) over it, so the words keep their place and stay sharp. A sketched body inside is
+ *  drawn once, untouched, where it was: under a box's face, over a table's grid. */
+export function svgSketchFace(markup: string): string {
+  const body = SKETCHED_BODY.exec(markup)?.[0] ?? '';
+  const face = body ? markup.replace(body, '') : markup;
+  const ink = face.replace(WORDS, '').replace(PHOTOS, '');
+  const inkLayer = HAS_INK.test(ink) ? `<g filter="url(#${SKETCH_ART_FILTER_ID})">${ink}</g>` : '';
+  const wordsLayer = HAS_WORDS.test(face) ? hideInk(face) : '';
+  const layers = inkLayer + wordsLayer;
+  return body && !markup.startsWith(body) ? layers + body : body + layers;
 }
