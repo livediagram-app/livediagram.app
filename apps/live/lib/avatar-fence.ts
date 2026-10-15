@@ -9,6 +9,8 @@
 
 import {
   boxEdges,
+  distToSegment,
+  segmentDistance as sharedSegmentDistance,
   fenceLine,
   officeFootprint,
   roomWalls,
@@ -63,14 +65,9 @@ export function fenceSegments(elements: readonly Element[]): FenceSegment[] {
 const cross = (o: FencePoint, a: FencePoint, b: FencePoint) =>
   (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
 
-/** Distance from a point to a segment. */
+/** Distance from a point to a segment (the shared geometry's distToSegment). */
 export function pointSegmentDistance(p: FencePoint, s: FenceSegment): number {
-  const dx = s.b.x - s.a.x;
-  const dy = s.b.y - s.a.y;
-  const len2 = dx * dx + dy * dy;
-  const t =
-    len2 === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - s.a.x) * dx + (p.y - s.a.y) * dy) / len2));
-  return Math.hypot(p.x - (s.a.x + t * dx), p.y - (s.a.y + t * dy));
+  return distToSegment(p, s.a, s.b);
 }
 
 /** Whether two segments cross or touch. */
@@ -93,15 +90,9 @@ export function segmentsIntersect(p: FenceSegment, q: FenceSegment): boolean {
   );
 }
 
-/** The closest two segments come to each other (0 when they cross). */
+/** The closest two segments come to each other (0 when they cross): the shared geometry's segmentDistance. */
 export function segmentDistance(p: FenceSegment, q: FenceSegment): number {
-  if (segmentsIntersect(p, q)) return 0;
-  return Math.min(
-    pointSegmentDistance(p.a, q),
-    pointSegmentDistance(p.b, q),
-    pointSegmentDistance(q.a, p),
-    pointSegmentDistance(q.b, p),
-  );
+  return sharedSegmentDistance(p.a, p.b, q.a, q.b);
 }
 
 /**
@@ -121,8 +112,13 @@ export function fenceRefuses(
   const crosses =
     cross(fence.a, fence.b, from) * cross(fence.a, fence.b, to) < 0 &&
     segmentsIntersect({ a: from, b: to }, fence);
-  return crosses || pointSegmentDistance(to, fence) < before;
+  // Closer by more than rounding: a step along the fence measures the same distance give or take an ulp, and an
+  // exact comparison refused such a slide at random.
+  return crosses || pointSegmentDistance(to, fence) < before - FENCE_EPSILON;
 }
+
+// Rounding's share of a distance measured in canvas px, never a real step closer.
+const FENCE_EPSILON = 1e-6;
 
 function firstRefusal(
   from: FencePoint,

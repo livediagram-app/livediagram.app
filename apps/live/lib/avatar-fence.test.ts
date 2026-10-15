@@ -212,3 +212,16 @@ describe('the office blocks like a fence', () => {
     expect(blocked.y).toBeGreaterThan(300);
   });
 });
+
+describe('a step along a fence from inside its reach', () => {
+  it('is never refused for rounding: the same distance off, a hair either way, is not closer', () => {
+    // A fence at 0.0274 rad, a character 5 px off it, stepping 3 px along it: measured, the step lands 1e-15 px
+    // "closer", which an exact comparison refused.
+    const th = 0.0274;
+    const [ux, uy] = [Math.cos(th), Math.sin(th)];
+    const fence = { a: { x: 0, y: 0 }, b: { x: 300 * ux, y: 300 * uy } };
+    const from = { x: 100 * ux - 5 * uy, y: 100 * uy + 5 * ux };
+    const to = { x: from.x + 3 * ux, y: from.y + 3 * uy };
+    expect(fenceRefuses(from, to, fence)).toBe(false);
+  });
+});

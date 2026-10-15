@@ -74,6 +74,22 @@ describe('useAvatarWalk with a fence', () => {
       vi.useRealTimers();
     }
   });
+
+  it('still arrives at someone standing just past the fence’s reach, so a shove lands', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+    try {
+      const fence = { ...createShape('fence', 0, 100), id: 'fence' };
+      const { result } = setup(vi.fn(), [fence]);
+      const arrived = vi.fn();
+      act(() => result.current.teleportTo({ x: 120, y: 200 }));
+      // A peer 6 px from the fence's line: the walk stops at the reach, 6 px short of them.
+      act(() => result.current.walkTo({ x: 120, y: 118 }, arrived));
+      act(() => vi.advanceTimersByTime(3000));
+      expect(arrived).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 // docs/specs/009-elements/office.md "Using it": a drink is presence, held for a minute, put down on leaving.
