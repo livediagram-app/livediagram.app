@@ -8,7 +8,8 @@ export type PlanKeyAction =
   | { kind: 'move'; move: ItemMove; announce: string }
   | { kind: 'open' }
   // `focusAfter`: the card that takes keyboard focus once this one has gone, the next in its cell, else the one
-  // before it, so a run of Deletes works down a column; null when the cell is left empty.
+  // before it, so a run of Deletes works down a column; a cell left empty hands it to the nearest card on the
+  // board in reading order (columns, then lanes); null only when the board is left with no card.
   | { kind: 'trash'; focusAfter: string | null }
   | { kind: 'add'; status: string; laneKey: string };
 
@@ -26,6 +27,17 @@ function locate(p: BoardProjection, itemId: string): Cell | null {
 const cellItems = (p: BoardProjection, col: number, lane: number) =>
   p.columns[col]?.lanes[lane]?.items ?? [];
 
+// Who takes focus once `itemId` has gone (see `focusAfter`).
+function focusAfterTrash(p: BoardProjection, at: Cell): string | null {
+  const items = cellItems(p, at.col, at.lane);
+  const inCell = items[at.index + 1] ?? items[at.index - 1];
+  if (inCell) return inCell.id;
+  const flat = p.columns.flatMap((c) => c.lanes.flatMap((l) => l.items));
+  const gone = items[at.index]!.id;
+  const i = flat.findIndex((it) => it.id === gone);
+  return (flat[i + 1] ?? flat[i - 1])?.id ?? null;
+}
+
 export function planBoardKey(
   p: BoardProjection,
   itemId: string,
@@ -40,10 +52,7 @@ export function planBoardKey(
   const title = `#${item.key} ${itemTitle(item)}`;
   if (key === 'Enter' || key === ' ') return { kind: 'open' };
   if ((key === 'Delete' || key === 'Backspace') && canEdit)
-    return {
-      kind: 'trash',
-      focusAfter: (items[at.index + 1] ?? items[at.index - 1])?.id ?? null,
-    };
+    return { kind: 'trash', focusAfter: focusAfterTrash(p, at) };
   if ((key === 'n' || key === 'N') && !shift && canEdit) {
     const column = p.columns[at.col]!;
     return { kind: 'add', status: column.column.status, laneKey: column.lanes[at.lane]!.laneKey };
