@@ -97,6 +97,26 @@ export function badgePresetFace(variant: string | undefined): {
   };
 }
 
+/** `el` with the colours its variant fixes put back, the last step of placing it: the Warning badge's rose. Placing
+ *  dresses a new element in the tab's theme and then in the style remembered for its kind, and either would paint
+ *  over a preset's own colour, which is what the preset is (docs/specs/009-elements/badge.md "Badge presets"). A
+ *  variant that fixes no colour leaves `el` as it is. */
+export function withVariantColours<T extends ShapeElement>(el: T, variant: string | undefined): T {
+  if (el.shape !== 'badge' || !variant || !Object.hasOwn(BADGE_PRESETS, variant)) return el;
+  const { strokeColor } = BADGE_PRESETS[variant]!;
+  if (!strokeColor || el.strokeColor === strokeColor) return el;
+  // The colour is the preset's, not a swatch's or a colour preset's: no binding re-derives it on a theme change.
+  const {
+    strokeSwatch: _s,
+    colorPreset: _p,
+    ...rest
+  } = el as T & {
+    strokeSwatch?: number;
+    colorPreset?: string;
+  };
+  return { ...rest, strokeColor } as T;
+}
+
 /** The badge presets' variants, in palette order after the New preset (no variant). */
 export const BADGE_PRESET_VARIANTS = ['beta', 'version', 'count', 'draft', 'warning'] as const;
 

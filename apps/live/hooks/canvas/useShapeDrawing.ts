@@ -19,7 +19,7 @@
 
 import type { Selection } from '@/lib/selection-store';
 import { useRef, useState } from 'react';
-import { createFreehand, type Element, type Tab } from '@livediagram/document';
+import { createFreehand, type Element, type Tab, withVariantColours } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -189,7 +189,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       onPlanCardPlace?.(intent.plan, endX, endY);
       return;
     }
-    const sized = dress(
+    const dressed = dress(
       buildDrawnBoxed(
         intent,
         startX,
@@ -201,6 +201,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         drawMode,
       ),
     );
+    // A preset's own colour (the Warning badge's rose) outlasts the theme and the remembered style it was dressed in.
+    const sized =
+      intent.type === 'shape' && dressed.type === 'shape'
+        ? withVariantColours(dressed, intent.variant)
+        : dressed;
     // Frames don't need special-casing here: the canvas + exporters
     // route through `framesFirst`, which keeps every frame painted
     // behind its contents regardless of array position (docs/specs/008-canvas/canvas-and-palette.md).
