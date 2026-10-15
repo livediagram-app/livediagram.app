@@ -6,7 +6,7 @@ import { isPlanTabKind } from './tab-kind';
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
 import { r2, xmlEscape } from './svg-render-primitives';
-import { SKETCH_ART_FILTER_ID } from './svg-render-sketch';
+import { SKETCH_FACE_FILTER } from './svg-render-sketch';
 
 /** A window's size as it lands (16:9). */
 export const TAB_WINDOW_SIZE = { width: 640, height: 360 } as const;
@@ -93,7 +93,7 @@ export function svgTabWindow(
     'none',
     ` stroke="${xmlEscape(stroke ?? TAB_WINDOW_HAIRLINE)}" stroke-width="1"`,
   );
-  const edge = sketched ? `<g filter="url(#${SKETCH_ART_FILTER_ID})">${hairline}</g>` : hairline;
+  const edge = sketched ? `<g filter="url(#${SKETCH_FACE_FILTER.id})">${hairline}</g>` : hairline;
   const drawing = art?.drawing;
   if (!drawing) {
     const name = art?.name ?? 'Tab Window';

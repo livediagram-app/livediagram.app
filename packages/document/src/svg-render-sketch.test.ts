@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, createTable, renderElementsToSvg, type Element, type Tab } from './index';
-import { SKETCH_ART_FILTER_ID, svgSketchFace } from './svg-render-sketch';
+import { SKETCH_FACE_FILTER, svgSketchArtDefs, svgSketchFace } from './svg-render-sketch';
 
 // docs/specs/008-canvas/finish.md "Every other face is drawn by hand too": a face's ink goes through the wobble, its
 // words stay crisp above it.
-const FILTERED = `<g filter="url(#${SKETCH_ART_FILTER_ID})">`;
+const FILTERED = `<g filter="url(#${SKETCH_FACE_FILTER.id})">`;
 
 function inkLayer(svg: string): string {
   const start = svg.indexOf(FILTERED);
@@ -63,7 +63,7 @@ describe('renderElementsToSvg under Sketch', () => {
 
   it("draws a chart's bars by hand and its words crisp, and defines the wobble", () => {
     const svg = renderElementsToSvg(tabOf([chart], 'sketch'));
-    expect(svg).toContain(`<filter id="${SKETCH_ART_FILTER_ID}"`);
+    expect(svg).toContain(`<filter id="${SKETCH_FACE_FILTER.id}"`);
     const ink = inkLayer(svg);
     expect(ink).toContain('<rect');
     expect(ink).not.toContain('<text');
@@ -72,7 +72,7 @@ describe('renderElementsToSvg under Sketch', () => {
 
   it('leaves a chart as drawn on a Flexible tab', () => {
     const svg = renderElementsToSvg(tabOf([chart]));
-    expect(svg).not.toContain(SKETCH_ART_FILTER_ID);
+    expect(svg).not.toContain(SKETCH_FACE_FILTER.id);
     expect(svg).not.toContain('visibility="hidden"');
   });
 
@@ -99,7 +99,30 @@ describe('renderElementsToSvg under Sketch', () => {
     const tw = { ...createShape('tab-window', 0, 0), id: 'tw' } as Element;
     const svg = renderElementsToSvg(tabOf([tw], 'sketch'));
     const ink = inkLayer(svg);
-    expect(ink).toMatch(/^<g filter="url\(#lvd-sketch-art\)"><rect [^>]*fill="none"/);
+    expect(ink).toMatch(/^<g filter="url\(#lvd-sketch-face\)"><rect [^>]*fill="none"/);
     expect(svg).not.toContain('visibility="hidden"');
+  });
+});
+
+describe('svgSketchArtDefs', () => {
+  const sketch = (el: object) => [{ ...el, finish: 'sketch' }] as unknown as Element[];
+
+  it("defines only the filters a tab's elements draw through", () => {
+    expect(svgSketchArtDefs(sketch({ type: 'shape', shape: 'icon' }), undefined)).toContain(
+      'lvd-sketch-art',
+    );
+    const faces = svgSketchArtDefs(sketch({ type: 'shape', shape: 'bar-chart' }), undefined);
+    expect(faces).toContain('lvd-sketch-face');
+    expect(faces).not.toContain('lvd-sketch-art');
+    expect(svgSketchArtDefs(sketch({ type: 'shape', shape: 'square' }), undefined)).toBe('');
+    expect(svgSketchArtDefs([{ type: 'shape', shape: 'bar-chart' }] as Element[], 'flexible')).toBe(
+      '',
+    );
+  });
+
+  it("draws a face's ink in one pass of one octave, the budget's filter", () => {
+    const faces = svgSketchArtDefs(sketch({ type: 'shape', shape: 'pyramid' }), undefined);
+    expect(faces.match(/<feDisplacementMap/g)).toHaveLength(1);
+    expect(faces).toContain('numOctaves="1"');
   });
 });
