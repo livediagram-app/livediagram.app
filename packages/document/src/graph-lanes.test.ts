@@ -113,6 +113,35 @@ describe('a shared end in swimlanes', () => {
   });
 });
 
+describe('a level label in swimlanes', () => {
+  it("widens the gap a decision's level exit crosses so its label fits, moving every later column along", () => {
+    const els = lay({
+      style: 'lanes',
+      groups: [
+        { id: 'c', label: 'Candidate' },
+        { id: 'r', label: 'Recruiter' },
+      ],
+      nodes: [
+        { id: 'offer', label: 'Make offer', group: 'r' },
+        { id: 'decide', label: 'Accept offer?', shape: 'diamond', group: 'c' },
+        { id: 'yes', label: 'Accepted: start onboarding', shape: 'stadium', group: 'c' },
+        { id: 'no', label: 'Declined: reopen role', shape: 'stadium', group: 'r' },
+      ],
+      edges: [
+        { from: 'offer', to: 'decide' },
+        { from: 'decide', to: 'yes', label: 'Accept' },
+        { from: 'decide', to: 'no', label: 'Decline' },
+      ],
+    });
+    const [decide, yes] = [box(els, 'decide'), box(els, 'yes')];
+    expect(midY(yes)).toBe(midY(decide));
+    // "Accept" is about 52 px with its margin; the run holds it and room for the arrowhead.
+    expect(yes.x - (decide.x + decide.width)).toBeGreaterThanOrEqual(68);
+    const lanes = els.filter((e) => e.type === 'shape' && e.shape === 'lane') as BoxedElement[];
+    expect(lanes[0]!.x + lanes[0]!.width).toBeGreaterThanOrEqual(yes.x + yes.width);
+  });
+});
+
 describe('a router line into a crowded side', () => {
   it('takes a free side of a shared end rather than landing beside two lines', () => {
     const read = graphFromMermaid(

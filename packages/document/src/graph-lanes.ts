@@ -15,6 +15,7 @@ import {
 import { LABEL_FONT_PX } from './label-font';
 import { reanchorArrow, type Pt } from './auto-layout-shared';
 import { BRANCH_CLEAR } from './graph-branches';
+import { labelWidth } from './graph-look';
 import { isBoxed, type BoxedElement, type Element } from './index';
 
 // The swimlane template's grid: header strip (as wide as the longest lane title needs, between the bounds), padding
@@ -27,6 +28,8 @@ const COLUMN_GAP = 48;
 const LANE_GAP = 36;
 const STACK_GAP = 24;
 const LANE_MIN_H = 120;
+// Room a level line keeps beside its label for its arrowhead and a stub out of its step.
+const LEVEL_LABEL_ROOM = 16;
 
 // Each node's column: its longest path from a node nothing enters, cycles cut where they close (input order). An edge
 // `level` names (a staircase hand-off) keeps its target in its source's column.
@@ -104,7 +107,7 @@ export function layoutLanes(
   const colX = colW.map(
     (_, c) => gutter + LANE_PAD + colW.slice(0, c).reduce((s, w) => s + w + COLUMN_GAP, 0),
   );
-  const laneW =
+  const laneWide =
     gutter + LANE_PAD * 2 + colW.reduce((s, w) => s + w, 0) + COLUMN_GAP * (columns - 1);
 
   // Each lane as tall as its tallest stack of nodes sharing a column, settled twice: the first placing tells each stack
@@ -141,15 +144,24 @@ export function layoutLanes(
       );
     return stacks;
   });
-  const { placed, laneRects, straight } = placeLanes(
-    ordered,
-    graph,
-    byId,
-    laneOf,
-    colX,
-    colW,
-    true,
-  );
+  const lined = placeLanes(ordered, graph, byId, laneOf, colX, colW, true);
+  const { laneRects, straight } = lined;
+  // A labelled line running level across one gap ("Accept", a decision's point exit) needs the gap to hold its label:
+  // each such gap widens, and every column after it moves along with it.
+  const levelY = new Map(lined.placed.map((b) => [b.id, b.y + b.height / 2]));
+  const boxOf = new Map(lined.placed.map((b) => [b.id, b]));
+  const widen = new Array<number>(columns).fill(0);
+  for (const e of graph.edges) {
+    const [a, b] = [boxOf.get(e.from), boxOf.get(e.to)];
+    if (!a || !b || !e.label?.trim() || laneOf.get(e.from) !== laneOf.get(e.to)) continue;
+    const c = col.get(e.from)!;
+    if (col.get(e.to) !== c + 1 || Math.abs(levelY.get(e.from)! - levelY.get(e.to)!) > 1) continue;
+    const run = b.x - (a.x + a.width);
+    widen[c] = Math.max(widen[c]!, Math.ceil(labelWidth(e.label) + LEVEL_LABEL_ROOM - run));
+  }
+  const shiftOf = (c: number) => widen.slice(0, c).reduce((s, w) => s + w, 0);
+  const placed = lined.placed.map((b) => ({ ...b, x: b.x + shiftOf(col.get(b.id)!) }));
+  const laneW = laneWide + shiftOf(columns);
   const laneEls: BoxedElement[] = lanes.map((lane, i) => ({
     id: lane.id,
     type: 'shape',

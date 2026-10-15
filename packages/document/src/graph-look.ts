@@ -1114,4 +1114,6 @@ const collinear = (a: Pt, b: Pt, c: Pt) =>
 // A caption's one-line width at the arrow label's default size, with room for its plate.
 // The room a label's plate takes beyond its text, keeping it clear of what it sits beside, in px.
 const LABEL_WIDTH_MARGIN = 18;
-const labelWidth = (label: string) => Math.min(260, label.length * 12 * 0.56 + LABEL_WIDTH_MARGIN);
+// The width an elbow label is given (its text's estimate and a clearing margin), at most 260.
+export const labelWidth = (label: string) =>
+  Math.min(260, label.length * 12 * 0.56 + LABEL_WIDTH_MARGIN);

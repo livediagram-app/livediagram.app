@@ -533,7 +533,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   them, moves so the two sit level and the hand-off runs straight along the lane (a first decision's "No" straight
   into a shared rejection); that line keeps the middle of its next step's side and another line into the same side
   comes in beside it on a quarter. A decision's own branches stacked beside it are not lined up: they stay spread so
-  each leaves by its own side. The lane grows to hold a stack that moved.
+  each leaves by its own side. The lane grows to hold a stack that moved. A labelled line running level across one
+  gap between columns (a decision's "Accept" on its point) widens that gap to hold its label, and every later column
+  moves along with it, so the label is never cut short ("Accep").
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
   an edit, as one: one miniature per shape kind the graph uses, with
