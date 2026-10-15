@@ -48,7 +48,7 @@ export function PaletteCategoryRail<T>({
   const choose = (id: string) => {
     if (query) onQueryChange('');
     onOpen(id);
-    paneRef.current?.scrollTo({ top: 0 });
+    if (paneRef.current) paneRef.current.scrollTop = 0;
   };
   return (
     <div className="flex flex-col">
