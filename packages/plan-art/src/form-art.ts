@@ -6,6 +6,7 @@ import {
   DROPDOWN_AFTER,
   RATING_SCALE_DEFAULT,
   promptOf,
+  ruleQuestion,
   type FormDefinition,
   type FormQuestion,
 } from '@livediagram/forms';
@@ -197,31 +198,23 @@ function drawQuestion(d: Draw, q: FormQuestion): void {
   const inner = COLUMN - PAD * 2;
   const top = d.y;
   const body: Draw = { ...d, markup: [], y: top + PAD - 6 };
-  if (q.type === 'checkbox') {
+  // A Checkbox's prompt sits beside its box.
+  const indent = q.type === 'checkbox' ? 28 : 0;
+  if (indent)
     body.markup.push(
       box(
         { x: x + PAD, y: body.y + 6, width: 18, height: 18 },
         { fill: CARD, stroke: MUTED, rx: 3, strokeWidth: 1.5 },
       ),
     );
-    textBlock(body, x + PAD + 28, promptOf(q) + (q.required ? ' *' : ''), {
-      size: 16,
-      color: INK,
-      weight: 500,
-      width: inner - 28,
-    });
-  } else {
-    const prompt = promptOf(q);
-    const lines = wrap(prompt, inner - 12, 16, 4);
-    for (const [i, l] of lines.entries()) {
-      body.y += 22;
-      // The required mark rides the prompt's last line, so it sits right after the words whatever their width.
-      const mark =
-        q.required && i === lines.length - 1 ? `<tspan fill="${REQUIRED}"> *</tspan>` : '';
-      body.markup.push(
-        `<text x="${x + PAD}" y="${body.y - 5}" font-size="16" font-weight="500" fill="${INK}">${xmlEscape(l)}${mark}</text>`,
-      );
-    }
+  const lines = wrap(promptOf(q), inner - indent - 12, 16, 4);
+  for (const [i, l] of lines.entries()) {
+    body.y += 22;
+    // The required mark rides the prompt's last line, so it sits right after the words whatever their width.
+    const mark = q.required && i === lines.length - 1 ? `<tspan fill="${REQUIRED}"> *</tspan>` : '';
+    body.markup.push(
+      `<text x="${x + PAD + indent}" y="${body.y - 5}" font-size="16" font-weight="500" fill="${INK}">${xmlEscape(l)}${mark}</text>`,
+    );
   }
   if (q.help) {
     body.y += 2;
@@ -241,7 +234,7 @@ function headerCard(
   d: Draw,
   title: string,
   description: string | undefined,
-  o: { heading: boolean; label?: string },
+  o: { heading: boolean; label?: string; rule?: string },
 ): void {
   const x = GUTTER;
   const top = d.y;
@@ -266,6 +259,16 @@ function headerCard(
       color: MUTED,
       width: COLUMN - PAD * 2,
       max: 8,
+    });
+  }
+  if (o.rule) {
+    body.y += 6;
+    textBlock(body, x + PAD, o.rule, {
+      size: 13,
+      color: MUTED,
+      weight: 600,
+      width: COLUMN - PAD * 2,
+      max: 2,
     });
   }
   const height = body.y + PAD - top;
@@ -300,6 +303,16 @@ function coverMarkup(form: FormDefinition, accent: string): { markup: string; he
   };
 }
 
+// A later section's rule as the builder's badge reads it ("Shown when Coming? is Yes or Maybe").
+function ruleLine(form: FormDefinition, index: number): string | undefined {
+  const rule = form.sections[index]?.showIf;
+  if (!rule) return undefined;
+  const q = ruleQuestion(form, index, rule);
+  return q
+    ? `Shown when ${promptOf(q)} is ${rule.anyOf.join(' or ')}`
+    : 'Always shown: its question was removed or changed';
+}
+
 export interface FormArt {
   svg: string;
   width: number;
@@ -327,6 +340,7 @@ export function formArt(form: FormDefinition, look: FormLook, fontStack?: string
       headerCard(d, s.title || 'Untitled Section', s.description, {
         heading: false,
         label: `Section ${i + 1} of ${total}`,
+        rule: ruleLine(form, i),
       });
     for (const q of s.questions) {
       if (d.y > FORM_ART_HEIGHT_MAX - 200) {
