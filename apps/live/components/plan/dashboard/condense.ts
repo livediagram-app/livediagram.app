@@ -32,7 +32,7 @@ const isMetricView = (view: string | undefined) => !!view?.startsWith('metric:')
 
 export function phoneSlotSize(
   content: DashboardContent | undefined,
-  element?: { shape?: string; planView?: { view?: string } } | undefined,
+  element?: { shape?: string; planView?: { view?: string } },
 ): PhoneSlotSize {
   if (!content) return 'empty';
   switch (content.type) {
