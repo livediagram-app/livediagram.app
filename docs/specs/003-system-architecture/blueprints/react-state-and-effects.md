@@ -55,6 +55,18 @@ What stays, with where it runs, is the allow-list in `apps/live/render-browser-g
 4. A handler that steps from the state on screen keeps `asked` (a ref): it steps from `asked ?? onScreen`, writes
    `asked`, and clears it once the state on screen equals it.
 
+### Ref-only wrappers: the sites
+
+| Site                                                    | The wrapper carried           | Becomes                                                       |
+| ------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------- |
+| `apps/live/components/canvas/whiteboard/ShapesFlyout.tsx` | focus for the search field    | `<Fragment ref>`; `FragmentInstance.focus()` lands on the input |
+| `apps/live/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor  | the click's `currentTarget` (`MenuActionRow` hands its click on) |
+
+Stay, carrying more than a ref: `packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
+ones among them), `apps/help/components/ArticleLayout.tsx` (reads `textContent`),
+`apps/live/components/plan/AddCardPopover.tsx` (catches React events bubbling out of a portal) and
+`packages/ui/src/timeline/TimelineCalendarView.tsx` (the component's own box).
+
 ### The React Compiler's reach
 
 `reactCompiler: true` with `experimental.turbopackRustReactCompiler` comes from `@livediagram/next-config` for all

@@ -104,8 +104,11 @@ Every app is a static export, so every component also renders once at build time
 
 ## Fragments and DOM events
 
-- **A node that exists only to carry a ref** (for an observer, a listener, focus or a measurement) is a
-  `<Fragment ref>` instead; its `FragmentInstance` observes, listens, focuses and measures the children as a group.
+- **A node that exists only to carry a ref** (for an observer, a listener, focus or a measurement) goes. Where an
+  event already names the element (its `currentTarget`), the handler uses that; otherwise a `<Fragment ref>` takes
+  its place, and its `FragmentInstance` observes, listens, focuses and measures the children as a group.
+- **A node that carries more than a ref** stays: React event props (a tooltip's trigger), `textContent`, or the
+  component's own box are not what a `FragmentInstance` offers.
 - **An event React exposes is listened to through React** (`onFullscreenChange`, `onFullscreenError`) when it fires
   on an element the component renders. An event that fires on `<html>` or `document` (presenting fullscreens the
   whole document) is beyond any component's tree, so an effect listens on `document`.

@@ -94,6 +94,16 @@ describe('LayerRowMenu', () => {
     expect(p.onDelete).toHaveBeenCalledOnce();
   });
 
+  // The confirm anchors to the row that asked, named by the click itself: no wrapper node carries a ref for it
+  // (docs/specs/003-system-architecture/react-state-and-effects.md "Fragments and DOM events").
+  it('anchors the confirm to the asking row, with no wrapper around it', () => {
+    renderMenu();
+    for (const name of ['Clear Layer', 'Delete Layer'])
+      expect(button(name).parentElement?.attributes.length).toBeGreaterThan(0);
+    fireEvent.click(button('Clear Layer'));
+    expect(screen.getByText('Clear the 3 elements on “Notes”? The layer stays.')).toBeTruthy();
+  });
+
   it('deletes an empty layer straight away and cannot clear it', () => {
     const p = renderMenu({ elementCount: 0 });
     expect(screen.queryByRole('button', { name: 'Clear Layer' })).toBeNull();
