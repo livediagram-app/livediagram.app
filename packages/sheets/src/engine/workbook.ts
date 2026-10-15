@@ -39,9 +39,12 @@ export type WorkbookOptions = {
 
 const DEPTH_MAX = 250;
 
-class Deep {
+// Thrown when a read nests past DEPTH_MAX: the read settles that cell on its own, then starts again.
+class Deep extends Error {
+  override readonly name = 'FormulaTooDeep';
   readonly id: string;
   constructor(id: string) {
+    super(`formula chain too deep at ${id}`);
     this.id = id;
   }
 }
