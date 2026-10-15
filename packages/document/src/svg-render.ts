@@ -26,8 +26,19 @@ import {
   svgShapeSilhouette,
 } from './svg-render-shapes';
 import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from './border-style';
-import { finishCornerFallbackPx, finishWobblesArt, resolveFinish, type Finish } from './finish';
-import { SKETCH_ART_FILTER_ID, svgSketchArtDefs, svgSketchedBody } from './svg-render-sketch';
+import {
+  finishCornerFallbackPx,
+  finishSplitsFace,
+  finishWobblesArt,
+  resolveFinish,
+  type Finish,
+} from './finish';
+import {
+  SKETCH_ART_FILTER_ID,
+  svgSketchArtDefs,
+  svgSketchedBody,
+  svgSketchFace,
+} from './svg-render-sketch';
 import { sketchBackdropIds } from './sketch-backdrop';
 import { acceptsInlineIcon, canvasSurface } from './colors';
 import { inlineIconLayout } from './svg-render-inline-icon';
@@ -97,6 +108,7 @@ export {
   type ExportIconArt,
   type ExportShape,
   type ExportStickerArt,
+  type ResolveEmojiArt,
   type ResolveIconArt,
   type ResolveImageHref,
   type ResolvePlanArt,
@@ -113,6 +125,7 @@ import {
   exportFontIds,
   finishOf,
   type BoxedExportOptions,
+  type ResolveEmojiArt,
   type ResolveIconArt,
   type ResolveImageHref,
   type ResolvePlanArt,
@@ -175,6 +188,25 @@ export function contentBounds(
 export { svgIconShape } from './svg-render-image-icon';
 
 export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): string {
+  // Every word on the element in its face, so a face that writes its own (a panel's rows, a button) wears the tab's
+  // font and finish as on the canvas; a word that names its own face keeps it.
+  const face = exportFontFamily(source, opts.tabFont, opts.tabFinish);
+  const drawn = svgBoxedFace(source, opts);
+  const out = face ? drawn.replace(/^<g/, `<g font-family="${xmlEscape(face)}"`) : drawn;
+  // Under Sketch a face is drawn by hand, its words crisp (docs/specs/008-canvas/finish.md "Every other face is
+  // drawn by hand too"). A tab window shows another tab in that tab's own finish: only its frame is drawn by hand.
+  if (
+    resolveFinish(finishOf(source), opts.tabFinish) !== 'sketch' ||
+    !finishSplitsFace(source) ||
+    (source.type === 'shape' && source.shape === 'tab-window')
+  )
+    return out;
+  const open = out.indexOf('>') + 1;
+  const close = out.lastIndexOf('</g>');
+  return out.slice(0, open) + svgSketchFace(out.slice(open, close)) + out.slice(close);
+}
+
+function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   const surface = opts.surface ?? 'light';
   // A stock colour stored by name is drawn in its version for this page.
   // A card under the tab's tag colours renders their accent edge (docs/specs/009-elements/tag-colours.md).
@@ -232,6 +264,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       shape.stroke,
       el.textColor ?? '#1e293b',
       opts.chartPalette,
+      fontFamily,
     )}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'plan-sheet') {
@@ -255,7 +288,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   if (el.type === 'shape' && el.shape === 'tab-window') {
     // Another tab of the document, fitted inside its frame (docs/specs/009-elements/tab-window.md "Exports"); its frame
     // named for its tab where the caller has no drawing.
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgTabWindow(el, opts.resolveTabWindow?.(el), el.strokeColor, surface)}</g>`;
+    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgTabWindow(el, opts.resolveTabWindow?.(el), el.strokeColor, surface, finish === 'sketch', fontFamily)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
     // The themed to-do card with its rows + done-count footer (docs/specs/009-elements/checklist.md).
@@ -264,6 +297,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       shape.fill,
       shape.stroke,
       el.textColor ?? '#1e293b',
+      fontFamily,
     )}</g>`;
   }
   if (shape.kind === 'image') {
@@ -334,7 +368,9 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       label: label?.text ?? el.label ?? '',
       surface,
       resolveIconArt: opts.resolveIconArt,
+      resolveEmojiArt: opts.resolveEmojiArt,
       tagColours: opts.tagColours,
+      finish,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the
@@ -557,6 +593,7 @@ export function renderElementsToSvg(
     resolveImageHref?: ResolveImageHref;
     resolveIconArt?: ResolveIconArt;
     resolveStickerArt?: ResolveStickerArt;
+    resolveEmojiArt?: ResolveEmojiArt;
     // The document's items, so Plan boards and cards draw their cards (docs/specs/026-plan/plan-board.md).
     items?: ReadonlyMap<string, Item>;
     // The document's item types (docs/specs/026-plan/item-types.md).
@@ -634,6 +671,7 @@ export function renderElementsToSvg(
             resolveImageHref: opts.resolveImageHref,
             resolveIconArt: opts.resolveIconArt,
             resolveStickerArt: opts.resolveStickerArt,
+            resolveEmojiArt: opts.resolveEmojiArt,
             tabFont: tab.font,
             tabFinish: tab.finish,
             sketchBackdrop: backdrops.has(el.id),

@@ -205,7 +205,10 @@ const customField = z.object({
     .string()
     .optional()
     .describe('A currency field’s ISO 4217 code (GBP, USD, EUR...); GBP when left out.'),
-  onCard: z.boolean().optional().describe('Draw it on the card face.'),
+  onCard: z
+    .boolean()
+    .optional()
+    .describe('Draw it on the card face (placed on the type’s Display).'),
 });
 
 const colourArg = z

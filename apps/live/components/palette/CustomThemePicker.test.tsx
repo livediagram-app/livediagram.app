@@ -46,7 +46,11 @@ describe('CustomThemePicker', () => {
     writable.value = true;
     const { THEMES } = await import('@/lib/themes');
     render(<CustomThemePicker themeId="brand" onSelect={vi.fn()} />);
-    for (const t of THEMES) expect(screen.getAllByText(t.label).length, t.id).toBeGreaterThan(0);
+    for (const t of THEMES.filter((t) => !t.seasonal))
+      expect(screen.getAllByText(t.label).length, t.id).toBeGreaterThan(0);
+    // The seasonal themes are worn only through the seasonal looks.
+    for (const t of THEMES.filter((t) => t.seasonal))
+      expect(screen.queryByText(t.label), t.id).toBeNull();
     for (const gone of ['Cool', 'Warm', 'Dark', 'Multi-colour', 'Formal', 'All themes'])
       expect(screen.queryByText(gone), gone).toBeNull();
   });

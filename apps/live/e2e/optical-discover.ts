@@ -13,6 +13,9 @@ export type Probe = {
   // Hide the probe's descendants (a shape) or the probe itself (SVG text over a circle).
   hideSelf: boolean;
   capBands: { text: string; mid: number }[];
+  // Where the browser snaps the first text run's baseline (optical-snap.ts): that baseline and the shape's
+  // top in the untransformed layout, and how much transforms scale the shape's height after the snap.
+  snap: { baseline: number; top: number; scale: number } | null;
   iconsOnly: boolean;
   // Vertical centring is only asked of a shape that centres, or whose content fills its height.
   vertical: boolean;
@@ -84,7 +87,8 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
     return { x: r.x, y: r.y, w: r.width, h: r.height };
   };
   const ctx = document.createElement('canvas').getContext('2d')!;
-  const capBandMid = (node: Text) => {
+  const capBand = (node: Text) => {
+    // The rect is the em box under any `text-box` trim, so this is the layout baseline exactly.
     const host = node.parentElement!;
     const cs = getComputedStyle(host);
     ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
@@ -93,7 +97,8 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
     range.selectNodeContents(node);
     const rect = range.getClientRects()[0];
     if (!rect) return null;
-    return rect.top + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent / 2;
+    const baseline = rect.top + m.fontBoundingBoxAscent;
+    return { baseline, mid: baseline - m.actualBoundingBoxAscent / 2 };
   };
   const textNodes = (root: Element) => {
     const out: Text[] = [];
@@ -110,6 +115,49 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
         if (painted(a)) return false;
       return true;
     });
+
+  // The browser snaps a baseline before it applies transforms, so the snap is read in the untransformed
+  // layout: each transformed ancestor's transform is set to identity (still a containing block, so
+  // nothing moves), the reading taken, and the transforms restored with transitions held off throughout.
+  const transformed = (el: Element) => {
+    const cs = getComputedStyle(el);
+    return [cs.transform, cs.translate, cs.scale, cs.rotate].some((v) => v !== 'none');
+  };
+  const untransformed = <T>(el: Element, read: () => T): T => {
+    const chain: Element[] = [];
+    for (let a: Element | null = el; a; a = a.parentElement) if (transformed(a)) chain.push(a);
+    if (chain.length === 0) return read();
+    const flat = `${attr}-flat`;
+    const still = document.createElement('style');
+    still.textContent = `[${flat}] { transition: none !important }`;
+    const identity = document.createElement('style');
+    identity.textContent = `[${flat}] { transform: translate(0px, 0px) !important; translate: none !important; scale: none !important; rotate: none !important }`;
+    for (const a of chain) a.setAttribute(flat, '');
+    document.head.append(still, identity);
+    try {
+      return read();
+    } finally {
+      identity.remove();
+      // Flush the restored transforms while transitions are still off.
+      for (const a of chain) a.getBoundingClientRect();
+      still.remove();
+      for (const a of chain) a.removeAttribute(flat);
+    }
+  };
+  // From the text's own host up: a transform between the shape and its text moves the glyph after the
+  // snap too, and stays in the ink reading as the glyph's own offset.
+  const snapFrame = (el: Element, texts: Text[]): Probe['snap'] => {
+    const client = el.getBoundingClientRect().height;
+    for (const n of texts) {
+      const frame = untransformed(n.parentElement!, () => {
+        const band = capBand(n);
+        const r = el.getBoundingClientRect();
+        return band && { baseline: band.baseline, top: r.top, scale: client / r.height };
+      });
+      if (frame) return frame;
+    }
+    return null;
+  };
 
   const probes: Probe[] = [];
   const tag = (el: Element) => {
@@ -137,8 +185,8 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
     if (el.querySelector('input, textarea, img, canvas, video')) continue;
     const capBands: Probe['capBands'] = [];
     for (const n of ownText(el)) {
-      const mid = capBandMid(n);
-      if (mid !== null) capBands.push({ text: n.data.trim(), mid });
+      const band = capBand(n);
+      if (band) capBands.push({ text: n.data.trim(), mid: band.mid });
     }
     const cs = getComputedStyle(el);
     // The text's advance, less the trailing letter-space a tracked run carries after its last letter.
@@ -278,6 +326,7 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
       hide: tag(el),
       hideSelf: false,
       capBands,
+      snap: capBands.length > 0 ? snapFrame(el, ownText(el)) : null,
       iconsOnly: icons > 0 && capBands.length === 0,
       vertical: verticalIntent,
       occluded,
@@ -326,6 +375,7 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
         hide: tag(t),
         hideSelf: true,
         capBands: [],
+        snap: null,
         iconsOnly: true,
         vertical: true,
         occluded: false,
@@ -362,8 +412,8 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
       const last = labels.at(-1);
       if (!glyph || !last || glyph.contains(last)) return [];
       const g = glyph.getBoundingClientRect();
-      const label = capBandMid(last);
-      if (label === null || g.bottom > label) return [];
+      const label = capBand(last)?.mid;
+      if (label === undefined || g.bottom > label) return [];
       return [{ item, top: r.top, label, glyph: g.top + g.height / 2 }];
     });
     const ref = rows[0];

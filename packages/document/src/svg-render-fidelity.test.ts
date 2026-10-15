@@ -67,6 +67,17 @@ describe('Behaviour face export', () => {
     expect(svgOf(shape('portal'))).toContain('stop-opacity="0.35"');
   });
 
+  it("draws a Reaction pad's emoji from its art when the caller has it, else as text", () => {
+    const pad = shape('reaction-pad', { reaction: 'applause', label: 'Applause' });
+    expect(svgOf(pad)).toMatch(/dominant-baseline="central"[^>]*>👏</);
+    const art = { viewBox: '0 0 36 36', markup: '<path d="M1 1"/>' };
+    const drawn = renderElementsToSvg({ id: 't', name: 'T', elements: [pad] } as unknown as Tab, {
+      resolveEmojiArt: (g) => (g === '👏' ? art : undefined),
+    });
+    expect(drawn).toContain('viewBox="0 0 36 36"><path d="M1 1"/></svg>');
+    expect(drawn).not.toContain('>👏<');
+  });
+
   it('puts a Reaction pad label in its chip', () => {
     const svg = svgOf(shape('reaction-pad', { label: 'Applause' }));
     expect(svg).toMatch(/fill-opacity="0.07"\/><text[^>]*font-size="10.5"[^>]*>Applause</);

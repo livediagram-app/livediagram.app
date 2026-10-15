@@ -185,17 +185,10 @@ function callToAction(k: Kit): Element[] {
       textScale: 1.8,
       textColor: PAPER,
     }),
-    k.text(
-      pad,
-      top + u * 9.5,
-      W - pad * 2 - btnW,
-      u * 5,
-      'Free on iOS and Android · borrowbox.app',
-      {
-        textScale: 1.2,
-        textColor: '#c7d2fe',
-      },
-    ),
+    k.text(pad, top + u * 9.5, W - pad * 2 - btnW, u * 5, 'Free on iOS and Android', {
+      textScale: 1.2,
+      textColor: '#c7d2fe',
+    }),
     k.shape('stadium', W - pad - btnW, top + (u * CTA_H - u * 8) / 2, btnW, u * 8, {
       label: 'Get the app',
       textBold: true,

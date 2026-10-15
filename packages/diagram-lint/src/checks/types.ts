@@ -15,6 +15,11 @@ export type RawFinding = {
   at: Point | null;
 };
 
-export type CheckInput = LintContext & { crossings: Crossings | null; log: LintLogger };
+export type CheckInput = LintContext & {
+  crossings: Crossings | null;
+  log: LintLogger;
+  // The elements whose colours the write being linted set; every element when absent (a whole tab's lint).
+  coloured?: ReadonlySet<string>;
+};
 
 export type Check = (input: CheckInput) => RawFinding[];

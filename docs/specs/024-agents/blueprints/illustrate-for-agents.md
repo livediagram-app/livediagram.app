@@ -63,7 +63,8 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
    - resolve `page` (`resolvePage`: id, then integer place 1..n, then name by `nameKey`) else `page_unknown` listing
      `1 Cover (slide), 2 (slide)`;
    - `add`: `kind === 'article'` → `article_by_write`; if the only page is unchosen and empty
-     (`offersPageKindChoice`) → `withPageKindChosen`, else `pageAdded(tab, kind, newId(), newFlowId())`; then
+     (`offersPageKindChoice`) → `withPageKindChosen`; else if the only page is of `kind`, unnamed and empty → that
+     page; else `pageAdded(tab, kind, newId(), newFlowId())`; then
      `name`, `size`, `orientation`, `background` through `pageRenamed`, `pageResized`, `pageTurned`,
      `pageBackgroundSet`, `at` through `pageMovedTo`, `layout` through `pageLaidOut`. Line:
      `Added page 3 (slide, Slide (16:9)) from layout Title Slide: name "Cover".`;
@@ -219,6 +220,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | Diagram tab                                                   | switched, `switched: true`, line "Switched the tab to Illustrate"      |
 | Fresh tab whose only page is unchosen and empty               | first `add` / new article takes that page                              |
+| Only page already of the kind added, unnamed and empty        | first `add` of that kind takes that page (its fields and layout set)   |
 | `add` article                                                 | `article_by_write`                                                     |
 | Size not offered / `fit`                                      | `size_not_offered` with the kind's sizes                               |
 | Turn a slide or logo                                          | `no_orientation`                                                       |

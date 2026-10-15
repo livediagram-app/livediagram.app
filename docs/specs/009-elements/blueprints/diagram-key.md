@@ -90,7 +90,7 @@ Derivation is O(elements) per changed tab with a key; a tab with no key costs on
 ## Presentation and UX
 
 - Starting content (D191): 260 wide, label "Key", text sm bold title with no label padding (it sits in its own 20 px band, where padding clipped descenders); rows 28 px; swatch: a 40 px line in the
-  pattern with an arrowhead, or a 40 × 20 card edge (a 4 px strip of the colour on a white box with a hairline).
+  pattern with an arrowhead, or a 40 × 20 card edge (a 4 px strip of the colour on a box in the key's own fill, with a hairline in its accent).
 - Empty state E1 copy as above, muted.
 
 ## Accessibility

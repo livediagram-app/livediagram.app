@@ -309,3 +309,13 @@ describe('frame headings', () => {
     expect(Math.abs(cx(byId(els, 'unit')) - cx(byId(els, 'ci')))).toBeLessThan(1);
   });
 });
+
+describe('a frame heading at a larger look', () => {
+  it('is wider in step with its text size, so the lead keeps a line clear of it', () => {
+    const at = { x: 0, y: 0, label: 'Notifications' };
+    const sm = frameHeadingRect(at)!.width;
+    const md = frameHeadingRect({ ...at, textSize: 'md' })!.width;
+    expect(md).toBeGreaterThan(sm);
+    expect(frameHeadingRect({ ...at, textSize: 12 })!.width).toBe(sm);
+  });
+});

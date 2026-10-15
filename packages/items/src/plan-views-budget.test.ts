@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import {
   calendarModel,
   priorityMatrixModel,
@@ -28,13 +29,15 @@ describe('plan view budgets', () => {
       });
       return n % 10 === 0 ? { ...it, type: 'project' } : it;
     });
-    const start = performance.now();
-    ganttModel(many, phases, new Date(2026, 9, 5), ['project']);
-    calendarModel(many, phases, 2026, 9);
-    breakdownModel(many, phases, { by: 'assignee' });
-    statusMixModel(many);
-    priorityMatrixModel(many, phases);
-    // 13ms locally for all five, setup included; the budget leaves room for a slow CI runner.
-    expect(performance.now() - start).toBeLessThan(250);
+    // Timed in CPU time (cpuMsOf), not wall time: a parallel run starved it past 250ms of wall clock once.
+    const ms = cpuMsOf(() => {
+      ganttModel(many, phases, new Date(2026, 9, 5), ['project']);
+      calendarModel(many, phases, 2026, 9);
+      breakdownModel(many, phases, { by: 'assignee' });
+      statusMixModel(many);
+      priorityMatrixModel(many, phases);
+    });
+    // 13ms locally for all five; the budget leaves room for a slow CI runner.
+    expect(ms).toBeLessThan(250);
   });
 });

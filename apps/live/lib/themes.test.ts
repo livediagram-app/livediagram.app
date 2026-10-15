@@ -59,13 +59,29 @@ describe('THEMES catalogue', () => {
   // accurate. The extras include the multicolour themes from docs/specs/011-theme/multicolour-themes.md.
   // Mirrors the equivalent assertions in templates.test.ts.
   // 24: Charcoal merged into Default, and Autumn and Jewel retired (docs/specs/011-theme/light-and-dark.md).
-  it('lists exactly 24 themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
-    expect(THEMES).toHaveLength(24);
+  // The seasonal themes (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks") are the seasonal looks'
+  // own, never offered in a picker, so the catalogue's counts are of the year-round themes.
+  const yearRound = THEMES.filter((t) => !t.seasonal);
+
+  it('lists exactly 24 year-round themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
+    expect(yearRound).toHaveLength(24);
+  });
+
+  it('holds six seasonal themes, all listed after the year-round ones', () => {
+    expect(THEMES.filter((t) => t.seasonal).map((t) => t.id)).toEqual([
+      'sparkle',
+      'spring',
+      'pumpkin',
+      'yuletide',
+      'frost',
+      'evergreen',
+    ]);
+    expect(THEMES.slice(0, yearRound.length)).toEqual(yearRound);
   });
 
   it('splits cleanly into 12 default + 12 extra (retained as catalogue metadata)', () => {
-    const defaults = THEMES.filter((t) => !t.extra);
-    const extras = THEMES.filter((t) => t.extra);
+    const defaults = yearRound.filter((t) => !t.extra);
+    const extras = yearRound.filter((t) => t.extra);
     expect(defaults).toHaveLength(12);
     expect(extras).toHaveLength(12);
   });
@@ -964,8 +980,8 @@ describe('deriveNewBoxedColours', () => {
 });
 
 describe('multi-colour (rainbow) themes', () => {
-  it('ships three palette themes (all extra)', () => {
-    const palettes = THEMES.filter((t) => !!t.palette);
+  it('ships three year-round palette themes (all extra)', () => {
+    const palettes = THEMES.filter((t) => !!t.palette && !t.seasonal);
     expect(palettes).toHaveLength(3);
     for (const t of palettes) {
       expect(t.extra).toBe(true);

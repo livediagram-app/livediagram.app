@@ -98,6 +98,13 @@ describe('exporting a key (I2)', () => {
     expect(svg.match(/>Key</g)).toHaveLength(1);
   });
 
+  it("draws a tag's card swatch on the key's own fill, so it reads on a dark theme", () => {
+    const k = settleDiagramKeys([arrow('dashed'), key({ fillColor: '#1e293b' })], map)[1];
+    const svg = renderElementsToSvg({ id: 't', name: 't', elements: [k] } as never);
+    expect(svg).toMatch(/<rect [^>]*rx="3" fill="#1e293b"/);
+    expect(svg).not.toMatch(/<rect [^>]*rx="3" fill="#ffffff"/);
+  });
+
   it('shows a hint when there is nothing to list', () => {
     const svg = renderElementsToSvg({
       id: 't',

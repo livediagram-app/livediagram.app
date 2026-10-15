@@ -35,6 +35,9 @@ const runName = clerkStub ? '-clerk-stub' : armed ? '-armed' : workbench ? '-wor
 
 export default defineConfig({
   testDir: './e2e',
+  // Playwright runs the `.spec.ts` files; the `.test.ts` beside them are Vitest unit tests of pure helpers
+  // (vitest.config.ts excludes `e2e/**/*.spec.ts`, the other half of this split).
+  testMatch: /\.spec\.ts$/,
   // Each invocation keeps its own artefacts: a run clears its output folder when it starts.
   outputDir: `test-results${runName}`,
   // The whole point is the smoke alarm, not a slow exhaustive suite:

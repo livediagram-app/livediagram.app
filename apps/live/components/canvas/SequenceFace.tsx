@@ -4,8 +4,10 @@ import {
   ANIMATION_SPEED_FACTOR,
   DEFAULT_ANIMATION_SPEED,
   sequenceDrawing,
+  type SequenceLook,
   type ShapeElement,
 } from '@livediagram/document';
+import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
 /** Seconds of the Play wipe per message at Normal speed (docs/specs/009-elements/sequence-diagram.md "Animation"). */
 export const SEQ_PLAY_S_PER_MESSAGE = 0.4;
@@ -19,23 +21,41 @@ export function sequenceLabel(element: ShapeElement): string {
 
 // The sequence diagram (docs/specs/009-elements/sequence-diagram.md): the export's own picture (sequenceDrawing, the
 // shared layout drawn by the headless renderer), fitted into the box with its aspect kept, so canvas and export agree.
+// It is drawn in the element's own look (its colours and face) and in its finish, so it wears the tab's theme.
 // The markup is built by our renderer from bounded, escaped rows, never from raw input. Play wipes it in from the top.
+// The element's resolved paper (fill), accent (stroke), ink and font stack, flat so the memo holds; the finish is read
+// from the canvas.
+type SequenceFaceProps = Omit<SequenceLook, 'paper' | 'finish'> & {
+  element: ShapeElement;
+  paper: string;
+};
+
 export const SequenceFace = memo(function SequenceFace({
   element,
   paper,
-}: {
-  element: ShapeElement;
-  paper: string;
-}) {
+  stroke,
+  ink,
+  fontFamily,
+}: SequenceFaceProps) {
+  const finish = useElementFinish((element as { finish?: unknown }).finish);
   const html = useMemo(
     () =>
-      sequenceDrawing(element, paper).replace(
+      sequenceDrawing(element, { paper, stroke, ink, fontFamily, finish }).replace(
         /^<svg([^>]*?) width="[^"]*" height="[^"]*"/,
         '<svg$1 width="100%" height="100%" preserveAspectRatio="xMidYMid meet"',
       ),
-    // The drawing depends on the rows and the paper only.
+    // The drawing depends on the rows and the look only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [element.sequenceParticipants, element.sequenceMessages, element.sequenceNumbered, paper],
+    [
+      element.sequenceParticipants,
+      element.sequenceMessages,
+      element.sequenceNumbered,
+      paper,
+      stroke,
+      ink,
+      fontFamily,
+      finish,
+    ],
   );
   const play = element.sequenceAnim === 'play';
   const messages = Math.max(1, element.sequenceMessages?.length ?? 0);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
-import { createShape, sequenceDrawing, type ShapeElement } from './index';
+import { createShape, sequenceDrawing, type SequenceLook, type ShapeElement } from './index';
 
 // docs/specs/009-elements/blueprints/sequence-diagram.md "Performance and limits": the picture is rebuilt on every
 // change of the rows (typing a message label commits on blur), so the worst case, 12 participants with 60 long
@@ -28,16 +28,28 @@ function worst(n: number): ShapeElement {
   };
 }
 
+// A themed look drawn by hand, the dearest look: every part recoloured, every box and line sketched.
+const SKETCHED: SequenceLook = {
+  paper: '#dcfce7',
+  stroke: '#15803d',
+  ink: '#14532d',
+  fontFamily: 'Lora, serif',
+  finish: 'sketch',
+};
+
 describe('sequenceDrawing budget', () => {
-  it('draws 12 participants and 60 messages within 40 ms of CPU', () => {
+  it.each([
+    ['the default look', undefined],
+    ['a themed Sketch look', SKETCHED],
+  ] as const)('draws 12 participants and 60 messages within 40 ms of CPU in %s', (_, look) => {
     let n = 0;
-    for (let p = 0; p < WARM_UP_PASSES; p++) sequenceDrawing(worst(n++));
+    for (let p = 0; p < WARM_UP_PASSES; p++) sequenceDrawing(worst(n++), look);
     let best = Infinity;
     for (let p = 0; p < PASSES; p++) {
       const el = worst(n++);
       best = Math.min(
         best,
-        cpuMsOf(() => sequenceDrawing(el)),
+        cpuMsOf(() => sequenceDrawing(el, look)),
       );
     }
     expect(best).toBeLessThan(cpuBudgetMs(40));

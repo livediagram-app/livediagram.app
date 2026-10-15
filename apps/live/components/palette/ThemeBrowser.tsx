@@ -13,6 +13,9 @@ import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { THEMES, type ThemeDefinition } from '@/lib/themes';
 import { CustomThemeCard, NewThemeCard, ThemeCard } from '@/components/palette/theme-picker-cards';
 
+// The seasonal themes are worn only through the seasonal looks, so the picker leaves them out.
+const PICKER_THEMES = THEMES.filter((t) => !t.seasonal);
+
 /** How many theme tiles one carousel page holds: a 3 x 3 grid. */
 export const THEMES_PER_PAGE = 9;
 
@@ -51,7 +54,7 @@ export function ThemeBrowser({
   const commit = onCommit ?? onSelect;
   // Every tile in one list, paged nine at a time: the built-ins, then the owner's own and the New card.
   const items: Item[] = [
-    ...THEMES.map((theme): Item => ({ kind: 'built-in', theme })),
+    ...PICKER_THEMES.map((theme): Item => ({ kind: 'built-in', theme })),
     ...(onNewCustomTheme
       ? [
           ...(customThemes ?? []).map((theme): Item => ({ kind: 'custom', theme })),

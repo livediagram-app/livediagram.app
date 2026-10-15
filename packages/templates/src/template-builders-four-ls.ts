@@ -134,7 +134,8 @@ export function buildFourLs(cx: number, cy: number): Element[] {
     'Checkout launch · 4Ls',
     'Look back over the whole milestone: write for 7 minutes, read each L out, dot-vote, then act on the top themes.',
   );
-  const titleW = 340;
+  // Wide enough for the title on one line at lg (its estimate is about 370 px), the rocket just past it.
+  const titleW = 390;
   const elements: Element[] = [
     { ...title!, width: titleW },
     {

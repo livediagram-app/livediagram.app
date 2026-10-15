@@ -64,10 +64,12 @@ describe('rollMashup', () => {
       for (let i = 0; i < 50; i++) expect(rollMashup({ random, finish }).finish).toBe(finish);
   });
 
-  it('mixes widely: the rolls spread over every theme and finish', () => {
+  it('mixes widely: the rolls spread over every year-round theme and finish, never a seasonal one', () => {
     const random = seeded(5);
     const rolls = Array.from({ length: ROLLS * 4 }, () => rollMashup({ random }));
-    expect(new Set(rolls.map((m) => m.theme)).size).toBe(THEMES.length);
+    const themes = new Set(rolls.map((m) => m.theme));
+    expect(themes.size).toBe(THEMES.filter((t) => !t.seasonal).length);
+    for (const t of THEMES.filter((t) => t.seasonal)) expect(themes.has(t.id), t.id).toBe(false);
     expect(new Set(rolls.map((m) => m.finish)).size).toBe(FINISHES.length);
     expect(MASHUP_COMBINATIONS).toBeGreaterThan(10_000);
   });

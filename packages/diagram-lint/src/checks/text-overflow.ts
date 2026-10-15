@@ -1,6 +1,7 @@
-// `text-overflow` (warning, an Illustrate tab only): on a page, text is the content rather than a caption, so a text
+// `text-overflow` (warning): on a page (an Illustrate tab) text is the content rather than a caption, so a text
 // element whose words, wrapped as every headless render wraps them, need more lines than its box holds runs into what
-// is under it; and two text elements whose boxes overlap print over each other. Elsewhere text is not linted (LN2).
+// is under it. On every tab, two text elements whose lines are drawn over each other print over each other (a board's
+// column heading wrapped onto its subtitle): `textOverprint` alone, as a caption's own box is not linted elsewhere.
 
 import {
   defaultPadding,
@@ -19,7 +20,7 @@ import { refOf } from '../context';
 import { fixes } from '../fixes';
 import type { Check, RawFinding } from './types';
 
-const isText = (el: Element): el is BoxedElement & { label: string } =>
+const isText = (el: Element): el is Text =>
   el.type === 'text' &&
   typeof (el as { label?: unknown }).label === 'string' &&
   (el as { label: string }).label.trim() !== '' &&
@@ -58,17 +59,20 @@ function inkOf(t: BoxedElement & { label: string }): {
       : ay === 'bottom'
         ? t.y + t.height - pad - block
         : t.y + t.height / 2 - block / 2;
-  const slack = px * INK_SLACK_EM;
+  const [above, below] = [px * INK_SLACK_EM, px * INK_SLACK_BELOW_EM];
   return {
-    ink: { x, y: top + slack, width, height: Math.max(0, block - 2 * slack) },
+    ink: { x, y: top + above, width, height: Math.max(0, block - above - below) },
     lines: wrapped.length,
     px,
     measure,
   };
 }
 
-// The share of the font size each line's top and bottom leading takes, where no glyph is drawn.
+// The share of the font size a block's top and bottom take where no glyph is drawn: above a capital there is leading
+// and the ascender's room, but a descender ("g", "p") reaches almost to a line's foot, so a heading wrapped onto the
+// subtitle under it was let off by the room a descender fills.
 const INK_SLACK_EM = 0.2;
+const INK_SLACK_BELOW_EM = 0.05;
 
 const inkOverlap = (a: Ink, b: Ink) =>
   Math.min(
@@ -76,10 +80,29 @@ const inkOverlap = (a: Ink, b: Ink) =>
     Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y),
   );
 
+// Text on a curve (a badge's) is drawn along its arc, not in its box, and turned text (an axis title stood on end)
+// is drawn across its box, so both are left out.
+const textsOf = (ctx: Parameters<Check>[0]) =>
+  ctx.visible
+    .filter(isText)
+    .filter((t) => !(t as { textArc?: number }).textArc)
+    .filter((t) => ((t as { rotation?: number }).rotation ?? 0) % 360 === 0);
+
 export const textOverflow: Check = (ctx) => {
-  // Text on a curve (a badge's) is drawn along its arc, not in its box, so it is left out.
-  const texts = ctx.visible.filter(isText).filter((t) => !(t as { textArc?: number }).textArc);
+  const texts = textsOf(ctx);
   const inks = new Map(texts.map((t) => [t.id, inkOf(t)]));
+  return [...linesOver(ctx, texts, inks), ...overprints(ctx, texts, inks)];
+};
+
+export const textOverprint: Check = (ctx) => {
+  const texts = textsOf(ctx);
+  return overprints(ctx, texts, new Map(texts.map((t) => [t.id, inkOf(t)])));
+};
+
+type Text = BoxedElement & { label: string };
+type Inks = ReadonlyMap<string, ReturnType<typeof inkOf>>;
+
+function linesOver(ctx: Parameters<Check>[0], texts: readonly Text[], inks: Inks): RawFinding[] {
   const out: RawFinding[] = [];
   for (const t of texts) {
     // A text set to scale fills its box by its size.
@@ -115,8 +138,13 @@ export const textOverflow: Check = (ctx) => {
       at: { x: t.x, y: t.y },
     });
   }
-  // Texts printed over each other, where their lines are drawn: a sweep down the page (sorted by the top of their
-  // ink), each against those starting above its ink's bottom, so the pairs tested are only those that share rows.
+  return out;
+}
+
+// Texts printed over each other, where their lines are drawn: a sweep down the page (sorted by the top of their
+// ink), each against those starting above its ink's bottom, so the pairs tested are only those that share rows.
+function overprints(ctx: Parameters<Check>[0], texts: readonly Text[], inks: Inks): RawFinding[] {
+  const out: RawFinding[] = [];
   const byTop = [...texts].sort((a, b) => inks.get(a.id)!.ink.y - inks.get(b.id)!.ink.y);
   for (let i = 0; i < byTop.length; i++) {
     const a = byTop[i]!;
@@ -135,4 +163,4 @@ export const textOverflow: Check = (ctx) => {
     }
   }
   return out;
-};
+}
