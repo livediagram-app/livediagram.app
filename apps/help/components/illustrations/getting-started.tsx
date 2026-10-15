@@ -1,10 +1,9 @@
 // Getting-started-category illustrations (docs/specs/018-help/help-app.md): beginner walkthroughs for
-// the new-document welcome flow, the shape palette, quick-connecting arrows,
+// the new-document welcome flow, quick-connecting arrows,
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 
-import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Dialog, Button, Tile, Label, Avatar } from './primitives';
+import { Scene, Shape, Arrow, Dialog, Button, Label, Avatar } from './primitives';
 
 /** The New Document wizard on its first step: the Mode / Location rail, the
  *  five mode cards, three then two at one height (Diagram first and chosen),
@@ -122,110 +121,6 @@ export function NewDocumentWelcome() {
         <Button x={250} y={231} w={56} h={22} label="Skip" />
         <Button x={314} y={231} w={64} h={22} label="Next" variant="primary" />
       </Dialog>
-    </Scene>
-  );
-}
-
-/** A dropdown chip in the palette's header band: a label and a caret. */
-function DropdownChip({ x, y, w, label }: { x: number; y: number; w: number; label: string }) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={20}
-        rx={6}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={x + 9} y={y + 11} size={10} weight={600} tone="strong">
-        {label}
-      </Label>
-      <path
-        d={`M${x + w - 14} ${y + 8} l4 4 l4 -4`}
-        className="stroke-slate-400"
-        strokeWidth={1.5}
-        fill="none"
-        strokeLinecap="round"
-      />
-    </g>
-  );
-}
-
-/** The palette strip across the top of the canvas: the selection-mode and category dropdowns,
- *  Popular's twelve tiles, then More (⋯) and Search. */
-export function ShapePalette() {
-  const stroke = { className: 'stroke-brand-500', strokeWidth: 2, fill: 'none' } as const;
-  const glyphs: ReactNode[] = [
-    <rect
-      key="sq"
-      x={-7}
-      y={-7}
-      width={14}
-      height={14}
-      rx={2}
-      className="stroke-brand-500"
-      strokeWidth={2}
-      fill="none"
-    />,
-    <circle key="ci" r={7} {...stroke} />,
-    <path key="di" d="M0 -8 L8 0 L0 8 L-8 0 Z" {...stroke} />,
-    <path key="tx" d="M-6 -6 h12 M0 -6 v13" {...stroke} strokeLinecap="round" />,
-    <path key="ar" d="M-7 5 L6 -6 M1 -6 h5 v5" {...stroke} strokeLinecap="round" />,
-    <rect key="fr" x={-8} y={-7} width={16} height={14} rx={2} {...stroke} strokeDasharray="3 2" />,
-    <rect key="st" x={-7} y={-7} width={14} height={14} rx={1.5} className="fill-amber-400" />,
-    <path key="im" d="M-8 6 L-3 -1 L1 3 L4 0 L8 6 Z" className="fill-brand-300" />,
-    <path key="pe" d="M-7 4 q3 -9 7 -2 t7 -4" {...stroke} strokeLinecap="round" />,
-    <path key="tb" d="M-8 -6 h16 v12 h-16 Z M-8 0 h16 M-2 -6 v12" {...stroke} strokeWidth={1.5} />,
-    <path key="co" d="M-3 -5 L-8 0 L-3 5 M3 -5 L8 0 L3 5" {...stroke} strokeLinecap="round" />,
-    <path key="en" d="M-8 -7 h16 v14 h-16 Z M-8 -2 h16" {...stroke} strokeWidth={1.5} />,
-  ];
-  return (
-    <Scene w={600} h={96}>
-      <rect
-        x={10}
-        y={24}
-        width={580}
-        height={46}
-        rx={10}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      {/* The selection-mode dropdown is icon-only: a pointer and a caret. */}
-      <rect
-        x={20}
-        y={37}
-        width={70}
-        height={20}
-        rx={6}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1}
-      />
-      <path d="M40 41 l0 12 l3 -3 l2 5 l2 -1 l-2 -5 l4 0 Z" className="fill-slate-600" />
-      <path
-        d="M62 45 l4 4 l4 -4"
-        className="fill-none stroke-slate-400"
-        strokeWidth={1.4}
-        strokeLinecap="round"
-      />
-      <path d="M98 33v28" className="stroke-slate-200" strokeWidth={1} />
-      <DropdownChip x={106} y={37} w={80} label="Popular" />
-      <path d="M194 33v28" className="stroke-slate-200" strokeWidth={1} />
-      {glyphs.map((g, i) => (
-        <Tile key={i} x={202 + i * 28} y={34}>
-          {g}
-        </Tile>
-      ))}
-      <path d="M544 33v28" className="stroke-slate-200" strokeWidth={1} />
-      {/* More (⋯), then Search. */}
-      <g className="fill-slate-400">
-        <circle cx={551} cy={47} r={1.6} />
-        <circle cx={556} cy={47} r={1.6} />
-        <circle cx={561} cy={47} r={1.6} />
-      </g>
-      <circle cx={576} cy={46} r={5} className="fill-none stroke-slate-500" strokeWidth={1.6} />
-      <path d="M580 50 l4 4" className="stroke-slate-500" strokeWidth={1.6} strokeLinecap="round" />
     </Scene>
   );
 }

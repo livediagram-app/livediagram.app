@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { CategoryPicker } from '@/components/illustrations/palette-tools';
+import { CommandPalette } from '@/components/illustrations/tips';
 
 export const metadata = helpMetadata({
   title: 'Palette Tools',
@@ -18,22 +18,22 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("tools")}
 >
 
-There is no longer a **Tools** tab. Every group it held is now a palette **category** of its own, one click away in the category picker rather than two, so this page is a map of where each tool went.
+There is no longer a **Tools** tab. Every group it held is now a palette **category** of its own, one press away on the palette strip, so this page is a map of where each tool went.
 
-The categories are grouped into bands: **Common**, **Structure**, **Decorate** and **Dynamic**, plus **Collaborate** in Facilitate mode, with **Popular** across the top. Open the picker from the category name at the top of the palette.
+The categories sit along the strip by name, in groups with a thin line between each: **Common**, **Structure**, **Decorate** and **Dynamic**, plus the session kit in Facilitate mode. Rest on one, or click it, to see its elements.
 
-<Figure caption="The category picker in Diagram mode: Popular across the top, then the four bands the categories fall into.">
-  <CategoryPicker />
+<Figure caption="The palette strip in Diagram mode: the selection mode, the categories by name, and Search.">
+  <CommandPalette />
 </Figure>
 
 ## Which categories each mode offers
 
 The palette is laid out per editor mode, so not every category appears everywhere:
 
-- **Diagram** (the default): Popular, Shapes, Write (with the Comment panel and Action card), Draw, Build, Icons, Tech and Media (Image and Avatar). **My shapes** joins Common once you have [imported a shape library](/help/explorer/shape-libraries/), and **Event Storming** joins Structure on an [Event Storming board](/help/canvas/event-storming-boards/).
-- **[Illustrate](/help/canvas/illustrate/)**: Popular, Shapes, Write, Build, Components, Devices, Icons, Stickers, Media (with the embeds), and Data. There is no Draw, Tech or Collaborate, and Write and Build leave out the diagram-only tiles (Page, Annotation, Mind node, Lane and Frame). **Logo** leads Common while the tab has a logo page, and **My shapes** joins once you have imported a shape library.
-- **[Facilitate](/help/canvas/facilitate-mode/)**: Popular, Shapes, Write & Build (Write and Build as one), Draw, Icons, Stickers, Media (Image and Avatar), and the six Collaborate categories: Ask, Tools, Record, React, Selection Mode and Navigate. Write & Build and Draw leave out what a session does not need (Page, Annotation, Shape Pen, Polygon, Mind node, Flowchart, Lane, Timeline and Sankey).
-- **[Plan](/help/canvas/plan-mode/)**: its **Boards & Cards** band (Cards, Boards, Widgets, Metrics, Visualisations), a **Spreadsheets** band with **Sheet**, and, under Common, Content (sticky note, text, image, page) and Tools (temperature check, estimate card, idea box, picker, timer and stopwatch). It has no Popular; it opens on Cards.
+- **Diagram** (the default): Shapes, Draw (Write's text, notes, Comment panel and Action card, then Draw's pens and arrows), Build, Concepts (with the Sankey), Icons, Tech and Media (Image and Avatar). **Library** (your shape libraries) joins Common once you have [imported a shape library](/help/explorer/shape-libraries/), and **Event Storming** joins Structure on an [Event Storming board](/help/canvas/event-storming-boards/).
+- **[Illustrate](/help/canvas/illustrate/)**: Shapes, Write, Build, Concepts (with the Sankey), Components, Devices, Icons, Stickers, Media (with the embeds), and Data. There is no Draw, Tech or Collaborate, and Write and Build leave out the diagram-only tiles (Page, Annotation, Mind node, Lane and Frame). **Logo** leads Common while the tab has a logo page, and **Library** joins once you have imported a shape library.
+- **[Facilitate](/help/canvas/facilitate-mode/)**: Shapes, Draw (text, notes, tables, checklists and frames, then the pens and arrows), Icons, Stickers, Media (Image and Avatar), Data, and the session kit: **Ask**, and **Session**, which holds Tools, Record, React, Selection Mode and Navigate. Draw leaves out what a session does not need (Page, Annotation, Shape Pen, Polygon, Mind node, Flowchart, Lane, Timeline and Sankey).
+- **[Plan](/help/canvas/plan-mode/)**: its **Boards & Cards** band (Cards, Boards, Widgets, Metrics, Visualisations), a **Spreadsheets** band with **Sheet**, and, under Common, Content (sticky note, text, image, page) and Tools (temperature check, estimate card, idea box, picker, timer and stopwatch). It keeps a category dropdown, opening on Cards.
 - **[Draw mode](/help/canvas/draw-mode/)** swaps the palette for the whiteboard's own pens and shapes.
 
 Anything a mode leaves out is still one search away: the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) can add any palette element by name, whatever the mode.
@@ -46,7 +46,7 @@ Anything a mode leaves out is still one search away: the [search panel](/help/se
 
 **Draw** holds the gesture tools: **Freehand** (`P`) sketches a stroke and keeps it exactly as drawn, the **Shape Pen** (`6`) turns a rough sketch into a real shape, the **Highlighter** lays one wide translucent marker stroke, **Polygon** places straight-edged outlines point by point, **Arrow** (`A`) drops a connector with a pointer at its end that you position by hand, and **Line** drops the same without the pointer. See [Drawing and Sketch](/help/palette/tools/drawing/) and [Highlighter](/help/palette/tools/highlighter/).
 
-**Components** (Illustrate) holds the ready-made pieces: **Code**, **Checklist**, and a **Web Elements** group of themed composites (Banner, Callout, Stat row, Process, Hero, Header; Hero needs image uploads, like Image and Avatar). Entity is a Diagram element. In Diagram mode, **Code block** and **Entity** sit in Popular; add a **Checklist** from the search panel.
+**Components** (Illustrate) holds the ready-made pieces: **Code**, **Checklist**, and a **Web Elements** group (**Page Blocks** in its panel) of themed composites (Banner, Callout, Stat row, Process, Hero, Header; Hero needs image uploads, like Image and Avatar). Entity is a Diagram element. In Diagram mode, **Entity** is in Build; add a **Code block** or a **Checklist** from the search panel.
 
 **Data** (Illustrate) holds the charts and meters: Pie, Bar, Line, Legend, Progress, Donut and Rating. See [Data and Chart Elements](/help/palette/tools/data-elements/).
 
@@ -58,8 +58,8 @@ Each behaves like any other element once placed: select it, restyle it, multi-se
 
 <Note>
   The palette is hidden for people with view-only access, since they can't add anything. See
-  [Toolbar Layout](/help/palette/toolbar-layout/) for how the strip shows a category, with **More**
-  for the rest of it.
+  [Toolbar Layout](/help/palette/toolbar-layout/) for how the strip shows the categories and opens
+  each one.
 </Note>
 
 ## Guides for these tools

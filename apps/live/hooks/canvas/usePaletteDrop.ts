@@ -15,6 +15,7 @@ import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { STICKER_DND_MIME } from '@/lib/stickers';
 import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
+import { overFloatingPanel } from '@/lib/canvas-pointer';
 import {
   LIBRARY_SHAPE_DND_MIME,
   readLibraryShapeRef,
@@ -74,7 +75,7 @@ export function usePaletteDrop({
     // mind" — show no-drop and don't let the drop below add anything. The
     // dragover events still bubble here from the panel, so check the target,
     // not just the MIME type.
-    if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) {
+    if (overFloatingPanel(e.target)) {
       e.dataTransfer.dropEffect = 'none';
       endPlanCardDrag();
       return;
@@ -108,7 +109,7 @@ export function usePaletteDrop({
     // Dropped back onto a floating panel (the Palette) — cancel: the drop event
     // bubbles up from the panel to this canvas handler, so without this guard a
     // drop over the Palette would still add an element behind it.
-    if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
+    if (overFloatingPanel(e.target)) return;
     // `kind` or `kind|choice` — the creation-time choice a split tile
     // carries (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without parsing it back out, a
     // dragged Poll tile dropped a timer.

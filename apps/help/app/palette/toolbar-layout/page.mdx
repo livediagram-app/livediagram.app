@@ -2,8 +2,8 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import {
+  ToolbarCategoryFlyout,
   ToolbarLayoutOverview,
-  ToolbarMorePopover,
 } from '@/components/illustrations/toolbar-layout';
 
 export const metadata = helpMetadata({
@@ -28,10 +28,10 @@ The editor lays its tools out the same way on every device, a computer, a tablet
 The palette is a single strip pinned to the top centre of the canvas. From left to right it holds:
 
 - **Selection mode**: Select, Hand, Eraser, Laser and the rest.
-- **Category**: which set of tiles the strip shows, such as Popular, Shapes or Icons.
-- **Up to twelve tiles** from that category (fewer on a narrow window). Click one to add it, or drag it onto the canvas. Each tile shows its keyboard shortcut in the corner.
-- **More** (the **⋯** button), when the category has more than the strip can hold.
+- **The categories**, by name: in Diagram mode **Shapes**, **Draw**, **Build**, **Concepts**, **Icons**, **Tech** and **Media**. Rest the pointer on one, or click it, and its elements open in a panel underneath.
 - **Search** (the magnifier, or press **S**), last on the strip, to find any element, icon or sticker by name.
+
+Plan mode keeps a category dropdown instead, with that category's tiles on the strip and **More** (the **⋯** button) for the rest.
 
 In the top-left corner, in a card of their own, sit the **menu button** and the **editor mode switch** (Diagram, Draw, Facilitate, Illustrate or Plan; **Shift+D** moves to the next mode). The menu button opens the [Explorer](/help/explorer/explorer-panel/) as a popover under it, and clicking it again closes it.
 
@@ -41,14 +41,23 @@ In the top-left corner, in a card of their own, sit the **menu button** and the 
   <ToolbarLayoutOverview />
 </Figure>
 
-Only one of the strip's menus is open at a time: opening the selection mode, category, More or Search closes whichever other was open, and a click anywhere outside closes it.
+Only one of the strip's menus is open at a time: opening the selection mode, a category, More or Search closes whichever other was open, and a click anywhere outside closes it.
 
-## More
+## The categories
 
-**More** opens the whole category under the button: its search box, its groups and every tile. Adding a tile from it closes it again, so the canvas is clear to draw on, and switching category closes it too. Icons, Stickers, Tech, Collaborate and My shapes always have a More, since their search and groups only live there.
+Each category on the strip opens a panel of its elements under its name:
 
-<Figure caption="More hangs from its button with the whole category: its search box and every tile.">
-  <ToolbarMorePopover />
+- **Rest the pointer on a category** and its panel opens; slide along the strip and the panel follows to each one you point at. Move away from both the strip and the panel and it closes. A click or a tap opens it too.
+- **Its elements come in named groups**, such as **Basics**, **Flowchart** and **More Shapes** in Shapes. Shapes shows them as pictures; the other categories as cards with a line on what each one is for. A tile's keyboard shortcut shows beside its name.
+- **Click an element to add it, or drag it onto the canvas.** The panel closes once you have used one, so the canvas is clear. The strip at the bottom of the panel says what the element under your pointer does.
+- **Card** and **Badge** open their presets in a second panel beside the first, which stays open behind it.
+- **Icons**, **Stickers**, **Tech** and **Session** list their groups down the left, with the open group's entries on the right and a search box across the top that looks through every group. Each reopens on the group you last had open.
+- With the keyboard: the **Left** and **Right** arrows move along the strip, **Down** or **Enter** opens a category, the arrows move through its elements, and **Escape** closes it.
+
+The names on the strip are one word each, and the editor modes offer different categories: **Draw** holds the words and the pens together (Text, notes, comments, then Freehand, Highlighter, Arrow and Line), and in Facilitate mode **Ask** puts a question to the room while **Session** holds the timers, reveals, records, reactions, selection-mode buttons and the places Avatars walk to. On a window too narrow for the names, the strip shows the categories' icons alone.
+
+<Figure caption="Rest on Shapes and its panel opens under it, its elements in named groups.">
+  <ToolbarCategoryFlyout />
 </Figure>
 
 ## Search
@@ -63,11 +72,11 @@ Search is not on an Event Storming board, where the notation is the palette, nor
 
 ## The order of the tiles
 
-Each category keeps its own order on the strip: adding something never moves it. Thin dividers split a category into groups of related tiles, such as the desktop and the mobile devices, or the charts and the meters. Each time a document loads the strip opens on the mode's [Popular](/help/palette/popular/) in Diagram and Illustrate, on **Cards** in Plan (or **Boards** while the tab has none), on the notation on an Event Storming board, and on **Participate** for a Participant.
+Each category keeps its own order: adding something never moves it. Its groups follow the same order on Plan's strip, where thin dividers split a category into groups of related tiles, such as the desktop and the mobile devices, or the charts and the meters. Each time a document loads Plan's strip opens on **Cards** (or **Boards** while the tab has none), an Event Storming board's on its notation, and a Participant's on **Participate**.
 
 ## What else the strip shows
 
-- **Plan mode** adds an **Edit Cards** button to the strip on the Cards category, for someone who can edit, and **Illustrate** an **Add Page** button (a **+**). Neither shows on a phone.
+- **Plan mode** adds an **Edit Cards** button to the strip on the Cards category, for someone who can edit. It doesn't show on a phone.
 - **On an Event Storming board** the strip shows the notation's tiles instead of the two pickers, led by **Add from Photo** where it is available.
 - **Viewers** who can't edit have no strip, since there is nothing to add; the menu button still shows.
 - **Zen mode** hides the strip and the menu button with the rest of the editor's chrome.
@@ -77,7 +86,7 @@ Each category keeps its own order on the strip: adding something never moves it.
 On a phone the strip is narrower:
 
 - The **menu button** sits in a card of its own at the left of the strip, without the mode switch: to change editor mode on a phone, open the tab menu (the **…** on the tab) open its **Mode** section and choose a mode.
-- The **category** shows its icon only, which leaves room for more tiles. Swipe the tiles sideways to see the rest of the category; **More** opens across the width of the screen.
+- The **categories** show their icons only, a little further apart. Swipe them sideways to reach the rest; the selection mode and Search stay put. A category's panel opens across the width of the screen.
 - **Layers** and **Collaborate** open above their buttons in the bottom row, as on a computer. Pinch to zoom; the **Fit** button is there too.
 
 A phone held sideways counts as a phone too.

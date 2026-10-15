@@ -7,6 +7,7 @@ import {
   startBlankDocument,
   startEventStormingRow,
   startTemplateDocument,
+  paletteTile,
 } from './fixtures';
 
 // End-to-end smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Small by design: it answers "does
@@ -64,7 +65,7 @@ test('create a blank document, add a shape, and it survives a reload', async ({
   // into canvas internals.
   const canvas = page.locator('[data-canvas-a11y-root]');
   const square = page.getByRole('img', { name: 'Square', exact: true });
-  await page.getByRole('button', { name: 'Add Square', exact: true }).click();
+  await (await paletteTile(page, 'Add Square')).click();
   await canvas.click({ position: { x: 420, y: 300 } });
   await expect(square).toHaveCount(1);
 

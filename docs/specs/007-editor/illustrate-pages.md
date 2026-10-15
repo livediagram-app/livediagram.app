@@ -68,10 +68,9 @@ one, choosing the first page's kind, the template picker and an AI tool's templa
 a phone (a bottom sheet). **The last page's kind comes first**: the card for the kind of the last page
 leads, ringed in the accent and tagged "Same as last page", and takes focus, so Enter adds another
 of the same, the most likely next page; with no page yet the usual order (Infographic, Article,
-Slide, Logo) stands. Contents' Add Page row leads with it too, highlighted. The **+** is named **Add Page** and shows the popover open as pressed. The Toolbar
-strip ends, after a divider, with the same **+** (Add Page), opening the same
-popover, while in Illustrate mode; not on a phone, where the strip has no room to spare and the
-row's own **+** adds a page.
+Slide, Logo) stands. Contents' Add Page row leads with it too, highlighted. The **+** is named **Add Page** and shows the popover open as pressed. The Toolbar strip has no **+** of
+its own (it once ended with one): it is the palette's category bar ([Toolbar layout](toolbar-layout.md#the-category-bar)),
+and the row's own **+** and Contents' Add Page row add a page.
 
 A tab entering Illustrate mode with no pages stored starts with one page, its kind unchosen.
 
@@ -1054,7 +1053,8 @@ swipe, with no X.
 ## Contents
 
 In Illustrate mode the bottom-right cluster holds **Contents** (a list glyph, named beside it on a
-desktop), left of the Theme & canvas button, in every Illustrate tab and for every role: finding
+desktop), left of the Theme & canvas button, joined in one frame with **Slides** after it ("Chrome in Illustrate
+mode"), in every Illustrate tab and for every role: finding
 your way round a long document is everyone's. It opens the **Contents** popover above it (a
 bottom sheet on a phone), the way round a big document:
 
@@ -1413,7 +1413,7 @@ SlideShown`).
 ## Chrome in Illustrate mode
 
 - **Slides button**: in the bottom-right cluster, where Layers sits in the other modes (left of
-  the brush), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an
+  the brush), joined to Contents in one frame (`PagesClusterStrip`, as Layers and Theme share one), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an
   outside press closes it; the button shows pressed while open). An infographic is likely to be
   presented, so its deck is one press away. Desktop only, as the Slide Deck itself is. Shown only
   while **at least one page is a slide**: until then the deck has nothing to hold, and the

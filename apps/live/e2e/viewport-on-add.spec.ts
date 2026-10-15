@@ -1,4 +1,11 @@
-import { expect, test, expectNoPageErrors, openStartBlank, pageOwnerHeaders } from './fixtures';
+import {
+  expect,
+  test,
+  expectNoPageErrors,
+  openStartBlank,
+  pageOwnerHeaders,
+  paletteTile,
+} from './fixtures';
 
 // The viewport on tab entry (docs/specs/008-canvas/canvas-and-palette.md "Fit-to-screen"): a tab is framed
 // once, when its content has loaded; what the user then adds, the first element on an empty tab
@@ -20,10 +27,7 @@ test.describe('Viewport on add', () => {
     const canvas = page.locator(CANVAS);
     const box = (await canvas.boundingBox())!;
     const drop = { x: 200, y: 260 };
-    await page
-      .getByRole('button', { name: 'Add Square', exact: true })
-      .first()
-      .dragTo(canvas, { targetPosition: drop });
+    await (await paletteTile(page, 'Add Square')).dragTo(canvas, { targetPosition: drop });
     const square = canvas.getByRole('img', { name: 'Square', exact: true });
     await expect(square).toHaveCount(1);
     // Past the frame the entry fit used to land on.
@@ -39,10 +43,9 @@ test.describe('Viewport on add', () => {
     const canvas = page.locator(CANVAS);
     // Dropped at the far corner, so only a fit would bring it back to the middle.
     const box = (await canvas.boundingBox())!;
-    await page
-      .getByRole('button', { name: 'Add Square', exact: true })
-      .first()
-      .dragTo(canvas, { targetPosition: { x: 80, y: box.height - 80 } });
+    await (
+      await paletteTile(page, 'Add Square')
+    ).dragTo(canvas, { targetPosition: { x: 80, y: box.height - 80 } });
     await page.keyboard.press('Escape');
     // Let the autosave land before reloading.
     await expect

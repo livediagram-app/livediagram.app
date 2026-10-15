@@ -6,6 +6,11 @@ Status: shipped
 
 A flattening of the palette's category structure.
 
+In Diagram, Facilitate and Illustrate the strip now shows these categories as a **category bar**, each opening a
+flyout of its tiles, with no Popular, one-word names, Write and Draw as one, and Facilitate's session tools gathered
+into Session ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)). The bands below are the bar's
+dividers there; the banded picker remains Plan's.
+
 This is the category catalogue and each category's **default** tiles. Which
 categories a palette offers, under what names and holding which tiles, is now
 per editor mode: see [Editor modes, "The palette per

@@ -83,13 +83,13 @@ export function ShortcutsToggle() {
   );
 }
 
-/** The palette strip across the top of the canvas, open on Popular, with the menu button and
+/** The palette strip across the top of the canvas, Diagram's category bar, with the menu button and
  *  the Diagram mode switch in their card to its left. */
 export function CommandPalette() {
   return (
     <Scene w={420} h={190}>
       <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} category="Popular" />
+      <Strip x={78} y={16} />
       <Shape x={60} y={104} w={84} h={46} kind="rect" label="Start" />
       <Shape x={268} y={104} w={84} h={46} kind="rect" accent label="Ship" />
       <Arrow from={[144, 127]} to={[268, 127]} />
