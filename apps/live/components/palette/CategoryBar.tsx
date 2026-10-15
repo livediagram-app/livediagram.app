@@ -174,6 +174,8 @@ export function CategoryBarButtons({
   // selection mode and Search beside it stay in reach (docs/specs/007-editor/toolbar-layout.md "On a phone").
   scrollable?: boolean;
 }) {
+  // What pressed a bar button last (mouse, touch, pen), read by its click: the click alone doesn't say.
+  const pressedBy = useRef<string | null>(null);
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
     const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
     if (step) {
@@ -217,12 +219,18 @@ export function CategoryBarButtons({
             aria-label={c.label}
             aria-haspopup="dialog"
             aria-expanded={open}
+            onPointerDown={(e) => {
+              pressedBy.current = e.pointerType;
+            }}
             onClick={(e) => {
-              // A keyboard press (Enter, Space) reports no pointer position, and toggles.
+              // A keyboard press (Enter, Space) reports no pointer position.
               const keyboard = e.detail === 0;
-              // A click on a category the hover already opened keeps it open, now pinned: the click was on its way
-              // there.
-              if (open && keyboard) bar.close(false);
+              // A tap (touch, pen) or a keyboard press on the open category toggles it shut. A mouse click on it keeps
+              // it open, now pinned: the hover opened it and the click was on its way there.
+              const toggles =
+                keyboard || pressedBy.current === 'touch' || pressedBy.current === 'pen';
+              pressedBy.current = null;
+              if (open && toggles) bar.close(false);
               else bar.open(c, keyboard);
             }}
             onPointerEnter={(e) => {

@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { discover, SHAPE, type Probe } from './optical-discover';
+import { inheritedSnap } from './optical-snap';
 
 // Optical alignment audit (docs/specs/004-interface-design/optical-alignment.md; the algorithm is
 // .../blueprints/optical-alignment.md, "Ink audit"). Finds every small painted shape that frames a glyph
@@ -181,7 +182,11 @@ export async function auditOptical(page: Page): Promise<OpticalReport> {
       await setHideRule(page, null);
       if (p.tailed) await swapTails(page, p.hide, false);
       const text = await diffInk(page, all, noText);
-      if (text) fail(p, 'caps ink, vertical', midX(text.top, text.bottom) - cy);
+      // Judged as if the shape sat on a whole pixel: the snap its position adds is not the shape's.
+      const s = p.snap;
+      if (!s) throw new Error(`optical audit: no baseline to read the snap from at ${p.where}`);
+      const inherited = inheritedSnap(s.baseline, s.top) * s.scale;
+      if (text) fail(p, 'caps ink, vertical', midX(text.top, text.bottom) - cy - inherited);
     }
   }
   await page.evaluate(
