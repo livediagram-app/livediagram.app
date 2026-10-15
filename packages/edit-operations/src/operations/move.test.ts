@@ -28,6 +28,22 @@ describe('move', () => {
     expect(at(applied(outcome).tab, 'n1')).toEqual([140 + PLACEMENT_GAP, 720]);
   });
 
+  it("keeps clear of what sits outside the reference's frame, which a move never grows", () => {
+    const blocker = {
+      id: 'b',
+      type: 'shape',
+      shape: 'square',
+      x: 200,
+      y: 300,
+      width: 140,
+      height: 60,
+    };
+    const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, blocker as Element] };
+    const [x, y] = at(applied(run('move n1 right-of:n4', tab)).tab, 'n1');
+    const clear = x! >= 340 || x! + 140 <= 200 || y! >= 360 || y! + 60 <= 300;
+    expect(clear).toBe(true);
+  });
+
   it('carries what a moved frame holds, as » lines', () => {
     const outcome = run('move f2 by=500,0');
     const { tab, targets } = applied(outcome);

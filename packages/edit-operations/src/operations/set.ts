@@ -19,10 +19,10 @@ import {
   writeFields,
 } from '../state';
 import type { SetOperation } from '../types';
-import { rerouted } from './connect';
+import { ROUTE_KEYS, rerouted } from './connect';
 
 // The fields that are an arrow's route, which new ends drop.
-const ROUTE_KEYS: ReadonlySet<string> = new Set(['curveOffset', 'curvePoints', 'elbowOffset']);
+const ROUTE_KEY_SET: ReadonlySet<string> = new Set(ROUTE_KEYS);
 
 // Fields whose change can leave a shape's label outgrowing its box.
 const FIT_KEYS: ReadonlySet<string> = new Set(['label', 'shape', 'text', 'textSize']);
@@ -59,7 +59,7 @@ function setOne(
   const reEnded =
     fitted.el.type === 'arrow' &&
     written.written.some((key) => key === 'from' || key === 'to') &&
-    !written.written.some((key) => ROUTE_KEYS.has(key));
+    !written.written.some((key) => ROUTE_KEY_SET.has(key));
   const next = reEnded ? rerouted(fitted.el as ArrowElement, currentElements(state)) : fitted.el;
   if (sameValue(next, el)) return null;
   const layerLock = layerLockOf(state.tab.layers, next.layerId);

@@ -193,6 +193,9 @@ export type CanvasProps = {
   chairSitters?: (
     elementId: string,
   ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
+  // The office's machines (docs/specs/009-elements/office.md "Using it"): bumped each time your own character
+  // gets a drink at one, so it answers on your screen.
+  machineAnswered?: (elementId: string) => number;
   // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing — the paired portal's name and, when
   // it has one, the action that travels there.
   onEnterPortal?: (element: import('@livediagram/document').ShapeElement) => {

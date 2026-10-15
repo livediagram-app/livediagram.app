@@ -4,7 +4,7 @@
 // keeps it on screen, and what it is standing on. No React, no DOM, so
 // the walk behaviour is unit-testable without a canvas.
 
-import { isBoxed, type Element } from '@livediagram/document';
+import { isBoxed, isFloorShape, type Element } from '@livediagram/document';
 
 // Walk speed in CANVAS px per second. Constant on purpose: an eased
 // glide reads as a camera move, a constant walk reads as a character.
@@ -293,6 +293,13 @@ export function elementUnderFeet(elements: Element[], feet: AvatarPoint): string
     if (el.type === 'shape' && el.shape === 'frame') continue;
     // A fence is not a destination (docs/specs/009-elements/fence.md): walking along one must not ring it.
     if (el.type === 'shape' && el.shape === 'fence') continue;
+    // Nor is the office's floor and scenery (docs/specs/009-elements/office.md): a room or a rug is where you
+    // stand, and a plant or a bookshelf is walked round.
+    if (
+      el.type === 'shape' &&
+      (isFloorShape(el.shape) || el.shape === 'plant' || el.shape === 'bookshelf')
+    )
+      continue;
     if (
       feet.x >= el.x &&
       feet.x <= el.x + el.width &&

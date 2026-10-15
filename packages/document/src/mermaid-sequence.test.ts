@@ -206,6 +206,50 @@ describe('layoutSequence', () => {
     expect(inner.x + inner.width).toBeLessThan(outer.x + outer.width);
   });
 
+  const framesOf = (lines: string[]) => {
+    const g = graphFromMermaid(['sequenceDiagram', ...lines].join('\n'));
+    if (!g.ok) throw new Error(g.error);
+    const els = layoutGraph(g.graph) as (Element & { x: number; width: number })[];
+    return {
+      els,
+      frame: (op: string) =>
+        els.find((e) => e.type === 'shape' && e.shape === 'frame' && e.label === op)!,
+    };
+  };
+
+  it('holds a note beside its last lifeline whole', () => {
+    const { els, frame } = framesOf([
+      'participant A',
+      'participant B',
+      'participant C',
+      'loop retry',
+      'A->>B: try',
+      'Note right of B: Backs off for longer each time it fails',
+      'end',
+    ]);
+    const note = els.find((e) => e.type === 'sticky')!;
+    const f = frame('loop');
+    expect(note.x).toBeGreaterThan(f.x);
+    expect(note.x + note.width).toBeLessThan(f.x + f.width);
+  });
+
+  it('keeps a nested fragment a step inside its outer one when their lifelines differ', () => {
+    const { frame } = framesOf([
+      'participant A',
+      'participant B',
+      'participant C',
+      'alt ok',
+      'A->>C: check',
+      'opt cached',
+      'B->>C: reuse',
+      'end',
+      'end',
+    ]);
+    const [outer, inner] = [frame('alt'), frame('opt')];
+    expect(inner.x).toBeGreaterThan(outer.x);
+    expect(inner.x + inner.width).toBeLessThan(outer.x + outer.width);
+  });
+
   it("sets a guard right of its fragment's first lifeline, never across it", () => {
     const g = graphFromMermaid(
       [

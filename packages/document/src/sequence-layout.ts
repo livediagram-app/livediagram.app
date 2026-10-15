@@ -25,6 +25,8 @@ const FRAGMENT_BAND = 40;
 const GUARD_GAP = 10;
 // How far a fragment nested in another, on the same first lifeline, sits inside it on each side.
 const FRAGMENT_INSET = 12;
+// The room a fragment keeps round a note inside it.
+const NOTE_PAD = 12;
 const DIVIDER_BAND = 36;
 const FRAGMENT_END = 24;
 const NOTE_LINE = 18;
@@ -80,6 +82,12 @@ export function layoutSequence(
     return (lines * fontPx * LABEL_LINE_HEIGHT + 4) / 2 + MESSAGE_LABEL_GAP;
   };
   const px = (id: string) => index.get(id)! * pitch + headW / 2;
+  // A note's left edge: centred over its participants, or beside the first.
+  const noteX = (note: Extract<SequenceItem, { kind: 'note' }>, width: number) => {
+    const xs = note.who.map(px);
+    if (note.placement === 'over') return (Math.min(...xs) + Math.max(...xs)) / 2 - width / 2;
+    return note.placement === 'right' ? xs[0]! + 24 : xs[0]! - 24 - width;
+  };
   const out: Element[] = [];
   const headTop = 0;
   const lifeTop = headTop + HEAD_H;
@@ -141,6 +149,8 @@ export function layoutSequence(
     top: number;
     dividers: { y: number; label: string }[];
     who: Set<string>;
+    // How far its notes reach left and right, so the frame holds them whole.
+    reach?: [number, number];
   }[] = [];
   const closed: {
     op: string;
@@ -149,6 +159,7 @@ export function layoutSequence(
     bottom: number;
     dividers: { y: number; label: string }[];
     who: Set<string>;
+    reach?: [number, number];
   }[] = [];
   const involve = (...who: string[]) => {
     for (const f of fragments) for (const w of who) f.who.add(w);
@@ -215,6 +226,9 @@ export function layoutSequence(
       const h = lines * NOTE_LINE + 30;
       notes.push({ item: it, y: y - 14, h });
       involve(...it.who);
+      const x = noteX(it, width);
+      for (const f of fragments)
+        f.reach = [Math.min(f.reach?.[0] ?? x, x), Math.max(f.reach?.[1] ?? x + width, x + width)];
       y += h + 16;
     } else if (it.kind === 'fragment') {
       fragments.push({ op: it.op, label: it.label, top: y - 22, dividers: [], who: new Set() });
@@ -284,13 +298,41 @@ export function layoutSequence(
     const cols = [...f.who].flatMap((w) => (index.has(w) ? [index.get(w)!] : []));
     return cols.length ? [Math.min(...cols), Math.max(...cols)] : [0, participants.length - 1];
   };
+  // Each frame's edges: its lifelines' (a step in per enclosing fragment on the same lifeline), widened to hold its
+  // notes, then, innermost first, each widened to hold the fragments inside it a step in, whatever their lifelines.
+  const edges = new Map(
+    closed.map((f) => {
+      const [first, last] = columns(f);
+      const depth = (side: 0 | 1) =>
+        closed.filter(
+          (o) =>
+            o !== f &&
+            o.top < f.top &&
+            o.bottom > f.bottom &&
+            columns(o)[side] === columns(f)[side],
+        ).length;
+      let left = first * pitch - 40 + depth(0) * FRAGMENT_INSET;
+      let right = last * pitch + headW + 40 - depth(1) * FRAGMENT_INSET;
+      if (f.reach) {
+        left = Math.min(left, f.reach[0] - NOTE_PAD);
+        right = Math.max(right, f.reach[1] + NOTE_PAD);
+      }
+      return [f, { left, right }];
+    }),
+  );
+  for (const f of [...closed].sort((a, b) => a.bottom - a.top - (b.bottom - b.top))) {
+    const e = edges.get(f)!;
+    for (const o of closed) {
+      if (o === f || o.top > f.top || o.bottom < f.bottom || o.bottom - o.top <= f.bottom - f.top)
+        continue;
+      const oe = edges.get(o)!;
+      oe.left = Math.min(oe.left, e.left - FRAGMENT_INSET);
+      oe.right = Math.max(oe.right, e.right + FRAGMENT_INSET);
+    }
+  }
   for (const f of closed) {
-    const [first, last] = columns(f);
-    const depth = closed.filter(
-      (o) => o !== f && o.top < f.top && o.bottom > f.bottom && columns(o)[0] === first,
-    ).length;
-    const left = first * pitch - 40 + depth * FRAGMENT_INSET;
-    const rightEdge = last * pitch + headW + 40 - depth * FRAGMENT_INSET;
+    const [first] = columns(f);
+    const { left, right: rightEdge } = edges.get(f)!;
     out.push({
       ...createShape('frame', left, f.top),
       id: freshId('fragment', opts.makeId),
@@ -371,13 +413,7 @@ export function layoutSequence(
   // Notes as stickies, over or beside their participants.
   for (const n of notes) {
     const width = noteWidth(n.item, pitch, headW);
-    const xs = n.item.who.map(px);
-    const x =
-      n.item.placement === 'over'
-        ? (Math.min(...xs) + Math.max(...xs)) / 2 - width / 2
-        : n.item.placement === 'right'
-          ? xs[0]! + 24
-          : xs[0]! - 24 - width;
+    const x = noteX(n.item, width);
     out.push({
       ...createSticky(x, n.y),
       id: freshId('note', opts.makeId),

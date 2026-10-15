@@ -15,7 +15,9 @@ import {
   createTable,
   createText,
   kindWordOf,
+  LABEL_FONT_PX,
   labelBoxSize,
+  labelFontPx,
   recolourElementForTheme,
   resolveActiveLayerId,
   type BoxedElement,
@@ -138,14 +140,15 @@ export function createKind(
     const peers = peerLook(state, el.shape);
     if (peers && !('textSize' in named) && !('text' in named))
       el = { ...el, textSize: peers.textSize };
-    const look =
-      el.textSize === 'sm' || el.textSize === 'md' ? { textSize: el.textSize } : undefined;
+    // Measured at the box's own label size, whatever it is.
+    const fontPx = labelFontPx(el.textSize);
+    const look = { textSize: fontPx <= LABEL_FONT_PX.sm ? 'sm' : 'md', fontPx } as const;
     if (peers) {
       // Siblings shorter than the palette's box of their shape wear the template look (graph input, templates): the
       // new box is measured as that look measures, so a short label is not the palette's tall square beside them.
       const templated = peers.height < SHAPE_DEFAULT_SIZE[el.shape].height;
       const fit = templated
-        ? labelBoxSize(el.label, el.shape, look ?? { textSize: 'sm' }, !!el.iconId, peers)
+        ? labelBoxSize(el.label, el.shape, look, !!el.iconId, peers)
         : labelBoxSize(el.label, el.shape);
       el = {
         ...el,
@@ -220,7 +223,9 @@ export function applyAddKind(
   index: number,
 ): EditRejection | null {
   const place = (size: { width: number; height: number }) =>
-    resolvePlacement(state, operation.place, size, new Set(), index);
+    resolvePlacement(state, operation.place, size, new Set(), index, undefined, {
+      growsFrame: true,
+    });
   const made = createKind(state, operation, index, place);
   if ('rejection' in made) return made.rejection;
   const refused = commitNew(state, made, 'add', index);

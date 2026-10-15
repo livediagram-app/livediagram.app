@@ -168,9 +168,11 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
 - **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, the
   pitch wide enough for the longest message label in one gap (up to 520 px), as a message keeps its label in its
   first gap; messages a row each, edge to edge of the activation bars, labels above their line, wrapped to the gap
-  and lifted by however many lines they take so no plate cuts its own line; a self-call loops out of the bar and back into its nested one; a note is a sticky
-  over or beside its participants, as tall as its text needs (one line, 48 px) with the text centred; a fragment is a frame across the lifelines its messages and notes involve (every lifeline when they
-  involve none; one nested on the same first lifeline sits a step inside) with its operator as its label and
+  and lifted by however many lines they take so no plate cuts its own line; a self-call loops out of the bar and back
+  into its nested one; a note is a sticky over or beside its participants, as tall as its text needs (one line, 48
+  px) with the text centred; a fragment is a frame across the lifelines its messages and notes involve (every
+  lifeline when they involve none), wide enough to hold its notes whole and every fragment nested in it a step
+  inside, with its operator as its label and
   each guard in muted text, operands split by a dashed divider.
 - **Limits**: at most 30 participants and 300 messages, notes and fragment lines; past them the parser refuses
   naming the limit.

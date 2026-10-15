@@ -266,6 +266,9 @@ export function resolvePlacement(
   moving: ReadonlySet<ElementId>,
   operation: number,
   start?: Box,
+  // An add, which grows a frame to hold what lands beside one of its members (growToHold), so it need only keep
+  // clear of that frame's contents. A move grows nothing, so it keeps clear of everything on the tab.
+  { growsFrame = false }: { growsFrame?: boolean } = {},
 ): Placed | { rejection: EditRejection } {
   if (placement === undefined) {
     const box = start ?? defaultSpot(state, size, moving);
@@ -321,7 +324,8 @@ export function resolvePlacement(
     }
     default: {
       const side = placement.rel === 'after' ? sideAfter(state, ref, refBox) : placement.rel;
-      const among = placement.rel === 'after' ? null : frameOccupiers(state, ref, moving);
+      const among =
+        placement.rel === 'after' || !growsFrame ? null : frameOccupiers(state, ref, moving);
       let start = beside(refBox, side, size, gap);
       // `below:<frame> align:<x>`: beside the reference, centred on x across the side.
       if (placement.alignTo !== undefined) {

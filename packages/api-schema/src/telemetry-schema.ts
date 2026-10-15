@@ -479,6 +479,14 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Desk',
     'Sofa',
     'Fence',
+    // The virtual office (docs/specs/009-elements/office.md), in Navigate.
+    'Room',
+    'Meeting-table',
+    'Plant',
+    'Bookshelf',
+    'Water-cooler',
+    'Coffee-machine',
+    'Rug',
     // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
     // token is what elementTelemetryType actually emits for the kind, which
     // for a hyphenated one is the hyphen kept (see Pie-chart above).

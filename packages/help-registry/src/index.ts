@@ -170,7 +170,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 35,
+    articleCount: 36,
     kind: 'feature',
   },
   {
@@ -1204,6 +1204,17 @@ export const articles: Article[] = [
     group: 'Elements',
   },
   {
+    slug: 'virtual-office',
+    title: 'Virtual Office',
+    description:
+      'Rooms with doorways, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs for Avatar mode.',
+    keywords:
+      'virtual office room rooms walls door doorway meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception team avatar walk sit navigate',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
     slug: 'cards-and-callouts',
     title: 'Cards and Callouts',
     description: 'One node with a title, a meta line, a body, an icon and tags, plus accent edges.',
@@ -1473,7 +1484,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'pub quiz quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
+      'virtual office office rooms pub quiz quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

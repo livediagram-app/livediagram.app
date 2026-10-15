@@ -24,11 +24,12 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { kindOf } from './element-text';
-import { rerouted } from './operations/connect';
+import { ROUTE_KEYS, rerouted } from './operations/connect';
 import { sameValue } from './equality';
 import { invalidResult } from './rejections';
 import { currentElements, replaceElement, type EditState } from './state';
 import type { EditLog } from './types';
+import { ALIAS_FIELDS } from './fields';
 
 type Raw = Record<string, unknown>;
 
@@ -66,7 +67,8 @@ function normaliseTouched(state: EditState, log: EditLog): void {
       normalised.type === 'sticky' &&
       state.before.has(id) &&
       (el as Raw).strokeColor === undefined &&
-      !written.includes('fillColor')
+      // The fill named by its stored key or by an alias that writes it (`fill`).
+      !written.some((k) => k === 'fillColor' || ALIAS_FIELDS[k]?.includes('fillColor'))
     )
       delete normalised.strokeColor;
     noteCoercions(state, el as unknown as Raw, normalised, log, operation);
@@ -121,9 +123,6 @@ function movedBoxes(before: ReadonlyMap<ElementId, Element>, next: Element[]): S
   return moved;
 }
 
-// The fields that are an arrow's route.
-const ROUTE_FIELDS = ['curvePoints', 'curveOffset', 'elbowOffset'] as const;
-
 // An arrow the rebind re-anchored with one end's box moved and the other still is drawn afresh (EO31): kept, its
 // route ran from the new anchor through the moved box. Both ends moved, the arrow moved whole and its route holds.
 function rerouteRebound(
@@ -140,7 +139,7 @@ function rerouteRebound(
     if (el.type !== 'arrow' || !was || was === el || was.type !== 'arrow') return el;
     const ends = (a: ArrowElement) => `${anchorOf(a.from)}>${anchorOf(a.to)}`;
     const reanchored = ends(el) !== ends(was);
-    const routed = ROUTE_FIELDS.some((k) => el[k] !== undefined);
+    const routed = ROUTE_KEYS.some((k) => el[k] !== undefined);
     return reanchored && routed && endsMoved(el) === 1 ? rerouted(el, rebound) : el;
   });
 }

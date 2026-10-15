@@ -35,6 +35,7 @@ import {
   seatingFacing,
   turnedSeatingBox,
   type SeatingKind,
+  type RoomDoor,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
@@ -63,6 +64,7 @@ const SEATING_TELEMETRY: Record<SeatingKind, string> = {
   chair: 'Chair',
   desk: 'Desk',
   sofa: 'Sofa',
+  'meeting-table': 'Meeting-table',
 };
 
 export function useDataShapeSetters({
@@ -355,6 +357,14 @@ export function useDataShapeSetters({
     track('Element', 'Changed', SEATING_TELEMETRY[turned]);
   };
 
+  // Room (docs/specs/009-elements/office.md "Room"): which wall the doorway is in.
+  const setRoomDoorSelected = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: (kind) => kind === 'room',
+  });
+  const setRoomDoor = (door: RoomDoor) => setRoomDoorSelected({ roomDoor: door }, 'Room');
+
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -417,6 +427,7 @@ export function useDataShapeSetters({
     setDecisionDateSelected,
     setDecisionDriversSelected,
     setChairFacingSelected,
+    setRoomDoorSelected: setRoomDoor,
     setButtonModeSelected,
   };
 }

@@ -1,9 +1,15 @@
 // A frame or lane grown to hold a box placed in it (docs/specs/024-agents/blueprints/edit-operations.md "Growing to
 // hold"): it takes its new box, and on each side it grew, what lay past its old edge within its span moves on by the
 // growth, carrying what it holds, so the grown container never takes in what sat beside it. Only the container's own
-// scope moves; what sits inside it stays where it was put.
+// scope moves; what sits inside it stays where it was put. A container nested in another grows that one in turn,
+// when it or what it moved on now reaches past it.
 
-import { containerContents, type BoxedElement, type ElementId } from '@livediagram/document';
+import {
+  containerContents,
+  isContainer,
+  type BoxedElement,
+  type ElementId,
+} from '@livediagram/document';
 import { boxOf, shifted, type Box } from './placement';
 import {
   currentElements,
@@ -14,12 +20,12 @@ import {
   type EditState,
 } from './state';
 
-// Room a frame or lane leaves around what it holds.
-export const HOLD_PAD = 32;
-
 // How far inside a container's old edge a neighbour may start and still count as lying past it: a box drawn flush
 // against the frame.
 const PAST_EDGE_TOLERANCE = 2;
+
+/** Room a frame or lane leaves around what it holds. */
+export const HOLD_PAD = 32;
 
 type Side = { dx: number; dy: number; past: (box: Box) => boolean };
 
@@ -32,6 +38,8 @@ export function growContainer(
   // The box the container grows to hold: it is placed already, never moved on.
   held: ElementId,
   operation: number,
+  // What an inner container's growth already moved on, never moved again by this one's.
+  settled: ReadonlySet<ElementId> = new Set(),
 ): void {
   const holders = holdersOf(state);
   const scope = holders.get(container.id) ?? null;
@@ -67,7 +75,11 @@ export function growContainer(
   // The container's neighbours: the units of its own scope, read before anything moves.
   const neighbours = before.flatMap((el) => {
     const box = boxOf(el);
-    return box && el.id !== container.id && el.id !== held && (holders.get(el.id) ?? null) === scope
+    return box &&
+      el.id !== container.id &&
+      el.id !== held &&
+      !settled.has(el.id) &&
+      (holders.get(el.id) ?? null) === scope
       ? [{ id: el.id, box }]
       : [];
   });
@@ -100,4 +112,38 @@ export function growContainer(
       : {}),
   };
   state.log('[edit-ops] grow-container', { operation, shifted: moved.size });
+  growScope(state, scope, [container.id, ...moved], operation, settled);
+}
+
+// The container holding a grown one, grown in turn to hold it and what it moved on with HOLD_PAD, when either now
+// reaches past it. A locked one, or a holder that is no frame or lane (a mind node), stays as it is.
+function growScope(
+  state: EditState,
+  scope: ElementId | null,
+  ids: readonly ElementId[],
+  operation: number,
+  settled: ReadonlySet<ElementId>,
+): void {
+  const parent = scope ? state.byId.get(scope) : undefined;
+  if (!parent || parent.type === 'arrow' || !isContainer(parent) || state.locked.has(parent.id))
+    return;
+  let [x, y] = [parent.x, parent.y];
+  let [right, bottom] = [parent.x + parent.width, parent.y + parent.height];
+  // A carried arrow has no box: only boxes count.
+  const boxes = ids.map((id) => boxOf(state.byId.get(id)!)).filter((b): b is Box => b !== null);
+  for (const box of boxes) {
+    x = Math.min(x, box.x - HOLD_PAD);
+    y = Math.min(y, box.y - HOLD_PAD);
+    right = Math.max(right, box.x + box.width + HOLD_PAD);
+    bottom = Math.max(bottom, box.y + box.height + HOLD_PAD);
+  }
+  if (
+    x === parent.x &&
+    y === parent.y &&
+    right === parent.x + parent.width &&
+    bottom === parent.y + parent.height
+  )
+    return;
+  const next = { x, y, width: Math.round(right - x), height: Math.round(bottom - y) };
+  growContainer(state, parent, next, ids[0]!, operation, new Set([...settled, ...ids]));
 }

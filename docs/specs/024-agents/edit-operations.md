@@ -111,8 +111,10 @@ The layout an agent did not ask to change stays put:
   that shape on the tab wear and at least their median size (grown only for a longer label), so a step added to a
   drawn flow is not a small box wrapping its label mid-word. Siblings shorter than the palette's box of their shape
   wear the template look, and the label is measured as that look measures, from their size: a short label takes
-  their size exactly, never the palette's taller square. On a tab with no box of that shape, it takes the
-  template's proportions graph input draws ([MCP server](../015-api/mcp-server.md) §4.7, 180×64 for a square).
+  their size exactly, never the palette's taller square, and keeps their height while its label holds one line. On
+  a tab with no box of that shape, it takes the template's proportions graph input draws
+  ([MCP server](../015-api/mcp-server.md) §4.7, 180×64 for a square). Either way the label is measured at the box's
+  own text size, and a label written over several lines line by line.
 - **A new box placed beside a member joins its frame or lane**: `add` with a placement against an element inside a
   container grows that container (`widened`, `taller`) to hold the new box with its padding, as an insertion does,
   instead of the box landing just outside it. The box lands beside its neighbour, making way only for what the

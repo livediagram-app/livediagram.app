@@ -42,8 +42,15 @@ export function facing(a: BoxedElement, b: BoxedElement) {
 }
 
 // The route fields an arrow drops when its ends move (EO31).
+export const ROUTE_KEYS = [
+  'curveOffset',
+  'curvePoints',
+  'elbowOffset',
+] as const satisfies readonly (keyof ArrowElement)[];
+
 export function withoutRoute(arrow: ArrowElement): ArrowElement {
-  const { curveOffset: _c, curvePoints: _p, elbowOffset: _e, ...rest } = arrow;
+  const rest = { ...arrow };
+  for (const key of ROUTE_KEYS) delete rest[key];
   return rest;
 }
 
