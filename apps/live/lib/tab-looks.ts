@@ -8,6 +8,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
+import { SEASONAL_LOOKS, type Season } from '@/lib/seasonal-looks';
 
 export type TabLookId =
   | 'everyday'
@@ -33,6 +34,13 @@ export type TabLookId =
   | 'northern-lights'
   | 'coffeehouse'
   | 'schematic'
+  // Seasonal looks (lib/seasonal-looks.ts): shown only behind the carousel's Seasonal toggle.
+  | 'countdown'
+  | 'egg-hunt'
+  | 'haunted'
+  | 'christmas-morning'
+  | 'winter-wonderland'
+  | 'fireside'
   // The Mashup card's random look (lib/look-mashup.ts): never in TAB_LOOKS, so never an activeLookId answer.
   | 'mashup';
 
@@ -49,6 +57,8 @@ export type TabLook = {
   pattern: BackgroundPattern;
   /** The pattern's strength, the tab's existing backgroundOpacity (1 when omitted): a busy pattern drawn softly. */
   patternOpacity?: number;
+  /** A seasonal look's season (lib/seasonal-looks.ts); unset on the year-round looks. */
+  season?: Season;
 };
 
 /** The looks, in the order the dialog shows them after the Mashup card: with it, four carousel pages of six.
@@ -280,8 +290,11 @@ export const TAB_LOOKS: readonly TabLook[] = [
 /** How many looks one carousel page holds. */
 export const LOOKS_PER_PAGE = 6;
 
+// Every named look, year-round and seasonal: a tab wearing a seasonal look reads as that look too.
+const ALL_LOOKS: readonly TabLook[] = [...TAB_LOOKS, ...SEASONAL_LOOKS];
+
 export function tabLookById(id: string): TabLook | undefined {
-  return TAB_LOOKS.find((l) => l.id === id);
+  return ALL_LOOKS.find((l) => l.id === id);
 }
 
 /** The tab with a look applied: the theme exactly as picking it does, then the finish, font and pattern. */
@@ -317,5 +330,5 @@ export function lookMatches(tab: LookSettings, look: TabLook): boolean {
 
 /** The look the tab's settings match, or undefined when it has its own mix. */
 export function activeLookId(tab: LookSettings): TabLookId | undefined {
-  return TAB_LOOKS.find((l) => lookMatches(tab, l))?.id;
+  return ALL_LOOKS.find((l) => lookMatches(tab, l))?.id;
 }

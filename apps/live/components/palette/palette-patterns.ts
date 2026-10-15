@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { type BackgroundPattern } from '@livediagram/document';
+import { type BackgroundPattern, type SeasonalBackgroundPattern } from '@livediagram/document';
 import {
   BackgroundAuroraIcon,
   BackgroundBlankIcon,
@@ -181,3 +181,23 @@ export const PATTERNS: PatternEntry[] = [
     icon: BackgroundRibbonsIcon,
   },
 ];
+
+// The seasonal patterns' names (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks"). They are not in
+// PATTERNS because no picker lists them; a tab wears one only through a seasonal look, and its name still shows on
+// the Canvas row and the look's card.
+const SEASONAL_PATTERN_LABELS: Record<SeasonalBackgroundPattern, string> = {
+  sparkles: 'Sparkles',
+  eggs: 'Eggs',
+  cobwebs: 'Cobwebs',
+  snowflakes: 'Snowflakes',
+  'candy-stripes': 'Candy Stripes',
+};
+
+/** A pattern's display name, the seasonal ones included. */
+export function patternLabel(id: BackgroundPattern): string {
+  return (
+    PATTERNS.find((p) => p.id === id)?.label ??
+    (SEASONAL_PATTERN_LABELS as Record<string, string>)[id] ??
+    id
+  );
+}

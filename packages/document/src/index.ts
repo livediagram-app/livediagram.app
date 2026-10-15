@@ -203,6 +203,13 @@ export type BackgroundPattern =
   | 'hexagonal'
   | 'engineering'
   | 'checkerboard'
+  // Seasonal patterns (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks"): static motif tiles worn
+  // by the seasonal looks only, never listed in a pattern picker.
+  | 'sparkles'
+  | 'eggs'
+  | 'cobwebs'
+  | 'snowflakes'
+  | 'candy-stripes'
   // Animated patterns (docs/specs/008-canvas/canvas-and-palette.md): soft ambient motion rendered as an
   // overlay layer rather than a CSS background image. They theme off the
   // pattern colour like the static ones. Kept last so the static catalogue
@@ -226,6 +233,21 @@ export const ANIMATED_BACKGROUND_PATTERNS = [
 ] as const;
 
 export type AnimatedBackgroundPattern = (typeof ANIMATED_BACKGROUND_PATTERNS)[number];
+
+// The seasonal members of BackgroundPattern: static tiles the seasonal looks wear, kept out of the pattern pickers.
+export const SEASONAL_BACKGROUND_PATTERNS = [
+  'sparkles',
+  'eggs',
+  'cobwebs',
+  'snowflakes',
+  'candy-stripes',
+] as const satisfies readonly BackgroundPattern[];
+
+export type SeasonalBackgroundPattern = (typeof SEASONAL_BACKGROUND_PATTERNS)[number];
+
+export function isSeasonalPattern(pattern: BackgroundPattern): boolean {
+  return (SEASONAL_BACKGROUND_PATTERNS as readonly string[]).includes(pattern);
+}
 
 export function isAnimatedPattern(
   pattern: BackgroundPattern,

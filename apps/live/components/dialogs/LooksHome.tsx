@@ -17,7 +17,7 @@ import { Glyph, lucideGlyph } from '@livediagram/ui';
 import { lucideChevronRight } from '@livediagram/icons/lucide';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
-import { PATTERNS } from '@/components/palette/palette-patterns';
+import { patternLabel as labelOfPattern } from '@/components/palette/palette-patterns';
 import { getTheme } from '@/lib/themes';
 import { type LookSettings, type TabLook, type TabLookId } from '@/lib/tab-looks';
 import { LooksCarousel } from './LooksCarousel';
@@ -66,7 +66,7 @@ export function LooksHome({
 }) {
   const theme = getTheme(themeId);
   const fontLabel = FONTS.find((f) => f.id === font)?.label ?? 'Editor default';
-  const patternLabel = PATTERNS.find((p) => p.id === pattern)?.label ?? 'Grid';
+  const patternLabel = labelOfPattern(pattern);
   return (
     <div className="flex flex-col gap-5">
       <LooksCarousel
