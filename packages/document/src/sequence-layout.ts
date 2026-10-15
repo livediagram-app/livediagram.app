@@ -83,13 +83,16 @@ export function layoutSequence(
   };
   const px = (id: string) => index.get(id)! * pitch + headW / 2;
   // A note's left edge: centred over its participants, or beside the first. Over one participant with a bar open
-  // (`depth` deep), it sits beside the bars as a right-of note does: centred, it hid the bar it was about.
+  // (`depth` deep), it sits beside the bars as a right-of note does (left of the last participant, the side with room):
+  // centred, it hid the bar it was about.
   const noteX = (note: Extract<SequenceItem, { kind: 'note' }>, width: number, depth = 0) => {
     const xs = note.who.map(px);
     if (note.placement === 'over' && (note.who.length > 1 || depth === 0))
       return (Math.min(...xs) + Math.max(...xs)) / 2 - width / 2;
     const bars = (depth * BAR) / 2;
-    return note.placement === 'left' ? xs[0]! - bars - 24 - width : xs[0]! + bars + 24;
+    const last = index.get(note.who[0]!) === participants.length - 1;
+    const left = note.placement === 'left' || (note.placement === 'over' && last);
+    return left ? xs[0]! - bars - 24 - width : xs[0]! + bars + 24;
   };
   const out: Element[] = [];
   const headTop = 0;

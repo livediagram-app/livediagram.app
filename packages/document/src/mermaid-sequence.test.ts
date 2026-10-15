@@ -335,6 +335,20 @@ describe('late activations and notes', () => {
     expect(idle!.x + idle!.width / 2).toBeCloseTo(c.x + c.width / 2, 0);
   });
 
+  it('sets a note over the last, active participant on the left of its bar, where there is room', () => {
+    const els = lay(`sequenceDiagram
+  participant A
+  participant B
+  A->>+B: Start
+  Note over B: Checks the request
+  B-->>-A: Done`);
+    const bar = els.find((e) => e.type === 'shape' && (e as { width: number }).width === 14) as {
+      x: number;
+    };
+    const note = els.find((e) => e.type === 'sticky') as Element & { x: number; width: number };
+    expect(note.x + note.width).toBeLessThan(bar.x);
+  });
+
   it('sizes a one-line note to its text and centres it', () => {
     const els = lay(`sequenceDiagram
   participant A
