@@ -15,9 +15,12 @@ on:
 permissions:
   contents: read
 
+# A pull request's newer push replaces its older run. On main every commit runs to the end, in a
+# group of its own: a shared group keeps only one pending run, so a burst of merges would still drop
+# the middle ones (docs/specs/016-platform/deployment.md "Runs on main are never cancelled").
 concurrency:
-  group: codeql-${{ github.ref }}
-  cancel-in-progress: true
+  group: codeql-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   analyze:

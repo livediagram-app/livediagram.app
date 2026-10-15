@@ -14,9 +14,12 @@ on:
 permissions:
   contents: read
 
+# A pull request's newer push replaces its older run. On main every commit runs to the end, in a
+# group of its own: a shared group keeps only one pending run, so a burst of merges would still drop
+# the middle ones (docs/specs/016-platform/deployment.md "Runs on main are never cancelled").
 concurrency:
-  group: e2e-${{ github.ref }}
-  cancel-in-progress: true
+  group: e2e-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # These builds exist to be tested, and CI's required Checks job already type-checks every app, so
 # `next build` skips its own type check here (@livediagram/next-config). Deploys keep it.
