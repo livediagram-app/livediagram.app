@@ -174,7 +174,7 @@ export const TELEMETRY_CATEGORIES = [
   'Sheet',
   // Forms (docs/specs/030-forms/forms.md "Telemetry"): a form started (its starter), a question added (its type),
   // published ('Link'), opened or closed, and a response sent ('Response', or 'Dropped' for the hidden field, written
-  // server-side) or reported (its reason). Never a form's words.
+  // server-side; 'Preview' for a builder Preview's card) or reported (its reason). Never a form's words.
   'Form',
   // Community (docs/specs/025-community/community.md): publishing, Edit Listing and removal from the editor
   // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters in

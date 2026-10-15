@@ -7,6 +7,7 @@ import {
   type FormReportReason,
   type PublicFormResponse,
 } from '@livediagram/api-schema';
+import { formLook } from '@livediagram/document';
 import {
   FORM_CODE_PATTERN,
   closedMessageOf,
@@ -19,7 +20,7 @@ import { clientIp } from '../client-ip';
 import { communityNetwork } from '../community-network';
 import { addFormReport, countSuspendedFormLinks, suspendFormLink } from '../db';
 import { notifyFormSuspended } from '../email/notifications';
-import { boardsOnTab, formBackdrop } from '../forms/form-tab';
+import { boardsOnTab } from '../forms/form-tab';
 import { reportServerEvent } from '../server-telemetry';
 import { openFormLink, respond } from '../forms/respond';
 import { json, methodNotAllowed, notFound } from '../responses';
@@ -42,7 +43,7 @@ async function read(ctx: RouteContext, code: string): Promise<Response> {
   const opened = await openFormLink(ctx, code);
   if (!opened) return formNotFound();
   const { link, doc, form, tab } = opened;
-  const backdrop = formBackdrop(tab);
+  const look = formLook(tab, form);
   let closed = closedReason(form, {
     open: link.open === 1,
     responses: link.responses,
@@ -61,10 +62,9 @@ async function read(ctx: RouteContext, code: string): Promise<Response> {
         state: 'closed',
         heading: form.heading,
         message: closedMessageOf(form),
-        ...(form.accent ? { accent: form.accent } : {}),
-        backdrop,
+        look,
       }
-    : { state: 'open', form: publicForm(form), backdrop };
+    : { state: 'open', form: publicForm(form), look };
   // Never cached: a form edited, closed or deleted shows as it is now.
   return json(body, { headers: { 'Cache-Control': 'no-store' } });
 }

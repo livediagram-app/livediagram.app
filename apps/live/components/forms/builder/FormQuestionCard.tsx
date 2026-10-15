@@ -136,7 +136,7 @@ export function FormQuestionCard({
           change((f) => moveQuestion(f, q.id, e.key === 'ArrowUp' ? -1 : 1));
         }
       }}
-      className={`relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md ring-1 ring-black/[0.02] dark:border-slate-700 dark:bg-slate-900 ${dragging ? 'opacity-40' : ''}`}
+      className={`form-box form-ink relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md ring-1 ring-black/[0.02] dark:border-slate-700 dark:bg-slate-900 ${dragging ? 'opacity-40' : ''}`}
     >
       <span aria-hidden className="absolute inset-y-0 left-0 w-1.5 bg-[var(--form-accent)]" />
       <button

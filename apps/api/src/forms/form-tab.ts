@@ -1,9 +1,8 @@
 // A Form tab as the api reads it (docs/specs/030-forms/blueprints/forms.md §11): its form, the boards its destination
 // names, and the backdrop its form page draws on.
-import { getBuiltInTheme, tabKindOf } from '@livediagram/document';
+import { tabKindOf } from '@livediagram/document';
 import { readForm, type FormDefinition } from '@livediagram/forms';
 import { normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
-import type { FormBackdrop } from '@livediagram/api-schema';
 import { getTab } from '../db';
 import type { Env, TabDTO } from '../types';
 
@@ -36,12 +35,4 @@ export async function boardsOnTab(
     if (setup) boards.push(setup);
   }
   return boards;
-}
-
-// The tab theme's backdrop, light and dark (a custom theme draws the default's, as the spec says).
-export function formBackdrop(tab: Pick<TabDTO, 'theme'>): FormBackdrop {
-  return {
-    light: getBuiltInTheme(tab.theme, 'light').backgroundColor,
-    dark: getBuiltInTheme(tab.theme, 'dark').backgroundColor,
-  };
 }

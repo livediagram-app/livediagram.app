@@ -11,7 +11,6 @@ import type { SubmitOutcome } from './useFormFill';
 const FORM: PublicForm = {
   heading: 'Event RSVP',
   description: 'See https://example.com for details',
-  accent: '#7c3aed',
   confirmation: 'See you there!',
   sections: [
     {

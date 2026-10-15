@@ -148,6 +148,18 @@ describe('responseCard', () => {
     expect(card.fields['title']).toBe('RSVP #3');
     expect(card.fields).not.toHaveProperty('status');
   });
+
+  it('titles a Preview’s card "Preview: …" and never marks it as a response', () => {
+    const f = form([Q('n', 'short', { goesTo: { to: 'title' } }), Q('a', 'paragraph')]);
+    const named = responseCard(f, 't', answers({ n: 'Ada', a: 'Hi' }), type, 'preview');
+    expect(named.fields['title']).toBe('Preview: Ada');
+    expect(named.fields['status']).toBe('new~1');
+    expect(named.fields['description']).toBe('A\nHi');
+    expect(named.fields).not.toHaveProperty(FROM_FORM_FIELD);
+    expect(responseCard(f, 't', answers({}), type, 'preview').fields['title']).toBe(
+      'Preview: RSVP',
+    );
+  });
 });
 
 describe('helpers', () => {

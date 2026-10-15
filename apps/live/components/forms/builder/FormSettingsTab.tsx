@@ -136,7 +136,7 @@ export function FormSettingsTab({ link }: { link: FormLinkState }) {
           onChange={(accent) => set({ accent })}
         />
         <p className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">
-          Its buttons, focus and choices. None is the livediagram blue.
+          Its buttons, focus and choices. None follows the tab’s theme.
         </p>
       </div>
     </div>

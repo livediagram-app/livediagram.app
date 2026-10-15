@@ -95,7 +95,7 @@ export function RatingInput({
               className={
                 style === 'stars'
                   ? 'rounded-md p-0.5 outline-none transition enabled:cursor-pointer enabled:hover:scale-110 focus-visible:ring-2 focus-visible:ring-[var(--rating-accent)] disabled:opacity-60 motion-reduce:transition-none motion-reduce:enabled:hover:scale-100'
-                  : `flex items-center justify-center rounded-lg border font-semibold tabular-nums outline-none transition enabled:cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--rating-accent)] focus-visible:ring-offset-1 disabled:opacity-60 ${
+                  : `form-box flex items-center justify-center rounded-lg border font-semibold tabular-nums outline-none transition enabled:cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--rating-accent)] focus-visible:ring-offset-1 disabled:opacity-60 ${
                       size === 'lg'
                         ? 'h-11 min-w-11 px-2 text-[15px]'
                         : size === 'sm'
@@ -103,8 +103,8 @@ export function RatingInput({
                           : 'h-9 min-w-9 px-1.5 text-[13px]'
                     } ${
                       picked
-                        ? 'border-transparent text-white'
-                        : 'border-slate-300 bg-white text-slate-700 enabled:hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200'
+                        ? 'border-transparent text-[var(--form-on-accent,white)]'
+                        : 'form-ink border-slate-300 bg-white text-slate-700 enabled:hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200'
                     }`
               }
               style={

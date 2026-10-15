@@ -18,7 +18,7 @@ import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { ColourSelect } from '@/components/plan/ColourSwatches';
 import { FormCoverBand } from '../FormCoverBand';
 import { LinkedText } from '../LinkedText';
-import { FORM_BRAND } from '../respond/FormFill';
+import { FORM_ACCENT } from '../respond/FormFill';
 import { DraftText } from './DraftText';
 import { useFormBuilder } from './form-builder-context';
 
@@ -31,11 +31,11 @@ const STYLE_NAMES: Record<CoverStyle, string> = {
 export function FormHeaderCard({ sections }: { sections: number }) {
   const b = useFormBuilder();
   const { form } = b;
-  const accent = form.accent ?? FORM_BRAND;
+  const accent = FORM_ACCENT;
   const [coverAnchor, setCoverAnchor] = useState<HTMLButtonElement | null>(null);
   const [coverOpen, setCoverOpen] = useState(false);
   return (
-    <div className="group/head overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
+    <div className="form-box form-ink group/head overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
       <div className="relative">
         <FormCoverBand cover={form.cover} accent={accent} className={form.cover ? '' : 'h-2.5'} />
         {b.canEdit ? (
@@ -199,8 +199,8 @@ export function SectionHeader({
 }) {
   const b = useFormBuilder();
   return (
-    <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
-      <div className="flex items-center justify-between bg-[var(--form-accent)] px-4 py-1.5 text-[12px] font-semibold text-white">
+    <div className="form-box form-ink mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
+      <div className="flex items-center justify-between bg-[var(--form-accent)] px-4 py-1.5 text-[12px] font-semibold text-[var(--form-on-accent)]">
         <span>
           Section {index + 1} of {count}
         </span>
@@ -210,7 +210,7 @@ export function SectionHeader({
               type="button"
               aria-label={`Delete section ${index + 1}`}
               onClick={() => b.actions.changeForm((f) => deleteSection(f, section.id))}
-              className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-white/80 hover:bg-white/20 hover:text-white"
+              className="flex h-6 w-6 cursor-pointer items-center justify-center rounded opacity-80 hover:bg-white/20 hover:opacity-100"
             >
               <TrashIcon size={14} />
             </button>

@@ -18,3 +18,38 @@
   stroke-dashoffset: 40;
   animation: form-check-draw 120ms 120ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
 }
+
+/*
+ * A form's look (docs/specs/030-forms/forms.md "Look"; components/forms/form-look.ts). The root carries both halves
+ * of its colour, and the viewer's appearance picks one. These rules sit outside Tailwind's layers, so they outrank
+ * its utilities. A finish only reshapes boxes marked `form-box`, and recolours only an outline marked `form-ink`
+ * (a box in its plain state): focus, a pick and an error keep their own colours.
+ */
+[data-form-look] {
+  --form-accent: var(--form-accent-light);
+  --form-on-accent: var(--form-on-accent-light);
+  --form-ink: #334155;
+}
+.dark [data-form-look] {
+  --form-accent: var(--form-accent-dark);
+  --form-on-accent: var(--form-on-accent-dark);
+  --form-ink: #cbd5e1;
+}
+
+/* Professional: square corners and fine lines, as its canvas boxes. */
+[data-form-finish='professional'] .form-box {
+  border-radius: 2px;
+}
+
+/* Sketch: outlines drawn by hand, a marker's weight, in ink, with a pencil shadow; neighbours wobble differently. */
+[data-form-finish='sketch'] .form-box {
+  border-width: 2px;
+  border-radius: 255px 14px 225px 14px / 14px 225px 14px 255px;
+  box-shadow: 2px 3px 0 -1px color-mix(in srgb, var(--form-ink) 35%, transparent);
+}
+[data-form-finish='sketch'] .form-box:nth-child(even) {
+  border-radius: 14px 225px 14px 255px / 225px 14px 255px 14px;
+}
+[data-form-finish='sketch'] .form-ink:not(:focus, :focus-within) {
+  border-color: var(--form-ink);
+}

@@ -56,10 +56,10 @@ export function QuestionView({
     <div
       id={domId}
       tabIndex={-1}
-      className={`rounded-xl border bg-white p-5 outline-none transition-colors max-sm:p-4 dark:bg-slate-900 ${
+      className={`form-box rounded-xl border bg-white p-5 outline-none transition-colors max-sm:p-4 dark:bg-slate-900 ${
         error
           ? 'border-red-400 dark:border-red-500/70'
-          : 'border-slate-200 dark:border-slate-700/80'
+          : 'form-ink border-slate-200 dark:border-slate-700/80'
       }`}
     >
       <Prompt

@@ -146,19 +146,22 @@ and the question has no Other. `effectiveTarget(q, type)` resolves `goesTo` or f
 
 ## 6. Response → card (`card.ts`)
 
-`responseCard(form, tabId, answers, type, number) → { type, fields }`:
+`responseCard(form, tabId, answers, type, number | 'preview') → { type, fields }`:
 
 - `title`: the Title answer as text (blank falls back), else `` `${heading} #${number}` ``, capped at ITEM_TITLE_MAX.
+  For `'preview'`: `PREVIEW_TITLE_PREFIX` (`'Preview: '`) then the Title answer, else the heading.
 - `description`: each unmapped (or broken) answer in form order, `prompt\nanswer`, blocks split by a blank line;
   `descriptionRich` the same runs with the prompts bold. Past ITEM_DESCRIPTION_MAX: the plain text cut with `…`, no
   runs.
 - a mapped field: currency rounded to 2 dp, Long Text from picks one a line, Text from any answer's text, a rating
   capped at the field's scale.
-- `status`: the destination's. `fromForm`: `fromFormValue(tabId, number)`, read by `readFromForm`.
+- `status`: the destination's. `fromForm`: `fromFormValue(tabId, number)`, read by `readFromForm`; never on a
+  preview's card.
 
 ## 7. Starters (`starters.ts`)
 
-`FORM_STARTERS` as the spec's table (`id`, `name`, `line`, `telemetry`, `readyType?`, `accent`, `description?`,
+`FORM_STARTERS` as the spec's table (`id`, `name`, `line`, `telemetry`, `readyType?`, `accent` (its picture and a
+new card type's colour; the form takes none), `description?`,
 `sections` of questions with `to: 'title' | 'description' | StarterField`). `starterBaseType(starter, catalogue,
 newTypeId)`: the document's copy of the ready-made type, else the ready-made one, else a new type (checklist glyph,
 the starter's colour; "Response" for Blank). `buildStarter(starter, type, newId)`: the form, its questions pointing
@@ -174,6 +177,12 @@ responses, now })`: `switched_off | no_destination | closes_at | limit`.
 
 ## 9. Document
 
+- `formLook(tab, form) → FormLook` (`packages/document/src/form-look.ts`, beside the themes: `@livediagram/forms`
+  cannot import the document package, which imports it): `backdrop` and `accent` for each half from
+  `getBuiltInTheme(tab.theme, half)` (a custom or unknown theme draws Default); the accent is `form.accent` in both
+  halves, else the shared `themeAccent(half)`, else on Default (no stroke, no palette) the brand `#0284c7` /
+  `#38bdf8`; `onAccent` is `deriveTextColorForBg(accent)` per half; `finish` is `resolveFinish(undefined,
+tab.finish)`; `font` the tab font when `resolveFontStack` knows it.
 - `TabKind` gains `'form'`; `PLAN_TAB_KINDS`, `isPlanTabKind`, `tabKindOf` take it. `Tab.form?: FormDefinition`,
   stored as tab JSON; readers call `readForm`.
 - A rename (`useTabActions`) and a duplicate set `form.heading` with the name (`apps/live/lib/form-tab.ts`).
@@ -219,7 +228,7 @@ link), `setFormLinkOpen`, `deleteFormLink` (live only), `deleteFormLinksForTab`,
 | PUT    | `.../form-link`                            | edit   | `{ open }`                                                                                                                                      |
 | DELETE | `.../form-link`                            | edit   | Deletes the live link                                                                                                                           |
 | POST   | `.../form-seen`                            | read   | Marks every response so far seen for the caller                                                                                                 |
-| GET    | `/api/forms/:code`                         | public | `PublicFormResponse`, `Cache-Control: no-store`; 404 `form_not_found` for every miss                                                            |
+| GET    | `/api/forms/:code`                         | public | `PublicFormResponse` (open: `form`, `look`; closed: `heading`, `message`, `look`), `no-store`; 404 `form_not_found` for every miss              |
 | POST   | `/api/forms/:code/responses`               | public | 201 `{ number }`; 400 `invalid_answers`; 409 `form_closed`; 413 `form_full`; 429 `form_busy`                                                    |
 | POST   | `/api/forms/:code/reports`                 | public | 201; 400 `invalid_report`; suspends at three networks and emails the owner                                                                      |
 
@@ -253,17 +262,19 @@ link), `setFormLinkOpen`, `deleteFormLink` (live only), `deleteFormLinksForTab`,
 
 ## 12. Live: the Form tab
 
-| File                                                        | Contract                                                                                                                                                                                                                                                      |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hooks/forms/form-edits.ts`                                 | Pure edits: add, duplicate (no mapping), delete, move, place (drag), update, set type, set target, options, sections, patch                                                                                                                                   |
-| `hooks/forms/form-start.ts`                                 | `planFormStart`, `responsesBoardSetup`, `responsesBoardTab`, `boardsOf`, `uniqueTypeLabel`, `withBoardTaking`                                                                                                                                                 |
-| `hooks/forms/useFormActions.ts`                             | `startForm`, `changeForm`, `renameForm`, `addFieldFor`, `syncFieldOptions`, `newResponsesBoard`, `newCardType`; a locked tab refuses each                                                                                                                     |
-| `hooks/forms/useFormLink.ts`                                | Reads (marking seen) on open, polls, publishes, opens/closes, deletes; `status` `offline` without a server                                                                                                                                                    |
-| `lib/api/forms.ts`, `lib/api/forms-public.ts`               | The owner's client (identity headers), the page's (plain fetch)                                                                                                                                                                                               |
-| `components/forms/FormPage.tsx`                             | The cover over the canvas, the top-row Preview / Form Panel / Share Form, the status bar, builder or Preview                                                                                                                                                  |
-| `components/forms/builder/*`                                | `FormBuilderColumn`, `FormHeaderCard` (+ `SectionHeader`), `FormQuestionCard`, `OptionsEditor`, `FormAddBar`, `QuestionTypeMenu`, `DraftText`, `useQuestionDrag`, `FormSidePanel`, `AnswerGoesTo`, `QuestionSettings`, `DestinationPicker`, `FormSettingsTab` |
-| `components/forms/ShareFormDialog.tsx`, `FormStatusBar.tsx` | As the spec                                                                                                                                                                                                                                                   |
-| Shared with the page                                        | `QuestionView`, `QuestionControl`, `RatingInput`, `FormCoverBand`, `LinkedText`                                                                                                                                                                               |
+| File                                                        | Contract                                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hooks/forms/form-edits.ts`                                 | Pure edits: add, duplicate (no mapping), delete, move, place (drag), update, set type, set target, options, sections, patch                                                                                                                                      |
+| `hooks/forms/form-start.ts`                                 | `planFormStart`, `responsesBoardSetup`, `responsesBoardTab`, `boardsOf`, `uniqueTypeLabel`, `withBoardTaking`                                                                                                                                                    |
+| `hooks/forms/useFormActions.ts`                             | `startForm`, `changeForm`, `renameForm`, `addFieldFor`, `syncFieldOptions`, `newResponsesBoard`, `newCardType`; a locked tab refuses each                                                                                                                        |
+| `hooks/forms/useFormLink.ts`                                | Reads (marking seen) on open, polls, publishes, opens/closes, deletes; `status` `offline` without a server                                                                                                                                                       |
+| `lib/api/forms.ts`, `lib/api/forms-public.ts`               | The owner's client (identity headers), the page's (plain fetch)                                                                                                                                                                                                  |
+| `components/forms/FormPage.tsx`                             | The cover over the canvas, the top-row Preview / Form Panel / Share Form, the status bar, builder or Preview; the look (`formLookProps(formLook(tab, form))`) on the form column only                                                                            |
+| `hooks/forms/form-preview.ts`                               | `sendPreview`: `checkResponse` (invalid), destination problem / type / `addItems` missing (`PREVIEW_NO_DESTINATION`), `responseCard(…, 'preview')` through `plan.addItems` (`PREVIEW_FAILED`), `Form·Sent·Preview`; only an Editor's Preview calls it            |
+| `components/forms/form-look.ts`, `app/forms.css`            | `formLookProps(look)`: `data-form-look`, `data-form-finish`, `--form-accent-light/dark`, `--form-on-accent-light/dark`, the font stack. `forms.css` (unlayered) picks the half under `.dark`; `form-box` boxes are reshaped by finish, `form-ink` outlines inked |
+| `components/forms/builder/*`                                | `FormBuilderColumn`, `FormHeaderCard` (+ `SectionHeader`), `FormQuestionCard`, `OptionsEditor`, `FormAddBar`, `QuestionTypeMenu`, `DraftText`, `useQuestionDrag`, `FormSidePanel`, `AnswerGoesTo`, `QuestionSettings`, `DestinationPicker`, `FormSettingsTab`    |
+| `components/forms/ShareFormDialog.tsx`, `FormStatusBar.tsx` | As the spec                                                                                                                                                                                                                                                      |
+| Shared with the page                                        | `QuestionView`, `QuestionControl`, `RatingInput`, `FormCoverBand`, `LinkedText`                                                                                                                                                                                  |
 
 `EditorView` mounts `FormPage` (lazy) for a Form tab with a form, Start Planning otherwise. `isCanvasCovered`,
 `CanvasChrome`, `plan-tab-list-store` and the mode lock name the kind.
@@ -272,34 +283,38 @@ link), `setFormLinkOpen`, `deleteFormLink` (live only), `deleteFormLinksForTab`,
 
 `app/form/[code]/page.tsx` (one placeholder built; `index: false`); the live worker rewrites every `/form/…` to
 `/form/placeholder`, with the same security headers (not frameable). `FormRespondPage` reads the code from the path,
-loads `GET /api/forms/:code`, and draws loading, not found, error, closed or `FormFill`. `FormFill` / `useFormFill`:
+loads `GET /api/forms/:code`, and draws loading, not found, error, closed or `FormFill`, its `<main>` carrying the
+look (and the backdrop's `--bd-light` / `--bd-dark`); the Report panel stays unthemed. `FormFill` / `useFormFill`:
 sections, checks, the summary, Submit, the confirmation; drafts in session storage `livediagram:form:<code>`.
 `FormFooter`: the made-with line and Report This Form (browser id `livediagram:form-browser`). The page imports no
 editor modules: `forms-public.ts`, the shared controls and `@livediagram/ui`.
 
 ## 14. Tests (traceability)
 
-| Spec rule                                                                                         | Test                                                                     |
-| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| readForm sanitises every field                                                                    | `packages/forms/src/read.test.ts`                                        |
-| Every answer error per type; copy for each                                                        | `answers.test.ts`                                                        |
-| Mapping table, fitting fields, fallback                                                           | `mapping.test.ts`                                                        |
-| Title, Description, field values, numbering, `fromForm`                                           | `card.test.ts`                                                           |
-| Starters valid, mappings resolve, fields reused                                                   | `starters.test.ts`                                                       |
-| Destination problems; public projection; closed reasons                                           | `destination.test.ts`, `public.test.ts`                                  |
-| The two field kinds: catalogue, card text, CSV, agents                                            | `packages/items/src/form-field-kinds.test.ts`                            |
-| Form tab kind always Plan                                                                         | `packages/document/src/dashboard.test.ts`                                |
-| `/form/<code>` page views drop the code                                                           | `packages/api-schema/src/page-views.test.ts`                             |
-| Publish by role, the code hidden, close, delete, tab delete                                       | `apps/api/src/routes/forms.test.ts`                                      |
-| Public read, every miss alike, responses, refusals, cap, full, hidden field, reports, suspensions | `apps/api/src/routes/forms.test.ts`                                      |
-| Code generation, the email throttle, the Inbox read                                               | `apps/api/src/db/forms.test.ts`                                          |
-| The response and suspension emails                                                                | `apps/api/src/email/notifications.test.ts`                               |
-| `form_reads` owner-keyed                                                                          | `apps/api/src/db/account-owner-columns.test.ts`                          |
-| Builder edits                                                                                     | `apps/live/hooks/forms/form-edits.test.ts`                               |
-| Starting a form                                                                                   | `apps/live/hooks/forms/form-start.test.ts`                               |
-| Builder by role, selection, options, sections, rename                                             | `apps/live/components/forms/builder/FormBuilderColumn.test.tsx`          |
-| The form page flow                                                                                | `components/forms/respond/FormFill.test.tsx`, `FormRespondPage.test.tsx` |
-| New on a response's card                                                                          | `components/forms/fresh-responses.test.ts`                               |
-| Start Planning's Forms                                                                            | `components/plan/PlanBoardPicker.test.tsx`                               |
-| The Inbox section                                                                                 | `components/panels/ActivityPane.test.tsx`                                |
-| The worker rewrite                                                                                | `apps/live/src/worker.test.ts`, `lib/form-path.test.ts`                  |
+| Spec rule                                                                                          | Test                                                                     |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| readForm sanitises every field                                                                     | `packages/forms/src/read.test.ts`                                        |
+| Every answer error per type; copy for each                                                         | `answers.test.ts`                                                        |
+| Mapping table, fitting fields, fallback                                                            | `mapping.test.ts`                                                        |
+| Title, Description, field values, numbering, `fromForm`, a preview's card                          | `card.test.ts`                                                           |
+| The look: theme accent per half, a chosen colour, Default's brand, finish, font, custom as Default | `packages/document/src/form-look.test.ts`                                |
+| Preview makes the card, refuses as the api does, needs a destination                               | `apps/live/hooks/forms/form-preview.test.ts`                             |
+| The form page wears the look                                                                       | `apps/live/components/forms/respond/FormRespondPage.test.tsx`            |
+| Starters valid, mappings resolve, fields reused                                                    | `starters.test.ts`                                                       |
+| Destination problems; public projection; closed reasons                                            | `destination.test.ts`, `public.test.ts`                                  |
+| The two field kinds: catalogue, card text, CSV, agents                                             | `packages/items/src/form-field-kinds.test.ts`                            |
+| Form tab kind always Plan                                                                          | `packages/document/src/dashboard.test.ts`                                |
+| `/form/<code>` page views drop the code                                                            | `packages/api-schema/src/page-views.test.ts`                             |
+| Publish by role, the code hidden, close, delete, tab delete                                        | `apps/api/src/routes/forms.test.ts`                                      |
+| Public read, every miss alike, responses, refusals, cap, full, hidden field, reports, suspensions  | `apps/api/src/routes/forms.test.ts`                                      |
+| Code generation, the email throttle, the Inbox read                                                | `apps/api/src/db/forms.test.ts`                                          |
+| The response and suspension emails                                                                 | `apps/api/src/email/notifications.test.ts`                               |
+| `form_reads` owner-keyed                                                                           | `apps/api/src/db/account-owner-columns.test.ts`                          |
+| Builder edits                                                                                      | `apps/live/hooks/forms/form-edits.test.ts`                               |
+| Starting a form                                                                                    | `apps/live/hooks/forms/form-start.test.ts`                               |
+| Builder by role, selection, options, sections, rename                                              | `apps/live/components/forms/builder/FormBuilderColumn.test.tsx`          |
+| The form page flow                                                                                 | `components/forms/respond/FormFill.test.tsx`, `FormRespondPage.test.tsx` |
+| New on a response's card                                                                           | `components/forms/fresh-responses.test.ts`                               |
+| Start Planning's Forms                                                                             | `components/plan/PlanBoardPicker.test.tsx`                               |
+| The Inbox section                                                                                  | `components/panels/ActivityPane.test.tsx`                                |
+| The worker rewrite                                                                                 | `apps/live/src/worker.test.ts`, `lib/form-path.test.ts`                  |

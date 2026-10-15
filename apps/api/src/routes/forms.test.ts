@@ -227,7 +227,11 @@ describe('the public form (docs/specs/030-forms/forms.md "Filling in a form")', 
     expect(res.status).toBe(200);
     expect(res.body.state).toBe('open');
     expect(JSON.stringify(res.body)).not.toMatch(/goesTo|destination|f-severity/);
-    expect(res.body.backdrop).toEqual({ light: expect.any(String), dark: expect.any(String) });
+    expect(res.body.look).toMatchObject({
+      backdrop: { light: expect.any(String), dark: expect.any(String) },
+      accent: { light: expect.any(String), dark: expect.any(String) },
+      finish: 'flexible',
+    });
   });
 
   it('answers every miss with the same 404', async () => {

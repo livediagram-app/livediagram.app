@@ -1076,8 +1076,8 @@ export const FORM_RESPONSES = chart(
   'Form',
   'Sent',
   'Form Responses',
-  "A response sent through a form link and made into a card (Response), or dropped because it filled the form's hidden field (Dropped). Counted by the api.",
-  { types: ['Response', 'Dropped'] },
+  "A response sent through a form link and made into a card (Response), or dropped because it filled the form's hidden field (Dropped), counted by the api; or a card made by trying the form in the builder's Preview (Preview).",
+  { types: ['Response', 'Dropped', 'Preview'] },
 );
 
 export const FORM_REPORTS = chart(

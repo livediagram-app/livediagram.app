@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { PublicFormResponse } from '@livediagram/api-schema';
+import { formLook } from '@livediagram/document';
 import { FormRespondPage } from './FormRespondPage';
 
 // A form link's page (docs/specs/030-forms/forms.md "Filling in a form"): its states, a response sent and each
@@ -10,7 +11,7 @@ import { FormRespondPage } from './FormRespondPage';
 const CODE = 'AbCdEfGhIjKlMnOpQrStU1';
 const OPEN: PublicFormResponse = {
   state: 'open',
-  backdrop: { light: '#f8fafc', dark: '#0f172a' },
+  look: formLook({ theme: 'forest', finish: 'sketch', font: 'caveat' }, {}),
   form: {
     heading: 'Feedback',
     confirmation: 'Thank you!',
@@ -61,6 +62,11 @@ describe('the form page', () => {
     await screen.findByRole('heading', { name: 'Feedback' });
     // The title is set in an effect, which can flush after the heading paints when the machine is busy.
     await waitFor(() => expect(document.title).toBe('Feedback | livediagram'));
+    // The tab's look dresses the page: its finish, font and colour.
+    const main = document.querySelector('main')!;
+    expect(main.getAttribute('data-form-finish')).toBe('sketch');
+    expect(main.style.fontFamily).toContain('Caveat');
+    expect(main.style.getPropertyValue('--form-accent-light')).toBe(OPEN.look.accent.light);
     answer();
     await submit();
     expect(await screen.findByText('Thank you!')).toBeTruthy();
@@ -83,7 +89,7 @@ describe('the form page', () => {
         state: 'closed',
         heading: 'Feedback',
         message: 'Back next year.',
-        backdrop: OPEN.backdrop,
+        look: OPEN.look,
       },
     });
     render(<FormRespondPage />);

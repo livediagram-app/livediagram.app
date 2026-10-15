@@ -125,15 +125,46 @@ A panel 340 px wide at the right on a screen 1,100 px wide or more; narrower, a 
 - **Settings**: **Accepting Responses** (the link's switch; dimmed until published), **Close On** (a date and time,
   with Clear; a time already past says the form is closed), **Response Limit** (1 to 2,000), **Confirmation Message**
   (up to 500 characters, default "Thanks, your response has been recorded."), **Closed Message** (up to 500
-  characters, default "This form is no longer accepting responses.") and the **Form Colour** (none is the brand
-  colour). The backdrop is the tab theme's, changed from the tab menu as ever.
+  characters, default "This form is no longer accepting responses.") and the **Form Colour** (None, the default,
+  follows the tab theme; see [Look](#look)). The rest of the look is the tab's, changed from **Style** as ever.
+
+### Look
+
+A form wears its tab's look, in the builder and on the form link's page alike, so a form on a hand-drawn Doodle tab
+reads hand-drawn and one on a Boardroom tab reads crisp. The form card stays white (light) or the dark card colour,
+so text contrast never depends on the theme.
+
+- **Colour**: the form colour (`accent`) when one is chosen, else the tab theme's own colour for each half (the
+  theme's line colour; on Default, the brand blue of each half). It paints the cover, the accent bars, focus rings,
+  selected choices, the progress bar, links and the filled buttons, whose labels take whichever of light or dark
+  text reads on it. Starters choose no form colour, so a new form follows its tab.
+- **Font**: the tab font, on everything in the form (a tab with none keeps the app font).
+- **Finish**: **Flexible** draws boxes as they are; **Professional** squares their corners (2 px); **Sketch** draws
+  every box (cards, fields, choices, ratings, buttons) by hand: a wandering outline at a marker's 2 px in ink
+  (slate 700 light, slate 300 dark), neighbours wobbling differently, with a pencil-offset shadow. Focus, a pick and
+  an error keep their own outline colours.
+- **Backdrop**: the theme's canvas colour, its light or dark half following the viewer.
+- A custom theme draws as Default, on the page and in the builder alike: the form link's page cannot read its
+  owner's themes, and the builder shows what respondents will see.
+- The look dresses the form alone: the builder's status bar and Form panel are the editor's and keep its look.
 
 ### Preview
 
 **Preview** in the top row (right, beside **Share Form**) hides every piece of editing chrome and draws the form
-exactly as the form link does, working (sections, validation, the confirmation, which adds "This is a preview:
-nothing was sent."), without saving or sending anything. Escape or **Back to Editing** returns; both start at the
-form's top.
+exactly as the form link does, working: sections, validation and the confirmation. Escape or **Back to Editing**
+returns; both start at the form's top.
+
+**Submit in Preview makes the card**, so the whole road from question to board can be tried before the link goes out:
+the answers are checked as the api checks them, and the card a response would make lands on the destination, in its
+column, with every answer mapped, except that
+
+- its title starts **"Preview: "** (then the Title answer, or the form's heading when no question goes to Title);
+- it is not a response: it takes no response number, counts towards no total, shows no **New** dot and sends no
+  email; it is an ordinary card the Editor made (their name in Created By, one undo step).
+
+The confirmation adds "This was a preview: its card, marked Preview, is on <board>." A destination that cannot take
+a card refuses with "Preview can't add its card until Responses Go To names a board and column." Preview works with
+or without a published link.
 
 ### Question types
 
@@ -250,10 +281,8 @@ number).
 The form link opens a page of its own, outside the editor: no Explorer, no document chrome, no sign-in prompt, and
 no editor code loaded (its own small bundle).
 
-- **Look**: the form's cover, then a card on the Form tab's theme backdrop (its light or dark half, following the
-  respondent's system; a custom theme draws the default backdrop), with the **form colour** (`accent`, chosen
-  under Look, the brand colour by default) on focus rings, selected choices, the progress bar and Submit. The card itself is white (light) or the dark card colour, so text contrast never depends
-  on the theme. A footer: "Made with livediagram" linking to the marketing site, and
+- **Look**: the form in its tab's [look](#look) (colour, font, finish and backdrop, each following the respondent's
+  system). The Report This Form panel keeps livediagram's own look. A footer: "Made with livediagram" linking to the marketing site, and
   **Report This Form** (below).
 - **Sections**: one section at a time, a progress bar across the top ("Section 2 of 3"), **Back** and **Next**; Next
   checks only that section's questions. The last section's button is **Submit**.
@@ -340,7 +369,8 @@ On submit the api, in one write:
 | See the response count and View on Board                 | ✓                                      | ✓           | ✓      |
 | Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 
-A Participant or Viewer sees the form drawn as the form link draws it (working, sending nothing, as Preview), with a
+A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no
+card: only an Editor's Preview makes one), with a
 line over it: "This is a form. Its responses become cards on **Bugs**." A tab-scoped share link to a Form tab shows the
 same. The form link's code is never sent to a Participant or a Viewer; they see the status and the count. A locked
 Form tab reads as a Viewer's does.
@@ -375,6 +405,7 @@ an agent, are later steps.
 | Form     | Shared   | `Link`                                             | Publish Form                                          |
 | Form     | Toggled  | `Open` / `Closed`                                  | Accepting Responses flipped (before the change lands) |
 | Form     | Sent     | `Response` / `Dropped` (hidden field)              | The api accepts or drops a response (server-side)     |
+| Form     | Sent     | `Preview`                                          | An Editor's Preview makes its card                    |
 | Form     | Reported | `Spam` / `Phishing` / `Offensive` / `Other`        | A report is filed (server-side)                       |
 | Activity | Selected | `FormResponses`                                    | A Form Responses row in the Inbox                     |
 | UI       | Toggled  | `NotifyFormResponsesOn` / `NotifyFormResponsesOff` | The email switch in Settings                          |

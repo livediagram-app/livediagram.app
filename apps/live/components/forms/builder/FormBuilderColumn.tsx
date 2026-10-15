@@ -67,7 +67,7 @@ export function FormBuilderColumn({
           ))}
           {section.questions.length === 0 ? (
             <CompactEmptyState
-              className="rounded-xl border border-dashed border-slate-300 bg-white/60 py-6 dark:border-slate-600 dark:bg-slate-900/40"
+              className="form-box rounded-xl border border-dashed border-slate-300 bg-white/60 py-6 dark:border-slate-600 dark:bg-slate-900/40"
               icon={<QuestionIcon aria-hidden />}
               title={
                 s === 0 && b.form.sections.length === 1

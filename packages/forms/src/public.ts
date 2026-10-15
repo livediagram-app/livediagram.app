@@ -11,7 +11,6 @@ export interface PublicSection extends Omit<FormSection, 'questions'> {
 export interface PublicForm {
   heading: string;
   description?: string;
-  accent?: string;
   cover?: FormCover;
   sections: PublicSection[];
   confirmation: string;
@@ -29,7 +28,6 @@ export function publicForm(form: FormDefinition): PublicForm {
     confirmation: form.confirmation ?? DEFAULT_CONFIRMATION,
   };
   if (form.description) out.description = form.description;
-  if (form.accent) out.accent = form.accent;
   if (form.cover) out.cover = { ...form.cover };
   return out;
 }

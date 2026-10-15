@@ -5,7 +5,7 @@
 // edit) sees it exactly as the form link draws it. The top right holds Preview and Share Form; the menu box, its name.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { Tab } from '@livediagram/document';
+import { formLook, type Tab } from '@livediagram/document';
 import { ITEMS_MAX } from '@livediagram/items';
 import {
   destinationProblem,
@@ -24,6 +24,7 @@ import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { FormActions } from '@/hooks/forms/useFormActions';
 import { useFormLink } from '@/hooks/forms/useFormLink';
 import { boardsOf } from '@/hooks/forms/form-start';
+import { sendPreview } from '@/hooks/forms/form-preview';
 import {
   FormBuilderContext,
   type FormBuilderValue,
@@ -33,7 +34,8 @@ import { FormBuilderColumn } from './builder/FormBuilderColumn';
 import { FormSidePanel } from './builder/FormSidePanel';
 import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
-import { FormFill, formAccentStyle } from './respond/FormFill';
+import { FormFill } from './respond/FormFill';
+import { formLookProps } from './form-look';
 
 const EyeIcon = lucideGlyph(lucideEye, 16);
 const ShareIcon = lucideGlyph(lucideShare2, 16);
@@ -81,6 +83,11 @@ export function FormPage({
         sections: [{ id: 's-1', title: '', questions: [] }],
       },
     [tab.form, tab.name],
+  );
+  // The look respondents see: the tab's theme, finish and font, and the form's colour (or the theme's).
+  const look = useMemo(
+    () => formLookProps(formLook(tab, form)),
+    [tab.theme, tab.finish, tab.font, form.accent],
   );
   const [preview, setPreview] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -225,7 +232,6 @@ export function FormPage({
                 <div
                   role="region"
                   aria-label={`${form.heading} form`}
-                  style={formAccentStyle(form.accent)}
                   className="flex h-full min-h-0 gap-4 px-3 pt-3 max-sm:px-2"
                 >
                   <div
@@ -252,7 +258,8 @@ export function FormPage({
                         </p>
                       ) : null}
                     </div>
-                    <div className="mt-3">
+                    {/* The look dresses the form alone: the status bar and the panel are the editor's. */}
+                    <div className="mt-3" {...look}>
                       {building ? (
                         <FormBuilderColumn scrollRef={scrollRef} />
                       ) : (
@@ -262,7 +269,20 @@ export function FormPage({
                             form={shown}
                             draftKey={null}
                             preview
-                            submit={async () => ({ kind: 'sent' })}
+                            {...(canEdit
+                              ? {
+                                  previewNote: `This was a preview: its card, marked Preview, is on ${destTab?.name ?? 'the board'}.`,
+                                  submit: (state) =>
+                                    sendPreview({
+                                      form,
+                                      tabId: tab.id,
+                                      type,
+                                      problem,
+                                      addItems: plan?.addItems,
+                                      state,
+                                    }),
+                                }
+                              : { submit: async () => ({ kind: 'sent' }) })}
                           />
                         </div>
                       )}

@@ -8,7 +8,8 @@ import type { PublicFormResponse } from '@livediagram/api-schema';
 import { formCodeFromPath } from '@/lib/form-path';
 import { loadPublicForm, sendFormResponse } from '@/lib/api/forms-public';
 import { FormCoverBand } from '../FormCoverBand';
-import { FORM_BRAND, FormFill, formAccentStyle } from './FormFill';
+import { formLookProps } from '../form-look';
+import { FORM_ACCENT, FormFill } from './FormFill';
 import type { SubmitOutcome } from './useFormFill';
 import { FormFooter } from './FormFooter';
 
@@ -48,18 +49,22 @@ export function FormRespondPage() {
     if (heading) document.title = `${heading} | livediagram`;
   }, [heading]);
 
-  const backdrop =
-    page.kind === 'ready'
-      ? ({
-          '--bd-light': page.data.backdrop.light,
-          '--bd-dark': page.data.backdrop.dark,
-        } as CSSProperties)
-      : undefined;
+  // The form's look (its tab's theme, finish and font) dresses the whole page, the backdrop included.
+  const look = page.kind === 'ready' ? formLookProps(page.data.look) : null;
   return (
     <main
-      style={backdrop}
+      {...look}
+      style={
+        look
+          ? ({
+              ...look.style,
+              '--bd-light': page.kind === 'ready' ? page.data.look.backdrop.light : undefined,
+              '--bd-dark': page.kind === 'ready' ? page.data.look.backdrop.dark : undefined,
+            } as CSSProperties)
+          : undefined
+      }
       className={`min-h-dvh px-4 pb-16 pt-6 sm:pt-10 ${
-        backdrop ? 'bg-[var(--bd-light)] dark:bg-[var(--bd-dark)]' : 'bg-slate-50 dark:bg-slate-950'
+        look ? 'bg-[var(--bd-light)] dark:bg-[var(--bd-dark)]' : 'bg-slate-50 dark:bg-slate-950'
       }`}
     >
       <div className="mx-auto w-full max-w-[640px]">
@@ -78,9 +83,9 @@ export function FormRespondPage() {
           />
         ) : null}
         {page.kind === 'ready' && page.data.state === 'closed' ? (
-          <div style={formAccentStyle(page.data.accent)} className="flex flex-col gap-3">
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
-              <FormCoverBand cover={undefined} accent={page.data.accent ?? FORM_BRAND} />
+          <div className="flex flex-col gap-3">
+            <div className="form-box form-ink overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
+              <FormCoverBand cover={undefined} accent={FORM_ACCENT} />
               <div className="px-6 py-8 max-sm:px-4">
                 <h1 className="text-[26px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                   {page.data.heading}

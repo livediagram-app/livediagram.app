@@ -31,12 +31,11 @@ const form: FormDefinition = {
 };
 
 describe('publicForm', () => {
-  it('shows the form without where its answers go', () => {
+  it('shows the form without where its answers go (its colour comes with its look)', () => {
     const p = publicForm(form);
     expect(p).toEqual({
       heading: 'Bugs',
       description: 'Tell us',
-      accent: '#dc2626',
       cover: { color: '#000000' },
       sections: [
         {

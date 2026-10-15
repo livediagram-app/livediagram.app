@@ -14,3 +14,5 @@ One row per default applied where a spec is silent or qualitative.
 | D8  | forms     | When text typed in the builder is saved        | Half a second after typing pauses, and when the field is left                         |
 | D9  | forms     | How many opened response cards a browser keeps | The newest 500 ids                                                                    |
 | D10 | forms     | Where the Form Panel docks                     | Beside the form from 1,100 px wide; a sheet over it below                             |
+| D11 | forms     | How Sketch draws a form's boxes                | Uneven elliptical corners (255/14 px), 2 px slate ink, a 2×3 px pencil shadow         |
+| D12 | forms     | Which theme colour is a form's                 | The shared theme accent; the brand blue of each half on Default                       |

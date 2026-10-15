@@ -30,6 +30,7 @@ export interface FormStarter {
   telemetry: string;
   // The ready-made card type its responses suit; absent makes a type named after the form.
   readyType?: 'bug' | 'idea' | 'candidate' | 'request';
+  // Its picture's colour and the colour of a card type it makes; the form itself takes its tab theme's.
   accent: string;
   description?: string;
   sections: { title: string; questions: StarterQuestion[] }[];
@@ -317,7 +318,6 @@ export function buildStarter(
   const form: FormDefinition = {
     v: FORM_VERSION,
     heading: starter.id === 'blank' ? 'Untitled Form' : starter.name,
-    accent: starter.accent,
     sections,
     starter: starter.id,
   };

@@ -6711,22 +6711,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "FontSize": {
     "type": "number"
   },
-  "FormBackdrop": {
-    "additionalProperties": false,
-    "properties": {
-      "dark": {
-        "type": "string"
-      },
-      "light": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "light",
-      "dark"
-    ],
-    "type": "object"
-  },
   "FormCover": {
     "additionalProperties": false,
     "properties": {
@@ -6810,6 +6794,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "FormHalves": {
+    "additionalProperties": false,
+    "description": "A colour for each half of the page.",
+    "properties": {
+      "dark": {
+        "type": "string"
+      },
+      "light": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "light",
+      "dark"
+    ],
+    "type": "object"
+  },
   "FormLink": {
     "additionalProperties": false,
     "properties": {
@@ -6865,6 +6866,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "unseen",
       "suspendedAt",
       "canPublish"
+    ],
+    "type": "object"
+  },
+  "FormLook": {
+    "additionalProperties": false,
+    "properties": {
+      "accent": {
+        "$ref": "#/components/schemas/FormHalves"
+      },
+      "backdrop": {
+        "$ref": "#/components/schemas/FormHalves"
+      },
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
+      },
+      "font": {
+        "type": "string"
+      },
+      "onAccent": {
+        "$ref": "#/components/schemas/FormHalves"
+      }
+    },
+    "required": [
+      "backdrop",
+      "accent",
+      "onAccent",
+      "finish"
     ],
     "type": "object"
   },
@@ -11916,9 +11944,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PublicForm": {
     "additionalProperties": false,
     "properties": {
-      "accent": {
-        "type": "string"
-      },
       "confirmation": {
         "type": "string"
       },
@@ -11950,11 +11975,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
-          "backdrop": {
-            "$ref": "#/components/schemas/FormBackdrop"
-          },
           "form": {
             "$ref": "#/components/schemas/PublicForm"
+          },
+          "look": {
+            "$ref": "#/components/schemas/FormLook"
           },
           "state": {
             "const": "open",
@@ -11964,21 +11989,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "required": [
           "state",
           "form",
-          "backdrop"
+          "look"
         ],
         "type": "object"
       },
       {
         "additionalProperties": false,
         "properties": {
-          "accent": {
-            "type": "string"
-          },
-          "backdrop": {
-            "$ref": "#/components/schemas/FormBackdrop"
-          },
           "heading": {
             "type": "string"
+          },
+          "look": {
+            "$ref": "#/components/schemas/FormLook"
           },
           "message": {
             "type": "string"
@@ -11992,7 +12014,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "state",
           "heading",
           "message",
-          "backdrop"
+          "look"
         ],
         "type": "object"
       }

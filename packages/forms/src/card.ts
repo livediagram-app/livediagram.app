@@ -59,6 +59,9 @@ function fieldValue(q: FormQuestion, value: AnswerValue, field: CustomFieldDef):
   }
 }
 
+// What a Preview's card is marked with (docs/specs/030-forms/forms.md "Preview"), before its title.
+export const PREVIEW_TITLE_PREFIX = 'Preview: ';
+
 const cut = (s: string, max: number) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
 
 export interface ResponseCard {
@@ -67,13 +70,15 @@ export interface ResponseCard {
 }
 
 // The card a response makes: the destination's type and status, the mapped answers in their fields, the rest in
-// Description under their prompts (in form order; unanswered questions left out).
+// Description under their prompts (in form order; unanswered questions left out). A Preview's card (`number` is
+// 'preview') is made the same way, but titled "Preview: …" (its title answer, else the form's heading) and never
+// marked as a response: no number, so it is neither counted nor shown as new.
 export function responseCard(
   form: FormDefinition,
   tabId: string,
   answers: ReadonlyMap<string, AnswerValue>,
   type: ItemTypeDef,
-  number: number,
+  number: number | 'preview',
 ): ResponseCard {
   const fields: ItemFields = {};
   let title: string | undefined;
@@ -97,7 +102,13 @@ export function responseCard(
       plain += `${block}${prompt}\n${text}`;
     }
   }
-  fields['title'] = cut(title?.trim() || numberedTitle(form.heading, number), ITEM_TITLE_MAX);
+  const answered = title?.trim();
+  fields['title'] = cut(
+    number === 'preview'
+      ? `${PREVIEW_TITLE_PREFIX}${answered || form.heading}`
+      : answered || numberedTitle(form.heading, number),
+    ITEM_TITLE_MAX,
+  );
   if (plain) {
     if (plain.length <= ITEM_DESCRIPTION_MAX) {
       fields['description'] = plain;
@@ -108,6 +119,6 @@ export function responseCard(
     }
   }
   if (form.destination) fields['status'] = form.destination.status;
-  fields[FROM_FORM_FIELD] = fromFormValue(tabId, number);
+  if (number !== 'preview') fields[FROM_FORM_FIELD] = fromFormValue(tabId, number);
   return { type: type.id, fields };
 }

@@ -4,7 +4,7 @@
 // card (a later section's title), a progress bar past one section, the section's questions, an error summary on Next
 // or Submit, Back / Next / Submit, and then the confirmation. The form link's page and the builder's Preview both draw
 // it; only what Submit does differs.
-import { useEffect, useRef, type CSSProperties } from 'react';
+import { useEffect, useRef } from 'react';
 import { answerErrorMessage, promptOf, type PublicForm } from '@livediagram/forms';
 import { FormCoverBand } from '../FormCoverBand';
 import { LinkedText } from '../LinkedText';
@@ -12,11 +12,8 @@ import { QuestionView } from '../QuestionView';
 import { FormConfirmation } from './FormConfirmation';
 import { useFormFill, type FillState, type SubmitOutcome } from './useFormFill';
 
-export const FORM_BRAND = '#0284c7';
-
-// The CSS variables a form's colour sets on its page.
-export const formAccentStyle = (accent: string | undefined): CSSProperties =>
-  ({ '--form-accent': accent ?? FORM_BRAND }) as CSSProperties;
+// The form's colour, as its look (form-look.ts) sets it on an ancestor: the builder's page or the form link's.
+export const FORM_ACCENT = 'var(--form-accent)';
 
 export function FormFill({
   form,
@@ -24,14 +21,17 @@ export function FormFill({
   draftKey,
   footer,
   preview = false,
+  previewNote = 'This is a preview: nothing was sent.',
 }: {
   form: PublicForm;
   submit: (state: FillState & { website: string }) => Promise<SubmitOutcome>;
   draftKey: string | null;
   // Below the card: the made-with line and Report This Form on the form page.
   footer?: React.ReactNode;
-  // In the builder's Preview: nothing is sent, and the confirmation says so.
+  // In the builder's Preview: the confirmation says what Submit did (an Editor's preview makes a card; a Viewer's
+  // sends nothing).
   preview?: boolean;
+  previewNote?: string;
 }) {
   const honeypot = useRef<HTMLInputElement>(null);
   const fill = useFormFill(
@@ -39,7 +39,6 @@ export function FormFill({
     (state) => submit({ ...state, website: honeypot.current?.value ?? '' }),
     draftKey,
   );
-  const accent = form.accent ?? FORM_BRAND;
   const summaryRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
   // The error summary takes focus when it appears, so a screen reader hears it and the keyboard starts there.
@@ -57,16 +56,16 @@ export function FormFill({
 
   if (fill.status === 'sent' || fill.status === 'closed') {
     return (
-      <div style={formAccentStyle(form.accent)} className="flex flex-col gap-3">
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
-          <FormCoverBand cover={form.cover} accent={accent} />
+      <div className="flex flex-col gap-3">
+        <div className="form-box form-ink overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
+          <FormCoverBand cover={form.cover} accent={FORM_ACCENT} />
           <FormConfirmation
             heading={form.heading}
             message={
               fill.status === 'closed'
                 ? 'This form has just closed, so your response wasn’t recorded.'
                 : preview
-                  ? `${form.confirmation} (This is a preview: nothing was sent.)`
+                  ? `${form.confirmation} (${previewNote})`
                   : form.confirmation
             }
             closed={fill.status === 'closed'}
@@ -84,13 +83,9 @@ export function FormFill({
   const questions = fill.current.questions;
   const cardId = (id: string) => `form-q-${id}`;
   return (
-    <div
-      ref={topRef}
-      style={formAccentStyle(form.accent)}
-      className="flex scroll-mt-4 flex-col gap-3"
-    >
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
-        <FormCoverBand cover={form.cover} accent={accent} />
+    <div ref={topRef} className="flex scroll-mt-4 flex-col gap-3">
+      <div className="form-box form-ink overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
+        <FormCoverBand cover={form.cover} accent={FORM_ACCENT} />
         <div
           className="border-t-[6px] border-[var(--form-accent)] px-6 pb-5 pt-5 max-sm:px-4"
           style={form.cover ? { borderTopWidth: 0 } : undefined}
@@ -143,7 +138,7 @@ export function FormFill({
           ref={summaryRef}
           tabIndex={-1}
           role="alert"
-          className="rounded-xl border-2 border-red-500 bg-red-50 p-4 outline-none dark:border-red-500/70 dark:bg-red-950/40"
+          className="form-box rounded-xl border-2 border-red-500 bg-red-50 p-4 outline-none dark:border-red-500/70 dark:bg-red-950/40"
         >
           <p className="text-[15px] font-semibold text-red-800 dark:text-red-200">
             {fill.summary.length === 1
@@ -220,7 +215,7 @@ export function FormFill({
           <button
             type="button"
             onClick={fill.back}
-            className="h-11 cursor-pointer rounded-lg border border-slate-300 bg-white px-5 text-[15px] font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="form-box form-ink h-11 cursor-pointer rounded-lg border border-slate-300 bg-white px-5 text-[15px] font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             Back
           </button>
@@ -230,12 +225,12 @@ export function FormFill({
             type="button"
             onClick={() => void fill.send()}
             disabled={fill.status === 'sending'}
-            className="flex h-11 cursor-pointer items-center gap-2 rounded-lg bg-[var(--form-accent)] px-6 text-[15px] font-semibold text-white shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-80 dark:focus-visible:ring-offset-slate-950"
+            className="flex h-11 cursor-pointer items-center gap-2 form-box rounded-lg bg-[var(--form-accent)] px-6 text-[15px] font-semibold text-[var(--form-on-accent)] shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-80 dark:focus-visible:ring-offset-slate-950"
           >
             {fill.status === 'sending' ? (
               <span
                 aria-hidden
-                className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white motion-reduce:animate-none"
+                className="h-4 w-4 animate-spin rounded-full border-2 border-current/40 border-t-current motion-reduce:animate-none"
               />
             ) : null}
             {fill.status === 'sending' ? 'Sending…' : 'Submit'}
@@ -244,7 +239,7 @@ export function FormFill({
           <button
             type="button"
             onClick={() => fill.next()}
-            className="h-11 cursor-pointer rounded-lg bg-[var(--form-accent)] px-6 text-[15px] font-semibold text-white shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
+            className="h-11 cursor-pointer form-box rounded-lg bg-[var(--form-accent)] px-6 text-[15px] font-semibold text-[var(--form-on-accent)] shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
           >
             Next
           </button>

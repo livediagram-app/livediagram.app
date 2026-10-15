@@ -33,8 +33,8 @@ export type QuestionControlProps = {
 };
 
 const FIELD =
-  'w-full rounded-lg border bg-white px-3 py-2.5 text-[15px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--form-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--form-accent)_30%,transparent)] disabled:cursor-not-allowed disabled:bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400 dark:disabled:bg-slate-900/60';
-const FIELD_OK = 'border-slate-300 dark:border-slate-600';
+  'form-box w-full rounded-lg border bg-white px-3 py-2.5 text-[15px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--form-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--form-accent)_30%,transparent)] disabled:cursor-not-allowed disabled:bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400 dark:disabled:bg-slate-900/60';
+const FIELD_OK = 'form-ink border-slate-300 dark:border-slate-600';
 const FIELD_BAD = 'border-red-500 dark:border-red-400';
 
 // A text area that grows with what is typed, up to a limit, then scrolls.
@@ -44,7 +44,8 @@ function GrowingText(props: React.TextareaHTMLAttributes<HTMLTextAreaElement> & 
     const el = ref.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight + 2, 360)}px`;
+    // Its borders are added (a border box), whatever the finish draws them at.
+    el.style.height = `${Math.min(el.scrollHeight + el.offsetHeight - el.clientHeight, 360)}px`;
   }, [props.value]);
   return <textarea ref={ref} rows={3} {...props} />;
 }
@@ -301,10 +302,10 @@ function Choices({
           : `Pick up to ${q.max}`
       : null;
   const row = (on: boolean) =>
-    `flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-[15px] transition ${
+    `form-box flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-[15px] transition ${
       on
         ? 'border-[var(--form-accent)] bg-[color-mix(in_srgb,var(--form-accent)_8%,transparent)] text-slate-900 dark:text-slate-50'
-        : `${invalid ? 'border-red-300 dark:border-red-500/50' : 'border-slate-200 dark:border-slate-700'} text-slate-800 hover:border-slate-300 hover:bg-slate-50 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-800/60`
+        : `${invalid ? 'border-red-300 dark:border-red-500/50' : 'form-ink border-slate-200 dark:border-slate-700'} text-slate-800 hover:border-slate-300 hover:bg-slate-50 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-800/60`
     } ${disabled ? 'pointer-events-none opacity-70' : ''}`;
   const input = 'h-[18px] w-[18px] shrink-0 cursor-pointer accent-[var(--form-accent)]';
   const otherOn = picks.includes(OTHER_ANSWER);

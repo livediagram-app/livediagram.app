@@ -1,5 +1,6 @@
 // The form link's wire shapes (docs/specs/030-forms/blueprints/forms.md §11): what the Form tab reads and changes
 // about its link, and what a form link's page reads and sends.
+import type { FormLook } from '@livediagram/document';
 import type { AnswerError, PublicForm } from '@livediagram/forms';
 
 // A Form tab's live link, as an Editor sees it.
@@ -22,19 +23,14 @@ export type FormLinkResponse = {
   canPublish: boolean;
 };
 
-// The tab theme's backdrop, for each half: the form page draws the one matching the respondent's system.
-export type FormBackdrop = { light: string; dark: string };
+// The form's look (its tab's theme, finish and font, and its colour), each colour for both halves: the form page
+// draws the one matching the respondent's system.
+export type { FormLook };
 
 // GET /api/forms/:code
 export type PublicFormResponse =
-  | { state: 'open'; form: PublicForm; backdrop: FormBackdrop }
-  | {
-      state: 'closed';
-      heading: string;
-      message: string;
-      accent?: string;
-      backdrop: FormBackdrop;
-    };
+  | { state: 'open'; form: PublicForm; look: FormLook }
+  | { state: 'closed'; heading: string; message: string; look: FormLook };
 
 // POST /api/forms/:code/responses
 export type FormResponseBody = {
