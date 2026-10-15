@@ -130,6 +130,13 @@ that side first, then along the flow into the other end, so it meets each end
 square. The bends are ordinary curve points, so the author can drag them like any
 other.
 
+Elements an agent places itself (the MCP's raw `elements`, any layout) get the
+same two bends on every angled arrow it gave no curve points whose ends face each
+other across a gap: a bottom to a lower top, a top to a higher bottom, a right
+side to a box further right, a left side to one further left. Such an arrow drew
+as an L that ran its last stretch along the far box's edge. An arrow whose ends
+do not face each other keeps its L, which already meets both ends square.
+
 ### Two-way edges bow apart
 
 In laid-out graph input (a Mermaid import, the MCP's `graph` / `mermaid`), a

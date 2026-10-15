@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { curveAnchorPoints } from './arrow-path';
-import { orthogonalBends, withOrthogonalBends } from './arrow-orthogonal';
+import { orthogonalBends, withFacingBends, withOrthogonalBends } from './arrow-orthogonal';
 import { createPinnedArrow, createShape } from './factories';
 import type { ArrowElement, Element } from './index';
 
@@ -83,5 +83,94 @@ describe('orthogonal bends', () => {
     };
     const els = [box('p', 0, 0), box('c', 50, 200), side];
     expect(orthogonalBends(side, els, 'TB')).toBeUndefined();
+  });
+});
+
+// docs/specs/008-canvas/layout-cleanup.md "Angled lines bend twice": an agent's own elements.
+describe('facing bends', () => {
+  const pinned = (
+    id: string,
+    from: string,
+    fa: 'n' | 'e' | 's' | 'w',
+    to: string,
+    ta: 'n' | 'e' | 's' | 'w',
+  ) => ({ ...createPinnedArrow(from, fa, to, ta), id, arrowStyle: 'angled' }) as ArrowElement;
+
+  it('bends a bottom-to-top arrow into a lower box twice, at half height', () => {
+    const els = [box('p', 0, 0), box('c', 300, 200), pinned('a', 'p', 's', 'c', 'n')];
+    const a = withFacingBends(els)[2] as ArrowElement;
+    expect(curveAnchorPoints({ x: 50, y: 60 }, { x: 350, y: 200 }, a.curvePoints!)).toEqual([
+      { x: 50, y: 130 },
+      { x: 350, y: 130 },
+    ]);
+  });
+
+  it('bends a right-to-left arrow into a box further right twice, at half width', () => {
+    const els = [box('p', 0, 0), box('c', 300, 200), pinned('a', 'p', 'e', 'c', 'w')];
+    const a = withFacingBends(els)[2] as ArrowElement;
+    expect(curveAnchorPoints({ x: 100, y: 30 }, { x: 300, y: 230 }, a.curvePoints!)).toEqual([
+      { x: 200, y: 30 },
+      { x: 200, y: 230 },
+    ]);
+  });
+
+  it('bends top-to-bottom and left-to-right arrows the other way round too', () => {
+    const els = [
+      box('p', 0, 0),
+      box('c', 300, 200),
+      pinned('up', 'c', 'n', 'p', 's'),
+      pinned('back', 'c', 'w', 'p', 'e'),
+    ];
+    const out = withFacingBends(els);
+    expect((out[2] as ArrowElement).curvePoints).toHaveLength(2);
+    expect((out[3] as ArrowElement).curvePoints).toHaveLength(2);
+  });
+
+  it('leaves an L whose ends do not face, a curved or straight arrow, and given bends alone', () => {
+    const given = { ...pinned('given', 'p', 's', 'c', 'n'), curvePoints: [{ dx: 5, dy: 5 }] };
+    const els = [
+      box('p', 0, 200),
+      box('c', 300, 0),
+      pinned('away', 'p', 's', 'c', 'n'),
+      pinned('mixed', 'p', 'e', 'c', 's'),
+      { ...pinned('curved', 'p', 's', 'c', 'n'), arrowStyle: 'curved' } as ArrowElement,
+      given,
+      { ...createShape('square', 0, 0), id: 'loose' } as Element,
+    ];
+    expect(withFacingBends(els)).toEqual(els);
+  });
+
+  it('runs a facing arrow straight when its ends line up', () => {
+    const els = [box('p', 0, 0), box('c', 0, 200), pinned('a', 'p', 's', 'c', 'n')];
+    expect(withFacingBends(els)[2]).toMatchObject({ arrowStyle: 'straight' });
+  });
+
+  it("keeps the cross run off a frame's heading band and border, nearest half way", () => {
+    // p's bottom (50, 60) to c's top (350, 300): half way is 180, inside the frame's heading band (170..202).
+    const frame = { ...createShape('frame', 0, 170), id: 'f', width: 500, height: 200 } as Element;
+    const els = [box('p', 0, 0), { ...box('c', 300, 300) }, frame, pinned('a', 'p', 's', 'c', 'n')];
+    const a = withFacingBends(els)[3] as ArrowElement;
+    expect(curveAnchorPoints({ x: 50, y: 60 }, { x: 350, y: 300 }, a.curvePoints!)[0]!.y).toBe(162);
+  });
+
+  it('keeps the cross run off a box between the ends, and half way when nothing is clear', () => {
+    const between = { ...box('m', 150, 100), height: 100 };
+    const els = [box('p', 0, 0), box('c', 300, 300), between, pinned('a', 'p', 's', 'c', 'n')];
+    const a = withFacingBends(els)[3] as ArrowElement;
+    // Half way (180) is inside m (92..208 with its clearance): the nearest clear level is 208.
+    expect(curveAnchorPoints({ x: 50, y: 60 }, { x: 350, y: 300 }, a.curvePoints!)[0]!.y).toBe(208);
+    const wall = { ...box('w', 0, 70), width: 400, height: 220 };
+    const walled = [box('p', 0, 0), box('c', 300, 300), wall, pinned('a', 'p', 's', 'c', 'n')];
+    const b = withFacingBends(walled)[3] as ArrowElement;
+    expect(curveAnchorPoints({ x: 50, y: 60 }, { x: 350, y: 300 }, b.curvePoints!)[0]!.y).toBe(180);
+  });
+
+  it('leaves a free end alone', () => {
+    const free: ArrowElement = {
+      ...pinned('f', 'p', 's', 'c', 'n'),
+      to: { kind: 'free', x: 300, y: 300 },
+    };
+    const els = [box('p', 0, 0), box('c', 300, 200), free];
+    expect(withFacingBends(els)[2]).toBe(free);
   });
 });
