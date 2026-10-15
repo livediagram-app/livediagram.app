@@ -3,7 +3,7 @@
 // A closed section (docs/specs/007-editor/element-tours.md "Settings"): the Tours' Element Tours sit in a closed
 // accordion naming how many are on, opened by its heading, or on its own when Settings lands on one of its rows.
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
@@ -68,5 +68,17 @@ describe('Element Tours section', () => {
     );
     fireEvent.click(screen.getByRole('switch', { name: 'Sankey Diagram Tour' }));
     expect(onChange).toHaveBeenCalledWith({ elementTourKinds: [], elementToursSeen: false });
+  });
+
+  it('brings what it unfolded into view once it has eased open', () => {
+    vi.useFakeTimers();
+    const scroll = vi.mocked(Element.prototype.scrollIntoView);
+    scroll.mockClear();
+    render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
+    fireEvent.click(header());
+    expect(scroll).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(200));
+    expect(scroll).toHaveBeenCalledWith(expect.objectContaining({ block: 'nearest' }));
+    vi.useRealTimers();
   });
 });

@@ -314,6 +314,9 @@ function SectionHeading({ name, focused }: { name: string; focused: boolean }) {
   );
 }
 
+// How long a closed section's body takes to ease open (AccordionSection's duration-short), before it is scrolled to.
+const COLLAPSED_SECTION_OPEN_MS = 200;
+
 // A closed accordion section (SettingsCategorySpec.collapsedSections): its heading is the toggle, with the section's
 // switch count beside the chevron, so it says what it holds while closed.
 function CollapsedSection({
@@ -330,6 +333,17 @@ function CollapsedSection({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(focused);
+  const ref = useRef<HTMLElement>(null);
+  // Opened by hand, it brings what it unfolded into view once the body has eased open, rather than leaving it
+  // below the fold of the pane.
+  useEffect(() => {
+    if (!open) return;
+    const timer = window.setTimeout(() => {
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+      ref.current?.scrollIntoView?.({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+    }, COLLAPSED_SECTION_OPEN_MS);
+    return () => window.clearTimeout(timer);
+  }, [open]);
   // Opened on its own when Settings lands on it, adjusted during render so the row is there to be scrolled to.
   const [wasFocused, setWasFocused] = useState(focused);
   if (focused !== wasFocused) {
@@ -338,6 +352,7 @@ function CollapsedSection({
   }
   return (
     <section
+      ref={ref}
       className="flex flex-col"
       data-settings-section={settingsSectionId(name)}
       id={`settings-section-${settingsSectionId(name)}`}
