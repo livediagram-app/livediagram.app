@@ -210,7 +210,7 @@ export const RECOMMENDED_IDS = [
   'board:todo',
   'dashboard:overview',
   'sheet:blank',
-  'sheet:budget',
+  'form:feedback',
 ] as const;
 
 // The sheet starts, in Start Planning's order: the empty sheet, the card table (only with cards), then every sheet

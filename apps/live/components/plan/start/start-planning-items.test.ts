@@ -49,14 +49,14 @@ describe('Start Planning’s choices', () => {
     expect(found.flatMap((g) => g.items.map((i) => i.id))).toContain('sheet:loan');
   });
 
-  it('recommends a mix of boards, a dashboard and sheets, in order', () => {
+  it('recommends a mix of boards, a dashboard, a sheet and a form, in order', () => {
     expect(itemsIn(items, 'recommended').map((i) => i.id)).toEqual([
       'board:roadmap',
       'board:kanban',
       'board:todo',
       'dashboard:overview',
       'sheet:blank',
-      'sheet:budget',
+      'form:feedback',
     ]);
   });
 
