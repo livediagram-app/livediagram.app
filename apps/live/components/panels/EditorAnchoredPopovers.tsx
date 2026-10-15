@@ -1,5 +1,6 @@
 'use client';
 
+import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 import dynamic from 'next/dynamic';
 import { apiSetDocumentFolder } from '@/lib/api-client';
 import { elementActions, isBoxed, threadAt } from '@livediagram/document';
@@ -90,6 +91,15 @@ export function EditorAnchoredPopovers() {
         sessionShareCode,
       );
   };
+
+  // Each popover closes once its element can no longer hold it (deleted, an undo, another tab), rather than staying
+  // hidden with its id set and reopening by itself when the element comes back (useCloseVanishedDialogs).
+  useCloseVanishedDialogs(activeTab.elements, [
+    [commentThreadOpenId, closeComments, isBoxed],
+    [actionPopoverOpenId, closeActionPopover, (el) => isBoxed(el) && !!el.action],
+    [assignActionFor, closeAssignActionDialog, isBoxed],
+    [noteOpenId, closeNote, isBoxed],
+  ]);
 
   return (
     <>
