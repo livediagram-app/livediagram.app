@@ -48,11 +48,15 @@ export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
   'technology',
 ]);
 
-/** A category's own tile ids, less the named ones: for a layout that drops a tile or two. */
+/** A category's own tile ids, less the named ones: for a layout that drops a tile or two. A dropped tile that ends a
+ *  group (`dividerAfter`) leaves its divider after the tile kept before it, so the group still ends there. */
 function tilesExcept(categoryId: string, ...drop: string[]): readonly string[] {
-  return tilesForCategory(categoryId)
-    .map((t) => t.id)
-    .filter((id) => !drop.includes(id));
+  const out: string[] = [];
+  for (const tile of tilesForCategory(categoryId)) {
+    if (!drop.includes(tile.id)) out.push(tile.id);
+    else if (tile.dividerAfter && out.length > 0 && out.at(-1) !== DIVIDE) out.push(DIVIDE);
+  }
+  return out;
 }
 
 // Media's embed providers (the Embed group).
