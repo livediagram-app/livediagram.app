@@ -18,7 +18,7 @@ See [Local development](local-development.md). The short version: clone, `pnpm i
 
 ## Code style
 
-- **TypeScript everywhere**. No untyped JavaScript outside generated bundles. Type-checking runs on **TypeScript 7**, the Go compiler — see [Two TypeScripts](#two-typescripts) below for why `package.json` names two of them.
+- **TypeScript everywhere**. No untyped JavaScript outside generated bundles. Type-checking runs on **TypeScript 7**, the Go compiler; see [TypeScript](#typescript) below.
 - **Tabs are spaces**: 2-space indent, Prettier-enforced.
 - **No em dashes**. Use commas, colons, or parentheses. (The repo has a hard rule against em dashes in code, comments, commits, and copy.)
 - **Reuse over duplication**. If two apps need the same thing (UI component, util, type, schema), it lives in [`packages/`](../../packages/), not copied into each app. Extract on first cross-app occurrence.
@@ -73,29 +73,18 @@ Two things follow for you as a contributor:
   binding added only at the top level is silently missing from staging. `pnpm
 staging:check` catches it in CI.
 
-### Two TypeScripts
+### TypeScript
 
-Every workspace lists two TypeScript entries, and they are not a mistake:
+Every workspace that type-checks lists one TypeScript, **TypeScript 7**, the Go compiler: `"typescript": "^7.0.2"`. It type-checks this monorepo about **7x faster** than 6 did (21.4s to 2.9s cold, all fourteen projects). `pnpm typecheck` runs its `tsc`, and so does `next build`, which type-checks through the project's `tsc` rather than a compiler API.
 
-```jsonc
-{
-  "@typescript/native": "npm:typescript@^7.0.2", // the `tsc` binary
-  "typescript": "npm:@typescript/typescript6@^6.0.2", // the compiler API, plus `tsc6`
-}
-```
+TypeScript 7.0 ships no classic compiler API (`import ts from 'typescript'` finds nothing to call). Code that reads TypeScript source does it one of two ways:
 
-TypeScript 7 is the Go compiler. It type-checks this monorepo about **7x faster** than 6 did (21.4s to 2.9s cold, all fourteen projects), so `pnpm typecheck` runs 7 and `tsc` on your PATH inside a workspace _is_ 7.
+- **Linting** is oxlint, which parses TypeScript itself ([Linting](../specs/003-system-architecture/linting.md)).
+- **The repo's static guards** (the palette tests, the telemetry emitter scan, the optical guard) parse with `parseSourceFiles` from `@livediagram/source-ast`, which asks TypeScript 7's native compiler through `typescript/unstable/sync` and hands back `typescript/unstable/ast` trees: the same nodes, `is*` guards and `SyntaxKind` the classic API had, with `node.forEachChild(visit)` in place of `ts.forEachChild(node, visit)` ([Source scanners](../specs/003-system-architecture/source-scanners.md)).
 
-What 7.0 does not ship is a programmatic API; that lands in 7.1. Tools that import the compiler rather than shell out to it — typescript-eslint, Next.js, Prettier's TypeScript parser — therefore still need 6. The alias pair is Microsoft's documented answer: `typescript` keeps resolving to the 6.0 API for those tools, while `@typescript/native` supplies 7's `tsc`. Run `tsc6` if you ever need to compare the two compilers on the same file.
+`apps/help/lib/typescript-version.test.ts` holds every workspace to the root manifest's `typescript` and rejects any alias to another TypeScript, so a second compiler cannot creep back in.
 
-`packages/eslint-config/typescript-aliases.test.ts` holds every workspace to the root manifest's pair: a new package that lists a plain `typescript` type-checks on 6 without anyone noticing, and draws a Dependabot major bump that cannot install.
-
-Two consequences worth knowing before they bite you:
-
-- **`packages/eslint-config` declares the 6.0 alias as a real dependency.** Without it, `auto-install-peers` resolves typescript-eslint's `typescript` peer against the 7.0 copy and every lint run dies with `typescript-eslint does not support TS 7.0`.
-- **Editors are a separate choice.** VS Code needs the TypeScript 7 extension for the fast language server; anything that embeds the compiler in its own language service (MDX tooling, Volar-based plugins) stays on 6 until 7.1. The CLI is the source of truth either way — CI runs 7.
-
-Both aliases get dropped for a plain `typescript@7.x` once 7.1 ships an API and typescript-eslint adopts it.
+The one exception is `ts-json-schema-generator` (the api's OpenAPI schema generator), which bundles its own TypeScript 5.9 to read the api-schema types; it runs only in `pnpm --filter @livediagram/api gen:openapi` and its drift test.
 
 `pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app spreads `livediagramNextConfig()` from `@livediagram/next-config` into its `next.config`**, which reads `NEXT_DISTDIR` for it, or the old build/dev cache race comes back.
 

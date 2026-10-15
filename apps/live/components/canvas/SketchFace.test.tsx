@@ -4,7 +4,7 @@
 // live face over a still ink copy of it, the copy re-taken once the face settles, never rendered by React twice.
 
 import { act, cleanup, render } from '@testing-library/react';
-import { useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   SKETCH_INK_MAX_WAIT_MS,
@@ -17,6 +17,25 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
 });
+
+/** A count the test moves on from outside React, read through a store, so no setter leaves a render. */
+function createCount(initial: number) {
+  let value = initial;
+  const listeners = new Set<() => void>();
+  return {
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    read: () => value,
+    bump: () => {
+      value += 1;
+      for (const listener of listeners) listener();
+    },
+  };
+}
 
 function face() {
   const live = document.createElement('div');
@@ -71,10 +90,9 @@ describe('SketchFace', () => {
   it('re-takes the copy once the face is still, and renders the face once', async () => {
     vi.useFakeTimers();
     let renders = 0;
-    let bump = () => {};
+    const count = createCount(1);
     function Bars() {
-      const [n, setN] = useState(1);
-      bump = () => setN((v) => v + 1);
+      const n = useSyncExternalStore(count.subscribe, count.read);
       renders++;
       return (
         <svg>
@@ -91,8 +109,8 @@ describe('SketchFace', () => {
     );
     const ink = container.firstElementChild!;
     expect(ink.querySelectorAll('rect')).toHaveLength(1);
-    await act(async () => bump());
-    await act(async () => bump());
+    await act(async () => count.bump());
+    await act(async () => count.bump());
     // Still changing: the copy waits.
     await act(async () => vi.advanceTimersByTime(SKETCH_INK_SETTLE_MS - 1));
     expect(ink.querySelectorAll('rect')).toHaveLength(1);
@@ -103,10 +121,9 @@ describe('SketchFace', () => {
 
   it('follows a face that never settles at least once per longest wait', async () => {
     vi.useFakeTimers();
-    let bump = () => {};
+    const count = createCount(0);
     function Ticker() {
-      const [n, setN] = useState(0);
-      bump = () => setN((v) => v + 1);
+      const n = useSyncExternalStore(count.subscribe, count.read);
       return <span data-n={n} />;
     }
     const { container } = render(
@@ -117,7 +134,7 @@ describe('SketchFace', () => {
     const ink = container.firstElementChild!;
     const step = SKETCH_INK_SETTLE_MS / 2;
     for (let t = 0; t < SKETCH_INK_MAX_WAIT_MS; t += step) {
-      await act(async () => bump());
+      await act(async () => count.bump());
       await act(async () => vi.advanceTimersByTime(step));
     }
     expect(Number(ink.querySelector('span')!.getAttribute('data-n'))).toBeGreaterThan(0);

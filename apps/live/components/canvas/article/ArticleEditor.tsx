@@ -549,7 +549,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       setLocalArticleCaret(latest.current.flow, null);
     };
     // Created once per article: everything it reads is read through refs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, []);
 
   // The writing changed on the tab from elsewhere (a collaborator, an undo, a zone settled): merge
@@ -573,14 +573,12 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     if (localOps.length > 0) scheduleCommit();
     view.setProps({});
     scheduleMeasure();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.doc, undoSeq]);
 
   // Pages, zoom, style or rights changed: the box, its columns and its look follow.
   useLayoutEffect(() => {
     viewRef.current?.setProps({});
     scheduleMeasure();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     props.pages,
     props.zoom,
@@ -613,7 +611,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     view.dispatch(view.state.tr.setSelection(sel));
     view.focus();
     props.onFocusTaken?.(request.seq);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [request?.seq]);
 
   return (

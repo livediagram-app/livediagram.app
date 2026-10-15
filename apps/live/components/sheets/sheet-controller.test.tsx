@@ -245,16 +245,11 @@ describe('useSheetController', () => {
     }
     vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => render(<Probe />)).toThrow('useSheetController outside a Sheet');
-    let seen: unknown = null;
-    function Reader() {
-      seen = useSheetController();
-      return null;
-    }
-    render(
-      <SheetControllerProvider value={result.current}>
-        <Reader />
-      </SheetControllerProvider>,
-    );
-    expect(seen).toBe(result.current);
+    const read = renderHook(() => useSheetController(), {
+      wrapper: ({ children }) => (
+        <SheetControllerProvider value={result.current}>{children}</SheetControllerProvider>
+      ),
+    });
+    expect(read.result.current).toBe(result.current);
   });
 });

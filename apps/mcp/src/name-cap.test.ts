@@ -67,7 +67,7 @@ describe('document and tab names through the MCP SDK', () => {
     });
     const create = sent.find((s) => s.method === 'POST' && s.path === '/documents')!;
     expect(create.body?.name).toBe(CAPPED);
-    expect((create.body?.tabs as { name: string }[])[0]!.name).toBe(CAPPED);
+    expect((create.body?.tabs as { name: string }[] | undefined)?.[0]?.name).toBe(CAPPED);
   });
 
   it('create_document takes a single tab alias, checked and capped as tabs are, and names what is wrong', async () => {
@@ -77,7 +77,7 @@ describe('document and tab names through the MCP SDK', () => {
       arguments: { name: 'Doc', tab: { name: LONG, elements: [] } },
     });
     const create = sent.find((s) => s.method === 'POST' && s.path === '/documents')!;
-    expect((create.body?.tabs as { name: string }[])[0]!.name).toBe(CAPPED);
+    expect((create.body?.tabs as { name: string }[] | undefined)?.[0]?.name).toBe(CAPPED);
     const bad = await client.callTool({
       name: 'create_document',
       arguments: { name: 'Doc', tab: { name: 'One', elements: 'none' } },
@@ -94,7 +94,7 @@ describe('document and tab names through the MCP SDK', () => {
     });
     // The tab arrives as a changeset that creates it (docs/specs/024-agents/agent-changesets.md).
     const created = sent.find((s) => s.method === 'POST' && s.path.endsWith('/changesets'))!;
-    expect((created.body?.replace as { name: string }).name).toBe(CAPPED);
+    expect((created.body?.replace as { name: string } | undefined)?.name).toBe(CAPPED);
 
     const result = await client.callTool({
       name: 'rename_document',

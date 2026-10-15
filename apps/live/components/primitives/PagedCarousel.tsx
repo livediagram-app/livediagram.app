@@ -56,7 +56,7 @@ export function PagedCarousel<T>({
     const el = strip.current;
     if (el) el.scrollLeft = page * el.clientWidth;
     // The opening page only: later moves scroll the strip themselves.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, []);
   const goTo = (next: number) => {
     const el = strip.current;

@@ -7,7 +7,31 @@
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import ts from 'typescript';
+import { parseSourceFiles } from '@livediagram/source-ast';
+import {
+  isBinaryExpression,
+  isConditionalExpression,
+  isIdentifier,
+  isJsxAttribute,
+  isJsxElement,
+  isJsxExpression,
+  isJsxFragment,
+  isJsxSelfClosingElement,
+  isJsxText,
+  isNoSubstitutionTemplateLiteral,
+  isParenthesizedExpression,
+  isPropertyAccessExpression,
+  isStringLiteral,
+  isTemplateExpression,
+  SyntaxKind,
+  type Expression,
+  type JsxAttribute,
+  type JsxChild,
+  type JsxOpeningElement,
+  type Node,
+  type NodeArray,
+  type SourceFile,
+} from 'typescript/unstable/ast';
 
 export type OpticalViolation = { file: string; line: number; snippet: string };
 
@@ -51,11 +75,11 @@ function sources(dir: string): string[] {
 }
 
 /** Every static class chunk in a className attribute: literals, template heads and spans. */
-function classText(attr: ts.JsxAttribute): string {
+function classText(attr: JsxAttribute): string {
   const parts: string[] = [];
-  const visit = (node: ts.Node): void => {
-    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) parts.push(node.text);
-    else if (ts.isTemplateExpression(node)) {
+  const visit = (node: Node): void => {
+    if (isStringLiteral(node) || isNoSubstitutionTemplateLiteral(node)) parts.push(node.text);
+    else if (isTemplateExpression(node)) {
       parts.push(node.head.text);
       for (const span of node.templateSpans) {
         visit(span.expression);
@@ -63,7 +87,7 @@ function classText(attr: ts.JsxAttribute): string {
       }
       return;
     }
-    ts.forEachChild(node, visit);
+    node.forEachChild(visit);
   };
   if (attr.initializer) visit(attr.initializer);
   return parts.join(' ');
@@ -72,19 +96,19 @@ function classText(attr: ts.JsxAttribute): string {
 // Inline wrappers that pass their text through untrimmed unless they carry the utility.
 const PLAIN_WRAPPERS = new Set(['span', 'div', 'b', 'strong', 'em', 'small']);
 
-function hasClass(opening: ts.JsxOpeningElement, sf: ts.SourceFile, cls: string): boolean {
+function hasClass(opening: JsxOpeningElement, sf: SourceFile, cls: string): boolean {
   const attr = opening.attributes.properties.find(
-    (p): p is ts.JsxAttribute => ts.isJsxAttribute(p) && p.name.getText(sf) === 'className',
+    (p): p is JsxAttribute => isJsxAttribute(p) && p.name.getText(sf) === 'className',
   );
   return attr ? classText(attr).split(/\s+/).includes(cls) : false;
 }
 
 /** The first child that can put untrimmed text in the shape, looking through plain wrappers. */
-function bareText(children: ts.NodeArray<ts.JsxChild>, sf: ts.SourceFile): ts.Node | undefined {
+function bareText(children: NodeArray<JsxChild>, sf: SourceFile): Node | undefined {
   for (const c of children) {
-    if (ts.isJsxText(c) && c.text.trim() !== '') return c;
-    if (ts.isJsxExpression(c) && c.expression !== undefined && !elementOnly(c.expression)) return c;
-    if (ts.isJsxElement(c)) {
+    if (isJsxText(c) && c.text.trim() !== '') return c;
+    if (isJsxExpression(c) && c.expression !== undefined && !elementOnly(c.expression)) return c;
+    if (isJsxElement(c)) {
       const tag = c.openingElement.tagName.getText(sf);
       // Either trimming utility: text-optical-line is text-optical-centre for a truncated label, which
       // keeps its descenders (theme.css).
@@ -102,22 +126,20 @@ function bareText(children: ts.NodeArray<ts.JsxChild>, sf: ts.SourceFile): ts.No
 }
 
 /** True when an expression child can only ever be an element (or nothing). */
-function elementOnly(node: ts.Expression): boolean {
-  if (ts.isParenthesizedExpression(node)) return elementOnly(node.expression);
-  if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node) || ts.isJsxFragment(node))
-    return true;
-  if (node.kind === ts.SyntaxKind.NullKeyword || node.kind === ts.SyntaxKind.FalseKeyword)
-    return true;
-  if (ts.isIdentifier(node)) return node.text === 'undefined' || ICON_NAME.test(node.text);
-  if (ts.isPropertyAccessExpression(node)) return ICON_NAME.test(node.name.text);
-  if (ts.isConditionalExpression(node))
+function elementOnly(node: Expression): boolean {
+  if (isParenthesizedExpression(node)) return elementOnly(node.expression);
+  if (isJsxElement(node) || isJsxSelfClosingElement(node) || isJsxFragment(node)) return true;
+  if (node.kind === SyntaxKind.NullKeyword || node.kind === SyntaxKind.FalseKeyword) return true;
+  if (isIdentifier(node)) return node.text === 'undefined' || ICON_NAME.test(node.text);
+  if (isPropertyAccessExpression(node)) return ICON_NAME.test(node.name.text);
+  if (isConditionalExpression(node))
     return elementOnly(node.whenTrue) && elementOnly(node.whenFalse);
   if (
-    ts.isBinaryExpression(node) &&
+    isBinaryExpression(node) &&
     [
-      ts.SyntaxKind.AmpersandAmpersandToken,
-      ts.SyntaxKind.BarBarToken,
-      ts.SyntaxKind.QuestionQuestionToken,
+      SyntaxKind.AmpersandAmpersandToken,
+      SyntaxKind.BarBarToken,
+      SyntaxKind.QuestionQuestionToken,
     ].includes(node.operatorToken.kind)
   )
     return elementOnly(node.right);
@@ -126,22 +148,23 @@ function elementOnly(node: ts.Expression): boolean {
 
 export function checkOpticalAlignment({ root }: { root: string }): OpticalViolation[] {
   const violations: OpticalViolation[] = [];
-  for (const path of sources(root)) {
-    const source = readFileSync(path, 'utf8');
-    // A violation needs ROUND in one of this file's class literals: a file without the token has
-    // none, and skipping its parse keeps the guard fast enough for a busy CI runner.
-    if (!source.includes('rounded-full')) continue;
-    const sf = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-    const visit = (node: ts.Node): void => {
-      if (ts.isJsxElement(node)) {
+  // A violation needs ROUND in one of a file's class literals: a file without the token has none,
+  // and skipping its parse keeps the guard fast enough for a busy CI runner.
+  const candidates = sources(root).filter((path) =>
+    readFileSync(path, 'utf8').includes('rounded-full'),
+  );
+  for (const sf of parseSourceFiles(candidates)) {
+    const path = sf.fileName;
+    const visit = (node: Node): void => {
+      if (isJsxElement(node)) {
         const opening = node.openingElement;
         const tag = opening.tagName.getText(sf);
         const cls = opening.attributes.properties.find(
-          (p): p is ts.JsxAttribute => ts.isJsxAttribute(p) && p.name.getText(sf) === 'className',
+          (p): p is JsxAttribute => isJsxAttribute(p) && p.name.getText(sf) === 'className',
         );
         const text = cls ? classText(cls) : '';
         const style = opening.attributes.properties.find(
-          (p): p is ts.JsxAttribute => ts.isJsxAttribute(p) && p.name.getText(sf) === 'style',
+          (p): p is JsxAttribute => isJsxAttribute(p) && p.name.getText(sf) === 'style',
         );
         const sized =
           FIXED_HEIGHT.test(text) || /\b(height|width)\b/.test(style?.getText(sf) ?? '');
@@ -156,7 +179,7 @@ export function checkOpticalAlignment({ root }: { root: string }): OpticalViolat
           }
         }
       }
-      ts.forEachChild(node, visit);
+      node.forEachChild(visit);
     };
     visit(sf);
   }

@@ -54,7 +54,9 @@ describe('LikeButton', () => {
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe('/api/community/posts/post123456/like');
     expect(init?.method).toBe('PUT');
-    expect((init?.headers as Record<string, string>)['X-Community-Key']).toMatch(/^[0-9a-f-]{36}$/);
+    expect((init?.headers as Record<string, string> | undefined)?.['X-Community-Key']).toMatch(
+      /^[0-9a-f-]{36}$/,
+    );
 
     await act(async () => resolve(Response.json({ likeCount: 9, liked: true })));
     expect(button().textContent).toBe('Like (9 likes)');

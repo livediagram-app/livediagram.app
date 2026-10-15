@@ -17,7 +17,7 @@
     "perfect-freehand": "^1.2.3"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "oxlint",
     "test": "vitest run",
     "stroke-points": "node --import ../../scripts/ts-source-hooks.mjs scripts/expand-stroke-points.ts",
     "test:coverage": "vitest run --coverage",
@@ -25,13 +25,12 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "devDependencies": {
-    "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
-    "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.3",
-    "eslint": "^10.12.0",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   }
 }

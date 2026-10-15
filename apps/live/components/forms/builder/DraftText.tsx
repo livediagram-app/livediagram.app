@@ -12,6 +12,7 @@ import {
   useState,
   type KeyboardEvent,
 } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // How long typing pauses before it is saved. Safe range 250..1000 ms.
 export const DRAFT_SAVE_MS = 500;
@@ -69,9 +70,8 @@ export const DraftText = forwardRef<
     onSave(text);
   };
   // A pending save is not lost when the field goes (a question deselected mid-word).
-  const flushRef = useRef(flush);
-  flushRef.current = flush;
-  useEffect(() => () => flushRef.current(), []);
+  const flushRef = useLatest(flush);
+  useEffect(() => () => flushRef.current(), [flushRef]);
   useImperativeHandle(ref, () => ({
     focus: () => input.current?.focus(),
     flush: () => flushRef.current(),
@@ -84,15 +84,14 @@ export const DraftText = forwardRef<
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`;
   }, [draft, multiline]);
+  const classes = `w-full bg-transparent outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 ${className}`;
   const props = {
-    ref: input,
     value: draft,
     placeholder,
     maxLength,
     disabled,
     autoFocus,
     'aria-label': label,
-    className: `w-full bg-transparent outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 ${className}`,
     onChange: (e: { target: { value: string } }) => {
       setDraft(e.target.value);
       if (timer.current) clearTimeout(timer.current);
@@ -114,8 +113,13 @@ export const DraftText = forwardRef<
       : undefined,
   };
   return multiline ? (
-    <textarea rows={1} {...props} className={`${props.className} resize-none overflow-hidden`} />
+    <textarea
+      ref={input}
+      rows={1}
+      {...props}
+      className={`${classes} resize-none overflow-hidden`}
+    />
   ) : (
-    <input type="text" {...props} />
+    <input ref={input} type="text" {...props} className={classes} />
   );
 });

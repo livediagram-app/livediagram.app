@@ -8,6 +8,7 @@
 // (gantt-names-resize.tsx). Rows may sit in swimlanes, laid out top down in one pass (ganttLayout), in the chart's
 // own row order when it has one; a row's grip drags it to a new place (useGanttRowReorder).
 import { useMemo, useRef, useState } from 'react';
+import { useToday } from '@/hooks/ui/useToday';
 import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import {
   ITEM_TYPES,
@@ -59,7 +60,7 @@ export function GanttView({
 }: PlanViewProps) {
   const phases = plan?.statusPhases ?? NO_PHASES;
   const types = plan?.types ?? ITEM_TYPES;
-  const now = new Date();
+  const now = useToday();
   const dayKey = now.toDateString();
   // The card types the chart draws: its own (else every one), of those offering Start and Due (plan-views.md
   // "Card types").

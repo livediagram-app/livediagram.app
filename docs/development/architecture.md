@@ -37,7 +37,8 @@ packages/
   telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)
   licences/       build-time generator of the /licences page from what each app bundles
   fake-google/    in-memory Google Drive + OAuth for tests only
-  eslint-config/  shared ESLint flat config
+  source-ast/     parses the repo's own TypeScript with TypeScript 7, for the static guards that read code
+  oxlint-config/  shared oxlint config + the repo's own lint rules
   prettier-config/shared Prettier config
   tailwind-config/shared Tailwind theme (brand palette, motion tokens) + the motion-budget guard
   vitest-config/  shared Vitest defaults
@@ -97,13 +98,14 @@ Each app pulls these in via `workspace:*`:
 - **`@livediagram/help-registry`** owns the help-centre article + category registry: slugs, titles, descriptions, and per-article search keywords, plus the pure href/search helpers. Two callers: the help app's browse + search (`apps/help/lib/articles.ts` re-exports it) and the live editor's search-panel Help group (`apps/live/lib/help-search.ts`), so adding an article once makes it findable in both.
 - **`@livediagram/licences`** generates the third-party licences page ([Third-party licences](../specs/002-project-scope/third-party-licences.md)). The marketing build runs it after every other app has built: it reads what each Next app ships to the browser from `next experimental-analyze` and what each worker bundles from a `wrangler --dry-run` metafile, collects each package's licence and notice files (with reviewed overrides for packages that ship none, and a reviewed table for what sits inside WASM and fonts), and writes a manifest plus deduplicated plain-text files that `apps/marketing/app/licences` renders. A package with no licence text, an unrecognised licence, a disallowed one or an unreviewed binary fails the build with a named error.
 - **`@livediagram/fake-google`** is an in-memory Google for tests only: the Drive REST API the [Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md) uses (files, folders, parents, the bin, `changes.list` page tokens, `appProperties`, `md5Checksum` / `headRevisionId`, multipart and resumable uploads, `fields` and `q`) plus the OAuth token and revoke endpoints, with `user*` calls that act as the person in Drive's own UI and injectable 401 / 403 / 404 / 429 failures. The live app's engine tests and the opt-in Drive e2e run against it, so the mirror is proven without real Google credentials. Never imported by an app bundle.
-- **`@livediagram/eslint-config`** / **`prettier-config`** / **`tailwind-config`** / **`vitest-config`** / **`next-config`** own the shared lint / format / theme / test / Next.js configs so every workspace stays consistent. `tailwind-config` also owns the motion tokens (`duration-micro` / `-short` / `-long`, mirrored as numbers in `@livediagram/tailwind-config/motion`) and the static motion-budget guard every app runs in its tests ([Motion](../specs/004-interface-design/motion.md)).
+- **`@livediagram/source-ast`** parses the repo's own TypeScript for the static guards that read code ([Source scanners](../specs/003-system-architecture/source-scanners.md)): `parseSourceFiles(paths)` opens the files as one in-memory project in TypeScript 7's native compiler (`typescript/unstable/sync`) and returns their syntax trees.
+- **`@livediagram/oxlint-config`** / **`prettier-config`** / **`tailwind-config`** / **`vitest-config`** / **`next-config`** own the shared lint / format / theme / test / Next.js configs so every workspace stays consistent. `tailwind-config` also owns the motion tokens (`duration-micro` / `-short` / `-long`, mirrored as numbers in `@livediagram/tailwind-config/motion`) and the static motion-budget guard every app runs in its tests ([Motion](../specs/004-interface-design/motion.md)).
 
 ## Tech stack
 
 What's running:
 
-- **Frontend**: Next.js 16 (Turbopack) with `output: 'export'`, React 19, TypeScript 7 (the Go compiler; the tools that need a compiler API still get 6.0 through an alias, see [contributing](contributing.md#two-typescripts)), Tailwind CSS 4.
+- **Frontend**: Next.js 16 (Turbopack) with `output: 'export'`, React 19, TypeScript 7 (the Go compiler, see [contributing](contributing.md#typescript)), Tailwind CSS 4.
 - **API**: Cloudflare Workers (vanilla `fetch` handlers, not Hono).
 - **Database**: Cloudflare D1 (SQLite-on-the-edge), accessed only via the api worker.
 - **Local persistence** (optional per document, [Offline Mode](../specs/006-document/offline-mode.md)): Offline Mode stores a document only in the browser's IndexedDB, never the api. It is opt-in at create time (or by taking a cloud document offline) and dispatched behind the single `apps/live/lib/api-client.ts` persistence boundary on `isOfflineId(id)`, so the rest of the editor takes the same code path either way. Convertible both directions: Sync Document uploads it to D1, Take Offline downloads it and deletes the server copy. See [Offline Mode](../specs/006-document/offline-mode.md).

@@ -96,7 +96,7 @@ export function useIndicatorLayout(
         ? null
         : placeCluster(element, cornerPx, items, style, content),
     // The outline's inputs, the content's and what the cluster holds; not the handlers.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     [
       shape,
       element.width,

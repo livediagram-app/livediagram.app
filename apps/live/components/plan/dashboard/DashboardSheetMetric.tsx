@@ -83,7 +83,7 @@ function SheetMetricBody({
   const sheet = read.state === 'ready' ? read.sheet : null;
   const shown = useMemo(
     () => (read.state === 'ready' ? sheetMetricShown(content, read) : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     [content, version, sheet],
   );
   const name = SHEET_METRIC_NAMES[content.metric];

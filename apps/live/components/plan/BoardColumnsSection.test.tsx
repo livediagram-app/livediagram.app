@@ -62,7 +62,7 @@ function show(setup: PlanBoardSetup, overrides: Record<string, unknown> = {}) {
   const onClose = vi.fn();
   const { rerender } = render(<BoardColumnsSection element={element} open onClose={onClose} />);
   const statuses = () =>
-    (updateBoard.mock.lastCall?.[1] as PlanBoardSetup).columns.map((c) => c.status);
+    (updateBoard.mock.lastCall?.[1] as PlanBoardSetup | undefined)?.columns.map((c) => c.status);
   // The board redrawn with the set-up it was just given.
   const redraw = () =>
     rerender(
@@ -124,7 +124,7 @@ describe('BoardColumnsSection', () => {
       target: { value: 'QA' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Add Column' }));
-    expect(statuses()[2]).toMatch(/^qa~/);
+    expect(statuses()?.[2]).toMatch(/^qa~/);
     expect(statuses()).toHaveLength(4);
     expect(track).toHaveBeenCalledWith('ColumnAdded');
   });

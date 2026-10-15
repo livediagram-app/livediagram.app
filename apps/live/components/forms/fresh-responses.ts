@@ -4,6 +4,7 @@
 // ago and not yet opened in this browser. What has been opened is kept per browser (local storage, the newest
 // FRESH_OPENED_MAX ids), and read through a small store so every card drawing the mark updates when one is opened.
 import { useSyncExternalStore } from 'react';
+import { useToday } from '@/hooks/ui/useToday';
 import { FROM_FORM_FIELD, readFromForm } from '@livediagram/forms';
 import type { Item } from '@livediagram/items';
 
@@ -69,9 +70,10 @@ export function useFreshResponse(item: Pick<Item, 'id' | 'fields' | 'createdAt'>
     () => version,
     () => 0,
   );
-  // Read at draw: a card older than the week stops showing New at its next draw.
-  // eslint-disable-next-line react-hooks/purity -- the week is coarse; a draw's own clock is enough
-  return isFreshResponse(item, Date.now());
+  // The week is coarse, so it is measured from today (useToday, which moves on at midnight), never the clock read
+  // while drawing: a card stops showing New at the first midnight after it turns a week old.
+  const today = useToday();
+  return isFreshResponse(item, today.getTime());
 }
 
 // For tests: forget what this browser opened.

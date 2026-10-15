@@ -265,7 +265,7 @@ export function useSheetModel(
   const items = plan?.items;
   const types = plan?.types;
   const statusNames = plan?.statusNames;
-  const usesCards = useMemo(() => workbook.usesCards(), [workbook, version]); // eslint-disable-line react-hooks/exhaustive-deps
+  const usesCards = useMemo(() => workbook.usesCards(), [workbook, version]); // oxlint-disable-line react/exhaustive-deps
   useEffect(() => {
     if (!usesCards || !items || !types) return;
     store.setCards(cardSourceOf(items.values(), types, { statusNames, version: Date.now() }));

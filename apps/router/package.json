@@ -8,7 +8,7 @@
     "deploy": "wrangler deploy",
     "staging:check": "wrangler deploy --dry-run --env staging",
     "dev": "wrangler dev --env local --port 3000 --inspector-port 9231",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist .wrangler node_modules .turbo"
@@ -16,13 +16,12 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261007.1",
     "@livediagram/api-schema": "workspace:*",
-    "@livediagram/eslint-config": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
+    "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
-    "@typescript/native": "npm:typescript@^7.0.2",
-    "eslint": "^10.12.0",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.3",
     "wrangler": "^4.148.0"
   }

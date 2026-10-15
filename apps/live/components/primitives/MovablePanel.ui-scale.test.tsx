@@ -3,7 +3,7 @@
 // at its root, and a free-dragged panel stays at the screen position it was
 // dropped at, so its stored screen-px position is written divided by the
 // scale. A corner panel stays its design 16px from the corner.
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, render, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 
@@ -101,12 +101,7 @@ describe('Panel opacity (docs/specs/007-editor/user-preferences.md)', () => {
 
 describe('useUiScale', () => {
   it('is 1 with no provider', () => {
-    let seen = 0;
-    function Probe() {
-      seen = useUiScale('panels');
-      return null;
-    }
-    render(<Probe />);
-    expect(seen).toBe(1);
+    const { result } = renderHook(() => useUiScale('panels'));
+    expect(result.current).toBe(1);
   });
 });

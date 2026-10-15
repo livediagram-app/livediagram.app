@@ -34,7 +34,7 @@ describe('serialiseElements', () => {
     const elements = [shape('a'), shape('b', { x: 40 })];
     const back = parseElementsPayload(serialiseElements(elements));
     expect(back?.map((el) => el.id)).toEqual(['a', 'b']);
-    expect((back?.[1] as ShapeElement).x).toBe(40);
+    expect((back?.[1] as ShapeElement | undefined)?.x).toBe(40);
   });
 
   it('writes the envelope the reader discriminates on', () => {

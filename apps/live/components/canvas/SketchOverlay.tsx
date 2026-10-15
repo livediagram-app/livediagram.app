@@ -34,7 +34,7 @@ export function useSketchPaint(
   return useMemo(
     () => sketchElementPaint(element, finish, fill, backdrop),
     // The fields sketchElementPaint reads, so moving the element keeps the drawing.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     [
       element.id,
       element.type,

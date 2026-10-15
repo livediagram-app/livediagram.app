@@ -263,7 +263,7 @@ export function Minimap({
       bounds: content,
     };
     // `writing` changes with the documents' text, which the bars read off the editors.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [elements, pages, tabFont, tabFinish, iconsLoaded, surface, writing, laidOut]);
 
   const recentreToClient = (clientX: number, clientY: number) => {

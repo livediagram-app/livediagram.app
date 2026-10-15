@@ -220,7 +220,8 @@ packages/
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles
-  eslint-config/  # shared ESLint flat config
+  source-ast/   # parses the repo's own TypeScript with TypeScript 7, for the static guards that read code
+  oxlint-config/  # shared oxlint config + the repo's own lint rules
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
   vitest-config/  # shared Vitest defaults (extended per workspace)
@@ -275,7 +276,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 - If two apps need the same thing (UI component, util, type, schema, API client, validator, config), it lives in `packages/`, not copied into each app.
 - If you find yourself copy-pasting code across apps or packages, stop and extract it. "I'll dedupe later" is how drift starts.
 - Design package APIs to be consumed by multiple callers — generic enough to reuse, specific enough to be useful.
-- Tailwind theme, ESLint, Prettier, TS config, and shared UI primitives all live in `packages/` for exactly this reason.
+- Tailwind theme, oxlint, Prettier, TS config, and shared UI primitives all live in `packages/` for exactly this reason.
 
 When the right place for code is genuinely unclear, default to `packages/`.
 
