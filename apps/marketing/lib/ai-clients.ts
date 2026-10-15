@@ -238,10 +238,6 @@ export const AI_CLIENTS: readonly AiClient[] = [
   },
 ];
 
-export function aiClientById(id: string): AiClient | undefined {
-  return AI_CLIENTS.find((c) => c.id === id);
-}
-
 export type StarterPrompt = { title: string; prompt: string };
 
 // Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_document with a graph,

@@ -41,7 +41,7 @@ Third-party menu names drift, so each client's last line says where to look if a
 ## Behaviour
 
 - **Copy** buttons use `navigator.clipboard.writeText` and `useCopiedFlash`: the label turns to "Copied" with a check for two seconds and a polite live region beside the button (never inside it, where a button's children are not read as a region) announces it. A button's accessible name starts with the words it shows ("Copy prompt: Map a codebase"), so it can be named by voice. A blocked clipboard leaves the button as it was; the text is always selectable. A command's `$ ` prompt is drawn by CSS, so selecting and copying the block by hand never takes it along.
-- **Tabs** follow the WAI-ARIA tabs pattern: `role="tablist"`, roving `tabIndex`, Left/Right/Home/End move and select, each tab `aria-controls` its panel.
+- **Tabs** follow the WAI-ARIA tabs pattern: `role="tablist"`, roving `tabIndex`, the arrow keys (either pair) and Home/End move and select, each tab `aria-controls` its panel. The list's `aria-orientation` follows its layout: vertical down the side from `lg`, horizontal across the top below it. Its group headings cannot sit in a tablist, so each tab is `aria-describedby` its group's heading. A link to `/ai#<client>` opens on that client in the hydrating render, before paint; the static HTML itself shows the first client until the page's script runs.
 - **One-click links** (`cursor:`, `vscode:`) open the editor app when it is installed; the manual config sits right under each, so nothing depends on the link.
 
 ## Share roles
