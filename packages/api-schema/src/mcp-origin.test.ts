@@ -17,6 +17,11 @@ describe('resolveMcpOrigin', () => {
       'https://mcp-staging.livediagram.app',
     );
     expect(resolveMcpOrigin('https://mcp.example.com/')).toBe('https://mcp.example.com');
+    expect(resolveMcpOrigin('https://mcp.example.com///')).toBe('https://mcp.example.com');
+    // A long run of slashes strips in one pass (a `/\/+$/` regex backtracked on it).
+    expect(resolveMcpOrigin(`x${'/'.repeat(200_000)}a${'/'.repeat(200_000)}`)).toBe(
+      `x${'/'.repeat(200_000)}a`,
+    );
   });
 
   it('puts the endpoint path on the origin', () => {

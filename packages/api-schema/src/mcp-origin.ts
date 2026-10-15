@@ -13,7 +13,11 @@ export const DEFAULT_MCP_ORIGIN = 'https://mcp.livediagram.app';
 // has expired" for every connecting client.
 export function resolveMcpOrigin(raw: string | undefined): string {
   const trimmed = raw?.trim();
-  return trimmed ? trimmed.replace(/\/+$/, '') : DEFAULT_MCP_ORIGIN;
+  if (!trimmed) return DEFAULT_MCP_ORIGIN;
+  // Trailing slashes off by a scan, not a regex: `/\/+$/` backtracks on a long run of slashes.
+  let end = trimmed.length;
+  while (end > 0 && trimmed[end - 1] === '/') end--;
+  return trimmed.slice(0, end);
 }
 
 /** The address an AI tool connects to: the MCP worker's streamable HTTP endpoint. */
