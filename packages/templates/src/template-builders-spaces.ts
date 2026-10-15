@@ -6,12 +6,12 @@
 
 import { createShape, createSticky, createText, type Element } from '@livediagram/document';
 import { heading } from './template-session-parts';
-import { furnishRooms, walkIn, type OfficePiece, type OfficeRoom } from './template-office-parts';
+import { officePlan, walkIn, type OfficePiece, type OfficeRoom } from './template-office-parts';
 
 const HEAD = 96;
 const BELOW = 120;
 
-// Floors first (rooms, then rugs), then the heading, then everything else, so a title never lies under a floor.
+// A space's floor plan with its heading (officePlan: floors first, then the heading, then the rest).
 function plan(
   x0: number,
   y0: number,
@@ -23,16 +23,14 @@ function plan(
   subtitle: string,
   extra: Element[],
 ): Element[] {
-  const placed = furnishRooms(rooms, x0, y0 + HEAD);
-  const floors = placed.filter(
-    (e) => e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug'),
+  return officePlan(
+    rooms,
+    x0,
+    y0,
+    HEAD,
+    heading(x0, y0, width, title, titleW, sticker, subtitle),
+    extra,
   );
-  return [
-    ...floors,
-    ...heading(x0, y0, width, title, titleW, sticker, subtitle),
-    ...placed.slice(floors.length),
-    ...extra,
-  ];
 }
 
 // Two desks facing two across a shared bench: the far pair's sitters face you, the near pair's face away.
@@ -254,7 +252,7 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
       ...walkIn(
         x0 + width,
         y0 + HEAD + HALL_H + BELOW / 2,
-        'Press Walk In (or W) and take a seat. Raise a hand with the Avatar panel’s reactions.',
+        'Press Walk In (or W) and take a seat. Raise a hand with the Avatar panel’s Behaviour › Wave, which everyone sees.',
       ),
     ],
   );

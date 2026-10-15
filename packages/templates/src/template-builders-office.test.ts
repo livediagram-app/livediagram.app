@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { roomWalls, type Element } from '@livediagram/document';
 import { buildTemplate } from './build-template';
+import { furnishRooms } from './template-office-parts';
 
 // docs/specs/012-collaboration/virtual-office-template.md
 describe('the Virtual Office template', () => {
@@ -104,5 +105,31 @@ describe('the space templates', () => {
     expect(chairs).toHaveLength(32);
     expect(chairs.every((c) => c.type === 'shape' && c.chairFacing === 's')).toBe(true);
     expect(count(els, 'focus-button')).toBe(1);
+    // A raised hand is Behaviour › Wave, which everyone sees; a Reactions burst plays on its sender's screen only.
+    const hint = els.find((e) => e.type === 'text' && /take a seat/.test(e.label ?? ''));
+    expect(hint?.label).toMatch(/Wave/);
+    expect(hint?.label).not.toMatch(/reactions/i);
+  });
+});
+
+describe('furnishRooms', () => {
+  it('keeps a piece given one side to its drawing’s proportion', () => {
+    const [, rug] = furnishRooms(
+      [
+        {
+          name: 'R',
+          x: 0,
+          y: 0,
+          w: 600,
+          h: 400,
+          door: 's',
+          pieces: [{ kind: 'rug', x: 10, y: 10, w: 400 }],
+        },
+      ],
+      0,
+      0,
+    ) as (Element & { width: number; height: number })[];
+    expect(rug!.width).toBe(400);
+    expect(rug!.height).toBe(240);
   });
 });
