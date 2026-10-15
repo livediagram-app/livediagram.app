@@ -117,7 +117,9 @@ export function applyPageChanges(
   const newFlowId = ids.flow ?? (() => nextArticleFlowId());
   // The pages a delete in this change took, an article's whole flow among them: a later delete naming one by id is
   // already done, never a missing page that undoes the change.
-  const removed = new Set<string>();
+  // The pages an earlier delete in this change took (an article's pages go together), as they were, so a later delete
+  // naming one by its id or its name is answered rather than refused.
+  const removed: IllustratePage[] = [];
   try {
     changes.forEach((change, i) => {
       const stop = (code: IllustrateRefusal['code'], message: string): never => {
@@ -266,25 +268,22 @@ export function applyPageChanges(
           return;
         }
         case 'delete': {
-          if (typeof change.page === 'string' && removed.has(change.page)) {
+          if (
+            typeof change.page === 'string' &&
+            !resolvePage(pages(), change.page) &&
+            resolvePage(removed, change.page)
+          ) {
             lines.push(`Page ${change.page} went with what an earlier delete in this change took.`);
             return;
           }
           const page = pageOf(change);
-          const gone = page.flow
-            ? pages()
-                .filter((p) => p.flow === page.flow)
-                .map((p) => p.id)
-            : [page.id];
+          // An article's pages go together.
+          const gone = page.flow ? pages().filter((p) => p.flow === page.flow) : [page];
           const at = placeOf(page.id);
-          const count = page.flow ? pages().filter((p) => p.flow === page.flow).length : 1;
-          const els = page.flow
-            ? pages()
-                .filter((p) => p.flow === page.flow)
-                .reduce((n, p) => n + onPage(p.id), 0)
-            : onPage(page.id);
+          const count = gone.length;
+          const els = gone.reduce((n, p) => n + onPage(p.id), 0);
           current = take(pageRemoved(current, page.id), page);
-          for (const id of gone) removed.add(id);
+          removed.push(...gone);
           lines.push(
             page.flow
               ? `Deleted the article on page ${at} (${count} pages, writing and ${els} elements).`
