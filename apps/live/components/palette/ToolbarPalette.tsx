@@ -214,6 +214,8 @@ export function ToolbarPalette(props: Props) {
       }),
     [tabs],
   );
+  // The bar has no Popular: with every category one press away, a pick from across them adds nothing.
+  const barCategories = useMemo(() => tabs.filter((t) => t.id !== 'popular'), [tabs]);
   // A category this mode does not offer (one picked in another mode) shows the mode's landing.
   const category =
     tabs.find((t) => t.id === categoryId) ?? tabs.find((t) => t.id === defaultId) ?? tabs[0];
@@ -469,7 +471,11 @@ export function ToolbarPalette(props: Props) {
                         </>
                       )}
                       {categoryBar ? (
-                        <CategoryBarButtons bar={bar} categories={tabs} labels={barLabels} />
+                        <CategoryBarButtons
+                          bar={bar}
+                          categories={barCategories}
+                          labels={barLabels}
+                        />
                       ) : (
                         <>
                           {/* The category picker sits between the selection mode and the
@@ -580,7 +586,7 @@ export function ToolbarPalette(props: Props) {
           {categoryBar ? (
             <CategoryBarFlyout
               bar={bar}
-              categories={tabs}
+              categories={barCategories}
               actions={tileActions}
               pendingDraw={pendingDraw ?? null}
               isMobile={isMobile}
