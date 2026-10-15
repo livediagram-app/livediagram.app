@@ -118,8 +118,13 @@ new behaviour: each role does what the elements they are built from already allo
 
 ## Testing
 
-- Every template builds, opens in Facilitate and sits in `games` (`templates.test.ts`, `template-categories.test.ts`).
-- Every Pub Quiz card is set up (`quizPhase` is `ready`): four answers, a correct index in range, 30 seconds.
-- Every poll button can start (`sessionButtonPlan` is not null), every Picker over written options has them, and the
-  Bingo grid has sixteen distinct prompts (`template-quiz-games.test.ts`).
+All in `packages/templates/src/template-quiz-games.test.ts` unless named:
+
+- Every template builds, opens in Facilitate and sits in `games`.
+- Every Pub Quiz card is set up (`quizPhase` is `ready`): four answers, a correct index in range, 30 seconds; the
+  right answers are spread over A to D (no letter right more than three times in nine, no round all one letter).
+- Every poll button can start (`sessionButtonPlan` is not null), its answers within the wire's `POLL_OPTION_MAX`, and
+  every Two Truths poll asks "Which one is the lie?"; every Picker over written options has them, and the Bingo grid
+  has sixteen distinct prompts.
+- Every player's sticky is a sticky preset's paper and ink.
 - Every preview draws inside its viewBox and tells a hover story (`template-previews`).
