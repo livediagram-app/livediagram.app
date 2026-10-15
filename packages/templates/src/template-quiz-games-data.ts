@@ -52,18 +52,18 @@ export const PUB_QUIZ_ROUNDS: readonly QuizRound[] = [
     questions: [
       {
         question: 'What is the chemical symbol for gold?',
-        options: ['Ag', 'Au', 'Gd', 'Go'],
-        correct: 1,
+        options: ['Ag', 'Gd', 'Go', 'Au'],
+        correct: 3,
       },
       {
         question: 'How many legs does a spider have?',
-        options: ['6', '8', '10', '12'],
-        correct: 1,
+        options: ['8', '6', '10', '12'],
+        correct: 0,
       },
       {
         question: 'Which planet is known as the Red Planet?',
-        options: ['Venus', 'Mars', 'Jupiter', 'Saturn'],
-        correct: 1,
+        options: ['Venus', 'Jupiter', 'Mars', 'Saturn'],
+        correct: 2,
       },
     ],
   },

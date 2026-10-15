@@ -9,7 +9,12 @@ import {
 import { buildTemplate } from './build-template';
 import { templateCategory } from './template-categories';
 import { templateEditorMode } from './template-modes';
-import { BINGO_PROMPTS, ICEBREAKER_QUESTIONS, PUB_QUIZ_SECONDS } from './template-quiz-games-data';
+import {
+  BINGO_PROMPTS,
+  ICEBREAKER_QUESTIONS,
+  PUB_QUIZ_ROUNDS,
+  PUB_QUIZ_SECONDS,
+} from './template-quiz-games-data';
 import type { TemplateKind } from './templates';
 
 // docs/specs/012-collaboration/quiz-and-game-templates.md "Testing".
@@ -100,5 +105,16 @@ describe('quiz and game templates', () => {
     expect(new Set(BINGO_PROMPTS).size).toBe(16);
     const cells = shapes(buildTemplate('people-bingo', 0, 0), 'square');
     expect(cells.map((c) => c.label)).toEqual(BINGO_PROMPTS);
+  });
+});
+
+describe('the Pub Quiz answers', () => {
+  it('spreads the right answers over the letters, so picking one letter scores nothing special', () => {
+    const correct = PUB_QUIZ_ROUNDS.flatMap((r) => r.questions.map((q) => q.correct));
+    const share = (i: number) => correct.filter((c) => c === i).length;
+    for (const i of [0, 1, 2, 3]) expect(share(i), `letter ${'ABCD'[i]}`).toBeLessThanOrEqual(3);
+    // And no round answers one letter throughout.
+    for (const r of PUB_QUIZ_ROUNDS)
+      expect(new Set(r.questions.map((q) => q.correct)).size).toBeGreaterThan(1);
   });
 });
