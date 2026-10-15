@@ -56,6 +56,18 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'PageSet', command: 'page set', what: 'changing a tab’s Illustrate pages' },
   { type: 'ArticleGet', command: 'article get', what: 'reading an article as Markdown' },
   { type: 'ArticleSet', command: 'article set', what: 'writing an article from Markdown' },
+  {
+    type: 'FormGet',
+    command: 'form get',
+    what: 'reading a form, its link and where its responses go',
+  },
+  { type: 'FormAdd', command: 'form add', what: 'adding a form from a starter or questions' },
+  { type: 'FormChange', command: 'form change', what: 'changing a form from a file of changes' },
+  {
+    type: 'FormShare',
+    command: 'form share',
+    what: 'publishing, closing or deleting a form’s link',
+  },
   { type: 'TypeLs', command: 'type ls', what: 'listing a document’s card types' },
   { type: 'TypeApply', command: 'type apply', what: 'changing card types from a file' },
   { type: 'ChangesetApply', command: 'edit', what: 'applying edit operations from a file' },
