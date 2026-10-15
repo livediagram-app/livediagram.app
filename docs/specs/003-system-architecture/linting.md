@@ -12,8 +12,8 @@ adds one override for its Playwright suite). Every rule is an **error**; there a
 ## Why
 
 The linter must not hold the compiler back. ESLint's TypeScript support imports the classic TypeScript
-compiler API, which TypeScript 7 does not ship; oxlint parses TypeScript itself, and runs faster. The rules the repo enforced under ESLint carry over one by one, so the move changes the tool,
-not the bar.
+compiler API, which TypeScript 7 does not ship; oxlint parses TypeScript itself, and runs faster. The
+rules the repo enforced under ESLint carry over one by one, so the move changes the tool, not the bar.
 
 ## The rules
 

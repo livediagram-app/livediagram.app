@@ -36,10 +36,9 @@
     "@cloudflare/workers-types": "^5.20261007.1",
     "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
-    "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.3",
     "wrangler": "^4.148.0"
   }

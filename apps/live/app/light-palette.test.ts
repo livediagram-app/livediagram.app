@@ -1,7 +1,14 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import ts from 'typescript';
+import {
+  isNoSubstitutionTemplateLiteral,
+  isStringLiteral,
+  isTemplateExpression,
+  type Node,
+  type SourceFile,
+} from 'typescript/unstable/ast';
+import { parseSourceFiles } from '@livediagram/source-ast';
 import { describe, expect, it } from 'vitest';
 
 // White text on a solid brand fill, in light mode (docs/specs/004-interface-design/color-scheme.md, Usage
@@ -107,28 +114,28 @@ const CANDIDATES = SOURCES.filter(
 );
 
 /** Each string literal on its own, and each template literal with its static chunks joined. */
-function classStrings(path: string, text: string): { path: string; text: string }[] {
-  const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
+function classStrings(source: SourceFile): { path: string; text: string }[] {
+  const path = source.fileName;
   const out: { path: string; text: string }[] = [];
-  const visit = (node: ts.Node): void => {
-    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+  const visit = (node: Node): void => {
+    if (isStringLiteral(node) || isNoSubstitutionTemplateLiteral(node)) {
       out.push({ path, text: node.text });
-    } else if (ts.isTemplateExpression(node)) {
+    } else if (isTemplateExpression(node)) {
       out.push({
         path,
         text: [node.head.text, ...node.templateSpans.map((s) => s.literal.text)].join(' '),
       });
     }
-    ts.forEachChild(node, visit);
+    node.forEachChild(visit);
   };
   visit(source);
   return out.map((s) => ({ ...s, path: relative(REPO, s.path) }));
 }
 
-const STRINGS = CANDIDATES.flatMap(({ path, text }) => classStrings(path, text));
-const INK_STRINGS = SOURCES.filter(({ text }) => /text-brand-(500|600)\b/.test(text)).flatMap(
-  ({ path, text }) => classStrings(path, text),
-);
+const STRINGS = parseSourceFiles(CANDIDATES.map(({ path }) => path)).flatMap(classStrings);
+const INK_STRINGS = parseSourceFiles(
+  SOURCES.filter(({ text }) => /text-brand-(500|600)\b/.test(text)).map(({ path }) => path),
+).flatMap(classStrings);
 const tokens = (text: string) => text.split(/\s+/).filter(Boolean);
 /** A light-mode utility (no `dark:` variant), with any other variant (`hover:`, `group-hover:`…). */
 const light = (re: RegExp) => (token: string) => !token.includes('dark:') && re.test(token);
