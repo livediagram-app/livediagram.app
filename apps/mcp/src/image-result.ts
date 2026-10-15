@@ -32,11 +32,10 @@ import {
 import { planTabKindOf } from '@livediagram/plan-art';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
-// The preview resolvers: an emoji (no emoji font in a Worker) draws as a labelled disc, not missing-glyph boxes.
-import {
-  resolveIconPreviewArt as resolveIconExportArt,
-  resolveStickerPreviewArt as resolveStickerArt,
-} from '@livediagram/icons/resolve';
+// The preview resolvers: an emoji (no emoji font in a Worker) draws from its fetched art, else as a labelled disc,
+// never as missing-glyph boxes.
+import { previewResolvers } from '@livediagram/icons/resolve';
+import { emojiGlyphsOf, previewEmoji } from './preview-emoji';
 import { chartsReadLive } from '@livediagram/agent-verbs';
 import { svgToPngBase64 } from './render';
 import { INTER_ITALIC, previewFonts } from './preview-fonts';
@@ -161,25 +160,21 @@ export async function tabPreview(
   if (laidOutPagesOf(tab).length > 0) {
     // Its pictures, its Plan cards and sheets (a sheet or a sheet-linked chart on a page draws what it holds, as on any
     // tab) and its faces, fetched together rather than one after another.
-    const [resolveImageHref, content, fonts] = await Promise.all([
+    const [resolveImageHref, content, fonts, emoji] = await Promise.all([
       auth ? buildImageResolver(auth.env, auth.token, tab) : undefined,
       planContentFor(tab, auth, undefined),
       previewFonts(tabFontIds(tab)),
+      previewEmoji(emojiGlyphsOf(tab.elements)),
     ]);
     const { sheetJson, ...withContent } = content;
     const live = sheetJson ? { ...tab, elements: chartsReadLive(tab.elements, sheetJson) } : tab;
-    const drawWith = {
-      resolveImageHref,
-      resolveIconArt: resolveIconExportArt,
-      resolveStickerArt,
-      ...withContent,
-    };
+    const drawWith = { resolveImageHref, ...previewResolvers(emoji), ...withContent };
     const svg = page ? renderPageToSvg(live, page, drawWith) : renderPagesToSvg(live, drawWith)!;
     return { type: 'image', data: await svgToPngBase64(svg, fonts), mimeType: 'image/png' };
   }
   // A Plan tab as the editor exports it: a Dashboard laid out, its pictures drawn from the cards.
-  const plain = (shown: Tab) =>
-    renderElementsToSvg(shown, { resolveIconArt: resolveIconExportArt, resolveStickerArt });
+  const art = previewResolvers(await previewEmoji(emojiGlyphsOf(tab.elements)));
+  const plain = (shown: Tab) => renderElementsToSvg(shown, art);
   const laidOut = await planPreviewFor(tab, auth, plain).catch(() => null);
   const drawn = laidOut?.tab ?? tab;
   const [resolveImageHref, content] = await Promise.all([
@@ -214,8 +209,7 @@ export async function tabPreview(
   const png = await svgToPngBase64(
     renderElementsToSvg(live, {
       resolveImageHref,
-      resolveIconArt: resolveIconExportArt,
-      resolveStickerArt,
+      ...art,
       ...drawWith,
       ...(laidOut ? { resolvePlanArt: laidOut.artWith(content) } : {}),
     }),

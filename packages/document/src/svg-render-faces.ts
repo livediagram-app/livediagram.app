@@ -37,6 +37,7 @@ import {
   RUG_FILL,
 } from './office';
 import { chairSeatFill } from './shape-geometry';
+import type { ResolveEmojiArt } from './svg-render-describe';
 import { REACTION_DEFAULT, REACTION_EMOJI, REACTION_HUES } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { formatTimerClock } from './session';
@@ -121,6 +122,8 @@ export function svgBehaviourFace(
   surface: CanvasSurface = 'light',
   // The card's resolved fill, for the Comment and Action panels' accent ink.
   fill?: string,
+  // An emoji's art, for the reaction pad's glyph where no emoji font is.
+  resolveEmojiArt?: ResolveEmojiArt,
 ): string | null {
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
@@ -192,7 +195,7 @@ export function svgBehaviourFace(
     case 'picker':
       return picker(el, cx, cy, title, color, surface);
     case 'reaction-pad':
-      return reactionPad(el, cx, cy, title, color);
+      return reactionPad(el, cx, cy, title, color, resolveEmojiArt);
     case 'chair':
     case 'desk':
     case 'sofa':
@@ -291,7 +294,14 @@ function portalArt(el: Face, stroke: string): string {
 // min(34% of the width, 40% of the height) standing on its glowing spot, and
 // the label in a quiet chip. Whether the emoji paints in colour depends on the
 // renderer's emoji font, the bargain every emoji in an export makes.
-function reactionPad(el: Face, cx: number, cy: number, title: string, color: string): string {
+function reactionPad(
+  el: Face,
+  cx: number,
+  cy: number,
+  title: string,
+  color: string,
+  resolveEmojiArt?: ResolveEmojiArt,
+): string {
   const reaction = el.reaction ?? REACTION_DEFAULT;
   const [from, to] = REACTION_HUES[reaction];
   const id = xmlEscape(el.id);
@@ -310,8 +320,7 @@ function reactionPad(el: Face, cx: number, cy: number, title: string, color: str
     `</defs>` +
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(borderOf(el).radius)}" fill="url(#pad-wash-${id})"/>` +
     `<ellipse cx="${r2(cx)}" cy="${r2(spotY + spotH / 2)}" rx="${r2(el.width * 0.23)}" ry="${r2(spotH / 2)}" fill="url(#pad-spot-${id})"/>` +
-    `<text x="${r2(cx)}" y="${r2(top + size / 2)}" text-anchor="middle" dominant-baseline="central"` +
-    ` font-size="${r2(size)}">${xmlEscape(REACTION_EMOJI[reaction])}</text>` +
+    emojiGlyph(REACTION_EMOJI[reaction], cx, top + size / 2, size, resolveEmojiArt) +
     (title
       ? `<rect x="${r2(cx - chipW / 2)}" y="${r2(chipY)}" width="${r2(chipW)}" height="${chipH}" rx="${chipH / 2}" fill="${xmlEscape(color)}" fill-opacity="0.07"/>` +
         text(cx, chipY + 12, title, { size: 10.5, weight: 600, color, anchor: 'middle' })
@@ -586,4 +595,25 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
     case 'path':
       return `<path d="${p.d}" ${paint}/>`;
   }
+}
+
+// An emoji centred on (cx, cy) at `size`: its art where the caller has it (a preview with no emoji font), else the
+// glyph as text for the viewer's emoji font.
+function emojiGlyph(
+  glyph: string,
+  cx: number,
+  cy: number,
+  size: number,
+  resolveEmojiArt?: ResolveEmojiArt,
+): string {
+  const art = resolveEmojiArt?.(glyph);
+  if (art)
+    return (
+      `<svg x="${r2(cx - size / 2)}" y="${r2(cy - size / 2)}" width="${r2(size)}" height="${r2(size)}"` +
+      ` viewBox="${xmlEscape(art.viewBox)}">${art.markup}</svg>`
+    );
+  return (
+    `<text x="${r2(cx)}" y="${r2(cy)}" text-anchor="middle" dominant-baseline="central"` +
+    ` font-size="${r2(size)}">${xmlEscape(glyph)}</text>`
+  );
 }
