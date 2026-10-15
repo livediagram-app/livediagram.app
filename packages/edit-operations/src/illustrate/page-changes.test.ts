@@ -113,6 +113,14 @@ describe('adding', () => {
       expect(illustratePagesOf(run(kept, [{ op: 'add', kind: 'slide' }]).tab)).toHaveLength(2);
   });
 
+  it('never takes a page the same call added as a blank', () => {
+    const out = run(tabOf(), [
+      { op: 'add', kind: 'slide' },
+      { op: 'add', kind: 'slide', name: 'Two' },
+    ]);
+    expect(illustratePagesOf(out.tab).map((p) => p.name ?? null)).toEqual([null, 'Two']);
+  });
+
   it('adds after the last page, with its fields, a layout and a place', () => {
     const tab = tabOf({ pages: [page('p1'), page('p2')] });
     const slide = layoutCatalogueFor('slide').layouts[0]!;
