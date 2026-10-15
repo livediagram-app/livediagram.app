@@ -144,7 +144,8 @@ author]`, `a["Customer account"]`), wherever the entity is named (its block, a r
   the same thing; on the bookstore fixtures it took crossings from one to none and shared runs from 280 px to 30.
   Only the layout sees the turn: each laid-out arrow is turned back after (its ends, heads, bends and label place
   swapped, the line unchanged), so the stored relationship reads as written (`AUTHOR -> BOOK_AUTHOR "writes"`), never
-  "Book publishes Publisher".
+  "Book publishes Publisher". Two entities related both ways (one relationship turned, the other not) are told apart
+  by order, so only the turned one is turned back.
 
 ## Sequence diagrams (agents)
 

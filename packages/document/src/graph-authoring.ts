@@ -13,6 +13,7 @@
 // referencing an unknown node id is dropped rather than producing an arrow
 // to nowhere.
 
+import { BOLD_EM } from './article-layout-estimate';
 import { personCardText } from './person-card';
 import type { ErShape } from './er-heads';
 import { SHAPE_DEFAULT_SIZE } from './factories';
@@ -289,10 +290,19 @@ export function graphToElements(
     }
     const role = n.role?.trim();
     const hasIcon = !!(n as { icon?: string }).icon || !!role;
-    // A person card is as wide as its longer line and a line taller than one.
-    const longer = role && role.length > (n.label ?? '').length ? role : (n.label ?? '');
-    const sized = labelBoxSize(role ? longer : n.label, shape, look, hasIcon);
-    const width = sized.width;
+    // A person card is as wide as its wider line, each measured as it is drawn (personRuns): the name bold at md (the
+    // headless estimate's bold widening, BOLD_EM), the role at the card's own size; and a line taller than one.
+    const sized = role
+      ? labelBoxSize(
+          n.label,
+          shape,
+          { textSize: 'md', fontPx: Math.round(LOOK_FONT_PX.md * BOLD_EM) },
+          hasIcon,
+        )
+      : labelBoxSize(n.label, shape, look, hasIcon);
+    const width = role
+      ? Math.max(sized.width, labelBoxSize(role, shape, look, hasIcon).width)
+      : sized.width;
     const height = role
       ? sized.height + Math.round(LOOK_FONT_PX[look?.textSize ?? 'sm'] * 1.4)
       : sized.height;

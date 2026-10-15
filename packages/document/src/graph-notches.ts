@@ -6,6 +6,7 @@
 
 import { arrowPolyline } from './arrow-path-hits';
 import { buildElementIndex } from './geometry';
+import { rectsIntersect, type Rect } from './geometry-primitives';
 import { segmentHitsBox } from './graph-look';
 import { isBoxed, type BoxedElement, type Element, type Endpoint } from './index';
 
@@ -42,6 +43,23 @@ export function withoutNotches(elements: Element[]): Element[] {
         if (end.kind === 'pinned')
           attached.set(end.elementId, (attached.get(end.elementId) ?? 0) + 1);
   const moves = new Map<string, { x: number; y: number }>();
+  // Whether a box moved `by` stays clear of every other box and inside each frame or lane that held it: a store packed
+  // a gap from its neighbour, or hugged by its frame's padding, has no room for the step and is left where it is.
+  const holders = elements.filter(
+    (el): el is BoxedElement =>
+      isBoxed(el) && el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane'),
+  );
+  const within = (a: Rect, b: Rect) =>
+    a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height;
+  const fits = (id: string, by: { x: number; y: number }) => {
+    const box = boxes.find((b) => b.id === id);
+    if (!box) return false;
+    const moved = { x: box.x + by.x, y: box.y + by.y, width: box.width, height: box.height };
+    return (
+      !boxes.some((b) => b.id !== id && rectsIntersect(moved, b)) &&
+      holders.every((h) => !within(box, h) || within(moved, h))
+    );
+  };
   const out = elements.map((el) => {
     if (el.type !== 'arrow' || el.arrowStyle !== 'angled' || !el.curvePoints?.length) return el;
     if (onBus(el.from) || onBus(el.to)) return el;
@@ -64,7 +82,12 @@ export function withoutNotches(elements: Element[]): Element[] {
       { end: el.to, by: { x: -step.x, y: -step.y } },
       { end: el.from, by: step },
     ].find(({ end }) => end.kind === 'pinned' && (attached.get(end.elementId) ?? 0) === 1);
-    if (leaf && leaf.end.kind === 'pinned' && !moves.has(leaf.end.elementId))
+    if (
+      leaf &&
+      leaf.end.kind === 'pinned' &&
+      !moves.has(leaf.end.elementId) &&
+      fits(leaf.end.elementId, leaf.by)
+    )
       moves.set(leaf.end.elementId, leaf.by);
     const { curvePoints: _bends, ...straight } = el;
     return { ...straight, arrowStyle: 'straight' as const };

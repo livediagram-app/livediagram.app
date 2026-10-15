@@ -143,9 +143,11 @@ function computeSpreadMap(elements: Element[], index: ElementIndex): Map<string,
     const across = (q: Point) => (axis === 'x' ? q.y : q.x);
     const nearness = (e: ConvergingEnd) =>
       Math.abs(across(e.other) - across(at)) * Math.sign(along(at) - along(e.other));
+    // Whole pixels, so "level" is a consistent bucket: ties within a pixel either way (0, 0.8, 1.6) are not transitive,
+    // and a sort given an inconsistent comparator ordered the fan by the arrows' order on the tab.
     const sorted = [...ends].sort(
       (a, b) =>
-        (Math.abs(along(a.other) - along(b.other)) < 1 ? 0 : along(a.other) - along(b.other)) ||
+        Math.round(along(a.other)) - Math.round(along(b.other)) ||
         nearness(a) - nearness(b) ||
         (a.arrowId < b.arrowId ? -1 : 1),
     );

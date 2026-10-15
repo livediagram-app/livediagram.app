@@ -565,7 +565,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice"). **No notch in a straight line:** an
   elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
   is drawn straight, as a step that short reads as a notch (two boxes of different widths centred a pixel or two
-  apart). Where one end's box meets no other line, that box moves across by the step so the line runs true; only
+  apart). Where one end's box meets no other line, that box moves across by the step so the line runs true, unless that would
+  take it onto a neighbour or over the border of a frame or lane that holds it; only
   when both ends meet other lines is it drawn as a slight slant (a store's 5 px slant over 250 was seen). An elbow
   whose straight line would cross a box it was routed round keeps its bends, and lines are straightened before their
   labels are placed, so a label sits on the line as it is drawn.
@@ -659,7 +660,9 @@ wrongly:
   does not wrap its names mid-word ("ElastiCa / che"). A raw arrow pinned at both ends that gives no `arrowStyle` is
   angled, as graph input draws its lines, and an angled one that gives no bends takes graph input's two (out of its
   start, across, into its end), so it meets both ends square rather than as the editor's lone L, sideways into a top;
-  one whose ends line up runs straight. `"arrowStyle": "straight"` keeps a diagonal.
+  one whose ends line up runs straight. `"arrowStyle": "straight"` keeps a diagonal. Both defaults are for content
+  arriving fresh: a `replace` that sends back elements the tab already holds (by id) leaves their text size and lines
+  as they are, so reading a tab and writing it back never restyles what the person made.
 - A **table**'s ragged rows are padded to the widest (`normalizeTable`, the same
   pass the editor runs on load), so every row renders.
 - An unknown **codeLanguage** becomes `plain` and an unknown **codeTheme** is

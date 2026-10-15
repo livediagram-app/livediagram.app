@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { glyphWidth } from './graph-authoring';
 import { barMarks, lineMarks, pieMarks } from './chart-marks';
 import {
   barValueLabels,
@@ -20,6 +21,13 @@ const months = [
 ];
 
 describe('shortNumber', () => {
+  it('reads a value that rounds up to the next unit in that unit', () => {
+    expect(shortNumber(999_960)).toBe('1M');
+    expect(shortNumber(999_960_000)).toBe('1B');
+    expect(shortNumber(-999_960)).toBe('-1M');
+    expect(shortNumber(999_940)).toBe('999.9k');
+  });
+
   it('reads numbers short, at most one decimal', () => {
     expect(shortNumber(42)).toBe('42');
     expect(shortNumber(3.14159)).toBe('3.1');
@@ -42,6 +50,20 @@ describe('value labels', () => {
     const names = labels.filter((l) => l.category);
     expect(names.map((l) => l.text)).toEqual(['Jul', 'Aug', 'Sep']);
     names.forEach((l) => expect(l.y).toBeGreaterThan(marks.baseline.y1));
+  });
+
+  it('cuts a column name to its slot, so neighbours never overprint', () => {
+    const regions = Array.from({ length: 10 }, (_, i) => ({
+      label: `Northern Europe ${i}`,
+      value: 10 + i,
+    }));
+    const marks = barMarks({ x: 0, y: 0, w: 300, h: 200 }, regions, false);
+    const names = barValueLabels(marks, regions, false, 12).filter((l) => l.category);
+    const slot = (marks.baseline.x2 - marks.baseline.x1) / regions.length;
+    for (const n of names) {
+      expect(glyphWidth(n.text, 12)).toBeLessThanOrEqual(slot);
+      expect(n.text.endsWith('…')).toBe(true);
+    }
   });
 
   it('puts a bar value after each bar, and no names', () => {

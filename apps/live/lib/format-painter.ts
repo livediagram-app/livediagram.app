@@ -221,6 +221,8 @@ export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement
     arrowheadColor: source.arrowheadColor,
     arrowheadSize: source.arrowheadSize,
     arrowheadShape: source.arrowheadShape,
+    // An ER relationship's own start head (one, many...); absent, the start takes the end's shape.
+    arrowheadStartShape: source.arrowheadStartShape,
     arrowStyle: source.arrowStyle,
     // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md): a look choice like the rest. Absent
     // means on, so a default source turns it back on for the target.
