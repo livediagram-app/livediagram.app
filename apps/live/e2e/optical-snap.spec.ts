@@ -23,6 +23,10 @@ async function paint(page: Page, wrapper: string, trim: boolean) {
       <span id="glyph" style="display:inline-block;line-height:1;font:600 11px ${FACE};color:#fff;${trim ? 'text-box:trim-both cap alphabetic' : ''}">HH</span>
     </div></body>`,
   );
+  // A freshly set document may not have presented a frame yet, and a capture before one fails.
+  await page.evaluate(
+    () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+  );
   const baseline = await page.evaluate(() => {
     const host = document.getElementById('glyph')!;
     const marker = document.createElement('span');
