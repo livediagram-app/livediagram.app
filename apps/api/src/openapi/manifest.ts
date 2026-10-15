@@ -1873,9 +1873,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/favourites/{documentId}',
     segment: 'favourites',
     tag: 'Account',
-    summary: 'Star a document for the caller. Idempotent.',
+    summary: 'Star a document for the caller. Idempotent; 404 when there is no such document.',
     auth: 'guest-or-clerk',
-    statuses: [204, 401],
+    statuses: [204, 401, 404],
   },
   {
     method: 'DELETE',

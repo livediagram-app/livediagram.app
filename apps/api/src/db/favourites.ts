@@ -26,13 +26,25 @@ export async function listFavouriteIds(env: Env, ownerId: string): Promise<strin
 // Star a document. Idempotent on (owner_id, document_id) — re-starring an
 // already-starred document keeps the ORIGINAL created_at rather than
 // bumping it, so "when I starred this" stays truthful.
-export async function addFavourite(env: Env, ownerId: string, documentId: string): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO favourites (owner_id, document_id, created_at) VALUES (?1, ?2, ?3)
-       ON CONFLICT (owner_id, document_id) DO NOTHING`,
-  )
-    .bind(ownerId, documentId, Date.now())
-    .run();
+// False when there is no such document: the table's foreign key refuses the row, which answers that without a lookup
+// on every star (docs/specs/013-workspace/favourites.md).
+export async function addFavourite(
+  env: Env,
+  ownerId: string,
+  documentId: string,
+): Promise<boolean> {
+  try {
+    await env.DB.prepare(
+      `INSERT INTO favourites (owner_id, document_id, created_at) VALUES (?1, ?2, ?3)
+         ON CONFLICT (owner_id, document_id) DO NOTHING`,
+    )
+      .bind(ownerId, documentId, Date.now())
+      .run();
+    return true;
+  } catch (err) {
+    if (err instanceof Error && /FOREIGN KEY constraint failed/.test(err.message)) return false;
+    throw err;
+  }
 }
 
 // Un-star. Silent when there was no row: the client's toggle is

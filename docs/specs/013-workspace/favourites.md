@@ -59,7 +59,9 @@ would cost a lookup per star to prevent nothing.
 The table's `document_id` is a foreign key into `documents`, and an offline
 document ([Offline Mode](../006-document/offline-mode.md)) has no row there: it lives only in this browser's
 IndexedDB. Sending its star to the server is therefore not merely wasted, it
-is **rejected** with `FOREIGN KEY constraint failed`, and because the toggle
+is **rejected**: the foreign key refuses the row and the route answers 404, as it
+does for a document deleted meanwhile (no lookup first; the insert's refusal is
+the check). Because the toggle
 is optimistic and the write is swallowed, the star would appear on click and
 be gone on the next reload.
 
