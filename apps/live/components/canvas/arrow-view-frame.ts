@@ -1,5 +1,6 @@
 import {
   angledElbow,
+  arrowDashOffset,
   arrowPathD,
   arrowPathMidpoint,
   arrowStyleOf,
@@ -86,11 +87,14 @@ export function deriveArrowViewFrame(
     !routed && style === 'angled' && !curveAnchors
       ? angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset)
       : null;
+  // A shared end's dashes anchored there, in step with every arrow into it (arrow-dash.ts).
+  const dashOffset = arrowDashOffset(arrow, from, to);
   return {
     from,
     to,
     style,
     pathD,
+    dashOffset,
     midpoint,
     curveAnchors,
     curveControl,
@@ -111,6 +115,7 @@ export function sameArrowViewFrame(a: ArrowViewFrame, b: ArrowViewFrame): boolea
   return (
     a.style === b.style &&
     a.pathD === b.pathD &&
+    a.dashOffset === b.dashOffset &&
     samePoint(a.from, b.from) &&
     samePoint(a.to, b.to) &&
     samePoint(a.midpoint, b.midpoint) &&

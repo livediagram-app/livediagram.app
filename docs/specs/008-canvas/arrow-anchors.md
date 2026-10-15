@@ -121,6 +121,11 @@ meeting at one point and running along one trunk ([draw.io import](../020-import
 "Shared ends stay shared"). A user who re-pins that end clears it, so a hand-drawn connection fans
 as usual.
 
+A dashed or dotted arrow with an exact end starts its pattern from its **end**, not its start (`arrowDashOffset`,
+in both renderers): arrows sharing an end (graph input's bus of services that each "publish" to one queue) run in
+step along the stretch they share and draw it as one dashed line, where each starting its pattern at its own start
+drew a blur of dashes out of phase.
+
 ## Auto-rebind
 
 As elements move, a pinned end can end up on a side that makes its arrow run through a shape. The

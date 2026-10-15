@@ -452,3 +452,49 @@ describe('labels off other lines', () => {
     expect(Math.abs(y - 165)).toBeGreaterThan(11);
   });
 });
+
+// docs/specs/015-api/mcp-server.md §4.7: a bus says its label once, on the drop its arrows share.
+describe('a bus says it once', () => {
+  const graph = (labels: string[], direction: 'down' | 'right' = 'down') =>
+    layoutGraph(
+      {
+        nodes: [
+          ...labels.map((_, i) => ({ id: `s${i}`, label: `Service ${i}` })),
+          { id: 'kafka', label: 'Kafka', shape: 'hexagon' },
+        ],
+        direction,
+        edges: labels.map((label, i) => ({
+          from: `s${i}`,
+          to: 'kafka',
+          label,
+          line: 'dashed' as const,
+        })),
+      },
+      {
+        makeEdgeId: (() => {
+          let n = 0;
+          return () => `e${n++}`;
+        })(),
+      },
+    ).filter((e): e is ArrowElement => e.type === 'arrow');
+
+  it('labels one arrow of a bus, on its drop into the node', () => {
+    const arrows = graph(['publish', 'publish', 'publish', 'publish']);
+    const said = arrows.filter((a) => a.label);
+    expect(said).toHaveLength(1);
+    // On the last run, the drop every arrow of the bus shares.
+    expect(said[0]!.labelOffset!.t).toBeGreaterThan(0.5);
+    expect(arrows.every((a) => a.exactEnd)).toBe(true);
+  });
+
+  it('keeps each label where the drop is too short to hold it', () => {
+    // Left to right the drop into the bus is a short level run: each arrow keeps its own.
+    const across = graph(['publish', 'publish', 'publish', 'publish'], 'right');
+    expect(across.filter((a) => a.label)).toHaveLength(4);
+  });
+
+  it('keeps each label where the arrows say different things', () => {
+    const arrows = graph(['orders', 'payments', 'stock']);
+    expect(arrows.filter((a) => a.label)).toHaveLength(3);
+  });
+});

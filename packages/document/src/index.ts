@@ -524,6 +524,7 @@ export * from './mind-outline-marks';
 export * from './mind-outline';
 export * from './youtube';
 export * from './arrow-path';
+export * from './arrow-dash';
 export * from './arrow-label';
 export * from './arrow-label-layout';
 export * from './arrow-label-wrap';
