@@ -4,6 +4,7 @@
 // count with how many are new to this reader (opening the tab responses go to), and the notices that say the form takes no responses
 // (paused: its destination broke; suspended after reports; closed).
 import type { ReactNode } from 'react';
+import { Tooltip } from '@livediagram/ui';
 import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@livediagram/forms';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 
@@ -80,14 +81,15 @@ export function FormStatusBar({
         {state}
         {/* The count opens the board (or sheet) the responses go to. */}
         {onOpenResponses ? (
-          <button
-            type="button"
-            onClick={onOpenResponses}
-            title={destinationName ? `Open ${destinationName}` : undefined}
-            className="shrink-0 cursor-pointer rounded text-slate-600 underline-offset-2 hover:underline dark:text-slate-300"
-          >
-            {count}
-          </button>
+          <Tooltip label={destinationName ? `Open ${destinationName}` : 'Open the responses'}>
+            <button
+              type="button"
+              onClick={onOpenResponses}
+              className="shrink-0 cursor-pointer rounded text-slate-600 underline-offset-2 hover:underline dark:text-slate-300"
+            >
+              {count}
+            </button>
+          </Tooltip>
         ) : (
           <span className="shrink-0 text-slate-600 dark:text-slate-300">{count}</span>
         )}

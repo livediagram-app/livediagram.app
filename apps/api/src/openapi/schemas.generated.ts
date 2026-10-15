@@ -7053,6 +7053,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "showIf": {
+        "$ref": "#/components/schemas/SectionRule"
+      },
       "title": {
         "type": "string"
       }
@@ -12118,6 +12121,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "showIf": {
+        "$ref": "#/components/schemas/SectionRule"
+      },
       "title": {
         "type": "string"
       }
@@ -12820,6 +12826,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "c",
       "at"
+    ],
+    "type": "object"
+  },
+  "SectionRule": {
+    "additionalProperties": false,
+    "properties": {
+      "anyOf": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "questionId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "questionId",
+      "anyOf"
     ],
     "type": "object"
   },
