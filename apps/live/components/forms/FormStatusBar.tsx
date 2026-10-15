@@ -108,6 +108,7 @@ export function FormStatusBar({
         {canEdit && problems > 0 && onProblems ? (
           <Tooltip label="See what to fix in Share Form">
             <button
+              aria-label="Problems with this Form"
               type="button"
               onClick={onProblems}
               className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 font-medium text-amber-800 hover:bg-amber-50 dark:text-amber-200 dark:hover:bg-amber-500/10"
