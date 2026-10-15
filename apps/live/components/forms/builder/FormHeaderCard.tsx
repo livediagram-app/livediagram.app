@@ -28,6 +28,8 @@ import { useFormBuilder } from './form-builder-context';
 
 // The cover's choices: a slide's Background categories but the picture (docs/specs/030-forms/forms.md "The form card").
 const COVER_CATEGORIES = ['solid', 'gradient', 'animated'] as const;
+// Wide enough for the motion tiles and their names to sit three across with room, as on a slide's panel.
+const COVER_POPOVER_W = 380;
 
 // A slide's background patched, kept in colour: the cover takes no picture.
 function patchedCover(
@@ -87,36 +89,44 @@ export function FormHeaderCard({ sections }: { sections: number }) {
         <AnchoredPopover
           anchor={coverAnchor}
           name="Cover"
-          width={304}
+          width={COVER_POPOVER_W}
           onClose={() => {
             setPreview(null);
             setCoverOpen(false);
           }}
         >
-          <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-            {/* A slide's Background and Pattern (docs/specs/007-editor/illustrate-pages.md "Backgrounds"), no picture. */}
-            <BackgroundSection
-              page={coverPage}
-              only={COVER_CATEGORIES}
-              themePresets={themePresets}
-              onBackground={(patch) => {
-                setPreview(null);
-                b.actions.changeForm((f) => patchForm(f, { cover: patchedCover(f.cover, patch) }));
-              }}
-              onPreview={setPreview}
-            />
-            {form.cover ? (
-              <button
-                type="button"
-                onClick={() => {
-                  b.actions.changeForm((f) => patchForm(f, { cover: undefined }));
-                  setCoverOpen(false);
+          <div className="flex max-h-[min(30rem,calc(100dvh-10rem))] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+              <p className="text-[14px] font-semibold text-slate-900 dark:text-slate-50">Cover</p>
+              {form.cover ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    b.actions.changeForm((f) => patchForm(f, { cover: undefined }));
+                    setCoverOpen(false);
+                  }}
+                  className="cursor-pointer rounded-md px-2 py-1 text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                >
+                  Remove Cover
+                </button>
+              ) : null}
+            </div>
+            <div className="overflow-y-auto px-4 py-3">
+              {/* A slide's Background and Pattern (docs/specs/007-editor/illustrate-pages.md "Backgrounds"), no picture. */}
+              <BackgroundSection
+                page={coverPage}
+                only={COVER_CATEGORIES}
+                themePresets={themePresets}
+                onBackground={(patch) => {
+                  setPreview(null);
+                  b.actions.changeForm((f) =>
+                    patchForm(f, { cover: patchedCover(f.cover, patch) }),
+                  );
                 }}
-                className="cursor-pointer self-start text-[12px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
-              >
-                Remove Cover
-              </button>
-            ) : null}
+                onPreview={setPreview}
+                motionNote="Moves in the builder and on the form’s page; still with Reduce Motion on."
+              />
+            </div>
           </div>
         </AnchoredPopover>
       ) : null}

@@ -188,10 +188,13 @@ export function BackgroundSection({
   onBackground,
   onPreview,
   only,
+  motionNote,
 }: {
   page: IllustratePage;
   // The categories offered, narrowing the page kind's own (a form's cover takes no picture).
   only?: readonly BackgroundCategory[];
+  // The Animated category's note on when it moves, for something that is not a slide.
+  motionNote?: string;
   // The tab theme's own gradients (themeBackgroundPresets), offered first among the gradients.
   themePresets: readonly ThemeBackgroundPreset[];
   onBackground: (patch: Partial<PageBackground>) => void;
@@ -264,6 +267,7 @@ export function BackgroundSection({
             themePresets={themePresets}
             onPick={pick}
             onPreview={preview}
+            {...(motionNote ? { note: motionNote } : {})}
           />
         ) : category === 'image' ? (
           <ImageBackgroundChoices

@@ -33,16 +33,21 @@ const LINES = [
 const FORMULA = '=SUM(B2:D2)';
 
 // Columns: the row numbers, then A (Item), B to D (the months), E (Total), F running on past the window.
-const X0 = 20;
-const NUM_W = 24;
+// The grid fills the tab as a Sheet does: from the canvas's left edge, columns running on past its right one and
+// empty rows down past its foot.
+const X0 = -56;
+const NUM_W = 26;
 const COLS = [
-  { letter: 'A', head: 'Item', w: 128 },
-  { letter: 'B', head: 'Jan', w: 84 },
-  { letter: 'C', head: 'Feb', w: 84 },
-  { letter: 'D', head: 'Mar', w: 84 },
-  { letter: 'E', head: 'Total', w: 92 },
-  { letter: 'F', head: '', w: 120 },
+  { letter: 'A', head: 'Item', w: 140 },
+  { letter: 'B', head: 'Jan', w: 92 },
+  { letter: 'C', head: 'Feb', w: 92 },
+  { letter: 'D', head: 'Mar', w: 92 },
+  { letter: 'E', head: 'Total', w: 100 },
+  { letter: 'F', head: '', w: 110 },
+  { letter: 'G', head: '', w: 110 },
 ] as const;
+// Rows drawn, the budget's and the empty ones under it, enough to reach the canvas's foot.
+const GRID_ROWS = 16;
 const ROW_H = 22;
 const TOP = -16; // the column letters' row
 const colX = (c: number) => X0 + NUM_W + COLS.slice(0, c).reduce((s, col) => s + col.w, 0);
@@ -83,10 +88,10 @@ function Cell({
 
 function Sheet() {
   const gridW = colX(COLS.length) - X0;
-  const rows = LINES.length + 2;
+  const rows = GRID_ROWS;
   const eX = colX(4);
   const eW = COLS[4]!.w;
-  const chart = { x: 330, y: 186, w: 250, h: 140 };
+  const chart = { x: 330, y: 150, w: 250, h: 136 };
   const max = Math.max(...LINES.map((_, i) => totalOf(i)));
   return (
     <>

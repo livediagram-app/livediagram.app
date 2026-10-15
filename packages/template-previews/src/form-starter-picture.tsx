@@ -4,8 +4,11 @@
 // corner says where its responses go, a board or a sheet (none for Blank, which goes nowhere yet).
 import { formStarter, type QuestionType, type StarterId } from '@livediagram/forms';
 import { lucideSquareKanban, lucideTable } from '@livediagram/icons/lucide';
-import { Prims } from '@livediagram/ui';
+import { Prims, lucideGlyph } from '@livediagram/ui';
 import { FILL_BOX } from './story-parts';
+
+const BoardGlyph = lucideGlyph(lucideSquareKanban, 15);
+const SheetGlyph = lucideGlyph(lucideTable, 15);
 import type { PlanPalette } from '@livediagram/document';
 
 const W = 160;
@@ -111,14 +114,14 @@ function Control({
 
 // Where the starter's responses go: a board's or a sheet's icon on a disc in the picture's top right corner.
 function DestinationBadge({ to, palette }: { to: 'board' | 'sheet'; palette: PlanPalette }) {
-  const r = 12;
-  const cx = W - 13;
-  const cy = 16;
+  const r = 14;
+  const cx = W - r - 1;
+  const cy = r + 1;
   return (
     <g data-starter-goes-to={to} className="pv-pulse" style={FILL_BOX}>
       <circle cx={cx} cy={cy} r={r} fill={palette.surface} stroke={palette.border} />
       <g
-        transform={`translate(${cx - 7.2} ${cy - 7.2}) scale(0.6)`}
+        transform={`translate(${cx - 8.4} ${cy - 8.4}) scale(0.7)`}
         fill="none"
         stroke={palette.text}
         strokeWidth={2}
@@ -134,6 +137,8 @@ function DestinationBadge({ to, palette }: { to: 'board' | 'sheet'; palette: Pla
 // The picture's drawing, in its own 160 by 100 units, for a caller's svg to hold (a template tile's 80 by 50 one).
 export const FORM_STARTER_VIEWBOX = `0 0 ${160} ${100}`;
 
+// Start Planning's picture (and the Forms tour's): the art filling its card's picture area, the badge saying where
+// responses go pinned to that area's own top right corner (not the drawn form's), larger than the tiles'.
 export function FormStarterPicture({
   starter,
   palette,
@@ -141,19 +146,40 @@ export function FormStarterPicture({
   starter: StarterId;
   palette: PlanPalette;
 }) {
+  const to = formStarter(starter).respondsTo;
   return (
-    <svg viewBox={FORM_STARTER_VIEWBOX} className="h-full w-full" aria-hidden>
-      <FormStarterArt starter={starter} palette={palette} />
-    </svg>
+    <span className="relative block h-full w-full">
+      <svg viewBox={FORM_STARTER_VIEWBOX} className="h-full w-full" aria-hidden>
+        <FormStarterArt starter={starter} palette={palette} badge={false} />
+      </svg>
+      {to ? (
+        <span
+          data-starter-goes-to={to}
+          role="img"
+          aria-label={
+            to === 'board'
+              ? 'Responses become cards on a board'
+              : 'Responses become rows in a sheet'
+          }
+          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border shadow-sm"
+          style={{ background: palette.surface, borderColor: palette.border, color: palette.text }}
+        >
+          {to === 'board' ? <BoardGlyph aria-hidden /> : <SheetGlyph aria-hidden />}
+        </span>
+      ) : null}
+    </span>
   );
 }
 
 export function FormStarterArt({
   starter: id,
   palette,
+  badge = true,
 }: {
   starter: StarterId;
   palette: PlanPalette;
+  // Drawn in the art's own corner (a template tile); Start Planning pins its own instead.
+  badge?: boolean;
 }) {
   const starter = formStarter(id);
   const accent = starter.accent;
@@ -206,7 +232,9 @@ export function FormStarterArt({
           </g>
         );
       })}
-      {starter.respondsTo ? <DestinationBadge to={starter.respondsTo} palette={palette} /> : null}
+      {badge && starter.respondsTo ? (
+        <DestinationBadge to={starter.respondsTo} palette={palette} />
+      ) : null}
     </g>
   );
 }
