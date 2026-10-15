@@ -21,26 +21,28 @@ effect events, `useLatest`, the clocks) are enforced by the hooks lint and need 
 
 ### Browser-only rendering: the sites
 
-Every render-time read of a browser global is converted; reads in effects, handlers and module code that render does
-not consume stay as they are.
+Every render-time read of a browser global is converted; reads in effects, handlers, external-store snapshots and
+module code that render does not consume stay as they are. A component whose prerendered HTML matters (an LCP
+page) never suspends whole: its URL reads use an external store whose server snapshot is "nothing" instead.
 
-| Site                                                                          | Reads                         | Becomes                                                              |
-| ----------------------------------------------------------------------------- | ----------------------------- | -------------------------------------------------------------------- |
-| `apps/live/app/explorer/useExplorerState.ts` (`useHydrated`)                  | device preferences            | `use(browser())`; `hooks/ui/useHydrated.ts` is removed               |
-| `apps/live/app/oauth/consent/page.tsx`, `apps/live/app/oauth/device/page.tsx` | `location` (the return path)  | `use(browser())` in the signed-out branch, under the page's Suspense |
-| `apps/live/app/new/page.tsx` (`initialPlacement` initialiser)                 | `location.search`             | `use(browser())` before the state                                    |
-| `apps/live/components/panels/TeamSharedDocuments.tsx` (`spot`)                | `location.search`             | `use(browser())` before the state                                    |
-| `ShareDialog`, `TeamInviteLinkDialog`, `CommunityPublishedConfirmation`       | `location.origin`             | `use(browser())`, then `window.location.origin`                      |
-| `CanvasThemeDialog` (`useBrushAnchor`)                                        | `innerWidth`, the brush's box | `use(browser())` before the state (read once as it opens)            |
-| `CardFinderPanel` (`finePointer`)                                             | `(pointer: fine)`             | `useMediaQuery('(pointer: fine)')`                                   |
-| `arrow-handles.tsx` (`COARSE_POINTER`, module constant)                       | `(pointer: coarse)`           | `useMediaQuery('(pointer: coarse)')` in the component                |
-| `EditorContextMenu`, `EditorCanvasHost` (`openUp`)                            | `innerHeight`                 | `useViewportHeight()`                                                |
-| `StartAgainTray` (`pillPlace` default argument)                               | `innerHeight`                 | a required argument; the caller passes `useViewportHeight()`         |
-| `packages/ui/src/SiteFooter.tsx`                                              | the clock (`new Date()`)      | `BUILD_YEAR`                                                         |
+| Site                                                                          | Reads                               | Becomes                                                                          |
+| ----------------------------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------- |
+| `apps/live/app/explorer/useExplorerState.ts` (was `useHydrated`)              | the URL, preferences                | `use(browser())`; `useHydrated` is removed                                       |
+| `apps/live/app/oauth/consent/page.tsx`, `apps/live/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense             |
+| `apps/live/app/new/page.tsx` (`initialPlacement`)                             | `location.search`                   | `useSyncExternalStore` (`placementContextFromSearch`), like the bypass           |
+| `apps/live/components/panels/TeamSharedDocuments.tsx` (`spot`)                | `location.search`                   | `use(browser())` before the state                                                |
+| `ShareDialog`, `TeamInviteLinkDialog`, `CommunityPublishedConfirmation`       | `location.origin`                   | `use(browser())`, then `window.location.origin`                                  |
+| `CanvasThemeDialog` (`useBrushAnchor`)                                        | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                        |
+| `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`     | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers) |
+| `CardFinderPanel` (`finePointer`)                                             | `(pointer: fine)`                   | `useMediaQuery('(pointer: fine)')`                                               |
+| `arrow-handles.tsx` (`COARSE_POINTER`, was a module constant)                 | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                              |
+| `EditorContextMenu` (`anchorBottom`)                                          | `innerHeight`                       | `useViewportHeight()`                                                            |
+| `StartAgainTray` (`pillPlace` default argument)                               | `innerHeight`                       | a required argument; the caller passes `useViewportHeight()`                     |
+| `useViewportWidth`, `useViewportHeight`                                       | `innerWidth`, `innerHeight`         | `useSyncExternalStore` on `resize`, 0 in the prerender                           |
+| `EditorCanvasHost` (`openUp`, in the context-menu handler)                    | `innerHeight`                       | the guard goes: a handler runs in the browser                                    |
+| `packages/ui/src/SiteFooter.tsx`                                              | the clock (`new Date()`)            | `NEXT_PUBLIC_BUILD_YEAR`                                                         |
 
-Stay as they are (outside render): `apps/telemetry/app/page.tsx` `prefetchViews` (from an effect), `MovablePanel`
-`clampFree`, `DriveMirrorProvider` `connectOutcomeOnce`, `PagedCarousel` `prefersReducedMotion` (a handler),
-`ReactionBurst` and `arrow-flow` (effects). A site found in Phase 7 that this table misses is added here first.
+What stays, with where it runs, is the allow-list in `apps/live/render-browser-globals.test.ts`.
 
 ### A View Transition from state
 
@@ -116,13 +118,13 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 
 ## Testing
 
-| Rule                                     | Test                                                                                              |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Browser-only sites render in the browser | Each site's component test renders the browser value; a server render shows the fallback          |
-| No `typeof window` in render             | `apps/live/render-browser-globals.test.ts`: scans `.tsx` for a guard outside effects and handlers |
-| Footer year from the build               | `packages/ui` SiteFooter test renders `BUILD_YEAR`, and no year without it                        |
-| Reduced motion starts no transition      | The slide and mode-switch tests stub `prefersReducedMotion` and assert no `startTransition` type  |
-| Steps count from `asked`                 | `PresentationHost` test: three quick steps land three slides on                                   |
+| Rule                                     | Test                                                                                             |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Browser-only sites render in the browser | Each site's component test renders the browser value; a server render shows the fallback         |
+| No `typeof window` in render             | `apps/live/render-browser-globals.test.ts`: `.tsx` and `use*.ts` guard only where allow-listed   |
+| Footer year from the build               | `packages/ui` SiteFooter test renders `BUILD_YEAR`, and no year without it                       |
+| Reduced motion starts no transition      | The slide and mode-switch tests stub `prefersReducedMotion` and assert no `startTransition` type |
+| Steps count from `asked`                 | `PresentationHost` test: three quick steps land three slides on                                  |
 
 ## Constants and configuration
 

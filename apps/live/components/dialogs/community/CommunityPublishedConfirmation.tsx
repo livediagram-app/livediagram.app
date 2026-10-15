@@ -1,5 +1,7 @@
 'use client';
 
+import { use } from 'react';
+import { browser } from 'react-dom';
 import { communityPostPath } from '@livediagram/api-schema';
 import { buttonClassName, Button, lucideGlyph, useCopiedFlash } from '@livediagram/ui';
 import { lucideExternalLink, lucideLink, lucideSparkles } from '@livediagram/icons/lucide';
@@ -27,7 +29,9 @@ export function CommunityPublishedConfirmation({
   const toast = useToast();
   const { copied, flash } = useCopiedFlash<true>(1500);
   const path = communityPostPath(postId);
-  const absolute = typeof window === 'undefined' ? path : `${window.location.origin}${path}`;
+  // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser only").
+  use(browser());
+  const absolute = `${window.location.origin}${path}`;
 
   const copyLink = async () => {
     try {

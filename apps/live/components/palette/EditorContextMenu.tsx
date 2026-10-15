@@ -68,6 +68,7 @@ import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
 import { shapeKindLabel } from '@/lib/element-names';
 import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
+import { useViewportHeight } from '@/hooks/ui/useViewportHeight';
 
 // Cursor position + which menu to show. `element` carries the clicked
 // element id; `canvas` is the empty-canvas right-click. Exported so
@@ -85,7 +86,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
   // Grow UPWARD when the menu is opened in the bottom fifth of the
   // viewport, so the tall collapsible-category menu opens above the
   // cursor instead of running off-screen — matching the tab menu.
-  const anchorBottom = typeof window !== 'undefined' && menu.y > window.innerHeight * 0.8;
+  const viewportHeight = useViewportHeight();
+  const anchorBottom = menu.y > viewportHeight * 0.8;
   // Accordion + colour-row scaffolding, shared with the multi-selection branch.
   const {
     sectionProps,

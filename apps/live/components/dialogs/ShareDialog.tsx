@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
+import { browser } from 'react-dom';
 import { Button, useCopiedFlash, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
@@ -148,7 +149,9 @@ export function ShareDialog({
 
   // Origin for the embed / live-image snippets. Guarded so a build-time
   // prerender (the dialog isn't shown then) doesn't touch window.
-  const origin = typeof window === 'undefined' ? '' : window.location.origin;
+  // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser only").
+  use(browser());
+  const origin = window.location.origin;
 
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing to share yet, so swap the whole
   // dialog for the sync gate until the owner moves it to the cloud.

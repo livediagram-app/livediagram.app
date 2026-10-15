@@ -56,6 +56,7 @@ import { creationIntentOf } from '@livediagram/api-schema';
 import {
   WIZARD_BYPASS_PARAMS,
   choosePlacementAgainUrl,
+  placementContextFromSearch,
   wizardBypassKind,
   wizardPresetMode,
   wizardPresetQuery,
@@ -90,6 +91,8 @@ const presetQueryFromUrl = () => wizardPresetQuery(window.location.search);
 const noPreset = () => null;
 const noBypass = () => null;
 const isBypassUrl = () => bypassKindFromUrl() !== null;
+const placementFromUrl = () => placementContextFromSearch(window.location.search);
+const noPlacement = (): string | undefined => undefined;
 
 // Folder shape the Settings step's placement browser consumes.
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
@@ -169,15 +172,8 @@ export default function NewDocumentPage() {
   // an explicit root choice silently).
   // No context is no placement: the Location step then pre-selects the reader's default folder
   // (docs/specs/013-workspace/default-folders.md "The New Document wizard"), else the root.
-  const [initialPlacement] = useState<string | undefined>(() => {
-    if (typeof window === 'undefined') return undefined;
-    const params = new URLSearchParams(window.location.search);
-    const folderId = params.get('folder');
-    const teamId = params.get('team');
-    if (teamId) return folderId ? `team:${teamId}:folder:${folderId}` : `team:${teamId}`;
-    if (folderId) return `folder:${folderId}`;
-    return undefined;
-  });
+  // Read from the URL like the bypass below: the prerender has no query string, so its snapshot is no placement.
+  const initialPlacement = useSyncExternalStore(subscribeNever, placementFromUrl, noPlacement);
 
   // Wizard bypass (docs/specs/007-editor/new-document-route.md): /new?blank=1 ("Start Blank") and
   // /new?template=<kind> (the marketing template gallery) skip the wizard

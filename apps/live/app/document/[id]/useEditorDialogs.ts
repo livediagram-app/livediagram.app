@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useState } from 'react';
+import { browser } from 'react-dom';
 import { dropSettingsLink, readSettingsLink } from '@/lib/settings-link';
 import type { CanvasThemeTab } from '@/components/dialogs/CanvasThemeDialog';
 import { track } from '@/lib/telemetry';
@@ -10,12 +11,13 @@ import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
 // contained slice composed into useEditorState and spread into its
 // view-model.
 export function useEditorDialogs() {
+  // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser
+  // only"): the editor never renders at build time, and this says so where the address is read.
+  use(browser());
   const [searchOpen, setSearchOpen] = useState(false);
   // The `?settings=<category>&section=<id>` deep link opens Settings on load
   // (docs/specs/007-editor/user-preferences.md); it stays in the URL until Settings closes.
-  const [settingsLink] = useState(() =>
-    typeof window === 'undefined' ? null : readSettingsLink(window.location.search),
-  );
+  const [settingsLink] = useState(() => readSettingsLink(window.location.search));
   const [settingsOpen, setSettingsOpen] = useState(settingsLink !== null);
   // Where Settings should land when it is opened from a search result
   // (docs/specs/007-editor/user-preferences.md): the setting itself, not the dialog's front door. Cleared on
@@ -55,14 +57,11 @@ export function useEditorDialogs() {
   // `?share=1` deep-link (the Explorer's "Manage Sharing…" row opens the
   // document with this param): land with the Share dialog already open.
   const [shareDialogOpen, setShareDialogOpen] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      new URL(window.location.href).searchParams.get('share') === '1',
+    () => new URL(window.location.href).searchParams.get('share') === '1',
   );
   // Strip the param after consuming it so a refresh / back doesn't keep
   // reopening the dialog, leaving the document URL clean.
   useEffect(() => {
-    if (typeof window === 'undefined') return;
     const url = new URL(window.location.href);
     if (url.searchParams.get('share') !== '1') return;
     url.searchParams.delete('share');

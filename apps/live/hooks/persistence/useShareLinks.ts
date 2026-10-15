@@ -196,8 +196,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
   // the share code as a query param and land on the dedicated visitor
   // path; the editor page reads the code there. Router stitches /live
   // onto the app's hostname so this URL always resolves end-to-end.
-  const shareUrlFor = (code: string) =>
-    typeof window === 'undefined' ? '' : `${window.location.origin}/document/shared?s=${code}`;
+  const shareUrlFor = (code: string) => `${window.location.origin}/document/shared?s=${code}`;
 
   return {
     updateParticipantName,
