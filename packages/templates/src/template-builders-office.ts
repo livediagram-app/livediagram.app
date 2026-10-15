@@ -29,8 +29,9 @@ const ROOMS: RoomSpec[] = [
     w: 420,
     door: 's',
     pieces: [
-      { kind: 'rug', x: 110, y: 170 },
-      { kind: 'sofa', x: 134, y: 52, facing: 'n' },
+      // The sofa on its rug at the back, clear of the doorway.
+      { kind: 'rug', x: 110, y: 40 },
+      { kind: 'sofa', x: 134, y: 58, facing: 'n' },
       { kind: 'plant', x: 22, y: 52 },
       { kind: 'plant', x: 342, y: 52 },
     ],
@@ -46,10 +47,11 @@ const ROOMS: RoomSpec[] = [
       { kind: 'desk', x: 180, y: 48, facing: 's' },
       { kind: 'desk', x: 330, y: 48, facing: 's' },
       { kind: 'bookshelf', x: 480, y: 40 },
+      // The near row leaves the doorway's column (262..358) clear, so walking in never lands at a desk.
       { kind: 'desk', x: 30, y: 190, facing: 's' },
-      { kind: 'desk', x: 180, y: 190, facing: 's' },
-      { kind: 'desk', x: 330, y: 190, facing: 's' },
-      { kind: 'plant', x: 530, y: 230 },
+      { kind: 'desk', x: 140, y: 190, facing: 's' },
+      { kind: 'desk', x: 400, y: 190, facing: 's' },
+      { kind: 'plant', x: 540, y: 230 },
     ],
   },
   {
@@ -82,26 +84,29 @@ const ROOMS: RoomSpec[] = [
     name: 'Lounge',
     x: 520 + GAP,
     y: ROW_H + CORRIDOR,
-    w: 560,
+    // 500 wide, so the bottom row is the top row's 1560.
+    w: 500,
     door: 'n',
     pieces: [
-      { kind: 'rug', x: 180, y: 180 },
+      // The sofa on its rug, well inside: just behind the doorway it sat whoever walked in.
+      { kind: 'rug', x: 150, y: 180 },
       { kind: 'bookshelf', x: 22, y: 40 },
-      { kind: 'sofa', x: 204, y: 60, facing: 'n' },
-      { kind: 'chair', x: 100, y: 196, facing: 'w' },
-      { kind: 'chair', x: 400, y: 196, facing: 'e' },
-      { kind: 'plant', x: 480, y: 52 },
+      { kind: 'sofa', x: 174, y: 200, facing: 'n' },
+      { kind: 'chair', x: 70, y: 196, facing: 'w' },
+      { kind: 'chair', x: 354, y: 196, facing: 'e' },
+      { kind: 'plant', x: 420, y: 52 },
     ],
   },
   {
     name: 'Focus Room',
-    x: 520 + GAP + 560 + GAP,
+    x: 520 + GAP + 500 + GAP,
     y: ROW_H + CORRIDOR,
     w: 420,
     door: 'n',
     pieces: [
-      { kind: 'desk', x: 150, y: 120, facing: 's' },
-      { kind: 'plant', x: 22, y: 230 },
+      // Off the doorway's column, so walking in reaches the room before the desk.
+      { kind: 'desk', x: 40, y: 120, facing: 's' },
+      { kind: 'plant', x: 340, y: 230 },
       { kind: 'bookshelf', x: 280, y: 40 },
     ],
   },

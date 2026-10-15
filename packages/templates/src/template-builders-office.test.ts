@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { roomWalls, type Element } from '@livediagram/document';
+import { roomDoorSpan, roomWalls, type Element } from '@livediagram/document';
 import { buildTemplate } from './build-template';
 
 // docs/specs/012-collaboration/virtual-office-template.md
@@ -63,6 +63,49 @@ describe('the Virtual Office template', () => {
         if (vertical) expect(w.a.x <= e.x || w.a.x >= e.x + e.width).toBe(true);
       }
     }
+  });
+});
+
+// Walking in through a doorway reaches the room: seating that catches a character the moment its feet enter it sat
+// anyone who came in when it stood just inside the door.
+describe('the Virtual Office layout', () => {
+  const els = buildTemplate('virtual-office', 0, 0) as Element[];
+  type Box = Element & { x: number; y: number; width: number; height: number };
+  const of = (kind: string) =>
+    els.filter((e) => e.type === 'shape' && e.shape === kind) as (Box & {
+      roomDoor?: 'n' | 's';
+      label?: string;
+    })[];
+  const meets = (a: Box, b: { x: number; y: number; width: number; height: number }) =>
+    a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+  const SEATS = ['desk', 'sofa', 'chair', 'meeting-table'];
+
+  it('keeps every seat out of the first 80 px inside each doorway', () => {
+    for (const room of of('room')) {
+      const span = roomDoorSpan(room.width, room.roomDoor ?? 's')!;
+      const approach = {
+        x: room.x + span[0],
+        width: span[1] - span[0],
+        y: room.roomDoor === 'n' ? room.y : room.y + room.height - 80,
+        height: 80,
+      };
+      for (const seat of els.filter((e) => e.type === 'shape' && SEATS.includes(e.shape)) as Box[])
+        expect(
+          meets(seat, approach),
+          `${room.label}: ${seat.type === 'shape' ? seat.shape : ''}`,
+        ).toBe(false);
+    }
+  });
+
+  it('puts every sofa on a rug', () => {
+    for (const sofa of of('sofa')) expect(of('rug').some((rug) => meets(sofa, rug))).toBe(true);
+  });
+
+  it('ends both rows of rooms at the same edge', () => {
+    const rooms = of('room');
+    const top = Math.min(...rooms.map((r) => r.y));
+    const right = (row: typeof rooms) => Math.max(...row.map((r) => r.x + r.width));
+    expect(right(rooms.filter((r) => r.y !== top))).toBe(right(rooms.filter((r) => r.y === top)));
   });
 });
 
