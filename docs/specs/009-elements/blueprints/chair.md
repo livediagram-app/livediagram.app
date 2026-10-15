@@ -30,13 +30,13 @@ Scope, by file:
 
 Desk and sofa (spec "Desk and sofa") add:
 
-| File                                                   | Role                                                                                                                                                                                                                 |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/seating.ts`                     | `isSeatingShape`, `DEFAULT_SEATING_FACING`, `CHAIR_ART`, `DESK_ART`, `SOFA_ART`, `FURNITURE_ART`, `facingView`, `furnitureFrame`, `furnitureParts`, `furnitureRing`, `seatPoints`, `nearestSeat`, `turnedSeatingBox` |
-| `packages/document/src/shape-factory.ts`               | desk 120x112, sofa 152x85, facing, `aspectLocked`, label bottom                                                                                                                                                      |
-| `apps/live/components/canvas/collab/FurnitureView.tsx` | The canvas desk and sofa, occupied ring, sitter names                                                                                                                                                                |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`        | `setChairFacingSelected` for all three; quarter turns swap the box                                                                                                                                                   |
-| `apps/live/components/palette/palette-tile-defs.tsx`   | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                                                                                                       |
+| File                                                   | Role                                                                                                                                                                              |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/seating.ts`                     | `isSeatingShape`, `DEFAULT_SEATING_FACING`, `CHAIR_ART`, `DESK_ART`, `SOFA_ART`, `FURNITURE_ART`, `facingView`, `furnitureFrame`, `seatPoints`, `nearestSeat`, `turnedSeatingBox` |
+| `packages/document/src/shape-factory.ts`               | desk 120x112, sofa 152x85, facing, `aspectLocked`, label bottom                                                                                                                   |
+| `apps/live/components/canvas/collab/FurnitureView.tsx` | The canvas desk and sofa, occupied ring, sitter names                                                                                                                             |
+| `apps/live/hooks/canvas/useDataShapeSetters.ts`        | `setChairFacingSelected` for all three; quarter turns swap the box                                                                                                                |
+| `apps/live/components/palette/palette-tile-defs.tsx`   | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                                                                    |
 
 ## Domain and naming
 
@@ -49,8 +49,8 @@ Desk and sofa (spec "Desk and sofa") add:
 | Seat point     | `seatPoints(element)`                      | Where a sitter's feet snap, from the facing's view      |
 | Seated         | `seatedOn: string \| null`                 | The chair id this character sits in                     |
 | Sitter         | `ChairSitter = { name, color }`            | One occupant, from presence                             |
-| Seating        | `SeatingKind` (`chair \| desk \| sofa`)    | Every kind a character can sit in                       |
-| Furniture art  | `FurnitureArt` (`FURNITURE_ART[kind]`)     | A desk's or sofa's drawing, seats and ring              |
+| Seating        | `SeatingKind`, `isSeatingShape`            | Chair, desk, sofa and meeting table: where one sits     |
+| Furniture art  | `FurnitureArt` (`FURNITURE_ART[kind]`)     | A piece's three drawings (`FurnitureDrawing` each)      |
 | View           | `facingView(facing)`                       | `n` front, `s` back, `e` side, `w` side mirrored        |
 | Occupied       | `sitters.length > 0`                       | Derived per render, never stored                        |
 | Seat fill      | `chairSeatFill(fillColor, stroke)`         | Own fill, or a 0.32 wash of the stroke when transparent |
@@ -111,13 +111,13 @@ export function isChairFacing(value: unknown): value is ChairFacing;
 export type ChairSitterFacing = 'down' | 'left' | 'up' | 'right';
 export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing>;
 // seating.ts
-export type FurnitureView = { width: number; height: number; parts: readonly FurniturePart[];
-  seats: readonly { u: number; v: number }[]; ring: { cx: number; cy: number; rx: number; ry: number } };
-export type FurnitureArt = { front: FurnitureView; back: FurnitureView; side: FurnitureView };
+export type FurnitureDrawing = { width: number; height: number; parts: readonly FurniturePart[];
+  seats: readonly { u: number; v: number }[]; ring: { cx: number; cy: number; rx: number; ry: number };
+  ringUnder?: number };
+export type FurnitureArt = { front: FurnitureDrawing; back: FurnitureDrawing; side: FurnitureDrawing };
 export function facingView(facing: ChairFacing): { view: 'front' | 'back' | 'side'; mirrored: boolean };
 export function furnitureFrame(art: FurnitureArt, facing: ChairFacing):
-  { viewBox: string; transform: string; view: FurnitureView };
-export function furnitureRing(art: FurnitureArt, facing: ChairFacing): FurnitureView['ring'];
+  { viewBox: string; transform: string; view: FurnitureDrawing };
 export function chairSeatFill(fillColor: string | undefined, stroke: string): string;
 
 // AvatarPresence (room-messages.ts)
@@ -155,7 +155,7 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
 | E6  | Touch device with no keys       | **Stand** press under the character [QF16]            |
 | E7  | Unknown `chairFacing`           | Tab write rejected                                    |
 | E8  | Seat ring and seat point        | Ring at 40/72 of the grid, feet at 0.62 (gap GF10)    |
-| E9  | Unstyled chair on dark paper    | Canvas draws `#94a3b8`, export `#64748b` (gap GF15)   |
+| E9  | Unstyled chair on dark paper    | Canvas and export both draw `#64748b`                 |
 | E10 | Chair stored with stamped skin  | `ownColours` drops it; label ink follows the paper    |
 
 ## Security and trust
@@ -175,11 +175,13 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
 - **Seat fill:** `chairSeatFill`; a transparent or absent fill washes the stroke at 0.32.
 - **Unstyled colours** (`behaviourSkin`, none stored): transparent box; light paper stroke
   `#94a3b8`, label `#0f172a`; dark paper stroke `#64748b`, label `#ffffff`. The export follows
-  this, and so does the canvas: `FurnitureView` takes `defaultStrokeColor(element, surface)` (GF15).
+  this, and so does the canvas: `FurnitureView` takes `defaultStrokeColor(element, surface)`.
 - **Label:** under the chair (`textAlignY: 'bottom'`), on the canvas and in the export.
 - **Palette:** tile `tools:chair` ("Add Chair") in the **Navigate** category (Facilitate's Collaborate band).
-- **Occupied:** a 3 px ring (`furnitureRing`, opacity 0.85) in the first sitter's colour; names in a
-  pill ABOVE the piece [QF16].
+- **Occupied:** a 3 px ring (the drawing's `ring`, opacity 0.85) in the first sitter's colour, painted
+  inside the drawing's frame (so a mirrored side mirrors it) before `parts[ringUnder]`: on the seat,
+  under whatever stands nearer the camera (a backrest's back, the desk and its monitor, a sofa's
+  arms). Names in a pill ABOVE the piece [QF16].
 - **No `…`:** `carriesSharedSettingsMenu('chair')` is `false`.
 - **Telemetry:** placing emits `Element·Added·Chair`; a facing change emits `Element·Changed·Chair`;
   sitting and standing emit nothing.

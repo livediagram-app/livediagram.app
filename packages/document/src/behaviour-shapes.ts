@@ -11,6 +11,7 @@
 // once: does this element carry a `…` on its face?
 
 import { isOfficeShape } from './office';
+import { isSeatingShape } from './seating';
 import type { ShapeKind } from './index';
 
 // Every kind the palette's Behaviours category can place.
@@ -105,9 +106,7 @@ export function drawsOwnElementMenu(kind: ShapeKind): boolean {
 export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
   if (
     kind === 'focus-button' ||
-    kind === 'chair' ||
-    kind === 'desk' ||
-    kind === 'sofa' ||
+    isSeatingShape(kind) ||
     kind === 'fence' ||
     isOfficeShape(kind) ||
     kind === 'reveal' ||
