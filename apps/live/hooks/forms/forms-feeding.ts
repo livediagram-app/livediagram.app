@@ -6,24 +6,24 @@ import type { Tab } from '@livediagram/document';
 const DELETE_TAB =
   "Delete this tab? Unless another document also holds it, its content can't be recovered.";
 
-/** The names of the Form tabs whose responses go to `tabId` (a board or a sheet). */
-export function formsFeeding(tabs: readonly Tab[], tabId: string): string[] {
+/** The Form tabs whose responses go to `tabId` (a board, or a sheet: a form sending to a sheet feeds no board, as its
+ *  sheet wins over a board it kept), each with its heading. The board's Form strip and Delete's warning both read it. */
+export function formsFeeding(
+  tabs: readonly Tab[],
+  tabId: string,
+): { tabId: string; heading: string }[] {
   return tabs.flatMap((t) => {
     if (t.kind !== 'form' || t.id === tabId || !t.form) return [];
     const to = t.form.sheet?.tabId ?? t.form.destination?.tabId;
-    return to === tabId ? [t.name] : [];
+    return to === tabId ? [{ tabId: t.id, heading: t.form.heading }] : [];
   });
 }
 
-/** Delete's confirmation for a tab: plain, or warning that the forms it takes responses for are unpublished. */
-export function deleteTabMessage(tabs: readonly Tab[], tabId: string): string {
-  const names = formsFeeding(tabs, tabId);
-  if (names.length === 0) return DELETE_TAB;
-  const which =
-    names.length === 1
-      ? `The form “${names[0]}” sends its responses`
-      : `${names.length} forms send their responses`;
-  return `Delete this tab? ${which} here: deleting it unpublishes ${
-    names.length === 1 ? 'that form' : 'them'
-  }, and people with the link can no longer fill it in. Unless another document also holds the tab, its content can't be recovered.`;
+/** Delete's warning for a tab the forms send their responses to: they are unpublished. Undefined for any other tab. */
+export function deleteTabWarning(tabs: readonly Tab[], tabId: string): string | undefined {
+  const forms = formsFeeding(tabs, tabId);
+  if (forms.length === 0) return undefined;
+  return forms.length === 1
+    ? `Unpublishes the form “${forms[0]!.heading}”: its link stops working.`
+    : `Unpublishes ${forms.length} forms: their links stop working.`;
 }

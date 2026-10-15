@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import { deleteTabMessage, formsFeeding } from './forms-feeding';
+import { deleteTabWarning, formsFeeding } from './forms-feeding';
 
 // Deleting a board or sheet a form sends to says first that it unpublishes the form
 // (docs/specs/030-forms/forms.md "Publishing and the form link").
@@ -33,19 +33,18 @@ describe('formsFeeding', () => {
   ];
 
   it('names the forms whose responses go to a tab, a sheet before a kept board', () => {
-    expect(formsFeeding(tabs, 'board')).toEqual(['Bugs']);
-    expect(formsFeeding(tabs, 'sheet')).toEqual(['RSVP']);
+    expect(formsFeeding(tabs, 'board')).toEqual([{ tabId: 'f1', heading: 'Bugs' }]);
+    expect(formsFeeding(tabs, 'sheet')).toEqual([{ tabId: 'f2', heading: 'RSVP' }]);
     expect(formsFeeding(tabs, 'f1')).toEqual([]);
   });
 
-  it('warns in Delete’s confirmation, one form or several', () => {
-    expect(deleteTabMessage(tabs, 'board')).toContain('The form “Bugs” sends its responses here');
-    expect(deleteTabMessage(tabs, 'board')).toContain('unpublishes that form');
-    const two = [...tabs, formTab('f3', 'More', { board: 'board' })];
-    expect(deleteTabMessage(two, 'board')).toContain('2 forms send their responses here');
-    expect(deleteTabMessage(tabs, 'f1')).toBe(
-      "Delete this tab? Unless another document also holds it, its content can't be recovered.",
+  it('warns in Delete’s confirmation, one form or several, and not for any other tab', () => {
+    expect(deleteTabWarning(tabs, 'board')).toBe(
+      'Unpublishes the form “Bugs”: its link stops working.',
     );
+    const two = [...tabs, formTab('f3', 'More', { board: 'board' })];
+    expect(deleteTabWarning(two, 'board')).toBe('Unpublishes 2 forms: their links stop working.');
+    expect(deleteTabWarning(tabs, 'f1')).toBeUndefined();
   });
 
   // The tab bar asks for every tab on every render: 200 tabs, 50 of them forms, stay well inside a frame.
@@ -54,7 +53,7 @@ describe('formsFeeding', () => {
       i % 4 === 0 ? formTab(`f${i}`, `F${i}`, { board: 'b0' }) : tab(`b${i}`, { kind: 'board' }),
     );
     const start = performance.now();
-    for (const t of many) deleteTabMessage(many, t.id);
+    for (const t of many) deleteTabWarning(many, t.id);
     expect(performance.now() - start).toBeLessThan(50);
   });
 });

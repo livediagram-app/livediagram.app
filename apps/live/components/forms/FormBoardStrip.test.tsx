@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { Tab } from '@livediagram/document';
-import { formsFeeding } from '@/hooks/forms/useFormBoardValue';
+import { formsFeeding } from '@/hooks/forms/forms-feeding';
 import { FormBoardStrip } from './FormBoardStrip';
 import { FormBoardContext, type FormBoardValue } from './form-board-context';
 

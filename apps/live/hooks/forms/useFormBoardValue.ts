@@ -4,19 +4,8 @@
 // off the document's Form tabs, with the api details and tab opening the strip needs. Recomputed only when they change.
 import { useMemo } from 'react';
 import type { Tab } from '@livediagram/document';
-import { readForm } from '@livediagram/forms';
 import type { FormBoardValue } from '@/components/forms/form-board-context';
-
-export function formsFeeding(tabs: readonly Tab[], boardTabId: string) {
-  return tabs.flatMap((t) => {
-    if (t.kind !== 'form') return [];
-    const form = readForm(t.form);
-    // A form sending its responses to a Sheet feeds no board.
-    return !form?.sheet && form?.destination?.tabId === boardTabId
-      ? [{ tabId: t.id, heading: form.heading }]
-      : [];
-  });
-}
+import { formsFeeding } from './forms-feeding';
 
 export function useFormBoardValue(input: {
   tabs: readonly Tab[];

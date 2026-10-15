@@ -26,7 +26,7 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
 import { TabPill, type TabPillCtx } from './TabPill';
 import type { TabModeChoice } from './TabModeMenuRows';
 import type { AccessLevel } from '@livediagram/api-schema';
-import { deleteTabMessage } from '@/hooks/forms/forms-feeding';
+import { deleteTabWarning } from '@/hooks/forms/forms-feeding';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu. (Add-element actions and the
 // Cleanup category used to live here too but were removed: the palette and quick-connect cover
@@ -221,7 +221,7 @@ export function TabBar({
   const tabMenuProps = (tab: Tab, close: () => void) => ({
     canDelete: tabs.length > 1,
     // Deleting a board or sheet a form sends to unpublishes the form: its confirmation says so first.
-    deleteMessage: deleteTabMessage(tabs, tab.id),
+    deleteWarning: deleteTabWarning(tabs, tab.id),
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
     modeChoice: modeChoiceFor?.(tab),

@@ -329,6 +329,27 @@ an option; Rating as its number, refused outside its scale), the MCP card tools 
 scale; `list_items` lists a rating's scale) and Sheets card references (a Multiple Choice as its text, a Rating as its
 number).
 
+### The Forms tour
+
+A guided tour, as [Plan's](../026-plan/plan-tour.md) is (`components/tour/FormTourHost.tsx`, its steps in
+`form-tour-steps.ts`): offered once, 800 ms after an Editor first has a Form tab open, never beside another tour or a
+start panel, never on a read-only, locked or embedded tab, and never before the synced preferences are in. Its welcome
+card asks "Getting started with forms?" over a starter's picture; its steps point and never change anything:
+
+1. **Build It Here** (the form's questions, or its add bar when it has none);
+2. **Add Questions** (the add bar);
+3. **Responses and Preview** (the status bar);
+4. **Where Responses Go** (the cog);
+5. **Share Form** (the header's Share Form; skipped on a phone);
+6. **Responses Arrive Here** (a board) or **Responses Land Here** (a sheet): it opens the tab the form's responses go
+   to and comes back to the form after, only when the form has one;
+
+then its closing card, **That Is a Form**. Opening any tab but the form or where its responses go ends it as skipped.
+Seen is `formTourSeen` (synced preferences); **Show Me Around** at the foot of the cog's panel reruns it at once, seen
+or not, as Settings' Tours › **Forms Tour** does. Its events are `UI` `Opened`/`Closed` `FormTourOffer`, `Started`
+`FormTour`, `View` `FormTourStep<Step>` and `Ended` `FormTourCompleted`/`FormTourSkipped`, charted as the **Forms
+Tour** stack beside the Draw tour's.
+
 ## Publishing and the form link
 
 - **Share Form** (the header's Share on a Form tab, an Editor's) opens the **Share Form** dialog, separate from the
@@ -536,20 +557,21 @@ an agent, are later steps.
 
 ## Telemetry
 
-| Category | Action   | Type                                               | When                                                  |
-| -------- | -------- | -------------------------------------------------- | ----------------------------------------------------- |
-| Form     | Created  | the starter (`Blank`, `BugReport`, `Rsvp`, ...)    | A starter is chosen on Start Planning                 |
-| Form     | Created  | `FromBoard`                                        | New Form on a board's cog                             |
-| Form     | Added    | the question type (`ShortAnswer`, `Rating`, ...)   | Add Question                                          |
-| Form     | Shared   | `Link`                                             | Publish Form                                          |
-| Form     | Shared   | `BoardCopy`                                        | Copy Form Link on a board's Form strip                |
-| Form     | Toggled  | `Open` / `Closed`                                  | Accepting Responses flipped (before the change lands) |
-| Form     | Sent     | `Response` / `Dropped` (hidden field)              | The api accepts or drops a response (server-side)     |
-| Form     | Sent     | `Preview`                                          | An Editor's Preview makes its card                    |
-| Form     | Reported | `Spam` / `Phishing` / `Offensive` / `Other`        | A report is filed (server-side)                       |
-| Activity | Selected | `FormResponses`                                    | A Form Responses row in the Inbox                     |
-| UI       | Toggled  | `NotifyFormResponsesOn` / `NotifyFormResponsesOff` | The email switch in Settings                          |
-| Email    | Sent     | `FormResponse` / `FormSuspended`                   | Those emails go (server-side)                         |
+| Category | Action   | Type                                                    | When                                                  |
+| -------- | -------- | ------------------------------------------------------- | ----------------------------------------------------- |
+| Form     | Created  | the starter (`Blank`, `BugReport`, `Rsvp`, ...)         | A starter is chosen on Start Planning                 |
+| Form     | Created  | `FromBoard`                                             | New Form on a board's cog                             |
+| Form     | Added    | the question type (`ShortAnswer`, `Rating`, ...)        | Add Question                                          |
+| Form     | Linked   | `ConnectNewBoard` / `ConnectNewSheet` / `ConnectChoose` | The connect box's three choices                       |
+| Form     | Shared   | `Link`                                                  | Publish Form                                          |
+| Form     | Shared   | `BoardCopy`                                             | Copy Form Link on a board's Form strip                |
+| Form     | Toggled  | `Open` / `Closed`                                       | Accepting Responses flipped (before the change lands) |
+| Form     | Sent     | `Response` / `Dropped` (hidden field)                   | The api accepts or drops a response (server-side)     |
+| Form     | Sent     | `Preview`                                               | An Editor's Preview makes its card                    |
+| Form     | Reported | `Spam` / `Phishing` / `Offensive` / `Other`             | A report is filed (server-side)                       |
+| Activity | Selected | `FormResponses`                                         | A Form Responses row in the Inbox                     |
+| UI       | Toggled  | `NotifyFormResponsesOn` / `NotifyFormResponsesOff`      | The email switch in Settings                          |
+| Email    | Sent     | `FormResponse` / `FormSuspended`                        | Those emails go (server-side)                         |
 
 Every chart is on the public dashboard's **Forms** stack.
 
