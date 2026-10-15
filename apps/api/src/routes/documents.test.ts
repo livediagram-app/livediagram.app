@@ -70,6 +70,8 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     deleteTabRow: vi.fn(),
     deleteShareLinksForTab: vi.fn(async (): Promise<string[]> => []),
     deleteFormLinksForTab: vi.fn(async (): Promise<number> => 0),
+    // No live form links: a deleted tab unpublishes no form here (forms.test.ts covers it).
+    liveFormLinksOf: vi.fn(async () => []),
     rescopeShareLink: vi.fn(),
   },
   // gateRead / gateEdit (context.ts) forward to these; mocking the auth
