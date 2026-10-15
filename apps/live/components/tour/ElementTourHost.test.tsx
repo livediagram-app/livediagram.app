@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type Element } from '@livediagram/document';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { elementTourOffer } from '@/lib/element-tour-offer';
+import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
 import { createSelectionStore, type SelectionStore } from '@/lib/selection-store';
 import { setActiveTour, activeTour } from '@/lib/tour-active';
 import { setStartPanelOpen } from '@/components/start/start-panel-open';
@@ -180,7 +181,7 @@ describe('ElementTourHost tour', () => {
       await act(async () => stage.engine!.next());
     }
     // The starter budget sends everything on (no leftover), and no More button is on screen here.
-    expect(seen).toEqual(['bands', 'nodes', 'flows']);
+    expect(seen).toEqual(['bands', 'flows']);
     expect(stage.engine?.step?.id).toBe('flows-nodes');
     expect(setSankeyFlowsOpenForId).toHaveBeenCalledWith('sk1');
   });
@@ -206,13 +207,35 @@ describe('ElementTourHost tour', () => {
     expect(stage.engine?.active).toBe(false);
   });
 
-  it('Done completes it', async () => {
+  it('Done completes it and puts the Flows dialog away', async () => {
+    const close = vi.fn();
+    const unregister = registerSankeyFlowsDialog({ showTable: vi.fn(), showText: vi.fn(), close });
     editor();
     mount();
     act(() => store.setSelectedId('sk1'));
     act(() => elementTourOffer()!.play());
-    while (stage.engine?.active) await act(async () => stage.engine!.next());
+    while (stage.engine?.step?.card !== 'outro') await act(async () => stage.engine!.next());
+    close.mockClear();
+    await act(async () => stage.engine!.next());
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'SankeyTourCompleted');
     expect(activeTour()).toBeNull();
+    expect(close).toHaveBeenCalledTimes(1);
+    unregister();
+  });
+
+  it('Skip leaves the Flows dialog where it is', async () => {
+    const close = vi.fn();
+    const unregister = registerSankeyFlowsDialog({ showTable: vi.fn(), showText: vi.fn(), close });
+    editor();
+    mount();
+    act(() => store.setSelectedId('sk1'));
+    act(() => elementTourOffer()!.play());
+    while (!stage.engine?.step?.id.startsWith('flows-'))
+      await act(async () => stage.engine!.next());
+    close.mockClear();
+    act(() => stage.engine!.skip());
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'SankeyTourSkipped');
+    expect(close).not.toHaveBeenCalled();
+    unregister();
   });
 });

@@ -1,6 +1,6 @@
 // The Sankey tour (docs/specs/007-editor/element-tours.md "The Sankey tour"): an element tour of the selected diagram.
-// It reads the diagram on the canvas first, lifting its widest band, its busiest node and a leftover as a hover
-// would, then opens the Flows dialog and carries on with the dialog's own Show Me steps, so the two never drift.
+// It reads the diagram on the canvas first, lifting its widest band and a leftover as a hover would, then opens the
+// Flows dialog and carries on with the dialog's own Show Me steps, so the two never drift.
 import { sankeyFrame, type ShapeElement } from '@livediagram/document';
 import { balanceNotes, rowsFromFlows } from '@/lib/sankey-flow-rows';
 import type { SankeyTourFocus } from '@/lib/sankey-tour-focus';
@@ -29,7 +29,6 @@ export type SankeyElementTourContext = {
   elementId: string;
   // The parts each canvas step lifts, as indices into the drawn layout; null leaves the step out.
   band: number | null;
-  node: number | null;
   leftover: number | null;
   // The selection toolbar's More button is showing (not for a power user on a desktop, who right-clicks).
   hasMore: boolean;
@@ -76,16 +75,6 @@ export function sankeyElementTourSteps(ctx: SankeyElementTourContext): Step[] {
         'Each band is as wide as the amount it carries, so the widest is where most of it goes. The readout gives its amount and its share.',
         inElement(id, `[data-sankey-band="${ctx.band}"]`),
         { part: 'band', index: ctx.band },
-      ),
-    );
-  if (ctx.node !== null)
-    steps.push(
-      canvasStep(
-        'nodes',
-        'Nodes Stand in Columns',
-        'A node is as tall as what passes through it. Columns step left to right from where the flows start.',
-        inElement(id, `[data-sankey-node="${ctx.node}"]`),
-        { part: 'node', index: ctx.node },
       ),
     );
   if (ctx.leftover !== null)
@@ -138,13 +127,13 @@ export function sankeyElementTourSteps(ctx: SankeyElementTourContext): Step[] {
   return steps;
 }
 
-// The parts the canvas steps lift, read from the diagram as it is drawn: the widest stored band, the node with the
-// most flows in and out (a middle one first, since it shows both), and the widest leftover band.
+// The parts the canvas steps lift, read from the diagram as it is drawn: the widest stored band, and the widest
+// leftover band.
 export function sankeyTourParts(
   element: ShapeElement,
-): Pick<SankeyElementTourContext, 'band' | 'node' | 'leftover'> {
+): Pick<SankeyElementTourContext, 'band' | 'leftover'> {
   const frame = sankeyFrame(element);
-  const { links, nodes } = frame.layout;
+  const { links } = frame.layout;
   let band: number | null = null;
   let leftover: number | null = null;
   links.forEach((b, i) => {
@@ -152,18 +141,7 @@ export function sankeyTourParts(
       if (leftover === null || b.value > links[leftover]!.value) leftover = i;
     } else if (band === null || b.value > links[band]!.value) band = i;
   });
-  let node: number | null = null;
-  let best = -1;
-  for (const n of nodes) {
-    const degree = links.filter((b) => b.source === n.index || b.target === n.index).length;
-    const middle = n.inflow > 0 && n.outflow > 0 ? 1000 : 0;
-    const score = middle + degree * 10 + Math.min(9, n.value / Math.max(1, frame.layout.total));
-    if (score > best) {
-      best = score;
-      node = n.index;
-    }
-  }
-  return { band, node, leftover };
+  return { band, leftover };
 }
 
 // What the Flows dialog will show, worked out as it does, so its steps are fixed with the rest.

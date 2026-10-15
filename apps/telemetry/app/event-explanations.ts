@@ -1624,8 +1624,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Avatar tour reached its closing "You\'re Ready to Roam" card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
-  'UI|View|SankeyTourStepNodes':
-    'The Sankey tour reached its "Nodes Stand in Columns" step, lifting the busiest node.',
   'UI|View|SankeyTourStepLeftover':
     'The Sankey tour reached its "What Is Left Over" step, lifting a leftover band.',
   'UI|View|SankeyTourStepStyle':

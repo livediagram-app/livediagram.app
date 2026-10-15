@@ -21,7 +21,6 @@ const budget = createShape('sankey', 0, 0) as ShapeElement;
 const ctxOf = (over: Partial<SankeyElementTourContext> = {}): SankeyElementTourContext => ({
   elementId: 'sk1',
   band: 0,
-  node: 1,
   leftover: 4,
   hasMore: true,
   touch: false,
@@ -42,7 +41,6 @@ describe('sankeyElementTourSteps', () => {
   it('reads the diagram, styles it, then runs the Flows dialog and closes', () => {
     expect(sankeyElementTourSteps(ctxOf()).map((s) => s.id)).toEqual([
       'bands',
-      'nodes',
       'leftover',
       'style',
       'flows',
@@ -61,7 +59,6 @@ describe('sankeyElementTourSteps', () => {
     const ids = sankeyElementTourSteps(
       ctxOf({
         band: null,
-        node: null,
         leftover: null,
         hasMore: false,
         flows: { hasNodes: false, hasBalanceNotes: false },
@@ -82,7 +79,6 @@ describe('sankeyElementTourSteps', () => {
     const a = api();
     const sel = (id: string) => steps.find((s) => s.id === id)!.selector!(a);
     expect(sel('bands')).toBe('[data-element-id="sk1"] [data-sankey-band="0"]');
-    expect(sel('nodes')).toBe('[data-element-id="sk1"] [data-sankey-node="1"]');
     expect(sel('leftover')).toBe('[data-element-id="sk1"] [data-sankey-band="4"]');
     expect(sel('style')).toBe('#selection-more-actions');
     expect(sel('flows')).toBe('[data-element-id="sk1"]');
@@ -95,7 +91,7 @@ describe('sankeyElementTourSteps', () => {
     expect(flows(true)).toMatch(/^Double-tap/);
   });
 
-  it('lifts a part on a canvas step, puts the dialog away, and lets go on leaving', async () => {
+  it('lifts a band on a canvas step, puts the dialog away, and lets go on leaving', async () => {
     const steps = sankeyElementTourSteps(ctxOf());
     const a = api();
     const bands = steps.find((s) => s.id === 'bands')!;
@@ -104,9 +100,9 @@ describe('sankeyElementTourSteps', () => {
     expect(a.focus).toHaveBeenCalledWith('band', 0);
     bands.cleanup!(a);
     expect(a.clearFocus).toHaveBeenCalled();
-    const nodes = steps.find((s) => s.id === 'nodes')!;
-    await nodes.prepare!(a);
-    expect(a.focus).toHaveBeenCalledWith('node', 1);
+    const leftover = steps.find((s) => s.id === 'leftover')!;
+    await leftover.prepare!(a);
+    expect(a.focus).toHaveBeenCalledWith('band', 4);
   });
 
   it('opens the dialog on its steps, over it, and brings the tab each step is about forward', async () => {
@@ -136,14 +132,10 @@ describe('sankeyElementTourSteps', () => {
 });
 
 describe('sankeyTourParts', () => {
-  it('picks the widest band and a middle node of the starter budget, and no leftover', () => {
+  it('picks the widest band of the starter budget, and no leftover', () => {
     const parts = sankeyTourParts(budget);
-    const { links, nodes } = sankeyFrame(budget).layout;
-    const widest = Math.max(...links.map((b) => b.value));
-    expect(links[parts.band!]!.value).toBe(widest);
-    const node = nodes.find((n) => n.index === parts.node)!;
-    expect(node.inflow).toBeGreaterThan(0);
-    expect(node.outflow).toBeGreaterThan(0);
+    const { links } = sankeyFrame(budget).layout;
+    expect(links[parts.band!]!.value).toBe(Math.max(...links.map((b) => b.value)));
     expect(parts.leftover).toBeNull();
   });
 
@@ -164,7 +156,6 @@ describe('sankeyTourParts', () => {
   it('has nothing to lift on an empty diagram', () => {
     expect(sankeyTourParts({ ...budget, sankeyFlows: [] } as ShapeElement)).toEqual({
       band: null,
-      node: null,
       leftover: null,
     });
   });

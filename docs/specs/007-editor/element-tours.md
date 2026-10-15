@@ -85,23 +85,21 @@ The steps, in order, each a line or two. The exact strings live in
 1. **Bands Carry Amounts** (only with flows): rings the widest band and lifts it, its readout showing as a hover
    would. "Each band is as wide as the amount it carries, so the widest is where most of it goes. The readout gives
    its amount and its share."
-2. **Nodes Stand in Columns** (only with flows): rings the busiest node with flows in and out (else the largest),
-   lifted with its readout. "A node is as tall as what passes through it. Columns step left to right from where the
-   flows start."
-3. **What Is Left Over** (only when a leftover band is drawn): rings the largest leftover band, lifted. "What a node
+2. **What Is Left Over** (only when a leftover band is drawn): rings the largest leftover band, lifted. "What a node
    keeps back runs on to Leftover, in grey. It is worked out, never typed, so it follows the amounts."
-4. **Style It** (only while the selection toolbar's More button shows): rings More. "Under Sankey in the menu: band
+3. **Style It** (only while the selection toolbar's More button shows): rings More. "Under Sankey in the menu: band
    colours, columns, labels, the unit, and an animation."
-5. **Write the Flows**: rings the whole diagram. "Double-click a Sankey (double-tap on a touch screen) to open its
+4. **Write the Flows**: rings the whole diagram. "Double-click a Sankey (double-tap on a touch screen) to open its
    flows. Next opens them for you."
-6. The Flows dialog opens, and the tour carries on inside it with the steps of its own
+5. The Flows dialog opens, and the tour carries on inside it with the steps of its own
    [Show Me](../009-elements/sankey.md#show-me) (Your Nodes, Flows Step by Step, Add a Flow, In and Out Differ, Or
    Type Them, Import a File, Live Preview), left out as Show Me leaves them out. Each opens the dialog again if it
    was closed. Stepping Back onto a canvas step closes it.
-7. **That Is a Sankey** (closing card): "Every change is one undo step. Show Me in the Flows dialog runs this part
-   again." with **Done** and a link to the Sankey Diagram article (**Sankey Diagram Help**).
+6. **That Is a Sankey** (closing card): "Every change is one undo step. Show Me in the Flows dialog runs this part
+   again." with **Done** and a link to the Sankey Diagram article (**Sankey Diagram Help**). Done closes the Flows
+   dialog with the tour, storing what is being typed as the dialog's own Done does; Skip leaves it open.
 
-The lift and the readout in steps 1 to 3 are the tour's: they win over a pointer left resting on another part (after pressing Next, say), since the step is about its part, and they go when the step does, when hovering works as ever.
+The lift and the readout in steps 1 and 2 are the tour's: they win over a pointer left resting on another part (after pressing Next, say), since the step is about its part, and they go when the step does, when hovering works as ever.
 
 ## Share roles
 
@@ -122,7 +120,7 @@ Each toured kind has its own literal tokens, `<Kind>Tour` (the Sankey's: `Sankey
   `UI` · `Closed` · `SankeyTourOffer` on Cancel.
 - **Start**: `UI` · `Started` · `SankeyTour` on Play.
 - **Stage views**: `UI` · `View` · `SankeyTourStep<Id>` once per step entry (`SankeyTourStepBands`,
-  `SankeyTourStepNodes`, `SankeyTourStepLeftover`, `SankeyTourStepStyle`, `SankeyTourStepFlows`, the dialog's
+  `SankeyTourStepLeftover`, `SankeyTourStepStyle`, `SankeyTourStepFlows`, the dialog's
   `SankeyTourStepFlowsNodes`, `...FlowsRows`, `...FlowsAdd`, `...FlowsBalance`, `...FlowsText`, `...FlowsImport`,
   `...FlowsPreview`, and `SankeyTourStepOutro`).
 - **End**: `UI` · `Ended` · `SankeyTourCompleted` | `SankeyTourSkipped`.

@@ -163,15 +163,17 @@ export function SankeyFlowsDialog({
   );
 
   // The Sankey element tour runs these same steps from outside (docs/specs/007-editor/element-tours.md): it switches
-  // the tabs through this handle, and while it runs Escape is its own, as Show Me's is.
+  // the tabs and closes it at its end through this handle, and while it runs Escape is its own, as Show Me's is.
   const switchTabRef = useLatest(switchTab);
+  const closeRef = useLatest(close);
   useLayoutEffect(
     () =>
       registerSankeyFlowsDialog({
         showTable: () => switchTabRef.current('table'),
         showText: () => switchTabRef.current('text'),
+        close: () => closeRef.current(),
       }),
-    [switchTabRef],
+    [switchTabRef, closeRef],
   );
   const elementTourRunning = useActiveTour() === 'element';
 

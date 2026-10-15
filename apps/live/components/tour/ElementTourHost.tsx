@@ -63,7 +63,8 @@ export function ElementTourHost() {
   const touringRef = useLatest(touring);
 
   const api: SankeyElementTourApi = {
-    ...sankeyFlowsDialog,
+    showTable: sankeyFlowsDialog.showTable,
+    showText: sankeyFlowsDialog.showText,
     focus: (part, index) => {
       const id = touringRef.current?.id;
       if (id) setSankeyTourFocus({ elementId: id, part, index });
@@ -73,9 +74,8 @@ export function ElementTourHost() {
       const id = touringRef.current?.id;
       if (id && ctx.sankeyFlowsOpenForId !== id) ctx.setSankeyFlowsOpenForId(id);
     },
-    closeFlows: () => {
-      if (ctx.sankeyFlowsOpenForId !== null) ctx.setSankeyFlowsOpenForId(null);
-    },
+    // As the dialog's own Done: what is being typed is stored first.
+    closeFlows: () => sankeyFlowsDialog.close(),
   };
   const apiRef = useLatest(api);
 
@@ -90,6 +90,8 @@ export function ElementTourHost() {
 
   const endTour = (outcome: TourOutcome) => {
     setSankeyTourFocus(null);
+    // Done on the closing card puts the Flows dialog away with the tour; a Skip leaves the person where they are.
+    if (outcome === 'completed') sankeyFlowsDialog.close();
     setTouring(null);
     debugLog('[element-tour] end', { outcome });
     track('UI', 'Ended', outcome === 'completed' ? 'SankeyTourCompleted' : 'SankeyTourSkipped');
