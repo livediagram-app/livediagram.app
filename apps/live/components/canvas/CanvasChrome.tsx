@@ -381,7 +381,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // cluster moves inside its frame.
   const canvasCovered = useCanvasCovered();
   const tabPlanKind = usePlanTabKind();
-  const elementCovers = canvasCovered && tabPlanKind !== 'dashboard';
+  // A Dashboard's or a Form tab's page covers the canvas as a page, not an element.
+  const elementCovers = canvasCovered && tabPlanKind !== 'dashboard' && tabPlanKind !== 'form';
   const clusterInset = elementCovers ? COVERED_CLUSTER_INSET : NO_CLUSTER_INSET;
   // Plan's Timer and Vote, only for a board made for voting (or a session running), never on a Dashboard.
   const planVoting = usePlanVoting(elements, !!props.tabVote || !!props.sessionTools?.timer);

@@ -700,3 +700,5 @@ export * from './illustrate';
 export * from './article-frames';
 export * from './illustrate-summary';
 export * from './mcp-origin';
+// Forms (docs/specs/030-forms/forms.md).
+export * from './forms';

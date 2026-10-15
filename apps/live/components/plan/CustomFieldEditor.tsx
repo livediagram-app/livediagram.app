@@ -4,17 +4,20 @@
 // its kind. Every value is a plain string, number or true/false under the field's id; clearing a
 // field removes its value. A value of the wrong kind (the field's kind changed) shows empty and is
 // replaced by the next edit.
-import { Select, TextInput } from '@livediagram/ui';
+import { CloseIcon, Select, TextInput } from '@livediagram/ui';
 import {
   CURRENCY_DEFAULT,
   EMAIL_MAX,
   ITEM_UNKNOWN_STRING_MAX,
+  RATING_STARS_ON_CARD,
   isEmailAddress,
+  ratingScaleOf,
   type CustomFieldDef,
   type ItemFieldValue,
 } from '@livediagram/items';
 import { DateField, DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { RatingInput } from '../forms/RatingInput';
 
 type Save = (value: ItemFieldValue | undefined) => void | boolean | Promise<boolean>;
 
@@ -175,6 +178,64 @@ export function CustomFieldEditor({
             </option>
           ))}
         </Select>
+      );
+    }
+    case 'multichoice': {
+      // Checkboxes, one an option; the picks kept in option order (docs/specs/030-forms/forms.md).
+      const options = field.options ?? [];
+      const picks = Array.isArray(value)
+        ? value.filter((v): v is string => typeof v === 'string')
+        : [];
+      return (
+        <div id={id} role="group" aria-label={field.label} className="flex flex-col gap-1">
+          {options.map((o) => (
+            <label
+              key={o}
+              className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-slate-200"
+            >
+              <input
+                type="checkbox"
+                disabled={disabled}
+                className="h-4 w-4 accent-brand-600 enabled:cursor-pointer"
+                checked={picks.includes(o)}
+                onChange={(e) => {
+                  const next = options.filter((x) =>
+                    x === o ? e.target.checked : picks.includes(x),
+                  );
+                  onSave(next.length ? next : undefined);
+                }}
+              />
+              {o}
+            </label>
+          ))}
+        </div>
+      );
+    }
+    case 'rating': {
+      const scale = ratingScaleOf(field);
+      const n = typeof value === 'number' ? value : undefined;
+      return (
+        <div id={id} className="flex items-center gap-1">
+          <RatingInput
+            label={field.label}
+            value={n}
+            scale={scale}
+            style={scale > RATING_STARS_ON_CARD ? 'numbers' : 'stars'}
+            size="sm"
+            disabled={disabled}
+            onChange={(v) => onSave(v)}
+          />
+          {n !== undefined && !disabled ? (
+            <button
+              type="button"
+              aria-label={`Clear ${field.label}`}
+              className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              onClick={() => onSave(undefined)}
+            >
+              <CloseIcon size={12} />
+            </button>
+          ) : null}
+        </div>
       );
     }
     // A Card field is drawn by LinkedCardField (ItemFieldEditor), never here.

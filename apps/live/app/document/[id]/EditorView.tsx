@@ -26,6 +26,8 @@ import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PlanProvider } from '@/components/plan/PlanContext';
+import { FormBoardContext } from '@/components/forms/form-board-context';
+import { useFormBoardValue } from '@/hooks/forms/useFormBoardValue';
 import { SheetsProviders } from '@/hooks/sheets/sheet-comments-context';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -85,6 +87,7 @@ import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled } from '@/lib/user-preferences';
 import { BLANK_SHEET_CHOICE } from '@/lib/sheet-seeds';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
+import { PendingFormStart } from '@/components/forms/PendingFormStart';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -106,6 +109,10 @@ const PlanBoardPicker = dynamic(
   () => import('@/components/plan/PlanBoardPicker').then((m) => m.PlanBoardPicker),
   { ssr: false },
 );
+// A Form tab's page (docs/specs/030-forms/forms.md), fetched only when one is opened.
+const FormPage = dynamic(() => import('@/components/forms/FormPage').then((m) => m.FormPage), {
+  ssr: false,
+});
 // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): only a Dashboard tab draws it.
 const DashboardPage = dynamic(
   () => import('@/components/plan/dashboard/DashboardPage').then((m) => m.DashboardPage),
@@ -125,6 +132,11 @@ const PlanTourHost = dynamic(
 // enters Facilitate, and stays mounted after, as the Plan tour does.
 const FacilitateTourHost = dynamic(
   () => import('@/components/tour/FacilitateTourHost').then((m) => m.FacilitateTourHost),
+  { ssr: false },
+);
+// The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab.
+const FormTourHost = dynamic(
+  () => import('@/components/tour/FormTourHost').then((m) => m.FormTourHost),
   { ssr: false },
 );
 // The Draw tour (docs/specs/023-draw-mode/draw-tour.md): the same, the first time the person enters Draw.
@@ -276,6 +288,17 @@ export function EditorView() {
   const role = useRoleIndicator();
 
   const selectTab = useSelectTab();
+  // A board's Form strip (docs/specs/030-forms/forms.md "On the board"): the forms feeding the open tab.
+  const formBoard = useFormBoardValue({
+    tabs,
+    activeTabId: activeTab.id,
+    documentId: ctx.documentId,
+    ownerId: ctx.selfParticipant.id,
+    share: ctx.sessionShareCode,
+    online: !isOffline,
+    canShare: ctx.can.level === 'edit',
+    openTab: selectTab,
+  });
   // Contextual command palette for the SearchPanel "Actions" group (docs/specs/008-canvas/canvas-and-palette.md):
   // selection-aware command list + dispatcher, built off the same editor
   // actions the menus use. Empty (undefined items) for view-only sessions.
@@ -286,6 +309,7 @@ export function EditorView() {
   const mountPlanTour = useEverTrue(ctx.editorMode.mode === 'plan');
   const mountFacilitateTour = useEverTrue(ctx.editorMode.mode === 'facilitate');
   const mountDrawTour = useEverTrue(ctx.editorMode.mode === 'draw');
+  const mountFormTour = useEverTrue(activeTab.kind === 'form');
   const mountAvatarTour = useEverTrue(canvasTool === 'avatar');
   const mountIllustrateTour = useEverTrue(ctx.editorMode.mode === 'illustrate');
   useEditorAccent(activeTab.theme);
@@ -350,10 +374,16 @@ export function EditorView() {
     !isReadOnly &&
     !templateGridOpen &&
     ctx.editorMode.mode === 'plan' &&
-    (activeTab.kind === 'dashboard' ? !dashboardHasRows : activeTab.elements.length === 0);
+    (activeTab.kind === 'dashboard'
+      ? !dashboardHasRows
+      : activeTab.kind === 'form'
+        ? !activeTab.form
+        : activeTab.elements.length === 0);
   // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md), for everyone who opens it; one with no rows left shows
   // Start Planning again, a new choice replacing it.
   const showDashboard = hydrated && activeTab.kind === 'dashboard' && dashboardHasRows;
+  // A Form tab's page (docs/specs/030-forms/forms.md), for everyone who opens it.
+  const showForm = hydrated && activeTab.kind === 'form' && !!activeTab.form;
   // The photo draft awaiting a decision, and the session-local view state
   // that goes with it (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftNotes = draftNotesOf(activeTab.elements);
@@ -552,397 +582,421 @@ export function EditorView() {
             {/* Plan boards and cards, and the dialogs that draw them (exports), read the items and
               their actions here (docs/specs/026-plan/plan-board.md). */}
             <PlanProvider value={ctx.plan.context}>
-              {/* The sheets bridge, and cell comments (docs/specs/029-sheets/sheet.md "Cell comments"): every Sheet
+              <FormBoardContext.Provider value={formBoard}>
+                {/* The sheets bridge, and cell comments (docs/specs/029-sheets/sheet.md "Cell comments"): every Sheet
                 opens its cells' threads through the editor's one comment popover. */}
-              <SheetsProviders
-                bridge={ctx.sheetsBridge}
-                openComments={ctx.openComments}
-                openId={ctx.commentThreadOpenId}
-                openCell={ctx.commentThreadOpenCell}
-                canComment={ctx.can.takePart}
-              >
-                <CanvasFocusProvider value={ctx.focusBounds}>
-                  <MinimalChromeProvider
-                    value={minimalChrome}
-                    powerUser={isPowerUserMode(userPreferences)}
-                  >
-                    <UiScaleProvider value={uiScales}>
-                      <DockNamesProvider value={userPreferences?.dockButtonNames !== false}>
-                        <EditorModeProvider value={ctx.editorMode}>
-                          {/* Side by side tabs (docs/specs/007-editor/split-view.md): the editor, and another
+                <SheetsProviders
+                  bridge={ctx.sheetsBridge}
+                  openComments={ctx.openComments}
+                  openId={ctx.commentThreadOpenId}
+                  openCell={ctx.commentThreadOpenCell}
+                  canComment={ctx.can.takePart}
+                >
+                  <CanvasFocusProvider value={ctx.focusBounds}>
+                    <MinimalChromeProvider
+                      value={minimalChrome}
+                      powerUser={isPowerUserMode(userPreferences)}
+                    >
+                      <UiScaleProvider value={uiScales}>
+                        <DockNamesProvider value={userPreferences?.dockButtonNames !== false}>
+                          <EditorModeProvider value={ctx.editorMode}>
+                            {/* Side by side tabs (docs/specs/007-editor/split-view.md): the editor, and another
                       tab of the document live beside it when one has been dragged to the right. */}
-                          <SplitViewFrame header={header} footer={footer}>
-                            {(headerInColumn, footerInColumn, splitShowing) => (
-                              <div className="flex h-dvh flex-col">
-                                {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
+                            <SplitViewFrame header={header} footer={footer}>
+                              {(headerInColumn, footerInColumn, splitShowing) => (
+                                <div className="flex h-dvh flex-col">
+                                  {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
           is armed so the user knows the next shape click connects, and
           gives a click target to cancel (clicking empty canvas also
           cancels). */}
-                                {connectSourceId !== null ? (
-                                  <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
-                                    <button
-                                      type="button"
-                                      onClick={cancelConnect}
-                                      className="pointer-events-auto flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 shadow-sm transition hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-200"
-                                    >
-                                      Click a shape to connect the arrow
-                                      <span className="text-brand-300" aria-hidden>
-                                        |
-                                      </span>
-                                      <span className="text-brand-700 dark:text-brand-300">
-                                        Cancel
-                                      </span>
-                                    </button>
-                                  </div>
-                                ) : null}
-                                {headerInColumn}
-                                {sessionCommunity && appChrome && hydrated ? (
-                                  <CommunityBar
-                                    community={sessionCommunity}
-                                    onMakeCopy={makeCopy}
-                                    copying={copying}
-                                  />
-                                ) : null}
-                                <AreaErrorBoundary area="TabDialogs">
-                                  <EditorTabDialogs />
-                                </AreaErrorBoundary>
-                                <AreaErrorBoundary area="Collaborators">
-                                  <CollaboratorsHost />
-                                </AreaErrorBoundary>
-                                <AreaErrorBoundary
-                                  area="Canvas"
-                                  fallback="panel"
-                                  fallbackClassName="flex-1"
-                                >
-                                  {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
-                                  <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
-                                    {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
-                                    <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
-                                      {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
-                                      <CommentBadgesContext.Provider
-                                        value={!(embedMode && isReadOnly) && !sessionCommunity}
+                                  {connectSourceId !== null ? (
+                                    <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
+                                      <button
+                                        type="button"
+                                        onClick={cancelConnect}
+                                        className="pointer-events-auto flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 shadow-sm transition hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-200"
                                       >
-                                        {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                        <SuppressElementIndicators when={embedMode}>
-                                          <EditorCanvasHost />
-                                        </SuppressElementIndicators>
-                                      </CommentBadgesContext.Provider>
-                                    </AgentFocusContext.Provider>
-                                  </ChangesetRevealContext.Provider>
-                                  {ctx.plan.openItemId || ctx.plan.editingTypeId ? (
-                                    <PlanSheetsHost plan={ctx.plan} />
+                                        Click a shape to connect the arrow
+                                        <span className="text-brand-300" aria-hidden>
+                                          |
+                                        </span>
+                                        <span className="text-brand-700 dark:text-brand-300">
+                                          Cancel
+                                        </span>
+                                      </button>
+                                    </div>
                                   ) : null}
-                                </AreaErrorBoundary>
-                                {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
+                                  {headerInColumn}
+                                  {sessionCommunity && appChrome && hydrated ? (
+                                    <CommunityBar
+                                      community={sessionCommunity}
+                                      onMakeCopy={makeCopy}
+                                      copying={copying}
+                                    />
+                                  ) : null}
+                                  <AreaErrorBoundary area="TabDialogs">
+                                    <EditorTabDialogs />
+                                  </AreaErrorBoundary>
+                                  <AreaErrorBoundary area="Collaborators">
+                                    <CollaboratorsHost />
+                                  </AreaErrorBoundary>
+                                  <AreaErrorBoundary
+                                    area="Canvas"
+                                    fallback="panel"
+                                    fallbackClassName="flex-1"
+                                  >
+                                    {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
+                                    <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
+                                      {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
+                                      <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
+                                        {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
+                                        <CommentBadgesContext.Provider
+                                          value={!(embedMode && isReadOnly) && !sessionCommunity}
+                                        >
+                                          {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
+                                          <SuppressElementIndicators when={embedMode}>
+                                            <EditorCanvasHost />
+                                          </SuppressElementIndicators>
+                                        </CommentBadgesContext.Provider>
+                                      </AgentFocusContext.Provider>
+                                    </ChangesetRevealContext.Provider>
+                                    {ctx.plan.openItemId || ctx.plan.editingTypeId ? (
+                                      <PlanSheetsHost plan={ctx.plan} />
+                                    ) : null}
+                                  </AreaErrorBoundary>
+                                  {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
           Nothing at all when no deck is running. */}
-                                <AreaErrorBoundary area="Presentation">
-                                  <PresentationHost />
-                                </AreaErrorBoundary>
-                                {embedMode ? (
-                                  // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
-                                  // switcher replace the full TabBar. Same selection clears as
-                                  // the TabBar's onSelect so element state never leaks across a
-                                  // tab switch.
-                                  <EmbedChrome
-                                    tabs={tabs}
-                                    activeId={activeId}
-                                    shareCode={sessionShareCode}
-                                    onSelectTab={selectTab}
-                                  />
-                                ) : null}
-                                {workbench ? (
-                                  // The workbench's Reconnect line; its Open in livediagram sits in the tab bar.
-                                  <WorkbenchReconnectLine
-                                    workbenchName={workbench.workbenchName}
-                                    ended={workbench.ended}
-                                  />
-                                ) : null}
-                                {footerInColumn}
-                                {/* Quick style panel (docs/specs/008-canvas/quick-style-panel.md): the most-used style choices beside
+                                  <AreaErrorBoundary area="Presentation">
+                                    <PresentationHost />
+                                  </AreaErrorBoundary>
+                                  {embedMode ? (
+                                    // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
+                                    // switcher replace the full TabBar. Same selection clears as
+                                    // the TabBar's onSelect so element state never leaks across a
+                                    // tab switch.
+                                    <EmbedChrome
+                                      tabs={tabs}
+                                      activeId={activeId}
+                                      shareCode={sessionShareCode}
+                                      onSelectTab={selectTab}
+                                    />
+                                  ) : null}
+                                  {workbench ? (
+                                    // The workbench's Reconnect line; its Open in livediagram sits in the tab bar.
+                                    <WorkbenchReconnectLine
+                                      workbenchName={workbench.workbenchName}
+                                      ended={workbench.ended}
+                                    />
+                                  ) : null}
+                                  {footerInColumn}
+                                  {/* Quick style panel (docs/specs/008-canvas/quick-style-panel.md): the most-used style choices beside
               a selection. Stands down in zen / embeds / presenting and while an
               element menu is open, which is the complete home of every setting. */}
-                                <AreaErrorBoundary area="QuickStyle">
-                                  <QuickStyleHost
-                                    deps={quickStyleDeps}
-                                    hidden={
-                                      // Not beside another tab (docs/specs/007-editor/split-view.md): half a window has
-                                      // no room for it next to the selection.
-                                      splitShowing ||
-                                      zenMode ||
-                                      embedMode ||
-                                      // Not in Plan mode (docs/specs/026-plan/plan-mode.md): a board's look is its theme's.
-                                      ctx.editorMode.mode === 'plan' ||
-                                      // Off in Settings (docs/specs/007-editor/user-preferences.md); style memory stays.
-                                      !panelEnabled(userPreferences, 'quickStylePanelEnabled') ||
-                                      (contextMenu !== null && contextMenu.mode !== 'canvas')
-                                    }
-                                    powerUser={isPowerUserMode(userPreferences)}
-                                  />
-                                </AreaErrorBoundary>
-                                {ctx.searchOpen ? (
-                                  <AreaErrorBoundary area="Search">
-                                    <EditorSearchPanel />
+                                  <AreaErrorBoundary area="QuickStyle">
+                                    <QuickStyleHost
+                                      deps={quickStyleDeps}
+                                      hidden={
+                                        // Not beside another tab (docs/specs/007-editor/split-view.md): half a window has
+                                        // no room for it next to the selection.
+                                        splitShowing ||
+                                        zenMode ||
+                                        embedMode ||
+                                        // Not in Plan mode (docs/specs/026-plan/plan-mode.md): a board's look is its theme's.
+                                        ctx.editorMode.mode === 'plan' ||
+                                        // Off in Settings (docs/specs/007-editor/user-preferences.md); style memory stays.
+                                        !panelEnabled(userPreferences, 'quickStylePanelEnabled') ||
+                                        (contextMenu !== null && contextMenu.mode !== 'canvas')
+                                      }
+                                      powerUser={isPowerUserMode(userPreferences)}
+                                    />
                                   </AreaErrorBoundary>
-                                ) : null}
-                                {/* Live poll (docs/specs/012-collaboration/live-poll.md). The prompt is shown to EVERY participant
+                                  {ctx.searchOpen ? (
+                                    <AreaErrorBoundary area="Search">
+                                      <EditorSearchPanel />
+                                    </AreaErrorBoundary>
+                                  ) : null}
+                                  {/* Live poll (docs/specs/012-collaboration/live-poll.md). The prompt is shown to EVERY participant
           including view-role; the results panel unlocks once you've
           responded (or if you're the host). Both vanish with the poll —
           nothing here is persisted. */}
-                                <PollPromptSheet
-                                  // Keyed on the poll so a second poll starts with a clean free-text
-                                  // box rather than inheriting the first one's half-typed answer.
-                                  key={livePoll.poll?.id ?? 'no-poll'}
-                                  // Asked of whoever may answer (docs/specs/013-workspace/share-roles.md): a Viewer only looks.
-                                  poll={
-                                    ctx.can.takePart && livePoll.poll && !livePoll.myAnswer
-                                      ? livePoll.poll
-                                      : null
-                                  }
-                                  onAnswer={livePoll.answerPoll}
-                                />
-                                {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog like the poll prompt above, and for
+                                  <PollPromptSheet
+                                    // Keyed on the poll so a second poll starts with a clean free-text
+                                    // box rather than inheriting the first one's half-typed answer.
+                                    key={livePoll.poll?.id ?? 'no-poll'}
+                                    // Asked of whoever may answer (docs/specs/013-workspace/share-roles.md): a Viewer only looks.
+                                    poll={
+                                      ctx.can.takePart && livePoll.poll && !livePoll.myAnswer
+                                        ? livePoll.poll
+                                        : null
+                                    }
+                                    onAnswer={livePoll.answerPoll}
+                                  />
+                                  {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog like the poll prompt above, and for
           the same reason: it is a question addressed to you, not a status
           line. Shown to view-role visitors too. */}
-                                <FocusInviteDialog
-                                  from={
-                                    focusInvite.invite
-                                      ? (livePresence.find((p) => p.id === focusInvite.invite!.from)
-                                          ?.name ?? 'Someone')
-                                      : null
-                                  }
-                                  onAccept={focusInvite.acceptFocus}
-                                  onDismiss={focusInvite.dismissFocus}
-                                />
-                                <AreaErrorBoundary area="Modals">
-                                  <EditorModals />
-                                </AreaErrorBoundary>
-                                <AreaErrorBoundary area="Popovers">
-                                  <EditorAnchoredPopovers />
-                                </AreaErrorBoundary>
-                                <AreaErrorBoundary area="ContextMenu">
-                                  <EditorContextMenuHost />
-                                </AreaErrorBoundary>
-                                <AreaErrorBoundary area="ElementDialogs">
-                                  <EditorElementDialogs />
-                                </AreaErrorBoundary>
-                                {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
+                                  <FocusInviteDialog
+                                    from={
+                                      focusInvite.invite
+                                        ? (livePresence.find(
+                                            (p) => p.id === focusInvite.invite!.from,
+                                          )?.name ?? 'Someone')
+                                        : null
+                                    }
+                                    onAccept={focusInvite.acceptFocus}
+                                    onDismiss={focusInvite.dismissFocus}
+                                  />
+                                  <AreaErrorBoundary area="Modals">
+                                    <EditorModals />
+                                  </AreaErrorBoundary>
+                                  <AreaErrorBoundary area="Popovers">
+                                    <EditorAnchoredPopovers />
+                                  </AreaErrorBoundary>
+                                  <AreaErrorBoundary area="ContextMenu">
+                                    <EditorContextMenuHost />
+                                  </AreaErrorBoundary>
+                                  <AreaErrorBoundary area="ElementDialogs">
+                                    <EditorElementDialogs />
+                                  </AreaErrorBoundary>
+                                  {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
           wizard's "Show me around" handoff flag is pending. */}
-                                <AreaErrorBoundary area="Tour">
-                                  <TourHost />
-                                  {/* The Plan tour (docs/specs/026-plan/plan-tour.md): the first time a person works in Plan. */}
-                                  {mountPlanTour ? <PlanTourHost /> : null}
-                                  {/* The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md): the first time a person works in Facilitate. */}
-                                  {mountFacilitateTour ? <FacilitateTourHost /> : null}
-                                  {mountDrawTour ? <DrawTourHost /> : null}
-                                  {/* The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the first time a person walks as an avatar. */}
-                                  {mountAvatarTour ? <AvatarTourHost /> : null}
-                                  {mountIllustrateTour ? <IllustrateTourHost /> : null}
-                                  <ElementTourHost />
-                                </AreaErrorBoundary>
+                                  <AreaErrorBoundary area="Tour">
+                                    <TourHost />
+                                    {/* The Plan tour (docs/specs/026-plan/plan-tour.md): the first time a person works in Plan. */}
+                                    {mountPlanTour ? <PlanTourHost /> : null}
+                                    {/* The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md): the first time a person works in Facilitate. */}
+                                    {mountFacilitateTour ? <FacilitateTourHost /> : null}
+                                    {mountDrawTour ? <DrawTourHost /> : null}
+                                    {/* The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab. */}
+                                    {mountFormTour ? <FormTourHost /> : null}
+                                    {/* A form template's form, started once its tab opens (lib/pending-form-start.ts). */}
+                                    <PendingFormStart />
+                                    {/* The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the first time a person walks as an avatar. */}
+                                    {mountAvatarTour ? <AvatarTourHost /> : null}
+                                    {mountIllustrateTour ? <IllustrateTourHost /> : null}
+                                    <ElementTourHost />
+                                  </AreaErrorBoundary>
 
-                                {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above
+                                  {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above
           the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]). */}
-                                {showSignInBanner ? (
-                                  <SignInBanner
-                                    surface="Editor"
-                                    onDismiss={dismissSignIn}
-                                    placementClassName="bottom-0 z-[var(--z-overlay)] pb-16"
-                                  />
-                                ) : null}
-                                {/* What a pasted board brought across (docs/specs/020-import-export/board-scene.md). */}
-                                <BoardSceneNotice
-                                  notice={boardSceneInsert.notice}
-                                  onClose={boardSceneInsert.dismissNotice}
-                                />
-                                {showDashboard ? (
-                                  <DashboardPage
-                                    // One page per Dashboard: opening another draws it still (useSlotEnter).
-                                    key={activeTab.id}
-                                    tab={activeTab}
-                                    tabs={tabs}
-                                    // A locked tab's Dashboard reads as a Viewer's does (plan-tabs.md "Dashboard tab").
-                                    canEdit={ctx.can.level === 'edit' && !ctx.activeTabLocked}
-                                    actions={ctx.planTabs}
-                                    openTab={selectTab}
-                                    loadTabs={loadAllTabs}
-                                    loadedTabIds={ctx.loadedTabIds}
-                                    deleteTab={deleteTab}
-                                    releaseSheets={ctx.releaseSheets}
-                                    renameTab={renameTab}
-                                  />
-                                ) : null}
-                                {/* One View Transition around every start, so a mode change turns the panel in place. */}
-                                <StartViewTransition>
-                                  {showPlanBoardPicker ? (
-                                    <PlanBoardPicker
-                                      // Each choice makes the tab its kind (docs/specs/026-plan/plan-tabs.md).
-                                      onPick={(preset) => {
-                                        const c = ctx.getViewportCenter();
-                                        ctx.planTabs.startElementTab('board', () =>
-                                          ctx.dropPaletteItem('plan-board', c.x, c.y, {
-                                            choice: preset,
-                                          }),
-                                        );
-                                      }}
-                                      onPickSheet={(start) => {
-                                        const c = ctx.getViewportCenter();
-                                        ctx.planTabs.startElementTab('sheet', () =>
-                                          ctx.dropPaletteItem(
-                                            'plan-sheet',
-                                            c.x,
-                                            c.y,
-                                            // Empty Sheet: a blank grid, with no Setup Sheet (plan-tabs.md "Names").
-                                            { choice: start ?? BLANK_SHEET_CHOICE },
-                                          ),
-                                        );
-                                      }}
-                                      onDashboard={ctx.planTabs.startDashboard}
-                                      // Something Else: the Quick Start, on Everything.
-                                      onQuickStart={openTemplatePicker}
-                                      onTemplate={(kind) => {
-                                        void ctx.chooseTemplate(kind);
-                                        moveOnTemplatePick(kind);
-                                      }}
-                                      tabs={tabs}
-                                      loadTabs={loadAllTabs}
-                                      onSuggestedDashboard={ctx.planTabs.startSuggestedDashboard}
-                                      onVisualisation={ctx.planTabs.startVisualisationTab}
+                                  {showSignInBanner ? (
+                                    <SignInBanner
+                                      surface="Editor"
+                                      onDismiss={dismissSignIn}
+                                      placementClassName="bottom-0 z-[var(--z-overlay)] pb-16"
                                     />
                                   ) : null}
-                                  {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a calm card in the
-          middle of an empty canvas, so a blank document reads as intentionally blank. */}
-                                  {/* An editor's empty Diagram, Facilitate or Illustrate tab offers its template start, in
-          the card's place (docs/specs/007-editor/start-diagramming.md). */}
-                                  {templateStart ? (
-                                    <>
-                                      <StartFromTemplates
-                                        key={`${activeTab.id}:${templateStart}`}
-                                        mode={templateStart}
-                                        tabId={activeTab.id}
+                                  {/* What a pasted board brought across (docs/specs/020-import-export/board-scene.md). */}
+                                  <BoardSceneNotice
+                                    notice={boardSceneInsert.notice}
+                                    onClose={boardSceneInsert.dismissNotice}
+                                  />
+                                  {showDashboard ? (
+                                    <DashboardPage
+                                      // One page per Dashboard: opening another draws it still (useSlotEnter).
+                                      key={activeTab.id}
+                                      tab={activeTab}
+                                      tabs={tabs}
+                                      // A locked tab's Dashboard reads as a Viewer's does (plan-tabs.md "Dashboard tab").
+                                      canEdit={ctx.can.level === 'edit' && !ctx.activeTabLocked}
+                                      actions={ctx.planTabs}
+                                      openTab={selectTab}
+                                      loadTabs={loadAllTabs}
+                                      loadedTabIds={ctx.loadedTabIds}
+                                      deleteTab={deleteTab}
+                                      releaseSheets={ctx.releaseSheets}
+                                      renameTab={renameTab}
+                                    />
+                                  ) : null}
+                                  {showForm ? (
+                                    <FormPage
+                                      key={activeTab.id}
+                                      tab={activeTab}
+                                      tabs={tabs}
+                                      // A locked tab's form reads as a Viewer's does.
+                                      canEdit={ctx.can.level === 'edit' && !ctx.activeTabLocked}
+                                      actions={ctx.forms}
+                                      openTab={selectTab}
+                                      loadTabs={loadAllTabs}
+                                      documentId={ctx.documentId}
+                                      ownerId={ctx.selfParticipant.id}
+                                      share={ctx.sessionShareCode}
+                                      online={!isOffline}
+                                    />
+                                  ) : null}
+                                  {/* One View Transition around every start, so a mode change turns the panel in place. */}
+                                  <StartViewTransition>
+                                    {showPlanBoardPicker ? (
+                                      <PlanBoardPicker
+                                        // Each choice makes the tab its kind (docs/specs/026-plan/plan-tabs.md).
+                                        onPick={(preset) => {
+                                          const c = ctx.getViewportCenter();
+                                          ctx.planTabs.startElementTab('board', () =>
+                                            ctx.dropPaletteItem('plan-board', c.x, c.y, {
+                                              choice: preset,
+                                            }),
+                                          );
+                                        }}
+                                        onPickSheet={(start) => {
+                                          const c = ctx.getViewportCenter();
+                                          ctx.planTabs.startElementTab('sheet', () =>
+                                            ctx.dropPaletteItem(
+                                              'plan-sheet',
+                                              c.x,
+                                              c.y,
+                                              // Empty Sheet: a blank grid, with no Setup Sheet (plan-tabs.md "Names").
+                                              { choice: start ?? BLANK_SHEET_CHOICE },
+                                            ),
+                                          );
+                                        }}
+                                        onDashboard={ctx.planTabs.startDashboard}
+                                        // Something Else: the Quick Start, on Everything.
+                                        onQuickStart={openTemplatePicker}
                                         onTemplate={(kind) => {
                                           void ctx.chooseTemplate(kind);
                                           moveOnTemplatePick(kind);
                                         }}
-                                        onQuickStart={openTemplatePicker}
+                                        tabs={tabs}
+                                        loadTabs={loadAllTabs}
+                                        onSuggestedDashboard={ctx.planTabs.startSuggestedDashboard}
+                                        onVisualisation={ctx.planTabs.startVisualisationTab}
+                                        onForm={ctx.forms.startForm}
                                       />
-                                      {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
-                                      <StartAgainTray
-                                        key={`tray:${activeTab.id}:${templateStart}`}
-                                        mode={templateStart}
+                                    ) : null}
+                                    {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a calm card in the
+          middle of an empty canvas, so a blank document reads as intentionally blank. */}
+                                    {/* An editor's empty Diagram, Facilitate or Illustrate tab offers its template start, in
+          the card's place (docs/specs/007-editor/start-diagramming.md). */}
+                                    {templateStart ? (
+                                      <>
+                                        <StartFromTemplates
+                                          key={`${activeTab.id}:${templateStart}`}
+                                          mode={templateStart}
+                                          tabId={activeTab.id}
+                                          onTemplate={(kind) => {
+                                            void ctx.chooseTemplate(kind);
+                                            moveOnTemplatePick(kind);
+                                          }}
+                                          onQuickStart={openTemplatePicker}
+                                        />
+                                        {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
+                                        <StartAgainTray
+                                          key={`tray:${activeTab.id}:${templateStart}`}
+                                          mode={templateStart}
+                                          tabId={activeTab.id}
+                                          tabName={activeTab.name}
+                                        />
+                                      </>
+                                    ) : showEmptyCanvasBanner ? (
+                                      <EmptyCanvasBanner
+                                        key={activeTab.id}
                                         tabId={activeTab.id}
                                         tabName={activeTab.name}
+                                        readOnly={isReadOnly}
+                                        participant={ctx.can.addContent && isReadOnly}
+                                        onQuickStart={openTemplatePicker}
                                       />
-                                    </>
-                                  ) : showEmptyCanvasBanner ? (
-                                    <EmptyCanvasBanner
-                                      key={activeTab.id}
-                                      tabId={activeTab.id}
-                                      tabName={activeTab.name}
-                                      readOnly={isReadOnly}
-                                      participant={ctx.can.addContent && isReadOnly}
-                                      onQuickStart={openTemplatePicker}
-                                    />
-                                  ) : null}
-                                </StartViewTransition>
+                                    ) : null}
+                                  </StartViewTransition>
 
-                                {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): names what holding Shift does
+                                  {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): names what holding Shift does
           right now, and offers the Alt insert-between gesture while a note is
           on the move. Suppressed while a mode banner owns the top slot. */}
-                                {minimalChrome ? null : (
-                                  <ModifierHint
-                                    readOnly={isReadOnly}
-                                    drag={drag}
-                                    esBoard={esBoard}
-                                    elements={activeTab.elements}
-                                    hasElements={activeTab.elements.length > 0}
-                                    suppressed={
-                                      canvasTool === 'format' ||
-                                      formatSourceId !== null ||
-                                      pendingDraw !== null
-                                    }
-                                  />
-                                )}
+                                  {minimalChrome ? null : (
+                                    <ModifierHint
+                                      readOnly={isReadOnly}
+                                      drag={drag}
+                                      esBoard={esBoard}
+                                      elements={activeTab.elements}
+                                      hasElements={activeTab.elements.length > 0}
+                                      suppressed={
+                                        canvasTool === 'format' ||
+                                        formatSourceId !== null ||
+                                        pendingDraw !== null
+                                      }
+                                    />
+                                  )}
 
-                                {/* What a photo import is doing BEFORE the draft lands: a progress
+                                  {/* What a photo import is doing BEFORE the draft lands: a progress
             strip from the moment the file is picked, with Cancel. */}
-                                <PhotoImportProgress
-                                  state={photoDraft.state}
-                                  onCancel={photoDraft.cancelReading}
-                                />
-
-                                {/* Step 1 + 2 of the wizard (docs/specs/021-event-storming/event-storming.md Phase 9): the photo with every
-            box, tickable, and the words editable. Nothing lands until Add. */}
-                                {photoDraft.state.stage === 'review' && photoDraft.review ? (
-                                  <PhotoReviewOverlay
-                                    review={photoDraft.review}
-                                    reading={
-                                      photoDraft.state.readSoFar < photoDraft.state.found &&
-                                      !photoDraft.review.readError
-                                    }
-                                    modelDownload={photoDraft.state.modelDownload}
-                                    readSoFar={photoDraft.state.readSoFar}
-                                    readTotal={photoDraft.state.found}
-                                    readerBackend={photoDraft.state.readerBackend}
-                                    readerWhy={photoDraft.state.readerWhy}
-                                    readerFallback={photoDraft.state.readerFallback}
-                                    rereading={photoDraft.rereading}
-                                    onReread={photoDraft.reread}
-                                    onConfirm={photoDraft.confirm}
-                                    onCancel={photoDraft.cancelReview}
-                                    // "Try another photo": leave this review and open the picker
-                                    // again, inside the same click, so the browser allows the dialog.
-                                    onRetake={() => {
-                                      photoDraft.cancelReview();
-                                      photoPickerRef.current?.click();
-                                    }}
+                                  <PhotoImportProgress
+                                    state={photoDraft.state}
+                                    onCancel={photoDraft.cancelReading}
                                   />
-                                ) : null}
 
-                                {/* A photo import awaiting Add or Discard (docs/specs/021-event-storming/event-storming.md Phase 8). Derived
+                                  {/* Step 1 + 2 of the wizard (docs/specs/021-event-storming/event-storming.md Phase 9): the photo with every
+            box, tickable, and the words editable. Nothing lands until Add. */}
+                                  {photoDraft.state.stage === 'review' && photoDraft.review ? (
+                                    <PhotoReviewOverlay
+                                      review={photoDraft.review}
+                                      reading={
+                                        photoDraft.state.readSoFar < photoDraft.state.found &&
+                                        !photoDraft.review.readError
+                                      }
+                                      modelDownload={photoDraft.state.modelDownload}
+                                      readSoFar={photoDraft.state.readSoFar}
+                                      readTotal={photoDraft.state.found}
+                                      readerBackend={photoDraft.state.readerBackend}
+                                      readerWhy={photoDraft.state.readerWhy}
+                                      readerFallback={photoDraft.state.readerFallback}
+                                      rereading={photoDraft.rereading}
+                                      onReread={photoDraft.reread}
+                                      onConfirm={photoDraft.confirm}
+                                      onCancel={photoDraft.cancelReview}
+                                      // "Try another photo": leave this review and open the picker
+                                      // again, inside the same click, so the browser allows the dialog.
+                                      onRetake={() => {
+                                        photoDraft.cancelReview();
+                                        photoPickerRef.current?.click();
+                                      }}
+                                    />
+                                  ) : null}
+
+                                  {/* A photo import awaiting Add or Discard (docs/specs/021-event-storming/event-storming.md Phase 8). Derived
             from the tab's own draft notes, so a reload mid-import comes back to
             the same decision rather than to a board full of strays. Hidden
             while the words are still being read: that moment belongs to the
             progress strip above. */}
-                                {photoDraft.state.stage !== 'detecting' ? (
-                                  <PhotoDraftBar
-                                    draftCount={draftNotes.length}
-                                    read={draftView?.read ?? null}
-                                    readError={draftView?.readError}
-                                    matchedCount={draftView ? draftView.matchedIds.size : null}
-                                    busy={photoDraft.state.stage === 'committing'}
-                                    onAccept={photoDraft.accept}
-                                    onDiscard={photoDraft.discard}
-                                  />
-                                ) : null}
+                                  {photoDraft.state.stage !== 'detecting' ? (
+                                    <PhotoDraftBar
+                                      draftCount={draftNotes.length}
+                                      read={draftView?.read ?? null}
+                                      readError={draftView?.readError}
+                                      matchedCount={draftView ? draftView.matchedIds.size : null}
+                                      busy={photoDraft.state.stage === 'committing'}
+                                      onAccept={photoDraft.accept}
+                                      onDiscard={photoDraft.discard}
+                                    />
+                                  ) : null}
 
-                                {/* The one file input behind "Add from Photo". Hidden, opened by the
+                                  {/* The one file input behind "Add from Photo". Hidden, opened by the
             palette row and the command palette; `capture` makes a phone open
             the camera straight away, because the act is "photograph this wall". */}
-                                {photoImportAvailable ? (
-                                  <input
-                                    ref={photoPickerRef}
-                                    type="file"
-                                    accept={PHOTO_ACCEPT_ATTR}
-                                    capture="environment"
-                                    className="hidden"
-                                    aria-hidden
-                                    tabIndex={-1}
-                                    onChange={onPhotoPicked}
-                                  />
-                                ) : null}
+                                  {photoImportAvailable ? (
+                                    <input
+                                      ref={photoPickerRef}
+                                      type="file"
+                                      accept={PHOTO_ACCEPT_ATTR}
+                                      capture="environment"
+                                      className="hidden"
+                                      aria-hidden
+                                      tabIndex={-1}
+                                      onChange={onPhotoPicked}
+                                    />
+                                  ) : null}
 
-                                {/* An editor older than the server's document format offers a reload, once its edits
+                                  {/* An editor older than the server's document format offers a reload, once its edits
             are saved (docs/specs/016-platform/new-version-prompt.md). */}
-                                <NewVersionPrompt hasUnsavedChanges={ctx.hasUnsavedChanges} />
-                              </div>
-                            )}
-                          </SplitViewFrame>
-                        </EditorModeProvider>
-                      </DockNamesProvider>
-                    </UiScaleProvider>
-                  </MinimalChromeProvider>
-                </CanvasFocusProvider>
-              </SheetsProviders>
+                                  <NewVersionPrompt hasUnsavedChanges={ctx.hasUnsavedChanges} />
+                                </div>
+                              )}
+                            </SplitViewFrame>
+                          </EditorModeProvider>
+                        </DockNamesProvider>
+                      </UiScaleProvider>
+                    </MinimalChromeProvider>
+                  </CanvasFocusProvider>
+                </SheetsProviders>
+              </FormBoardContext.Provider>
             </PlanProvider>
           </CanvasFinishProvider>
         </CanvasSurfaceProvider>

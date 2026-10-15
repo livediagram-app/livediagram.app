@@ -6,7 +6,9 @@
 
 import {
   DASHBOARD_CARD_TYPES,
+  FORM_METRICS,
   SHEET_METRICS,
+  type FormMetricKind,
   type DashboardTabOf,
   type ShapeElement,
   type SheetMetricKind,
@@ -22,6 +24,8 @@ export type DashboardItem =
   | { kind: 'card'; card: DashboardCardKind }
   // A figure from a Sheet (Add to Slot's From a Sheet), its source chosen once placed.
   | { kind: 'sheet-metric'; metric: SheetMetricKind }
+  // A figure from a form (Add to Slot's Form Metrics), the document's form chosen as it is placed.
+  | { kind: 'form-metric'; metric: FormMetricKind }
   // A chart from a Sheet (Add to Slot's Sheet Chart): `chart` once chosen (SheetChartSource), the element it places.
   | { kind: 'sheet-chart'; chart?: ShapeElement | undefined }
   // An existing Board or Sheet tab, shown in a slot (the Tabs category).
@@ -86,6 +90,7 @@ export const isDashboardCardKind = (v: string): v is DashboardCardKind =>
 export const dashboardCardChoice = (card: DashboardCardKind) => `card:${card}`;
 export const sheetMetricChoice = (metric: SheetMetricKind) => `sheet:${metric}`;
 export const SHEET_CHART_CHOICE = 'sheet:chart';
+export const formMetricChoice = (metric: FormMetricKind) => `form:${metric}`;
 
 export const dashboardTabChoice = (of: DashboardTabOf, tabId: string) => `tab:${of}:${tabId}`;
 
@@ -104,6 +109,12 @@ export function dashboardItemOf(kind: string, choice?: string): DashboardItem | 
     const metric = choice.slice(6);
     return (SHEET_METRICS as readonly string[]).includes(metric)
       ? { kind: 'sheet-metric', metric: metric as SheetMetricKind }
+      : null;
+  }
+  if (kind === 'plan-view' && choice?.startsWith('form:')) {
+    const metric = choice.slice(5);
+    return (FORM_METRICS as readonly string[]).includes(metric)
+      ? { kind: 'form-metric', metric: metric as FormMetricKind }
       : null;
   }
   if (kind === 'plan-view' && choice?.startsWith('card:')) {

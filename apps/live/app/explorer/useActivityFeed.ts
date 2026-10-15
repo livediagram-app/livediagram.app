@@ -16,6 +16,7 @@ import type {
   ActivityCard,
   ActivityCardThread,
   ActivityThread,
+  ActivityFormResponses,
 } from '@livediagram/api-schema';
 import { apiListActivity } from '@/lib/api-client';
 import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
@@ -35,6 +36,8 @@ export type ActivityFeed = {
   youAssigned: ActivityAction[];
   /** Unresolved threads the reader is in, on elements and on Plan cards, newest comment first. */
   threads: ThreadRow[];
+  /** Forms with responses the reader has not seen (docs/specs/030-forms/forms.md), newest response first. */
+  formResponses: ActivityFormResponses[];
   loading: boolean;
   /** The last read FAILED — not the same as nothing outstanding. */
   error: boolean;
@@ -46,6 +49,7 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
   const [threads, setThreads] = useState<ActivityThread[]>([]);
   const [cards, setCards] = useState<ActivityCard[]>([]);
   const [cardThreads, setCardThreads] = useState<ActivityCardThread[]>([]);
+  const [formResponses, setFormResponses] = useState<ActivityFormResponses[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   // Guards a late response from a previous owner id (a guest signing in
@@ -67,6 +71,7 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
           setThreads([]);
           setCards([]);
           setCardThreads([]);
+          setFormResponses([]);
         }
         setLoading(false);
         return;
@@ -76,6 +81,7 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
       setThreads(result.threads);
       setCards(result.cards);
       setCardThreads(result.cardThreads ?? []);
+      setFormResponses(result.formResponses ?? []);
       setLoading(false);
     });
   }, []);
@@ -133,5 +139,5 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
     [threads, cardThreads],
   );
 
-  return { assignedToMe, youAssigned, threads: threadRows, loading, error, retry };
+  return { assignedToMe, youAssigned, threads: threadRows, formResponses, loading, error, retry };
 }

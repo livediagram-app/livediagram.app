@@ -259,6 +259,13 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
+      'NotifyFormResponsesOn',
+      'NotifyFormResponsesOff',
+      'Someone Fills In My Form',
+      'The new form response email.',
+    ),
+    toggle(
+      'UI',
       'NotifyTipsOn',
       'NotifyTipsOff',
       'Tips and Check-Ins',

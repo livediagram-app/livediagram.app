@@ -192,7 +192,9 @@ describe('deleting a type', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(
-      screen.getByText('Delete the Task type? Its 2 cards will be moved to the Trash too.'),
+      screen.getByRole('dialog', {
+        name: 'Delete the Task type? Its 2 cards will be moved to the Trash too.',
+      }),
     ).toBeTruthy();
     const pop = () => document.querySelector<HTMLElement>('[data-confirm-popover]')!;
     fireEvent.click(within(pop()).getByRole('button', { name: 'Cancel' }));

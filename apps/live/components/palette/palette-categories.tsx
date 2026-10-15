@@ -109,7 +109,7 @@ export const PALETTE_CATEGORIES: {
     // Plan views (docs/specs/026-plan/plan-views.md): the read-out widgets free on the canvas, then charts
     // of every card.
     id: 'plan-metrics',
-    label: 'Metrics',
+    label: 'Card Metrics',
     group: 4,
     description:
       'Live metrics over every card, placed anywhere on the canvas: completion, due soon and more.',

@@ -6,7 +6,8 @@
 // Sheet, and the cards), offering only what looks good at this slot's size (SLOT_FIT). It opens on its categories
 // (the palette's ToolsCategoryGrid); one opens to its tiles, each drawn as it would look there, under the breadcrumb
 // back (Escape and Backspace go back too). Picking one fills this slot (placeItem, one step) and closes it.
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { EditorContext } from '@/app/document/[id]/EditorContext';
 import {
   isPlanViewId,
   type MetricKind,
@@ -21,6 +22,7 @@ import { MetricPreview, NotePreview, VisualisationPreview } from './slot-preview
 import {
   CardPreview,
   DiagramPreview,
+  FormMetricPreview,
   SheetChartPreview,
   SheetMetricPreview,
 } from './card-previews';
@@ -34,6 +36,7 @@ import { tileCaption } from '@/components/palette/tile-caption';
 import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
 import {
   DASHBOARD_CARD_TILES,
+  DASHBOARD_FORM_TILES,
   DASHBOARD_SHEET_TILES,
   dashboardTabTiles,
 } from '@/components/palette/palette-dashboard-tiles';
@@ -56,13 +59,16 @@ type Section = { title: string; tiles: PaletteTileDef[] };
 export function slotFillSections(
   tabTiles: PaletteTileDef[],
   size: SlotSize | null = null,
+  // Whether the document has a form: Form Metrics are offered only then.
+  hasForms = false,
 ): { sections: Section[]; tooBig: SlotFitKind[] } {
   const sticky = tileById('tools:sticky');
   const all: Section[] = [
     { title: 'This Document’s Tabs', tiles: tabTiles },
     { title: 'New Board', tiles: tilesForCategory('plan-boards') },
     { title: 'New Sheet', tiles: tilesForCategory('plan-sheets') },
-    { title: 'Metrics', tiles: tilesForCategory('plan-metrics') },
+    { title: 'Card Metrics', tiles: tilesForCategory('plan-metrics') },
+    { title: 'Form Metrics', tiles: hasForms ? DASHBOARD_FORM_TILES : [] },
     { title: 'Visualisations', tiles: tilesForCategory('plan-visualisations') },
     { title: 'From a Sheet', tiles: DASHBOARD_SHEET_TILES },
     { title: 'Utilities', tiles: [sticky, ...DASHBOARD_CARD_TILES].filter((t) => !!t) },
@@ -151,6 +157,8 @@ function TilePicture({
   if (item.kind === 'card') return <CardPreview card={item.card} palette={palette} />;
   if (item.kind === 'sheet-metric')
     return <SheetMetricPreview metric={item.metric} palette={palette} />;
+  if (item.kind === 'form-metric')
+    return <FormMetricPreview metric={item.metric} palette={palette} />;
   if (item.kind === 'sheet-chart') return <SheetChartPreview palette={palette} />;
   return <span aria-hidden>{label}</span>;
 }
@@ -169,9 +177,11 @@ export function SlotFillPicker({
 }) {
   const tabs = usePlanTabList();
   const palette = planPalette(useCanvasSurface(), {});
+  // Form Metrics only while the document has a form (docs/specs/026-plan/plan-tabs.md "Form Metrics").
+  const hasForms = useContext(EditorContext)?.tabs.some((t) => t.kind === 'form') ?? false;
   const { sections, tooBig } = useMemo(
-    () => slotFillSections(dashboardTabTiles(tabs), size),
-    [tabs, size],
+    () => slotFillSections(dashboardTabTiles(tabs), size, hasForms),
+    [tabs, size, hasForms],
   );
   const hint = tooBigLine(tooBig);
   // null: the categories. A lone category opens at once, with nowhere to go back to.

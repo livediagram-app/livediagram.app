@@ -23,6 +23,7 @@
     "@livediagram/document": "workspace:*",
     "@livediagram/document-views": "workspace:*",
     "@livediagram/edit-operations": "workspace:*",
+    "@livediagram/forms": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/items": "workspace:*",
     "@livediagram/sheets": "workspace:*",

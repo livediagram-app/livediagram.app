@@ -27,7 +27,7 @@ import { QaDiscussed } from './QaDiscussed';
 import { QaComposer } from './QaComposer';
 import { AccentBar, DiscussGlyph, EmptyRows } from './qa-parts';
 import { CollabAccentScope } from '../collab-accent';
-import { useFlipList } from './useFlipList';
+import { useFlipList } from '@/hooks/ui/useFlipList';
 
 // What the board can do for this viewer. Participant verbs are present for
 // anyone in a live session (view links too); the facilitator verbs only for
@@ -58,6 +58,16 @@ function useSelfVoterId(ownerId: string, elementId: string): string {
   return id;
 }
 
+// A note that climbs the ranking gets one soft glow (qa-board.css).
+const QA_FLIP = {
+  moveClass: 'qa-flip-move',
+  onClimb: (node: HTMLElement) => {
+    node.classList.remove('qa-climb');
+    void node.offsetWidth;
+    node.classList.add('qa-climb');
+  },
+};
+
 export function QaBoardFace({
   element,
   label,
@@ -81,7 +91,10 @@ export function QaBoardFace({
   const notes: QaNote[] = element.qaNotes ?? [];
   const { discussing, queue, done } = qaView(notes);
   const voterId = useSelfVoterId(selfOwnerId, element.id);
-  const rowRef = useFlipList(queue.map((n) => n.id));
+  const rowRef = useFlipList(
+    queue.map((n) => n.id),
+    QA_FLIP,
+  );
   // Notes posted after the board appeared settle in; the ones already there
   // when it first paints don't all animate at once.
   const [initialIds] = useState(() => new Set(notes.map((n) => n.id)));

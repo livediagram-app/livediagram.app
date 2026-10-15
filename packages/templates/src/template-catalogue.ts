@@ -29,7 +29,7 @@ export type TemplateCatalogue = {
 export function templateCatalogue(): TemplateCatalogue {
   return {
     categories: [...TEMPLATE_CATEGORIES, BLANKS_CATALOGUE_CATEGORY],
-    templates: TEMPLATES.filter((t) => !t.hidden).map((t) => ({
+    templates: TEMPLATES.filter((t) => !t.hidden && !t.editorOnly).map((t) => ({
       kind: t.kind,
       title: t.title,
       description: t.description,

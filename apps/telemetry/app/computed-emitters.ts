@@ -27,6 +27,7 @@ import {
   placementDefaultTelemetryType,
 } from '@livediagram/api-schema';
 import { countedVerbs, SYNC_WATCH_TYPE } from '@livediagram/agent-verbs';
+import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livediagram/forms';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
@@ -274,6 +275,22 @@ export const DRAW_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
+// The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
+// docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
+// The welcome card sends no step view.
+export const FORM_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/form-tour-steps.ts').matchAll(/^ {2}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `FormTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
 // The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/live avatar-tour-steps.ts,
 // docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
 export const AVATAR_TOUR_STEP_SOURCE: string[] = [
@@ -510,6 +527,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'SheetRestored',
     ],
   },
+  // A form started names its starter, a question added its type (docs/specs/030-forms/forms.md "Telemetry").
+  'apps/live/hooks/forms/useFormActions.ts Form·Created': {
+    values: FORM_STARTERS.map((s) => s.telemetry),
+  },
+  'apps/live/components/forms/builder/FormAddBar.tsx Form·Added': {
+    values: Object.values(QUESTION_TYPE_TELEMETRY),
+  },
   // A Sheet change names its kind (api-schema SHEET_CHANGE_KINDS); a formula's first use of a function, its name.
   'apps/live/components/sheets/sheet-controller.tsx Sheet·Changed': {
     values: [...SHEET_CHANGE_KINDS],
@@ -630,6 +654,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: FACILITATE_TOUR_STEP_SOURCE,
   },
   'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
   'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
   'apps/live/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
   'apps/live/components/tour/ElementTourHost.tsx UI·Ended': {

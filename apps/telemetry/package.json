@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/forms": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/ui": "workspace:*",
     "next": "^16.4.1",

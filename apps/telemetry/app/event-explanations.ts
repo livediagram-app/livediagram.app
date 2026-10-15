@@ -116,6 +116,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone clicked an action row in the Explorer's Inbox, jumping to the element it's assigned on.",
   'Activity|Selected|Card':
     "Someone clicked a Plan card row in the Explorer's Inbox, jumping to the card on its board.",
+  'Activity|Selected|FormResponses':
+    "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on.",
   'Activity|Selected|Thread':
     "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
   'Canvas|Used|AddNextNote':
@@ -712,6 +714,42 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A returning guest (not signed in) reopened the app on a later day, counted once per day.',
   'Participant|Returned|Authenticated':
     'A returning signed-in user reopened the app on a later day, counted once per day.',
+  'Form|Created|Blank': 'Someone started a form from Start Planning: a blank one.',
+  'Form|Created|BugReport': 'Someone started a form from the Bug Report starter.',
+  'Form|Created|Feedback': 'Someone started a form from the Feedback starter.',
+  'Form|Created|FeatureRequest': 'Someone started a form from the Feature Request starter.',
+  'Form|Created|Rsvp': 'Someone started a form from the Event RSVP starter.',
+  'Form|Created|JobApplication': 'Someone started a form from the Job Application starter.',
+  'Form|Created|Contact': 'Someone started a form from the Contact starter.',
+  'Form|Added|ShortAnswer': 'Someone added a Short Answer question to a form.',
+  'Form|Added|Paragraph': 'Someone added a Paragraph question to a form.',
+  'Form|Added|Number': 'Someone added a Number question to a form.',
+  'Form|Added|Email': 'Someone added an Email question to a form.',
+  'Form|Added|Link': 'Someone added a Link question to a form.',
+  'Form|Added|Date': 'Someone added a Date question to a form.',
+  'Form|Added|SingleChoice': 'Someone added a Single Choice question to a form.',
+  'Form|Added|MultipleChoice': 'Someone added a Multiple Choice question to a form.',
+  'Form|Added|Rating': 'Someone added a Rating question to a form.',
+  'Form|Added|Checkbox': 'Someone added a Checkbox question to a form.',
+  'Form|Linked|ConnectNewBoard':
+    'Someone connected a form that sent its responses nowhere to a new board, from the box above its title.',
+  'Form|Linked|ConnectNewSheet':
+    'Someone connected a form that sent its responses nowhere to a new sheet, from the box above its title.',
+  'Form|Linked|ConnectChoose':
+    "Someone opened Responses Go To from the box above a form's title, to choose an existing board or sheet.",
+  'Form|Shared|Link':
+    'Someone published a form, making the public link anyone can fill it in from.',
+  'Form|Toggled|Open': 'Someone switched Accepting Responses on for a published form.',
+  'Form|Toggled|Closed':
+    'Someone switched Accepting Responses off: the link stays, showing the closed message.',
+  'Form|Sent|Response':
+    'Someone filled in a form through its link, and the response became a card on its board.',
+  'Form|Sent|Dropped':
+    "A response that filled a form's hidden field was dropped: a bot, answered as if it were kept.",
+  'Form|Reported|Spam': 'Someone reported a form as spam.',
+  'Form|Reported|Phishing': 'Someone reported a form as phishing or asking for passwords.',
+  'Form|Reported|Offensive': 'Someone reported a form as offensive.',
+  'Form|Reported|Other': 'Someone reported a form for another reason.',
   'Sheet|Opened|Find': 'Someone opened Find on a Sheet, to search its cells.',
   'Sheet|Searched|Function':
     'Someone searched the functions a Sheet formula can use, from the toolbar’s function picker.',
@@ -1119,6 +1157,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
   'UI|Closed|FacilitateTourOffer':
     'Someone turned the Facilitate tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Facilitate).',
+  'UI|Closed|FormTourOffer': 'Someone turned the Forms tour down with No on its own card.',
   'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Cleared|BrowserRepair':
@@ -1228,6 +1267,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|DrawTourCompleted':
     "Someone reached the end of the Draw tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|DrawTourSkipped': 'Someone closed the Draw tour before its end.',
+  'UI|Ended|FormTourCompleted':
+    "Someone reached the end of the Forms tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|FormTourSkipped':
+    'Someone closed the Forms tour before its end, or left the form for a tab other than where its responses go.',
   'UI|Ended|FacilitateTourCompleted':
     "Someone reached the end of the Facilitate tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|FacilitateTourSkipped': 'Someone closed the Facilitate tour before its end.',
@@ -1355,6 +1398,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
     'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour".',
+  'UI|Opened|FormTourOffer':
+    'The Forms tour was offered: as its own card the first time an Editor opened a Form tab, or replayed from Show Me Around in the form cog or Settings\' Tours › "Forms Tour".',
   'UI|Opened|FacilitateTourOffer':
     'The Facilitate tour was offered: as its own card the first time someone worked in Facilitate mode, or replayed from Settings\' Tours › "Facilitate Tour". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Facilitate").',
   'UI|Opened|PlanTourOffer':
@@ -1463,6 +1508,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Yes on the Avatar tour's first card, beginning its walkthrough of Avatar mode.",
   'UI|Started|DrawTour':
     "Someone pressed Yes on the Draw tour's first card, beginning its walkthrough of the dock.",
+  'UI|Started|FormTour':
+    "Someone pressed Yes on the Forms tour's first card, beginning its walkthrough of the form builder.",
   'UI|Started|FacilitateTour':
     "Someone pressed Show me around on the Facilitate tour's first card, beginning its walkthrough of the session kit.",
   'UI|Started|PlanTour':
@@ -1531,6 +1578,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone stopped showing their profile picture to collaborators, in Settings > Account.',
   'UI|Toggled|ShowProfilePictureOn':
     'Someone started showing their profile picture to collaborators again, in Settings > Account.',
+  'UI|Toggled|NotifyFormResponsesOff':
+    'Someone turned off the email they get when somebody fills in one of their forms.',
+  'UI|Toggled|NotifyFormResponsesOn':
+    'Someone turned back on the email they get when somebody fills in one of their forms.',
   'UI|Toggled|NotifyMentionsOff':
     'Someone turned off the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
   'UI|Toggled|NotifyMentionsOn':
@@ -1672,6 +1723,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Draw Tour" in Settings, marking the Draw tour as not yet seen.',
   'UI|Toggled|DrawTourSeenOn':
     'Someone switched off Tours › "Draw Tour" in Settings, marking the Draw tour as seen.',
+  'UI|Toggled|FormTourSeenOff':
+    'Someone switched on Tours › "Forms Tour" in Settings, marking the Forms tour as not yet seen.',
+  'UI|Toggled|FormTourSeenOn':
+    'Someone switched off Tours › "Forms Tour" in Settings, marking the Forms tour as seen.',
   'UI|Toggled|FacilitateTourSeenOff':
     'Someone switched on Tours › "Facilitate Tour" in Settings, marking the Facilitate tour as not yet seen.',
   'UI|Toggled|FacilitateTourSeenOn':
@@ -1949,6 +2004,19 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|DrawTourStepOutro': 'The Draw tour reached its closing "You\'re ready to draw" card.',
   'UI|View|FacilitateTourStepCollaborate':
     'The Facilitate tour reached its "Collaborate" step, ringing the Collaborate band of the palette\'s category picker.',
+  'UI|View|FormTourStepAdd':
+    'The Forms tour reached its "Add Questions" step, ringing the add bar.',
+  'UI|View|FormTourStepDestination':
+    'The Forms tour reached its "Responses Arrive Here" step, opening the board or sheet the form sends its responses to.',
+  'UI|View|FormTourStepForm':
+    'The Forms tour reached its "Build It Here" step, ringing the questions in the form builder.',
+  'UI|View|FormTourStepOutro': 'The Forms tour reached its closing "That Is a Form" card.',
+  'UI|View|FormTourStepSettings':
+    'The Forms tour reached its "Where Responses Go" step, ringing the form cog.',
+  'UI|View|FormTourStepShare':
+    'The Forms tour reached its "Share Form" step, ringing Share Form in the header.',
+  'UI|View|FormTourStepStatus':
+    'The Forms tour reached its "Responses and Preview" step, ringing the form status bar.',
   'UI|View|FacilitateTourStepSessionStrip':
     'The Facilitate tour reached its "Run the room" step, on the Session strip.',
   'UI|View|FacilitateTourStepShare':
@@ -2031,6 +2099,14 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Activity|Loaded':
     "Something happened while loading the Explorer's Inbox (the list of outstanding actions and comment threads).",
   'Activity|Opened': "Someone opened or interacted with the Explorer's Inbox.",
+  'Form|Created': 'Someone started a form from Start Planning.',
+  'Form|Added': 'Someone added a question to a form.',
+  'Form|Linked':
+    'Someone connected a form to where its responses go, from the box above its title.',
+  'Form|Shared': 'Someone published a form, making its public link.',
+  'Form|Toggled': 'Someone switched Accepting Responses on or off for a published form.',
+  'Form|Sent': 'A response came in through a form link.',
+  'Form|Reported': 'Someone reported a form they were sent.',
   'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",
   'Canvas|Used': 'Someone picked up one of the canvas tools or modes, or used a canvas feature.',
   'Canvas|Zoomed': 'Someone changed the zoom from the zoom controls.',

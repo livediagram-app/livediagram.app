@@ -45,5 +45,7 @@ export * from './feature-art/article-looks';
 export * from './feature-art/slide-layouts';
 // Sheets on a Plan tab, two tabs side by side, and boards brought in from other tools.
 export * from './feature-art/sheet';
+// Forms (docs/specs/030-forms/forms.md): built in place, shared by link, responses landing.
+export * from './feature-art/forms';
 export * from './feature-art/side-by-side';
 export * from './feature-art/imports';

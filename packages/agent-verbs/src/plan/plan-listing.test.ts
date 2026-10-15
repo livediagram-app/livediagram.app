@@ -53,7 +53,8 @@ describe('listedType', () => {
     expect(bug.custom[0]).toMatchObject({ name: 'Severity', onCard: true });
     expect(bug.display['compact']).toEqual({ belowTitle: ['Severity'] });
     expect(bug.fields).not.toContain(bug.custom[0]!.id);
-    // A Default State no board names reads as its status; a link field names its target; a currency its code.
+    // A Default State no board names reads as its status; a link field names its target; a currency its code; a
+    // Rating its top score.
     expect(
       listedType({ ...r.catalogue!.types.find((t) => t.label === 'Bug')!, defaultStatus: 'gone' })
         .defaultStatus,
@@ -62,15 +63,19 @@ describe('listedType', () => {
       ...ITEM_TYPES[1]!,
       id: 'deal',
       label: 'Deal',
-      fields: ['title', 'status', 'f-v', 'f-c'],
+      fields: ['title', 'status', 'f-v', 'f-c', 'f-r', 'f-n'],
       custom: [
         { id: 'f-v', label: 'Value', kind: 'currency' },
         { id: 'f-c', label: 'Company', kind: 'card', linkType: 'project' },
+        { id: 'f-r', label: 'Fit', kind: 'rating' },
+        { id: 'f-n', label: 'Score', kind: 'rating', scale: 10 },
       ],
     });
     expect(deal.custom).toEqual([
       { id: 'f-v', name: 'Value', kind: 'currency', currency: 'GBP' },
       { id: 'f-c', name: 'Company', kind: 'card', linkType: 'project' },
+      { id: 'f-r', name: 'Fit', kind: 'rating', scale: 5 },
+      { id: 'f-n', name: 'Score', kind: 'rating', scale: 10 },
     ]);
   });
 });

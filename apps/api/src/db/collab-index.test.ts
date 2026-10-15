@@ -176,7 +176,7 @@ describe('readActivity', () => {
     const { env, batches } = fakeEnv();
     await readActivity(env, 'me', { limit: 7 });
     expect(batches).toHaveLength(1);
-    expect(batches[0]).toHaveLength(4);
+    expect(batches[0]).toHaveLength(5);
     for (const s of batches[0]!) {
       expect(s.args[0]).toBe('me');
       expect(typeof s.args[1]).toBe('number');
@@ -192,6 +192,9 @@ describe('readActivity', () => {
     // A card's comment threads read the item store too (§2.5), with no ids of their own to bind.
     expect(batches[0]![3]!.sql).toMatch(/\$\.comments\.resolved/);
     expect(batches[0]![3]!.args).toHaveLength(3);
+    // Forms with unseen responses (docs/specs/030-forms/forms.md "Hearing about responses").
+    expect(batches[0]![4]!.sql).toMatch(/CROSS JOIN form_links l/);
+    expect(batches[0]![4]!.args).toHaveLength(3);
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: a visitor shown one tab gets a code of exactly that

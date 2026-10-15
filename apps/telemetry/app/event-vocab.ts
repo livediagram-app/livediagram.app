@@ -62,6 +62,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Plan: '#2563eb',
   // Green, the spreadsheet's own.
   Sheet: '#16a34a',
+  // Violet, the Event RSVP starter's: apart from Plan's blue and Sheet's green.
+  Form: '#7c3aed',
   // Pink, the heart on a Community card.
   Community: '#db2777',
   Email: '#0d9488',

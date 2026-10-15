@@ -15,8 +15,11 @@ const NAME_MAX = 80;
 export function DashboardMenuName({
   tab,
   onRename,
+  kindLabel = 'Dashboard',
 }: {
   tab: Tab;
+  // What the tab is, in the rename button's name ("Rename Form Bug Report"): a Form tab names itself the same way.
+  kindLabel?: string;
   // Absent for someone who may not edit.
   onRename?: ((name: string) => void) | undefined;
 }) {
@@ -46,7 +49,7 @@ export function DashboardMenuName({
         <button
           ref={nameRef}
           type="button"
-          aria-label={`Rename Dashboard ${tab.name}`}
+          aria-label={`Rename ${kindLabel} ${tab.name}`}
           onClick={() => setEditing(true)}
           className={`${IN_BOX_TITLE_CLASS} cursor-text rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500`}
         >

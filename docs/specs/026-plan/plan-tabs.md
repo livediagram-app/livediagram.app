@@ -3,7 +3,8 @@
 Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab**
 (one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the
 document's Board and Sheet tabs, plan views, charts and notes). Boards and Sheets are never small elements free on a
-canvas any more; a Dashboard is where they are seen side by side. Each kind is a tab **Kind**
+canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form,
+whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md). Each kind is a tab **Kind**
 ([Domain language](../003-system-architecture/domain-language.md)), as Event Storming is: it is what the tab is, and
 it brings its own behaviour.
 
@@ -263,7 +264,7 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
   description, over an **Add to Slot** button (the dashed add row Add New Card Type wears, kept to 224 px in a wide
   slot) for an Editor; anyone else sees the badge and title alone. **Add to Slot** opens a picker of what a slot
   takes, by category: **This Document’s Tabs** (every tab but a Dashboard, see Showing a tab), **New Board** (each preset), **New
-  Sheet**, **Metrics**, **Visualisations**, **From a Sheet** (Sheet Figure, Column Summary, Trend, Sheet Chart) and **Utilities** (Note, Title, Status, Checklist, Key Date, Links); picking
+  Sheet**, **Card Metrics**, **Form Metrics** (only while the document has a Form tab), **Visualisations**, **From a Sheet** (Sheet Figure, Column Summary, Trend, Sheet Chart) and **Utilities** (Note, Title, Status, Checklist, Key Date, Links); picking
   one fills that slot. Each fill is one undo step, replacing what the slot held (an element it held leaves the tab
   with it).
 - **Its name in the menu box**: as a maximised or tab-filling board's or Sheet's name rides there
@@ -355,6 +356,26 @@ Taking it counts as the board's or Sheet's own CSV export (`Plan · Exported · 
 - **Markdown** of a Board tab is its board's outline (each column and its cards); **JSON** of a Dashboard tab is the
   file its Import reads back. Mermaid and Excalidraw carry diagrams, so no Plan tab offers them.
 - Telemetry: the formats' existing `Document · Exported · <Format>`; no new values.
+
+## Form Metrics
+
+A slot can show a figure from one of the document's forms ([Forms](../030-forms/forms.md)): Add to Slot's **Form
+Metrics**, offered only while the document has a Form tab. Six figures (`form-metric` content: `metric`, `formTabId`):
+
+| Figure             | Shows                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------- |
+| **Responses**      | Its responses so far, large, over "responses so far"                                                            |
+| **New Responses**  | How many are new to the reader ("new to you since you last looked")                                             |
+| **Form Status**    | A pill: **Accepting** (green), **Closed** (amber), **Not Published**, **Suspended** (red), or **Draft** offline |
+| **Response Limit** | "42 / 100" with a bar toward the limit (amber once reached) and how many to go; **No limit** without one        |
+| **Closes**         | Days until it closes ("3 days", **Today**), its date beneath; **Closed** once past; **No date** without one     |
+| **Form Link**      | The link to copy (**Copy**, an Editor's) once published; "Not published yet." before                            |
+
+Placed, it reads the document's first Form tab; an Editor changes the form from the select at the card's foot while
+the document has more than one (the form's name shows there otherwise). Its figures are read live from the form's link
+as the board's Form strip reads it, never marking responses seen, and the clock is read again each minute. A slot whose
+form was deleted says "This form was deleted." with **Clear Slot**. An image export names the figure (the link is not
+read for an export). Anyone may read it; only an Editor changes its form or copies its link.
 
 ## Figures from a Sheet
 

@@ -26,7 +26,9 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 - A **tab kind** is what a tab is. It is reserved for boards that do not follow the homogeneous environment of the
   general diagram tab, with their own notation, rules and data.
-- The general diagram tab is the default kind. **Event Storming** is the only other kind.
+- The general diagram tab is the default kind. **Event Storming** is the only other kind among the canvas modes;
+  Plan's tabs are kinds of their own ([Plan tabs](../026-plan/plan-tabs.md): Board, Sheet and Dashboard, and the Form
+  tab of [Forms](../030-forms/forms.md)), each always in Plan.
 - A new kind is added only when no mode can serve the use.
 - "Board type" means a kind. It never names a template or a mode.
 

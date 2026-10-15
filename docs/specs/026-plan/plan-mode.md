@@ -89,7 +89,7 @@ Plan must cost nothing to a document that does not use it:
     card is a row (its picture 96 by 72 px at the left, its name, badge and line, two lines at most, beside it, no
     card-type chips), so a screen holds several.
     - **Recommended** ("The quickest ways to start, picked for most teams."): the Roadmap, Kanban and To-do List boards,
-      the Overview dashboard, and the Empty Sheet and Budget sheets.
+      the Overview dashboard, the Empty Sheet, and the Feedback form.
     - **Boards** ("Columns of cards for the work to move through."): every board type in `PLAN_BOARD_TILES`' order,
       Blank first, All Cards last, the Archive board left out.
     - **Spreadsheets** ("Cells, formulas and charts, beside your boards."): **Empty Sheet** ("A blank grid, ready to

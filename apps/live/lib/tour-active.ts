@@ -5,7 +5,7 @@ import { useSyncExternalStore } from 'react';
 // once, so each host publishes itself here while it is active and waits for the others to clear. A module
 // store, like the modal guard: one editor per page.
 export type ActiveTour =
-  'welcome' | 'plan' | 'facilitate' | 'draw' | 'illustrate' | 'avatar' | 'element';
+  'welcome' | 'plan' | 'facilitate' | 'draw' | 'illustrate' | 'avatar' | 'form' | 'element';
 
 let current: ActiveTour | null = null;
 const listeners = new Set<() => void>();

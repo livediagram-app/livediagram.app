@@ -17,6 +17,7 @@ import { DashboardChecklistCard } from './DashboardChecklistCard';
 import { DashboardKeyDateCard } from './DashboardKeyDateCard';
 import { DashboardLinksCard } from './DashboardLinksCard';
 import { DashboardSheetMetric } from './DashboardSheetMetric';
+import { DashboardFormMetric } from './DashboardFormMetric';
 import { DashboardSheetChart } from './DashboardSheetChart';
 
 // The box's size, kept as it changes (the row resized, the window).
@@ -119,5 +120,7 @@ export function DashboardSlotContent({
       return <DashboardLinksCard slotId={slotId} links={content} />;
     case 'sheet-metric':
       return <DashboardSheetMetric slotId={slotId} content={content} />;
+    case 'form-metric':
+      return <DashboardFormMetric slotId={slotId} content={content} />;
   }
 }

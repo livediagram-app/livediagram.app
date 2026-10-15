@@ -6,7 +6,7 @@ import { builtInFieldOf } from './card-source';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, validateFields } from './fields';
 import type { Item, ItemCreate, ItemFieldValue, ItemFields, ItemPerson } from './item';
 import { itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
-import type { CustomFieldDef, ItemTypeDef } from './item-types';
+import { ratingScaleOf, type CustomFieldDef, type ItemTypeDef } from './item-types';
 import {
   ITEM_DESCRIPTION_MAX,
   ITEM_LABEL_MAX,
@@ -112,6 +112,11 @@ export function boardCsvRows(
             const linked = linkedCard(items, item.fields[f.id]);
             return linked ? itemTitle(linked) : '';
           }
+          // An option may hold a comma, so a Multiple Choice's picks are kept apart by semicolons.
+          if (f.kind === 'multichoice') {
+            const v = item.fields[f.id];
+            return Array.isArray(v) ? v.map((x) => cellOf(x)).join('; ') : cellOf(v);
+          }
           return cellOf(item.fields[f.id]);
         }),
       ]);
@@ -144,6 +149,21 @@ export function cardDateOf(text: string): string | undefined {
   return realDay(y, Number(dmy[2]), Number(dmy[1]));
 }
 
+// A Multiple Choice's picks from "Vegan; Gluten free" (or commas, when every part is an option), in option order;
+// undefined when none is an option.
+export function multiChoiceOf(options: readonly string[], text: string): string[] | undefined {
+  const pick = (parts: string[]) =>
+    options.filter((o) => parts.some((p) => lower(p.trim()) === lower(o)));
+  const bySemicolon = text.split(';');
+  let picks = pick(bySemicolon);
+  if (bySemicolon.length === 1) {
+    const byComma = text.split(',');
+    const commaPicks = pick(byComma);
+    if (commaPicks.length === byComma.filter((p) => p.trim()).length) picks = commaPicks;
+  }
+  return picks.length ? picks : undefined;
+}
+
 const TRUE_TEXT = new Set(['yes', 'y', 'true', '1', 'x', '✓', '✔']);
 
 function customValue(f: CustomFieldDef, text: string): ItemFieldValue | undefined {
@@ -160,6 +180,12 @@ function customValue(f: CustomFieldDef, text: string): ItemFieldValue | undefine
       return TRUE_TEXT.has(lower(text)) ? true : undefined;
     case 'choice':
       return f.options?.find((o) => lower(o) === lower(text));
+    case 'multichoice':
+      return multiChoiceOf(f.options ?? [], text);
+    case 'rating': {
+      const n = Number(text);
+      return Number.isInteger(n) && n >= 1 && n <= ratingScaleOf(f) ? n : undefined;
+    }
     default:
       return text.slice(0, ITEM_UNKNOWN_STRING_MAX);
   }

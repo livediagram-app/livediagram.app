@@ -6,12 +6,25 @@
 // alone. Each tile's picture is the row it makes.
 import type { ReactNode } from 'react';
 import { Glyph, PlanIcon, lucideGlyph } from '@livediagram/ui';
-import { lucideCalendar, lucideHash, lucideLink, lucideWorkflow } from '@livediagram/icons/lucide';
+import {
+  lucideCalendar,
+  lucideCircleCheck,
+  lucideClipboardList,
+  lucideHash,
+  lucideLink,
+  lucideWorkflow,
+} from '@livediagram/icons/lucide';
 import { SheetArt } from '@/components/sheets/sheet-art';
-import { SHEET_METRICS, type SheetMetricKind } from '@livediagram/document';
-import { SHEET_METRIC_NAMES } from '@livediagram/plan-art';
+import {
+  FORM_METRICS,
+  SHEET_METRICS,
+  type FormMetricKind,
+  type SheetMetricKind,
+} from '@livediagram/document';
+import { FORM_METRIC_LINES, FORM_METRIC_NAMES, SHEET_METRIC_NAMES } from '@livediagram/plan-art';
 import {
   DASHBOARD_CARD_KINDS,
+  formMetricChoice,
   sheetMetricChoice,
   SHEET_CHART_CHOICE,
   dashboardCardChoice,
@@ -179,7 +192,7 @@ export const DASHBOARD_CARD_TILES: PaletteTileDef[] = DASHBOARD_CARD_KINDS.map((
 // Add to Slot's From a Sheet (docs/specs/026-plan/plan-tabs.md "Figures from a Sheet"): a figure read live from one of
 // the document's Sheets. Not in any palette category (Plan shows none): Add to Slot reads them.
 // Each figure's name, shared with its picture in an image export.
-export { SHEET_METRIC_NAMES };
+export { FORM_METRIC_NAMES, SHEET_METRIC_NAMES };
 const SHEET_METRIC_LINES: Record<SheetMetricKind, string> = {
   figure: 'One cell’s value, large, with an optional target to measure it against.',
   summary: 'A column’s total, average, lowest, highest or count.',
@@ -239,6 +252,51 @@ export const DASHBOARD_SHEET_TILES: PaletteTileDef[] = [
     icon: <SheetChartGlyph />,
   },
 ];
+
+// Add to Slot's Form Metrics (docs/specs/026-plan/plan-tabs.md "Form Metrics"): a figure from one of the document's
+// forms, offered only while it has one. Not in any palette category: Add to Slot reads them.
+const ResponsesGlyph = lucideGlyph(lucideClipboardList, 18);
+const FormStatusGlyph = lucideGlyph(lucideCircleCheck, 18);
+const ClosesGlyph = lucideGlyph(lucideCalendar, 18);
+const FormLinkGlyph = lucideGlyph(lucideLink, 18);
+// A list with a new dot at its corner.
+function NewResponsesGlyph() {
+  return (
+    <Glyph size={18} units={20}>
+      <path d="M4 6.5h8M4 10.5h8M4 14.5h6" />
+      <circle cx="15.5" cy="5" r="2.2" fill="currentColor" />
+    </Glyph>
+  );
+}
+// A bar filled part way to its end.
+function LimitGlyph() {
+  return (
+    <Glyph size={18} units={20}>
+      <rect x="2.5" y="8" width="15" height="4.5" rx="2.25" />
+      <path d="M5 10.25h6" strokeWidth={2.4} />
+    </Glyph>
+  );
+}
+const FORM_METRIC_GLYPHS: Record<FormMetricKind, ReactNode> = {
+  responses: <ResponsesGlyph />,
+  new: <NewResponsesGlyph />,
+  status: <FormStatusGlyph />,
+  limit: <LimitGlyph />,
+  closes: <ClosesGlyph />,
+  link: <FormLinkGlyph />,
+};
+export const DASHBOARD_FORM_TILES: PaletteTileDef[] = FORM_METRICS.map(
+  (metric): PaletteTileDef => ({
+    id: `dashboard:form-${metric}`,
+    section: 'dashboard-cards',
+    label: `Add ${FORM_METRIC_NAMES[metric]}`,
+    caption: FORM_METRIC_NAMES[metric],
+    description: FORM_METRIC_LINES[metric],
+    noTint: true,
+    action: { type: 'shape', kind: 'plan-view', plan: formMetricChoice(metric) },
+    icon: FORM_METRIC_GLYPHS[metric],
+  }),
+);
 
 // The Tabs category's tiles (docs/specs/026-plan/plan-tabs.md "The Tabs category"): one per Board, Sheet or Diagram tab, named
 // for it, that shows the tab in a slot, live (a `tab:` choice, which only a Dashboard takes).

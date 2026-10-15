@@ -15,6 +15,9 @@ A guest can open `/new`, create a document, and use the full canvas without an a
 - `/new` — welcome / template-picker flow for creating a new document (the app's entry point). See [New document route](new-document-route.md).
 - `/document/<id>` — the editor itself, scoped to one document id. Static-exports a single `/document/placeholder` page; the live worker rewrites all `/document/<id>` paths to it at the edge, and the client reads the real id from the path.
 - `/explorer/*`, `/sign-in`, `/get-started`, `/sso-callback`, `/embed` — the library, auth, and read-only embed surfaces.
+- `/form/<code>` — a published form's page ([Forms](../030-forms/forms.md#filling-in-a-form)): one placeholder page
+  backs every code (the live worker rewrites `/form/<code>` to `/form/placeholder`, as it does `/document/<id>`), with
+  none of the editor's chrome or code.
 
 ## Persistence
 

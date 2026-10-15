@@ -7,6 +7,7 @@ import { broadcastShareOp } from '../room-client';
 import { redactCommentAuthorIds } from '../comments';
 import { redactTabForCommunity } from '../community-redact';
 import {
+  deleteFormLinksForTab,
   deleteShareLinksForTab,
   deleteTabRow,
   documentsContainingTab,
@@ -23,6 +24,7 @@ import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livediagram/ap
 import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleQaBoardRoute } from './qa-board-routes';
+import { handleFormLinkRoutes } from './form-link-routes';
 import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
@@ -47,6 +49,7 @@ import {
   type RouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './document-views-route';
+import { pauseFormsFeeding } from '../forms/form-tab';
 
 // Tab-content sub-resource routes for /api/documents/<id>/...,
 // split out of documents.ts. Returns a Response when it handles the path, or
@@ -59,6 +62,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // /api/documents/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
   const qa = await handleQaBoardRoute(ctx);
   if (qa) return qa;
+  // /api/documents/<id>/tabs/<tabId>/form-link and form-seen (docs/specs/030-forms/forms.md).
+  const formLink = await handleFormLinkRoutes(ctx);
+  if (formLink) return formLink;
   // /api/documents/<id>/tabs/<tabId>/comment-pictures (docs/specs/014-identity/profile-picture.md §6).
   const commentPictures = await handleCommentPicturesRoute(ctx);
   if (commentPictures) return commentPictures;
@@ -204,6 +210,10 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       for (const code of revoked) {
         ctx.waitUntil?.(broadcastShareOp(env, id, { kind: 'share-revoked', code }));
       }
+      // A Form tab's link goes with it, and a form whose board or sheet it was stops taking responses (its link kept)
+      // (docs/specs/030-forms/forms.md "Publishing and the form link").
+      await deleteFormLinksForTab(env, id, tabId);
+      await pauseFormsFeeding(env, id, tabId);
       return noContent();
     }
   }

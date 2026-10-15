@@ -1,6 +1,6 @@
 // What a Dashboard card reads as, in words (docs/specs/026-plan/plan-tabs.md "Cards"): shared by the live cards in the
 // editor and their still pictures in an image export. Pure.
-import type { DashboardLink, SheetMetricKind } from '@livediagram/document';
+import type { DashboardLink, SheetMetricKind, FormMetricKind } from '@livediagram/document';
 
 // What a Key Date's count reads, and whether it has passed.
 export function keyDateCount(days: number): { figure: string; unit: string; past: boolean } {
@@ -27,6 +27,24 @@ export function linkLabelOf(
 }
 
 // Each figure from a Sheet's name.
+// A figure from a form's names and lines (docs/specs/026-plan/plan-tabs.md "Form Metrics").
+export const FORM_METRIC_NAMES: Record<FormMetricKind, string> = {
+  responses: 'Responses',
+  new: 'New Responses',
+  status: 'Form Status',
+  limit: 'Response Limit',
+  closes: 'Closes',
+  link: 'Form Link',
+};
+export const FORM_METRIC_LINES: Record<FormMetricKind, string> = {
+  responses: 'How many responses a form has had.',
+  new: 'Responses you have not seen yet.',
+  status: 'Whether a form is taking responses.',
+  limit: 'Responses so far against the form’s limit.',
+  closes: 'When a form stops taking responses.',
+  link: 'A form’s link, to copy and send.',
+};
+
 export const SHEET_METRIC_NAMES: Record<SheetMetricKind, string> = {
   figure: 'Sheet Figure',
   summary: 'Column Summary',

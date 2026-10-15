@@ -42,10 +42,13 @@ function subscribe(listener: () => void): () => void {
 }
 
 // Anything covers the canvas: a board, view or Sheet maximised, a board or Sheet filling the tab, or a Dashboard tab's
-// page (docs/specs/026-plan/plan-tabs.md). Read at a key press too.
+// page (docs/specs/026-plan/plan-tabs.md), or a Form tab's (docs/specs/030-forms/forms.md). Read at a key press too.
 export function isCanvasCovered(): boolean {
   return (
-    getMaximisedPlanId() !== null || cover.fillTabId !== null || cover.planKind === 'dashboard'
+    getMaximisedPlanId() !== null ||
+    cover.fillTabId !== null ||
+    cover.planKind === 'dashboard' ||
+    cover.planKind === 'form'
   );
 }
 

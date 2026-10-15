@@ -23,12 +23,22 @@ describe('apiListActivity', () => {
   it('returns every kind the api sends', async () => {
     const card = { id: 'it1' };
     const cardThread = { id: 'it2' };
-    answer(Response.json({ actions: [], threads: [], cards: [card], cardThreads: [cardThread] }));
+    const form = { tabId: 'f1' };
+    answer(
+      Response.json({
+        actions: [],
+        threads: [],
+        cards: [card],
+        cardThreads: [cardThread],
+        formResponses: [form],
+      }),
+    );
     expect(await apiListActivity('me')).toEqual({
       actions: [],
       threads: [],
       cards: [card],
       cardThreads: [cardThread],
+      formResponses: [form],
     });
   });
 
@@ -39,6 +49,7 @@ describe('apiListActivity', () => {
       threads: [],
       cards: [],
       cardThreads: [],
+      formResponses: [],
     });
   });
 

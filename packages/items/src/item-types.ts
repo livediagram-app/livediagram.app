@@ -45,6 +45,10 @@ export const CUSTOM_FIELD_KINDS = [
   // One email address.
   'email',
   'choice',
+  // Several of its named options (docs/specs/030-forms/forms.md "New card field kinds").
+  'multichoice',
+  // A whole number from 1 to its `scale`, drawn as stars.
+  'rating',
   // A link to one other card, of the type `linkType` names (docs/specs/026-plan/item-types.md "Card fields").
   'card',
 ] as const;
@@ -65,6 +69,12 @@ export const COMMON_CURRENCIES = [
   'SEK',
 ] as const;
 export const CURRENCY_DEFAULT = 'GBP';
+// A Rating field's scale (docs/specs/030-forms/forms.md "New card field kinds").
+export const RATING_FIELD_SCALE_MIN = 3;
+export const RATING_FIELD_SCALE_MAX = 10;
+export const RATING_FIELD_SCALE_DEFAULT = 5;
+export const ratingScaleOf = (field: Pick<CustomFieldDef, 'scale'>): number =>
+  field.scale ?? RATING_FIELD_SCALE_DEFAULT;
 export const CURRENCY_CODE = /^[A-Z]{3}$/;
 // An email address as a field keeps it: something@domain.tld, no spaces, up to 254 characters.
 export const EMAIL_MAX = 254;
@@ -75,8 +85,10 @@ export interface CustomFieldDef {
   id: string;
   label: string;
   kind: CustomFieldKind;
-  // Choice's options, in order.
+  // Choice's and Multiple Choice's options, in order.
   options?: readonly string[];
+  // A Rating's top score, RATING_FIELD_SCALE_MIN..MAX; RATING_FIELD_SCALE_DEFAULT when absent.
+  scale?: number;
   // A Card field's target card type id: its value is the id of one card of that type.
   linkType?: string;
   // A Currency field's ISO 4217 code ("GBP"); CURRENCY_DEFAULT when absent.

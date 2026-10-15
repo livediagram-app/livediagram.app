@@ -47,16 +47,22 @@ export function themeOfPresets(presets: readonly ThemeBackgroundPreset[]) {
     : {};
 }
 
+const MOTION_NOTE =
+  'Moves on screen and while presenting; still in exports and with Reduce Motion on.';
+
 export function AnimatedBackgroundChoices({
   fill,
   themePresets,
   onPick,
   onPreview,
+  note = MOTION_NOTE,
 }: {
   fill: PageFill | undefined;
   themePresets: readonly ThemeBackgroundPreset[];
   onPick: (fill: PageFill) => void;
   onPreview: (fill: PageFill) => void;
+  // When it moves, under the choices: a slide's, unless the caller paints something else (a form's cover).
+  note?: string;
 }) {
   const theme = themeOfPresets(themePresets);
   const motion = fill?.kind === 'gradient' ? fill.motion : undefined;
@@ -244,9 +250,7 @@ export function AnimatedBackgroundChoices({
           />
         </div>
       ) : null}
-      <p className="mt-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-        Moves on screen and while presenting; still in exports and with Reduce Motion on.
-      </p>
+      <p className="mt-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">{note}</p>
     </div>
   );
 }

@@ -980,6 +980,13 @@ export const DRAW_TOUR_OFFERED = opened(
   (t) => t === 'DrawTourOffer',
 );
 
+// The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.
+export const FORM_TOUR_OFFERED = opened(
+  'Forms Tour Offered',
+  'The Forms tour offered, the first time an Editor opens a Form tab.',
+  (t) => t === 'FormTourOffer',
+);
+
 // The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
 export const AVATAR_TOUR_OFFERED = opened(
   'Avatar Tour Offered',

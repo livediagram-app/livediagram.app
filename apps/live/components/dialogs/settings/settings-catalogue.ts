@@ -92,6 +92,7 @@ type EmailKey =
   | 'notifyComments'
   | 'notifyActionAssigned'
   | 'notifyMentions'
+  | 'notifyFormResponses'
   | 'notifyTips'
   | 'notifyMilestones';
 
@@ -481,6 +482,7 @@ type TourSeenKey =
   | 'planTourSeen'
   | 'facilitateTourSeen'
   | 'drawTourSeen'
+  | 'formTourSeen'
   | 'avatarTourSeen'
   | 'illustrateTourSeen'
   | 'elementToursSeen';
@@ -1158,6 +1160,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you work in Draw.',
         helpArticle: 'drawTour',
       }),
+      tourSwitch('formTourSeen', {
+        label: 'Forms Tour',
+        event: { category: 'UI', on: 'FormTourSeenOff', off: 'FormTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial form survey questions responses replay',
+        description: 'The first time you open a Form tab.',
+        helpArticle: 'planForms',
+      }),
       tourSwitch('avatarTourSeen', {
         label: 'Avatar Tour',
         event: { category: 'UI', on: 'AvatarTourSeenOff', off: 'AvatarTourSeenOn' },
@@ -1478,6 +1487,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'email mention tag at comment',
         label: 'Someone Mentions Me in a Comment',
         description: 'A teammate @mentions you in a comment.',
+      }),
+      emailSwitch('notifyFormResponses', {
+        event: { category: 'UI', on: 'NotifyFormResponsesOn', off: 'NotifyFormResponsesOff' },
+        keywords: 'email form response survey submission answer',
+        label: 'Someone Fills In My Form',
+        description:
+          'Someone responds to a form in a document you own (at most one email every 15 minutes per form).',
       }),
       emailSwitch('notifyActionAssigned', {
         event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
