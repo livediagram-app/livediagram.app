@@ -1,7 +1,7 @@
 // `arrow-behind-box` (warning): an arrow passes through a box it does not connect, one finding an arrow
 // listing every such box (LN8). An arrow that opts out of route-behind is drawn over them by choice: not behind.
 
-import { pathPassesThrough, queryElementGrid } from '@livediagram/document';
+import { boundsOfPoints, pathPassesThrough, queryElementGrid } from '@livediagram/document';
 import { arrowName, arrowSelector } from '../arrow-names';
 import { isLintBox } from '../boxes';
 import { LINT_MOVE_CLEAR } from '../constants';
@@ -24,7 +24,7 @@ export const arrowBehindBox: Check = (ctx) =>
     // it (the grid), so the cost follows the findings, not the tab.
     const clears = restyledRoutes(ctx, d.arrow).find(
       ({ route }) =>
-        !queryElementGrid(ctx.grid, padded(ctx, boundsOf(route)))
+        !queryElementGrid(ctx.grid, padded(ctx, boundsOfPoints(route)!))
           .filter(isLintBox)
           .some(
             (box) => box.id !== d.from?.id && box.id !== d.to?.id && pathPassesThrough(route, box),
@@ -43,13 +43,6 @@ export const arrowBehindBox: Check = (ctx) =>
       },
     ];
   });
-
-const boundsOf = (pts: readonly { x: number; y: number }[]) => {
-  const xs = pts.map((p) => p.x);
-  const ys = pts.map((p) => p.y);
-  const [x, y] = [Math.min(...xs), Math.min(...ys)];
-  return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
-};
 
 // How far to move a box so a line through it clears it by LINT_MOVE_CLEAR: across the first run that passes through
 // it, the shorter way.

@@ -1,8 +1,9 @@
 import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { Glyph, Tooltip } from '@livediagram/ui';
 import {
-  CONCEPT_ROWS,
+  boundsOfPoints,
   type ChevronLayout,
+  CONCEPT_ROWS,
   type ConceptRow,
   type LayoutRect,
   type WebRows,
@@ -167,11 +168,7 @@ export function ConceptRowBar({
 
 // The stage's bounding box, from its outline.
 function boxOf(stage: ChevronLayout['stages'][number]): LayoutRect {
-  const xs = stage.points.map((p) => p.x);
-  const ys = stage.points.map((p) => p.y);
-  const x = Math.min(...xs);
-  const y = Math.min(...ys);
-  return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
+  return boundsOfPoints(stage.points)!;
 }
 
 /**
