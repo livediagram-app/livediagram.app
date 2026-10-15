@@ -32,6 +32,29 @@ describe('label-collision', () => {
     expect(of(lint(tabOf(...els, sql, cache)), 'label-collision')).toEqual([]);
   });
 
+  it('finds the run a label sits on past an earlier run on the same upright', () => {
+    // Down x=0, across, back to x=0 and down again: the label sits on the last run, below the first one's end. A
+    // line along that run is the label's own track, never a strike.
+    const hook = arrow('x', 'a', 'b', ['s', 'n'], {
+      arrowStyle: 'angled',
+      label: 'go',
+      labelOffset: { t: 0.5, offset: 0 },
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 0, y: 800 },
+      curvePoints: [
+        { dx: 0, dy: -300 },
+        { dx: 100, dy: -300 },
+        { dx: 100, dy: -200 },
+        { dx: 0, dy: -200 },
+      ],
+    });
+    const along = arrow('y', 'a', 'b', ['s', 'n'], {
+      from: { kind: 'free', x: 0, y: 250 },
+      to: { kind: 'free', x: 0, y: 350 },
+    });
+    expect(of(lint(tabOf(hook, along)), 'label-collision')).toEqual([]);
+  });
+
   it('fires when another line strikes the label through, moving it along its own line to a clear spot', () => {
     const labelled = arrow('x', 'a', 'b', ['e', 'w'], { label: 'go' });
     // c drops straight through the middle of a→b, where its label sits.
