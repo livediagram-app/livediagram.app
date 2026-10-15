@@ -551,7 +551,8 @@ export function useAvatarWalk({
           wave: waveStartRef.current === null ? null : 0,
           seatedOn: seatedRef.current,
           holding: holdingRef.current,
-          status,
+          // Only when set: a missing status reads as none, and a walk sends ~30 a second.
+          ...(status ? { status } : null),
           ...(live ? { reaction: { kind: live.kind, elapsedMs: now - live.startedAt } } : null),
         });
       }
@@ -593,7 +594,8 @@ export function useAvatarWalk({
       wave: null,
       seatedOn: seatedRef.current,
       holding: holdingRef.current,
-      status,
+      // Only when set: a missing status reads as none, and a walk sends ~30 a second.
+      ...(status ? { status } : null),
     });
   });
   // `facing` is read as the snapshot's value only (an effect event), since re-publishing on a turn would
@@ -619,7 +621,8 @@ export function useAvatarWalk({
       wave: null,
       seatedOn: seatedRef.current,
       holding: holdingRef.current,
-      status,
+      // Only when set: a missing status reads as none, and a walk sends ~30 a second.
+      ...(status ? { status } : null),
     });
   // Take a drink (docs/specs/009-elements/office.md "Using it"): held for DRINK_HOLD_MS, replacing any other,
   // and told to the room at once rather than at the next step.

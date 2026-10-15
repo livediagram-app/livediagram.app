@@ -164,5 +164,8 @@ describe('useAvatarWalk with a status', () => {
     onPresence.mockClear();
     hook.rerender({ status: 'focus' });
     expect(onPresence).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'focus' }));
+    // Cleared, the field goes: a missing status reads as none, and packets go out ~30 a second while walking.
+    hook.rerender({ status: null });
+    expect(onPresence.mock.lastCall![0]).not.toHaveProperty('status');
   });
 });
