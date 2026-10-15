@@ -79,8 +79,14 @@ const WRITE_WITH_COMMENTS = [
   'collab:action-card',
 ];
 
-// The diagram-building elements Diagram's Build adds to the category's own tiles.
-const DIAGRAM_BUILD_EXTRAS = ['components:card', 'components:badge', 'components:step'];
+// The diagram-building elements Diagram's Build adds to the category's own tiles, the Entity (a class or table, a
+// data model's node) among them: it was Popular's alone, and the category bar has no Popular.
+const DIAGRAM_BUILD_EXTRAS = [
+  'components:card',
+  'components:badge',
+  'components:step',
+  'tools:entity',
+];
 
 // The concept graphics, then the Sankey (Diagram's and Illustrate's Concepts).
 const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];

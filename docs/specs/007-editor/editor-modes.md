@@ -308,17 +308,23 @@ holds.
   and Components' collapsed groups); it
   renders whatever tiles the layout hands it. A category with no body of its
   own, such as Popular, is a tile grid.
-- **Every surface reads the layout:** the Toolbar strip and its More popover.
+- **Every surface reads the layout:** the Toolbar strip, its category bar and flyouts (Diagram, Facilitate,
+  Illustrate: [The category bar](toolbar-layout.md#the-category-bar), which shows the layout without Popular, with
+  one-word names, Write and Draw as one, and Facilitate's session tools as Session) and its More popover (Plan).
 - Draw mode shows its own tools in place of the palette, so it borrows
   Diagram's layout.
 
 Today the layouts differ as below. Diagram offers no **Stickers** and no **Collaborate**: both are Facilitate's ([Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette)), though Search still finds and places them in Diagram. Within the shared categories,
+**Sankey** sits in **Concepts**, after the concept graphics, in Diagram and Illustrate: a flow drawn as wide as
+what it carries explains an idea the way a funnel or a cycle does. Facilitate offers no **Concepts**: concept
+graphics lay out an idea for a diagram, which a session does not stop to draw.
 Illustrate's **Write** leaves out **Page** (the page is the canvas there) and
 **Annotation**, its **Build** leaves out **Mind Node**, **Lane** and **Frame**
 (they organise a diagram, not a visual page), and its **Components** leaves
 out **Entity**; Diagram's
 **Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
-Docs, Website), keeping Image and Avatar; its **Build** adds the **Card**, **Badge**, **Step Number** and
+Docs, Website), keeping Image and Avatar; its **Build** adds the **Card**, **Badge**, **Step Number**, **Entity** (Popular's alone until the category bar had no
+Popular) and
 **Boundary** ([The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
 [The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md)), and its **Write** adds the **Callout** from Components (a headed
 note belongs to a diagram as much as a page) ahead of the Comment panel and Action card. Facilitate joins **Write** and **Build** as one category, **Write &

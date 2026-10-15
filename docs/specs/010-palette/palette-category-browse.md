@@ -50,6 +50,19 @@ better scenery.
 A non-empty query replaces the whole navigation with one flat grid of hits —
 the breadcrumb would be lying about where the results came from.
 
+## Two panes in the category bar's flyouts
+
+On the category bar ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), Icons, Stickers, Technology
+and Session browse as **two panes** instead of the drill-in: the groups down a rail on the left (each its glyph,
+name and count badge, the open one raised with a brand edge), the open group's entries on the right under a sticky
+heading, and the search across the top. There is no breadcrumb and no grid of group tiles: every group is in view
+and one press away, so there is nothing to back out of. It opens on the first group, and after that on the one it
+was left on, for the page load (`BrowseMemory`, keyed by the browse's root); the query is not kept. Search is never
+narrowed, as above: a query replaces the right pane with "Results for “…”" across every group.
+
+`PaletteCategoryBrowser` draws either: the flyout sets `BrowseLayoutContext` to `rail` (`PaletteCategoryRail`), and
+every other host keeps the drill-in grid.
+
 ## One implementation
 
 `components/palette/PaletteCategoryBrowser.tsx` owns the navigation for all

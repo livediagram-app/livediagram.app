@@ -12,7 +12,7 @@ flows, so nobody has to position a band by hand.
 
 ## What someone does with it
 
-1. **Drop it.** Build → **Sankey**: tap to drop or drag to size. It arrives as a real diagram, a household
+1. **Drop it.** Concepts → **Sankey**: tap to drop or drag to size. It arrives as a real diagram, a household
    budget (two incomes into a budget, split into needs, wants and savings, needs split into rent and
    groceries), so the idea explains itself and every part is there to overwrite.
 2. **Read it.** Hover a band: it lifts, the rest fade back, and a readout says `Salary → Budget`,

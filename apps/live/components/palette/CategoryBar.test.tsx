@@ -45,7 +45,7 @@ function show(mode: EditorMode = 'diagram') {
   return h;
 }
 
-const button = (name: string) => screen.getByRole('button', { name, exact: true });
+const button = (name: string) => screen.getByRole('button', { name });
 const flyout = () => document.querySelector('[data-category-flyout]') as HTMLElement | null;
 const side = () => document.querySelector('[data-category-flyout-side]') as HTMLElement | null;
 const heading = () => flyout()?.querySelector('h3')?.textContent;

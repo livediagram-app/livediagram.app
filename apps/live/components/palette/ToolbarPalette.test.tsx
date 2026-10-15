@@ -108,7 +108,7 @@ const barNames = () =>
   );
 const flyout = () => document.querySelector('[data-category-flyout]') as HTMLElement | null;
 const openFlyout = (name: string) => {
-  fireEvent.click(screen.getByRole('button', { name, exact: true }));
+  fireEvent.click(screen.getByRole('button', { name }));
   const el = flyout();
   expect(el, `${name}'s flyout`).not.toBeNull();
   return el!;
@@ -353,7 +353,7 @@ describe('ToolbarPalette', () => {
   it('switches the flyout to the category pressed next', () => {
     show({ mode: 'facilitate' });
     openFlyout('Icons');
-    fireEvent.click(screen.getByRole('button', { name: 'Shapes', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
     expect(within(flyout()!).getByRole('button', { name: 'Add Square' })).toBeTruthy();
     expect(within(flyout()!).queryByPlaceholderText('Search icons')).toBeNull();
   });

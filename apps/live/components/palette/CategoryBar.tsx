@@ -196,8 +196,9 @@ export function CategoryBarButtons({
             }}
             type="button"
             data-category-bar-button=""
-            // The Diagram tour's Palette Categories step rings the bar and opens the first category.
-            {...(i === 0 ? { 'data-tour-id': 'palette-category' } : {})}
+            // The Diagram tour's Palette Categories step opens the first category; the Facilitate tour rings Ask and
+            // Session by their own anchors.
+            data-tour-id={i === 0 ? 'palette-category' : `bar-${c.id}`}
             aria-label={c.label}
             aria-haspopup="dialog"
             aria-expanded={open}

@@ -79,7 +79,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'categories',
     title: 'Palette Categories',
-    body: 'The palette is organised into categories: Popular holds the tiles most reached for, then the other categories provide unique opportunities to personalise your diagram.',
+    body: 'The palette’s categories sit along the top: rest on one to see its elements, then click one to add it, or drag it onto the canvas.',
     target: 'palette-category-menu',
     alsoHighlight: 'palette-category',
     boardSkip: true,

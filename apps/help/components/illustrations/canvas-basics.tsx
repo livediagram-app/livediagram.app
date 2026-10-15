@@ -300,7 +300,7 @@ export function CanvasPaletteOverview() {
   return (
     <Scene w={420} h={240}>
       <MenuCard x={8} y={14} />
-      <Strip x={78} y={14} category="Popular" />
+      <Strip x={78} y={14} />
       <Shape x={60} y={72} w={76} h={42} label="Start" />
       <Shape x={176} y={66} w={60} h={54} kind="diamond" />
       <Shape x={168} y={146} w={76} h={36} accent label="Done" />

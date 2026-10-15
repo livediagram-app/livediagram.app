@@ -75,8 +75,10 @@ short sentences per step about diagramming ("concise" is the spec constraint; th
 1. **The Palette**: the strip across the top where every shape, arrow and icon comes from.
 2. **Selection Modes**: opens the canvas-tool dropdown (Select / Hand / Eraser / ...) and explains mode
    switching. No "default" claim in the copy: desktop defaults to Select but mobile to Hand.
-3. **Palette Categories**: opens the palette-category dropdown (Popular / Shapes / Tools / Components /
-   Devices / Icons / Technology). A dedicated "Tools category" step existed briefly and was cut: the category
+3. **Palette Categories**: opens the first category on the palette's category bar (Shapes), its flyout ringed
+   with the bar ([Toolbar layout](toolbar-layout.md#the-category-bar)): "The palette's categories sit along the
+   top: rest on one to see its elements, then click one to add it, or drag it onto the canvas." Plan's strip still
+   opens its category dropdown here. A dedicated "Tools category" step existed briefly and was cut: the category
    dropdown already tells that story.
 4. **The Element Menu**: selects an element (adding a theme-coloured square at the viewport centre first if the
    tab is empty) and opens its right-click menu programmatically. A square it added is the tour's own: placed

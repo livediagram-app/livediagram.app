@@ -21,14 +21,14 @@ describe('Facilitate tour steps', () => {
 
   it('anchors every step between the bookends to the chrome it explains', () => {
     const anchors = FACILITATE_TOUR_STEPS.filter((s) => !s.card).map((s) => s.target);
-    expect(anchors).toEqual(['band-collaborate', 'session-tools', 'share']);
+    expect(anchors).toEqual(['bar-collab-ask', 'session-tools', 'share']);
   });
 
-  // The palette is the welcome tour's; this tour rings the Collaborate band alone.
-  it('rings the Collaborate band from its heading to its last category', () => {
+  // The palette is the welcome tour's; this tour rings the session kit on the category bar alone.
+  it('rings Ask and Session on the category bar', () => {
     const step = FACILITATE_TOUR_STEPS.find((s) => s.id === 'collaborate')!;
-    expect(step.target).toBe('band-collaborate');
-    expect(step.alsoHighlight).toBe('option-collab-navigate');
+    expect(step.target).toBe('bar-collab-ask');
+    expect(step.alsoHighlight).toBe('bar-session');
   });
 
   it('leaves Share out where there is no Share button', () => {
