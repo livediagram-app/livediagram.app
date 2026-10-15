@@ -45,16 +45,24 @@ shared configuration, and which Next.js features they use or decline, with the r
 
 ## Features used and declined
 
-| Feature                                                                     | Verdict  | Why                                                                            |
-| --------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------ |
-| `<ViewTransition>`, `addTransitionType`, `transitionTypes` on `next/link`   | Used     | [Motion](../004-interface-design/motion.md) "View Transitions"                 |
-| `reactBrowserBailout` (client-rendering bailouts through `browser()`)       | Used     | On by default since 16.4                                                       |
-| Turbopack file-system cache, `turbopackGc`, lazy dynamic imports            | Used     | Above                                                                          |
-| Bundle analyzer and its `next-bundle-optimizer` skill                       | Used     | [Web performance](web-performance.md) "Measuring"                              |
-| Cache Components, `partialPrefetching`, `ensureStatic`, `cachedNavigations` | Declined | `output: 'export'` cannot enable them ("PPR cannot be enabled in export mode") |
-| Server Actions, ISR, `proxy.ts`, rewrites, headers, root params, adapters   | Declined | No Next.js server: a static export on Cloudflare                               |
-| `turbopackPluginRuntimeStrategy: 'workerThreads'`                           | Declined | Next falls back to child processes on Node 24.13.1 and later                   |
-| `turbopackAdditionalRoots`                                                  | Declined | No linked package lives outside the repository                                 |
-| Next.js Devtools MCP                                                        | Declined | Developer tooling, not part of the product                                     |
-
-Features still being measured are added to this table with their verdict once measured.
+| Feature                                                                                 | Verdict  | Why                                                                                                                                               |
+| --------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<ViewTransition>`, `addTransitionType`, `transitionTypes` on `next/link`               | Used     | [Motion](../004-interface-design/motion.md) "View Transitions"                                                                                    |
+| `reactBrowserBailout` (client-rendering bailouts through `browser()`)                   | Used     | On by default since 16.4                                                                                                                          |
+| Turbopack file-system cache, `turbopackGc`, lazy dynamic imports                        | Used     | Above                                                                                                                                             |
+| Bundle analyzer (`next analyze`, `next analyze export` for JSON)                        | Used     | [Web performance](web-performance.md) "Measuring"                                                                                                 |
+| Cache Components, `partialPrefetching`, `ensureStatic`, `cachedNavigations`             | Declined | `output: 'export'` cannot enable them ("PPR cannot be enabled in export mode")                                                                    |
+| Server Actions, ISR, `proxy.ts`, rewrites, headers, root params, adapters               | Declined | No Next.js server: a static export on Cloudflare                                                                                                  |
+| `turbopackPluginRuntimeStrategy: 'workerThreads'`                                       | Declined | Next falls back to child processes on Node 24.13.1 and later                                                                                      |
+| `turbopackAdditionalRoots`                                                              | Declined | No linked package lives outside the repository                                                                                                    |
+| Next.js Devtools MCP                                                                    | Declined | Developer tooling, not part of the product                                                                                                        |
+| The analyzer's `next-bundle-optimizer` agent skill                                      | Declined | Agent tooling installed outside the repository, not part of the build                                                                             |
+| Multiple icon formats (`app/icon.svg` beside `app/icon.png`)                            | Used     | Help and community, which serve their own basePath icon, gain the PNG fallback the other three name in `BRAND_ICONS`                              |
+| `optimisticRouting`, `prefetchInlining`, Turbopack's shared runtime and export mangling | Used     | On by default since 16.4                                                                                                                          |
+| Hydration diff indicator, the new default error page                                    | Used     | Development only, on by default                                                                                                                   |
+| `catchError()`, `unstable_retry()`                                                      | Declined | No area throws `notFound()` or `redirect()` and there are no Server Components to retry; `AreaErrorBoundary` keeps its stale-chunk recovery       |
+| Built-in glob imports (`import.meta.glob`)                                              | Declined | The long import lists name exports keyed by domain ids (type-checked), and their packages also build outside Turbopack (Workers, the CLI, Vitest) |
+| The Playwright `instant()` helper                                                       | Declined | It asserts the static shell of a Partial Prefetching navigation, which needs Cache Components                                                     |
+| Immutable static assets across deployments                                              | Declined | An adapter feature for `?dpl` skew protection; the stale-builds guard covers skew ([Stale builds](stale-builds.md))                               |
+| `experimental.useOffline`                                                               | Declined | Offline is the editor's own system ([Offline mode](../006-document/offline-mode.md)); a soft navigation left pending would hide it                |
+| `experimental.concurrentRouterQueue`                                                    | Declined | Router internals with no measured need here                                                                                                       |

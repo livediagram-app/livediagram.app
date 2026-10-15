@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
   other: DARK_READER_LOCK,
-  // Favicon is served BY this app: `app/icon.svg` (Next auto-injects it,
+  // Favicon is served BY this app: `app/icon.svg` with `app/icon.png` as its fallback (Next auto-injects both,
   // basePath-aware at /help/icon.svg) so the help centre owns its icon
   // instead of relying on the router forwarding a bare /icon.svg to another
   // worker (which 404s in standalone dev).

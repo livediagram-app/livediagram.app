@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
   other: DARK_READER_LOCK,
-  // Favicon is served BY this app: `app/icon.svg` (Next injects it, basePath-aware at
+  // Favicon is served BY this app: `app/icon.svg` with `app/icon.png` as its fallback (Next injects both, basePath-aware at
   // /community/icon.svg), so standalone dev never relies on another worker for it.
 };
 

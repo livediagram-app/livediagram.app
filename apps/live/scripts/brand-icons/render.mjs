@@ -4,9 +4,10 @@
 //   - marketing/media/logo/: the full mark and the lockup, light and dark
 //   - marketing/media/icons/: transparent PNGs at Google Drive's sizes, and
 //     white-tile PNGs (also copied to apps/marketing/public/ for the manifest)
+//   - apps/{help,community}/app/icon.png: the 256px tile, their favicon's PNG fallback
 // Run via `pnpm icons:brand` from the repo root. apps/marketing/lib/brand-icon.test.ts
 // fails when a committed SVG drifts from the module.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 import { build } from 'esbuild';
@@ -79,5 +80,10 @@ for (const size of [256, 512, 1024]) {
 }
 for (const size of [256, 512]) {
   await shoot(size, '#ffffff', `apps/marketing/public/livediagram-icon-${size}.png`);
+}
+// The apps that serve their own icon under a basePath pair app/icon.svg with this PNG (Next emits both links).
+for (const app of ['help', 'community']) {
+  copyFileSync(`${root}apps/marketing/public/livediagram-icon-256.png`, `${root}apps/${app}/app/icon.png`);
+  console.log(`brand-icons: apps/${app}/app/icon.png`);
 }
 await browser.close();
