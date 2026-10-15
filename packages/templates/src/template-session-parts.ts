@@ -19,6 +19,9 @@ export const HEAD_GAP = 28;
 export const MUTED = '#64748b';
 export const SECTION_H = 32;
 export const BUTTON_H = 96;
+// A reaction pad beside its note, and where a section's content starts under its heading.
+export const PAD_W = 150;
+export const UNDER_SECTION = SECTION_H + 12;
 export const BUTTON_W = 152;
 export const CHECK_ROW_H = 40;
 // A bold large title's average glyph advance (a share of its size) and its box's inner room.
