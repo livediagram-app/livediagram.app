@@ -60,6 +60,12 @@ export default defineProject({ test: { environment: 'jsdom' } });
   those tests flake on a busy machine. CPU time still catches the regression
   the budget is for. The one exception is a test that asserts nothing WAITS
   (no sleep, no retry delay): only wall-clock time can see a wait.
+- **An inline script is tested as the browser runs it.** A boot script ships as a string the page
+  inlines before hydration (appearance, reduce motion, the stale-HTML guard), so its test runs that
+  very string with `runInlineScript(source, globals)` from
+  `@livediagram/vitest-config/inline-script`: a classic script in its own realm whose globals are
+  the stubs it is handed (`document`, `localStorage`, a clock, `URL`) and nothing of the test's,
+  never through `new Function`.
 - **A tight budget is written for a developer's machine and widened on CI and under coverage.** CI's
   shared runners, under coverage, run the same work about 4x slower than an
   M-series Mac (the Tidy Up hover: 24 ms locally, 101 to 104 ms on CI), so a
