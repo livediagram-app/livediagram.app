@@ -364,7 +364,7 @@ Metrics**, offered only while the document has a Form tab. Six figures (`form-me
 
 | Figure             | Shows                                                                                                           |
 | ------------------ | --------------------------------------------------------------------------------------------------------------- |
-| **Responses**      | Its responses so far, large, over "responses to <Form>"                                                         |
+| **Responses**      | Its responses so far, large, over "responses so far"                                                            |
 | **New Responses**  | How many are new to the reader ("new to you since you last looked")                                             |
 | **Form Status**    | A pill: **Accepting** (green), **Closed** (amber), **Not Published**, **Suspended** (red), or **Draft** offline |
 | **Response Limit** | "42 / 100" with a bar toward the limit (amber once reached) and how many to go; **No limit** without one        |

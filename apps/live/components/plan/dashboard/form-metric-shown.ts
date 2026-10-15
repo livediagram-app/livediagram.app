@@ -37,7 +37,7 @@ export function formMetricShown(
   const live = link?.link ?? null;
   switch (metric) {
     case 'responses':
-      return { hero: responses.toLocaleString('en-GB'), line: `responses to ${form.heading}` };
+      return { hero: responses.toLocaleString('en-GB'), line: 'responses so far' };
     case 'new':
       return {
         hero: (link?.unseen ?? 0).toLocaleString('en-GB'),
@@ -74,7 +74,7 @@ export function formMetricShown(
     case 'link':
       return {
         hero: null,
-        line: live ? 'Anyone with the link can fill it in' : 'Not published yet',
+        line: live ? 'Anyone with the link can fill it in' : 'Publish it from Share Form',
       };
   }
 }

@@ -21,7 +21,7 @@ const shown = (
 
 describe('formMetricShown', () => {
   it('counts responses and the new ones', () => {
-    expect(shown('responses')).toEqual({ hero: '42', line: 'responses to RSVP' });
+    expect(shown('responses')).toEqual({ hero: '42', line: 'responses so far' });
     expect(shown('new').hero).toBe('3');
     expect(shown('new', { link: link({ unseen: 0 }) }).line).toBe(
       'nothing new since you last looked',
@@ -69,6 +69,6 @@ describe('formMetricShown', () => {
 
   it('gives a link card its line', () => {
     expect(shown('link')).toEqual({ hero: null, line: 'Anyone with the link can fill it in' });
-    expect(shown('link', { link: link({ link: null }) }).line).toBe('Not published yet');
+    expect(shown('link', { link: link({ link: null }) }).line).toBe('Publish it from Share Form');
   });
 });
