@@ -1044,7 +1044,7 @@ export const FORMS_CREATED = chart(
   'Form',
   'Created',
   'Forms Started',
-  "A Form tab started from Start Planning, by its starter, or made from a board's cog (FromBoard).",
+  "A Form tab started from Start Planning, by its starter, or made from a board's cog.",
   { types: [...FORM_STARTERS.map((s) => s.telemetry), 'FromBoard'] },
 );
 
@@ -1060,7 +1060,7 @@ export const FORMS_PUBLISHED = chart(
   'Form',
   'Shared',
   'Forms Published',
-  "A form published: its public link made from Share Form (Link), or copied from a board's Form strip (BoardCopy).",
+  "A form published: its public link made from Share Form, or copied from the form's pill on a board.",
   { types: ['Link', 'BoardCopy'] },
 );
 
