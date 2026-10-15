@@ -565,7 +565,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice"). **No notch in a straight line:** an
   elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
   is drawn straight, as a step that short reads as a notch (two boxes of different widths centred a pixel or two
-  apart). Where one end's box meets no other line, that box moves across by the step so the line runs true; only
+  apart). Where one end's box meets no other line, that box moves across by the step so the line runs true, unless that would
+  take it onto a neighbour or over the border of a frame or lane that holds it; only
   when both ends meet other lines is it drawn as a slight slant (a store's 5 px slant over 250 was seen). An elbow
   whose straight line would cross a box it was routed round keeps its bends, and lines are straightened before their
   labels are placed, so a label sits on the line as it is drawn.

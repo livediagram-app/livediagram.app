@@ -49,6 +49,27 @@ describe('withoutNotches', () => {
     expect((busy.find((e) => e.id === 'b') as Element & { x: number }).x).toBe(0);
   });
 
+  it('leaves a leaf where it is when the step would take it onto a neighbour or over its frame', () => {
+    const bAt = (els: Element[]) => (els.find((e) => e.id === 'b') as Element & { x: number }).x;
+    // c sits flush against b's right side: moving b 2 px right would overlap it.
+    const packed = withoutNotches([
+      box('a', 0, 0),
+      box('b', 0, 200, 196),
+      box('c', 196, 200),
+      elbow('x', 'a', 'b', -2),
+    ]);
+    expect(bAt(packed)).toBe(0);
+    // A frame hugs b on the right, a pixel past it: the 2 px step would push b over its border.
+    const frame = { ...box('f', -20, 180, 217, 100), shape: 'frame' } as Element;
+    const framed = withoutNotches([
+      box('a', 0, 0),
+      frame,
+      box('b', 0, 200, 196),
+      elbow('x', 'a', 'b', -2),
+    ]);
+    expect(bAt(framed)).toBe(0);
+  });
+
   it('keeps an elbow whose ends are further apart, a curve, and one joining a bus', () => {
     const far = withoutNotches([box('a', 0, 0), box('b', 40, 200), elbow('x', 'a', 'b', 40)]);
     expect(arrowOf(far, 'x').arrowStyle).toBe('angled');
