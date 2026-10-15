@@ -12,7 +12,7 @@ import {
 } from '@livediagram/document';
 import { LINT_CHECKS } from './checks';
 import { aspectExtreme } from './checks/aspect-extreme';
-import { textOverflow } from './checks/text-overflow';
+import { textOverflow, textOverprint } from './checks/text-overflow';
 import { LINT_MAX_ARROWS } from './constants';
 import { prepareLintContext, type LintSource } from './context';
 import { consoleLintLogger, type LintLogger } from './log';
@@ -25,12 +25,14 @@ export type LintOptions = { source?: LintSource; flow?: 'down' | 'right'; log?: 
 // there (a deck of slides is a row of pages), and laying it out as a diagram would wreck them.
 // and its text is its content, so text that overflows its box or prints over other text is (text-overflow).
 const PAGE_CHECKS = [...LINT_CHECKS.filter((check) => check !== aspectExtreme), textOverflow];
+// Any other tab: text printed over text is a finding there too (text-overflow's overprint half).
+const TAB_CHECKS = [...LINT_CHECKS, textOverprint];
 
 export function lintTab(
   tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & Partial<Pick<Tab, 'opensIn' | 'kind'>>,
   options: LintOptions = {},
 ): LintReport {
-  const checks = opensInOf(tab) === 'illustrate' ? PAGE_CHECKS : LINT_CHECKS;
+  const checks = opensInOf(tab) === 'illustrate' ? PAGE_CHECKS : TAB_CHECKS;
   const started = performance.now();
   const source = options.source ?? 'tab';
   const log = options.log ?? consoleLintLogger;

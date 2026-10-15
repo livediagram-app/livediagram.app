@@ -30,7 +30,7 @@ const MIST = '#ccfbf1';
 const EMPTY_DISC = '#e2e8f0';
 const EMPTY_INK = '#94a3b8';
 
-const HEADLINE = { value: '184,302', caption: 'visits through our doors in 2026' } as const;
+const HEADLINE = { value: '184,302', caption: 'visits in 2026' } as const;
 const HEADLINE_NOTE = 'That is 620 people for every day we were open, more than ever before.';
 
 // The pictogram: ten neighbours, this many of them card holders.
@@ -82,7 +82,7 @@ function masthead(k: Kit): Element[] {
       textColor: SEA,
     }),
     { ...k.title(0, u * 5, W, u * 11, 'A year at your local library'), textColor: INK },
-    k.text(0, u * 17, W * 0.9, u * 5, 'How one small branch served a town of 26,000 people.', {
+    k.text(0, u * 17, W * 0.9, u * 5, 'One small branch, a town of 26,000 people.', {
       textScale: 1.1,
       textColor: MUTED,
     }),

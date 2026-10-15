@@ -190,7 +190,7 @@ function callToAction(k: Kit): Element[] {
       top + u * 9.5,
       W - pad * 2 - btnW,
       u * 5,
-      'Free on iOS and Android · borrowbox.app',
+      'Free on iOS and Android',
       {
         textScale: 1.2,
         textColor: '#c7d2fe',

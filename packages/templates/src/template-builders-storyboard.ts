@@ -44,7 +44,7 @@ const SHOTS: Shot[] = [
   {
     shot: 'Close-up · 0:04',
     action: 'She opens Pedal: a bike 90 m away.',
-    sound: 'VO: “Next bus, 20 minutes. Your bike, 90 metres.”',
+    sound: 'VO: “Bus in 20 minutes. Bike, 90 metres.”',
     marks: [
       { icon: 'smartphone', x: 125, y: 52, size: 110 },
       { icon: 'map-pin', x: 162, y: 88, size: 36 },

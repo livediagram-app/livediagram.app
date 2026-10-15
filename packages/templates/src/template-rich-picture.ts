@@ -225,8 +225,8 @@ export function buildRichPicture(cx: number, cy: number): Element[] {
     'Stakeholder',
     'What they say',
     'The system',
-    'A clash of interests',
-    'Who is watching',
+    'A conflict',
+    'Who watches',
     'What flows',
   ].forEach((label, i) => out.push(letter(x0 + lx + 96, row(i) - 16, 170, 32, label)));
 
