@@ -28,8 +28,8 @@ is the whole of what the repo enforces.
   TypeScript). Unused variables and arguments are allowed only when named with a leading `_`.
 - **typescript-eslint's recommended type-checked rules**, as oxlint's type-aware `typescript/*`
   rules (see [Type-aware rules](#type-aware-rules)): `no-array-delete`, `no-for-in-array`,
-  `no-unsafe-enum-comparison` and `no-unsafe-unary-minus`. The rest of the set turns on one rule at
-  a time, each at zero findings ([#711](https://github.com/livediagram-app/livediagram.app/issues/711)).
+  `no-unsafe-enum-comparison`, `no-unsafe-unary-minus` and `restrict-plus-operands`. The rest of
+  the set turns on one rule at a time, each at zero findings ([#711](https://github.com/livediagram-app/livediagram.app/issues/711)).
 - **Known gap**: `no-useless-assignment` in the oxlint release the repo uses does not report a value
   written to a function parameter and overwritten before it is read. oxc reports it from
   [oxc-project/oxc#27735](https://github.com/oxc-project/oxc/pull/27735) on; the gap closes when the repo
@@ -58,8 +58,10 @@ is the whole of what the repo enforces.
 - A type-aware rule needs the type of an expression, not only its syntax. oxlint hands those rules
   to `oxlint-tsgolint` (`options.typeAware` in the shared config), which is built on typescript-go:
   the same TypeScript 7 the repo type-checks with, so no second compiler is involved.
-- A file is typed through the `tsconfig.json` that includes it; a file no tsconfig includes is typed
-  on its own, as an inferred project.
+- A file is typed through the `tsconfig.json` that includes it. Scripts belong in their workspace's
+  tsconfig (`apps/live`'s `.mts` scripts, marketing's `.well-known` route), so they are
+  type-checked and linted with the workspace's paths; a file no tsconfig includes is typed on its
+  own, as an inferred project, where an aliased import has no type.
 - `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,
   and a dependency of `@livediagram/oxlint-config`, whose tests run it.
 - A finding is fixed where it arises (a truer signature, a handled promise), never cast or
