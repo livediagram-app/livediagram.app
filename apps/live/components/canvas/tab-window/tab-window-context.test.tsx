@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Element, Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { TAB_WINDOW_REASK_MS, useTabWindowContextValue } from './tab-window-context';
+import { useTabWindowContextValue } from './tab-window-context';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -84,25 +84,33 @@ describe('useTabWindowContextValue', () => {
     expect(h.hook.result.current.status('flow')).toBe('loading');
   });
 
-  it('asks again while another fetch of the tab is under way, and shows how it ended', async () => {
+  // loadTabs settles once the tab has (another caller's fetch waited for), so a window never polls.
+  it('asks once and never again on a timer', async () => {
     vi.useFakeTimers();
     try {
       const h = setup();
-      // The first ask is answered at once without the tab: another caller is fetching it.
       await act(async () => {
         h.hook.result.current.request('flow');
       });
-      expect(h.hook.result.current.status('flow')).toBe('loading');
-      // That fetch failed; the next ask reports it.
-      h.loadTabs.mockResolvedValueOnce(['flow']);
       await act(async () => {
-        await vi.advanceTimersByTimeAsync(TAB_WINDOW_REASK_MS);
+        await vi.advanceTimersByTimeAsync(10_000);
       });
-      expect(h.loadTabs).toHaveBeenCalledTimes(2);
-      expect(h.hook.result.current.status('flow')).toBe('failed');
+      expect(h.loadTabs).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  // "States": a Retry shows Loading until it settles, even for a tab the editor's own visit failed on.
+  it('shows Loading while a Retry of a tab the editor failed on runs, then how it ended', async () => {
+    const h = setup({ loadErrors: new Set(['flow']) });
+    expect(h.hook.result.current.status('flow')).toBe('failed');
+    let settle: (failures: string[]) => void = () => {};
+    h.loadTabs.mockImplementationOnce(() => new Promise((r) => (settle = r)));
+    act(() => h.hook.result.current.retry('flow'));
+    expect(h.hook.result.current.status('flow')).toBe('loading');
+    await act(async () => settle(['flow']));
+    expect(h.hook.result.current.status('flow')).toBe('failed');
   });
 
   it('reads a tab the editor failed to load as failed', () => {
