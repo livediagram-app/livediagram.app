@@ -126,7 +126,7 @@ export function SequenceParticipantStrip({
 
   const uses = open ? messageCount(open.id) : 0;
   return (
-    <section aria-label="Participants" className="mb-4">
+    <section aria-label="Participants" className="mb-4" data-tour-id="sequence-participants">
       <p className="mb-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
         Participants <span className="font-normal">· left to right; click one to change it</span>
       </p>

@@ -1,7 +1,7 @@
 'use client';
 
 // The type editor's field forms (docs/specs/026-plan/item-types.md "Editing a type"): a custom field's
-// name and options (Choice), and Add Field, which offers the built-in fields the type lacks
+// name, options (Choice, Multiple Choice) and scale (Rating), and Add Field, which offers the built-in fields the type lacks
 // and a new custom field. The grouped field list is ItemTypeLayoutEditor.
 import { useState } from 'react';
 import {
@@ -12,6 +12,9 @@ import {
   CUSTOM_FIELD_KINDS,
   CUSTOM_FIELD_LABEL_MAX,
   ITEM_TYPES,
+  RATING_FIELD_SCALE_DEFAULT,
+  RATING_FIELD_SCALE_MAX,
+  RATING_FIELD_SCALE_MIN,
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemFieldId,
@@ -49,8 +52,13 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   link: 'Link',
   email: 'Email',
   choice: 'Choice',
+  multichoice: 'Multiple Choice',
+  rating: 'Rating',
   card: 'Link to Card',
 };
+
+// The kinds with options (docs/specs/030-forms/forms.md "New card field kinds").
+export const hasOptions = (kind: CustomFieldKind) => kind === 'choice' || kind === 'multichoice';
 
 // A full-width dashed "add" row (Add Type, Add Field, Add Tab): plain to spot, quiet until hovered.
 export const DASHED_ADD_BUTTON =
@@ -98,6 +106,37 @@ function CurrencySelect({
       {codes.map((c) => (
         <option key={c} value={c}>
           {c}
+        </option>
+      ))}
+    </Select>
+  );
+}
+
+// A Rating field's scale: 3 to 10 stars or points, 5 by default (stored as absent).
+function RatingScaleSelect({
+  value,
+  onChange,
+}: {
+  value: number | undefined;
+  onChange: (scale: number | undefined) => void;
+}) {
+  const scale = value ?? RATING_FIELD_SCALE_DEFAULT;
+  const scales: number[] = [];
+  for (let n = RATING_FIELD_SCALE_MIN; n <= RATING_FIELD_SCALE_MAX; n += 1) scales.push(n);
+  return (
+    <Select
+      aria-label="Scale"
+      className="w-full"
+      selectClassName="text-[13px]"
+      value={scale}
+      onChange={(e) => {
+        const n = Number(e.target.value);
+        onChange(n === RATING_FIELD_SCALE_DEFAULT ? undefined : n);
+      }}
+    >
+      {scales.map((n) => (
+        <option key={n} value={n}>
+          Out of {n}
         </option>
       ))}
     </Select>
@@ -159,7 +198,10 @@ export function CustomFieldForm({
       {field.kind === 'currency' ? (
         <CurrencySelect value={field.currency} onChange={(currency) => onChange({ currency })} />
       ) : null}
-      {field.kind === 'choice' ? (
+      {field.kind === 'rating' ? (
+        <RatingScaleSelect value={field.scale} onChange={(scale) => onChange({ scale })} />
+      ) : null}
+      {hasOptions(field.kind) ? (
         <TextArea
           aria-label="Options, one a line"
           placeholder="Options, one a line"
@@ -195,7 +237,7 @@ export function NewFieldForm({
   const types = usePlan()?.types ?? ITEM_TYPES;
   const ready =
     custom.label.trim().length > 0 &&
-    (custom.kind !== 'choice' || (custom.options?.length ?? 0) > 0) &&
+    (!hasOptions(custom.kind) || (custom.options?.length ?? 0) > 0) &&
     (custom.kind !== 'card' || !!custom.linkType);
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-900">
@@ -236,7 +278,13 @@ export function NewFieldForm({
             value={custom.kind}
             onChange={(kind) => setCustom({ ...custom, kind })}
           />
-          {custom.kind === 'choice' ? (
+          {custom.kind === 'rating' ? (
+            <RatingScaleSelect
+              value={custom.scale}
+              onChange={(scale) => setCustom({ ...custom, scale })}
+            />
+          ) : null}
+          {hasOptions(custom.kind) ? (
             <TextArea
               aria-label="Options, one a line"
               placeholder="Options, one a line"
@@ -263,6 +311,7 @@ export function NewFieldForm({
             options={custom.options ?? []}
             linkLabel={types.find((t) => t.id === custom.linkType)?.label}
             currency={custom.currency}
+            scale={custom.scale}
           />
         </div>
       ) : null}
@@ -279,7 +328,8 @@ export function NewFieldForm({
               onAddCustom({
                 ...custom,
                 label: custom.label.trim(),
-                ...(custom.kind === 'choice' ? {} : { options: undefined }),
+                ...(hasOptions(custom.kind) ? {} : { options: undefined }),
+                ...(custom.kind === 'rating' ? {} : { scale: undefined }),
                 ...(custom.kind === 'card' ? {} : { linkType: undefined }),
                 ...(custom.kind === 'currency' ? {} : { currency: undefined }),
               })

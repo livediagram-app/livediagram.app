@@ -59,8 +59,8 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Draw, Avatar and Illustrate tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
-// docs/specs/007-editor/illustrate-tour.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
+// The Draw, Avatar, Forms, Illustrate and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
+// docs/specs/030-forms/forms.md, docs/specs/007-editor/illustrate-tour.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
 export async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
@@ -71,7 +71,9 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
       if (
         prefs.drawTourSeen !== true ||
         prefs.avatarTourSeen !== true ||
-        !Array.isArray(prefs.illustrateTourKinds)
+        prefs.formTourSeen !== true ||
+        !Array.isArray(prefs.illustrateTourKinds) ||
+        !Array.isArray(prefs.elementTourKinds)
       )
         localStorage.setItem(
           key,
@@ -79,8 +81,24 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
             ...prefs,
             drawTourSeen: true,
             avatarTourSeen: true,
+            formTourSeen: true,
             illustrateTourSeen: true,
             illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+            // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
+            elementTourKinds: [
+              'sankey',
+              'layer-stack',
+              'pyramid',
+              'funnel',
+              'cycle',
+              'hub',
+              'onion',
+              'chevrons',
+              'mind-node',
+              'flowchart',
+              'org-chart',
+              'sequence',
+            ],
           }),
         );
     } catch {
@@ -388,4 +406,16 @@ export async function settledBox(
     })
     .toBe(true);
   return box!;
+}
+
+/** A palette tile, from its category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The
+ *  category bar"): opens the category (a press, so it stays open whatever the pointer does next) unless its flyout is
+ *  already showing, and returns the tile. */
+export async function paletteTile(page: Page, name: string, category = 'Shapes'): Promise<Locator> {
+  const flyout = page.locator('[data-category-flyout]');
+  const button = page.locator(`[data-category-bar-button][aria-label="${category}"]`);
+  if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();
+  const tile = flyout.getByRole('button', { name, exact: true }).first();
+  await tile.waitFor();
+  return tile;
 }

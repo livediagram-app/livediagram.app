@@ -149,6 +149,24 @@ export function pathEndTangents(
   `components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
   `feDisplacementMap` passes (seeds 7 and 23, base frequency 0.12 and 0.1, scale 3), merged.
 
+- Faces (spec "Every other face is drawn by hand too"): `finishSplitsFace(el)` (`finish.ts`) names the elements
+  whose face is split: every shape kind outside `SKETCHED_BY_BODY` (the plain boxes whose sketched body is their
+  whole drawing, the sequence diagram, icons and stickers), a plain box with an inline icon, tables, link cards,
+  video and annotations. `BoxedElementView` wraps everything it draws over the body (accent edge to
+  `ElementFaceRouter`) in `components/canvas/SketchFace.tsx` when the resolved finish is Sketch and the predicate
+  holds. `SketchFace` renders an empty `[data-sketch-ink]` div (`aria-hidden`, `inert`) then a
+  `[data-sketch-words]` div holding the face, both `absolute inset-0`, no z-index. In a layout effect it fills the
+  ink div with `sketchInkCopy(live)` (a `cloneNode` with `img, video, iframe, canvas, [data-sketch-skip]` removed and
+  every `id` stripped), and re-takes it from a `MutationObserver` on the live div, `SKETCH_INK_SETTLE_MS` after the
+  last change, never later than `SKETCH_INK_MAX_WAIT_MS` after the first. `app/sketch-face.css` hides the live
+  layer's backgrounds, borders, shadows (not on `:focus-visible`) and SVG shapes (`opacity: 0`), and gives the ink
+  layer `filter: url(#lvd-sketch-face)`, `pointer-events: none`, transparent text fill and hidden SVG text.
+  `TabWindowFace` marks its drawing and its Open button `data-sketch-skip`.
+- `SketchFilterDefs` also renders `SKETCH_FACE_FILTER` (`svg-render-sketch.ts`): one `feTurbulence` (octaves 1,
+  seed 7, base frequency 0.12) and one `feDisplacementMap` (scale 3) over a 5% margin.
+- Lettering of faces: the `BoxedElementView` wrapper sets `fontFamily` to the element's resolved stack when there is
+  one, so words a face writes itself inherit it.
+
 ### Exports (`packages/document/src/svg-render*.ts`)
 
 `svgArrow` resolves its ends and drawn arrow through `finishArrowEnds(arrow, elements, finish)`, so a Professional
@@ -158,6 +176,16 @@ the same strokes, hatching and heads from `sketch.ts`, and the Professional fall
 `export-tab.ts` PNG and SVG, `Minimap`, `useLayerThumbnails`, `useSlideThumbnails`) computes `sketchBackdropIds`
 once and passes `sketchBackdrop` per element; `boxedNeedsSvgRaster` sends every non-Flexible element down the SVG
 raster path so PNG matches SVG.
+
+`svgBoxed` wraps `svgBoxedFace`: it sets the element's `exportFontFamily` on its outer `<g>`, and when the element is
+sketched, `finishSplitsFace` holds and it is not a tab window, passes the group's inner markup to `svgSketchFace`:
+a `data-finish="sketch"` body is lifted out and kept where it was (first for a box, last for a table); the ink copy
+(every `<text>`, `<image>` and `<foreignObject>` removed) goes in `<g filter="url(#lvd-sketch-face)">`; the words
+copy (every `rect`, `circle`, `ellipse`, `path`, `line`, `polyline`, `polygon` and `use` given
+`visibility="hidden"`, `clipPath`, `mask`, `defs`, `pattern` and `marker` blocks left whole) follows when the face
+has words or photos. `svgTabWindow(..., sketched, fontFamily)` puts only its hairline through the filter.
+`svgSketchArtDefs` emits the art filter when an icon or sticker is sketched and the face filter when a split face
+is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the element's face.
 
 ### Menus and dialog
 
@@ -207,6 +235,12 @@ sticky and table.
 - Huge shapes (20000 px): hatching capped at `SKETCH_HATCH_MAX_LINES`, curve samples capped at 64.
 - Degenerate arrow (length < 0.5): drawn unsketched.
 - Unknown path commands in `outlineOfPath`: the rest of the path is ignored and the outline so far is used.
+- A face with no ink (words only): the export draws no filtered group; a face with no words or photos draws no words
+  copy. A face whose ink copy is taken before it mounts its content gets it on the next settle.
+- Duplicate definitions: the ink copy carries no ids, so the live face's `url(#...)` references resolve to its own;
+  the export's two copies repeat identical gradient definitions, which resolve to the first.
+- A face that animates in CSS: the copy carries the same classes, so its ink animates too (restarted at each copy).
+- Hover and press tints on a face's controls are not drawn (the ink is a still copy); focus rings are.
 
 ## Security and trust
 
@@ -224,6 +258,13 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
 - Views memoise geometry on size / kind / stroke, never position, so a drag recomputes nothing for moved shapes; the
   backdrop store re-renders only the views whose flag flips.
 - Palette tiles: one shared filter definition, applied by class; no per-tile geometry.
+- Faces (measured on a static build, headless Chromium, 1600 x 1000, a Sketch tab of 200 charts, Sankeys, pyramids
+  and hubs plus one 2400 x 1600 Sankey, zooming and panning): copying all 201 faces' ink 6-14 ms once; the two-pass
+  art filter on faces gave zoom tasks of 51-89 ms (budget: none over 50 ms, canvas-performance.md), the one-pass face
+  filter none (Flexible: none); frames p95 33 ms against 16.7 ms on Flexible, raster work off the main thread. A
+  pan costs nothing. A zoom restyles 80 of those faces every frame (14,800 mutations); the settle wait copies each
+  once after the gesture rather than once a frame. Re-measure on a GPU-backed browser before raising the filter's
+  cost.
 
 ## Presentation and UX
 
@@ -238,6 +279,10 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
 The menu rows are `OptionRows`: menu item radios inside the menu (its own keys move between them), each with
 `aria-checked`. The dialog tiles are `SizeButton`s with `aria-pressed`; the panel is reached from the dialog's
 **Fine-tune** row named Finish, with a **Back** control to the home. Hover preview never fires for touch. No motion.
+
+A sketched face's ink copy is `aria-hidden` and `inert`, so assistive tech and the keyboard reach the live face only,
+once. The live face keeps its words at full contrast (the ink is behind them in the same colours it had) and keeps
+its focus rings (`:focus-visible` is exempt from the shadow reset).
 
 ## Web Experience
 
@@ -266,23 +311,31 @@ per command letter.
 | preview draws each finish, stable, in the tab's font         | `apps/live/lib/finish-preview.test.ts`                                                                   |
 | dialog tab sets, previews, Apply to All clears               | `apps/live/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/live/hooks/canvas/useTabCanvas.test.ts` |
 | Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                                                 |
+| which elements split their face                              | `packages/document/src/finish.test.ts`                                                                   |
+| export split, body placement, tab window frame, defs, fonts  | `packages/document/src/svg-render-sketch.test.ts`                                                        |
+| ink copy, settle and longest wait, single render             | `apps/live/components/canvas/SketchFace.test.tsx`                                                        |
+| face split per finish, element font on the wrapper           | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
 
 ## Constants and configuration
 
-| Constant                 | Value  | Provenance                                                             | Safe range              |
-| ------------------------ | ------ | ---------------------------------------------------------------------- | ----------------------- |
-| `PROFESSIONAL_CORNER_PX` | 0      | square, the clearest break from Flexible (user feedback)               | 0 to 4                  |
-| `PROFESSIONAL_FONT_ID`   | inter  | the catalogue's neutral sans                                           | any sans font id        |
-| `SKETCH_JITTER_PX`       | 1.5    | rough.js roughness 1 reads at ~1-2 px                                  | 0.5 to 3                |
-| `SKETCH_OVERSHOOT_PX`    | 2      | visible corner crossings without stray tails                           | 0 to 4                  |
-| `SKETCH_BOW_SHARE`       | 0.02   | a visible bow on long edges (tuned by eye)                             | 0 to 0.03               |
-| `SKETCH_BOW_MAX_PX`      | 5      | stops long edges from looking bent                                     | 1 to 8                  |
-| `SKETCH_CURVE_STEP_PX`   | 20     | smooth under the spline, half the string work of 14                    | 12 to 28                |
-| `SKETCH_CURVE_JITTER_PX` | 2      | eased wander reads like a hand at 2 px (tuned by eye)                  | 1 to 3                  |
-| `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle                                         | -60 to -30              |
-| `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                                               | 100 to 600              |
-| `SKETCH_HATCH_OPACITY`   | 0.15   | shading that reads without distracting (softened from 0.3 on feedback) | 0.1 to 0.45             |
-| `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font                                       | any handwriting font id |
+| Constant                        | Value  | Provenance                                                             | Safe range              |
+| ------------------------------- | ------ | ---------------------------------------------------------------------- | ----------------------- |
+| `PROFESSIONAL_CORNER_PX`        | 0      | square, the clearest break from Flexible (user feedback)               | 0 to 4                  |
+| `PROFESSIONAL_FONT_ID`          | inter  | the catalogue's neutral sans                                           | any sans font id        |
+| `SKETCH_JITTER_PX`              | 1.5    | rough.js roughness 1 reads at ~1-2 px                                  | 0.5 to 3                |
+| `SKETCH_OVERSHOOT_PX`           | 2      | visible corner crossings without stray tails                           | 0 to 4                  |
+| `SKETCH_BOW_SHARE`              | 0.02   | a visible bow on long edges (tuned by eye)                             | 0 to 0.03               |
+| `SKETCH_BOW_MAX_PX`             | 5      | stops long edges from looking bent                                     | 1 to 8                  |
+| `SKETCH_CURVE_STEP_PX`          | 20     | smooth under the spline, half the string work of 14                    | 12 to 28                |
+| `SKETCH_CURVE_JITTER_PX`        | 2      | eased wander reads like a hand at 2 px (tuned by eye)                  | 1 to 3                  |
+| `SKETCH_HATCH_ANGLE_DEG`        | -41    | rough.js default hachure angle                                         | -60 to -30              |
+| `SKETCH_HATCH_MAX_LINES`        | 300    | caps cost on huge shapes                                               | 100 to 600              |
+| `SKETCH_HATCH_OPACITY`          | 0.15   | shading that reads without distracting (softened from 0.3 on feedback) | 0.1 to 0.45             |
+| `SKETCH_FONT_ID`                | caveat | the catalogue's handwriting font                                       | any handwriting font id |
+| `SKETCH_FACE_FILTER.scale`      | 3      | matches the icons' wobble; past 4 small rules break up                 | 2 to 4                  |
+| `SKETCH_FACE_FILTER.numOctaves` | 1      | two passes broke the zoom budget on a 200-chart board (measured)       | 1                       |
+| `SKETCH_INK_SETTLE_MS`          | 120    | past a zoom frame or a keystroke, quicker than the eye follows         | 80 to 200               |
+| `SKETCH_INK_MAX_WAIT_MS`        | 1000   | a face that never settles still follows within a second                | 500 to 2000             |
 
 ## Assets and external resources
 

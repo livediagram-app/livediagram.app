@@ -136,7 +136,7 @@ export function buildDoodleWarmup(cx: number, cy: number): Element[] {
       colour: 'orange',
       width: 3,
     }),
-    letter(vx + 16, vy + 14, 210, 44, 'Best Likeness', {
+    letter(vx + 16, vy + 14, 210, 44, 'Best Doodle', {
       textSize: 'lg',
       textBold: true,
       colour: 'orange',

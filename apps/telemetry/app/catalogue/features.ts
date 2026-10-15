@@ -6,6 +6,7 @@ import { SELECTION_MODES } from '../palette-types';
 import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '../look-feel-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
+import { elementTourTokens } from '../element-tour-kinds';
 import { LOGO_TOOL_TYPES } from '../logo-types';
 
 export const LAYERS_RENAMED = chart(
@@ -979,6 +980,13 @@ export const DRAW_TOUR_OFFERED = opened(
   (t) => t === 'DrawTourOffer',
 );
 
+// The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.
+export const FORM_TOUR_OFFERED = opened(
+  'Forms Tour Offered',
+  'The Forms tour offered, the first time an Editor opens a Form tab.',
+  (t) => t === 'FormTourOffer',
+);
+
 // The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
 export const AVATAR_TOUR_OFFERED = opened(
   'Avatar Tour Offered',
@@ -991,6 +999,14 @@ export const ILLUSTRATE_TOUR_OFFERED = opened(
   'Illustrate Tour Offered',
   'The Illustrate tour offered, the first time someone works in Illustrate mode.',
   (t) => t === 'IllustrateTourOffer',
+);
+
+// The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on
+// the Visitors tab, which names the kinds.
+export const ELEMENT_TOURS_OFFERED = opened(
+  'Element Tours Offered',
+  'An element tour offered beside a selected element, once per kind per visit.',
+  (t) => elementTourTokens('Offer').includes(t ?? ''),
 );
 
 // The power user mode offer (docs/specs/007-editor/power-user-mode.md); charted in its funnel on
@@ -1161,9 +1177,9 @@ export const HIGHLIGHTER_SETTINGS = chart(
 export const LOOKS_FILTERED = chart(
   'UI',
   'Changed',
-  'Looks Filtered by Finish',
-  "The Tab Style popover's Looks narrowed to one finish with its Finish filter.",
-  { types: ['LooksFinishFilter'], rising: 'neutral' },
+  'Looks Filtered',
+  "The Tab Style popover's Looks narrowed to one finish with its Finish filter, or switched to the seasonal looks with its Seasonal toggle.",
+  { types: ['LooksFinishFilter', 'LooksSeasonal'], rising: 'neutral' },
 );
 
 export const LOOK_AND_FEEL: MetricStack = {

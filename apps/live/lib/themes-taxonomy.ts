@@ -37,6 +37,12 @@ const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
   pastel: 'Soft multi-colour, a hue per branch.',
   tropical: 'Bright, summery hues per branch.',
   uml: 'Standard notation, each shape its colour.',
+  sparkle: 'Gold on a midnight navy.',
+  spring: 'Painted-egg pastels, a hue per branch.',
+  pumpkin: 'Orange, purple and green on a moonless night.',
+  yuletide: 'Holly red, pine green and tinsel gold.',
+  frost: 'Icy blues on fresh snow.',
+  evergreen: 'Berry red on deep fir green.',
 };
 
 // The blurb for a theme id, or undefined for an unknown / custom id.

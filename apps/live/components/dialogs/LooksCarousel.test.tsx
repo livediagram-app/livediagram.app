@@ -4,7 +4,14 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { lookSettings } from '@/lib/look-mashup';
-import { TAB_LOOKS, activeLookId, type LookSettings, type TabLook } from '@/lib/tab-looks';
+import { SEASONAL_LOOKS, seasonalLooksFor } from '@/lib/seasonal-looks';
+import {
+  TAB_LOOKS,
+  activeLookId,
+  withLookApplied,
+  type LookSettings,
+  type TabLook,
+} from '@/lib/tab-looks';
 import { track } from '@/lib/telemetry';
 import { LooksCarousel } from './LooksCarousel';
 
@@ -18,8 +25,18 @@ const UNTOUCHED: LookSettings = { theme: undefined, finish: undefined, font: und
 const cards = () =>
   screen
     .getAllByRole('button')
-    .filter((b) => b.hasAttribute('aria-pressed'))
-    .map((b) => b.querySelector('span > span')?.textContent);
+    .filter((b) => b.hasAttribute('aria-pressed') && b.textContent !== 'Seasonal')
+    // The name, skipping a seasonal card's season line above it.
+    .map(
+      (b) =>
+        [...b.querySelectorAll('span > span')].find((s) => !s.className.includes('uppercase'))
+          ?.textContent,
+    );
+const seasonsShown = () =>
+  screen
+    .getAllByRole('button')
+    .map((b) => b.querySelector('span > span.uppercase')?.textContent)
+    .filter(Boolean);
 
 // Renders the carousel as the dialog does: a pick re-renders it with the tab's new settings.
 function host(initial: LookSettings = UNTOUCHED) {
@@ -86,5 +103,59 @@ describe('the Mashup card', () => {
     });
     for (let i = 0; i < 4; i++) fireEvent.click(h.mashup());
     expect(h.picks.map((p) => p.finish)).toEqual(Array(4).fill('professional'));
+  });
+});
+
+describe('the Seasonal toggle', () => {
+  afterEach(() => vi.useRealTimers());
+
+  const plain = (settings: LookSettings = UNTOUCHED) =>
+    render(
+      <LooksCarousel
+        settings={settings}
+        activeLook={activeLookId(settings)}
+        onPickLook={() => {}}
+        headingClass=""
+      />,
+    );
+  const toggle = () => screen.getByRole('button', { name: 'Seasonal' });
+
+  it('swaps the everyday looks for the seasonal ones only, the season on now first, with no Mashup card', () => {
+    // Mid-October: Halloween leads, then Christmas, New Year and Easter.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 15));
+    plain();
+    expect(toggle().getAttribute('aria-pressed')).toBe('false');
+    expect(cards()).not.toContain(SEASONAL_LOOKS[0]!.label);
+    fireEvent.click(toggle());
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'LooksSeasonal');
+    expect(toggle().getAttribute('aria-pressed')).toBe('true');
+    expect(cards()).toEqual(seasonalLooksFor(new Date(2026, 9, 15)).map((l) => l.label));
+    expect(cards()[0]).toBe('Haunted');
+    expect(seasonsShown()[0]).toBe('Halloween');
+    expect(screen.queryByRole('button', { name: MASHUP })).toBeNull();
+    fireEvent.click(toggle());
+    expect(cards()).toEqual(['Mashup', ...TAB_LOOKS.map((l) => l.label)]);
+  });
+
+  it('narrows the seasonal looks by finish too', () => {
+    plain();
+    fireEvent.click(toggle());
+    fireEvent.change(screen.getByRole('combobox', { name: 'Filter looks by finish' }), {
+      target: { value: 'sketch' },
+    });
+    const sketch = SEASONAL_LOOKS.filter((l) => l.finish === 'sketch').map((l) => l.label);
+    expect(sketch.length).toBeGreaterThan(0);
+    expect([...cards()].sort()).toEqual([...sketch].sort());
+  });
+
+  it('opens on, with the look selected, when the tab already wears a seasonal look', () => {
+    const tab = withLookApplied({ id: 't', name: 'T', elements: [] } as never, SEASONAL_LOOKS[3]!);
+    plain(tab);
+    expect(toggle().getAttribute('aria-pressed')).toBe('true');
+    const selected = screen
+      .getAllByRole('button')
+      .find((b) => b.getAttribute('aria-pressed') === 'true' && b.textContent !== 'Seasonal');
+    expect(selected?.textContent).toContain(SEASONAL_LOOKS[3]!.label);
   });
 });

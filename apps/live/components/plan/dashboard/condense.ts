@@ -45,6 +45,7 @@ export function phoneSlotSize(
     case 'links':
       return 'card';
     case 'sheet-metric':
+    case 'form-metric':
       return 'figure';
     case 'tab':
       return 'work';

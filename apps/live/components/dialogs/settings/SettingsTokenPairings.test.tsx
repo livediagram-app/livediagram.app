@@ -75,9 +75,9 @@ describe('SettingsTokenPairings', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Unpair Acme Editor at/ }));
     expect(onUnpair).not.toHaveBeenCalled();
     expect(
-      screen.getByText(
-        'Unpair Acme Editor? Its open diagrams stop editing until you allow it again.',
-      ),
+      screen.getByRole('dialog', {
+        name: 'Unpair Acme Editor? Its open diagrams stop editing until you allow it again.',
+      }),
     ).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Unpair' }));
@@ -89,9 +89,9 @@ describe('SettingsTokenPairings', () => {
     render(<SettingsTokenPairings pairings={[UNNAMED]} now={NOW} onUnpair={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: /^Unpair Unnamed workbench at/ }));
     expect(
-      screen.getByText(
-        'Unpair Unnamed workbench? Its open diagrams stop editing until you allow it again.',
-      ),
+      screen.getByRole('dialog', {
+        name: 'Unpair Unnamed workbench? Its open diagrams stop editing until you allow it again.',
+      }),
     ).toBeTruthy();
   });
 

@@ -40,6 +40,8 @@ export function PersonNodeFace({
     <>
       <div
         aria-hidden
+        // Where an element tour points (components/tour/org-chart-tour-steps.ts), as the role line below.
+        data-tour-part="person-initials"
         className="pointer-events-none absolute flex items-center justify-center rounded-full font-semibold"
         style={{
           ...rectStyle(l.disc),
@@ -57,7 +59,11 @@ export function PersonNodeFace({
         </div>
       </LabelRegion>
       {l.role ? (
-        <div className="absolute flex items-center" style={{ ...rectStyle(l.role), fontFamily }}>
+        <div
+          className="absolute flex items-center"
+          style={{ ...rectStyle(l.role), fontFamily }}
+          data-tour-part="person-role"
+        >
           <InlineTextLine
             value={role}
             placeholder="Role"

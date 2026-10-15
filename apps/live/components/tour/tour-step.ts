@@ -21,6 +21,9 @@ export type TourStepOf<Api> = {
   // tour's Collaborate step), so the dim spotlights part of the menu; otherwise the later-portalled menu
   // paints over a ring at the same layer.
   ringOverMenu?: boolean;
+  // The layer this step's ring draws at, over the stage's own: 'modal' for a step inside a dialog the tour opened
+  // (the Sankey tour's Flows dialog steps, docs/specs/007-editor/element-tours.md), so the ring is not under it.
+  layer?: 'overlay' | 'modal';
   // Centred bookend cards, outside the step count, each with its own
   // illustration and button set: 'welcome' offers the tour (accept /
   // decline, declining is permanent via the done-guard); 'outro' wraps it

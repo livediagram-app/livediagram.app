@@ -108,6 +108,7 @@ describe('the shelves, as the template step lays them out', () => {
       'blank-logo',
       'blank-plan',
       'blank-spreadsheet',
+      'blank-form',
     ]);
     for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
     expect(shelves.slice(1).map((s) => s.id)).toEqual(
@@ -182,7 +183,11 @@ describe('Blank Slate under a mode', () => {
       'blank-logo',
     ]);
     expect(popularFor('facilitate').map((t) => t.kind)).toEqual(['blank-session']);
-    expect(popularFor('plan').map((t) => t.kind)).toEqual(['blank-plan', 'blank-spreadsheet']);
+    expect(popularFor('plan').map((t) => t.kind)).toEqual([
+      'blank-plan',
+      'blank-spreadsheet',
+      'blank-form',
+    ]);
   });
 
   it('holds every blank under Everything', () => {

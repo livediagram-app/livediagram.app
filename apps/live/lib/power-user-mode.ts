@@ -11,8 +11,10 @@ export const POWER_USER_PRESET = {
   planTourSeen: { planTourSeen: true },
   facilitateTourSeen: { facilitateTourSeen: true },
   drawTourSeen: { drawTourSeen: true },
+  formTourSeen: { formTourSeen: true },
   avatarTourSeen: { avatarTourSeen: true },
   illustrateTourSeen: { illustrateTourSeen: true },
+  elementToursSeen: { elementToursSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },
 } as const satisfies Record<string, Partial<UserPreferences>>;

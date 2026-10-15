@@ -73,6 +73,7 @@ const feed = (over: Partial<ActivityFeed> = {}): ActivityFeed => ({
   assignedToMe: [],
   youAssigned: [],
   threads: [],
+  formResponses: [],
   loading: false,
   error: false,
   retry: vi.fn(),
@@ -170,5 +171,33 @@ describe('ActivityPane', () => {
     expect(retry).toHaveBeenCalled();
     rerender(<ActivityPane feed={feed()} />);
     expect(screen.getByText('Nothing waiting on you')).toBeTruthy();
+  });
+});
+
+// docs/specs/030-forms/forms.md "Hearing about responses": a form with unseen responses lists, opening its board.
+describe('Form Responses', () => {
+  it('lists each form with its count and opens its board', () => {
+    render(
+      <ActivityPane
+        feed={feed({
+          formResponses: [
+            {
+              documentId: 'd1',
+              documentName: 'Ops',
+              teamId: null,
+              via: 'own',
+              tabId: 'form-tab',
+              heading: 'Bug Report',
+              boardTabId: 'board-tab',
+              unseen: 3,
+              latestAt: Date.now(),
+            },
+          ],
+        })}
+      />,
+    );
+    expect(screen.getByText('Form Responses')).toBeTruthy();
+    const row = screen.getByRole('link', { name: /3 new responses to Bug Report/ });
+    expect(row.getAttribute('href')).toBe('/document/d1#t=board-tab');
   });
 });

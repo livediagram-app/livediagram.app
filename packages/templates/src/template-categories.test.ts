@@ -16,12 +16,13 @@ import { TEMPLATES, type TemplateKind } from './templates';
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the thirteen job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
+  it('are the fourteen job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Brainstorm',
       'Design',
       'Finance',
       'Flowcharts',
+      'Forms',
       'Org Charts',
       'Planning',
       'Presentations',
@@ -61,6 +62,7 @@ describe('template categories', () => {
       planning: 9,
       finance: 6,
       spreadsheets: 5,
+      forms: 6,
       meetings: 17,
       mindmaps: 8,
       timelines: 7,

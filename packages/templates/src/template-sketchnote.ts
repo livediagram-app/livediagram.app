@@ -35,7 +35,7 @@ const KEY_POINTS = [
   'Small PRs, under 200 lines each',
 ];
 
-const QUOTES = ['“If it scares you, ship it smaller.”', '“Rollback is a feature, not a failure.”'];
+const QUOTES = ['“If it scares you, ship it smaller.”', '“Rollback is a feature.”'];
 
 const QUESTIONS = [
   'How do we flag a database migration?',
@@ -69,12 +69,12 @@ export function buildSketchnote(cx: number, cy: number): Element[] {
   // The big idea in a cloud at the centre.
   out.push(drawn(cloudPath(x0 + 700, y0 + 420, 215, 120, 10, 4), 20, { colour: 'blue', width: 3 }));
   out.push(
-    letter(x0 + 610, y0 + 318, 180, 30, 'THE BIG IDEA', {
+    letter(x0 + 610, y0 + 312, 180, 30, 'THE BIG IDEA', {
       colour: 'red',
       textBold: true,
       textAlignX: 'center',
     }),
-    letter(x0 + 520, y0 + 350, 360, 130, 'Small, boring releases make Friday just another day', {
+    letter(x0 + 500, y0 + 346, 400, 150, 'Small, boring releases make Friday just another day', {
       textSize: 'lg',
       textScale: 1.1,
       textAlignX: 'center',
@@ -206,18 +206,11 @@ export function buildSketchnote(cx: number, cy: number): Element[] {
   out.push(drawn(tl!, 91, { colour: 'red' }), drawn(tr!, 92, { colour: 'red' }));
   out.push(drawn(tb!, 90, { colour: 'red', width: 3 }));
   out.push(
-    letter(
-      x0 + 250,
-      y0 + 850,
-      900,
-      56,
-      'Takeaway: make the deploy so dull nobody notices it is Friday',
-      {
-        textSize: 'lg',
-        textAlignX: 'center',
-        textBold: true,
-      },
-    ),
+    letter(x0 + 250, y0 + 850, 900, 56, 'Takeaway: a Friday deploy should be dull', {
+      textSize: 'lg',
+      textAlignX: 'center',
+      textBold: true,
+    }),
     sticker('emoji-party-popper', x0 + 1196, y0 + 832, 70, 10),
   );
 

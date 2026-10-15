@@ -30,7 +30,6 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVote,
-  lucideZap,
 } from '@livediagram/icons/lucide';
 import { topCategorySlug } from '@livediagram/help-registry';
 import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
@@ -486,6 +485,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="10.4" y="8" width="3.2" height="4" rx="0.6" />
       <rect x="9" y="6.5" width="6" height="7" rx="1.5" strokeDasharray="1.6 1.4" />
       <path d="M4.5 16h2.5M17 16h2.5" />
+    </Glyph>
+  ),
+  // A clipboard holding two ticked lines: a form filled in.
+  forms: (
+    <Glyph>
+      <rect x="4.5" y="4" width="15" height="17.5" rx="1.5" />
+      <rect x="9" y="2.5" width="6" height="3" rx="1" />
+      <path d="M7.5 10.5l1.2 1.2 2.3-2.4M13 10.5h4M7.5 16l1.2 1.2 2.3-2.4M13 16h4" />
     </Glyph>
   ),
   // A page of rows and slots, a wide one over two, the first holding a small ring: a dashboard.
@@ -1479,13 +1486,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   technology: (
     <Glyph>
       <Prims prims={lucideCpu} />
-    </Glyph>
-  ),
-  // Palette → Popular: a bolt, for the tiles one tap away. Not the tab's own sparkles, which the
-  // AI Tools card already wears here.
-  popular: (
-    <Glyph>
-      <Prims prims={lucideZap} />
     </Glyph>
   ),
   // Two overlapping panels with the back one showing through.

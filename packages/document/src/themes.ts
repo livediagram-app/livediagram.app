@@ -55,7 +55,15 @@ export type ThemeId =
   | 'tropical'
   // Formal: standard notations. UML paints each shape kind its
   // conventional colour (docs/specs/011-theme/canvas-and-theme-dialog.md).
-  | 'uml';
+  | 'uml'
+  // Seasonal: reached only through the seasonal looks (docs/specs/011-theme/canvas-and-theme-dialog.md
+  // "Seasonal looks"), never listed in a theme picker.
+  | 'sparkle'
+  | 'spring'
+  | 'pumpkin'
+  | 'yuletide'
+  | 'frost'
+  | 'evergreen';
 
 // One branch colour for a multi-colour theme: the fill / stroke / text
 // triple a single limb of the hierarchy is painted with. Unlike the
@@ -115,6 +123,9 @@ export type ThemeDefinition = {
   // ThemeCategoryBrowser now (docs/specs/008-canvas/canvas-and-palette.md), so every theme is reachable by
   // category and there is no "Show more" left to sit behind.
   extra?: boolean;
+  // A seasonal theme (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks"): it paints a tab that wears
+  // it like any theme, but no theme picker lists it and the Mashup never draws it; a seasonal look is the way in.
+  seasonal?: true;
 };
 
 // Which chrome a viewer is looking at (docs/specs/007-editor/live-app.md). Every scheme reads it: each viewer sees a

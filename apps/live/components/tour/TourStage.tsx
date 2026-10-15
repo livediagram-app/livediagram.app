@@ -35,6 +35,7 @@ export function TourStage<Api>({
   const palette = useStartPalette();
   const { step, stepIndex, targetRect } = engine;
   if (!engine.active || !step) return null;
+  const ringLayer = step.layer ?? layer;
   return (
     <Portal>
       {step.card ? (
@@ -58,7 +59,7 @@ export function TourStage<Api>({
         // first appearance.
         <div
           aria-hidden
-          className={`pointer-events-none fixed ${layer === 'modal' ? 'z-[calc(var(--z-modal)+1)]' : step.ringOverMenu ? 'z-[calc(var(--z-overlay)+1)]' : 'z-[var(--z-overlay)]'} animate-fade-in rounded-xl border-2 transition-all duration-long ease-out`}
+          className={`pointer-events-none fixed ${ringLayer === 'modal' ? 'z-[calc(var(--z-modal)+1)]' : step.ringOverMenu ? 'z-[calc(var(--z-overlay)+1)]' : 'z-[var(--z-overlay)]'} animate-fade-in rounded-xl border-2 transition-all duration-long ease-out`}
           style={{
             left: targetRect.left - pad,
             top: targetRect.top - pad,

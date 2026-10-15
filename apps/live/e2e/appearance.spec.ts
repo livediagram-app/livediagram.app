@@ -1,5 +1,5 @@
 import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@livediagram/document';
-import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
+import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
 
 // Appearance (docs/specs/007-editor/live-app.md) end to end: the three settings on the real control, and
 // the thing the merge was for — a tab on the Default theme repainting
@@ -72,7 +72,7 @@ test.describe('Appearance', () => {
     // what it is drawn in is entirely the canvas's ink — the thing the merge
     // depends on, and the thing a unit test can't see reach a memoised view.
     const square = page.getByRole('img', { name: 'Square', exact: true });
-    await page.getByRole('button', { name: 'Add Square', exact: true }).click();
+    await (await paletteTile(page, 'Add Square')).click();
     await page.locator(CANVAS).click({ position: { x: 420, y: 300 } });
     await expect(square).toHaveCount(1);
     await expect

@@ -121,6 +121,8 @@ export function applyPageChanges(
   // naming one by its id or its name is answered rather than refused.
   const removed: IllustratePage[] = [];
   try {
+    // The pages this call has added, which a later add never takes as a blank.
+    const madeHere = new Set<string>();
     changes.forEach((change, i) => {
       const stop = (code: IllustrateRefusal['code'], message: string): never => {
         throw new Stop({ code, message, change: i });
@@ -202,11 +204,22 @@ export function applyPageChanges(
             // The fresh tab's empty, unchosen first page becomes the page asked for.
             current = withPageKindChosen(current, first.id, change.kind as PageKind, newFlowId())!;
             page = pages()[0]!;
+          } else if (
+            ps.length === 1 &&
+            !madeHere.has(first.id) &&
+            first.kind === change.kind &&
+            !first.name?.trim() &&
+            onPage(first.id) === 0
+          ) {
+            // A blank of that kind (the Blank Slide Deck's one empty slide) becomes the page asked for, so a deck made
+            // from it does not open on an empty slide.
+            page = first;
           } else {
             const id = newPageId();
             current = take(pageAdded(current, change.kind as PageKind, id, newFlowId()));
             page = pages().find((p) => p.id === id)!;
           }
+          madeHere.add(page.id);
           const said = setFields(page, change);
           if (change.at !== undefined)
             current = take(pageMovedTo(current, page.id, unitAt(change.at)), page);

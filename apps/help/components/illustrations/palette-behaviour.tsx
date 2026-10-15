@@ -171,54 +171,111 @@ function StopwatchGlyph() {
 
 // --- Scenes ----------------------------------------------------------------
 
-/** The Collaborate elements in the palette's category picker: Facilitate mode's Collaborate band, six
- *  categories ordered room-first, with the labels and order PALETTE_CATEGORIES gives them. `lit` picks
- *  out the categories an article is about. */
+/** The Collaborate elements on Facilitate's palette strip: **Ask** on its own, then **Session**, open, with its five
+ *  groups down the side, room-first, and the open group's elements beside them. `lit` picks out what an article is
+ *  about (Ask, and any of Session's groups; the first lit group is the one shown open). */
 export function CollaborateCategories({ lit = [] }: { lit?: readonly string[] }) {
-  const px = 52;
-  const py = 12;
   const groups: { label: string; icon: ReactNode }[] = [
-    { label: 'Ask', icon: <AskGlyph /> },
     { label: 'Tools', icon: <FacilitateGlyph /> },
     { label: 'Record', icon: <RecordGlyph /> },
     { label: 'React', icon: <SmileGlyph /> },
     { label: 'Selection Mode', icon: <SelectGlyph /> },
     { label: 'Navigate', icon: <DoorGlyph /> },
   ];
+  const open = groups.find((g) => lit.includes(g.label)) ?? groups[0]!;
+  const askLit = lit.includes('Ask');
   return (
-    <Scene w={420} h={196} bg="plain">
-      <Panel x={px} y={py} w={316} h={168} title="COLLABORATE">
+    <Scene w={420} h={236} bg="plain">
+      {/* The end of the strip: Ask, then Session, open. */}
+      <rect
+        x={196}
+        y={10}
+        width={168}
+        height={32}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <rect
+        x={202}
+        y={14}
+        width={58}
+        height={24}
+        rx={6}
+        className={askLit ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-transparent'}
+        strokeWidth={1}
+      />
+      <Chip x={216} y={26} r={8}>
+        <AskGlyph />
+      </Chip>
+      <Label x={228} y={30} size={10} weight={600} tone={askLit ? 'accent' : 'body'}>
+        Ask
+      </Label>
+      <rect x={266} y={14} width={92} height={24} rx={6} className="fill-brand-100" />
+      <Chip x={280} y={26} r={8}>
+        <FacilitateGlyph />
+      </Chip>
+      <Label x={292} y={30} size={10} weight={700} className="fill-brand-700">
+        Session
+      </Label>
+      <rect x={272} y={37} width={80} height={2} rx={1} className="fill-brand-500" />
+      {/* Session's flyout: its groups down the side, the open one's elements beside them. */}
+      <Panel x={56} y={50} w={308} h={176}>
+        <rect x={57} y={51} width={112} height={174} rx={9} className="fill-slate-50" />
+        <path d="M169 52 V225" className="stroke-slate-200" strokeWidth={1} />
         {groups.map((g, i) => {
-          const gx = px + 12 + (i % 3) * 102;
-          const gy = py + 32 + Math.floor(i / 3) * 66;
-          const on = lit.includes(g.label);
+          const gy = 60 + i * 32;
+          const on = g === open;
+          const named = lit.includes(g.label);
           return (
             <g key={g.label}>
-              <rect
-                x={gx}
-                y={gy}
-                width={88}
-                height={56}
-                rx={9}
-                className={on ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-200'}
-                strokeWidth={1.5}
-              />
-              <Chip x={gx + 44} y={gy + 20} r={13}>
+              {on ? (
+                <rect
+                  x={62}
+                  y={gy}
+                  width={102}
+                  height={26}
+                  rx={7}
+                  className="fill-white stroke-slate-200"
+                  strokeWidth={1}
+                />
+              ) : null}
+              <Chip x={76} y={gy + 13} r={8}>
                 {g.icon}
               </Chip>
               <Label
-                x={gx + 44}
-                y={gy + 45}
-                anchor="middle"
-                size={10}
-                weight={600}
-                tone={on ? 'accent' : 'body'}
+                x={88}
+                y={gy + 17}
+                size={9.5}
+                weight={on || named ? 700 : 500}
+                tone={on || named ? 'accent' : 'body'}
               >
                 {g.label}
               </Label>
             </g>
           );
         })}
+        <Label x={180} y={70} size={10} weight={700} tone="strong">
+          {open.label}
+        </Label>
+        {[0, 1, 2].map((i) => (
+          <g key={i}>
+            <rect
+              x={180}
+              y={82 + i * 44}
+              width={172}
+              height={36}
+              rx={8}
+              className="fill-white stroke-slate-200"
+              strokeWidth={1}
+            />
+            <Chip x={198} y={100 + i * 44} r={10}>
+              {open.icon}
+            </Chip>
+            <TextBar x={214} y={93 + i * 44} w={88} tone="muted" />
+            <TextBar x={214} y={104 + i * 44} w={120} tone="faint" />
+          </g>
+        ))}
       </Panel>
     </Scene>
   );

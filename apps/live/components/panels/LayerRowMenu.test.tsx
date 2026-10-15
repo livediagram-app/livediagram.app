@@ -101,7 +101,9 @@ describe('LayerRowMenu', () => {
     for (const name of ['Clear Layer', 'Delete Layer'])
       expect(button(name).parentElement?.attributes.length).toBeGreaterThan(0);
     fireEvent.click(button('Clear Layer'));
-    expect(screen.getByText('Clear the 3 elements on “Notes”? The layer stays.')).toBeTruthy();
+    expect(
+      screen.getByRole('dialog', { name: 'Clear the 3 elements on “Notes”? The layer stays.' }),
+    ).toBeTruthy();
   });
 
   it('deletes an empty layer straight away and cannot clear it', () => {
@@ -114,7 +116,9 @@ describe('LayerRowMenu', () => {
   it('asks before clearing', () => {
     const p = renderMenu();
     fireEvent.click(button('Clear Layer'));
-    expect(screen.getByText('Clear the 3 elements on “Notes”? The layer stays.')).toBeTruthy();
+    expect(
+      screen.getByRole('dialog', { name: 'Clear the 3 elements on “Notes”? The layer stays.' }),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
     expect(p.onClear).toHaveBeenCalledOnce();
   });

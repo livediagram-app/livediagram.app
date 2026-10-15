@@ -2,7 +2,7 @@
 // writes ("In Progress", "Bug", "Severity", "Sam", "#12") resolved to what items store (a status id, a type id, a
 // custom field id, a person, an item id). Unknown names are refused with what is there, never stored.
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
-import { isEmailAddress, type ItemTypeDef } from './item-types';
+import { isEmailAddress, ratingScaleOf, type ItemTypeDef } from './item-types';
 import { knownFieldKind, PRIORITIES, validateFields } from './fields';
 import {
   ITEM_CHECKLIST_MAX,
@@ -207,6 +207,33 @@ export function resolveFields(
           `"${value}" is not a ${field.label} option. Options: ${list(field.options ?? [])}.`,
         );
       out[key] = option;
+    } else if (
+      field.kind === 'multichoice' &&
+      (typeof value === 'string' || Array.isArray(value))
+    ) {
+      const names = typeof value === 'string' ? [value] : value;
+      const picks: string[] = [];
+      for (const name of names) {
+        const option =
+          typeof name === 'string' ? choiceOption(field.options ?? [], name) : undefined;
+        if (!option)
+          return refuse(
+            'choice_unknown',
+            `"${String(name)}" is not a ${field.label} option. Options: ${list(field.options ?? [])}.`,
+          );
+        if (!picks.includes(option)) picks.push(option);
+      }
+      // Kept in option order, as the card panel keeps them.
+      out[key] = (field.options ?? []).filter((o) => picks.includes(o));
+    } else if (field.kind === 'rating') {
+      const scale = ratingScaleOf(field);
+      const n = typeof value === 'string' ? Number(value) : value;
+      if (typeof n !== 'number' || !Number.isInteger(n) || n < 1 || n > scale)
+        return refuse(
+          'value_invalid',
+          `${field.label} is a rating: give a whole number from 1 to ${scale}.`,
+        );
+      out[key] = n;
     } else if (field.kind === 'currency' && typeof value === 'string') {
       // "£12,500" or "1200.50": the amount, its symbols and grouping aside.
       const amount = Number(value.replace(/[^\d.-]/g, ''));

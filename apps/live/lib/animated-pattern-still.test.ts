@@ -49,7 +49,8 @@ describe('lookPreviewSvg', () => {
       const svg = lookPreviewSvg(look);
       const still = svg.indexOf('<circle ');
       expect(still, look.id).toBeGreaterThan(svg.indexOf('<rect '));
-      expect(still, look.id).toBeLessThan(svg.indexOf('<g><rect '));
+      // The first box: an element's group, carrying the look's font when it has one.
+      expect(still, look.id).toBeLessThan(svg.search(/<g(?: font-family="[^"]*")?><rect /));
     }
   });
 

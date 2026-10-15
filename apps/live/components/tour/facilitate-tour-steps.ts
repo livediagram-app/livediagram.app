@@ -1,10 +1,9 @@
 // The steps of the Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md "The steps"): a welcome
-// card, then the Collaborate band of the category picker → the Session strip → Share, then the outro. The
+// card, then Ask and Session on the category bar → the Session strip → Share, then the outro. The
 // palette itself is the Diagram tour's. It places
 // nothing, so its steps only point at the chrome and open the one menu they explain.
 
-import { closeDropdown, ensurePaletteOpen } from './tour-steps';
-import { clickTour, findTour, waitForTour } from './tour-dom';
+import { ensurePaletteOpen } from './tour-steps';
 import { stepTelemetryType, type TourStepOf } from './tour-step';
 
 // Nothing to drive beyond the DOM: the tour makes no content (spec "Tour content").
@@ -22,17 +21,13 @@ export const FACILITATE_TOUR_STEPS: FacilitateTourStep[] = [
   {
     id: 'collaborate',
     title: 'Collaborate',
-    body: 'The session kit lives under Collaborate: Ask, Tools, Record, React, Selection Mode and Navigate hold every element that comes alive with the room.',
-    // The Collaborate band only, from its heading to its last category, inside the open picker.
-    target: 'band-collaborate',
-    alsoHighlight: 'option-collab-navigate',
-    ringOverMenu: true,
+    body: 'The session kit sits at the end of the palette: Ask puts a question to the room, and Session holds the timers, reveals, records, reactions, selection modes and places to go.',
+    // Ask and Session on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar").
+    target: 'bar-collab-ask',
+    alsoHighlight: 'bar-session',
     prepare: async () => {
       await ensurePaletteOpen();
-      if (!findTour('palette-category-menu')) clickTour('palette-category');
-      await waitForTour('band-collaborate');
     },
-    cleanup: () => closeDropdown('palette-category-menu', 'palette-category'),
   },
   {
     id: 'session-strip',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { layoutGraph, type GraphInput } from './graph-input';
 import { GRAPH_LAYOUT_MAX_EDGES, GRAPH_LAYOUT_MAX_NODES } from './graph-limits';
 
@@ -45,7 +45,7 @@ const fastest = (graph: GraphInput) => {
 describe('graph look cost', () => {
   it('lays out the largest graph allowed in under a second of CPU', () => {
     const graph = randomGraph(GRAPH_LAYOUT_MAX_NODES, GRAPH_LAYOUT_MAX_EDGES);
-    expect(fastest(graph)).toBeLessThan(1000);
+    expect(fastest(graph)).toBeLessThan(cpuBudgetMs(1000));
   }, 60_000);
 
   // A dense graph small enough for the orthogonal router (up to ROUTER_MAX_BOXES boxes) searches for its loops; its
@@ -55,11 +55,13 @@ describe('graph look cost', () => {
       [60, 140],
       [120, 300],
     ] as const)
-      expect(fastest(randomGraph(nodes, edges)), `${nodes}/${edges}`).toBeLessThan(1000);
+      expect(fastest(randomGraph(nodes, edges)), `${nodes}/${edges}`).toBeLessThan(
+        cpuBudgetMs(1000),
+      );
   }, 60_000);
 
   it('lays a 150-node graph out both ways for auto direction in under 250 ms of CPU', () => {
     const graph = randomGraph(150, 250);
-    expect(fastest(graph)).toBeLessThan(250);
+    expect(fastest(graph)).toBeLessThan(cpuBudgetMs(250));
   });
 });

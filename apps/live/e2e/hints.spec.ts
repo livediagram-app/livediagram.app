@@ -13,19 +13,19 @@ const HOVER_CARD = '[role="tooltip"][data-hint="hover-card"]';
 // Well under the 1 s delay, and well over a frame: "instant" means this.
 const INSTANT_MS = 300;
 
-// The captioned Square tile in the Shapes category's More popover: the strip's own tiles are
-// icon-only and name themselves in a hover card, so the tooltip lives on the popover's tiles.
+// A captioned Square tile, in the strip's Search popover: the category flyouts' tiles show their names, so the
+// tooltip lives on Search's captioned tiles (the palette tile grid, as More's were).
+const SEARCH = '[data-toolbar-search]';
 const squareTile = (page: Page) =>
-  page.locator('[data-toolbar-more]').getByRole('button', { name: 'Add Square', exact: true });
+  page.locator(SEARCH).getByRole('button', { name: 'Add Square', exact: true });
 
 // A blank document with the quick tour out of the way (its dialog would cover
-// the palette mid-hover), and the Palette on Shapes with its More popover open.
+// the palette mid-hover), and the strip's Search open on "square".
 async function openEditor(page: Page) {
   await startBlankDocument(page);
   await dismissQuickTour(page);
-  await page.getByRole('button', { name: 'Palette category' }).click();
-  await page.locator('[data-option-id="shapes"]').click();
-  await page.getByRole('button', { name: /^More/ }).click();
+  await page.getByRole('button', { name: 'Search elements' }).click();
+  await page.locator(SEARCH).getByRole('textbox', { name: 'Search elements' }).fill('square');
   await expect(squareTile(page)).toBeVisible();
 }
 
@@ -69,8 +69,8 @@ test.describe('Tooltip on a palette tile', () => {
 
     await page.keyboard.press('Escape');
     await expect(tooltip).toHaveCount(0);
-    // The press is not consumed: the More popover the tile sits in closes on it too.
-    await expect(page.locator('[data-toolbar-more]')).toHaveCount(0);
+    // The press is not consumed: the Search popover the tile sits in closes on it too.
+    await expect(page.locator(SEARCH)).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
 

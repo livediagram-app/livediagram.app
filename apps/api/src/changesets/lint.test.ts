@@ -26,6 +26,17 @@ describe('lintResult', () => {
     ]);
   });
 
+  it('judges colours on what the write set: none of a template replace, a change over the tab before', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const coloured = { ...box('a', 0), fillColor: '#123456' } as Element;
+    const codes = (before: Parameters<typeof lintResult>[2]) =>
+      lintResult({ elements: [coloured] }, where, before)!.findings.map((f) => f.code);
+    expect(codes(null)).toEqual(['colour-on-themed']);
+    expect(codes('template')).toEqual([]);
+    expect(codes({ elements: [coloured] })).toEqual([]);
+    expect(codes({ elements: [box('a', 0)] })).toEqual(['colour-on-themed']);
+  });
+
   it('logs the lint\x27s warnings and debug lines at their levels', () => {
     const warns: unknown[][] = [];
     const debugs: unknown[][] = [];

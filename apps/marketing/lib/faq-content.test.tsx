@@ -89,7 +89,9 @@ describe('theme counts in marketing copy', () => {
       ...copy.matchAll(/\b(\d+|twenty-[a-z]+) (?:one-click )?(?:whole-canvas )?themes\b/gi),
     ].map((m) => (/^\d+$/.test(m[1]!) ? Number(m[1]) : WORDS[m[1]!.toLowerCase()]));
     expect(counts.length).toBeGreaterThan(0);
-    for (const n of counts) expect(n).toBe(THEMES.length);
+    // The seasonal themes are the seasonal looks' own, never offered in a picker, so the copy counts the rest.
+    const offered = THEMES.filter((t) => !t.seasonal).length;
+    for (const n of counts) expect(n).toBe(offered);
   });
 });
 

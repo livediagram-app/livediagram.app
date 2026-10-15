@@ -28,6 +28,18 @@ diagrams (agents)"); this element keeps the list as the source, so inserting a m
 
 Removing a participant removes the messages to and from it.
 
+### Look
+
+The picture wears the element's own look, so it follows the tab's theme like any other element:
+
+- **Colours**: the participants' outlines, the activation bars and the message lines in the element's **border colour**
+  (the theme's accent on a new one); every word in its **text colour** (the theme's ink); the boxes on its **fill**,
+  which is the paper. A theme switch, or a colour picked in Colours, recolours all of it.
+- **Font**: every word in the element's face, resolved as any label's is (its own font, else the tab's, else its
+  finish's lettering).
+- **Finish** ([Finish](../008-canvas/finish.md)): its boxes and lines are drawn in the element's finish, so on a Sketch
+  tab they are hand-drawn and on a Professional one square-cornered and thin.
+
 ## Editing
 
 A sequence is too much to edit in a menu, so it has its own dialog, as the [Sankey](sankey.md) has its Flows dialog.
@@ -100,6 +112,12 @@ unless Repeat is on. CSS only (a clip from the top); reduced motion and every ex
 
 A new one shows Browser, API and Database with five messages: a call, a self-call, a call to the database, its reply
 and the reply to the browser.
+
+## Element tour
+
+The first time an Editor selects a sequence diagram, a small **Tour** toolbar beside its selection toolbar offers the
+[Sequence tour](../007-editor/element-tours.md#the-sequence-tour): the diagram on the canvas, then the Sequence dialog,
+opened by the tour, step by step; Done closes it with the tour. While the tour runs, Escape is the tour's.
 
 ## Share roles
 

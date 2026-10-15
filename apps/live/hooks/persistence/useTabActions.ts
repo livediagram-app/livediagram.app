@@ -17,6 +17,7 @@
 
 import { defaultTabName, isDefaultTabName } from '@livediagram/document';
 import { boardsRenamedWithTab, planTitledWithTab, sheetIdsOn } from '@/lib/tab-named-plan';
+import { withFormHeading } from '@/lib/form-tab';
 import type { ImportedPlanItems } from '@/lib/import-tab';
 import type { PlanTabImportResult } from '@/hooks/plan/usePlanTabImport';
 import {
@@ -205,7 +206,8 @@ export function useTabActions(deps: TabActionsDeps) {
       ts.map((t) =>
         t.id === id
           ? {
-              ...t,
+              // A Form tab's form takes the name as its heading (docs/specs/030-forms/forms.md "The Form tab").
+              ...withFormHeading(t, trimmed),
               name: trimmed,
               elements:
                 planTitledWithTab(t, trimmed) ??
@@ -272,7 +274,8 @@ export function useTabActions(deps: TabActionsDeps) {
     // A Board or Visualisation tab and its board or chart share one name (docs/specs/026-plan/plan-tabs.md "Names"):
     // the copy's are titled as the copy is, so neither takes the original's name back later.
     const copy: Tab = {
-      ...reminted,
+      // A copied Form tab is never published (its link lives on the server) and is headed as the copy is named.
+      ...withFormHeading(reminted, name),
       elements: planTitledWithTab(reminted, name) ?? reminted.elements,
       id: crypto.randomUUID(),
       name,

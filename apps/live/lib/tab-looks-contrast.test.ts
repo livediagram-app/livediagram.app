@@ -12,6 +12,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { rollMashup } from './look-mashup';
+import { SEASONAL_LOOKS } from './seasonal-looks';
 import { TAB_LOOKS, withLookApplied, type TabLook } from './tab-looks';
 import { resolveTabBackdrop, themeViewMap } from './themes';
 
@@ -63,7 +64,7 @@ const mashups: TabLook[] = Array.from({ length: MASHUP_SAMPLES }, () =>
 );
 
 describe('every look and mashup is accessible in both appearances', () => {
-  for (const [i, look] of [...TAB_LOOKS, ...mashups].entries()) {
+  for (const [i, look] of [...TAB_LOOKS, ...SEASONAL_LOOKS, ...mashups].entries()) {
     for (const appearance of ['light', 'dark'] as Appearance[]) {
       it(`${look.id === 'mashup' ? `mashup ${i} (${look.description})` : look.id} (${appearance})`, () => {
         const styled = withLookApplied(tab(), look);

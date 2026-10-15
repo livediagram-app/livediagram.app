@@ -6,6 +6,9 @@ import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
 import {
   CURRENCY_CODE,
+  RATING_FIELD_SCALE_DEFAULT,
+  RATING_FIELD_SCALE_MAX,
+  RATING_FIELD_SCALE_MIN,
   CURRENCY_DEFAULT,
   CUSTOM_FIELD_KINDS,
   FALLBACK_ITEM_TYPE,
@@ -246,7 +249,7 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     label,
     kind: kind as CustomFieldKind,
   };
-  if (kind === 'choice') {
+  if (kind === 'choice' || kind === 'multichoice') {
     const raw = input['options'];
     if (!Array.isArray(raw)) return `${at}.options`;
     const options = raw.map((o) => (typeof o === 'string' ? o.trim() : ''));
@@ -258,6 +261,17 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     )
       return `${at}.options`;
     field.options = options;
+  }
+  if (kind === 'rating' && input['scale'] !== undefined) {
+    const scale = input['scale'];
+    if (
+      typeof scale !== 'number' ||
+      !Number.isInteger(scale) ||
+      scale < RATING_FIELD_SCALE_MIN ||
+      scale > RATING_FIELD_SCALE_MAX
+    )
+      return `${at}.scale`;
+    if (scale !== RATING_FIELD_SCALE_DEFAULT) field.scale = scale;
   }
   if (kind === 'card') {
     // The type it links to; one the catalogue lacks is kept (the type may come back), never refused.

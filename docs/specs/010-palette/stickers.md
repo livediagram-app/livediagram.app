@@ -157,3 +157,9 @@ entry builds art drawing both the plate and its own content, and the drop
 geometry for each flavour. The public
 OpenAPI schema is regenerated, so `sticker` / `stickerId` are part of the
 documented wire format.
+
+## No hover card on a sticker tile
+
+A sticker's palette tile has no hover card. One opened over the browse's breadcrumb, and then over the two-pane
+browse's heading, as the pointer crossed the grid, hiding the way round. The picture is the answer; its name is the
+button's accessible label.

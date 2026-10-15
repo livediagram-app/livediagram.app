@@ -25,7 +25,7 @@ const INTER_ITALIC_SPEC = 'Inter:ital,wght@1,400;1,700';
 // Each family's faces as they are being fetched or were fetched, with when that started and whether it has settled.
 const memory = new Map<string, { faces: Promise<Uint8Array[]>; since: number; settled: boolean }>();
 
-type Fetcher = (url: string) => Promise<Response>;
+export type Fetcher = (url: string) => Promise<Response>;
 
 // The TrueType files a family spec's stylesheet names (one per weight), in order.
 export function faceUrlsOf(css: string): string[] {
@@ -34,7 +34,8 @@ export function faceUrlsOf(css: string): string[] {
   );
 }
 
-async function cached(url: string, fetcher: Fetcher): Promise<Response | null> {
+// A fetch through the Cache API: kept once fetched, so a later preview in any isolate reads it from the edge.
+export async function cached(url: string, fetcher: Fetcher): Promise<Response | null> {
   const store = (globalThis as { caches?: { default?: Cache } }).caches?.default;
   const hit = await store?.match(url).catch(() => undefined);
   if (hit) return hit;

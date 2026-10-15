@@ -143,7 +143,7 @@ export function buildMobileWireframe(cx: number, cy: number): Element[] {
   {
     const { ui, text } = screen(1);
     elements.push(ui('icon', 26, 108, 24, 24, { iconId: 'arrow-left' }));
-    elements.push(text(58, 104, 220, 32, 'Oat flat white', { textSize: 'lg', ...bold }));
+    elements.push(text(58, 104, 220, 32, 'Oat flat white', { textSize: 'md', ...bold }));
     elements.push(ui('square', 26, 146, 252, 110, { borderRadius: 'md', strokeWidth: 'thin' }));
     elements.push(ui('icon', 132, 181, 40, 40, { iconId: 'image' }));
     elements.push(text(30, 268, 120, 24, 'Size', bold));

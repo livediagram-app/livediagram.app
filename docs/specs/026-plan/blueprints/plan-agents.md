@@ -40,7 +40,9 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   through `readCardDisplay` (defaults dropped); a refusal is `display_invalid`. `tabsFrom` builds whole tabs (≤
   `ITEM_TYPE_TABS_MAX`), refusing Title, Votes, a field the type lacks or one in two tabs, keeping a same-named tab's
   id (else `newTabId`). `detailsLabelFrom` stores nothing for "Details". `set.editCustom` (`editedCustom`) renames,
-  replaces a Choice field's options, sets or clears `onCard`. `typeNamed` resolves a type by its current name, else
+  replaces a Choice field's options, sets or clears `onCard`; clearing it drops the field from an own Detailed Display
+  (`withoutOnDetailed`), and a field the change ticks (`add.custom`, `set.addCustom`, `set.editCustom`) is appended
+  to an own Detailed Display's `body` when not placed (`withOnCardShown`). `typeNamed` resolves a type by its current name, else
   a name it had earlier in the batch (`formerNames`).
 - `listedType(t, statuses)` / `listedTypes`: id, name, color, glyph, built-in fields, custom (with `onCard`), the
   Default State by column name, `display` per size by slot and field name (`namedDisplay` over `typeCardLayout`),

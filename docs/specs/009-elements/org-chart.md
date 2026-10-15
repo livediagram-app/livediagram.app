@@ -41,6 +41,12 @@ of Engineering". Tab from it adds the first report.
 Person nodes take the Shape set and the Text set like any mind node. A level-by-level build is not part of this
 element; a map's nodes animate one by one as any element does.
 
+## Element tour
+
+The first time an Editor selects a person node, a small **Tour** toolbar beside its selection toolbar offers the
+[Org Chart tour](../007-editor/element-tours.md#the-org-chart-tour): the name, role and initials, a report (Tab) and a
+peer (Enter), a team moved as one, and the menu it shares with mind maps.
+
 ## Share roles
 
 As a mind node's ([Mind node](mind-node.md)): an Editor grows and edits; a Participant writes a node's text only where

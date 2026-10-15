@@ -57,9 +57,9 @@ describe('the Card Types panel’s list', () => {
     expect(add).not.toHaveBeenCalled();
     expect(button.getAttribute('aria-expanded')).toBe('true');
     expect(
-      screen.getByText(
-        'Add Project, Note and Idea to this document’s card types? They go after the ones you have, and nothing you have changes.',
-      ),
+      screen.getByRole('dialog', {
+        name: 'Add Project, Note and Idea to this document’s card types? They go after the ones you have, and nothing you have changes.',
+      }),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Add Types' }));
     expect(add).toHaveBeenCalledTimes(1);

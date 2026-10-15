@@ -379,4 +379,98 @@ export const THEMES: ThemeDefinition[] = [
     // this theme is reached through its own Formal category like any other.
     extra: true,
   },
+  // --- Seasonal themes (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks") ---------------
+  // Worn by the seasonal looks only: `seasonal` keeps them out of every theme picker and the Mashup.
+  {
+    // New Year: gold on a midnight navy, the fireworks-and-champagne night.
+    id: 'sparkle',
+    label: 'Sparkle',
+    backgroundColor: '#0b1026',
+    backgroundPattern: 'blank',
+    patternColor: '#3a3f6b',
+    elementFill: '#1a2147',
+    elementStroke: '#e8b84a',
+    elementText: '#fdf3d7',
+    seasonal: true,
+  },
+  {
+    // Easter: painted-egg pastels, a hue per branch, on a buttercup canvas.
+    id: 'spring',
+    label: 'Spring',
+    backgroundColor: '#fffbeb',
+    backgroundPattern: 'blank',
+    patternColor: '#fde68a',
+    elementFill: '#fffdf5',
+    elementStroke: '#a16207',
+    elementText: '#422006',
+    rootColor: { fill: '#fffdf5', stroke: '#a16207', text: '#422006' },
+    palette: [
+      { fill: '#fae8ff', stroke: '#c026d3', text: '#701a75' },
+      { fill: '#dcfce7', stroke: '#16a34a', text: '#14532d' },
+      { fill: '#e0f2fe', stroke: '#0284c7', text: '#0c4a6e' },
+      { fill: '#ffe4e6', stroke: '#e11d48', text: '#881337' },
+      { fill: '#fef9c3', stroke: '#ca8a04', text: '#713f12' },
+    ],
+    seasonal: true,
+  },
+  {
+    // Halloween: pumpkin orange, potion purple and slime green on a moonless night.
+    id: 'pumpkin',
+    label: 'Pumpkin',
+    backgroundColor: '#16101f',
+    backgroundPattern: 'blank',
+    patternColor: '#3b2d4f',
+    elementFill: '#2a1f38',
+    elementStroke: '#f97316',
+    elementText: '#ffedd5',
+    rootColor: { fill: '#2a1f38', stroke: '#f97316', text: '#ffedd5' },
+    palette: [
+      { fill: '#3d2410', stroke: '#fb923c', text: '#ffedd5' },
+      { fill: '#2e1a47', stroke: '#c084fc', text: '#f3e8ff' },
+      { fill: '#1f3311', stroke: '#a3e635', text: '#ecfccb' },
+    ],
+    seasonal: true,
+  },
+  {
+    // Christmas: holly red, pine green and tinsel gold on warm paper.
+    id: 'yuletide',
+    label: 'Yuletide',
+    backgroundColor: '#fffaf2',
+    backgroundPattern: 'blank',
+    patternColor: '#fecaca',
+    elementFill: '#fffdf8',
+    elementStroke: '#7c2d12',
+    elementText: '#431407',
+    rootColor: { fill: '#fffdf8', stroke: '#7c2d12', text: '#431407' },
+    palette: [
+      { fill: '#fee2e2', stroke: '#dc2626', text: '#7f1d1d' },
+      { fill: '#dcfce7', stroke: '#15803d', text: '#14532d' },
+      { fill: '#fef3c7', stroke: '#b45309', text: '#78350f' },
+    ],
+    seasonal: true,
+  },
+  {
+    // Christmas: icy blues on fresh snow.
+    id: 'frost',
+    label: 'Frost',
+    backgroundColor: '#f3f8ff',
+    backgroundPattern: 'blank',
+    patternColor: '#bfdbfe',
+    elementFill: '#e6f0ff',
+    elementStroke: '#2563eb',
+    elementText: '#1e3a8a',
+    seasonal: true,
+  },
+  {
+    // Christmas: berry red on a deep fir green, by the fire.
+    id: 'evergreen',
+    label: 'Evergreen',
+    backgroundColor: '#0f2a1d',
+    backgroundPattern: 'blank',
+    patternColor: '#2f5a43',
+    elementFill: '#173b29',
+    elementStroke: '#f87171',
+    elementText: '#fef2f2',
+    seasonal: true,
+  },
 ];

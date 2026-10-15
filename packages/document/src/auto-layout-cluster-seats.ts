@@ -5,11 +5,12 @@
 // middle and swept along it past the members' own drops. These two passes run on the expanded geometry.
 
 import { SIBLING_GAP } from './auto-layout-shared';
+import { LABEL_FONT_PX } from './label-font';
 import { legalise, rankOffsets } from './auto-layout-placement';
 import { NOTCH_MAX } from './graph-notches';
 import type { LayoutDirection } from './auto-layout';
 import type { DiagramGraph } from './graph-authoring';
-import type { Anchor, ArrowElement, BoxedElement } from './index';
+import type { Anchor, ArrowElement, BoxedElement, TextSizePreset } from './index';
 
 type Axis = {
   main: (el: BoxedElement) => number;
@@ -176,13 +177,20 @@ export function frameHeadingRect(frame: {
   x: number;
   y: number;
   label?: string;
+  textSize?: unknown;
 }): { x: number; y: number; width: number; height: number } | null {
   const text = frame.label?.trim();
   if (!text) return null;
+  // A larger look's heading is wider in step with its size (a small graph's md heading ran past the lead).
+  const size =
+    typeof frame.textSize === 'string' && frame.textSize in LABEL_FONT_PX
+      ? LABEL_FONT_PX[frame.textSize as TextSizePreset]
+      : LABEL_FONT_PX.sm;
+  const scale = size / LABEL_FONT_PX.sm;
   return {
     x: frame.x,
     y: frame.y,
-    width: text.length * FRAME_HEADING_CHAR_PX + FRAME_HEADING_PAD,
+    width: text.length * FRAME_HEADING_CHAR_PX * scale + FRAME_HEADING_PAD,
     height: FRAME_HEADING_HEIGHT,
   };
 }
@@ -197,9 +205,10 @@ export function headingLead(
   enteredFromOutside: ReadonlySet<string>,
   pad: number,
   direction: LayoutDirection,
+  textSize?: unknown,
 ): number {
   if (direction !== 'TB' || members.length === 0) return 0;
-  const heading = frameHeadingRect({ x: 0, y: 0, label });
+  const heading = frameHeadingRect({ x: 0, y: 0, label, ...(textSize ? { textSize } : {}) });
   if (!heading) return 0;
   // The first rank by centre, as the layout aligns a rank: by its top, a taller box (a cloud among cylinders) stood
   // alone as the first row.

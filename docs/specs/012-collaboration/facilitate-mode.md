@@ -78,7 +78,8 @@ mode as today:
 
 ## The palette
 
-Facilitate's layout, in order:
+Facilitate's layout, in order (no Concepts: concept graphics lay out an idea for a diagram, which a session does not
+stop to draw):
 
 | Band        | Categories                                                    |
 | ----------- | ------------------------------------------------------------- |
@@ -106,6 +107,11 @@ Facilitate's layout, in order:
   - **React**: the five reaction pads.
   - **Selection Mode**: one button per selection mode.
   - **Navigate**: Portal, Bring focus, Chair, Desk, Sofa, Fence, Link card.
+- **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows the
+  layout as **Shapes, Draw · Icons, Stickers, Media · Data · Ask, Session**: no Popular; Write & Build and Draw as
+  one category, **Draw**, its flyout a Write section then a Draw section; and Tools, Record, React, Selection Mode
+  and Navigate gathered into **Session**, browsed in two panes (the groups down the side, a search across all of
+  them). **Ask** keeps its own button: putting a question to the room is the session's main act.
 
   In Facilitate every one of them is a tile you reach for mid-session, so a parent category was a
   click in front of each, with a group browser one level down. Six categories put every group one

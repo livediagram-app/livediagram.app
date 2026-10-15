@@ -35,6 +35,8 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   },
   { table: 'shared_with', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'favourites', column: 'owner_id', migrate: { kind: 'moves' } },
+  // What a reader has seen of a form's responses (docs/specs/030-forms/forms.md): guests edit forms too.
+  { table: 'form_reads', column: 'owner_id', migrate: { kind: 'moves' } },
   // Default folders (docs/specs/013-workspace/default-folders.md): guests have them too.
   { table: 'placement_defaults', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'user_preferences', column: 'owner_id', migrate: { kind: 'moves' } },
@@ -160,6 +162,13 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     updated_at: T0,
   });
   insert(sql, 'favourites', { owner_id: id, document_id: `d-${id}`, created_at: T0 });
+  insert(sql, 'form_links', {
+    code: `form-${id}`,
+    document_id: peerDocument,
+    tab_id: `t-${id}`,
+    created_at: T0,
+  });
+  insert(sql, 'form_reads', { code: `form-${id}`, owner_id: id, seen_number: 3 });
   insert(sql, 'favourites', { owner_id: id, document_id: peerDocument, created_at: T0 });
   insert(sql, 'shared_with', {
     owner_id: id,

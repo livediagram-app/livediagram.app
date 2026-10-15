@@ -21,6 +21,7 @@ export function DiagramKeyFace({
   element,
   labelNode,
   accent,
+  paper,
   ink,
   fontFamily,
   editable,
@@ -29,6 +30,8 @@ export function DiagramKeyFace({
   element: ShapeElement;
   labelNode: ReactNode;
   accent: string;
+  // The key's own fill, which a tag row's card swatch is drawn on, so it reads as a card on any theme.
+  paper: string;
   ink: string;
   fontFamily: string | undefined;
   editable: boolean;
@@ -87,7 +90,7 @@ export function DiagramKeyFace({
                     width={s.width}
                     height={s.height}
                     rx={3}
-                    fill="#ffffff"
+                    fill={paper}
                     stroke={accent}
                     strokeOpacity={0.4}
                   />

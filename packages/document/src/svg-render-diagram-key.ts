@@ -12,7 +12,7 @@ type Shape = BoxedElement & { type: 'shape' };
 
 export function svgDiagramKey(
   el: Shape,
-  o: { stroke: string; labelColor: string; label: string; fontFamily?: string },
+  o: { stroke: string; fill: string; labelColor: string; label: string; fontFamily?: string },
 ): string {
   const rows = el.keyRows ?? [];
   const l = diagramKeyLayout(el.width, rows.length);
@@ -45,7 +45,7 @@ export function svgDiagramKey(
         `<polygon points="${r2(x + s.width)},${midY} ${r2(x + s.width - 7)},${r2(y + s.height / 2 - 4)} ${r2(x + s.width - 7)},${r2(y + s.height / 2 + 4)}" fill="${ink}"/>`;
     } else {
       out +=
-        `<rect x="${r2(x)}" y="${r2(y)}" width="${s.width}" height="${s.height}" rx="3" fill="#ffffff" stroke="${xmlEscape(o.stroke)}" stroke-opacity="0.4"/>` +
+        `<rect x="${r2(x)}" y="${r2(y)}" width="${s.width}" height="${s.height}" rx="3" fill="${xmlEscape(o.fill)}" stroke="${xmlEscape(o.stroke)}" stroke-opacity="0.4"/>` +
         `<rect x="${r2(x)}" y="${r2(y)}" width="4" height="${s.height}" fill="${xmlEscape(row.color ?? o.stroke)}"/>`;
     }
     out += webLine(el, meaningOf(el, row), meaning, 12, o.labelColor, {

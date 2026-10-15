@@ -33,6 +33,7 @@
     "@livediagram/document": "workspace:*",
     "@livediagram/document-views": "workspace:*",
     "@livediagram/explorer-lens": "workspace:*",
+    "@livediagram/forms": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/items": "workspace:*",

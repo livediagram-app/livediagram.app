@@ -88,7 +88,6 @@ describe('palette layouts', () => {
       'my-shapes',
       'write',
       'draw',
-      'concepts',
       'icons',
       'stickers',
       'media',
@@ -219,6 +218,26 @@ describe('palette layouts', () => {
     ]);
   });
 
+  // Every Popular tile is in another category of its mode too: the category bar has no Popular.
+  it('offers every Popular tile in another category of its mode', () => {
+    for (const mode of ['diagram', 'facilitate', 'illustrate'] as const) {
+      const cats = paletteCategoriesFor(mode);
+      const elsewhere = new Set(
+        cats.filter((c) => c.id !== 'popular').flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
+      );
+      for (const tile of cats.find((c) => c.id === 'popular')?.tiles ?? [])
+        if (tile.action.type !== 'open')
+          expect(elsewhere.has(tile.id), `${mode} ${tile.id}`).toBe(true);
+    }
+  });
+
+  it('files the Sankey under Concepts, not Build, in Diagram and Illustrate', () => {
+    for (const mode of ['diagram', 'illustrate'] as const) {
+      expect(tileIds(mode, 'concepts').at(-1), mode).toBe('tools:sankey');
+      expect(tileIds(mode, 'build'), mode).not.toContain('tools:sankey');
+    }
+  });
+
   it('leaves mind nodes, lanes, frames, annotations and entities out of Illustrate', () => {
     const everywhere = paletteCategoriesFor('illustrate').flatMap((c) =>
       (c.tiles ?? []).map((t) => t.id),
@@ -236,7 +255,6 @@ describe('palette layouts', () => {
       'tools:table',
       'tools:stack',
       'tools:timeline',
-      'tools:sankey',
     ]);
     expect(tileIds('diagram', 'build')).toContain('tools:mind-node');
     expect(tileIds('diagram', 'write')).toContain('tools:annotation');

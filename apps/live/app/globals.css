@@ -3,6 +3,7 @@
 @import '@livediagram/template-previews/preview-art-tile.css';
 @import '@livediagram/template-previews/preview-motion.css';
 @import './qa-board.css';
+@import './forms.css';
 @import './canvas-motion.css';
 @import './motion-shape.css';
 @import './motion-text.css';
@@ -15,6 +16,7 @@
 @import './image-search-loader.css';
 @import './article-pages.css';
 @import './split-view.css';
+@import './sketch-face.css';
 
 /* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
  * is PHONE_MEDIA_QUERY (lib/responsive.ts); the two state the same query. Phone-only layout uses

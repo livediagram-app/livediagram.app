@@ -84,7 +84,7 @@
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
-    "crossings": 9,
+    "crossings": 5,
     "behind": 0,
     "collisions": 0,
     "extent": "2587×974"
@@ -94,7 +94,7 @@
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
-    "crossings": 1,
+    "crossings": 0,
     "behind": 0,
     "collisions": 0,
     "extent": "3302×986"
@@ -104,7 +104,7 @@
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
-    "crossings": 4,
+    "crossings": 2,
     "behind": 0,
     "collisions": 0,
     "extent": "3027×974"
@@ -267,6 +267,6 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "560×1278"
+    "extent": "578×1278"
   }
 }

@@ -41,6 +41,29 @@ function badgeFontSize(text: string): number {
 const BADGE_PILL = { x: 14, y: 14, width: 192, height: 60 };
 const BADGE_TRACKING = 1.2;
 
+// An emoji sticker's plate: its shadow and its white, hairlined tile.
+const EMOJI_PLATE =
+  `<rect x="8" y="12" width="84" height="84" rx="26" fill="${SHADOW}" opacity="${SHADOW_OPACITY}"/>` +
+  `<rect x="8" y="8" width="84" height="84" rx="26" fill="#ffffff" stroke="${PLATE_EDGE}" stroke-width="1.5"/>`;
+
+// An emoji's own drawing (its SVG's viewBox and contents), for a render with no emoji font (resolve.ts).
+export type EmojiArt = { viewBox: string; markup: string };
+
+// The box an emoji sticker's glyph fills on its plate (font size 54 about the plate's middle), and an emoji icon's on
+// its 24 grid (size 20 about its middle).
+const STICKER_GLYPH_BOX = { x: 23, y: 23, size: 54 };
+export const ICON_GLYPH_BOX = { x: 2, y: 2, size: 20 };
+
+export function emojiArtMarkup(art: EmojiArt, box: { x: number; y: number; size: number }): string {
+  return `<svg x="${box.x}" y="${box.y}" width="${box.size}" height="${box.size}" viewBox="${art.viewBox}">${art.markup}</svg>`;
+}
+
+// An emoji sticker drawn from its emoji's own art rather than a font's glyph: the same plate, the art where the
+// glyph sits.
+export function emojiStickerArt(art: EmojiArt): StickerArt {
+  return { viewBox: '0 0 100 100', markup: EMOJI_PLATE + emojiArtMarkup(art, STICKER_GLYPH_BOX) };
+}
+
 export function stickerArt(def: StickerDef): StickerArt {
   if (def.kind === 'badge') {
     const fill = STICKER_TONE_COLOR[def.tone];
@@ -63,8 +86,7 @@ export function stickerArt(def: StickerDef): StickerArt {
   return {
     viewBox: '0 0 100 100',
     markup:
-      `<rect x="8" y="12" width="84" height="84" rx="26" fill="${SHADOW}" opacity="${SHADOW_OPACITY}"/>` +
-      `<rect x="8" y="8" width="84" height="84" rx="26" fill="#ffffff" stroke="${PLATE_EDGE}" stroke-width="1.5"/>` +
+      EMOJI_PLATE +
       // The emoji font supplies its own colours, so no fill is set; stroke is
       // cleared in case a non-emoji fallback character is substituted, which
       // would otherwise inherit a stroke from an ancestor group.

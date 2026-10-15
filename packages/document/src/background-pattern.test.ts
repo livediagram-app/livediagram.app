@@ -24,6 +24,11 @@ describe('isAnimatedPattern', () => {
       'hexagonal',
       'engineering',
       'checkerboard',
+      'sparkles',
+      'eggs',
+      'cobwebs',
+      'snowflakes',
+      'candy-stripes',
     ];
     for (const pattern of staticPatterns) {
       expect(isAnimatedPattern(pattern)).toBe(false);

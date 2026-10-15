@@ -125,8 +125,9 @@ Every write takes what a person would say, and stores the ids:
 - A tab of another kind that holds a board or a Sheet (a Blank Plan tab given a board by `add_board`) can be shown;
   a Dashboard draws it as its canvas.
 - A Cards by Field chart grouped by a Card field names each linked card, of whatever type.
-- A Board tab's preview grows its board to every card it holds, as the board scrolls on its tab, rather than cutting
-  lower rows off.
+- A preview grows a board to every card it holds, as the board scrolls on its tab, rather than cutting lower rows or
+  lanes off ("+2 more"): always on a Board tab, and on any other tab wherever the grown board covers nothing that
+  starts below it (`board-growth.ts`). The stored board keeps its height.
 
 ## What a change says
 
@@ -150,7 +151,9 @@ Every write takes what a person would say, and stores the ids:
 defaultStatus?, excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes
     values. `editCustom` `[{ field, name?, options?, onCard? }]` edits a custom field in place, as the type editor's
     field form does: a new name, a Choice field's options replaced whole (any other kind is refused), drawn on the
-    card or not; values on cards stay.
+    card or not; values on cards stay. A field ticked `onCard` (added or edited) on a type with a Display of its own
+    is placed at the end of its Detailed body, as without one the default layout shows it; unticked, it leaves that
+    Display.
   - A type renamed earlier in the same call still answers to its former name, so a later change can name it either
     way.
   - `add` and `set` also take the type's **card face and panel**, as the type editor's Display and Configuration
@@ -190,6 +193,8 @@ its Default State, its display per size and its tabs, so a change can build on w
 - A refusal says what was wrong, what is there, and the next call to make. It never answers with a raw api
   status.
 - A tool error is a tool result marked as an error, never a thrown protocol error, for anything the caller can fix.
+- A call past the per-token rate limit says so and how long to wait (about a minute, the limit's window), so an
+  agent makes the same call again rather than giving up or guessing at a back-off.
 
 ## Cost
 

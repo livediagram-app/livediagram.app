@@ -111,3 +111,39 @@ describe('colour-on-themed', () => {
     ]);
   });
 });
+
+describe('colour-on-themed, judged on what set the colour', () => {
+  const coloured = (id: string, x: number, extra: Record<string, unknown> = {}) =>
+    box(id, x, 0, { fillColor: '#123456', ...extra });
+
+  it('names only the elements a write coloured, when told which', () => {
+    const tab = themed('ocean', coloured('a', 0), coloured('b', 300));
+    const named = (coloured?: ReadonlySet<string>) =>
+      of(lint(tab, coloured ? { coloured } : {}), 'colour-on-themed').map((f) => f.refs[0]);
+    expect(named()).toEqual(['a', 'b']);
+    expect(named(new Set(['b']))).toEqual(['b']);
+    expect(named(new Set())).toEqual([]);
+  });
+
+  it('leaves a template’s scaffold and a fill locked against the theme alone', () => {
+    const report = lint(
+      themed(
+        'ocean',
+        coloured('s', 0, { layerId: 'layer:template:scaffold' }),
+        coloured('l', 300, { themeLockFill: true }),
+        coloured('k', 600, { themeLockFill: true, strokeColor: '#654321' }),
+        coloured('u', 900, { themeLockFill: false }),
+      ),
+    );
+    expect(of(report, 'colour-on-themed').map((f) => f.message)).toEqual([
+      'k sets its stroke on a themed tab',
+      'u sets its fill on a themed tab',
+    ]);
+  });
+
+  it('is no finding on an Illustrate tab, whose pages are coloured by design', () => {
+    expect(
+      of(lint({ ...themed('ocean', coloured('a', 0)), opensIn: 'illustrate' }), 'colour-on-themed'),
+    ).toEqual([]);
+  });
+});

@@ -10,6 +10,7 @@ import {
 } from '@livediagram/document';
 import { relativeSince } from '@livediagram/ui/relative-time';
 import {
+  FORM_METRIC_NAMES,
   SHEET_METRIC_NAMES,
   keyDateCount,
   linkLabelOf as labelOf,
@@ -249,6 +250,9 @@ export function cardArt(content: DashboardContent, input: CardArtInput): string 
     }
     case 'sheet-metric':
       return sheetMetricArt(content.metric, input);
+    // A figure from a form is read live from its link: an export names it.
+    case 'form-metric':
+      return slotMessageArt(r, p, FORM_METRIC_NAMES[content.metric], true);
     default:
       return '';
   }

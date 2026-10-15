@@ -19,6 +19,8 @@ const KIND_NAMES: Readonly<Record<string, string>> = {
   board: 'A Board tab',
   sheet: 'A Sheet tab',
   dashboard: 'A Dashboard',
+  // docs/specs/030-forms/forms.md "The Form tab".
+  form: 'A Form tab',
 };
 
 export function resolveEditorMode(input: {

@@ -15,6 +15,10 @@ export type Side = 'n' | 'e' | 's' | 'w';
 export const ROUTER_MARGIN = 18;
 export const ROUTER_BEND_COST = 80;
 export const ROUTER_SHARE_COST = 400;
+// How near an earlier run a step counts as sharing it: a line a few px beside another, or on its line a few px short
+// of its end (a "no" running up to the very point a "yes" turns into the step it passes), reads as riding it as surely
+// as one on it does.
+export const ROUTER_SHARE_NEAR = 8;
 export const ROUTER_MAX_GRID = 40_000;
 // The most work the router does for one layout, every route together, in grid crossings laid out plus search steps
 // taken: past it a route gives up (null) and the caller keeps its own (an outside track), so a dense graph never
@@ -37,13 +41,15 @@ export type Run = { horizontal: boolean; at: number; lo: number; hi: number };
 const inside = (p: Pt, r: Rect) =>
   p.x > r.x && p.x < r.x + r.width && p.y > r.y && p.y < r.y + r.height;
 
-// Earlier runs bucketed by axis and whole-pixel position, so a step looks only at the runs near its own line.
-const runKey = (horizontal: boolean, at: number) => Math.floor(at) * 2 + (horizontal ? 1 : 0);
+// Earlier runs bucketed by axis and position, ROUTER_SHARE_NEAR wide, so a step looks only at the runs near its own
+// line: the bucket it falls in and the one either side.
+const bucketOf = (at: number) => Math.floor(at / ROUTER_SHARE_NEAR);
+const runKey = (horizontal: boolean, bucket: number) => bucket * 2 + (horizontal ? 1 : 0);
 
 function runIndex(runs: readonly Run[]): Map<number, Run[]> {
   const out = new Map<number, Run[]>();
   for (const r of runs) {
-    const k = runKey(r.horizontal, r.at);
+    const k = runKey(r.horizontal, bucketOf(r.at));
     (out.get(k) ?? out.set(k, []).get(k)!).push(r);
   }
   return out;
@@ -56,10 +62,15 @@ function sharesRun(a: Pt, b: Pt, runs: ReadonlyMap<number, readonly Run[]>): boo
   const [lo, hi] = horizontal
     ? [Math.min(a.x, b.x), Math.max(a.x, b.x)]
     : [Math.min(a.y, b.y), Math.max(a.y, b.y)];
-  // Within 2 px of `at`: the buckets either side of it are enough.
-  for (let k = Math.floor(at) - 2; k <= Math.floor(at) + 2; k++)
+  // Within ROUTER_SHARE_NEAR of `at`: its bucket and the one either side are enough.
+  for (let k = bucketOf(at) - 1; k <= bucketOf(at) + 1; k++)
     for (const r of runs.get(runKey(horizontal, k)) ?? [])
-      if (Math.abs(r.at - at) < 2 && r.hi > lo + 1 && r.lo < hi - 1) return true;
+      if (
+        Math.abs(r.at - at) < ROUTER_SHARE_NEAR &&
+        r.hi > lo - ROUTER_SHARE_NEAR &&
+        r.lo < hi + ROUTER_SHARE_NEAR
+      )
+        return true;
   return false;
 }
 

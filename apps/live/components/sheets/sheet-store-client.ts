@@ -56,6 +56,11 @@ type WriteOpts = {
   alongside?: ItemUndoStep;
 };
 
+// A new tab's sheet waiting for the tab to be saved: retried this many times, this much longer each time
+// (docs/specs/029-sheets/sheet-store.md "Changing a sheet"). Safe range 2..6 and 300..2000 ms.
+const CREATE_TAB_RETRIES = 4;
+const CREATE_TAB_RETRY_MS = 800;
+
 export type SheetStoreDeps = {
   scope: SheetsScope;
   self: () => SheetPerson | null;
@@ -336,6 +341,16 @@ export class SheetStore {
     };
     this.adopt(json);
     this.notify();
+    this.sendCreate(create, opts, 0);
+  }
+
+  // Sends a create. A sheet on a tab made a moment ago can reach the server before its tab is saved: `tab_not_found`
+  // is retried, a little later each time, before it counts as refused.
+  private sendCreate(
+    create: SheetCreateRequest & { id: string },
+    opts: { onRefused?: (code: string | null) => boolean; onCreated?: () => void },
+    attempt: number,
+  ): void {
     this.enqueue(create.id, async () => {
       try {
         const stored = await this.api.createSheet(this.deps.scope, create, this.by());
@@ -344,6 +359,13 @@ export class SheetStore {
         opts.onCreated?.();
       } catch (e) {
         const code = e instanceof ApiError ? e.code : null;
+        if (code === 'tab_not_found' && attempt < CREATE_TAB_RETRIES) {
+          setTimeout(
+            () => this.sendCreate(create, opts, attempt + 1),
+            CREATE_TAB_RETRY_MS * (attempt + 1),
+          );
+          return;
+        }
         if (!opts.onRefused?.(code)) this.refused(e, create.id);
         this.drop(create.id);
         this.notify();

@@ -73,7 +73,9 @@ changes before it would have done.
   (`article_by_write`) with that hint.
 - **The first page's choice**: while the tab's only page is unchosen and empty, an `add` of a kind makes that page
   the kind (`withPageKindChosen`) instead of adding a second page, so a fresh Illustrate tab does not keep an empty
-  first page.
+  first page. Likewise a blank of the kind asked for (the tab's only page already of that kind, unnamed and holding
+  nothing, as the Blank Slide Deck makes it) becomes the page added, so a deck made from it does not open on an empty
+  slide.
 - **Sizes**: a page takes only the sizes its kind offers (`pageSizesFor`); any other is refused (`size_not_offered`)
   naming the ones it takes. Fit to Content is never chosen (`size_not_offered`). A slide or logo page has no
   orientation; turning one is refused (`no_orientation`).

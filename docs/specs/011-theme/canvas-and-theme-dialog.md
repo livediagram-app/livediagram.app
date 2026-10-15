@@ -102,14 +102,58 @@ The table is in the order the carousel shows them after the Mashup card, six to 
 - **Share roles:** an Editor picks looks. A Participant or Viewer never reaches the dialog (it is only offered on
   an editable tab, and the tab setters refuse a blocked session), so neither can apply a look.
 
+### Seasonal looks
+
+Six more looks are for holidays: one for **New Year**, one for **Easter**, one for **Halloween** and three for
+**Christmas**. They are looks in every way (four ordinary settings, not stored, one undo step, selected while the
+tab matches) but they never appear among the everyday looks.
+
+- **The Seasonal toggle.** A **Seasonal** button sits left of the Finish filter on the Looks heading row. Pressed
+  (`aria-pressed`), the carousel shows the seasonal looks only, with no Mashup card (a mashup rolls everyday
+  ingredients); pressed again, the everyday carousel comes back. The Finish filter still narrows whichever set is
+  shown, and every finish has at least one seasonal look. Like the filter, the toggle is the viewer's own, for this
+  open of the dialog only, except that the dialog opens with it on when the tab already wears a seasonal look, so
+  that look's card shows selected. Toggling is tracked as `UI / Changed / LooksSeasonal`.
+- **Always on offer, the current season first.** Every season is there all year. The seasons are ordered by the
+  next time each one ends, from the viewer's local date: the season on now, or the next to come, leads. A season
+  leads through its last day: New Year through 7 January, Easter through Easter Monday (Easter Sunday by the
+  Gregorian computus), Halloween through 31 October, Christmas through 26 December. Within a season, looks keep
+  catalogue order. The order is worked out once per open of the dialog.
+- **The card** names its season in a small line above the look's name.
+
+| Season    | Look              | Theme     | Finish       | Tab font         | Pattern       | Pattern strength |
+| --------- | ----------------- | --------- | ------------ | ---------------- | ------------- | ---------------- |
+| New Year  | Countdown         | Sparkle   | Professional | Abril Fatface    | Sparkles      | 70%              |
+| Easter    | Egg Hunt          | Spring    | Flexible     | Nunito           | Eggs          | 70%              |
+| Halloween | Haunted           | Pumpkin   | Sketch       | Permanent Marker | Cobwebs       | 70%              |
+| Christmas | Christmas Morning | Yuletide  | Flexible     | Lora             | Candy Stripes | 30%              |
+| Christmas | Winter Wonderland | Frost     | Sketch       | Caveat           | Snowflakes    | 80%              |
+| Christmas | Fireside          | Evergreen | Professional | Roboto Slab      | Drift         | 60%              |
+
+- **Seasonal themes.** Sparkle (gold on midnight navy), Spring (painted-egg pastels, a hue per branch), Pumpkin
+  (orange, purple and green per branch on a night canvas), Yuletide (red, green and gold per branch), Frost (icy
+  blues) and Evergreen (berry red on fir green). They are built-in themes (`seasonal: true` in the catalogue), with
+  light and dark halves at the same contrast floor as every theme
+  (`apps/live/lib/tab-looks-contrast.test.ts` checks the seasonal looks in both halves). No theme picker lists them
+  and the Mashup never draws them; a tab wears one only through a seasonal look, and its name still shows on the
+  Colours row.
+- **Seasonal patterns.** Sparkles (four-point twinkles), Eggs (banded egg outlines), Cobwebs (a web strung from
+  each tile's corner), Snowflakes (six-armed flakes) and Candy Stripes (thick 45° bands). Each is a static SVG tile
+  in the tab's pattern colour, so it themes, fades and scales like the other static patterns, and the image export
+  draws the same tile (`apps/live/lib/seasonal-patterns.ts`). No pattern picker lists them; the Canvas row still
+  names the one a tab wears. Fireside reuses the animated Drift for falling embers.
+- **Telemetry:** picking a seasonal look fires `track('Tab', 'Changed', 'SeasonalLook')` in place of the `Look`
+  event.
+- **Share roles:** as for looks, an Editor picks seasonal looks; a Participant or Viewer never reaches the dialog.
+
 ### Mashup
 
 The carousel's first card is **Mashup**, a random look generator: each press dresses the tab in a new, random look,
 and the user can keep pressing it to regenerate.
 
 - **Ingredients.** A mashup draws each of a look's four settings at random, independently: a **theme** from the
-  whole built-in catalogue, a **finish**, a **tab font** from the fonts the looks use (or none), and a **pattern**
-  with its strength from the patterns the looks use, so a busy pattern keeps the soft strength its look gave it.
+  whole built-in catalogue less the seasonal themes, a **finish**, a **tab font** from the fonts the looks use (or none), and a **pattern**
+  with its strength from the patterns the everyday looks use, so a busy pattern keeps the soft strength its look gave it.
   Every ingredient is curated, which keeps a mashup respectable; the mix is what makes it unique (over fifteen
   thousand combinations).
 - **Light and dark.** Any theme reads in both appearances ([Light and dark halves](light-and-dark.md)), so every

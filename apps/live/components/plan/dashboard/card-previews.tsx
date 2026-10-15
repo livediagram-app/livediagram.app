@@ -3,7 +3,7 @@
 // Add to Slot's pictures of the written cards (docs/specs/026-plan/plan-tabs.md "Cards"), in slot-previews.tsx's
 // style and the tab's colours: a Title bare on the page, a Status as its light and line, a Checklist as ticked rows, a
 // Key Date as its count, Links as labelled rows. Decorative: the card's name says what it is.
-import type { SheetMetricKind } from '@livediagram/document';
+import type { FormMetricKind, SheetMetricKind } from '@livediagram/document';
 import type { DashboardCardKind } from '@/hooks/plan/dashboard-drop';
 import { AMBER, Bar, BLUE, Frame, GREEN, RED, type P } from './slot-previews';
 
@@ -217,4 +217,52 @@ const PREVIEWS: Record<DashboardCardKind, (p: P) => React.ReactNode> = {
 export function CardPreview({ card, palette }: P & { card: DashboardCardKind }) {
   const Picture = PREVIEWS[card];
   return <Picture palette={palette} />;
+}
+
+// A figure from a form, as the slot will draw it (DashboardFormMetric): its figure and a line, a status pill, a bar
+// toward the limit, a date, or a link with Copy.
+export function FormMetricPreview({ palette, metric }: P & { metric: FormMetricKind }) {
+  const big = (text: string) => (
+    <span
+      className="text-[20px] font-semibold leading-none tabular-nums"
+      style={{ color: palette.text }}
+    >
+      {text}
+    </span>
+  );
+  return (
+    <Frame palette={palette}>
+      <Bar w="45%" c={palette.muted} h={3} o={0.6} />
+      {metric === 'status' ? (
+        <span
+          className="inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold"
+          style={{ backgroundColor: 'rgb(16 185 129 / 0.14)', color: GREEN }}
+        >
+          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: GREEN }} />
+          Accepting
+        </span>
+      ) : metric === 'link' ? (
+        <span className="flex items-center gap-1">
+          <span className="h-3 flex-1 rounded" style={{ backgroundColor: palette.column }} />
+          <span className="h-3 w-7 rounded" style={{ backgroundColor: BLUE }} />
+        </span>
+      ) : metric === 'closes' ? (
+        big('3 days')
+      ) : metric === 'new' ? (
+        big('5')
+      ) : metric === 'limit' ? (
+        big('42 / 100')
+      ) : (
+        big('142')
+      )}
+      {metric === 'limit' ? (
+        <span
+          className="mt-auto flex h-1.5 w-full overflow-hidden rounded-full"
+          style={{ backgroundColor: palette.column }}
+        >
+          <span style={{ width: '42%', backgroundColor: BLUE }} />
+        </span>
+      ) : null}
+    </Frame>
+  );
 }

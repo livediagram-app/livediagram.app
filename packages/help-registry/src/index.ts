@@ -170,7 +170,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 36,
+    articleCount: 35,
     kind: 'feature',
   },
   {
@@ -1043,15 +1043,6 @@ export const articles: Article[] = [
   },
   // ---- Palette landings: Elements ----
   {
-    slug: 'popular',
-    title: 'Popular',
-    description: 'The tiles most reached for, in the grid the palette opens on.',
-    keywords: 'popular common default quick grid landing favourites favorites everyday',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Elements',
-  },
-  {
     slug: 'shapes',
     title: 'Shapes',
     description: 'Squares, circles, cylinders and more, with morphing and markers.',
@@ -1610,6 +1601,17 @@ export const articles: Article[] = [
       'A guided walkthrough of Plan mode on an example board or sheet, offered once and replayable from Settings.',
     keywords:
       'plan tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial example board example cards example sheet first time learn plan mode kanban board cards spreadsheet spreadsheets sheet sheets formulas replay rerun settings accessibility',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
+    slug: 'forms',
+    title: 'Forms',
+    description:
+      'A form anyone can fill in from a link, each response a card on your board: questions, where answers go, publishing and closing.',
+    keywords:
+      'form forms survey surveys questionnaire google forms typeform intake submission submissions responses response respondents rsvp feedback bug report contact job application public link share link publish questions question answers mapping fields card type board column close limit report anonymous',
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',
@@ -2677,7 +2679,7 @@ export const articles: Article[] = [
     title: 'Changing the Theme',
     description: 'Open the Tab Style dialog and browse themes by category.',
     keywords:
-      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic aurora',
+      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic aurora seasonal holiday christmas halloween easter new year snowflakes',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',

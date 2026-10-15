@@ -107,7 +107,7 @@ export function SequenceMessageList({
   const full = messages.length >= SEQ_MESSAGES_MAX;
 
   return (
-    <section aria-label="Messages">
+    <section aria-label="Messages" data-tour-id="sequence-messages">
       <p className="mb-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
         Messages <span className="font-normal">· top to bottom; Enter adds the next</span>
       </p>
@@ -156,6 +156,8 @@ export function SequenceMessageList({
                   <button
                     type="button"
                     aria-label={`Message ${n} kind: ${KIND_NAME[m.kind]}. Change to ${KIND_NAME[next]}`}
+                    // The first message's kind, where the Sequence tour points (docs/specs/007-editor/element-tours.md).
+                    data-tour-id={i === 0 ? 'sequence-kind' : undefined}
                     onClick={() => onCommit(set(i, { kind: next }))}
                     className={`order-3 flex h-9 cursor-pointer items-center justify-center rounded-md border transition ${
                       m.kind === 'reply'
@@ -235,6 +237,7 @@ export function SequenceMessageList({
         disabled={full}
         onClick={() => onAddAfter(messages.length - 1)}
         className={`${ADD_ROW} mt-2`}
+        data-tour-id="sequence-add-message"
       >
         <PlusIcon />
         Add Message

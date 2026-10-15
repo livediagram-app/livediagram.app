@@ -1,5 +1,5 @@
 // Scenes for the Toolbar Layout article (docs/specs/007-editor/toolbar-layout.md): the strip across the top
-// of the canvas, and More opening a category's full palette under itself. `Strip` and `MenuCard`
+// of the canvas as the category bar, and a category's flyout opening under it. `Strip` and `MenuCard`
 // are exported so other scenes draw the editor's top row the same way.
 // Composed only from the shared primitives, like every other help scene.
 import type { ReactNode } from 'react';
@@ -74,41 +74,71 @@ function Pill({
   );
 }
 
-function Ellipsis({ x, y }: { x: number; y: number }) {
-  return (
-    <g className="fill-brand-600">
-      <circle cx={x} cy={y} r={1.6} />
-      <circle cx={x + 5} cy={y} r={1.6} />
-      <circle cx={x + 10} cy={y} r={1.6} />
-    </g>
-  );
-}
+// Diagram's category bar, in order, a divider between the bands.
+const BAR: readonly (string | '|')[] = [
+  'Shapes',
+  'Draw',
+  '|',
+  'Build',
+  'Concepts',
+  '|',
+  'Icons',
+  'Tech',
+  'Media',
+];
+// A name's width at the strip's 8.5px type, and the padding either side of it.
+const charW = 4.8;
+const PAD = 8;
+const nameW = (name: string) => Math.round(name.length * charW + 2 * PAD);
 
-/** The palette strip, top-left corner at (x, y), 304 wide and 32 tall. */
-export function Strip({
-  x,
-  y,
-  moreActive = false,
-  // Diagram mode opens the palette on Popular.
-  category = 'Popular',
-}: {
-  x: number;
-  y: number;
-  moreActive?: boolean;
-  category?: string;
-}) {
-  // The category's first five tiles, in the app's order: Popular leads with words and an arrow
-  // after the basic shapes, Shapes carries on with more outlines.
-  const tiles =
-    category === 'Popular'
-      ? (['square', 'circle', 'diamond', 'text', 'arrow'] as const)
-      : (['square', 'circle', 'diamond', 'cylinder', 'parallelogram'] as const);
+/** The width of the strip drawn by `Strip`. */
+export const STRIP_W = 49 + BAR.reduce((w, c) => w + (c === '|' ? 9 : nameW(c)), 0) + 40;
+
+/** The palette strip as Diagram's category bar, top-left corner at (x, y), STRIP_W wide and 32 tall: the selection
+ *  mode, the categories by name (`open` pressed, its flyout showing), and Search. */
+export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
+  const slots = barSlots(x);
+  const end = slots.at(-1)!.left + slots.at(-1)!.w;
+  const items = slots.map((slot, i) => {
+    if (slot.name === '|')
+      return (
+        <path
+          key={i}
+          d={`M${slot.left + 4} ${y + 8}v16`}
+          className="stroke-slate-200"
+          strokeWidth={1}
+        />
+      );
+    const { name, left: at, w } = slot;
+    const pressed = name === open;
+    return (
+      <g key={name}>
+        {pressed ? (
+          <rect x={at} y={y + 4} width={w} height={24} rx={6} className="fill-brand-100" />
+        ) : null}
+        <Label
+          x={at + w / 2}
+          y={y + 19}
+          size={8.5}
+          weight={pressed ? 700 : 500}
+          anchor="middle"
+          className={pressed ? 'fill-brand-700' : 'fill-slate-600'}
+        >
+          {name}
+        </Label>
+        {pressed ? (
+          <rect x={at + 6} y={y + 27} width={w - 12} height={2} rx={1} className="fill-brand-500" />
+        ) : null}
+      </g>
+    );
+  });
+
   return (
     <g>
       <rect
         x={x}
         y={y}
-        width={304}
+        width={STRIP_W}
         height={32}
         rx={9}
         className="fill-white stroke-slate-200"
@@ -120,38 +150,39 @@ export function Strip({
         </g>
       </Pill>
       <path d={`M${x + 43} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
-      <Pill x={x + 47} y={y + 4} w={72}>
-        <Label x={x + 55} y={y + 17} size={10} weight={600} className="fill-brand-700">
-          {category}
-        </Label>
-      </Pill>
-      <path d={`M${x + 124} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
-      {tiles.map((kind, i) => (
-        <g key={kind} transform={`translate(${x + 140 + i * 20} ${y + 16})`}>
-          <ShapeGlyph kind={kind} />
-        </g>
-      ))}
-      <path d={`M${x + 228} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
-      <Pill x={x + 232} y={y + 4} w={38} active={moreActive}>
-        <Ellipsis x={x + 238} y={y + 16} />
-      </Pill>
+      {items}
       {/* Search, last on the strip behind its own divider. */}
-      <path d={`M${x + 275} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
+      <path d={`M${end + 6} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
       <circle
-        cx={x + 287}
+        cx={end + 21}
         cy={y + 15}
         r={5}
         className="fill-none stroke-slate-500"
         strokeWidth={1.6}
       />
       <path
-        d={`M${x + 291} ${y + 19} l4 4`}
+        d={`M${end + 25} ${y + 19} l4 4`}
         className="stroke-slate-500"
         strokeWidth={1.6}
         strokeLinecap="round"
       />
     </g>
   );
+}
+
+// Each of the bar's items on a strip drawn at x: its left edge and width (a divider is 9 wide).
+function barSlots(x: number): { name: string; left: number; w: number }[] {
+  return BAR.reduce<{ name: string; left: number; w: number }[]>((out, name) => {
+    const prev = out.at(-1);
+    const left = prev ? prev.left + prev.w : x + 49;
+    return [...out, { name, left, w: name === '|' ? 9 : nameW(name) }];
+  }, []);
+}
+
+/** Where a category's button sits on a strip drawn at x: its left edge and width. */
+export function stripCategory(x: number, name: string): { left: number; w: number } {
+  const slot = barSlots(x).find((s) => s.name === name);
+  return slot ? { left: slot.left, w: slot.w } : { left: x, w: 0 };
 }
 
 /** The top-left card, its top-left corner at (x, y): the menu button (☰) and, unless `menuOnly`
@@ -215,18 +246,12 @@ export function ToolbarLayoutOverview() {
       <Label x={99} y={80} size={10} anchor="middle" tone="muted">
         Selection mode
       </Label>
-      <Label x={162} y={62} size={10} anchor="middle" tone="muted">
-        Category
+      <line x1={250} y1={51} x2={250} y2={70} {...leader} />
+      <Label x={250} y={80} size={10} anchor="middle" tone="accent" weight={700}>
+        Categories
       </Label>
-      <line x1={258} y1={51} x2={258} y2={70} {...leader} />
-      <Label x={258} y={80} size={10} anchor="middle" tone="muted">
-        Up to twelve tiles
-      </Label>
-      <Label x={329} y={62} size={10} anchor="middle" tone="accent" weight={700}>
-        More
-      </Label>
-      <line x1={366} y1={51} x2={366} y2={70} {...leader} />
-      <Label x={366} y={80} size={10} anchor="middle" tone="muted">
+      <line x1={78 + STRIP_W - 18} y1={51} x2={78 + STRIP_W - 18} y2={70} {...leader} />
+      <Label x={78 + STRIP_W - 18} y={80} size={10} anchor="middle" tone="muted">
         Search
       </Label>
       {/* The bottom row: Undo and Redo, Layers and the paintbrush, then zoom. */}
@@ -278,30 +303,30 @@ export function ToolbarLayoutOverview() {
   );
 }
 
-/** More open: the current category's full palette, hanging from the button. */
-export function ToolbarMorePopover() {
-  const grid = ['square', 'circle', 'diamond', 'cylinder', 'parallelogram', 'hexagon'] as const;
+/** A category open: resting on Shapes hangs its flyout under it, its tiles in named groups. */
+export function ToolbarCategoryFlyout() {
+  const groups = [
+    { title: 'Basics', tiles: ['square', 'circle', 'diamond'] as const },
+    { title: 'Flowchart', tiles: ['cylinder', 'parallelogram', 'hexagon'] as const },
+  ];
+  const shapes = stripCategory(78, 'Shapes');
+  const panelX = Math.round(shapes.left + shapes.w / 2 - 90);
   return (
-    <Scene w={420} h={220}>
-      <Strip x={78} y={16} moreActive />
-      {/* Right edge under the More button's right edge (78 + 232 + 38). */}
-      <Panel x={185} y={58} w={164} h={148} title="SHAPES">
-        <rect
-          x={195}
-          y={88}
-          width={144}
-          height={18}
-          rx={5}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1}
-        />
-        <Label x={202} y={98} size={10} tone="muted">
-          Search
-        </Label>
-        {grid.map((kind, i) => (
-          <Tile key={i} x={197 + (i % 3) * 50} y={116 + Math.floor(i / 3) * 42} size={30}>
-            <ShapeGlyph kind={kind} />
-          </Tile>
+    <Scene w={420} h={236}>
+      <MenuCard x={8} y={16} />
+      <Strip x={78} y={16} open="Shapes" />
+      <Panel x={panelX} y={58} w={180} h={166} title="SHAPES">
+        {groups.map((g, gi) => (
+          <g key={g.title}>
+            <Label x={panelX + 10} y={96 + gi * 60} size={9} weight={600} tone="muted">
+              {g.title}
+            </Label>
+            {g.tiles.map((kind, i) => (
+              <Tile key={kind} x={panelX + 10 + i * 54} y={102 + gi * 60} size={34}>
+                <ShapeGlyph kind={kind} />
+              </Tile>
+            ))}
+          </g>
         ))}
       </Panel>
     </Scene>

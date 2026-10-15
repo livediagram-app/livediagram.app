@@ -13,11 +13,13 @@ import {
   elementFontId,
   finishFontId,
   finishNewArrowStyle,
+  finishSplitsFace,
   supportsFinish,
   finishHatches,
   isFinish,
   resolveFinish,
 } from './finish';
+import { SHAPE_KINDS } from './validate';
 import { createSticky, createText } from './factories';
 import { createShape } from './shape-factory';
 import { FONTS } from './fonts';
@@ -141,5 +143,48 @@ describe("an element's own finish and the tab's font", () => {
   it("keeps the tab's font when the element follows the tab or is Flexible", () => {
     expect(elementFontId({}, 'inter', 'sketch')).toBe('inter');
     expect(elementFontId({ finish: 'flexible' }, 'inter', 'sketch')).toBe('inter');
+  });
+});
+
+describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too")', () => {
+  const shape = (kind: string, iconId?: string) => ({ type: 'shape', shape: kind, iconId });
+
+  it('splits every face that draws more than its label', () => {
+    for (const kind of [
+      'bar-chart',
+      'pyramid',
+      'sankey',
+      'badge',
+      'card',
+      'desk',
+      'plan-board',
+      'quiz',
+      'entity',
+    ]) {
+      expect(finishSplitsFace(shape(kind)), kind).toBe(true);
+    }
+    for (const type of ['table', 'link-card', 'video', 'annotation']) {
+      expect(finishSplitsFace({ type }), type).toBe(true);
+    }
+  });
+
+  it('leaves plain boxes, icons, stickers and the sequence diagram to their own drawing', () => {
+    for (const kind of ['square', 'circle', 'mind-node', 'frame', 'icon', 'sticker', 'sequence']) {
+      expect(finishSplitsFace(shape(kind)), kind).toBe(false);
+    }
+    for (const type of ['text', 'sticky', 'freehand', 'image', 'path']) {
+      expect(finishSplitsFace({ type }), type).toBe(false);
+    }
+  });
+
+  it('splits a plain box carrying an inline icon, so the icon is drawn by hand', () => {
+    expect(finishSplitsFace(shape('square', 'lucide:star'))).toBe(true);
+    expect(finishSplitsFace(shape('icon', 'lucide:star'))).toBe(false);
+  });
+
+  it('names only real shape kinds as drawn by their body', () => {
+    // Every kind not split must exist, so a renamed kind cannot quietly drop out of Sketch.
+    const unsplit = [...SHAPE_KINDS].filter((k) => !finishSplitsFace(shape(k)));
+    expect(unsplit.length).toBe(26);
   });
 });

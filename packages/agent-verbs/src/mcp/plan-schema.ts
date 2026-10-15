@@ -186,18 +186,29 @@ const customField = z.object({
     .describe(
       'text (one line), longtext (paragraphs, in a panel tab), number, currency (an amount in the field’s ' +
         'currency, shown as "£12,500"), date (YYYY-MM-DD), checkbox, link (a URL, shown as its site), email (one ' +
-        'address), choice (one of its options), or card (one card of linkType, as "#12").',
+        'address), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
+        'whole number from 1 to its scale, drawn as stars) or card (one card of linkType, as "#12").',
     ),
   options: z
     .array(z.string())
     .optional()
-    .describe('A choice field’s options, in order (up to 20).'),
+    .describe('A choice or multichoice field’s options, in order (up to 20).'),
+  scale: z
+    .number()
+    .int()
+    .min(3)
+    .max(10)
+    .optional()
+    .describe('A rating field’s top score, 3 to 10; 5 when left out.'),
   linkType: typeArg.optional().describe('A card field’s target card type.'),
   currency: z
     .string()
     .optional()
     .describe('A currency field’s ISO 4217 code (GBP, USD, EUR...); GBP when left out.'),
-  onCard: z.boolean().optional().describe('Draw it on the card face.'),
+  onCard: z
+    .boolean()
+    .optional()
+    .describe('Draw it on the card face (placed on the type’s Display).'),
 });
 
 const colourArg = z
@@ -256,7 +267,10 @@ const detailsLabelArg = z.string().describe('What the panel calls Details (1-24 
 const customFieldEdit = z.object({
   field: z.string().describe('The custom field, by name.'),
   name: z.string().optional().describe('A new name.'),
-  options: z.array(z.string()).optional().describe('A choice field’s options, replaced whole.'),
+  options: z
+    .array(z.string())
+    .optional()
+    .describe('A choice or multichoice field’s options, replaced whole.'),
   currency: z.string().optional().describe('A currency field’s ISO 4217 code.'),
   onCard: z.boolean().optional(),
 });
@@ -347,8 +361,11 @@ const listedCustom = z.object({
   name: z.string().describe('The field’s name, as change_items takes it.'),
   kind: z
     .string()
-    .describe('text, longtext, number, currency, date, checkbox, link, email, choice or card.'),
-  options: z.array(z.string()).optional().describe('A choice field’s options.'),
+    .describe(
+      'text, longtext, number, currency, date, checkbox, link, email, choice, multichoice, rating or card.',
+    ),
+  options: z.array(z.string()).optional().describe('A choice or multichoice field’s options.'),
+  scale: z.number().optional().describe('A rating field’s top score.'),
   linkType: z.string().optional().describe('A card field’s target card type id.'),
   currency: z.string().optional().describe('A currency field’s ISO 4217 code.'),
   onCard: z.boolean().optional().describe('Drawn on Detailed cards by default.'),

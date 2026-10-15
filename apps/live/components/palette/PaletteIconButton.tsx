@@ -149,7 +149,6 @@ export function IconButton({
   shortcutAlwaysVisible,
   finishAction,
 }: IconButtonProps) {
-  const tabFinish = useTabFinish();
   // A reason greys the tile out as `disabled` does, but keeps it focusable so the reason can be read.
   const refused = !!disabledReason && !disabledProp;
   const disabled = disabledProp || refused;
@@ -193,30 +192,13 @@ export function IconButton({
     : active
       ? 'bg-brand-100 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50'
       : 'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-100 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
-  // Theme tint for the glyph. The active (queued) tile keeps the brand
-  // pressed treatment so it still reads as "selected"; disabled + opted-out
-  // tiles render plain. The stroke colour drives every `currentColor` glyph;
-  // the filled tiles additionally expose the fill as a CSS var consumed by
-  // the `palette-tile-filled` rule. Caption text stays on the slate `tone`
-  // (the style only lands on the glyph wrapper), so labels keep their
-  // contrast.
-  const themeTint = useContext(PaletteTintContext);
-  // Per-shape themes (UML / custom) colour a tile by its own kind; fall
-  // back to the theme's single element stroke / fill for kinds without an
-  // override (and for non-shape tiles, which carry no dragKind).
-  const shapeOverride = dragKind ? themeTint?.shapeColors?.[dragKind] : undefined;
-  const baseStroke = shapeOverride?.stroke ?? themeTint?.stroke;
-  const baseFill = shapeOverride?.fill ?? themeTint?.fill;
-  const tintStroke = !active && !disabled && !noTint ? baseStroke : undefined;
-  const tintFill = tintStroke && filled ? baseFill : undefined;
-  const glyphStyle: React.CSSProperties | undefined = tintStroke
-    ? ({
-        color: tintStroke,
-        ...(tintFill ? { '--tile-fill': tintFill } : {}),
-      } as React.CSSProperties)
-    : undefined;
-  const finishClass = finishAction ? paletteFinishClass(tabFinish, finishAction) : '';
-  const glyphClass = `${tintFill ? 'palette-tile-filled ' : ''}${finishClass ? `${finishClass} ` : ''}`;
+  const { glyphStyle, glyphClass } = useTileGlyph({
+    dragKind,
+    filled,
+    noTint,
+    plain: !!active || !!disabled,
+    finishAction,
+  });
   // Short caption under the icon (see tileCaption — shared with the Tools
   // tab's rows so the same tool is never named two ways).
   const caption = tileCaption(label, captionOverride);
@@ -302,4 +284,48 @@ export function IconButton({
       {button}
     </HoverCard>
   );
+}
+
+/** How a tile's glyph is drawn: in the tab theme's tint (a shape kind's own colours where the theme has them, its
+ *  fill too for a `filled` tile), and previewing the tab's finish. `plain` (an armed or disabled tile) keeps the
+ *  brand treatment instead. Shared by the palette tile and the category flyout's tiles, so the two never differ. */
+export function useTileGlyph({
+  dragKind,
+  filled,
+  noTint,
+  plain,
+  finishAction,
+}: {
+  dragKind?: ShapeKind | undefined;
+  filled?: boolean | undefined;
+  noTint?: boolean | undefined;
+  plain: boolean;
+  finishAction?: PaletteTileDef['action'] | undefined;
+}): { glyphStyle: React.CSSProperties | undefined; glyphClass: string } {
+  const tabFinish = useTabFinish();
+  // Theme tint for the glyph. The active (queued) tile keeps the brand
+  // pressed treatment so it still reads as "selected"; disabled + opted-out
+  // tiles render plain. The stroke colour drives every `currentColor` glyph;
+  // the filled tiles additionally expose the fill as a CSS var consumed by
+  // the `palette-tile-filled` rule. Caption text stays on the slate `tone`
+  // (the style only lands on the glyph wrapper), so labels keep their
+  // contrast.
+  const themeTint = useContext(PaletteTintContext);
+  // Per-shape themes (UML / custom) colour a tile by its own kind; fall
+  // back to the theme's single element stroke / fill for kinds without an
+  // override (and for non-shape tiles, which carry no dragKind).
+  const shapeOverride = dragKind ? themeTint?.shapeColors?.[dragKind] : undefined;
+  const baseStroke = shapeOverride?.stroke ?? themeTint?.stroke;
+  const baseFill = shapeOverride?.fill ?? themeTint?.fill;
+  const tintStroke = !plain && !noTint ? baseStroke : undefined;
+  const tintFill = tintStroke && filled ? baseFill : undefined;
+  const glyphStyle: React.CSSProperties | undefined = tintStroke
+    ? ({
+        color: tintStroke,
+        ...(tintFill ? { '--tile-fill': tintFill } : {}),
+      } as React.CSSProperties)
+    : undefined;
+  const finishClass = finishAction ? paletteFinishClass(tabFinish, finishAction) : '';
+  const glyphClass = `${tintFill ? 'palette-tile-filled ' : ''}${finishClass ? `${finishClass} ` : ''}`;
+  return { glyphStyle, glyphClass };
 }

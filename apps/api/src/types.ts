@@ -105,6 +105,8 @@ export type Env = {
   // keyed `community:<address range>` (community-network.ts). These callers are anonymous, so the owner-keyed write
   // limiter would lump them all onto its 'anonymous' key. Optional: absent (self-host) → "allow".
   COMMUNITY_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
+  // Per-network limiter for a form link's reads and responses (docs/specs/030-forms/forms.md "Abuse and limits").
+  FORM_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
   // turns it off; unset leaves it on. See community-enabled.ts.
   COMMUNITY_ENABLED?: string;

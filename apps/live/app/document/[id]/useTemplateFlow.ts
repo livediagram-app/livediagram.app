@@ -4,7 +4,14 @@ import type { ItemCreate } from '@livediagram/items';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import { isPlanTemplateKind, withBlankPageThemed, type TemplateKind } from '@livediagram/templates';
+import {
+  formTemplateStarter,
+  isFormTemplateKind,
+  isPlanTemplateKind,
+  withBlankPageThemed,
+  type TemplateKind,
+} from '@livediagram/templates';
+import type { StarterId } from '@livediagram/forms';
 import { templateTabName } from '@/lib/template-tab-name';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
@@ -66,6 +73,8 @@ export function useTemplateFlow(opts: {
   bringCardTypes: (elements: Tab['elements']) => void;
   // Makes a Plan template's example cards (docs/specs/026-plan/plan-templates.md "Example cards"), as one write.
   seedCards: (creates: readonly ItemCreate[]) => void;
+  // A form template starts its form on the tab, as Start Planning's Forms do (docs/specs/030-forms/forms.md).
+  startForm?: (starter: StarterId) => void;
 }) {
   const {
     activeId,
@@ -83,6 +92,7 @@ export function useTemplateFlow(opts: {
     markTabLoaded,
     bringCardTypes,
     seedCards,
+    startForm,
   } = opts;
 
   // Quick Start belongs to the tab it was opened on. Both entry points
@@ -158,6 +168,12 @@ export function useTemplateFlow(opts: {
       setSelfParticipant((p) => ({ ...p, name }));
     }
     confirmName();
+    // A form template: the tab becomes its form, its board or sheet made as Start Planning makes them.
+    if (isFormTemplateKind(kind) && startForm) {
+      setTemplatePickerMode('welcome');
+      startForm(formTemplateStarter(kind));
+      return;
+    }
     setTemplatePickerMode('welcome');
     const centre = getViewportCenter();
     // Dynamic-import the heavy builders module only when the user

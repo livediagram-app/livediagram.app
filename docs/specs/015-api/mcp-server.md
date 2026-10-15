@@ -489,6 +489,11 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   searched for (the orthogonal router: the cheapest clean path over every pair of sides); the search shares one
   budget per layout (`ROUTER_BUDGET`, grid crossings laid out plus steps taken), and once it is spent the rest take
   their outside tracks, so a dense graph lays out in well under a second (60 boxes and 140 edges in about 0.2 s).
+  The search prices a run along a line already drawn (`ROUTER_SHARE_COST`), counting one within `ROUTER_SHARE_NEAR`
+  (8 px) beside it, or on its line stopping that short of its end, as sharing it: a "No" running up to the very point
+  a "Yes" turns into a step read as going into that step. It also prices each line already ending on a side the
+  route leaves or enters (`ROUTER_SIDE_LOAD_COST`, about two bends' worth), so a third line into one side of a shared
+  end takes a free side instead of squeezing in beside the other two.
 - **Groups keep their lines clear.** A node outside a group that a member links to sits by that member, not by the
   middle of the group (a database under the service that owns it), its rank kept in order and its gaps kept. An edge
   to or from the group itself leaves the frame facing the other end: from the side level with it when it lies under
@@ -498,6 +503,12 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   whose first member would take a line through the heading's text is widened on the left until it does not, on the
   heading's side only: the far side hugs the members (a long heading framed two boxes in twice their room), unless
   an edge meets the group itself, whose frame then stays centred on its members so that edge stays on their line.
+  A row of members with no lines among them sits by its links to the group most of the row links to (each store
+  under its own service, a service's link to a third party pulling it off none), never by a hub's. A hub (a member
+  linked to more outside nodes than half its row, at least three, in a row holding at least three one-link members:
+  a Kafka bus every service publishes to) goes to the end of its row rather than mid-row between a service and its
+  store. Two members wanting one spot split the difference, unless that spreads along a tight row: then the first
+  takes the spot and the next packs beside it, so the rest stay straight.
   A label's plate keeps 6 px off every frame's and lane's border, inside or out, never sitting on the edge. The
   reverse holds too: a group in one row whose members have no lines among them (a row of data stores) seats each
   member by the outside nodes it links to, a database under its service, its order and gaps kept, and its frame
@@ -522,6 +533,15 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   trunk), one whose next step lies clearly to its left or right leaves that side instead. A step with exactly two
   exits whose next steps lie clearly either side of it, neither ahead, sends both out of their sides (accept up,
   decline down; yes left, no right): kept on the point, one left by a corner and the other by the tip, lopsided.
+  Steps stacked in one column of a lane read top to bottom as their feeders do (a step fed from its own lane and from
+  below sits over one fed only from below), so the lines into the stack do not cross on their way in. A stack one of
+  whose steps a step of the same lane feeds from an earlier column, with nothing of that lane on the line between
+  them, moves so the two sit level and the hand-off runs straight along the lane (a first decision's "No" straight
+  into a shared rejection); that line keeps the middle of its next step's side and another line into the same side
+  comes in beside it on a quarter. A decision's own branches stacked beside it are not lined up: they stay spread so
+  each leaves by its own side. The lane grows to hold a stack that moved. A labelled line running level across one
+  gap between columns (a decision's "Accept" on its point) widens that gap to hold its label, and every later column
+  moves along with it, so the label is never cut short ("Accep").
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
   an edit, as one: one miniature per shape kind the graph uses, with
@@ -1100,10 +1120,14 @@ The output literals that named the container changed with it: `renamed`, `delete
   under it; `page` (an id, place or name) draws one page alone at its own size. An article page draws its writing as
   estimated without a browser (`article-layout-estimate.ts`: each block set as the editor's stylesheet sets it,
   wrapped at an estimated width, flowed down the article's pages), with the pages the editor would add after its last
-  shown and labelled as such. An emoji icon or sticker, which needs a colour-emoji font a Worker lacks, draws as a disc
-  labelled emoji (`resolveIconPreviewArt`, `resolveStickerPreviewArt`).
+  shown and labelled as such. An emoji icon, sticker or reaction pad, which needs a colour-emoji font a Worker lacks,
+  draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its
+  code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
+  `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One
+  that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@livediagram/icons/resolve`).
 - Article summaries (`write_article`, `change_pages`, the `pages` view) carry `estimatedPages`, the pages the writing
-  reaches once laid out, from the same estimate.
+  reaches once laid out, from the same estimate; `write_article`'s last line says it in words ("It takes about 2 pages
+  once laid out"), so an agent asked for one page sees at once that it ran over.
 
 ## 5. Visualise — inline image render
 

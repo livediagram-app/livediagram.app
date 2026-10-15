@@ -12,7 +12,7 @@ flows, so nobody has to position a band by hand.
 
 ## What someone does with it
 
-1. **Drop it.** Build → **Sankey**: tap to drop or drag to size. It arrives as a real diagram, a household
+1. **Drop it.** Concepts → **Sankey**: tap to drop or drag to size. It arrives as a real diagram, a household
    budget (two incomes into a budget, split into needs, wants and savings, needs split into rent and
    groceries), so the idea explains itself and every part is there to overwrite.
 2. **Read it.** Hover a band: it lifts, the rest fade back, and a readout says `Salary → Budget`,
@@ -189,6 +189,14 @@ Dialog**, linking the Sankey Diagram article. Each step is a line or two: what t
 While it runs, Escape is the tour's and never closes the dialog. Only an Editor opens the dialog, so only an Editor
 sees Show Me. Telemetry: `UI` · `Started` · `SankeyFlowsTour`, and `UI` · `Ended` · `SankeyFlowsTourCompleted` or
 `SankeyFlowsTourSkipped`.
+
+## Element tour
+
+The first time an Editor selects a Sankey, a small **Tour** toolbar beside its selection toolbar offers the
+[Sankey tour](../007-editor/element-tours.md#the-sankey-tour): it lifts the diagram's widest band and a leftover with
+their readouts, points at the menu's styling and at double-clicking, then opens the Flows dialog, runs its
+[Show Me](#show-me) steps there and closes it on Done. Played or cancelled, it is not offered again until Settings' Tours ›
+Element Tours offers it.
 
 ## Who may do what
 

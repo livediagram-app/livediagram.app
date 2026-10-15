@@ -12,7 +12,10 @@ export const aspectExtreme: Check = (ctx) => {
   // A tab whose boxes sit in frames or lanes takes its shape from its groups, and no tab layout keeps them (LN16); a
   // graph's fix lays it out again with its groups, so a graph is held to its shape whatever it groups.
   const framed = ctx.source === 'tab' && framedTab(ctx);
-  if (!extent || ctx.boxes.length < LINT_ASPECT_MIN_BOXES || framed) return [];
+  // A tab with no lines between its boxes (a board of columns and stickies, a canvas of panels) is no graph: its
+  // shape is its design, and laying it out as one would scatter it.
+  const unjoined = ctx.source === 'tab' && ctx.connecting.length === 0;
+  if (!extent || ctx.boxes.length < LINT_ASPECT_MIN_BOXES || framed || unjoined) return [];
   const { width, height } = extent;
   if (width < 1 || height < 1) return [];
   const ratio = Math.max(width / height, height / width);
