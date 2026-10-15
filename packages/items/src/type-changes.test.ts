@@ -65,6 +65,28 @@ describe('applyCardTypeChanges: add', () => {
     expect(validateItemTypeCatalogue(r.catalogue).ok).toBe(true);
   });
 
+  it('places a field ticked Show on Card on the Display a new type is given', () => {
+    const r = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [
+          {
+            op: 'add',
+            name: 'Lead',
+            custom: [
+              { name: 'Value', kind: 'number', onCard: true },
+              { name: 'Notes', kind: 'long text' },
+            ],
+            display: { detailed: { head: ['Number'] } },
+          },
+        ],
+        statuses,
+      ),
+    );
+    const lead = r.catalogue!.types.find((t) => t.label === 'Lead')!;
+    expect(lead.display!.detailed).toEqual({ head: ['key'], body: ['f-value'] });
+  });
+
   it('takes built-in fields, a colour and a glyph', () => {
     const r = ok(
       applyCardTypeChanges(
@@ -275,6 +297,70 @@ describe('applyCardTypeChanges: every edit path', () => {
       },
     ],
   };
+
+  it('places a field ticked Show on Card on a Display of the type’s own, and takes it off when unticked', () => {
+    const displayed = {
+      ...tabbed,
+      types: tabbed.types.map((t) =>
+        t.id === 'bug' ? { ...t, display: { detailed: { head: ['key' as const] } } } : t,
+      ),
+    };
+    const shown = ok(
+      applyCardTypeChanges(
+        displayed,
+        [
+          {
+            op: 'set',
+            type: 'Bug',
+            addCustom: [
+              { name: 'Customer reported', kind: 'checkbox', onCard: true },
+              { name: 'Scratch', kind: 'text', onCard: true },
+            ],
+            editCustom: [{ field: 'Severity', onCard: true }],
+            removeCustom: ['Scratch'],
+          },
+        ],
+        statuses,
+      ),
+    );
+    const bug = shown.catalogue!.types.find((t) => t.id === 'bug')!;
+    expect(bug.display!.detailed).toEqual({
+      head: ['key'],
+      body: ['f-customer-reported', 'f-sev'],
+    });
+    // Ticked again, it is not placed twice; unticked, it leaves the Display.
+    const again = ok(
+      applyCardTypeChanges(
+        shown.catalogue,
+        [{ op: 'set', type: 'Bug', editCustom: [{ field: 'Severity', onCard: true }] }],
+        statuses,
+      ),
+    );
+    expect(again.catalogue!.types.find((t) => t.id === 'bug')!.display!.detailed!.body).toEqual([
+      'f-customer-reported',
+      'f-sev',
+    ]);
+    const off = ok(
+      applyCardTypeChanges(
+        shown.catalogue,
+        [{ op: 'set', type: 'Bug', editCustom: [{ field: 'Severity', onCard: false }] }],
+        statuses,
+      ),
+    );
+    expect(off.catalogue!.types.find((t) => t.id === 'bug')!.display!.detailed).toEqual({
+      head: ['key'],
+      body: ['f-customer-reported'],
+    });
+    // A type without a Display of its own keeps none: its default layout shows the field.
+    const plain = ok(
+      applyCardTypeChanges(
+        tabbed,
+        [{ op: 'set', type: 'Bug', editCustom: [{ field: 'Severity', onCard: false }] }],
+        statuses,
+      ),
+    );
+    expect(plain.catalogue!.types.find((t) => t.id === 'bug')!.display).toBeUndefined();
+  });
 
   it('sets a colour and glyph, keeps a field it already has, and drops a removed field from tabs', () => {
     const r = ok(

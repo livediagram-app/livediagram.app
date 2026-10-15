@@ -151,7 +151,9 @@ Every write takes what a person would say, and stores the ids:
 defaultStatus?, excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes
     values. `editCustom` `[{ field, name?, options?, onCard? }]` edits a custom field in place, as the type editor's
     field form does: a new name, a Choice field's options replaced whole (any other kind is refused), drawn on the
-    card or not; values on cards stay.
+    card or not; values on cards stay. A field ticked `onCard` (added or edited) on a type with a Display of its own
+    is placed at the end of its Detailed body, as without one the default layout shows it; unticked, it leaves that
+    Display.
   - A type renamed earlier in the same call still answers to its former name, so a later change can name it either
     way.
   - `add` and `set` also take the type's **card face and panel**, as the type editor's Display and Configuration
