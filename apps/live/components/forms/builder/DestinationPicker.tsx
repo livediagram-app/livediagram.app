@@ -1,7 +1,8 @@
 'use client';
 
-// Responses Go To (docs/specs/030-forms/forms.md "The Form panel"): the Board tab, the card type and the status every
-// response is made in, with New Board and New Card Type, and a sentence reading the choice back. A choice that no
+// Responses Go To (docs/specs/030-forms/forms.md "Responses Go To and Settings"): the Board tab, the card type and the
+// status every response is made in (New Board and New Card Type the last choice of each), and a sentence reading the
+// choice back. A choice that no
 // longer holds (its board, column or type gone) says so, and the form takes no responses until it is fixed.
 import type { Tab } from '@livediagram/document';
 import {
@@ -10,14 +11,14 @@ import {
   type FormDestination,
 } from '@livediagram/forms';
 import { boardAddTypes } from '@livediagram/items';
-import { PlusIcon, Select } from '@livediagram/ui';
+import { Select } from '@livediagram/ui';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
 import { boardsOf } from '@/hooks/forms/form-start';
 import { patchForm } from '@/hooks/forms/form-edits';
 import { useFormBuilder } from './form-builder-context';
 
-const NEW_BUTTON =
-  'flex h-8 cursor-pointer items-center gap-1 rounded-md px-2 text-[12px] font-medium text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10';
+// The value of each select's last choice, New Board or New Card Type.
+const NEW = '__new';
 
 export function DestinationPicker({ tabs }: { tabs: readonly Tab[] }) {
   const b = useFormBuilder();
@@ -37,69 +38,55 @@ export function DestinationPicker({ tabs }: { tabs: readonly Tab[] }) {
   return (
     <div className="flex flex-col gap-3">
       <SettingsField label="Board">
-        <div className="flex items-center gap-1.5">
-          <Select
-            className="min-w-0 flex-1"
-            selectClassName="text-[13px]"
-            value={destTab?.id ?? ''}
-            disabled={!b.canEdit}
-            onChange={(e) => {
-              const tab = boardTabs.find((t) => t.id === e.target.value);
-              const setup = tab ? boardsOf(tab)[0]?.setup : undefined;
-              if (!tab || !setup) return;
-              const typeId =
-                dest && boardAddTypes(setup, b.types).some((t) => t.id === dest.typeId)
-                  ? dest.typeId
-                  : (boardAddTypes(setup, b.types)[0]?.id ?? dest?.typeId ?? '');
-              set({ tabId: tab.id, typeId, status: setup.columns[0]!.status });
-            }}
-          >
-            <option value="" disabled>
-              {boardTabs.length ? 'Choose a board…' : 'No boards yet'}
+        <Select
+          className="w-full"
+          selectClassName="text-[13px]"
+          value={destTab?.id ?? ''}
+          disabled={!b.canEdit}
+          onChange={(e) => {
+            if (e.target.value === NEW) return b.actions.newResponsesBoard();
+            const tab = boardTabs.find((t) => t.id === e.target.value);
+            const setup = tab ? boardsOf(tab)[0]?.setup : undefined;
+            if (!tab || !setup) return;
+            const typeId =
+              dest && boardAddTypes(setup, b.types).some((t) => t.id === dest.typeId)
+                ? dest.typeId
+                : (boardAddTypes(setup, b.types)[0]?.id ?? dest?.typeId ?? '');
+            set({ tabId: tab.id, typeId, status: setup.columns[0]!.status });
+          }}
+        >
+          <option value="" disabled>
+            {boardTabs.length ? 'Choose a board…' : 'No boards yet'}
+          </option>
+          {boardTabs.map((t) => (
+            <option key={t.id} value={t.id} disabled={boardsOf(t).length === 0}>
+              {t.name}
             </option>
-            {boardTabs.map((t) => (
-              <option key={t.id} value={t.id} disabled={boardsOf(t).length === 0}>
-                {t.name}
-              </option>
-            ))}
-          </Select>
-          {b.canEdit ? (
-            <button
-              type="button"
-              className={NEW_BUTTON}
-              onClick={() => b.actions.newResponsesBoard()}
-            >
-              <PlusIcon size={12} />
-              New Board
-            </button>
-          ) : null}
-        </div>
+          ))}
+          {b.canEdit ? <option value={NEW}>+ New Board</option> : null}
+        </Select>
       </SettingsField>
       <SettingsField label="Card Type">
-        <div className="flex items-center gap-1.5">
-          <Select
-            className="min-w-0 flex-1"
-            selectClassName="text-[13px]"
-            value={dest && takes.some((t) => t.id === dest.typeId) ? dest.typeId : ''}
-            disabled={!b.canEdit || !board}
-            onChange={(e) => dest && set({ ...dest, typeId: e.target.value })}
-          >
-            <option value="" disabled>
-              Choose a card type…
+        <Select
+          className="w-full"
+          selectClassName="text-[13px]"
+          value={dest && takes.some((t) => t.id === dest.typeId) ? dest.typeId : ''}
+          disabled={!b.canEdit || !board}
+          onChange={(e) => {
+            if (e.target.value === NEW) return b.actions.newCardType();
+            if (dest) set({ ...dest, typeId: e.target.value });
+          }}
+        >
+          <option value="" disabled>
+            Choose a card type…
+          </option>
+          {takes.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.label}
             </option>
-            {takes.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-          </Select>
-          {b.canEdit && board ? (
-            <button type="button" className={NEW_BUTTON} onClick={() => b.actions.newCardType()}>
-              <PlusIcon size={12} />
-              New Card Type
-            </button>
-          ) : null}
-        </div>
+          ))}
+          {b.canEdit ? <option value={NEW}>+ New Card Type</option> : null}
+        </Select>
       </SettingsField>
       <div>
         <p className="mb-1.5 px-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">

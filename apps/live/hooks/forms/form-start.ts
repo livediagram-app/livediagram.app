@@ -139,13 +139,18 @@ export function planFormStart(input: {
   types: readonly ItemTypeDef[];
   statusNames: Iterable<readonly [string, string]>;
   random?: () => number;
+  // The board responses go to (a form made from a board's cog), in place of the first that fits.
+  board?: { tabId: string; elementId: string };
 }): FormStartPlan {
   const { starter, formTab, tabs, types } = input;
   const random = input.random ?? Math.random;
   const newId = (prefix: 'q' | 's') => newFormPartId(prefix, random);
-  const boards = tabs.flatMap((t) =>
-    t.id === formTab.id ? [] : boardsOf(t).map((b) => ({ tab: t, ...b })),
-  );
+  const boards = tabs
+    .flatMap((t) => (t.id === formTab.id ? [] : boardsOf(t).map((b) => ({ tab: t, ...b }))))
+    .filter(
+      (b) =>
+        !input.board || (b.tab.id === input.board.tabId && b.element.id === input.board.elementId),
+    );
   // A blank form takes the first board's first card type, when there is one.
   const blankType =
     starter.id === 'blank' ? boards.flatMap((b) => boardAddTypes(b.setup, types))[0] : undefined;

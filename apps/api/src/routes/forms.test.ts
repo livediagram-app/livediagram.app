@@ -377,6 +377,47 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
   });
 });
 
+describe('an Editor\'s Preview (docs/specs/030-forms/forms.md "Preview")', () => {
+  it("counts a published form's preview as a response, titled Preview, even while closed", async () => {
+    expect(
+      (await owner('POST', 'form-preview', { body: { answers: { 'q-sum': 'x' } } })).body,
+    ).toEqual({ error: 'form_not_published' });
+    await publish();
+    await owner('PUT', 'form-link', { body: { open: false } });
+    const res = await owner('POST', 'form-preview', {
+      body: { answers: { 'q-sum': 'Checkout broke' }, website: 'ignored for a preview' },
+    });
+    expect(res).toEqual({ status: 201, body: { number: 1 } });
+    const [card] = await items();
+    expect(card!.fields).toMatchObject({
+      title: 'Preview: Checkout broke',
+      [FROM_FORM_FIELD]: 'ftab:1',
+    });
+    // Counted, and seen by the previewer who was up to date.
+    expect((await owner('GET', 'form-link')).body).toMatchObject({ responses: 1, unseen: 0 });
+  });
+
+  it("keeps unseen responses new, refuses bad answers, and is an Editor's alone", async () => {
+    const code = await publish();
+    await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'Real one' } });
+    await owner('POST', 'form-preview', { body: { answers: { 'q-sum': 'Mine' } } });
+    expect((await owner('GET', 'form-link')).body).toMatchObject({ responses: 2, unseen: 2 });
+    expect((await owner('POST', 'form-preview', { body: { answers: {} } })).body).toMatchObject({
+      error: 'invalid_answers',
+    });
+    expect((await owner('GET', 'form-preview')).status).toBe(405);
+    expect(
+      (
+        await owner('POST', 'form-preview', {
+          owner: 'visitor',
+          code: 'VIEW',
+          body: { answers: {} },
+        })
+      ).status,
+    ).toBe(403);
+  });
+});
+
 describe('reports (docs/specs/030-forms/forms.md "Report This Form")', () => {
   const ip = async (code: string, browser: string, address: string, reason = 'phishing') => {
     const ctx = makeTestRouteContext('POST', `/api/forms/${code}/reports`, {

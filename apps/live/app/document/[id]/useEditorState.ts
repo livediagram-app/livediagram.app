@@ -2302,6 +2302,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     itemTypes,
     statusNames: planStatusNames,
     markTabLoaded,
+    openTab: setActiveId,
   });
   // Old Plan tabs become the Plan kinds when an Editor opens them (docs/specs/026-plan/plan-tabs.md).
   usePlanTabConversion({
@@ -2333,6 +2334,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     statusTypes: planStatusTypes,
     statusBoards: planStatusBoards,
     notify: toast.info,
+    newFormFor: forms.newFormFor,
   });
   // The Plan tour's example board and cards, or sheet (docs/specs/026-plan/plan-tour.md "Tour content").
   const tourSquare = useTourSquare({ activeId, tickTabs });

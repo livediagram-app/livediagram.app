@@ -55,7 +55,14 @@ function isClosed(form: FormDefinition, link: FormLinkRow, now: number): boolean
   return closedReason(form, { open: link.open === 1, responses: link.responses, now }) !== null;
 }
 
-export async function respond(ctx: RouteContext, code: string): Promise<Response> {
+// `preview`: an Editor's Preview of the published form (docs/specs/030-forms/forms.md "Preview"), sent through the
+// form-preview route: a counted response like any other, titled "Preview: …", taken even while the form is closed,
+// with no hidden field to check and no email (the Editor made it).
+export async function respond(
+  ctx: RouteContext,
+  code: string,
+  { preview = false }: { preview?: boolean } = {},
+): Promise<Response> {
   const { env } = ctx;
   const text = await ctx.request.text();
   if (text.length > RESPONSE_BODY_MAX) return refuse({ error: 'form_busy' }, 413);
@@ -72,14 +79,14 @@ export async function respond(ctx: RouteContext, code: string): Promise<Response
   if (!opened) return refuse({ error: 'form_not_found' }, 404);
   const { link, doc, form, tab } = opened;
   // The hidden field: a person never fills it, so a bot learns nothing from the answer it gets.
-  if (typeof body.website === 'string' && body.website.trim() !== '') {
+  if (!preview && typeof body.website === 'string' && body.website.trim() !== '') {
     console.info('[forms] form.response.dropped', { documentId: doc.id });
     ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', 'Dropped'));
     const accepted: FormResponseAccepted = { number: 0 };
     return json(accepted, { status: 201 });
   }
   const now = Date.now();
-  if (isClosed(form, link, now)) {
+  if (!preview && isClosed(form, link, now)) {
     console.info('[forms] form.response.refused', { error: 'form_closed' });
     return refuse({ error: 'form_closed' }, 409);
   }
@@ -106,16 +113,16 @@ export async function respond(ctx: RouteContext, code: string): Promise<Response
   // The card the item store would make, checked before a number is taken: a form whose answers make no valid card
   // (it should never happen: the answers were checked) refuses the response rather than burning a number.
   const cardFor = (n: number) => {
-    const card = responseCard(form, tab.id, checked.answers, type, n);
+    const card = responseCard(form, tab.id, checked.answers, type, n, preview);
     return readItemCreate({
       type: card.type,
       fields: card.fields,
       place: { status: form.destination!.status },
     });
   };
-  const preview = cardFor(1);
-  if (typeof preview === 'string') {
-    console.error('[forms] form.response.unmade', { documentId: doc.id, rejection: preview });
+  const first = cardFor(1);
+  if (typeof first === 'string') {
+    console.error('[forms] form.response.unmade', { documentId: doc.id, rejection: first });
     return refuse({ error: 'invalid_answers', errors: {} }, 400);
   }
 
@@ -125,11 +132,11 @@ export async function respond(ctx: RouteContext, code: string): Promise<Response
     return refuse({ error: 'form_busy' }, 429);
   }
   const create = cardFor(number);
-  // Only the title's number differs from the preview, so the check holds.
+  // Only the title's number differs from the first, so the check holds.
   const made = await createMany(
     ctx,
     { documentId: doc.id, owner: formPerson(code, form).id },
-    [typeof create === 'string' ? preview : create],
+    [typeof create === 'string' ? first : create],
     { by: formPerson(code, form) },
   );
   if (made instanceof Response) {
@@ -138,16 +145,17 @@ export async function respond(ctx: RouteContext, code: string): Promise<Response
     return refuse({ error: 'form_busy' }, 429);
   }
   relay(ctx, doc.id, made.items, [], made.rev);
-  console.info('[forms] form.response.accepted', { documentId: doc.id, number });
-  ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', 'Response'));
-  ctx.waitUntil?.(
-    notifyFormResponse(
-      ctx.env,
-      { id: doc.id, ownerId: doc.ownerId, name: doc.name },
-      { code, heading: form.heading },
-      String(made.items[0]?.fields['title'] ?? ''),
-    ),
-  );
+  console.info('[forms] form.response.accepted', { documentId: doc.id, number, preview });
+  ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', preview ? 'Preview' : 'Response'));
+  if (!preview)
+    ctx.waitUntil?.(
+      notifyFormResponse(
+        ctx.env,
+        { id: doc.id, ownerId: doc.ownerId, name: doc.name },
+        { code, heading: form.heading },
+        String(made.items[0]?.fields['title'] ?? ''),
+      ),
+    );
   const accepted: FormResponseAccepted = { number };
   return json(accepted, { status: 201 });
 }

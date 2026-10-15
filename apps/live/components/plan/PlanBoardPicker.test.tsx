@@ -26,13 +26,14 @@ function show(over: Partial<Parameters<typeof PlanBoardPicker>[0]> = {}) {
     onPickSheet: vi.fn(),
     onDashboard: vi.fn(),
     onQuickStart: vi.fn(),
+    onForm: vi.fn(),
   };
   render(<PlanBoardPicker {...props} {...over} />);
   return props;
 }
 
 describe('Start Planning', () => {
-  it('opens on Recommended: boards, a dashboard and sheets, each named with its kind', () => {
+  it('opens on Recommended: boards, a dashboard, a sheet and a form, each named with its kind', () => {
     show();
     expect(screen.getByRole('heading', { name: 'Start Planning' })).toBeTruthy();
     expect(rail(/^Recommended/).getAttribute('aria-current')).toBe('true');
@@ -47,7 +48,7 @@ describe('Start Planning', () => {
       'board:todo',
       'dashboard:overview',
       'sheet:blank',
-      'sheet:budget',
+      'form:feedback',
     ]);
     expect(card(/^Kanban Board:/)).toBeTruthy();
   });

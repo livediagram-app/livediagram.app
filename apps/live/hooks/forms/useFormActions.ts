@@ -31,6 +31,9 @@ import {
 export type FormActions = {
   // A starter chosen on Start Planning: the tab becomes a Form tab holding it.
   startForm: (starter: StarterId) => void;
+  // New Form on a board's cog: a Blank form on a new Form tab after the board's, its responses going to that board,
+  // opened.
+  newFormFor: (boardElementId: string) => void;
   // One builder edit to the active Form tab's form; `kind` names it for telemetry where it is counted.
   changeForm: (change: (form: FormDefinition) => FormDefinition) => void;
   // The heading, which is the tab's name too: both in one step.
@@ -58,6 +61,7 @@ export function useFormActions({
   itemTypes,
   statusNames,
   markTabLoaded,
+  openTab,
 }: {
   activeId: string;
   tabs: readonly Tab[];
@@ -65,9 +69,11 @@ export function useFormActions({
   itemTypes: Pick<ItemTypesSlice, 'types' | 'saveType'>;
   statusNames: ReadonlyMap<string, string>;
   markTabLoaded?: (tabId: string) => void;
+  // Opens a tab (the Form tab New Form makes).
+  openTab?: (tabId: string) => void;
 }): FormActions {
   // Read when used, so the actions keep one identity while tabs and types change underneath.
-  const live = useLatest({ tabs, itemTypes, statusNames, markTabLoaded });
+  const live = useLatest({ tabs, itemTypes, statusNames, markTabLoaded, openTab });
   const commitTabs = useCallback(
     (map: (ts: Tab[]) => Tab[]) =>
       commitAnyTabs((ts) => (ts.find((t) => t.id === activeId)?.locked ? ts : map(ts))),
@@ -114,6 +120,47 @@ export function useFormActions({
       track('Form', 'Created', starter.telemetry);
     },
     [activeId, commitTabs, live],
+  );
+
+  const newFormFor = useCallback<FormActions['newFormFor']>(
+    (boardElementId) => {
+      const { tabs: now, itemTypes: slice, statusNames: names } = live.current;
+      const boardTab = now.find((t) => boardsOf(t).some((b) => b.element.id === boardElementId));
+      const board = boardTab && boardsOf(boardTab).find((b) => b.element.id === boardElementId);
+      if (!boardTab || !board || boardTab.locked) return;
+      const name = `${board.setup.title || boardTab.name} Form`.slice(0, 80);
+      const formTab: Tab = {
+        id: crypto.randomUUID(),
+        name,
+        elements: [],
+        kind: 'form',
+        opensIn: 'plan',
+        ...(boardTab.theme ? { theme: boardTab.theme } : {}),
+      };
+      const plan = planFormStart({
+        starter: formStarter('blank'),
+        formTab,
+        tabs: now,
+        types: slice.types,
+        statusNames: [...names],
+        board: { tabId: boardTab.id, elementId: boardElementId },
+      });
+      // A Blank form takes the board's first card type and first column (planFormStart, given the board).
+      const made: Tab = { ...formTab, form: { ...plan.form, heading: name } };
+      commitAnyTabs((ts) => {
+        const at = ts.findIndex((t) => t.id === boardTab.id);
+        const next = [...ts];
+        next.splice(at + 1, 0, made);
+        if (plan.newBoardTab) next.splice(at + 2, 0, plan.newBoardTab);
+        return next;
+      });
+      live.current.markTabLoaded?.(made.id);
+      if (plan.newBoardTab) live.current.markTabLoaded?.(plan.newBoardTab.id);
+      if (plan.saveType) slice.saveType(plan.type);
+      live.current.openTab?.(made.id);
+      track('Form', 'Created', 'FromBoard');
+    },
+    [commitAnyTabs, live],
   );
 
   const changeForm = useCallback<FormActions['changeForm']>(
@@ -249,6 +296,7 @@ export function useFormActions({
   return useMemo(
     () => ({
       startForm,
+      newFormFor,
       changeForm,
       renameForm,
       addFieldFor,
@@ -258,6 +306,7 @@ export function useFormActions({
     }),
     [
       startForm,
+      newFormFor,
       changeForm,
       renameForm,
       addFieldFor,

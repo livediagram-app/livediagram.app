@@ -1,7 +1,7 @@
 'use client';
 
-// The form's Settings (docs/specs/030-forms/forms.md "The Form panel"): Accepting Responses (the link's switch, once
-// published), Close On, Response Limit, the confirmation and closed messages, and the form colour.
+// The form's Settings (docs/specs/030-forms/forms.md "Responses Go To and Settings"): Accepting Responses (the link's
+// switch, once published), then Close On and Response Limit side by side, then the confirmation and closed messages.
 import { useState } from 'react';
 import {
   DEFAULT_CLOSED_MESSAGE,
@@ -53,54 +53,57 @@ export function FormSettingsTab({ link }: { link: FormLinkState }) {
             : 'Publish the form from Share Form to start taking responses.'}
         </p>
       </div>
-      <SettingsField label="Close On">
-        <div className="flex items-center gap-2">
+      <div className="grid grid-cols-[1fr_8.5rem] gap-2 [&>*]:min-w-0">
+        <SettingsField label="Close On">
+          <div className="flex items-center gap-2">
+            <TextInput
+              compact
+              type="datetime-local"
+              className="min-w-0 flex-1"
+              value={localValue(form.closesAt)}
+              onChange={(e) => {
+                const t = e.target.value ? new Date(e.target.value).getTime() : NaN;
+                set({ closesAt: Number.isFinite(t) ? t : undefined });
+              }}
+            />
+            {form.closesAt !== undefined ? (
+              <button
+                type="button"
+                onClick={() => set({ closesAt: undefined })}
+                className="cursor-pointer text-[12px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
+        </SettingsField>
+        <SettingsField label="Response Limit">
           <TextInput
             compact
-            type="datetime-local"
-            className="flex-1"
-            value={localValue(form.closesAt)}
-            onChange={(e) => {
-              const t = e.target.value ? new Date(e.target.value).getTime() : NaN;
-              set({ closesAt: Number.isFinite(t) ? t : undefined });
+            type="number"
+            inputMode="numeric"
+            className="w-full"
+            min={1}
+            max={FORM_RESPONSE_LIMIT_MAX}
+            placeholder="No limit"
+            defaultValue={form.limit ?? ''}
+            key={form.limit ?? 'none'}
+            onBlur={(e) => {
+              const raw = e.target.value.trim();
+              const n = Number(raw);
+              if (raw === '') set({ limit: undefined });
+              else if (Number.isInteger(n) && n >= 1 && n <= FORM_RESPONSE_LIMIT_MAX)
+                set({ limit: n });
+              else e.target.value = form.limit === undefined ? '' : String(form.limit);
             }}
           />
-          {form.closesAt !== undefined ? (
-            <button
-              type="button"
-              onClick={() => set({ closesAt: undefined })}
-              className="cursor-pointer text-[12px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
-            >
-              Clear
-            </button>
-          ) : null}
-        </div>
-      </SettingsField>
+        </SettingsField>
+      </div>
       {past ? (
         <p className="-mt-2 text-[12px] text-amber-700 dark:text-amber-300">
           That time has passed: the form is closed.
         </p>
       ) : null}
-      <SettingsField label="Response Limit">
-        <TextInput
-          compact
-          type="number"
-          inputMode="numeric"
-          min={1}
-          max={FORM_RESPONSE_LIMIT_MAX}
-          placeholder="No limit"
-          defaultValue={form.limit ?? ''}
-          key={form.limit ?? 'none'}
-          onBlur={(e) => {
-            const raw = e.target.value.trim();
-            const n = Number(raw);
-            if (raw === '') set({ limit: undefined });
-            else if (Number.isInteger(n) && n >= 1 && n <= FORM_RESPONSE_LIMIT_MAX)
-              set({ limit: n });
-            else e.target.value = form.limit === undefined ? '' : String(form.limit);
-          }}
-        />
-      </SettingsField>
       <SettingsField label="Confirmation Message">
         <div className={BOX}>
           <DraftText

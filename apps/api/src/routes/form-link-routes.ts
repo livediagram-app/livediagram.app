@@ -16,6 +16,7 @@ import {
   unseenResponses,
 } from '../db';
 import { boardsOnTab, readFormTab } from '../forms/form-tab';
+import { respond } from '../forms/respond';
 import { conflict, forbidden, json, methodNotAllowed, notFound } from '../responses';
 import {
   gateEdit,
@@ -58,7 +59,7 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
   if (!(
     segments.length === 6 &&
     segments[3] === 'tabs' &&
-    (segments[5] === 'form-link' || segments[5] === 'form-seen')
+    (segments[5] === 'form-link' || segments[5] === 'form-seen' || segments[5] === 'form-preview')
   ))
     return null;
   const documentId = segments[2]!;
@@ -75,6 +76,20 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
     const live = await getLiveFormLink(env, documentId, tabId);
     if (live) await markFormSeen(env, live.code, owner);
     return answer(ctx, documentId, tabId, owner, editor);
+  }
+
+  // An Editor's Preview of a published form (docs/specs/030-forms/forms.md "Preview"): a counted response. A previewer
+  // who had seen every response has seen this one too (one with others unseen keeps them new). Unpublished, there is
+  // nothing to count it on: 404, and the editor makes its card itself.
+  if (segments[5] === 'form-preview') {
+    if (request.method !== 'POST') return methodNotAllowed();
+    if (!editor) return forbidden();
+    const live = await getLiveFormLink(env, documentId, tabId);
+    if (!live) return json({ error: 'form_not_published' }, { status: 404 });
+    const upToDate = (await unseenResponses(env, live.code, owner)) === 0;
+    const sent = await respond(ctx, live.code, { preview: true });
+    if (sent.status === 201 && upToDate) await markFormSeen(env, live.code, owner);
+    return sent;
   }
 
   if (request.method === 'GET') return answer(ctx, documentId, tabId, owner, editor);

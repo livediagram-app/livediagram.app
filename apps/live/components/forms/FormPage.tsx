@@ -22,12 +22,14 @@ import { CanvasCover } from '@/components/plan/MaximisedPlanLayer';
 import { DashboardMenuName } from '@/components/plan/dashboard/DashboardMenuName';
 import { useMenuNameSlot } from '@/components/plan/menu-name-slot';
 import { setFormShareHost } from '@/lib/form-share-store';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { FormActions } from '@/hooks/forms/useFormActions';
 import { useFormLink } from '@/hooks/forms/useFormLink';
 import { boardsOf } from '@/hooks/forms/form-start';
 import { sendPreview } from '@/hooks/forms/form-preview';
+import { apiSendFormPreview } from '@/lib/api/forms';
 import { FormBuilderContext, type FormBuilderValue } from './builder/form-builder-context';
 import { FormBuilderColumn } from './builder/FormBuilderColumn';
 import { FormSettingsButton, type FormSettingsSection } from './builder/FormSettingsButton';
@@ -219,6 +221,8 @@ export function FormPage({
                             <>
                               {/* A phone has no menu box: Preview rides here instead. */}
                               {nameSlot ? null : previewButton}
+                              {/* Learn about forms, beside the cog (as a board's help sits by its cog). */}
+                              <HelpArticleLink article="planForms" />
                               {building ? (
                                 <FormSettingsButton
                                   tabs={tabs}
@@ -253,15 +257,30 @@ export function FormPage({
                             {...(canEdit
                               ? {
                                   previewNote: `This was a preview: its card, marked Preview, is on ${destTab?.name ?? 'the board'}.`,
-                                  submit: (state) =>
-                                    sendPreview({
+                                  submit: async (state) => {
+                                    const outcome = await sendPreview({
                                       form,
                                       tabId: tab.id,
                                       type,
                                       problem,
                                       addItems: plan?.addItems,
                                       state,
-                                    }),
+                                      // A published form counts it as a response.
+                                      sendToLink:
+                                        published && documentId
+                                          ? (s) =>
+                                              apiSendFormPreview(
+                                                ownerId,
+                                                documentId,
+                                                tab.id,
+                                                s,
+                                                share,
+                                              )
+                                          : undefined,
+                                    });
+                                    if (outcome.kind === 'sent') link.reload();
+                                    return outcome;
+                                  },
                                 }
                               : { submit: async () => ({ kind: 'sent' }) })}
                           />

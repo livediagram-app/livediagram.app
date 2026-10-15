@@ -81,6 +81,8 @@ export function usePlanSlice(opts: {
   publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
   // Shows a refusal on screen (a toast): a canvas Plan card dropped where it cannot go.
   notify?: (message: string) => void;
+  // New Form on a board's cog (useFormActions); stable.
+  newFormFor?: (boardElementId: string) => void;
 }) {
   const { planItems, itemTypes, editorMode, canEdit, canVote, presence } = opts;
   const canEditCards = opts.canEditCards ?? canEdit;
@@ -505,6 +507,7 @@ export function usePlanSlice(opts: {
       createTypeForView,
       setupBoardId,
       openBoardSetup,
+      ...(opts.newFormFor && canEdit ? { newFormFor: opts.newFormFor } : {}),
       status: planItems.status,
       self: planItems.self,
       people,
@@ -592,6 +595,7 @@ export function usePlanSlice(opts: {
       opts.statusPhases,
       opts.statusTypes,
       opts.statusBoards,
+      opts.newFormFor,
     ],
   );
 

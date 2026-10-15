@@ -49,6 +49,7 @@ function Harness({ canEdit }: { canEdit: boolean }) {
   });
   const actions: FormActions = {
     startForm: vi.fn(),
+    newFormFor: vi.fn(),
     changeForm: (fn) => setForm((f) => fn(f)),
     renameForm: (name) => setForm((f) => ({ ...f, heading: name })),
     addFieldFor: vi.fn(() => null),

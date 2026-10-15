@@ -1,26 +1,18 @@
 'use client';
 
 // The form's cog (docs/specs/030-forms/forms.md "Responses Go To and Settings"), at the end of the status bar as a
-// board's settings sit at the end of its header: Responses Go To and Settings, each a section closed until opened
-// (or opened to the one asked for: a paused form's Fix opens Responses Go To). An Editor's alone.
+// board's settings sit at the end of its header: one panel switching between Responses Go To (first) and Settings, or
+// opened on the one asked for (a paused form's Fix opens Responses Go To). An Editor's alone.
 import { useState } from 'react';
 import type { Tab } from '@livediagram/document';
 import { Tooltip, lucideGlyph } from '@livediagram/ui';
-import {
-  lucideSettings,
-  lucideSlidersHorizontal,
-  lucideSquareKanban,
-} from '@livediagram/icons/lucide';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { lucideSettings } from '@livediagram/icons/lucide';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { DestinationPicker } from './DestinationPicker';
 import { FormSettingsTab } from './FormSettingsTab';
 import { FormSheet } from './FormSheet';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
-const BoardIcon = lucideGlyph(lucideSquareKanban, 13);
-const SlidersIcon = lucideGlyph(lucideSlidersHorizontal, 13);
 
 export type FormSettingsSection = 'destination' | 'settings';
 
@@ -56,7 +48,7 @@ export function FormSettingsButton({
         </button>
       </Tooltip>
       {open !== false && anchor ? (
-        <FormSheet anchor={anchor} name="Form Settings" width={360} onClose={onClose}>
+        <FormSheet anchor={anchor} name="Form Settings" width={320} onClose={onClose}>
           <Sections tabs={tabs} link={link} first={open} />
         </FormSheet>
       ) : null}
@@ -73,32 +65,38 @@ function Sections({
   link: FormLinkState;
   first: FormSettingsSection | null;
 }) {
-  const [shown, setShown] = useState<FormSettingsSection | null>(first);
-  const toggle = (s: FormSettingsSection) => setShown((o) => (o === s ? null : s));
+  const [shown, setShown] = useState<FormSettingsSection>(first ?? 'destination');
+  const tab = (id: FormSettingsSection, name: string) => (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={shown === id}
+      onClick={() => setShown(id)}
+      className={`flex h-7 flex-1 cursor-pointer items-center justify-center rounded-md px-2 text-[12px] font-semibold transition ${
+        shown === id
+          ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50'
+          : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
+      }`}
+    >
+      {name}
+    </button>
+  );
   return (
-    <div className="-mx-3 -mb-3 flex flex-col">
-      <MenuAccordionSection
-        title="Responses Go To"
-        icon={<BoardIcon aria-hidden />}
-        open={shown === 'destination'}
-        onToggle={() => toggle('destination')}
+    <div className="flex flex-col gap-3">
+      <div
+        role="tablist"
+        aria-label="Form Settings"
+        className="flex gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
       >
-        <div className="px-3 py-1.5">
+        {tab('destination', 'Responses Go To')}
+        {tab('settings', 'Settings')}
+      </div>
+      <div role="tabpanel" aria-label={shown === 'destination' ? 'Responses Go To' : 'Settings'}>
+        {shown === 'destination' ? (
           <DestinationPicker tabs={tabs} />
-        </div>
-      </MenuAccordionSection>
-      <MenuAccordionSection
-        title="Settings"
-        icon={<SlidersIcon aria-hidden />}
-        open={shown === 'settings'}
-        onToggle={() => toggle('settings')}
-      >
-        <div className="px-3 py-1.5">
+        ) : (
           <FormSettingsTab link={link} />
-        </div>
-      </MenuAccordionSection>
-      <div className="flex justify-end border-t border-slate-100 px-2 pt-1 dark:border-slate-800">
-        <HelpArticleLink article="planForms" />
+        )}
       </div>
     </div>
   );

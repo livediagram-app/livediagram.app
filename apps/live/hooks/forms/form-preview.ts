@@ -1,9 +1,11 @@
 // Submit in the builder's Preview (docs/specs/030-forms/forms.md "Preview"): an Editor's preview makes the card a
-// response would, titled "Preview: …" and not counted as a response, so the whole road from question to card can be
-// tried before the link goes out. The answers are checked as the api checks them.
+// response would, titled "Preview: …", so the whole road from question to card can be tried. A published form takes
+// it as a counted response, through the api; one with no link yet has nothing to count it on, so the editor makes the
+// card itself. The answers are checked as the api checks them.
 import type { ItemCreate, ItemTypeDef } from '@livediagram/items';
 import { checkResponse, responseCard, type FormDefinition } from '@livediagram/forms';
 import type { FillState, SubmitOutcome } from '@/components/forms/respond/useFormFill';
+import type { PreviewSend } from '@/lib/api/forms';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
@@ -18,6 +20,7 @@ export async function sendPreview({
   problem,
   addItems,
   state,
+  sendToLink,
 }: {
   form: FormDefinition;
   tabId: string;
@@ -26,6 +29,8 @@ export async function sendPreview({
   problem: unknown;
   addItems: ((creates: readonly ItemCreate[]) => Promise<boolean>) | undefined;
   state: FillState;
+  // The form's live link takes it as a response (absent offline, or for a form never published).
+  sendToLink?: ((state: FillState) => Promise<PreviewSend>) | undefined;
 }): Promise<SubmitOutcome> {
   const checked = checkResponse(form, state);
   if (!checked.ok) return { kind: 'invalid', errors: checked.errors };
@@ -33,7 +38,17 @@ export async function sendPreview({
     debugLog('[forms] form.preview.no_destination', { problem });
     return { kind: 'failed', message: PREVIEW_NO_DESTINATION };
   }
-  const card = responseCard(form, tabId, checked.answers, type, 'preview');
+  if (sendToLink) {
+    const sent = await sendToLink(state);
+    // The api counts it (Form·Sent·Preview, server-side).
+    if (sent.kind === 'sent') return { kind: 'sent' };
+    if (sent.kind === 'invalid') return { kind: 'invalid', errors: sent.errors };
+    if (sent.kind === 'failed') {
+      console.warn('[forms] form.preview.failed');
+      return { kind: 'failed', message: PREVIEW_FAILED };
+    }
+  }
+  const card = responseCard(form, tabId, checked.answers, type, null, true);
   const made = await addItems([
     { type: card.type, fields: card.fields, place: { status: form.destination.status } },
   ]);

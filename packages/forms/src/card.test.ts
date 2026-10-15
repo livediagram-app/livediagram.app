@@ -149,16 +149,19 @@ describe('responseCard', () => {
     expect(card.fields).not.toHaveProperty('status');
   });
 
-  it('titles a Preview’s card "Preview: …" and never marks it as a response', () => {
+  it('titles a Preview’s card "Preview: …", a response only when it takes a number', () => {
     const f = form([Q('n', 'short', { goesTo: { to: 'title' } }), Q('a', 'paragraph')]);
-    const named = responseCard(f, 't', answers({ n: 'Ada', a: 'Hi' }), type, 'preview');
+    const named = responseCard(f, 't', answers({ n: 'Ada', a: 'Hi' }), type, null, true);
     expect(named.fields['title']).toBe('Preview: Ada');
     expect(named.fields['status']).toBe('new~1');
     expect(named.fields['description']).toBe('A\nHi');
     expect(named.fields).not.toHaveProperty(FROM_FORM_FIELD);
-    expect(responseCard(f, 't', answers({}), type, 'preview').fields['title']).toBe(
-      'Preview: RSVP',
-    );
+    const counted = responseCard(f, 't', answers({}), type, 7, true);
+    expect(counted.fields['title']).toBe('Preview: RSVP');
+    // A preview of a published form is a counted response: it takes its number.
+    expect(counted.fields[FROM_FORM_FIELD]).toBe('t:7');
+    // A card with no number is named after the form alone.
+    expect(responseCard(f, 't', answers({}), type, null).fields['title']).toBe('RSVP');
   });
 });
 

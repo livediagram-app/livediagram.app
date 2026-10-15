@@ -6717,6 +6717,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color": {
         "type": "string"
       },
+      "gradient": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
       "style": {
         "$ref": "#/components/schemas/CoverStyle"
       }

@@ -1048,6 +1048,18 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/form-preview',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'An Editor\'s Preview of the published form: sent as a counted response, its card titled "Preview: ...", taken while the form is closed too, with no email. 404 form_not_published when the form has no live link.',
+    auth: 'guest-or-clerk',
+    requestSchema: ref('FormResponseBody'),
+    responseSchema: ref('FormResponseAccepted'),
+    statuses: [201, 400, 403, 404, 409, 413, 429],
+  },
+  {
+    method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/qa',
     segment: 'documents',
     tag: 'Documents',

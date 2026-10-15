@@ -401,6 +401,7 @@ an agent, are later steps.
 | Category | Action   | Type                                               | When                                                  |
 | -------- | -------- | -------------------------------------------------- | ----------------------------------------------------- |
 | Form     | Created  | the starter (`Blank`, `BugReport`, `Rsvp`, ...)    | A starter is chosen on Start Planning                 |
+| Form     | Created  | `FromBoard`                                        | New Form on a board's cog                             |
 | Form     | Added    | the question type (`ShortAnswer`, `Rating`, ...)   | Add Question                                          |
 | Form     | Shared   | `Link`                                             | Publish Form                                          |
 | Form     | Toggled  | `Open` / `Closed`                                  | Accepting Responses flipped (before the change lands) |

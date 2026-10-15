@@ -70,15 +70,16 @@ export interface ResponseCard {
 }
 
 // The card a response makes: the destination's type and status, the mapped answers in their fields, the rest in
-// Description under their prompts (in form order; unanswered questions left out). A Preview's card (`number` is
-// 'preview') is made the same way, but titled "Preview: …" (its title answer, else the form's heading) and never
-// marked as a response: no number, so it is neither counted nor shown as new.
+// Description under their prompts (in form order; unanswered questions left out). A Preview's card (`preview`) is
+// made the same way, titled "Preview: …" (its title answer, else the form's heading). `number` is the response number
+// it takes; null (a preview of a form with no link to count it) marks it as no response.
 export function responseCard(
   form: FormDefinition,
   tabId: string,
   answers: ReadonlyMap<string, AnswerValue>,
   type: ItemTypeDef,
-  number: number | 'preview',
+  number: number | null,
+  preview = false,
 ): ResponseCard {
   const fields: ItemFields = {};
   let title: string | undefined;
@@ -104,9 +105,9 @@ export function responseCard(
   }
   const answered = title?.trim();
   fields['title'] = cut(
-    number === 'preview'
+    preview
       ? `${PREVIEW_TITLE_PREFIX}${answered || form.heading}`
-      : answered || numberedTitle(form.heading, number),
+      : answered || (number === null ? form.heading : numberedTitle(form.heading, number)),
     ITEM_TITLE_MAX,
   );
   if (plain) {
@@ -119,6 +120,6 @@ export function responseCard(
     }
   }
   if (form.destination) fields['status'] = form.destination.status;
-  if (number !== 'preview') fields[FROM_FORM_FIELD] = fromFormValue(tabId, number);
+  if (number !== null) fields[FROM_FORM_FIELD] = fromFormValue(tabId, number);
   return { type: type.id, fields };
 }

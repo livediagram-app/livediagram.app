@@ -82,4 +82,28 @@ describe('sendPreview', () => {
     const { result } = send({ addItems: async () => false });
     expect(await result).toEqual({ kind: 'failed', message: PREVIEW_FAILED });
   });
+
+  it('sends a published form’s preview through its link, counted there, and says what it answered', async () => {
+    const link = vi.fn(async () => ({ kind: 'sent' as const }));
+    const { made, result } = send({ sendToLink: link });
+    expect(await result).toEqual({ kind: 'sent' });
+    expect(made).toEqual([]);
+    // The api counts it: no second count here.
+    expect(track).not.toHaveBeenCalled();
+    expect(
+      await send({
+        sendToLink: async () => ({ kind: 'invalid', errors: { 'q-t': 'required' } }),
+      }).result,
+    ).toEqual({ kind: 'invalid', errors: { 'q-t': 'required' } });
+    expect(await send({ sendToLink: async () => ({ kind: 'failed' }) }).result).toEqual({
+      kind: 'failed',
+      message: PREVIEW_FAILED,
+    });
+  });
+
+  it('makes the card itself when the form has no link yet', async () => {
+    const { made, result } = send({ sendToLink: async () => ({ kind: 'not_published' }) });
+    expect(await result).toEqual({ kind: 'sent' });
+    expect(made[0]!.fields['title']).toBe('Preview: Login fails');
+  });
 });
