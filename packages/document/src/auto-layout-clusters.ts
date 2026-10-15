@@ -217,7 +217,8 @@ export function layoutClusteredGraph(
     const from = project(e.from);
     const to = project(e.to);
     if (from === to) return;
-    contractedArrows.push(edgeToArrow({ from, to }, `contracted-${i}`));
+    // Its label kept, so the gap between the ranks it crosses fits it (auto-layout.ts).
+    contractedArrows.push(edgeToArrow({ from, to, label: e.label }, `contracted-${i}`));
   });
 
   const contracted = autoLayoutElements([...frames, ...freeNodes, ...contractedArrows], {

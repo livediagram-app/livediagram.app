@@ -455,8 +455,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   the box; an id that names none is refused.
 - **Flow lines are elbows.** `lines` defaults to `angled` for flow, lanes and tree; every edge to a later rank bends
   twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus, as long as
-  they are drawn alike: where solid and dashed lines meet at one end of a node, the lines of the style most of them
-  have share it and the rest keep their own ends, leaving from that side's quarter toward their other end, beside the
+  they are drawn alike (an unset line is solid): where solid and dashed lines meet at one end of a node, the lines of
+  the style most of the ones that could merge have share it (a labelled arrow saying something of its own does not
+  count) and the rest keep their own ends, leaving from that side's quarter toward their other end, beside the
   trunk rather than on it, so a dashed event line never rides a solid call's trunk, nor its run across the gap
   between ranks (each line's runs take their own channel there); a labelled
   arrow keeps its own ends, unless arrows into one node (or out of one) say the same thing in the same line: those
@@ -473,7 +474,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   beside a neighbour's drop), before it is ever laid over another line. Each label keeps off the labels placed
   before it (two "publish" labels off one bus stood over each other).
   The gap between two ranks fits the widest label crossing it, as Tidy Up's does (its width left to right, its line
-  height either side of the jog top to bottom), so a caption is never longer than its edge.
+  height either side of the jog top to bottom), so a caption is never longer than its edge; between a group and a
+  node outside it too.
 - **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
   the spine (the one labelled yes / ok / true / pass, else the one leading furthest) and lays each other exit whose
   target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.
@@ -564,7 +566,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
   is drawn straight, as a step that short reads as a notch (two boxes of different widths centred a pixel or two
   apart). Where one end's box meets no other line, that box moves across by the step so the line runs true; only
-  when both ends meet other lines is it drawn as a slight slant (a store's 5 px slant over 250 was seen).
+  when both ends meet other lines is it drawn as a slight slant (a store's 5 px slant over 250 was seen). An elbow
+  whose straight line would cross a box it was routed round keeps its bends, and lines are straightened before their
+  labels are placed, so a label sits on the line as it is drawn.
 
 The flow layout reduces crossings: after ranking, a few up-and-down barycentre
 passes reorder each rank, and a new order is kept only when it crosses fewer

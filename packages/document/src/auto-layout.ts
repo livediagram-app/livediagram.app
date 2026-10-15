@@ -198,7 +198,8 @@ function positionComponent(
 
   // The gap after each rank fits the labels of the edges crossing it, as Tidy Up's does (auto-layout-tidy-flow.ts):
   // left to right, a label's width; top to bottom, its line height either side of the jog there. A label longer
-  // than the gap otherwise sat on the box it pointed at.
+  // than the gap otherwise sat on the box it pointed at. Top to bottom one line (64 px) fits LAYER_GAP (90) today,
+  // so only a left-to-right layout widens; the rule is kept so a narrower gap stays safe.
   const gapAfter = new Map<number, number>();
   for (const e of realEdges) {
     const room = labelRoom(labelOf(e));

@@ -1,12 +1,13 @@
 // No notch in a straight line (docs/specs/015-api/mcp-server.md §4.7 "The graph look"): an elbow whose ends sit
 // within NOTCH_MAX of one line, across a middle run shorter than KINK_RUN, is drawn straight. Two boxes of different
 // widths centred a pixel or two apart, or two anchors a pixel off, gave an elbow whose middle run was a 2 px step: a
-// notch a reader sees, where a slant of a few pixels over the edge's length cannot be seen. Graph input only, the
-// last pass over its routed arrows.
+// notch a reader sees, where a slant of a few pixels over the edge's length cannot be seen. An elbow whose straight
+// line would cross a box it was routed round keeps its bends. Graph input only, before its labels are placed.
 
 import { arrowPolyline } from './arrow-path-hits';
 import { buildElementIndex } from './geometry';
-import type { Element, Endpoint } from './index';
+import { segmentHitsBox } from './graph-look';
+import { isBoxed, type BoxedElement, type Element, type Endpoint } from './index';
 
 // How far apart an elbow's ends may sit across its line and still be drawn straight, in px.
 export const NOTCH_MAX = 6;
@@ -14,7 +15,8 @@ export const NOTCH_MAX = 6;
 export const KINK_RUN = 12;
 
 // An arrow end as a key, for a pinned end: arrows sharing one join a bus there.
-const endKey = (end: Endpoint) => (end.kind === 'pinned' ? `${end.elementId}:${end.anchor}` : null);
+export const arrowEndKey = (end: Endpoint) =>
+  end.kind === 'pinned' ? `${end.elementId}:${end.anchor}` : null;
 
 export function withoutNotches(elements: Element[]): Element[] {
   const index = buildElementIndex(elements);
@@ -23,9 +25,15 @@ export function withoutNotches(elements: Element[]): Element[] {
   const shared = new Map<string, number>();
   for (const el of elements)
     if (el.type === 'arrow')
-      for (const key of [endKey(el.from), endKey(el.to)])
+      for (const key of [arrowEndKey(el.from), arrowEndKey(el.to)])
         if (key) shared.set(key, (shared.get(key) ?? 0) + 1);
-  const onBus = (end: Endpoint) => (shared.get(endKey(end) ?? '') ?? 0) > 1;
+  const onBus = (end: Endpoint) => (shared.get(arrowEndKey(end) ?? '') ?? 0) > 1;
+  // The boxes a straightened line must miss: every box but the frames and lanes that hold them.
+  const boxes = elements.filter(
+    (el): el is BoxedElement =>
+      isBoxed(el) && !(el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane')),
+  );
+  const pinned = (end: Endpoint) => (end.kind === 'pinned' ? end.elementId : null);
   // How many arrows meet each box, and the boxes moved to true a line up.
   const attached = new Map<string, number>();
   for (const el of elements)
@@ -47,6 +55,8 @@ export function withoutNotches(elements: Element[]): Element[] {
     const [start, end] = [points[0]!, points[points.length - 1]!];
     const [dx, dy] = [end.x - start.x, end.y - start.y];
     if (Math.min(Math.abs(dx), Math.abs(dy)) > NOTCH_MAX) return el;
+    const ends = new Set([pinned(el.from), pinned(el.to)]);
+    if (boxes.some((b) => !ends.has(b.id) && segmentHitsBox(start, end, b))) return el;
     // A box no other line meets moves across by the step, so the line runs true: drawn straight between ends a few
     // pixels apart, a store's drop read as a slant (an evaluator saw 5 px over 250).
     const step = Math.abs(dx) < Math.abs(dy) ? { x: dx, y: 0 } : { x: 0, y: dy };

@@ -75,6 +75,30 @@ describe('withExactEnds', () => {
   });
 });
 
+describe('withExactEnds: who counts', () => {
+  it('reads an explicit solid line and an unset one as the same line', () => {
+    const els = withExactEnds([
+      arrow('p1', 'a', 'bus', { label: 'publish', strokeStyle: 'solid' }),
+      arrow('p2', 'b', 'bus', { label: 'publish' }),
+    ]);
+    expect(byId(els, 'p1')).toMatchObject({ exactEnd: true });
+    expect(byId(els, 'p2')).toMatchObject({ exactEnd: true });
+  });
+
+  it('lets alike lines share a trunk though more lines of another style leave there, each saying its own thing', () => {
+    const els = withExactEnds([
+      arrow('get', 'svc', 'x', { label: 'GET' }),
+      arrow('post', 'svc', 'y', { label: 'POST' }),
+      arrow('put', 'svc', 'z', { label: 'PUT' }),
+      arrow('e1', 'svc', 'q', { strokeStyle: 'dashed' }),
+      arrow('e2', 'svc', 'r', { strokeStyle: 'dashed' }),
+    ]);
+    expect(byId(els, 'e1')).toMatchObject({ exactStart: true });
+    expect(byId(els, 'e2')).toMatchObject({ exactStart: true });
+    expect(byId(els, 'get').exactStart).toBeUndefined();
+  });
+});
+
 describe('withExactEnds by line', () => {
   it('lets only the style most lines at an end have share it, solid on a tie', () => {
     const els = withExactEnds([
@@ -312,6 +336,34 @@ describe('labels off frames', () => {
 });
 
 describe('labels slide along their run', () => {
+  it("leaves a lanes decision's exits on its side when the lines are not angled", () => {
+    const exitsOf = (lines: 'straight' | 'angled') =>
+      layoutGraph({
+        style: 'lanes',
+        lines,
+        nodes: [
+          { id: 'check', label: 'Approved?', shape: 'diamond', group: 'a' },
+          { id: 'yes', label: 'Ship', group: 'b' },
+          { id: 'no', label: 'Rework', group: 'c' },
+        ],
+        groups: [
+          { id: 'a', label: 'Review' },
+          { id: 'b', label: 'Release' },
+          { id: 'c', label: 'Build' },
+        ],
+        edges: [
+          { from: 'check', to: 'yes', label: 'yes' },
+          { from: 'check', to: 'no', label: 'no' },
+        ],
+      })
+        .filter((e): e is ArrowElement => e.type === 'arrow')
+        .map((a) => (a.from.kind === 'pinned' ? a.from.anchor : null));
+    // Angled, one exit leaves by the top or bottom, squared by its elbow.
+    expect(exitsOf('angled').some((a) => a === 'n' || a === 's')).toBe(true);
+    // Straight, nothing turns it: both leave the side facing their targets.
+    expect(exitsOf('straight').some((a) => a === 'n' || a === 's')).toBe(false);
+  });
+
   it('keeps a label on a drop between two lanes off both lane borders', () => {
     const els = layoutGraph(
       {
