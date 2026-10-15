@@ -15,7 +15,7 @@ import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
-import { sessionStripTools } from './SessionClusterStrip';
+import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { tidyUpOffered } from './tidy-up-actions';
 
 // Layers is a popover most visits never open: mounted from its first opening on (its code fetched once the
@@ -82,15 +82,15 @@ const NO_MOVE = () => {};
 
 export function useCanvasChromePanels({
   props,
-  planVoting,
+  stripTools,
   chromeHidden,
   isMobile,
   panelWiringFor,
   panelsOn,
 }: {
   props: CanvasChromeProps;
-  // Plan offers Timer and Vote (usePlanVoting).
-  planVoting: boolean;
+  // The tools the mode's Session strip offers (sessionStripTools), as CanvasChrome drew them.
+  stripTools: SessionStripTools | null;
   chromeHidden: boolean;
   isMobile: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
@@ -491,17 +491,13 @@ export function useCanvasChromePanels({
       ? activeDockPanel
       : null;
   // Only the tools the mode's strip offers (docs/specs/012-collaboration/session-tools.md).
-  const stripTools = sessionStripTools(props.editorMode, props.esBoard === true, planVoting);
   const sessionTools = stripTools ? props.sessionTools : undefined;
-  const sessionButtonGone =
-    sessionSegment !== null &&
-    (!sessionTools ||
-      (sessionSegment === 'session-poll' && !stripTools?.poll) ||
-      (sessionSegment === 'session-timer' && !stripTools?.timer) ||
-      ((!!readOnly || !!stripTools?.runningOnly) &&
-        ((sessionSegment === 'session-timer' && !sessionTools.timer) ||
-          (sessionSegment === 'session-vote' && !tabVote) ||
-          (sessionSegment === 'session-poll' && !pollPanel))));
+  const sessionButtonGone = stripSegmentGone({
+    segment: sessionSegment,
+    tools: sessionTools ? stripTools : null,
+    readOnly: !!readOnly,
+    running: { timer: !!sessionTools?.timer, vote: !!tabVote, poll: !!pollPanel },
+  });
   useEffect(() => {
     if (sessionButtonGone) closeDockPanel();
   }, [sessionButtonGone, closeDockPanel]);

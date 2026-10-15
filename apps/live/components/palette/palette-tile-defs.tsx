@@ -1119,7 +1119,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Bring Focus',
     caption: 'Bring Focus',
     description:
-      'Bring Focus. Press it and everyone else in the room is offered a jump to it, at your zoom, on your tab.',
+      'Bring Focus. Press it and everyone else in the room is offered a jump to it, on your tab.',
     filled: true,
     action: { type: 'shape', kind: 'focus-button' },
     icon: (

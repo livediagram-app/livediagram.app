@@ -32,7 +32,11 @@ import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton
 import { showsSlidesButton, SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
 import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
-import { SessionClusterStrip, sessionStripTools } from '@/components/canvas/SessionClusterStrip';
+import {
+  SessionClusterStrip,
+  sessionStripTools,
+  stripCanStart,
+} from '@/components/canvas/SessionClusterStrip';
 import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
 import { usePlanVoting } from '@/hooks/plan/usePlanVoting';
@@ -404,7 +408,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     paletteTint,
   } = useCanvasChromePanels({
     props,
-    planVoting,
+    stripTools,
     chromeHidden,
     isMobile,
     panelWiringFor,
@@ -713,7 +717,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   voteReviewing={!!props.voteReview}
                   voteButtonRef={voteButtonRef}
                   pollRunning={!!props.pollPanel}
-                  canStart={!readOnly && !stripTools.runningOnly}
+                  canStart={stripCanStart(stripTools, !!readOnly)}
                   offersTimer={stripTools.timer}
                   offersPoll={stripTools.poll}
                   open={

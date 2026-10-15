@@ -1,7 +1,7 @@
 'use client';
 
 // Bring Focus (docs/specs/012-collaboration/bring-focus.md): press it and everyone else in the room is offered a
-// jump to it, at your zoom, on your tab.
+// jump to it, on your tab.
 //
 // The same keycap the mode button wears, for the same reason: this is a thing
 // you press, and it should look pressed-able before you have read the label.
