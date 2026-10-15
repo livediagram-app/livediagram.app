@@ -206,18 +206,11 @@ export function buildSketchnote(cx: number, cy: number): Element[] {
   out.push(drawn(tl!, 91, { colour: 'red' }), drawn(tr!, 92, { colour: 'red' }));
   out.push(drawn(tb!, 90, { colour: 'red', width: 3 }));
   out.push(
-    letter(
-      x0 + 250,
-      y0 + 850,
-      900,
-      56,
-      'Takeaway: a Friday deploy should be dull',
-      {
-        textSize: 'lg',
-        textAlignX: 'center',
-        textBold: true,
-      },
-    ),
+    letter(x0 + 250, y0 + 850, 900, 56, 'Takeaway: a Friday deploy should be dull', {
+      textSize: 'lg',
+      textAlignX: 'center',
+      textBold: true,
+    }),
     sticker('emoji-party-popper', x0 + 1196, y0 + 832, 70, 10),
   );
 
