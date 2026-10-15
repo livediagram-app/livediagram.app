@@ -503,6 +503,12 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   whose first member would take a line through the heading's text is widened on the left until it does not, on the
   heading's side only: the far side hugs the members (a long heading framed two boxes in twice their room), unless
   an edge meets the group itself, whose frame then stays centred on its members so that edge stays on their line.
+  A row of members with no lines among them sits by its links to the group most of the row links to (each store
+  under its own service, a service's link to a third party pulling it off none), never by a hub's. A hub (a member
+  linked to more outside nodes than half its row, at least three, in a row holding at least three one-link members:
+  a Kafka bus every service publishes to) goes to the end of its row rather than mid-row between a service and its
+  store. Two members wanting one spot split the difference, unless that spreads along a tight row: then the first
+  takes the spot and the next packs beside it, so the rest stay straight.
   A label's plate keeps 6 px off every frame's and lane's border, inside or out, never sitting on the edge. The
   reverse holds too: a group in one row whose members have no lines among them (a row of data stores) seats each
   member by the outside nodes it links to, a database under its service, its order and gaps kept, and its frame

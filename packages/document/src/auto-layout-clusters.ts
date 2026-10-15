@@ -21,7 +21,7 @@ import { unionRects, type Rect } from './geometry-primitives';
 import { bowReciprocalEdges } from './arrow-reciprocal';
 import { faceGroupEdges, headingLead, seatByMembers } from './auto-layout-cluster-seats';
 import { lineUpStackedFrames } from './auto-layout-cluster-stack';
-import { seatMembersByNeighbours } from './auto-layout-cluster-members';
+import { isRowHub, seatMembersByNeighbours } from './auto-layout-cluster-members';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // Space between a frame's border and its members: the top band is deeper so
@@ -119,6 +119,9 @@ function sanitizeClusters(graph: DiagramGraph): GraphCluster[] {
 // Without clusters this is exactly graphToElements + autoLayoutElements
 // (plus the edgeless sweep) — the plain path every flowchart without
 // subgraphs takes.
+// Rounds of seating rows by their neighbours (3c): the second settles a row seated before its partner moved.
+const SEAT_PASSES = 2;
+
 export function layoutClusteredGraph(
   graph: DiagramGraph,
   opts: ClusteredLayoutOptions = {},
@@ -253,15 +256,17 @@ export function layoutClusteredGraph(
   // 3b. Within each group, order members that share a rank by where their
   // outside neighbours ended up, so edges into the group don't cross it.
   orderMembersByNeighbours(clusters, placedNodes, placedFrames, graph, direction ?? 'TB');
-  // 3c. A row of members with no lines among them sits by the outside nodes they link to.
-  seatMembersByNeighbours(
-    placedNodes,
-    placedFrames,
-    clusterOf,
-    graph,
-    direction ?? 'TB',
-    FRAME_PAD,
-  );
+  // 3c. A row of members with no lines among them sits by the outside nodes they link to. Twice: a row seated by
+  // another that then moved (services by their stores, before the stores were seated by them) sat a notch off it.
+  for (let pass = 0; pass < SEAT_PASSES; pass++)
+    seatMembersByNeighbours(
+      placedNodes,
+      placedFrames,
+      clusterOf,
+      graph,
+      direction ?? 'TB',
+      FRAME_PAD,
+    );
   // 3d. Groups stacked down the flow keep the spine straight: a stage's one entry lines up with what feeds it. Before
   // 3e: it moves a stage's members, and a node seated by them first was left behind.
   lineUpStackedFrames(placedFrames, placedNodes, clusterOf, graph, direction ?? 'TB');
@@ -363,7 +368,7 @@ function orderMembersByNeighbours(
       const gaps = rank
         .slice(1)
         .map((el, i) => crossStart(el) - crossStart(rank[i]!) - crossLen(rank[i]!));
-      const keyed = rank.map((el, i) => {
+      const outsideOf = (el: BoxedElement) => {
         const outside: number[] = [];
         for (const e of graph.edges) {
           const other = e.from === el.id ? e.to : e.to === el.id ? e.from : null;
@@ -371,9 +376,16 @@ function orderMembersByNeighbours(
           const o = byId.get(other);
           if (o) outside.push(cross(o));
         }
-        const key = outside.length
-          ? outside.reduce((a, b) => a + b, 0) / outside.length
-          : cross(el);
+        return outside;
+      };
+      const rowLinks = rank.map((el) => outsideOf(el).length);
+      const keyed = rank.map((el, i) => {
+        const outside = outsideOf(el);
+        const key = isRowHub(outside.length, rowLinks)
+          ? Infinity
+          : outside.length
+            ? outside.reduce((a, b) => a + b, 0) / outside.length
+            : cross(el);
         return { el, key, i };
       });
       keyed.sort((a, b) => a.key - b.key || a.i - b.i);
