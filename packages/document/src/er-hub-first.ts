@@ -72,18 +72,23 @@ export function reversedArrow(a: ArrowElement): ArrowElement {
   };
 }
 
-// Each laid-out arrow of a turned edge (matched by its pinned ends) turned back to the way it was written.
+// Each laid-out arrow of a turned edge turned back to the way it was written. Arrows come out in edge order, so the
+// k-th arrow between two boxes is the k-th edge between them: a pair related both ways (one turned, one not) turns
+// back only the one that was turned.
 export function turnBack(elements: Element[], edges: readonly GraphEdge[]): Element[] {
-  const pending = new Map<string, number>();
-  for (const e of edges)
-    if (e.turned) pending.set(`${e.from}>${e.to}`, (pending.get(`${e.from}>${e.to}`) ?? 0) + 1);
-  if (pending.size === 0) return elements;
+  if (!edges.some((e) => e.turned)) return elements;
+  // For each laid-out direction, whether each edge drawn that way, in order, was turned.
+  const order = new Map<string, boolean[]>();
+  for (const e of edges) {
+    const key = `${e.from}>${e.to}`;
+    order.set(key, [...(order.get(key) ?? []), e.turned === true]);
+  }
+  const seen = new Map<string, number>();
   return elements.map((el) => {
     if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.to.kind !== 'pinned') return el;
     const key = `${el.from.elementId}>${el.to.elementId}`;
-    const left = pending.get(key) ?? 0;
-    if (left === 0) return el;
-    pending.set(key, left - 1);
-    return reversedArrow(el);
+    const k = seen.get(key) ?? 0;
+    seen.set(key, k + 1);
+    return order.get(key)?.[k] ? reversedArrow(el) : el;
   });
 }
