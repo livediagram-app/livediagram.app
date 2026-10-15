@@ -4,7 +4,6 @@
 // from the editor's Plan slice: the document's boards give the status picker its names.
 import { useMemo } from 'react';
 import {
-  ITEM_TYPES_MAX,
   duplicateItemType,
   isArchived,
   isTrashed,
@@ -14,6 +13,7 @@ import {
   typeIn,
 } from '@livediagram/items';
 import { duplicateItem } from './duplicate-item';
+import { mayCreateCardType } from './may-create-card-type';
 import { newCardStatus } from './new-card-status';
 import { newTypeForBoard } from '@/hooks/plan/useTypeForBoard';
 import { liveTrail } from './item-trail';
@@ -90,7 +90,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
             plan.closeTypeEditor();
           }}
           onClose={plan.closeTypeEditor}
-          {...(editing && ctx.types.length < ITEM_TYPES_MAX
+          {...(editing && mayCreateCardType(ctx)
             ? { onDuplicate: () => ctx.editType('new', editing.id) }
             : {})}
         />

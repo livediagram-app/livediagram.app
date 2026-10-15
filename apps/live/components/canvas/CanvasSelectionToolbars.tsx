@@ -11,6 +11,7 @@ import {
   isFlowchartStep,
   isMindNode,
   takesAttachments,
+  threadAt,
   type Element,
 } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -126,11 +127,11 @@ export function CanvasSelectionToolbars({
             zoom={viewportZoom}
             suspended={moving}
             title={selected ? `Selected ${elementKindLabel(selected)}` : 'Selected Element'}
-            // In view-only mode we mount the popover with just
-            // `onOpenComments`: visitors should be able to read +
-            // post comments on a document they don't own, but no
-            // other edit affordances apply. Every other handler
-            // becomes undefined and the matching button drops out.
+            // In a read-only session we mount the popover with just
+            // `onOpenComments` (below): a Participant reads and posts
+            // comments, a Viewer only reads them. No other edit affordance
+            // applies: every other handler becomes undefined and the
+            // matching button drops out.
             locked={readOnly ? undefined : selectedLocked}
             // Edit text: on every text-CAPABLE element, even before it has
             // a label — an empty shape's "Add Text" button teaches that
@@ -188,11 +189,10 @@ export function CanvasSelectionToolbars({
             onSendToBack={readOnly || !selected ? undefined : props.onSendSelectedToBack}
             onToggleLock={readOnly ? undefined : onToggleLockSelected}
             onDelete={readOnly ? undefined : onDeleteSelected}
-            // Comment button is VIEW-ROLE ONLY now. Editors reach
-            // comments via the right-click / ellipsis context menu (which
-            // is gated !isReadOnly), so the toolbar button was a
-            // duplicate for them. View-role visitors get no context menu,
-            // so the toolbar stays their only way into a thread.
+            // The comment button is a read-only session's only (Participant and Viewer). Editors
+            // reach comments via the right-click / ellipsis context menu (gated !isReadOnly), so the
+            // toolbar button was a duplicate for them; a read-only session has no context menu, so
+            // the toolbar is its way into a thread.
             // Not where the reader has no comments to open (an embed's viewer, a Community visitor).
             // A Viewer writes no comment (docs/specs/013-workspace/share-roles.md): it reads the thread an
             // element has, behind Show Comments, and gets no button on one with none.
@@ -281,6 +281,5 @@ export function CanvasSelectionToolbars({
 
 // Whether an element carries a comment thread to read (resolved ones included: a reader opens those too).
 function hasComments(el: Element): boolean {
-  const thread = (el as { commentThread?: { comments: readonly unknown[] } }).commentThread;
-  return (thread?.comments.length ?? 0) > 0;
+  return (threadAt(el)?.comments.length ?? 0) > 0;
 }
