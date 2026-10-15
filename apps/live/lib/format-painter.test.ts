@@ -276,6 +276,20 @@ describe('paintableArrowFields', () => {
     expect(out).not.toHaveProperty('locked');
   });
 
+  it('carries an ER relationship’s own start head, and a plain arrow’s lack of one', () => {
+    const er = {
+      ...fullyStyledArrow,
+      arrowheadShape: 'many',
+      arrowheadStartShape: 'one',
+    } as ArrowElement;
+    expect(paintableArrowFields(er)).toMatchObject({
+      arrowheadShape: 'many',
+      arrowheadStartShape: 'one',
+    });
+    const onto = applyPaint(er, paintableArrowFields(fullyStyledArrow));
+    expect(onto.arrowheadStartShape).toBeUndefined();
+  });
+
   it('carries the arrowhead colour and the label plate', () => {
     const out = paintableArrowFields({
       ...fullyStyledArrow,
