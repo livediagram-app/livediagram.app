@@ -47,8 +47,9 @@ const ROOMS: RoomSpec[] = [
       { kind: 'desk', x: 180, y: 48, facing: 's' },
       { kind: 'desk', x: 330, y: 48, facing: 's' },
       { kind: 'bookshelf', x: 480, y: 40 },
-      // The near row leaves the doorway's column (262..358) clear, so walking in never lands at a desk.
-      { kind: 'desk', x: 30, y: 190, facing: 's' },
+      // The near row leaves the doorway's column (262..358) clear, so walking in never lands at a desk: two desks
+      // side by side as a bench on the left, one on the right.
+      { kind: 'desk', x: 20, y: 190, facing: 's' },
       { kind: 'desk', x: 140, y: 190, facing: 's' },
       { kind: 'desk', x: 400, y: 190, facing: 's' },
       { kind: 'plant', x: 540, y: 230 },

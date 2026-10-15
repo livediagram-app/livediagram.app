@@ -97,6 +97,13 @@ describe('the Virtual Office layout', () => {
     }
   });
 
+  it('never stands one desk over another', () => {
+    const desks = of('desk');
+    for (const [i, a] of desks.entries())
+      for (const b of desks.slice(i + 1))
+        expect(meets(a, b), `${a.x},${a.y} / ${b.x},${b.y}`).toBe(false);
+  });
+
   it('puts every sofa on a rug', () => {
     for (const sofa of of('sofa')) expect(of('rug').some((rug) => meets(sofa, rug))).toBe(true);
   });
