@@ -79,6 +79,11 @@ describe('checkAnswer', () => {
     expect(checkAnswer(q, ['A', 'B', 'C', OTHER_ANSWER], 'D')).toEqual({ error: 'too_many' });
     expect(checkAnswer(q, ['A', OTHER_ANSWER], 'D')).toEqual({ value: ['A', 'D'] });
     expect(checkAnswer(q, ['A', OTHER_ANSWER], 'A')).toEqual({ value: ['A'] });
+    // Other typed as an option that was not ticked counts as that option, never as nothing.
+    expect(checkAnswer({ ...q, min: undefined }, [OTHER_ANSWER], 'B')).toEqual({ value: ['B'] });
+    expect(checkAnswer({ ...q, min: undefined }, ['C', OTHER_ANSWER], 'A')).toEqual({
+      value: ['A', 'C'],
+    });
     expect(checkAnswer(q, ['A', OTHER_ANSWER], '')).toEqual({ error: 'required' });
     expect(checkAnswer(q, ['A', 'Z'])).toEqual({ error: 'not_an_option' });
     expect(checkAnswer(q, 'A')).toEqual({ error: 'not_an_option' });
@@ -90,6 +95,9 @@ describe('checkAnswer', () => {
     expect(checkAnswer(Q('rating'), 5)).toEqual({ value: 5 });
     expect(checkAnswer(Q('rating'), '3')).toEqual({ value: 3 });
     expect(checkAnswer(Q('rating'), 6)).toEqual({ error: 'out_of_scale' });
+    expect(checkAnswer(Q('rating'), true)).toEqual({ error: 'out_of_scale' });
+    expect(checkAnswer(Q('rating'), [2])).toEqual({ error: 'out_of_scale' });
+    expect(checkAnswer(Q('rating'), '2.0')).toEqual({ error: 'out_of_scale' });
     expect(checkAnswer(Q('rating', { scale: 10 }), 10)).toEqual({ value: 10 });
     expect(checkAnswer(Q('checkbox'), true)).toEqual({ value: true });
     expect(checkAnswer(Q('checkbox'), 'yes')).toEqual({ error: 'must_tick' });

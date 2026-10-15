@@ -64,3 +64,28 @@ describe('renameForm', () => {
     expect(retitleSheets).not.toHaveBeenCalled();
   });
 });
+
+// The connect box's Cards on a Board, for a form whose sheet was removed (docs/specs/030-forms/forms.md "Responses Go
+// To and Settings"): the new board is where responses go, so the sheet it named goes.
+describe('newResponsesBoard', () => {
+  it('drops a removed sheet so the new board takes the responses', () => {
+    let now: Tab[] = [formTab({ sheet: 'gone' })];
+    const { result } = renderHook(() =>
+      useFormActions({
+        activeId: 'f',
+        tabs: now,
+        commitTabs: (map) => (now = map(now)),
+        itemTypes: {
+          types: [{ id: 'bug', label: 'Bug', fields: ['title'], custom: [] } as never],
+          saveType: vi.fn(),
+        },
+        statusNames: new Map(),
+      }),
+    );
+    result.current.newResponsesBoard();
+    const form = now.find((t) => t.id === 'f')!.form!;
+    const board = now.find((t) => t.kind === 'board')!;
+    expect(form.sheet).toBeUndefined();
+    expect(form.destination).toMatchObject({ tabId: board.id, typeId: 'bug' });
+  });
+});

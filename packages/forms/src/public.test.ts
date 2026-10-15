@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CLOSED_MESSAGE, DEFAULT_CONFIRMATION } from './limits';
 import type { FormDefinition } from './model';
-import { closedMessageOf, closedReason, publicForm } from './public';
+import { closedBySettings, closedMessageOf, closedReason, publicForm } from './public';
 import {
   QUESTION_TYPE_NAMES,
   QUESTION_TYPE_TELEMETRY,
@@ -64,9 +64,19 @@ describe('closed', () => {
     expect(closedReason(form, open)).toBeNull();
     expect(closedReason(form, { ...open, open: false })).toBe('switched_off');
     expect(closedReason({ ...form, destination: undefined }, open)).toBe('no_destination');
+    // Rows in a sheet need no board.
+    expect(
+      closedReason({ ...form, destination: undefined, sheet: { tabId: 't', sheetId: 's' } }, open),
+    ).toBeNull();
     expect(closedReason({ ...form, closesAt: 100 }, open)).toBe('closes_at');
     expect(closedReason({ ...form, closesAt: 101 }, open)).toBeNull();
     expect(closedReason({ ...form, limit: 3 }, { ...open, responses: 3 })).toBe('limit');
+  });
+
+  it('says when its own Settings close it, whatever its switch', () => {
+    expect(closedBySettings({}, { responses: 9, now: 5 })).toBeNull();
+    expect(closedBySettings({ closesAt: 5 }, { responses: 0, now: 5 })).toBe('closes_at');
+    expect(closedBySettings({ limit: 9 }, { responses: 9, now: 5 })).toBe('limit');
   });
 
   it('has a closed message', () => {
