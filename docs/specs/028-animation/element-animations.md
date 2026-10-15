@@ -30,8 +30,9 @@ A standalone **text element** has no body set: its words are the whole element, 
 
 A shape **carries words** when its kind takes a label. Icons, charts, progress, rating, stickers and chairs keep
 their own sets (below) and take no Text set; nor do badges and step numbers, whose few characters are part of their
-body, or the concept graphics, which animate their rows with the Concept set. A step number's **Play in Order** offsets
-its Shape animation by its number ([The step number](../009-elements/step-number.md)).
+body, or the concept graphics, which animate their rows with the Concept set. A Shape animation stored on a concept graphic or a sequence
+before they had sets of their own does not play: their menu has no Shape category to change or clear it. A step number's
+**Play in Order** offsets its Shape animation by its number ([The step number](../009-elements/step-number.md)).
 
 ### Sets that already exist
 

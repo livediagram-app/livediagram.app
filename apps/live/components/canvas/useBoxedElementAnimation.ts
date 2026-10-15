@@ -5,6 +5,7 @@ import {
   bodyAnimationSetOf,
   defaultFillColor,
   defaultStrokeColor,
+  hasOwnBodySet,
   keptAnimation,
   type BoxedElement,
   type ShapeAnimation,
@@ -45,6 +46,9 @@ export function wrapperShapeAnimation(element: BoxedElement): ShapeAnimation | u
       ? undefined
       : (value as ShapeAnimation);
   }
+  // Concept graphics and sequences animate their rows by their own fields: a Shape value from before has nothing to
+  // clear it from, so it does not play.
+  if (hasOwnBodySet(element)) return undefined;
   const set = bodyAnimationSetOf(element);
   // Icons, charts, progress and rating own other fields; an old value here plays as it did.
   if (set === undefined || set === 'shape') return value as ShapeAnimation;
