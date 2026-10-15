@@ -13,6 +13,7 @@ import {
   statusKey,
   TRASH_STATUS,
   CURRENCY_DEFAULT,
+  ratingScaleOf,
   detailsLabelOf,
   isCustomCardField,
   namedDisplay,
@@ -69,6 +70,8 @@ export interface ListedType {
     options?: readonly string[];
     linkType?: string;
     currency?: string;
+    // A Rating field's top score.
+    scale?: number;
     onCard?: boolean;
   }[];
   // The column a new card of it starts in, by name.
@@ -184,6 +187,7 @@ export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] =
       ...(f.options ? { options: f.options } : {}),
       ...(f.linkType ? { linkType: f.linkType } : {}),
       ...(f.kind === 'currency' ? { currency: f.currency ?? CURRENCY_DEFAULT } : {}),
+      ...(f.kind === 'rating' ? { scale: ratingScaleOf(f) } : {}),
       ...(f.onCard ? { onCard: true } : {}),
     })),
     ...(status ? { defaultStatus: statuses.find((s) => s.status === status)?.name ?? status } : {}),

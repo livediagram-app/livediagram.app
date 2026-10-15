@@ -925,6 +925,9 @@ importers:
 
   packages/document:
     dependencies:
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../forms
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons

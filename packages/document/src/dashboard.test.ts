@@ -132,13 +132,16 @@ describe('a dashboard layout', () => {
 
 // docs/specs/026-plan/plan-tabs.md "The kinds".
 describe('the Plan tab kinds', () => {
-  it.each(['board', 'sheet', 'dashboard'] as const)('a %s tab is always in Plan', (kind) => {
-    const tab = { id: 't', kind, opensIn: 'draw' as const };
-    expect(tabKindOf(tab)).toBe(kind);
-    expect(opensInOf(tab)).toBe('plan');
-    expect(editorModeSwitchable(tab)).toBe(false);
-    expect(setTabOpensIn(tab, 'diagram')).toBe(tab);
-  });
+  it.each(['board', 'sheet', 'dashboard', 'form'] as const)(
+    'a %s tab is always in Plan',
+    (kind) => {
+      const tab = { id: 't', kind, opensIn: 'draw' as const };
+      expect(tabKindOf(tab)).toBe(kind);
+      expect(opensInOf(tab)).toBe('plan');
+      expect(editorModeSwitchable(tab)).toBe(false);
+      expect(setTabOpensIn(tab, 'diagram')).toBe(tab);
+    },
+  );
 });
 
 describe('dashboard presets', () => {

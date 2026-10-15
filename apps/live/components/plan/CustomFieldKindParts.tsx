@@ -1,11 +1,23 @@
 'use client';
 
-// New Custom Field's kind and preview (docs/specs/026-plan/item-types.md "Editing a type": Add Field): the ten
-// kinds as a grid of icon tiles, one radio group, and a preview of the field as the card's panel will show it,
+// New Custom Field's kind and preview (docs/specs/026-plan/item-types.md "Editing a type": Add Field): the twelve
+// kinds as a grid of icon tiles, six to a row, one radio group, and a preview of the field as the card's panel will show it,
 // named as typed, with a sample value of its kind.
-import { currencyText, type CustomFieldDef, type CustomFieldKind } from '@livediagram/items';
+import {
+  RATING_FIELD_SCALE_DEFAULT,
+  currencyText,
+  ratingText,
+  type CustomFieldDef,
+  type CustomFieldKind,
+} from '@livediagram/items';
 import { CheckIcon, lucideGlyph } from '@livediagram/ui';
-import { lucideHash, lucideList, lucideLink, lucideType } from '@livediagram/icons/lucide';
+import {
+  lucideHash,
+  lucideList,
+  lucideListChecks,
+  lucideLink,
+  lucideType,
+} from '@livediagram/icons/lucide';
 import { CUSTOM_KIND_LABELS } from './ItemTypeFieldForms';
 import { ItemDetailsRow } from './ItemPanelLayout';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -14,6 +26,7 @@ const TypeIcon = lucideGlyph(lucideType, 16);
 const HashIcon = lucideGlyph(lucideHash, 16);
 const ListIcon = lucideGlyph(lucideList, 16);
 const LinkIcon = lucideGlyph(lucideLink, 16);
+const ListChecksIcon = lucideGlyph(lucideListChecks, 16);
 
 // Each kind's icon: what its value looks like.
 export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
@@ -26,6 +39,8 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   link: <LinkIcon />,
   email: <PlanTypeGlyph glyph="mail" size={16} />,
   choice: <ListIcon />,
+  multichoice: <ListChecksIcon />,
+  rating: <PlanTypeGlyph glyph="star" size={16} />,
   card: <PlanTypeGlyph glyph="ticket" size={16} />,
 };
 
@@ -67,7 +82,7 @@ export function CustomFieldKindTiles({
   onChange: (kind: CustomFieldKind) => void;
 }) {
   return (
-    <div role="radiogroup" aria-label="New field's kind" className="grid grid-cols-5 gap-1">
+    <div role="radiogroup" aria-label="New field's kind" className="grid grid-cols-6 gap-1">
       {kinds.map((k) => {
         const on = k === value;
         return (
@@ -98,11 +113,13 @@ function SampleValue({
   options,
   linkLabel,
   currency,
+  scale,
 }: {
   kind: CustomFieldKind;
   options: readonly string[];
   linkLabel: string | undefined;
   currency: string | undefined;
+  scale: number | undefined;
 }) {
   const box =
     'rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
@@ -142,6 +159,25 @@ function SampleValue({
           {options[0] ?? 'An option'}
         </span>
       );
+    case 'multichoice':
+      return (
+        <span className="flex flex-wrap gap-1">
+          {(options.length ? options.slice(0, 2) : ['An option', 'Another']).map((o) => (
+            <span
+              key={o}
+              className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[12px] text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            >
+              {o}
+            </span>
+          ))}
+        </span>
+      );
+    case 'rating':
+      return (
+        <span className="text-[14px] tracking-wider text-amber-500" aria-hidden>
+          {ratingText(4, scale ?? RATING_FIELD_SCALE_DEFAULT)}
+        </span>
+      );
     case 'card':
       return (
         <div className={`${box} inline-flex items-center gap-1.5`}>
@@ -158,6 +194,7 @@ export function CustomFieldPreview({
   options,
   linkLabel,
   currency,
+  scale,
 }: {
   label: string;
   kind: CustomFieldKind;
@@ -166,6 +203,8 @@ export function CustomFieldPreview({
   linkLabel?: string | undefined;
   // A Currency field's code.
   currency?: string | undefined;
+  // A Rating field's scale.
+  scale?: number | undefined;
 }) {
   return (
     <figure
@@ -177,7 +216,13 @@ export function CustomFieldPreview({
       </figcaption>
       <div className="pointer-events-none" aria-hidden>
         <ItemDetailsRow label={label.trim() || 'Field name'}>
-          <SampleValue kind={kind} options={options} linkLabel={linkLabel} currency={currency} />
+          <SampleValue
+            kind={kind}
+            options={options}
+            linkLabel={linkLabel}
+            currency={currency}
+            scale={scale}
+          />
         </ItemDetailsRow>
       </div>
     </figure>

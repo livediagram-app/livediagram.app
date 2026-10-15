@@ -3,6 +3,8 @@
 // handles document data. See docs/specs/006-document/document-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
+import type { FormDefinition } from '@livediagram/forms';
+
 // Live session-tool types used by the `Tab.timer` / `Tab.vote` fields
 // below. Type-only import (erased at build) so the index <-> session
 // circular reference is fine. The runtime helpers are re-exported lower
@@ -293,6 +295,8 @@ export type Tab = {
   kind?: TabKind;
   // A Dashboard tab's rows and slots (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), read via `readDashboard`.
   dashboard?: DashboardLayout;
+  // A Form tab's form (docs/specs/030-forms/forms.md), read via `readForm` from @livediagram/forms.
+  form?: FormDefinition;
   // The tab's editor mode, the same for everyone on it and the mode it opens in
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
   // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
