@@ -655,7 +655,9 @@ wrongly:
   does not wrap its names mid-word ("ElastiCa / che"). A raw arrow pinned at both ends that gives no `arrowStyle` is
   angled, as graph input draws its lines, and an angled one that gives no bends takes graph input's two (out of its
   start, across, into its end), so it meets both ends square rather than as the editor's lone L, sideways into a top;
-  one whose ends line up runs straight. `"arrowStyle": "straight"` keeps a diagonal.
+  one whose ends line up runs straight. `"arrowStyle": "straight"` keeps a diagonal. Both defaults are for content
+  arriving fresh: a `replace` that sends back elements the tab already holds (by id) leaves their text size and lines
+  as they are, so reading a tab and writing it back never restyles what the person made.
 - A **table**'s ragged rows are padded to the widest (`normalizeTable`, the same
   pass the editor runs on load), so every row renders.
 - An unknown **codeLanguage** becomes `plain` and an unknown **codeTheme** is

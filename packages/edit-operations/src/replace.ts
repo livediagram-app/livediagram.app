@@ -63,10 +63,12 @@ function fromGraph(graph: GraphInput, themeId: string | undefined): Built {
 function fromElements(
   raw: unknown,
   layout: 'auto' | 'preserve' | undefined,
-  themeId?: string,
+  themeId: string | undefined,
+  kept: ReadonlySet<string>,
 ): Built {
   if (!Array.isArray(raw)) return invalidBody('elements: expected an array of elements');
-  const normalised = normaliseElements(raw) as unknown[];
+  // Elements the tab already holds keep their own look; only new ones take a raw element's defaults.
+  const normalised = normaliseElements(raw, { kept }) as unknown[];
   for (const el of normalised) {
     const issue = elementValidationIssue(el);
     if (issue) {
@@ -85,7 +87,13 @@ function fromElements(
   };
 }
 
-function build(body: ReplaceBody, source: Source, themeId: string | undefined): Built {
+function build(
+  body: ReplaceBody,
+  source: Source,
+  themeId: string | undefined,
+  // The ids the tab already holds.
+  kept: ReadonlySet<string> = new Set(),
+): Built {
   switch (source) {
     case 'graph': {
       const { graph } = body as { graph: unknown };
@@ -121,7 +129,7 @@ function build(body: ReplaceBody, source: Source, themeId: string | undefined): 
     }
     case 'elements': {
       const { elements, layout } = body as { elements: unknown; layout?: 'auto' | 'preserve' };
-      return fromElements(elements, layout, themeId);
+      return fromElements(elements, layout, themeId, kept);
     }
   }
 }
@@ -170,7 +178,7 @@ export function applyReplace(
   if (typeof source !== 'string') return refuse(source);
   const themeId = options.themeId ?? options.theme?.id ?? tab?.theme;
   if (themeId !== undefined && !isBuiltInTheme(themeId)) log('[edit-ops] theme-fallback', {});
-  const built = build(body, source, themeId);
+  const built = build(body, source, themeId, new Set(tab?.elements.map((el) => el.id) ?? []));
   if ('code' in built) return refuse(built);
   // A Dashboard is rebuilt in place on a Dashboard tab (its id, name and theme kept); onto any other tab it is refused.
   if (tab && built.newOnly && tabKindOf(tab) !== 'dashboard')
