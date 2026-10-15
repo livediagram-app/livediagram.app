@@ -22,7 +22,11 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
-    "@livediagram/templates": "workspace:*"
+    "@livediagram/document": "workspace:*",
+    "@livediagram/forms": "workspace:*",
+    "@livediagram/icons": "workspace:*",
+    "@livediagram/templates": "workspace:*",
+    "@livediagram/ui": "workspace:*"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",

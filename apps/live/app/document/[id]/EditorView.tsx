@@ -87,6 +87,7 @@ import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled } from '@/lib/user-preferences';
 import { BLANK_SHEET_CHOICE } from '@/lib/sheet-seeds';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
+import { PendingFormStart } from '@/components/forms/PendingFormStart';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -761,6 +762,8 @@ export function EditorView() {
                                     {mountDrawTour ? <DrawTourHost /> : null}
                                     {/* The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab. */}
                                     {mountFormTour ? <FormTourHost /> : null}
+                                    {/* A form template's form, started once its tab opens (lib/pending-form-start.ts). */}
+                                    <PendingFormStart />
                                     {/* The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the first time a person walks as an avatar. */}
                                     {mountAvatarTour ? <AvatarTourHost /> : null}
                                     {mountIllustrateTour ? <IllustrateTourHost /> : null}

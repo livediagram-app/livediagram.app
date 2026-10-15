@@ -108,6 +108,14 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'guest-list': ['guests', 'rsvp list', 'invite list'],
   'grade-book': ['grades', 'report card', 'exam'],
   'habit-tracker': ['habits', 'self improvement', 'fitness'],
+  // Form templates (form-templates.ts).
+  'blank-form': ['empty', 'survey', 'questionnaire', 'responses', 'sign up'],
+  'bug-report-form': ['bug', 'issue', 'report', 'support', 'triage', 'survey'],
+  'feedback-form': ['feedback', 'survey', 'rating', 'satisfaction', 'nps', 'questionnaire'],
+  'feature-request-form': ['feature', 'idea', 'request', 'suggestion', 'roadmap', 'survey'],
+  'rsvp-form': ['rsvp', 'event', 'invite', 'attendance', 'party', 'guest', 'sign up'],
+  'job-application-form': ['job', 'application', 'hiring', 'candidate', 'recruitment', 'careers'],
+  'contact-form': ['contact', 'enquiry', 'inquiry', 'message', 'support', 'get in touch'],
   // Workshops.
   'meeting-agenda': [
     'meeting',

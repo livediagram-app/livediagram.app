@@ -38,3 +38,5 @@ export { templateCatalogue, type TemplateCatalogue } from './template-catalogue'
 // '@livediagram/templates/template-sheets' subpath, so only a caller making sheets bundles it.
 export { hasTemplateSheets } from './template-sheet-marks';
 export { withBlankPageThemed } from './blank-page-templates';
+
+export * from './form-templates';

@@ -5,10 +5,20 @@
 import { formStarter, type QuestionType, type StarterId } from '@livediagram/forms';
 import { lucideSquareKanban, lucideTable } from '@livediagram/icons/lucide';
 import { Prims } from '@livediagram/ui';
-import type { PlanPalette } from '@/components/plan/plan-palette';
+import { FILL_BOX } from './story-parts';
+import type { PlanPalette } from '@livediagram/document';
 
 const W = 160;
 const H = 100;
+
+// A five-pointed star round (cx, cy), its points absolute (the tiles' bounds check reads them as drawn).
+function starPoints(cx: number, cy: number, r: number): string {
+  return Array.from({ length: 10 }, (_, k) => {
+    const a = -Math.PI / 2 + (k * Math.PI) / 5;
+    const d = k % 2 === 0 ? r : r * 0.45;
+    return `${(cx + d * Math.cos(a)).toFixed(2)},${(cy + d * Math.sin(a)).toFixed(2)}`;
+  }).join(' ');
+}
 
 function Control({
   type,
@@ -28,13 +38,13 @@ function Control({
     return (
       <g>
         {[0, 1, 2, 3, 4].map((i) => (
-          <path
+          <polygon
             key={i}
-            transform={`translate(${x + i * 9} ${y - 1}) scale(0.32)`}
-            d="M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52 6.12 20.61l1.12-6.55L2.48 9.42l6.58-.96z"
+            points={starPoints(x + 3.5 + i * 9, y + 2.6, 3.6)}
             fill={i < 4 ? accent : 'none'}
             stroke={i < 4 ? accent : line}
-            strokeWidth={2.5}
+            strokeWidth={0.8}
+            strokeLinejoin="round"
           />
         ))}
       </g>
@@ -105,7 +115,7 @@ function DestinationBadge({ to, palette }: { to: 'board' | 'sheet'; palette: Pla
   const cx = W - 13;
   const cy = 16;
   return (
-    <g data-starter-goes-to={to}>
+    <g data-starter-goes-to={to} className="pv-pulse" style={FILL_BOX}>
       <circle cx={cx} cy={cy} r={r} fill={palette.surface} stroke={palette.border} />
       <g
         transform={`translate(${cx - 7.2} ${cy - 7.2}) scale(0.6)`}
@@ -121,7 +131,24 @@ function DestinationBadge({ to, palette }: { to: 'board' | 'sheet'; palette: Pla
   );
 }
 
+// The picture's drawing, in its own 160 by 100 units, for a caller's svg to hold (a template tile's 80 by 50 one).
+export const FORM_STARTER_VIEWBOX = `0 0 ${160} ${100}`;
+
 export function FormStarterPicture({
+  starter,
+  palette,
+}: {
+  starter: StarterId;
+  palette: PlanPalette;
+}) {
+  return (
+    <svg viewBox={FORM_STARTER_VIEWBOX} className="h-full w-full" aria-hidden>
+      <FormStarterArt starter={starter} palette={palette} />
+    </svg>
+  );
+}
+
+export function FormStarterArt({
   starter: id,
   palette,
 }: {
@@ -140,18 +167,29 @@ export function FormStarterPicture({
     [],
   );
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-full" aria-hidden>
+    <g>
       <rect
         x={12}
         y={6}
         width={W - 24}
-        height={H}
+        height={H - 8}
         rx={5}
         fill={palette.card}
         stroke={palette.border}
       />
-      <path d={`M12 11a5 5 0 0 1 5-5h${W - 34}a5 5 0 0 1 5 5v5H12z`} fill={accent} />
-      <rect x={20} y={21} width={52} height={3.5} rx={1.5} fill={palette.text} opacity={0.85} />
+      <path d={`M12 11A5 5 0 0 1 17 6H${W - 17}A5 5 0 0 1 ${W - 12} 11V16H12Z`} fill={accent} />
+      {/* The heading; a template tile's hover story grows it in (preview-motion.css). */}
+      <rect
+        x={20}
+        y={21}
+        width={52}
+        height={3.5}
+        rx={1.5}
+        fill={palette.text}
+        opacity={0.85}
+        className="pv-grow-x"
+        style={{ ...FILL_BOX, transformOrigin: 'left center' }}
+      />
       {questions.map((q, i) => {
         const top = tops[i]!;
         return (
@@ -169,6 +207,6 @@ export function FormStarterPicture({
         );
       })}
       {starter.respondsTo ? <DestinationBadge to={starter.respondsTo} palette={palette} /> : null}
-    </svg>
+    </g>
   );
 }

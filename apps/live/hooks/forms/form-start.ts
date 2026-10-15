@@ -166,6 +166,8 @@ export function planFormStart(input: {
   board?: { tabId: string; elementId: string };
   // A new sheet's id, for a starter whose responses are rows.
   newSheetId?: () => string;
+  // The form's name when the tab gives it one (its own name), so a Responses tab is named after it.
+  heading?: string;
 }): FormStartPlan {
   const { starter, formTab, tabs, types } = input;
   const random = input.random ?? Math.random;
@@ -183,7 +185,11 @@ export function planFormStart(input: {
   const withBase = types.some((t) => t.id === baseType.id) ? types : [...types, baseType];
   const target = boards.find((b) => boardTakesType(b.setup, withBase, baseType.id));
   const { form: built, type } = buildStarter(starter, baseType, newId);
-  const form: FormDefinition = { ...built, v: FORM_VERSION };
+  const form: FormDefinition = {
+    ...built,
+    v: FORM_VERSION,
+    ...(input.heading ? { heading: input.heading } : {}),
+  };
   // The catalogue's own type, untouched, needs no write; a ready-made type it lacks, a new one or one given fields do.
   const saveType = !types.includes(type);
 

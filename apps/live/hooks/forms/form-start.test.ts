@@ -116,6 +116,21 @@ describe('planFormStart', () => {
     expect(plan.saveType).toBe(false);
   });
 
+  it('names the form and its Responses tab after a name the tab gave it', () => {
+    const plan = planFormStart({
+      starter: formStarter('rsvp'),
+      formTab,
+      tabs: [formTab],
+      types: [],
+      statusNames: [],
+      random,
+      newSheetId: () => 'AAAAAAAAAAA1',
+      heading: 'Summer Party',
+    });
+    expect(plan.form.heading).toBe('Summer Party');
+    expect(plan.newSheet!.tab.name).toBe('Summer Party Responses');
+  });
+
   it('sends a sheet starter’s responses to a new Sheet tab after the form, in its theme', () => {
     const plan = planFormStart({
       starter: formStarter('rsvp'),

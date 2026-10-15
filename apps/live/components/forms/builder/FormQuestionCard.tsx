@@ -141,7 +141,8 @@ export function FormQuestionCard({
             disabled
           />
         </div>
-        {b.canEdit && target.broken ? (
+        {/* A sheet takes every answer in a column of its own: nothing maps, so nothing breaks. */}
+        {b.canEdit && target.broken && !b.form.sheet ? (
           <p className="pointer-events-none absolute bottom-2 right-3 rounded bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-500/15 dark:text-amber-200">
             Goes to Description
           </p>

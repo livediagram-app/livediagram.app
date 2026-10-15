@@ -115,17 +115,20 @@ export function useFormActions({
       const formTab = now.find((t) => t.id === activeId);
       if (!formTab || formTab.locked) return;
       const starter = formStarter(starterId);
+      // A tab with a name of its own gives it to the form (docs/specs/030-forms/forms.md "The Form tab"), and its
+      // Responses tab is named after that.
+      const own = isDefaultTabName(formTab.name) ? undefined : formTab.name;
       const plan = planFormStart({
         starter,
         formTab,
         tabs: now,
         types: slice.types,
         statusNames: [...names],
+        ...(own ? { heading: own } : {}),
         ...(live.current.makeSheet ? { newSheetId: newPlanSheetId } : {}),
       });
-      // A tab with a name of its own gives it to the form (docs/specs/030-forms/forms.md "The Form tab").
-      const name = isDefaultTabName(formTab.name) ? plan.form.heading : formTab.name;
-      const form = { ...plan.form, heading: name };
+      const name = plan.form.heading;
+      const form = plan.form;
       commitTabs((ts) => {
         const next = ts.map((t) =>
           t.id === activeId

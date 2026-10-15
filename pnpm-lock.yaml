@@ -1515,9 +1515,21 @@ importers:
 
   packages/template-previews:
     dependencies:
+      '@livediagram/document':
+        specifier: workspace:*
+        version: link:../document
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../forms
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../icons
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../templates
+      '@livediagram/ui':
+        specifier: workspace:*
+        version: link:../ui
       react:
         specifier: ^19.3.0
         version: 19.3.1
@@ -1564,6 +1576,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../forms
       '@livediagram/items':
         specifier: workspace:*
         version: link:../items

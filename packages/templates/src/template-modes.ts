@@ -67,6 +67,14 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'guest-list': 'plan',
   'grade-book': 'plan',
   'habit-tracker': 'plan',
+  // A form is started on a Plan tab (form-templates.ts).
+  'blank-form': 'plan',
+  'bug-report-form': 'plan',
+  'feedback-form': 'plan',
+  'feature-request-form': 'plan',
+  'rsvp-form': 'plan',
+  'job-application-form': 'plan',
+  'contact-form': 'plan',
   // Session formats (docs/specs/012-collaboration/facilitate-mode.md "Templates"): run with the room,
   // so they open where the Collaborate kit and the Session strip are.
   'blank-session': 'facilitate',
@@ -130,6 +138,7 @@ export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [
   'blank-infographic',
   'blank-logo',
   'blank-spreadsheet',
+  'blank-form',
 ];
 
 /** True for the blanks: each mode's, Blank Spreadsheet and the blanks of a page kind. Quick-picks on Popular, never on a category shelf or tile. */

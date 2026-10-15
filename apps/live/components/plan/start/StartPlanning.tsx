@@ -27,7 +27,7 @@ import type { PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { DashboardLayoutPicture } from '../DashboardLayoutPicture';
 import { VisualisationPreview } from '../dashboard/slot-previews';
-import { FormStarterPicture } from '@/components/forms/FormStarterPicture';
+import { FormStarterPicture } from '@livediagram/template-previews';
 import type { StarterId } from '@livediagram/forms';
 import type { PlanVisualisation } from '@livediagram/items';
 import {

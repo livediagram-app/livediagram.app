@@ -5,6 +5,7 @@ import {
   planTemplateTabCount,
   templateEditorMode,
   type PlanTemplateKind,
+  isFormTemplateKind,
 } from '@livediagram/templates';
 import { SHEET_TEMPLATES } from '@livediagram/sheets';
 import {
@@ -128,6 +129,8 @@ describe('Inspiration and the template pickers show the same Plan templates', ()
       (t) =>
         templateEditorMode(t.kind) === 'plan' &&
         t.kind !== 'blank-plan' &&
+        // Forms are Start Planning's own Forms category, as their starters.
+        !isFormTemplateKind(t.kind) &&
         !(
           isSpreadsheetPlanTemplate(t.kind as PlanTemplateKind) &&
           planTemplateTabCount(t.kind as PlanTemplateKind) === 1

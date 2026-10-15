@@ -93,6 +93,15 @@ Blank Form makes no board, sheet or card type: its responses go nowhere until on
 [connect box](#responses-go-to-and-settings) above its title or Responses Go To, as a sheet may be wanted rather
 than a board.
 
+**As templates**: each starter is also a template (`<starter>-form`: Blank Form, Bug Report Form, Feedback Form,
+Feature Request Form, Event RSVP Form, Job Application Form, Contact Form; `packages/templates/src/form-templates.ts`),
+so a form is made from the template step, the landing page's gallery (its **Forms** category, Blank Form on Blank
+Slate) and a `/new?template=` link as it is from Start Planning. A form template makes an empty Plan tab and the
+editor starts the starter's form on it: from the template step at once, from `/new` once the new document's tab is
+open (the starter waits in `sessionStorage` under the tab's id, `lib/pending-form-start.ts`). The tab's name, when it
+has one of its own, names the form and its Responses tab. Only the editor can start a form (its card type, its sheet),
+so form templates are `editorOnly`: left out of the agents' catalogue (`list_templates`).
+
 **From a board**: a Board tab's board (not an All Cards or Archive one) offers **New Form** as its own row at the end of
 its cog's menu, for an Editor. It makes a Blank form named "<Board> Form" on a new Form tab right after the board's
 tab (in the board tab's theme), its responses going to that board's first column as the board's first card type, and
