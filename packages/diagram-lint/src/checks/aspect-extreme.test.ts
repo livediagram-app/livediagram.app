@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { box, frame, lint, of, tabOf } from '../fixtures/build';
+import { arrow, box, frame, lint, of, tabOf } from '../fixtures/build';
 
 describe('aspect-extreme', () => {
   it('fires on a drawing more than three times wider than tall, or the reverse', () => {
-    const wide = lint(tabOf(box('a', 0, 0), box('b', 600, 0), box('c', 1200, 0)));
+    const joined = [arrow('ab', 'a', 'b'), arrow('bc', 'b', 'c')];
+    const wide = lint(tabOf(box('a', 0, 0), box('b', 600, 0), box('c', 1200, 0), ...joined));
     expect(of(wide, 'aspect-extreme')).toEqual([
       {
         code: 'aspect-extreme',
@@ -20,6 +21,12 @@ describe('aspect-extreme', () => {
       message: 'drawing: 120×1260, 10.5 times taller than wide',
       fix: 'direction: right',
     });
+  });
+
+  it('stays quiet on a tab whose boxes no line joins, a board shaped by its design', () => {
+    const board = tabOf(box('a', 0, 0), box('b', 600, 0), box('c', 1200, 0));
+    expect(of(lint(board), 'aspect-extreme')).toEqual([]);
+    expect(of(lint(board, { source: 'graph' }), 'aspect-extreme')).toHaveLength(1);
   });
 
   it('stays quiet under three boxes, near square, or with nothing visible', () => {
