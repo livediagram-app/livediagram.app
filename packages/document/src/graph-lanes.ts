@@ -184,7 +184,8 @@ export function layoutLanes(
 }
 
 // Columns with the staircase (docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):
-// a hand-off to the next lane that is its step's only way out and its next step's only way in keeps its column. One
+// a hand-off to the next lane that is its step's only way out and its next step's only way in keeps its column, unless
+// its step was itself reached by such a drop. One
 // whose step, or next step, then shares that column with another node of its lane takes a column after all, so the
 // drop never runs over a box; settled in a few rounds, as each round only ever gives a hand-off its column back.
 const STAIR_ROUNDS = 4;
@@ -210,6 +211,15 @@ function stairColumns(
       )
       .map((e) => `${e.from}->${e.to}`),
   );
+  // Never two drops in a row: a step a drop arrived at takes its next hand-off a column on, so the staircase steps right
+  // as it climbs or falls and the flow still reads left to right (four drops in a row stood the first steps in one
+  // column, read top to bottom).
+  const arrivedByDrop = new Set<string>();
+  for (const id of ids)
+    for (const k of [...level].filter((key) => key.startsWith(`${id}->`))) {
+      if (arrivedByDrop.has(id)) level.delete(k);
+      else arrivedByDrop.add(k.slice(id.length + 2));
+    }
   let col = columnsOf(ids, graph.edges, level);
   for (let round = 0; round < STAIR_ROUNDS && level.size; round++) {
     const crowded = (id: string) =>

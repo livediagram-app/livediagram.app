@@ -318,7 +318,7 @@ describe('lanes', () => {
     expect(huge[0]!.headerSize).toBe(176);
   });
 
-  it('draws each group as a lane, one under another, a lone hand-off dropping straight down', () => {
+  it('draws each group as a lane, one under another, a lone hand-off dropping straight down, never two in a row', () => {
     const els = lay({
       style: 'lanes',
       nodes: [
@@ -343,9 +343,10 @@ describe('lanes', () => {
       'Hiring manager',
     ]);
     expect(lanes[1]!.y).toBeGreaterThan(lanes[0]!.y + lanes[0]!.height);
-    // Each hand-off is its step's only way out and the next step's only way in: a staircase, one column.
+    // Each hand-off is its step's only way out and the next step's only way in: a staircase. The first drops in its
+    // column; never two drops in a row, so the next steps right and the flow still reads left to right.
     expect(midX(box(els, 'b'))).toBe(midX(box(els, 'a')));
-    expect(midX(box(els, 'c'))).toBe(midX(box(els, 'b')));
+    expect(midX(box(els, 'c'))).toBeGreaterThan(midX(box(els, 'b')));
     for (const [id, lane] of [
       ['a', 0],
       ['b', 1],
