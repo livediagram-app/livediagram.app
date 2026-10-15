@@ -16,19 +16,19 @@ document.
 
 ## Domain language
 
-| Term                | Meaning                                                                                       | Not                          |
-| ------------------- | --------------------------------------------------------------------------------------------- | ---------------------------- |
-| **Form tab**        | A tab of kind `form`: one form, filling the tab                                               | form page, survey tab        |
-| **form**            | The definition a Form tab holds: its heading, sections, questions, look and where answers go  | survey, questionnaire        |
-| **section**         | One page of a form, shown alone with Next and Back; a form has at least one                   | page (Illustrate's), step    |
-| **question**        | One thing a form asks: a prompt, a question type, whether it is required, and its answer slot | field (that is a card's)     |
+| Term                | Meaning                                                                                       | Not                           |
+| ------------------- | --------------------------------------------------------------------------------------------- | ----------------------------- |
+| **Form tab**        | A tab of kind `form`: one form, filling the tab                                               | form page, survey tab         |
+| **form**            | The definition a Form tab holds: its heading, sections, questions, look and where answers go  | survey, questionnaire         |
+| **section**         | One page of a form, shown alone with Next and Back; a form has at least one                   | page (Illustrate's), step     |
+| **question**        | One thing a form asks: a prompt, a question type, whether it is required, and its answer slot | field (that is a card's)      |
 | **question type**   | What a question takes (Short Answer, Multiple Choice...)                                      | field kind (that is a card's) |
-| **mapping**         | Where a question's answer is kept on the card: Title, Description or one custom field         | binding, link                |
-| **destination**     | The Board tab, card type and status every response is made in                                 | target, inbox                |
-| **form link**       | The public address of a published form (`/form/<code>`); it grants nothing on the document    | share link (that is a doc's) |
-| **respondent**      | Anyone filling in a form through its form link; always anonymous                              | user, visitor, submitter     |
-| **response**        | One submitted set of answers; it is made into one card                                        | submission, entry, reply     |
-| **response number** | The form's own running count, 1, 2, 3, never reused (`Bug Report #14`)                        | key (that is the card's)     |
+| **mapping**         | Where a question's answer is kept on the card: Title, Description or one custom field         | binding, link                 |
+| **destination**     | The Board tab, card type and status every response is made in                                 | target, inbox                 |
+| **form link**       | The public address of a published form (`/form/<code>`); it grants nothing on the document    | share link (that is a doc's)  |
+| **respondent**      | Anyone filling in a form through its form link; always anonymous                              | user, visitor, submitter      |
+| **response**        | One submitted set of answers; it is made into one card                                        | submission, entry, reply      |
+| **response number** | The form's own running count, 1, 2, 3, never reused (`Bug Report #14`)                        | key (that is the card's)      |
 
 A Form tab is a tab **Kind** ([Domain language](../003-system-architecture/domain-language.md)), as a Board tab is:
 it is what the tab is and it brings its own behaviour. It is always in Plan mode.
@@ -50,15 +50,15 @@ it is what the tab is and it brings its own behaviour. It is always in Plan mode
 Start Planning ([Plan mode](../026-plan/plan-mode.md#starting-a-board)) gains a **Forms** category after
 Spreadsheets, its cards each a picture of the form over its name and line:
 
-| Starter          | Line                                       | Questions (type → mapping)                                                                                                                         |
-| ---------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Blank Form**   | Start from one question                    | Untitled Question (Short Answer, unmapped)                                                                                                         |
-| **Bug Report**   | Reports land on your triage board          | Summary (Short Answer → Title, required); What happened? (Paragraph → Description, required); Severity (Single Choice → Severity); Email (Email → Email) |
-| **Feedback**     | Ratings and comments, ready to sort        | How would you rate us? (Rating → Rating, required); What did you like? (Paragraph); What could be better? (Paragraph); Email (Email)               |
-| **Feature Request** | Ideas from anyone, voted on by your team | Idea (Short Answer → Title, required); Why do you need it? (Paragraph → Description); How important is it? (Rating → Importance)                   |
-| **Event RSVP**   | Who is coming, and what they need          | Name (Short Answer → Title, required); Email (Email → Email, required); Attending? (Single Choice → Attending); Dietary needs (Multiple Choice → Dietary) |
-| **Job Application** | Candidates straight into your pipeline  | Section "About You": Full name (→ Title, required), Email (→ Email, required), Portfolio (Link → Portfolio); Section "Experience": Years of experience (Number → Years), Why us? (Paragraph → Description) |
-| **Contact**      | Messages you can assign and close          | Name (→ Title, required); Email (→ Email, required); Message (Paragraph → Description, required)                                                    |
+| Starter             | Line                                     | Questions (type → mapping)                                                                                                                                                                                 |
+| ------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Blank Form**      | Start from one question                  | Untitled Question (Short Answer, unmapped)                                                                                                                                                                 |
+| **Bug Report**      | Reports land on your triage board        | Summary (Short Answer → Title, required); What happened? (Paragraph → Description, required); Severity (Single Choice → Severity); Email (Email → Email)                                                   |
+| **Feedback**        | Ratings and comments, ready to sort      | How would you rate us? (Rating → Rating, required); What did you like? (Paragraph); What could be better? (Paragraph); Email (Email)                                                                       |
+| **Feature Request** | Ideas from anyone, voted on by your team | Idea (Short Answer → Title, required); Why do you need it? (Paragraph → Description); How important is it? (Rating → Importance)                                                                           |
+| **Event RSVP**      | Who is coming, and what they need        | Name (Short Answer → Title, required); Email (Email → Email, required); Attending? (Single Choice → Attending); Dietary needs (Multiple Choice → Dietary)                                                  |
+| **Job Application** | Candidates straight into your pipeline   | Section "About You": Full name (→ Title, required), Email (→ Email, required), Portfolio (Link → Portfolio); Section "Experience": Years of experience (Number → Years), Why us? (Paragraph → Description) |
+| **Contact**         | Messages you can assign and close        | Name (→ Title, required); Email (→ Email, required); Message (Paragraph → Description, required)                                                                                                           |
 
 Choosing a starter makes the tab and any new Board tab in one change and one undo step; the card type and fields
 it brings are a card-type change of their own and stay after an undo, as a template's types do:
@@ -120,18 +120,18 @@ working (sections, validation, the confirmation), without saving anything. Escap
 
 ### Question types
 
-| Type                | The respondent sees                                 | Settings                                                                        | Kept as                       |
-| ------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------- | ----------------------------- |
-| **Short Answer**    | A one-line text box                                 | Placeholder                                                                     | Text, up to 200 characters    |
-| **Paragraph**       | A growing text area                                 | Placeholder                                                                     | Text, up to 2,000 characters  |
-| **Number**          | A number box                                        | Minimum, Maximum, Whole Numbers Only                                            | A number                      |
-| **Email**           | An email box                                        |                                                                                 | An email address              |
-| **Link**            | A web address box                                   |                                                                                 | An `https://` URL             |
-| **Date**            | A date picker                                       |                                                                                 | A date (`YYYY-MM-DD`)         |
-| **Single Choice**   | Radio buttons (or a dropdown past 7 options)        | Options (2 to 20), Show as Dropdown                                             | One option                    |
-| **Multiple Choice** | Checkboxes                                          | Options (2 to 20), Minimum and Maximum Picks                                    | A list of options             |
-| **Rating**          | Stars, or numbered buttons on a scale               | Scale 3 to 10 (5 by default), Stars or Numbers, Low and High labels (Numbers)   | A whole number 1 to the scale |
-| **Checkbox**        | One checkbox beside the prompt ("I agree to...")    |                                                                                 | true or false                 |
+| Type                | The respondent sees                              | Settings                                                                      | Kept as                       |
+| ------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------- |
+| **Short Answer**    | A one-line text box                              | Placeholder                                                                   | Text, up to 200 characters    |
+| **Paragraph**       | A growing text area                              | Placeholder                                                                   | Text, up to 2,000 characters  |
+| **Number**          | A number box                                     | Minimum, Maximum, Whole Numbers Only                                          | A number                      |
+| **Email**           | An email box                                     |                                                                               | An email address              |
+| **Link**            | A web address box                                |                                                                               | An `https://` URL             |
+| **Date**            | A date picker                                    |                                                                               | A date (`YYYY-MM-DD`)         |
+| **Single Choice**   | Radio buttons (or a dropdown past 7 options)     | Options (2 to 20), Show as Dropdown                                           | One option                    |
+| **Multiple Choice** | Checkboxes                                       | Options (2 to 20), Minimum and Maximum Picks                                  | A list of options             |
+| **Rating**          | Stars, or numbered buttons on a scale            | Scale 3 to 10 (5 by default), Stars or Numbers, Low and High labels (Numbers) | A whole number 1 to the scale |
+| **Checkbox**        | One checkbox beside the prompt ("I agree to...") |                                                                               | true or false                 |
 
 - A prompt is 1 to 200 characters ("Untitled Question" until typed); help text up to 500.
 - Options are 1 to 80 characters, unique ignoring case, edited as a list (Enter adds the next, Backspace on an
@@ -153,18 +153,18 @@ Every question's answer is kept on the response's card. **Answer Goes To** offer
   which adds a custom field of the right kind named after the prompt (made unique) to the card type at once. A
   field mapped by another question is shown as taken.
 
-| Question type   | Field kinds it may map to                                   |
-| --------------- | ----------------------------------------------------------- |
-| Short Answer    | Text, Long Text                                             |
-| Paragraph       | Long Text                                                   |
-| Number          | Number, Currency                                            |
-| Email           | Email, Text                                                 |
-| Link            | Link, Text                                                  |
-| Date            | Date                                                        |
-| Single Choice   | Choice (options matched by name), Text                      |
-| Multiple Choice | Multiple Choice (options matched by name), Long Text        |
-| Rating          | Rating (scale equal or larger), Number                      |
-| Checkbox        | Checkbox                                                    |
+| Question type   | Field kinds it may map to                            |
+| --------------- | ---------------------------------------------------- |
+| Short Answer    | Text, Long Text                                      |
+| Paragraph       | Long Text                                            |
+| Number          | Number, Currency                                     |
+| Email           | Email, Text                                          |
+| Link            | Link, Text                                           |
+| Date            | Date                                                 |
+| Single Choice   | Choice (options matched by name), Text               |
+| Multiple Choice | Multiple Choice (options matched by name), Long Text |
+| Rating          | Rating (scale equal or larger), Number               |
+| Checkbox        | Checkbox                                             |
 
 - A Single or Multiple Choice question mapped to a field shares its options: adding, renaming or removing an option on
   the question does the same to the field (one undo step), so the two never drift. A field's option a card already
@@ -291,13 +291,13 @@ On submit the api, in one write:
 
 ## Who may do what
 
-| Action                                                    | Editor | Participant | Viewer |
-| --------------------------------------------------------- | ------ | ----------- | ------ |
-| See the Form tab (as a Preview, no editing chrome)       | ✓      | ✓           | ✓      |
-| Build: questions, sections, mappings, destination, look   | ✓      |             |        |
-| Publish, open, close, delete the link, see the form link  | ✓      |             |        |
-| See the response count and View on Board                  | ✓      | ✓           | ✓      |
-| Fill in the form through its link                         | anyone with the link, signed in or not |  |  |
+| Action                                                   | Editor                                 | Participant | Viewer |
+| -------------------------------------------------------- | -------------------------------------- | ----------- | ------ |
+| See the Form tab (as a Preview, no editing chrome)       | ✓                                      | ✓           | ✓      |
+| Build: questions, sections, mappings, destination, look  | ✓                                      |             |        |
+| Publish, open, close, delete the link, see the form link | ✓                                      |             |        |
+| See the response count and View on Board                 | ✓                                      | ✓           | ✓      |
+| Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 
 A Participant or Viewer sees the form drawn as the form link draws it, disabled, with a banner: "This is a form. Its
 responses become cards on **Bugs**." A tab-scoped share link to a Form tab shows the same. The form link itself is
@@ -324,13 +324,13 @@ form through an agent is a later step.
 
 ## Telemetry
 
-| Category | Action      | Type                                                 | When                                    |
-| -------- | ----------- | ---------------------------------------------------- | --------------------------------------- |
-| Form     | Created     | the starter (`Blank`, `BugReport`, ...)              | A starter is chosen on Start Planning   |
-| Form     | QuestionAdded | the question type (`ShortAnswer`, `Rating`, ...)   | Add Question                            |
-| Form     | Published   | `Link`                                               | Publish Form                            |
-| Form     | Opened      | `Open` / `Closed`                                    | The switch is flipped                   |
-| Form     | Responded   | `Response` / `Dropped` (hidden field)                | The api accepts a response (server-side) |
+| Category | Action        | Type                                             | When                                     |
+| -------- | ------------- | ------------------------------------------------ | ---------------------------------------- |
+| Form     | Created       | the starter (`Blank`, `BugReport`, ...)          | A starter is chosen on Start Planning    |
+| Form     | QuestionAdded | the question type (`ShortAnswer`, `Rating`, ...) | Add Question                             |
+| Form     | Published     | `Link`                                           | Publish Form                             |
+| Form     | Opened        | `Open` / `Closed`                                | The switch is flipped                    |
+| Form     | Responded     | `Response` / `Dropped` (hidden field)            | The api accepts a response (server-side) |
 
 ## Out of scope
 

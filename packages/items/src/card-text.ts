@@ -3,7 +3,7 @@
 // card face and every export, so a board reads the same on the canvas and in its picture.
 
 import { linkText } from './card-links';
-import { CURRENCY_DEFAULT, type CustomFieldDef } from './item-types';
+import { CURRENCY_DEFAULT, ratingScaleOf, type CustomFieldDef } from './item-types';
 import type { Item, ItemFieldValue } from './item';
 
 const FORMATS = {
@@ -64,9 +64,30 @@ export function customFieldText(
       return typeof value === 'string' ? value : null;
     case 'card':
       return linkText(items, value);
+    case 'multichoice':
+      return multiChoiceText(value);
+    case 'rating':
+      return ratingText(value, ratingScaleOf(field));
     default:
       return typeof value === 'string' ? value.split('\n')[0]! : null;
   }
+}
+
+// A Multiple Choice's picks as one line ("Vegan, Gluten free"); null with none.
+export function multiChoiceText(value: ItemFieldValue | undefined): string | null {
+  if (!Array.isArray(value)) return typeof value === 'string' && value ? value : null;
+  const picks = value.filter((v): v is string => typeof v === 'string' && v !== '');
+  return picks.length ? picks.join(', ') : null;
+}
+
+// A Rating as a card shows it (docs/specs/030-forms/forms.md "New card field kinds"): stars filled to the value up to
+// a scale of RATING_STARS_ON_CARD, else "7 / 10"; null for no rating.
+export const RATING_STARS_ON_CARD = 5;
+export function ratingText(value: ItemFieldValue | undefined, scale: number): string | null {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) return null;
+  const n = Math.min(value, scale);
+  if (scale > RATING_STARS_ON_CARD) return `${n} / ${scale}`;
+  return '★'.repeat(n) + '☆'.repeat(scale - n);
 }
 
 // An amount in its currency as the reader's locale writes it ("£12,500", "$1,200.50"): whole amounts without

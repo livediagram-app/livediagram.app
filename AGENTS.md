@@ -209,6 +209,7 @@ packages/
   template-previews/ # per-template preview SVGs (editor picker + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
+  forms/          # Form tabs: form model, answer checks, answer-to-card mapping, starters (pure)
   plan-art/       # Plan tab images (Board, Sheet, Dashboard as laid out) for editor exports + MCP previews (pure)
   items/          # items, item types, fields, ranks, writes and the Plan board projection (pure)
   sheets/         # the Sheet engine: A1 addressing, formulas, recalculation, writes, CSV (pure)

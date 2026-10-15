@@ -8,6 +8,9 @@ import {
   CURRENCY_CODE,
   CURRENCY_DEFAULT,
   CUSTOM_FIELD_KINDS,
+  RATING_FIELD_SCALE_DEFAULT,
+  RATING_FIELD_SCALE_MAX,
+  RATING_FIELD_SCALE_MIN,
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemTypeDef,
@@ -51,6 +54,8 @@ export interface CustomFieldInput {
   name: string;
   kind: string;
   options?: readonly string[];
+  // A Rating field's top score, 3 to 10; 5 when absent.
+  scale?: number;
   // A Card field's target card type, by id or name.
   linkType?: string;
   // A Currency field's ISO 4217 code; GBP when absent.
@@ -167,8 +172,10 @@ function editedCustom(type: ItemTypeDef, edit: CustomFieldEdit): ItemTypeDef {
     next.label = name;
   }
   if (edit.options) {
-    if (field.kind !== 'choice')
-      throw invalid(`"${field.label}" is a ${field.kind} field: only a choice field has options.`);
+    if (field.kind !== 'choice' && field.kind !== 'multichoice')
+      throw invalid(
+        `"${field.label}" is a ${field.kind} field: only a choice or multichoice field has options.`,
+      );
     next.options = edit.options.map((o) => o.trim());
   }
   if (edit.currency) {
@@ -239,7 +246,19 @@ function customOf(
     label: name,
     kind: known as CustomFieldKind,
   };
-  if (known === 'choice') field.options = (input.options ?? []).map((o) => o.trim());
+  if (known === 'choice' || known === 'multichoice')
+    field.options = (input.options ?? []).map((o) => o.trim());
+  if (known === 'rating' && input.scale !== undefined) {
+    if (
+      !Number.isInteger(input.scale) ||
+      input.scale < RATING_FIELD_SCALE_MIN ||
+      input.scale > RATING_FIELD_SCALE_MAX
+    )
+      throw invalid(
+        `A rating's scale is a whole number from ${RATING_FIELD_SCALE_MIN} to ${RATING_FIELD_SCALE_MAX}.`,
+      );
+    if (input.scale !== RATING_FIELD_SCALE_DEFAULT) field.scale = input.scale;
+  }
   if (known === 'card') {
     if (!input.linkType)
       throw invalid(`The Card field "${name}" needs linkType: the card type it links to.`);
