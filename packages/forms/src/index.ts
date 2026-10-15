@@ -11,3 +11,4 @@ export * from './public';
 export * from './ids';
 export * from './destination';
 export * from './branching';
+export * from './publish-check';

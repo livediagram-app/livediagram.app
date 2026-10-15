@@ -2,11 +2,16 @@
 
 // Share Form (docs/specs/030-forms/forms.md "Publishing and the form link"), separate from the document's Share
 // dialog: a form link grants nothing on the document. Unpublished, it explains and offers Publish Form (held back,
-// with the reason, while responses have nowhere to go). Published, it shows the link to copy or open, Accepting
+// with the reason, while responses have nowhere to go or the form is not ready: each problem listed with Show). Published, it shows the link to copy or open, Accepting
 // Responses, and Delete Link, which asks first.
 import { useId, useState } from 'react';
 import { Button, Dialog, DialogCloseButton, DialogHeader } from '@livediagram/ui';
-import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@livediagram/forms';
+import {
+  DESTINATION_PROBLEM_TEXT,
+  PUBLISH_PROBLEM_TEXT,
+  type DestinationProblem,
+  type PublishProblem,
+} from '@livediagram/forms';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
@@ -18,12 +23,17 @@ export function ShareFormDialog({
   link,
   problem,
   onFixDestination,
+  notReady = [],
+  onShow,
 }: {
   open: boolean;
   onClose: () => void;
   link: FormLinkState;
   problem: DestinationProblem | null;
   onFixDestination: () => void;
+  // What else stops publishing (publishProblems), and Show for a question's or section's.
+  notReady?: readonly PublishProblem[];
+  onShow?: (problem: PublishProblem) => void;
 }) {
   const titleId = useId();
   const [copied, setCopied] = useState(false);
@@ -123,6 +133,26 @@ export function ShareFormDialog({
                   Choose Where Responses Go
                 </button>
               </div>
+            ) : notReady.length ? (
+              <div className="rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+                <p className="font-semibold">Before publishing:</p>
+                <ul className="mt-1 flex flex-col gap-1">
+                  {notReady.map((p, i) => (
+                    <li key={i} className="flex items-baseline justify-between gap-3">
+                      <span>{PUBLISH_PROBLEM_TEXT[p.kind]}</span>
+                      {onShow && p.kind !== 'no_questions' ? (
+                        <button
+                          type="button"
+                          onClick={() => onShow(p)}
+                          className="shrink-0 cursor-pointer font-semibold underline underline-offset-2"
+                        >
+                          Show
+                        </button>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ) : (
               <p className="text-[14px] leading-relaxed text-slate-600 dark:text-slate-300">
                 Publishing makes a link you can send to anyone. Each response becomes a card on your
@@ -131,7 +161,13 @@ export function ShareFormDialog({
             )}
             <div className="flex justify-end">
               <Button
-                disabled={!!problem || !canPublish || link.busy || link.status !== 'ready'}
+                disabled={
+                  !!problem ||
+                  notReady.length > 0 ||
+                  !canPublish ||
+                  link.busy ||
+                  link.status !== 'ready'
+                }
                 onClick={() => void link.publish()}
               >
                 {link.busy ? 'Publishing…' : 'Publish Form'}

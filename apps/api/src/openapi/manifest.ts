@@ -1006,7 +1006,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Publish the Form tab: make its public link. 409 form_already_published, 409 form_destination_missing (its board, column or card type is gone), 403 form_suspensions (this document has had too many links suspended).',
+      'Publish the Form tab: make its public link. 409 form_already_published, 409 form_destination_missing (its board, column or card type is gone), 409 form_not_ready with its problems (no questions, an unworded question, a choice without options, a broken mapping or section rule), 403 form_suspensions (this document has had too many links suspended).',
     auth: 'guest-or-clerk',
     responseSchema: ref('FormLinkResponse'),
     statuses: [200, 400, 403, 404, 409],

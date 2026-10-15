@@ -156,6 +156,14 @@ describe('publishing (docs/specs/030-forms/forms.md "Publishing and the form lin
     expect((await owner('POST', 'form-link')).status).toBe(409);
   });
 
+  it('refuses to publish a form not ready to fill in, naming why', async () => {
+    writeForm({ ...form(), sections: [{ id: 's-1', title: '', questions: [] }] });
+    expect((await owner('POST', 'form-link')).body).toEqual({
+      error: 'form_not_ready',
+      problems: [{ kind: 'no_questions' }],
+    });
+  });
+
   it('refuses to publish without a working destination', async () => {
     writeForm(form({ destination: undefined }));
     expect((await owner('POST', 'form-link')).body).toMatchObject({

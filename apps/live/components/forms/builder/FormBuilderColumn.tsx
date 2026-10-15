@@ -57,7 +57,12 @@ export function FormBuilderColumn({
       ) : null}
       <FormHeaderCard sections={b.form.sections.length} />
       {b.form.sections.map((section, s) => (
-        <div key={section.id} data-form-section={s} className="flex flex-col gap-3">
+        <div
+          key={section.id}
+          data-form-section={s}
+          data-form-section-id={section.id}
+          className="flex flex-col gap-3"
+        >
           {s > 0 ? (
             <SectionHeader section={section} index={s} count={b.form.sections.length} />
           ) : null}

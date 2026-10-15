@@ -13,6 +13,7 @@ import {
   destinationProblem,
   destinationType,
   publicForm,
+  publishProblems,
   readForm,
   type FormDefinition,
 } from '@livediagram/forms';
@@ -117,6 +118,8 @@ export function FormPage({
     types,
   );
   const type = destinationType(form.destination, types);
+  // What else stops publishing (docs/specs/030-forms/forms.md "Publishing and the form link").
+  const notReady = useMemo(() => publishProblems(form, type), [form, type]);
 
   // Responses Go To or Settings, from wherever a fix is offered (out of Preview first).
   const openSettings = useCallback((section: FormSettingsSection | null) => {
@@ -297,6 +300,16 @@ export function FormPage({
         onFixDestination={() => {
           setShareOpen(false);
           openSettings('destination');
+        }}
+        notReady={notReady}
+        onShow={(p) => {
+          setShareOpen(false);
+          setPreview(false);
+          if ('questionId' in p) select(p.questionId, true);
+          else if (p.kind === 'broken_rule')
+            document
+              .querySelector(`[data-form-section-id="${p.sectionId}"]`)
+              ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }}
       />
     </>

@@ -2,7 +2,12 @@
 // link", "Who may do what"): a Form tab's link, as its document's people see and change it. Anyone who may read the
 // tab sees the response count; only an Editor sees the code and publishes, opens, closes or deletes the link.
 import type { FormLinkResponse } from '@livediagram/api-schema';
-import { FORM_SUSPENSIONS_MAX, destinationProblem } from '@livediagram/forms';
+import {
+  FORM_SUSPENSIONS_MAX,
+  destinationProblem,
+  destinationType,
+  publishProblems,
+} from '@livediagram/forms';
 import { typesOf } from '@livediagram/items';
 import {
   countSuspendedFormLinks,
@@ -104,8 +109,12 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
     const boards = form.destination
       ? await boardsOnTab(env, documentId, form.destination.tabId)
       : [];
-    const problem = destinationProblem(form.destination, boards, typesOf(doc.itemTypes));
+    const types = typesOf(doc.itemTypes);
+    const problem = destinationProblem(form.destination, boards, types);
     if (problem) return conflict('form_destination_missing');
+    // A form not ready to fill in (no questions, an unworded one, a broken mapping or rule) is not published.
+    const problems = publishProblems(form, destinationType(form.destination, types));
+    if (problems.length) return json({ error: 'form_not_ready', problems }, { status: 409 });
     if ((await countSuspendedFormLinks(env, documentId)) >= FORM_SUSPENSIONS_MAX)
       return forbidden('form_suspensions');
     const made = await createFormLink(env, documentId, tabId, Date.now());

@@ -289,10 +289,19 @@ number).
 
 ## Publishing and the form link
 
-- **Share Form** (top row, an Editor's) opens the **Share Form** dialog, separate from the document's Share dialog:
+- **Share Form** (the header's Share on a Form tab, an Editor's) opens the **Share Form** dialog, separate from the
+  document's Share dialog:
   - Its subtitle: "Anyone with the link can fill in this form. They won’t see your document."
   - Not yet published: a line on what publishing does and **Publish Form**, which makes the form link. While
-    responses have nowhere to go, it is held back with the reason and **Choose Where Responses Go**.
+    responses have nowhere to go, it is held back with the reason and **Choose Where Responses Go**. While the form
+    is **not ready** it is held back under "Before publishing:", each problem a line, a question's or section's with
+    **Show** (closing the dialog and selecting the question, or scrolling to the section):
+    - "Add a question: a form needs at least one." (no questions);
+    - "A question has no wording yet.";
+    - "A choice question has no options." (a Single or Multiple Choice with none);
+    - "An answer goes to a card field that was removed or no longer fits." (a broken mapping);
+    - "A section shows only on an answer that is no longer there." (a broken section rule).
+      The api checks the same (`publishProblems`) and refuses with 409 `form_not_ready` and the problems.
   - Published: the link in a read-only field with **Copy Link** (it reads "Copied" for a moment), **Open** (a new
     browser tab), **Accepting Responses** with the count so far, and **Delete Link**, which asks first ("Delete this
     link? People with it will see this form isn’t available. Publishing again makes a new link.").

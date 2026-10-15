@@ -170,6 +170,14 @@ body.answers)`, so the api and the page check and keep only what shows. Live: `u
 sections and reports `position` / `count`; `components/forms/builder/SectionRule.tsx` is the badge and editor; `updateSection` takes
 `showIf` (an empty `anyOf` clears it).
 
+## 6b. Ready to publish (`publish-check.ts`)
+
+`publishProblems(form, type)`: `no_questions`, then per section in order `broken_rule` (a later section whose
+`showIf` has no `ruleQuestion`), and per question `unworded` (blank prompt), `no_options` (single or multi with
+none), `broken_mapping` (a `goesTo` whose `effectiveTarget` is broken; judged only with a type: without one the
+destination's own problem speaks). `PUBLISH_PROBLEM_TEXT` the dialog's lines. The publish route answers 409
+`form_not_ready` with `problems`; Share Form lists them (`notReady`, `onShow`).
+
 ## 7. Starters (`starters.ts`)
 
 `FORM_STARTERS` as the spec's table (`id`, `name`, `line`, `telemetry`, `readyType?`, `accent` (its picture and a
@@ -305,31 +313,32 @@ editor modules: `forms-public.ts`, the shared controls and `@livediagram/ui`.
 
 ## 14. Tests (traceability)
 
-| Spec rule                                                                                         | Test                                                                     |
-| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| readForm sanitises every field                                                                    | `packages/forms/src/read.test.ts`                                        |
-| Every answer error per type; copy for each                                                        | `answers.test.ts`                                                        |
-| Mapping table, fitting fields, fallback                                                           | `mapping.test.ts`                                                        |
-| Title, Description, field values, numbering, `fromForm`, a preview's card                         | `card.test.ts`                                                           |
-| The look: theme accent per half, Default's brand, finish, font, custom as Default                 | `packages/document/src/form-look.test.ts`                                |
-| Preview makes the card, refuses as the api does, needs a destination                              | `apps/live/hooks/forms/form-preview.test.ts`                             |
-| The form page wears the look                                                                      | `apps/live/components/forms/respond/FormRespondPage.test.tsx`            |
-| Starters valid, mappings resolve, fields reused                                                   | `starters.test.ts`                                                       |
-| Sections shown by earlier answers, broken rules, the check dropping hidden answers, reading rules | `packages/forms/src/branching.test.ts`                                   |
-| Destination problems; public projection; closed reasons                                           | `destination.test.ts`, `public.test.ts`                                  |
-| The two field kinds: catalogue, card text, CSV, agents                                            | `packages/items/src/form-field-kinds.test.ts`                            |
-| Form tab kind always Plan                                                                         | `packages/document/src/dashboard.test.ts`                                |
-| `/form/<code>` page views drop the code                                                           | `packages/api-schema/src/page-views.test.ts`                             |
-| Publish by role, the code hidden, close, delete, tab delete                                       | `apps/api/src/routes/forms.test.ts`                                      |
-| Public read, every miss alike, responses, refusals, cap, full, hidden field, reports, suspensions | `apps/api/src/routes/forms.test.ts`                                      |
-| Code generation, the email throttle, the Inbox read                                               | `apps/api/src/db/forms.test.ts`                                          |
-| The response and suspension emails                                                                | `apps/api/src/email/notifications.test.ts`                               |
-| `form_reads` owner-keyed                                                                          | `apps/api/src/db/account-owner-columns.test.ts`                          |
-| Builder edits                                                                                     | `apps/live/hooks/forms/form-edits.test.ts`                               |
-| Starting a form                                                                                   | `apps/live/hooks/forms/form-start.test.ts`                               |
-| Builder by role, selection, options, sections, rename                                             | `apps/live/components/forms/builder/FormBuilderColumn.test.tsx`          |
-| The form page flow                                                                                | `components/forms/respond/FormFill.test.tsx`, `FormRespondPage.test.tsx` |
-| New on a response's card                                                                          | `components/forms/fresh-responses.test.ts`                               |
-| Start Planning's Forms                                                                            | `components/plan/PlanBoardPicker.test.tsx`                               |
-| The Inbox section                                                                                 | `components/panels/ActivityPane.test.tsx`                                |
-| The worker rewrite                                                                                | `apps/live/src/worker.test.ts`, `lib/form-path.test.ts`                  |
+| Spec rule                                                                                         | Test                                                                                              |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| readForm sanitises every field                                                                    | `packages/forms/src/read.test.ts`                                                                 |
+| Every answer error per type; copy for each                                                        | `answers.test.ts`                                                                                 |
+| Mapping table, fitting fields, fallback                                                           | `mapping.test.ts`                                                                                 |
+| Title, Description, field values, numbering, `fromForm`, a preview's card                         | `card.test.ts`                                                                                    |
+| The look: theme accent per half, Default's brand, finish, font, custom as Default                 | `packages/document/src/form-look.test.ts`                                                         |
+| Preview makes the card, refuses as the api does, needs a destination                              | `apps/live/hooks/forms/form-preview.test.ts`                                                      |
+| The form page wears the look                                                                      | `apps/live/components/forms/respond/FormRespondPage.test.tsx`                                     |
+| Starters valid, mappings resolve, fields reused                                                   | `starters.test.ts`                                                                                |
+| What stops publishing                                                                             | `packages/forms/src/publish-check.test.ts`, `apps/live/components/forms/ShareFormDialog.test.tsx` |
+| Sections shown by earlier answers, broken rules, the check dropping hidden answers, reading rules | `packages/forms/src/branching.test.ts`                                                            |
+| Destination problems; public projection; closed reasons                                           | `destination.test.ts`, `public.test.ts`                                                           |
+| The two field kinds: catalogue, card text, CSV, agents                                            | `packages/items/src/form-field-kinds.test.ts`                                                     |
+| Form tab kind always Plan                                                                         | `packages/document/src/dashboard.test.ts`                                                         |
+| `/form/<code>` page views drop the code                                                           | `packages/api-schema/src/page-views.test.ts`                                                      |
+| Publish by role, the code hidden, close, delete, tab delete                                       | `apps/api/src/routes/forms.test.ts`                                                               |
+| Public read, every miss alike, responses, refusals, cap, full, hidden field, reports, suspensions | `apps/api/src/routes/forms.test.ts`                                                               |
+| Code generation, the email throttle, the Inbox read                                               | `apps/api/src/db/forms.test.ts`                                                                   |
+| The response and suspension emails                                                                | `apps/api/src/email/notifications.test.ts`                                                        |
+| `form_reads` owner-keyed                                                                          | `apps/api/src/db/account-owner-columns.test.ts`                                                   |
+| Builder edits                                                                                     | `apps/live/hooks/forms/form-edits.test.ts`                                                        |
+| Starting a form                                                                                   | `apps/live/hooks/forms/form-start.test.ts`                                                        |
+| Builder by role, selection, options, sections, rename                                             | `apps/live/components/forms/builder/FormBuilderColumn.test.tsx`                                   |
+| The form page flow                                                                                | `components/forms/respond/FormFill.test.tsx`, `FormRespondPage.test.tsx`                          |
+| New on a response's card                                                                          | `components/forms/fresh-responses.test.ts`                                                        |
+| Start Planning's Forms                                                                            | `components/plan/PlanBoardPicker.test.tsx`                                                        |
+| The Inbox section                                                                                 | `components/panels/ActivityPane.test.tsx`                                                         |
+| The worker rewrite                                                                                | `apps/live/src/worker.test.ts`, `lib/form-path.test.ts`                                           |

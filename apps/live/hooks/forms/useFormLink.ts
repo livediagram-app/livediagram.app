@@ -34,6 +34,7 @@ const PUBLISH_ERRORS: Record<string, string> = {
   form_suspensions:
     'This document can’t publish more forms: its form links were suspended after reports.',
   form_already_published: 'This form is already published.',
+  form_not_ready: 'Finish the form before publishing: Share Form lists what it needs.',
 };
 
 export function useFormLink(input: {
