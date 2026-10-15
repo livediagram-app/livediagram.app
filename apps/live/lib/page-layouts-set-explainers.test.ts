@@ -116,7 +116,8 @@ describe('explainer layouts', () => {
         .filter((e) => e.type === 'arrow');
       expect(arrows).toHaveLength(4);
       for (const a of arrows) {
-        if (a.type !== 'arrow' || a.from.kind !== 'pinned' || a.to.kind !== 'pinned') throw 0;
+        if (a.type !== 'arrow' || a.from.kind !== 'pinned' || a.to.kind !== 'pinned')
+          throw new Error('expected an arrow pinned at both ends');
         expect([a.from.anchor, a.to.anchor]).toEqual([from, to]);
       }
     }
