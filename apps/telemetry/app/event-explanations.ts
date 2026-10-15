@@ -1175,6 +1175,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Funnel tour, offered beside a selected funnel.',
   'UI|Ended|FunnelTourSkipped':
     'Someone left the Funnel tour before its end, or the funnel it was on went away.',
+  'UI|Ended|CycleTourCompleted':
+    'Someone reached the end of the Cycle tour, offered beside a selected cycle.',
+  'UI|Ended|CycleTourSkipped':
+    'Someone left the Cycle tour before its end, or the cycle it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1303,6 +1307,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Pyramid tour was offered, as a small Tour toolbar beside a selected pyramid (counted once per visit).',
   'UI|Opened|FunnelTourOffer':
     'The Funnel tour was offered, as a small Tour toolbar beside a selected funnel (counted once per visit).',
+  'UI|Opened|CycleTourOffer':
+    'The Cycle tour was offered, as a small Tour toolbar beside a selected cycle (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
@@ -1387,6 +1393,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected pyramid, starting its tour.',
   'UI|Started|FunnelTour':
     'Someone pressed Play on the Tour toolbar beside a selected funnel, starting its tour.',
+  'UI|Started|CycleTour':
+    'Someone pressed Play on the Tour toolbar beside a selected cycle, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1568,6 +1576,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Funnel Tour" in Settings, so it is offered again.',
   'UI|Toggled|FunnelTourSeenOn':
     'Someone switched off Tours › Element Tours › "Funnel Tour" in Settings, so it is not offered.',
+  'UI|Toggled|CycleTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Cycle Tour" in Settings, so it is offered again.',
+  'UI|Toggled|CycleTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Cycle Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -1702,6 +1714,19 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|FunnelTourStepAnimate':
     'The Funnel tour reached its "Pour It In" step, playing the Build animation on the funnel.',
   'UI|View|FunnelTourStepOutro': 'The Funnel tour reached its closing "That Is a Funnel" card.',
+  'UI|View|CycleTourStepLoop':
+    'The Cycle tour reached its "A Loop, Clockwise" step, on the whole cycle.',
+  'UI|View|CycleTourStepFirst':
+    'The Cycle tour reached its "Where It Starts" step, on the first step.',
+  'UI|View|CycleTourStepCentre':
+    'The Cycle tour reached its "Name the Loop" step, on the words in the middle.',
+  'UI|View|CycleTourStepAdd':
+    'The Cycle tour reached its "Add a Step" step, with the "+" ring open on Add Step.',
+  'UI|View|CycleTourStepRows':
+    'The Cycle tour reached its "Reorder in the Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|CycleTourStepAnimate':
+    'The Cycle tour reached its "Set It Turning" step, playing the Flow animation on the cycle.',
+  'UI|View|CycleTourStepOutro': 'The Cycle tour reached its closing "That Is a Cycle" card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':

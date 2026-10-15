@@ -73,3 +73,12 @@ describe('the Funnel element tour kind', () => {
     expect(canTourElement({ level: 'view' }, funnel, 'funnel')).toBe(false);
   });
 });
+
+describe('the Cycle element tour kind', () => {
+  it('tours a cycle, for an Editor only', () => {
+    const cycle = createShape('cycle', 0, 0) as Element;
+    expect(elementTourKindOf(cycle)).toBe('cycle');
+    expect(canTourElement({ level: 'edit' }, cycle, 'cycle')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, cycle, 'cycle')).toBe(false);
+  });
+});

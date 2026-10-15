@@ -58,7 +58,7 @@ export function onGraphic(
   title: string,
   body: string,
   selector: string,
-  preview?: 'build' | 'pulse',
+  preview?: 'build' | 'pulse' | 'flow',
 ): Step {
   return {
     id,

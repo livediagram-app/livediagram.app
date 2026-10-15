@@ -250,6 +250,7 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('LayerStackTour', 'layer-stack-tour-steps.ts'),
   ...conceptTourSteps('PyramidTour', 'pyramid-tour-steps.ts'),
   ...conceptTourSteps('FunnelTour', 'funnel-tour-steps.ts'),
+  ...conceptTourSteps('CycleTour', 'cycle-tour-steps.ts'),
 ];
 
 export const DRAW_TOUR_STEP_SOURCE: string[] = [

@@ -17,6 +17,7 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   'layer-stack': createShape('layer-stack', 0, 0) as Element,
   pyramid: createShape('pyramid', 0, 0) as Element,
   funnel: applyShapeVariant(createShape('pyramid', 0, 0) as ShapeElement, 'funnel') as Element,
+  cycle: createShape('cycle', 0, 0) as Element,
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {

@@ -1225,6 +1225,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a funnel.',
         helpArticle: 'conceptGraphics',
       }),
+      elementTourSwitch('cycle', {
+        label: 'Cycle Tour',
+        event: { category: 'UI', on: 'CycleTourSeenOff', off: 'CycleTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial cycle loop ring flywheel pdca steps clockwise flow concept replay',
+        description: 'The first time you select a cycle.',
+        helpArticle: 'conceptGraphics',
+      }),
     ],
   },
   {

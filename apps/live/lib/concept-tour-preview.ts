@@ -5,7 +5,7 @@ import { createElementKeyedStore } from './element-keyed-store';
 
 export type ConceptTourPreview = {
   elementId: string;
-  anim: 'build' | 'pulse';
+  anim: 'build' | 'pulse' | 'flow';
   run: number;
 };
 
