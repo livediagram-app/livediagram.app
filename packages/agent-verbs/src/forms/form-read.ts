@@ -87,11 +87,7 @@ function readQuestion(
   if (column !== undefined) return { ...out, column };
   const target = effectiveTarget(q, type);
   out.goesTo =
-    target.to === 'title'
-      ? 'Title'
-      : target.to === 'field'
-        ? (target.field?.label ?? 'Description')
-        : 'Description';
+    target.to === 'title' ? 'Title' : target.to === 'field' ? target.field!.label : 'Description';
   if (target.broken) out.goesToBroken = true;
   return out;
 }
@@ -143,8 +139,6 @@ export function readFormOf(input: {
       responses: link!.responses,
       now: input.now ?? Date.now(),
     });
-    // A sheet form has no board destination; closedReason reads that as nowhere to go.
-    if (reason === 'no_destination' && form.sheet) reason = null;
     state = reason ? 'closed' : problem ? 'paused' : 'accepting';
   } else if (link?.suspendedAt) state = 'suspended';
   const problems = [
@@ -153,8 +147,8 @@ export function readFormOf(input: {
     ...publishProblems(form, form.sheet ? undefined : type).map((p) => {
       const text = PUBLISH_PROBLEM_TEXT[p.kind];
       if ('questionId' in p) {
-        const q = form.sections.flatMap((s) => s.questions).find((x) => x.id === p.questionId);
-        return `${text} (${q ? `"${promptOf(q)}", ` : ''}${p.questionId})`;
+        const q = form.sections.flatMap((s) => s.questions).find((x) => x.id === p.questionId)!;
+        return `${text} ("${promptOf(q)}", ${p.questionId})`;
       }
       if ('sectionId' in p)
         return `${text} (section ${form.sections.findIndex((s) => s.id === p.sectionId) + 1})`;

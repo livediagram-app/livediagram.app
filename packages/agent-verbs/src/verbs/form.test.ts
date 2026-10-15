@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library } from '../testing/fake-api';
 import { formPlan, formTabBody } from '../testing/forms';
-import { formChange, formGet, formShare } from './form';
+import { formAdd, formChange, formGet, formShare } from './form';
 
 // The form verbs (docs/specs/030-forms/forms.md "Agents"; docs/specs/015-api/cli.md "Commands").
 const plan = formPlan();
@@ -17,8 +17,14 @@ const LINK = {
 function ctxWith(input = '') {
   const writes: string[] = [];
   const base = `/documents/${DOC_A}`;
-  const api = fakeApi({
+  const routes: Record<string, unknown> = {
     ...library,
+    // The library lists on a GET; a new document is made on a POST.
+    '/documents': (r: Request) =>
+      r.method === 'POST'
+        ? Response.json({ document: { id: 'new' } }, { status: 201 })
+        : Response.json((library as Record<string, unknown>)['/documents']),
+    [`${base}/item-types`]: { ok: true },
     [base]: {
       document: {
         id: DOC_A,
@@ -38,7 +44,19 @@ function ctxWith(input = '') {
       writes.push(`${r.method} form`);
       return Response.json({ tabId: 'form', rev: 8, name: 'Bug Report' });
     },
-  });
+  };
+  // A new tab's changeset, on whatever id it was given.
+  const api = fakeApi(
+    new Proxy(routes, {
+      get: (t, k: string) =>
+        k in t
+          ? t[k]
+          : k.endsWith('/changesets')
+            ? { changeset: { id: 'cs_1', rev: 1 } }
+            : undefined,
+      has: (t, k: string) => k in t || k.endsWith('/changesets'),
+    }),
+  );
   return { ctx: contextOf(api, [], [], { readInput: async () => input }), writes };
 }
 
@@ -78,5 +96,84 @@ describe('form change and share', () => {
     const out = await formShare.run!(ctx, formShare.input.parse({ doc: DOC_A, action: 'publish' }));
     expect(writes).toEqual(['PUT form-link']);
     expect(out.lines).toEqual(['opened again: the same link takes responses']);
+  });
+});
+
+describe('the form verbs, every path', () => {
+  it('prints a sheet form, a form going nowhere, sections with rules, and problems', () => {
+    const base = {
+      documentId: DOC_A,
+      tabId: 'form',
+      heading: 'RSVP',
+      state: 'not_published',
+      link: null,
+      responses: 0,
+      lines: [],
+      made: ['Sheet tab "RSVP Responses" (t1)'],
+      problems: ['Add a question: a form needs at least one.'],
+    };
+    const sheet = formGet.text!({
+      ...base,
+      respondsTo: { to: 'sheet', sheet: 'RSVP Responses' },
+      sections: [
+        { id: 's1', place: 1, questions: [] },
+        {
+          id: 's2',
+          place: 2,
+          title: 'More',
+          showIf: { questionId: 'q', prompt: 'Coming?', anyOf: ['Yes', 'Maybe'] },
+          questions: [{ id: 'q2', type: 'short', typeName: 'Short Answer', prompt: 'Name' }],
+        },
+      ],
+    });
+    expect(sheet).toEqual([
+      '+ Sheet tab "RSVP Responses" (t1)',
+      'RSVP  not_published  0 responses',
+      'responses: rows in RSVP Responses',
+      'section 1',
+      'section 2 More (shown when Coming? is Yes or Maybe)',
+      '  q2  short  Name',
+      '! Add a question: a form needs at least one.',
+    ]);
+    expect(
+      formGet.text!({
+        ...base,
+        made: [],
+        problems: [],
+        respondsTo: { to: 'nowhere' },
+        sections: [],
+      })[1],
+    ).toBe('responses: nowhere yet');
+    expect(formGet.quiet!({ ...base, respondsTo: {}, sections: [] })).toEqual([]);
+    expect(formShare.quiet!({ ...base, respondsTo: {}, sections: [] })).toEqual([]);
+    expect(
+      formShare.quiet!({ ...base, link: 'https://x/form/a', respondsTo: {}, sections: [] }),
+    ).toEqual(['https://x/form/a']);
+  });
+
+  it('refuses as the engine refuses: not found for an unknown Form tab, else a refusal', async () => {
+    const { ctx } = ctxWith();
+    await expect(
+      formGet.run!(ctx, formGet.input.parse({ doc: DOC_A, tab: 'Nope' })),
+    ).rejects.toMatchObject({ status: 404 });
+    await expect(
+      formShare.run!(
+        ctx,
+        formShare.input.parse({ doc: DOC_A, action: 'delete_link', tab: 'Bugs' }),
+      ),
+    ).rejects.toMatchObject({ status: 400 });
+  });
+
+  it('adds a form to a document from a starter, or from a file of add_form input', async () => {
+    const { ctx } = ctxWith('{"questions":[{"type":"short","prompt":"Name"}]}');
+    const fromFile = await formAdd.run!(
+      ctx,
+      formAdd.input.parse({ doc: DOC_A, from: '-', name: 'Lunch' }),
+    );
+    expect(fromFile.heading).toBe('Lunch');
+    expect(formAdd.quiet!(fromFile)).toEqual([fromFile.tabId]);
+    const starter = await formAdd.run!(ctx, formAdd.input.parse({ starter: 'rsvp' }));
+    expect(starter.heading).toBe('Event RSVP');
+    expect(formChange.quiet!(starter)).toEqual([starter.tabId]);
   });
 });

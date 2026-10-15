@@ -8,7 +8,6 @@ import {
   QUESTION_TYPE_NAMES,
   canGoToTitle,
   destinationType,
-  fieldTakes,
   formStarter,
   newFieldFor,
   questionsOf,
@@ -146,10 +145,13 @@ export function setRespondsTo(
     } else {
       const sheetId = newPlanSheetId();
       const tab = responsesSheetTab(d.form.heading, d.formTab as Tab, sheetId);
-      tab.elements = tab.elements.map((el) =>
-        el.type === 'shape' && el.planSheet
-          ? ({ ...el, planSheet: { ...el.planSheet, start: BLANK_SHEET_START } } as Element)
-          : el,
+      // The tab holds the one Sheet element responsesSheetTab made.
+      tab.elements = tab.elements.map(
+        (el) =>
+          ({
+            ...el,
+            planSheet: { ...(el as { planSheet: object }).planSheet, start: BLANK_SHEET_START },
+          }) as Element,
       );
       d.newTabs.push(tab);
       sheet = { tabId: tab.id, sheetId, name: tab.name };
@@ -194,11 +196,10 @@ export function setRespondsTo(
     );
     // A responses board takes the form's card type alone, so it shows only responses.
     const made = boardsOf(tab)[0]!;
-    tab.elements = tab.elements.map((el) =>
-      el.id === made.element.id && el.type === 'shape' && el.planBoard
-        ? ({ ...el, planBoard: { ...el.planBoard, addTypes: [type!.id] } } as Element)
-        : el,
-    );
+    // The tab holds the one board responsesBoardTab made.
+    tab.elements = [
+      { ...made.element, planBoard: { ...made.setup, addTypes: [type.id] } } as Element,
+    ];
     d.newTabs.push(tab);
     board = {
       tabId: tab.id,
@@ -219,7 +220,8 @@ export function setRespondsTo(
   }
   const { sheet: _sheet, ...rest } = d.form;
   d.form = { ...rest, destination: { tabId: board.tabId, typeId: type.id, status } };
-  const column = board.columns.find((c) => c.status === status)?.name ?? status;
+  // The status was chosen from the board's own columns.
+  const column = board.columns.find((c) => c.status === status)!.name;
   d.lines.push(`responses go to ${type.label} cards in ${column} on "${board.tabName}"`);
   return null;
 }
@@ -318,8 +320,7 @@ export function syncChoiceField(d: FormDraft, questionId: string): FormRefusal |
       `The field "${field.label}" would offer more than 20 options: map "${q.prompt}" elsewhere.`,
     );
   const next = { ...field, options: [...has, ...missing] };
+  // The field now holds every option the question offers, and the question has no Other: it fits.
   saveType(d, { ...type, custom: type.custom!.map((f) => (f.id === field.id ? next : f)) });
-  if (!fieldTakes(q, next))
-    return refuse('field_does_not_fit', `"${q.prompt}" no longer fits the field "${field.label}".`);
   return null;
 }

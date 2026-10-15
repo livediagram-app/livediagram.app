@@ -201,7 +201,9 @@ async function syncSheetHeaders(
   }
   if (fresh) changes.push({ op: 'freeze', rows: 1 }, { op: 'rename', title: fresh.title });
   if (!changes.length) return;
-  await changeSheet(api, d.world.documentId, { sheet: sheetId, changes }, client);
+  const done = await changeSheet(api, d.world.documentId, { sheet: sheetId, changes }, client);
+  // The sheet engine answers a refusal rather than throwing: a miss all the same.
+  if (done.refusal) throw new Error(done.refusal.message);
   if (missing.length && !fresh)
     d.lines.push(
       `added the sheet's column${missing.length === 1 ? '' : 's'} ${missing.map((m) => `"${m}"`).join(', ')}`,
@@ -259,7 +261,8 @@ async function writeAround(
     const changed = await changeBoard(
       api,
       d.world.documentId,
-      { board: board.elementId, types: board.types ?? [] },
+      // A board is changed only when it confines its types, so it names them.
+      { board: board.elementId, types: board.types! },
       client,
     );
     made.push(

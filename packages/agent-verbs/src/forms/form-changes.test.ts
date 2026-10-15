@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { questionsOf, type FormDefinition } from '@livediagram/forms';
 import { boardsOf } from '@livediagram/templates';
-import { BUG, formDraft } from '../testing/forms';
+import { BUG, bugForm, formDraft } from '../testing/forms';
 import { applyFormChanges, type FormChange } from './form-changes';
 import type { FormDraft } from './form-draft';
 
@@ -292,5 +292,208 @@ describe('the form, its settings and where responses go', () => {
     expect(candidate.form.destination?.typeId).toBe('candidate');
     const custom = run([{ op: 'responds_to', to: 'board', cardType: 'Guest' }]).d;
     expect(custom.types.at(-1)).toMatchObject({ label: 'Guest' });
+  });
+});
+
+describe('every refusal, named', () => {
+  const split: FormChange = { op: 'add_section', after: 'Severity' };
+  const cases: [string, FormChange[], string][] = [
+    [
+      'an unknown question to place before',
+      [{ op: 'add_question', question: { type: 'short', prompt: 'X' }, before: 'Nope' }],
+      'question_unknown',
+    ],
+    [
+      'an unknown question to place after',
+      [{ op: 'move_question', question: 'Summary', after: 'Nope' }],
+      'question_unknown',
+    ],
+    [
+      'a question after itself',
+      [{ op: 'move_question', question: 'Summary', after: 'Summary' }],
+      'invalid_value',
+    ],
+    [
+      'an unknown section',
+      [{ op: 'add_question', question: { type: 'short', prompt: 'X' }, section: 9 }],
+      'section_unknown',
+    ],
+    [
+      'a bad question',
+      [{ op: 'add_question', question: { type: 'short', prompt: '' } }],
+      'prompt_empty',
+    ],
+    [
+      'a bad setting',
+      [{ op: 'set_question', question: 'Summary', set: { prompt: '' } }],
+      'prompt_empty',
+    ],
+    [
+      'a question to delete that is not there',
+      [{ op: 'delete_question', question: 'Nope' }],
+      'question_unknown',
+    ],
+    [
+      'a question to move that is not there',
+      [{ op: 'move_question', question: 'Nope', section: 1 }],
+      'question_unknown',
+    ],
+    ['a move to nowhere', [{ op: 'move_question', question: 'Summary' }], 'invalid_value'],
+    ['a section split after nothing', [{ op: 'add_section', after: 'Nope' }], 'question_unknown'],
+    ['a new section with a long title', [{ op: 'add_section', title: 'x'.repeat(81) }], 'too_long'],
+    [
+      'a section to change that is not there',
+      [{ op: 'set_section', section: 'Nope', title: 'X' }],
+      'section_unknown',
+    ],
+    [
+      'a section description too long',
+      [split, { op: 'set_section', section: 2, description: 'x'.repeat(1001) }],
+      'too_long',
+    ],
+    [
+      'a rule on a question that is not there',
+      [split, { op: 'set_section', section: 2, showIf: { question: 'Nope', anyOf: ['x'] } }],
+      'question_unknown',
+    ],
+    [
+      'a rule with no answers',
+      [split, { op: 'set_section', section: 2, showIf: { question: 'Severity', anyOf: [] } }],
+      'rule_answer_none',
+    ],
+    [
+      'a section to delete that is not there',
+      [{ op: 'delete_section', section: 'Nope' }],
+      'section_unknown',
+    ],
+    ['a heading too long', [{ op: 'set_form', heading: 'x'.repeat(81) }], 'too_long'],
+    ['an empty heading', [{ op: 'set_form', heading: ' ' }], 'heading_empty'],
+    ['a description too long', [{ op: 'set_form', description: 'x'.repeat(1001) }], 'too_long'],
+    ['a cover that is no cover', [{ op: 'set_form', cover: 'red' }], 'cover_invalid'],
+    ['an empty cover', [{ op: 'set_form', cover: {} }], 'cover_invalid'],
+    ['an empty theme', [{ op: 'set_form', theme: ' ' }], 'invalid_value'],
+    ['a closing time that is none', [{ op: 'settings', closesAt: 'soon' }], 'invalid_value'],
+    ['a message too long', [{ op: 'settings', confirmation: 'x'.repeat(501) }], 'too_long'],
+  ];
+  for (const [what, changes, code] of cases)
+    it(`refuses ${what}`, () => expect(run(changes).refused).toMatchObject({ code }));
+
+  it('says there is no earlier question to decide a rule', () => {
+    const d = formDraft({
+      ...bugForm(),
+      sections: [{ id: 's', title: '', questions: [{ id: 'q', type: 'short', prompt: 'Q' }] }],
+    });
+    const refused = applyFormChanges(d, [
+      { op: 'add_section' },
+      { op: 'set_section', section: 2, showIf: { question: 'Q', anyOf: ['x'] } },
+    ]);
+    expect(refused?.message).toContain('none yet: add one first');
+  });
+
+  it('stops at the most questions and sections a form holds', () => {
+    const many: FormDefinition = {
+      ...bugForm(),
+      sections: Array.from({ length: 10 }, (_, s) => ({
+        id: `s${s}`,
+        title: '',
+        questions: Array.from({ length: 10 }, (_, i) => ({
+          id: `q${s}-${i}`,
+          type: 'short' as const,
+          prompt: `Q${s}-${i}`,
+        })),
+      })),
+    };
+    expect(
+      applyFormChanges(formDraft(many), [
+        { op: 'add_question', question: { type: 'short', prompt: 'X' } },
+      ]),
+    ).toMatchObject({ code: 'questions_full' });
+    expect(applyFormChanges(formDraft(many), [{ op: 'add_section' }])).toMatchObject({
+      code: 'sections_full',
+    });
+  });
+});
+
+describe('every change, applied', () => {
+  it('moves a question before itself as no move, and to the end of a section', () => {
+    const { d, refused } = run([
+      { op: 'move_question', question: 'Summary', before: 'Summary' },
+      { op: 'add_section', title: 'Two', description: 'More' },
+      { op: 'move_question', question: 'Summary', section: 'Two' },
+    ]);
+    expect(refused).toBeNull();
+    expect(prompts(d.form)).toEqual([['Severity', 'Can we contact you?'], ['Summary']]);
+    expect(d.form.sections[1]).toMatchObject({ title: 'Two', description: 'More' });
+  });
+
+  it('changes a section’s description and drops its rule, and reads a rule’s answers once', () => {
+    const { d } = run([
+      {
+        op: 'add_section',
+        after: 'Severity',
+        showIf: { question: 'Severity', anyOf: ['High', 'high', 'Low'] },
+      },
+      { op: 'set_section', section: 2, description: 'Why' },
+    ]);
+    expect(d.form.sections[1]).toMatchObject({
+      description: 'Why',
+      showIf: { anyOf: ['High', 'Low'] },
+    });
+    expect(
+      run([
+        { op: 'add_section', after: 'Severity', showIf: { question: 'Severity', anyOf: ['Low'] } },
+        { op: 'set_section', section: 2, showIf: null },
+      ]).d.form.sections[1],
+    ).not.toHaveProperty('showIf');
+  });
+
+  it('sets and clears the description, a solid cover, a pattern alone, and clears the cover', () => {
+    const solid = run([
+      { op: 'set_form', description: 'Tell us', cover: { color: '#0f766e', pattern: 'grid' } },
+    ]).d.form;
+    expect(solid).toMatchObject({
+      description: 'Tell us',
+      cover: { fill: { kind: 'solid', color: '#0f766e' }, pattern: 'grid' },
+    });
+    expect(run([{ op: 'set_form', cover: { pattern: 'dots' } }]).d.form.cover).toEqual({
+      pattern: 'dots',
+    });
+    expect(
+      run([{ op: 'set_form', cover: { gradient: ['#000000', '#ffffff'], motion: 'aurora' } }]).d
+        .form.cover,
+    ).toMatchObject({
+      fill: { kind: 'gradient', angle: 160, motion: 'aurora' },
+    });
+    const cleared = run([
+      { op: 'set_form', description: 'x', cover: { color: '#000000' } },
+      { op: 'set_form', description: '', cover: null },
+    ]).d.form;
+    expect(cleared.description).toBeUndefined();
+    expect(cleared.cover).toBeUndefined();
+  });
+
+  it('sets and clears every setting', () => {
+    const set = run([
+      {
+        op: 'settings',
+        closesAt: '2026-12-01T18:00:00Z',
+        limit: 5,
+        confirmation: 'Ta',
+        closedMessage: 'Shut',
+      },
+    ]).d.form;
+    expect(set).toMatchObject({ limit: 5, confirmation: 'Ta', closedMessage: 'Shut' });
+    const cleared = run([
+      {
+        op: 'settings',
+        closesAt: '2026-12-01T18:00:00Z',
+        confirmation: 'Ta',
+        closedMessage: 'Shut',
+      },
+      { op: 'settings', closesAt: null, confirmation: null, closedMessage: '' },
+    ]).d.form;
+    expect(cleared).not.toHaveProperty('closesAt');
+    expect(cleared).not.toHaveProperty('confirmation');
+    expect(cleared).not.toHaveProperty('closedMessage');
   });
 });

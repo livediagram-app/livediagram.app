@@ -77,3 +77,73 @@ describe('questionFrom', () => {
     expect(set.ok && set.question).toEqual({ id: 'q', type: 'short', prompt: 'p' });
   });
 });
+
+describe('the settings each type takes', () => {
+  it('reads every setting a type has, and clears what is given empty', () => {
+    const rating = questionFrom(
+      {
+        type: 'rating',
+        prompt: 'Rate',
+        scale: 10,
+        style: 'numbers',
+        lowLabel: 'Poor',
+        highLabel: 'Great',
+      },
+      'q',
+    );
+    expect(rating.ok && rating.question).toMatchObject({
+      scale: 10,
+      style: 'numbers',
+      lowLabel: 'Poor',
+      highLabel: 'Great',
+    });
+    const number = questionFrom(
+      { type: 'number', prompt: 'Age', min: 18, max: 99, whole: true, placeholder: '30' },
+      'q',
+    );
+    expect(number.ok && number.question).toMatchObject({
+      min: 18,
+      max: 99,
+      whole: true,
+      placeholder: '30',
+    });
+    const multi = questionFrom(
+      { type: 'multi', prompt: 'Pick', options: ['A', 'B', 'C'], min: 1, max: 2, other: true },
+      'q',
+    );
+    expect(multi.ok && multi.question).toMatchObject({ min: 1, max: 2, other: true });
+    expect(questionFrom({ type: 'single', prompt: 'P', dropdown: true }, 'q')).toMatchObject({
+      ok: true,
+    });
+  });
+
+  it('names the settings of a type that has none beyond its prompt', () => {
+    const made = questionFrom({ type: 'date', prompt: 'When', placeholder: 'x' }, 'q');
+    expect(!made.ok && made.message).toContain('none beyond prompt, help and required');
+  });
+
+  it('refuses an empty or over-long option, a number that is none, and help past its limit', () => {
+    expect(questionFrom({ type: 'single', prompt: 'P', options: ['A', ' '] }, 'q')).toMatchObject({
+      code: 'option_empty',
+    });
+    expect(
+      questionFrom({ type: 'single', prompt: 'P', options: ['x'.repeat(41)] }, 'q'),
+    ).toMatchObject({ code: 'too_long' });
+    expect(questionFrom({ type: 'number', prompt: 'P', min: Number.NaN }, 'q')).toMatchObject({
+      code: 'invalid_value',
+    });
+    expect(questionFrom({ type: 'short', prompt: 'P', help: 'h'.repeat(501) }, 'q')).toMatchObject({
+      code: 'too_long',
+    });
+    expect(
+      questionFrom({ type: 'multi', prompt: 'P', options: ['A'], min: 1.5 }, 'q'),
+    ).toMatchObject({
+      code: 'picks_out_of_range',
+    });
+  });
+
+  it('reads a multiple choice with no options as offering none', () => {
+    const bare = { id: 'q', type: 'multi' as const, prompt: 'P' };
+    expect(applyQuestionSet(bare, { max: 1 })).toMatchObject({ code: 'picks_out_of_range' });
+  });
+});

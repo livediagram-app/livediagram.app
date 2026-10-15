@@ -93,3 +93,10 @@ describe('form names', () => {
     expect(resolveSheet(world.sheets, 'Bugs')).toMatchObject({ ok: false, code: 'sheet_unknown' });
   });
 });
+
+describe('naming nothing', () => {
+  it('says none when there is nothing of the kind', () => {
+    const r = resolveBoard([], 'Bugs');
+    expect(!r.ok && r.message).toContain('Board tabs: none');
+  });
+});
