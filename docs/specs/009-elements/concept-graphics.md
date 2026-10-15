@@ -159,8 +159,9 @@ the "+" ring's add, the Rows section, the colour ramp and its animation previewe
 [layer stack](../007-editor/element-tours.md#the-layer-stack-tour), the
 [pyramid](../007-editor/element-tours.md#the-pyramid-tour), the
 [funnel](../007-editor/element-tours.md#the-funnel-tour), the
-[cycle](../007-editor/element-tours.md#the-cycle-tour) and the
-[hub and spoke](../007-editor/element-tours.md#the-hub-and-spoke-tour).
+[cycle](../007-editor/element-tours.md#the-cycle-tour), the
+[hub and spoke](../007-editor/element-tours.md#the-hub-and-spoke-tour) and the
+[onion](../007-editor/element-tours.md#the-onion-tour).
 
 ## Share roles
 

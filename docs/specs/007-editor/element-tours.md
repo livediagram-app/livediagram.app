@@ -9,7 +9,7 @@ with a centred card) and [Show Me](show-me.md) (never offered, started from a bu
 tour offers itself, but quietly: a small toolbar that waits beside the selection, never a card over the canvas.
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
-[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle and hub and spoke.
+[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, and onion.
 
 ## Domain language
 
@@ -188,6 +188,20 @@ On the selected Hub and spoke, from `hub-tour-steps.ts`.
 6. **Light Them Up**: plays **Pulse** round the satellites as a preview while the step is up.
 7. **That Is a Hub and Spoke**: the closing card.
 
+## The Onion tour
+
+On the selected Onion, from `onion-tour-steps.ts`.
+
+1. **Nested, Not Overlapping**: rings the onion, counting its rings; each wraps everything inside it, and it is not a
+   Venn.
+2. **The Core**: rings the core's name, in the middle and solid in the accent; click (tap) to type over it.
+3. **Outward From There**: rings the outermost ring's name; each ring after the core sits further out, its name along
+   the top of its band.
+4. **Add a Ring**: the "+" ring open on **Add Ring**; a new ring round the outside, up to six.
+5. **Reorder in the Menu** (only while More shows): rings More; Rows from the core out, two at least.
+6. **Ripple Outward**: plays **Pulse** from the core outward as a preview while the step is up.
+7. **That Is an Onion**: the closing card.
+
 ## Share roles
 
 | Role        | Element tours                                                                                  |
@@ -201,7 +215,7 @@ graphic, an Editor on an unlocked element, since its rows are structure), never 
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -214,6 +228,7 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   the Funnel's `FunnelTourStepStages`, `...Edit`, `...Values`, `...Add`, `...Shape`, `...Colours`, `...Animate` and
   `...Outro`; the Cycle's `CycleTourStepLoop`, `...First`, `...Centre`, `...Add`, `...Rows`, `...Animate` and
   `...Outro`; the Hub's `HubTourStepHub`, `...Satellites`, `...Edit`, `...Add`, `...Spokes`, `...Animate` and
+  `...Outro`; the Onion's `OnionTourStepRings`, `...Core`, `...Outer`, `...Add`, `...Rows`, `...Animate` and
   `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
@@ -242,6 +257,6 @@ help article's tour section; and a section here.
 - `apps/live/components/tour/ElementTourOffer.tsx`: the offer toolbar.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
-  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`: each kind's own.
+  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`: each kind's own.
 - `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
 - `apps/live/lib/concept-tour-preview.ts`: the animation a step previews on a concept graphic.

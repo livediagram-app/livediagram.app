@@ -19,6 +19,7 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   funnel: applyShapeVariant(createShape('pyramid', 0, 0) as ShapeElement, 'funnel') as Element,
   cycle: createShape('cycle', 0, 0) as Element,
   hub: createShape('hub', 0, 0) as Element,
+  onion: createShape('onion', 0, 0) as Element,
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {

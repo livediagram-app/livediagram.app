@@ -91,3 +91,12 @@ describe('the Hub and Spoke element tour kind', () => {
     expect(canTourElement({ level: 'view' }, hub, 'hub')).toBe(false);
   });
 });
+
+describe('the Onion element tour kind', () => {
+  it('tours an onion, for an Editor only', () => {
+    const onion = createShape('onion', 0, 0) as Element;
+    expect(elementTourKindOf(onion)).toBe('onion');
+    expect(canTourElement({ level: 'edit' }, onion, 'onion')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, onion, 'onion')).toBe(false);
+  });
+});

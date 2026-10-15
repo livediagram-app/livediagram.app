@@ -1240,6 +1240,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a hub and spoke.',
         helpArticle: 'conceptGraphics',
       }),
+      elementTourSwitch('onion', {
+        label: 'Onion Tour',
+        event: { category: 'UI', on: 'OnionTourSeenOff', off: 'OnionTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial onion rings concentric core layers architecture concept replay',
+        description: 'The first time you select an onion.',
+        helpArticle: 'conceptGraphics',
+      }),
     ],
   },
   {

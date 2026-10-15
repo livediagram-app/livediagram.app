@@ -16,6 +16,7 @@ export const ELEMENT_TOUR_KINDS = [
   'funnel',
   'cycle',
   'hub',
+  'onion',
 ] as const;
 
 export type ElementTourKind = (typeof ELEMENT_TOUR_KINDS)[number];
@@ -28,6 +29,7 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   funnel: 'funnel',
   cycle: 'cycle',
   hub: 'hub and spoke',
+  onion: 'onion',
 };
 
 // The toured kind an element is, or null when its type has no tour.
@@ -39,6 +41,7 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el.shape === 'pyramid' && (el as ShapeElement).pyramidVariant === 'funnel') return 'funnel';
   if (el.shape === 'cycle') return 'cycle';
   if (el.shape === 'hub') return 'hub';
+  if (el.shape === 'onion') return 'onion';
   return null;
 }
 
@@ -55,6 +58,7 @@ export function canTourElement(
     // A concept graphic's rows are structure, an Editor's on an unlocked element
     // (docs/specs/009-elements/concept-graphics.md "Share roles").
     case 'layer-stack':
+    case 'onion':
     case 'hub':
     case 'cycle':
     case 'funnel':

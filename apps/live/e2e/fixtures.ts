@@ -83,7 +83,15 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
             illustrateTourSeen: true,
             illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
             // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
-            elementTourKinds: ['sankey', 'layer-stack', 'pyramid', 'funnel', 'cycle', 'hub'],
+            elementTourKinds: [
+              'sankey',
+              'layer-stack',
+              'pyramid',
+              'funnel',
+              'cycle',
+              'hub',
+              'onion',
+            ],
           }),
         );
     } catch {

@@ -1183,6 +1183,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Hub and Spoke tour, offered beside a selected hub and spoke.',
   'UI|Ended|HubTourSkipped':
     'Someone left the Hub and Spoke tour before its end, or the hub and spoke it was on went away.',
+  'UI|Ended|OnionTourCompleted':
+    'Someone reached the end of the Onion tour, offered beside a selected onion.',
+  'UI|Ended|OnionTourSkipped':
+    'Someone left the Onion tour before its end, or the onion it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1315,6 +1319,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Cycle tour was offered, as a small Tour toolbar beside a selected cycle (counted once per visit).',
   'UI|Opened|HubTourOffer':
     'The Hub and Spoke tour was offered, as a small Tour toolbar beside a selected hub and spoke (counted once per visit).',
+  'UI|Opened|OnionTourOffer':
+    'The Onion tour was offered, as a small Tour toolbar beside a selected onion (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
@@ -1403,6 +1409,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected cycle, starting its tour.',
   'UI|Started|HubTour':
     'Someone pressed Play on the Tour toolbar beside a selected hub and spoke, starting its tour.',
+  'UI|Started|OnionTour':
+    'Someone pressed Play on the Tour toolbar beside a selected onion, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1592,6 +1600,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Hub and Spoke Tour" in Settings, so it is offered again.',
   'UI|Toggled|HubTourSeenOn':
     'Someone switched off Tours › Element Tours › "Hub and Spoke Tour" in Settings, so it is not offered.',
+  'UI|Toggled|OnionTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Onion Tour" in Settings, so it is offered again.',
+  'UI|Toggled|OnionTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Onion Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -1753,6 +1765,18 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Hub and Spoke tour reached its "Light Them Up" step, playing the Pulse animation on the hub.',
   'UI|View|HubTourStepOutro':
     'The Hub and Spoke tour reached its closing "That Is a Hub and Spoke" card.',
+  'UI|View|OnionTourStepRings':
+    'The Onion tour reached its "Nested, Not Overlapping" step, on the whole onion.',
+  'UI|View|OnionTourStepCore': 'The Onion tour reached its "The Core" step, on the core\'s name.',
+  'UI|View|OnionTourStepOuter':
+    'The Onion tour reached its "Outward From There" step, on the outermost ring\'s name.',
+  'UI|View|OnionTourStepAdd':
+    'The Onion tour reached its "Add a Ring" step, with the "+" ring open on Add Ring.',
+  'UI|View|OnionTourStepRows':
+    'The Onion tour reached its "Reorder in the Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|OnionTourStepAnimate':
+    'The Onion tour reached its "Ripple Outward" step, playing the Pulse animation on the onion.',
+  'UI|View|OnionTourStepOutro': 'The Onion tour reached its closing "That Is an Onion" card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':
