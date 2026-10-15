@@ -73,12 +73,14 @@ export function RevealFace({
   if (uncovered) {
     return (
       // Only the pill takes pointers, so a locally-revealed zone doesn't sit
-      // between the user and the content they came to read.
+      // between the user and the content they came to read. The pill turns
+      // them back on for itself: inside a `pointer-events-none` parent it would
+      // otherwise inherit none, and a press on Hide fell through to the element.
       <div className="pointer-events-none absolute inset-0">
         <button
           type="button"
           {...pillPress}
-          className="flex cursor-pointer items-center gap-1 rounded-full bg-slate-900/75 px-2.5 py-1 text-[10px] font-semibold text-white shadow-lg ring-1 ring-white/10 backdrop-blur transition hover:bg-slate-900/90"
+          className="pointer-events-auto absolute right-2 top-2 flex cursor-pointer items-center gap-1 rounded-full bg-slate-900/75 px-2.5 py-1 text-[10px] font-semibold text-white shadow-lg ring-1 ring-white/10 backdrop-blur transition hover:bg-slate-900/90"
         >
           <EyeOffIcon />
           Hide
