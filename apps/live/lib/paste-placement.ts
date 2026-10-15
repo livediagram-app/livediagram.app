@@ -7,6 +7,7 @@ import {
   landArrivals,
   type Element,
   type ElementId,
+  type Endpoint,
   type Tab,
 } from '@livediagram/document';
 
@@ -93,6 +94,19 @@ function sourceBounds(source: readonly Element[]): ViewRect | null {
         }
       : { x0, y0, x1, y1 };
   };
+  // An end is held when what it rests on is in the copy, all the way down: an end on an arrow is held only when that
+  // arrow's own ends are, or its point would be measured through an element left behind ({0, 0}) and stretch the
+  // box towards the origin. `seen` stops a loop of arrows on each other.
+  const byId = new Map(all.map((e) => [e.id, e]));
+  const held = (end: Endpoint, seen: ReadonlySet<string> = new Set()): boolean => {
+    if (end.kind === 'free') return true;
+    if (end.kind === 'pinned') return ids.has(end.elementId);
+    if (end.kind !== 'on-arrow' || !ids.has(end.arrowId) || seen.has(end.arrowId)) return false;
+    const on = byId.get(end.arrowId);
+    if (on?.type !== 'arrow') return false;
+    const next = new Set(seen).add(end.arrowId);
+    return held(on.from, next) && held(on.to, next);
+  };
   for (const el of all) {
     if (el.type !== 'arrow') {
       const r = elementBounds(el, all);
@@ -100,11 +114,7 @@ function sourceBounds(source: readonly Element[]): ViewRect | null {
       continue;
     }
     for (const end of [el.from, el.to]) {
-      const held =
-        end.kind === 'free' ||
-        (end.kind === 'pinned' && ids.has(end.elementId)) ||
-        (end.kind === 'on-arrow' && ids.has(end.arrowId));
-      if (!held) continue;
+      if (!held(end)) continue;
       const p = endpointPosition(end, all);
       take(p.x, p.y, p.x, p.y);
     }
