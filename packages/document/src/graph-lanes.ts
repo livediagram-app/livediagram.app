@@ -107,11 +107,9 @@ export function layoutLanes(
   const laneW =
     gutter + LANE_PAD * 2 + colW.reduce((s, w) => s + w, 0) + COLUMN_GAP * (columns - 1);
 
-  // Each lane as tall as its tallest stack of nodes sharing a column.
-  const placed: BoxedElement[] = [];
-  const laneEls: BoxedElement[] = [];
-  let y = 0;
-  lanes.forEach((lane, i) => {
+  // Each lane as tall as its tallest stack of nodes sharing a column, settled twice: the first placing tells each stack
+  // where its members' feeders sit, the second orders the stack by them and lines up a hand-off within the lane.
+  const stacksOf = (lane: (typeof lanes)[number]) => {
     const stacks = new Map<number, BoxedElement[]>();
     for (const id of lane.members) {
       const b = byId.get(id);
@@ -119,6 +117,99 @@ export function layoutLanes(
       const c = col.get(id)!;
       (stacks.get(c) ?? stacks.set(c, []).get(c)!).push(b);
     }
+    return stacks;
+  };
+  const first = placeLanes(lanes.map(stacksOf), graph, byId, laneOf, colX, colW);
+  const midY = new Map(first.placed.map((b) => [b.id, b.y + b.height / 2]));
+  const feedersOf = (id: string) =>
+    graph.edges.filter((e) => e.to === id && e.from !== id && midY.has(e.from)).map((e) => e.from);
+  const pull = (b: BoxedElement) => {
+    const ys = feedersOf(b.id).map((f) => midY.get(f)!);
+    return ys.length ? ys.reduce((s, v) => s + v, 0) / ys.length : midY.get(b.id)!;
+  };
+  // A stack reads top to bottom as its feeders do (a step fed from the lane above sits over one fed from below), so
+  // the lines into it do not cross on their way in.
+  const ordered = lanes.map((lane) => {
+    const stacks = stacksOf(lane);
+    for (const [c, stack] of stacks)
+      stacks.set(
+        c,
+        stack
+          .map((b, k) => ({ b, k, at: pull(b) }))
+          .sort((p, q) => p.at - q.at || p.k - q.k)
+          .map((e) => e.b),
+      );
+    return stacks;
+  });
+  const { placed, laneRects, straight } = placeLanes(
+    ordered,
+    graph,
+    byId,
+    laneOf,
+    colX,
+    colW,
+    true,
+  );
+  const laneEls: BoxedElement[] = lanes.map((lane, i) => ({
+    id: lane.id,
+    type: 'shape',
+    shape: 'lane',
+    x: 0,
+    y: laneRects[i]!.y,
+    width: laneW,
+    height: laneRects[i]!.height,
+    label: lane.label,
+    // The swimlane template's lane title: a size up from the steps, so a role reads as a heading.
+    textSize: 'md',
+    textBold: true,
+    textAlignX: 'left',
+    textAlignY: 'top',
+    headerSize: gutter,
+    ...(i % 2 === 1 ? { colorPreset: 'soft' } : {}),
+  }));
+
+  const centers = new Map<string, Pt>(
+    placed.map((b) => [b.id, { x: b.x + b.width / 2, y: b.y + b.height / 2 }]),
+  );
+  const arrows = graph.edges
+    .filter((e) => centers.has(e.from) && centers.has(e.to))
+    .map((e) => reanchorArrow(edgeToArrow(e, makeEdgeId()), centers, 'LR'))
+    // A hand-off lined up along its lane keeps the middle of its next step's side, so another line into that side
+    // moves to a quarter beside it (graph-branches.ts) rather than both fanning off the straight run.
+    .map((a) =>
+      a.from.kind === 'pinned' &&
+      a.to.kind === 'pinned' &&
+      straight.has(`${a.from.elementId}->${a.to.elementId}`)
+        ? { ...a, exactEnd: true }
+        : a,
+    );
+  // A step's exits leave by different sides (graph-branches.ts) once graph input knows its lines are angled: only an
+  // elbow turns a side exit into a square line.
+  return [...laneEls, ...placed, ...arrows];
+}
+
+// Places each lane's stacks, one lane under another. A stack sits centred on its lane's middle line unless `align`:
+// then, column by column, a stack one of whose members a step of the same lane feeds from an earlier column, with
+// nothing of the lane between them on that line, moves so the two share a middle and the hand-off runs straight
+// (a decision's "no" straight along its lane into the rejection). The lane grows to hold what moved.
+function placeLanes(
+  laneStacks: Map<number, BoxedElement[]>[],
+  graph: DiagramGraph,
+  byId: ReadonlyMap<string, BoxedElement>,
+  laneOf: ReadonlyMap<string, number>,
+  colX: number[],
+  colW: number[],
+  align = false,
+): {
+  placed: BoxedElement[];
+  laneRects: { y: number; height: number }[];
+  straight: Set<string>;
+} {
+  const placed: BoxedElement[] = [];
+  const straight = new Set<string>();
+  const laneRects: { y: number; height: number }[] = [];
+  let y = 0;
+  laneStacks.forEach((stacks, i) => {
     // A stack every member of which one step of this lane feeds (a decision's yes and no, side by side in the next
     // column) spreads until its first and last clear that step's points by BRANCH_CLEAR, so its exits can leave by
     // the top and the bottom rather than as stubs from one point.
@@ -141,46 +232,82 @@ export function layoutLanes(
     };
     const stackH = (s: BoxedElement[]) =>
       s.reduce((h, b) => h + b.height, 0) + gapOf(s) * (s.length - 1);
-    const height = Math.max(
-      LANE_MIN_H,
-      LANE_PAD * 2 + Math.max(0, ...[...stacks.values()].map(stackH)),
-    );
-    for (const [c, stack] of stacks) {
-      let sy = y + (height - stackH(stack)) / 2;
+    // Each stack's top, from the lane's middle line; members' middles likewise.
+    const top = new Map<number, number>();
+    const mid = new Map<string, number>();
+    const at = new Map<string, { c: number; b: BoxedElement }>();
+    const columns = [...stacks.keys()].sort((p, q) => p - q);
+    const feeds = (from: string, to: string) =>
+      graph.edges.some((e) => e.from === from && e.to === to);
+    for (const c of columns) {
+      const stack = stacks.get(c)!;
+      const midsFrom = (t: number) => {
+        const out: number[] = [];
+        for (const b of stack) {
+          out.push(t + b.height / 2);
+          t += b.height + gapOf(stack);
+        }
+        return out;
+      };
+      let t = -stackH(stack) / 2;
+      if (align) {
+        const mids = midsFrom(t);
+        for (let k = 0; k < stack.length; k++) {
+          const b = stack[k]!;
+          const feeder = graph.edges
+            .filter((e) => e.to === b.id && at.has(e.from) && at.get(e.from)!.c < c)
+            // A step that feeds two of the stack (a decision's branches) keeps them spread about it, each exit leaving
+            // by its own side.
+            .filter((e) => stack.filter((o) => feeds(e.from, o.id)).length < 2)
+            .map((e) => at.get(e.from)!)
+            .find((f) => clearRun(f, mid.get(f.b.id)!, c, at, mid));
+          if (!feeder) continue;
+          t += mid.get(feeder.b.id)! - mids[k]!;
+          straight.add(`${feeder.b.id}->${b.id}`);
+          break;
+        }
+      }
+      top.set(c, t);
+      midsFrom(t).forEach((m, k) => {
+        mid.set(stack[k]!.id, m);
+        at.set(stack[k]!.id, { c, b: stack[k]! });
+      });
+    }
+    const highest = Math.min(0, ...columns.map((c) => top.get(c)!));
+    const lowest = Math.max(0, ...columns.map((c) => top.get(c)! + stackH(stacks.get(c)!)));
+    const height = Math.max(LANE_MIN_H, LANE_PAD * 2 + lowest - highest);
+    // The middle line, so what the lane holds sits centred in it.
+    const middle = y + (height - (lowest - highest)) / 2 - highest;
+    for (const c of columns) {
+      let sy = middle + top.get(c)!;
+      const stack = stacks.get(c)!;
       for (const b of stack) {
         placed.push({ ...b, x: colX[c]! + (colW[c]! - b.width) / 2, y: sy });
         sy += b.height + gapOf(stack);
       }
     }
-    laneEls.push({
-      id: lane.id,
-      type: 'shape',
-      shape: 'lane',
-      x: 0,
-      y,
-      width: laneW,
-      height,
-      label: lane.label,
-      // The swimlane template's lane title: a size up from the steps, so a role reads as a heading.
-      textSize: 'md',
-      textBold: true,
-      textAlignX: 'left',
-      textAlignY: 'top',
-      headerSize: gutter,
-      ...(i % 2 === 1 ? { colorPreset: 'soft' } : {}),
-    });
+    laneRects.push({ y, height });
     y += height + LANE_GAP;
   });
+  return { placed, laneRects, straight };
+}
 
-  const centers = new Map<string, Pt>(
-    placed.map((b) => [b.id, { x: b.x + b.width / 2, y: b.y + b.height / 2 }]),
-  );
-  const arrows = graph.edges
-    .filter((e) => centers.has(e.from) && centers.has(e.to))
-    .map((e) => reanchorArrow(edgeToArrow(e, makeEdgeId()), centers, 'LR'));
-  // A step's exits leave by different sides (graph-branches.ts) once graph input knows its lines are angled: only an
-  // elbow turns a side exit into a square line.
-  return [...laneEls, ...placed, ...arrows];
+// Whether a straight run along the lane at `level` (from the middle line), from a feeder's column to column `c`, keeps
+// clear of every box of the lane in the columns between.
+const RUN_CLEAR = 12;
+function clearRun(
+  feeder: { c: number; b: BoxedElement },
+  level: number,
+  c: number,
+  at: ReadonlyMap<string, { c: number; b: BoxedElement }>,
+  mid: ReadonlyMap<string, number>,
+): boolean {
+  for (const [id, o] of at) {
+    if (o.c <= feeder.c || o.c >= c) continue;
+    const m = mid.get(id)!;
+    if (Math.abs(m - level) < o.b.height / 2 + RUN_CLEAR) return false;
+  }
+  return true;
 }
 
 // Columns with the staircase (docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):

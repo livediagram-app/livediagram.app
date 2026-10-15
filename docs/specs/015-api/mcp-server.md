@@ -489,6 +489,11 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   searched for (the orthogonal router: the cheapest clean path over every pair of sides); the search shares one
   budget per layout (`ROUTER_BUDGET`, grid crossings laid out plus steps taken), and once it is spent the rest take
   their outside tracks, so a dense graph lays out in well under a second (60 boxes and 140 edges in about 0.2 s).
+  The search prices a run along a line already drawn (`ROUTER_SHARE_COST`), counting one within `ROUTER_SHARE_NEAR`
+  (8 px) beside it, or on its line stopping that short of its end, as sharing it: a "No" running up to the very point
+  a "Yes" turns into a step read as going into that step. It also prices each line already ending on a side the
+  route leaves or enters (`ROUTER_SIDE_LOAD_COST`, about two bends' worth), so a third line into one side of a shared
+  end takes a free side instead of squeezing in beside the other two.
 - **Groups keep their lines clear.** A node outside a group that a member links to sits by that member, not by the
   middle of the group (a database under the service that owns it), its rank kept in order and its gaps kept. An edge
   to or from the group itself leaves the frame facing the other end: from the side level with it when it lies under
@@ -522,6 +527,13 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   trunk), one whose next step lies clearly to its left or right leaves that side instead. A step with exactly two
   exits whose next steps lie clearly either side of it, neither ahead, sends both out of their sides (accept up,
   decline down; yes left, no right): kept on the point, one left by a corner and the other by the tip, lopsided.
+  Steps stacked in one column of a lane read top to bottom as their feeders do (a step fed from its own lane and from
+  below sits over one fed only from below), so the lines into the stack do not cross on their way in. A stack one of
+  whose steps a step of the same lane feeds from an earlier column, with nothing of that lane on the line between
+  them, moves so the two sit level and the hand-off runs straight along the lane (a first decision's "No" straight
+  into a shared rejection); that line keeps the middle of its next step's side and another line into the same side
+  comes in beside it on a quarter. A decision's own branches stacked beside it are not lined up: they stay spread so
+  each leaves by its own side. The lane grows to hold a stack that moved.
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
   an edit, as one: one miniature per shape kind the graph uses, with

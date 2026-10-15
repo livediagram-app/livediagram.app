@@ -8,6 +8,7 @@
 //
 // Graph input only (graph-input.ts `layoutGraph`); the editor's Mermaid import and Tidy Up never run them.
 
+import { anchorPrimarySide } from './anchors';
 import { isContainerKind } from './containment';
 import { edgeKey } from './auto-layout';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
@@ -353,19 +354,24 @@ const SIDE_ANCHORS: Readonly<Record<Side, readonly Anchor[]>> = {
   w: ['w', 'wnw', 'wsw'],
 };
 
-// The anchors on each element some arrow already ends at.
-function anchorsInUse(elements: readonly Element[]): Map<string, Set<Anchor>> {
-  const used = new Map<string, Set<Anchor>>();
+// The anchors on each element some arrow already ends at, once per end.
+function anchorsInUse(elements: readonly Element[]): Map<string, Anchor[]> {
+  const used = new Map<string, Anchor[]>();
   for (const el of elements) {
     if (el.type !== 'arrow') continue;
     for (const end of [el.from, el.to])
       if (end.kind === 'pinned')
-        (used.get(end.elementId) ?? used.set(end.elementId, new Set()).get(end.elementId)!).add(
+        (used.get(end.elementId) ?? used.set(end.elementId, []).get(end.elementId)!).push(
           end.anchor,
         );
   }
   return used;
 }
+
+// What a route pays per line already ending on a side it leaves or enters: two or three lines bunched on one side
+// read as one, so a route takes a free side for a bend or two more (a third "no" into one rejection drops in by its
+// top rather than squeezing in beside the other two).
+export const ROUTER_SIDE_LOAD_COST = 150;
 
 // The cheapest clean route between two boxes over every pair of sides, or null. Each end takes its side's middle,
 // or a quarter of that side when another arrow already ends at the middle, so two arrows never meet in one point.
@@ -374,15 +380,17 @@ function bestRoute(
   dst: BoxedElement,
   solid: readonly BoxedElement[],
   taken: readonly Run[],
-  used: ReadonlyMap<string, ReadonlySet<Anchor>>,
+  used: ReadonlyMap<string, readonly Anchor[]>,
   budget: RouterBudget,
 ): { fromAnchor: Anchor; toAnchor: Anchor; from: RoutePt; to: RoutePt; corners: RoutePt[] } | null {
   // The anchors free on a side: its middle when free, else its free quarters (the middle when none is free).
   const freeOn = (b: BoxedElement, side: Side): readonly Anchor[] => {
-    const free = SIDE_ANCHORS[side].filter((a) => !used.get(b.id)?.has(a));
+    const free = SIDE_ANCHORS[side].filter((a) => !used.get(b.id)?.includes(a));
     if (free[0] === SIDE_ANCHORS[side][0]) return [free[0]!];
     return free.length ? free : [SIDE_ANCHORS[side][0]!];
   };
+  const load = (b: BoxedElement, side: Side) =>
+    (used.get(b.id) ?? []).filter((a) => anchorPrimarySide(a) === side).length;
   let best: {
     fromAnchor: Anchor;
     toAnchor: Anchor;
@@ -398,8 +406,11 @@ function bestRoute(
           const from = anchorPosition(src, fromAnchor);
           const to = anchorPosition(dst, toAnchor);
           const route = routeOrthogonal(from, fromSide, to, toSide, solid, taken, budget);
-          if (route && (!best || route.cost < best.cost))
-            best = { fromAnchor, toAnchor, from, to, corners: route.corners, cost: route.cost };
+          if (!route) continue;
+          const cost =
+            route.cost + (load(src, fromSide) + load(dst, toSide)) * ROUTER_SIDE_LOAD_COST;
+          if (!best || cost < best.cost)
+            best = { fromAnchor, toAnchor, from, to, corners: route.corners, cost };
         }
   return best;
 }
