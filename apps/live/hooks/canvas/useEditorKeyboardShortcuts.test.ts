@@ -59,6 +59,15 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(fired(VIEW_TOOL_KEYS, 'i')).toBe('tool:isometric');
     expect(fired(VIEW_TOOL_KEYS, 'z')).toBe('zen');
   });
+
+  it('walks on W in Facilitate only', () => {
+    const facilitate = spyLive();
+    VIEW_TOOL_KEYS.w!({ ...facilitate.live, facilitateMode: true });
+    expect(facilitate.calls).toEqual(['tool:avatar']);
+    const diagram = spyLive();
+    VIEW_TOOL_KEYS.w!(diagram.live);
+    expect(diagram.calls).toEqual([]);
+  });
 });
 
 describe('EDIT_KEYS (mutating tools / element adds)', () => {
