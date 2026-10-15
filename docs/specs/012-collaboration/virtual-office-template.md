@@ -36,7 +36,8 @@ Three siblings, built the same way (`template-office-parts.ts`: rooms first, rug
 - **Team Pod**: one room for a small team: a cluster of four desks, a meeting table for the stand-up, a coffee
   machine, a plant and a bookshelf, and beside it a **Team Board** of four stickies (This week, Blocked on, Wins,
   Questions).
-- **All-Hands Hall**: one big room with a **Stage** (a rug, labelled) and a [Bring Focus](bring-focus.md) button
+- **All-Hands Hall**: one big room with a **Stage** (a rug, with a "Stage" text over it: a rug has nothing to write
+  on) and a [Bring Focus](bring-focus.md) button
   for the presenter, thirty-two chairs in four rows facing the stage either side of a centre aisle, plants and a
   water cooler.
 
@@ -48,4 +49,11 @@ Coworking Space, Team Pod, All-Hands Hall), after Meetings. Extra templates (not
 ## Share roles
 
 As every template: an Editor creates a document or tab from it. Everyone on the board walks, sits, talks and drinks
-in it ([Office](../009-elements/office.md#share-roles)).
+in it ([Office](../009-elements/office.md#share-roles)). What the spaces add follows the elements' own rules:
+
+- **The hall's Bring Focus**: an Editor presses it; a Participant or a Viewer cannot
+  ([Bring Focus](bring-focus.md#rules)).
+- **The Team Board's stickies**: an Editor and a Participant write on, move and recolour them; a Viewer reads them
+  ([Share roles](../013-workspace/share-roles.md)).
+- The **raised hand** an attendee is told to use is Behaviour › Wave, which every role may do and everyone sees;
+  a Reactions burst plays on its sender's screen only ([Avatar mode](../008-canvas/avatar-mode.md)).

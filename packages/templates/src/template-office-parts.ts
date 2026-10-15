@@ -5,6 +5,7 @@
 import {
   createShape,
   createText,
+  isFloorShape,
   type ChairFacing,
   type Element,
   type RoomDoor,
@@ -30,6 +31,18 @@ export type OfficeRoom = {
   pieces: OfficePiece[];
 };
 
+// A piece's size: its own `w` and `h`, or one of them with the other kept to the drawing's proportion (the drawings
+// are aspect locked), or its default.
+function sizeOf(
+  p: OfficePiece,
+  base: { width: number; height: number },
+): { width?: number; height?: number } {
+  if (p.w && p.h) return { width: p.w, height: p.h };
+  if (p.w) return { width: p.w, height: Math.round((p.w * base.height) / base.width) };
+  if (p.h) return { width: Math.round((p.h * base.width) / base.height), height: p.h };
+  return {};
+}
+
 /** Rooms, then rugs, then furniture, each piece placed in its room. `x0, y0` is the plan's top left. */
 export function furnishRooms(rooms: readonly OfficeRoom[], x0: number, y0: number): Element[] {
   const walls: Element[] = [];
@@ -46,10 +59,11 @@ export function furnishRooms(rooms: readonly OfficeRoom[], x0: number, y0: numbe
       roomDoor: room.door,
     });
     for (const p of room.pieces) {
+      const base = createShape(p.kind, rx + p.x, ry + p.y);
       const el: Element = {
-        ...createShape(p.kind, rx + p.x, ry + p.y),
+        ...base,
         ...(p.facing ? { chairFacing: p.facing } : {}),
-        ...(p.w && p.h ? { width: p.w, height: p.h } : {}),
+        ...sizeOf(p, base),
       };
       (p.kind === 'rug' ? floor : furniture).push(el);
     }
@@ -77,5 +91,29 @@ export function walkIn(right: number, cy: number, hint: string): Element[] {
       textColor: '#475569',
     },
     { ...createShape('mode-button', right - BUTTON_W, cy - BUTTON_H / 2), label: 'Walk In' },
+  ];
+}
+
+const isFloor = (el: Element) => el.type === 'shape' && isFloorShape(el.shape);
+
+/**
+ * A space laid out: its rooms furnished `head` below `y0`, the floors (rooms, then rugs) first, then the heading, then
+ * the furniture, then `extra`, so a title never lies under a floor. Split by kind, never by position, so a piece that
+ * is a floor can never be dropped or doubled.
+ */
+export function officePlan(
+  rooms: readonly OfficeRoom[],
+  x0: number,
+  y0: number,
+  head: number,
+  headingEls: readonly Element[],
+  extra: readonly Element[],
+): Element[] {
+  const placed = furnishRooms(rooms, x0, y0 + head);
+  return [
+    ...placed.filter(isFloor),
+    ...headingEls,
+    ...placed.filter((el) => !isFloor(el)),
+    ...extra,
   ];
 }

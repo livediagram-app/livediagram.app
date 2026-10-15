@@ -27,20 +27,21 @@ function Room({
   y: number;
   w: number;
   h: number;
-  door: 'top' | 'bottom';
+  door: 'top' | 'bottom' | 'left';
 }) {
   const mid = x + w / 2;
   const doorY = door === 'top' ? y : y + h;
   const otherY = door === 'top' ? y + h : y;
+  const midY = y + h / 2;
+  // The walls round the room, broken by a doorway in the middle of the door's side.
+  const walls =
+    door === 'left'
+      ? `M${x} ${midY - 3}L${x} ${y}L${x + w} ${y}L${x + w} ${y + h}L${x} ${y + h}L${x} ${midY + 3}`
+      : `M${mid - 3} ${doorY}L${x} ${doorY}L${x} ${otherY}L${x + w} ${otherY}L${x + w} ${doorY}L${mid + 3} ${doorY}`;
   return (
     <>
       <rect x={x} y={y} width={w} height={h} fill={FLOOR} />
-      <path
-        d={`M${mid - 3} ${doorY}L${x} ${doorY}L${x} ${otherY}L${x + w} ${otherY}L${x + w} ${doorY}L${mid + 3} ${doorY}`}
-        fill="none"
-        stroke={WALL}
-        strokeWidth="0.9"
-      />
+      <path d={walls} fill="none" stroke={WALL} strokeWidth="0.9" />
     </>
   );
 }
@@ -104,31 +105,32 @@ export function templatePreviewGroup23(kind: TemplateKind): ReactElement | null 
         </svg>
       );
     case 'coworking-space':
-      // An open floor of desk clusters, two booths on the right, a coffee bar and a lounge rug.
+      // An open floor of desk clusters, two booths inside it on the right opening onto the floor, a coffee bar and a
+      // lounge rug.
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
-          <Room x={3} y={4} w={56} h={42} door="bottom" />
-          <Room x={61} y={4} w={16} h={18} door="bottom" />
-          <Room x={61} y={26} w={16} h={18} door="bottom" />
+          <Room x={3} y={4} w={74} h={42} door="bottom" />
+          <Room x={60} y={7} w={14} h={15} door="left" />
+          <Room x={60} y={26} w={14} h={15} door="left" />
           {[7, 27].map((x) =>
             [9, 15].map((y) => (
               <rect key={`${x}-${y}`} x={x} y={y} width="16" height="4" rx="0.8" fill={FURNITURE} />
             )),
           )}
-          <rect x={66} y={11} width="6" height="4" rx="0.8" fill={FURNITURE} />
-          <rect x={66} y={33} width="6" height="4" rx="0.8" fill={FURNITURE} />
+          <rect x={65} y={12} width="6" height="4" rx="0.8" fill={FURNITURE} />
+          <rect x={65} y={31} width="6" height="4" rx="0.8" fill={FURNITURE} />
           <rect x={7} y={34} width="4" height="4" rx="0.6" fill={FURNITURE} />
           <rect x={13} y={33} width="3" height="5" rx="0.6" fill="rgb(186 230 253)" />
           <ellipse cx={38} cy={38} rx="9" ry="4" fill="rgb(253 230 138)" />
           <rect x={31} y={30} width="14" height="3" rx="1" fill={FURNITURE} />
-          <Plant x={54} y={39} />
+          <Plant x={52} y={39} />
           <g
             className="pv-arrive"
             style={pv({ '--pv-at': '400ms', '--pv-from-y': '10px' })}
             opacity="0"
           >
-            <circle cx="31" cy="43" r="1.3" fill="rgb(251 191 146)" />
-            <rect x="29.8" y="44.1" width="2.4" height="2.4" rx="0.4" fill={SHIRT} />
+            <circle cx="40" cy="43" r="1.3" fill="rgb(251 191 146)" />
+            <rect x="38.8" y="44.1" width="2.4" height="2.4" rx="0.4" fill={SHIRT} />
           </g>
         </svg>
       );
@@ -182,13 +184,14 @@ export function templatePreviewGroup23(kind: TemplateKind): ReactElement | null 
               />
             )),
           )}
+          {/* In through the doorway at the back of the hall, up the aisle. */}
           <g
             className="pv-arrive"
-            style={pv({ '--pv-at': '400ms', '--pv-from-y': '-6px' })}
+            style={pv({ '--pv-at': '400ms', '--pv-from-y': '8px' })}
             opacity="0"
           >
-            <circle cx="40" cy="9" r="1.3" fill="rgb(251 191 146)" />
-            <rect x="38.8" y="10.1" width="2.4" height="2.4" rx="0.4" fill={SHIRT} />
+            <circle cx="40" cy="41" r="1.3" fill="rgb(251 191 146)" />
+            <rect x="38.8" y="42.1" width="2.4" height="2.4" rx="0.4" fill={SHIRT} />
           </g>
         </svg>
       );
