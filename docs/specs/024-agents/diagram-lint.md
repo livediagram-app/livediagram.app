@@ -57,7 +57,9 @@ I group-split-edges  core: 12 of 13 arrows cross its border  fix: group by owner
 ## Where it runs
 
 - One pure package, `@livediagram/diagram-lint`, using the geometry `@livediagram/document` already has
-  (`arrowPolyline`, `pathsCross`, `pathPassesThrough`, the element grid, refs and containment).
+  (`arrowRoutePoints`, `pathsCross`, `pathPassesThrough`, the element grid, refs and containment). It reads each line
+  as drawn: ends sharing an anchor fanned apart as the renderers and the label pass place them, so a label sitting
+  between two fanned lines is never called struck, and a spot it names for a struck label is clear on the drawing.
 - Every changeset result's last line carries the lint verdict, `lint clean` or `lint 2 warnings, 1 info`
   ([Edit operations](edit-operations.md#results)); `tab lint` shows the findings. A changeset lints its whole result
   tab, not only what it touched.

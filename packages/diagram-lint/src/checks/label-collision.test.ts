@@ -18,6 +18,20 @@ describe('label-collision', () => {
     ).toBe('shorten the edge label to 3 characters');
   });
 
+  it('reads lines as drawn, fanned off a shared anchor: a label between two fanned drops is not struck', () => {
+    // Two angled lines leave e's bottom together and the renderers fan them apart; x's label sits in the gap between
+    // the two drops. Read unfanned, y's drop ran through the label, a strike whose fix never cleared it.
+    const big = { width: 400, height: 150 };
+    const els = [
+      box('e', 560, 610, big),
+      box('r', 770, 890, { width: 215, height: 140 }),
+      box('c', 535, 890, { width: 215, height: 140 }),
+    ];
+    const sql = arrow('x', 'e', 'r', ['s', 'n'], { arrowStyle: 'angled', label: 'SQL' });
+    const cache = arrow('y', 'e', 'c', ['s', 'n'], { arrowStyle: 'angled' });
+    expect(of(lint(tabOf(...els, sql, cache)), 'label-collision')).toEqual([]);
+  });
+
   it('fires when another line strikes the label through, moving it along its own line to a clear spot', () => {
     const labelled = arrow('x', 'a', 'b', ['e', 'w'], { label: 'go' });
     // c drops straight through the middle of a→b, where its label sits.

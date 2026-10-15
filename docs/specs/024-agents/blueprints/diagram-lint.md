@@ -93,7 +93,8 @@ The lint is a pure function: no state, no clock, no randomness, no I/O but one l
    - `containers` = `deriveContainers(visible)`: each element's container, the smallest frame or lane holding its centre.
      `frameOf(box)` walks that chain to its first frame (LN13).
    - `arrows` = visible arrows. `dangling` = those failing the `arrow-dangling` test. `drawable` = the rest.
-   - `polylines` = `arrowPolyline(arrow, index)` for each drawable arrow, with its bounds, computed once.
+   - `polylines` = `arrowRoutePoints(arrow, visible)` for each drawable arrow (the drawn route, shared-anchor ends
+     fanned), with its bounds, computed once.
    - `grid` = `buildElementGrid(boxes)`; `rotationPad` = half the largest diagonal of any rotated box (0 if none),
      added to every grid query rect so a rotated box's corners are not missed (LN34).
    - `labels` = `arrowLabelPass(visible, { measureFor: (px) => estimatedLabelMeasure(px), fontEpoch: LINT_MEASURE_EPOCH })`

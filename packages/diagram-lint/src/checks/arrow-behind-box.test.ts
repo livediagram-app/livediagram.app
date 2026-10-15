@@ -51,9 +51,10 @@ describe('arrow-behind-box', () => {
         arrow('y', 'a', 'b'),
       ),
     );
+    // Two arrows on one anchor are drawn fanned apart, so each clears m its own way.
     expect(of(twice, 'arrow-behind-box').map((f) => f.fix)).toEqual([
-      'move m by=0,46',
-      'move m by=0,46',
+      'move m by=0,39',
+      'move m by=0,-39',
     ]);
     expect(
       of(
