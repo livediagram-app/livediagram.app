@@ -124,7 +124,10 @@ export function TabWindowFace({
       style={{ borderRadius: radius }}
     >
       {state.kind === 'drawing' && tab ? (
-        <TabWindowDrawing tab={tab} elementId={element.id} />
+        // The tab it shows keeps that tab's own finish (docs/specs/008-canvas/finish.md): never sketched again here.
+        <div data-sketch-skip="" className="absolute inset-0">
+          <TabWindowDrawing tab={tab} elementId={element.id} />
+        </div>
       ) : state.kind === 'unchosen' ? (
         message(choose ? 'Show a tab here' : 'No tab chosen', chooseAction)
       ) : state.kind === 'unavailable' ? (
@@ -162,6 +165,8 @@ export function TabWindowFace({
             type="button"
             aria-label={`Open ${tab.name || 'Untitled tab'}`}
             data-tab-window-open=""
+            // A floating control, not part of the drawing: drawn as it is under Sketch.
+            data-sketch-skip=""
             style={{
               right: px(8),
               top: px(8),
