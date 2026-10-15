@@ -5,7 +5,6 @@ import {
   AI_CLIENTS,
   MCP_URL,
   STARTER_PROMPTS,
-  aiClientById,
   cursorInstallLink,
   vscodeInstallLink,
 } from './ai-clients';
@@ -38,7 +37,7 @@ describe('Build with AI clients', () => {
 
   it('never ids a client after a page section, so its hash cannot clash', () => {
     for (const section of ['connect', 'prompts', 'how-it-works']) {
-      expect(aiClientById(section)).toBeUndefined();
+      expect(AI_CLIENTS.some((c) => c.id === section)).toBe(false);
     }
   });
 

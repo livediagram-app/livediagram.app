@@ -17,7 +17,7 @@ const FACTS = [
   {
     icon: lucideGlyph(lucideKey, 18),
     title: 'Revoke it any time',
-    body: 'Each connection is an API token named after the tool, in Settings › Account › API Tokens. Revoke it and access stops at once.',
+    body: 'Each connection is an API token named after the tool, in Settings › Account › API Tokens, and lasts six months. Revoke it and access stops at once.',
   },
   {
     icon: lucideGlyph(lucideCpu, 18),

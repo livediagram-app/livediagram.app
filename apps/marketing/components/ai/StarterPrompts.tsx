@@ -16,12 +16,7 @@ export function StarterPrompts() {
           <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             “{prompt}”
           </p>
-          <CopyButton
-            text={prompt}
-            label="Copy prompt"
-            what={`the ${title} prompt`}
-            className="mt-4 self-start"
-          />
+          <CopyButton text={prompt} label="Copy prompt" what={title} className="mt-4 self-start" />
         </li>
       ))}
     </ul>
