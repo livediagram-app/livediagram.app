@@ -135,13 +135,16 @@ const respondsTo = z
       .string()
       .optional()
       .describe(
-        'An existing Board tab’s name (or its board’s title). Absent: a new Board tab "<Form> Responses" with New, In Progress and Done.',
+        'An existing Board tab’s name (or its board’s title). Absent: a new Board tab "<Form> Responses" with New, ' +
+          'In Progress and Done, taking the form’s card type alone.',
       ),
     cardType: z
       .string()
       .optional()
       .describe(
-        'The card type each response becomes, by name. Absent: the form’s own, the board’s first, or a new type named after the form.',
+        'The card type each response becomes, by name. A name the document lacks brings in the ready-made type of ' +
+          'that name (Bug, Idea, Candidate, Request...) or makes a new one. Absent: the form’s own, the board’s ' +
+          'first, or a new type named after the form.',
       ),
     column: z
       .string()
@@ -151,7 +154,8 @@ const respondsTo = z
       .string()
       .optional()
       .describe(
-        'An existing sheet, by its Sheet tab’s name. Absent: a new Sheet tab "<Form> Responses", a column per question.',
+        'An existing sheet, by its Sheet tab’s name. Absent: a new Sheet tab "<Form> Responses", its header row a ' +
+          'column per question.',
       ),
   })
   .describe('Where each response goes.');
@@ -178,13 +182,18 @@ const settings = {
     .string()
     .nullable()
     .optional()
-    .describe('When the form stops taking responses, an ISO date and time; null clears it.'),
+    .describe(
+      'When the form stops taking responses, an ISO date and time; one with no offset (no Z or +hh:mm) is UTC. ' +
+        'Respondents are not shown it beforehand: say it in the description if they should know. null clears it.',
+    ),
   limit: z
     .number()
     .int()
     .nullable()
     .optional()
-    .describe(`The most responses it takes, 1 to ${FORM_RESPONSE_LIMIT_MAX}; null clears it.`),
+    .describe(
+      `The most responses it takes (each submission counts one, whatever it holds), 1 to ${FORM_RESPONSE_LIMIT_MAX}; null clears it.`,
+    ),
   confirmation: z
     .string()
     .nullable()

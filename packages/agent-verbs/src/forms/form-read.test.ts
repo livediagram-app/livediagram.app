@@ -12,8 +12,16 @@ const link = (open: boolean, responses = 2): FormLinkResponse => ({
   canPublish: true,
 });
 const read = (form = bugForm(), l: FormLinkResponse | null = null) => {
-  const world = formWorld(form);
-  return readFormOf({ tabId: 'form', form, tabs: world.tabs, types: world.types, link: l, now: 0 });
+  const world = formWorld();
+  return readFormOf({
+    tabId: 'form',
+    form,
+    boards: world.boards,
+    sheets: world.sheets,
+    types: world.types,
+    link: l,
+    now: 0,
+  });
 };
 
 describe('readFormOf', () => {
@@ -50,6 +58,19 @@ describe('readFormOf', () => {
     expect(read(bugForm(), { ...link(true), link: null, suspendedAt: 5 })).toMatchObject({
       state: 'suspended',
     });
+  });
+
+  it('names the question each problem is about', () => {
+    const form = bugForm();
+    const unworded = {
+      ...form,
+      sections: [
+        { ...form.sections[0]!, questions: [{ id: 'q-x', type: 'short' as const, prompt: '' }] },
+      ],
+    };
+    expect(read(unworded).problems).toEqual([
+      'A question has no wording yet. ("Untitled Question", q-x)',
+    ]);
   });
 
   it('lists what stops it being published, in Share Form’s words', () => {

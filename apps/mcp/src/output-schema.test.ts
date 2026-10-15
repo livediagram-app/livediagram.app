@@ -215,6 +215,10 @@ const PLAN = {
     { status: 'done~a', name: 'Done' },
   ],
   types: [...ITEM_TYPES, BUG],
+  tabs: [
+    { id: 't1', name: 'Tab 1', kind: 'board' },
+    { id: 'f1', name: 'Bug Report', kind: 'form' },
+  ],
 };
 
 // A plausible api with non-empty lists, so the array item schemas are exercised.

@@ -2281,6 +2281,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "object"
       },
       "graph": {},
+      "kind": {
+        "enum": [
+          "board",
+          "sheet"
+        ],
+        "type": "string"
+      },
       "layout": {
         "enum": [
           "auto",
@@ -11827,6 +11834,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "tabs": {
+        "items": {
+          "$ref": "#/components/schemas/PlanTabOutline"
+        },
+        "type": "array"
+      },
       "types": {
         "items": {
           "$ref": "#/components/schemas/ItemTypeDef"
@@ -11877,6 +11890,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "status",
       "name"
+    ],
+    "type": "object"
+  },
+  "PlanTabOutline": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "kind": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "sheetIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "theme": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "kind"
     ],
     "type": "object"
   },

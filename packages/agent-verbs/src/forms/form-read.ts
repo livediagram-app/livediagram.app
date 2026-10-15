@@ -22,8 +22,7 @@ import {
   type FormQuestion,
 } from '@livediagram/forms';
 import type { ItemTypeDef } from '@livediagram/items';
-import { boardsOf, sheetsOf } from '@livediagram/templates';
-import type { Tab } from '@livediagram/document';
+import type { BoardRef, SheetRef } from './form-world';
 
 export type FormState = 'not_published' | 'accepting' | 'closed' | 'paused' | 'suspended';
 
@@ -96,30 +95,35 @@ function readQuestion(
 export function readFormOf(input: {
   tabId: string;
   form: FormDefinition;
-  tabs: readonly Tab[];
+  boards: readonly BoardRef[];
+  sheets: readonly SheetRef[];
+  // Tab names by id, for a destination whose board is gone from its tab.
+  tabNames?: ReadonlyMap<string, string>;
   types: readonly ItemTypeDef[];
   link: FormLinkResponse | null;
   now?: number;
 }): FormReading {
-  const { form, tabs, types, link } = input;
+  const { form, boards: allBoards, sheets, types, link } = input;
   const type = destinationType(form.destination, types);
   // Where responses go, and what stops them landing.
   let respondsTo: FormReading['respondsTo'] = { to: 'nowhere' };
   let problem: DestinationProblem | null = null;
   if (form.sheet) {
-    const sheets = sheetsOf(tabs);
     problem = sheetDestinationProblem(form.sheet, sheets);
     const named = sheets.find((s) => s.sheetId === form.sheet!.sheetId);
     respondsTo = { to: 'sheet', sheet: named?.name ?? '(removed)' };
   } else if (form.destination) {
     const dest = form.destination;
-    const tab = tabs.find((t) => t.id === dest.tabId);
-    const boards = tab ? boardsOf(tab).map((b) => b.setup) : [];
-    problem = destinationProblem(dest, boards, types);
-    const column = boards.flatMap((b) => b.columns).find((c) => c.status === dest.status);
+    const onTab = allBoards.filter((b) => b.tabId === dest.tabId);
+    problem = destinationProblem(
+      dest,
+      onTab.map((b) => ({ columns: b.columns, addTypes: b.types ?? undefined })),
+      types,
+    );
+    const column = onTab.flatMap((b) => b.columns).find((c) => c.status === dest.status);
     respondsTo = {
       to: 'board',
-      board: tab?.name ?? '(removed)',
+      board: onTab[0]?.tabName ?? input.tabNames?.get(dest.tabId) ?? '(removed)',
       cardType: type?.label ?? '(removed)',
       column: column?.name ?? '(removed)',
     };
@@ -139,9 +143,17 @@ export function readFormOf(input: {
   } else if (link?.suspendedAt) state = 'suspended';
   const problems = [
     ...(problem ? [`Responses have nowhere to go: ${DESTINATION_PROBLEM_TEXT[problem]}`] : []),
-    ...publishProblems(form, form.sheet ? undefined : type).map(
-      (p) => PUBLISH_PROBLEM_TEXT[p.kind],
-    ),
+    // Each in Share Form's words, naming the question or section it is about.
+    ...publishProblems(form, form.sheet ? undefined : type).map((p) => {
+      const text = PUBLISH_PROBLEM_TEXT[p.kind];
+      if ('questionId' in p) {
+        const q = form.sections.flatMap((s) => s.questions).find((x) => x.id === p.questionId);
+        return `${text} (${q ? `"${promptOf(q)}", ` : ''}${p.questionId})`;
+      }
+      if ('sectionId' in p)
+        return `${text} (section ${form.sections.findIndex((s) => s.id === p.sectionId) + 1})`;
+      return text;
+    }),
   ];
   return {
     tabId: input.tabId,

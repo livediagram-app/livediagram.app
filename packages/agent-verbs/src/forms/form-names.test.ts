@@ -75,17 +75,21 @@ describe('form names', () => {
     expect(resolveSection(form, 3)).toMatchObject({ ok: false, code: 'section_unknown' });
   });
 
-  it('finds a Board tab’s board and its column, and a sheet by its tab’s name', () => {
-    const board = resolveBoard(world.tabs, 'bugs');
+  it('finds a Board tab’s board and its column, and a sheet by its Responses Go To name', () => {
+    const board = resolveBoard(world.boards, 'bugs');
     expect(board).toMatchObject({ ok: true, board: { elementId: 'b1' } });
-    expect(board.ok && resolveColumn(board.board.setup, 'nope')).toMatchObject({
+    expect(board.ok && resolveColumn(board.board, 'nope')).toMatchObject({
       code: 'column_unknown',
     });
-    expect(resolveBoard(world.tabs, 'Budget')).toMatchObject({ ok: false, code: 'board_unknown' });
-    expect(resolveSheet(world.tabs, 'budget')).toMatchObject({
+    expect(board.ok && resolveColumn(board.board, 'fixed')).toMatchObject({ ok: true });
+    expect(resolveBoard(world.boards, 'Budget')).toMatchObject({
+      ok: false,
+      code: 'board_unknown',
+    });
+    expect(resolveSheet(world.sheets, 'budget')).toMatchObject({
       ok: true,
       sheet: { sheetId: 'sheet_budget' },
     });
-    expect(resolveSheet(world.tabs, 'Bugs')).toMatchObject({ ok: false, code: 'sheet_unknown' });
+    expect(resolveSheet(world.sheets, 'Bugs')).toMatchObject({ ok: false, code: 'sheet_unknown' });
   });
 });

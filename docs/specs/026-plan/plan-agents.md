@@ -26,7 +26,10 @@ never told a change worked when it shows on no board.
   - **statuses**: each status the boards name, once, with its column name, the first board's name winning (the
     editor's rule, [Plan templates](plan-templates.md) "Hand-offs");
   - **types**: the document's card types (its catalogue; none while not chosen), each with its id, name and fields,
-    custom fields by id, name and kind (and a Choice's options).
+    custom fields by id, name and kind (and a Choice's options);
+  - **tabs**: every tab the caller may read, in order, with its id, name, kind and theme, and a Sheet tab's sheet ids, read
+    from the stored tabs without their bodies, so a form verb names a board, a sheet or a Form tab in one request
+    ([Forms](../030-forms/forms.md#agents)).
 - A card link (Parent, a Card field) reads as its card's number and title (`"#12 Fix login"`); writes take that form
   back, by the number.
 - A person named for the first time gets a colour no one on the document has yet, while colours remain.

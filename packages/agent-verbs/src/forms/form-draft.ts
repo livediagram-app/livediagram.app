@@ -1,11 +1,10 @@
 // A form being changed by an agent (docs/specs/030-forms/forms.md "Agents", blueprint §15 "Engine flow"): the form,
-// the card types as they will be saved, and the tabs to make or change beside it, built up change by change and
-// written only once every change has been checked. Where responses go and where each answer goes are decided here,
-// as Responses Go To and Answer Goes To decide them.
+// the card types as they will be saved, the boards and sheets it may send responses to, and the tabs to make or boards
+// to change beside it, built up change by change and written only once every change has been checked. Where responses
+// go and where each answer goes are decided here, as Responses Go To and Answer Goes To decide them.
 import { newPlanSheetId, type Element, type Tab } from '@livediagram/document';
 import {
   MAPPABLE_KINDS,
-  NEW_FIELD_KIND,
   QUESTION_TYPE_NAMES,
   canGoToTitle,
   destinationType,
@@ -20,11 +19,13 @@ import {
 } from '@livediagram/forms';
 import {
   ITEM_TYPE_CUSTOM_MAX,
+  READY_MADE_CARD_TYPES,
   boardAddTypes,
   boardTakesType,
   newCustomFieldId,
   newItemTypeId,
   resolveType,
+  type CustomFieldDef,
   type ItemTypeDef,
 } from '@livediagram/items';
 import {
@@ -32,17 +33,9 @@ import {
   responsesBoardTab,
   responsesSheetTab,
   uniqueTypeLabel,
-  withBoardTaking,
 } from '@livediagram/templates';
-import {
-  refuse,
-  resolveBoard,
-  resolveColumn,
-  resolveSheet,
-  type FormRefusal,
-  type Named,
-} from './form-names';
-import type { FormWorld, WorldTab } from './form-world';
+import { refuse, resolveBoard, resolveColumn, resolveSheet, type FormRefusal } from './form-names';
+import type { BoardRef, FormWorld, SheetRef } from './form-world';
 
 export interface RespondsToInput {
   to: 'board' | 'sheet';
@@ -61,42 +54,73 @@ export interface FormDraft {
   form: FormDefinition;
   types: ItemTypeDef[];
   typesChanged: boolean;
+  // The boards and sheets responses may go to: the document's and the ones this draft makes.
+  boards: BoardRef[];
+  sheets: SheetRef[];
   // Responses tabs to make after the Form tab, in order.
   newTabs: Tab[];
-  // Existing Board tabs whose board now takes the form's card type.
-  changedTabs: Map<string, WorldTab>;
+  // Existing boards that now take the form's card type, by element id, with every type they take.
+  changedBoards: Map<string, BoardRef>;
   // What was done, a line a change, as the answer says it.
   lines: string[];
   newId: (prefix: 'q' | 's') => string;
 }
 
-// Every tab the draft knows: the document's (as changed) and the ones it will make.
-export function draftTabs(d: FormDraft): Tab[] {
-  return [...d.world.tabs.map((t) => d.changedTabs.get(t.id) ?? t), ...d.newTabs];
+export function draftOf(
+  world: FormWorld,
+  formTab: Pick<Tab, 'id' | 'name' | 'theme'>,
+  form: FormDefinition,
+  newId: (prefix: 'q' | 's') => string,
+): FormDraft {
+  return {
+    world,
+    formTab,
+    form,
+    types: [...world.types],
+    typesChanged: false,
+    boards: [...world.boards],
+    sheets: [...world.sheets],
+    newTabs: [],
+    changedBoards: new Map(),
+    lines: [],
+    newId,
+  };
 }
 
-function saveType(d: FormDraft, type: ItemTypeDef): void {
+export function saveType(d: FormDraft, type: ItemTypeDef): void {
   const at = d.types.findIndex((t) => t.id === type.id);
   d.types = at < 0 ? [...d.types, type] : d.types.map((t, i) => (i === at ? type : t));
   d.typesChanged = true;
 }
 
-// A new card type named after the form, as + New Card Type makes it.
-function newFormType(d: FormDraft): ItemTypeDef {
-  const label = uniqueTypeLabel(d.form.heading, d.types);
+// A new card type named `label` (the form's heading by default), as + New Card Type makes it.
+function newFormType(d: FormDraft, label = uniqueTypeLabel(d.form.heading, d.types)): ItemTypeDef {
   const type: ItemTypeDef = {
     ...starterBaseType(formStarter('blank'), d.types, newItemTypeId(label, d.types)),
     label,
     newTitle: `New ${label.toLowerCase()}`,
   };
   saveType(d, type);
+  d.lines.push(`made the card type "${label}"`);
   return type;
 }
 
-function namedType(d: FormDraft, name: string): Named<{ type: ItemTypeDef }> {
-  const found = resolveType(name, d.types);
-  return found.ok ? found : refuse(found.code, found.message);
+// A card type by name: the document's, else a ready-made one of that name brought in (Candidate, Bug...), else a new
+// one of that name, so a document of its own can name the type its responses become.
+function typeNamed(d: FormDraft, name: string): ItemTypeDef {
+  const own = resolveType(name, d.types);
+  if (own.ok) return own.type;
+  const ready = resolveType(name, READY_MADE_CARD_TYPES);
+  if (ready.ok) {
+    saveType(d, ready.type);
+    d.lines.push(`brought in the ready-made card type "${ready.type.label}"`);
+    return ready.type;
+  }
+  return newFormType(d, name.trim().slice(0, 28));
 }
+
+const takes = (b: BoardRef, types: readonly ItemTypeDef[], id: string) =>
+  boardTakesType({ addTypes: b.types ?? undefined }, types, id);
 
 // Responses to a board or a sheet, named or new (Responses Go To). A board form's type is the one named, else
 // `prefer` (a starter's), else the form's own (its destination's), else the board's first, else a new one named after
@@ -112,18 +136,14 @@ export function setRespondsTo(
         'responds_to_mixed',
         'A sheet takes no board, card type or column: name a sheet, or none for a new one.',
       );
-    let sheet: { tabId: string; sheetId: string; name: string };
+    let sheet: SheetRef;
     if (r.sheet) {
-      const found = resolveSheet(draftTabs(d), r.sheet);
+      const found = resolveSheet(d.sheets, r.sheet);
       if (!found.ok) return found;
       sheet = found.sheet;
     } else {
       const sheetId = newPlanSheetId();
-      const tab = responsesSheetTab(
-        d.form.heading,
-        { ...d.formTab, id: d.formTab.id } as Tab,
-        sheetId,
-      );
+      const tab = responsesSheetTab(d.form.heading, d.formTab as Tab, sheetId);
       tab.elements = tab.elements.map((el) =>
         el.type === 'shape' && el.planSheet
           ? ({ ...el, planSheet: { ...el.planSheet, start: BLANK_SHEET_START } } as Element)
@@ -131,6 +151,7 @@ export function setRespondsTo(
       );
       d.newTabs.push(tab);
       sheet = { tabId: tab.id, sheetId, name: tab.name };
+      d.sheets.push(sheet);
     }
     // Switching keeps the board settings, for switching back.
     d.form = { ...d.form, sheet: { tabId: sheet.tabId, sheetId: sheet.sheetId } };
@@ -143,28 +164,20 @@ export function setRespondsTo(
       'A board takes no sheet: name a board, or none for a new one.',
     );
   const own = prefer ?? destinationType(d.form.destination, d.types);
-  let type: ItemTypeDef | undefined;
-  if (r.cardType) {
-    const found = namedType(d, r.cardType);
-    if (!found.ok) return found;
-    type = found.type;
-  }
-  let tab: Tab;
-  let elementId: string;
+  let type = r.cardType ? typeNamed(d, r.cardType) : undefined;
+  let board: BoardRef;
   let status: string;
   if (r.board) {
-    const found = resolveBoard(draftTabs(d) as WorldTab[], r.board);
+    const found = resolveBoard(d.boards, r.board);
     if (!found.ok) return found;
-    const { board } = found;
-    type ??= own && boardTakesType(board.setup, d.types, own.id) ? own : undefined;
-    type ??= boardAddTypes(board.setup, d.types)[0] ?? newFormType(d);
-    tab = board.tab;
-    elementId = board.elementId;
+    board = found.board;
+    type ??= own && takes(board, d.types, own.id) ? own : undefined;
+    type ??= boardAddTypes({ addTypes: board.types ?? undefined }, d.types)[0] ?? newFormType(d);
     if (r.column) {
-      const column = resolveColumn(board.setup, r.column);
+      const column = resolveColumn(board, r.column);
       if (!column.ok) return column;
       status = column.column.status;
-    } else status = board.setup.columns[0]!.status;
+    } else status = board.columns[0]!.status;
   } else {
     if (r.column)
       return refuse(
@@ -172,30 +185,49 @@ export function setRespondsTo(
         'A new board has the columns New, In Progress and Done: name a column of an existing board only.',
       );
     type ??= own ?? newFormType(d);
-    tab = responsesBoardTab(
+    const tab = responsesBoardTab(
       d.form.heading,
       d.formTab,
       d.world.statuses.map((s) => [s.status, s.name] as const),
     );
-    d.newTabs.push(tab);
+    // A responses board takes the form's card type alone, so it shows only responses.
     const made = boardsOf(tab)[0]!;
-    elementId = made.element.id;
-    status = made.setup.columns[0]!.status;
+    tab.elements = tab.elements.map((el) =>
+      el.id === made.element.id && el.type === 'shape' && el.planBoard
+        ? ({ ...el, planBoard: { ...el.planBoard, addTypes: [type!.id] } } as Element)
+        : el,
+    );
+    d.newTabs.push(tab);
+    board = {
+      tabId: tab.id,
+      tabName: tab.name,
+      elementId: made.element.id,
+      title: made.setup.title,
+      types: [type.id],
+      columns: made.setup.columns.map((c) => ({ status: c.status, name: c.name })),
+    };
+    d.boards.push(board);
+    status = board.columns[0]!.status;
   }
   // A board that confines its card types takes the form's too.
-  const taking = withBoardTaking(tab, type.id);
-  if (taking !== tab) {
-    const at = d.newTabs.indexOf(tab);
-    if (at >= 0) d.newTabs[at] = taking;
-    else d.changedTabs.set(tab.id, taking as WorldTab);
+  if (board.types && !board.types.includes(type.id)) {
+    const taking = { ...board, types: [...board.types, type.id] };
+    d.boards = d.boards.map((b) => (b.elementId === board.elementId ? taking : b));
+    d.changedBoards.set(board.elementId, taking);
   }
   const { sheet: _sheet, ...rest } = d.form;
-  d.form = { ...rest, destination: { tabId: tab.id, typeId: type.id, status } };
-  const column = boardsOf(taking)
-    .find((b) => b.element.id === elementId)
-    ?.setup.columns.find((c) => c.status === status);
-  d.lines.push(`responses go to ${type.label} cards in ${column?.name ?? status} on "${tab.name}"`);
+  d.form = { ...rest, destination: { tabId: board.tabId, typeId: type.id, status } };
+  const column = board.columns.find((c) => c.status === status)?.name ?? status;
+  d.lines.push(`responses go to ${type.label} cards in ${column} on "${board.tabName}"`);
   return null;
+}
+
+// The field New Field makes for `q`: the kind its type makes, or, for a choice with "Other" (whose answer is no option
+// of a choice field), the text kind that holds any answer.
+function newFieldOf(q: FormQuestion, id: string, label: string): CustomFieldDef {
+  const field = newFieldFor(q, id, label);
+  if (!q.other) return field;
+  return { id, label, kind: MAPPABLE_KINDS[q.type][1]! };
 }
 
 // Where `q`'s answer goes: Title, Description, or a field of the form's card type by name, made (New Field) when
@@ -235,7 +267,7 @@ export function setGoesTo(d: FormDraft, q: FormQuestion, goesTo: string): FormRe
   if (field && q.other && (field.kind === 'choice' || field.kind === 'multichoice'))
     return refuse(
       'field_does_not_fit',
-      'An "Other" answer is no option of a choice field: map it to a text field, or to Description.',
+      `"${q.prompt}" offers "Other", whose answer is no option of the choice field "${field.label}": map it to a text field (a new name makes one), or to Description.`,
     );
   if (!field) {
     if ((type.custom?.length ?? 0) >= ITEM_TYPE_CUSTOM_MAX)
@@ -244,16 +276,16 @@ export function setGoesTo(d: FormDraft, q: FormQuestion, goesTo: string): FormRe
         `${type.label} holds ${ITEM_TYPE_CUSTOM_MAX} custom fields already: map to one of them, or to Description.`,
       );
     const id = newCustomFieldId(where, [...type.fields, ...(type.custom ?? []).map((f) => f.id)]);
-    field = newFieldFor(q, id, where.slice(0, 40));
+    field = newFieldOf(q, id, where.slice(0, 40));
     saveType(d, { ...type, fields: [...type.fields, id], custom: [...(type.custom ?? []), field] });
-    d.lines.push(`added the ${NEW_FIELD_KIND[q.type]} field "${field.label}" to ${type.label}`);
+    d.lines.push(`added the ${field.kind} field "${field.label}" to ${type.label}`);
   }
   d.form = setTarget(d.form, q.id, { to: 'field', fieldId: field.id });
   return syncChoiceField(d, q.id);
 }
 
-// A question mapped to a choice field keeps the field holding every option it offers (an option the question
-// drops stays on the field: a card may hold it).
+// A question mapped to a choice field keeps the field holding every option it offers (an option the question drops
+// stays on the field: a card may hold it); one given "Other" while mapped so is refused, as its answer would not fit.
 export function syncChoiceField(d: FormDraft, questionId: string): FormRefusal | null {
   const q = questionsOf(d.form).find((x) => x.id === questionId);
   const type = destinationType(d.form.destination, d.types);
@@ -261,6 +293,11 @@ export function syncChoiceField(d: FormDraft, questionId: string): FormRefusal |
   const target = q.goesTo;
   const field = type.custom?.find((f) => f.id === target.fieldId);
   if (!field || (field.kind !== 'choice' && field.kind !== 'multichoice')) return null;
+  if (q.other)
+    return refuse(
+      'field_does_not_fit',
+      `"${q.prompt}" offers "Other", whose answer is no option of the choice field "${field.label}": map it to a text field, or to Description.`,
+    );
   const has = field.options ?? [];
   const missing = (q.options ?? []).filter(
     (o) => !has.some((h) => h.toLowerCase() === o.toLowerCase()),

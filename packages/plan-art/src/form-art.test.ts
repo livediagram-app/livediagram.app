@@ -34,7 +34,7 @@ describe('formArt', () => {
     for (const t of QUESTION_TYPES) expect(art.svg).toContain(`Q ${t}`);
     expect(art.svg).toContain('Every Type');
     expect(art.svg).toContain('Section 2 of 2');
-    expect(art.svg).toContain('Shown when Q single is Option 1');
+    expect(art.svg).toContain('Shown when “Q single” is Option 1');
     expect(art.svg).toContain('Submit');
     expect(art.svg).toContain(formLook({ theme: 'ocean' }).accent.light);
     expect(art.svg.match(/<tspan fill="#dc2626"> \*<\/tspan>/g)).toHaveLength(
@@ -52,7 +52,12 @@ describe('formArt', () => {
     expect(formArt(every, formLook({ finish: 'professional' })).svg).toContain('rx="2"');
   });
 
-  it('stays within the preview’s height, saying how many questions it left out', () => {
+  it('draws the cover’s pattern over its colour', () => {
+    const cover = { fill: { kind: 'solid' as const, color: '#0f766e' }, pattern: 'dots' as const };
+    expect(formArt({ ...every, cover }, formLook({})).svg).toContain('url(#form-cover-pattern)');
+  });
+
+  it('flows a long form into a second column, then says how many questions it left out', () => {
     const many: FormDefinition = {
       ...every,
       sections: [
@@ -69,7 +74,28 @@ describe('formArt', () => {
     const started = performance.now();
     const art = formArt(many, formLook({}));
     expect(performance.now() - started).toBeLessThan(200);
-    expect(art.height).toBeLessThanOrEqual(FORM_ART_HEIGHT_MAX + 200);
-    expect(art.svg).toMatch(/\d+ more questions not drawn/);
+    expect(art.width).toBe(FORM_ART_WIDTH * 2);
+    expect(art.height).toBeLessThanOrEqual(FORM_ART_HEIGHT_MAX + 64);
+    const drawn = (art.svg.match(/>P\d+</g) ?? []).length;
+    const left = Number(/(\d+) more questions not drawn/.exec(art.svg)?.[1]);
+    expect(drawn + left).toBe(100);
+  });
+
+  it('keeps a paragraph placeholder’s line breaks', () => {
+    const q = {
+      ...blankQuestion('paragraph', 'q'),
+      prompt: 'Steps',
+      placeholder: '1. Go to\n2. Click',
+    };
+    const art = formArt(
+      { ...every, sections: [{ id: 's', title: '', questions: [q] }] },
+      formLook({}),
+    );
+    expect(art.svg).toContain('>1. Go to<');
+    expect(art.svg).toContain('>2. Click<');
+  });
+
+  it('keeps a short form to one column', () => {
+    expect(formArt(every, formLook({})).width).toBe(FORM_ART_WIDTH);
   });
 });

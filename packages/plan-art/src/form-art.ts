@@ -11,7 +11,7 @@ import {
   type FormQuestion,
 } from '@livediagram/forms';
 import { xmlEscape } from '@livediagram/icons';
-import { box, line, r2, type Rect } from './plan-art-kit';
+import { box, line, r2 } from './plan-art-kit';
 
 // The builder's column (640) inside its gutters, and the cover's height on a desktop.
 export const FORM_ART_WIDTH = 720;
@@ -24,6 +24,8 @@ const GAP = 12;
 // A form past this height is cut off with a line saying how many questions were left out: the MCP draws a preview at
 // most 2,048 px on its longest side (render.ts PREVIEW_MAX_SIDE_PX), so a taller picture would shrink past reading.
 export const FORM_ART_HEIGHT_MAX = 2048;
+// A long form flows on into a second column (1,440 px wide in all) before anything is left out.
+export const FORM_ART_COLUMNS_MAX = 2;
 
 const INK = '#0f172a';
 const MUTED = '#64748b';
@@ -181,12 +183,11 @@ function drawControl(d: Draw, q: FormQuestion, x: number, width: number): void {
     default: {
       const h = controlHeight(q);
       m.push(box({ x, y: top, width, height: h }, { fill: FIELD, stroke: RULE, rx: d.rx }));
-      m.push(
-        line(x + 12, top + 25, q.placeholder ?? HINTS[q.type] ?? '', {
-          size: 14,
-          color: MUTED,
-          width: width - 24,
-        }),
+      // A paragraph's placeholder keeps its line breaks, as its text area shows them (three lines fit).
+      const hint = q.placeholder ?? HINTS[q.type] ?? '';
+      const lines = q.type === 'paragraph' ? hint.split('\n').slice(0, 3) : [hint];
+      lines.forEach((l, i) =>
+        m.push(line(x + 12, top + 25 + i * 20, l, { size: 14, color: MUTED, width: width - 24 })),
       );
     }
   }
@@ -279,37 +280,57 @@ function headerCard(
   d.y = top + height + GAP;
 }
 
+// The cover's patterns as a slide draws them: light marks over the colour.
+function patternDefs(pattern: string | undefined): { defs: string; fill: string | null } {
+  if (!pattern) return { defs: '', fill: null };
+  const mark =
+    pattern === 'dots'
+      ? '<circle cx="8" cy="8" r="1.6" fill="#ffffff" fill-opacity="0.35"/>'
+      : pattern === 'grid'
+        ? '<path d="M16 0H0V16" fill="none" stroke="#ffffff" stroke-opacity="0.3"/>'
+        : '<path d="M0 16L16 0" fill="none" stroke="#ffffff" stroke-opacity="0.3"/>';
+  return {
+    defs: `<pattern id="form-cover-pattern" width="16" height="16" patternUnits="userSpaceOnUse">${mark}</pattern>`,
+    fill: 'url(#form-cover-pattern)',
+  };
+}
+
+// The band across the top: the cover's colours and pattern, else a thin band of the form colour. At the block's top.
 function coverMarkup(form: FormDefinition, accent: string): { markup: string; height: number } {
   const fill = form.cover?.fill;
   if (!fill)
     return {
-      markup: box({ x: GUTTER, y: 24, width: COLUMN, height: BAND_H }, { fill: accent, rx: 4 }),
+      markup: box({ x: GUTTER, y: 0, width: COLUMN, height: BAND_H }, { fill: accent, rx: 4 }),
       height: BAND_H,
     };
-  let paint = fill.kind === 'solid' ? fill.color : 'url(#form-cover)';
-  let defs = '';
+  const pattern = patternDefs(form.cover?.pattern);
+  let paint = fill.kind === 'solid' ? xmlEscape(fill.color) : 'url(#form-cover)';
+  let gradient = '';
   if (fill.kind === 'gradient') {
     const rad = ((fill.angle - 90) * Math.PI) / 180;
     const dx = Math.cos(rad) / 2;
     const dy = Math.sin(rad) / 2;
-    defs =
-      `<defs><linearGradient id="form-cover" x1="${r2(0.5 - dx)}" y1="${r2(0.5 - dy)}" x2="${r2(0.5 + dx)}" y2="${r2(0.5 + dy)}">` +
-      `<stop offset="0" stop-color="${xmlEscape(fill.from)}"/><stop offset="1" stop-color="${xmlEscape(fill.to)}"/></linearGradient></defs>`;
+    gradient =
+      `<linearGradient id="form-cover" x1="${r2(0.5 - dx)}" y1="${r2(0.5 - dy)}" x2="${r2(0.5 + dx)}" y2="${r2(0.5 + dy)}">` +
+      `<stop offset="0" stop-color="${xmlEscape(fill.from)}"/><stop offset="1" stop-color="${xmlEscape(fill.to)}"/></linearGradient>`;
   }
-  paint = xmlEscape(paint);
+  const band = (p: string) =>
+    `<rect x="${GUTTER}" y="0" width="${COLUMN}" height="${COVER_H}" rx="12" fill="${p}"/>`;
   return {
-    markup: `${defs}<rect x="${GUTTER}" y="24" width="${COLUMN}" height="${COVER_H}" rx="12" fill="${paint}"/>`,
+    markup:
+      `<defs>${gradient}${pattern.defs}</defs>${band(paint)}` +
+      (pattern.fill ? band(pattern.fill) : ''),
     height: COVER_H,
   };
 }
 
-// A later section's rule as the builder's badge reads it ("Shown when Coming? is Yes or Maybe").
+// A later section's rule as the builder's badge reads it ("Shown when “Coming?” is Yes or Maybe").
 function ruleLine(form: FormDefinition, index: number): string | undefined {
   const rule = form.sections[index]?.showIf;
   if (!rule) return undefined;
   const q = ruleQuestion(form, index, rule);
   return q
-    ? `Shown when ${promptOf(q)} is ${rule.anyOf.join(' or ')}`
+    ? `Shown when “${promptOf(q)}” is ${rule.anyOf.join(' or ')}`
     : 'Always shown: its question was removed or changed';
 }
 
@@ -319,62 +340,105 @@ export interface FormArt {
   height: number;
 }
 
-// The form drawn on its look: every section in order, each later one under a "Section n of m" card.
+// One piece of the picture, drawn from its own top: its markup and the height it takes with the gap under it.
+type Block = { markup: string; height: number; questions: number; keepWithNext?: true };
+
+function block(d: Draw, draw: (b: Draw) => void, questions = 0): Block {
+  const b: Draw = { ...d, markup: [], y: 0 };
+  draw(b);
+  return { markup: b.markup.join(''), height: b.y, questions };
+}
+
+// The form drawn on its look: every section in order, each later one under a "Section n of m" card, flowing down one
+// column and on into a second when the first is full; what still does not fit is counted under the last block drawn.
 export function formArt(form: FormDefinition, look: FormLook, fontStack?: string): FormArt {
   const accent = look.accent.light;
   const rx = look.finish === 'professional' ? 2 : 10;
-  const cover = coverMarkup(form, accent);
   const d: Draw = {
-    markup: [cover.markup],
-    y: 24 + cover.height + GAP,
+    markup: [],
+    y: 0,
     accent,
     onAccent: look.onAccent.light,
     rx,
     font: fontStack ?? 'system-ui, sans-serif',
   };
+  const cover = coverMarkup(form, accent);
+  const blocks: Block[] = [{ markup: cover.markup, height: cover.height + GAP, questions: 0 }];
   const total = form.sections.length;
-  let cut = 0;
   form.sections.forEach((s, i) => {
-    if (i === 0) headerCard(d, form.heading, form.description, { heading: true });
-    else
-      headerCard(d, s.title || 'Untitled Section', s.description, {
-        heading: false,
-        label: `Section ${i + 1} of ${total}`,
-        rule: ruleLine(form, i),
-      });
-    for (const q of s.questions) {
-      if (d.y > FORM_ART_HEIGHT_MAX - 200) {
-        cut += 1;
-        continue;
-      }
-      drawQuestion(d, q);
-    }
+    const header =
+      i === 0
+        ? block(d, (b) => headerCard(b, form.heading, form.description, { heading: true }))
+        : block(d, (b) =>
+            headerCard(b, s.title || 'Untitled Section', s.description, {
+              heading: false,
+              label: `Section ${i + 1} of ${total}`,
+              rule: ruleLine(form, i),
+            }),
+          );
+    // A heading never ends a column without its first question under it.
+    blocks.push(s.questions.length ? { ...header, keepWithNext: true } : header);
+    for (const q of s.questions) blocks.push(block(d, (b) => drawQuestion(b, q), 1));
   });
-  if (cut) {
-    d.y += 8;
-    d.markup.push(
-      line(FORM_ART_WIDTH / 2, d.y + 14, `${cut} more question${cut === 1 ? '' : 's'} not drawn`, {
-        size: 13,
-        color: MUTED,
-        anchor: 'middle',
-      }),
-    );
-    d.y += 28;
-  }
-  const button: Rect = { x: GUTTER, y: d.y + 4, width: 96, height: 40 };
-  d.markup.push(box(button, { fill: accent, rx }));
-  d.markup.push(
-    line(button.x + 48, button.y + 25, 'Submit', {
-      size: 14,
-      weight: 600,
-      color: look.onAccent.light,
-      anchor: 'middle',
+  blocks.push(
+    block(d, (b) => {
+      b.markup.push(box({ x: GUTTER, y: 4, width: 96, height: 40 }, { fill: accent, rx }));
+      b.markup.push(
+        line(GUTTER + 48, 29, 'Submit', {
+          size: 14,
+          weight: 600,
+          color: look.onAccent.light,
+          anchor: 'middle',
+        }),
+      );
+      b.y = 44;
     }),
   );
-  const height = Math.round(button.y + button.height + 32);
+
+  const TOP = 24;
+  const columns: { y: number; markup: string[] }[] = [{ y: TOP, markup: [] }];
+  let cut = 0;
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i]!;
+    const need = b.height + (b.keepWithNext ? (blocks[i + 1]?.height ?? 0) : 0);
+    let col = columns[columns.length - 1]!;
+    if (col.y + need > FORM_ART_HEIGHT_MAX && col.y > TOP) {
+      if (columns.length < FORM_ART_COLUMNS_MAX) {
+        col = { y: TOP, markup: [] };
+        columns.push(col);
+      } else {
+        // Every question from here on, whether this block holds one or not (a heading, the button).
+        cut = blocks.slice(i).reduce((n, x) => n + x.questions, 0);
+        break;
+      }
+    }
+    col.markup.push(`<g transform="translate(0 ${r2(col.y)})">${b.markup}</g>`);
+    col.y += b.height;
+  }
+  if (cut) {
+    const last = columns[columns.length - 1]!;
+    last.markup.push(
+      line(
+        FORM_ART_WIDTH / 2,
+        last.y + 14,
+        `${cut} more question${cut === 1 ? '' : 's'} not drawn: read_form lists every one`,
+        {
+          size: 13,
+          color: MUTED,
+          anchor: 'middle',
+        },
+      ),
+    );
+    last.y += 28;
+  }
+  const width = FORM_ART_WIDTH * columns.length;
+  const height = Math.round(Math.max(...columns.map((c) => c.y)) + 32);
+  const body = columns
+    .map((c, i) => `<g transform="translate(${i * FORM_ART_WIDTH} 0)">${c.markup.join('')}</g>`)
+    .join('');
   const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${FORM_ART_WIDTH}" height="${height}" viewBox="0 0 ${FORM_ART_WIDTH} ${height}">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
     `<rect width="100%" height="100%" fill="${xmlEscape(look.backdrop.light)}"/>` +
-    `<g font-family="${xmlEscape(d.font)}">${d.markup.join('')}</g></svg>`;
-  return { svg, width: FORM_ART_WIDTH, height };
+    `<g font-family="${xmlEscape(d.font)}">${body}</g></svg>`;
+  return { svg, width, height };
 }

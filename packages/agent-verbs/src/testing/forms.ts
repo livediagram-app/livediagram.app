@@ -1,5 +1,6 @@
 // A document for the form verb suites (docs/specs/030-forms/forms.md "Agents"): a Board tab "Bugs" whose board takes
 // only Bug cards, a Sheet tab "Budget", and a Form tab "Bug Report" sending Bug cards to New, its Severity a field.
+import type { PlanResponse } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
 import type { FormDefinition } from '@livediagram/forms';
 import {
@@ -8,8 +9,8 @@ import {
   presetSetup,
   type ItemTypeDef,
 } from '@livediagram/items';
-import type { FormDraft } from '../forms/form-draft';
-import type { FormWorld, WorldTab } from '../forms/form-world';
+import { draftOf, type FormDraft } from '../forms/form-draft';
+import { worldOf, type FormTabBody, type FormWorld } from '../forms/form-world';
 
 const READY_BUG = READY_MADE_CARD_TYPES.find((t) => t.id === 'bug')!;
 export const BUG: ItemTypeDef = {
@@ -18,21 +19,8 @@ export const BUG: ItemTypeDef = {
   custom: [{ id: 'f-severity', label: 'Severity', kind: 'choice', options: ['Low', 'High'] }],
 };
 
-export const bugBoard = () => {
-  const setup = { ...presetSetup('bug-triage'), addTypes: ['bug'] };
-  return {
-    id: 'b1',
-    type: 'shape',
-    shape: 'plan-board',
-    x: 0,
-    y: 0,
-    width: 900,
-    height: 500,
-    planBoard: setup,
-  } as unknown as Tab['elements'][number];
-};
-
-export const firstStatus = () => presetSetup('bug-triage').columns[0]!.status;
+const triage = presetSetup('bug-triage');
+export const firstStatus = () => triage.columns[0]!.status;
 
 export const bugForm = (): FormDefinition => ({
   v: 1,
@@ -57,52 +45,53 @@ export const bugForm = (): FormDefinition => ({
   destination: { tabId: 'bugs', typeId: 'bug', status: firstStatus() },
 });
 
-export function formWorld(form: FormDefinition = bugForm()): FormWorld {
-  const tabs: WorldTab[] = [
-    { id: 'bugs', name: 'Bugs', kind: 'board', opensIn: 'plan', elements: [bugBoard()], rev: 4 },
-    {
-      id: 'budget',
-      name: 'Budget',
-      kind: 'sheet',
-      opensIn: 'plan',
-      rev: 1,
-      elements: [
-        {
-          id: 'sh1',
-          type: 'shape',
-          shape: 'plan-sheet',
-          x: 0,
-          y: 0,
-          width: 800,
-          height: 500,
-          planSheet: { sheetId: 'sheet_budget' },
-        } as unknown as Tab['elements'][number],
-      ],
-    },
-    { id: 'form', name: 'Bug Report', kind: 'form', opensIn: 'plan', elements: [], form, rev: 7 },
-  ];
+// The document's plan as the api answers it.
+export function formPlan(): PlanResponse {
   return {
-    documentId: 'doc',
-    documentName: 'Ops',
-    tabs,
+    boards: [
+      {
+        tabId: 'bugs',
+        tabName: 'Bugs',
+        elementId: 'b1',
+        title: triage.title,
+        kind: 'board',
+        types: ['bug'],
+        columns: triage.columns.map((c) => ({ status: c.status, name: c.name })),
+      },
+    ],
+    statuses: triage.columns.map((c) => ({ status: c.status, name: c.name })),
     types: [BUG, ...ITEM_TYPES],
-    statuses: presetSetup('bug-triage').columns.map((c) => ({ status: c.status, name: c.name })),
+    tabs: [
+      { id: 'bugs', name: 'Bugs', kind: 'board' },
+      { id: 'budget', name: 'Budget', kind: 'sheet', sheetIds: ['sheet_budget'] },
+      { id: 'form', name: 'Bug Report', kind: 'form', theme: 'ocean' },
+    ],
     itemTypesRev: 3,
   };
 }
 
+export const formWorld = (): FormWorld => worldOf('doc', formPlan());
+
+export const formTabBody = (form: FormDefinition = bugForm()): FormTabBody =>
+  ({
+    id: 'form',
+    name: form.heading,
+    kind: 'form',
+    opensIn: 'plan',
+    elements: [],
+    form,
+    rev: 7,
+  }) as Tab & FormTabBody;
+
 let ids = 0;
-export function formDraft(world: FormWorld = formWorld()): FormDraft {
-  const tab = world.tabs.find((t) => t.kind === 'form')!;
-  return {
+export function formDraft(
+  form: FormDefinition = bugForm(),
+  world: FormWorld = formWorld(),
+): FormDraft {
+  return draftOf(
     world,
-    formTab: { id: tab.id, name: tab.name },
-    form: tab.form as FormDefinition,
-    types: [...world.types],
-    typesChanged: false,
-    newTabs: [],
-    changedTabs: new Map(),
-    lines: [],
-    newId: (prefix) => `${prefix}-t${++ids}`,
-  };
+    { id: 'form', name: form.heading, theme: 'ocean' },
+    form,
+    (p) => `${p}-t${++ids}`,
+  );
 }

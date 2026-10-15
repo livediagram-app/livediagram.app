@@ -1,7 +1,8 @@
 // The form verbs' calls (docs/specs/030-forms/forms.md "Agents", blueprint §15 "Engine flow"), shared by the MCP's
-// read_form, add_form, change_form and share_form and the CLI's form commands. Each reads the document once, builds
-// the whole change on a draft, and writes only once every change has been checked: card types first, then the form
-// (a new Form tab by a changeset, an existing form through its route), then the tabs its responses go to.
+// read_form, add_form, change_form and share_form and the CLI's form commands. Each reads the document's plan once
+// (its tabs, boards and sheets named without their bodies) and the Form tab's own body, builds the whole change on a
+// draft, and writes only once every change has been checked: card types first, then the form (a new Form tab by a
+// changeset, an existing form through its route), then the tabs its responses go to.
 import type { ApiClient } from '@livediagram/api-client';
 import {
   CLIENT_HEADER,
@@ -19,6 +20,8 @@ import {
   changesBeyondSettings,
   formStarter,
   newFormPartId,
+  readForm as readStoredForm,
+  sheetHeaders,
   starterBaseType,
   type FormDefinition,
   type StarterId,
@@ -27,6 +30,7 @@ import { ITEM_TYPE_CATALOGUE_VERSION, newItemTypeId } from '@livediagram/items';
 import { apiRefusalOf } from '../plan/api-refusal';
 import { changeBoard } from '../plan/change-board';
 import { CARD_TYPES_SAVE_ATTEMPTS, isCardTypesStale, itemTypesPath } from '../plan/plan-state';
+import { changeSheet } from '../sheets/change-sheet';
 import { tabPath } from '../verbs/shared';
 import {
   addQuestionTo,
@@ -34,11 +38,17 @@ import {
   type FormChange,
   type SectionRuleInput,
 } from './form-changes';
-import { draftTabs, setRespondsTo, type FormDraft, type RespondsToInput } from './form-draft';
+import { draftOf, setRespondsTo, type FormDraft, type RespondsToInput } from './form-draft';
 import { refuse, resolveFormTab, type FormRefusal } from './form-names';
 import type { QuestionInput } from './form-question';
 import { readFormOf, type FormReading } from './form-read';
-import { formLinkPath, readFormLink, readFormWorld, type FormWorld } from './form-world';
+import {
+  formLinkPath,
+  readFormLink,
+  readFormTabBody,
+  readFormWorld,
+  type FormWorld,
+} from './form-world';
 
 type Client = 'mcp' | 'cli';
 export type FormDone = {
@@ -52,21 +62,42 @@ export type FormCallResult = FormDone | FormRefusal;
 
 export const FORM_CHANGES_MAX = 50;
 
+const newId = (prefix: 'q' | 's') => newFormPartId(prefix);
+const tabNamesOf = (world: FormWorld) => new Map(world.tabs.map((t) => [t.id, t.name]));
+
+async function guarded(run: () => Promise<FormCallResult>): Promise<FormCallResult> {
+  try {
+    return await run();
+  } catch (err) {
+    const refusal = apiRefusalOf(err);
+    if (!refusal) throw err;
+    return { ok: false, ...refusal };
+  }
+}
+
 // --- Reading ----------------------------------------------------------------------------------------------------
 
+// The plan, the Form tab named (its body: the one tab read), its link, and the form as read_form answers it.
 async function readingOf(api: ApiClient, documentId: string, tabRef: string | undefined) {
   const world = await readFormWorld(api, documentId);
   const found = resolveFormTab(world.tabs, tabRef);
   if (!found.ok) return found;
-  const link = await readFormLink(api, documentId, found.tab.id);
+  const [tab, link] = await Promise.all([
+    readFormTabBody(api, documentId, found.tab.id),
+    readFormLink(api, documentId, found.tab.id),
+  ]);
+  const form = readStoredForm(tab.form);
+  if (!form) return refuse('not_a_form_tab', `"${tab.name}" holds no form yet.`);
   const reading = readFormOf({
-    tabId: found.tab.id,
-    form: found.form,
-    tabs: world.tabs,
+    tabId: tab.id,
+    form,
+    boards: world.boards,
+    sheets: world.sheets,
+    tabNames: tabNamesOf(world),
     types: world.types,
     link,
   });
-  return { ok: true as const, world, tab: found.tab, form: found.form, link, reading };
+  return { ok: true as const, world, tab, form, link, reading };
 }
 
 export async function readForm(
@@ -81,35 +112,27 @@ export async function readForm(
   });
 }
 
+// The answer after a write, from what was written: the draft's form among the boards and sheets it leaves, and the
+// link as it stands (a new form has none). No second read of the document.
+function doneFrom(
+  d: FormDraft,
+  tabId: string,
+  link: FormLinkResponse | null,
+  made: string[],
+): FormDone {
+  const reading = readFormOf({
+    tabId,
+    form: d.form,
+    boards: d.boards,
+    sheets: d.sheets,
+    tabNames: tabNamesOf(d.world),
+    types: d.types,
+    link,
+  });
+  return { ok: true, documentId: d.world.documentId, reading, lines: d.lines, made };
+}
+
 // --- Writing ----------------------------------------------------------------------------------------------------
-
-async function guarded(run: () => Promise<FormCallResult>): Promise<FormCallResult> {
-  try {
-    return await run();
-  } catch (err) {
-    const refusal = apiRefusalOf(err);
-    if (!refusal) throw err;
-    return { ok: false, ...refusal };
-  }
-}
-
-function draftOf(
-  world: FormWorld,
-  formTab: Pick<Tab, 'id' | 'name' | 'theme'>,
-  form: FormDefinition,
-): FormDraft {
-  return {
-    world,
-    formTab,
-    form,
-    types: [...world.types],
-    typesChanged: false,
-    newTabs: [],
-    changedTabs: new Map(),
-    lines: [],
-    newId: (prefix) => newFormPartId(prefix),
-  };
-}
 
 async function postChangeset(
   api: ApiClient,
@@ -145,42 +168,80 @@ async function saveTypes(api: ApiClient, d: FormDraft): Promise<'saved' | 'stale
   }
 }
 
-// The responses tabs a draft makes, after what the document holds, and the boards that now take its card type.
-async function writeAround(api: ApiClient, d: FormDraft, client: Client): Promise<string[]> {
+// A new responses sheet starts with its header row as the first response would write it ("#", "Submitted", each
+// question), bold and frozen, and takes its tab's name, so it reads as the form's before anyone answers.
+async function headSheet(
+  api: ApiClient,
+  d: FormDraft,
+  sheetId: string,
+  title: string,
+  client: Client,
+) {
+  const headers = sheetHeaders(d.form).map((h) => h.header);
+  const last = String.fromCharCode(64 + Math.min(headers.length, 26));
+  await changeSheet(
+    api,
+    d.world.documentId,
+    {
+      sheet: sheetId,
+      changes: [
+        { op: 'set', at: 'A1', rows: [headers] },
+        { op: 'format', range: `A1:${last}1`, format: { bold: true } },
+        { op: 'freeze', rows: 1 },
+        { op: 'rename', title },
+      ],
+    },
+    client,
+  );
+}
+
+// The responses tabs a draft makes, after what the document holds (made already when a new document carried them),
+// each new sheet given its headers; then the boards that now take the form's card type.
+async function writeAround(
+  api: ApiClient,
+  d: FormDraft,
+  client: Client,
+  tabsMade: boolean,
+): Promise<string[]> {
   const made: string[] = [];
   for (const tab of d.newTabs) {
-    await postChangeset(
-      api,
-      d.world.documentId,
-      tab.id,
-      {
-        replace: {
-          elements: tab.elements as unknown[],
-          kind: tab.kind === 'sheet' ? 'sheet' : 'board',
-          name: tab.name,
-          ...(tab.theme ? { theme: tab.theme } : {}),
-          layout: 'preserve',
+    if (!tabsMade)
+      await postChangeset(
+        api,
+        d.world.documentId,
+        tab.id,
+        {
+          replace: {
+            elements: tab.elements as unknown[],
+            kind: tab.kind === 'sheet' ? 'sheet' : 'board',
+            name: tab.name,
+            ...(tab.theme ? { theme: tab.theme } : {}),
+            layout: 'preserve',
+          },
+          summary: `Add ${tab.name}`,
         },
-        summary: `Add ${tab.name}`,
-      },
-      client,
-    );
+        client,
+      );
     made.push(`${tab.kind === 'sheet' ? 'Sheet' : 'Board'} tab "${tab.name}" (${tab.id})`);
+    const sheet = d.sheets.find((s) => s.tabId === tab.id);
+    // The headers are a head start: the first response writes any it finds missing, so a miss here is said, not fatal.
+    if (sheet)
+      await headSheet(api, d, sheet.sheetId, tab.name, client).catch(() =>
+        made.push(`its header row is written by the first response`),
+      );
   }
-  for (const tab of d.changedTabs.values()) {
-    const board = tab.elements.find(
-      (el) => el.type === 'shape' && el.shape === 'plan-board' && el.planBoard?.addTypes,
-    );
-    const takes = board && board.type === 'shape' ? board.planBoard?.addTypes : undefined;
-    if (!board || !takes) continue;
+  for (const board of d.changedBoards.values()) {
     const changed = await changeBoard(
       api,
       d.world.documentId,
-      { board: board.id, types: takes },
+      { board: board.elementId, types: board.types ?? [] },
       client,
     );
-    if (!changed.ok) throw Object.assign(new Error(changed.message), { refusal: changed });
-    made.push(`"${tab.name}" now takes the form's card type`);
+    made.push(
+      changed.ok
+        ? `"${board.tabName}" now takes the form's card type`
+        : `"${board.tabName}" could not take the form's card type: ${changed.message}`,
+    );
   }
   return made;
 }
@@ -204,48 +265,55 @@ export interface AddFormInput {
   settings?: Omit<Extract<FormChange, { op: 'settings' }>, 'op'>;
 }
 
-function startDraft(world: FormWorld, input: AddFormInput, tabId: string): FormDraft | FormRefusal {
-  const theme = input.theme ?? world.tabs[0]?.theme;
-  const formTab = { id: tabId, name: input.name ?? '', ...(theme ? { theme } : {}) };
-  if (input.starter) {
-    if (!(STARTER_IDS as readonly string[]).includes(input.starter))
-      return refuse(
-        'starter_unknown',
-        `No starter "${input.starter}". Starters: ${STARTER_IDS.filter((s) => s !== 'blank').join(', ')}.`,
-      );
-    if (input.questions || input.sections)
-      return refuse(
-        'starter_and_questions',
-        'Give a starter or questions, not both: change a started form with change_form.',
-      );
-    const starter = formStarter(input.starter);
-    const base = starterBaseType(starter, world.types, newItemTypeId(starter.name, world.types));
-    const built = buildStarter(starter, base, (p) => newFormPartId(p));
-    const form: FormDefinition = { ...built.form, ...(input.name ? { heading: input.name } : {}) };
-    const d = draftOf(world, { ...formTab, name: form.heading }, form);
-    const r = input.respondsTo ?? (starter.respondsTo ? { to: starter.respondsTo } : undefined);
-    if (r) {
-      // A starter's ready-made type: the document's own copy is untouched unless the starter gave it fields.
-      const own = world.types.find((t) => t.id === built.type.id);
-      if (r.to === 'board' && !r.cardType && own !== built.type) {
-        d.types = own
-          ? d.types.map((t) => (t.id === built.type.id ? built.type : t))
-          : [...d.types, built.type];
-        d.typesChanged = true;
-      }
-      const refused = setRespondsTo(d, r, r.to === 'board' && !r.cardType ? built.type : undefined);
-      if (refused) return refused;
+function startFromStarter(
+  world: FormWorld,
+  input: AddFormInput,
+  formTab: Pick<Tab, 'id' | 'name' | 'theme'>,
+): FormDraft | FormRefusal {
+  if (!(STARTER_IDS as readonly string[]).includes(input.starter!))
+    return refuse(
+      'starter_unknown',
+      `No starter "${input.starter}". Starters: ${STARTER_IDS.filter((s) => s !== 'blank').join(', ')}.`,
+    );
+  if (input.questions || input.sections)
+    return refuse(
+      'starter_and_questions',
+      'Give a starter or questions, not both: change a started form with change_form.',
+    );
+  const starter = formStarter(input.starter!);
+  const base = starterBaseType(starter, world.types, newItemTypeId(starter.name, world.types));
+  const built = buildStarter(starter, base, newId);
+  const form: FormDefinition = { ...built.form, ...(input.name ? { heading: input.name } : {}) };
+  const d = draftOf(world, { ...formTab, name: form.heading }, form, newId);
+  const r = input.respondsTo ?? (starter.respondsTo ? { to: starter.respondsTo } : undefined);
+  if (r) {
+    // A starter's ready-made type: the document's own copy is untouched unless the starter gave it fields.
+    const own = world.types.find((t) => t.id === built.type.id);
+    if (r.to === 'board' && !r.cardType && own !== built.type) {
+      d.types = own
+        ? d.types.map((t) => (t.id === built.type.id ? built.type : t))
+        : [...d.types, built.type];
+      d.typesChanged = true;
     }
-    d.lines.unshift(`started from ${starter.name}`);
-    return d;
+    const refused = setRespondsTo(d, r, r.to === 'board' && !r.cardType ? built.type : undefined);
+    if (refused) return refused;
   }
+  d.lines.unshift(`started from ${starter.name}`);
+  return d;
+}
+
+function startFromQuestions(
+  world: FormWorld,
+  input: AddFormInput,
+  formTab: Pick<Tab, 'id' | 'name' | 'theme'>,
+): FormDraft | FormRefusal {
   const form: FormDefinition = {
     v: FORM_VERSION,
     heading: input.name?.trim() || UNTITLED_FORM,
     ...(input.description?.trim() ? { description: input.description.trim() } : {}),
-    sections: [{ id: newFormPartId('s'), title: '', questions: [] }],
+    sections: [{ id: newId('s'), title: '', questions: [] }],
   };
-  const d = draftOf(world, { ...formTab, name: form.heading }, form);
+  const d = draftOf(world, { ...formTab, name: form.heading }, form, newId);
   const asked = input.questions?.length || input.sections?.some((s) => s.questions.length);
   const r = input.respondsTo ?? (asked ? { to: 'board' as const } : undefined);
   if (r) {
@@ -260,14 +328,13 @@ function startDraft(world: FormWorld, input: AddFormInput, tabId: string): FormD
     // The first section given is the form's first when no questions came before it.
     const first = i === 0 && !input.questions?.length;
     if (!first) {
-      const changes: FormChange[] = [
+      const refused = applyFormChanges(d, [
         {
           op: 'add_section',
           ...(s.title ? { title: s.title } : {}),
           ...(s.description ? { description: s.description } : {}),
         },
-      ];
-      const refused = applyFormChanges(d, changes);
+      ]);
       if (refused) return refused;
     }
     const section = d.form.sections.length;
@@ -283,6 +350,15 @@ function startDraft(world: FormWorld, input: AddFormInput, tabId: string): FormD
   return d;
 }
 
+const NO_DOCUMENT: Omit<FormWorld, 'documentId'> = {
+  tabs: [],
+  boards: [],
+  sheets: [],
+  types: [],
+  statuses: [],
+  itemTypesRev: 0,
+};
+
 export async function addForm(
   api: ApiClient,
   input: AddFormInput,
@@ -292,22 +368,19 @@ export async function addForm(
     for (let attempt = 1; ; attempt += 1) {
       const world: FormWorld = input.documentId
         ? await readFormWorld(api, input.documentId)
-        : {
-            documentId: crypto.randomUUID(),
-            documentName: '',
-            tabs: [],
-            types: [],
-            statuses: [],
-            itemTypesRev: 0,
-          };
+        : { documentId: crypto.randomUUID(), ...NO_DOCUMENT };
       const tabId = crypto.randomUUID();
-      const d = startDraft(world, input, tabId);
+      const theme = input.theme ?? world.tabs[0]?.theme;
+      const formTab = { id: tabId, name: input.name ?? '', ...(theme ? { theme } : {}) };
+      const d = input.starter
+        ? startFromStarter(world, input, formTab)
+        : startFromQuestions(world, input, formTab);
       if ('ok' in d) return d;
       if (input.settings) {
         const refused = applyFormChanges(d, [{ op: 'settings', ...input.settings }]);
         if (refused) return refused;
       }
-      const formTab: Tab = {
+      const tab: Tab = {
         id: tabId,
         name: d.form.heading,
         elements: [],
@@ -315,7 +388,7 @@ export async function addForm(
         kind: 'form',
         opensIn: 'plan',
         form: d.form,
-        ...(d.formTab.theme ? { theme: d.formTab.theme } : {}),
+        ...(theme ? { theme } : {}),
       };
       const documentId = world.documentId;
       if (!input.documentId) {
@@ -325,7 +398,7 @@ export async function addForm(
           body: JSON.stringify({
             id: documentId,
             name: d.form.heading,
-            tabs: [formTab, ...d.newTabs],
+            tabs: [tab, ...d.newTabs],
             source: client,
             ...(d.typesChanged
               ? { itemTypes: { version: ITEM_TYPE_CATALOGUE_VERSION, types: d.types } }
@@ -334,7 +407,7 @@ export async function addForm(
         });
         const made = [
           `document "${d.form.heading}" (${documentId})`,
-          ...d.newTabs.map((t) => `tab "${t.name}" (${t.id})`),
+          ...(await writeAround(api, d, client, true)),
         ];
         return doneFrom(d, tabId, null, made);
       }
@@ -347,7 +420,7 @@ export async function addForm(
           replace: {
             form: d.form as unknown as Record<string, unknown>,
             name: d.form.heading,
-            ...(d.formTab.theme ? { theme: d.formTab.theme } : {}),
+            ...(theme ? { theme } : {}),
           },
           summary: `Add the ${d.form.heading} form`,
         },
@@ -355,27 +428,11 @@ export async function addForm(
       );
       const made = [
         `Form tab "${d.form.heading}" (${tabId})`,
-        ...(await writeAround(api, d, client)),
+        ...(await writeAround(api, d, client, false)),
       ];
       return doneFrom(d, tabId, null, made);
     }
   });
-}
-
-// The answer after a write, from what was written: the draft's form among the tabs it leaves, and the link as it
-// stands (a new form has none). No second read of the document.
-function doneFrom(
-  d: FormDraft,
-  tabId: string,
-  link: FormLinkResponse | null,
-  made: string[],
-): FormDone {
-  const tabs = [
-    ...draftTabs(d),
-    { ...d.formTab, id: tabId, elements: [], kind: 'form' as const, form: d.form },
-  ];
-  const reading = readFormOf({ tabId, form: d.form, tabs, types: d.types, link });
-  return { ok: true, documentId: d.world.documentId, reading, lines: d.lines, made };
 }
 
 // --- change_form ------------------------------------------------------------------------------------------------
@@ -395,7 +452,7 @@ export async function changeForm(
     for (let attempt = 1; ; attempt += 1) {
       const read = await readingOf(api, documentId, tabRef);
       if (!read.ok) return read;
-      const d = draftOf(read.world, read.tab, read.form);
+      const d = draftOf(read.world, read.tab, read.form, newId);
       const refused = applyFormChanges(d, changes);
       if (refused) return refused;
       // A form taking responses keeps everything but its settings (its route refuses the rest too).
@@ -410,7 +467,7 @@ export async function changeForm(
         headers: { [CLIENT_HEADER]: client },
         body: JSON.stringify({ form: d.form, rev: read.tab.rev }),
       });
-      const made = await writeAround(api, d, client);
+      const made = await writeAround(api, d, client, false);
       return doneFrom(d, read.tab.id, read.link, made);
     }
   });
@@ -434,46 +491,42 @@ export async function shareForm(
     const path = formLinkPath(documentId, read.tab.id);
     const live = read.link?.link ?? null;
     const lines: string[] = [];
-    try {
-      if (action === 'publish') {
-        if (read.reading.problems.length)
-          return refuse(
-            'form_not_ready',
-            `Not ready to publish. Fix these with change_form: ${read.reading.problems.join(' ')}`,
-          );
-        if (!live) {
-          await api.json<FormLinkResponse>(path, { method: 'POST' });
-          lines.push('published: the form link takes responses');
-        } else if (!live.open) {
-          await api.json<FormLinkResponse>(path, {
-            method: 'PUT',
-            body: JSON.stringify({ open: true }),
-          });
-          lines.push('opened again: the same link takes responses');
-        } else lines.push('already taking responses');
-      } else if (action === 'close') {
-        if (!live)
-          return refuse('form_not_published', 'This form has no link yet: publish it first.');
+    if (action === 'publish') {
+      if (read.reading.problems.length)
+        return refuse(
+          'form_not_ready',
+          `Not ready to publish. Fix these with change_form: ${read.reading.problems.join(' ')}`,
+        );
+      if (!live) {
+        await api.json<FormLinkResponse>(path, { method: 'POST' });
+        lines.push('published: the form link takes responses');
+      } else if (!live.open) {
         await api.json<FormLinkResponse>(path, {
           method: 'PUT',
-          body: JSON.stringify({ open: false }),
+          body: JSON.stringify({ open: true }),
         });
-        lines.push('closed: its link stays, and shows the closed message');
-      } else {
-        if (!live) return refuse('form_not_published', 'This form has no link to delete.');
-        await api.json<FormLinkResponse>(path, { method: 'DELETE' });
-        lines.push('link deleted: publishing again makes a new one');
-      }
-    } catch (err) {
-      const refusal = apiRefusalOf(err);
-      if (!refusal) throw err;
-      return { ok: false, ...refusal };
+        lines.push('opened again: the same link takes responses');
+      } else lines.push('already taking responses');
+    } else if (action === 'close') {
+      if (!live)
+        return refuse('form_not_published', 'This form has no link yet: publish it first.');
+      await api.json<FormLinkResponse>(path, {
+        method: 'PUT',
+        body: JSON.stringify({ open: false }),
+      });
+      lines.push('closed: its link stays, and shows the closed message');
+    } else {
+      if (!live) return refuse('form_not_published', 'This form has no link to delete.');
+      await api.json<FormLinkResponse>(path, { method: 'DELETE' });
+      lines.push('link deleted: publishing again makes a new one');
     }
     const link = await readFormLink(api, documentId, read.tab.id);
     const reading = readFormOf({
       tabId: read.tab.id,
       form: read.form,
-      tabs: read.world.tabs,
+      boards: read.world.boards,
+      sheets: read.world.sheets,
+      tabNames: tabNamesOf(read.world),
       types: read.world.types,
       link,
     });

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library } from '../testing/fake-api';
-import { formWorld } from '../testing/forms';
+import { formPlan, formTabBody } from '../testing/forms';
 import { formChange, formGet, formShare } from './form';
 
 // The form verbs (docs/specs/030-forms/forms.md "Agents"; docs/specs/015-api/cli.md "Commands").
-const world = formWorld();
+const plan = formPlan();
 const LINK = {
   link: { code: 'AbCdEfGhIjKlMnOpQrStUv', open: false, createdAt: 1 },
   responses: 4,
@@ -23,11 +23,11 @@ function ctxWith(input = '') {
       document: {
         id: DOC_A,
         name: 'Auth flow',
-        tabs: world.tabs.map((t, i) => ({ id: t.id, name: t.name, orderIndex: i })),
+        tabs: plan.tabs!.map((t, i) => ({ id: t.id, name: t.name, orderIndex: i })),
       },
     },
-    [`${base}/plan`]: { boards: [], statuses: world.statuses, types: world.types, itemTypesRev: 3 },
-    ...Object.fromEntries(world.tabs.map((t) => [`${base}/tabs/${t.id}`, { tab: t }])),
+    [`${base}/plan`]: plan,
+    [`${base}/tabs/form`]: { tab: formTabBody() },
     [`${base}/tabs/form/form-link`]: (r: Request) => {
       if (r.method !== 'GET') writes.push(`${r.method} form-link`);
       return Response.json(

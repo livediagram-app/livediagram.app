@@ -621,10 +621,17 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
   anything else about it (`form_locked`), whoever sends it.
 - **Share roles**: reading needs read access to the tab; the link's code only ever reaches an Editor; building and
   publishing are an Editor's, as the api gates them (a Participant's or Viewer's token is refused).
-- **Written through a changeset**: a Form tab is made or its form replaced by a changeset whose `replace` names a
-  `form` (the form whole, checked by the same sanitiser the editor reads with), so it reaches open editors at once
-  and lists in the document's changes as the agent's. Card types and new Board or Sheet tabs are written as
-  `add_board`, `add_sheet` and `change_card_types` write them.
+- **How it is written**: a new Form tab is a changeset whose `replace` names its `form` (the form whole, read by the
+  same sanitiser the editor reads with), so it lists in the document's changes as the agent's. An existing form is
+  replaced through its own route, `POST /api/documents/:id/tabs/:tabId/form` `{ form, rev }`, at the revision the
+  agent read (409 `form_changed` when someone changed it since), relayed to open editors as an editor's own edit;
+  a changeset never replaces an existing form (it writes and relays elements, and a form is none). Card types are
+  saved as `change_card_types` saves them, at their revision; a new responses board or sheet is a changeset that
+  makes a Board or Sheet tab (`replace` of elements with `kind`), its sheet made under the id the form names. Every
+  check is made before anything is written, so a refusal leaves the document as it was.
+- **The CLI**: `form get`, `form add` (`--starter`, or `--from` a JSON file of `add_form` input), `form change` (a
+  JSON file of changes, or stdin) and `form share` (`publish`, `close`, `delete_link`).
+- An empty list of changes is a read: nothing is written.
 
 ## Telemetry
 

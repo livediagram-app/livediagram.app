@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { FormLinkResponse } from '@livediagram/api-schema';
 import { fakeApi } from '../testing/fake-api';
-import { formWorld } from '../testing/forms';
+import { formPlan, formTabBody } from '../testing/forms';
 import { addForm, changeForm, readForm, shareForm } from './form-calls';
 
 // The form verbs' calls (docs/specs/030-forms/forms.md "Agents", blueprint §15 "Engine flow"): one read, every
 // change checked, then card types, the form and its responses tabs written in that order.
-const world = formWorld();
 const LINK: FormLinkResponse = {
   link: { code: 'AbCdEfGhIjKlMnOpQrStUv', open: true, createdAt: 1 },
   responses: 4,
@@ -24,19 +23,8 @@ function api(link: FormLinkResponse | null = null, extra: Record<string, unknown
     return Response.json(answer);
   };
   const routes: Record<string, unknown> = {
-    '/documents/doc': {
-      document: {
-        id: 'doc',
-        name: 'Ops',
-        tabs: world.tabs.map((t, i) => ({ id: t.id, name: t.name, orderIndex: i })),
-      },
-    },
-    '/documents/doc/plan': {
-      boards: [],
-      statuses: world.statuses,
-      types: world.types,
-      itemTypesRev: 3,
-    },
+    '/documents/doc/plan': formPlan(),
+    '/documents/doc/tabs/form': { tab: formTabBody() },
     '/documents/doc/item-types': record({ ok: true }),
     '/documents/doc/tabs/form/form-link': link
       ? record(link)
@@ -52,7 +40,6 @@ function api(link: FormLinkResponse | null = null, extra: Record<string, unknown
             : record(LINK)(r),
     '/documents/doc/tabs/form/form': record({ tabId: 'form', rev: 8, name: 'Bug Report' }),
     '/documents': record({ document: { id: 'new' } }),
-    ...Object.fromEntries(world.tabs.map((t) => [`/documents/doc/tabs/${t.id}`, { tab: t }])),
     ...extra,
   };
   const client = fakeApi(
@@ -77,6 +64,17 @@ describe('readForm', () => {
       ok: true,
       reading: { heading: 'Bug Report', state: 'accepting', responses: 4 },
     });
+  });
+
+  it('reads the plan, the Form tab and its link, never the other tabs', async () => {
+    // The per-token read limit is 120 a minute: a read whose cost grew with the document's tabs ran into it.
+    const { client } = api(LINK);
+    await readForm(client, 'doc');
+    expect([...client.calls].sort()).toEqual([
+      '/documents/doc/plan',
+      '/documents/doc/tabs/form',
+      '/documents/doc/tabs/form/form-link',
+    ]);
   });
 });
 
@@ -212,12 +210,12 @@ describe('shareForm', () => {
   });
 
   it('refuses to publish a form with problems, naming them', async () => {
-    const empty = formWorld({
+    const empty = formTabBody({
       v: 1,
       heading: 'Empty',
       sections: [{ id: 's', title: '', questions: [] }],
     });
-    const { client, writes } = api(null, { '/documents/doc/tabs/form': { tab: empty.tabs[2] } });
+    const { client, writes } = api(null, { '/documents/doc/tabs/form': { tab: empty } });
     const r = await shareForm(client, 'doc', undefined, 'publish');
     expect(r).toMatchObject({ ok: false, code: 'form_not_ready' });
     expect(!r.ok && r.message).toContain('Add a question');

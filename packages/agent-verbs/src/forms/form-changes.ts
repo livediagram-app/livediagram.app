@@ -295,7 +295,9 @@ function settings(d: FormDraft, c: Extract<FormChange, { op: 'settings' }>): For
   const patch: Partial<FormDefinition> = {};
   if (c.closesAt === null) patch.closesAt = undefined;
   else if (c.closesAt !== undefined) {
-    const at = Date.parse(c.closesAt);
+    // A time with no offset is UTC, wherever the call runs.
+    const iso = c.closesAt.trim();
+    const at = Date.parse(/T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(iso) ? `${iso}Z` : iso);
     if (!Number.isFinite(at))
       return refuse(
         'invalid_value',

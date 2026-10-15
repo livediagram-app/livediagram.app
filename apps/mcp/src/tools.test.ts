@@ -88,6 +88,10 @@ const PLAN = {
   ],
   statuses: [{ status: 'todo', name: 'To Do' }],
   types: ITEM_TYPES,
+  tabs: [
+    { id: 't_1', name: 'Tab 1', kind: 'diagram' },
+    { id: 'f_1', name: 'RSVP', kind: 'form' },
+  ],
 };
 // A Form tab, published and taking responses, so the form tools have a form to name (docs/specs/030-forms/forms.md
 // "Agents").

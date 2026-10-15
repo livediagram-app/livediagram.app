@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { questionsOf, type FormDefinition } from '@livediagram/forms';
 import { boardsOf } from '@livediagram/templates';
-import { BUG, formDraft, formWorld } from '../testing/forms';
+import { BUG, formDraft } from '../testing/forms';
 import { applyFormChanges, type FormChange } from './form-changes';
 import type { FormDraft } from './form-draft';
 
@@ -85,6 +85,31 @@ describe('where an answer goes', () => {
       'High',
       'Critical',
     ]);
+  });
+
+  it('gives a choice with "Other" a text field, as its answer is no option of a choice field', () => {
+    const { d, refused } = run([
+      {
+        op: 'add_question',
+        question: {
+          type: 'multi',
+          prompt: 'Stack',
+          options: ['Go', 'Rust'],
+          other: true,
+          goesTo: 'Stack',
+        },
+      },
+    ]);
+    expect(refused).toBeNull();
+    expect(d.types.find((t) => t.id === 'bug')!.custom!.at(-1)).toMatchObject({
+      label: 'Stack',
+      kind: 'longtext',
+    });
+    expect(
+      run([{ op: 'set_question', question: 'Severity', set: { other: true } }]).refused,
+    ).toMatchObject({
+      code: 'field_does_not_fit',
+    });
   });
 
   it('refuses a field that cannot hold the answer, a title it cannot be, and a field on a sheet form', () => {
@@ -193,6 +218,14 @@ describe('the form, its settings and where responses go', () => {
     expect(run([{ op: 'settings', limit: 0 }]).refused).toMatchObject({ code: 'invalid_value' });
   });
 
+  it('reads a closing time with no offset as UTC', () => {
+    const { d } = run([{ op: 'settings', closesAt: '2026-12-15T17:00:00' }]);
+    expect(d.form.closesAt).toBe(Date.UTC(2026, 11, 15, 17));
+    expect(run([{ op: 'settings', closesAt: '2026-12-15T17:00:00+01:00' }]).d.form.closesAt).toBe(
+      Date.UTC(2026, 11, 15, 16),
+    );
+  });
+
   it('sends responses to a new board as + New Board makes it, the form’s card type its own', () => {
     const { d, refused } = run([{ op: 'responds_to', to: 'board' }]);
     expect(refused).toBeNull();
@@ -212,8 +245,7 @@ describe('the form, its settings and where responses go', () => {
     ]);
     expect(refused).toBeNull();
     expect(d.form.destination).toMatchObject({ tabId: 'bugs', typeId: 'task' });
-    const board = boardsOf(d.changedTabs.get('bugs')!)[0]!;
-    expect(board.setup.addTypes).toEqual(['bug', 'task']);
+    expect(d.changedBoards.get('b1')?.types).toEqual(['bug', 'task']);
   });
 
   it('sends responses to a new or named sheet, keeping the board for switching back', () => {
@@ -231,15 +263,25 @@ describe('the form, its settings and where responses go', () => {
     });
   });
 
-  it('makes a card type named after a form with none', () => {
-    const world = formWorld({
+  it('makes a card type named after a form with none, its new board taking that type alone', () => {
+    const lunch: FormDefinition = {
       v: 1,
       heading: 'Lunch Order',
       sections: [{ id: 's', title: '', questions: [] }],
-    });
-    const d = formDraft({ ...world, tabs: world.tabs.filter((t) => t.id !== 'bugs') });
+    };
+    const d = formDraft(lunch);
     expect(applyFormChanges(d, [{ op: 'responds_to', to: 'board' }])).toBeNull();
-    expect(d.types.at(-1)).toMatchObject({ label: 'Lunch Order', glyph: 'checklist' });
+    const made = d.types.at(-1)!;
+    expect(made).toMatchObject({ label: 'Lunch Order', glyph: 'checklist' });
+    expect(boardsOf(d.newTabs[0]!)[0]!.setup.addTypes).toEqual([made.id]);
     expect(d.types.some((t) => t === BUG)).toBe(true);
+  });
+
+  it('brings in a ready-made card type by name, or makes one of that name', () => {
+    const candidate = run([{ op: 'responds_to', to: 'board', cardType: 'Candidate' }]).d;
+    expect(candidate.types.some((t) => t.id === 'candidate')).toBe(true);
+    expect(candidate.form.destination?.typeId).toBe('candidate');
+    const custom = run([{ op: 'responds_to', to: 'board', cardType: 'Guest' }]).d;
+    expect(custom.types.at(-1)).toMatchObject({ label: 'Guest' });
   });
 });
