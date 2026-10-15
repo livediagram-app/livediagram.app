@@ -109,6 +109,8 @@ describe('the form page', () => {
     [{ status: 429, body: { error: 'form_busy' } }, 'This form is busy'],
     [{ status: 429 }, 'You’ve sent a lot of responses'],
     [{ status: 502, body: 'x' }, 'We couldn’t send your response'],
+    [{ status: 500, body: { error: 'internal_error' } }, 'We couldn’t send your response'],
+    [{ status: 418, body: { error: 'teapot' } }, 'We couldn’t send your response'],
     [
       { status: 400, body: { error: 'invalid_answers', errors: { q: 'too_long' } } },
       'Keep it under 200',

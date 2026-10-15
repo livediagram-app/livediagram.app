@@ -123,6 +123,12 @@ export function FormRespondPage() {
                     kind: 'failed',
                     message: 'You’ve sent a lot of responses. Wait a minute and try again.',
                   };
+                default:
+                  // Anything else the api answers (a fault on its side): said as a failed send, answers kept.
+                  return {
+                    kind: 'failed',
+                    message: 'We couldn’t send your response. Check your connection and try again.',
+                  };
               }
             }}
           />

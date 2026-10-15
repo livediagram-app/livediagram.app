@@ -26,6 +26,7 @@ import {
 } from '@/hooks/forms/form-edits';
 import { newFormPartId } from '@livediagram/forms';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
+import { QuestionControl } from '../QuestionControl';
 import { QuestionView } from '../QuestionView';
 import { DraftText, type DraftTextHandle } from './DraftText';
 import { OptionsEditor } from './OptionsEditor';
@@ -193,14 +194,17 @@ export function FormQuestionCard({
               }
             />
           ) : (
-            <div className="pointer-events-none opacity-80">
-              <QuestionView
-                question={{ ...q, prompt: q.prompt || 'Question', help: undefined }}
+            // The control alone, as respondents will see it: the prompt and help are edited just above.
+            <div className="pointer-events-none opacity-80" aria-hidden>
+              <QuestionControl
+                question={q}
                 value={undefined}
                 other=""
                 onChange={() => {}}
                 onOther={() => {}}
                 disabled
+                labelledBy=""
+                controlId={`preview-${q.id}`}
               />
             </div>
           )}

@@ -47,8 +47,11 @@ export function FormFill({
   useEffect(() => {
     if (summaryKey) summaryRef.current?.focus();
   }, [summaryKey]);
-  // A new section starts at its top.
+  // A new section starts at its top (not the first: the page above it, a status bar, stays in view).
+  const shownSection = useRef(fill.section);
   useEffect(() => {
+    if (shownSection.current === fill.section) return;
+    shownSection.current = fill.section;
     topRef.current?.scrollIntoView?.({ block: 'start' });
   }, [fill.section]);
 

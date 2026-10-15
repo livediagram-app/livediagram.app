@@ -49,6 +49,8 @@ export async function sendFormResponse(
     if (res.status === 429 && !(await peekError(res)))
       return { kind: 'refused', refusal: { error: 'rate_limited' } };
     const refusal = (await res.json().catch(() => null)) as FormResponseRefusal | null;
+    // A server fault is not a refusal of the answers: said as a failed send.
+    if (res.status >= 500) return { kind: 'offline' };
     return refusal && 'error' in refusal ? { kind: 'refused', refusal } : { kind: 'offline' };
   } catch {
     return { kind: 'offline' };

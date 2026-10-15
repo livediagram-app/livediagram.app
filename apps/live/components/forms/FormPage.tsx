@@ -226,7 +226,7 @@ export function FormPage({
                   role="region"
                   aria-label={`${form.heading} form`}
                   style={formAccentStyle(form.accent)}
-                  className="flex h-full min-h-0 gap-4 px-3 pt-16 max-sm:px-2"
+                  className="flex h-full min-h-0 gap-4 px-3 pt-3 max-sm:px-2"
                 >
                   <div
                     ref={scrollRef}

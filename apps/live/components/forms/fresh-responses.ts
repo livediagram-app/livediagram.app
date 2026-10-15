@@ -14,6 +14,8 @@ export const FRESH_OPENED_MAX = 500;
 const KEY = 'livediagram:form-responses-opened';
 
 let opened: string[] | null = null;
+// The same ids as a set, so each card's check is one lookup however many were opened.
+let openedSet: ReadonlySet<string> = new Set();
 let version = 0;
 const listeners = new Set<() => void>();
 
@@ -26,14 +28,16 @@ function load(): string[] {
   } catch {
     opened = [];
   }
+  openedSet = new Set(opened);
   return opened;
 }
 
 export function markResponseOpened(item: Pick<Item, 'id' | 'fields'>): void {
   if (!readFromForm(item.fields[FROM_FORM_FIELD])) return;
   const list = load();
-  if (list.includes(item.id)) return;
+  if (openedSet.has(item.id)) return;
   opened = [...list, item.id].slice(-FRESH_OPENED_MAX);
+  openedSet = new Set(opened);
   version += 1;
   try {
     localStorage.setItem(KEY, JSON.stringify(opened));
@@ -46,11 +50,11 @@ export function markResponseOpened(item: Pick<Item, 'id' | 'fields'>): void {
 export function isFreshResponse(
   item: Pick<Item, 'id' | 'fields' | 'createdAt'>,
   now: number,
-  openedIds: readonly string[] = load(),
 ): boolean {
   if (!readFromForm(item.fields[FROM_FORM_FIELD])) return false;
   if (now - item.createdAt > FRESH_RESPONSE_MS) return false;
-  return !openedIds.includes(item.id);
+  load();
+  return !openedSet.has(item.id);
 }
 
 function subscribe(listener: () => void) {
@@ -73,5 +77,6 @@ export function useFreshResponse(item: Pick<Item, 'id' | 'fields' | 'createdAt'>
 // For tests: forget what this browser opened.
 export function resetFreshResponses(): void {
   opened = null;
+  openedSet = new Set();
   version += 1;
 }
