@@ -25,7 +25,8 @@ vi.mock('./BoxedElementView', () => ({
   BoxedElementView: memo(function BoxedStub({ element }: { element: Element }) {
     bump(renders.boxed, element.id);
     drawnAs.set(element.id, element);
-    return null;
+    // A mark where the view mounts, so a test can see where each boxed element is drawn.
+    return <span data-boxed-stub={element.id} />;
   }),
 }));
 vi.mock('./ArrowView', async (importOriginal) => {
@@ -349,6 +350,9 @@ describe('the element plane', () => {
     const plane = container.querySelector('[data-element-plane]');
     expect(plane).not.toBeNull();
     expect(plane!.className).toBe('contents');
+    // Every element: the three boxed ones and the arrow, none of them outside it.
+    expect(plane!.querySelectorAll('[data-boxed-stub]').length).toBe(3);
+    expect(container.querySelectorAll('[data-boxed-stub]').length).toBe(3);
     expect(plane!.querySelectorAll('[data-arrow-svg]').length).toBe(1);
     expect(container.querySelectorAll('[data-element-plane]').length).toBe(1);
     expect(plane!.querySelector('[data-selection-grips]')).toBeNull();
