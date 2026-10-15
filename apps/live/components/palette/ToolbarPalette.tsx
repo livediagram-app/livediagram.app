@@ -1,8 +1,7 @@
 'use client';
 
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
-import type { Element, PageKind } from '@livediagram/document';
-import { AddPageStripButton } from './AddPageStripButton';
+import type { Element } from '@livediagram/document';
 import {
   useEffect,
   useEffectEvent,
@@ -56,6 +55,8 @@ import {
 import { BoardCardsStrip } from './BoardCardsStrip';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { barFitsLabels, CATEGORY_BAR_MODES } from './category-flyout-groups';
+import { SessionBrowse } from './session-category';
+import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
@@ -88,10 +89,6 @@ type Props = Pick<
     // Explorer menu button and mode switch on a phone, which has no room for
     // them in a corner card above the strip.
     leading?: ReactNode;
-    // Illustrate mode: a + at the strip's end adds a page (AddPageStripButton).
-    onAddPage?: (kind: PageKind) => void;
-    // The last page's kind, offered first in Add a Page.
-    lastPageKind?: PageKind;
     // The active tab's elements: Search lists their element types before anything is typed.
     tabElements?: readonly Element[];
     // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, its selection
@@ -216,7 +213,14 @@ export function ToolbarPalette(props: Props) {
     [tabs],
   );
   // The bar has no Popular: with every category one press away, a pick from across them adds nothing.
-  const barCategories = useMemo(() => tabs.filter((t) => t.id !== 'popular'), [tabs]);
+  // The bar's categories (bar-categories): no Popular, one-word names, Write and Draw as one, Session.
+  const barCategories = useMemo(
+    () =>
+      barCategoriesFor(tabs, (groups) => (
+        <SessionBrowse groups={groups} actions={tileActions} pendingDraw={pendingDraw ?? null} />
+      )),
+    [tabs, tileActions, pendingDraw],
+  );
   // A category this mode does not offer (one picked in another mode) shows the mode's landing.
   const category =
     tabs.find((t) => t.id === categoryId) ?? tabs.find((t) => t.id === defaultId) ?? tabs[0];
@@ -577,15 +581,6 @@ export function ToolbarPalette(props: Props) {
                       <>
                         <Divider />
                         <EditCardsStripButton />
-                      </>
-                    ) : null}
-                    {props.onAddPage && !isMobile ? (
-                      <>
-                        <Divider />
-                        <AddPageStripButton
-                          onAdd={props.onAddPage}
-                          suggested={props.lastPageKind}
-                        />
                       </>
                     ) : null}
                     {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md

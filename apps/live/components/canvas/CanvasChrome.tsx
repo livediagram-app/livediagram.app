@@ -46,7 +46,6 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 // little more in, and past the element's bottom scrollbar up.
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
-import { pageKindOf } from '@livediagram/document';
 import { ContentsClusterButton } from './ContentsClusterButton';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
@@ -600,12 +599,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           logoPages={!!props.illustratePages?.pages.some((p) => p.kind === 'logo')}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
-          onAddPage={readOnly ? undefined : props.illustratePages?.edit?.addPage}
-          lastPageKind={
-            props.illustratePages?.pages.length
-              ? pageKindOf(props.illustratePages.pages[props.illustratePages.pages.length - 1]!)
-              : undefined
-          }
           tabElements={elements}
         />
       ) : null}

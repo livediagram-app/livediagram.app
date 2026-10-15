@@ -36,12 +36,16 @@ const BAR_SELECTOR =
 const GRID_PX = 416;
 const CARDS_PX = 576;
 const CARD_COLUMN_PX = 304;
+const RAIL_PX = 600;
 const WIDTH_CLASS: Readonly<Record<number, string>> = {
+  [RAIL_PX]: 'w-[37.5rem]',
   [GRID_PX]: 'w-[26rem]',
   [CARDS_PX]: 'w-[36rem]',
   [CARD_COLUMN_PX]: 'w-[19rem]',
 };
 const widthPx = (c: FlyoutCategory) => {
+  // A catalogue (Icons, Stickers, Technology, Session) browses as two panes, its groups down the side.
+  if (!c.tiles) return RAIL_PX;
   if (!c.tiles || flyoutLayout(c.id) !== 'cards') return GRID_PX;
   return flyoutCardColumns(c.tiles.length) === 1 ? CARD_COLUMN_PX : CARDS_PX;
 };

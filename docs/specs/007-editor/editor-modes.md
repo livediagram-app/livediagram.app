@@ -339,7 +339,7 @@ and sets targets as often as a page reports them.
 | Draw              | yes     | no         | no   | yes                 |
 | Build             | yes     | yes        | no   | in Write            |
 | Components        | no      | yes        | no   | no                  |
-| Concepts          | yes     | yes        | no   | yes                 |
+| Concepts          | yes     | yes        | no   | no                  |
 | Devices           | no      | yes        | no   | no                  |
 | Event Storming    | board   | no         | no   | no                  |
 | Icons             | yes     | yes        | no   | yes                 |

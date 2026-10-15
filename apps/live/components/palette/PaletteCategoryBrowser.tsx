@@ -5,6 +5,7 @@ import { NoMatches } from '@livediagram/ui';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { ToolsBreadcrumb, ToolsCategoryGrid, type ToolsCategory } from './palette-tools-nav';
 import { track } from '@/lib/telemetry';
+import { PaletteCategoryRail } from './PaletteCategoryRail';
 
 // The palette's drill-in browse pattern, once (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories",
 // docs/specs/010-palette/palette-category-browse.md).
@@ -49,6 +50,10 @@ export function useBrowseMemory(): BrowseMemory {
     [],
   );
 }
+
+// How a browse lays itself out: the drill-in grid (a category tile per group, a breadcrumb back), or the two-pane
+// rail (PaletteCategoryRail) the category bar's flyouts use, with every group in view down the side.
+export const BrowseLayoutContext = createContext<'grid' | 'rail'>('grid');
 
 type Props<T> = {
   // Breadcrumb root — the tab's own name, so "Icons › People" reads true.
@@ -117,19 +122,40 @@ export function PaletteCategoryBrowser<T>({
   const q = query.trim();
   const matches = q ? search(q) : null;
   const openCategory = categories.find((c) => c.id === openId) ?? null;
+  const layout = useContext(BrowseLayoutContext);
   if (startGroup?.bare && openCategory) return <>{renderItems(openCategory.items)}</>;
+  const onSearch = (next: string) => {
+    onQueryChange(next);
+    if (!searchedRef.current && next.trim()) {
+      searchedRef.current = true;
+      track('UI', 'Searched', telemetry.searchedType);
+    }
+  };
+  if (layout === 'rail')
+    return (
+      <PaletteCategoryRail
+        categories={categories}
+        openId={openId}
+        onOpen={(id) => {
+          if (id !== openId) track('UI', 'Opened', telemetry.openedType);
+          setOpenId(id);
+        }}
+        renderItems={renderItems}
+        query={query}
+        onQueryChange={onSearch}
+        matches={matches}
+        search={searchInput}
+        things={things}
+        loading={loading}
+        loadingMessage={loadingMessage}
+      />
+    );
   return (
     <div className="flex flex-col">
       <div className="mb-2 flex items-center">
         <SearchInput
           value={query}
-          onChange={(next) => {
-            onQueryChange(next);
-            if (!searchedRef.current && next.trim()) {
-              searchedRef.current = true;
-              track('UI', 'Searched', telemetry.searchedType);
-            }
-          }}
+          onChange={onSearch}
           placeholder={searchInput.placeholder}
           ariaLabel={searchInput.ariaLabel}
           clearAriaLabel={searchInput.clearAriaLabel}

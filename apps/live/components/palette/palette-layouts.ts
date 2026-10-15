@@ -243,8 +243,8 @@ const FACILITATE: PaletteLayout = {
       ],
     },
     { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
-    // A session reads results and runs retros in cycles (docs/specs/009-elements/concept-graphics.md).
-    { id: 'concepts' },
+    // No Concepts: concept graphics lay out an idea for a diagram (docs/specs/009-elements/concept-graphics.md),
+    // which a session does not stop to draw.
     { id: 'icons' },
     { id: 'stickers' },
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },

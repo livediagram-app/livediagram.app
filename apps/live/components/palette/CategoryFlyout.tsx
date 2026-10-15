@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { EditorMode } from '@livediagram/document';
+import { CountBadge } from '@livediagram/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
@@ -12,8 +13,10 @@ import {
   flyoutKeyTarget,
   flyoutLayout,
   flyoutTagline,
+  type FlyoutGroup,
 } from './category-flyout-groups';
 import { CardList, InfoFooter, opensSide, TileGrid } from './category-flyout-items';
+import { BrowseLayoutContext } from './PaletteCategoryBrowser';
 
 // The category bar's flyout (docs/specs/007-editor/toolbar-layout.md "The category bar"): one category's
 // tiles under its name, in its named groups, as a grid of pictures (Shapes) or cards with a blurb (Build). A footer
@@ -29,6 +32,8 @@ export type FlyoutCategory = {
   // Null for a catalogue, whose body is `content`.
   tiles: readonly PaletteTileDef[] | null;
   content: ReactNode;
+  // Its own headed sections, in place of the groups its dividers make (Write and Draw as one).
+  sections?: readonly FlyoutGroup[];
 };
 
 /** Arrow keys walk the flyout's items by position (category-flyout-groups), across its groups. */
@@ -107,7 +112,13 @@ export function CategoryFlyout({
       >
         {tiles ? (
           <div className="flex flex-col gap-3 p-3">
-            {flyoutGroups(category.id, tiles).map((group, gi) => (
+            {(category.sections
+              ? category.sections.map((g) => ({
+                  ...g,
+                  tiles: visibleTiles([...g.tiles], actions.hasImage),
+                }))
+              : flyoutGroups(category.id, tiles)
+            ).map((group, gi) => (
               <section key={group.id} aria-label={group.title ?? category.label}>
                 {group.title ? (
                   <h4 className="mb-1.5 flex items-center gap-2 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
@@ -133,7 +144,14 @@ export function CategoryFlyout({
             ))}
           </div>
         ) : (
-          <div className="px-2 py-2.5">{category.content}</div>
+          // A catalogue browses as two panes (PaletteCategoryRail), edge to edge; My shapes keeps its padding.
+          <BrowseLayoutContext.Provider value="rail">
+            {category.id === 'my-shapes' ? (
+              <div className="px-2 py-2.5">{category.content}</div>
+            ) : (
+              category.content
+            )}
+          </BrowseLayoutContext.Provider>
         )}
       </div>
       {tiles ? <InfoFooter def={hovered} /> : null}
@@ -169,11 +187,7 @@ export function FlyoutHeader({
           {tagline}
         </p>
       </div>
-      {count ? (
-        <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium tabular-nums text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-          {count}
-        </span>
-      ) : null}
+      {count ? <CountBadge count={count} className="shrink-0" /> : null}
     </header>
   );
 }

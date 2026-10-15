@@ -6,9 +6,13 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 import type { EditorMode } from '@livediagram/document';
 
-/** The modes whose strip is a category bar: Diagram and Facilitate. Illustrate and Plan keep the category picker
- *  and its tiles. */
-export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['diagram', 'facilitate']);
+/** The modes whose strip is a category bar: Diagram, Facilitate and Illustrate. Plan keeps the category picker and
+ *  its tiles (its boards and cards are a different palette). */
+export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set([
+  'diagram',
+  'facilitate',
+  'illustrate',
+]);
 
 // The bar's room for names, estimated from the names themselves (13px medium is about 7px a letter): a named
 // button is its glyph and padding plus its name, and the strip's own chrome (the selection mode, Search, dividers
@@ -22,6 +26,17 @@ const MENU_CLEARANCE_PX = 2 * 116;
 export function barFitsLabels(labels: readonly string[], viewportPx: number): boolean {
   const named = labels.reduce((sum, l) => sum + NAMED_BUTTON_PX + l.length * LABEL_PX_PER_CHAR, 0);
   return named + BAR_CHROME_PX + MENU_CLEARANCE_PX <= viewportPx;
+}
+
+// The bar names every category in one word, so a name never wraps or crowds its neighbours: a layout's longer
+// name gives way to its short one here (the flyout's header uses the same, so the two never disagree).
+const BAR_LABELS: Readonly<Record<string, string>> = {
+  write: 'Write',
+  'my-shapes': 'Library',
+};
+
+export function barLabel(categoryId: string, label: string): string {
+  return BAR_LABELS[categoryId] ?? label;
 }
 
 /** How a flyout lays its tiles out: a grid of pictures where the glyph IS the answer (a square explains a square),
@@ -72,11 +87,15 @@ const TAGLINES: Readonly<Record<string, string>> = {
   'collab-react': 'Celebrate on the canvas.',
   'collab-mode': 'Buttons that switch how everyone points.',
   'collab-navigate': 'Places to go, and things to sit at.',
+  logo: 'The tools a logo is made with.',
+  components: 'Ready-made blocks that follow the theme.',
+  devices: 'Frames to set a screen design in.',
 };
 
 // Where a mode fills a category differently enough that its default line would mislead.
 const MODE_TAGLINES: Readonly<Partial<Record<EditorMode, Readonly<Record<string, string>>>>> = {
   facilitate: { write: 'Words, notes, tables and frames.' },
+  illustrate: { build: 'Tables, stacks, timelines and flows.' },
 };
 
 export function flyoutTagline(categoryId: string, fallback: string, mode?: EditorMode): string {
@@ -92,12 +111,22 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'shapes:cylinder': 'Flowchart',
   'shapes:cloud': 'More Shapes',
   'tools:page': 'Text',
-  'tools:sticky': 'Notes and Comments',
+  'tools:text': 'Text',
+  'tools:sticky': 'Notes',
   'tools:pencil': 'Pens',
   'tools:polygon': 'Outlines',
   'tools:arrow': 'Connectors',
   'tools:mind-node': 'Diagrams',
   'tools:lane': 'Layout and Parts',
+  'tools:table': 'Tables',
+  'tools:stack': 'Layout',
+  'tools:code-block': 'Code and Lists',
+  'components:card': 'Page Blocks',
+  'devices:browser': 'Desktop',
+  'devices:phone': 'Mobile',
+  'tools:image': 'Pictures',
+  'media:embed-youtube': 'Embeds',
+  'tools:avatar': 'People',
   'data:pie': 'Charts',
   'data:progress-bar': 'Meters',
 };

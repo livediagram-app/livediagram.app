@@ -64,7 +64,6 @@ function show({
   hidden?: boolean;
   esBoardControls?: EsBoardControls;
   mode?: EditorMode;
-  onAddPage?: () => void;
   tabElements?: Element[];
 } = {}) {
   const h = handlers();
@@ -388,15 +387,6 @@ describe('ToolbarPalette', () => {
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
       'Devices',
     );
-  });
-
-  it('ends with Add Page in Illustrate mode, but not on a phone (docs/specs/007-editor/illustrate-pages.md)', () => {
-    show({ mode: 'illustrate', onAddPage: vi.fn() });
-    expect(screen.getByRole('button', { name: 'Add Page' })).toBeTruthy();
-    cleanup();
-    mobile.value = true;
-    show({ mode: 'illustrate', onAddPage: vi.fn() });
-    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
   });
 
   describe('Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type")', () => {

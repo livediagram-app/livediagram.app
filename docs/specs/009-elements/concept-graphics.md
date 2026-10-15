@@ -142,7 +142,7 @@ tile places a Pyramid with the Funnel variant (the variant is the decision, so i
 | Diagram    | yes      |
 | Illustrate | yes      |
 | Plan       | no       |
-| Facilitate | yes      |
+| Facilitate | no       |
 
 ## Templates
 

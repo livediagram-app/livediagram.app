@@ -88,7 +88,6 @@ describe('palette layouts', () => {
       'my-shapes',
       'write',
       'draw',
-      'concepts',
       'icons',
       'stickers',
       'media',
