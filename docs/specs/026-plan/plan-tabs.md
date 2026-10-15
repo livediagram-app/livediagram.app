@@ -362,14 +362,14 @@ Taking it counts as the board's or Sheet's own CSV export (`Plan · Exported · 
 A slot can show a figure from one of the document's forms ([Forms](../030-forms/forms.md)): Add to Slot's **Form
 Metrics**, offered only while the document has a Form tab. Six figures (`form-metric` content: `metric`, `formTabId`):
 
-| Figure             | Shows                                                                                                           |
-| ------------------ | --------------------------------------------------------------------------------------------------------------- |
-| **Responses**      | Its responses so far, large, over "responses so far"                                                            |
-| **New Responses**  | How many are new to the reader ("new to you since you last looked")                                             |
-| **Form Status**    | A pill: **Accepting** (green), **Closed** (amber), **Not Published**, **Suspended** (red), or **Draft** offline |
-| **Response Limit** | "42 / 100" with a bar toward the limit (amber once reached) and how many to go; **No limit** without one        |
-| **Closes**         | Days until it closes ("3 days", **Today**), its date beneath; **Closed** once past; **No date** without one     |
-| **Form Link**      | The link to copy (**Copy**, an Editor's) once published; "Not published yet." before                            |
+| Figure             | Shows                                                                                                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Responses**      | Its responses so far, large, over "responses so far"                                                                                                             |
+| **New Responses**  | How many are new to the reader ("new to you since you last looked")                                                                                              |
+| **Form Status**    | A pill: **Accepting** (green), **Closed** (amber; also past its Close On or at its Response Limit), **Not Published**, **Suspended** (red), or **Draft** offline |
+| **Response Limit** | "42 / 100" with a bar toward the limit (amber once reached) and how many to go; **No limit** without one                                                         |
+| **Closes**         | Days until it closes ("3 days", **Today**), its date beneath; **Closed** once past; **No date** without one                                                      |
+| **Form Link**      | The link to copy (**Copy**, an Editor's) once published; "Not published yet." before                                                                             |
 
 Placed, it reads the document's first Form tab; an Editor changes the form from the select at the card's foot while
 the document has more than one (the form's name shows there otherwise). Its figures are read live from the form's link

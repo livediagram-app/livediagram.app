@@ -149,13 +149,15 @@ export async function deleteFormLinksForTab(
 
 export const FORM_HOUR_MS = 60 * 60 * 1000;
 
-// Takes the next response number, within the form's hourly cap: one guarded UPDATE, so two responses at once
-// never share a number and the cap holds. Null when the cap is reached (or the link went meanwhile).
+// Takes the next response number, within the form's hourly cap and its Response Limit (`limit`, null for none or for
+// a preview): one guarded UPDATE, so two responses at once never share a number and neither cap is passed. Null when
+// one is reached (or the link went meanwhile).
 export async function claimResponseNumber(
   env: Env,
   code: string,
   now: number,
   hourlyCap: number,
+  limit: number | null = null,
 ): Promise<number | null> {
   const windowStart = now - FORM_HOUR_MS;
   const row = await env.DB.prepare(
@@ -165,9 +167,10 @@ export async function claimResponseNumber(
             hour_count = CASE WHEN hour_start <= ? THEN 1 ELSE hour_count + 1 END,
             hour_start = CASE WHEN hour_start <= ? THEN ? ELSE hour_start END
       WHERE code = ? AND suspended_at IS NULL AND (hour_start <= ? OR hour_count < ?)
+        AND (? IS NULL OR responses < ?)
       RETURNING responses`,
   )
-    .bind(now, windowStart, windowStart, now, code, windowStart, hourlyCap)
+    .bind(now, windowStart, windowStart, now, code, windowStart, hourlyCap, limit, limit)
     .first<{ responses: number }>();
   return row ? row.responses : null;
 }

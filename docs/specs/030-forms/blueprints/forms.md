@@ -258,7 +258,8 @@ moved by the guest migration. Unseen = `responses - seen_number`.
 `generateFormCode` (base 62 without bias), `getLiveFormLink`, `getFormLink`, `getSuspendedFormLink`,
 `countSuspendedFormLinks`, `createFormLink` (carries the tab's highest response number on; null on a second live
 link), `setFormLinkOpen`, `deleteFormLink` (live only), `deleteFormLinksForTab`, `claimResponseNumber` (one guarded
-`UPDATE … RETURNING`: number, `last_response_at` and the hourly window together; null at the cap),
+`UPDATE … RETURNING`: number, `last_response_at` and the hourly window together, and `responses < limit` when given;
+null at either cap),
 `addFormReport` (distinct networks), `suspendFormLink`, `markFormSeen`, `unseenResponses`, `claimFormEmail`
 (compare-and-swap on `last_email_at`, returning how many were held).
 
@@ -291,7 +292,8 @@ with `open: true` and the publish `POST` share `notReadyToOpen` (`form-link-rout
 4. `closedReason` → 409 `form_closed`. `checkResponse` → 400 with errors.
 5. `destinationProblem` over the destination tab's boards and the catalogue → 409 `form_closed`.
 6. The card for number 1 checked by `readItemCreate` (400 if refused: never expected).
-7. `claimResponseNumber` → 429 `form_busy` at the cap.
+7. `claimResponseNumber` with the form's Response Limit (none for a preview) → 409 `form_closed` when another
+   response took the last place meanwhile, else 429 `form_busy` at the hourly cap (`claimNumber`, `respond.ts`).
 8. `createMany(ctx, { documentId, owner: formPerson.id }, [create], { by: formPerson })`; `items_full` → 413
    `form_full`. Relay; `Form·Sent·Response`; `notifyFormResponse` in `waitUntil`.
 
