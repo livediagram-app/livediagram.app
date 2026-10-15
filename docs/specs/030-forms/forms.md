@@ -609,18 +609,23 @@ with the ones there are. Question types go by their ids (`short`, `paragraph`, `
     its types also takes. A question's `goesTo` (`title`, `description`, or a field's name) maps its answer: a name
     the card type lacks makes that field, of the kind the question's type makes (New Field), options included; a
     choice with **Other** gets a text field (Long Text for Multiple Choice), as its Other answer is no option of a
-    choice field. A Close On time with no offset is UTC. Each problem `read_form` lists names its question or section.
+    choice field; a new choice or rating field is drawn on the card face, as a starter's are. A first section's
+    description given to `add_form` is the form's description, and a title given it is said not to show. A Close On
+    time with no offset is UTC. Each problem `read_form` lists names its question or section.
     `read_form`'s picture flows a long form into a second column, a section heading never ending a column without its
     first question, and says how many questions it could not fit.
 - **`change_form`** (destructive, as it deletes): up to 50 changes in order, applied as one write and one undo step
-  for people: `add_question` `{ question, section?, after? }`, `set_question` `{ question, set }` (a type change
+  for people: `add_question` `{ question, section?, after?, before? }`, `set_question` `{ question, set }` (a type change
   keeps what the new type can use, as the type button does), `delete_question`, `move_question`
-  `{ question, section?, after? }`, `add_section` `{ title?, description?, after? }` (after a question splits there,
+  `{ question, section?, after?, before? }` (`before` the first question puts it first), `add_section` `{ title?, description?, after? }` (after a question splits there,
   as Add Section does; else an empty section at the end), `set_section` `{ section, title?, description?,
 showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the section before), `set_form`
   `{ heading?, description?, cover? }`, `settings` `{ closesAt?, limit?, confirmation?, closedMessage? }` (null
   clears one) and `responds_to` (as `add_form`'s). Each is checked as the builder checks it (limits, unique options,
-  a mapping that fits, a rule on an earlier choice), and a refusal writes nothing and names the change.
+  a mapping that fits, a rule on an earlier choice), and a refusal writes nothing and names the change. A sheet
+  form's sheet gains a header for each question it lacks one for, after its last header (bold), as a response would
+  write it; it is read for this only when the form now asks for a header it did not. `read_form` names each
+  question's sheet column (`column`) on a sheet form.
 - **`share_form`** (write): `publish` (makes the form link; on a closed form, opens it again), `close`, or
   `delete_link`. A form with problems is refused with every problem, as Share Form lists them. The answer is the
   state, the link and the count.
