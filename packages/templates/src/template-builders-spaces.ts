@@ -176,8 +176,10 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
     'Your team’s corner: four desks together, a table for the stand-up, and a board for the week.',
     [
       ...board,
+      // Under the pod, not the whole plan: the button is where the character lands, so it waits by the pod's door
+      // rather than under the board, a long walk from the way in.
       ...walkIn(
-        x0 + width,
+        x0 + POD_W,
         y0 + HEAD + POD_H + BELOW / 2,
         'Press Walk In (or W), take a desk, and meet round the table for the stand-up.',
       ),
