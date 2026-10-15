@@ -30,6 +30,7 @@ import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 import { ChevronStageControls } from '@/components/canvas/ConceptRowBar';
+import { useConceptTourPreview } from '@/lib/concept-tour-preview';
 
 type Props = {
   element: ShapeElement & { shape: ConceptShape };
@@ -83,8 +84,11 @@ export function ConceptFace({
   const noun = CONCEPT_ROWS[element.shape].noun;
   const write = (i: number, patch: Partial<ConceptRow>) =>
     onSetRows({ conceptRows: rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) });
-  const anim = conceptAnimOf(element);
-  const repeats = conceptAnimRepeats(element);
+  // An element tour previews an animation on the element it is on, played once and never stored
+  // (docs/specs/007-editor/element-tours.md); otherwise the element's own.
+  const preview = useConceptTourPreview(element.id);
+  const anim = preview ? preview.anim : conceptAnimOf(element);
+  const repeats = preview ? false : conceptAnimRepeats(element);
   const animClass = !anim
     ? ''
     : anim === 'build'
@@ -109,6 +113,8 @@ export function ConceptFace({
     <div
       className={`absolute flex items-center ${opts.align === 'left' ? 'justify-start' : 'justify-center'} px-1`}
       style={{ ...rectStyle(rect), fontFamily }}
+      // Where an element tour points (components/tour/concept-element-tour-steps.ts).
+      {...(opts.note ? { 'data-concept-note': i } : { 'data-concept-row': i })}
     >
       <InlineTextLine
         value={value}
@@ -379,7 +385,8 @@ export function ConceptFace({
     );
   }
   return (
-    <div className={`absolute inset-0 ${animClass}`} style={vars}>
+    // A preview's run keys the layer, so pressing a step again replays it from the start.
+    <div key={preview?.run ?? 'own'} className={`absolute inset-0 ${animClass}`} style={vars}>
       {body}
     </div>
   );

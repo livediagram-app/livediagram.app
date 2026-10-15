@@ -40,6 +40,7 @@ const setSankeyFlowsOpenForId = vi.fn();
 
 const sankey = { ...createShape('sankey', 0, 0), id: 'sk1' } as Element;
 const square = { ...createShape('square', 0, 0), id: 'sq1' } as Element;
+const stack = { ...createShape('layer-stack', 0, 0), id: 'ls1' } as Element;
 
 const editor = (over: Record<string, unknown> = {}) => {
   ctx.current = {
@@ -48,7 +49,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     anyWelcomeOpen: false,
     embedMode: false,
     can: { level: 'edit' },
-    activeTab: { id: 'tab1', elements: [sankey, square] },
+    activeTab: { id: 'tab1', elements: [sankey, square, stack] },
     userPreferences: {} as UserPreferences,
     setUserPreferences,
     writeUserPreferences,
@@ -237,5 +238,42 @@ describe('ElementTourHost tour', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'SankeyTourSkipped');
     expect(close).not.toHaveBeenCalled();
     unregister();
+  });
+});
+
+// A second toured kind runs through the same host, under its own token (docs/specs/007-editor/element-tours.md).
+describe('ElementTourHost with a layer stack', () => {
+  it('offers, plays and completes the Layer Stack tour under its own token', async () => {
+    editor();
+    mount();
+    act(() => store.setSelectedId('ls1'));
+    expect(elementTourOffer()).toMatchObject({ elementId: 'ls1', kind: 'layer-stack' });
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'LayerStackTourOffer');
+    act(() => elementTourOffer()!.play());
+    expect(writeUserPreferences).toHaveBeenCalledWith({ elementTourKinds: ['layer-stack'] }, 'me');
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'LayerStackTour');
+    expect(stage.engine?.step?.id).toBe('layers');
+    expect(track).toHaveBeenCalledWith('UI', 'View', 'LayerStackTourStepLayers');
+    while (stage.engine?.active) await act(async () => stage.engine!.next());
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'LayerStackTourCompleted');
+    // Nothing of the Sankey's is put away for a layer stack.
+    expect(setSankeyFlowsOpenForId).not.toHaveBeenCalled();
+  });
+
+  it('answers each kind on its own: a Sankey answered still offers a layer stack', () => {
+    editor({ userPreferences: { elementTourKinds: ['sankey'] } });
+    mount();
+    act(() => store.setSelectedId('sk1'));
+    expect(elementTourOffer()).toBeNull();
+    act(() => store.setSelectedId('ls1'));
+    expect(elementTourOffer()?.kind).toBe('layer-stack');
+  });
+
+  it('cancels under its own token', () => {
+    editor();
+    mount();
+    act(() => store.setSelectedId('ls1'));
+    act(() => elementTourOffer()!.dismiss());
+    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'LayerStackTourOffer');
   });
 });

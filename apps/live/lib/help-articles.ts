@@ -109,6 +109,7 @@ export const HELP_ARTICLES = {
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/build/sankey-diagram',
   sequenceDiagram: 'palette/sequence-diagrams',
+  conceptGraphics: 'palette/concept-graphics',
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
@@ -404,6 +405,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sankeyDiagram: {
     title: 'Learn about Sankey diagrams',
     description: 'Writing flows, reading the bands, and styling nodes and labels.',
+  },
+  conceptGraphics: {
+    title: 'Learn about concept graphics',
+    description:
+      'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons, and editing their rows.',
   },
   sequenceDiagram: {
     title: 'Learn about sequence diagrams',

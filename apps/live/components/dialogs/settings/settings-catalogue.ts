@@ -1203,6 +1203,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a Sankey diagram.',
         helpArticle: 'sankeyDiagram',
       }),
+      elementTourSwitch('layer-stack', {
+        label: 'Layer Stack Tour',
+        event: { category: 'UI', on: 'LayerStackTourSeenOff', off: 'LayerStackTourSeenOn' },
+        keywords: 'tour walkthrough tutorial layer stack layers bands concept rows replay',
+        description: 'The first time you select a layer stack.',
+        helpArticle: 'conceptGraphics',
+      }),
     ],
   },
   {
