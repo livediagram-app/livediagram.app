@@ -69,8 +69,9 @@ ones among them), `apps/help/components/ArticleLayout.tsx` (reads `textContent`)
 
 ### The React Compiler's reach
 
-`reactCompiler: true` with `experimental.turbopackRustReactCompiler` comes from `@livediagram/next-config` for all
-five apps ([Next.js blueprint](../../016-platform/blueprints/nextjs.md)); `apps/live/next.config.ts` drops its own.
+`reactCompiler: true` with `experimental.turbopackRustReactCompiler` comes from `@livediagram/next-config` when an app
+passes `reactCompiler: true`, which only `apps/live/next.config.ts` does
+([Next.js blueprint](../../016-platform/blueprints/nextjs.md)).
 
 ## Interfaces and contracts
 

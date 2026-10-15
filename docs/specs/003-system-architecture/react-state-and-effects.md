@@ -58,9 +58,10 @@ recompute(t))`. `apps/live/commit-updater-flags.test.ts` fails a new one.
 
 ## The React Compiler
 
-Every Next.js app (live, marketing, help, community, telemetry) builds with the React Compiler, which memoises
-components and hooks at build time, so a re-render re-runs only what its inputs changed.
-The setting lives once, in `@livediagram/next-config`. The rules above are its precondition: it compiles code
+The editor (`apps/live`) builds with the React Compiler, which memoises components and hooks at build time, so a
+re-render re-runs only what its inputs changed. The four static sites (marketing, help, community, telemetry) do not:
+their pages rarely re-render, and the compiler's memoisation added 6 to 44 KiB of first-load JavaScript to them.
+The editor asks for it through `@livediagram/next-config` (`reactCompiler: true`). The rules above are its precondition: it compiles code
 that keeps them and leaves the rest as plain React.
 
 - **The native Rust port runs it**, inside Turbopack (`reactCompiler: true` with

@@ -34,20 +34,23 @@ export function isTurbopack(env = process.env) {
 
 /**
  * The settings every Next app shares (docs/specs/016-platform/nextjs.md "One configuration"); an app spreads this and
- * adds only what is its own. The React Compiler (Rust port) and the Turbopack flags come only under Turbopack: the
- * Rust port throws under webpack.
+ * adds only what is its own. The Turbopack flags come only under Turbopack. The React Compiler (Rust port, which
+ * throws under webpack) runs only for an app that asks for it (`reactCompiler`): the editor, whose surfaces re-render
+ * constantly; on mostly static pages it costs first-load JavaScript and buys little.
  *
- * @param {{ env?: NodeJS.ProcessEnv, exportInDev?: boolean, now?: Date }} [options]
+ * @param {{ env?: NodeJS.ProcessEnv, exportInDev?: boolean, reactCompiler?: boolean, now?: Date }} [options]
  * @returns {import('next').NextConfig}
  */
 export function livediagramNextConfig({
   env = process.env,
   exportInDev = true,
+  reactCompiler = false,
   now = new Date(),
 } = {}) {
   const exporting = exportInDev || env.NODE_ENV === 'production';
   const turbopack = isTurbopack(env);
-  console.log(`[next-config] turbopack=${turbopack} export=${exporting} compiler=${turbopack}`);
+  const compiler = turbopack && reactCompiler;
+  console.log(`[next-config] turbopack=${turbopack} export=${exporting} compiler=${compiler}`);
   return {
     ...(exporting ? { output: 'export' } : {}),
     // Dev builds into its own directory: `scripts/next-dev.mjs` sets NEXT_DISTDIR=.next-dev, so a `next build` running
@@ -61,12 +64,12 @@ export function livediagramNextConfig({
     env: { NEXT_PUBLIC_BUILD_YEAR: String(now.getFullYear()) },
     // The repository's agent files are written by hand: `next dev` must not generate an AGENTS.md.
     agentRules: false,
-    ...(turbopack ? { reactCompiler: true } : {}),
+    ...(compiler ? { reactCompiler: true } : {}),
     experimental: {
       agentUpgrade: 'latest',
+      ...(compiler ? { turbopackRustReactCompiler: true } : {}),
       ...(turbopack
         ? {
-            turbopackRustReactCompiler: true,
             turbopackGc: true,
             turbopackLazyDynamicImports: true,
           }

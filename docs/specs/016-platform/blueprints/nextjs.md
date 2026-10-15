@@ -22,10 +22,12 @@ Derived from [Next.js](../nextjs.md).
 export function livediagramNextConfig({
   env = process.env,
   exportInDev = true,
+  reactCompiler = false,
   now = new Date(),
 } = {}) {
   const exporting = exportInDev || env.NODE_ENV === 'production';
   const turbopack = isTurbopack(env);
+  const compiler = turbopack && reactCompiler;
   return {
     ...(exporting ? { output: 'export' } : {}),
     distDir: env.NEXT_DISTDIR ?? '.next',
@@ -33,12 +35,12 @@ export function livediagramNextConfig({
     images: { unoptimized: true },
     env: { NEXT_PUBLIC_BUILD_YEAR: String(now.getFullYear()) },
     agentRules: false,
-    ...(turbopack ? { reactCompiler: true } : {}),
+    ...(compiler ? { reactCompiler: true } : {}),
     experimental: {
       agentUpgrade: 'latest',
+      ...(compiler ? { turbopackRustReactCompiler: true } : {}),
       ...(turbopack
         ? {
-            turbopackRustReactCompiler: true,
             turbopackGc: true,
             turbopackLazyDynamicImports: true,
           }
@@ -51,7 +53,7 @@ export function livediagramNextConfig({
 - It logs one line when it builds: `[next-config] turbopack=<bool> export=<bool> compiler=<bool>`, so a build log shows
   what ran.
 - **App configs**: `marketing`, `help`, `community`, `telemetry` spread `livediagramNextConfig()`; `live` spreads
-  `livediagramNextConfig({ exportInDev: false })`. Each adds only `basePath`, `assetPrefix`, `trailingSlash`,
+  `livediagramNextConfig({ exportInDev: false, reactCompiler: true })`. Each adds only `basePath`, `assetPrefix`, `trailingSlash`,
   `pageExtensions`, `transpilePackages` and (help) the MDX wrapper.
 - `experimental.reactBrowserBailout` (Next's client-rendering bailouts through `browser()`) is on by default in 16.4.1, so
   it is not set.
@@ -75,6 +77,7 @@ export function isTurbopack(env?: NodeJS.ProcessEnv): boolean;
 export function livediagramNextConfig(options?: {
   env?: NodeJS.ProcessEnv;
   exportInDev?: boolean;
+  reactCompiler?: boolean;
   now?: Date;
 }): import('next').NextConfig;
 ```
@@ -96,8 +99,8 @@ Measured before and after, in the PR: each app's build time, first-load JavaScri
 
 ## Web Experience
 
-First-load JavaScript per page no larger than before; the four static apps gain the React Compiler with no
-change to their HTML.
+First-load JavaScript per page no larger than before: the React Compiler stays out of the four static apps, where it
+added 6 to 44 KiB.
 
 ## Observability
 
@@ -105,15 +108,16 @@ change to their HTML.
 
 ## Testing
 
-| Rule                                         | Test                                                                         |
-| -------------------------------------------- | ---------------------------------------------------------------------------- |
-| Export always, except the editor's dev       | `packages/next-config/index.test.js`                                         |
-| Compiler and Turbopack flags under Turbopack | `packages/next-config/index.test.js`                                         |
-| None of them under webpack                   | `packages/next-config/index.test.js`                                         |
-| Build year from `now`                        | `packages/next-config/index.test.js`                                         |
-| `agentRules` off, `agentUpgrade` latest      | `packages/next-config/index.test.js`                                         |
-| Every app uses the shared config             | `packages/next-config/apps-use-shared.test.js` (reads each `next.config.ts`) |
-| Peer ranges match the React line             | `packages/next-config/apps-use-shared.test.js`                               |
+| Rule                                      | Test                                                                         |
+| ----------------------------------------- | ---------------------------------------------------------------------------- |
+| Export always, except the editor's dev    | `packages/next-config/index.test.js`                                         |
+| Compiler only when asked, under Turbopack | `packages/next-config/index.test.js`                                         |
+| Only the editor asks for the compiler     | `packages/next-config/apps-use-shared.test.js`                               |
+| None of them under webpack                | `packages/next-config/index.test.js`                                         |
+| Build year from `now`                     | `packages/next-config/index.test.js`                                         |
+| `agentRules` off, `agentUpgrade` latest   | `packages/next-config/index.test.js`                                         |
+| Every app uses the shared config          | `packages/next-config/apps-use-shared.test.js` (reads each `next.config.ts`) |
+| Peer ranges match the React line          | `packages/next-config/apps-use-shared.test.js`                               |
 
 ## Constants and configuration
 

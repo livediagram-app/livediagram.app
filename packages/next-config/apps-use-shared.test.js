@@ -33,6 +33,12 @@ describe.each(APPS)('apps/%s/next.config.ts', (app) => {
   });
 });
 
+// The React Compiler runs in the editor alone (docs/specs/016-platform/nextjs.md "One configuration").
+it.each(APPS)('apps/%s asks for the React Compiler only if it is the editor', (app) => {
+  const source = read(`apps/${app}/next.config.ts`);
+  expect(/reactCompiler: true/.test(source)).toBe(app === 'live');
+});
+
 describe('shared packages', () => {
   it.each(['packages/ui', 'packages/template-previews'])('%s peers on React 19.3', (pkg) => {
     const peers = JSON.parse(read(`${pkg}/package.json`)).peerDependencies;

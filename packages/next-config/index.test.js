@@ -78,9 +78,9 @@ describe('livediagramNextConfig', () => {
     expect(config.experimental?.agentUpgrade).toBe('latest');
   });
 
-  it('runs the Rust React Compiler and the Turbopack flags under Turbopack', () => {
+  it('runs the Rust React Compiler for an app that asks for it, under Turbopack', () => {
     quiet();
-    const config = livediagramNextConfig({ env: { TURBOPACK: '1' }, now });
+    const config = livediagramNextConfig({ env: { TURBOPACK: '1' }, reactCompiler: true, now });
     expect(config.reactCompiler).toBe(true);
     expect(config.experimental).toEqual({
       agentUpgrade: 'latest',
@@ -90,16 +90,31 @@ describe('livediagramNextConfig', () => {
     });
   });
 
+  // docs/specs/016-platform/nextjs.md: the compiler costs first-load JavaScript on pages that rarely re-render, so only
+  // the editor runs it.
+  it('leaves the compiler off by default, keeping the Turbopack flags', () => {
+    quiet();
+    const config = livediagramNextConfig({ env: { TURBOPACK: '1' }, now });
+    expect(config.reactCompiler).toBeUndefined();
+    expect(config.experimental).toEqual({
+      agentUpgrade: 'latest',
+      turbopackGc: true,
+      turbopackLazyDynamicImports: true,
+    });
+  });
+
   it('leaves the compiler and every Turbopack flag off under webpack', () => {
     quiet();
-    const config = livediagramNextConfig({ env: {}, now });
+    const config = livediagramNextConfig({ env: {}, reactCompiler: true, now });
     expect(config.reactCompiler).toBeUndefined();
     expect(config.experimental).toEqual({ agentUpgrade: 'latest' });
   });
 
   it('logs what the build runs with', () => {
     const log = quiet();
-    livediagramNextConfig({ env: { TURBOPACK: '1' }, now });
+    livediagramNextConfig({ env: { TURBOPACK: '1' }, reactCompiler: true, now });
     expect(log).toHaveBeenCalledWith('[next-config] turbopack=true export=true compiler=true');
+    livediagramNextConfig({ env: { TURBOPACK: '1' }, now });
+    expect(log).toHaveBeenCalledWith('[next-config] turbopack=true export=true compiler=false');
   });
 });

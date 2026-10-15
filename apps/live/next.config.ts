@@ -6,7 +6,8 @@ import { livediagramNextConfig } from '@livediagram/next-config';
 // user-minted ids without enumerating them in `generateStaticParams`; production ships a single placeholder file
 // backed by the live worker's path rewrite (docs/specs/007-editor/new-document-route.md).
 const nextConfig: NextConfig = {
-  ...livediagramNextConfig({ exportInDev: false }),
+  // The React Compiler runs here alone: the editor re-renders constantly (docs/specs/016-platform/nextjs.md).
+  ...livediagramNextConfig({ exportInDev: false, reactCompiler: true }),
   // Pages serve at clean root paths (/document, /explorer, /new, ...);
   // the router selects the live app by route (docs/specs/016-platform/router-app.md), so there's no
   // `/live` basePath in the URL any more. Only the bundled `_next`

@@ -11,5 +11,7 @@ export declare function isTurbopack(env?: NodeJS.ProcessEnv): boolean;
 export declare function livediagramNextConfig(options?: {
   env?: NodeJS.ProcessEnv;
   exportInDev?: boolean;
+  /** Run the React Compiler (Rust port, under Turbopack only). The editor alone sets it. */
+  reactCompiler?: boolean;
   now?: Date;
 }): import('next').NextConfig;
