@@ -42,6 +42,7 @@ import { SplitViewFrame } from '@/components/split/SplitViewFrame';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
+import { StartViewTransition } from '@/components/start/StartViewTransition';
 import { showsEmptyCanvasCard } from '@/components/canvas/empty-canvas-card';
 import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
@@ -761,76 +762,79 @@ export function EditorView() {
                                     renameTab={renameTab}
                                   />
                                 ) : null}
-                                {showPlanBoardPicker ? (
-                                  <PlanBoardPicker
-                                    // Each choice makes the tab its kind (docs/specs/026-plan/plan-tabs.md).
-                                    onPick={(preset) => {
-                                      const c = ctx.getViewportCenter();
-                                      ctx.planTabs.startElementTab('board', () =>
-                                        ctx.dropPaletteItem('plan-board', c.x, c.y, {
-                                          choice: preset,
-                                        }),
-                                      );
-                                    }}
-                                    onPickSheet={(start) => {
-                                      const c = ctx.getViewportCenter();
-                                      ctx.planTabs.startElementTab('sheet', () =>
-                                        ctx.dropPaletteItem(
-                                          'plan-sheet',
-                                          c.x,
-                                          c.y,
-                                          // Empty Sheet: a blank grid, with no Setup Sheet (plan-tabs.md "Names").
-                                          { choice: start ?? BLANK_SHEET_CHOICE },
-                                        ),
-                                      );
-                                    }}
-                                    onDashboard={ctx.planTabs.startDashboard}
-                                    // Something Else: the Quick Start, on Everything.
-                                    onQuickStart={openTemplatePicker}
-                                    onTemplate={(kind) => {
-                                      void ctx.chooseTemplate(kind);
-                                      moveOnTemplatePick(kind);
-                                    }}
-                                    tabs={tabs}
-                                    loadTabs={loadAllTabs}
-                                    onSuggestedDashboard={ctx.planTabs.startSuggestedDashboard}
-                                    onVisualisation={ctx.planTabs.startVisualisationTab}
-                                  />
-                                ) : null}
-                                {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a calm card in the
-          middle of an empty canvas, so a blank document reads as intentionally blank. */}
-                                {/* An editor's empty Diagram, Facilitate or Illustrate tab offers its template start, in
-          the card's place (docs/specs/007-editor/start-diagramming.md). */}
-                                {templateStart ? (
-                                  <>
-                                    <StartFromTemplates
-                                      key={`${activeTab.id}:${templateStart}`}
-                                      mode={templateStart}
-                                      tabId={activeTab.id}
+                                {/* One View Transition around every start, so a mode change turns the panel in place. */}
+                                <StartViewTransition>
+                                  {showPlanBoardPicker ? (
+                                    <PlanBoardPicker
+                                      // Each choice makes the tab its kind (docs/specs/026-plan/plan-tabs.md).
+                                      onPick={(preset) => {
+                                        const c = ctx.getViewportCenter();
+                                        ctx.planTabs.startElementTab('board', () =>
+                                          ctx.dropPaletteItem('plan-board', c.x, c.y, {
+                                            choice: preset,
+                                          }),
+                                        );
+                                      }}
+                                      onPickSheet={(start) => {
+                                        const c = ctx.getViewportCenter();
+                                        ctx.planTabs.startElementTab('sheet', () =>
+                                          ctx.dropPaletteItem(
+                                            'plan-sheet',
+                                            c.x,
+                                            c.y,
+                                            // Empty Sheet: a blank grid, with no Setup Sheet (plan-tabs.md "Names").
+                                            { choice: start ?? BLANK_SHEET_CHOICE },
+                                          ),
+                                        );
+                                      }}
+                                      onDashboard={ctx.planTabs.startDashboard}
+                                      // Something Else: the Quick Start, on Everything.
+                                      onQuickStart={openTemplatePicker}
                                       onTemplate={(kind) => {
                                         void ctx.chooseTemplate(kind);
                                         moveOnTemplatePick(kind);
                                       }}
-                                      onQuickStart={openTemplatePicker}
+                                      tabs={tabs}
+                                      loadTabs={loadAllTabs}
+                                      onSuggestedDashboard={ctx.planTabs.startSuggestedDashboard}
+                                      onVisualisation={ctx.planTabs.startVisualisationTab}
                                     />
-                                    {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
-                                    <StartAgainTray
-                                      key={`tray:${activeTab.id}:${templateStart}`}
-                                      mode={templateStart}
+                                  ) : null}
+                                  {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a calm card in the
+          middle of an empty canvas, so a blank document reads as intentionally blank. */}
+                                  {/* An editor's empty Diagram, Facilitate or Illustrate tab offers its template start, in
+          the card's place (docs/specs/007-editor/start-diagramming.md). */}
+                                  {templateStart ? (
+                                    <>
+                                      <StartFromTemplates
+                                        key={`${activeTab.id}:${templateStart}`}
+                                        mode={templateStart}
+                                        tabId={activeTab.id}
+                                        onTemplate={(kind) => {
+                                          void ctx.chooseTemplate(kind);
+                                          moveOnTemplatePick(kind);
+                                        }}
+                                        onQuickStart={openTemplatePicker}
+                                      />
+                                      {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
+                                      <StartAgainTray
+                                        key={`tray:${activeTab.id}:${templateStart}`}
+                                        mode={templateStart}
+                                        tabId={activeTab.id}
+                                        tabName={activeTab.name}
+                                      />
+                                    </>
+                                  ) : showEmptyCanvasBanner ? (
+                                    <EmptyCanvasBanner
+                                      key={activeTab.id}
                                       tabId={activeTab.id}
                                       tabName={activeTab.name}
+                                      readOnly={isReadOnly}
+                                      participant={ctx.can.addContent && isReadOnly}
+                                      onQuickStart={openTemplatePicker}
                                     />
-                                  </>
-                                ) : showEmptyCanvasBanner ? (
-                                  <EmptyCanvasBanner
-                                    key={activeTab.id}
-                                    tabId={activeTab.id}
-                                    tabName={activeTab.name}
-                                    readOnly={isReadOnly}
-                                    participant={ctx.can.addContent && isReadOnly}
-                                    onQuickStart={openTemplatePicker}
-                                  />
-                                ) : null}
+                                  ) : null}
+                                </StartViewTransition>
 
                                 {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): names what holding Shift does
           right now, and offers the Alt insert-between gesture while a note is

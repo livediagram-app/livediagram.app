@@ -132,7 +132,7 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 // The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "Choosing a mode"): choose one, Create
 // on the Location step, and land on the editor with the mode's start screen over the canvas
 // (docs/specs/007-editor/start-diagramming.md).
-async function createInMode(page: Page, mode: string): Promise<void> {
+export async function createInMode(page: Page, mode: string): Promise<void> {
   await page.goto('/new');
   await page.getByText('New Document', { exact: false }).waitFor();
   const card = page.locator(`[data-new-mode="${mode}"]`);

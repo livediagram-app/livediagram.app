@@ -120,7 +120,7 @@ async function openDeck(
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Selection mode' }).click();
   await page.getByText('Slide Deck', { exact: true }).first().click();
-  await page.getByRole('button', { name: /^Present(\s*\d+)?$/ }).click();
+  await page.getByRole('button', { name: /^Present \d+$/ }).click();
   await page.waitForTimeout(1500);
   await cdp?.send('Emulation.setCPUThrottlingRate', { rate: throttle });
   return { ctx, page, cdp: cdp! };

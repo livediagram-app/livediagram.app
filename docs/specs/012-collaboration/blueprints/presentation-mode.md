@@ -22,18 +22,20 @@ Transitions) and "Full screen" (refusals logged). The rest of presentation mode 
 1. `PresentationOverlay` calls `onGo(next)` (keys, clicks, the HUD's buttons, auto-advance, the jump list).
 2. `PresentationHost` resolves the target: for a step (`|next - at| === 1`) it is
    `clamp(asked ?? at, + step, 0 … runnable.length)`; a jump keeps `next`. It writes `asked`.
-3. `type = slideTransitionType(config.transition, asked ?? at, target)`. With no type, or `prefersReducedMotion()`,
-   it calls `setPresentingAt(target)` and stops.
-4. Otherwise `startTransition(() => { addTransitionType(type); setPresentingAt(target); })`.
+3. `type = slideTransitionType(config.transition, asked ?? at, target)`. With no type it calls
+   `setPresentingAt(target)` and stops.
+4. Otherwise `startTypedTransition(type, () => setPresentingAt(target))` (`apps/live/lib/view-transition.ts`), which
+   runs it plainly under `prefersReducedMotion()` and in a typed `startTransition` otherwise.
 5. The layout effect on `[at, shown]` clears `asked` once `at` equals it, records the direction for the HUD and sets
-   `data-slide-transition` and `--lvd-slide-ms` as before; it no longer snapshots, restarts or sends off anything.
+   `data-presenting`, `data-hide-pointer` and `--lvd-slide-ms`; `data-slide-transition` is no longer set, and nothing
+   is snapshotted, restarted or sent off.
 
 ### The entrance
 
 1. Presenting starts with `data-slide-move="pending"` (the surface held at `opacity: 0`).
 2. `whenScreenSettles` waits as before. When it is ready, the host removes `pending` inside
-   `startTransition(() => { addTransitionType('slide-in'); setRevealed(true); })`, where `revealed` is state that
-   drives `data-slide-move` (`pending` until revealed). Under reduced motion it removes `pending` plainly.
+   `startTypedTransition('slide-in', () => setRevealed(true))`, where `revealed` is state that drives
+   `data-slide-move` (`pending` until revealed). Under reduced motion it removes `pending` plainly.
 3. The surface boundary's `update` for `slide-in` runs `lvd-slide-in` on the new picture; the old (empty) picture
    is not drawn.
 

@@ -78,7 +78,7 @@ instant, canvas included, and zero every cascade delay. The budget describes ful
 motion is stricter still.
 
 - **Animations** collapse to 0.01ms rather than 0, so `animationend` still fires for code that
-  waits on it (the presentation host).
+  waits on it (a split pane closing).
 - **Transitions** collapse to 0s, so none is created. Every element's `transition-property`
   defaults to `all`, so any non-zero duration on every element turns every style write into a
   transition. A position written and measured in the same frame then reads back its old value. The

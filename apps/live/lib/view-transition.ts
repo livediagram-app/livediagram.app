@@ -1,15 +1,17 @@
-import { flushSync } from 'react-dom';
+import { addTransitionType, startTransition } from 'react';
 import { prefersReducedMotion } from './motion-preference';
 
-// Runs a state change as a View Transition: the browser holds a picture of the page as it was and crossfades it into
-// the page the change draws, so a whole surface swapping (a start panel changing mode) reads as one turning rather than
-// a blink. The change is flushed inside the transition so the new state is what it captures. Where the browser has no
-// View Transitions, or motion is reduced, the change simply runs.
-export function withViewTransition(change: () => void): void {
-  const doc = typeof document === 'undefined' ? null : document;
-  if (!doc || typeof doc.startViewTransition !== 'function' || prefersReducedMotion()) {
+// A state change animated as a React View Transition (docs/specs/003-system-architecture/react-state-and-effects.md
+// "Animating a state change"): the change runs in a transition named by `type`, and the <ViewTransition> around
+// the surface that changes picks its animation by that type. Under reduced motion (the OS setting or the in-app
+// preference) the change runs plainly, so no View Transition starts and nothing is captured.
+export function startTypedTransition(type: string, change: () => void): void {
+  if (prefersReducedMotion()) {
     change();
     return;
   }
-  doc.startViewTransition(() => flushSync(change));
+  startTransition(() => {
+    addTransitionType(type);
+    change();
+  });
 }
