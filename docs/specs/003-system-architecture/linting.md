@@ -26,9 +26,11 @@ is the whole of what the repo enforces.
 - **typescript-eslint's recommended rules**, as oxlint's native `typescript/*` rules (and `eslint/*`
   for `no-unused-vars`, `no-unused-expressions` and `no-array-constructor`, which oxlint runs on
   TypeScript). Unused variables and arguments are allowed only when named with a leading `_`.
-- **One known gap**: oxlint's `no-useless-assignment` does not report a value written to a function
-  parameter and overwritten before it is read, which ESLint's does
-  ([oxc-project/oxc#27720](https://github.com/oxc-project/oxc/issues/27720)).
+- **Known gap**: `no-useless-assignment` in the oxlint release the repo uses does not report a value
+  written to a function parameter and overwritten before it is read. oxc reports it from
+  [oxc-project/oxc#27735](https://github.com/oxc-project/oxc/pull/27735) on; the gap closes when the repo
+  takes the first oxlint release that contains it, and fixes what it finds
+  ([#721](https://github.com/livediagram-app/livediagram.app/issues/721)).
 - **By language**: the rules TypeScript's compiler already enforces (`no-undef`, `no-dupe-keys`,
   `constructor-super` and the rest) run on JavaScript files only; `no-var`, `prefer-const`,
   `prefer-rest-params` and `prefer-spread` run on TypeScript files only. JavaScript files know the
