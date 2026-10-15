@@ -14,6 +14,7 @@ import { onionTourSteps } from './onion-tour-steps';
 import { chevronsTourSteps } from './chevrons-tour-steps';
 import { mindNodeTourSteps } from './mind-node-tour-steps';
 import { flowchartTourSteps } from './flowchart-tour-steps';
+import { orgChartTourSteps } from './org-chart-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -145,6 +146,19 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
             e.shape === 'lane' &&
             e.flowchartId === (el as ShapeElement).flowchartId,
         ),
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+  },
+  'org-chart': {
+    token: 'OrgChartTour',
+    eyebrow: 'Org chart tour',
+    helpArticle: 'orgCharts',
+    helpLabel: 'Org Charts Help',
+    steps: (el, env) =>
+      orgChartTourSteps({
+        elementId: el.id,
+        hasReports: env.elements.some((e) => (e as ShapeElement).mindParentId === el.id),
         hasMore: env.hasMore,
         touch: env.touch,
       }),

@@ -20,6 +20,7 @@ export const ELEMENT_TOUR_KINDS = [
   'chevrons',
   'mind-node',
   'flowchart',
+  'org-chart',
 ] as const;
 
 export type ElementTourKind = (typeof ELEMENT_TOUR_KINDS)[number];
@@ -36,6 +37,7 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   chevrons: 'chevron process',
   'mind-node': 'mind map node',
   flowchart: 'flowchart step',
+  'org-chart': 'person in an org chart',
 };
 
 // The toured kind an element is, or null when its type has no tour.
@@ -50,6 +52,8 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el.shape === 'onion') return 'onion';
   if (el.shape === 'chevrons') return 'chevrons';
   if (el.shape === 'mind-node' && (el as ShapeElement).mindLook !== 'person') return 'mind-node';
+  if (el.shape === 'mind-node' && (el as ShapeElement).mindLook === 'person') return 'org-chart';
+  // Last: a step guard that fails narrows the element to nothing for any check after it.
   if (isFlowchartStep(el)) return 'flowchart';
   return null;
 }
@@ -77,6 +81,8 @@ export function canTourElement(
     case 'mind-node':
       return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
     case 'flowchart':
+      return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
+    case 'org-chart':
       return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
   }
 }

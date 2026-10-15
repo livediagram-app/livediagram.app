@@ -10,7 +10,8 @@ tour offers itself, but quietly: a small toolbar that waits beside the selection
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 [concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion and chevron process; the
-[mind node](../009-elements/mind-node.md); and the [flowchart](../009-elements/flowchart.md) step.
+[mind node](../009-elements/mind-node.md); the [flowchart](../009-elements/flowchart.md) step; and the
+[org chart](../009-elements/org-chart.md)'s person node.
 
 ## Domain language
 
@@ -254,6 +255,21 @@ re-lays the chart itself.
 6. **The Flowchart Menu** (only while More shows): rings More. Add Lane, Tidy Flowchart, Direction.
 7. **That Is a Flowchart**: the closing card, with **Flowcharts Help**.
 
+## The Org Chart tour
+
+On a selected person node (a mind node with the person look), from `org-chart-tour-steps.ts`. It points at the node,
+its parts (`data-tour-part="person-role"`, `"person-initials"`) and its toolbar; it never grows the chart itself.
+
+1. **A Person in the Chart**: rings the node: name, role and initials; double-click (double-tap) to change the name.
+2. **Their Role**: rings the role line; click (tap) to write it.
+3. **Initials, Made for You**: rings the disc; the first letters of the name's first two words, following the name.
+4. **Add a Report**: rings **Add Child** (Tab on a keyboard); a new person under this one, on the same trunk.
+5. **Add a Peer**: rings **Add Sibling** (Enter on a keyboard); a new person reporting to the same manager.
+6. **Move a Whole Team** (a person with reports; otherwise **Teams Move Together**): rings the node.
+7. **The Mind Map Menu** (only while More shows): rings More; an org chart is a mind map flowing down: Tidy Map,
+   Spacing, Edit Outline.
+8. **That Is an Org Chart**: the closing card, with **Org Charts Help**.
+
 ## Share roles
 
 | Role        | Element tours                                                                                  |
@@ -263,13 +279,13 @@ re-lays the chart itself.
 | Viewer      | Never offered                                                                                  |
 
 The gate is the toured kind's own edit check on the session's `can` (for a Sankey, `canEditSankey`; for a concept
-graphic, a mind node or a flowchart step, an Editor on an unlocked element, since its rows, its Mind Map menu and its
+graphic, a mind node (a person node included) or a flowchart step, an Editor on an unlocked element, since its rows, its Mind Map menu and its
 Step Type are an Editor's), never
 `isReadOnly` alone.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `MindMapTour`, `FlowchartTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -285,7 +301,9 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   `...Outro`; the Onion's `OnionTourStepRings`, `...Core`, `...Outer`, `...Add`, `...Rows`, `...Animate` and
   `...Outro`; the Chevrons' `ChevronsTourStepStages`, `...Edit`, `...Bar`, `...Notes`, `...Add`, `...Animate` and
   `...Outro`; the Mind Map's `MindMapTourStepNode`, `...Child`, `...Sibling`, `...Branch`, `...Menu` and `...Outro`;
-  the Flowchart's `FlowchartTourStepStep`, `...Next`, `...Branch`, `...Type`, `...Lane`, `...Menu` and `...Outro`.
+  the Flowchart's `FlowchartTourStepStep`, `...Next`, `...Branch`, `...Type`, `...Lane`, `...Menu` and `...Outro`;
+  the Org Chart's `OrgChartTourStepPerson`, `...Role`, `...Initials`, `...Report`, `...Peer`, `...Team`, `...Menu` and
+  `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.
@@ -314,8 +332,8 @@ help article's tour section; and a section here.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
   `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`, `chevrons-tour-steps.ts`: each kind's own.
-- `apps/live/components/tour/mind-node-tour-steps.ts`, `flowchart-tour-steps.ts`: the Mind Map and Flowchart tours'
-  steps.
+- `apps/live/components/tour/mind-node-tour-steps.ts`, `flowchart-tour-steps.ts`, `org-chart-tour-steps.ts`: the
+  Mind Map, Flowchart and Org Chart tours' steps.
 - `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
 - `apps/live/lib/concept-tour-preview.ts`: what a step shows on a concept graphic: an animation previewed, or a
   chevron stage's bar held open.

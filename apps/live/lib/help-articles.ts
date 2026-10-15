@@ -31,10 +31,12 @@ export const HELP_ARTICLES = {
   // a URL). Lanes and entities had keys here and no placement, so they were
   // removed; their articles are still in the help centre. The mind map's Edit
   // Outline dialog links its own sub-article from its header, and the mind
-  // map's and the flowchart's element tours (docs/specs/007-editor/element-tours.md) link their articles.
+  // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
+  // articles.
   embedElements: 'palette/embed-elements',
   mindMaps: 'palette/mind-maps',
   flowcharts: 'palette/flowcharts',
+  orgCharts: 'palette/org-charts',
   mindMapOutline: 'palette/mind-maps/edit-outline',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
@@ -348,6 +350,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   layers: {
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
+  },
+  orgCharts: {
+    title: 'Learn about org charts',
+    description: 'People and roles in a tree: reports, peers, and the downward flow.',
   },
   flowcharts: {
     title: 'Learn about flowcharts',

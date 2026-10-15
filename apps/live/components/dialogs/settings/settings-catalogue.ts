@@ -1272,6 +1272,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a flowchart step.',
         helpArticle: 'flowcharts',
       }),
+      elementTourSwitch('org-chart', {
+        label: 'Org Chart Tour',
+        event: { category: 'UI', on: 'OrgChartTourSeenOff', off: 'OrgChartTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial org chart organisation organization person role initials report peer team replay',
+        description: 'The first time you select a person in an org chart.',
+        helpArticle: 'orgCharts',
+      }),
     ],
   },
   {

@@ -11,6 +11,7 @@ export const ELEMENT_TOUR_KINDS = [
   { token: 'ChevronsTour', title: 'Chevrons' },
   { token: 'MindMapTour', title: 'Mind Map' },
   { token: 'FlowchartTour', title: 'Flowchart' },
+  { token: 'OrgChartTour', title: 'Org Chart' },
 ] as const;
 
 export const elementTourTokens = (suffix = ''): string[] =>

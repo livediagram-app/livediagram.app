@@ -131,3 +131,12 @@ describe('the Flowchart element tour kind', () => {
     expect(canTourElement({ level: 'participate' }, step, 'flowchart')).toBe(false);
   });
 });
+
+describe('the Org Chart element tour kind', () => {
+  it('tours a person node as the org chart, for an Editor only', () => {
+    const person = { ...createShape('mind-node', 0, 0), mindLook: 'person' } as Element;
+    expect(elementTourKindOf(person)).toBe('org-chart');
+    expect(canTourElement({ level: 'edit' }, person, 'org-chart')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, person, 'org-chart')).toBe(false);
+  });
+});

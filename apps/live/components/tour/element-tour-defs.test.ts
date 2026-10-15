@@ -23,6 +23,11 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   chevrons: createShape('chevrons', 0, 0) as Element,
   'mind-node': createShape('mind-node', 0, 0) as Element,
   flowchart: { ...createShape('square', 0, 0), flowchartId: 'f1' } as Element,
+  'org-chart': {
+    ...createShape('mind-node', 0, 0),
+    mindLook: 'person',
+    label: 'Ana Kim',
+  } as Element,
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {

@@ -167,6 +167,7 @@ describe('settings catalogue', () => {
       ['elementTour-chevrons', 'toggle', 'Chevrons Tour', 'conceptGraphics'],
       ['elementTour-mind-node', 'toggle', 'Mind Map Tour', 'mindMaps'],
       ['elementTour-flowchart', 'toggle', 'Flowchart Tour', 'flowcharts'],
+      ['elementTour-org-chart', 'toggle', 'Org Chart Tour', 'orgCharts'],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
@@ -195,6 +196,7 @@ describe('settings catalogue', () => {
         ['ChevronsTourSeenOff', 'ChevronsTourSeenOn'],
         ['MindMapTourSeenOff', 'MindMapTourSeenOn'],
         ['FlowchartTourSeenOff', 'FlowchartTourSeenOn'],
+        ['OrgChartTourSeenOff', 'OrgChartTourSeenOn'],
       ],
     );
   });
@@ -254,6 +256,7 @@ describe('settings catalogue', () => {
       'elementTour-chevrons': ['elementTourKinds'],
       'elementTour-mind-node': ['elementTourKinds'],
       'elementTour-flowchart': ['elementTourKinds'],
+      'elementTour-org-chart': ['elementTourKinds'],
     };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.
