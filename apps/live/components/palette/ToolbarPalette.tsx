@@ -54,6 +54,7 @@ import {
   useSheetCovering,
 } from '@/hooks/plan/plan-cover-store';
 import { BoardCardsStrip } from './BoardCardsStrip';
+import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
 // top centre of the canvas, the way Excalidraw's tool bar works. Selection
@@ -95,6 +96,10 @@ type Props = Pick<
     // modes, and no Search (it would offer every element type).
     participant?: boolean;
   };
+// The narrowest window (at design size) whose category bar shows its categories' names: Diagram's nine named
+// buttons, the selection mode and Search come to about 900px, clear of the Explorer card on both sides.
+const CATEGORY_BAR_LABELS_MIN_PX = 1180;
+
 // The strip's card, and the leading card beside it on a phone.
 const CARD_CLASS = `${TOOLBAR_CARD} ${BAND_TINT} ${PHONE_TOOLBAR_ITEMS}`;
 
@@ -150,6 +155,8 @@ export function ToolbarPalette(props: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const more = useStripPopover(rootRef, '[data-toolbar-more], [data-toolbar-more-button]');
   const search = useStripPopover(rootRef, TOOLBAR_SEARCH_SELECTOR);
+  // Diagram's category bar and its flyout (CategoryBar).
+  const bar = useCategoryBar(rootRef);
   const moreOpen = more.open;
   const setMoreOpen = more.setOpen;
   const { tabs, tileActions, canvasToolOptions, onCanvasToolChange, editorMode } =
@@ -159,6 +166,7 @@ export function ToolbarPalette(props: Props) {
       onTileUsed: () => {
         more.setOpen(false);
         search.setOpen(false);
+        bar.popover.setOpen(false);
       },
     });
   // The landing rule (palette-layouts, docs/specs/021-event-storming/event-storming.md): the
@@ -171,6 +179,10 @@ export function ToolbarPalette(props: Props) {
   // A Dashboard opens on its Popular (palette-layouts DASHBOARD) and offers no selection modes: its page covers the
   // canvas, so there is nothing for a mode to act on (docs/specs/026-plan/plan-tabs.md).
   const dashboardTab = usePlanTabKind() === 'dashboard';
+  // Diagram shows its categories on the strip, each opening a flyout of its tiles, rather than one category's tiles
+  // (docs/specs/007-editor/toolbar-layout.md "Diagram's category bar"). Not on an event-storming board, whose
+  // notation is the palette, nor for a Participant, whose palette is one category.
+  const categoryBar = editorMode === 'diagram' && !esBoard && !participant && !dashboardTab;
   const defaultId = participant
     ? 'participate'
     : dashboardTab
@@ -213,6 +225,8 @@ export function ToolbarPalette(props: Props) {
   // UI scale (docs/specs/007-editor/ui-scale.md): the strip zooms at its root,
   // so a scaled tile takes more of the window.
   const scale = useUiScale('toolbar');
+  // The category bar names its categories where the window has room for every name; glyphs alone otherwise.
+  const barLabels = !isMobile && viewportWidth / scale >= CATEGORY_BAR_LABELS_MIN_PX;
   // Measured from the strip itself (useStripTileLimit); the estimate only
   // covers the first paint.
   const cardRef = useRef<HTMLDivElement>(null);
@@ -319,6 +333,7 @@ export function ToolbarPalette(props: Props) {
     );
     if (!button || search.open) return;
     more.setOpen(false);
+    bar.popover.setOpen(false);
     beforeSearch();
     track('UI', 'Opened', 'ToolbarSearch');
     search.openFrom(button);
@@ -453,70 +468,86 @@ export function ToolbarPalette(props: Props) {
                           {swipe ? null : <Divider />}
                         </>
                       )}
-                      {/* The category picker sits between the selection mode and the
+                      {categoryBar ? (
+                        <CategoryBarButtons bar={bar} categories={tabs} labels={barLabels} />
+                      ) : (
+                        <>
+                          {/* The category picker sits between the selection mode and the
                     tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
                     Its width follows its label's text, which is fractional:
                     snapped, so the tiles after it stay on whole pixels. */}
-                      <SnapWidth>
-                        <PaletteDropdown
-                          ariaLabel="Palette category"
-                          dataTourId="palette-category"
-                          value={category?.id ?? defaultId}
-                          variant="toolbar"
-                          // A phone shows the category's icon alone, so the
-                          // strip has room for more tiles.
-                          iconOnly={isMobile}
-                          autoHeight
-                          grid
-                          menuClassName=""
-                          groupLabels={CATEGORY_BANDS}
-                          onChange={switchCategory}
-                          options={tabs.map((tab) => ({
-                            id: tab.id,
-                            label: tab.label,
-                            icon: tab.icon,
-                            group: tab.group,
-                            fullWidth: tab.fullWidth,
-                          }))}
-                        />
-                      </SnapWidth>
+                          <SnapWidth>
+                            <PaletteDropdown
+                              ariaLabel="Palette category"
+                              dataTourId="palette-category"
+                              value={category?.id ?? defaultId}
+                              variant="toolbar"
+                              // A phone shows the category's icon alone, so the
+                              // strip has room for more tiles.
+                              iconOnly={isMobile}
+                              autoHeight
+                              grid
+                              menuClassName=""
+                              groupLabels={CATEGORY_BANDS}
+                              onChange={switchCategory}
+                              options={tabs.map((tab) => ({
+                                id: tab.id,
+                                label: tab.label,
+                                icon: tab.icon,
+                                group: tab.group,
+                                fullWidth: tab.fullWidth,
+                              }))}
+                            />
+                          </SnapWidth>
+                        </>
+                      )}
                       <Divider />
                     </>
                   )}
-                  <ToolbarStripRail
-                    scrollable={swipe}
-                    railKey={category?.id ?? defaultId}
-                    items={
-                      groups && category
-                        ? groupItems(category.id, groups, openers)
-                        : tileItems(tiles, dividersAfter, tileActions, pendingDraw ?? null, openers)
-                    }
-                    leavingItems={
-                      leavingId && leavingGroups
-                        ? groupItems(leavingId, leavingGroups)
-                        : leaving
-                          ? tileItems(leaving.tiles, leaving.dividersAfter, tileActions, null)
-                          : null
-                    }
-                  />
-                  {/* Outside the rail so it rides the rail's width change rather
+                  {categoryBar ? null : (
+                    <>
+                      <ToolbarStripRail
+                        scrollable={swipe}
+                        railKey={category?.id ?? defaultId}
+                        items={
+                          groups && category
+                            ? groupItems(category.id, groups, openers)
+                            : tileItems(
+                                tiles,
+                                dividersAfter,
+                                tileActions,
+                                pendingDraw ?? null,
+                                openers,
+                              )
+                        }
+                        leavingItems={
+                          leavingId && leavingGroups
+                            ? groupItems(leavingId, leavingGroups)
+                            : leaving
+                              ? tileItems(leaving.tiles, leaving.dividersAfter, tileActions, null)
+                              : null
+                        }
+                      />
+                      {/* Outside the rail so it rides the rail's width change rather
                 than popping out and back in with the tiles. Only there when
                 the category has more than the strip shows. On a phone only for My shapes (showMore). */}
-                  {showMore ? (
-                    <>
-                      <Divider />
-                      {moreShown ? (
-                        moreButton
-                      ) : (
-                        <HoverCard
-                          title={`More ${category?.label ?? ''}`.trim()}
-                          description={category?.description ?? 'Everything in this category.'}
-                        >
-                          {moreButton}
-                        </HoverCard>
-                      )}
+                      {showMore ? (
+                        <>
+                          <Divider />
+                          {moreShown ? (
+                            moreButton
+                          ) : (
+                            <HoverCard
+                              title={`More ${category?.label ?? ''}`.trim()}
+                              description={category?.description ?? 'Everything in this category.'}
+                            >
+                              {moreButton}
+                            </HoverCard>
+                          )}
+                        </>
+                      ) : null}
                     </>
-                  ) : null}
+                  )}
                   {/* Not on a phone: the strip has no room to spare, and the row's own + (after the
                     last page) adds one there. */}
                   {category?.id === 'plan-cards' && plan?.canEdit && !isMobile ? (
@@ -546,7 +577,17 @@ export function ToolbarPalette(props: Props) {
               </CardWidth>
             )}
           </StripRow>
-          {moreOpen && category ? (
+          {categoryBar ? (
+            <CategoryBarFlyout
+              bar={bar}
+              categories={tabs}
+              actions={tileActions}
+              pendingDraw={pendingDraw ?? null}
+              isMobile={isMobile}
+              scale={scale}
+            />
+          ) : null}
+          {moreOpen && category && !categoryBar ? (
             // The category's full Palette body (usePaletteCatalogue), or what a group tile or an opener opened.
             <StripPopover
               right={more.right}
