@@ -91,10 +91,22 @@ export function trustedScriptOrigins(env: {
  * The inline script first in every layout's <head>: the `default` policy (script URLs by `isAllowedScriptUrl`, and
  * React DOM's empty `<script></script>` alone as HTML), and the log line for every Trusted Types violation.
  */
+// What the boot script may embed: a path prefix (`''`, `/live`, `/help`) and plain https origins. Anything else is a
+// caller's mistake, refused rather than written into a script.
+const ASSET_PREFIX = /^(\/[A-Za-z0-9_-]+)*$/;
+const SCRIPT_ORIGIN = /^https:\/\/[A-Za-z0-9.-]+(:[0-9]+)?$/;
+// JSON for an inline script: no raw "<", so nothing in it can close the script element.
+const inlineJson = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
+
 export function trustedTypesBootScript(assetPrefix: string, origins: readonly string[]): string {
+  if (!ASSET_PREFIX.test(assetPrefix))
+    throw new Error(`[trusted-types] not an asset prefix: ${assetPrefix}`);
+  for (const origin of origins)
+    if (!SCRIPT_ORIGIN.test(origin))
+      throw new Error(`[trusted-types] not a script origin: ${origin}`);
   return (
     '(function(){' +
-    `var PREFIX=${JSON.stringify(assetPrefix)};var ORIGINS=${JSON.stringify(origins)};` +
+    `var PREFIX=${inlineJson(assetPrefix)};var ORIGINS=${inlineJson(origins)};` +
     `var allowed=${isAllowedScriptUrl.toString()};` +
     "if(window.trustedTypes&&window.trustedTypes.createPolicy){window.trustedTypes.createPolicy('default',{" +
     'createScriptURL:function(url,type,sink){if(allowed(String(url),location.origin,PREFIX,ORIGINS,sink))return String(url);' +

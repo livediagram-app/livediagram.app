@@ -185,6 +185,17 @@ describe('trustedTypesBootScript', () => {
     expect(error).toHaveBeenCalledWith('[trusted-types] html-refused <img src=x onerror=alert(1)>');
   });
 
+  // It is inlined into the page as script: what it embeds is checked first, and never carries a raw "<".
+  it('refuses a prefix or an origin that is not one, rather than embed it', () => {
+    expect(() => trustedTypesBootScript('/help</script><script>alert(1)//', [])).toThrow(
+      /asset prefix/,
+    );
+    expect(() => trustedTypesBootScript('help', [])).toThrow(/asset prefix/);
+    expect(() => trustedTypesBootScript('', ['https://a.example"];alert(1)//'])).toThrow(/origin/);
+    expect(() => trustedTypesBootScript('', ['javascript:alert(1)'])).toThrow(/origin/);
+    expect(() => trustedTypesBootScript('/live', ['https://clerk.example.com'])).not.toThrow();
+  });
+
   // It is inlined in a <script> element: a closing tag anywhere in it would end that element early.
   it('never closes the inline script element it is written into', () => {
     expect(trustedTypesBootScript('/live', ['https://clerk.example.com'])).not.toMatch(

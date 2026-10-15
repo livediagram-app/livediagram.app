@@ -105,14 +105,15 @@ export function trustedTypesBootScript(assetPrefix: string, origins: readonly st
 
 ## Errors and edge cases
 
-| Case                                         | Handling                                                             |
-| -------------------------------------------- | -------------------------------------------------------------------- |
-| A sink given a plain string by our code      | Blocked and logged; the sinks test fails it before it ships          |
-| A third-party script URL not allowed         | Blocked, `[trusted-types] script-url-refused`; fixed with that party |
-| Another app's build (`/live/_next/` on help) | Refused: each app allows its own prefix alone                        |
-| A browser without Trusted Types              | The header is ignored; the helpers pass strings                      |
-| A malformed publishable key                  | No Clerk origin; Clerk's script is refused and logged                |
-| Clerk's timer worker refused (older rule)    | Clerk falls back to page timers and warns; the blob rule prevents it |
+| Case                                         | Handling                                                                                     |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| A sink given a plain string by our code      | Blocked and logged; the sinks test fails it before it ships                                  |
+| A third-party script URL not allowed         | Blocked, `[trusted-types] script-url-refused`; fixed with that party                         |
+| Another app's build (`/live/_next/` on help) | Refused: each app allows its own prefix alone                                                |
+| A browser without Trusted Types              | The header is ignored; the helpers pass strings                                              |
+| A malformed publishable key                  | No Clerk origin; Clerk's script is refused and logged                                        |
+| A prefix or origin that is not one           | `trustedTypesBootScript` throws, so the build fails; what it embeds is JSON with `<` escaped |
+| Clerk's timer worker refused (older rule)    | Clerk falls back to page timers and warns; the blob rule prevents it                         |
 
 ## Security and trust
 
