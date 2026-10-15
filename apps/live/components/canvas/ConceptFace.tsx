@@ -87,9 +87,11 @@ export function ConceptFace({
   // An element tour previews an animation on the element it is on, played once and never stored
   // (docs/specs/007-editor/element-tours.md); otherwise the element's own.
   const preview = useConceptTourPreview(element.id);
-  const anim = preview?.anim ?? conceptAnimOf(element);
+  // A chart's Grow is never previewed on a concept graphic.
+  const previewAnim = preview?.anim === 'grow' ? undefined : preview?.anim;
+  const anim = previewAnim ?? conceptAnimOf(element);
   // A previewed Build plays once; a previewed loop (Pulse, Flow) keeps going while its step is up.
-  const repeats = preview?.anim ? preview.anim !== 'build' : conceptAnimRepeats(element);
+  const repeats = previewAnim ? previewAnim !== 'build' : conceptAnimRepeats(element);
   const animClass = !anim
     ? ''
     : anim === 'build'

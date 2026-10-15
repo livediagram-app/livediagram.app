@@ -78,3 +78,8 @@ over; clearing its text in place switches it off) and the three styles as tiles.
 
 The MCP server and the REST API take `boundary` with `boundaryStyle`, `pageSubtitle` and `iconId`. An agent drawing
 cloud architecture nests boundaries for edge, region, VPC and subnet.
+
+## Element tour
+
+The **Boundary tour** is offered beside the first boundary a person selects, as an Editor on an unlocked element, and walks through it on the element
+itself ([Element tours](../007-editor/element-tours.md) "The Boundary tour").

@@ -1,3 +1,4 @@
+import type { TourPreviewAnim } from '@/lib/concept-tour-preview';
 import type { SankeyTourFocus } from '@/lib/sankey-tour-focus';
 import type { SankeyFlowsTourApi } from './sankey-flows-tour-steps';
 
@@ -10,8 +11,11 @@ export type ElementTourApi = SankeyFlowsTourApi & {
   // A Sankey: open its Flows dialog, or close it as its Done does.
   openFlows: () => void;
   closeFlows: () => void;
-  // A concept graphic: play an animation on it once, never stored, or stop it.
-  previewConcept: (anim: 'build' | 'pulse' | 'flow') => void;
+  // A concept graphic or a chart: play an animation on it, never stored, or stop it.
+  previewConcept: (anim: TourPreviewAnim) => void;
+  // A line, area or scatter chart: open its Chart data dialog, or close it as its Done does.
+  openChartData: () => void;
+  closeChartData: () => void;
   // A sequence diagram: open its Sequence dialog, close it as its Done does, or bring a tab forward.
   openSequence: () => void;
   closeSequence: () => void;

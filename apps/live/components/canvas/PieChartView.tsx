@@ -17,7 +17,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { ChartValues } from '@/components/primitives/ChartValues';
-import { chartAnim, chartFrame } from '@/lib/chart';
+import { useChartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';
 import { ChartSurface } from '@/components/primitives/ChartSurface';
@@ -47,7 +47,7 @@ export function PieChartView({
   const { cx, cy, rad, wedges } = pie;
   const valuePx = chartValueFontPx(element.textSize);
 
-  const group = chartAnim(element, `${cx}px ${cy}px`);
+  const group = useChartAnim(element, `${cx}px ${cy}px`);
 
   return (
     <ChartSurface

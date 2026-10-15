@@ -62,3 +62,8 @@ A key takes the **Shape** set. It is reference, not story, so it offers no entra
 
 The MCP server and the REST API take `diagram-key` with `label` and `keyMeanings`; the rows are derived when the board
 next loads or changes.
+
+## Element tour
+
+The **Diagram Key tour** is offered beside the first diagram key a person selects, as an Editor on an unlocked element, and walks through it on the element
+itself ([Element tours](../007-editor/element-tours.md) "The Diagram Key tour").

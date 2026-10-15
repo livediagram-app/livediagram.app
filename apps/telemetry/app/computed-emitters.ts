@@ -236,7 +236,7 @@ const conceptTourSteps = (token: string, file: string): string[] =>
   [
     ...[
       ...read(`live/components/tour/${file}`).matchAll(
-        /(?:(?:onGraphic|addRowStep|inTheMenu|onCanvas|inDialog)\(\s*|\bid: )'([a-z-]+)'/g,
+        /(?:(?:onGraphic|addRowStep|inTheMenu|onCanvas|inDialog)\(\s*|menuStep\(\s*\w+,\s*|\bid: )'([a-z-]+)'/g,
       ),
     ].map((m) => m[1]!),
     'outro',
@@ -260,6 +260,14 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('FlowchartTour', 'flowchart-tour-steps.ts'),
   ...conceptTourSteps('OrgChartTour', 'org-chart-tour-steps.ts'),
   ...conceptTourSteps('SequenceTour', 'sequence-tour-steps.ts'),
+  ...conceptTourSteps('ChartTour', 'chart-tour-steps.ts'),
+  ...conceptTourSteps('StackTour', 'stack-tour-steps.ts'),
+  ...conceptTourSteps('EntityTour', 'entity-tour-steps.ts'),
+  ...conceptTourSteps('TabWindowTour', 'tab-window-tour-steps.ts'),
+  ...conceptTourSteps('LaneTour', 'lane-tour-steps.ts'),
+  ...conceptTourSteps('BoundaryTour', 'boundary-tour-steps.ts'),
+  ...conceptTourSteps('DiagramKeyTour', 'diagram-key-tour-steps.ts'),
+  ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
 
 export const DRAW_TOUR_STEP_SOURCE: string[] = [

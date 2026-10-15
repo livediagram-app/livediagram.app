@@ -71,3 +71,8 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 - Animating the trip (a fade or a step-through) instead of cutting to the far side.
 - Portals to another document entirely — that is what an element link already does.
 - Locked portals, one-time portals, portals that need a key: fun, and firmly out of scope for a diagram tool.
+
+## Element tour
+
+The **Portal tour** is offered beside the first portal a person selects, as an Editor on an unlocked element, and walks through it on the element
+itself ([Element tours](../007-editor/element-tours.md) "The Portal tour").

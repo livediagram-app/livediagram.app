@@ -17,7 +17,7 @@ import {
 } from '@livediagram/document';
 import { ChartValues } from '@/components/primitives/ChartValues';
 import { BarChartAxis } from './ChartAxis';
-import { chartAnim, chartFrame } from '@/lib/chart';
+import { useChartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';
 import { ChartSurface } from '@/components/primitives/ChartSurface';
@@ -43,7 +43,7 @@ export function BarChartView({
   const marks = barMarks(area, data, horizontal, 0, 0, element.chartAxis === true);
   const { baseline, bars, origin } = marks;
   const valuePx = chartValueFontPx(element.textSize);
-  const group = chartAnim(element, `${origin.x}px ${origin.y}px`);
+  const group = useChartAnim(element, `${origin.x}px ${origin.y}px`);
 
   return (
     <ChartSurface

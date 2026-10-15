@@ -71,3 +71,8 @@ A new stack is a row, 360 × 160, empty, drawn as a faint dashed outline so it r
 The MCP server and the REST API take `stack` with `stackDirection`, `stackColumns`, `stackGap`, `stackPadding` and
 `stackAlign`. An agent places children anywhere inside it; the editor lays them out when the board next loads or
 changes.
+
+## Element tour
+
+The **Stack tour** is offered beside the first stack a person selects, as an Editor on an unlocked element, and walks through it on the element
+itself ([Element tours](../007-editor/element-tours.md) "The Stack tour").
