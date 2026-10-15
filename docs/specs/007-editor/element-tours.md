@@ -9,7 +9,9 @@ with a centred card) and [Show Me](show-me.md) (never offered, started from a bu
 tour offers itself, but quietly: a small toolbar that waits beside the selection, never a card over the canvas.
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
-[concept graphics](../009-elements/concept-graphics.md) layer stack and pyramid.
+[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion and chevron process; the
+[mind node](../009-elements/mind-node.md); the [flowchart](../009-elements/flowchart.md) step; the
+[org chart](../009-elements/org-chart.md)'s person node; and the [sequence diagram](../009-elements/sequence-diagram.md).
 
 ## Domain language
 
@@ -143,6 +145,153 @@ the variant: an Inverted pyramid's first tier is the widest, along the top, and 
    top down).
 7. **That Is a Pyramid** (Inverted: **That Is an Inverted Pyramid**): the closing card.
 
+## The Funnel tour
+
+On the selected Funnel (a Pyramid in its Funnel variant), from `funnel-tour-steps.ts`.
+
+1. **Narrowing Stage by Stage**: rings the funnel. Each band is a stage, the widest first, narrowing to a third of the
+   width, so the drop-off reads at a glance.
+2. **Type Over a Stage**: rings the first band's name.
+3. **A Number on Each Band** (only while a band has a value): rings the first value. Each band can carry its number
+   beside its name; cleared, the name takes the whole band.
+4. **Add a Stage**: the "+" ring open on **Add Tier**; a new band at the bottom, up to six.
+5. **Funnel, Pyramid or Inverted** (only while More shows): rings More. Shape switches between the three, keeping
+   every band.
+6. **From the Accent Down**: rings the last band; the widest takes the accent.
+7. **Pour It In**: plays Build on it as a preview, from the top down.
+8. **That Is a Funnel**: the closing card.
+
+## The Cycle tour
+
+On the selected Cycle, from `cycle-tour-steps.ts`.
+
+1. **A Loop, Clockwise**: rings the cycle, counting its steps. The first sits at twelve o'clock, the rest clockwise,
+   each arrow running to the next and the last back to the start.
+2. **Where It Starts**: rings the first step, solid in the accent; click (tap) a step's name to type over it.
+3. **Name the Loop**: rings the words in the middle (`data-tour-part="concept-centre"`, as on a Hub's hub);
+   double-click (double-tap) to edit them.
+4. **Add a Step**: the "+" ring open on **Add Step**; a new step at the end, up to eight, spaced evenly again.
+5. **Reorder in the Menu** (only while More shows): rings More; Rows renames, moves and removes steps, three at least.
+6. **Set It Turning**: plays **Flow**, the cycle's own loop, round its arrows as a preview while the step is up (a
+   previewed loop keeps going; a previewed Build plays once).
+7. **That Is a Cycle**: the closing card.
+
+## The Hub and Spoke tour
+
+On the selected Hub and spoke, from `hub-tour-steps.ts`.
+
+1. **One Thing in the Middle**: rings the hub (`data-tour-part="concept-centre"`); what everything touches.
+   Double-click (double-tap) to name it.
+2. **Round It, Clockwise**: rings the graphic, counting its satellites, evenly round the hub from twelve o'clock.
+3. **Type Over a Satellite**: rings the first satellite's name.
+4. **Add a Satellite**: the "+" ring open on **Add Satellite**; up to eight, spread evenly again.
+5. **Spokes or None** (only while More shows): rings More. Spokes turns the lines off, leaving the satellites
+   floating; Rows reorders them.
+6. **Light Them Up**: plays **Pulse** round the satellites as a preview while the step is up.
+7. **That Is a Hub and Spoke**: the closing card.
+
+## The Onion tour
+
+On the selected Onion, from `onion-tour-steps.ts`.
+
+1. **Nested, Not Overlapping**: rings the onion, counting its rings; each wraps everything inside it, and it is not a
+   Venn.
+2. **The Core**: rings the core's name, in the middle and solid in the accent; click (tap) to type over it.
+3. **Outward From There**: rings the outermost ring's name; each ring after the core sits further out, its name along
+   the top of its band.
+4. **Add a Ring**: the "+" ring open on **Add Ring**; a new ring round the outside, up to six.
+5. **Reorder in the Menu** (only while More shows): rings More; Rows from the core out, two at least.
+6. **Ripple Outward**: plays **Pulse** from the core outward as a preview while the step is up.
+7. **That Is an Onion**: the closing card.
+
+## The Chevrons tour
+
+On the selected Chevron process, from `chevrons-tour-steps.ts`. It has no menu step: a chevron process is edited on
+the canvas, not in a Rows section.
+
+1. **Stages, Left to Right**: rings the process, counting its stages, each pointing into the next.
+2. **Type Over a Stage**: rings the first stage's name.
+3. **Each Stage's Own Bar**: holds the middle stage's bar open (the first's on a two-stage process), as if the stage
+   were pointed at, and rings it: move left or right, delete, and Add Note while no stage has a note. On a touch
+   screen the words say every stage shows its bar (zoom in if the stages are small). A stage too small for its bar
+   (zoomed out, a narrow phone) draws none, so the step rings the stage instead of waiting for it. The bar closes
+   again on leaving the step.
+4. **A Note Under Each** (only while a stage has a note): rings the first note.
+5. **Add a Stage**: the "+" ring open on **Add Stage**; up to eight.
+6. **Run the Pipeline**: plays **Pulse** along the stages as a preview while the step is up.
+7. **That Is a Chevron Process**: the closing card.
+
+## The Mind Map tour
+
+On a selected mind node (not a person node: that is the org chart's), from `mind-node-tour-steps.ts`. It points at the
+node and its selection toolbar; it never grows the map itself.
+
+1. **A Node That Knows Its Parent**: rings the node; every node grown from it is joined to it, and the map keeps
+   itself tidy.
+2. **Grow a Child**: rings the toolbar's **Add Child**. With a keyboard: "Tab, or Add Child here", and typing names
+   the new node; on a touch screen, the button alone.
+3. **Add a Sibling**: rings **Add Sibling**. With a keyboard it names Enter and Shift+Enter (a new line while typing);
+   on a touch screen, the button alone.
+4. **Move a Whole Branch** (a node with nodes grown from it; otherwise **Branches Move as One**): rings the node;
+   dragging it carries its branch.
+5. **The Mind Map Menu** (only while More shows): rings More. Branching (the shape it grows in), Spacing, Tidy Map
+   and Edit Outline.
+6. **That Is a Mind Map**: the closing card, with **Mind Maps Help**.
+
+The steps' environment carries the tab's elements, so a step can read past its own element (here, whether the node has
+children).
+
+## The Flowchart tour
+
+On a selected flowchart step, from `flowchart-tour-steps.ts`. It points at the step and its toolbar; it never grows or
+re-lays the chart itself.
+
+1. **A Step in a Flowchart**: rings the step; every change lays the chart out again.
+2. **The Next Step**: rings the toolbar's **Add Step** ("Tab, or Add Step here" with a keyboard; the button alone on a
+   touch screen).
+3. **Add a Branch**: rings **Add Branch** (Enter with a keyboard): a step beside this one, from the same step.
+4. **Change Its Type**: rings **Step Type**; the type is the shape, the words are kept, the chart re-lays.
+5. **Its Lane** (only on a chart with swimlanes): rings **Lane**.
+6. **The Flowchart Menu** (only while More shows): rings More. Add Lane, Tidy Flowchart, Direction.
+7. **That Is a Flowchart**: the closing card, with **Flowcharts Help**.
+
+## The Org Chart tour
+
+On a selected person node (a mind node with the person look), from `org-chart-tour-steps.ts`. It points at the node,
+its parts (`data-tour-part="person-role"`, `"person-initials"`) and its toolbar; it never grows the chart itself.
+
+1. **A Person in the Chart**: rings the node: name, role and initials; double-click (double-tap) to change the name.
+2. **Their Role**: rings the role line; click (tap) to write it.
+3. **Initials, Made for You**: rings the disc; the first letters of the name's first two words, following the name.
+4. **Add a Report**: rings **Add Child** (Tab on a keyboard); a new person under this one, on the same trunk.
+5. **Add a Peer**: rings **Add Sibling** (Enter on a keyboard); a new person reporting to the same manager.
+6. **Move a Whole Team** (a person with reports; otherwise **Teams Move Together**): rings the node.
+7. **The Mind Map Menu** (only while More shows): rings More; an org chart is a mind map flowing down: Tidy Map,
+   Spacing, Edit Outline.
+8. **That Is an Org Chart**: the closing card, with **Org Charts Help**.
+
+## The Sequence tour
+
+On a selected sequence diagram, from `sequence-tour-steps.ts`. Like the Sankey tour it reads the diagram on the canvas,
+then opens its Sequence dialog and carries on inside it, every step ringing a real control (each anchor a
+`data-tour-id`: `sequence-participants`, `-messages`, `-kind` on the first message's kind, `-add-message`, `-text`,
+`-preview`, `-numbered`). Each dialog step opens the dialog (again, if it was closed) on the tab it is about; a canvas
+step puts it away. While it runs, Escape is the tour's and never closes the dialog.
+
+1. **Who Calls Whom**: rings the diagram; lifelines, a row per message, a bar while a call waits for its reply.
+2. **The Sequence Menu** (only while More shows): rings More. Edit Sequence, Numbered, and Play under Animation.
+3. **Write It as a List**: rings the diagram; double-click (double-tap) to write it. Next opens the dialog.
+4. **The Participants**: the strip; rename, actor, move, remove with its messages.
+5. **A Row a Message**: the messages. With a keyboard it names Enter (the next message, from whoever was called) and
+   Backspace (an empty one removed); on a touch screen, the move arrows.
+6. **Call, Async or Reply** (only with a message): the first message's kind button.
+7. **Add a Message**: the Add Message row, up to sixty.
+8. **Or Type It**: brings the Text tab forward and rings it; put back to the messages on leaving.
+9. **Live Preview**: the preview.
+10. **Number Them**: the Numbered switch.
+11. **That Is a Sequence Diagram**: the closing card, with **Sequence Diagrams Help**. **Done** closes the dialog with
+    the tour, storing what is being typed as the dialog's own Done does; Skip leaves it open.
+
 ## Share roles
 
 | Role        | Element tours                                                                                  |
@@ -152,11 +301,14 @@ the variant: an Inverted pyramid's first tier is the widest, along the top, and 
 | Viewer      | Never offered                                                                                  |
 
 The gate is the toured kind's own edit check on the session's `can` (for a Sankey, `canEditSankey`; for a concept
-graphic, an Editor on an unlocked element, since its rows are structure), never `isReadOnly` alone.
+graphic, a mind node (a person node included) or a flowchart step, an Editor on an unlocked element; for a sequence
+diagram, `canEditSequence`, since its rows, its Mind Map menu and its
+Step Type are an Editor's), never
+`isReadOnly` alone.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`, `SequenceTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -165,7 +317,17 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   `...Leftover`, `...Style`, `...Flows`, the dialog's `...FlowsNodes`, `...FlowsRows`, `...FlowsAdd`,
   `...FlowsBalance`, `...FlowsText`, `...FlowsImport`, `...FlowsPreview` and `...Outro`; the Layer Stack's
   `LayerStackTourStepLayers`, `...Edit`, `...Notes`, `...Add`, `...Rows`, `...Colours`, `...Animate` and `...Outro`;
-  the Pyramid's `PyramidTourStepTiers`, `...Edit`, `...Add`, `...Shape`, `...Colours`, `...Animate` and `...Outro`.
+  the Pyramid's `PyramidTourStepTiers`, `...Edit`, `...Add`, `...Shape`, `...Colours`, `...Animate` and `...Outro`;
+  the Funnel's `FunnelTourStepStages`, `...Edit`, `...Values`, `...Add`, `...Shape`, `...Colours`, `...Animate` and
+  `...Outro`; the Cycle's `CycleTourStepLoop`, `...First`, `...Centre`, `...Add`, `...Rows`, `...Animate` and
+  `...Outro`; the Hub's `HubTourStepHub`, `...Satellites`, `...Edit`, `...Add`, `...Spokes`, `...Animate` and
+  `...Outro`; the Onion's `OnionTourStepRings`, `...Core`, `...Outer`, `...Add`, `...Rows`, `...Animate` and
+  `...Outro`; the Chevrons' `ChevronsTourStepStages`, `...Edit`, `...Bar`, `...Notes`, `...Add`, `...Animate` and
+  `...Outro`; the Mind Map's `MindMapTourStepNode`, `...Child`, `...Sibling`, `...Branch`, `...Menu` and `...Outro`;
+  the Flowchart's `FlowchartTourStepStep`, `...Next`, `...Branch`, `...Type`, `...Lane`, `...Menu` and `...Outro`;
+  the Org Chart's `OrgChartTourStepPerson`, `...Role`, `...Initials`, `...Report`, `...Peer`, `...Team`, `...Menu` and
+  `...Outro`; the Sequence's `SequenceTourStepDiagram`, `...Menu`, `...Write`, `...Participants`, `...Messages`,
+  `...Kind`, `...Add`, `...Text`, `...Preview`, `...Numbered` and `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.
@@ -193,6 +355,11 @@ help article's tour section; and a section here.
 - `apps/live/components/tour/ElementTourOffer.tsx`: the offer toolbar.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
-  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`: each kind's own.
+  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`, `chevrons-tour-steps.ts`: each kind's own.
+- `apps/live/components/tour/mind-node-tour-steps.ts`, `flowchart-tour-steps.ts`, `org-chart-tour-steps.ts`,
+  `sequence-tour-steps.ts`: the Mind Map, Flowchart, Org Chart and Sequence tours' steps.
+- `apps/live/lib/dialog-handle.ts`: the slot an open dialog registers its tabs and close in, for a tour that runs inside
+  it (`sankey-flows-dialog-handle.ts`, `sequence-dialog-handle.ts`).
 - `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
-- `apps/live/lib/concept-tour-preview.ts`: the animation a step previews on a concept graphic.
+- `apps/live/lib/concept-tour-preview.ts`: what a step shows on a concept graphic: an animation previewed, or a
+  chevron stage's bar held open.

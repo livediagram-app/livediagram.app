@@ -2,10 +2,12 @@
 
 // The Sequence dialog (docs/specs/009-elements/sequence-diagram.md "The Sequence dialog").
 
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement } from '@livediagram/document';
 import { SequenceDialog, type SequenceRows } from './SequenceDialog';
+import { sequenceDialog } from '@/lib/sequence-dialog-handle';
+import { setActiveTour } from '@/lib/tour-active';
 
 afterEach(cleanup);
 
@@ -152,5 +154,46 @@ describe('SequenceDialog', () => {
     expect(screen.getByText('No messages yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^Add Message/ }));
     expect(stored()!.messages).toEqual([{ from: 'browser', to: 'api', label: '', kind: 'call' }]);
+  });
+});
+
+// The Sequence element tour runs steps inside this dialog (docs/specs/007-editor/element-tours.md "The Sequence tour").
+describe('SequenceDialog under the element tour', () => {
+  afterEach(() => setActiveTour('element', false));
+
+  it('marks what the tour points at', () => {
+    open();
+    for (const id of [
+      'sequence-participants',
+      'sequence-messages',
+      'sequence-kind',
+      'sequence-add-message',
+      'sequence-preview',
+      'sequence-numbered',
+    ])
+      expect(document.querySelector(`[data-tour-id="${id}"]`), id).not.toBeNull();
+    expect(document.querySelectorAll('[data-tour-id="sequence-kind"]')).toHaveLength(1);
+  });
+
+  it('lets the tour switch its tabs and close it as Done does, storing what is typed', () => {
+    const { onClose, onCommit } = open();
+    act(() => sequenceDialog.showText());
+    expect(document.querySelector('[data-tour-id="sequence-text"]')).not.toBeNull();
+    act(() => sequenceDialog.showMessages());
+    expect(document.querySelector('[data-tour-id="sequence-text"]')).toBeNull();
+    fireEvent.change(words(1), { target: { value: 'Checkout' } });
+    act(() => sequenceDialog.close());
+    expect(onClose).toHaveBeenCalled();
+    expect(onCommit).toHaveBeenCalled();
+    cleanup();
+    expect(() => sequenceDialog.close()).not.toThrow();
+  });
+
+  it('keeps Escape from closing it while the element tour runs', () => {
+    act(() => setActiveTour('element', true));
+    const { onClose } = open();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onClose).not.toHaveBeenCalled();
   });
 });

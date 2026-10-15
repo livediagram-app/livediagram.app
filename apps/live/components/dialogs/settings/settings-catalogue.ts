@@ -1217,6 +1217,77 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a pyramid.',
         helpArticle: 'conceptGraphics',
       }),
+      elementTourSwitch('funnel', {
+        label: 'Funnel Tour',
+        event: { category: 'UI', on: 'FunnelTourSeenOff', off: 'FunnelTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial funnel conversion stages bands values concept rows replay',
+        description: 'The first time you select a funnel.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('cycle', {
+        label: 'Cycle Tour',
+        event: { category: 'UI', on: 'CycleTourSeenOff', off: 'CycleTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial cycle loop ring flywheel pdca steps clockwise flow concept replay',
+        description: 'The first time you select a cycle.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('hub', {
+        label: 'Hub and Spoke Tour',
+        event: { category: 'UI', on: 'HubTourSeenOff', off: 'HubTourSeenOn' },
+        keywords: 'tour walkthrough tutorial hub spoke satellites ecosystem centre concept replay',
+        description: 'The first time you select a hub and spoke.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('onion', {
+        label: 'Onion Tour',
+        event: { category: 'UI', on: 'OnionTourSeenOff', off: 'OnionTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial onion rings concentric core layers architecture concept replay',
+        description: 'The first time you select an onion.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('chevrons', {
+        label: 'Chevrons Tour',
+        event: { category: 'UI', on: 'ChevronsTourSeenOff', off: 'ChevronsTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial chevrons chevron process stages pipeline value chain stage bar concept replay',
+        description: 'The first time you select a chevron process.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('mind-node', {
+        label: 'Mind Map Tour',
+        event: { category: 'UI', on: 'MindMapTourSeenOff', off: 'MindMapTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial mind map node tab enter child sibling branch tidy outline replay',
+        description: 'The first time you select a mind map node.',
+        helpArticle: 'mindMaps',
+      }),
+      elementTourSwitch('flowchart', {
+        label: 'Flowchart Tour',
+        event: { category: 'UI', on: 'FlowchartTourSeenOff', off: 'FlowchartTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial flowchart step tab enter branch decision step type lane swimlane direction replay',
+        description: 'The first time you select a flowchart step.',
+        helpArticle: 'flowcharts',
+      }),
+      elementTourSwitch('org-chart', {
+        label: 'Org Chart Tour',
+        event: { category: 'UI', on: 'OrgChartTourSeenOff', off: 'OrgChartTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial org chart organisation organization person role initials report peer team replay',
+        description: 'The first time you select a person in an org chart.',
+        helpArticle: 'orgCharts',
+      }),
+      elementTourSwitch('sequence', {
+        label: 'Sequence Tour',
+        event: { category: 'UI', on: 'SequenceTourSeenOff', off: 'SequenceTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial sequence diagram participants messages call reply async lifeline numbered uml replay',
+        description: 'The first time you select a sequence diagram.',
+        helpArticle: 'sequenceDiagram',
+      }),
     ],
   },
   {

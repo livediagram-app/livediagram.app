@@ -18,6 +18,7 @@ import {
 import { helpArticleHref } from '@/lib/help-articles';
 import { setConceptTourPreview } from '@/lib/concept-tour-preview';
 import { sankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
+import { sequenceDialog } from '@/lib/sequence-dialog-handle';
 import { setSankeyTourFocus } from '@/lib/sankey-tour-focus';
 import type { Selection } from '@/lib/selection-store';
 import { track } from '@/lib/telemetry';
@@ -65,9 +66,21 @@ export function ElementTourHost() {
     },
     // As the dialog's own Done: what is being typed is stored first.
     closeFlows: () => sankeyFlowsDialog.close(),
+    openSequence: () => {
+      const id = touringRef.current?.id;
+      if (id && ctx.sequenceOpenForId !== id) ctx.setSequenceOpenForId(id);
+    },
+    // As the dialog's own Done: what is being typed is stored first.
+    closeSequence: () => sequenceDialog.close(),
+    showSequenceTab: (tab) =>
+      tab === 'text' ? sequenceDialog.showText() : sequenceDialog.showMessages(),
     previewConcept: (anim) => {
       const id = touringRef.current?.id;
       if (id) setConceptTourPreview({ elementId: id, anim, run: Date.now() });
+    },
+    showStageBar: (index) => {
+      const id = touringRef.current?.id;
+      if (id) setConceptTourPreview({ elementId: id, bar: index, run: Date.now() });
     },
     clearPreview: () => setConceptTourPreview(null),
   };
@@ -114,6 +127,7 @@ export function ElementTourHost() {
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
   };
 
+  const activeTabRef = useLatest(ctx.activeTab);
   const play = (el: Element, k: ElementTourKind) => {
     const d = ELEMENT_TOUR_DEFS[k];
     answer(k);
@@ -123,6 +137,7 @@ export function ElementTourHost() {
       d.steps(el, {
         hasMore: document.getElementById('selection-more-actions') !== null,
         touch,
+        elements: activeTabRef.current.elements,
       }),
     );
     setTouring({ id: el.id, kind: k });
@@ -155,7 +170,6 @@ export function ElementTourHost() {
 
   // The offer, one object per element offered, so the toolbar re-renders only when it comes or goes.
   const offerId = offered ? element.id : null;
-  const activeTabRef = useLatest(ctx.activeTab);
   const offer = useMemo<ElementTourOffer | null>(
     () =>
       offerId && kind

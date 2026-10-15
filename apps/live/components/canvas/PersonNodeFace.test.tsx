@@ -55,3 +55,14 @@ describe('PersonNodeFace', () => {
     expect(screen.queryByRole('textbox', { name: 'Role' })).toBeNull();
   });
 });
+
+// Element tours (docs/specs/007-editor/element-tours.md "The Org Chart tour") point at the role line and the initials.
+describe('PersonNodeFace tour anchors', () => {
+  it('marks the role line and the initials disc', () => {
+    show(person());
+    expect(document.querySelector('[data-tour-part="person-role"]')?.textContent).toContain(
+      'Head of Engineering',
+    );
+    expect(document.querySelector('[data-tour-part="person-initials"]')?.textContent).toBe('AK');
+  });
+});

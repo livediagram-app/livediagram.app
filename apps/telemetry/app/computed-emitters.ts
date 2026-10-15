@@ -229,12 +229,13 @@ export const SANKEY_TOUR_STEP_SOURCE: string[] = [
   'outro',
 ].map((id) => `SankeyTourStep${pascal(id)}`);
 
-// A concept graphic's tour (docs/specs/007-editor/element-tours.md): its steps file's builders, then its closing card.
+// A concept graphic's tour (docs/specs/007-editor/element-tours.md): its steps file's builders and any step of its own
+// (`id: '…'`), then its closing card.
 const conceptTourSteps = (token: string, file: string): string[] =>
   [
     ...[
       ...read(`live/components/tour/${file}`).matchAll(
-        /(?:onGraphic|addRowStep|inTheMenu)\(\s*'([a-z-]+)'/g,
+        /(?:(?:onGraphic|addRowStep|inTheMenu|onCanvas|inDialog)\(\s*|\bid: )'([a-z-]+)'/g,
       ),
     ].map((m) => m[1]!),
     'outro',
@@ -249,6 +250,15 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...SANKEY_TOUR_STEP_SOURCE,
   ...conceptTourSteps('LayerStackTour', 'layer-stack-tour-steps.ts'),
   ...conceptTourSteps('PyramidTour', 'pyramid-tour-steps.ts'),
+  ...conceptTourSteps('FunnelTour', 'funnel-tour-steps.ts'),
+  ...conceptTourSteps('CycleTour', 'cycle-tour-steps.ts'),
+  ...conceptTourSteps('HubTour', 'hub-tour-steps.ts'),
+  ...conceptTourSteps('OnionTour', 'onion-tour-steps.ts'),
+  ...conceptTourSteps('ChevronsTour', 'chevrons-tour-steps.ts'),
+  ...conceptTourSteps('MindMapTour', 'mind-node-tour-steps.ts'),
+  ...conceptTourSteps('FlowchartTour', 'flowchart-tour-steps.ts'),
+  ...conceptTourSteps('OrgChartTour', 'org-chart-tour-steps.ts'),
+  ...conceptTourSteps('SequenceTour', 'sequence-tour-steps.ts'),
 ];
 
 export const DRAW_TOUR_STEP_SOURCE: string[] = [

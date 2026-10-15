@@ -87,8 +87,9 @@ export function ConceptFace({
   // An element tour previews an animation on the element it is on, played once and never stored
   // (docs/specs/007-editor/element-tours.md); otherwise the element's own.
   const preview = useConceptTourPreview(element.id);
-  const anim = preview ? preview.anim : conceptAnimOf(element);
-  const repeats = preview ? false : conceptAnimRepeats(element);
+  const anim = preview?.anim ?? conceptAnimOf(element);
+  // A previewed Build plays once; a previewed loop (Pulse, Flow) keeps going while its step is up.
+  const repeats = preview?.anim ? preview.anim !== 'build' : conceptAnimRepeats(element);
   const animClass = !anim
     ? ''
     : anim === 'build'
@@ -238,7 +239,7 @@ export function ConceptFace({
       <>
         <Row i={0} origin={l.centre}>
           {svg(<circle cx={l.centre.x} cy={l.centre.y} r={l.hubR} fill={accent} />)}
-          <LabelRegion rect={l.hubLabel}>
+          <LabelRegion rect={l.hubLabel} tourId="concept-centre">
             <div className="absolute inset-0" style={{ color: ramp[0]?.text ?? ink }}>
               {labelNode}
             </div>
@@ -327,6 +328,7 @@ export function ConceptFace({
         notes={hasNotes}
         invScale={1 / zoom}
         onSetRows={onSetRows}
+        tourBar={preview?.bar}
       >
         {stages}
       </ChevronStageControls>
@@ -380,13 +382,19 @@ export function ConceptFace({
             </Row>
           );
         })}
-        <LabelRegion rect={l.centreLabel}>{labelNode}</LabelRegion>
+        <LabelRegion rect={l.centreLabel} tourId="concept-centre">
+          {labelNode}
+        </LabelRegion>
       </>
     );
   }
   return (
     // A preview's run keys the layer, so pressing a step again replays it from the start.
-    <div key={preview?.run ?? 'own'} className={`absolute inset-0 ${animClass}`} style={vars}>
+    <div
+      key={preview?.anim ? preview.run : 'own'}
+      className={`absolute inset-0 ${animClass}`}
+      style={vars}
+    >
       {body}
     </div>
   );

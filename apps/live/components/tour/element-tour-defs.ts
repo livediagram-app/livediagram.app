@@ -7,6 +7,15 @@ import type { ElementTourKind } from '@/lib/element-tours';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { layerStackTourSteps } from './layer-stack-tour-steps';
 import { pyramidTourSteps } from './pyramid-tour-steps';
+import { funnelTourSteps } from './funnel-tour-steps';
+import { cycleTourSteps } from './cycle-tour-steps';
+import { hubTourSteps } from './hub-tour-steps';
+import { onionTourSteps } from './onion-tour-steps';
+import { chevronsTourSteps } from './chevrons-tour-steps';
+import { mindNodeTourSteps } from './mind-node-tour-steps';
+import { flowchartTourSteps } from './flowchart-tour-steps';
+import { orgChartTourSteps } from './org-chart-tour-steps';
+import { sequenceTourSteps } from './sequence-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -21,6 +30,8 @@ export type ElementTourEnv = {
   hasMore: boolean;
   // A touch screen: taps where a mouse clicks.
   touch: boolean;
+  // The tab's elements, for a tour that reads past its own element (a mind node's children).
+  elements: readonly Element[];
 };
 
 export type ElementTourDef = {
@@ -73,6 +84,99 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
         inverted: (el as ShapeElement).pyramidVariant === 'inverted',
         ...env,
       }),
+  },
+  funnel: {
+    token: 'FunnelTour',
+    eyebrow: 'Funnel tour',
+    helpArticle: 'conceptGraphics',
+    helpLabel: 'Concept Graphics Help',
+    steps: (el, env) => funnelTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
+  },
+  cycle: {
+    token: 'CycleTour',
+    eyebrow: 'Cycle tour',
+    helpArticle: 'conceptGraphics',
+    helpLabel: 'Concept Graphics Help',
+    steps: (el, env) => cycleTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
+  },
+  hub: {
+    token: 'HubTour',
+    eyebrow: 'Hub and spoke tour',
+    helpArticle: 'conceptGraphics',
+    helpLabel: 'Concept Graphics Help',
+    steps: (el, env) => hubTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
+  },
+  onion: {
+    token: 'OnionTour',
+    eyebrow: 'Onion tour',
+    helpArticle: 'conceptGraphics',
+    helpLabel: 'Concept Graphics Help',
+    steps: (el, env) => onionTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
+  },
+  chevrons: {
+    token: 'ChevronsTour',
+    eyebrow: 'Chevrons tour',
+    helpArticle: 'conceptGraphics',
+    helpLabel: 'Concept Graphics Help',
+    steps: (el, env) => chevronsTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
+  },
+  'mind-node': {
+    token: 'MindMapTour',
+    eyebrow: 'Mind map tour',
+    helpArticle: 'mindMaps',
+    helpLabel: 'Mind Maps Help',
+    steps: (el, env) =>
+      mindNodeTourSteps({
+        elementId: el.id,
+        hasChildren: env.elements.some((e) => (e as ShapeElement).mindParentId === el.id),
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+  },
+  flowchart: {
+    token: 'FlowchartTour',
+    eyebrow: 'Flowchart tour',
+    helpArticle: 'flowcharts',
+    helpLabel: 'Flowcharts Help',
+    steps: (el, env) =>
+      flowchartTourSteps({
+        elementId: el.id,
+        hasLanes: env.elements.some(
+          (e) =>
+            e.type === 'shape' &&
+            e.shape === 'lane' &&
+            e.flowchartId === (el as ShapeElement).flowchartId,
+        ),
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+  },
+  'org-chart': {
+    token: 'OrgChartTour',
+    eyebrow: 'Org chart tour',
+    helpArticle: 'orgCharts',
+    helpLabel: 'Org Charts Help',
+    steps: (el, env) =>
+      orgChartTourSteps({
+        elementId: el.id,
+        hasReports: env.elements.some((e) => (e as ShapeElement).mindParentId === el.id),
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+  },
+  sequence: {
+    token: 'SequenceTour',
+    eyebrow: 'Sequence tour',
+    helpArticle: 'sequenceDiagram',
+    helpLabel: 'Sequence Diagrams Help',
+    steps: (el, env) =>
+      sequenceTourSteps({
+        elementId: el.id,
+        hasMessages: ((el as ShapeElement).sequenceMessages ?? []).length > 0,
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+    onDone: (api) => api.closeSequence(),
   },
 };
 

@@ -187,6 +187,7 @@ export function ChevronStageControls({
   notes,
   invScale,
   onSetRows,
+  tourBar,
   children,
 }: {
   stages: ChevronLayout['stages'];
@@ -197,6 +198,8 @@ export function ChevronStageControls({
   notes: boolean;
   invScale: number;
   onSetRows: (rows: WebRows) => void;
+  // A stage whose bar an element tour step holds open (docs/specs/007-editor/element-tours.md "The Chevrons tour").
+  tourBar?: number;
   children: ReactNode;
 }) {
   const hover = useGraceHover<number>();
@@ -249,7 +252,7 @@ export function ChevronStageControls({
         {children}
       </div>
       {rows.map((_, i) =>
-        all || hover.hovered === i ? (
+        all || hover.hovered === i || tourBar === i ? (
           <ConceptRowBar
             key={i}
             rect={{ ...stages[i]!.label, y: boxOf(stages[i]!).y }}

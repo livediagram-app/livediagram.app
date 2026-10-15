@@ -8,7 +8,7 @@
 // preview redraws from the draft as you type; the diagram behind redraws when a change is stored, words on blur and
 // anything structural at once, one undo step each. A store that would change nothing is skipped.
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import {
   nextMessageAfter,
@@ -23,6 +23,9 @@ import {
 } from '@livediagram/document';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogTabs } from '@/components/dialogs/DialogTabs';
+import { useLatest } from '@/hooks/ui/useLatest';
+import { registerSequenceDialog } from '@/lib/sequence-dialog-handle';
+import { useActiveTour } from '@/lib/tour-active';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SequenceFace } from '@/components/canvas/SequenceFace';
 import { SequenceParticipantStrip } from '@/components/dialogs/SequenceParticipantStrip';
@@ -156,10 +159,26 @@ export function SequenceDialog({
     return { el, ratio: w && h ? `${w} / ${h}` : '16 / 10' };
   }, [element, participants, messages]);
 
+  // The Sequence element tour runs steps inside this dialog (docs/specs/007-editor/element-tours.md "The Sequence
+  // tour"): it switches the tabs and closes it at its end through this handle, and while it runs Escape is its own.
+  const switchTabRef = useLatest(switchTab);
+  const closeRef = useLatest(close);
+  useLayoutEffect(
+    () =>
+      registerSequenceDialog({
+        showMessages: () => switchTabRef.current('messages'),
+        showText: () => switchTabRef.current('text'),
+        close: () => closeRef.current(),
+      }),
+    [switchTabRef, closeRef],
+  );
+  const elementTourRunning = useActiveTour() === 'element';
+
   return (
     <Dialog
       open
       onClose={close}
+      closeOnEscape={!elementTourRunning}
       ariaLabel="Edit sequence diagram"
       size="3xl"
       phoneSheet
@@ -208,7 +227,12 @@ export function SequenceDialog({
               />
             </div>
           ) : (
-            <div id="sequence-panel-text" role="tabpanel" aria-labelledby="sequence-tab-text">
+            <div
+              id="sequence-panel-text"
+              role="tabpanel"
+              aria-labelledby="sequence-tab-text"
+              data-tour-id="sequence-text"
+            >
               <textarea
                 className="h-72 w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 font-mono text-[13px] leading-relaxed text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/30"
                 value={text}
@@ -245,7 +269,10 @@ export function SequenceDialog({
             </div>
           )}
         </div>
-        <figure className="order-1 shrink-0 md:sticky md:top-0 md:order-2 md:w-[280px] md:self-start">
+        <figure
+          data-tour-id="sequence-preview"
+          className="order-1 shrink-0 md:sticky md:top-0 md:order-2 md:w-[280px] md:self-start"
+        >
           <div
             // Short on a phone, so the rows are in view under it.
             className="relative mx-auto max-h-[360px] w-full max-w-[280px] overflow-hidden rounded-lg border border-slate-200 bg-white max-sm:max-h-40 dark:border-slate-700"
@@ -260,7 +287,10 @@ export function SequenceDialog({
       </div>
 
       <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-6 py-4 max-sm:px-4 dark:border-slate-800">
-        <label className="flex cursor-pointer items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-200">
+        <label
+          data-tour-id="sequence-numbered"
+          className="flex cursor-pointer items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-200"
+        >
           <ToggleSwitch
             checked={element.sequenceNumbered === true}
             onChange={() => onNumbered(element.sequenceNumbered !== true)}

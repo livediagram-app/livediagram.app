@@ -28,10 +28,15 @@ export const HELP_ARTICLES = {
   autoAttachArrows: 'palette/auto-attach-arrows',
   // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
   // surface that links its article (the link picker, when it is restricted to
-  // a URL). Mind maps, lanes and entities had keys here and no placement, so
-  // they were removed; their articles are still in the help centre. The mind
-  // map's Edit Outline dialog links its own sub-article from its header.
+  // a URL). Lanes and entities had keys here and no placement, so they were
+  // removed; their articles are still in the help centre. The mind map's Edit
+  // Outline dialog links its own sub-article from its header, and the mind
+  // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
+  // articles.
   embedElements: 'palette/embed-elements',
+  mindMaps: 'palette/mind-maps',
+  flowcharts: 'palette/flowcharts',
+  orgCharts: 'palette/org-charts',
   mindMapOutline: 'palette/mind-maps/edit-outline',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
@@ -345,6 +350,18 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   layers: {
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
+  },
+  orgCharts: {
+    title: 'Learn about org charts',
+    description: 'People and roles in a tree: reports, peers, and the downward flow.',
+  },
+  flowcharts: {
+    title: 'Learn about flowcharts',
+    description: 'Growing a chart a step at a time, step types, swimlanes and direction.',
+  },
+  mindMaps: {
+    title: 'Learn about mind maps',
+    description: 'Growing a map with Tab and Enter, its branching shapes, spacing and Tidy Map.',
   },
   mindMapOutline: {
     title: 'Learn about editing an outline',

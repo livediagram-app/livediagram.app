@@ -1,6 +1,7 @@
-import type { Element, ShapeElement } from '@livediagram/document';
+import { isFlowchartStep, type Element, type ShapeElement } from '@livediagram/document';
 import type { EditorCapabilities } from './editor-capabilities';
 import { canEditSankey } from './sankey-edit';
+import { canEditSequence } from './sequence-edit';
 import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
@@ -9,7 +10,20 @@ import type { UserPreferences } from './user-preferences';
 // `elementTourKinds` lists the kinds answered (Play or Cancel); `elementToursSeen` counts them all only for a power
 // user (tourTrackSeen), as the Illustrate tour's kinds do.
 
-export const ELEMENT_TOUR_KINDS = ['sankey', 'layer-stack', 'pyramid'] as const;
+export const ELEMENT_TOUR_KINDS = [
+  'sankey',
+  'layer-stack',
+  'pyramid',
+  'funnel',
+  'cycle',
+  'hub',
+  'onion',
+  'chevrons',
+  'mind-node',
+  'flowchart',
+  'org-chart',
+  'sequence',
+] as const;
 
 export type ElementTourKind = (typeof ELEMENT_TOUR_KINDS)[number];
 
@@ -18,6 +32,15 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   sankey: 'Sankey diagram',
   'layer-stack': 'layer stack',
   pyramid: 'pyramid',
+  funnel: 'funnel',
+  cycle: 'cycle',
+  hub: 'hub and spoke',
+  onion: 'onion',
+  chevrons: 'chevron process',
+  'mind-node': 'mind map node',
+  flowchart: 'flowchart step',
+  'org-chart': 'person in an org chart',
+  sequence: 'sequence diagram',
 };
 
 // The toured kind an element is, or null when its type has no tour.
@@ -26,6 +49,16 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el.shape === 'sankey') return 'sankey';
   if (el.shape === 'layer-stack') return 'layer-stack';
   if (el.shape === 'pyramid' && (el as ShapeElement).pyramidVariant !== 'funnel') return 'pyramid';
+  if (el.shape === 'pyramid' && (el as ShapeElement).pyramidVariant === 'funnel') return 'funnel';
+  if (el.shape === 'cycle') return 'cycle';
+  if (el.shape === 'hub') return 'hub';
+  if (el.shape === 'onion') return 'onion';
+  if (el.shape === 'chevrons') return 'chevrons';
+  if (el.shape === 'mind-node' && (el as ShapeElement).mindLook !== 'person') return 'mind-node';
+  if (el.shape === 'mind-node' && (el as ShapeElement).mindLook === 'person') return 'org-chart';
+  if (el.shape === 'sequence') return 'sequence';
+  // Last: a step guard that fails narrows the element to nothing for any check after it.
+  if (isFlowchartStep(el)) return 'flowchart';
   return null;
 }
 
@@ -42,8 +75,21 @@ export function canTourElement(
     // A concept graphic's rows are structure, an Editor's on an unlocked element
     // (docs/specs/009-elements/concept-graphics.md "Share roles").
     case 'layer-stack':
+    case 'chevrons':
+    case 'onion':
+    case 'hub':
+    case 'cycle':
+    case 'funnel':
     case 'pyramid':
       return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
+    case 'mind-node':
+      return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
+    case 'flowchart':
+      return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
+    case 'org-chart':
+      return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
+    case 'sequence':
+      return canEditSequence(can, el);
   }
 }
 

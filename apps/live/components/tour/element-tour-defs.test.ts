@@ -2,7 +2,12 @@
 // a definition, a token of its own, and steps that end on a closing card.
 
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import {
+  applyShapeVariant,
+  createShape,
+  type Element,
+  type ShapeElement,
+} from '@livediagram/document';
 import { ELEMENT_TOUR_KINDS } from '@/lib/element-tours';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
 import type { ElementTourApi } from './element-tour-api';
@@ -11,6 +16,19 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   sankey: createShape('sankey', 0, 0) as Element,
   'layer-stack': createShape('layer-stack', 0, 0) as Element,
   pyramid: createShape('pyramid', 0, 0) as Element,
+  funnel: applyShapeVariant(createShape('pyramid', 0, 0) as ShapeElement, 'funnel') as Element,
+  cycle: createShape('cycle', 0, 0) as Element,
+  hub: createShape('hub', 0, 0) as Element,
+  onion: createShape('onion', 0, 0) as Element,
+  chevrons: createShape('chevrons', 0, 0) as Element,
+  'mind-node': createShape('mind-node', 0, 0) as Element,
+  flowchart: { ...createShape('square', 0, 0), flowchartId: 'f1' } as Element,
+  'org-chart': {
+    ...createShape('mind-node', 0, 0),
+    mindLook: 'person',
+    label: 'Ana Kim',
+  } as Element,
+  sequence: createShape('sequence', 0, 0) as Element,
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {
@@ -24,12 +42,22 @@ describe('ELEMENT_TOUR_DEFS', () => {
   it.each(ELEMENT_TOUR_KINDS)(
     'gives the %s tour steps on its element, ending on a closing card',
     (kind) => {
-      const steps = ELEMENT_TOUR_DEFS[kind].steps(SAMPLE[kind], { hasMore: true, touch: false });
+      const steps = ELEMENT_TOUR_DEFS[kind].steps(SAMPLE[kind], {
+        hasMore: true,
+        touch: false,
+        elements: [SAMPLE[kind]],
+      });
       expect(steps.length).toBeGreaterThan(2);
       expect(steps.at(-1)?.card).toBe('outro');
       expect(steps.filter((s) => s.card === 'welcome')).toEqual([]);
     },
   );
+
+  it('puts away the Sequence dialog on Done', () => {
+    const api = { closeSequence: vi.fn() } as unknown as ElementTourApi;
+    ELEMENT_TOUR_DEFS.sequence.onDone?.(api);
+    expect(api.closeSequence).toHaveBeenCalled();
+  });
 
   it('puts away the Sankey Flows dialog on Done', () => {
     const api = { closeFlows: vi.fn() } as unknown as ElementTourApi;

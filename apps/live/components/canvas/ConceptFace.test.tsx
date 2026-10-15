@@ -151,4 +151,37 @@ describe('ConceptFace under an element tour', () => {
     act(() => setConceptTourPreview(null));
     expect(root().className).not.toContain('lvd-concept-build');
   });
+
+  it('marks the middle of a cycle and a hub for a step to point at', () => {
+    expect(
+      show(make('cycle')).container.querySelector('[data-tour-part="concept-centre"]')?.textContent,
+    ).toBe('centre words');
+    cleanup();
+    expect(
+      show(make('hub')).container.querySelector('[data-tour-part="concept-centre"]'),
+    ).not.toBeNull();
+  });
+
+  it('keeps a previewed loop going while its step is up', () => {
+    const el = { ...make('cycle'), id: 'loop' } as ShapeElement & { shape: ConceptShape };
+    const { container } = show(el);
+    act(() => setConceptTourPreview({ elementId: 'loop', anim: 'flow', run: 1 }));
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.className).toContain('lvd-concept-flow');
+    expect(root.style.getPropertyValue('--lvd-concept-iter')).toBe('');
+  });
+
+  it("holds a chevron stage's bar open for a tour step, without changing its animation", () => {
+    const el = { ...make('chevrons'), id: 'chev' } as ShapeElement & { shape: ConceptShape };
+    const { container } = show(el);
+    const bars = () => container.querySelectorAll('[data-concept-row-bar]');
+    const before = bars().length;
+    act(() => setConceptTourPreview({ elementId: 'chev', bar: 1, run: 1 }));
+    expect(container.querySelector('[data-concept-row-bar][aria-label="Stage 2"]')).not.toBeNull();
+    expect((container.firstElementChild as HTMLElement).className).not.toContain(
+      'lvd-concept-pulse',
+    );
+    act(() => setConceptTourPreview(null));
+    expect(bars().length).toBe(before);
+  });
 });
