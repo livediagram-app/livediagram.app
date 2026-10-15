@@ -1,6 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import type { EditorMode } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
@@ -14,7 +15,7 @@ import {
 } from './category-flyout-groups';
 import { CardList, InfoFooter, opensSide, TileGrid } from './category-flyout-items';
 
-// The category bar's flyout (docs/specs/007-editor/toolbar-layout.md "Diagram's category bar"): one category's
+// The category bar's flyout (docs/specs/007-editor/toolbar-layout.md "The category bar"): one category's
 // tiles under its name, in its named groups, as a grid of pictures (Shapes) or cards with a blurb (Build). A footer
 // says what the pointed-at tile does and its key. A tile with presets (Card, Badge) or an opener opens a side panel
 // beside the flyout (CategoryFlyoutSide), which the host draws, so this one stays open. A catalogue (Icons,
@@ -47,6 +48,7 @@ export function onFlyoutArrowKey(e: KeyboardEvent<HTMLElement>, body: HTMLElemen
 
 export function CategoryFlyout({
   category,
+  mode,
   actions,
   pendingDraw,
   focusFirst,
@@ -55,6 +57,8 @@ export function CategoryFlyout({
   onItemHover,
 }: {
   category: FlyoutCategory;
+  // The mode, for a line it words its own way.
+  mode?: EditorMode;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null;
   // Opened from the keyboard: the first tile takes focus, so the arrows carry on from there.
@@ -91,7 +95,7 @@ export function CategoryFlyout({
       <FlyoutHeader
         icon={category.icon}
         title={category.label}
-        tagline={flyoutTagline(category.id, category.description)}
+        tagline={flyoutTagline(category.id, category.description, mode)}
         count={tiles?.length}
       />
       {/* Keyed on the category, so a switch fades the new body in and replays the tiles' cascade. */}

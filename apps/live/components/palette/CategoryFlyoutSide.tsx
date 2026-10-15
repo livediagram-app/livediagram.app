@@ -8,7 +8,7 @@ import { visibleTiles, tileHandler, type PaletteTileActions } from './PaletteTil
 import { CardList, InfoFooter } from './category-flyout-items';
 import { FlyoutHeader, onFlyoutArrowKey } from './CategoryFlyout';
 
-// The category flyout's side panel (docs/specs/007-editor/toolbar-layout.md "Diagram's category bar"): what a tile
+// The category flyout's side panel (docs/specs/007-editor/toolbar-layout.md "The category bar"): what a tile
 // with presets (Card, Badge) or an opener holds, in a second popover beside the flyout, lined up with the tile that
 // opened it, so the flyout stays open behind it as a submenu's parent does. It opens on the side of the tile's own
 // column (sidePlacement); on a phone it lies over the flyout. Its presets place and drag as any tile.

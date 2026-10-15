@@ -55,6 +55,7 @@ import {
 } from '@/hooks/plan/plan-cover-store';
 import { BoardCardsStrip } from './BoardCardsStrip';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
+import { barFitsLabels, CATEGORY_BAR_MODES } from './category-flyout-groups';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
@@ -97,10 +98,6 @@ type Props = Pick<
     // modes, and no Search (it would offer every element type).
     participant?: boolean;
   };
-// The narrowest window (at design size) whose category bar shows its categories' names: Diagram's nine named
-// buttons, the selection mode and Search come to about 900px, clear of the Explorer card on both sides.
-const CATEGORY_BAR_LABELS_MIN_PX = 1180;
-
 // The strip's card, and the leading card beside it on a phone.
 const CARD_CLASS = `${TOOLBAR_CARD} ${BAND_TINT} ${PHONE_TOOLBAR_ITEMS}`;
 
@@ -156,7 +153,7 @@ export function ToolbarPalette(props: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const more = useStripPopover(rootRef, '[data-toolbar-more], [data-toolbar-more-button]');
   const search = useStripPopover(rootRef, TOOLBAR_SEARCH_SELECTOR);
-  // Diagram's category bar and its flyout (CategoryBar).
+  // The category bar and its flyout (CategoryBar).
   const bar = useCategoryBar(rootRef);
   // Icons, Stickers and Tech reopen on the group they were left on, for the page load (BrowseMemory).
   const browseMemory = useBrowseMemory();
@@ -183,9 +180,10 @@ export function ToolbarPalette(props: Props) {
   // canvas, so there is nothing for a mode to act on (docs/specs/026-plan/plan-tabs.md).
   const dashboardTab = usePlanTabKind() === 'dashboard';
   // Diagram shows its categories on the strip, each opening a flyout of its tiles, rather than one category's tiles
-  // (docs/specs/007-editor/toolbar-layout.md "Diagram's category bar"). Not on an event-storming board, whose
+  // (docs/specs/007-editor/toolbar-layout.md "The category bar"). Not on an event-storming board, whose
   // notation is the palette, nor for a Participant, whose palette is one category.
-  const categoryBar = editorMode === 'diagram' && !esBoard && !participant && !dashboardTab;
+  const categoryBar =
+    CATEGORY_BAR_MODES.has(editorMode) && !esBoard && !participant && !dashboardTab;
   const defaultId = participant
     ? 'participate'
     : dashboardTab
@@ -231,7 +229,12 @@ export function ToolbarPalette(props: Props) {
   // so a scaled tile takes more of the window.
   const scale = useUiScale('toolbar');
   // The category bar names its categories where the window has room for every name; glyphs alone otherwise.
-  const barLabels = !isMobile && viewportWidth / scale >= CATEGORY_BAR_LABELS_MIN_PX;
+  const barLabels =
+    !isMobile &&
+    barFitsLabels(
+      barCategories.map((c) => c.label),
+      viewportWidth / scale,
+    );
   // Measured from the strip itself (useStripTileLimit); the estimate only
   // covers the first paint.
   const cardRef = useRef<HTMLDivElement>(null);
@@ -401,7 +404,13 @@ export function ToolbarPalette(props: Props) {
         alignItems: 'var(--plan-strip-align, center)',
         paddingRight: 'var(--plan-strip-end, 0px)',
       }}
-      className={`pointer-events-none absolute inset-x-0 top-3 z-[var(--z-toolbar)] flex-col [&>*]:pointer-events-auto ${hidden ? 'hidden' : 'flex'}`}
+      // While one of its popovers is open (a category's flyout, More, Search) the strip rises to the popover layer,
+      // so what hangs from it sits over everything on the canvas, an element's toolbar and menus included.
+      className={`pointer-events-none absolute inset-x-0 top-3 ${
+        bar.popover.open || more.open || search.open
+          ? 'z-[var(--z-popover)]'
+          : 'z-[var(--z-toolbar)]'
+      } flex-col [&>*]:pointer-events-auto ${hidden ? 'hidden' : 'flex'}`}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -598,6 +607,7 @@ export function ToolbarPalette(props: Props) {
               <CategoryBarFlyout
                 bar={bar}
                 categories={barCategories}
+                mode={editorMode}
                 actions={tileActions}
                 pendingDraw={pendingDraw ?? null}
                 isMobile={isMobile}

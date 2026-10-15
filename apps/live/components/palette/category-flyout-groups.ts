@@ -1,8 +1,28 @@
 import type { PaletteTileDef } from './palette-tile-defs';
 
-// The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "Diagram's category bar"): which
-// categories show on the bar, how each one's tiles are laid out in its flyout, the short line under its name, and
+// The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar"): which modes show
+// the bar, whether it has room to name its categories, how each one's tiles are laid out in its flyout, the short line under its name, and
 // the names of its groups. Pure, so the rules are testable without rendering the strip.
+
+import type { EditorMode } from '@livediagram/document';
+
+/** The modes whose strip is a category bar: Diagram and Facilitate. Illustrate and Plan keep the category picker
+ *  and its tiles. */
+export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['diagram', 'facilitate']);
+
+// The bar's room for names, estimated from the names themselves (13px medium is about 7px a letter): a named
+// button is its glyph and padding plus its name, and the strip's own chrome (the selection mode, Search, dividers
+// and padding) and the Explorer card's clearance on both sides come off the window first. Without the room the bar
+// shows glyphs alone, named by the flyout they open.
+const LABEL_PX_PER_CHAR = 7;
+const NAMED_BUTTON_PX = 40;
+const BAR_CHROME_PX = 150;
+const MENU_CLEARANCE_PX = 2 * 116;
+
+export function barFitsLabels(labels: readonly string[], viewportPx: number): boolean {
+  const named = labels.reduce((sum, l) => sum + NAMED_BUTTON_PX + l.length * LABEL_PX_PER_CHAR, 0);
+  return named + BAR_CHROME_PX + MENU_CLEARANCE_PX <= viewportPx;
+}
 
 /** How a flyout lays its tiles out: a grid of pictures where the glyph IS the answer (a square explains a square),
  *  or cards with a one-line blurb where it is not (a Sankey's glyph does not explain a Sankey). The same rule as the
@@ -44,40 +64,58 @@ const TAGLINES: Readonly<Record<string, string>> = {
   icons: 'Single-colour glyphs for any idea.',
   technology: 'Cloud and infrastructure marks for architecture.',
   media: 'Pictures and people.',
+  stickers: 'Colour emoji to react, mark status and celebrate.',
+  data: 'Charts and meters that read at a glance.',
+  'collab-ask': 'Put a question to the room.',
+  'collab-tools': 'Run the session: timers, reveals and picks.',
+  'collab-record': 'Keep what happened: comments, actions, decisions.',
+  'collab-react': 'Celebrate on the canvas.',
+  'collab-mode': 'Buttons that switch how everyone points.',
+  'collab-navigate': 'Places to go, and things to sit at.',
 };
 
-export function flyoutTagline(categoryId: string, fallback: string): string {
-  return TAGLINES[categoryId] ?? fallback;
+// Where a mode fills a category differently enough that its default line would mislead.
+const MODE_TAGLINES: Readonly<Partial<Record<EditorMode, Readonly<Record<string, string>>>>> = {
+  facilitate: { write: 'Words, notes, tables and frames.' },
+};
+
+export function flyoutTagline(categoryId: string, fallback: string, mode?: EditorMode): string {
+  return (mode && MODE_TAGLINES[mode]?.[categoryId]) ?? TAGLINES[categoryId] ?? fallback;
 }
 
-// Each category's groups, named in order: a category splits into groups where a tile ends one (`dividerAfter`, the
-// strip's fixed dividers), so the names follow those splits. A category with one group shows no heading; a group
-// with no name here shows none either.
-const GROUP_NAMES: Readonly<Record<string, readonly string[]>> = {
-  shapes: ['Basics', 'Flowchart', 'More Shapes'],
-  write: ['Text', 'Notes and Comments'],
-  draw: ['Pens', 'Outlines', 'Connectors'],
-  build: ['Diagrams', 'Layout and Parts'],
+// A group's name, by the tile that starts it: a category splits into groups where a tile ends one (`dividerAfter`,
+// the strip's fixed dividers), and the same tile starts the same kind of group whichever mode's layout it is in.
+// A category shows its groups only when every one is named; otherwise it is one block, so a layout whose dividers
+// fall elsewhere (Facilitate's Write & Build) never shows half its groups headed and half bare.
+const GROUP_NAMES: Readonly<Record<string, string>> = {
+  'shapes:square': 'Basics',
+  'shapes:cylinder': 'Flowchart',
+  'shapes:cloud': 'More Shapes',
+  'tools:page': 'Text',
+  'tools:sticky': 'Notes and Comments',
+  'tools:pencil': 'Pens',
+  'tools:polygon': 'Outlines',
+  'tools:arrow': 'Connectors',
+  'tools:mind-node': 'Diagrams',
+  'tools:lane': 'Layout and Parts',
+  'data:pie': 'Charts',
+  'data:progress-bar': 'Meters',
 };
 
 export type FlyoutGroup = { id: string; title: string | null; tiles: PaletteTileDef[] };
 
-/** The category's tiles split into its named groups, in order. Empty groups are dropped. */
+/** The category's tiles split into its named groups, in order; one untitled group when they are not all named. */
 export function flyoutGroups(categoryId: string, tiles: readonly PaletteTileDef[]): FlyoutGroup[] {
   const runs: PaletteTileDef[][] = [[]];
   tiles.forEach((tile, i) => {
     runs.at(-1)!.push(tile);
     if (tile.dividerAfter && i < tiles.length - 1 && !UNGROUPED.has(categoryId)) runs.push([]);
   });
-  const names = GROUP_NAMES[categoryId] ?? [];
   const groups = runs.filter((run) => run.length > 0);
-  return groups.map((run, i) => ({
-    id: run[0]!.id,
-    title: groups.length > 1 ? (names[i] ?? null) : null,
-    tiles: run,
-  }));
+  const named = groups.length > 1 && groups.every((run) => GROUP_NAMES[run[0]!.id]);
+  if (!named) return tiles.length > 0 ? [{ id: tiles[0]!.id, title: null, tiles: [...tiles] }] : [];
+  return groups.map((run) => ({ id: run[0]!.id, title: GROUP_NAMES[run[0]!.id]!, tiles: run }));
 }
-
 // An item's place in the flyout, for arrow-key moves: the centre of its box.
 export type FlyoutPoint = { x: number; y: number };
 

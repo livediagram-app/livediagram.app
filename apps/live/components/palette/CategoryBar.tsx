@@ -17,11 +17,12 @@ import { flyoutCardColumns, flyoutLayout } from './category-flyout-groups';
 import { opensSide } from './category-flyout-items';
 import { CategoryFlyoutSide, sidePlacement, type SideOpen } from './CategoryFlyoutSide';
 import type { PaletteTileDef } from './palette-tile-defs';
+import type { EditorMode } from '@livediagram/document';
 import { StripOpenedBody, Divider } from './strip-rail-items';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
-// Diagram's category bar (docs/specs/007-editor/toolbar-layout.md "Diagram's category bar"): the strip shows the
-// mode's categories rather than one category's tiles, each a button with its glyph and name. With a mouse, resting
+// The category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): Diagram's and Facilitate's strip
+// shows the mode's categories rather than one category's tiles, each a button with its glyph and name. With a mouse, resting
 // on one opens its flyout (CategoryFlyout) centred under it, pointing at another moves the flyout there, and leaving
 // both the bar and the flyout closes it. A tap or a click opens it too. The arrow keys walk the bar, and Down or
 // Enter opens a category with its first tile focused.
@@ -250,6 +251,7 @@ export function CategoryBarButtons({
 export function CategoryBarFlyout({
   bar,
   categories,
+  mode,
   actions,
   pendingDraw,
   isMobile,
@@ -257,6 +259,7 @@ export function CategoryBarFlyout({
 }: {
   bar: CategoryBarState;
   categories: readonly BarCategory[];
+  mode: EditorMode;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null;
   isMobile: boolean;
@@ -328,6 +331,7 @@ export function CategoryBarFlyout({
           <CategoryFlyout
             key={category.id}
             category={category}
+            mode={mode}
             actions={actions}
             pendingDraw={pendingDraw}
             focusFirst={bar.viaKeyboard}
