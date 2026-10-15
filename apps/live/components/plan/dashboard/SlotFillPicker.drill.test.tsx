@@ -29,14 +29,14 @@ describe('Add to Slot’s categories', () => {
     show({ width: 300, height: 160 });
     const panel = screen.getByRole('dialog', { name: 'Add to Slot' });
     expect([...panel.querySelectorAll('button')].map((b) => b.getAttribute('aria-label'))).toEqual([
-      'Metrics, 10 choices',
+      'Card Metrics, 10 choices',
       'From a Sheet, 3 choices',
       'Utilities, 6 choices',
     ]);
     // Each says what is inside, in full.
     expect(panel.textContent).toContain('Figures and charts read live from a sheet.');
     expect(screen.getByText(/need a bigger slot/)).toBeTruthy();
-    expect(document.activeElement).toBe(category(/^Metrics/));
+    expect(document.activeElement).toBe(category(/^Card Metrics/));
   });
 
   it('drills into one under the breadcrumb, focusing its first tile, and picks from there', () => {
@@ -53,9 +53,9 @@ describe('Add to Slot’s categories', () => {
 
   it('goes back by the breadcrumb, Escape or Backspace, focusing the category, then closes on Escape', () => {
     const { onClose } = show();
-    fireEvent.click(category(/^Metrics/));
+    fireEvent.click(category(/^Card Metrics/));
     fireEvent.click(screen.getByRole('button', { name: /Add to Slot/ }));
-    expect(document.activeElement).toBe(category(/^Metrics/));
+    expect(document.activeElement).toBe(category(/^Card Metrics/));
     fireEvent.click(category(/^Utilities/));
     key('Escape');
     expect(document.activeElement).toBe(category(/^Utilities/));
@@ -69,10 +69,10 @@ describe('Add to Slot’s categories', () => {
 
   it('cascades the categories in on opening, then slides each level in from where it lies', () => {
     show();
-    const card = () => category(/^Metrics/);
+    const card = () => category(/^Card Metrics/);
     expect(card().className).toContain('animate-card-rise');
     fireEvent.click(card());
-    const level = () => screen.getByRole('region', { name: 'Metrics' }).parentElement!;
+    const level = () => screen.getByRole('region', { name: 'Card Metrics' }).parentElement!;
     expect(level().className).toContain('animate-tip-next');
     key('Escape');
     expect(card().parentElement!.parentElement!.className).toContain('animate-tip-prev');
@@ -82,10 +82,10 @@ describe('Add to Slot’s categories', () => {
 
   it('opens a lone category at once, with nowhere to go back to', () => {
     const a = { title: 'Utilities' };
-    const b = { title: 'Metrics' };
+    const b = { title: 'Card Metrics' };
     expect(openSection([a], null)).toEqual({ open: a, only: true });
     expect(openSection([a, b], null)).toEqual({ open: null, only: false });
-    expect(openSection([a, b], 'Metrics')).toEqual({ open: b, only: false });
+    expect(openSection([a, b], 'Card Metrics')).toEqual({ open: b, only: false });
     expect(openSection([a, b], 'Gone')).toEqual({ open: null, only: false });
   });
 });

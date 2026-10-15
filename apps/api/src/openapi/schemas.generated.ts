@@ -5091,6 +5091,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/SheetMetricContent"
+      },
+      {
+        "$ref": "#/components/schemas/FormMetricContent"
       }
     ]
   },
@@ -6890,6 +6893,38 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "finish"
     ],
     "type": "object"
+  },
+  "FormMetricContent": {
+    "additionalProperties": false,
+    "properties": {
+      "formTabId": {
+        "type": "string"
+      },
+      "metric": {
+        "$ref": "#/components/schemas/FormMetricKind"
+      },
+      "type": {
+        "const": "form-metric",
+        "type": "string"
+      }
+    },
+    "required": [
+      "type",
+      "metric",
+      "formTabId"
+    ],
+    "type": "object"
+  },
+  "FormMetricKind": {
+    "enum": [
+      "responses",
+      "new",
+      "status",
+      "limit",
+      "closes",
+      "link"
+    ],
+    "type": "string"
   },
   "FormQuestion": {
     "additionalProperties": false,

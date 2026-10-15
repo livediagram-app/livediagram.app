@@ -28,6 +28,7 @@ import { announce } from '@/lib/announcer';
 import {
   DASHBOARD_CARD_NAMES,
   DASHBOARD_ROW_TILES,
+  FORM_METRIC_NAMES,
   SHEET_CHART_NAME,
   SHEET_METRIC_NAMES,
 } from '@/components/palette/palette-dashboard-tiles';
@@ -51,6 +52,8 @@ export function armedName(item: DashboardItem, tabs: readonly Tab[]): string {
       return DASHBOARD_CARD_NAMES[item.card];
     case 'sheet-metric':
       return SHEET_METRIC_NAMES[item.metric];
+    case 'form-metric':
+      return FORM_METRIC_NAMES[item.metric];
     case 'sheet-chart':
       return SHEET_CHART_NAME;
     case 'tab':

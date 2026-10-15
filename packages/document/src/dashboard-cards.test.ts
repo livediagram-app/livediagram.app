@@ -131,3 +131,22 @@ describe('a figure from a Sheet', () => {
     expect(readDashboardCard({ type: 'sheet-metric', metric: 'pie' })).toBeUndefined();
   });
 });
+
+// A figure from a form (docs/specs/026-plan/plan-tabs.md "Form Metrics").
+describe('readDashboardCard form-metric', () => {
+  it('keeps a known figure and its form, and an unset form as empty', () => {
+    expect(
+      readDashboardCard({ type: 'form-metric', metric: 'responses', formTabId: 'tab-1' }),
+    ).toEqual({
+      type: 'form-metric',
+      metric: 'responses',
+      formTabId: 'tab-1',
+    });
+    expect(readDashboardCard({ type: 'form-metric', metric: 'link', formTabId: 7 })).toEqual({
+      type: 'form-metric',
+      metric: 'link',
+      formTabId: '',
+    });
+    expect(readDashboardCard({ type: 'form-metric', metric: 'votes' })).toBeUndefined();
+  });
+});

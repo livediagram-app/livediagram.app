@@ -16,7 +16,7 @@ describe('Add to Slot', () => {
       'This Document’s Tabs',
       'New Board',
       'New Sheet',
-      'Metrics',
+      'Card Metrics',
       'Visualisations',
       'From a Sheet',
       'Utilities',
@@ -37,7 +37,7 @@ describe('Add to Slot', () => {
   it('offers a short slot only what looks good in it, and says what needs more room', () => {
     const tabs = dashboardTabTiles([{ id: 't', name: 'Launch', of: 'board' }]);
     const { sections, tooBig } = slotFillSections(tabs, { width: 300, height: 160 });
-    expect(sections.map((s) => s.title)).toEqual(['Metrics', 'From a Sheet', 'Utilities']);
+    expect(sections.map((s) => s.title)).toEqual(['Card Metrics', 'From a Sheet', 'Utilities']);
     expect(tooBig).toEqual(['board', 'sheet', 'chart']);
     expect(tooBigLine(tooBig)).toBe(
       'Boards, sheets and charts need a bigger slot: drag the row’s lower edge to make it taller.',
@@ -48,7 +48,7 @@ describe('Add to Slot', () => {
     const { sections, tooBig } = slotFillSections([], { width: 320, height: 400 });
     expect(sections.map((s) => s.title)).toEqual([
       'New Sheet',
-      'Metrics',
+      'Card Metrics',
       'Visualisations',
       'From a Sheet',
       'Utilities',
@@ -241,5 +241,22 @@ describe('a Visualisation tab', () => {
     expect(row.slots).toHaveLength(1);
     const view = tab.elements[0] as { planView?: { view: string } };
     expect(view.planView?.view).toBe('gantt');
+  });
+
+  // The user's call (2026-10-15): figures from a form, offered only while the document has one.
+  it('offers Form Metrics only when the document has a form', () => {
+    const titles = (hasForms: boolean) =>
+      slotFillSections([], null, hasForms).sections.map((s) => s.title);
+    expect(titles(false)).not.toContain('Form Metrics');
+    expect(titles(true)).toContain('Form Metrics');
+    const form = slotFillSections([], null, true).sections.find((s) => s.title === 'Form Metrics')!;
+    expect(form.tiles.map((t) => t.caption)).toEqual([
+      'Responses',
+      'New Responses',
+      'Form Status',
+      'Response Limit',
+      'Closes',
+      'Form Link',
+    ]);
   });
 });

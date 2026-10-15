@@ -31,7 +31,7 @@ a card is never dropped into one.
 
 ## Metrics
 
-The **Metrics** palette category holds the board widget kinds that read out rather than narrow a
+The **Card Metrics** palette category holds the board widget kinds that read out rather than narrow a
 board ([Board widgets](board-widgets.md)), each free on the canvas:
 
 | Metric      | Shows, over every live card                            |
