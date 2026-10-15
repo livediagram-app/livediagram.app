@@ -33,8 +33,8 @@ export type ChangesetBody =
       theme?: string;
       finish?: Finish;
       name?: string;
-      // A new tab of elements made a Board tab (docs/specs/030-forms/forms.md "Agents").
-      tabKind?: 'board';
+      // A new tab of elements made a Board or Sheet tab (docs/specs/030-forms/forms.md "Agents").
+      tabKind?: 'board' | 'sheet';
     };
 
 export type ParsedChangeset = {
@@ -168,8 +168,9 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
     return bad('"replace.finish" is "flexible", "professional" or "sketch"');
   if (raw.name !== undefined && typeof raw.name !== 'string')
     return bad('"replace.name" must be a string');
-  if (raw.kind !== undefined && !(raw.kind === 'board' && sources[0] === 'elements'))
-    return bad('"replace.kind" is "board", with elements');
+  const kind = raw.kind === 'board' || raw.kind === 'sheet' ? raw.kind : undefined;
+  if (raw.kind !== undefined && !(kind && sources[0] === 'elements'))
+    return bad('"replace.kind" is "board" or "sheet", with elements');
   const layout = raw.layout === 'auto' || raw.layout === 'preserve' ? raw.layout : undefined;
   // The engine checks each source's shape itself (applyReplace), naming what is wrong.
   const replace = replaceBodyOf(sources[0]!, raw, layout);
@@ -180,7 +181,7 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
     ...(typeof raw.theme === 'string' ? { theme: raw.theme } : {}),
     ...(isFinish(raw.finish) ? { finish: raw.finish } : {}),
     ...(typeof raw.name === 'string' ? { name: raw.name } : {}),
-    ...(raw.kind === 'board' ? { tabKind: 'board' as const } : {}),
+    ...(kind ? { tabKind: kind } : {}),
   };
 }
 

@@ -89,7 +89,37 @@ const PLAN = {
   statuses: [{ status: 'todo', name: 'To Do' }],
   types: ITEM_TYPES,
 };
-const LIVE_DOC = { id: 'd_1', name: 'A diagram', tabs: [{ id: 't_1', name: 'Tab 1' }] };
+// A Form tab, published and taking responses, so the form tools have a form to name (docs/specs/030-forms/forms.md
+// "Agents").
+const FORM_TAB = {
+  id: 'f_1',
+  name: 'RSVP',
+  rev: 1,
+  kind: 'form',
+  opensIn: 'plan',
+  elements: [],
+  form: {
+    v: 1,
+    heading: 'RSVP',
+    sections: [{ id: 's-1', title: '', questions: [{ id: 'q-1', type: 'short', prompt: 'Name' }] }],
+    destination: { tabId: 't_1', typeId: 'task', status: 'todo' },
+  },
+};
+const FORM_LINK = {
+  link: { code: 'AbCdEfGhIjKlMnOpQrStUv', open: true, createdAt: 1 },
+  responses: 2,
+  unseen: 1,
+  suspendedAt: null,
+  canPublish: true,
+};
+const LIVE_DOC = {
+  id: 'd_1',
+  name: 'A diagram',
+  tabs: [
+    { id: 't_1', name: 'Tab 1', orderIndex: 0 },
+    { id: 'f_1', name: 'RSVP', orderIndex: 1 },
+  ],
+};
 // One blank sheet on the tab, so the sheet tools have a sheet to name.
 const SHEET = sheetToJson(emptySheet({ id: 'sheet_budget', tabId: 't_1', title: 'Budget' }));
 
@@ -137,6 +167,9 @@ function okResponse(request: Request): Response {
     });
   }
   if (path.endsWith('/name')) return json({ tab: { id: 't_1', name: 'A diagram', orderIndex: 0 } });
+  if (path.endsWith('/form-link')) return json(FORM_LINK);
+  if (path.endsWith('/tabs/f_1/form')) return json({ tabId: 'f_1', rev: 2, name: 'RSVP' });
+  if (path.endsWith('/tabs/f_1')) return json({ tab: FORM_TAB });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
   if (/^\/documents\/[^/]+$/.test(path)) return json({ document: LIVE_DOC });
   if (path.endsWith('/items') && request.method === 'GET') return json({ items: [], rev: 0 });
@@ -204,6 +237,7 @@ const ARGS = {
   changes: [],
   board: 'Sprint',
   sheet: 'Budget',
+  action: 'close',
 };
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
@@ -216,15 +250,17 @@ const AUTHED = { authInfo: { token: 'tok_test' } };
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('registerTools', () => {
-  it('registers the twenty-three documented tools, each with a description', () => {
+  it('registers the twenty-seven documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
       'add_board',
+      'add_form',
       'add_sheet',
       'add_tab',
       'change_board',
       'change_card_types',
+      'change_form',
       'change_items',
       'change_pages',
       'change_sheet',
@@ -236,11 +272,13 @@ describe('registerTools', () => {
       'list_templates',
       'list_trash',
       'read_document',
+      'read_form',
       'read_sheet',
       'rename_document',
       'restore_document',
       'search_icons',
       'share_document',
+      'share_form',
       'update_document',
       'write_article',
     ]);
@@ -361,6 +399,11 @@ describe('tool annotations', () => {
     // content; write_article replaces an article's text.
     change_pages: 'destructive',
     write_article: 'destructive',
+    // docs/specs/030-forms/forms.md "Agents": change_form deletes questions and sections; share_form publishes.
+    read_form: 'read',
+    add_form: 'write',
+    change_form: 'destructive',
+    share_form: 'write',
   };
 
   it('gives every tool one of the three documented presets', () => {
@@ -407,6 +450,7 @@ describe('tool annotations', () => {
       'list_templates',
       'list_trash',
       'read_document',
+      'read_form',
       'read_sheet',
       'search_icons',
     ]);
@@ -428,6 +472,7 @@ describe('tool annotations', () => {
       .sort();
     expect(destructive).toEqual([
       'change_card_types',
+      'change_form',
       'change_items',
       'change_pages',
       'change_sheet',

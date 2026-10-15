@@ -20,6 +20,18 @@ const BY_CODE: Readonly<Record<string, string>> = {
     'someone else kept changing the card types at the same moment: list_items reads them again, then retry.',
   place_invalid: 'the column or position is not valid.',
   ...SHEET_REFUSAL_WORDS,
+  // Forms (docs/specs/030-forms/forms.md "Agents").
+  form_locked:
+    'this form is taking responses, so only its settings can change. Close it with share_form (action "close") ' +
+    'first: its link stays, and publish opens it again.',
+  form_changed:
+    'someone changed the form since it was read: read_form again, then redo the change.',
+  form_not_ready: 'the form is not ready to publish: read_form lists its problems.',
+  form_destination_missing: 'responses have nowhere to go: set respondsTo with change_form.',
+  form_suspensions:
+    "this document's form links were suspended twice after reports, so it cannot publish another.",
+  form_already_published: 'the form already has a link: read_form gives it.',
+  not_a_form_tab: 'that tab holds no form: add one with add_form.',
 };
 
 const BY_STATUS: Readonly<Record<number, string>> = {

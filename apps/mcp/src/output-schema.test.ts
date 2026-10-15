@@ -128,7 +128,59 @@ const ITEM = {
   createdBy: { id: 'p', name: 'P', color: '#000000' },
   updatedBy: { id: 'p', name: 'P', color: '#000000' },
 };
-const LIVE_DOC = { id: 'd1', name: 'Roadmap', tabs: [{ id: 't1', name: 'Tab 1' }] };
+const LIVE_DOC = {
+  id: 'd1',
+  name: 'Roadmap',
+  tabs: [
+    { id: 't1', name: 'Tab 1', orderIndex: 0 },
+    { id: 'f1', name: 'Bug Report', orderIndex: 1 },
+  ],
+};
+// A Form tab taking responses, its answers going to the Sprint board (docs/specs/030-forms/forms.md "Agents").
+const FORM_TAB = {
+  id: 'f1',
+  name: 'Bug Report',
+  rev: 2,
+  kind: 'form',
+  opensIn: 'plan',
+  elements: [],
+  form: {
+    v: 1,
+    heading: 'Bug Report',
+    description: 'Tell us what broke.',
+    sections: [
+      {
+        id: 's-1',
+        title: '',
+        questions: [
+          { id: 'q-1', type: 'short', prompt: 'Summary', required: true, goesTo: { to: 'title' } },
+          {
+            id: 'q-2',
+            type: 'single',
+            prompt: 'Severity',
+            options: ['S1', 'S2'],
+            goesTo: { to: 'field', fieldId: 'f-severity' },
+          },
+        ],
+      },
+      {
+        id: 's-2',
+        title: 'Details',
+        showIf: { questionId: 'q-2', anyOf: ['S1'] },
+        questions: [{ id: 'q-3', type: 'rating', prompt: 'How bad?', scale: 5, style: 'stars' }],
+      },
+    ],
+    destination: { tabId: 't1', typeId: 'bug', status: 'todo~a' },
+    limit: 100,
+  },
+};
+const FORM_LINK = {
+  link: { code: 'AbCdEfGhIjKlMnOpQrStUv', open: true, createdAt: 1 },
+  responses: 3,
+  unseen: 1,
+  suspendedAt: null,
+  canPublish: true,
+};
 const BUG = {
   ...ITEM_TYPES[1],
   id: 'bug',
@@ -203,12 +255,43 @@ async function api(request: Request): Promise<Response> {
   if (path.endsWith('/illustrate')) return json(ILLUSTRATE);
   if (path.endsWith('/changesets')) return json(CHANGESET);
   if (path.endsWith('/name')) return json({ tab: { id: 't1', name: 'Renamed', orderIndex: 0 } });
+  if (path.endsWith('/form-link')) return json(FORM_LINK);
+  if (path.endsWith('/tabs/f1/form')) return json({ tabId: 'f1', rev: 3, name: 'Bug Report' });
+  if (path.endsWith('/tabs/f1')) return json({ tab: FORM_TAB });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
   return json({ document: LIVE_DOC });
 }
 
 // Each tool, with both result branches of rename and delete.
 const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, unknown> }[] = [
+  { tool: 'read_form', output: 'readFormOutput', args: { documentId: 'd1' } },
+  {
+    tool: 'add_form',
+    output: 'addFormOutput',
+    args: {
+      documentId: 'd1',
+      name: 'Party RSVP',
+      questions: [
+        { type: 'short', prompt: 'Name', required: true, goesTo: 'Title' },
+        { type: 'multi', prompt: 'Dietary needs', options: ['Vegan', 'Halal'], goesTo: 'Diet' },
+      ],
+      respondsTo: { to: 'board', cardType: 'Bug' },
+    },
+  },
+  {
+    tool: 'add_form',
+    output: 'addFormOutput',
+    args: { name: 'Feedback', starter: 'feedback' },
+  },
+  {
+    tool: 'change_form',
+    output: 'changeFormOutput',
+    args: {
+      documentId: 'd1',
+      changes: [{ op: 'settings', limit: 50, closesAt: '2026-12-01T18:00:00Z' }],
+    },
+  },
+  { tool: 'share_form', output: 'shareFormOutput', args: { documentId: 'd1', action: 'close' } },
   { tool: 'find_documents', output: 'findDocumentsOutput', args: {} },
   { tool: 'read_document', output: 'readDocumentOutput', args: { documentId: 'd1' } },
   {
