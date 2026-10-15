@@ -1,0 +1,135 @@
+# React state and effects blueprint
+
+Derived from [React state and effects](../react-state-and-effects.md): the sections "Rendering in the browser only",
+"Animating a state change", "Fragments and DOM events" and the React Compiler's reach. The older rules (pure render,
+effect events, `useLatest`, the clocks) are enforced by the hooks lint and need no blueprint.
+
+## Domain and naming
+
+| Term                | Identifier                                          | Meaning                                                                 |
+| ------------------- | --------------------------------------------------- | ----------------------------------------------------------------------- |
+| Browser-only render | `use(browser())`                                    | Suspends during the static prerender; never in the browser              |
+| Prerender fallback  | the nearest `<Suspense fallback>`                   | What the exported HTML holds where a browser-only component sits        |
+| Transition type     | `addTransitionType(type)`                           | Why a transition runs; a surface keys its View Transition classes by it |
+| Surface boundary    | `<ViewTransition default="none" update={…}>`        | The one place a surface's View Transition is declared                   |
+| Reduced motion      | `prefersReducedMotion()`                            | The OS setting or the in-app preference (`.reduce-motion` on `<html>`)  |
+| Asked-for state     | `asked` (a ref beside the handler)                  | What a handler last asked for while React holds its transition          |
+| Fragment ref        | `<Fragment ref>`, `FragmentInstance`                | A group handle on a component's children, with no wrapper node          |
+| Build year          | `process.env.NEXT_PUBLIC_BUILD_YEAR` (`BUILD_YEAR`) | The year the site was built, inlined at build time                      |
+
+## Behaviour and state
+
+### Browser-only rendering: the sites
+
+Every render-time read of a browser global is converted; reads in effects, handlers and module code that render does
+not consume stay as they are.
+
+| Site                                                                    | Reads                         | Becomes                                                              |
+| ----------------------------------------------------------------------- | ----------------------------- | -------------------------------------------------------------------- |
+| `apps/live/app/explorer/useExplorerState.ts` (`useHydrated`)            | device preferences            | `use(browser())`; `hooks/ui/useHydrated.ts` is removed               |
+| `apps/live/app/oauth/consent/page.tsx`, `oauth/device/page.tsx`         | `location` (the return path)  | `use(browser())` in the signed-out branch, under the page's Suspense |
+| `apps/live/app/new/page.tsx` (`initialPlacement` initialiser)           | `location.search`             | `use(browser())` before the state                                    |
+| `apps/live/components/panels/TeamSharedDocuments.tsx` (`spot`)          | `location.search`             | `use(browser())` before the state                                    |
+| `ShareDialog`, `TeamInviteLinkDialog`, `CommunityPublishedConfirmation` | `location.origin`             | `use(browser())`, then `window.location.origin`                      |
+| `CanvasThemeDialog` (`useBrushAnchor`)                                  | `innerWidth`, the brush's box | `use(browser())` before the state (read once as it opens)            |
+| `CardFinderPanel` (`finePointer`)                                       | `(pointer: fine)`             | `useMediaQuery('(pointer: fine)')`                                   |
+| `arrow-handles.tsx` (`COARSE_POINTER`, module constant)                 | `(pointer: coarse)`           | `useMediaQuery('(pointer: coarse)')` in the component                |
+| `EditorContextMenu`, `EditorCanvasHost` (`openUp`)                      | `innerHeight`                 | `useViewportHeight()`                                                |
+| `StartAgainTray` (`pillPlace` default argument)                         | `innerHeight`                 | a required argument; the caller passes `useViewportHeight()`         |
+| `packages/ui/src/SiteFooter.tsx`                                        | the clock (`new Date()`)      | `BUILD_YEAR`                                                         |
+
+Stay as they are (outside render): `telemetry/app/page.tsx` `prefetchViews` (from an effect), `MovablePanel`
+`clampFree`, `DriveMirrorProvider` `connectOutcomeOnce`, `PagedCarousel` `prefersReducedMotion` (a handler),
+`ReactionBurst` and `arrow-flow` (effects). A site found in Phase 7 that this table misses is added here first.
+
+### A View Transition from state
+
+1. The handler checks `prefersReducedMotion()`; when true, or when the change does not animate, it applies the
+   change plainly and stops.
+2. Otherwise it calls `startTransition(() => { addTransitionType(type); apply(); })`.
+3. React commits the transition inside `document.startViewTransition`; the surface's boundary names its root
+   element, and its `update` (or `enter` / `exit`) class for `type` picks the CSS animation.
+4. A handler that steps from the state on screen keeps `asked` (a ref): it steps from `asked ?? onScreen`, writes
+   `asked`, and clears it once the state on screen equals it.
+
+### The React Compiler's reach
+
+`reactCompiler: true` with `experimental.turbopackRustReactCompiler` comes from `@livediagram/next-config` for all
+five apps ([Next.js blueprint](../../016-platform/blueprints/nextjs.md)); `apps/live/next.config.ts` drops its own.
+
+## Interfaces and contracts
+
+```ts
+// react-dom
+export function browser(): PromiseLike<void>; // use(browser()): suspends on the server only
+
+// react
+export function addTransitionType(type: string): void;
+export function ViewTransition(props: {
+  default?: 'none' | 'auto' | string;
+  update?: string | Record<string, string>;
+  enter?: string | Record<string, string>;
+  exit?: string | Record<string, string>;
+  children: React.ReactNode;
+}): React.ReactNode;
+```
+
+- A `<Suspense>` placed for `use(browser())` takes a fallback with the final box's size and no text a screen reader
+  would announce twice.
+- `BUILD_YEAR` is a four-digit string; read as `process.env.NEXT_PUBLIC_BUILD_YEAR ?? ''` so a test without it renders
+  no year rather than a wrong one.
+
+## Errors and edge cases
+
+| Case                                                     | Handling                                                          |
+| -------------------------------------------------------- | ----------------------------------------------------------------- |
+| `use(browser())` with no `<Suspense>` above, prerendered | The build fails on the missing boundary; a boundary is added      |
+| A browser without View Transitions                       | React applies the change without animating; nothing else differs  |
+| A second transition while one animates                   | React holds it; `asked` keeps the handler's steps from being lost |
+| A transition skipped (the tab hidden)                    | The change is committed; nothing waits on the animation           |
+| A Fragment whose children change                         | `FragmentInstance` follows the current first-level children       |
+
+## Performance and limits
+
+- A View Transition captures its surface twice per change: it is used only for whole-surface swaps (a slide move,
+  the start's mode switch), never per keystroke or pointer move.
+- `use(browser())` costs nothing in the browser; in the prerender it moves the content after hydration, so a site
+  above the fold reserves its size (CLS stays 0).
+
+## Presentation and UX
+
+A browser-only component's fallback is its empty shape (the same box, no content). The start's mode switch and a
+slide move animate as their own specs say; under reduced motion both change at once.
+
+## Accessibility
+
+Fallbacks carry no text. Reduced motion (both sources) starts no View Transition.
+
+## Web Experience
+
+- CLS: every prerender fallback reserves its final size; verified per site with the layout-stability check.
+- INP: a View Transition's update runs as a transition, so the key or click that starts it paints first.
+
+## Observability
+
+No new log lines: a refused fullscreen and a Trusted Types violation are logged by their own blueprints.
+
+## Testing
+
+| Rule                                     | Test                                                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Browser-only sites render in the browser | Each site's component test renders the browser value; a server render shows the fallback          |
+| No `typeof window` in render             | `apps/live/render-browser-globals.test.ts`: scans `.tsx` for a guard outside effects and handlers |
+| Footer year from the build               | `packages/ui` SiteFooter test renders `BUILD_YEAR`, and no year without it                        |
+| Reduced motion starts no transition      | The slide and mode-switch tests stub `prefersReducedMotion` and assert no `startTransition` type  |
+| Steps count from `asked`                 | `PresentationHost` test: three quick steps land three slides on                                   |
+
+## Constants and configuration
+
+| Constant                 | Value                                       | Provenance                       | Safe range        |
+| ------------------------ | ------------------------------------------- | -------------------------------- | ----------------- |
+| `NEXT_PUBLIC_BUILD_YEAR` | `String(new Date().getFullYear())` at build | `@livediagram/next-config` `env` | A four-digit year |
+
+## Defaults ledger
+
+D1 to D4 in [DEFAULTS.md](DEFAULTS.md).

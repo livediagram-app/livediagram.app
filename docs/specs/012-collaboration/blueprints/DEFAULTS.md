@@ -20,7 +20,9 @@ One row per default applied where a spec is silent or qualitative.
 | D7  | facilitate-mode | Mark's drawing                                   | A 24-unit line glyph in the drawing-kinds style: an easel's three legs under a pad with two text lines           |
 | D8  | facilitate-mode | Whether Facilitate's Media has embeds            | No: Diagram's Media (Image, Avatar), so the two stay alike                                                       |
 
-| #   | Blueprint       | Spec silence                         | Default applied                                                                   |
-| --- | --------------- | ------------------------------------ | --------------------------------------------------------------------------------- |
-| FT1 | facilitate-tour | When to decide the Share step is out | When the offer starts, by whether the header's Share button is on screen          |
-| FT2 | facilitate-tour | The help card's hue                  | `#ea580c`, a step from Facilitate mode's `#c2410c`, as the Plan tour's is to Plan |
+| #   | Blueprint         | Spec silence                                             | Default applied                                                                                    |
+| --- | ----------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| FT1 | facilitate-tour   | When to decide the Share step is out                     | When the offer starts, by whether the header's Share button is on screen                           |
+| FT2 | facilitate-tour   | The help card's hue                                      | `#ea580c`, a step from Facilitate mode's `#c2410c`, as the Plan tour's is to Plan                  |
+| PM1 | presentation-mode | What counts as a step (counted from the slide asked for) | A move of exactly one slide; a jump (list, Home, End) is taken as given                            |
+| PM2 | presentation-mode | What logs a refused fullscreen                           | `console.warn`, always shown ([Console logging](../../003-system-architecture/console-logging.md)) |

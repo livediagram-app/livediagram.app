@@ -197,6 +197,19 @@ takes these blocks:
 The only change on the way is `element-pop-in`. Non-motion canvas rules stay in `globals.css`:
 the sticky peel, isometric depth, cursors and note ink.
 
+### View Transitions
+
+- **The root takes no part**: `html { view-transition-name: none; }` in the editor's `globals.css`, so only a named
+  surface is captured.
+- **The canvas surface** (slide moves) keeps its classes in `canvas-motion.css`: `slide-in`, `slide-forward`,
+  `slide-back` and `slide-fade`, on `::view-transition-old(.<class>)` and `::view-transition-new(.<class>)`, with
+  `::view-transition-group(.<class>)` held still (`animation: none`). They reuse the `lvd-slide-*` keyframes and
+  `--lvd-slide-ms`; the ghost (`[data-slide-ghost]`) and the `[data-slide-move]` move rules are removed.
+- **Chrome surfaces** (the start's mode switch) keep theirs in `globals.css`: `start-mode` cross-fades old and new
+  over `--transition-duration-short` (200ms) on the ease-out curve.
+- **Reduced motion** adds no CSS: the handlers start no View Transition (`prefersReducedMotion()`), so the
+  pseudo-elements never exist. The old `@media (prefers-reduced-motion)` slide-fade block goes with the ghost.
+
 ## Interfaces and contracts
 
 ```ts
@@ -342,6 +355,9 @@ logging, because motion isn't a decision point.
 | Reduced motion creates no transitions        | `apps/live/app/reduced-motion.test.ts`                                                           |
 | Canvas entry keeps 360ms                     | `apps/live/app/canvas-motion.test.ts`, `apps/live/components/canvas/canvas-motion.test.tsx`      |
 | Chrome animations settle in 250ms at runtime | `apps/live/e2e/motion-budget.spec.ts`                                                            |
+| The root takes no View Transition part       | `apps/live/app/view-transitions.test.ts`                                                         |
+| View Transition classes stay in their files  | `apps/live/app/view-transitions.test.ts`                                                         |
+| Slide moves animate, reduced motion cuts     | `apps/live/e2e/perf/slide-transition.perf.ts`, `PresentationHost.test.tsx`                       |
 
 ### The runtime guard
 

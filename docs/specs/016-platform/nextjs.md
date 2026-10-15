@@ -29,6 +29,8 @@ shared configuration, and which Next.js features they use or decline, with the r
 | `experimental.turbopackLazyDynamicImports` | `true`                                                        | Dev compiles a dynamic import when the browser asks for it                                            |
 | `experimental.reactBrowserBailout`         | `true`                                                        | Next's client-rendering bailouts suspend through `browser()`                                          |
 | `experimental.agentUpgrade`                | `'latest'`                                                    | Coding agents are pointed at new stable releases                                                      |
+| `agentRules`                               | `false`                                                       | `next dev` writes no `AGENTS.md`: the repository's agent files are written by hand                    |
+| `env.NEXT_PUBLIC_BUILD_YEAR`               | the build's year                                              | The footer's year, the same in the prerender and the browser                                          |
 
 - **An app's own settings**: `basePath`, `assetPrefix`, `trailingSlash`, `pageExtensions`, MDX and `transpilePackages`.
 - **The React Compiler needs Turbopack.** Under the webpack escape hatch (`dev:webpack`) it is left off.
@@ -54,6 +56,5 @@ shared configuration, and which Next.js features they use or decline, with the r
 | `turbopackPluginRuntimeStrategy: 'workerThreads'`                           | Declined | Next falls back to child processes on Node 24.13.1 and later                   |
 | `turbopackAdditionalRoots`                                                  | Declined | No linked package lives outside the repository                                 |
 | Next.js Devtools MCP                                                        | Declined | Developer tooling, not part of the product                                     |
-| The versioned-docs block Next writes into `AGENTS.md`                       | Declined | `AGENTS.md` is written by hand                                                 |
 
 Features still being measured are added to this table with their verdict once measured.
