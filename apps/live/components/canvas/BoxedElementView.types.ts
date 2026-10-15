@@ -183,9 +183,6 @@ export type BoxedElementViewProps = {
   chairSitters?: (
     elementId: string,
   ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
-  // The office's machines (docs/specs/009-elements/office.md "Using it"): bumped each time your own character
-  // gets a drink at one, so it answers on your screen.
-  machineAnswered?: (elementId: string) => number;
   // The viewer's current mode, so a Selection Mode button offering it renders
   // disabled (docs/specs/009-elements/mode-button.md).
   activeMode?: import('@livediagram/document').SelectionMode;

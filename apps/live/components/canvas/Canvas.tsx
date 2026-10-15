@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { answerMachine } from '@/lib/machine-answer';
 import { useAvatarStatus } from '@/hooks/canvas/useAvatarStatus';
 import type { View } from '@/lib/viewport-store';
 import { CanvasMenu } from './canvas-menu-context';
@@ -434,7 +435,7 @@ function CanvasView(props: CanvasProps) {
       const drink = drinkFrom(element.shape);
       if (!drink) return;
       avatarRef.current?.giveDrink(drink);
-      setMachineAnswer((prev) => ({ id: element.id, seq: (prev?.seq ?? 0) + 1 }));
+      answerMachine(element.id);
       track('Canvas', 'Used', drink === 'water' ? 'WaterCooler' : 'CoffeeMachine');
     },
     // Reaction pad (docs/specs/009-elements/reaction-pad.md): walking onto one is the same act as pressing
@@ -445,12 +446,6 @@ function CanvasView(props: CanvasProps) {
   // goes through a ref — declared above, repointed here, read at arrival time.
   // Same shape as `enterPortalRef` below, for the same reason.
   const avatarRef = useLatest<ReturnType<typeof useAvatarWalk> | null>(avatar);
-  // The machine that last gave you a drink, bumped each time, so it answers (FurnitureView's MachineAnswer).
-  const [machineAnswer, setMachineAnswer] = useState<{ id: string; seq: number } | null>(null);
-  const machineAnsweredOf = useCallback(
-    (elementId: string) => (machineAnswer?.id === elementId ? machineAnswer.seq : 0),
-    [machineAnswer],
-  );
   // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): an Editor or a Participant says
   // something above their character's head; everyone on the tab sees it float away.
   const speech = useAvatarSpeech({
@@ -931,7 +926,6 @@ function CanvasView(props: CanvasProps) {
                           // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
                           // lives, rather than threaded from the page.
                           chairSitters={sittersOf}
-                          machineAnswered={machineAnsweredOf}
                           // Pressing a Selection Mode button that hands out Avatar mode drops
                           // the character at THAT button (see avatarSpawn), not the viewport
                           // centre: you pressed a thing on the canvas, so the character should

@@ -360,7 +360,9 @@ export function roomParts(width: number, height: number, door: RoomDoor): Furnit
     parts.push(rect('rail', W + 4, side[0] + 6, 10, side[1] - side[0] - 12, 2));
   if (side && door === 'e')
     parts.push(rect('rail', width - W - 14, side[0] + 6, 10, side[1] - side[0] - 12, 2));
-  return parts;
+  // A room shrunk past its walls has no floor or mat left to draw: a part of no size is dropped, never drawn with a
+  // negative width or height (an SVG error on the canvas and in an export).
+  return parts.filter((p) => p.tag !== 'rect' || (p.w > 0 && p.h > 0));
 }
 
 export type WallSegment = { a: { x: number; y: number }; b: { x: number; y: number } };

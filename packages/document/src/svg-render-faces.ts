@@ -203,11 +203,12 @@ export function svgBehaviourFace(
     case 'water-cooler':
     case 'coffee-machine':
       return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
-    // A rug and a room are floor: their own fill, not the seats' wash (docs/specs/009-elements/office.md).
+    // A rug and a room are floor: their own fill, not the seats' wash (docs/specs/009-elements/office.md), resolved
+    // for the paper as the canvas resolves it (deep on a dark tab).
     case 'rug':
-      return furnitureArt(el, el.fillColor ?? RUG_FILL, stroke);
+      return furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
     case 'room':
-      return roomSvg(el, el.fillColor ?? ROOM_FLOOR, stroke);
+      return roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
     case 'fence':
       return fenceArt(el, stroke);
     case 'comment-pin':
