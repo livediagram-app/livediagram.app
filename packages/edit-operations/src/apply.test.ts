@@ -7,6 +7,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { applyEditOperations } from './apply';
+import { EDIT_MAX_ERRORS } from './vocabulary';
 import { parseEditOperations } from './parse';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
 import { applied, lines, refused } from './fixtures/outcomes';
@@ -273,6 +274,7 @@ describe('applyEditOperations', () => {
       const { calls, log } = recording();
       run([set('n3', { label: 'Sign in' }), { op: 'rm', target: 'ghost' }], checkoutFlow(), log);
       expect(calls).toEqual([
+        ['[edit-ops] unmatched', { count: 1, stopped: 'none' }],
         ['[edit-ops] rejected', { code: 'target_not_found', operation: 2, op: 'rm' }],
       ]);
     });
@@ -301,6 +303,34 @@ describe('targets that match nothing', () => {
     const mixed = parseEditOperations('set nope1 label=A\nadd square id=n1');
     if ('errors' in mixed) throw new Error('parse');
     const stopped = applyEditOperations(checkoutFlow(), mixed.operations);
-    expect('errors' in stopped && stopped.errors.map((e) => e.code)).toEqual(['target_not_found']);
+    // The refusal that stopped the read is answered too, so the retry does not meet it fresh.
+    expect('errors' in stopped && stopped.errors.map((e) => [e.code, e.operation])).toEqual([
+      ['target_not_found', 1],
+      ['id_taken', 2],
+    ]);
+  });
+
+  // Each miss scans the tab for the nearest candidates: at most EDIT_MAX_ERRORS are gathered, as the parser's are.
+  it('gathers at most EDIT_MAX_ERRORS misses', () => {
+    const text = Array.from({ length: 40 }, (_, i) => `set nope${i} label=X`).join('\n');
+    const parsed = parseEditOperations(text);
+    if ('errors' in parsed) throw new Error('parse');
+    const out = applyEditOperations(checkoutFlow(), parsed.operations);
+    expect('errors' in out && out.errors).toHaveLength(EDIT_MAX_ERRORS);
+  });
+
+  // A miss on what a skipped operation would have made sends the agent to that operation, not this right line.
+  it('names the skipped operation a later miss follows from', () => {
+    const parsed = parseEditOperations(
+      'set nope label=A\nadd square id=fresh right-of:nope\nset fresh label=B',
+    );
+    if ('errors' in parsed) throw new Error('parse');
+    const out = applyEditOperations(checkoutFlow(), parsed.operations);
+    if (!('errors' in out)) throw new Error('applied');
+    const last = out.errors.find((e) => e.operation === 3)!;
+    expect(last.details).toEqual([
+      '"fresh" was to be made by operation 2, which was skipped above',
+    ]);
+    expect(last.hint).toContain('fix operation 2');
   });
 });

@@ -107,7 +107,12 @@ door), "batch", "patch", "query" or "filter" for a selector, "handle" or "alias"
 
 ### The pipeline
 
-`applyEditOperations(tab, operations, options)` runs, in this order, and stops at the first rejection:
+`applyEditOperations(tab, operations, options)` runs, in this order. A `target_not_found` is gathered and the
+operations after it read on (up to `EDIT_MAX_ERRORS` gathered); any other rejection stops at once, and is answered
+after the gathered misses when there are any. A miss on an id a skipped operation would have made (its `id=`, or a
+raw element's `id`) says so (`"<id>" was to be made by operation <n>, which was skipped above`, hint `fix operation
+<n>; …`) in place of its nearest candidates. Nothing is written while any rejection remains; `[edit-ops] unmatched`
+logs the count and the code that stopped the read (`none` when none did):
 
 1. **Count.** More than `CHANGESET_MAX_OPERATIONS` operations: `too_large`.
 2. **Tab lock.** `tab.locked`: `element_locked` naming the tab, before any operation.
@@ -674,7 +679,7 @@ and by the api for the tab byte cap.
 
 Every rejection prints `error <code> · op <n> · <formatOperation(op)>` (parse errors: `· line <n>`), its detail
 and hint lines indented, and the block ends with `nothing was applied`. Parsing reports up to `EDIT_MAX_ERRORS`
-malformed lines; applying stops at the first rejection (EO7). Candidate lists stop at
+malformed lines; applying gathers up to `EDIT_MAX_ERRORS` misses and stops at any other rejection (EO7). Candidate lists stop at
 `REJECTION_CANDIDATES_MAX` with `… <n> more`.
 
 Edge cases:
@@ -739,7 +744,8 @@ Worst case: `MAX_ELEMENTS_PER_TAB` (10,000) elements, `CHANGESET_MAX_OPERATIONS`
 - **Targets.** `noteTarget` keeps a `Set` beside the ordered `targets`, so a `set … all` notes each element in
   `O(1)`; the old `includes` was quadratic in the elements resolved.
 - **Nearest candidates** run only on `target_not_found` / `unknown_field`: banded Levenshtein with band
-  `NEAREST_MAX_DISTANCE` over labels cut to 60 characters, `O(n × 60 × band)`, about 6,000,000 cells at worst.
+  `NEAREST_MAX_DISTANCE` over labels cut to 60 characters, `O(n × 60 × band)`, about 6,000,000 cells a miss at
+  worst; a request gathers at most `EDIT_MAX_ERRORS` (10) misses, so at most ten such passes.
 - **Layout** costs `autoLayoutElements` on the selection only.
 - **Budget.** `EDIT_APPLY_BUDGET_MS` is the aim for a 500-operation changeset on a 2,000-element tab, measured, not
   a gate. Measured: 498 operations on 1,980 elements take 39 ms without inserts, and 88 ms with 83 of them inserts

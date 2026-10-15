@@ -26,6 +26,7 @@ import { applyRm } from './operations/rm';
 import { applySet } from './operations/set';
 import { buildResultLines } from './results';
 import { tabLocked, tooLarge } from './rejections';
+import { EDIT_MAX_ERRORS } from './vocabulary';
 import { createState, type EditState } from './state';
 import type { ApplyOptions, ApplyOutcome, ApplyRejection, EditLog, EditOperation } from './types';
 
@@ -77,6 +78,27 @@ function rejected(
   return { errors: [rejection] };
 }
 
+// The id an operation names for what it makes (`add … id=`, `connect … id=`, a raw element's own id), if any.
+function madeId(operation: EditOperation): string | undefined {
+  if ('id' in operation && typeof operation.id === 'string') return operation.id;
+  if (operation.op === 'add' && 'element' in operation && typeof operation.element.id === 'string')
+    return operation.element.id;
+  return undefined;
+}
+
+// A miss on an id an earlier skipped operation would have made: that operation is the one to fix.
+function fromSkipped(rejection: EditRejection, unmade: ReadonlyMap<string, number>): EditRejection {
+  for (const [id, at] of unmade) {
+    if (rejection.details?.[0] !== `"${id}" matches nothing`) continue;
+    return {
+      ...rejection,
+      details: [`"${id}" was to be made by operation ${at}, which was skipped above`],
+      hint: `fix operation ${at}; this one may then stand as written`,
+    };
+  }
+  return rejection;
+}
+
 export function applyEditOperations(
   tab: Tab,
   operations: readonly EditOperation[],
@@ -91,21 +113,38 @@ export function applyEditOperations(
   }
   const state = createState(tab, options, log);
   // A target that matches nothing is skipped and the rest read on, so one answer names every such target and a long
-  // changeset is fixed in one retry, not one per wrong ref; any other rejection stops at once. Nothing is written
-  // while one remains.
+  // changeset is fixed in one retry, not one per wrong ref; any other rejection stops at once, and is answered too.
+  // Nothing is written while one remains. At most EDIT_MAX_ERRORS are gathered, as the parser's own list is: each
+  // miss scans the tab for the nearest candidates, so a changeset of misses is bounded work.
   const unmatched: EditRejection[] = [];
+  // The ids a skipped operation would have made, so a later miss on one says so rather than sending the agent to fix
+  // a line that is right.
+  const unmade = new Map<string, number>();
+  let stoppedBy: EditRejection | null = null;
   for (const [index, operation] of operations.entries()) {
     const rejection = applyOperation(state, operation, index + 1);
     if (!rejection) continue;
     if (rejection.code !== 'target_not_found') {
-      if (unmatched.length) break;
-      return rejected(log, rejection, operations);
+      if (!unmatched.length) return rejected(log, rejection, operations);
+      stoppedBy = rejection;
+      break;
     }
-    unmatched.push(rejection);
+    unmatched.push(fromSkipped(rejection, unmade));
+    const made = madeId(operation);
+    if (made !== undefined) unmade.set(made, index + 1);
+    if (unmatched.length >= EDIT_MAX_ERRORS) break;
   }
-  // Logged as the first is, then answered with them all.
-  if (unmatched.length)
-    return { errors: [...rejected(log, unmatched[0]!, operations).errors, ...unmatched.slice(1)] };
+  // Logged as the first is (with how many there are), then answered with them all.
+  if (unmatched.length) {
+    log('[edit-ops] unmatched', { count: unmatched.length, stopped: stoppedBy?.code ?? 'none' });
+    return {
+      errors: [
+        ...rejected(log, unmatched[0]!, operations).errors,
+        ...unmatched.slice(1),
+        ...(stoppedBy ? [stoppedBy] : []),
+      ],
+    };
+  }
   const next = finalise(state, log);
   if ('code' in next) return rejected(log, next, operations);
   const elementOps = diffToElementOps(tab.elements, next.elements);
