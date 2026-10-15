@@ -56,4 +56,3 @@ export const FORM_REPORT_REASON_LABELS: Readonly<Record<FormReportReason, string
 export const FORM_REPORT_NOTE_MAX = 300;
 export type FormReportBody = { reason: FormReportReason; note?: string };
 
-export const formPath = (code: string) => `/form/${code}`;

@@ -255,7 +255,6 @@ export function formStarter(id: StarterId): FormStarter {
   return FORM_STARTERS.find((s) => s.id === id) ?? FORM_STARTERS[0]!;
 }
 
-export const STARTER_FORM_COLOUR = '#2563eb';
 // The glyph a card type made for a form takes.
 export const FORM_TYPE_GLYPH = 'checklist';
 

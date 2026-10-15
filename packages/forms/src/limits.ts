@@ -15,7 +15,6 @@ export const HELP_MAX = 500;
 export const PLACEHOLDER_MAX = 80;
 // An option is shared with the Choice field a question maps to, so it keeps that field's limits.
 export const OPTION_MAX = CUSTOM_CHOICE_OPTION_MAX;
-export const OPTIONS_MIN = 2;
 export const OPTIONS_MAX = CUSTOM_CHOICE_OPTIONS_MAX;
 export const SHORT_ANSWER_MAX = Math.min(200, ITEM_TITLE_MAX);
 // A Paragraph is kept as Long Text, up to 2,000 characters (docs/specs/026-plan/item-types.md).
@@ -25,8 +24,6 @@ export const SCALE_LABEL_MAX = 40;
 export const RATING_SCALE_MIN = 3;
 export const RATING_SCALE_MAX = 10;
 export const RATING_SCALE_DEFAULT = 5;
-// Up to this scale a Rating draws stars on a card; past it, "n / scale".
-export const RATING_STARS_MAX = 5;
 export const MESSAGE_MAX = 500;
 export const SECTIONS_MAX = 10;
 export const QUESTIONS_MAX = 100;
@@ -44,5 +41,4 @@ export const DROPDOWN_AFTER = 7;
 
 export const DEFAULT_CONFIRMATION = 'Thanks, your response has been recorded.';
 export const DEFAULT_CLOSED_MESSAGE = 'This form is no longer accepting responses.';
-export const UNTITLED_QUESTION = 'Untitled Question';
 export const UNTITLED_FORM = 'Untitled Form';
