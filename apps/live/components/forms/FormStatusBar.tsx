@@ -9,6 +9,7 @@ import type { FormLinkState } from '@/hooks/forms/useFormLink';
 export function FormStatusBar({
   link,
   problem,
+  full = false,
   canEdit,
   boardName,
   onViewBoard,
@@ -16,6 +17,8 @@ export function FormStatusBar({
 }: {
   link: FormLinkState;
   problem: DestinationProblem | null;
+  // The document holds as many cards as it can: responses are refused until some go.
+  full?: boolean;
   canEdit: boolean;
   boardName: string | null;
   onViewBoard: (() => void) | null;
@@ -93,6 +96,14 @@ export function FormStatusBar({
               Choose Where Responses Go
             </button>
           ) : null}
+        </div>
+      ) : null}
+      {live && full ? (
+        <div
+          role="status"
+          className="rounded-xl bg-amber-50 px-4 py-2.5 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100"
+        >
+          Responses are paused: this document holds as many cards as it can.
         </div>
       ) : null}
       {data?.suspendedAt && !live ? (

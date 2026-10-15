@@ -4,18 +4,22 @@ Derived from [Forms](../forms.md). Implementation contracts: files, types, const
 
 ## 1. Packages and placement
 
-| Concern                                                                | Home                                                                                                                        |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| The form model, sanitiser, answers, mapping, response → card, starters | `packages/forms` (`@livediagram/forms`, pure, new)                                                                          |
-| The `form` tab kind, `Tab.form`                                        | `packages/document` (`tab-kind.ts`, `index.ts`)                                                                             |
-| Multiple Choice and Rating field kinds                                 | `packages/items` (`item-types.ts`, `type-catalogue.ts`, `card-text.ts`, `board-csv.ts`, `type-changes.ts`, `plan-names.ts`) |
-| Wire DTOs (`PublicFormDTO`, `FormLinkDTO`, refusals)                   | `packages/api-schema` (`forms.ts`)                                                                                          |
-| `form_links`, `form_reports`, `form_reads`; owner + public routes      | `apps/api` (`db/forms.ts`, `routes/form-link-routes.ts`, `routes/form-public-routes.ts`, `forms/*`)                         |
-| The Form tab builder, Share Form dialog, Start Planning Forms          | `apps/live/components/forms/*`, `apps/live/hooks/forms/*`                                                                   |
-| The respondent page                                                    | `apps/live/app/form/page.tsx` → `components/forms/respond/*`                                                                |
+| Concern                                                                                          | Home                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The form model, sanitiser, answers, mapping, response → card, starters, destination, public form | `packages/forms` (`@livediagram/forms`, pure: `model`, `limits`, `read`, `answers`, `mapping`, `card`, `starters`, `destination`, `public`, `ids`)                                                                                       |
+| The `form` tab kind, `Tab.form`                                                                  | `packages/document` (`tab-kind.ts`, `index.ts`)                                                                                                                                                                                          |
+| Multiple Choice and Rating field kinds                                                           | `packages/items` (`item-types.ts`, `type-catalogue.ts`, `card-text.ts`, `board-csv.ts`, `type-changes.ts`, `plan-names.ts`); agents in `packages/agent-verbs/src/plan/plan-listing.ts` and `packages/agent-verbs/src/mcp/plan-schema.ts` |
+| Wire DTOs (`FormLinkResponse`, `PublicFormResponse`, `FormResponseBody`, report reasons)         | `packages/api-schema` (`forms.ts`); the Inbox's `ActivityFormResponses` in `activity.ts`; `/form` in `page-views.ts`; `forms` in `error-telemetry.ts`; `Form` in `telemetry-schema.ts`                                                   |
+| `form_links`, `form_reports`, `form_reads`                                                       | `apps/api/migrations/0092_forms.sql`, `apps/api/src/db/forms.ts`, the Inbox read `apps/api/src/db/activity-forms.ts`                                                                                                                     |
+| Owner routes, public routes, the response write                                                  | `apps/api/src/routes/form-link-routes.ts`, `apps/api/src/routes/forms.ts`, `apps/api/src/forms/respond.ts`, `apps/api/src/forms/form-tab.ts`                                                                                             |
+| Emails                                                                                           | `apps/api/src/email/templates.ts` (`formResponseEmail`, `formSuspendedEmail`), `notifications.ts` (`notifyFormResponse`, `notifyFormSuspended`)                                                                                          |
+| The Form tab                                                                                     | `apps/live/components/forms/FormPage.tsx` and `components/forms/builder/*`; actions in `apps/live/hooks/forms/*`                                                                                                                         |
+| Start Planning's Forms                                                                           | `apps/live/components/plan/start/start-planning-items.ts`, `StartPlanning.tsx`, `components/forms/FormStarterPicture.tsx`                                                                                                                |
+| The form page                                                                                    | `apps/live/app/form/[code]/page.tsx` → `components/forms/respond/*`; the worker rewrite in `apps/live/src/worker.ts`; `apps/live/lib/form-path.ts`                                                                                       |
+| The Inbox, the New mark, the panel line                                                          | `apps/live/components/panels/activity-pane-parts.tsx`, `components/forms/fresh-responses.ts`, `NewResponseMark.tsx`, `components/plan/ItemPanelLayout.tsx`                                                                               |
 
-`@livediagram/forms` depends on `@livediagram/items` only. `@livediagram/document` depends on it for the `Tab.form`
-type and `readForm`.
+`@livediagram/forms` depends on `@livediagram/items` only. `@livediagram/document` and `@livediagram/api-schema`
+depend on it for types.
 
 ## 2. Model (`packages/forms/src/model.ts`)
 
@@ -32,274 +36,270 @@ export const QUESTION_TYPES = [
   'rating',
   'checkbox',
 ] as const;
-export type QuestionType = (typeof QUESTION_TYPES)[number];
 
 export type AnswerTarget =
-  | { to: 'description' } // the default; also what an absent `goesTo` reads as
+  | { to: 'description' } // also what an absent `goesTo` reads as
   | { to: 'title' }
   | { to: 'field'; fieldId: string };
 
 export interface FormQuestion {
-  id: string; // q-xxxxxx, unique in the form
+  id: string;
   type: QuestionType;
-  prompt: string; // 1..PROMPT_MAX; '' reads as 'Untitled Question'
-  help?: string; // ..HELP_MAX
+  prompt: string; // '' reads as 'Untitled Question'
+  help?: string;
   required?: true;
-  placeholder?: string; // short, paragraph, number, email, link
-  options?: string[]; // single, multi: 2..OPTIONS_MAX
-  other?: true; // single, multi: an Other option with text
-  dropdown?: true; // single
+  placeholder?: string;
+  options?: string[];
+  other?: true;
+  dropdown?: true; // single, multi
   min?: number;
-  max?: number; // number; multi: picks
-  whole?: true; // number
-  scale?: number; // rating: RATING_SCALE_MIN..MAX (default 5)
-  style?: 'stars' | 'numbers'; // rating
+  max?: number;
+  whole?: true; // number; multi: picks
+  scale?: number;
+  style?: 'stars' | 'numbers';
   lowLabel?: string;
-  highLabel?: string; // rating numbers, ..40
+  highLabel?: string; // rating
   goesTo?: AnswerTarget;
 }
-
 export interface FormSection {
   id: string;
   title: string;
   description?: string;
   questions: FormQuestion[];
 }
-
 export interface FormDestination {
   tabId: string;
   typeId: string;
   status: string;
 }
-
+export interface FormCover {
+  color?: string;
+  style?: 'solid' | 'gradient' | 'dots';
+}
 export interface FormDefinition {
   v: 1;
-  heading: string; // = tab name
+  heading: string;
   description?: string;
-  accent?: string; // #rrggbb, the form colour
-  cover?: { color?: string; imageId?: string };
-  sections: FormSection[]; // >= 1; sections[0].title is unused (the heading)
+  accent?: string;
+  cover?: FormCover;
+  sections: FormSection[];
   destination?: FormDestination;
-  closesAt?: number; // epoch ms
-  limit?: number; // 1..FORM_RESPONSE_LIMIT_MAX
-  confirmation?: string; // ..MESSAGE_MAX
-  closedMessage?: string; // ..MESSAGE_MAX
-  starter?: StarterId; // telemetry and the title hint only
+  closesAt?: number;
+  limit?: number;
+  confirmation?: string;
+  closedMessage?: string;
+  starter?: StarterId;
 }
 ```
 
-`readForm(raw: unknown): FormDefinition | null` sanitises (unknown keys dropped, strings trimmed and capped, ids
-checked, duplicates dropped, settings out of range dropped, a question of an unknown type dropped, an empty
-`sections` given one empty section). It never throws. `null` only when `raw` is not an object.
+`readForm(raw)` sanitises: unknown keys dropped, strings trimmed and capped, ids checked (`/^[a-z0-9-]{1,24}$/`),
+repeated sections and questions dropped, settings out of range dropped, a question of an unknown type dropped,
+Title kept by the first question claiming it, an empty `sections` given one empty section. It never throws; `null`
+only when `raw` is not an object. `QUESTION_TYPE_NAMES` and `QUESTION_TYPE_TELEMETRY` name each type.
 
-## 3. Constants (`packages/forms/src/limits.ts`)
+## 3. Constants (`packages/forms/src/limits.ts`, and where noted)
 
-| Name                           | Value  | Provenance                                                             | Safe range                        |
-| ------------------------------ | ------ | ---------------------------------------------------------------------- | --------------------------------- |
-| `FORM_HEADING_MAX`             | 80     | spec "The form card"                                                   | 40..120                           |
-| `FORM_DESCRIPTION_MAX`         | 1000   | spec                                                                   | 500..2000                         |
-| `PROMPT_MAX`                   | 200    | spec "Question types"                                                  | 100..300                          |
-| `HELP_MAX`                     | 500    | spec                                                                   | 200..1000                         |
-| `OPTION_MAX`                   | 80     | spec                                                                   | = items' CUSTOM_CHOICE_OPTION_MAX |
-| `OPTIONS_MAX`                  | 20     | spec (= Choice's 20)                                                   | = CUSTOM_CHOICE_OPTIONS_MAX       |
-| `SHORT_ANSWER_MAX`             | 200    | spec (= ITEM_TITLE_MAX)                                                | = ITEM_TITLE_MAX                  |
-| `PARAGRAPH_MAX`                | 2000   | spec (= Long Text)                                                     | = Long Text                       |
-| `RATING_SCALE_MIN/MAX/DEFAULT` | 3/10/5 | spec                                                                   | fixed                             |
-| `MESSAGE_MAX`                  | 500    | spec "Settings"                                                        | 200..1000                         |
-| `SECTIONS_MAX`                 | 10     | spec "Abuse and limits"                                                | 5..20                             |
-| `QUESTIONS_MAX`                | 100    | spec                                                                   | 50..200                           |
-| `FORM_RESPONSE_LIMIT_MAX`      | 2000   | = ITEMS_MAX                                                            | = ITEMS_MAX                       |
-| `RESPONSE_BODY_MAX`            | 65536  | spec                                                                   | 32K..256K                         |
-| `FORM_CODE_LENGTH`             | 22     | ~131 bits over base 62; ≥16 chars so telemetry also treats it as an id | 20..32                            |
-| `FORM_NETWORK_PER_MINUTE`      | 10     | spec (binding `FORM_RATE_LIMITER`)                                     | 5..30                             |
-| `FORM_RESPONSES_PER_HOUR`      | 500    | spec, per form                                                         | 100..2000                         |
-| `FORM_EMAIL_THROTTLE_MS`       | 15 min | spec (= comment email's)                                               | 5..60 min                         |
-| `FORM_NEW_DOT_MS`              | 7 days | spec "On the board"                                                    | 1..30 days                        |
-| `FORM_REPORTS_TO_SUSPEND`      | 3      | = Community's                                                          | fixed                             |
-| `FORM_SUSPENSIONS_MAX`         | 2      | spec "Report This Form"                                                | 1..5                              |
-| `FORM_PUBLIC_CACHE_S`          | 60     | spec "Abuse and limits"                                                | 10..300                           |
+| Name                                                         | Value       | Provenance                                                   | Safe range            |
+| ------------------------------------------------------------ | ----------- | ------------------------------------------------------------ | --------------------- |
+| `FORM_HEADING_MAX`                                           | 80          | spec "The form card"                                         | 40..120               |
+| `FORM_DESCRIPTION_MAX`                                       | 1000        | spec                                                         | 500..2000             |
+| `SECTION_TITLE_MAX`, `PROMPT_MAX`                            | 80, 200     | spec                                                         | 40..120, 100..300     |
+| `HELP_MAX`, `PLACEHOLDER_MAX`                                | 500, 80     | spec                                                         | 200..1000, 40..120    |
+| `OPTION_MAX`, `OPTIONS_MAX`                                  | 40, 20      | = items' Choice limits                                       | fixed                 |
+| `SHORT_ANSWER_MAX`, `PARAGRAPH_MAX`                          | 200, 2000   | spec (Title, Long Text)                                      | fixed                 |
+| `RATING_SCALE_MIN/MAX/DEFAULT`                               | 3/10/5      | spec; items' `RATING_FIELD_SCALE_*` the same                 | fixed                 |
+| `MESSAGE_MAX`                                                | 500         | spec "Settings"                                              | 200..1000             |
+| `SECTIONS_MAX`, `QUESTIONS_MAX`                              | 10, 100     | spec "Abuse and limits"                                      | 5..20, 50..200        |
+| `FORM_RESPONSE_LIMIT_MAX`                                    | 2000        | = `ITEMS_MAX`                                                | = `ITEMS_MAX`         |
+| `RESPONSE_BODY_MAX`                                          | 65536       | spec                                                         | 32K..256K             |
+| `FORM_CODE_LENGTH`                                           | 22          | DEFAULTS D1                                                  | 20..32                |
+| `FORM_SUSPENSIONS_MAX`                                       | 2           | spec "Report This Form"                                      | 1..5                  |
+| `DROPDOWN_AFTER`                                             | 7           | DEFAULTS D6                                                  | 5..12                 |
+| `FORM_RESPONSES_PER_HOUR` (respond.ts)                       | 500         | spec "Abuse and limits"                                      | 100..2000             |
+| `FORM_REPORTS_TO_SUSPEND` (forms.ts)                         | 3           | = Community's                                                | fixed                 |
+| `FORM_EMAIL_THROTTLE_MS` (notifications.ts)                  | 15 min      | = the comment email's                                        | 5..60 min             |
+| `FORM_RATE_LIMITER` (wrangler.toml)                          | 60 / 60 s   | spec; one binding, keys `form:` and `form-read:` per network | 30..120               |
+| `FORM_LINK_POLL_MS` (useFormLink.ts)                         | 30 s        | DEFAULTS D7                                                  | 15..120 s             |
+| `DRAFT_SAVE_MS` (DraftText.tsx)                              | 500 ms      | DEFAULTS D8                                                  | 250..1000 ms          |
+| `FRESH_RESPONSE_MS`, `FRESH_OPENED_MAX` (fresh-responses.ts) | 7 days, 500 | spec; DEFAULTS D9                                            | 1..30 days, 100..2000 |
 
 ## 4. Answers (`answers.ts`)
 
 `type AnswerValue = string | number | boolean | string[]`. The wire body is
-`{ answers: Record<questionId, AnswerValue>, other?: Record<questionId, string>, website?: string }` (`website` the
-hidden field).
+`{ answers: Record<questionId, unknown>, other?: Record<questionId, unknown>, website?: string }` (`website` the hidden
+field). An Other pick is sent as `OTHER_ANSWER` with its text under `other`.
 
-`checkAnswer(q, raw, other?) → { value?: AnswerValue } | { error: AnswerError }` where
-`AnswerError = 'required' | 'too_long' | 'not_a_number' | 'not_whole' | 'below_min' | 'above_max' | 'not_an_email'
-| 'not_a_link' | 'not_a_date' | 'not_an_option' | 'too_few' | 'too_many' | 'out_of_scale' | 'must_tick'`.
-An empty answer (`''`, `[]`, `false` for a non-required checkbox, absent) is `{}`; required → `required`.
-`checkResponse(form, body) → { answers: Map<id, AnswerValue> } | { errors: Record<id, AnswerError> }`: answers to
-ids not in the form are dropped (spec "Live"). `answerErrorMessage(q, error)` gives the page's copy (spec
-"Checking answers"), shared by the page's own checks so client and server read the same.
+`checkAnswer(q, raw, other?) → { value?, error? }`, errors `required | too_long | not_a_number | not_whole | below_min
+| above_max | not_an_email | not_a_link | not_a_date | not_an_option | too_few | too_many | out_of_scale | must_tick`.
+An empty answer (`''`, whitespace, `[]`, `false`, absent) is `{}`, or `required` / `must_tick` when required. A Link
+without a scheme is taken as `https://`; only `https://` with a dotted host passes. Multiple picks are kept in option
+order, an Other's text last. `checkResponse(form, body, questions?)` checks every question (or a section's); answers to
+unknown ids are dropped. `answerErrorMessage(q, error)` is the page's copy, shared by client and api.
 
 ## 5. Mapping (`mapping.ts`)
 
-- `MAPPABLE_KINDS: Record<QuestionType, CustomFieldKind[]>` is the spec table; `TITLE_TYPES` = short, email, number,
-  single, date.
-- `newFieldKind(type)`: short→text, paragraph→longtext, number→number, email→email, link→link, date→date,
-  single→choice, multi→multichoice, rating→rating, checkbox→checkbox.
-- `effectiveTarget(q, type: ItemTypeDef | undefined)`: `goesTo` when it still resolves (field exists, kind in
-  `MAPPABLE_KINDS[q.type]`, rating scale ≤ field scale), else `{ to: 'description' }` with `broken: true`.
-- `syncedOptions`: a mapped single/multi question's option edit returns the catalogue change for its field.
+`MAPPABLE_KINDS`, `TITLE_TYPES` (short, email, number, single, date) and `NEW_FIELD_KIND` are the spec's tables.
+`fieldTakes(q, field)`: the kind fits; a rating field's scale ≥ the question's; a choice field holds every option
+and the question has no Other. `effectiveTarget(q, type)` resolves `goesTo` or falls back to Description with
+`broken: true` (field gone, not in `type.fields`, no longer fits; Title on a type that cannot be one).
+`fieldChoices(form, q, type)` lists fitting fields with the question using each; `titleTakenBy`; `newFieldFor`.
 
 ## 6. Response → card (`card.ts`)
 
-`responseCard(form, answers, type, number, now) → { type: string; fields: ItemFields }`:
+`responseCard(form, tabId, answers, type, number) → { type, fields }`:
 
-- `title`: the Title-mapped answer as text, else `` `${heading} #${number}` ``, capped at ITEM_TITLE_MAX.
-- `description`: for each unmapped (or broken) answered question in form order, `**<prompt>**\n<text>\n\n`, capped at
-  ITEM_DESCRIPTION_MAX (cut with `…`). Text: choices `, `-joined, rating `n / scale`, checkbox Yes/No.
-- custom fields: the value converted to the field's kind (number→Currency rounds to 2 dp; multi→Long Text joins
-  lines; single→Text as text).
-- `status`: the destination's. `form: { tabId, number, at }` under the reserved field `formResponse` (shown as the
-  From Form chip; validated by items as an unknown object field → added to KNOWN_FIELDS as kind `form`).
+- `title`: the Title answer as text (blank falls back), else `` `${heading} #${number}` ``, capped at ITEM_TITLE_MAX.
+- `description`: each unmapped (or broken) answer in form order, `prompt\nanswer`, blocks split by a blank line;
+  `descriptionRich` the same runs with the prompts bold. Past ITEM_DESCRIPTION_MAX: the plain text cut with `…`, no
+  runs.
+- a mapped field: currency rounded to 2 dp, Long Text from picks one a line, Text from any answer's text, a rating
+  capped at the field's scale.
+- `status`: the destination's. `fromForm`: `fromFormValue(tabId, number)`, read by `readFromForm`.
 
 ## 7. Starters (`starters.ts`)
 
-`FORM_STARTERS: readonly FormStarter[]` with `{ id: 'blank'|'bug-report'|'feedback'|'feature-request'|'rsvp'|'job-application'|'contact', name, line, readyType?: 'bug'|'idea'|'candidate', form(newId): FormDefinition, fields: {questionId, label, kind, options?, scale?}[] }` exactly as the spec's table. `telemetryType` maps to `Blank`, `BugReport`, ...
+`FORM_STARTERS` as the spec's table (`id`, `name`, `line`, `telemetry`, `readyType?`, `accent`, `description?`,
+`sections` of questions with `to: 'title' | 'description' | StarterField`). `starterBaseType(starter, catalogue,
+newTypeId)`: the document's copy of the ready-made type, else the ready-made one, else a new type (checklist glyph,
+the starter's colour; "Response" for Blank). `buildStarter(starter, type, newId)`: the form, its questions pointing
+at the type's fields; a field of the same name and kind reused (options it lacks added), else added. Returns the
+same type object when nothing changed.
 
-## 8. Public projection (`public.ts`)
+## 8. Destination and the public form (`destination.ts`, `public.ts`)
 
-`publicForm(form) → PublicForm`: heading, description, accent, cover, sections with questions stripped of `goesTo`;
-settings `confirmation`. Never the destination, ids of fields or the starter.
+`destinationProblem(destination, boards, types)`: `no_destination | board_missing | status_missing | type_missing |
+type_not_on_board`, Archive boards not counted; `DESTINATION_PROBLEM_TEXT` its sentence. `publicForm(form)` strips
+`goesTo`, the destination and the starter, and fills the default confirmation. `closedReason(form, { open,
+responses, now })`: `switched_off | no_destination | closes_at | limit`.
 
-## 9. Document (`packages/document`)
+## 9. Document
 
-- `TabKind` gains `'form'`; `PLAN_TAB_KINDS` = board, sheet, dashboard, form; `isPlanTabKind`, `tabKindOf` accept it.
-- `Tab.form?: FormDefinition`. Tab validation keeps it as JSON; readers call `readForm`.
-- A copy (`copyDocument`, tab duplicate, import) keeps `form` and clears nothing in it; the link lives server-side
-  so a copy is unpublished by construction. A duplicate whose destination tab was not copied clears `destination`
-  (`remapFormDestination(form, tabIdMap)`).
+- `TabKind` gains `'form'`; `PLAN_TAB_KINDS`, `isPlanTabKind`, `tabKindOf` take it. `Tab.form?: FormDefinition`,
+  stored as tab JSON; readers call `readForm`.
+- A rename (`useTabActions`) and a duplicate set `form.heading` with the name (`apps/live/lib/form-tab.ts`).
 
 ## 10. Items: the two field kinds
 
-- `CUSTOM_FIELD_KINDS` += `'multichoice'`, `'rating'`. `CustomFieldDef.scale?: number` (rating; default 5).
-- `readCustom`: multichoice reads options as choice does; rating reads `scale` in 3..10.
-- `card-text.ts` `customFieldText`: multichoice joins `, `; rating `★★★★☆` up to 5, else `n / scale`.
-- `board-csv.ts`: multichoice `; `-joined in and out; rating as the number, refused outside 1..scale.
-- `type-changes.ts` (MCP `change_card_types`): accepts the kinds; `options` for multichoice, `scale` for rating.
-- `KNOWN_FIELDS.formResponse = 'form'`; `checkFields` validates `{ tabId: string, number: int ≥1, at: number }`.
-- Editor: `CustomFieldKindParts` (icons: list-checks, star), the Add Field grid becomes 12 tiles six to a row,
-  `CustomFieldEditor` gains `MultiChoiceEditor` (checkbox list) and `RatingEditor` (radio group of stars, arrows),
-  the card chip draws the text above.
+`CUSTOM_FIELD_KINDS` += `multichoice`, `rating`; `CustomFieldDef.scale?`; `ratingScaleOf`. `readCustom` reads a
+multichoice's options as Choice's and a rating's `scale` (3..10, the default unstored). `customFieldText`:
+`multiChoiceText`, `ratingText` (stars to 5, else `n / scale`). `board-csv`: `multiChoiceOf`, ratings in range.
+`resolveFields` (agents): picks by name, ratings in range. `applyCardTypeChanges`: `options` for multichoice, `scale`
+for rating. No item store change: a list of strings and a number are already valid custom values.
 
 ## 11. Api
 
 ### Tables (migration `0092_forms.sql`)
 
 ```sql
-CREATE TABLE form_links (
-  code TEXT PRIMARY KEY,
-  document_id TEXT NOT NULL,
-  tab_id TEXT NOT NULL,
-  open INTEGER NOT NULL DEFAULT 1,
-  created_at INTEGER NOT NULL,
-  created_by TEXT NOT NULL,
-  responses INTEGER NOT NULL DEFAULT 0,      -- the response number last given
-  hour_start INTEGER NOT NULL DEFAULT 0,     -- per-form hourly cap window
-  hour_count INTEGER NOT NULL DEFAULT 0,
-  suspended_at INTEGER,
-  last_email_at INTEGER, held_emails INTEGER NOT NULL DEFAULT 0
-);
-CREATE UNIQUE INDEX form_links_tab ON form_links(document_id, tab_id) WHERE suspended_at IS NULL;
-CREATE TABLE form_reports (code TEXT NOT NULL, browser TEXT NOT NULL, network TEXT NOT NULL, reason TEXT NOT NULL,
-  note TEXT, created_at INTEGER NOT NULL, PRIMARY KEY (code, browser));
-CREATE TABLE form_reads (code TEXT NOT NULL, owner_id TEXT NOT NULL, seen_number INTEGER NOT NULL,
-  PRIMARY KEY (code, owner_id));
+form_links (code PK, document_id → documents ON DELETE CASCADE, tab_id, open, created_at, responses,
+            last_response_at, hour_start, hour_count, suspended_at, last_email_at, held_emails)
+  UNIQUE (document_id, tab_id) WHERE suspended_at IS NULL; INDEX (document_id)
+form_reports (code → form_links ON DELETE CASCADE, browser, network, reason, note, created_at, PK (code, browser))
+form_reads (code → form_links ON DELETE CASCADE, owner_id, seen_number, PK (code, owner_id)); INDEX (owner_id)
 ```
 
-Unseen = `responses - seen_number` (by response number, so no per-card rows).
+`form_reads.owner_id` is owner-keyed data (`docs/specs/015-api/api.md` "Owner-keyed data"): deleted with an account,
+moved by the guest migration. Unseen = `responses - seen_number`.
+
+### `db/forms.ts`
+
+`generateFormCode` (base 62 without bias), `getLiveFormLink`, `getFormLink`, `getSuspendedFormLink`,
+`countSuspendedFormLinks`, `createFormLink` (carries the tab's highest response number on; null on a second live
+link), `setFormLinkOpen`, `deleteFormLink` (live only), `deleteFormLinksForTab`, `claimResponseNumber` (one guarded
+`UPDATE … RETURNING`: number, `last_response_at` and the hourly window together; null at the cap),
+`addFormReport` (distinct networks), `suspendFormLink`, `markFormSeen`, `unseenResponses`, `claimFormEmail`
+(compare-and-swap on `last_email_at`, returning how many were held).
 
 ### Routes
 
-| Method | Path                                       | Gate                                         | Does                                                                                                                                                     |
-| ------ | ------------------------------------------ | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/documents/:id/tabs/:tabId/form-link` | read                                         | `{ link: FormLinkDTO \| null, responses, unseen }`; `code` only to edit                                                                                  |
-| POST   | `/api/documents/:id/tabs/:tabId/form-link` | edit                                         | Publish: 409 `form_already_published`, 409 `form_destination_missing`, 403 `form_suspensions`                                                            |
-| PUT    | `/api/documents/:id/tabs/:tabId/form-link` | edit                                         | `{ open: boolean }`; purges the public cache                                                                                                             |
-| DELETE | `/api/documents/:id/tabs/:tabId/form-link` | edit                                         | Deletes the live link                                                                                                                                    |
-| POST   | `/api/documents/:id/tabs/:tabId/form-seen` | read                                         | `form_reads.seen_number = responses` for the caller                                                                                                      |
-| GET    | `/api/forms/:code`                         | public                                       | `PublicFormDTO` `{ state: 'open' \| 'closed', form?, closedMessage?, backdrop }`, cached 60 s, 404 `form_not_found`                                      |
-| POST   | `/api/forms/:code/responses`               | public, `FORM_RATE_LIMITER` per network      | 201 `{ number }`; 400 `{ error: 'invalid_answers', errors }`; 409 `form_closed`; 413 `form_full` / `payload_too_large`; 429 `rate_limited` / `form_busy` |
-| POST   | `/api/forms/:code/reports`                 | public, `COMMUNITY_RATE_LIMITER` per network | 201; once per browser (`X-Owner-Id`)                                                                                                                     |
+| Method | Path                                       | Gate   | Does                                                                                                                                            |
+| ------ | ------------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/documents/:id/tabs/:tabId/form-link` | read   | `FormLinkResponse`; `link.code` `''` unless edit                                                                                                |
+| POST   | `.../form-link`                            | edit   | Publish; marks it seen for the publisher. 409 `form_already_published` / `form_destination_missing`, 403 `form_suspensions`, 404 not a Form tab |
+| PUT    | `.../form-link`                            | edit   | `{ open }`                                                                                                                                      |
+| DELETE | `.../form-link`                            | edit   | Deletes the live link                                                                                                                           |
+| POST   | `.../form-seen`                            | read   | Marks every response so far seen for the caller                                                                                                 |
+| GET    | `/api/forms/:code`                         | public | `PublicFormResponse`, `Cache-Control: no-store`; 404 `form_not_found` for every miss                                                            |
+| POST   | `/api/forms/:code/responses`               | public | 201 `{ number }`; 400 `invalid_answers`; 409 `form_closed`; 413 `form_full`; 429 `form_busy`                                                    |
+| POST   | `/api/forms/:code/reports`                 | public | 201; 400 `invalid_report`; suspends at three networks and emails the owner                                                                      |
 
-Public routes are exempt from the auth parse and the owner-keyed write limiter, as `/api/share` is. A trashed
-document, a suspended link, a missing tab or a tab whose kind is not `form` answer 404 / closed alike, no leak.
+`/api/forms` requests skip the owner-keyed write limiter and take `FORM_RATE_LIMITER` (`index.ts`). The tab delete
+(`document-subresource-routes.ts`) deletes the tab's links. All are in the OpenAPI manifest.
 
 ### The response write (`forms/respond.ts`)
 
-1. Body ≤ RESPONSE_BODY_MAX; hidden field set → 201 `{ number: 0 }`, `[forms] form.response.dropped`.
-2. Read link (404), document (trash → 404), Form tab row (`readForm`); open check (switch, closesAt, limit,
-   suspended) → 409 `form_closed`.
-3. `checkResponse` → 400 with errors.
-4. Destination: the board tab row exists and holds a board taking `typeId` with a column of `status`, the type in the
-   catalogue; else 409 `form_closed` and `[forms] form.destination.broken`.
-5. Claim the number and the hourly slot in one guarded UPDATE
-   (`responses = responses + 1, hour_count = CASE ... END WHERE code = ? AND hour_count < cap RETURNING responses`);
-   no row → 429 `form_busy`.
-6. `createMany` with `by` = the form person `{ id: 'form:<code8>', name: '<heading> form', color: accent }`;
-   `items_full` → 413 `form_full` (the number is not reused: it stays claimed).
-7. Relay the item; `waitUntil` the email (`notifyFormResponse`, throttled by `last_email_at`/`held_emails`).
+1. Body ≤ RESPONSE_BODY_MAX (413), JSON with `answers` (400).
+2. `openFormLink`: link live, document live, tab a Form tab (404 otherwise).
+3. Hidden field set → 201 `{ number: 0 }`, `Form·Sent·Dropped`.
+4. `closedReason` → 409 `form_closed`. `checkResponse` → 400 with errors.
+5. `destinationProblem` over the destination tab's boards and the catalogue → 409 `form_closed`.
+6. The card for number 1 checked by `readItemCreate` (400 if refused: never expected).
+7. `claimResponseNumber` → 429 `form_busy` at the cap.
+8. `createMany(ctx, { documentId, owner: formPerson.id }, [create], { by: formPerson })`; `items_full` → 413
+   `form_full`. Relay; `Form·Sent·Response`; `notifyFormResponse` in `waitUntil`.
 
 ### Logs
 
 `[forms] form.published`, `form.closed`, `form.reopened`, `form.deleted`, `form.response.accepted`,
-`form.response.refused {error}`, `form.response.dropped`, `form.destination.broken`, `form.reported`,
-`form.suspended`, `form.email.sent|held`.
+`form.response.refused {error}`, `form.response.dropped`, `form.response.unmade`, `form.destination.broken`,
+`form.reported`, `form.suspended`, `form.email.sent`, `form.email.held`.
 
-### Elsewhere in the api
+### Elsewhere
 
-- Tab delete deletes the tab's form links (`deleteFormLinksForTab`) in the tab delete batch.
-- Activity (`GET /api/activity`) gains `formResponses: { code, documentId, documentName, tabId, heading, unseen,
-boardTabId }[]` for documents the reader may edit with `unseen > 0`.
-- `notification-prefs`: a `formResponses` email preference (default on).
-- `LIVE_ROUTE_SEGMENTS` += `form`; `pageViewPath('/form/<code>')` → `/form`.
+- The Inbox: `readActivity` adds `FORM_RESPONSES_SQL` (`db/activity-forms.ts`) to its batch: live links in the
+  reader's own and team documents with unseen responses, newest first; heading and board tab read from the tab's JSON.
+- `notification-prefs`: `notifyFormResponses` (default on).
+- `LIVE_ROUTE_SEGMENTS` += `form`; `pageViewPath('/form/…')` is `/form`; `API_ROUTE_RESOURCES` += `forms`.
 
 ## 12. Live: the Form tab
 
-| File                                            | Contract                                                                                                                                                                     |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hooks/forms/useFormActions.ts`                 | `changeForm(fn, kind)` commits `tab.form` (one undo step per change), `startForm(starter)`                                                                                   |
-| `hooks/forms/form-edits.ts`                     | Pure edits: add/duplicate/delete/move question, section, option ops, `setTarget`, `setType` (keeps prompt and compatible settings, drops a mapping the new type cannot take) |
-| `hooks/forms/useFormLink.ts`                    | Loads and changes the link via `lib/api/forms.ts`; `markSeen` on open                                                                                                        |
-| `components/forms/FormTab.tsx`                  | The page: column, cover, heading, sections, add bar; selection; Preview                                                                                                      |
-| `components/forms/FormQuestionCard.tsx`         | One question, view and edit states                                                                                                                                           |
-| `components/forms/QuestionControl.tsx`          | The respondent's control per type (shared by builder, preview and the public page)                                                                                           |
-| `components/forms/FormPanel.tsx`                | Question / Responses Go To / Settings tabs                                                                                                                                   |
-| `components/forms/AnswerGoesTo.tsx`             | The mapping picker                                                                                                                                                           |
-| `components/forms/ShareFormDialog.tsx`          | Publish, copy, open, switch, delete                                                                                                                                          |
-| `components/forms/FormStatusBar.tsx`            | "14 responses · 3 new", View on Board, paused and suspended notices                                                                                                          |
-| `components/plan/start/start-planning-items.ts` | `forms` category and `{ kind: 'form', starter }` items                                                                                                                       |
+| File                                                        | Contract                                                                                                                                                                                                                                                      |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hooks/forms/form-edits.ts`                                 | Pure edits: add, duplicate (no mapping), delete, move, place (drag), update, set type, set target, options, sections, patch                                                                                                                                   |
+| `hooks/forms/form-start.ts`                                 | `planFormStart`, `responsesBoardSetup`, `responsesBoardTab`, `boardsOf`, `uniqueTypeLabel`, `withBoardTaking`                                                                                                                                                 |
+| `hooks/forms/useFormActions.ts`                             | `startForm`, `changeForm`, `renameForm`, `addFieldFor`, `syncFieldOptions`, `newResponsesBoard`, `newCardType`; a locked tab refuses each                                                                                                                     |
+| `hooks/forms/useFormLink.ts`                                | Reads (marking seen) on open, polls, publishes, opens/closes, deletes; `status` `offline` without a server                                                                                                                                                    |
+| `lib/api/forms.ts`, `lib/api/forms-public.ts`               | The owner's client (identity headers), the page's (plain fetch)                                                                                                                                                                                               |
+| `components/forms/FormPage.tsx`                             | The cover over the canvas, the top-row Preview / Form Panel / Share Form, the status bar, builder or Preview                                                                                                                                                  |
+| `components/forms/builder/*`                                | `FormBuilderColumn`, `FormHeaderCard` (+ `SectionHeader`), `FormQuestionCard`, `OptionsEditor`, `FormAddBar`, `QuestionTypeMenu`, `DraftText`, `useQuestionDrag`, `FormSidePanel`, `AnswerGoesTo`, `QuestionSettings`, `DestinationPicker`, `FormSettingsTab` |
+| `components/forms/ShareFormDialog.tsx`, `FormStatusBar.tsx` | As the spec                                                                                                                                                                                                                                                   |
+| Shared with the page                                        | `QuestionView`, `QuestionControl`, `RatingInput`, `FormCoverBand`, `LinkedText`                                                                                                                                                                               |
 
-Start: `startForm(starter)` → one `commitTabs` making the tab `kind: 'form'`, `form`, and (when needed) the new Board
-tab after it (`newSlotTab`-style board, columns New/In Progress/Done); then `itemTypes.addTypes` / `saveType` for
-the card type and fields.
+`EditorView` mounts `FormPage` (lazy) for a Form tab with a form, Start Planning otherwise. `isCanvasCovered`,
+`CanvasChrome`, `plan-tab-list-store` and the mode lock name the kind.
 
-## 13. Live: the respondent page
+## 13. Live: the form page
 
-- `app/form/page.tsx` (static, `index: false`), the live worker rewrites `/form/<code>` to `/form/placeholder` as
-  it does `/document`; `components/forms/respond/FormRespondPage.tsx` reads the code from the path.
-- Imports only `@livediagram/forms` (answers, messages), `QuestionControl` and `@livediagram/ui` primitives: no
-  editor modules (guarded by a first-load test listing the page's chunks).
-- Session storage key `livediagram:form:<code>`; wrapped in try/catch.
+`app/form/[code]/page.tsx` (one placeholder built; `index: false`); the live worker rewrites every `/form/…` to
+`/form/placeholder`, with the same security headers (not frameable). `FormRespondPage` reads the code from the path,
+loads `GET /api/forms/:code`, and draws loading, not found, error, closed or `FormFill`. `FormFill` / `useFormFill`:
+sections, checks, the summary, Submit, the confirmation; drafts in session storage `livediagram:form:<code>`.
+`FormFooter`: the made-with line and Report This Form (browser id `livediagram:form-browser`). The page imports no
+editor modules: `forms-public.ts`, the shared controls and `@livediagram/ui`.
 
 ## 14. Tests (traceability)
 
-| Spec rule                                                                           | Test                                                   |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| readForm sanitises every field                                                      | `packages/forms/src/read.test.ts`                      |
-| Every answer error per type                                                         | `answers.test.ts`                                      |
-| Mapping table, fallback when field removed                                          | `mapping.test.ts`                                      |
-| Title, Description, field values, numbering                                         | `card.test.ts`                                         |
-| Starters match the spec table                                                       | `starters.test.ts`                                     |
-| Public projection hides mapping/destination                                         | `public.test.ts`                                       |
-| New field kinds read, CSV, card text                                                | `packages/items` tests beside each file                |
-| Form tab kind always Plan                                                           | `packages/document/src/dashboard.test.ts` (kinds list) |
-| Owner routes gated by role                                                          | `apps/api/src/routes/form-link-routes.test.ts`         |
-| Response write: open, closed, invalid, full, busy, hidden field, destination broken | `form-public-routes.test.ts`                           |
-| Reports suspend after three networks                                                | `form-reports.test.ts`                                 |
-| Share roles in the builder                                                          | `apps/live/components/forms/FormTab.roles.test.tsx`    |
-| Edits are pure and one step                                                         | `hooks/forms/form-edits.test.ts`                       |
-| Respondent page: sections, errors, submit                                           | `components/forms/respond/FormRespondPage.test.tsx`    |
-| `/form/<code>` page view drops the code                                             | `packages/api-schema/src/page-views.test.ts`           |
+| Spec rule                                                                                         | Test                                                                     |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| readForm sanitises every field                                                                    | `packages/forms/src/read.test.ts`                                        |
+| Every answer error per type; copy for each                                                        | `answers.test.ts`                                                        |
+| Mapping table, fitting fields, fallback                                                           | `mapping.test.ts`                                                        |
+| Title, Description, field values, numbering, `fromForm`                                           | `card.test.ts`                                                           |
+| Starters valid, mappings resolve, fields reused                                                   | `starters.test.ts`                                                       |
+| Destination problems; public projection; closed reasons                                           | `destination.test.ts`, `public.test.ts`                                  |
+| The two field kinds: catalogue, card text, CSV, agents                                            | `packages/items/src/form-field-kinds.test.ts`                            |
+| Form tab kind always Plan                                                                         | `packages/document/src/dashboard.test.ts`                                |
+| `/form/<code>` page views drop the code                                                           | `packages/api-schema/src/page-views.test.ts`                             |
+| Publish by role, the code hidden, close, delete, tab delete                                       | `apps/api/src/routes/forms.test.ts`                                      |
+| Public read, every miss alike, responses, refusals, cap, full, hidden field, reports, suspensions | `apps/api/src/routes/forms.test.ts`                                      |
+| Code generation, the email throttle, the Inbox read                                               | `apps/api/src/db/forms.test.ts`                                          |
+| The response and suspension emails                                                                | `apps/api/src/email/notifications.test.ts`                               |
+| `form_reads` owner-keyed                                                                          | `apps/api/src/db/account-owner-columns.test.ts`                          |
+| Builder edits                                                                                     | `apps/live/hooks/forms/form-edits.test.ts`                               |
+| Starting a form                                                                                   | `apps/live/hooks/forms/form-start.test.ts`                               |
+| Builder by role, selection, options, sections, rename                                             | `apps/live/components/forms/builder/FormBuilderColumn.test.tsx`          |
+| The form page flow                                                                                | `components/forms/respond/FormFill.test.tsx`, `FormRespondPage.test.tsx` |
+| New on a response's card                                                                          | `components/forms/fresh-responses.test.ts`                               |
+| Start Planning's Forms                                                                            | `components/plan/PlanBoardPicker.test.tsx`                               |
+| The Inbox section                                                                                 | `components/panels/ActivityPane.test.tsx`                                |
+| The worker rewrite                                                                                | `apps/live/src/worker.test.ts`, `lib/form-path.test.ts`                  |

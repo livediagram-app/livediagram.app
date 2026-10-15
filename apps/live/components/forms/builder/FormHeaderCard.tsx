@@ -67,7 +67,7 @@ export function FormHeaderCard({ sections }: { sections: number }) {
                 Cover Colour
               </p>
               <ColourSelect
-                label="Cover colour"
+                label="Cover Colour"
                 value={form.cover?.color}
                 onChange={(color) =>
                   b.actions.changeForm((f) =>

@@ -8,6 +8,7 @@ import type { Tab } from '@livediagram/document';
 import { CloseIcon } from '@livediagram/ui';
 import { questionById, setQuestionType } from '@/hooks/forms/form-edits';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { AnswerGoesTo } from './AnswerGoesTo';
 import { DestinationPicker } from './DestinationPicker';
 import { FormSettingsTab } from './FormSettingsTab';
@@ -69,6 +70,7 @@ export function FormSidePanel({
             </button>
           ))}
         </div>
+        <HelpArticleLink article="planForms" />
         {onClose ? (
           <button
             type="button"

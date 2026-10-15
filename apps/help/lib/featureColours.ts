@@ -35,6 +35,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'draw-tour': '#57534e',
   'illustrate-tour': '#be123c',
   dashboards: '#0ea5e9',
+  forms: '#7c3aed',
   sheets: '#16a34a',
   'sheet-functions': '#059669',
   illustrate: '#e11d48',

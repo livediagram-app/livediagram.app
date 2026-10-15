@@ -3,7 +3,8 @@
 Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab**
 (one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the
 document's Board and Sheet tabs, plan views, charts and notes). Boards and Sheets are never small elements free on a
-canvas any more; a Dashboard is where they are seen side by side. Each kind is a tab **Kind**
+canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form,
+whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md). Each kind is a tab **Kind**
 ([Domain language](../003-system-architecture/domain-language.md)), as Event Storming is: it is what the tab is, and
 it brings its own behaviour.
 

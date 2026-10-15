@@ -76,6 +76,7 @@ export const HELP_ARTICLES = {
   planCards: 'canvas/plan-mode/cards',
   planSheets: 'canvas/plan-mode/sheets',
   planDashboards: 'canvas/plan-mode/dashboards',
+  planForms: 'canvas/plan-mode/forms',
   planTour: 'canvas/plan-mode/plan-tour',
   facilitateTour: 'canvas/facilitate-mode/facilitate-tour',
   // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
@@ -158,6 +159,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planDashboards: {
     title: 'Learn about dashboards',
     description: 'Rows of slots, what a slot can show, and arranging them.',
+  },
+  planForms: {
+    title: 'Learn about forms',
+    description: 'Questions, where answers go, publishing and responses.',
   },
   eventStormingBoards: {
     title: 'Learn about event-storming boards',

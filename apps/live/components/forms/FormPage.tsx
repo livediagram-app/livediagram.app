@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Tab } from '@livediagram/document';
+import { ITEMS_MAX } from '@livediagram/items';
 import {
   destinationProblem,
   destinationType,
@@ -235,6 +236,7 @@ export function FormPage({
                       <FormStatusBar
                         link={link}
                         problem={problem}
+                        full={(plan?.items.size ?? 0) >= ITEMS_MAX}
                         canEdit={canEdit}
                         boardName={destTab?.name ?? null}
                         onViewBoard={viewBoard}

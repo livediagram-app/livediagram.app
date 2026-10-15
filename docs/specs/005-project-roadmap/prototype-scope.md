@@ -38,6 +38,10 @@ The editor is real:
   cells, 157 functions (reading other sheets on the tab and Plan cards), number formats, borders, merges,
   freeze, sort, filter, find and replace, copy and paste with Google Sheets and Excel, CSV in and out, live for
   everyone with one undo timeline, maximised like a board, and sheet tools for the CLI and MCP.
+- **Forms** ([Forms](../030-forms/forms.md)): a Plan-mode Form tab built in place from seven starters, ten question
+  types and sections, each answer mapped to the card's title, description or a field (Multiple Choice and Rating
+  joined the card field kinds), published as a public link anyone can fill in without an account; every response
+  becomes a card in the board column the form names, with the Inbox, a New mark and an email to hear of it.
 - **Snap colours**: on a whiteboard, one option converts every custom colour into the board's stock colours, so an imported or hand-coloured board adapts to light and dark like everything drawn in stock colours ([Draw mode](../023-draw-mode/draw-mode.md#snap-colours)).
 - **Packed pen strokes**: every freehand stroke is stored as one compact binary block of points and pressures, so a board of thousands of strokes fits its tab; an editor left open across a format change asks calmly to be reloaded. See [Stroke points](../006-document/stroke-points.md) and [New version prompt](../016-platform/new-version-prompt.md).
 - **Corners that scale down**: a corner preset is drawn at most a quarter of a shape's shorter side, so a small rounded square stays a rounded square ([Corner radius](../008-canvas/corner-radius.md)).

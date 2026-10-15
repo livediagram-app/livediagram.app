@@ -1,0 +1,84 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Forms',
+  description:
+    'Build a form in Plan mode and share its link: every response becomes a card on your board. Questions, where answers go, publishing and reports.',
+  path: '/help/canvas/plan-mode/forms/',
+});
+
+<ArticleLayout
+  title="Forms"
+  description="A form anyone can fill in from a link, whose every response lands as a card on your board."
+  categoryTitle="Canvas"
+  categorySlug="canvas/plan-mode"
+>
+
+A **Form** is a [Plan mode](/help/canvas/plan-mode/) tab that holds one form. You build it in place, share its link, and anyone can fill it in without an account. Each response becomes a card on a [board](/help/canvas/plan-mode/boards/) in the same document, already in the column you chose, so collecting answers leads straight into working on them.
+
+## Start a Form
+
+On an empty Plan tab, choose **Forms** in **Start Planning**'s rail, then a starter:
+
+- **Blank Form**: one question to start from.
+- **Bug Report**: a summary, what happened, severity and an email, landing on a triage board as Bugs.
+- **Feedback**: a star rating and comments.
+- **Feature Request**: an idea and how important it is, as Ideas your team can vote on.
+- **Event RSVP**: who is coming and what they need.
+- **Job Application**: two sections, about the person and their experience, as Candidates.
+- **Contact**: a message you can assign and close, as a Request.
+
+A starter picks where responses go: your first board that takes its kind of card, or a new **Responses** board made after the form with **New**, **In Progress** and **Done** columns. The fields its questions fill are added to the card type for you.
+
+## Build the form
+
+The tab shows the form as people will see it. Click a question (or Tab to it and press Enter) to edit it: type its question, a description under it, and its options, and choose its type. Its footer has **Answer goes to**, **Move Up**, **Move Down**, **Duplicate**, **Delete** and **Required**. Escape lets go of it.
+
+- **Add a question** with the bar under the selected question: it adds one of the same type, or pick another type from its arrow.
+- **Add Section** splits the form after the selected question, so people answer it one page at a time with **Next** and **Back** and a progress bar.
+- **Drag** a question by the handle at its top to move it, into another section too.
+- **Options**: press Enter for the next one, Backspace in an empty one to remove it, Alt with the arrow keys to move it, and paste several lines to add one option per line. **Add “Other”** lets people type their own answer.
+- **The cover**: hover the top of the form and choose **Add Cover** for a colour band, plain, as a gradient or dotted.
+
+### Question types
+
+**Short Answer**, **Paragraph**, **Number** (with a minimum, a maximum and whole numbers only), **Email**, **Link**, **Date**, **Single Choice** (shown as a dropdown past seven options, or always), **Multiple Choice** (with the fewest and most picks), **Rating** (stars, or numbers from 1 to between 3 and 10 with a label at each end) and **Checkbox** (one box to tick, such as agreeing to terms).
+
+## Where answers go
+
+The **Form Panel** beside the form has three tabs:
+
+- **Question**: the selected question's type, **Answer Goes To** and its settings.
+- **Responses Go To**: the board, the card type and the column every response is made in.
+- **Settings**: **Accepting Responses**, **Close On**, **Response Limit**, the message people see after sending and once the form has closed, and the **Form Colour**.
+
+**Answer Goes To** decides where each answer is kept on the card:
+
+- **Description**, the default: written into the card's description under its question.
+- **Title**: the card's name on the board. One question at most. With none, cards are named after the form and numbered, such as **Bug Report #14**.
+- **A field** of the card type that fits the answer, or **New Field**, which adds one named after the question. A choice question mapped to a Choice or Multiple Choice field keeps its options in step with the field.
+
+**Preview** at the top right shows the form exactly as people will, working, without sending anything.
+
+## Share it
+
+Press **Share Form** and then **Publish Form**. You get a link to copy or open; anyone with it can fill in the form, and they never see your document. The same dialog has **Accepting Responses**, to close the form for a while without losing its link, and **Delete Link**. Publishing again makes a new link.
+
+Forms are published from documents saved to livediagram; a document kept on this device only can't publish one.
+
+## Responses
+
+Each response becomes one card in the column you chose, made by the form (its **Created by** names it) and showing **New** until you open it. The card's panel shows its response number and when it came. A count of responses, with how many are new to you, sits at the top of the Form tab with **View on** its board, and the Explorer's **Inbox** lists forms with new responses. The document's owner also gets an email, at most one every 15 minutes per form; turn it off under **Someone Fills In My Form** in Settings.
+
+If its board, column or card type is removed, the form pauses and asks you to choose where responses go.
+
+## Who can do what
+
+Editors build, publish, open and close forms. Participants and Viewers see the form as people filling it in do, with how many responses it has, but not its link.
+
+## Safety
+
+People can report a form they were sent from **Report This Form** under it. Reports from three different places suspend its link for good, and the owner is told by email. Forms never ask for passwords: don't use them to collect any.
+
+</ArticleLayout>

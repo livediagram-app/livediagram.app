@@ -131,7 +131,7 @@ export function FormSettingsTab({ link }: { link: FormLinkState }) {
           Form Colour
         </p>
         <ColourSelect
-          label="Form colour"
+          label="Form Colour"
           value={form.accent}
           onChange={(accent) => set({ accent })}
         />
