@@ -2,7 +2,12 @@
 // a definition, a token of its own, and steps that end on a closing card.
 
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import {
+  applyShapeVariant,
+  createShape,
+  type Element,
+  type ShapeElement,
+} from '@livediagram/document';
 import { ELEMENT_TOUR_KINDS } from '@/lib/element-tours';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
 import type { ElementTourApi } from './element-tour-api';
@@ -11,6 +16,7 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   sankey: createShape('sankey', 0, 0) as Element,
   'layer-stack': createShape('layer-stack', 0, 0) as Element,
   pyramid: createShape('pyramid', 0, 0) as Element,
+  funnel: applyShapeVariant(createShape('pyramid', 0, 0) as ShapeElement, 'funnel') as Element,
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {

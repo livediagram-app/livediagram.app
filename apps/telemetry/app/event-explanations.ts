@@ -1171,6 +1171,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Pyramid tour, offered beside a selected pyramid.',
   'UI|Ended|PyramidTourSkipped':
     'Someone left the Pyramid tour before its end, or the pyramid it was on went away.',
+  'UI|Ended|FunnelTourCompleted':
+    'Someone reached the end of the Funnel tour, offered beside a selected funnel.',
+  'UI|Ended|FunnelTourSkipped':
+    'Someone left the Funnel tour before its end, or the funnel it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1297,6 +1301,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Layer Stack tour was offered, as a small Tour toolbar beside a selected layer stack (counted once per visit).',
   'UI|Opened|PyramidTourOffer':
     'The Pyramid tour was offered, as a small Tour toolbar beside a selected pyramid (counted once per visit).',
+  'UI|Opened|FunnelTourOffer':
+    'The Funnel tour was offered, as a small Tour toolbar beside a selected funnel (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
@@ -1379,6 +1385,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected layer stack, starting its tour.',
   'UI|Started|PyramidTour':
     'Someone pressed Play on the Tour toolbar beside a selected pyramid, starting its tour.',
+  'UI|Started|FunnelTour':
+    'Someone pressed Play on the Tour toolbar beside a selected funnel, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1556,6 +1564,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Pyramid Tour" in Settings, so it is offered again.',
   'UI|Toggled|PyramidTourSeenOn':
     'Someone switched off Tours › Element Tours › "Pyramid Tour" in Settings, so it is not offered.',
+  'UI|Toggled|FunnelTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Funnel Tour" in Settings, so it is offered again.',
+  'UI|Toggled|FunnelTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Funnel Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -1675,6 +1687,21 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PyramidTourStepAnimate':
     'The Pyramid tour reached its Build step, playing the Build animation on the pyramid.',
   'UI|View|PyramidTourStepOutro': 'The Pyramid tour reached its closing card.',
+  'UI|View|FunnelTourStepStages':
+    'The Funnel tour reached its "Narrowing Stage by Stage" step, on the whole funnel.',
+  'UI|View|FunnelTourStepEdit':
+    'The Funnel tour reached its "Type Over a Stage" step, on the first band\'s name.',
+  'UI|View|FunnelTourStepValues':
+    'The Funnel tour reached its "A Number on Each Band" step, on a band\'s value.',
+  'UI|View|FunnelTourStepAdd':
+    'The Funnel tour reached its "Add a Stage" step, with the "+" ring open on Add Tier.',
+  'UI|View|FunnelTourStepShape':
+    'The Funnel tour reached its "Funnel, Pyramid or Inverted" step, on the selection toolbar\'s More button.',
+  'UI|View|FunnelTourStepColours':
+    'The Funnel tour reached its "From the Accent Down" step, on the last band.',
+  'UI|View|FunnelTourStepAnimate':
+    'The Funnel tour reached its "Pour It In" step, playing the Build animation on the funnel.',
+  'UI|View|FunnelTourStepOutro': 'The Funnel tour reached its closing "That Is a Funnel" card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':

@@ -160,6 +160,7 @@ describe('settings catalogue', () => {
       ['elementTour-sankey', 'toggle', 'Sankey Diagram Tour', 'sankeyDiagram'],
       ['elementTour-layer-stack', 'toggle', 'Layer Stack Tour', 'conceptGraphics'],
       ['elementTour-pyramid', 'toggle', 'Pyramid Tour', 'conceptGraphics'],
+      ['elementTour-funnel', 'toggle', 'Funnel Tour', 'conceptGraphics'],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
@@ -181,6 +182,7 @@ describe('settings catalogue', () => {
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
         ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
         ['PyramidTourSeenOff', 'PyramidTourSeenOn'],
+        ['FunnelTourSeenOff', 'FunnelTourSeenOn'],
       ],
     );
   });
@@ -233,6 +235,7 @@ describe('settings catalogue', () => {
       'elementTour-sankey': ['elementTourKinds'],
       'elementTour-layer-stack': ['elementTourKinds'],
       'elementTour-pyramid': ['elementTourKinds'],
+      'elementTour-funnel': ['elementTourKinds'],
     };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.

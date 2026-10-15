@@ -9,7 +9,7 @@ with a centred card) and [Show Me](show-me.md) (never offered, started from a bu
 tour offers itself, but quietly: a small toolbar that waits beside the selection, never a card over the canvas.
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
-[concept graphics](../009-elements/concept-graphics.md) layer stack and pyramid.
+[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid and funnel.
 
 ## Domain language
 
@@ -143,6 +143,22 @@ the variant: an Inverted pyramid's first tier is the widest, along the top, and 
    top down).
 7. **That Is a Pyramid** (Inverted: **That Is an Inverted Pyramid**): the closing card.
 
+## The Funnel tour
+
+On the selected Funnel (a Pyramid in its Funnel variant), from `funnel-tour-steps.ts`.
+
+1. **Narrowing Stage by Stage**: rings the funnel. Each band is a stage, the widest first, narrowing to a third of the
+   width, so the drop-off reads at a glance.
+2. **Type Over a Stage**: rings the first band's name.
+3. **A Number on Each Band** (only while a band has a value): rings the first value. Each band can carry its number
+   beside its name; cleared, the name takes the whole band.
+4. **Add a Stage**: the "+" ring open on **Add Tier**; a new band at the bottom, up to six.
+5. **Funnel, Pyramid or Inverted** (only while More shows): rings More. Shape switches between the three, keeping
+   every band.
+6. **From the Accent Down**: rings the last band; the widest takes the accent.
+7. **Pour It In**: plays Build on it as a preview, from the top down.
+8. **That Is a Funnel**: the closing card.
+
 ## Share roles
 
 | Role        | Element tours                                                                                  |
@@ -156,7 +172,7 @@ graphic, an Editor on an unlocked element, since its rows are structure), never 
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -165,7 +181,9 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   `...Leftover`, `...Style`, `...Flows`, the dialog's `...FlowsNodes`, `...FlowsRows`, `...FlowsAdd`,
   `...FlowsBalance`, `...FlowsText`, `...FlowsImport`, `...FlowsPreview` and `...Outro`; the Layer Stack's
   `LayerStackTourStepLayers`, `...Edit`, `...Notes`, `...Add`, `...Rows`, `...Colours`, `...Animate` and `...Outro`;
-  the Pyramid's `PyramidTourStepTiers`, `...Edit`, `...Add`, `...Shape`, `...Colours`, `...Animate` and `...Outro`.
+  the Pyramid's `PyramidTourStepTiers`, `...Edit`, `...Add`, `...Shape`, `...Colours`, `...Animate` and `...Outro`;
+  the Funnel's `FunnelTourStepStages`, `...Edit`, `...Values`, `...Add`, `...Shape`, `...Colours`, `...Animate` and
+  `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.
@@ -193,6 +211,6 @@ help article's tour section; and a section here.
 - `apps/live/components/tour/ElementTourOffer.tsx`: the offer toolbar.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
-  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`: each kind's own.
+  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`: each kind's own.
 - `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
 - `apps/live/lib/concept-tour-preview.ts`: the animation a step previews on a concept graphic.

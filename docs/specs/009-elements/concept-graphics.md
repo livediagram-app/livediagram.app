@@ -156,8 +156,9 @@ rows, and the **Flywheel** template's ring is one Cycle. Templates that sit besi
 The first time an Editor selects a concept graphic of a toured kind, a small **Tour** toolbar beside its selection
 toolbar offers its [element tour](../007-editor/element-tours.md): on the graphic itself, its rows, typing in place,
 the "+" ring's add, the Rows section, the colour ramp and its animation previewed on it. Toured: the
-[layer stack](../007-editor/element-tours.md#the-layer-stack-tour) and the
-[pyramid](../007-editor/element-tours.md#the-pyramid-tour).
+[layer stack](../007-editor/element-tours.md#the-layer-stack-tour), the
+[pyramid](../007-editor/element-tours.md#the-pyramid-tour) and the
+[funnel](../007-editor/element-tours.md#the-funnel-tour).
 
 ## Share roles
 

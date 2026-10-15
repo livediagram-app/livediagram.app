@@ -249,6 +249,7 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...SANKEY_TOUR_STEP_SOURCE,
   ...conceptTourSteps('LayerStackTour', 'layer-stack-tour-steps.ts'),
   ...conceptTourSteps('PyramidTour', 'pyramid-tour-steps.ts'),
+  ...conceptTourSteps('FunnelTour', 'funnel-tour-steps.ts'),
 ];
 
 export const DRAW_TOUR_STEP_SOURCE: string[] = [

@@ -4,6 +4,7 @@ export const ELEMENT_TOUR_KINDS = [
   { token: 'SankeyTour', title: 'Sankey' },
   { token: 'LayerStackTour', title: 'Layer Stack' },
   { token: 'PyramidTour', title: 'Pyramid' },
+  { token: 'FunnelTour', title: 'Funnel' },
 ] as const;
 
 export const elementTourTokens = (suffix = ''): string[] =>

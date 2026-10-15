@@ -7,6 +7,7 @@ import type { ElementTourKind } from '@/lib/element-tours';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { layerStackTourSteps } from './layer-stack-tour-steps';
 import { pyramidTourSteps } from './pyramid-tour-steps';
+import { funnelTourSteps } from './funnel-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -73,6 +74,13 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
         inverted: (el as ShapeElement).pyramidVariant === 'inverted',
         ...env,
       }),
+  },
+  funnel: {
+    token: 'FunnelTour',
+    eyebrow: 'Funnel tour',
+    helpArticle: 'conceptGraphics',
+    helpLabel: 'Concept Graphics Help',
+    steps: (el, env) => funnelTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
 };
 

@@ -9,7 +9,7 @@ import type { UserPreferences } from './user-preferences';
 // `elementTourKinds` lists the kinds answered (Play or Cancel); `elementToursSeen` counts them all only for a power
 // user (tourTrackSeen), as the Illustrate tour's kinds do.
 
-export const ELEMENT_TOUR_KINDS = ['sankey', 'layer-stack', 'pyramid'] as const;
+export const ELEMENT_TOUR_KINDS = ['sankey', 'layer-stack', 'pyramid', 'funnel'] as const;
 
 export type ElementTourKind = (typeof ELEMENT_TOUR_KINDS)[number];
 
@@ -18,6 +18,7 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   sankey: 'Sankey diagram',
   'layer-stack': 'layer stack',
   pyramid: 'pyramid',
+  funnel: 'funnel',
 };
 
 // The toured kind an element is, or null when its type has no tour.
@@ -26,6 +27,7 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el.shape === 'sankey') return 'sankey';
   if (el.shape === 'layer-stack') return 'layer-stack';
   if (el.shape === 'pyramid' && (el as ShapeElement).pyramidVariant !== 'funnel') return 'pyramid';
+  if (el.shape === 'pyramid' && (el as ShapeElement).pyramidVariant === 'funnel') return 'funnel';
   return null;
 }
 
@@ -42,6 +44,7 @@ export function canTourElement(
     // A concept graphic's rows are structure, an Editor's on an unlocked element
     // (docs/specs/009-elements/concept-graphics.md "Share roles").
     case 'layer-stack':
+    case 'funnel':
     case 'pyramid':
       return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
   }

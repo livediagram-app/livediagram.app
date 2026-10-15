@@ -64,3 +64,12 @@ describe('element tour kinds of the concept graphics', () => {
     expect(canTourElement({ level: 'participate' }, pyramid, 'pyramid')).toBe(false);
   });
 });
+
+describe('the Funnel element tour kind', () => {
+  it('tours a pyramid in its Funnel variant as the Funnel', () => {
+    const funnel = { ...createShape('pyramid', 0, 0), pyramidVariant: 'funnel' } as Element;
+    expect(elementTourKindOf(funnel)).toBe('funnel');
+    expect(canTourElement({ level: 'edit' }, funnel, 'funnel')).toBe(true);
+    expect(canTourElement({ level: 'view' }, funnel, 'funnel')).toBe(false);
+  });
+});

@@ -1217,6 +1217,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a pyramid.',
         helpArticle: 'conceptGraphics',
       }),
+      elementTourSwitch('funnel', {
+        label: 'Funnel Tour',
+        event: { category: 'UI', on: 'FunnelTourSeenOff', off: 'FunnelTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial funnel conversion stages bands values concept rows replay',
+        description: 'The first time you select a funnel.',
+        helpArticle: 'conceptGraphics',
+      }),
     ],
   },
   {
