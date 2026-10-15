@@ -14,6 +14,7 @@ import {
   FORM_TOUR_OFFERED,
   AVATAR_TOUR_OFFERED,
   ILLUSTRATE_TOUR_OFFERED,
+  SANKEY_TOUR_OFFERED,
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
@@ -565,6 +566,63 @@ export const ILLUSTRATE_TOUR: MetricStack = {
     ILLUSTRATE_TOURS_SKIPPED,
   ],
   headline: ILLUSTRATE_TOURS_STARTED,
+};
+
+// Element tours (docs/specs/007-editor/element-tours.md): the Sankey tour, offered beside a selected Sankey diagram.
+export const SANKEY_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Sankey Tours Declined',
+  'The Sankey tour turned down with the cross on its Tour toolbar.',
+  { types: ['SankeyTourOffer'], rising: 'neutral' },
+);
+
+export const SANKEY_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Sankey Tours Started',
+  'Play pressed on the Tour toolbar beside a Sankey diagram.',
+  { types: ['SankeyTour'] },
+);
+
+export const SANKEY_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Sankey Tour Steps Viewed',
+  'A step of the Sankey tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('SankeyTourStep') },
+);
+
+export const SANKEY_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Sankey Tours Completed',
+  'The Sankey tour run to its last card.',
+  { types: ['SankeyTourCompleted'] },
+);
+
+export const SANKEY_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Sankey Tours Skipped',
+  'The Sankey tour closed before its end.',
+  { types: ['SankeyTourSkipped'], rising: 'neutral' },
+);
+
+export const SANKEY_TOUR: MetricStack = {
+  stack: true,
+  title: 'Sankey Tour',
+  blurb:
+    'The element tour of a Sankey diagram: offered beside a selected one, declined, stepped through, finished or skipped.',
+  members: [
+    SANKEY_TOUR_OFFERED,
+    SANKEY_TOUR_DECLINED,
+    SANKEY_TOURS_STARTED,
+    SANKEY_TOUR_STEPS_VIEWED,
+    SANKEY_TOURS_COMPLETED,
+    SANKEY_TOURS_SKIPPED,
+  ],
+  headline: SANKEY_TOURS_STARTED,
 };
 
 // Show Me (docs/specs/007-editor/show-me.md): the on-demand tours of one surface each. Never offered, so each starts

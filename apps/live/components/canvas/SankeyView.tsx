@@ -24,6 +24,7 @@ import {
 } from '@livediagram/document';
 import { animClass, animSpeedVars } from '@/lib/icons';
 import { ChartReadout } from '@/components/primitives/ChartReadout';
+import { useSankeyTourFocus } from '@/lib/sankey-tour-focus';
 
 type Hover = { kind: 'band'; index: number } | { kind: 'node'; index: number };
 
@@ -38,6 +39,7 @@ export function SankeyView({
   ground,
   editable,
   bare = false,
+  onCanvas = false,
 }: {
   element: ShapeElement;
   fontFamily?: string;
@@ -49,6 +51,9 @@ export function SankeyView({
   editable: boolean;
   // Bands and nodes only: no labels and no hover, for a menu tile's miniature.
   bare?: boolean;
+  // The diagram on the canvas (not a preview or a tile): the one the Sankey tour points at and lifts parts of
+  // (docs/specs/007-editor/element-tours.md "The Sankey tour").
+  onCanvas?: boolean;
 }) {
   const {
     width,
@@ -101,9 +106,19 @@ export function SankeyView({
       ground,
     ],
   );
-  const [hover, setHover] = useState<Hover | null>(null);
+  const [pointerHover, setHover] = useState<Hover | null>(null);
+  // A tour step's lift draws as a hover does, and wins over a pointer left resting on another part (the step is
+  // about its part); hover works as ever once the step ends.
+  const tourFocus = useSankeyTourFocus(onCanvas && !bare ? element.id : null);
+
   const gradientBase = `lvd-sk-${useId().replace(/:/g, '')}`;
   const { w, h, layout, fontPx } = frame;
+  // A lift past the diagram's parts (its flows edited under the step) draws nothing rather than reading past them.
+  const tourHover: Hover | null =
+    tourFocus && tourFocus.index < (tourFocus.part === 'band' ? layout.links : layout.nodes).length
+      ? { kind: tourFocus.part, index: tourFocus.index }
+      : null;
+  const hover = tourHover ?? pointerHover;
 
   const anim = element.sankeyAnim;
   const loops = animLoops(anim, element.sankeyAnimRepeat, SANKEY_LOOPING_ANIMS);
@@ -221,6 +236,8 @@ export function SankeyView({
                 key={i}
                 d={b.path}
                 className="lvd-sk-band"
+                // The tour's anchors (sankey-element-tour-steps.ts).
+                data-sankey-band={i}
                 fill={paint.kind === 'gradient' ? `url(#${gradientBase}-${i})` : paint.color}
                 fillOpacity={
                   on === null
@@ -259,6 +276,7 @@ export function SankeyView({
                 height={Math.max(1, n.y1 - n.y0)}
                 rx={2}
                 className="lvd-sk-node"
+                data-sankey-node={n.index}
                 fill={frame.nodeColor(n.index)}
                 opacity={on === false ? 0.35 : 1}
                 style={{ transition, ...col(n.index) }}

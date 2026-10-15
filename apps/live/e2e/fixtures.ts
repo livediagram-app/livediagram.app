@@ -59,7 +59,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Draw, Avatar, Forms and Illustrate tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
+// The Draw, Avatar, Forms, Illustrate and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
 // docs/specs/030-forms/forms.md, docs/specs/007-editor/illustrate-tour.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
 export async function markModeToursSeen(context: BrowserContext): Promise<void> {
@@ -72,7 +72,8 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
         prefs.drawTourSeen !== true ||
         prefs.avatarTourSeen !== true ||
         prefs.formTourSeen !== true ||
-        !Array.isArray(prefs.illustrateTourKinds)
+        !Array.isArray(prefs.illustrateTourKinds) ||
+        !Array.isArray(prefs.elementTourKinds)
       )
         localStorage.setItem(
           key,
@@ -83,6 +84,8 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
             formTourSeen: true,
             illustrateTourSeen: true,
             illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+            // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
+            elementTourKinds: ['sankey'],
           }),
         );
     } catch {

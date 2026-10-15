@@ -211,6 +211,25 @@ export const FACILITATE_TOUR_STEP_SOURCE: string[] = [
 
 // The Draw tour's steps, as drawTourStepTelemetryType makes them (apps/live draw-tour-steps.ts,
 // docs/specs/023-draw-mode/draw-tour.md). The welcome card sends no step view.
+// The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
+// it runs inside the dialog (each `flows-` prefixed), then its closing card.
+const pascal = (id: string) =>
+  id
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+export const SANKEY_TOUR_STEP_SOURCE: string[] = [
+  ...[
+    ...read('live/components/tour/sankey-element-tour-steps.ts').matchAll(
+      /canvasStep\(\s*'([a-z-]+)'/g,
+    ),
+  ].map((m) => m[1]!),
+  ...[
+    ...read('live/components/tour/sankey-flows-tour-steps.ts').matchAll(/step\(\s*'([a-z-]+)'/g),
+  ].map((m) => `flows-${m[1]!}`),
+  'outro',
+].map((id) => `SankeyTourStep${pascal(id)}`);
+
 export const DRAW_TOUR_STEP_SOURCE: string[] = [
   ...read('live/components/tour/draw-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
@@ -604,6 +623,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
   'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: SANKEY_TOUR_STEP_SOURCE },
   'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
   'apps/live/components/tour/IllustrateTourHost.tsx UI·View': {
     values: ILLUSTRATE_TOUR_STEP_SOURCE,
