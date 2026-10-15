@@ -231,7 +231,10 @@ describe('markdown import limits', () => {
     1 + Math.max(0, ...node.children.map((c) => depthOf(c)));
 
   it('nests a deep list no deeper than MAX_LIST_DEPTH, keeping every item', () => {
-    const md = Array.from({ length: 12_000 }, (_, i) => `${'  '.repeat(i)}- item ${i}`).join('\n');
+    // Past the node cap, so the import also leaves items out; more lines only add input (line i
+    // is indented 2i spaces, so the text grows with the square of the count) and no more depth.
+    const lines = MAX_MARKDOWN_IMPORT_NODES + 500;
+    const md = Array.from({ length: lines }, (_, i) => `${'  '.repeat(i)}- item ${i}`).join('\n');
     const parsed = parseMarkdown(md);
     expect(depthOf(parsed.roots[0]!)).toBe(MAX_LIST_DEPTH);
     const result = buildTabFromMarkdown(md);
