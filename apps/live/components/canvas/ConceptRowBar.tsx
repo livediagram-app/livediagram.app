@@ -9,6 +9,7 @@ import {
 } from '@livediagram/document';
 import { FLOATING_CONTROL_CLASS } from '@/components/chrome/floating-controls';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
+import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useGraceHover } from '@/hooks/ui/useGraceHover';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { moveRow } from '@/lib/move-row';
@@ -175,7 +176,8 @@ function boxOf(stage: ChevronLayout['stages'][number]): LayoutRect {
 /**
  * A selected, editable chevron process's stages (`children`) between their hover zones and their bars. Each zone sits
  * under the stages, so the words stay editable and a press still reaches the element; the bars sit over them. Leaving
- * a zone clears the hover after a grace, so the pointer can reach the bar. On a phone (no hover) every bar shows.
+ * a zone clears the hover after a grace, so the pointer can reach the bar. On a phone or any touch screen (no hover)
+ * every bar shows.
  */
 export function ChevronStageControls({
   stages,
@@ -197,7 +199,9 @@ export function ChevronStageControls({
   children: ReactNode;
 }) {
   const hover = useGraceHover<number>();
-  const all = isMobileViewportSync();
+  // Every bar shows where there is no hover to reveal one: a phone, and any touch screen (a tablet is wide).
+  const coarse = useCoarsePointer();
+  const all = coarse || isMobileViewportSync();
   const zones = useRef<(HTMLDivElement | null)[]>([]);
   const overName = (e: ReactPointerEvent) => {
     const at = zones.current.findIndex((z) => {
@@ -244,7 +248,9 @@ export function ChevronStageControls({
             key={i}
             rect={{ ...stages[i]!.label, y: boxOf(stages[i]!).y }}
             room={{
-              width: pitch,
+              // The bar is centred on the stage's words, which sit inset from its point: its room is the narrower of
+              // those and the step to the next stage, so a full bar never runs onto a neighbour.
+              width: Math.min(pitch, stages[i]!.label.width),
               height: boxOf(stages[i]!).height / 2 - NAME_HALF_HEIGHT * labelPx,
             }}
             index={i}

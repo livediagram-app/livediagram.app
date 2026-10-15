@@ -12,6 +12,7 @@ import {
   type ConceptShape,
   type ShapeElement,
   type WebRows,
+  chevronLayout,
 } from '@livediagram/document';
 import { ConceptFace } from './ConceptFace';
 import { BAR_MIN_SCALE, barScale, barWidthPx } from './ConceptRowBar';
@@ -47,8 +48,19 @@ function show(element = chevrons(), editable = true) {
   return { onSetRows, zone, rows, element };
 }
 
-const phone = (on: boolean) =>
-  vi.stubGlobal('matchMedia', (q: string) => ({ matches: on, media: q }) as MediaQueryList);
+// A media query answered: `on` for the phone query, `touch` for "no hover" (a phone or a tablet).
+const media = ({ on = false, touch = on }: { on?: boolean; touch?: boolean }) =>
+  vi.stubGlobal(
+    'matchMedia',
+    (q: string) =>
+      ({
+        matches: q === '(hover: none)' ? touch : on,
+        media: q,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }) as unknown as MediaQueryList,
+  );
+const phone = (on: boolean) => media({ on });
 
 describe('chevron stage controls', () => {
   it('shows only the hovered stage its controls, and keeps them a moment after the pointer leaves', () => {
@@ -131,6 +143,25 @@ describe('chevron stage controls', () => {
     phone(true);
     show();
     expect(screen.getAllByRole('toolbar')).toHaveLength(chevrons().conceptRows!.length);
+  });
+
+  it("shows every stage's controls on a tablet too, which is wide but has no hover", () => {
+    media({ touch: true });
+    show();
+    expect(screen.getAllByRole('toolbar')).toHaveLength(chevrons().conceptRows!.length);
+  });
+
+  it('keeps a full bar within its stage, clear of the next one', () => {
+    phone(true);
+    // Three stages 400 wide: a later stage's words are 63 wide, under a full bar's 82, though its step is 120.
+    const rows = [{ label: 'A' }, { label: 'B' }, { label: 'C' }];
+    show({ ...chevrons(rows), width: 400, height: 200 });
+    const { stages } = chevronLayout(400, 200, rows.length, false);
+    screen.getAllByRole('toolbar').forEach((bar, i) => {
+      const scale = Number(/scale\(([\d.]+)\)/.exec(bar.style.transform)![1]);
+      const width = scale * barWidthPx(bar.querySelectorAll('button').length);
+      expect(width).toBeLessThanOrEqual(stages[i]!.label.width + 0.5);
+    });
   });
 
   it('shows none unless the element is selected and editable', () => {

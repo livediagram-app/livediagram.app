@@ -61,9 +61,10 @@ same row editor as the web components. A **Chevron process** has no Rows section
 While it is selected, the stage under the pointer shows a small bar inside its top edge, at a constant screen size:
 **Move Stage Left**, **Move Stage Right** (each off at its end), **Add Note** (only while no stage has a note, so the
 note line is not drawn to click into; it gives that stage the note "Note" to type over) and **Delete Stage** (off at
-two stages). The bar stays a moment after the pointer leaves the stage, so it can be reached; on a phone, which has no
-hover, every stage shows its bar. A bar keeps clear of its stage's name and its neighbours: zoomed out, it shrinks to
-fit the band above the name, and once that would make it too small to press (under three quarters of its size) it is
+two stages). The bar stays a moment after the pointer leaves the stage, so it can be reached, and while the pointer is
+on the stage's name; on a phone or any other touch screen (a tablet is wide but has no hover), every stage shows its
+bar. A bar keeps clear of its stage's name and its neighbours, never wider than the stage's words, which sit inside
+its body: zoomed out, it shrinks to fit the band above the name, and once that would make it too small to press (under three quarters of its size) it is
 not drawn until the view is zoomed in again. While the element is selected, the ring offers **Add Layer**, **Add Tier**,
 **Add Step**, **Add Satellite**, **Add Ring** or **Add Stage**.
 
