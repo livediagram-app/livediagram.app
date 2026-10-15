@@ -18,6 +18,7 @@ describe('resolveMcpOrigin', () => {
     );
     expect(resolveMcpOrigin('https://mcp.example.com/')).toBe('https://mcp.example.com');
     expect(resolveMcpOrigin('https://mcp.example.com///')).toBe('https://mcp.example.com');
+    expect(resolveMcpOrigin('///')).toBe(DEFAULT_MCP_ORIGIN);
     // A long run of slashes strips in one pass (a `/\/+$/` regex backtracked on it).
     expect(resolveMcpOrigin(`x${'/'.repeat(200_000)}a${'/'.repeat(200_000)}`)).toBe(
       `x${'/'.repeat(200_000)}a`,

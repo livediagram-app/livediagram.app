@@ -17,7 +17,8 @@ export function resolveMcpOrigin(raw: string | undefined): string {
   // Trailing slashes off by a scan, not a regex: `/\/+$/` backtracks on a long run of slashes.
   let end = trimmed.length;
   while (end > 0 && trimmed[end - 1] === '/') end--;
-  return trimmed.slice(0, end);
+  // Nothing but slashes is no origin: the hosted one, as for a blank value.
+  return trimmed.slice(0, end) || DEFAULT_MCP_ORIGIN;
 }
 
 /** The address an AI tool connects to: the MCP worker's streamable HTTP endpoint. */
