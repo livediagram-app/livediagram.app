@@ -65,7 +65,9 @@ const CONTENT_KINDS =
   'Content-carrying kinds: ' +
   'type "sticky": a note whose "label" is its text; the theme never recolours it, so its own ' +
   `"fillColor" + "textColor" are kept (palette pairs, fill/text: ${stickyPairs}); unset it is ` +
-  'the classic amber note. ' +
+  'the classic amber note. A sticky with "esKind" (domain-event, command, actor, policy, read-model, ' +
+  'external-system, aggregate, hotspot) is an event-storming note of that kind (its paper, size and lane on a ' +
+  'storm board): add one to a board with the edit `add sticky label="Courier" esKind=actor`. ' +
   'type "table": "cells" is rows of strings (ragged rows are padded), "headerRow" / ' +
   '"headerColumn" style the first row / column, "zebra" tints alternate rows. ' +
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +
