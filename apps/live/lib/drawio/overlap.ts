@@ -10,7 +10,9 @@ export function overlapTest(graph: DrawioGraph): (cellId: string) => boolean {
   let vertices: { id: string; rect: Rect }[] | null = null;
   const ancestorsOf = (id: string) => {
     const out = new Set<string>();
-    for (let p = graph.cells.get(id)?.parentId; p; p = graph.cells.get(p)?.parentId) out.add(p);
+    // Stops at an ancestor already met: a duplicate id can close the chain into a cycle (D21).
+    for (let p = graph.cells.get(id)?.parentId; p && !out.has(p); p = graph.cells.get(p)?.parentId)
+      out.add(p);
     return out;
   };
   return (cellId) => {
