@@ -181,7 +181,14 @@ export function layoutClusteredGraph(
       );
       return [
         c.id,
-        headingLead(c.label ?? c.id, memberEls.get(c.id)!, entered, FRAME_PAD, direction ?? 'TB'),
+        headingLead(
+          c.label ?? c.id,
+          memberEls.get(c.id)!,
+          entered,
+          FRAME_PAD,
+          direction ?? 'TB',
+          look?.textSize,
+        ),
       ] as const;
     }),
   );

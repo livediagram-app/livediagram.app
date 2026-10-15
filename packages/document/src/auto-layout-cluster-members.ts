@@ -179,7 +179,15 @@ export function seatMembersByNeighbours(
     );
     const before = Math.max(
       lo(members) - crossLo(frame, direction),
-      pad + headingLead(frame.label, seated, entered, pad, direction),
+      pad +
+        headingLead(
+          frame.label,
+          seated,
+          entered,
+          pad,
+          direction,
+          (frame as { textSize?: unknown }).textSize,
+        ),
     );
     const after = crossLo(frame, direction) + crossLen(frame, direction) - hi(members);
     const from = lo(seated) - before;

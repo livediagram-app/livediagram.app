@@ -847,7 +847,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
               width: (h as { headerSize?: number }).headerSize ?? 0,
               height: h.height,
             }
-          : frameHeadingRect(h as { x: number; y: number; label?: string }),
+          : frameHeadingRect(h as { x: number; y: number; label?: string; textSize?: unknown }),
     }));
   const overlap = (p0: number, p1: number, q0: number, q1: number) =>
     Math.min(Math.max(p0, p1), Math.max(q0, q1)) > Math.max(Math.min(p0, p1), Math.min(q0, q1));
