@@ -56,6 +56,12 @@ it runs (transformers.js, TensorFlow.js, jsquash) are outside this boundary.
 
 A third party that needs anything else is a bug to fix with it, never a wider `default`.
 
+**One third party is refused by design.** Cloudflare's JavaScript Detections (bot management) is injected by the edge
+into every page: it writes a script into a hidden iframe with `innerHTML`, in the iframe's own realm, where no policy
+of ours can reach. Trusted Types refuses it, so each page load logs one error from Cloudflare's snippet
+(`/cdn-cgi/challenge-platform/scripts/jsd/`) and Cloudflare gets no JavaScript-detection signal. That trade is
+accepted: no bot or firewall rule may depend on that signal, and the error is not counted as a violation of ours.
+
 ## A refusal
 
 - **The browser blocks the sink and throws**, and the page logs `[trusted-types] violation` with the directive and
