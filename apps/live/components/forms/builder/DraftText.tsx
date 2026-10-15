@@ -76,12 +76,13 @@ export const DraftText = forwardRef<
     focus: () => input.current?.focus(),
     flush: () => flushRef.current(),
   }));
-  // A multi-line field grows with what is typed.
+  // A multi-line field grows with what is typed. The height is a border box, so its borders are added to the text's
+  // scroll height; without them a field with an underline came up a pixel short and showed a scrollbar.
   useLayoutEffect(() => {
     const el = input.current;
     if (!multiline || !el) return;
     el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
+    el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`;
   }, [draft, multiline]);
   const props = {
     ref: input,
@@ -113,7 +114,7 @@ export const DraftText = forwardRef<
       : undefined,
   };
   return multiline ? (
-    <textarea rows={1} {...props} className={`${props.className} resize-none`} />
+    <textarea rows={1} {...props} className={`${props.className} resize-none overflow-hidden`} />
   ) : (
     <input type="text" {...props} />
   );
