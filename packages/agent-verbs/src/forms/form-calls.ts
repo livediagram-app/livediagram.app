@@ -30,7 +30,10 @@ import { ITEM_TYPE_CATALOGUE_VERSION, newItemTypeId } from '@livediagram/items';
 import { apiRefusalOf } from '../plan/api-refusal';
 import { changeBoard } from '../plan/change-board';
 import { CARD_TYPES_SAVE_ATTEMPTS, isCardTypesStale, itemTypesPath } from '../plan/plan-state';
+import { columnIndex, columnLetters } from '@livediagram/sheets';
 import { changeSheet } from '../sheets/change-sheet';
+import { readSheet } from '../sheets/read-sheet';
+import type { SheetChange } from '../sheets/sheet-change-build';
 import { tabPath } from '../verbs/shared';
 import {
   addQuestionTo,
@@ -168,31 +171,39 @@ async function saveTypes(api: ApiClient, d: FormDraft): Promise<'saved' | 'stale
   }
 }
 
-// A new responses sheet starts with its header row as the first response would write it ("#", "Submitted", each
-// question), bold and frozen, and takes its tab's name, so it reads as the form's before anyone answers.
-async function headSheet(
+// A sheet form's sheet holds a header for every question, as a response would leave it: the ones it lacks are
+// written after its last header (bold), never over one, so the columns answers already fill keep their meaning. A new
+// sheet also freezes its header row and takes its tab's name, so it reads as the form's before anyone answers.
+async function syncSheetHeaders(
   api: ApiClient,
   d: FormDraft,
   sheetId: string,
-  title: string,
+  fresh: { title: string } | null,
   client: Client,
-) {
-  const headers = sheetHeaders(d.form).map((h) => h.header);
-  const last = String.fromCharCode(64 + Math.min(headers.length, 26));
-  await changeSheet(
-    api,
-    d.world.documentId,
-    {
-      sheet: sheetId,
-      changes: [
-        { op: 'set', at: 'A1', rows: [headers] },
-        { op: 'format', range: `A1:${last}1`, format: { bold: true } },
-        { op: 'freeze', rows: 1 },
-        { op: 'rename', title },
-      ],
-    },
-    client,
-  );
+): Promise<void> {
+  const read = fresh
+    ? null
+    : await readSheet(api, d.world.documentId, { sheet: sheetId, range: 'A1:ZZ1' });
+  const cells = read && read.ok ? read.cells : [];
+  const have = new Set(cells.map((c) => c.display.trim().toLowerCase()).filter(Boolean));
+  const lastCol = cells.reduce((n, c) => Math.max(n, columnIndex(c.at.replace(/\d+$/, '')) + 1), 0);
+  const missing = sheetHeaders(d.form)
+    .map((h) => h.header)
+    .filter((h) => !have.has(h.toLowerCase()));
+  const changes: SheetChange[] = [];
+  if (missing.length) {
+    const from = columnLetters(lastCol);
+    const to = columnLetters(lastCol + missing.length - 1);
+    changes.push({ op: 'set', at: `${from}1`, rows: [missing] });
+    changes.push({ op: 'format', range: `${from}1:${to}1`, format: { bold: true } });
+  }
+  if (fresh) changes.push({ op: 'freeze', rows: 1 }, { op: 'rename', title: fresh.title });
+  if (!changes.length) return;
+  await changeSheet(api, d.world.documentId, { sheet: sheetId, changes }, client);
+  if (missing.length && !fresh)
+    d.lines.push(
+      `added the sheet's column${missing.length === 1 ? '' : 's'} ${missing.map((m) => `"${m}"`).join(', ')}`,
+    );
 }
 
 // The responses tabs a draft makes, after what the document holds (made already when a new document carried them),
@@ -202,6 +213,8 @@ async function writeAround(
   d: FormDraft,
   client: Client,
   tabsMade: boolean,
+  // The form as it was read, when it was changed: its sheet is synced only when a header is new to it.
+  before: FormDefinition | null = null,
 ): Promise<string[]> {
   const made: string[] = [];
   for (const tab of d.newTabs) {
@@ -226,10 +239,20 @@ async function writeAround(
     const sheet = d.sheets.find((s) => s.tabId === tab.id);
     // The headers are a head start: the first response writes any it finds missing, so a miss here is said, not fatal.
     if (sheet)
-      await headSheet(api, d, sheet.sheetId, tab.name, client).catch(() =>
+      await syncSheetHeaders(api, d, sheet.sheetId, { title: tab.name }, client).catch(() =>
         made.push(`its header row is written by the first response`),
       );
   }
+  // A sheet form's existing sheet gains a column for each question it lacks one for, read only when the form now asks
+  // for a header it did not (a sheet read loads the document's sheets).
+  const target = d.form.sheet;
+  const had = new Set(before ? sheetHeaders(before).map((h) => h.header.toLowerCase()) : []);
+  const newHeader = sheetHeaders(d.form).some((h) => !had.has(h.header.toLowerCase()));
+  const switched = before?.sheet?.sheetId !== target?.sheetId;
+  if (target && (newHeader || switched) && !d.newTabs.some((t) => t.id === target.tabId))
+    await syncSheetHeaders(api, d, target.sheetId, null, client).catch(() =>
+      made.push(`the sheet's new columns are written by the first response`),
+    );
   for (const board of d.changedBoards.values()) {
     const changed = await changeBoard(
       api,
@@ -327,6 +350,13 @@ function startFromQuestions(
   for (const [i, s] of (input.sections ?? []).entries()) {
     // The first section given is the form's first when no questions came before it.
     const first = i === 0 && !input.questions?.length;
+    // The first page's title and description are the form's heading and description.
+    if (first && s.description?.trim() && !d.form.description)
+      d.form = { ...d.form, description: s.description.trim() };
+    if (first && s.title?.trim() && s.title.trim() !== d.form.heading)
+      d.lines.push(
+        `the first page shows the form's heading ("${d.form.heading}"), not its own title "${s.title.trim()}"`,
+      );
     if (!first) {
       const refused = applyFormChanges(d, [
         {
@@ -467,7 +497,7 @@ export async function changeForm(
         headers: { [CLIENT_HEADER]: client },
         body: JSON.stringify({ form: d.form, rev: read.tab.rev }),
       });
-      const made = await writeAround(api, d, client, false);
+      const made = await writeAround(api, d, client, false, read.form);
       return doneFrom(d, read.tab.id, read.link, made);
     }
   });

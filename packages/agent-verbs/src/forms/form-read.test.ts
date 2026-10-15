@@ -89,6 +89,11 @@ describe('readFormOf', () => {
     );
     expect(r.respondsTo).toEqual({ to: 'sheet', sheet: 'Budget' });
     expect(r.sections[0]!.questions.every((q) => q.goesTo === undefined)).toBe(true);
+    expect(r.sections[0]!.questions.map((q) => q.column)).toEqual([
+      'Summary',
+      'Severity',
+      'Can we contact you?',
+    ]);
     expect(r.state).toBe('accepting');
   });
 });

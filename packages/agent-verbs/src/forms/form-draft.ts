@@ -223,11 +223,14 @@ export function setRespondsTo(
 }
 
 // The field New Field makes for `q`: the kind its type makes, or, for a choice with "Other" (whose answer is no option
-// of a choice field), the text kind that holds any answer.
+// of a choice field), the text kind that holds any answer. A choice or rating field is drawn on the card face, as a
+// starter's are, so it reads at a glance on the board.
 function newFieldOf(q: FormQuestion, id: string, label: string): CustomFieldDef {
+  if (q.other) return { id, label, kind: MAPPABLE_KINDS[q.type][1]! };
   const field = newFieldFor(q, id, label);
-  if (!q.other) return field;
-  return { id, label, kind: MAPPABLE_KINDS[q.type][1]! };
+  return ['choice', 'multichoice', 'rating'].includes(field.kind)
+    ? { ...field, onCard: true }
+    : field;
 }
 
 // Where `q`'s answer goes: Title, Description, or a field of the form's card type by name, made (New Field) when
@@ -278,7 +281,11 @@ export function setGoesTo(d: FormDraft, q: FormQuestion, goesTo: string): FormRe
     const id = newCustomFieldId(where, [...type.fields, ...(type.custom ?? []).map((f) => f.id)]);
     field = newFieldOf(q, id, where.slice(0, 40));
     saveType(d, { ...type, fields: [...type.fields, id], custom: [...(type.custom ?? []), field] });
-    d.lines.push(`added the ${field.kind} field "${field.label}" to ${type.label}`);
+    d.lines.push(
+      `added the ${field.kind} field "${field.label}" to ${type.label}${
+        q.other ? ' (a text field: an "Other" answer is no option of a choice field)' : ''
+      }${field.onCard ? ', shown on the card' : ''}`,
+    );
   }
   d.form = setTarget(d.form, q.id, { to: 'field', fieldId: field.id });
   return syncChoiceField(d, q.id);

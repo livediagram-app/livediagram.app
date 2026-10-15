@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { FormLinkResponse } from '@livediagram/api-schema';
 import { fakeApi } from '../testing/fake-api';
-import { formPlan, formTabBody } from '../testing/forms';
+import { sheetJson, sheetServer } from '../testing/sheets';
+import { bugForm, formPlan, formTabBody } from '../testing/forms';
 import { addForm, changeForm, readForm, shareForm } from './form-calls';
 
 // The form verbs' calls (docs/specs/030-forms/forms.md "Agents", blueprint §15 "Engine flow"): one read, every
@@ -14,7 +15,12 @@ const LINK: FormLinkResponse = {
   canPublish: true,
 };
 
-function api(link: FormLinkResponse | null = null, extra: Record<string, unknown> = {}) {
+function api(
+  link: FormLinkResponse | null = null,
+  extra: Record<string, unknown> = {},
+  // Routes answered by path pattern (the sheet server's).
+  fallback: Record<string, unknown> = {},
+) {
   const writes: { method: string; path: string; body: unknown }[] = [];
   const record = (answer: unknown) => async (r: Request) => {
     const path = new URL(r.url).pathname.replace(/^\/api/, '');
@@ -47,10 +53,12 @@ function api(link: FormLinkResponse | null = null, extra: Record<string, unknown
       get: (target, key: string) =>
         key in target
           ? target[key]
-          : /\/changesets$/.test(key)
-            ? record({ changeset: { id: 'cs_0000000001', rev: 1 } })
-            : undefined,
-      has: (target, key: string) => key in target || /\/changesets$/.test(key),
+          : key in fallback
+            ? fallback[key]
+            : /\/changesets$/.test(key)
+              ? record({ changeset: { id: 'cs_0000000001', rev: 1 } })
+              : undefined,
+      has: (target, key: string) => key in target || key in fallback || /\/changesets$/.test(key),
     }),
   );
   return { client, writes };
@@ -220,5 +228,46 @@ describe('shareForm', () => {
     expect(r).toMatchObject({ ok: false, code: 'form_not_ready' });
     expect(!r.ok && r.message).toContain('Add a question');
     expect(writes).toEqual([]);
+  });
+});
+
+describe('a sheet form’s sheet', () => {
+  it('gains a column for a question the form adds, after its last header, never over one', async () => {
+    const sheetForm = { ...bugForm(), sheet: { tabId: 'budget', sheetId: 'sheet_budget' } };
+    const server = sheetServer('doc', [
+      sheetJson({ id: 'sheet_budget', tabId: 'budget', title: 'Budget' }, [
+        ['#', 'Submitted', 'Summary'],
+        [1, '2026-10-15 14:03 UTC', 'It broke'],
+      ]),
+    ]);
+    const { client } = api(
+      null,
+      { '/documents/doc/tabs/form': { tab: formTabBody(sheetForm) } },
+      server.routes,
+    );
+    const r = await changeForm(
+      client,
+      'doc',
+      undefined,
+      [{ op: 'add_question', question: { type: 'email', prompt: 'Email' } }],
+      'mcp',
+    );
+    expect(r.ok).toBe(true);
+    expect(r.ok && r.lines.at(-1)).toBe(
+      'added the sheet\'s columns "Severity", "Can we contact you?", "Email"',
+    );
+    const cells = server.writes.flatMap((w) => ('cells' in w.write ? w.write.cells : []));
+    expect(cells.flatMap((c) => (c?.i && 's' in c.i ? [c.i.s] : []))).toEqual([
+      'Severity',
+      'Can we contact you?',
+      'Email',
+    ]);
+  });
+
+  it('is not read when no question is new to it', async () => {
+    const sheetForm = { ...bugForm(), sheet: { tabId: 'budget', sheetId: 'sheet_budget' } };
+    const { client } = api(null, { '/documents/doc/tabs/form': { tab: formTabBody(sheetForm) } });
+    await changeForm(client, 'doc', undefined, [{ op: 'settings', limit: 10 }], 'mcp');
+    expect(client.calls.some((c) => c.includes('/sheets'))).toBe(false);
   });
 });

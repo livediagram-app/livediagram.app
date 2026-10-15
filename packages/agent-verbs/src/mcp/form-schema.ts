@@ -89,7 +89,9 @@ const questionFields = {
     .describe(
       'Board forms: where the answer is kept on the response’s card: "Title" (one question at most; short, email, ' +
         'number, single or date), "Description" (the default: written under its prompt), or a card field’s name. ' +
-        'A name the card type lacks makes that field, of the kind the question fits.',
+        'A name the card type lacks makes that field, of the kind the question fits (a choice or rating shown on the ' +
+        'card; a choice with "other" a text field, as an Other answer is no option). An existing currency field takes ' +
+        'a number.',
     ),
 };
 const questionType = z
@@ -247,6 +249,10 @@ const readQuestion = z
       .boolean()
       .optional()
       .describe('Its field was removed or no longer fits: it goes to Description.'),
+    column: z
+      .string()
+      .optional()
+      .describe('Sheet forms: the header of the sheet column its answers fill.'),
   })
   .passthrough();
 
@@ -375,6 +381,9 @@ const change = z.discriminatedUnion('op', [
       .optional()
       .describe('Add at the end of this section. Absent: the end of the form.'),
     after: questionRef.optional().describe('Add right after this question.'),
+    before: questionRef
+      .optional()
+      .describe('Add right before this question (before the first: first).'),
   }),
   z.object({ op: z.literal('set_question'), question: questionRef, set: questionSet }),
   z.object({ op: z.literal('delete_question'), question: questionRef }),
@@ -383,6 +392,9 @@ const change = z.discriminatedUnion('op', [
     question: questionRef,
     section: sectionRef.optional().describe('Move to the end of this section.'),
     after: questionRef.optional().describe('Move right after this question.'),
+    before: questionRef
+      .optional()
+      .describe('Move right before this question (before the first: first).'),
   }),
   z.object({
     op: z.literal('add_section'),
@@ -411,7 +423,13 @@ const change = z.discriminatedUnion('op', [
       .optional()
       .describe(`The form’s heading and its tab’s name, up to ${FORM_HEADING_MAX}.`),
     description: z.string().optional(),
-    cover: cover.nullable().optional().describe('The cover band; null removes it.'),
+    cover: cover
+      .nullable()
+      .optional()
+      .describe(
+        'The cover band; null removes it. The form’s own colour (bars, buttons) is its tab theme’s: pick the tab’s ' +
+          'theme to match a cover.',
+      ),
   }),
   z.object({ op: z.literal('settings'), ...settings }),
   respondsTo.extend({ op: z.literal('responds_to') }),

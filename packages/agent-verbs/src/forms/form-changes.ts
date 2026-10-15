@@ -56,10 +56,22 @@ export interface SectionRuleInput {
 }
 
 export type FormChange =
-  | { op: 'add_question'; question: QuestionInput; section?: SectionRef; after?: string }
+  | {
+      op: 'add_question';
+      question: QuestionInput;
+      section?: SectionRef;
+      after?: string;
+      before?: string;
+    }
   | { op: 'set_question'; question: string; set: QuestionSet }
   | { op: 'delete_question'; question: string }
-  | { op: 'move_question'; question: string; section?: SectionRef; after?: string }
+  | {
+      op: 'move_question';
+      question: string;
+      section?: SectionRef;
+      after?: string;
+      before?: string;
+    }
   | {
       op: 'add_section';
       title?: string;
@@ -100,7 +112,7 @@ function text(v: string, max: number, what: string): Named<{ text: string }> {
 export function addQuestionTo(
   d: FormDraft,
   input: QuestionInput,
-  place: { section?: SectionRef; after?: string },
+  place: { section?: SectionRef; after?: string; before?: string },
 ): FormRefusal | null {
   if (!canAddQuestion(d.form))
     return refuse('questions_full', `A form holds at most ${QUESTIONS_MAX} questions.`);
@@ -132,8 +144,17 @@ function mapOne(
 function placeAt(
   d: FormDraft,
   id: string,
-  place: { section?: SectionRef; after?: string },
+  place: { section?: SectionRef; after?: string; before?: string },
 ): FormRefusal | null {
+  // Right before a question (the first place of a section is before its first question).
+  if (place.before !== undefined) {
+    const before = resolveQuestion(d.form, place.before);
+    if (!before.ok) return before;
+    if (before.question.id === id) return null;
+    const at = findQuestion(d.form, before.question.id)!;
+    d.form = placeQuestion(d.form, id, at.section, at.index);
+    return null;
+  }
   if (place.after !== undefined) {
     const after = resolveQuestion(d.form, place.after);
     if (!after.ok) return after;
@@ -348,10 +369,10 @@ function applyOne(d: FormDraft, c: FormChange): FormRefusal | null {
     case 'move_question': {
       const found = resolveQuestion(d.form, c.question);
       if (!found.ok) return found;
-      if (c.after === undefined && c.section === undefined)
+      if (c.after === undefined && c.before === undefined && c.section === undefined)
         return refuse(
           'invalid_value',
-          'move_question names where: after a question, or a section to end.',
+          'move_question names where: before or after a question, or a section to end.',
         );
       const placed = placeAt(d, found.question.id, c);
       if (!placed) d.lines.push(`moved "${promptOf(found.question)}"`);

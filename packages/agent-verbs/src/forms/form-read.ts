@@ -16,6 +16,7 @@ import {
   publishProblems,
   ruleQuestion,
   sheetDestinationProblem,
+  sheetHeaders,
   type ClosedReason,
   type DestinationProblem,
   type FormDefinition,
@@ -38,6 +39,8 @@ export interface ReadQuestion extends Omit<
   // Title, Description, or the card field's name; absent on a sheet form (each answer its own column).
   goesTo?: string;
   goesToBroken?: true;
+  // Sheet forms: the header of the column its answers fill.
+  column?: string;
 }
 
 export interface FormReading {
@@ -72,7 +75,8 @@ export interface FormReading {
 function readQuestion(
   q: FormQuestion,
   type: ItemTypeDef | undefined,
-  sheet: boolean,
+  // A sheet form's column for it; a board form's answer goes to a card instead.
+  column: string | undefined,
 ): ReadQuestion {
   const { goesTo: _g, required, other, dropdown, whole, ...rest } = q;
   const out: ReadQuestion = { ...rest, prompt: promptOf(q), typeName: QUESTION_TYPE_NAMES[q.type] };
@@ -80,7 +84,7 @@ function readQuestion(
   if (other) out.other = true;
   if (dropdown) out.dropdown = true;
   if (whole) out.whole = true;
-  if (sheet) return out;
+  if (column !== undefined) return { ...out, column };
   const target = effectiveTarget(q, type);
   out.goesTo =
     target.to === 'title'
@@ -128,6 +132,8 @@ export function readFormOf(input: {
       column: column?.name ?? '(removed)',
     };
   } else problem = 'no_destination';
+  // A sheet form's column for each question, as a response finds it (its header).
+  const columns = form.sheet ? new Map(sheetHeaders(form).map((h) => [h.key, h.header])) : null;
   const live = link?.link ?? null;
   let state: FormState = 'not_published';
   let reason: ClosedReason | null = null;
@@ -183,7 +189,7 @@ export function readFormOf(input: {
             }
           : {}),
         ...(s.showIf && !rule ? { showIfBroken: true as const } : {}),
-        questions: s.questions.map((q) => readQuestion(q, type, !!form.sheet)),
+        questions: s.questions.map((q) => readQuestion(q, type, columns?.get(q.id))),
       };
     }),
     ...(form.cover ? { cover: form.cover } : {}),

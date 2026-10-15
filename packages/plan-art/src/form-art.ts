@@ -330,7 +330,7 @@ function ruleLine(form: FormDefinition, index: number): string | undefined {
   if (!rule) return undefined;
   const q = ruleQuestion(form, index, rule);
   return q
-    ? `Shown when “${promptOf(q)}” is ${rule.anyOf.join(' or ')}`
+    ? `Shown when “${promptOf(q)}” is ${rule.anyOf.map((a) => `“${a}”`).join(' or ')}`
     : 'Always shown: its question was removed or changed';
 }
 
@@ -365,6 +365,7 @@ export function formArt(form: FormDefinition, look: FormLook, fontStack?: string
   const cover = coverMarkup(form, accent);
   const blocks: Block[] = [{ markup: cover.markup, height: cover.height + GAP, questions: 0 }];
   const total = form.sections.length;
+  const sometimes = form.sections.some((x) => x.showIf);
   form.sections.forEach((s, i) => {
     const header =
       i === 0
@@ -372,7 +373,8 @@ export function formArt(form: FormDefinition, look: FormLook, fontStack?: string
         : block(d, (b) =>
             headerCard(b, s.title || 'Untitled Section', s.description, {
               heading: false,
-              label: `Section ${i + 1} of ${total}`,
+              // A form whose sections show only sometimes has no one count: each respondent's is their own.
+              label: sometimes ? `Section ${i + 1}` : `Section ${i + 1} of ${total}`,
               rule: ruleLine(form, i),
             }),
           );

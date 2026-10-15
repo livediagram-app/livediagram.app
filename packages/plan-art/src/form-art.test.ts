@@ -33,8 +33,14 @@ describe('formArt', () => {
     expect(art.width).toBe(FORM_ART_WIDTH);
     for (const t of QUESTION_TYPES) expect(art.svg).toContain(`Q ${t}`);
     expect(art.svg).toContain('Every Type');
-    expect(art.svg).toContain('Section 2 of 2');
-    expect(art.svg).toContain('Shown when “Q single” is Option 1');
+    // Its later section shows only sometimes, so no count is given.
+    expect(art.svg).toContain('>Section 2<');
+    expect(art.svg).toContain('Shown when “Q single” is “Option 1”');
+    const always = {
+      ...every,
+      sections: [every.sections[0]!, { ...every.sections[1]!, showIf: undefined }],
+    };
+    expect(formArt(always, formLook({})).svg).toContain('Section 2 of 2');
     expect(art.svg).toContain('Submit');
     expect(art.svg).toContain(formLook({ theme: 'ocean' }).accent.light);
     expect(art.svg.match(/<tspan fill="#dc2626"> \*<\/tspan>/g)).toHaveLength(

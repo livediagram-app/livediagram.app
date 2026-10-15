@@ -43,6 +43,15 @@ describe('questions', () => {
     expect(questionsOf(d.form)[0]).toMatchObject({ required: true, help: 'We never share it.' });
   });
 
+  it('puts a question first, or right before another', () => {
+    const { d, refused } = run([
+      { op: 'move_question', question: 'Can we contact you?', before: 'Summary' },
+      { op: 'add_question', question: { type: 'email', prompt: 'Email' }, before: 'Severity' },
+    ]);
+    expect(refused).toBeNull();
+    expect(prompts(d.form)).toEqual([['Can we contact you?', 'Summary', 'Email', 'Severity']]);
+  });
+
   it('names the change that is refused, and writes nothing', () => {
     const d = formDraft();
     const before = d.form;
@@ -67,12 +76,12 @@ describe('where an answer goes', () => {
     ]);
     expect(refused).toBeNull();
     const type = d.types.find((t) => t.id === 'bug')!;
-    expect(type.custom?.map((f) => [f.label, f.kind])).toEqual([
-      ['Severity', 'choice'],
-      ['Impact', 'rating'],
+    expect(type.custom?.map((f) => [f.label, f.kind, !!f.onCard])).toEqual([
+      ['Severity', 'choice', false],
+      ['Impact', 'rating', true],
     ]);
     expect(d.typesChanged).toBe(true);
-    expect(d.lines).toContain('added the rating field "Impact" to Bug');
+    expect(d.lines).toContain('added the rating field "Impact" to Bug, shown on the card');
   });
 
   it('keeps a choice field holding every option its question offers', () => {
