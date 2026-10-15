@@ -91,16 +91,23 @@ function facingAxis(arrow: ArrowElement, elements: Element[]): 'TB' | 'LR' | nul
 const FACING_END_CLEAR = 12;
 const FACING_BOX_CLEAR = 8;
 const FACING_HEADING_BAND = 32;
+// How far apart two facing arrows' cross runs keep, where their spans overlap: closer, they read as one line.
+const FACING_RUN_GAP = 16;
+
+// A cross run already placed: along `axis` at `at`, spanning lo..hi across it.
+type CrossRun = { axis: 'TB' | 'LR'; at: number; lo: number; hi: number };
 
 // Where a facing arrow's cross run sits along its flow: half way between its ends when that is clear, else the clear
 // level nearest half way, where clear means off every other box, off every container's border and its heading band
-// (a frame's title, a subnet's CIDR), so the run never strikes text; half way when no level is clear.
+// (a frame's title, a subnet's CIDR), so the run never strikes text, and off the cross runs placed before it, so two
+// never run as one; half way when no level is clear.
 function crossLevel(
   axis: 'TB' | 'LR',
   from: { x: number; y: number },
   to: { x: number; y: number },
   arrow: ArrowElement,
   elements: Element[],
+  runs: readonly CrossRun[] = [],
 ): number {
   const tb = axis === 'TB';
   const [a, b] = tb ? [from.y, to.y] : [from.x, to.x];
@@ -124,6 +131,11 @@ function crossLevel(
         [p1 - FACING_BOX_CLEAR, p1 + FACING_BOX_CLEAR],
       );
   }
+  // Off the runs placed before it on the same axis, where their spans overlap or meet end to end (one line on, it read
+  // as the other's continuation).
+  for (const r of runs)
+    if (r.axis === axis && r.hi >= c0 - FACING_RUN_GAP && r.lo <= c1 + FACING_RUN_GAP)
+      blocked.push([r.at - FACING_RUN_GAP, r.at + FACING_RUN_GAP]);
   const free = (v: number) => blocked.every(([s0, s1]) => v <= s0 || v >= s1);
   if (free(mid)) return mid;
   // The clear levels nearest half way lie on the edges of what blocks it.
@@ -138,6 +150,7 @@ function crossLevel(
 // given no curve points whose ends face each other takes two bends, its cross run at a clear level (crossLevel), or
 // runs straight when its ends line up. Its plain L ran its last stretch along the far box's edge.
 export function withFacingBends(elements: Element[]): Element[] {
+  const runs: CrossRun[] = [];
   return elements.map((el) => {
     if (el.type !== 'arrow' || el.arrowStyle !== 'angled' || el.curvePoints?.length) return el;
     const axis = facingAxis(el, elements);
@@ -146,7 +159,10 @@ export function withFacingBends(elements: Element[]): Element[] {
     const to = spreadEnd(el, 'to', elements);
     if (axis === 'TB' ? Math.abs(to.x - from.x) < 1 : Math.abs(to.y - from.y) < 1)
       return { ...el, arrowStyle: 'straight' as const };
-    const level = crossLevel(axis, from, to, el, elements);
+    const level = crossLevel(axis, from, to, el, elements, runs);
+    const [c0, c1] =
+      axis === 'TB' ? [from.x, to.x].sort((p, q) => p - q) : [from.y, to.y].sort((p, q) => p - q);
+    runs.push({ axis, at: level, lo: c0!, hi: c1! });
     const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
     const points =
       axis === 'TB'

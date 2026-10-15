@@ -493,6 +493,28 @@ describe('a bus says it once', () => {
     expect(across.filter((a) => a.label)).toHaveLength(4);
   });
 
+  it('merges a bus named once, on one of its arrows, and says it on the shared drop', () => {
+    let n = 0;
+    const arrows = layoutGraph(
+      {
+        direction: 'down',
+        nodes: [
+          ...[0, 1, 2, 3].map((i) => ({ id: `s${i}`, label: `Service ${i}` })),
+          { id: 'kafka', label: 'Kafka', shape: 'hexagon' },
+        ],
+        edges: [0, 1, 2, 3].map((i) => ({
+          from: `s${i}`,
+          to: 'kafka',
+          line: 'dashed' as const,
+          ...(i === 0 ? { label: 'publish' } : {}),
+        })),
+      },
+      { makeEdgeId: () => `e${n++}` },
+    ).filter((e): e is ArrowElement => e.type === 'arrow');
+    expect(arrows.every((a) => a.exactEnd)).toBe(true);
+    expect(arrows.find((a) => a.label)!.labelOffset!.t).toBeGreaterThan(0.5);
+  });
+
   it('keeps each label where the arrows say different things', () => {
     const arrows = graph(['orders', 'payments', 'stock']);
     expect(arrows.filter((a) => a.label)).toHaveLength(3);

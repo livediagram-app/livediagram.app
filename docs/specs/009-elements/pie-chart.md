@@ -63,8 +63,9 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   do (120k, 1.5M). The toggle fires `Element·Changed·ChartAxis`; the gating is Show Values'.
 - **A second axis**: a line, area or scatter series marked `axis: "right"` is drawn against a scale of its own,
   worked out from the right-hand series alone, so a series in the thousands and one in the tens both read (signups
-  against paid). With Show Axis on, the right side carries that scale's tick labels in the first right-hand series'
-  colour; the gridlines follow the left scale. A chart whose series are all on the right draws them on the left
+  against paid). With Show Axis on, the right side carries that scale's tick labels in the chart's text colour,
+  the plot's right edge drawn in the first right-hand series' colour so the two read as one (labels in a light
+  series' colour were too faint to read); the gridlines follow the left scale. A chart whose series are all on the right draws them on the left
   scale, as if none were. In the editor, the Chart category of a line chart with two or more series has **Right
   Axis**, a choice of None or one series, which moves that series to the right (one commit, `Element·Changed·
 ChartAxis`); a series on the right shows "(right)" after its name in the Data summary. An Editor changes it.

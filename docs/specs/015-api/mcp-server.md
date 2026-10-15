@@ -461,7 +461,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   trunk rather than on it, so a dashed event line never rides a solid call's trunk, nor its run across the gap
   between ranks (each line's runs take their own channel there); a labelled
   arrow keeps its own ends, unless arrows into one node (or out of one) say the same thing in the same line: those
-  join one bus too (several services that each "publish" to one event bus), the bus saying it once, on the stretch
+  join one bus too (several services that each "publish" to one event bus), and so does the one labelled arrow
+  among unlabelled ones into one node in its line (an agent that names the bus once, on one of its arrows), the bus
+  saying it once, on the stretch
   into that node they all share (four "publish" plates, one a leg, read as four different things; a trunk out of one
   node keeps one on each leg, where each says where it goes), never a
   decision's exits, whose label names that decision's branch (two decisions' "no" on one bus could not say which was

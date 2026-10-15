@@ -134,7 +134,10 @@ Elements an agent places itself (the MCP's raw `elements`, any layout) get the
 same two bends on every angled arrow it gave no curve points whose ends face each
 other across a gap: a bottom to a lower top, a top to a higher bottom, a right
 side to a box further right, a left side to one further left. Such an arrow drew
-as an L that ran its last stretch along the far box's edge. An arrow whose ends
+as an L that ran its last stretch along the far box's edge. Its cross run sits half way between its ends when that
+is clear, else at the clear level nearest half way: off every other box, off every container's border and the band
+under its top edge its heading takes (a subnet's name and CIDR), and 16 px off any cross run placed before it whose
+span overlaps or meets its own, so two never read as one line. An arrow whose ends
 do not face each other keeps its L, which already meets both ends square.
 
 ### Two-way edges bow apart

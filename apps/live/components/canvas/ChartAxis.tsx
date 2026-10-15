@@ -11,7 +11,8 @@ const GRID = '#e2e8f0';
 
 type Ink = { textColor: string; fontFamily?: string | undefined };
 
-/** A line, area or scatter chart's ticks: the left axis with its gridlines, the right axis's labels in its colour. */
+/** A line, area or scatter chart's ticks: the left axis with its gridlines, the right axis's labels beside an edge in
+ *  its series' colour. */
 export function LineChartAxis({
   marks,
   rightColor,
@@ -36,6 +37,16 @@ export function LineChartAxis({
           </text>
         </g>
       ))}
+      {marks.axis.right.length > 0 ? (
+        <line
+          x1={x + w}
+          y1={marks.plot.y}
+          x2={x + w}
+          y2={marks.plot.y + marks.plot.h}
+          stroke={rightColor}
+          strokeWidth={2}
+        />
+      ) : null}
       {marks.axis.right.map((t, i) => (
         <text
           key={`r${i}`}
@@ -43,7 +54,7 @@ export function LineChartAxis({
           y={t.y + AXIS_TICK_FONT_PX / 3}
           textAnchor="start"
           fontSize={AXIS_TICK_FONT_PX}
-          fill={rightColor}
+          fill={textColor}
           fontFamily={fontFamily}
         >
           {t.text}

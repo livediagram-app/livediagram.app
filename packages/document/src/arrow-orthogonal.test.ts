@@ -165,6 +165,23 @@ describe('facing bends', () => {
     expect(curveAnchorPoints({ x: 50, y: 60 }, { x: 350, y: 300 }, b.curvePoints!)[0]!.y).toBe(180);
   });
 
+  it("keeps a cross run off another facing arrow's run where their spans overlap", () => {
+    // Two arrows down from p into c and d, their cross runs over the same stretch: the second steps off the first.
+    const els = [
+      box('p', 0, 0),
+      box('c', 300, 300),
+      box('d', 200, 300),
+      pinned('a', 'p', 's', 'c', 'n'),
+      { ...pinned('b', 'p', 's', 'd', 'n'), id: 'b' },
+    ];
+    const out = withFacingBends(els);
+    const y = (i: number, to: { x: number; y: number }) =>
+      curveAnchorPoints({ x: 50, y: 60 }, to, (out[i] as ArrowElement).curvePoints!)[0]!.y;
+    expect(Math.abs(y(3, { x: 350, y: 300 }) - y(4, { x: 250, y: 300 }))).toBeGreaterThanOrEqual(
+      16,
+    );
+  });
+
   it('leaves a free end alone', () => {
     const free: ArrowElement = {
       ...pinned('f', 'p', 's', 'c', 'n'),

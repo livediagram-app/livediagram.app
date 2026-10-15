@@ -120,7 +120,9 @@ describe('the axis in an export', () => {
       } as Tab);
     const on = chart({ chartAxis: true });
     expect(on).toContain('>1,500</text>');
-    expect(on).toMatch(/text-anchor="start"[^>]*fill="#ff0000">200<\/text>/);
+    expect(on).toMatch(/text-anchor="start"[^>]*>200<\/text>/);
+    // The right edge in Paid's colour.
+    expect(on).toMatch(/stroke="#ff0000" stroke-width="2"/);
     expect(chart({})).not.toContain('>1,500</text>');
     const columns = renderElementsToSvg({
       id: 't',

@@ -31,7 +31,8 @@ describe('chart views', () => {
     expect(ticks).toContain('1,500');
     const right = [...line.querySelectorAll('text[text-anchor="start"]')];
     expect(right.map((t) => t.textContent)).toContain('200');
-    expect(right[0]!.getAttribute('fill')).toBe('#ff0000');
+    expect(right[0]!.getAttribute('fill')).toBe('#000');
+    expect(line.querySelector('line[stroke="#ff0000"]')).not.toBeNull();
     for (const variant of [undefined, 'horizontal' as const]) {
       const bars = render(
         <BarChartView
