@@ -17,9 +17,10 @@ import {
   BUTTON_W,
   GAP,
   HEAD_GAP,
-  SECTION_H,
+  PAD_W,
   SUBTITLE_H,
   TITLE_H,
+  UNDER_SECTION,
   heading,
   note,
   section,
@@ -37,9 +38,7 @@ import {
 import { BLUE, PINK, YELLOW } from './template-workshop-stickies';
 
 // The reaction pad's size beside a session button: as tall as the button, so a kit row reads as one band.
-const PAD_W = 150;
 // The gap between a section label and what it heads.
-const UNDER_SECTION = SECTION_H + 12;
 
 // Pub Quiz: three rounds of three Quiz cards on the right, each round a row under its own label, so the quizmaster
 // works across and down. The left column keeps score (a table the quizmaster fills in after each round), holds the

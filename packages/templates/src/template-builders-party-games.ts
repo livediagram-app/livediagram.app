@@ -10,9 +10,11 @@ import {
   BUTTON_W,
   GAP,
   HEAD_GAP,
+  PAD_W,
   SECTION_H,
   SUBTITLE_H,
   TITLE_H,
+  UNDER_SECTION,
   checklist,
   heading,
   kitRow,
@@ -22,9 +24,6 @@ import {
 } from './template-session-parts';
 import { BINGO_PROMPTS, TWO_TRUTHS_PLAYERS, WOULD_YOU_RATHER } from './template-quiz-games-data';
 import { YELLOW } from './template-workshop-stickies';
-
-const PAD_W = 150;
-const UNDER_SECTION = SECTION_H + 12;
 
 // A reaction pad as tall as a session button, with the line that says when to press it beside it.
 function padRow(

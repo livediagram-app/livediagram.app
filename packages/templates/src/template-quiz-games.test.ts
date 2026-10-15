@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { POLL_OPTION_MAX } from '@livediagram/api-schema';
+import { STICKY_PRESETS } from '@livediagram/document';
 import {
   quizPhase,
   sessionButtonPlan,
@@ -14,6 +15,7 @@ import {
   ICEBREAKER_QUESTIONS,
   PUB_QUIZ_ROUNDS,
   PUB_QUIZ_SECONDS,
+  TWO_TRUTHS_PLAYERS,
 } from './template-quiz-games-data';
 import type { TemplateKind } from './templates';
 
@@ -116,5 +118,15 @@ describe('the Pub Quiz answers', () => {
     // And no round answers one letter throughout.
     for (const r of PUB_QUIZ_ROUNDS)
       expect(new Set(r.questions.map((q) => q.correct)).size).toBeGreaterThan(1);
+  });
+});
+
+describe('the players’ stickies', () => {
+  it('each take a sticky preset’s paper and ink, so the colour picker names them', () => {
+    for (const p of TWO_TRUTHS_PLAYERS)
+      expect(
+        STICKY_PRESETS.some((k) => k.fill === p.sticky.fillColor && k.text === p.sticky.textColor),
+        p.name,
+      ).toBe(true);
   });
 });
