@@ -14,20 +14,6 @@ export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set([
   'illustrate',
 ]);
 
-// The bar's room for names, estimated from the names themselves (13px medium is about 7px a letter): a named
-// button is its glyph and padding plus its name, and the strip's own chrome (the selection mode, Search, dividers
-// and padding) and the Explorer card's clearance on both sides come off the window first. Without the room the bar
-// shows glyphs alone, named by the flyout they open.
-const LABEL_PX_PER_CHAR = 7;
-const NAMED_BUTTON_PX = 40;
-const BAR_CHROME_PX = 150;
-const MENU_CLEARANCE_PX = 2 * 116;
-
-export function barFitsLabels(labels: readonly string[], viewportPx: number): boolean {
-  const named = labels.reduce((sum, l) => sum + NAMED_BUTTON_PX + l.length * LABEL_PX_PER_CHAR, 0);
-  return named + BAR_CHROME_PX + MENU_CLEARANCE_PX <= viewportPx;
-}
-
 // The bar names every category in one word, so a name never wraps or crowds its neighbours: a layout's longer
 // name gives way to its short one here (the flyout's header uses the same, so the two never disagree).
 const BAR_LABELS: Readonly<Record<string, string>> = {

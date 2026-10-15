@@ -54,7 +54,8 @@ import {
 } from '@/hooks/plan/plan-cover-store';
 import { BoardCardsStrip } from './BoardCardsStrip';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
-import { barFitsLabels, CATEGORY_BAR_MODES } from './category-flyout-groups';
+import { CATEGORY_BAR_MODES } from './category-flyout-groups';
+import { useBarLabels } from './useBarLabels';
 import { SessionBrowse } from './session-category';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
@@ -233,15 +234,15 @@ export function ToolbarPalette(props: Props) {
   // so a scaled tile takes more of the window.
   const scale = useUiScale('toolbar');
   // The category bar names its categories where the window has room for every name; glyphs alone otherwise.
-  const barLabels =
-    !isMobile &&
-    barFitsLabels(
-      barCategories.map((c) => c.label),
-      viewportWidth / scale,
-    );
   // Measured from the strip itself (useStripTileLimit); the estimate only
   // covers the first paint.
   const cardRef = useRef<HTMLDivElement>(null);
+  // The category bar names its categories while the strip has room for the names (useBarLabels).
+  const barLabels = useBarLabels(cardRef, {
+    enabled: categoryBar && !isMobile,
+    categoriesKey: barCategories.map((c) => c.label).join('|'),
+    scale,
+  });
   const leadingRef = useRef<HTMLDivElement>(null);
   const stripLimit = useStripTileLimit(cardRef, {
     leadingRef,

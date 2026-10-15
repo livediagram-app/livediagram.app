@@ -82,6 +82,9 @@ const WRITE_WITH_COMMENTS = [
 // The diagram-building elements Diagram's Build adds to the category's own tiles.
 const DIAGRAM_BUILD_EXTRAS = ['components:card', 'components:badge', 'components:step'];
 
+// The concept graphics, then the Sankey (Diagram's and Illustrate's Concepts).
+const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
+
 // Image and Avatar; no embedded pages, and no Tab Window (an Illustrate element, docs/specs/009-elements/tab-window.md).
 const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES, 'media:tab-window');
 
@@ -119,10 +122,11 @@ const DIAGRAM: PaletteLayout = {
     // The diagram-building elements join Build here (docs/specs/009-elements/card.md and its siblings).
     {
       id: 'build',
-      tiles: [...tilesForCategory('build').map((t) => t.id), ...DIAGRAM_BUILD_EXTRAS],
+      tiles: [...tilesExcept('build', 'tools:sankey'), ...DIAGRAM_BUILD_EXTRAS],
     },
-    // Concept graphics (docs/specs/009-elements/concept-graphics.md).
-    { id: 'concepts' },
+    // Concept graphics (docs/specs/009-elements/concept-graphics.md), and the Sankey: a flow drawn as wide as what it
+    // carries explains an idea the way a funnel or a cycle does, so it sits with them rather than with the builders.
+    { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
     { id: 'event-storming', boardOnly: true },
     { id: 'icons' },
     { id: 'technology' },
@@ -186,9 +190,10 @@ const ILLUSTRATE: PaletteLayout = {
         'tools:frame',
         'tools:boundary',
         'tools:diagram-key',
+        'tools:sankey',
       ),
     },
-    { id: 'concepts' },
+    { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
     // The web blocks, without the data-model Entity.
     { id: 'components', tiles: tilesExcept('components', 'tools:entity') },
     { id: 'devices' },

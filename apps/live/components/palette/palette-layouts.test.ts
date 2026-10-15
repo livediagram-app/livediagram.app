@@ -218,6 +218,13 @@ describe('palette layouts', () => {
     ]);
   });
 
+  it('files the Sankey under Concepts, not Build, in Diagram and Illustrate', () => {
+    for (const mode of ['diagram', 'illustrate'] as const) {
+      expect(tileIds(mode, 'concepts').at(-1), mode).toBe('tools:sankey');
+      expect(tileIds(mode, 'build'), mode).not.toContain('tools:sankey');
+    }
+  });
+
   it('leaves mind nodes, lanes, frames, annotations and entities out of Illustrate', () => {
     const everywhere = paletteCategoriesFor('illustrate').flatMap((c) =>
       (c.tiles ?? []).map((t) => t.id),
@@ -235,7 +242,6 @@ describe('palette layouts', () => {
       'tools:table',
       'tools:stack',
       'tools:timeline',
-      'tools:sankey',
     ]);
     expect(tileIds('diagram', 'build')).toContain('tools:mind-node');
     expect(tileIds('diagram', 'write')).toContain('tools:annotation');
