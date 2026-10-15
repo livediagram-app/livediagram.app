@@ -41,7 +41,11 @@ export function FormProblems({
       <ul className="mt-1 flex flex-col gap-1">
         {problem ? (
           <li className="flex items-baseline justify-between gap-3">
-            <span>Responses have nowhere to go. {DESTINATION_PROBLEM_TEXT[problem]}</span>
+            <span>
+              {problem === 'no_destination'
+                ? 'Responses have nowhere to go yet: choose a board or a sheet.'
+                : DESTINATION_PROBLEM_TEXT[problem]}
+            </span>
             {onFixDestination ? (
               <button type="button" onClick={onFixDestination} className={LINK}>
                 Choose Where Responses Go

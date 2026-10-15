@@ -471,7 +471,7 @@ board settings, for switching back.
 
 - **Choosing the sheet**: **Sheet** lists the document's Sheet tabs' sheets by their tab's name ("Budget", "Budget 2"
   for a second on it), its last choice **+ New Sheet**: a Sheet tab "<Form> Responses" after the Form tab (in its
-  theme), a blank sheet on it the destination, opened so the sheet is made. Picking Rows in a Sheet with no sheet
+  theme), a blank sheet on it the destination, made at once so the form stays open. Picking Rows in a Sheet with no sheet
   yet makes one the same way. A sentence reads it back: "Each response becomes a row on **Budget**, a column per
   question. No mapping needed." A sheet no longer on its tab says "Its sheet was removed. Choose where responses go."
   and pauses the form, as a broken board destination does.

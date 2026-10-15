@@ -194,7 +194,7 @@ board check) for publishing and the public read; `respond` branches on
 `storeSheetWrite(ctx, documentId, sheetId, { write, unchecked: true }, by, null)`, the route's write path factored
 out. The sheet store retries a create refused `tab_not_found` (`CREATE_TAB_RETRIES` 4, `CREATE_TAB_RETRY_MS` 800 ms
 a step), for a sheet on a tab not saved yet. Live: `sheetsOf(tabs)`, `setResponsesTo`, `newResponsesSheet`
-(`placeNewSheet` on a new Sheet tab, opened), `DestinationPicker` (`SheetDestination` / `BoardDestination`),
+(a new Sheet tab, its sheet made through `makeSheet` so the form stays open; `placeNewSheet` and opened where nothing can make it), `DestinationPicker` (`SheetDestination` / `BoardDestination`),
 `sendPreview` (a sheet destination with a problem fails at once, `PREVIEW_NO_SHEET`; else the api first; a sheet with
 no link fails), `formsFeeding` (`hooks/forms/forms-feeding.ts`, the stored destination read without parsing) skips
 sheet forms for a board. A sheet starter's sheet is made with its tab, not on opening it: `makeFormSheet`

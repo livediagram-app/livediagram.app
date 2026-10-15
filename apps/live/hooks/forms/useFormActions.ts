@@ -58,8 +58,8 @@ export type FormActions = {
   setResponsesTo: (
     to: { kind: 'board' } | { kind: 'sheet'; tabId: string; sheetId: string },
   ) => void;
-  // New Sheet: a Sheet tab "<Form> Responses" after this one, a blank sheet on it the destination, opened so the sheet
-  // is made.
+  // New Sheet: a Sheet tab "<Form> Responses" after this one, a blank sheet on it the destination, made at once (the
+  // form stays open), or opened so the sheet is made where nothing can make it.
   newResponsesSheet: () => void;
 };
 
@@ -373,10 +373,12 @@ export function useFormActions({
     const formTab = now.find((t) => t.id === activeId);
     if (!formTab || formTab.locked) return;
     const form = readForm(formTab.form) ?? blankForm(formTab.name);
-    const { sheetId } = placeNewSheet({
-      title: `${form.heading} Responses`.slice(0, 80),
-      blank: true,
-    });
+    const title = `${form.heading} Responses`.slice(0, 80);
+    const make = live.current.makeSheet;
+    // Made at once through the sheet store, so the form stays open; without it, placed, to be made on opening.
+    const { sheetId } = make
+      ? { sheetId: newPlanSheetId() }
+      : placeNewSheet({ title, blank: true });
     const sheetTab = responsesSheetTab(form.heading, formTab, sheetId);
     commitTabs((ts) => {
       const next = ts.map((t) =>
@@ -386,8 +388,9 @@ export function useFormActions({
       return next;
     });
     live.current.markTabLoaded?.(sheetTab.id);
+    if (make) make({ id: sheetId, tabId: sheetTab.id, title });
     // A placed sheet is made when its tab first draws it: opened, it exists for the first response.
-    live.current.openTab?.(sheetTab.id);
+    else live.current.openTab?.(sheetTab.id);
   }, [activeId, commitTabs, live]);
 
   const setDestinationType = useCallback<FormActions['setDestinationType']>(
