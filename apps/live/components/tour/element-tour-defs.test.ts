@@ -28,6 +28,7 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
     mindLook: 'person',
     label: 'Ana Kim',
   } as Element,
+  sequence: createShape('sequence', 0, 0) as Element,
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {
@@ -51,6 +52,12 @@ describe('ELEMENT_TOUR_DEFS', () => {
       expect(steps.filter((s) => s.card === 'welcome')).toEqual([]);
     },
   );
+
+  it('puts away the Sequence dialog on Done', () => {
+    const api = { closeSequence: vi.fn() } as unknown as ElementTourApi;
+    ELEMENT_TOUR_DEFS.sequence.onDone?.(api);
+    expect(api.closeSequence).toHaveBeenCalled();
+  });
 
   it('puts away the Sankey Flows dialog on Done', () => {
     const api = { closeFlows: vi.fn() } as unknown as ElementTourApi;

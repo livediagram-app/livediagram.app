@@ -1,6 +1,7 @@
 import { isFlowchartStep, type Element, type ShapeElement } from '@livediagram/document';
 import type { EditorCapabilities } from './editor-capabilities';
 import { canEditSankey } from './sankey-edit';
+import { canEditSequence } from './sequence-edit';
 import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
@@ -21,6 +22,7 @@ export const ELEMENT_TOUR_KINDS = [
   'mind-node',
   'flowchart',
   'org-chart',
+  'sequence',
 ] as const;
 
 export type ElementTourKind = (typeof ELEMENT_TOUR_KINDS)[number];
@@ -38,6 +40,7 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   'mind-node': 'mind map node',
   flowchart: 'flowchart step',
   'org-chart': 'person in an org chart',
+  sequence: 'sequence diagram',
 };
 
 // The toured kind an element is, or null when its type has no tour.
@@ -53,6 +56,7 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el.shape === 'chevrons') return 'chevrons';
   if (el.shape === 'mind-node' && (el as ShapeElement).mindLook !== 'person') return 'mind-node';
   if (el.shape === 'mind-node' && (el as ShapeElement).mindLook === 'person') return 'org-chart';
+  if (el.shape === 'sequence') return 'sequence';
   // Last: a step guard that fails narrows the element to nothing for any check after it.
   if (isFlowchartStep(el)) return 'flowchart';
   return null;
@@ -84,6 +88,8 @@ export function canTourElement(
       return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
     case 'org-chart':
       return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
+    case 'sequence':
+      return canEditSequence(can, el);
   }
 }
 

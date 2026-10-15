@@ -15,6 +15,7 @@ import { chevronsTourSteps } from './chevrons-tour-steps';
 import { mindNodeTourSteps } from './mind-node-tour-steps';
 import { flowchartTourSteps } from './flowchart-tour-steps';
 import { orgChartTourSteps } from './org-chart-tour-steps';
+import { sequenceTourSteps } from './sequence-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -162,6 +163,20 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
         hasMore: env.hasMore,
         touch: env.touch,
       }),
+  },
+  sequence: {
+    token: 'SequenceTour',
+    eyebrow: 'Sequence tour',
+    helpArticle: 'sequenceDiagram',
+    helpLabel: 'Sequence Diagrams Help',
+    steps: (el, env) =>
+      sequenceTourSteps({
+        elementId: el.id,
+        hasMessages: ((el as ShapeElement).sequenceMessages ?? []).length > 0,
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+    onDone: (api) => api.closeSequence(),
   },
 };
 

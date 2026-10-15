@@ -95,6 +95,7 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
               'mind-node',
               'flowchart',
               'org-chart',
+              'sequence',
             ],
           }),
         );

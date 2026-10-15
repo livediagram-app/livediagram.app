@@ -140,3 +140,13 @@ describe('the Org Chart element tour kind', () => {
     expect(canTourElement({ level: 'participate' }, person, 'org-chart')).toBe(false);
   });
 });
+
+describe('the Sequence element tour kind', () => {
+  it('tours a sequence diagram, for an Editor on an unlocked one', () => {
+    const seq = createShape('sequence', 0, 0) as Element;
+    expect(elementTourKindOf(seq)).toBe('sequence');
+    expect(canTourElement({ level: 'edit' }, seq, 'sequence')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, seq, 'sequence')).toBe(false);
+    expect(canTourElement({ level: 'edit' }, { ...seq, locked: true }, 'sequence')).toBe(false);
+  });
+});

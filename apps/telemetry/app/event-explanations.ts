@@ -1203,6 +1203,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Org Chart tour, offered beside a selected person in an org chart.',
   'UI|Ended|OrgChartTourSkipped':
     'Someone left the Org Chart tour before its end, or the person in an org chart it was on went away.',
+  'UI|Ended|SequenceTourCompleted':
+    'Someone reached the end of the Sequence tour, offered beside a selected sequence diagram.',
+  'UI|Ended|SequenceTourSkipped':
+    'Someone left the Sequence tour before its end, or the sequence diagram it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1345,6 +1349,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Flowchart tour was offered, as a small Tour toolbar beside a selected flowchart step (counted once per visit).',
   'UI|Opened|OrgChartTourOffer':
     'The Org Chart tour was offered, as a small Tour toolbar beside a selected person in an org chart (counted once per visit).',
+  'UI|Opened|SequenceTourOffer':
+    'The Sequence tour was offered, as a small Tour toolbar beside a selected sequence diagram (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
@@ -1443,6 +1449,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected flowchart step, starting its tour.',
   'UI|Started|OrgChartTour':
     'Someone pressed Play on the Tour toolbar beside a selected person in an org chart, starting its tour.',
+  'UI|Started|SequenceTour':
+    'Someone pressed Play on the Tour toolbar beside a selected sequence diagram, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1652,6 +1660,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Org Chart Tour" in Settings, so it is offered again.',
   'UI|Toggled|OrgChartTourSeenOn':
     'Someone switched off Tours › Element Tours › "Org Chart Tour" in Settings, so it is not offered.',
+  'UI|Toggled|SequenceTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Sequence Tour" in Settings, so it is offered again.',
+  'UI|Toggled|SequenceTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Sequence Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -1881,6 +1893,28 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Org Chart tour reached its "The Mind Map Menu" step, on the selection toolbar\'s More button.',
   'UI|View|OrgChartTourStepOutro':
     'The Org Chart tour reached its closing "That Is an Org Chart" card.',
+  'UI|View|SequenceTourStepDiagram':
+    'The Sequence tour reached its "Who Calls Whom" step, on the whole diagram.',
+  'UI|View|SequenceTourStepMenu':
+    'The Sequence tour reached its "The Sequence Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|SequenceTourStepWrite':
+    'The Sequence tour reached its "Write It as a List" step, on the whole diagram.',
+  'UI|View|SequenceTourStepParticipants':
+    'The Sequence tour reached its "The Participants" step, inside the Sequence dialog it opened.',
+  'UI|View|SequenceTourStepMessages':
+    'The Sequence tour reached its "A Row a Message" step, inside the Sequence dialog.',
+  'UI|View|SequenceTourStepKind':
+    'The Sequence tour reached its "Call, Async or Reply" step, on a message\'s kind.',
+  'UI|View|SequenceTourStepAdd':
+    'The Sequence tour reached its "Add a Message" step, inside the Sequence dialog.',
+  'UI|View|SequenceTourStepText':
+    'The Sequence tour reached its "Or Type It" step, on the Sequence dialog\'s Text tab.',
+  'UI|View|SequenceTourStepPreview':
+    'The Sequence tour reached its "Live Preview" step, inside the Sequence dialog.',
+  'UI|View|SequenceTourStepNumbered':
+    'The Sequence tour reached its "Number Them" step, on Numbered.',
+  'UI|View|SequenceTourStepOutro':
+    'The Sequence tour reached its closing "That Is a Sequence Diagram" card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':

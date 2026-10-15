@@ -10,8 +10,8 @@ tour offers itself, but quietly: a small toolbar that waits beside the selection
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 [concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion and chevron process; the
-[mind node](../009-elements/mind-node.md); the [flowchart](../009-elements/flowchart.md) step; and the
-[org chart](../009-elements/org-chart.md)'s person node.
+[mind node](../009-elements/mind-node.md); the [flowchart](../009-elements/flowchart.md) step; the
+[org chart](../009-elements/org-chart.md)'s person node; and the [sequence diagram](../009-elements/sequence-diagram.md).
 
 ## Domain language
 
@@ -270,6 +270,28 @@ its parts (`data-tour-part="person-role"`, `"person-initials"`) and its toolbar;
    Spacing, Edit Outline.
 8. **That Is an Org Chart**: the closing card, with **Org Charts Help**.
 
+## The Sequence tour
+
+On a selected sequence diagram, from `sequence-tour-steps.ts`. Like the Sankey tour it reads the diagram on the canvas,
+then opens its Sequence dialog and carries on inside it, every step ringing a real control (each anchor a
+`data-tour-id`: `sequence-participants`, `-messages`, `-kind` on the first message's kind, `-add-message`, `-text`,
+`-preview`, `-numbered`). Each dialog step opens the dialog (again, if it was closed) on the tab it is about; a canvas
+step puts it away. While it runs, Escape is the tour's and never closes the dialog.
+
+1. **Who Calls Whom**: rings the diagram; lifelines, a row per message, a bar while a call waits for its reply.
+2. **The Sequence Menu** (only while More shows): rings More. Edit Sequence, Numbered, and Play under Animation.
+3. **Write It as a List**: rings the diagram; double-click (double-tap) to write it. Next opens the dialog.
+4. **The Participants**: the strip; rename, actor, move, remove with its messages.
+5. **A Row a Message**: the messages. With a keyboard it names Enter (the next message, from whoever was called) and
+   Backspace (an empty one removed); on a touch screen, the move arrows.
+6. **Call, Async or Reply** (only with a message): the first message's kind button.
+7. **Add a Message**: the Add Message row, up to sixty.
+8. **Or Type It**: brings the Text tab forward and rings it; put back to the messages on leaving.
+9. **Live Preview**: the preview.
+10. **Number Them**: the Numbered switch.
+11. **That Is a Sequence Diagram**: the closing card, with **Sequence Diagrams Help**. **Done** closes the dialog with
+    the tour, storing what is being typed as the dialog's own Done does; Skip leaves it open.
+
 ## Share roles
 
 | Role        | Element tours                                                                                  |
@@ -279,13 +301,14 @@ its parts (`data-tour-part="person-role"`, `"person-initials"`) and its toolbar;
 | Viewer      | Never offered                                                                                  |
 
 The gate is the toured kind's own edit check on the session's `can` (for a Sankey, `canEditSankey`; for a concept
-graphic, a mind node (a person node included) or a flowchart step, an Editor on an unlocked element, since its rows, its Mind Map menu and its
+graphic, a mind node (a person node included) or a flowchart step, an Editor on an unlocked element; for a sequence
+diagram, `canEditSequence`, since its rows, its Mind Map menu and its
 Step Type are an Editor's), never
 `isReadOnly` alone.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`, `SequenceTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -303,7 +326,8 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   `...Outro`; the Mind Map's `MindMapTourStepNode`, `...Child`, `...Sibling`, `...Branch`, `...Menu` and `...Outro`;
   the Flowchart's `FlowchartTourStepStep`, `...Next`, `...Branch`, `...Type`, `...Lane`, `...Menu` and `...Outro`;
   the Org Chart's `OrgChartTourStepPerson`, `...Role`, `...Initials`, `...Report`, `...Peer`, `...Team`, `...Menu` and
-  `...Outro`.
+  `...Outro`; the Sequence's `SequenceTourStepDiagram`, `...Menu`, `...Write`, `...Participants`, `...Messages`,
+  `...Kind`, `...Add`, `...Text`, `...Preview`, `...Numbered` and `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.
@@ -332,8 +356,10 @@ help article's tour section; and a section here.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
   `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`, `chevrons-tour-steps.ts`: each kind's own.
-- `apps/live/components/tour/mind-node-tour-steps.ts`, `flowchart-tour-steps.ts`, `org-chart-tour-steps.ts`: the
-  Mind Map, Flowchart and Org Chart tours' steps.
+- `apps/live/components/tour/mind-node-tour-steps.ts`, `flowchart-tour-steps.ts`, `org-chart-tour-steps.ts`,
+  `sequence-tour-steps.ts`: the Mind Map, Flowchart, Org Chart and Sequence tours' steps.
+- `apps/live/lib/dialog-handle.ts`: the slot an open dialog registers its tabs and close in, for a tour that runs inside
+  it (`sankey-flows-dialog-handle.ts`, `sequence-dialog-handle.ts`).
 - `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
 - `apps/live/lib/concept-tour-preview.ts`: what a step shows on a concept graphic: an animation previewed, or a
   chevron stage's bar held open.

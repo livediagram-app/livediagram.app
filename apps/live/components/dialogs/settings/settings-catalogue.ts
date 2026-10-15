@@ -1280,6 +1280,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a person in an org chart.',
         helpArticle: 'orgCharts',
       }),
+      elementTourSwitch('sequence', {
+        label: 'Sequence Tour',
+        event: { category: 'UI', on: 'SequenceTourSeenOff', off: 'SequenceTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial sequence diagram participants messages call reply async lifeline numbered uml replay',
+        description: 'The first time you select a sequence diagram.',
+        helpArticle: 'sequenceDiagram',
+      }),
     ],
   },
   {

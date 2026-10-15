@@ -235,7 +235,7 @@ const conceptTourSteps = (token: string, file: string): string[] =>
   [
     ...[
       ...read(`live/components/tour/${file}`).matchAll(
-        /(?:(?:onGraphic|addRowStep|inTheMenu)\(\s*|\bid: )'([a-z-]+)'/g,
+        /(?:(?:onGraphic|addRowStep|inTheMenu|onCanvas|inDialog)\(\s*|\bid: )'([a-z-]+)'/g,
       ),
     ].map((m) => m[1]!),
     'outro',
@@ -258,6 +258,7 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('MindMapTour', 'mind-node-tour-steps.ts'),
   ...conceptTourSteps('FlowchartTour', 'flowchart-tour-steps.ts'),
   ...conceptTourSteps('OrgChartTour', 'org-chart-tour-steps.ts'),
+  ...conceptTourSteps('SequenceTour', 'sequence-tour-steps.ts'),
 ];
 
 export const DRAW_TOUR_STEP_SOURCE: string[] = [
