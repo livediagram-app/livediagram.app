@@ -1,6 +1,6 @@
 # Architecture
 
-A pnpm + Turborepo monorepo: eight Cloudflare-deployed apps, one distributed command-line app and twenty-three shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
+A pnpm + Turborepo monorepo: eight Cloudflare-deployed apps, one distributed command-line app and thirty shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
 
 ```
 apps/
@@ -32,6 +32,7 @@ packages/
   edit-operations/ the engine agent changesets run on: edit operations and replace into element ops
   document-views/ read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   diagram-lint/ checks how a tab is drawn: overlaps, crossings, arrows behind boxes, with a fix each
+  render-png/     SVG to PNG with resvg (wasm) and Inter, for the MCP server's previews and the CLI's renders
   sticky-vision/  finds sticky notes in a photo of a wall (classical CV, no DOM)
   sticky-model/   the learned boundary model's pure parts (cues, decode) + its training scripts
   telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)
