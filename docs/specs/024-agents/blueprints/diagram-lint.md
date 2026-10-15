@@ -10,7 +10,7 @@ Scope, by file:
 
 | File                                                                              | Role                                                                                                                                                        |
 | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/diagram-lint/{package.json,tsconfig.json,eslint.config.js}`             | The package `@livediagram/diagram-lint`; depends on `@livediagram/document` and `@livediagram/api-schema` (tests also on `templates` and `edit-operations`) |
+| `packages/diagram-lint/{package.json,tsconfig.json,oxlint.config.ts}`             | The package `@livediagram/diagram-lint`; depends on `@livediagram/document` and `@livediagram/api-schema` (tests also on `templates` and `edit-operations`) |
 | `packages/diagram-lint/vitest.config.ts`                                          | `defineProject`, node environment, 100% coverage thresholds (as `explorer-lens`)                                                                            |
 | `packages/diagram-lint/src/index.ts`                                              | The barrel: `lintTab`, `lintGraph`, `compareGraphLayouts`, the formatters, the constants                                                                    |
 | `packages/diagram-lint/src/constants.ts`                                          | Every `LINT_*` constant (see Constants)                                                                                                                     |

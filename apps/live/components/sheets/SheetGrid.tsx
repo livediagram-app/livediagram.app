@@ -102,7 +102,7 @@ export function SheetGrid({
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [c.gridEl, c.setView]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [c.gridEl, c.setView]); // oxlint-disable-line react-hooks-js/exhaustive-deps
 
   // The wheel scrolls the grid, not the canvas, while the grid can scroll that way (as a board's body).
   useEffect(() => {
@@ -129,7 +129,7 @@ export function SheetGrid({
       height: c.view.height - c.geometry.headH,
     });
     if (next) el.scrollTo({ top: next.top, left: next.left });
-  }, [ar, ac]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ar, ac]); // oxlint-disable-line react-hooks-js/exhaustive-deps
 
   // This person's selection, said to the room (useSheetPresence's store throttles it).
   useEffect(() => {
@@ -209,7 +209,7 @@ export function SheetGrid({
         });
     return out;
     // `presence` is the store itself (stable); `presenceVersion` says when it moved.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
   }, [
     c.editing?.draft,
     peers,

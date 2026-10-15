@@ -150,7 +150,7 @@ export function usePlanImageExport(
       live = false;
     };
     // Read again when the Sheets framed, the layout or the tabs change; `tab` itself is read through them.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
   }, [needsSheets, bridge, sheetKey, tab.dashboard, documentTabs]);
 
   // A plan view's picture from the document's cards, and each placeholder's from the layout.

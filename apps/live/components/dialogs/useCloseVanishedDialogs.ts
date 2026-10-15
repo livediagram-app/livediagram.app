@@ -35,6 +35,6 @@ export function useCloseVanishedDialogs(
       close();
     }
     // `open` is rebuilt every render; `key` names what it holds.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
   }, [elements, key]);
 }

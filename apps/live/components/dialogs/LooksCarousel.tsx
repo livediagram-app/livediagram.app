@@ -64,7 +64,7 @@ export function LooksCarousel({
   const mashupPreview = useMemo(
     () => ({ markup: lookPreviewSvg(mashup), paper: lookPreviewTab(mashup).backgroundColor }),
     // As the looks' previews: redrawn in the viewer's half when it changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
     [mashup, appearance],
   );
   const previews = useMemo(
@@ -76,7 +76,7 @@ export function LooksCarousel({
         ]),
       ),
     // The previews read the viewer's appearance themselves (getTheme); it is a dependency so they redraw on a change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
     [appearance],
   );
   return (

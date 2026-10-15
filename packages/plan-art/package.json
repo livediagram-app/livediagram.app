@@ -11,7 +11,7 @@
     "./test-fixtures": "./src/test-fixtures.ts"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "oxlint",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
@@ -24,11 +24,11 @@
     "@livediagram/ui": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.3",
-    "eslint": "^10.12.0",
+    "oxlint": "^1.88.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^5.0.3"
   }

@@ -48,7 +48,7 @@ export function PageSurfacesProvider({
   children: ReactNode;
 }) {
   const key = surfaces && surfaces.size ? [...surfaces].map(([id, s]) => `${id}:${s}`).join() : '';
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the entries, not the map
+  // oxlint-disable-next-line react-hooks-js/exhaustive-deps -- keyed on the entries, not the map
   const stable = useMemo(() => (key ? surfaces : null), [key]);
   return <PageSurfacesContext.Provider value={stable}>{children}</PageSurfacesContext.Provider>;
 }
@@ -73,7 +73,7 @@ export function ChartGroundsProvider({
   children: ReactNode;
 }) {
   const key = grounds && grounds.size ? [...grounds].map(([id, g]) => `${id}:${g}`).join(';') : '';
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the entries, not the map
+  // oxlint-disable-next-line react-hooks-js/exhaustive-deps -- keyed on the entries, not the map
   const stable = useMemo(() => (key ? grounds : null), [key]);
   return <ChartGroundsContext.Provider value={stable}>{children}</ChartGroundsContext.Provider>;
 }

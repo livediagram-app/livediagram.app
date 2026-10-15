@@ -32,7 +32,7 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
   // A window inside this tab is named for the tab it shows, as the export names it. Keyed on the tabs' names, not the
   // tabs, so an edit anywhere in the document does not redraw this one.
   const nameKey = tabs.map((t) => `${t.id}\u0000${t.name}`).join('\u0001');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // oxlint-disable-next-line react-hooks-js/exhaustive-deps
   const windowNames = useMemo(() => tabWindowNames(tabs), [nameKey]);
   const plan = usePlan();
   const { appearance } = useAppearance();
@@ -59,7 +59,7 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
       live = false;
     };
     // Keyed on the ids, not the tab: the bitmaps only change when the set of photos does.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
   }, [wantedImages, imageContext]);
 
   return useMemo(() => {

@@ -161,7 +161,7 @@ function Wireframe({
   const els = useMemo(
     () => buildPageLayout(layout, page),
     // Rebuilt only when the page's shape changes (it mints fresh ids each time).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
     [layout, rect.x, rect.y, rect.width, rect.height],
   );
   const h = (width * rect.height) / rect.width;

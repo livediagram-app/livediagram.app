@@ -75,5 +75,5 @@ export function useFollowLayout({
       setEditing(null);
       toast(r === null ? EDIT_LOST : EDIT_LOST_COLUMN);
     } else if (r !== editing.r || c !== editing.c) setEditing({ ...editing, r, c });
-  }, [layout]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [layout]); // oxlint-disable-line react-hooks-js/exhaustive-deps
 }

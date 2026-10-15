@@ -230,7 +230,7 @@ function FilterMenu({
   const values = useMemo(
     () => columnValueCounts(c.workbook, c.sheet.id, colId),
     // Counted again whenever a value may have changed (`version`).
-    [c.workbook, c.sheet.id, colId, c.version], // eslint-disable-line react-hooks/exhaustive-deps
+    [c.workbook, c.sheet.id, colId, c.version], // oxlint-disable-line react-hooks-js/exhaustive-deps
   );
   const [kept, setKept] = useState<Set<string>>(
     () => new Set(current?.values ?? values.map((v) => v.text)),

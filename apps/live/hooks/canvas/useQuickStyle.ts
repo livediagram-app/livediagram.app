@@ -161,7 +161,7 @@ export function useQuickStyle(
     return plain ? memory.styleNewElement(plain) : null;
     // toolVersion: memory changed under the same intent. memory.scope: another document's (or
     // tab kind's) memory, whose style must never show as this one's next mark.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
   }, [whiteboard, editsBlocked, selected.length, intent, theme, toolVersion, memory.scope]);
   // The Highlighter rows: the selected highlights first; with nothing selected, the armed tile.
   const hlColour = deps.highlighter?.colour;

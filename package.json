@@ -26,11 +26,11 @@
     "icons:brand": "pnpm --filter @livediagram/live icons:brand"
   },
   "devDependencies": {
-    "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/prettier-config": "workspace:*",
     "@typescript/native": "npm:typescript@^7.0.2",
     "esbuild": "^0.28.2",
-    "eslint": "^10.12.0",
+    "oxlint": "^1.88.0",
     "prettier": "^3.9.9",
     "turbo": "^2.11.7",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
@@ -58,6 +58,15 @@
       "brace-expansion@3 || 4 || 5": "^5.0.8",
       "onnxruntime-node>global-agent": "^4.1.3",
       "@tensorflow/tfjs>argparse": "^2.0.1"
+    },
+    "packageExtensions": {
+      "eslint-plugin-react-hooks": {
+        "peerDependenciesMeta": {
+          "eslint": {
+            "optional": true
+          }
+        }
+      }
     }
   }
 }

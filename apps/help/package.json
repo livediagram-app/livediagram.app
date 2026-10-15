@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node ../../scripts/next-dev.mjs --port 3004",
     "build": "next build",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -27,8 +27,8 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
-    "@livediagram/eslint-config": "workspace:*",
     "@livediagram/next-config": "workspace:*",
+    "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
@@ -39,7 +39,7 @@
     "@types/react-dom": "^19.3.0",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.3",
-    "eslint": "^10.12.0",
+    "oxlint": "^1.88.0",
     "tailwindcss": "^4.3.3",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^5.0.3"

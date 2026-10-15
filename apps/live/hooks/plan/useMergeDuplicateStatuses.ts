@@ -56,6 +56,6 @@ export function useMergeDuplicateStatuses(opts: {
     if (patches.length) void writeQuiet({ kind: 'patches', patches });
     debugLog('[plan] states.merged', { states: merged.size, cards: patches.length });
     // Runs once per set of duplicates: the merge empties it, and a new duplicate changes it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
   }, [signature, enabled, itemsReady]);
 }

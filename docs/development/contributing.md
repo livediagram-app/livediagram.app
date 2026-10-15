@@ -86,16 +86,15 @@ Every workspace lists two TypeScript entries, and they are not a mistake:
 
 TypeScript 7 is the Go compiler. It type-checks this monorepo about **7x faster** than 6 did (21.4s to 2.9s cold, all fourteen projects), so `pnpm typecheck` runs 7 and `tsc` on your PATH inside a workspace _is_ 7.
 
-What 7.0 does not ship is a programmatic API; that lands in 7.1. Tools that import the compiler rather than shell out to it — typescript-eslint, Next.js, Prettier's TypeScript parser — therefore still need 6. The alias pair is Microsoft's documented answer: `typescript` keeps resolving to the 6.0 API for those tools, while `@typescript/native` supplies 7's `tsc`. Run `tsc6` if you ever need to compare the two compilers on the same file.
+What 7.0 does not ship is a programmatic API; that lands in 7.1. Tools that import the compiler rather than shell out to it (Next.js, and the repo's own source scanners) therefore still need 6. The alias pair is Microsoft's documented answer: `typescript` keeps resolving to the 6.0 API for those tools, while `@typescript/native` supplies 7's `tsc`. Run `tsc6` if you ever need to compare the two compilers on the same file.
 
-`packages/eslint-config/typescript-aliases.test.ts` holds every workspace to the root manifest's pair: a new package that lists a plain `typescript` type-checks on 6 without anyone noticing, and draws a Dependabot major bump that cannot install.
+`packages/oxlint-config/typescript-aliases.test.ts` holds every workspace to the root manifest's pair: a new package that lists a plain `typescript` type-checks on 6 without anyone noticing, and draws a Dependabot major bump that cannot install.
 
-Two consequences worth knowing before they bite you:
+One consequence worth knowing before it bites you:
 
-- **`packages/eslint-config` declares the 6.0 alias as a real dependency.** Without it, `auto-install-peers` resolves typescript-eslint's `typescript` peer against the 7.0 copy and every lint run dies with `typescript-eslint does not support TS 7.0`.
 - **Editors are a separate choice.** VS Code needs the TypeScript 7 extension for the fast language server; anything that embeds the compiler in its own language service (MDX tooling, Volar-based plugins) stays on 6 until 7.1. The CLI is the source of truth either way — CI runs 7.
 
-Both aliases get dropped for a plain `typescript@7.x` once 7.1 ships an API and typescript-eslint adopts it.
+Both aliases get dropped for a plain `typescript@7.x` once those tools move off the 6.0 API. Linting does not hold this back: oxlint parses TypeScript itself ([Linting](../specs/003-system-architecture/linting.md)).
 
 `pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app spreads `livediagramNextConfig()` from `@livediagram/next-config` into its `next.config`**, which reads `NEXT_DISTDIR` for it, or the old build/dev cache race comes back.
 

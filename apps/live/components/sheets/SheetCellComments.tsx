@@ -70,7 +70,7 @@ export function SheetCellComments({ hover }: { hover: { r: number; c: number } |
     el.addEventListener('keydown', onKey);
     return () => el.removeEventListener('keydown', onKey);
     // `c` changes every render; what the listener reads of it is read when the key lands.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
   }, [c.gridEl, open, elementId, c.interactive]);
 
   // The Comments panel names this Sheet's cell threads by A1, and asks it to bring one into view.

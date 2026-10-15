@@ -17,7 +17,7 @@ Vitest with the same shared config.
 
 Per the repo's reuse-over-duplication rule, test configuration lives in one
 place: `packages/vitest-config`. It sits alongside the other shared configs
-(`eslint-config`, `prettier-config`, `tailwind-config`).
+(`oxlint-config`, `prettier-config`, `tailwind-config`).
 
 It exports:
 
@@ -305,8 +305,9 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     builder tests, `apps/marketing`'s gallery, and `apps/help`'s article guard.
   - `packages/tailwind-config`: the theme's budgets, motion and optical
     utilities, scrollbars.
-  - `packages/eslint-config`: the custom rules (raw SVG, native `title`) and
-    the TypeScript alias wiring.
+  - `packages/oxlint-config`: the shared lint config, linting scratch files
+    with the real config (every rule family, the custom raw SVG and native
+    `title` rules, directives), and the TypeScript alias wiring.
   - `packages/telemetry-client`: the shared buffer / flush / beacon engine
     both apps emit through: batching, caps, opt-in gates, page-hide beacon,
     error-tracking caps.

@@ -7,8 +7,8 @@ Status: shipped
 Every React component and hook in the repo keeps render pure and uses effects only to synchronise with
 something outside React. Every `eslint-plugin-react-hooks` rule, including the React Compiler rules
 (`refs`, `set-state-in-effect`, `purity`, `immutability` and the rest) and `exhaustive-deps`, is an
-**error** in every workspace (`packages/eslint-config`), with no per-line suppressions and no
-exemptions. Tests drive hooks through a component (`renderHook`), like the app does.
+**error** in every workspace (`packages/oxlint-config`, run by oxlint: [Linting](linting.md)), with no
+per-line suppressions and no exemptions. Tests drive hooks through a component (`renderHook`), like the app does.
 
 ## Why
 

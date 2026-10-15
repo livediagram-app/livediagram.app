@@ -227,7 +227,7 @@ export function useSheetControllerState(opts: {
   // Rows the filter hides are drawn at no height; worked out again whenever a value may have changed.
   const filtered = useMemo(
     () => (sheet.layout.filter ? filteredOutRows(workbook, sheet.id) : new Set<string>()),
-    [workbook, sheet.id, sheet.layout.filter, version], // eslint-disable-line react-hooks/exhaustive-deps
+    [workbook, sheet.id, sheet.layout.filter, version], // oxlint-disable-line react-hooks-js/exhaustive-deps
   );
   const geometry = useMemo(() => geometryOf(sheet.layout, filtered), [sheet.layout, filtered]);
   const grid = useMemo<Grid>(() => {

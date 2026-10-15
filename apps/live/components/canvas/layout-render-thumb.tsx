@@ -39,7 +39,7 @@ export function LayoutRenderThumb({
   const markup = useMemo(
     () => layoutRenderSvg(tab, page, layout),
     // Redrawn for the page's place, size and paint, and the tab's look; not for its elements.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
     [layout, rect.x, rect.y, rect.width, rect.height, page.background, tab.theme, tab.font, icons],
   );
   return (
