@@ -221,6 +221,30 @@ const GHOST_CLASSES = [
 const REVEAL_MS = 120;
 
 // The transform that lays a box drawn at `to` over `from` (top-left origin): where the element sits on the canvas.
+type BoxSize = { width: number; height: number };
+
+// The box's laid-out size (untransformed, so the open animation never shows in it), for a view to fit: reported now
+// and on every resize, and null when the box goes. Both maximised layers report through it.
+function useReportedBoxSize(
+  boxRef: { current: HTMLElement | null },
+  onSize: ((size: BoxSize | null) => void) | undefined,
+  canvas: unknown,
+): void {
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box || !onSize) return;
+    const report = () => onSize({ width: box.offsetWidth, height: box.offsetHeight });
+    report();
+    if (typeof ResizeObserver === 'undefined') return () => onSize(null);
+    const ro = new ResizeObserver(report);
+    ro.observe(box);
+    return () => {
+      ro.disconnect();
+      onSize(null);
+    };
+  }, [boxRef, onSize, canvas]);
+}
+
 export function flipTransform(from: DOMRect, to: DOMRect): string {
   if (to.width <= 0 || to.height <= 0) return 'none';
   const sx = from.width / to.width;
@@ -495,20 +519,7 @@ export function MaximisedPlanLayer({
     return closing ? closeBox(box, id, host) : openBox(box, id, host);
   }, [closing, id, host, canvas]);
 
-  // The box's laid-out size (untransformed, so the open animation never shows in it), for a view to fit.
-  useEffect(() => {
-    const box = boxRef.current;
-    if (!box || !onSize) return;
-    const report = () => onSize({ width: box.offsetWidth, height: box.offsetHeight });
-    report();
-    if (typeof ResizeObserver === 'undefined') return () => onSize(null);
-    const ro = new ResizeObserver(report);
-    ro.observe(box);
-    return () => {
-      ro.disconnect();
-      onSize(null);
-    };
-  }, [onSize, canvas]);
+  useReportedBoxSize(boxRef, onSize, canvas);
 
   if (typeof document === 'undefined') return null;
   return (
@@ -559,19 +570,7 @@ export function FilledTabLayer({
       announceHeaderBand();
     }
   }, [canvas, host]);
-  useEffect(() => {
-    const box = boxRef.current;
-    if (!box || !onSize) return;
-    const report = () => onSize({ width: box.offsetWidth, height: box.offsetHeight });
-    report();
-    if (typeof ResizeObserver === 'undefined') return () => onSize(null);
-    const ro = new ResizeObserver(report);
-    ro.observe(box);
-    return () => {
-      ro.disconnect();
-      onSize(null);
-    };
-  }, [onSize, canvas]);
+  useReportedBoxSize(boxRef, onSize, canvas);
   return (
     <>
       <span hidden ref={mark} />
