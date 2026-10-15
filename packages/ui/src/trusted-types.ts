@@ -88,8 +88,8 @@ export function trustedScriptOrigins(env: {
 }
 
 /**
- * The inline script first in every layout's <head>: the `default` policy (script URLs only, by
- * `isAllowedScriptUrl`), and the log line for every Trusted Types violation.
+ * The inline script first in every layout's <head>: the `default` policy (script URLs by `isAllowedScriptUrl`, and
+ * React DOM's empty `<script></script>` alone as HTML), and the log line for every Trusted Types violation.
  */
 export function trustedTypesBootScript(assetPrefix: string, origins: readonly string[]): string {
   return (
@@ -98,7 +98,11 @@ export function trustedTypesBootScript(assetPrefix: string, origins: readonly st
     `var allowed=${isAllowedScriptUrl.toString()};` +
     "if(window.trustedTypes&&window.trustedTypes.createPolicy){window.trustedTypes.createPolicy('default',{" +
     'createScriptURL:function(url,type,sink){if(allowed(String(url),location.origin,PREFIX,ORIGINS,sink))return String(url);' +
-    "console.error('[trusted-types] script-url-refused '+url);return null;}});}" +
+    "console.error('[trusted-types] script-url-refused '+url);return null;}," +
+    // React DOM parses an empty script to make a <script> element on a client render; inert, the one HTML let through.
+    // Written <\\/script> so the HTML parser never sees a closing tag inside this inline script.
+    "createHTML:function(html){if(html==='<script><\\/script>')return html;" +
+    "console.error('[trusted-types] html-refused '+html);return null;}});}" +
     "addEventListener('securitypolicyviolation',function(e){" +
     "if(String(e.violatedDirective).indexOf('trusted-types')>=0)" +
     "console.error('[trusted-types] violation '+e.violatedDirective+' '+(e.sample||''));});" +

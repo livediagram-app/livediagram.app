@@ -27,6 +27,8 @@ All three come from one shared module, `@livediagram/ui`'s `trusted-types`, and 
   own `<asset prefix>/_next/` (`/_next/` for marketing, `/live/_next/`, `/help/_next/` and so on), one on an origin in
   "Third parties", and a worker from the page's own `blob:` URL; it refuses everything else: HTML, script text, and
   any other URL. A `blob:` URL can only be minted by script already running on the page, and a worker has no DOM.
+  For HTML it allows exactly `<script></script>`, the empty script React DOM parses to create a `<script>` element on
+  a client render (a script inserted through `innerHTML` never runs); any other HTML string is refused.
 - **`livediagram-markup`** turns markup that livediagram's own builders produced into `TrustedHTML`
   (`trustedHtml(markup)`). Its callers are the builders that escape every piece of content they place: the icon,
   sticker and template SVG builders (`@livediagram/icons`, `@livediagram/templates`), the headless tab renderer's
@@ -39,14 +41,15 @@ All three come from one shared module, `@livediagram/ui`'s `trusted-types`, and 
 
 ## Third parties
 
-| Code                                  | Needs                                                               | Allowed by                                       |
-| ------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------ |
-| Next.js and Turbopack's chunk loading | Script URLs under `/_next/` (`/live/_next/` in the editor)          | `default`                                        |
-| Next.js's own script helper           | Its pass-through policy                                             | The `nextjs` policy name                         |
-| ProseMirror (the article editor)      | Parsing pasted HTML into an inert template                          | The `ProseMirrorClipboard` policy name           |
-| Our web workers                       | Their script URLs under `/_next/`                                   | `default`                                        |
-| Clerk (editor, community sign-in)     | Script URLs on the Clerk frontend API origin                        | `default`, origin from the publishable key       |
-| Clerk's session timers                | A `Worker` from the page's own `blob:` URL (its fixed timer source) | `default`, for the Worker constructor sink alone |
+| Code                                             | Needs                                                                           | Allowed by                                       |
+| ------------------------------------------------ | ------------------------------------------------------------------------------- | ------------------------------------------------ |
+| React DOM, rendering a `<script>` in the browser | `innerHTML = '<script></script>'` on a scratch element (an empty, inert script) | `default`, that exact string alone               |
+| Next.js and Turbopack's chunk loading            | Script URLs under `/_next/` (`/live/_next/` in the editor)                      | `default`                                        |
+| Next.js's own script helper                      | Its pass-through policy                                                         | The `nextjs` policy name                         |
+| ProseMirror (the article editor)                 | Parsing pasted HTML into an inert template                                      | The `ProseMirrorClipboard` policy name           |
+| Our web workers                                  | Their script URLs under `/_next/`                                               | `default`                                        |
+| Clerk (editor, community sign-in)                | Script URLs on the Clerk frontend API origin                                    | `default`, origin from the publishable key       |
+| Clerk's session timers                           | A `Worker` from the page's own `blob:` URL (its fixed timer source)             | `default`, for the Worker constructor sink alone |
 
 A worker's own scope is not the page's: its script is served from `/_next/` with no policy header, so the libraries
 it runs (transformers.js, TensorFlow.js, jsquash) are outside this boundary.

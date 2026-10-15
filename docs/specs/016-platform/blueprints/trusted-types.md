@@ -47,6 +47,12 @@ page runs, minified or not:
         console.error('[trusted-types] script-url-refused ' + url);
         return null; // the browser blocks the sink
       },
+      // React DOM's scratch <script> (inert); written <\/script> so the HTML parser never ends this script early.
+      createHTML: function (html) {
+        if (html === '<script><\/script>') return html;
+        console.error('[trusted-types] html-refused ' + html);
+        return null;
+      },
     });
   }
   addEventListener('securitypolicyviolation', function (e) {
@@ -64,7 +70,8 @@ page runs, minified or not:
 4. The page's origin with a path starting `<assetPrefix>/_next/` is allowed.
 5. Otherwise allowed only when its origin is in `origins`.
 
-No `createHTML` and no `createScript`: an HTML or script string from code without a policy is refused.
+No `createScript`, and `createHTML` passes one string alone: an HTML or script string from code without a policy is
+refused. The boot script contains no `</script` anywhere (a test holds it), since it is written into one.
 
 ### `trustedHtml` and `parseInert`
 
@@ -120,10 +127,11 @@ export function trustedTypesBootScript(assetPrefix: string, origins: readonly st
 
 ## Observability
 
-| Fingerprint                          | Level | When                                    |
-| ------------------------------------ | ----- | --------------------------------------- |
-| `[trusted-types] violation`          | error | Any Trusted Types violation on the page |
-| `[trusted-types] script-url-refused` | error | The default policy refuses a URL        |
+| Fingerprint                          | Level | When                                      |
+| ------------------------------------ | ----- | ----------------------------------------- |
+| `[trusted-types] violation`          | error | Any Trusted Types violation on the page   |
+| `[trusted-types] script-url-refused` | error | The default policy refuses a URL          |
+| `[trusted-types] html-refused`       | error | The default policy refuses an HTML string |
 
 ## Testing
 

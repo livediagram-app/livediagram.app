@@ -150,7 +150,7 @@ describe('trustedTypesBootScript', () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
     run(trustedTypesBootScript('/live', ['https://clerk.example.com']));
     const policy = created.find((c) => c.name === 'default')!;
-    expect(Object.keys(policy.rules)).toEqual(['createScriptURL']);
+    expect(Object.keys(policy.rules).sort()).toEqual(['createHTML', 'createScriptURL']);
     expect(policy.rules.createScriptURL!('/live/_next/static/chunks/a.js')).toBe(
       '/live/_next/static/chunks/a.js',
     );
@@ -169,6 +169,26 @@ describe('trustedTypesBootScript', () => {
     expect(worker(own, 'TrustedScriptURL', 'HTMLScriptElement src')).toBeNull();
     expect(error).toHaveBeenCalledWith(
       '[trusted-types] script-url-refused https://evil.example/x.js',
+    );
+  });
+
+  // React DOM makes a <script> element on a client render by parsing an empty one (inert: a script inserted
+  // through innerHTML never runs). That exact string passes; any other HTML is refused and logged.
+  it('lets React DOM make an empty script element, and refuses any other HTML', () => {
+    const { created } = stubTrustedTypes();
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    run(trustedTypesBootScript('', []));
+    const createHTML = created.find((c) => c.name === 'default')!.rules.createHTML!;
+    expect(createHTML('<script></script>')).toBe('<script></script>');
+    expect(createHTML('<script>alert(1)</script>')).toBeNull();
+    expect(createHTML('<img src=x onerror=alert(1)>')).toBeNull();
+    expect(error).toHaveBeenCalledWith('[trusted-types] html-refused <img src=x onerror=alert(1)>');
+  });
+
+  // It is inlined in a <script> element: a closing tag anywhere in it would end that element early.
+  it('never closes the inline script element it is written into', () => {
+    expect(trustedTypesBootScript('/live', ['https://clerk.example.com'])).not.toMatch(
+      /<\/script/i,
     );
   });
 
