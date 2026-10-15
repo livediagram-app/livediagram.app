@@ -169,6 +169,8 @@ describe('hub, onion and chevrons (round 2)', () => {
       }
     // A hub that already fitted keeps its 16 px least radius.
     expect(hubLayout(120, 120, 6).hubR).toBeGreaterThanOrEqual(16);
+    // Including where the room is only just enough (80 px: 18 px of room for a 16 px hub).
+    expect(hubLayout(80, 80, 6).hubR).toBeGreaterThanOrEqual(16);
   });
 
   it('switches spokes off and back on (on is the absent default)', () => {
@@ -213,6 +215,8 @@ describe('hub, onion and chevrons (round 2)', () => {
     expect(hub.match(/>Orders</g)).toHaveLength(1);
     expect(hub).toContain('<line');
     expect(svgBoxed(withHubSpokes(make('hub'), false))).not.toContain('<line');
+    // A hub with no rows draws as the canvas does: no spoke to a satellite that is not there.
+    expect(svgBoxed(make('hub', { conceptRows: [] }))).not.toContain('<line');
     const onion = svgBoxed(make('onion'));
     for (const t of ['Domain', 'Infrastructure']) expect(onion).toContain(t);
     expect(onion.match(/<circle/g)).toHaveLength(4);

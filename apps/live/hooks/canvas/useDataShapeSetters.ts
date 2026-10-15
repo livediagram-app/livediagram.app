@@ -31,7 +31,7 @@ import {
   type Element,
   type ProgressAnim,
   type ShapeElement,
-  isSeatingShape,
+  turnsWithFacing,
   seatingFacing,
   turnedSeatingBox,
   type SeatingKind,
@@ -341,14 +341,15 @@ export function useDataShapeSetters({
   const setChairFacingSelected = (facing: ChairFacing) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
+    // A meeting table in the selection never turns, so it neither takes the facing nor names the event.
     const first = elements().find(
-      (el) => ids.has(el.id) && el.type === 'shape' && isSeatingShape(el.shape),
+      (el) => ids.has(el.id) && el.type === 'shape' && turnsWithFacing(el.shape),
     );
-    if (!first || first.type !== 'shape' || !isSeatingShape(first.shape)) return;
+    if (!first || first.type !== 'shape' || !turnsWithFacing(first.shape)) return;
     const turned: SeatingKind = first.shape;
     commit((els) =>
       els.map((el) => {
-        if (!ids.has(el.id) || el.type !== 'shape' || !isSeatingShape(el.shape)) return el;
+        if (!ids.has(el.id) || el.type !== 'shape' || !turnsWithFacing(el.shape)) return el;
         const seating = { ...el, shape: el.shape };
         const box = turnedSeatingBox(seating, seatingFacing(seating), facing);
         return { ...el, ...box, chairFacing: facing };

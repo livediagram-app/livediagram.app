@@ -269,12 +269,13 @@ export async function ownsDocument(
   return ctx.resolveOwner() === liveDoc.ownerId;
 }
 
-// May `ctx` delete this document? Its owner, OR a joined member of its team
-// (docs/specs/013-workspace/team-shared-documents.md: members fully manage team
-// documents, delete included). NOT a share-link visitor: editing content via a
-// link is one thing, destroying the document is owner/team-only. Also gates
-// what the delete confirmation reads first (the shared-tabs notice).
-export async function mayDeleteDocument(
+// Does `ctx` manage this document? Its owner, OR a joined member of its team
+// (docs/specs/013-workspace/team-shared-documents.md: a team's library belongs to
+// every joined member, so each may share, delete and restore its documents). NOT a
+// share-link visitor: editing content via a link is one thing, deciding who else
+// gets in or destroying the document is owner/team-only. The member leg is checked
+// against the verified account id, never the header, like ownsDocument.
+export async function managesDocument(
   ctx: RouteContext,
   liveDoc: Pick<DocumentDTO, 'ownerId' | 'teamId'>,
 ): Promise<boolean> {
@@ -283,6 +284,10 @@ export async function mayDeleteDocument(
   const membership = await getMembership(ctx.env, liveDoc.teamId, ctx.verifiedUserId);
   return membership?.status === 'joined';
 }
+
+// May `ctx` delete this document? Exactly who manages it (managesDocument). Also
+// gates what the delete confirmation reads first (the shared-tabs notice).
+export const mayDeleteDocument = managesDocument;
 
 // The answer for a document id no LIVE row holds (docs/specs/013-workspace/trash.md):
 // 410 `document_trashed` when it is in the Trash and the caller could have
@@ -317,6 +322,22 @@ export async function requireOwnedDocument(
   const existing = await getDocument(ctx.env, documentId);
   if (!existing) return missingDocument(ctx, documentId);
   if (!(await ownsDocument(ctx, existing))) return forbidden();
+  return existing;
+}
+
+// The share-link family's guard (docs/specs/013-workspace/team-shared-documents.md): the
+// same 400 / 404 / 403 ladder as requireOwnedDocument, but a joined member of a team
+// document passes as well as its owner, since the team's documents are all of theirs
+// to share.
+export async function requireManagedDocument(
+  ctx: RouteContext,
+  documentId: string,
+): Promise<DocumentDTO | Response> {
+  const owner = ctx.resolveOwner();
+  if (!owner) return missingAuth();
+  const existing = await getDocument(ctx.env, documentId);
+  if (!existing) return missingDocument(ctx, documentId);
+  if (!(await managesDocument(ctx, existing))) return forbidden();
   return existing;
 }
 

@@ -1,6 +1,7 @@
 import type { ArrowElement, Element, ShapeElement, Tab } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
+  mayShareDocument,
   autosaveReadOnly,
   computeTabSaveDiff,
   createTab,
@@ -556,5 +557,23 @@ describe('autosaveReadOnly', () => {
     expect(autosaveReadOnly({ canEdit: true, loadError: false, documentNotFound: true })).toBe(
       true,
     );
+  });
+});
+
+// docs/specs/013-workspace/team-shared-documents.md: a team's documents belong to every joined member.
+describe('mayShareDocument', () => {
+  it('lets the owner share, team or not', () => {
+    expect(mayShareDocument({ isOwner: true, teamId: null, sessionShareCode: null })).toBe(true);
+    expect(mayShareDocument({ isOwner: true, teamId: 't1', sessionShareCode: null })).toBe(true);
+  });
+
+  it('lets a teammate who opened a team document without a code share it', () => {
+    expect(mayShareDocument({ isOwner: false, teamId: 't1', sessionShareCode: null })).toBe(true);
+  });
+
+  it('keeps share-link visitors as visitors, team document or not', () => {
+    expect(mayShareDocument({ isOwner: false, teamId: null, sessionShareCode: 'c1' })).toBe(false);
+    expect(mayShareDocument({ isOwner: false, teamId: 't1', sessionShareCode: 'c1' })).toBe(false);
+    expect(mayShareDocument({ isOwner: false, teamId: null, sessionShareCode: null })).toBe(false);
   });
 });

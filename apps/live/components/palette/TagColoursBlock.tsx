@@ -35,7 +35,8 @@ export function TagColoursBlock({
               value={colour ?? '#94a3b8'}
               open={open === tag}
               onToggle={() => setOpen((o) => (o === tag ? null : tag))}
-              onChange={(c) => onSetTagColour(tag, c)}
+              // The picker's No Colour is `transparent`: for a tag, that clears its colour.
+              onChange={(c) => onSetTagColour(tag, c === 'transparent' ? null : c)}
               {...colourPalette}
             />
             {colour ? (

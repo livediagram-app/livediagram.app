@@ -55,6 +55,13 @@ const isBoxed = (el: Element): el is Boxed =>
   Number.isFinite((el as Boxed).width) &&
   Number.isFinite((el as Boxed).height);
 
+// A mark that rides on something else, never a slot of its own: a badge, step or pointer note attached to a host
+// (it follows its host, which may be a child), or a comment pin. Laying one out moved it off its host and grew the
+// stack by an empty slot.
+const isMark = (el: Element): boolean =>
+  (el as { attachedTo?: string }).attachedTo !== undefined ||
+  (el.type === 'shape' && el.shape === 'comment-pin');
+
 /** A stack's children in slot order: the elements it directly holds, ordered by their centres. */
 export function stackChildren(
   elements: readonly Element[],
@@ -62,7 +69,8 @@ export function stackChildren(
   holders: ReadonlyMap<ElementId, ElementId | null> = deriveContainers(elements),
 ): Boxed[] {
   const kids = elements.filter(
-    (el): el is Boxed => isBoxed(el) && el.id !== stack.id && holders.get(el.id) === stack.id,
+    (el): el is Boxed =>
+      isBoxed(el) && el.id !== stack.id && holders.get(el.id) === stack.id && !isMark(el),
   );
   const { direction } = stackSettingsOf(stack);
   const c = (b: Box) => boxCentre(b);

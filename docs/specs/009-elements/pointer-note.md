@@ -25,8 +25,9 @@ a quiet dot.
 - **Size**: a new note is 180 × 64 with its tip 56 px below its bottom-left corner and 24 px to the left. The note is
   resized like any box; the tip keeps its place.
 - **It does not rotate**: the tip is pinned to a point on the board, and turning the note would swing its leader off
-  that point. The menu has no Rotation for it, the Rotate commands skip it, and a turn stored on one (by an agent) is
-  drawn upright.
+  that point. The menu has no Rotation for it (nor a multi-selection of only pointer notes), the Rotate commands skip
+  it, and a turn written on one (by an agent, or an old copy) is dropped where elements enter, so its arrows,
+  handles, hit tests and every export see it upright too.
 
 ## Attaching the tip
 

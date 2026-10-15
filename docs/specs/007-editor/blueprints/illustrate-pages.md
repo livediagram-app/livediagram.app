@@ -138,6 +138,8 @@ page; "template" stays the whole-tab starting point.
 | `THUMB_W`, `WIDE_THUMB_W`                                              | 120 px, 104 px (the wide card's four columns)                   | `infographic-layout-thumb.tsx`, `infographic-page-layouts-section.tsx`; D29                                                              |
 | `DRAG_THRESHOLD`                                                       | 6 px                                                            | `usePageReorderDrag.ts`; spec "Drag a page's label"                                                                                      |
 | `VIEW_GLIDE_MS`                                                        | 280 ms                                                          | `apps/live/lib/viewport-glide.ts`; spec "The page navigator"                                                                             |
+| `LAST_ILLUSTRATE_PAGE_SETTLE_MS`                                       | 400 ms                                                          | `apps/live/lib/last-illustrate-page.ts`; spec "Back to the page you were on"; D87                                                        |
+| `LAST_ILLUSTRATE_PAGE_MAX`                                             | 200 tabs                                                        | `apps/live/lib/last-illustrate-page.ts`; about 20 KB of local storage; D87                                                               |
 | `NOTICE_GAP_MS`                                                        | 2500 ms                                                         | `page-lock-guard.ts`; the locked-page notice at most this often, D80                                                                     |
 | `PAGINATE_CLUSTER_GAP`                                                 | 120 px                                                          | `illustrate-paginate.ts`; spec "Into pages"                                                                                              |
 | `LANDSCAPE_RATIO`                                                      | 1.1                                                             | `illustrate-paginate.ts`; spec "Into pages"                                                                                              |
@@ -196,6 +198,12 @@ page; "template" stays the whole-tab starting point.
   pages, Turn Into Pages), so an unchosen page is told from a chosen one.
 - No migration: every new field is optional and absent on old data; old pages parse unchanged (as
   unchosen infographic pages, their row on the origin).
+- The page you were last on, per person (`lib/last-illustrate-page.ts`, local storage key
+  `livediagram:v2:last-illustrate-page`, `{ [lastIllustratePageKey(documentId, tabId)]: pageId }`,
+  the key `<documentId>:<tabId>` so a tab id repeated across documents never borrows another's
+  page, the latest `LAST_ILLUSTRATE_PAGE_MAX` = 200 entries, a re-recorded entry moved to the most
+  recent, an unchanged write skipped). Read through `safeJson`; a malformed value or a non-string
+  entry reads as absent. Not a synced preference (capped at 4 KB) and never in the document.
 
 ## Behaviour and state
 
@@ -210,7 +218,16 @@ now; stops a glide), `themeBackgrounds`, `themeAccent`, `articles?` (composed
 in by `useEditorState`), `tabFont`, `layoutPreview` / `setLayoutPreview` (state held here so the
 clip and the overlay share it), and `edit` (absent for a viewer or a locked tab).
 
-On `[on, tabLoaded, tabId]` a frame later `centre()` (frames the first page, at once); on `[on,
+On `[on, tabLoaded, tabId]` a frame later `centre()` (`frameLanding`: the remembered page, else
+the first, at once); `frameFirstPageRef` is handed the same `frameLanding` for the tab-entry fit
+(`useTabEntryEffects`). Back to the page you were on: `useLastIllustratePage` (given `documentId`
+and the viewport store by `useEditorState`) subscribes to the store in a layout effect while on
+with two pages or more; each view change restarts a `LAST_ILLUSTRATE_PAGE_SETTLE_MS` timer, whose
+end writes `pageNearestPoint(pages, computeViewportCenter(canvas size, offset))` under
+`lastIllustratePageKey(documentId, tabId)`. Nothing is written until `frameLanding` has armed the
+key (the view before it may be the last tab's). A pending timer is flushed on the effect's cleanup
+(a tab switch: a layout cleanup, so before anything frames the next tab) and on `pagehide`. On
+`[on,
 tabLoaded, tabId, canEdit]` `putOnAPage()` (Into pages, below), its own effect so an editor role
 resolved after the load still gets the page. After `onGoTo(id)` (add, duplicate, a turn or a new
 size, the page before a deleted one, the first page of a split) the hook frames that page once it
@@ -833,6 +850,9 @@ SVG `href` is escaped. The api counts a page picture as an image reference
 - `elementPageSurfaces` and `illustratePageSnapBoxes` run per render: O(elements x pages) and
   O(pages); the provider's value is stable while the entries are, so element views do not
   re-render during a drag that keeps elements on their pages.
+- Remembering the page costs nothing per pan frame beyond a `clearTimeout` / `setTimeout` pair (no
+  render: it follows the viewport store); once settled, one O(pages) nearest-page pass and one
+  local-storage read (at most 200 entries) plus a write only when the page changed.
 - Entering the mode (`withContentOnAPage`) is O(elements): one bounds pass and one anchor-point
   pass over `elementIndexFor` (measured 1.4 ms at 3000 elements, against 67 ms for the clustering
   it replaced; guarded by a 5000-element budget test). `contentClusters` is O(n²) in the split
@@ -924,7 +944,7 @@ positioned over the canvas.
 - `debugLog` fingerprints: `[illustrate-page] orientation set`, `size set`, `renamed`,
   `background set`, `moved`, `page added`, `article added`, `duplicated`, `article duplicated`,
   `page removed`, `article removed`, `last page removed`, `first page kind chosen`,
-  `layout placed`, `framed`, `content put onto a page`, `page split`, `split: one group`,
+  `layout placed`, `framed`, `last page recorded`, `content put onto a page`, `page split`, `split: one group`,
   `split refused: page limit`, `size refused: fit to content`, `size refused: not offered for the
 kind`, `turn refused: landscape only`, `pattern refused: a logo page`, `refused: page locked`,
   `lock set`, `started blank`, `re-inked` (`reinked`, `remembered`), `tidied`, `tidy: already tidy`, `press off the pages ignored`; `[page-lock] edit held back`;
@@ -945,6 +965,8 @@ read against the code. Rules no test covers are listed as gaps after the table.
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Page kinds: read, absent is infographic, an article's flow kept or its own id                                                                                               | `packages/document/src/illustrate-page.test.ts` "page kinds"                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | A new page per kind: infographic modelled on the last, article, slide, logo                                                                                                 | `packages/document/src/illustrate-edits.test.ts` "adding"; `apps/live/hooks/editor/illustrate-page-edits.test.ts` "Illustrate page edits: documents", "slide page edits", "logo page edits", "Fit to Content page edits"                                                                                                                                                                                                                                                                      |
+| Back to the page you were on: landing frames it, else the first; nothing recorded before the landing frame; a settling move kept on leaving or closing                      | `apps/live/hooks/editor/useIllustratePages.last-page.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| The remembered page: per document and tab, malformed reads absent, capped at the latest 200, the page under (else nearest) the view's centre                                | `apps/live/lib/last-illustrate-page.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | The first page's choice: offered while alone, unchosen, empty; each kind taken                                                                                              | `packages/document/src/article-pages.test.ts` "the first page's own choice of kind"; `illustrate-page-edits.test.ts` "chooses Slide for the only, empty page", "chooses Logo for the only, empty page"                                                                                                                                                                                                                                                                                        |
 | The kind cards: arrow keys between the four                                                                                                                                 | `apps/live/components/canvas/FirstPageChoice.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | The + after the last page: level with its middle                                                                                                                            | `apps/live/components/canvas/AddPageButton.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -1030,4 +1052,4 @@ Gaps (no unit test; browser-checked or uncovered):
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md), rows D23 to D32, D55 to D58 and D81 to D86.
+See [DEFAULTS.md](DEFAULTS.md), rows D23 to D32, D55 to D58 and D81 to D87.

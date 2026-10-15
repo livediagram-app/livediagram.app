@@ -137,3 +137,19 @@ describe('the meeting table', () => {
     expect(nearestSeat(table, { x: 150, y: 168 })).toMatchObject({ facing: 'up' });
   });
 });
+
+describe('roomParts at the smallest sizes', () => {
+  it('draws no part with a negative or zero size, however small the room', () => {
+    for (const door of ['n', 's', 'e', 'w'] as const)
+      for (const [w, h] of [
+        [36, 200],
+        [200, 20],
+        [10, 10],
+      ] as const)
+        for (const p of roomParts(w, h, door))
+          if (p.tag === 'rect') {
+            expect(p.w, `${door} ${w}x${h} ${p.role}`).toBeGreaterThan(0);
+            expect(p.h, `${door} ${w}x${h} ${p.role}`).toBeGreaterThan(0);
+          }
+  });
+});

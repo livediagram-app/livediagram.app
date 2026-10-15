@@ -41,6 +41,7 @@ To stop a card showing a tag's colour, clear that tag's colour (or remove the ta
 
 A **Tag Colours** block in the card's **Card** section lists the selected card's tags, each with a colour row (the
 shared colour picker: [Colour picker](../004-interface-design/colour-picker.md)) and, once set, **Clear** beside it.
+The picker's **No Colour** clears it the same way.
 Picking a colour sets the tag's colour for the whole tab, in one history step. The [Diagram key](diagram-key.md) lists
 the map.
 

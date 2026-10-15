@@ -84,7 +84,9 @@ Walk up to one and your character **gets a drink**.
 ## Rug
 
 A floor rug: an oval with a border, in the element's fill. Decoration that never blocks and is never a destination;
-placed **behind everything** like a room, so it lies on the floor under the furniture. Default 200 × 120.
+placed **behind everything** like a room, so it lies on the floor under the furniture. Rooms and rugs paint as
+backdrops, the larger first, however they arrive (placed, drawn to size, pasted, written by an agent): a rug lies on its
+room's floor, and a room never covers what stands in it. Default 200 × 120.
 
 ## Share roles
 

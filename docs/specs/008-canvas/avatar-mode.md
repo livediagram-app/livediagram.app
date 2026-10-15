@@ -12,6 +12,7 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 
 - New `CanvasTool` id `'avatar'`, offered in the canvas-tool picker's **presenter group** next to Laser and Spotlight.
 - Keyboard shortcut **`W`** (walk). `A` is Arrow, `V` / `H` / `K` / `I` / `E` / `Z` are taken.
+- **Where it is offered: Facilitate only.** Avatar is a [Facilitate mode](../012-collaboration/facilitate-mode.md) tool, so the canvas-tool picker, the `W` key and the search panel's `tool:avatar` command offer it only while the tab is in Facilitate; Diagram, Draw, Illustrate and Plan leave it out (`FACILITATE_ONLY_TOOLS` in `canvas-tool-options.tsx`). A [Selection Mode button](../009-elements/mode-button.md) set to Avatar still hands it out in **every** mode: an author who placed one chose to offer the walk on that board, so the button, not the mode, decides. Leaving Facilitate while walking does not end the walk; the usual ways out (a view-tool key, the picker, the button) still work.
 - **Disabled on an empty canvas**, like every tool below Select / Hand: with nothing drawn there is nowhere to walk.
 - Available on **every viewport** (unlike Spotlight): tap-to-walk works fine on touch, it just loses the arrow keys.
 - Available to **view-role** visitors — it is a pure view aid and mutates nothing.
@@ -58,6 +59,19 @@ Contents, top to bottom:
 - A **Send a Message** button closes the panel, full width under the action rows, for someone who may [speak](#speech-bubbles). It opens the [message popover](#the-message-popover), and it is the only way to speak on a device with no Enter key. On a desktop it carries an `Enter` key hint, so the shortcut is learned where the button is. A Viewer's panel has no such button.
 
 **No colour picker**, deliberately — see above.
+
+## Keyboard actions
+
+Every Behaviour and every Reaction in the panel is also **one key**, so a presenter mid-walk can wave or throw confetti without opening the panel:
+
+- **Behaviour on its initial**: `J` Jumping jacks, `W` Wave, `S` Spin, `C` Cheer, `D` Dance.
+- **Reactions on `1` to `5`**, in the panel's order: Confetti, Sparkles, Hearts, Applause, Fireworks.
+- A key plays exactly what its panel button plays (the same `playReaction` and burst handlers), the panel open or not. Pressing it again restarts the performance or replays the burst, as a second click does.
+- **Plain presses only**: any modifier (Shift+D stays the mode switch, Cmd+C copies) and an autorepeat from a held key do nothing, so holding a key never machine-guns a burst.
+- **Never while typing**: a focused text field (the message composer, a rename, a comment), an open dialog or a focused menu keeps the key, as it does for the arrows and Space.
+- While walking these keys are the character's, so the editor's own meanings stand aside (`S` does not open Search, `1` does not pick Select). `V` / `H` / `K` / `I` / `Z` and `Escape` remain the ways out.
+- The panel shows each key on its button (desktop only, as the message button's `Enter` hint), and the Settings Keyboard reference lists them under **While walking (Avatar mode)**. The key map lives in `lib/avatar-action-keys.ts` (pure, unit-tested); `hooks/canvas/useAvatarActionKeys.ts` plays it.
+- Viewers have the keys too, as they have the panel's actions: nothing they do is a document write.
 
 ## Persistence
 

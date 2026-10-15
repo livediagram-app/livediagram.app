@@ -1793,8 +1793,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const collabDeepLink = useCollabDeepLinkCapture();
 
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
-  // entry). See useTabEntryEffects. A tab showing pages frames its first page
-  // instead (set by useIllustratePages below), never the whole row.
+  // entry). See useTabEntryEffects. A tab showing pages frames the page you were
+  // last on (else its first) instead (set by useIllustratePages below), never the whole row.
   const frameFirstPageRef = useRef<(() => void) | null>(null);
   const { requestFit } = useTabEntryEffects({
     hydrated,
@@ -2021,6 +2021,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onArticleCreated: (flow) => articleFocusRef.current?.(flow),
     framePageRef,
     frameFirstPageRef,
+    documentId: documentId ?? undefined,
+    viewport,
   });
   // What a locked page holds is inert, as on a locked layer (Illustrate mode only).
   const pageLockedIds = usePageLockedIds(activeTab.elements, illustratePages?.pages ?? null);
@@ -3719,6 +3721,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onSendToBack: sendSelectedToBack,
     onFitToScreen: fitToScreen,
     onCycleEditorMode: editorModeShortcut(editorMode, announce),
+    facilitateMode: editorMode.mode === 'facilitate',
     onDeselect: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());

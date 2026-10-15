@@ -1,7 +1,7 @@
 // The one geometry table for the shapes that are DRAWN rather than boxed.
 //
 // Two renderers paint these: the editor's React overlays (ShapeSvgOverlay,
-// BrowserChrome, ChairView in apps/live) and the headless string emitters
+// BrowserChrome, FurnitureView in apps/live) and the headless string emitters
 // (svg-render-shapes / svg-render-faces here, used by exports, thumbnails,
 // the api's live image and the MCP render). They used to carry their own
 // copies of every path, kept "in sync" by a comment, and the copies drifted
