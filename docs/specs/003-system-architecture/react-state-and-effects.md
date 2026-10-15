@@ -1,6 +1,6 @@
 # React state and effects
 
-Status: shipped
+Status: shipped; the React 19.3 sections (browser-only rendering, View Transitions, Fragment refs) are specified
 
 ## What
 
@@ -58,8 +58,9 @@ recompute(t))`. `apps/live/commit-updater-flags.test.ts` fails a new one.
 
 ## The React Compiler
 
-`apps/live` builds with the React Compiler, which memoises components and hooks at build time, so a
-re-render re-runs only what its inputs changed. The rules above are its precondition: it compiles code
+Every Next.js app (live, marketing, help, community, telemetry) builds with the React Compiler, which memoises
+components and hooks at build time, so a re-render re-runs only what its inputs changed.
+The setting lives once, in `@livediagram/next-config`. The rules above are its precondition: it compiles code
 that keeps them and leaves the rest as plain React.
 
 - **The native Rust port runs it**, inside Turbopack (`reactCompiler: true` with
@@ -77,6 +78,39 @@ that keeps them and leaves the rest as plain React.
   returns the cached value. Module state a render depends on is an external store that notifies
   its subscribers.
 
+## Rendering in the browser only
+
+Every app is a static export, so every component also renders once at build time, where there is no window.
+
+- **A component that cannot render meaningfully at build time** calls `use(browser())` (`browser` from `react-dom`).
+  It suspends during the prerender and renders at once in the browser.
+- **Its nearest `<Suspense>`** has a fallback that reserves the final size, so the swap moves nothing
+  ([Layout stability](../004-interface-design/layout-stability.md)).
+- **Render never guards a browser global with `typeof window`**, and no `useHydrated`-style state stands in for it.
+  `typeof window` stays only in effects, handlers and module code that runs outside React.
+- **Render never reads the clock**, the shared footer's year included: the prerendered HTML and the hydrating
+  browser must render the same text whatever the date.
+
+## Animating a state change
+
+- **A state change animates as a View Transition**: the update runs in `startTransition`, and the `<ViewTransition>`
+  around the surface that changes animates it. `addTransitionType` names why it changes, and the surface keys its
+  `update`, `enter` and `exit` classes by that type, with `default="none"` so no other transition animates it.
+- **Nothing calls `document.startViewTransition` directly**, and nothing uses `flushSync` to feed one.
+- **Reduced motion** (the OS setting or the in-app preference, `prefersReducedMotion()`) runs the change without a
+  transition, so the browser captures nothing ([Motion](../004-interface-design/motion.md) "Reduced motion").
+- **React holds a transition while a View Transition runs.** A handler that counts from the state on screen counts
+  from the state it last asked for instead, or quick repeats are lost.
+
+## Fragments and DOM events
+
+- **A node that exists only to carry a ref** (for an observer, a listener, focus or a measurement) is a
+  `<Fragment ref>` instead; its `FragmentInstance` observes, listens, focuses and measures the children as a group.
+- **An event React exposes is listened to through React** (`onFullscreenChange`, `onFullscreenError`) when it fires
+  on an element the component renders. An event that fires on `<html>` or `document` (presenting fullscreens the
+  whole document) is beyond any component's tree, so an effect listens on `document`.
+
 ## Out of scope
 
-- The React Compiler in the other Next.js apps (marketing, help, telemetry, community).
+- Server Components, Server Actions and request-time rendering: every app is a static export
+  ([Next.js](../016-platform/nextjs.md)).

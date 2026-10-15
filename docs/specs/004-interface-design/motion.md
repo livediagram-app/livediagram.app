@@ -85,6 +85,20 @@ motion is stricter still.
   tab menu's viewport clamp looped on exactly that ("Maximum update depth exceeded"). Nothing waits
   on `transitionend`.
 
+## View Transitions
+
+A state change that swaps a whole surface animates as a React View Transition
+([React state and effects](../003-system-architecture/react-state-and-effects.md) "Animating a state change").
+
+- **Its pace follows its surface.** A chrome surface (the start's mode switch) runs within the ceiling on a motion
+  token; a canvas surface (a slide move) follows its own spec.
+- **Only the named surface moves.** The document root takes no part (`view-transition-name: none` on `<html>`), so
+  the rest of the page neither cross-fades nor freezes into a picture.
+- **Its animation classes** live beside the surface's other motion: the canvas's in `canvas-motion.css`, chrome's in
+  `globals.css`, each on the `::view-transition-old(.<class>)` and `::view-transition-new(.<class>)` pseudo-elements.
+- **Reduced motion starts no View Transition at all.** The collapse rule above matches elements, not the
+  `::view-transition-*` pseudo-elements, so the change itself runs without a transition and appears at once.
+
 ## Dialogs
 
 A modal arrives rather than appearing. Every dialog built on the shared `Dialog` shell (the Plan card
