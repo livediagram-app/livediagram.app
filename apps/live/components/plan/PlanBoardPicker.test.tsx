@@ -156,7 +156,7 @@ describe('Start Planning Forms', () => {
   });
 
   it('has no Forms without onForm', () => {
-    show();
+    show({ onForm: undefined });
     expect(screen.queryByRole('button', { name: /^Forms/ })).toBeNull();
   });
 });
