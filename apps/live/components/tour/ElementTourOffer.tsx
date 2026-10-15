@@ -6,18 +6,16 @@ import { CloseIcon, HoverCard, lucideGlyph, SOLID_BRAND_DARK_CONTROL } from '@li
 import { lucideFootprints } from '@livediagram/icons/lucide';
 import { PlayIcon } from '@/components/primitives/PlayIcon';
 import type { ElementTourOffer as Offer } from '@/lib/element-tour-offer';
+import { ELEMENT_TOUR_NAMES } from '@/lib/element-tours';
 
 // Show Me's footprints: the one glyph for a walkthrough.
 const FootprintsIcon = lucideGlyph(lucideFootprints, 14);
-
-// What each toured kind's offer calls its element.
-const KIND_NAME: Record<Offer['kind'], string> = { sankey: 'Sankey diagram' };
 
 const BUTTON =
   'relative flex h-8 w-8 items-center justify-center rounded-md transition touch-target-y';
 
 export function ElementTourOffer({ offer }: { offer: Offer }) {
-  const name = KIND_NAME[offer.kind];
+  const name = ELEMENT_TOUR_NAMES[offer.kind];
   return (
     <div
       role="toolbar"

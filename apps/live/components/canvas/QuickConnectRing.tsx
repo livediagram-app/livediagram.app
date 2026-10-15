@@ -307,6 +307,8 @@ export function QuickConnectRing({
         type="button"
         aria-label="Quick add and connect"
         aria-expanded={open}
+        // Which side it is on, for an element tour pointing at the ring (docs/specs/007-editor/element-tours.md).
+        data-quick-plus={placement}
         className="pointer-events-auto absolute flex items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-lg shadow-slate-900/10 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:shadow-slate-950/40 dark:hover:bg-slate-800 dark:hover:text-white"
         style={{
           left: 0,

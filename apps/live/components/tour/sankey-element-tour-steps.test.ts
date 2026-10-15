@@ -9,7 +9,6 @@ import {
   sankeyElementTourSteps,
   sankeyFlowsContextOf,
   sankeyTourParts,
-  sankeyTourStepTelemetryType,
   type SankeyElementTourApi,
   type SankeyElementTourContext,
 } from './sankey-element-tour-steps';
@@ -35,6 +34,8 @@ const api = (): SankeyElementTourApi => ({
   closeFlows: vi.fn(),
   showTable: vi.fn(),
   showText: vi.fn(),
+  previewConcept: vi.fn(),
+  clearPreview: vi.fn(),
 });
 
 describe('sankeyElementTourSteps', () => {
@@ -123,11 +124,6 @@ describe('sankeyElementTourSteps', () => {
     const outro = sankeyElementTourSteps(ctxOf()).at(-1)!;
     expect(outro.card).toBe('outro');
     expect(outro.title).toBe('That Is a Sankey');
-  });
-
-  it('names its telemetry tokens from the step ids', () => {
-    expect(sankeyTourStepTelemetryType('bands')).toBe('SankeyTourStepBands');
-    expect(sankeyTourStepTelemetryType('flows-add')).toBe('SankeyTourStepFlowsAdd');
   });
 });
 

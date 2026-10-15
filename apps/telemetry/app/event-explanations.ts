@@ -1163,6 +1163,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of the Tab Style dialog's Show Me tour.",
   'UI|Ended|TabStyleTourSkipped':
     "Someone left the Tab Style dialog's Show Me tour before its end.",
+  'UI|Ended|LayerStackTourCompleted':
+    'Someone reached the end of the Layer Stack tour, offered beside a selected layer stack.',
+  'UI|Ended|LayerStackTourSkipped':
+    'Someone left the Layer Stack tour before its end, or the stack it was on went away.',
+  'UI|Ended|PyramidTourCompleted':
+    'Someone reached the end of the Pyramid tour, offered beside a selected pyramid.',
+  'UI|Ended|PyramidTourSkipped':
+    'Someone left the Pyramid tour before its end, or the pyramid it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1285,6 +1293,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour".',
   'UI|Opened|AvatarPanel':
     'Someone opened the Avatar panel from its button beside Undo and Redo, in Avatar mode.',
+  'UI|Opened|LayerStackTourOffer':
+    'The Layer Stack tour was offered, as a small Tour toolbar beside a selected layer stack (counted once per visit).',
+  'UI|Opened|PyramidTourOffer':
+    'The Pyramid tour was offered, as a small Tour toolbar beside a selected pyramid (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
@@ -1363,6 +1375,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the photo import review, starting its tour of checking the notes found on the wall.',
   'UI|Started|TabStyleTour':
     'Someone pressed Show Me in the Tab Style dialog, starting its tour of looks and fine-tuning.',
+  'UI|Started|LayerStackTour':
+    'Someone pressed Play on the Tour toolbar beside a selected layer stack, starting its tour.',
+  'UI|Started|PyramidTour':
+    'Someone pressed Play on the Tour toolbar beside a selected pyramid, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1532,6 +1548,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours in Settings, so every element tour is offered again.',
   'UI|Toggled|ElementToursSeenOn':
     'Someone switched off Tours › Element Tours in Settings, so no element tour is offered.',
+  'UI|Toggled|LayerStackTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Layer Stack Tour" in Settings, so it is offered again.',
+  'UI|Toggled|LayerStackTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Layer Stack Tour" in Settings, so it is not offered.',
+  'UI|Toggled|PyramidTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Pyramid Tour" in Settings, so it is offered again.',
+  'UI|Toggled|PyramidTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Pyramid Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -1622,6 +1646,35 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Avatar tour reached its "Give Someone a Push" step, on the person\'s own character.',
   'UI|View|AvatarTourStepOutro':
     'The Avatar tour reached its closing "You\'re Ready to Roam" card.',
+  'UI|View|LayerStackTourStepLayers':
+    'The Layer Stack tour reached its "One Element, Many Layers" step, on the whole stack.',
+  'UI|View|LayerStackTourStepEdit':
+    'The Layer Stack tour reached its "Type Over a Layer" step, on the top layer\'s name.',
+  'UI|View|LayerStackTourStepNotes':
+    'The Layer Stack tour reached its "Side Notes" step, on a layer\'s side note.',
+  'UI|View|LayerStackTourStepAdd':
+    'The Layer Stack tour reached its "Add a Layer" step, with the "+" ring open on Add Layer.',
+  'UI|View|LayerStackTourStepRows':
+    'The Layer Stack tour reached its "Reorder in the Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|LayerStackTourStepColours':
+    'The Layer Stack tour reached its "One Colour, a Whole Ramp" step, on the bottom layer.',
+  'UI|View|LayerStackTourStepAnimate':
+    'The Layer Stack tour reached its "Build It Up" step, playing the Build animation on the stack.',
+  'UI|View|LayerStackTourStepOutro':
+    'The Layer Stack tour reached its closing "That Is a Layer Stack" card.',
+  'UI|View|PyramidTourStepTiers':
+    'The Pyramid tour reached its "Tiers Cut From One Triangle" step, on the whole pyramid.',
+  'UI|View|PyramidTourStepEdit':
+    'The Pyramid tour reached its "Type Over a Tier" step, on the first tier\'s name.',
+  'UI|View|PyramidTourStepAdd':
+    'The Pyramid tour reached its "Add a Tier" step, with the "+" ring open on Add Tier.',
+  'UI|View|PyramidTourStepShape':
+    'The Pyramid tour reached its "Pyramid, Inverted or Funnel" step, on the selection toolbar\'s More button.',
+  'UI|View|PyramidTourStepColours':
+    'The Pyramid tour reached its "From the Accent Down" step, on the last tier.',
+  'UI|View|PyramidTourStepAnimate':
+    'The Pyramid tour reached its Build step, playing the Build animation on the pyramid.',
+  'UI|View|PyramidTourStepOutro': 'The Pyramid tour reached its closing card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':

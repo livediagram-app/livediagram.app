@@ -13,11 +13,12 @@ import {
   DRAW_TOUR_OFFERED,
   AVATAR_TOUR_OFFERED,
   ILLUSTRATE_TOUR_OFFERED,
-  SANKEY_TOUR_OFFERED,
+  ELEMENT_TOURS_OFFERED,
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
 import { chart } from './helpers';
+import { ELEMENT_TOUR_KINDS, elementTourTokens } from '../element-tour-kinds';
 
 export const NEW_VISITORS: Metric = {
   category: 'Participant',
@@ -510,61 +511,69 @@ export const ILLUSTRATE_TOUR: MetricStack = {
   headline: ILLUSTRATE_TOURS_STARTED,
 };
 
-// Element tours (docs/specs/007-editor/element-tours.md): the Sankey tour, offered beside a selected Sankey diagram.
-export const SANKEY_TOUR_DECLINED = chart(
+// Element tours (docs/specs/007-editor/element-tours.md): a tour of one element type, offered beside a selected one.
+// One stack for them all, as Show Me's: offered, declined, started (and started per element), steps, how they end.
+export const ELEMENT_TOURS_DECLINED = chart(
   'UI',
   'Closed',
-  'Sankey Tours Declined',
-  'The Sankey tour turned down with the cross on its Tour toolbar.',
-  { types: ['SankeyTourOffer'], rising: 'neutral' },
+  'Element Tours Declined',
+  'An element tour turned down with the cross on its Tour toolbar.',
+  { types: elementTourTokens('Offer'), rising: 'neutral' },
 );
 
-export const SANKEY_TOURS_STARTED = chart(
+export const ELEMENT_TOURS_STARTED = chart(
   'UI',
   'Started',
-  'Sankey Tours Started',
-  'Play pressed on the Tour toolbar beside a Sankey diagram.',
-  { types: ['SankeyTour'] },
+  'Element Tours Started',
+  'Play pressed on the Tour toolbar beside a selected element.',
+  { types: elementTourTokens() },
 );
 
-export const SANKEY_TOUR_STEPS_VIEWED = chart(
+export const ELEMENT_TOURS_BY_KIND: Metric[] = ELEMENT_TOUR_KINDS.map((k) =>
+  chart('UI', 'Started', `${k.title} Tours Started`, `Play pressed beside a selected ${k.title}.`, {
+    types: [k.token],
+  }),
+);
+
+export const ELEMENT_TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
-  'Sankey Tour Steps Viewed',
-  'A step of the Sankey tour shown.',
-  { typeIn: (t) => (t ?? '').startsWith('SankeyTourStep') },
+  'Element Tour Steps Viewed',
+  'A step of an element tour shown.',
+  { typeIn: (t) => ELEMENT_TOUR_KINDS.some((k) => (t ?? '').startsWith(`${k.token}Step`)) },
 );
 
-export const SANKEY_TOURS_COMPLETED = chart(
+export const ELEMENT_TOURS_COMPLETED = chart(
   'UI',
   'Ended',
-  'Sankey Tours Completed',
-  'The Sankey tour run to its last card.',
-  { types: ['SankeyTourCompleted'] },
+  'Element Tours Completed',
+  'An element tour run to its last card.',
+  { types: elementTourTokens('Completed') },
 );
 
-export const SANKEY_TOURS_SKIPPED = chart(
+export const ELEMENT_TOURS_SKIPPED = chart(
   'UI',
   'Ended',
-  'Sankey Tours Skipped',
-  'The Sankey tour closed before its end.',
-  { types: ['SankeyTourSkipped'], rising: 'neutral' },
+  'Element Tours Skipped',
+  'An element tour closed before its end.',
+  { types: elementTourTokens('Skipped'), rising: 'neutral' },
 );
 
-export const SANKEY_TOUR: MetricStack = {
+export const ELEMENT_TOURS: MetricStack = {
   stack: true,
-  title: 'Sankey Tour',
+  title: 'Element Tours',
   blurb:
-    'The element tour of a Sankey diagram: offered beside a selected one, declined, stepped through, finished or skipped.',
+    'Tours of one element type, offered beside a selected one: offered, declined, started, stepped through, finished or skipped.',
   members: [
-    SANKEY_TOUR_OFFERED,
-    SANKEY_TOUR_DECLINED,
-    SANKEY_TOURS_STARTED,
-    SANKEY_TOUR_STEPS_VIEWED,
-    SANKEY_TOURS_COMPLETED,
-    SANKEY_TOURS_SKIPPED,
+    ELEMENT_TOURS_OFFERED,
+    ELEMENT_TOURS_DECLINED,
+    ELEMENT_TOURS_STARTED,
+    ...ELEMENT_TOURS_BY_KIND,
+    ELEMENT_TOUR_STEPS_VIEWED,
+    ELEMENT_TOURS_COMPLETED,
+    ELEMENT_TOURS_SKIPPED,
   ],
-  headline: SANKEY_TOURS_STARTED,
+  headline: ELEMENT_TOURS_STARTED,
 };
 
 // Show Me (docs/specs/007-editor/show-me.md): the on-demand tours of one surface each. Never offered, so each starts

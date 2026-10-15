@@ -61,7 +61,7 @@ import {
   DRAW_TOUR,
   AVATAR_TOUR,
   ILLUSTRATE_TOUR,
-  SANKEY_TOUR,
+  ELEMENT_TOURS,
   POWER_USER_OFFER,
   NEW_VERSION_PROMPT,
 } from './metric-catalogue';
@@ -101,7 +101,7 @@ export const GROUPS: MetricGroup[] = [
       DRAW_TOUR,
       AVATAR_TOUR,
       ILLUSTRATE_TOUR,
-      SANKEY_TOUR,
+      ELEMENT_TOURS,
       POWER_USER_OFFER,
       NEW_VERSION_PROMPT,
     ],

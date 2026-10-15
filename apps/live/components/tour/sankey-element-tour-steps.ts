@@ -4,23 +4,14 @@
 import { sankeyFrame, type ShapeElement } from '@livediagram/document';
 import { balanceNotes, rowsFromFlows } from '@/lib/sankey-flow-rows';
 import type { SankeyTourFocus } from '@/lib/sankey-tour-focus';
-import {
-  sankeyFlowsTourSteps,
-  type SankeyFlowsTourApi,
-  type SankeyFlowsTourContext,
-} from './sankey-flows-tour-steps';
+import { sankeyFlowsTourSteps, type SankeyFlowsTourContext } from './sankey-flows-tour-steps';
+import type { ElementTourApi } from './element-tour-api';
 import { waitForSelector } from './tour-dom';
-import { stepTelemetryType, type TourStepOf } from './tour-step';
+import type { TourStepOf } from './tour-step';
 import { TARGET_WAIT_MS } from './useTourEngine';
 
-export type SankeyElementTourApi = SankeyFlowsTourApi & {
-  // Lifts one band or node of the toured diagram, or lets it go.
-  focus: (part: SankeyTourFocus['part'], index: number) => void;
-  clearFocus: () => void;
-  // Opens the diagram's Flows dialog, or closes it (a step back onto the canvas).
-  openFlows: () => void;
-  closeFlows: () => void;
-};
+// The Sankey tour runs on the shared element tour facade.
+export type SankeyElementTourApi = ElementTourApi;
 
 type Step = TourStepOf<SankeyElementTourApi>;
 
@@ -152,9 +143,4 @@ export function sankeyFlowsContextOf(element: ShapeElement): SankeyFlowsTourCont
     hasBalanceNotes:
       balanceNotes(rows, element.sankeyUnit, element.sankeyLeftover !== 'hide').length > 0,
   };
-}
-
-// Telemetry `type` for a step view: 'flows-add' → 'SankeyTourStepFlowsAdd'.
-export function sankeyTourStepTelemetryType(stepId: string): string {
-  return stepTelemetryType('SankeyTourStep', stepId);
 }

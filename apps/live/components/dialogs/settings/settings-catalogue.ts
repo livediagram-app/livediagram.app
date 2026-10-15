@@ -1203,6 +1203,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a Sankey diagram.',
         helpArticle: 'sankeyDiagram',
       }),
+      elementTourSwitch('layer-stack', {
+        label: 'Layer Stack Tour',
+        event: { category: 'UI', on: 'LayerStackTourSeenOff', off: 'LayerStackTourSeenOn' },
+        keywords: 'tour walkthrough tutorial layer stack layers bands concept rows replay',
+        description: 'The first time you select a layer stack.',
+        helpArticle: 'conceptGraphics',
+      }),
+      elementTourSwitch('pyramid', {
+        label: 'Pyramid Tour',
+        event: { category: 'UI', on: 'PyramidTourSeenOff', off: 'PyramidTourSeenOn' },
+        keywords: 'tour walkthrough tutorial pyramid tiers triangle inverted concept rows replay',
+        description: 'The first time you select a pyramid.',
+        helpArticle: 'conceptGraphics',
+      }),
     ],
   },
   {
