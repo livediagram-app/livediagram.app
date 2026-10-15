@@ -42,13 +42,19 @@ export async function cpuMsOfAsync(fn) {
 export const CI_CPU_HEADROOM = 3;
 
 /**
+ * The variable the shared Vitest config hands its workers when the run collects coverage (`--coverage`):
+ * instrumented code runs the same work slower, wherever it runs.
+ */
+export const UNDER_COVERAGE_ENV = 'LIVEDIAGRAM_COVERAGE';
+
+/**
  * A speed test's CPU budget: `ms` as written on a developer's machine, `ms x CI_CPU_HEADROOM` on
- * CI (`CI` set, as GitHub Actions sets it). The written number stays the product's own budget and
+ * CI (`CI` set, as GitHub Actions sets it) or under coverage (the pre-push hook's run). The written number stays the product's own budget and
  * holds wherever it is meaningful; CI still fails a slide past three times it.
  *
  * @param {number} ms
  * @returns {number}
  */
 export function cpuBudgetMs(ms) {
-  return process.env.CI ? ms * CI_CPU_HEADROOM : ms;
+  return process.env.CI || process.env[UNDER_COVERAGE_ENV] ? ms * CI_CPU_HEADROOM : ms;
 }
