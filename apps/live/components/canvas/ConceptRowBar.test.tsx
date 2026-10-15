@@ -65,6 +65,29 @@ describe('chevron stage controls', () => {
     expect(screen.queryAllByRole('toolbar')).toHaveLength(0);
   });
 
+  it('keeps the controls while the pointer is on a stage name, which lies over its zone', () => {
+    vi.useFakeTimers();
+    const { zone } = show();
+    const at = { left: 100, right: 200, top: 0, bottom: 80 };
+    zone(1).getBoundingClientRect = () =>
+      ({ ...at, x: 100, y: 0, width: 100, height: 80 }) as DOMRect;
+    fireEvent.pointerEnter(zone(1));
+    // Onto the name: the zone sees the pointer leave, the names see it move over stage 2.
+    fireEvent.pointerLeave(zone(1));
+    // A node of the stages drawn over the zones (whatever wraps them).
+    const drawn = zone(1).parentElement!.querySelector(':scope > :not([data-concept-row-zone])')!;
+    const name = drawn.querySelector('*') ?? drawn;
+    fireEvent.pointerMove(name, { clientX: 150, clientY: 40 });
+    act(() => vi.advanceTimersByTime(HOVER_GRACE_MS * 2));
+    expect(screen.getAllByRole('toolbar').map((t) => t.getAttribute('aria-label'))).toEqual([
+      'Stage 2',
+    ]);
+    // Off the names altogether: gone after the grace.
+    fireEvent.pointerLeave(name);
+    act(() => vi.advanceTimersByTime(HOVER_GRACE_MS));
+    expect(screen.queryAllByRole('toolbar')).toHaveLength(0);
+  });
+
   it('moves a stage either way, with its note', () => {
     const { zone, rows, element } = show();
     const [a, b, c] = element.conceptRows!;

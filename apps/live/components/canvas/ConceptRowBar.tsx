@@ -1,4 +1,4 @@
-import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
+import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { Glyph, Tooltip } from '@livediagram/ui';
 import {
   CONCEPT_ROWS,
@@ -198,6 +198,21 @@ export function ChevronStageControls({
 }) {
   const hover = useGraceHover<number>();
   const all = isMobileViewportSync();
+  const zones = useRef<(HTMLDivElement | null)[]>([]);
+  const overName = (e: ReactPointerEvent) => {
+    const at = zones.current.findIndex((z) => {
+      const r = z?.getBoundingClientRect();
+      return (
+        !!r &&
+        e.clientX >= r.left &&
+        e.clientX <= r.right &&
+        e.clientY >= r.top &&
+        e.clientY <= r.bottom
+      );
+    });
+    // Every move, so a grace begun by leaving the zone is cancelled; the same stage again does not re-render.
+    if (at >= 0) hover.enter(at);
+  };
   const { min, noun } = CONCEPT_ROWS.chevrons;
   const n = rows.length;
   // Neighbouring chevrons overlap at their points, so a stage's own room is the step from one stage to the next.
@@ -208,6 +223,9 @@ export function ChevronStageControls({
       {rows.map((_, i) => (
         <div
           key={i}
+          ref={(el) => {
+            zones.current[i] = el;
+          }}
           data-concept-row-zone={i}
           className="absolute"
           style={rectStyle(boxOf(stages[i]!))}
@@ -215,7 +233,11 @@ export function ChevronStageControls({
           onPointerLeave={hover.leave}
         />
       ))}
-      {children}
+      {/* The names lie over their zones, so a pointer on a name has left its zone: the stage under it is found from
+          the zones' boxes, and leaving the names starts the same grace as leaving a zone. */}
+      <div className="contents" onPointerMove={overName} onPointerLeave={hover.leave}>
+        {children}
+      </div>
       {rows.map((_, i) =>
         all || hover.hovered === i ? (
           <ConceptRowBar
