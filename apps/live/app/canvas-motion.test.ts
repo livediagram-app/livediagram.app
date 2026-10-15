@@ -36,3 +36,11 @@ describe('the editor fade-in rule', () => {
     ]);
   });
 });
+
+// The element plane (docs/specs/008-canvas/blueprints/canvas-performance.md): without this rule the plane passes the
+// canvas's cursor down and a tool switch or a pan restyles every element on the board.
+describe('the element plane rule', () => {
+  it('stops the canvas cursor at the plane', () => {
+    expect(read('./globals.css')).toMatch(/\[data-element-plane\]\s*\{[^}]*cursor:\s*auto/);
+  });
+});

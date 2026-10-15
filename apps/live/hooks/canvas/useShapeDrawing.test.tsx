@@ -144,3 +144,40 @@ describe('useShapeDrawing image', () => {
     expect(result.current.drawing.pendingDraw).toBeNull();
   });
 });
+
+// docs/specs/009-elements/badge.md "Badge presets": the Warning badge is rose on any tab, whatever the theme or the
+// style the board remembers for badges.
+describe('placing a badge preset', () => {
+  it('keeps the Warning badge rose on a themed tab with a remembered badge colour', () => {
+    const commit = vi.fn();
+    const selection = createSelectionStore();
+    const { result } = renderHook(() =>
+      useShapeDrawing({
+        editsBlocked: false,
+        readSelection: selection.get,
+        canvasTool: 'select',
+        setCanvasTool: vi.fn(),
+        activeTab: { id: 't1', name: 'Tab', theme: 'ocean', elements: [] } as unknown as Tab,
+        drawMode: false,
+        commit,
+        setSelectedId: selection.setSelectedId,
+        setMultiSelectedIds: selection.setMultiSelectedIds,
+        setEditingId: vi.fn(),
+        zoomRef: { current: 1 },
+        // The board remembers blue for badges.
+        styleNewElement: (el) => ({ ...el, strokeColor: '#2563eb' }),
+      }),
+    );
+    act(() =>
+      result.current.commitDraw(
+        { type: 'shape', kind: 'badge', variant: 'warning' },
+        100,
+        100,
+        100,
+        100,
+      ),
+    );
+    const [placed] = commit.mock.calls[0]![0]([]);
+    expect(placed).toMatchObject({ shape: 'badge', label: 'PII', strokeColor: '#e11d48' });
+  });
+});

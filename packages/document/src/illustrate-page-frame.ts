@@ -107,7 +107,7 @@ export function pageExportFrame(
     ruling,
     transparentPaper = false,
     imageHref,
-    overBackground,
+    overFill,
   }: {
     // The plain paper's colour: white in an export; the canvas's own paper where a page is drawn
     // as the canvas shows it (the Map).
@@ -123,10 +123,11 @@ export function pageExportFrame(
     // A page picture's bytes by gallery id (a data URL, export-tab-images), to embed. Without them
     // (the Map, slide thumbnails) the page is painted in the picture's tone under its overlay.
     imageHref?: (imageId: string) => string | undefined;
-    // Markup laid over the whole background, its pattern included, and under everything on the page:
-    // a slide's animated background as it stands when the slide opens, where the slide on screen and
-    // the PNG and PDF draw it (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
-    overBackground?: string;
+    // Markup laid over the fill and under its pattern: a slide's animated background as it stands when the
+    // slide opens (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds"). The SVG's is an opaque
+    // picture of the gradient with the motion painted in, so it takes the fill's place; laid over the pattern it
+    // would hide it.
+    overFill?: string;
   } = {},
 ): PageExportFrame {
   const r = page.rect;
@@ -151,6 +152,7 @@ export function pageExportFrame(
   } else if (!transparent) {
     parts.push(rect(xmlEscape(fill?.color ?? paper)));
   }
+  if (overFill) parts.push(overFill);
   if (pattern && ruling && pattern === 'lines') {
     // Ruled inside the margins, one line under each line of body text.
     const p = ruling.pitch;
@@ -168,7 +170,6 @@ export function pageExportFrame(
       rect(`url(#${id}-pattern)`),
     );
   }
-  if (overBackground) parts.push(overBackground);
   return {
     bounds: { x: r.x, y: r.y, w: r.width, h: r.height },
     surface: pageSurface(page) ?? 'light',

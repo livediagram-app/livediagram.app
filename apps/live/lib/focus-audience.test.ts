@@ -40,13 +40,19 @@ describe('viewIsCentredOn', () => {
 });
 
 describe('focusPressOutcome', () => {
-  const base = { size: SIZE, tabId: 'tab-a', at: AT };
+  const base = { tabId: 'tab-a', at: AT };
   const view = (
-    over: Partial<{ tabId: string; pan: { x: number; y: number }; zoom: number }> = {},
+    over: Partial<{
+      tabId: string;
+      pan: { x: number; y: number };
+      zoom: number;
+      size: { width: number; height: number } | undefined;
+    }> = {},
   ) => ({
     tabId: 'tab-a',
     pan: centred.pan,
     zoom: 0.5,
+    size: SIZE,
     ...over,
   });
 
@@ -93,5 +99,19 @@ describe('focusPressOutcome', () => {
     expect(focusPressOutcome({ ...base, sent: true, peerIds: ['a', 'b'], viewports })).toBe(
       'already-there',
     );
+  });
+
+  it("judges each peer on their own canvas, not the presser's", () => {
+    // Centred for a canvas of our size, so our size would call it already
+    // there. On their twice-as-wide canvas the point sits well off their
+    // middle, and their own receiver puts the dialog up: so it is asked.
+    const wide = { width: SIZE.width * 2, height: SIZE.height * 2 };
+    const viewports = new Map([['a', view({ size: wide })]]);
+    expect(focusPressOutcome({ ...base, sent: true, peerIds: ['a'], viewports })).toBe('asked');
+  });
+
+  it('asks a peer whose viewport carries no size (a client from before it was sent)', () => {
+    const viewports = new Map([['a', view({ size: undefined })]]);
+    expect(focusPressOutcome({ ...base, sent: true, peerIds: ['a'], viewports })).toBe('asked');
   });
 });

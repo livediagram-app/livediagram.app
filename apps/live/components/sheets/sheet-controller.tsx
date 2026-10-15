@@ -122,6 +122,9 @@ const SheetControllerContext = createContext<SheetController | null>(null);
 
 export const SheetControllerProvider = SheetControllerContext.Provider;
 
+// What a Participant is told when a change to a Sheet's shape is held back (docs/specs/013-workspace/share-roles.md).
+export const SHAPE_REFUSED = "Only an editor can change a Sheet's rows, columns or settings.";
+
 export function useSheetController(): SheetController {
   const c = useContext(SheetControllerContext);
   if (!c) throw new Error('useSheetController outside a Sheet');
@@ -245,7 +248,7 @@ export function useSheetControllerState(opts: {
   // it too, so it is held back here rather than shown and taken away.
   const canShape = opts.canShape ?? opts.canEdit;
   const shapeRefused = useLatest(() => {
-    opts.toast("Only an editor can change a Sheet's rows, columns or settings.");
+    opts.toast(SHAPE_REFUSED);
     return false;
   });
   // And its cells' values, never their formats (sheet.md "Who may do what"): a paste or a fill lands as its values,

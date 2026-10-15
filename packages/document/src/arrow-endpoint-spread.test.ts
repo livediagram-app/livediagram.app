@@ -219,3 +219,29 @@ describe('ties in the fan', () => {
     );
   });
 });
+
+describe('fan order', () => {
+  it('gives the same slots whatever order the arrows come in, for ends a pixel or so apart', () => {
+    // Along the top edge: 0, 0.8 and 1.6 px apart, each next pair "level" but the outer pair not, and the nearer of
+    // each level pair the later: a comparator that ties within a pixel then reads a < c, c < b and b < a.
+    const hub = box('hub', 400, 300);
+    const ends = [
+      arrow({ kind: 'free', x: 100, y: 20 }, pinned('hub', 'n'), 'a'),
+      arrow({ kind: 'free', x: 100.8, y: 100 }, pinned('hub', 'n'), 'b'),
+      arrow({ kind: 'free', x: 101.6, y: 160 }, pinned('hub', 'n'), 'c'),
+    ];
+    const slotsOf = (order: number[]) => {
+      const elements: Element[] = [hub, ...order.map((i) => ends[i]!)];
+      return ['a', 'b', 'c'].map((id) => arrowEndpointSpread(id, 'to', elements).x);
+    };
+    const first = slotsOf([0, 1, 2]);
+    for (const order of [
+      [0, 2, 1],
+      [1, 0, 2],
+      [1, 2, 0],
+      [2, 0, 1],
+      [2, 1, 0],
+    ])
+      expect(slotsOf(order), order.join('')).toEqual(first);
+  });
+});

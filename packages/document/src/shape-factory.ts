@@ -34,6 +34,7 @@ import {
 } from './collab-shapes';
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
 import { DEFAULT_SEATING_FACING } from './seating';
+import { FENCE_DEFAULT_SIZE } from './fence';
 import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
@@ -190,7 +191,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // around in.
   chair: { width: 76, height: 84 },
   // Fence (docs/specs/009-elements/fence.md): a short run across, thin enough to read as a barrier.
-  fence: { width: 240, height: 24 },
+  fence: { ...FENCE_DEFAULT_SIZE },
   // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): their drawings' grids, at the
   // chair's scale, so a character fits the seat.
   desk: { width: 120, height: 112 },

@@ -91,7 +91,7 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 
 **Everyone sees everyone.** The character rides the presence channel as an `avatar` `RoomOp` (alongside `cursor` / `select` / `laser` / `tab-focus` in `@livediagram/api-schema`), so a whole room can walk around one canvas at once.
 
-- The packet is deliberately tiny — feet position, facing, the four costume tokens, walking flag, step frame, hop height, wave frame — and goes out at the **same ~30 Hz throttle as the cursor**, from the same gates (hydrated, a document id, and either a share link or a team document). The costume is **optional on the wire**, so a packet from an older client still parses; the receiver runs it through the same field-by-field parser as storage and falls back to the default character.
+- The packet is deliberately tiny — feet position, facing, the four costume tokens, walking flag, step frame, hop height, wave frame — and goes out at the **same ~30 Hz throttle as the cursor** (a packet a window holds back is sent as the window ends, so the last one said, a status picked or the step a walk ends on, is never the one dropped), from the same gates (hydrated, a document id, and either a share link or a team document). The costume is **optional on the wire**, so a packet from an older client still parses; the receiver runs it through the same field-by-field parser as storage and falls back to the default character.
 - It is **ephemeral presence, not a mutation**: `avatar` is in the room's `PRESENCE_OP_KINDS`, so it relays unordered, from any role (**including view-role** — an audience member walking around a canvas someone linked them to is as harmless as their cursor), is never persisted, and is never replayed to a reconnecting client.
 - **Leaving the mode publishes `avatar: null`**, which deletes the entry on every peer, and a peer who disconnects is pruned with the rest of their presence — so nobody is left standing on a canvas after they've gone.
 - Peers' characters are **scoped to the tab** they were published on and are drawn with **their own presence colour on the shirt plus a small name chip** above the head, so a room of walkers stays legible. Your own character has no chip (you know who you are).
@@ -118,7 +118,9 @@ who is free to talk, who is heads-down, who has stepped away.
   status. A peer's dot sits at the start of their name chip; yours sits above your head, where your chip would be.
 - **For the session only**: it is never stored, so an "In a Meeting" set yesterday does not greet anyone today.
   Leaving the mode clears it, like the character itself.
-- A screen reader hears a peer's status with their name ("Sam, Focusing"), and your own on its own.
+- A screen reader hears a peer's status with their name ("Sam, Focusing"), and your own as yours ("Your status:
+  Focusing"), as visually hidden text beside the character, which is itself hidden from assistive tech. A long name
+  in the chip ends in an ellipsis, and the chip and the Zz always draw over the character, faded or not.
 - Under reduced motion the "Zz" holds still.
 - Telemetry: `UI · Changed · AvatarStatus` on a change, never which.
 

@@ -39,7 +39,8 @@ describe('Tidy Up hover budget', () => {
     'mindmap',
     'align',
   ] as CleanupKind[]) {
-    it(`${kind} lays out ${TIDY_PREVIEW_WORST_CASE_NODES} nodes inside ${TIDY_PREVIEW_BUDGET_MS} ms`, () => {
+    // Named with the budget it holds here, so a CI failure names CI's.
+    it(`${kind} lays out ${TIDY_PREVIEW_WORST_CASE_NODES} nodes inside ${cpuBudgetMs(TIDY_PREVIEW_BUDGET_MS)} ms`, () => {
       // Untimed warm-ups first: `cpuUsage` bills the whole process, so while V8 still compiles and
       // collects on its background threads a pass pays for them (on a CI runner under coverage one warm-up
       // left Smart at 105 to 109 ms; it is about 20 ms locally). Then CPU time, not wall time: the

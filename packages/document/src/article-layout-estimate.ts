@@ -23,7 +23,7 @@ import type { LaidOutPage } from './illustrate-page';
 // An average glyph's advance as a share of the font size (a bold one a little wider), as the headless renders
 // estimate a label (svg-render-primitives' LABEL_ESTIMATE_CHAR_EM).
 const CHAR_EM = 0.52;
-const BOLD_EM = 1.06;
+export const BOLD_EM = 1.06;
 const MONO = 'Roboto Mono, ui-monospace, monospace';
 
 // How a block is set (app/article-pages.css): its size as a share of the body size, weight, face, line height (null:

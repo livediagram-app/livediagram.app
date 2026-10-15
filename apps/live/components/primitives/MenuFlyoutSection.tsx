@@ -80,6 +80,8 @@ function loneSection(children: ReactNode): ReactNode | null {
   return isValidElement(only) ? only : null;
 }
 
+type FlyoutPos = { left: number; top: number; width?: number; minHeight?: number };
+
 export function MenuFlyoutSection(props: MenuFlyoutSectionProps) {
   // A panel is one purpose-built surface, not a list of sections, so there is
   // nothing to promote: its single child is the whole point of the flyout.
@@ -148,12 +150,28 @@ function Flyout({
   // `width` is only set in that mode, where the panel matches the menu it
   // replaces; the desktop panel keeps its fixed w-56.
   const isMobile = useIsMobileViewport();
-  const [pos, setPos] = useState<{
-    left: number;
-    top: number;
-    width?: number;
-    minHeight?: number;
-  } | null>(null);
+  const [pos, setPos] = useState<FlyoutPos | null>(null);
+  // The position last placed, read outside a setState updater: whether a measure moved anything is decided here,
+  // where measure() can answer it, never by a flag an updater sets (React may run the updater later, which left
+  // the flag reading "settled" and stopped the tracker while the panel still moved). See
+  // docs/specs/003-system-architecture/react-state-and-effects.md "A handler decides before it commits".
+  const placed = useRef<FlyoutPos | null>(null);
+  // Place the panel; true when it was already there (settled).
+  const place = useCallback((next: FlyoutPos | null): boolean => {
+    const prev = placed.current;
+    if (
+      prev &&
+      next &&
+      prev.left === next.left &&
+      prev.top === next.top &&
+      prev.width === next.width &&
+      prev.minHeight === next.minHeight
+    )
+      return true;
+    placed.current = next;
+    setPos(next);
+    return false;
+  }, []);
   const setOpen = useCallback(
     (next: boolean) => {
       if (controlled) {
@@ -197,20 +215,7 @@ function Flyout({
           { width: window.innerWidth, height: window.innerHeight },
           m,
         );
-        let settledMobile = true;
-        setPos((prev) => {
-          if (
-            prev &&
-            prev.left === left &&
-            prev.top === top &&
-            prev.width === width &&
-            prev.minHeight === minHeight
-          )
-            return prev;
-          settledMobile = false;
-          return { left, top, width, minHeight };
-        });
-        return settledMobile;
+        return place({ left, top, width, minHeight });
       }
     }
     const fitsRight = tr.right + gap + pr.width + m <= window.innerWidth;
@@ -241,14 +246,8 @@ function Flyout({
     // comparison something stable to latch onto.
     const left = Math.round(Math.max(m, Math.min(rawLeft, window.innerWidth - pr.width - m)));
     const top = Math.round(Math.max(m, Math.min(rawTop, window.innerHeight - pr.height - m)));
-    let settled = true;
-    setPos((prev) => {
-      if (prev && prev.left === left && prev.top === top) return prev;
-      settled = false;
-      return { left, top };
-    });
-    return settled;
-  }, [isMobile, isPanel]);
+    return place({ left, top });
+  }, [isMobile, isPanel, place]);
 
   const [trackNonce, setTrackNonce] = useState(0);
   const retrack = useCallback(() => setTrackNonce((n) => n + 1), []);
@@ -346,7 +345,7 @@ function Flyout({
         {...itemProps}
         onClick={() => {
           const next = !open;
-          setPos(null);
+          place(null);
           setOpen(next);
           if (next) onOpen?.();
         }}

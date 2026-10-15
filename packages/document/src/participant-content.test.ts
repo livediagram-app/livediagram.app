@@ -6,6 +6,7 @@ import { createFlowchartStart } from './flowchart';
 import { addFlowchartLane, applyFlowchartStep, planFlowchartStep } from './flowchart-grow';
 import {
   applyParticipantOp,
+  MIND_GROW_PX_PER_CHAR,
   participantTabChange,
   type ParticipantOpResult,
 } from './participant-content';
@@ -611,6 +612,19 @@ describe('mind maps and images (docs/specs/013-workspace/share-roles.md)', () =>
     expect(participantTabChange(before, tabOf([map()[0]!, stretched, map()[2]!]), ME)).toBeNull();
     const shrunk = { ...c1, label: 'x', height: c1.height - 10 } as Element;
     expect(participantTabChange(before, tabOf([map()[0]!, shrunk, map()[2]!]), ME)).toBeNull();
+    // Grown, but only as far as its label could need: one changed letter never stretches it 10 million px.
+    // The room's op lands it at the ceiling; a whole-tab change asking past it does not land at all.
+    const stretchedFar = { ...c1, label: 'Ab', height: 1e7 } as Element;
+    const capped = applied(
+      applyParticipantOp(before, { kind: 'update', element: stretchedFar }, ME),
+    );
+    expect(capped.tab.elements[1]).toMatchObject({
+      label: 'Ab',
+      height: c1.height + 2 * MIND_GROW_PX_PER_CHAR,
+    });
+    expect(
+      participantTabChange(before, tabOf([map()[0]!, stretchedFar, map()[2]!]), ME),
+    ).toBeNull();
   });
 
   it('keeps what it added addable: its connector stays on the map, its node stays one', () => {

@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { useAvatarStatus } from '@/hooks/canvas/useAvatarStatus';
 import type { View } from '@/lib/viewport-store';
 import { CanvasMenu } from './canvas-menu-context';
 import { CanvasFinishProvider } from './CanvasFinishContext';
@@ -83,7 +84,7 @@ import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { spotlightRadius } from '@/lib/spotlight-config';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
 import { track } from '@/lib/telemetry';
-import { parseAvatarStatus, type AvatarStatus } from '@/lib/avatar-status';
+import { parseAvatarStatus } from '@/lib/avatar-status';
 import { useAvatarSpeech } from '@/hooks/canvas/useAvatarSpeech';
 import { useSpeechBubbles } from '@/lib/avatar-speech-store';
 import { headPoint } from '@/lib/avatar-speech';
@@ -398,10 +399,8 @@ function CanvasView(props: CanvasProps) {
   // a pad's (docs/specs/009-elements/reaction-pad.md): nothing is stored and nothing is replayed.
   const [avatarBurst, setAvatarBurst] = useState<{ reaction: Reaction; seed: number } | null>(null);
   const avatarBurstSeq = useRef(0);
-  // Your status in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"): for the session, cleared on leaving
-  // the mode (adjusted during render so it never publishes a stale one).
-  const [avatarStatus, setAvatarStatus] = useState<AvatarStatus | null>(null);
-  if (canvasTool !== 'avatar' && avatarStatus !== null) setAvatarStatus(null);
+  // Your status in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), cleared on leaving it.
+  const [avatarStatus, setAvatarStatus] = useAvatarStatus(canvasTool === 'avatar');
   // A character walks among what is drawn: a hidden layer's fences, portals and seats are not there.
   const walkElements = useMemo(
     () => visibleLayerElements(elements, tabLayers),
@@ -1187,10 +1186,7 @@ function CanvasView(props: CanvasProps) {
               onResetLaserPanel={props.onResetLaserPanel}
               onRandomiseAvatar={avatarLook.randomise}
               avatarStatus={avatarStatus}
-              onSetAvatarStatus={(next: AvatarStatus | null) => {
-                track('UI', 'Changed', 'AvatarStatus');
-                setAvatarStatus(next);
-              }}
+              onSetAvatarStatus={setAvatarStatus}
               onSendAvatarMessage={
                 speech.speaking ? (text: string) => speech.send(text, 'panel') : undefined
               }

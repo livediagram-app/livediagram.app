@@ -10,9 +10,11 @@ import {
   BUTTON_W,
   GAP,
   HEAD_GAP,
+  PAD_W,
   SECTION_H,
   SUBTITLE_H,
   TITLE_H,
+  UNDER_SECTION,
   checklist,
   heading,
   kitRow,
@@ -22,9 +24,6 @@ import {
 } from './template-session-parts';
 import { BINGO_PROMPTS, TWO_TRUTHS_PLAYERS, WOULD_YOU_RATHER } from './template-quiz-games-data';
 import { YELLOW } from './template-workshop-stickies';
-
-const PAD_W = 150;
-const UNDER_SECTION = SECTION_H + 12;
 
 // A reaction pad as tall as a session button, with the line that says when to press it beside it.
 function padRow(
@@ -127,7 +126,9 @@ export function buildTwoTruthsAndALie(cx: number, cy: number): Element[] {
       ...sessionButton({
         tool: 'poll',
         style: 'choice',
-        question: `Which is ${p.name}’s lie?`,
+        // Generic, as the spec has it: the names are placeholders the players write over, and a Participant can
+        // never rewrite a poll's question, so a named one would ask about someone who is not playing.
+        question: 'Which one is the lie?',
         options: ['1', '2', '3'],
       }),
       x: x0 + rowW - BUTTON_W,

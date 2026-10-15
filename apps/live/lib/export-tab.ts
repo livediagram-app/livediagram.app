@@ -569,7 +569,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
         ruling: pageRulingOf(tab, opts.page),
         transparentPaper: opts.transparentPaper,
         imageHref: (id) => opts.images?.get(id)?.href,
-        overBackground: opts.stillBackground ? undefined : pageMotionSvg(opts.page),
+        overFill: opts.stillBackground ? undefined : pageMotionSvg(opts.page),
       })
     : null;
   const writing = opts.page ? pageWriting(tab, opts.page) : null;

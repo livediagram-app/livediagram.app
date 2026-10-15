@@ -99,9 +99,10 @@ describe('planBoardKey', () => {
       kind: 'trash',
       focusAfter: a.id,
     });
+    // The last card in its cell: the nearest card on the board takes it (here the one before, in To do).
     expect(planBoardKey(p, c.id, 'Delete', false, true)).toEqual({
       kind: 'trash',
-      focusAfter: null,
+      focusAfter: b.id,
     });
   });
 });

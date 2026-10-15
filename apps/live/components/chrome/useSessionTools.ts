@@ -10,7 +10,6 @@ export function useSessionTools(): SessionToolsProps {
   const {
     activeTab,
     facilitator,
-    livePresence,
     startTimer,
     pauseTimer,
     resumeTimer,
@@ -28,11 +27,11 @@ export function useSessionTools(): SessionToolsProps {
     layers,
     activeLayerId,
   } = useEditorContext();
-  // Who is running the session when it is not us (docs/specs/012-collaboration/facilitator.md),
-  // resolved from the roster we already hold so a rename reads correctly; null when we hold it.
+  // Who is running the session when it is not us (docs/specs/012-collaboration/facilitator.md): the roster's
+  // name, so a rename reads correctly, else as last seen while an absent holder keeps the baton; null when we hold it.
   const facilitatedBy =
     facilitator.sessionToolsBlocked && facilitator.facilitatorId
-      ? (livePresence.find((p) => p.id === facilitator.facilitatorId)?.name ?? 'Someone else')
+      ? (facilitator.facilitatorName ?? 'Someone else')
       : null;
   const timer = activeTab.timer ?? null;
   const vote = activeTab.vote ?? null;

@@ -156,7 +156,9 @@ Session templates open in Facilitate, as the Draw templates open in Draw
   `opportunity-solution-tree` (grouped in Start Facilitating under Retrospectives, Workshops, Planning
   and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#facilitate-templates));
 - the quizzes and games, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather` and
-  `people-bingo` ([Quiz and game templates](quiz-and-game-templates.md)).
+  `people-bingo` ([Quiz and game templates](quiz-and-game-templates.md));
+- the spaces to walk round in Avatar mode, `virtual-office`, `coworking-space`, `team-pod` and `all-hands-hall`
+  ([Virtual Office template](virtual-office-template.md)).
 
 Brainstorm mind maps stay in Diagram and the drawn warm-ups (`doodle-warmup`, `pre-mortem`,
 `idea-garden`) stay in Draw.

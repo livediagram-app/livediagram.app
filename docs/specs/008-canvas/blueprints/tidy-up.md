@@ -208,22 +208,22 @@ present-only tick, inside the budget above. No LCP impact (lazy).
 
 ## Constants and configuration
 
-| Constant                             | Value   | Provenance                                                     | Safe range   |
-| ------------------------------------ | ------- | -------------------------------------------------------------- | ------------ |
-| `POPOVER_WIDTHS['tidy-up']`          | 320     | Two 152 px tiles, gap and padding                              | 288–384      |
-| `TIDY_PREVIEW_WORST_CASE_NODES`      | 300     | A dense hand-drawn diagram (D83)                               | —            |
-| `TIDY_PREVIEW_BUDGET_MS`             | 100     | One hover must feel immediate (D83)                            | 50–200       |
-| `ALIGN_TOLERANCE`                    | 8 px    | Hand drift under one grid step (D99)                           | 4–10         |
-| `LINK_TOLERANCE`                     | 16 px   | An arrow's ends a little out of line (D99)                     | 10–24        |
-| `MAX_ALIGN_PASSES`                   | 4       | Two is usual (D100)                                            | 2–6          |
-| `MAX_LAYOUT_PASSES`                  | 3       | A hand-drawn tree takes two (D100)                             | 1–4          |
-| `SETTLE_ELEMENT_LIMIT`               | 300     | Three passes stay in the hover budget below it (D100)          | 150–500      |
-| `IN_LINE_PX`                         | 12      | Drawn in line, not a layout's lean (D102)                      | 8–20         |
-| `TIDY_RANK_GAP` / `TIDY_SIBLING_GAP` | 56 / 48 | The checkout's own rows are 44 apart (D103)                    | 40–90        |
-| `TIDY_CLEARANCE`                     | 24      | Room between the block and a title (D103)                      | 16–40        |
-| `CLEARANCE` / `LOOP_OFFSET` (route)  | 10 / 32 | A leg's gap to a box; a loop's lane outside (D104)             | 6–16 / 24–48 |
-| `ROUTE_GRID_CELL`                    | 160 px  | About one box and its gap: a leg spans a few cells             | 80–400       |
-| `LANE_GAP` / `LANE_GAP_DRIFT`        | 48 / 16 | A swimlane's lanes are 36 apart; a layout's own spacing (D105) | 24–64 / 8–24 |
+| Constant                             | Value   | Provenance                                                                                                             | Safe range      |
+| ------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `POPOVER_WIDTHS['tidy-up']`          | 320     | Two 152 px tiles, gap and padding                                                                                      | 288–384         |
+| `TIDY_PREVIEW_WORST_CASE_NODES`      | 300     | A dense hand-drawn diagram (D83)                                                                                       | —               |
+| `TIDY_PREVIEW_BUDGET_MS`             | 100     | One hover must feel immediate (D83); asserted as `cpuBudgetMs` of it, 300 on CI's coverage runners (`CI_CPU_HEADROOM`) | 50–200 (CI: 3x) |
+| `ALIGN_TOLERANCE`                    | 8 px    | Hand drift under one grid step (D99)                                                                                   | 4–10            |
+| `LINK_TOLERANCE`                     | 16 px   | An arrow's ends a little out of line (D99)                                                                             | 10–24           |
+| `MAX_ALIGN_PASSES`                   | 4       | Two is usual (D100)                                                                                                    | 2–6             |
+| `MAX_LAYOUT_PASSES`                  | 3       | A hand-drawn tree takes two (D100)                                                                                     | 1–4             |
+| `SETTLE_ELEMENT_LIMIT`               | 300     | Three passes stay in the hover budget below it (D100)                                                                  | 150–500         |
+| `IN_LINE_PX`                         | 12      | Drawn in line, not a layout's lean (D102)                                                                              | 8–20            |
+| `TIDY_RANK_GAP` / `TIDY_SIBLING_GAP` | 56 / 48 | The checkout's own rows are 44 apart (D103)                                                                            | 40–90           |
+| `TIDY_CLEARANCE`                     | 24      | Room between the block and a title (D103)                                                                              | 16–40           |
+| `CLEARANCE` / `LOOP_OFFSET` (route)  | 10 / 32 | A leg's gap to a box; a loop's lane outside (D104)                                                                     | 6–16 / 24–48    |
+| `ROUTE_GRID_CELL`                    | 160 px  | About one box and its gap: a leg spans a few cells                                                                     | 80–400          |
+| `LANE_GAP` / `LANE_GAP_DRIFT`        | 48 / 16 | A swimlane's lanes are 36 apart; a layout's own spacing (D105)                                                         | 24–64 / 8–24    |
 
 ## Defaults ledger
 

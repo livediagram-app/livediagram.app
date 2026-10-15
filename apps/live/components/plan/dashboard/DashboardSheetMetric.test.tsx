@@ -14,13 +14,13 @@ afterEach(cleanup);
 
 const rows = ['row0a', 'row1a', 'row2a', 'row3a'];
 const cols = ['colAa', 'colBa'];
-function budget(): Extract<SheetRead, { state: 'ready' }> {
+function budget(rent = 1200): Extract<SheetRead, { state: 'ready' }> {
   const cell = (s: string | number) => ({ input: typeof s === 'number' ? { n: s } : { s } });
   const cells = new Map([
     [cellKey('row0a', 'colAa'), cell('Item')],
     [cellKey('row0a', 'colBa'), cell('Spent')],
     [cellKey('row1a', 'colAa'), cell('Rent')],
-    [cellKey('row1a', 'colBa'), cell(1200)],
+    [cellKey('row1a', 'colBa'), cell(rent)],
     [cellKey('row2a', 'colAa'), cell('Food')],
     [cellKey('row2a', 'colBa'), cell(300)],
     [cellKey('row3a', 'colAa'), cell('Target')],
@@ -88,6 +88,19 @@ describe('a figure from a Sheet', () => {
     });
     expect(screen.getByRole('group', { name: /^Rent: 1200 of 2000/ })).toBeTruthy();
     expect(screen.getByText('60%')).toBeTruthy();
+  });
+
+  // docs/specs/026-plan/board-widgets.md: 100% only once the target is met, never a goal just short of it.
+  it('reads 99%, not 100%, just short of its target', () => {
+    read = budget(1991);
+    show({
+      type: 'sheet-metric',
+      metric: 'figure',
+      sheetId: 'sheetAAAA',
+      cell: { r: 'row1a', c: 'colBa' },
+      target: { r: 'row3a', c: 'colBa' },
+    });
+    expect(screen.getByText('99%')).toBeTruthy();
   });
 
   it('sums a column below its header', () => {

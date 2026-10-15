@@ -91,14 +91,47 @@ export function EditorElementDialogs() {
     can,
   } = useEditorContext();
 
-  useCloseVanishedDialogs(activeTab.elements, [
-    [linkPickerOpenForId, () => setLinkPickerOpenForId(null)],
-    [lineDataOpenForId, () => setLineDataOpenForId(null)],
-    [codeEditOpenForId, () => setCodeEditOpenForId(null)],
-    [sankeyFlowsOpenForId, () => setSankeyFlowsOpenForId(null)],
-    [sequenceOpenForId, () => setSequenceOpenForId(null)],
-    [mindOutline.openForId, mindOutline.close],
-  ]);
+  // Each dialog closes whenever its own render check below fails, not only when its element goes: hidden by a lock
+  // or a role change, it would otherwise reopen by itself when that is undone. Edit Outline closes itself
+  // (useMindOutline), so it is not listed.
+  const editable = () => !isReadOnly;
+  useCloseVanishedDialogs(
+    activeTab.elements,
+    [
+      [linkPickerOpenForId, () => setLinkPickerOpenForId(null), editable],
+      [
+        cellLinkPickerOpenFor?.tableId ?? null,
+        () => setCellLinkPickerOpenFor(null),
+        (el) => !isReadOnly && el.type === 'table',
+      ],
+      [
+        lineDataOpenForId,
+        () => setLineDataOpenForId(null),
+        (el) => !isReadOnly && el.type === 'shape',
+      ],
+      [
+        codeEditOpenForId,
+        () => setCodeEditOpenForId(null),
+        (el) => !isReadOnly && el.type === 'shape',
+      ],
+      [
+        sankeyFlowsOpenForId,
+        () => setSankeyFlowsOpenForId(null),
+        (el) => el.type === 'shape' && el.shape === 'sankey' && canEditSankey(can, el),
+      ],
+      [
+        sequenceOpenForId,
+        () => setSequenceOpenForId(null),
+        (el) => el.type === 'shape' && el.shape === 'sequence' && canEditSequence(can, el),
+      ],
+      [
+        imagePickerOpenFor?.forElementId ?? null,
+        closeImagePicker,
+        () => !isReadOnly || !!can.addContent,
+      ],
+    ],
+    `${isReadOnly}|${can.level}|${!!can.addContent}`,
+  );
 
   // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
   // only, validated as a YouTube link. Every other element keeps the full

@@ -424,8 +424,9 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
   matches the browser's own first frame). The PNG and PDF paint it onto the page
   (`paintMotionFrame`, `page-motion-canvas.ts`); the SVG embeds a picture of the gradient with the
   frame over it (a JPEG, 29 to 141 KiB for a 1920 x 1080 slide, about a fiftieth of a see-through
-  PNG), laid over the fill and its pattern as the slide on screen and the PNG and PDF draw it
-  (`pageExportFrame`'s `overBackground`). A deck repeats
+  PNG). The picture is opaque, so it takes the fill's place, under the pattern (`pageExportFrame`'s
+  `overFill`): laid over the pattern, as the slide on screen and the PNG and PDF draw the motion, it would
+  hide the pattern entirely. So a patterned animated slide's SVG shows the pattern over the motion. A deck repeats
   one background, so an export paints each background once (the PDF and a zip of pages keep the
   last two painted, as a 1920 x 1080 slide at 2x is 33 MB of pixels; the SVG keeps its last eight
   pictures).
@@ -533,7 +534,7 @@ given in one go rather than page by page.
   infographic page), except a picture onto a logo page ("A logo page takes no picture background.");
   a locked target says so ("That page is locked. Unlock it to change its background.") and is left
   as it is. A refused paint keeps a Paint once brush (only a paint empties it), and a brush whose
-  page has gone (deleted, undone) empties at the next press, as an element's does. A press off every
+  page has gone (deleted, undone) empties as the page goes (`useDeadPageBrush`), so the next press, on a page or an element, works at once. A press off every
   page still ends the tool.
 - **Agents** give every page of a kind one background with `change_pages`'s
   `apply_background_to_all` ([Illustrate for agents](../024-agents/illustrate-for-agents.md)).

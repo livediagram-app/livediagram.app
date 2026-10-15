@@ -125,6 +125,19 @@ describe('palette layouts', () => {
       if (t.action.type === 'open') expect(offered.has(t.action.category), t.id).toBe(true);
   });
 
+  // A layout that drops a group's last tile keeps the group's end: Diagram and Facilitate leave out the Tab Window,
+  // which ends Media's first group, and Image ends it there instead.
+  it("keeps Media's divider after Image where the Tab Window is left out", () => {
+    for (const mode of ['diagram', 'facilitate'] as const) {
+      const media = paletteCategoriesFor(mode).find((c) => c.id === 'media')!;
+      const ids = media.tiles!.map((t) => t.id);
+      expect(ids, mode).not.toContain('media:tab-window');
+      expect(media.tiles!.find((t) => t.id === 'tools:image')?.dividerAfter, mode).toBe(true);
+      // Never one at the very end.
+      expect(media.tiles!.at(-1)?.dividerAfter, mode).toBeFalsy();
+    }
+  });
+
   it('holds every Collaborate tile in Facilitate, across its six categories', () => {
     const held = paletteCategoriesFor('facilitate')
       .filter((c) => c.id.startsWith('collab-'))

@@ -124,8 +124,9 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   marks.
 - **Containment** (`contain` on element wrappers) so a change inside one element does not
   invalidate the layout of others. Measured and set aside: `contain: layout` on every element left
-  a pen stroke's release unchanged (layout was about 8 ms of it; the rest was a restyle of the
-  whole board, which the cursor rule above removes).
+  a diagram stroke's release unchanged (layout was about 8 ms of it; the rest was a restyle of the
+  whole board, which the cursor rule above removes). A whiteboard pen's cursor passes through that
+  rule on purpose, so its restyle remains.
 
 ## Measuring
 

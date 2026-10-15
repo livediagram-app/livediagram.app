@@ -419,9 +419,15 @@ columns) is never refused.
   `background-color`, `text-align`). `readPastedHtml(html)` tokenises `<table>/<tr>/<td|th>` with `colspan`/
   `rowspan` and the same inline styles plus `<b>/<i>/<u>/<s>`, without a DOM (a small tag scanner; entities via a
   table of the common named ones plus numeric). `readPastedText` splits by tab when any line holds a tab, else by
-  comma when every line parses as CSV with the same column count > 1, else one column.
-- `parseCsv` is RFC 4180 (quoted fields, `""`, CRLF or LF, a final newline), cut at `SHEET_ROWS_MAX` ×
-  `SHEET_COLS_MAX` with `truncated` set. `toCsv` quotes fields holding `,`, `"`, CR or LF.
+  comma when the text holds a line break (a final one trimmed first) and every record parses as CSV with the same
+  column count > 1, else one column, a line a row.
+- `parseCsv(text, sep?)` is RFC 4180 (quoted fields, `""`, CRLF or LF, a final newline, a leading BOM dropped), cut
+  at `SHEET_ROWS_MAX` × `SHEET_COLS_MAX` with `truncated` set. Without `sep`, `separatorOf` picks it: `\t` when the
+  first line holds one; else, over the first `SEPARATOR_SAMPLE_LINES` (20) lines, blank lines dropped, the width
+  with each of `;` and `,` (the shared field count when every record has the same one, > 1, else 0), and `;` when
+  that width is > 0 and ≥ the comma's (a tie is `;`), else `,`; text holding no `;` is `,` without parsing.
+  `toCsv` quotes fields holding `,`, `;`, `"`, CR or LF (a `;` so a one-column sheet's file reads back as one
+  column).
 - `detectSeries(values)`: all numbers with a constant step → arithmetic; all dates with a constant day step, or the
   same day of month a month apart → date series; text with a trailing integer and the same prefix → number series;
   English month (`Jan`/`January`) and day names (`Mon`/`Monday`), case kept → cyclic; else copy. A single number

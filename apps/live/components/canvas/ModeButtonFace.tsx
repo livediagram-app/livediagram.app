@@ -76,13 +76,16 @@ export function ModeButtonFace({
   const isCurrent = activeMode === mode;
   const press = usePressWithoutDrag(onPress);
   const kicker = isCurrent ? 'Leave' : 'Switch to';
-  const text = label.trim() || `${kicker} ${MODE_LABEL[mode]}`;
+  // In its mode the button takes you out, so it says so whatever its own label: a "Walk In" that walked you out
+  // would say the opposite of what it does.
+  const own = isCurrent ? '' : label.trim();
+  const text = own || `${kicker} ${MODE_LABEL[mode]}`;
   // The face: the glyph in a translucent chip (which is what reads as "this is
   // a control" rather than "this is a box with a picture in it"), a small
   // kicker, and the destination in the element's own text weight. A derived
   // label splits into kicker + mode; an author's own label takes the whole
   // width and skips the kicker.
-  const derived = !label.trim();
+  const derived = !own;
   const inner = (
     <>
       <span

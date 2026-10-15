@@ -129,12 +129,12 @@ kind one of three); `sequenceNumbered` boolean; `sequenceAnim` `'play'`.
 
 ## Errors and edge cases
 
-| #   | Case                                     | Handling                                                                  |
-| --- | ---------------------------------------- | ------------------------------------------------------------------------- |
-| E1  | No messages                              | Heads and lifelines only                                                  |
-| E2  | A message to a removed participant       | Dropped by the write; ignored by the reader                               |
-| E3  | Very long labels                         | The layout widens its pitch (capped at 520) and the picture scales down   |
-| E4  | Diagram deleted while its dialog is open | The dialog closes (`useCloseVanishedDialogs`); an undo does not reopen it |
+| #   | Case                                                                   | Handling                                                                                                                     |
+| --- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| E1  | No messages                                                            | Heads and lifelines only                                                                                                     |
+| E2  | A message to a removed participant                                     | Dropped by the write; ignored by the reader                                                                                  |
+| E3  | Very long labels                                                       | The layout widens its pitch (capped at 520) and the picture scales down                                                      |
+| E4  | Diagram deleted, locked or no longer editable while its dialog is open | The dialog closes (`useCloseVanishedDialogs`, with its own `canEditSequence` check); an undo or an unlock does not reopen it |
 
 ## Security and trust
 
@@ -187,16 +187,17 @@ dialog, `useSequenceSetters`), `SequenceNumbered`, `SequenceAnim`.
 
 ## Testing
 
-| Rule                      | Test file                                                   |
-| ------------------------- | ----------------------------------------------------------- |
-| Writes, bounds (I1), next | `packages/document/src/sequence-element.test.ts`            |
-| Picture and export (I2)   | same                                                        |
-| Menu: summary, Edit       | `apps/live/components/palette/SequenceMenuSection.test.tsx` |
-| Dialog: rows, text, close | `apps/live/components/dialogs/SequenceDialog.test.tsx`      |
-| Text read and written     | `packages/document/src/sequence-text.test.ts`               |
-| Dialog writes             | `apps/live/hooks/canvas/useSequenceSetters.test.ts`         |
-| Who may edit              | `apps/live/lib/sequence-edit.test.ts`                       |
-| Face label, Play class    | `apps/live/components/canvas/SequenceFace.test.tsx`         |
+| Rule                      | Test file                                                      |
+| ------------------------- | -------------------------------------------------------------- |
+| Writes, bounds (I1), next | `packages/document/src/sequence-element.test.ts`               |
+| Picture and export (I2)   | same                                                           |
+| Menu: summary, Edit       | `apps/live/components/palette/SequenceMenuSection.test.tsx`    |
+| Dialog: rows, text, close | `apps/live/components/dialogs/SequenceDialog.test.tsx`         |
+| Text read and written     | `packages/document/src/sequence-text.test.ts`                  |
+| Dialog writes             | `apps/live/hooks/canvas/useSequenceSetters.test.ts`            |
+| Who may edit              | `apps/live/lib/sequence-edit.test.ts`                          |
+| Face label, Play class    | `apps/live/components/canvas/SequenceFace.test.tsx`            |
+| Dialog closes (E4)        | `apps/live/components/dialogs/useCloseVanishedDialogs.test.ts` |
 
 ## Constants and configuration
 

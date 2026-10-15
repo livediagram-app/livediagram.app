@@ -23,10 +23,16 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
 - **State** (`tabWindowState(windowTabId, tab, status)`): no `windowTabId` → `unchosen`; no tab with that id among the
   person's tabs → `unavailable`; status `failed` → `failed`; `loading` → `loading`; no elements → `empty`; else
   `drawing`. A name is the tab's, or "Untitled tab".
-- **Status** (`useTabWindowContextValue`): the canvas's own tab or one in `loadedTabIds` → `loaded`; a tab in the
-  failed set → `failed`; else `loading`. `request(id)` fetches a `loading` tab through `loadTabs([id])` once (an
-  in-flight set); a fetch resolving with the id among its failures adds it to the failed set, else removes it.
-  `retry(id)` removes it from the failed set and fetches again.
+- **Status** (`useTabWindowContextValue`): the canvas's own tab or one in `loadedTabIds` → `loaded`; a tab being
+  retried → `loading`; a tab in the failed set or the editor's `loadErrors` → `failed`; else `loading`. `request(id)`
+  fetches a `loading` tab through `loadTabs([id])` once (an in-flight set); a fetch resolving with the id among its
+  failures adds it to the failed set, else removes it. `retry(id)` removes it from the failed set, marks it retrying
+  until that fetch settles, and fetches again. Nothing re-asks on a timer.
+- **Settling** (`usePerTabLoad.loadAllTabs(only?)`): every fetch under way, visit-time or sweep, is recorded with how
+  it ends (`'loaded' | 'failed' | 'cancelled'`). A requested tab already being fetched is waited for, not fetched
+  again; its `failed` end is reported among the failures; a `cancelled` end (its visit moved on) is followed to the
+  fetch that replaced it, up to `TAB_FETCH_FOLLOW_MAX` (3) times. So the promise settles once every requested tab
+  has. A sweep's success also clears that tab from `tabLoadErrors`.
 - **Choosing**: the face's `choose(elementId, tabId)` commits `windowTabId` on that element (`commitElements`, one
   undo step); the menu's Shows commits through `ops.commit(..., 'TabWindowTab')` on the selection.
 - **Opening**: `open(tabId)` (face) and the menu's Open row call `useSelectTab()`.
@@ -49,7 +55,7 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
   prefixed; references to ids not in the markup are left alone.
 - `useTabWindowExport({ tab, tabs, loadTabs, imageContext, active, items })`: targets are `tabWindowTargets(tab)`
   (distinct `windowTabId`s in element order, not the tab itself); when `active` and there are targets it awaits
-  `loadTabs(targets)`, then `loadTabImages` for each target tab; `ready` once both settle (photos only with an
+  `loadTabs` of the targets a window may show (`tabWindowMayShow`; none fetched for a Plan tab), then `loadTabImages` for each target tab; `ready` once both settle (photos only with an
   `imageContext`). It returns `resolveTabWindow` (from `tabWindowArts`) and `tabWindowFontIds`
   (`exportFontIds` of each target). `tabWindowArts` skips a tab `tabWindowMayShow` refuses or that is missing, gives an
   empty tab its name only, and otherwise renders `renderTabToSvg(tabAsSeen(t), { pattern: false, images,
@@ -120,9 +126,10 @@ resolveTabWindow: names, items })` sized by `svgFrameOf`.
 
 ## Constants and configuration
 
-| Constant              | Value                                                   | Why                                  |
-| --------------------- | ------------------------------------------------------- | ------------------------------------ |
-| `TAB_WINDOW_SIZE`     | 640 x 360                                               | 16:9, a slide's own shape            |
-| `TAB_WINDOW_RADIUS`   | 12                                                      | The editor's card corners            |
-| `TAB_WINDOW_HAIRLINE` | `#cbd5e1`                                               | slate-300, the frame on any paper    |
-| `TAB_WINDOW_EMPTY`    | light `#f8fafc` / `#64748b`; dark `#1e293b` / `#94a3b8` | slate grounds and ink for each paper |
+| Constant               | Value                                                   | Why                                                                               |
+| ---------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `TAB_WINDOW_SIZE`      | 640 x 360                                               | 16:9, a slide's own shape                                                         |
+| `TAB_WINDOW_RADIUS`    | 12                                                      | The editor's card corners                                                         |
+| `TAB_WINDOW_HAIRLINE`  | `#cbd5e1`                                               | slate-300, the frame on any paper                                                 |
+| `TAB_WINDOW_EMPTY`     | light `#f8fafc` / `#64748b`; dark `#1e293b` / `#94a3b8` | slate grounds and ink for each paper                                              |
+| `TAB_FETCH_FOLLOW_MAX` | 3 (`usePerTabLoad`; safe 1 to 5)                        | A cancelled fetch's replacements followed before leaving the tab to its own visit |

@@ -6,12 +6,12 @@
 
 import { createShape, createSticky, createText, type Element } from '@livediagram/document';
 import { heading } from './template-session-parts';
-import { furnishRooms, walkIn, type OfficePiece, type OfficeRoom } from './template-office-parts';
+import { officePlan, walkIn, type OfficePiece, type OfficeRoom } from './template-office-parts';
 
 const HEAD = 96;
 const BELOW = 120;
 
-// Floors first (rooms, then rugs), then the heading, then everything else, so a title never lies under a floor.
+// A space's floor plan with its heading (officePlan: floors first, then the heading, then the rest).
 function plan(
   x0: number,
   y0: number,
@@ -23,16 +23,14 @@ function plan(
   subtitle: string,
   extra: Element[],
 ): Element[] {
-  const placed = furnishRooms(rooms, x0, y0 + HEAD);
-  const floors = placed.filter(
-    (e) => e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug'),
+  return officePlan(
+    rooms,
+    x0,
+    y0,
+    HEAD,
+    heading(x0, y0, width, title, titleW, sticker, subtitle),
+    extra,
   );
-  return [
-    ...floors,
-    ...heading(x0, y0, width, title, titleW, sticker, subtitle),
-    ...placed.slice(floors.length),
-    ...extra,
-  ];
 }
 
 // Two desks facing two across a shared bench: the far pair's sitters face you, the near pair's face away.
@@ -79,14 +77,15 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
         { kind: 'bookshelf', x: 690, y: 46 },
       ],
     },
-    // Two phone booths along the right, for a call without the room.
+    // Two phone booths along the right, for a call without the room. Their doors face the open floor: a door in a
+    // booth's front wall opened onto a 40 px strip by the room's own wall, too narrow to walk.
     {
       name: 'Booth 1',
       x: 860,
       y: 40,
       w: 200,
       h: 220,
-      door: 's',
+      door: 'w',
       pieces: [{ kind: 'chair', x: 62, y: 90, facing: 's' }],
     },
     {
@@ -95,7 +94,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       y: 300,
       w: 200,
       h: 220,
-      door: 's',
+      door: 'w',
       pieces: [{ kind: 'chair', x: 62, y: 90, facing: 's' }],
     },
   ];
@@ -178,8 +177,10 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
     'Your team’s corner: four desks together, a table for the stand-up, and a board for the week.',
     [
       ...board,
+      // Under the pod, not the whole plan: the button is where the character lands, so it waits by the pod's door
+      // rather than under the board, a long walk from the way in.
       ...walkIn(
-        x0 + width,
+        x0 + POD_W,
         y0 + HEAD + POD_H + BELOW / 2,
         'Press Walk In (or W), take a desk, and meet round the table for the stand-up.',
       ),
@@ -254,7 +255,7 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
       ...walkIn(
         x0 + width,
         y0 + HEAD + HALL_H + BELOW / 2,
-        'Press Walk In (or W) and take a seat. Raise a hand with the Avatar panel’s reactions.',
+        'Press Walk In (or W) and take a seat. Raise a hand with the Avatar panel’s Behaviour › Wave, which everyone sees.',
       ),
     ],
   );

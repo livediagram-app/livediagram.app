@@ -46,6 +46,7 @@ import {
 } from '@/components/canvas/tab-window/tab-window-context';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
 import { brushPageId, pageBrushPreview, pagePaintPress } from '@/lib/format-page-brush';
+import { useDeadPageBrush } from '@/hooks/editor/useDeadPageBrush';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -513,6 +514,11 @@ export function EditorCanvasHost() {
   // renderer and never reaches into the tab.
   // A page's background in the brush (docs/specs/007-editor/illustrate-pages.md "Copying a background").
   const brushedPage = illustratePages?.pages.find((pg) => pg.id === brushPageId(formatSourceId));
+  useDeadPageBrush(
+    formatSourceId,
+    illustratePages?.pages.map((pg) => pg.id),
+    setFormatSourceId,
+  );
   const formatSource = formatSourceId
     ? (activeTab.elements.find((el) => el.id === formatSourceId) ?? null)
     : null;
@@ -794,11 +800,8 @@ export function EditorCanvasHost() {
                   ? (pageId) => {
                       // A page's background as the brush, painted page to page (docs/specs/007-editor/
                       // illustrate-pages.md "Copying a background").
-                      // A brush whose page has gone holds nothing any more, as an element's does.
-                      if (brushPageId(formatSourceId) && !brushedPage) {
-                        setFormatSourceId(null);
-                        return;
-                      }
+                      // A brush whose page has gone is emptied as the page goes (useDeadPageBrush), so this
+                      // press arms the pressed page at once.
                       const press = pagePaintPress(
                         formatSourceId,
                         pageId,

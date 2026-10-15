@@ -396,5 +396,5 @@ Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main
 
 ## Not tried
 
-- `contain` on element wrappers, a raster snapshot of still elements during a gesture, and fewer
-  SVG roots. Each is weighed in the spec.
+- A raster snapshot of still elements during a gesture, and fewer SVG roots. Each is weighed in the spec.
+  (`contain` on element wrappers was tried: see above.)

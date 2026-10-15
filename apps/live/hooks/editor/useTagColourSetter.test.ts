@@ -42,4 +42,20 @@ describe('useTagColourSetter', () => {
     viewer.set('Bug', '#dc2626');
     expect(viewer.commitTabs).not.toHaveBeenCalled();
   });
+
+  // It reaches the menus through the editor context: one setter for every edit of the tab, not a new one per edit.
+  it('stays the same setter while the tab changes, and reads the tab as it is now', () => {
+    track.mockClear();
+    const commitTabs = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ t }: { t: Tab }) => useTagColourSetter({ activeTab: t, canEdit: true, commitTabs }),
+      { initialProps: { t: tab() } },
+    );
+    const first = result.current;
+    rerender({ t: tab({ tagColours: [{ tag: 'Bug', color: '#dc2626' }] }) });
+    expect(result.current).toBe(first);
+    // The newer tab already has it, so nothing is written.
+    result.current('Bug', '#dc2626');
+    expect(commitTabs).not.toHaveBeenCalled();
+  });
 });

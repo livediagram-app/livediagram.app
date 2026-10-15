@@ -53,6 +53,7 @@ export function SessionTimerFace({
   minutes,
   onSetMinutes,
   onOpenSettings,
+  runBy = null,
 }: {
   // Null when no timer is running for this tab: the element shows its
   // configured length and a Start.
@@ -72,6 +73,9 @@ export function SessionTimerFace({
   onSetMinutes?: (minutes: number) => void;
   /** The way out of the presets to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
+  /** Somebody else facilitating, by name: an Editor's controls are gone for that reason, and the face says so
+   *  (docs/specs/012-collaboration/facilitator.md "Being told you cannot"). */
+  runBy?: string | null;
 }) {
   // The clock advances 4x a second while running, exactly as the chrome pill's does. A paused or absent
   // timer is static, so nothing spins.
@@ -120,6 +124,9 @@ export function SessionTimerFace({
             </>
           )}
         </ElementEllipsisMenu>
+      ) : null}
+      {readOnly && runBy ? (
+        <span className="sr-only">{`${runBy} is facilitating this session; ask them to run the timer.`}</span>
       ) : null}
       {/* A DIAL (docs/specs/012-collaboration/participant-responses.md). Ticks along the edge you read the digits against
           say "instrument"; the drain behind them is the hand. */}

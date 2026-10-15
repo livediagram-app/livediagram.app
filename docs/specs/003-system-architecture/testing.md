@@ -66,8 +66,11 @@ export default defineProject({ test: { environment: 'jsdom' } });
   budget set for a person's device sits at the line there and fails at random;
   coverage alone slows it too (the pre-push hook's coverage run read a 16 ms
   drag frame at 20 ms). Such a test asserts `cpuBudgetMs(ms)`: `ms` in a plain
-  run, `ms x CI_CPU_HEADROOM` (3) when `CI` is set or the run collects coverage
-  (the shared Vitest config passes `LIVEDIAGRAM_COVERAGE` to its workers). A loose regression guard (a budget many times what the
+  run, `ms x CI_CPU_HEADROOM` (3) when `CI` is `true` or `1` (`CI=false` or
+  `CI=0` is a developer's machine) or the run collects coverage (the shared
+  Vitest config passes `LIVEDIAGRAM_COVERAGE` to its workers). Three is enough
+  beside a 4x slower runner because each budget keeps its own room over the
+  local timing (Tidy Up: 100 ms against 24). A loose regression guard (a budget many times what the
   work measures) needs neither.
 - **A test never pays a cold module load.** When the code under test imports
   a module lazily (`await import(...)`), the test file also imports it

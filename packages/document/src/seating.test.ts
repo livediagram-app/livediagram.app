@@ -51,7 +51,10 @@ describe('seatPoints', () => {
   it('seats a chair sitter on the seat, never on the backrest, at every facing', () => {
     const chair = { x: 100, y: 200, width: 80, height: 100, shape: 'chair' as const };
     // Facing you: below the middle, on the seat in front of the back.
-    expect(seatPoints(chair)).toEqual([{ x: 140, y: 262 }]);
+    // On the drawing as drawn: the box is taller than the chair's grid, so the grid is letterboxed in it.
+    const [seat] = seatPoints(chair);
+    expect(seat!.x).toBe(140);
+    expect(seat!.y).toBeCloseTo(260.8, 6);
     // Back to you: above the middle, beyond the backrest.
     expect(seatPoints({ ...chair, chairFacing: 's' })[0]!.y).toBeLessThan(250);
     // Facing left the backrest is on the right, so the seat is left of the middle; right mirrors it.
@@ -59,6 +62,22 @@ describe('seatPoints', () => {
     const [right] = seatPoints({ ...chair, chairFacing: 'w' });
     expect(left!.x).toBeLessThan(140);
     expect(right!.x).toBeCloseTo(280 - left!.x, 6);
+  });
+
+  it('seats on the drawing where it is drawn, in a box of other proportions', () => {
+    // A sofa turned on its side through an agent, its 152 x 85 box not swapped: the drawing is letterboxed to the
+    // box's height and centred, so each seat lies on the drawn cushion, not at its share of the whole box.
+    const box = { x: 0, y: 0, width: 152, height: 85 };
+    const { view: name, mirrored } = facingView('e');
+    const view = FURNITURE_ART.sofa[name];
+    const scale = Math.min(box.width / view.width, box.height / view.height);
+    const [dw, dh] = [view.width * scale, view.height * scale];
+    const [dx, dy] = [(box.width - dw) / 2, (box.height - dh) / 2];
+    const seats = seatPoints({ ...box, shape: 'sofa', chairFacing: 'e' });
+    view.seats.forEach(({ u, v }, i) => {
+      expect(seats[i]!.x).toBeCloseTo(dx + dw * (mirrored ? 1 - u : u), 6);
+      expect(seats[i]!.y).toBeCloseTo(dy + dh * v, 6);
+    });
   });
 
   it('gives the sofa two seats, side by side', () => {

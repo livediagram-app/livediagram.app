@@ -3,6 +3,9 @@
 // players. Pure data, read by template-builders-quiz-games.ts and template-builders-party-games.ts. Every answer
 // marked correct is correct: a quiz that marks the room wrong is the one bug a quizmaster cannot talk round.
 
+// The sticky paper and ink each player writes on: the sticky presets' own pairs, so the colour picker names them.
+import { BLUE, LILAC, PINK } from './template-workshop-stickies';
+
 export type QuizQuestion = { question: string; options: readonly string[]; correct: number };
 export type QuizRound = { title: string; questions: readonly QuizQuestion[] };
 
@@ -52,18 +55,18 @@ export const PUB_QUIZ_ROUNDS: readonly QuizRound[] = [
     questions: [
       {
         question: 'What is the chemical symbol for gold?',
-        options: ['Ag', 'Au', 'Gd', 'Go'],
-        correct: 1,
+        options: ['Ag', 'Gd', 'Go', 'Au'],
+        correct: 3,
       },
       {
         question: 'How many legs does a spider have?',
-        options: ['6', '8', '10', '12'],
-        correct: 1,
+        options: ['8', '6', '10', '12'],
+        correct: 0,
       },
       {
         question: 'Which planet is known as the Red Planet?',
-        options: ['Venus', 'Mars', 'Jupiter', 'Saturn'],
-        correct: 1,
+        options: ['Venus', 'Jupiter', 'Mars', 'Saturn'],
+        correct: 2,
       },
     ],
   },
@@ -151,20 +154,20 @@ export const TWO_TRUTHS_PLAYERS: readonly TwoTruthsPlayer[] = [
       'I once sang on live radio.',
       'I have never eaten pizza.',
     ],
-    sticky: { fillColor: '#ddd6fe', textColor: '#2e1065' },
+    sticky: LILAC,
   },
   {
     initials: 'DP',
     name: 'Dev',
     colour: '#0891b2',
     statements: null,
-    sticky: { fillColor: '#bae6fd', textColor: '#082f49' },
+    sticky: BLUE,
   },
   {
     initials: 'PN',
     name: 'Priya',
     colour: '#db2777',
     statements: null,
-    sticky: { fillColor: '#fecdd3', textColor: '#4c0519' },
+    sticky: PINK,
   },
 ];

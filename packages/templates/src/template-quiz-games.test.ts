@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { POLL_OPTION_MAX } from '@livediagram/api-schema';
+import { STICKY_PRESETS } from '@livediagram/document';
 import {
   quizPhase,
   sessionButtonPlan,
@@ -8,7 +10,13 @@ import {
 import { buildTemplate } from './build-template';
 import { templateCategory } from './template-categories';
 import { templateEditorMode } from './template-modes';
-import { BINGO_PROMPTS, ICEBREAKER_QUESTIONS, PUB_QUIZ_SECONDS } from './template-quiz-games-data';
+import {
+  BINGO_PROMPTS,
+  ICEBREAKER_QUESTIONS,
+  PUB_QUIZ_ROUNDS,
+  PUB_QUIZ_SECONDS,
+  TWO_TRUTHS_PLAYERS,
+} from './template-quiz-games-data';
 import type { TemplateKind } from './templates';
 
 // docs/specs/012-collaboration/quiz-and-game-templates.md "Testing".
@@ -78,8 +86,16 @@ describe('quiz and game templates', () => {
       shapes(buildTemplate(kind, 0, 0), 'session-button').filter((b) => b.session?.tool === 'poll');
     expect(polls('would-you-rather')).toHaveLength(6);
     for (const p of polls('would-you-rather')) {
-      for (const o of p.session!.options!) expect(o.length).toBeLessThanOrEqual(60);
+      // The wire's own limit, so a lower one is caught here rather than cut short on the server.
+      for (const o of p.session!.options!) expect(o.length).toBeLessThanOrEqual(POLL_OPTION_MAX);
     }
+    // One generic question each: the players' names are placeholders written over, and no Participant can rewrite
+    // a poll's question.
+    expect(polls('two-truths-and-a-lie').map((p) => p.session!.question)).toEqual([
+      'Which one is the lie?',
+      'Which one is the lie?',
+      'Which one is the lie?',
+    ]);
     expect(polls('two-truths-and-a-lie').map((p) => p.session!.options)).toEqual([
       ['1', '2', '3'],
       ['1', '2', '3'],
@@ -91,5 +107,26 @@ describe('quiz and game templates', () => {
     expect(new Set(BINGO_PROMPTS).size).toBe(16);
     const cells = shapes(buildTemplate('people-bingo', 0, 0), 'square');
     expect(cells.map((c) => c.label)).toEqual(BINGO_PROMPTS);
+  });
+});
+
+describe('the Pub Quiz answers', () => {
+  it('spreads the right answers over the letters, so picking one letter scores nothing special', () => {
+    const correct = PUB_QUIZ_ROUNDS.flatMap((r) => r.questions.map((q) => q.correct));
+    const share = (i: number) => correct.filter((c) => c === i).length;
+    for (const i of [0, 1, 2, 3]) expect(share(i), `letter ${'ABCD'[i]}`).toBeLessThanOrEqual(3);
+    // And no round answers one letter throughout.
+    for (const r of PUB_QUIZ_ROUNDS)
+      expect(new Set(r.questions.map((q) => q.correct)).size).toBeGreaterThan(1);
+  });
+});
+
+describe('the players’ stickies', () => {
+  it('each take a sticky preset’s paper and ink, so the colour picker names them', () => {
+    for (const p of TWO_TRUTHS_PLAYERS)
+      expect(
+        STICKY_PRESETS.some((k) => k.fill === p.sticky.fillColor && k.text === p.sticky.textColor),
+        p.name,
+      ).toBe(true);
   });
 });

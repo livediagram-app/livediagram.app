@@ -19,6 +19,12 @@ import type { SheetsRoomOp } from './sheets';
 // character, walk cycle, hop, and flag wave the sender sees. Deliberately
 // small — this goes out at cursor rates.
 
+// The statuses a character can show in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), the one list both
+// ends of the wire read: the editor's picker and labels are keyed to it, so a status can never be sent that a
+// receiver's type does not name.
+export const AVATAR_STATUS_IDS = ['available', 'focus', 'meeting', 'away'] as const;
+export type AvatarStatus = (typeof AVATAR_STATUS_IDS)[number];
+
 export type AvatarPresence = {
   x: number;
   y: number;
@@ -57,7 +63,7 @@ export type AvatarPresence = {
   holding?: 'water' | 'coffee' | null;
   // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none. Presence for the session only;
   // a receiver draws only a status it knows. Optional so an older client's packet parses as no status.
-  status?: 'available' | 'focus' | 'meeting' | 'away' | null;
+  status?: AvatarStatus | null;
 };
 
 // Room op kinds that are ephemeral signals: they mutate no document state,
@@ -603,18 +609,29 @@ export type RoomOp =
   // presenter reloads mid-follow, all for three numbers on an
   // already-throttled channel. The cost is accepted and written down: a room
   // where nobody follows anybody still carries these while people scroll.
-  | { kind: 'viewport'; tabId: string; pan: { x: number; y: number }; zoom: number }
+  //
+  // `size` is the sender's canvas, so Bring Focus can tell a presser whether
+  // the room is already looking at a point on each viewer's own screen
+  // (docs/specs/012-collaboration/bring-focus.md). Optional: a client from before it
+  // sends none, and a viewport without one counts as unknown.
+  | {
+      kind: 'viewport';
+      tabId: string;
+      pan: { x: number; y: number };
+      zoom: number;
+      size?: { width: number; height: number };
+    }
   // Who the sender follows (a presence id), or null when they stop: to the room, never relayed.
   | { kind: 'follow'; target: string | null }
   // --- Bring Focus (docs/specs/012-collaboration/bring-focus.md) ----------------------------------------
   // Somebody pressed a Bring Focus element: offer everyone else a jump to it.
   //
-  // Carries the element's CENTRE and the presser's zoom, not the presser's
-  // pan. Two people rarely have the same window size, so copying a pan lands
-  // the element off-centre (or off-screen) for anyone whose canvas is a
-  // different shape; centring the point is the correct translation of "come
-  // and look at this", and the zoom is what makes their view show the same
-  // amount of canvas.
+  // Carries the element's CENTRE, not the presser's pan. Two people rarely
+  // have the same window size, so copying a pan lands the element off-centre
+  // (or off-screen) for anyone whose canvas is a different shape; centring the
+  // point is the correct translation of "come and look at this". The
+  // presser's `zoom` still rides along for clients from before receivers kept
+  // their own zoom; a receiver ignores it.
   //
   // No sender name: the envelope already identifies the sender and the
   // receiver resolves the name from the presence list it holds, so a renamed

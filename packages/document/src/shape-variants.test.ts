@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyShapeVariant,
   badgePresetFace,
+  withVariantColours,
   BADGE_PRESET_VARIANTS,
   CARD_PRESET_VARIANTS,
   cardLayout,
@@ -110,5 +111,23 @@ describe('badgePresetFace', () => {
       expect(face.look).toBe(el.chipLook ?? 'solid');
       expect(face.accent).toBe(el.strokeColor);
     }
+  });
+});
+
+describe('withVariantColours', () => {
+  const badge = () => createShape('badge', 0, 0) as ShapeElement;
+  it("puts the Warning preset's rose back over a theme or remembered colour, and its bindings go", () => {
+    const dressed = { ...badge(), strokeColor: '#2563eb', strokeSwatch: 2 } as ShapeElement;
+    const out = withVariantColours(dressed, 'warning');
+    expect(out.strokeColor).toBe('#e11d48');
+    expect(out).not.toHaveProperty('strokeSwatch');
+  });
+
+  it('leaves a preset with no colour of its own, another kind, and no variant as they are', () => {
+    const dressed = { ...badge(), strokeColor: '#2563eb' } as ShapeElement;
+    expect(withVariantColours(dressed, 'beta')).toBe(dressed);
+    expect(withVariantColours(dressed, undefined)).toBe(dressed);
+    const card = { ...createShape('card', 0, 0), strokeColor: '#2563eb' } as ShapeElement;
+    expect(withVariantColours(card, 'warning')).toBe(card);
   });
 });
