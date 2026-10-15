@@ -9,6 +9,7 @@ import {
 } from '@livediagram/document';
 import { buildPageLayout, PAGE_LAYOUTS } from '@livediagram/templates';
 import { PAGE_TIDY_GRID, tidyPageElements, type PageTidyInput } from './page-tidy';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 
 // A4 portrait: the page is 794 x 1123 centred on the origin, its margin 56, so the content box runs
 // x -341..341, y -505.5..505.5, and the tolerance is 0.012 x 794, about 9.5 px.
@@ -269,11 +270,13 @@ describe('tidyPageElements on real layouts', () => {
       els.push(shape(`s${i}`, -330 + col * 33 + next() * 4, -500 + row * 33 + next() * 4, 28, 28));
     }
     const input = inputFor(els, page);
-    const t0 = performance.now();
-    const out = tidyPageElements(els, input);
-    const ms = performance.now() - t0;
+    let out: Element[] = els;
+    // CPU time, not wall time: a loaded CI runner stretched the wall clock past the budget (1639 ms on #705).
+    const ms = cpuMsOf(() => {
+      out = tidyPageElements(els, input);
+    });
     expect(tidyPageElements(out, input)).toBe(out);
-    // Measured about 120 ms on an M-series Mac; the budget leaves room for a loaded CI runner.
+    // Measured about 120 ms on an M-series Mac; the budget leaves room for a slower CI runner.
     expect(ms).toBeLessThan(1500);
   });
 });
