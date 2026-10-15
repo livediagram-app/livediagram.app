@@ -601,15 +601,15 @@ with the ones there are. Question types go by their ids (`short`, `paragraph`, `
     board's first;
   - `{ to: "sheet" }`: to a new Sheet tab "<Form> Responses", as + New Sheet does; with `sheet`, an existing one;
   - left out: a starter's own way; for questions, a new board.
-  A board form's card type is the one named, or a new type named after the form (as + New Card Type), which a board
-  confining its types also takes. A question's `goesTo` (`title`, `description`, or a field's name) maps its answer:
-  a name the card type lacks makes that field, of the kind the question's type makes (New Field), options included.
+    A board form's card type is the one named, or a new type named after the form (as + New Card Type), which a board
+    confining its types also takes. A question's `goesTo` (`title`, `description`, or a field's name) maps its answer:
+    a name the card type lacks makes that field, of the kind the question's type makes (New Field), options included.
 - **`change_form`** (destructive, as it deletes): up to 50 changes in order, applied as one write and one undo step
   for people: `add_question` `{ question, section?, after? }`, `set_question` `{ question, set }` (a type change
   keeps what the new type can use, as the type button does), `delete_question`, `move_question`
   `{ question, section?, after? }`, `add_section` `{ title?, description?, after? }` (after a question splits there,
   as Add Section does; else an empty section at the end), `set_section` `{ section, title?, description?,
-  showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the section before), `set_form`
+showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the section before), `set_form`
   `{ heading?, description?, cover? }`, `settings` `{ closesAt?, limit?, confirmation?, closedMessage? }` (null
   clears one) and `responds_to` (as `add_form`'s). Each is checked as the builder checks it (limits, unique options,
   a mapping that fits, a rule on an earlier choice), and a refusal writes nothing and names the change.

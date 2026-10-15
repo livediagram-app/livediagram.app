@@ -391,25 +391,25 @@ Derived from [Forms](../forms.md#agents) and [MCP server](../../015-api/mcp-serv
 
 ### Placement
 
-| Concern                                                                                         | Home                                                                                                                                                         |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| The builder's pure edits (shared by the editor and agents)                                      | `packages/forms/src/edits.ts` (was `apps/live/hooks/forms/form-edits.ts`)                                                                                   |
-| Starting a form: `planFormStart`, `responsesBoardTab`, `responsesSheetTab`, `boardsOf`, `sheetsOf`, `uniqueTypeLabel`, `withBoardTaking`, `withAutoBoardName` | `packages/templates/src/form-start.ts` (was `apps/live/hooks/forms/form-start.ts`; it builds tabs, so it lives beside `form-templates.ts`, never in `@livediagram/forms`) |
-| A live form's lock                                                                              | `packages/forms/src/lock.ts`: `SETTINGS_KEYS` (`closesAt`, `limit`, `confirmation`, `closedMessage`), `changesBeyondSettings(before, after)`                |
-| The changeset `form` source                                                                     | `packages/edit-operations/src/replace.ts` + `form-body.ts`; `apps/api/src/changesets/request.ts` (`REPLACE_SOURCES`); `packages/api-schema` `ChangesetReplace.form` |
-| The lock on the api                                                                             | `apps/api/src/changesets/submit.ts` (`formLockRefusal`, after `compile`, before the write)                                                                  |
-| The engine agents share                                                                         | `packages/agent-verbs/src/forms/`: `form-state.ts`, `form-names.ts`, `form-question-input.ts`, `form-changes.ts`, `form-read.ts`, `add-form.ts`, `change-form.ts`, `share-form.ts` |
-| MCP schemas and tool verbs                                                                      | `packages/agent-verbs/src/mcp/form-schema.ts`; `mcpReadForm`, `mcpAddForm`, `mcpChangeForm`, `mcpShareForm` in `verbs/mcp-tools.ts` (after the Illustrate tools) |
-| MCP registration                                                                                | `apps/mcp/src/form-tools.ts` (`registerFormTools`)                                                                                                           |
-| CLI verbs                                                                                       | `packages/agent-verbs/src/verbs/form.ts`: `form.ls`, `form.get`, `form.add`, `form.change` (changes from a JSON file or stdin), `form.share`                 |
-| The form's picture                                                                              | `packages/plan-art/src/form-art.ts` (`formArt(form, look, { dark })` → `{ svg, width, height }`), drawn by `read_form` and by `read_document`'s image of a Form tab |
+| Concern                                                                                                                                                       | Home                                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The builder's pure edits (shared by the editor and agents)                                                                                                    | `packages/forms/src/edits.ts` (was `apps/live/hooks/forms/form-edits.ts`)                                                                                                          |
+| Starting a form: `planFormStart`, `responsesBoardTab`, `responsesSheetTab`, `boardsOf`, `sheetsOf`, `uniqueTypeLabel`, `withBoardTaking`, `withAutoBoardName` | `packages/templates/src/form-start.ts` (was `apps/live/hooks/forms/form-start.ts`; it builds tabs, so it lives beside `form-templates.ts`, never in `@livediagram/forms`)          |
+| A live form's lock                                                                                                                                            | `packages/forms/src/lock.ts`: `SETTINGS_KEYS` (`closesAt`, `limit`, `confirmation`, `closedMessage`), `changesBeyondSettings(before, after)`                                       |
+| The changeset `form` source                                                                                                                                   | `packages/edit-operations/src/replace.ts` + `form-body.ts`; `apps/api/src/changesets/request.ts` (`REPLACE_SOURCES`); `packages/api-schema` `ChangesetReplace.form`                |
+| The lock on the api                                                                                                                                           | `apps/api/src/changesets/submit.ts` (`formLockRefusal`, after `compile`, before the write)                                                                                         |
+| The engine agents share                                                                                                                                       | `packages/agent-verbs/src/forms/`: `form-state.ts`, `form-names.ts`, `form-question-input.ts`, `form-changes.ts`, `form-read.ts`, `add-form.ts`, `change-form.ts`, `share-form.ts` |
+| MCP schemas and tool verbs                                                                                                                                    | `packages/agent-verbs/src/mcp/form-schema.ts`; `mcpReadForm`, `mcpAddForm`, `mcpChangeForm`, `mcpShareForm` in `verbs/mcp-tools.ts` (after the Illustrate tools)                   |
+| MCP registration                                                                                                                                              | `apps/mcp/src/form-tools.ts` (`registerFormTools`)                                                                                                                                 |
+| CLI verbs                                                                                                                                                     | `packages/agent-verbs/src/verbs/form.ts`: `form.ls`, `form.get`, `form.add`, `form.change` (changes from a JSON file or stdin), `form.share`                                       |
+| The form's picture                                                                                                                                            | `packages/plan-art/src/form-art.ts` (`formArt(form, look, { dark })` → `{ svg, width, height }`), drawn by `read_form` and by `read_document`'s image of a Form tab                |
 
 ### The changeset `form` source
 
 - `replace: { form }` takes the form whole. `readForm(raw)` null → `invalid_value` "form: not a form (a heading and
   sections of questions)". The sanitised form is what is stored; anything `readForm` drops is dropped.
 - No tab yet: a new tab `{ id, name: form.heading, kind: 'form', opensIn: 'plan', elements: [], form,
-  defaultTextSize: 'sm', theme? }`.
+defaultTextSize: 'sm', theme? }`.
 - A Form tab: `{ ...tab, name: form.heading, form }`. Any other kind → `invalid_value` "form: only a Form tab takes
   one" with hint "add a Form tab with add_form".
 - `withServerRules` keeps the stored name except on a Form tab, whose name is its form's heading (capped as a tab
@@ -420,16 +420,16 @@ Derived from [Forms](../forms.md#agents) and [MCP server](../../015-api/mcp-serv
 
 ### Names and refusals (`form-names.ts`)
 
-| Reference          | Matches, in order                                                               | Refusal (code, message lists what there is)       |
-| ------------------ | ------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Form tab           | tab id; tab name (case aside); none given: the document's first Form tab        | `form_tab_unknown`; `form_tab_none` with add_form |
-| question           | id; prompt (case aside, trimmed); two prompts alike → `question_ambiguous`      | `question_unknown`                                |
-| section            | id; title (case aside); a whole number 1..n (its place)                         | `section_unknown`                                 |
-| board              | Board tab name; board title; a document with one board needs none               | `board_unknown`                                   |
-| card type          | the plan's `resolveType` (id or name)                                           | as `resolveType`                                  |
-| column             | the board's column name (case aside) or status                                  | `column_unknown`                                  |
-| sheet              | `sheetsOf` name; the Sheet tab's name                                           | `sheet_unknown`                                   |
-| `goesTo` field     | the card type's custom field by name (case aside); else a new field (NEW_FIELD_KIND) | `field_does_not_fit` with the kinds that fit; `title_not_allowed`; `fields_full` at 12 |
+| Reference      | Matches, in order                                                                    | Refusal (code, message lists what there is)                                            |
+| -------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| Form tab       | tab id; tab name (case aside); none given: the document's first Form tab             | `form_tab_unknown`; `form_tab_none` with add_form                                      |
+| question       | id; prompt (case aside, trimmed); two prompts alike → `question_ambiguous`           | `question_unknown`                                                                     |
+| section        | id; title (case aside); a whole number 1..n (its place)                              | `section_unknown`                                                                      |
+| board          | Board tab name; board title; a document with one board needs none                    | `board_unknown`                                                                        |
+| card type      | the plan's `resolveType` (id or name)                                                | as `resolveType`                                                                       |
+| column         | the board's column name (case aside) or status                                       | `column_unknown`                                                                       |
+| sheet          | `sheetsOf` name; the Sheet tab's name                                                | `sheet_unknown`                                                                        |
+| `goesTo` field | the card type's custom field by name (case aside); else a new field (NEW_FIELD_KIND) | `field_does_not_fit` with the kinds that fit; `title_not_allowed`; `fields_full` at 12 |
 
 ### Question input (`form-question-input.ts`)
 
@@ -462,29 +462,29 @@ own column").
   words; `form_destination_missing` → `DESTINATION_PROBLEM_TEXT`; 403 `form_suspensions` → "this document's form links
   were suspended twice, so it cannot publish another".
 - **read_form** answer: `{ documentId, tabId, heading, description?, state, closedReason?, link: url | null,
-  responses, unseen, respondsTo, sections: [{ id, place, title, description?, showIf?: { questionId, prompt, anyOf },
-  questions: [{ id, type, typeName, prompt, …settings, goesTo: 'Title' | 'Description' | field name,
-  goesToBroken? }] }], settings: { closesAt?: ISO, limit?, confirmation, closedMessage }, problems: string[],
-  tabs?: made, url }`. The form link is `${origin}/form/<code>`.
+responses, unseen, respondsTo, sections: [{ id, place, title, description?, showIf?: { questionId, prompt, anyOf },
+questions: [{ id, type, typeName, prompt, …settings, goesTo: 'Title' | 'Description' | field name,
+goesToBroken? }] }], settings: { closesAt?: ISO, limit?, confirmation, closedMessage }, problems: string[],
+tabs?: made, url }`. The form link is `${origin}/form/<code>`.
 
 ### Constants
 
-| Name                     | Value | Why                                                                |
-| ------------------------ | ----- | ------------------------------------------------------------------ |
-| `FORM_CHANGES_MAX`       | 50    | As `change_items`, `change_sheet`, `change_pages`                  |
-| `FORM_ART_WIDTH`         | 720   | The builder's 640 px column with its gutters                       |
-| `FORM_ART_HEIGHT_MAX`    | 4,000 | A 100-question form's picture stays a readable PNG under the cap   |
+| Name                  | Value | Why                                                              |
+| --------------------- | ----- | ---------------------------------------------------------------- |
+| `FORM_CHANGES_MAX`    | 50    | As `change_items`, `change_sheet`, `change_pages`                |
+| `FORM_ART_WIDTH`      | 720   | The builder's 640 px column with its gutters                     |
+| `FORM_ART_HEIGHT_MAX` | 4,000 | A 100-question form's picture stays a readable PNG under the cap |
 
 ### Tests
 
-| Rule                                                                                  | Test                                                                                     |
-| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| The `form` source: new tab, swapped form, other kinds refused, name follows heading   | `packages/edit-operations/src/replace-form.test.ts`, `apps/api/src/changesets/request.test.ts` |
-| The lock: settings pass, anything else 409, closed form free                          | `packages/forms/src/lock.test.ts`, `apps/api/src/routes/changesets-form.test.ts`         |
-| Names resolve and refuse with what there is                                           | `packages/agent-verbs/src/forms/form-names.test.ts`                                       |
-| Question input equals the builder's; settings per type; limits                        | `packages/agent-verbs/src/forms/form-question-input.test.ts`                              |
-| Every change kind, refusal names the change, nothing written                          | `packages/agent-verbs/src/forms/form-changes.test.ts`                                     |
-| add_form: starter, questions, each respondsTo, new document, fields made              | `packages/agent-verbs/src/forms/form-engine.test.ts`                                      |
-| share_form actions and refusals; a Viewer's token gets no link                        | `packages/agent-verbs/src/forms/form-engine.test.ts`, `apps/mcp/src/form-tools.test.ts`   |
-| The tools as registered; parity                                                       | `apps/mcp/src/form-tools.test.ts`, `apps/mcp/src/verb-parity.test.ts`                     |
-| The picture: every type drawn, look, sections, a 100-question form within budget      | `packages/plan-art/src/form-art.test.ts`                                                  |
+| Rule                                                                                | Test                                                                                           |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| The `form` source: new tab, swapped form, other kinds refused, name follows heading | `packages/edit-operations/src/replace-form.test.ts`, `apps/api/src/changesets/request.test.ts` |
+| The lock: settings pass, anything else 409, closed form free                        | `packages/forms/src/lock.test.ts`, `apps/api/src/routes/changesets-form.test.ts`               |
+| Names resolve and refuse with what there is                                         | `packages/agent-verbs/src/forms/form-names.test.ts`                                            |
+| Question input equals the builder's; settings per type; limits                      | `packages/agent-verbs/src/forms/form-question-input.test.ts`                                   |
+| Every change kind, refusal names the change, nothing written                        | `packages/agent-verbs/src/forms/form-changes.test.ts`                                          |
+| add_form: starter, questions, each respondsTo, new document, fields made            | `packages/agent-verbs/src/forms/form-engine.test.ts`                                           |
+| share_form actions and refusals; a Viewer's token gets no link                      | `packages/agent-verbs/src/forms/form-engine.test.ts`, `apps/mcp/src/form-tools.test.ts`        |
+| The tools as registered; parity                                                     | `apps/mcp/src/form-tools.test.ts`, `apps/mcp/src/verb-parity.test.ts`                          |
+| The picture: every type drawn, look, sections, a 100-question form within budget    | `packages/plan-art/src/form-art.test.ts`                                                       |
