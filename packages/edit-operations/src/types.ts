@@ -138,6 +138,8 @@ export type ReplaceOptions = ApplyOptions & {
   themeId?: string;
   // The new tab's finish (docs/specs/008-canvas/finish.md); only a replace that creates the tab sets one.
   finish?: Finish;
+  // A new tab of elements made a Board tab (a form's responses board, docs/specs/030-forms/forms.md "Agents").
+  kind?: 'board';
 };
 
 export type ReplaceBody =
@@ -146,7 +148,7 @@ export type ReplaceBody =
   | { template: string }
   // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard"); never onto an existing tab.
   | { dashboard: DashboardSpec }
-  // A Form tab's form whole (docs/specs/030-forms/forms.md "Agents"): a new Form tab, or a Form tab's form swapped.
+  // A new Form tab's form whole (docs/specs/030-forms/forms.md "Agents"); an existing form changes through its route.
   | { form: unknown }
   | { elements: unknown[]; layout?: 'auto' | 'preserve' };
 

@@ -183,7 +183,8 @@ function nextTab(
 ): Tab {
   if (!tab) {
     const made = built.tab(options.tabId, options.name);
-    return options.finish ? { ...made, finish: options.finish } : made;
+    const kinded: Tab = options.kind ? { ...made, kind: options.kind, opensIn: 'plan' } : made;
+    return options.finish ? { ...kinded, finish: options.finish } : kinded;
   }
   if (built.newOnly) {
     // A Dashboard tab rebuilt: its views and layout anew, everything else about the tab kept.

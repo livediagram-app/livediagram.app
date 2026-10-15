@@ -67,3 +67,14 @@ describe('form replace', () => {
     }
   });
 });
+
+describe('a new tab of elements made a Board tab', () => {
+  it('stamps the kind and Plan on a new tab only', () => {
+    const out = applied(applyReplace(null, { elements: [] }, { ...options, kind: 'board' }));
+    expect(out.tab).toMatchObject({ kind: 'board', opensIn: 'plan' });
+    const kept = applied(
+      applyReplace(checkoutFlow(), { elements: [] }, { ...options, kind: 'board' }),
+    );
+    expect(kept.tab.kind).not.toBe('board');
+  });
+});

@@ -183,8 +183,10 @@ export type ChangesetReplaceBody = {
   template?: string;
   // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard").
   dashboard?: Record<string, unknown>;
-  // A Form tab's form (docs/specs/030-forms/forms.md "Agents"): a new Form tab, or a Form tab's form swapped.
+  // A new Form tab's form (docs/specs/030-forms/forms.md "Agents").
   form?: Record<string, unknown>;
+  // A new tab of elements made a Board tab (a form's responses board).
+  kind?: 'board';
   elements?: unknown[];
   layout?: 'auto' | 'preserve';
   theme?: string;
