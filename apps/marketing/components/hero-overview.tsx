@@ -4,11 +4,15 @@ import { CANVAS, LANDSCAPE_VIEWBOX } from './hero-editor-window';
 import { ArticlePage } from './hero-article-page';
 import { DiagramBoard } from './hero-diagram-board';
 import { DrawBoard } from './hero-draw-board';
+import { FormBoard } from './hero-form-board';
 import { InfographicPages } from './hero-illustrate-page';
 import { MindMapBoard } from './hero-mindmap-board';
 import { PlanBoard } from './hero-plan-board';
+import { SheetBoard } from './hero-sheet-board';
+import { SlidesBoard } from './hero-slides-board';
 import { TownHallBoard } from './hero-townhall-board';
 import type { HeroMode } from './hero-mode-palette';
+import type { HeroSceneKey } from './hero-scene-data';
 
 // The hero's first window (docs/specs/019-marketing/marketing-site.md "Hero"): an overview of every
 // window that follows, a bare board (no editor chrome) with one named frame per scene. Each frame
@@ -23,7 +27,8 @@ export type OverviewScene = {
   viewBox?: string;
 };
 
-const SCENES: Record<string, () => ReactNode> = {
+// Every scene's drawing, keyed by the scene: a new scene does not compile until it is drawn here.
+const SCENES: Record<HeroSceneKey, () => ReactNode> = {
   diagram: () => <DiagramBoard />,
   draw: () => <DrawBoard />,
   mindmap: () => <MindMapBoard />,
@@ -31,6 +36,9 @@ const SCENES: Record<string, () => ReactNode> = {
   article: () => <ArticlePage />,
   townhall: () => <TownHallBoard />,
   plan: () => <PlanBoard />,
+  slides: () => <SlidesBoard />,
+  sheet: () => <SheetBoard />,
+  form: () => <FormBoard />,
 };
 
 export function HeroOverview({
@@ -61,7 +69,7 @@ export function HeroOverview({
 
 function OverviewFrame({ scene, onOpen }: { scene: OverviewScene; onOpen: (key: string) => void }) {
   const Icon: ComponentType<{ size?: number; className?: string }> = EDITOR_MODE_ICONS[scene.mode];
-  const draw = SCENES[scene.key];
+  const draw = SCENES[scene.key as HeroSceneKey];
   return (
     <button
       type="button"

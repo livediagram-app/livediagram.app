@@ -4,13 +4,22 @@
 // the one that shows its feature (FeatureScene.tsx), so a scene is declared once, here.
 //
 // The data alone, without the boards: a page that shows one scene (FeatureScene) loads only that
-// scene's board, never all seven. hero-scenes.tsx pairs each with its board for the hero stage.
+// scene's board, never all ten. hero-scenes.tsx pairs each with its board for the hero stage.
 
 import type { TabDef } from './hero-editor-window';
 import type { HeroMode } from './hero-mode-palette';
 
 export type HeroSceneKey =
-  'diagram' | 'draw' | 'mindmap' | 'infographic' | 'article' | 'plan' | 'townhall';
+  | 'diagram'
+  | 'draw'
+  | 'mindmap'
+  | 'infographic'
+  | 'slides'
+  | 'article'
+  | 'plan'
+  | 'sheet'
+  | 'form'
+  | 'townhall';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
@@ -101,6 +110,18 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     portraitViewBox: PORTRAIT_PAGES,
   },
   {
+    key: 'slides',
+    word: 'Present',
+    build: '/new?mode=illustrate&q=slide',
+    short: 'Slides',
+    title: 'Board update',
+    label: 'Slides: build a deck from ready-made layouts, then present it full screen',
+    mode: 'illustrate',
+    tabs: [{ name: 'Deck', color: '#0284c7', active: true }],
+    shared: true,
+    portraitViewBox: PORTRAIT,
+  },
+  {
     key: 'article',
     word: 'Document',
     build: '/new?mode=illustrate&q=article',
@@ -123,6 +144,37 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     tabs: [
       { name: 'Board', color: '#0ea5e9', active: true },
       { name: 'Roadmap', color: '#10b981' },
+    ],
+    shared: true,
+    portraitViewBox: PORTRAIT,
+  },
+  {
+    key: 'sheet',
+    word: 'Budget',
+    build: '/new?mode=plan&q=budget',
+    short: 'Sheet',
+    title: 'Q3 budget',
+    label: 'Sheet: formulas that fill down and charts made from the cells, live for everyone',
+    mode: 'plan',
+    tabs: [
+      { name: 'Budget', color: '#10b981', active: true },
+      { name: 'Board', color: '#0ea5e9' },
+    ],
+    shared: true,
+    portraitViewBox: PORTRAIT,
+  },
+  {
+    key: 'form',
+    word: 'Collect',
+    build: '/new?mode=plan&q=rsvp',
+    short: 'Form',
+    title: 'Summer party',
+    label:
+      'Form: share a link, and every answer lands as a row in your sheet or a card on your board',
+    mode: 'plan',
+    tabs: [
+      { name: 'RSVP', color: '#7c3aed', active: true },
+      { name: 'Responses', color: '#10b981' },
     ],
     shared: true,
     portraitViewBox: PORTRAIT,

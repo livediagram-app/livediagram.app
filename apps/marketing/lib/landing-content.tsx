@@ -32,6 +32,9 @@ import {
   FacilitatorArt,
   FlowingArrowsArt,
   FontsArt,
+  FormBuilderArt,
+  FormResponsesArt,
+  FormShareArt,
   FormatPainterArt,
   FullScreenSlideArt,
   HiddenVotesArt,
@@ -126,8 +129,8 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: collaborate,
- * then each way of working on a tab (Diagram, Draw, Illustrate's infographics and
- * its documents and slides, Plan). `page.tsx` renders one beat per entry and
+ * then each way of working on a tab (Diagram, Draw, Illustrate's infographics, its
+ * slide decks and its documents, Plan's boards, then its sheets and forms). `page.tsx` renders one beat per entry and
  * alternates its background by index; `/features/<id>` renders each one's cards.
  */
 export const LANDING_SECTIONS: LandingSection[] = [
@@ -843,20 +846,81 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
   },
   {
-    id: 'documents',
-    label: 'Documents & slides',
-    scene: 'article',
-    cta: 'Explore documents and slides',
-    title: 'Write it up, then present it',
+    id: 'slides',
+    label: 'Slide decks',
+    scene: 'slides',
+    cta: 'Explore slide decks',
+    title: 'Build the deck, then present it',
     description:
-      'Write on pages like a doc, with the diagram right there in the text. Then turn pages into slides and present them full screen, your notes beside you. The write-up, the deck and the diagram stay one document.',
+      'Start a slide from one of 46 ready-made layouts, or make one from what you drew, then present the deck full screen on your screen alone, your notes behind a button. Slides reference your diagram, so they never drift from it.',
     metaDescription:
-      'Write on pages like a doc, with the diagram in the text, then turn pages into slides and present them. The write-up and the deck stay one document.',
+      'Slide decks from 46 ready-made layouts or from what you drew, presented full screen with private notes. Slides stay in step with your diagram.',
+    highlights: [
+      'Slide pages, ready-made layouts',
+      'Slides made from what you drew',
+      'Notes only you open',
+      'Your screen, not everyone else’s',
+    ],
+    items: [
+      {
+        art: <SlideLayoutsArt />,
+        href: '/help/canvas/illustrate/exporting-pages/#turning-pages-into-slides',
+        title: 'Slide pages, ready-made layouts',
+        description:
+          'Add a 16:9 or classic 4:3 slide page and start it from one of 46 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
+      },
+      {
+        art: <SlideDeckArt />,
+        href: '/help/selection-modes/slide-deck/',
+        title: 'Slides made from what you drew',
+        description:
+          'A slide is simply the elements you picked, from one tab. Select a cluster on the canvas and make it a slide; the arrows between them come along on their own. Slides reference your elements rather than copying them, so editing a shape updates every slide it appears on and the deck can never drift from the diagram.',
+      },
+      {
+        art: <FullScreenSlideArt />,
+        href: '/help/selection-modes/slide-deck/',
+        title: 'One deck across every tab',
+        description:
+          'Slide one can come from your architecture tab and slide two from the roadmap. Order them however you like in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the document, so a teammate opens it and sees the same talk.',
+      },
+      {
+        art: <PresenterNotesArt />,
+        href: '/help/selection-modes/slide-deck/',
+        title: 'Notes only you open',
+        description:
+          'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, so nothing about your script is on screen until you ask for it. Clicking any element shows its note, comments and assigned action too, for the question you did not plan for.',
+      },
+      {
+        art: <PresentLocallyArt />,
+        href: '/help/selection-modes/slide-deck/',
+        title: 'Your screen, not everyone else’s',
+        description:
+          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the document open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe. To leave a deck running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
+      },
+      {
+        art: <ZenModeArt />,
+        href: '/help/tools/zen-mode/',
+        title: 'Zen mode for focus',
+        description:
+          'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
+      },
+    ],
+  },
+  {
+    id: 'documents',
+    label: 'Documents',
+    scene: 'article',
+    cta: 'Explore documents',
+    title: 'Write it up, diagram and all',
+    description:
+      'Write on pages like a doc, with the diagram right there in the text: pictures that wrap, comments in the margin, and five looks to match your house style. The write-up and the diagram stay one document.',
+    metaDescription:
+      'Write on pages like a doc, with the diagram in the text: pictures that wrap, margin comments and five looks. The write-up and diagram stay one document.',
     highlights: [
       'Write like a doc',
       'Pages that grow',
-      'Slide pages, ready-made layouts',
-      'Notes only you open',
+      'Pictures and drawings in the text',
+      'Comments in the margin',
     ],
     items: [
       {
@@ -898,54 +962,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Five looks for an article',
         description:
           'Clean, Classic, Report, Notebook or Bold, then set the accent colour, margins, fonts and page numbers to match your house style.',
-      },
-      {
-        art: <SlideLayoutsArt />,
-        href: '/help/canvas/illustrate/exporting-pages/#turning-pages-into-slides',
-        group: 'Present',
-        title: 'Slide pages, ready-made layouts',
-        description:
-          'Add a 16:9 or classic 4:3 slide page and start it from one of 46 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
-      },
-      {
-        art: <SlideDeckArt />,
-        href: '/help/selection-modes/slide-deck/',
-        group: 'Present',
-        title: 'Slides made from what you drew',
-        description:
-          'A slide is simply the elements you picked, from one tab. Select a cluster on the canvas and make it a slide; the arrows between them come along on their own. Slides reference your elements rather than copying them, so editing a shape updates every slide it appears on and the deck can never drift from the diagram.',
-      },
-      {
-        art: <FullScreenSlideArt />,
-        href: '/help/selection-modes/slide-deck/',
-        group: 'Present',
-        title: 'One deck across every tab',
-        description:
-          'Slide one can come from your architecture tab and slide two from the roadmap. Order them however you like in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the document, so a teammate opens it and sees the same talk.',
-      },
-      {
-        art: <PresenterNotesArt />,
-        href: '/help/selection-modes/slide-deck/',
-        group: 'Present',
-        title: 'Notes only you open',
-        description:
-          'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, so nothing about your script is on screen until you ask for it. Clicking any element shows its note, comments and assigned action too, for the question you did not plan for.',
-      },
-      {
-        art: <PresentLocallyArt />,
-        href: '/help/selection-modes/slide-deck/',
-        group: 'Present',
-        title: 'Your screen, not everyone else’s',
-        description:
-          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the document open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe. To leave a deck running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
-      },
-      {
-        art: <ZenModeArt />,
-        href: '/help/tools/zen-mode/',
-        group: 'Present',
-        title: 'Zen mode for focus',
-        description:
-          'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
       },
     ],
   },
@@ -1035,6 +1051,107 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Agents that move the cards',
         description:
           'Your AI tools can read the plan and add, edit and move cards over MCP, the API or the CLI, naming columns and fields the way the board shows them.',
+      },
+    ],
+  },
+  {
+    id: 'sheets',
+    label: 'Sheets',
+    scene: 'sheet',
+    cta: 'Explore sheets',
+    title: 'Spreadsheets that sit beside the work',
+    description:
+      'Put a spreadsheet on a Plan tab: real formulas, number formats, sort and filter, live for everyone. Read the cards on the board, or list them as rows that stay linked both ways, and chart any cells in a click.',
+    metaDescription:
+      'Spreadsheets on a Plan tab: real formulas, live for everyone, reading the board’s cards or listing them as linked rows, with charts from any cells.',
+    highlights: [
+      'Sheets with real formulas',
+      'Cards as rows, linked both ways',
+      'Charts from your cells',
+      'Twelve ready-made spreadsheets',
+    ],
+    items: [
+      {
+        art: <SheetsArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Sheets with real formulas',
+        description:
+          'Cells, over 150 functions, number formats, sort, filter and freeze, live for everyone on the document. Formulas fill down, and a cell can read a card on the board.',
+      },
+      {
+        art: <SharedItemsArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Cards as rows, linked both ways',
+        description:
+          'List the board’s cards as rows: change a cell and the card changes, move the card and its row follows. The sheet and the board are one set of work.',
+      },
+      {
+        art: <PlanViewsArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Charts from your cells',
+        description:
+          'Select some cells and chart them as bars, lines or a pie that sits in the Sheet over its cells, redrawn the moment a number changes.',
+      },
+      {
+        art: <TemplatesArt />,
+        href: '/help/canvas/plan-mode/#plan-templates',
+        title: 'Twelve ready-made spreadsheets',
+        description:
+          'A Budget Planner, an Invoice, a Sales Pipeline, a Grade Book, a Loan Calculator and more, many with charts already in, or a blank spreadsheet to type into.',
+      },
+      {
+        art: <BoardImportArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Paste from Sheets and Excel, CSV in and out',
+        description:
+          'Copy and paste works with Google Sheets and Excel, CSV files come in and go out, and cells come Compact, Default or Roomy and zoom from 50% to 200%.',
+      },
+    ],
+  },
+  {
+    id: 'forms',
+    label: 'Forms',
+    scene: 'form',
+    cta: 'Explore forms',
+    title: 'Ask anyone, and every answer lands',
+    description:
+      'Build a form where it sits, share one link, and each response lands the moment it is sent: a row in a sheet, or a card on a board ready to work through. No account needed to answer, and nothing else of yours to see.',
+    metaDescription:
+      'Build a form, share one link, and each response lands as a row in a sheet or a card on a board. No account needed to answer.',
+    highlights: [
+      'Build it where it sits',
+      'One link to share',
+      'Every answer lands',
+      'Seven forms to start from',
+    ],
+    items: [
+      {
+        art: <FormBuilderArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'Build it where it sits',
+        description:
+          'Click a question to word it, pick its type (short answer, paragraph, number, email, link, date, choices, rating or a checkbox) and mark it required, right in the form. Sections can show only on an earlier answer.',
+      },
+      {
+        art: <FormShareArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'One link to share',
+        description:
+          'Publish the form to get a link anyone can fill in, with no sign-in. They see the form and nothing else of yours, and you can close it, set a closing date or a response limit at any time.',
+      },
+      {
+        art: <FormResponsesArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'Every answer lands',
+        description:
+          'Each response becomes a row in a sheet, a column per question, or a card on a board with its answers in the card’s fields, ready to move along. The count on the form says how many are new.',
+      },
+      {
+        art: <TemplatesArt />,
+        href: '/help/canvas/plan-mode/forms/',
+        title: 'Seven forms to start from',
+        description:
+          'A Bug Report, Feedback, a Feature Request, an Event RSVP, a Job Application, a Contact form, or a blank one, each sending its answers to the board or sheet that suits it.',
       },
     ],
   },
