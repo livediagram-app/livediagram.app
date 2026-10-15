@@ -1056,6 +1056,14 @@ export const FORM_QUESTIONS_ADDED = chart(
   { types: Object.values(QUESTION_TYPE_TELEMETRY) },
 );
 
+export const FORMS_CONNECTED = chart(
+  'Form',
+  'Linked',
+  'Forms Connected',
+  'A form connected from the box above its title while its responses went nowhere: to a new board, to a new sheet, or Responses Go To opened to choose one.',
+  { types: ['ConnectNewBoard', 'ConnectNewSheet', 'ConnectChoose'] },
+);
+
 export const FORMS_PUBLISHED = chart(
   'Form',
   'Shared',
@@ -1096,6 +1104,7 @@ export const FORMS: MetricStack = {
   members: [
     FORMS_CREATED,
     FORM_QUESTIONS_ADDED,
+    FORMS_CONNECTED,
     FORMS_PUBLISHED,
     FORMS_OPENED_CLOSED,
     FORM_RESPONSES,

@@ -11,6 +11,7 @@ import {
   PLAN_TOUR_OFFERED,
   FACILITATE_TOUR_OFFERED,
   DRAW_TOUR_OFFERED,
+  FORM_TOUR_OFFERED,
   AVATAR_TOUR_OFFERED,
   ILLUSTRATE_TOUR_OFFERED,
   POWER_USER_OFFERED,
@@ -393,6 +394,63 @@ export const DRAW_TOUR: MetricStack = {
     DRAW_TOURS_SKIPPED,
   ],
   headline: DRAW_TOURS_STARTED,
+};
+
+// The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): its own funnel, beside the Draw tour's.
+export const FORM_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Forms Tours Declined',
+  'The Forms tour turned down on its welcome card, before it started.',
+  { types: ['FormTourOffer'], rising: 'neutral' },
+);
+
+export const FORM_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Forms Tours Started',
+  'The Forms tour started.',
+  { types: ['FormTour'] },
+);
+
+export const FORM_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Forms Tour Steps Viewed',
+  'A step of the Forms tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('FormTourStep') },
+);
+
+export const FORM_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Forms Tours Completed',
+  'The Forms tour run to its last step.',
+  { types: ['FormTourCompleted'] },
+);
+
+export const FORM_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Forms Tours Skipped',
+  'The Forms tour closed before its end.',
+  { types: ['FormTourSkipped'], rising: 'neutral' },
+);
+
+export const FORM_TOUR: MetricStack = {
+  stack: true,
+  title: 'Forms Tour',
+  blurb:
+    'The first time on a Form tab: the Forms tour offered, stepped through, finished or skipped.',
+  members: [
+    FORM_TOUR_OFFERED,
+    FORM_TOUR_DECLINED,
+    FORM_TOURS_STARTED,
+    FORM_TOUR_STEPS_VIEWED,
+    FORM_TOURS_COMPLETED,
+    FORM_TOURS_SKIPPED,
+  ],
+  headline: FORM_TOURS_STARTED,
 };
 
 // The Avatar tour (docs/specs/008-canvas/avatar-tour.md): its own funnel, beside the Draw tour's.

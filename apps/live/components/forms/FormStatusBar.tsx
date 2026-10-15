@@ -77,7 +77,10 @@ export function FormStatusBar({
   );
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-x-3 gap-y-2 rounded-xl border max-sm:flex-wrap border-slate-200 bg-white px-4 py-2.5 text-[13px] dark:border-slate-700/80 dark:bg-slate-900">
+      <div
+        data-form-status=""
+        className="flex items-center gap-x-3 gap-y-2 rounded-xl border max-sm:flex-wrap border-slate-200 bg-white px-4 py-2.5 text-[13px] dark:border-slate-700/80 dark:bg-slate-900"
+      >
         {state}
         {/* The count opens the board (or sheet) the responses go to. */}
         {onOpenResponses ? (

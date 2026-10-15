@@ -224,6 +224,22 @@ export const DRAW_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
+// The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
+// docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
+// The welcome card sends no step view.
+export const FORM_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/form-tour-steps.ts').matchAll(/^ {2}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `FormTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
 // The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/live avatar-tour-steps.ts,
 // docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
 export const AVATAR_TOUR_STEP_SOURCE: string[] = [
@@ -587,6 +603,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: FACILITATE_TOUR_STEP_SOURCE,
   },
   'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
   'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
   'apps/live/components/tour/IllustrateTourHost.tsx UI·View': {
     values: ILLUSTRATE_TOUR_STEP_SOURCE,

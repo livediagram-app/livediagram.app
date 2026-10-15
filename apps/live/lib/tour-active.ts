@@ -4,7 +4,8 @@ import { useSyncExternalStore } from 'react';
 // docs/specs/012-collaboration/facilitate-tour.md): the welcome, Plan and Facilitate tours never run at
 // once, so each host publishes itself here while it is active and waits for the others to clear. A module
 // store, like the modal guard: one editor per page.
-export type ActiveTour = 'welcome' | 'plan' | 'facilitate' | 'draw' | 'illustrate' | 'avatar';
+export type ActiveTour =
+  'welcome' | 'plan' | 'facilitate' | 'draw' | 'illustrate' | 'avatar' | 'form';
 
 let current: ActiveTour | null = null;
 const listeners = new Set<() => void>();

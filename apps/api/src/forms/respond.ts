@@ -106,7 +106,8 @@ export async function previewToSheet(
       { error: wrote === 'missing' ? 'form_closed' : wrote === 'full' ? 'form_full' : 'form_busy' },
       wrote === 'missing' ? 409 : wrote === 'full' ? 413 : 429,
     );
-  ctx.waitUntil?.(reportServerEvent(ctx.env, 'Form', 'Sent', 'Preview'));
+  const { env } = ctx;
+  ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', 'Preview'));
   const accepted: FormResponseAccepted = { number: 0 };
   return json(accepted, { status: 201 });
 }
@@ -247,7 +248,7 @@ function accepted(
 ): Response {
   const { doc, form, code, number, preview } = r;
   console.info('[forms] form.response.accepted', { documentId: doc.id, number, preview });
-  ctx.waitUntil?.(reportServerEvent(ctx.env, 'Form', 'Sent', preview ? 'Preview' : 'Response'));
+  ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', preview ? 'Preview' : 'Response'));
   if (!preview)
     ctx.waitUntil?.(
       notifyFormResponse(

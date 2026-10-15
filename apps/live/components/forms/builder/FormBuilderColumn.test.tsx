@@ -81,7 +81,7 @@ function Harness({ canEdit }: { canEdit: boolean }) {
   return (
     <FormBuilderContext.Provider value={value}>
       <div ref={scrollRef}>
-        <FormBuilderColumn scrollRef={scrollRef} />
+        <FormBuilderColumn scrollRef={scrollRef} hasDestinations={false} />
       </div>
     </FormBuilderContext.Provider>
   );

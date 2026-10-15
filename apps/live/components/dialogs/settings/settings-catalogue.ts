@@ -451,6 +451,7 @@ type TourSeenKey =
   | 'planTourSeen'
   | 'facilitateTourSeen'
   | 'drawTourSeen'
+  | 'formTourSeen'
   | 'avatarTourSeen'
   | 'illustrateTourSeen';
 
@@ -1122,6 +1123,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'tour walkthrough onboarding tutorial draw whiteboard pen sketch replay',
         description: 'The first time you work in Draw.',
         helpArticle: 'drawTour',
+      }),
+      tourSwitch('formTourSeen', {
+        label: 'Forms Tour',
+        event: { category: 'UI', on: 'FormTourSeenOff', off: 'FormTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial form survey questions responses replay',
+        description: 'The first time you open a Form tab.',
+        helpArticle: 'planForms',
       }),
       tourSwitch('avatarTourSeen', {
         label: 'Avatar Tour',

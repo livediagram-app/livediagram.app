@@ -1,6 +1,6 @@
 'use client';
 
-// The form as built (docs/specs/030-forms/forms.md "Building a form"): its header, each section's questions (a later
+// The form as built (docs/specs/030-forms/forms.md "Building a form"): the connect box while responses go nowhere, its header, each section's questions (a later
 // section headed by its own card), and the add bar (under the selected question, else at the end), in a 640 px column.
 // A press on the column's background deselects. Questions slide when moved and grow in when added (question-motion).
 import { Fragment, useCallback, useRef } from 'react';
@@ -8,6 +8,7 @@ import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
 import { lucideClipboardList } from '@livediagram/icons/lucide';
 import { placeQuestion } from '@/hooks/forms/form-edits';
 import { FormAddBar } from './FormAddBar';
+import { FormConnectCard } from './FormConnectCard';
 import { FormHeaderCard, SectionHeader } from './FormHeaderCard';
 import { FormQuestionCard } from './FormQuestionCard';
 import { useFormBuilder } from './form-builder-context';
@@ -19,8 +20,11 @@ const QuestionIcon = lucideGlyph(lucideClipboardList, 20);
 
 export function FormBuilderColumn({
   scrollRef,
+  hasDestinations,
 }: {
   scrollRef: React.RefObject<HTMLDivElement | null>;
+  // Whether the document already has a board or sheet the form could send its responses to.
+  hasDestinations: boolean;
 }) {
   const b = useFormBuilder();
   const columnRef = useRef<HTMLDivElement>(null);
@@ -55,6 +59,7 @@ export function FormBuilderColumn({
           style={{ top: drag.mark.top }}
         />
       ) : null}
+      <FormConnectCard hasExisting={hasDestinations} />
       <FormHeaderCard sections={b.form.sections.length} />
       {b.form.sections.map((section, s) => (
         <div

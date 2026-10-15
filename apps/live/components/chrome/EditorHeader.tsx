@@ -222,6 +222,7 @@ export function EditorHeader({
           >
             <button
               type="button"
+              data-tour-id="share-form"
               onClick={formShare.open}
               className={`${HEADER_ACTION_BTN} ${
                 formShare.published

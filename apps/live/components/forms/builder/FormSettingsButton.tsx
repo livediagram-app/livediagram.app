@@ -11,6 +11,7 @@ import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { DestinationPicker } from './DestinationPicker';
 import { FormSettingsTab } from './FormSettingsTab';
 import { FormSheet } from './FormSheet';
+import { requestFormTourRelaunch } from '@/lib/form-tour';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
 
@@ -50,6 +51,19 @@ export function FormSettingsButton({
       {open !== false && anchor ? (
         <FormSheet anchor={anchor} name="Form Settings" width={320} onClose={onClose}>
           <Sections tabs={tabs} link={link} first={open} />
+          {/* The Forms tour, again (docs/specs/030-forms/forms.md "The Forms tour"). */}
+          <div className="mt-3 flex justify-end border-t border-slate-100 pt-2 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                requestFormTourRelaunch();
+              }}
+              className="cursor-pointer rounded-md px-2 py-1 text-[12px] font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+            >
+              Show Me Around
+            </button>
+          </div>
         </FormSheet>
       ) : null}
     </>

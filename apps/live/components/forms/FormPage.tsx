@@ -251,7 +251,12 @@ export function FormPage({
                     {/* The look dresses the form alone: the status bar and the panel are the editor's. */}
                     <div className="mt-3" {...look}>
                       {building ? (
-                        <FormBuilderColumn scrollRef={scrollRef} />
+                        <FormBuilderColumn
+                          scrollRef={scrollRef}
+                          hasDestinations={tabs.some(
+                            (t) => t.kind === 'board' || t.kind === 'sheet',
+                          )}
+                        />
                       ) : (
                         <div className="mx-auto w-full max-w-[640px]">
                           <FormFill

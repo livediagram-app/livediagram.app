@@ -1,0 +1,88 @@
+// @vitest-environment jsdom
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import type { FormDefinition } from '@livediagram/forms';
+import type { FormActions } from '@/hooks/forms/useFormActions';
+import { FormBuilderContext, type FormBuilderValue } from './form-builder-context';
+import { FormConnectCard } from './FormConnectCard';
+
+// The connect box (docs/specs/030-forms/forms.md "Responses Go To and Settings"): an Editor's, above the form's title,
+// while the form sends its responses nowhere.
+
+const track = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/telemetry', () => ({ track }));
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
+
+const BLANK: FormDefinition = { v: 1, heading: 'Feedback', sections: [] };
+
+function setup(over: Partial<FormDefinition> = {}, { canEdit = true, hasExisting = true } = {}) {
+  const actions = {
+    newResponsesBoard: vi.fn(),
+    newResponsesSheet: vi.fn(),
+  } as unknown as FormActions;
+  const openSettings = vi.fn();
+  const value = {
+    form: { ...BLANK, ...over },
+    canEdit,
+    actions,
+    openSettings,
+  } as unknown as FormBuilderValue;
+  render(
+    <FormBuilderContext.Provider value={value}>
+      <FormConnectCard hasExisting={hasExisting} />
+    </FormBuilderContext.Provider>,
+  );
+  return { actions, openSettings };
+}
+
+const box = () => screen.queryByRole('region', { name: 'Where Should Responses Go?' });
+
+describe('FormConnectCard', () => {
+  it('asks an Editor where responses go while the form has no board or sheet', () => {
+    setup();
+    expect(box()).toBeTruthy();
+  });
+
+  it.each([
+    ['a board', { destination: { tabId: 't', typeId: 'bug', status: 'new' } }],
+    ['a sheet', { sheet: { tabId: 't', sheetId: 's' } }],
+  ])('is gone once the form sends to %s', (_what, over) => {
+    setup(over as Partial<FormDefinition>);
+    expect(box()).toBeNull();
+  });
+
+  it('is never shown to someone who may not edit', () => {
+    setup({}, { canEdit: false });
+    expect(box()).toBeNull();
+  });
+
+  it('New Board connects the form to a new board', () => {
+    const { actions } = setup();
+    fireEvent.click(screen.getByRole('button', { name: 'New Board' }));
+    expect(actions.newResponsesBoard).toHaveBeenCalledOnce();
+    expect(track).toHaveBeenCalledWith('Form', 'Linked', 'ConnectNewBoard');
+  });
+
+  it('New Sheet connects the form to a new sheet', () => {
+    const { actions } = setup();
+    fireEvent.click(screen.getByRole('button', { name: 'New Sheet' }));
+    expect(actions.newResponsesSheet).toHaveBeenCalledOnce();
+    expect(track).toHaveBeenCalledWith('Form', 'Linked', 'ConnectNewSheet');
+  });
+
+  it('Choose Existing opens Responses Go To', () => {
+    const { openSettings } = setup();
+    fireEvent.click(screen.getByRole('button', { name: 'Choose Existing' }));
+    expect(openSettings).toHaveBeenCalledWith('destination');
+    expect(track).toHaveBeenCalledWith('Form', 'Linked', 'ConnectChoose');
+  });
+
+  it('offers no Choose Existing when the document has no board or sheet', () => {
+    setup({}, { hasExisting: false });
+    expect(screen.queryByRole('button', { name: 'Choose Existing' })).toBeNull();
+  });
+});

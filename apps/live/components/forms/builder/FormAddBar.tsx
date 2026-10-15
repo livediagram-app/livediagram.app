@@ -43,7 +43,10 @@ export function FormAddBar() {
     'flex h-10 cursor-pointer items-center gap-2 px-4 text-[14px] font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-200 dark:hover:bg-slate-800';
   return (
     <div className="flex justify-center py-1">
-      <div className="flex items-stretch overflow-hidden rounded-full border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
+      <div
+        data-form-add=""
+        className="flex items-stretch overflow-hidden rounded-full border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
+      >
         <button
           type="button"
           disabled={!canAddQuestion(b.form)}

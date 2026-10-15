@@ -145,13 +145,14 @@ describe('settings catalogue', () => {
 
   // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
   // the order the tours come.
-  it('gives the six tours a category of their own, a switch each with its own article', () => {
+  it('gives the seven tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
       ['tourSeen', 'toggle', 'Diagram Tour', 'diagramTour'],
       ['planTourSeen', 'toggle', 'Plan Tour', 'planTour'],
       ['facilitateTourSeen', 'toggle', 'Facilitate Tour', 'facilitateTour'],
       ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
+      ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       ['illustrateTourSeen', 'toggle', 'Illustrate Tour', 'illustrateTour'],
     ]);
@@ -169,6 +170,7 @@ describe('settings catalogue', () => {
         ['PlanTourSeenOff', 'PlanTourSeenOn'],
         ['FacilitateTourSeenOff', 'FacilitateTourSeenOn'],
         ['DrawTourSeenOff', 'DrawTourSeenOn'],
+        ['FormTourSeenOff', 'FormTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['IllustrateTourSeenOff', 'IllustrateTourSeenOn'],
       ],

@@ -133,6 +133,11 @@ const FacilitateTourHost = dynamic(
   () => import('@/components/tour/FacilitateTourHost').then((m) => m.FacilitateTourHost),
   { ssr: false },
 );
+// The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab.
+const FormTourHost = dynamic(
+  () => import('@/components/tour/FormTourHost').then((m) => m.FormTourHost),
+  { ssr: false },
+);
 // The Draw tour (docs/specs/023-draw-mode/draw-tour.md): the same, the first time the person enters Draw.
 const DrawTourHost = dynamic(
   () => import('@/components/tour/DrawTourHost').then((m) => m.DrawTourHost),
@@ -297,6 +302,7 @@ export function EditorView() {
   const mountPlanTour = useEverTrue(ctx.editorMode.mode === 'plan');
   const mountFacilitateTour = useEverTrue(ctx.editorMode.mode === 'facilitate');
   const mountDrawTour = useEverTrue(ctx.editorMode.mode === 'draw');
+  const mountFormTour = useEverTrue(activeTab.kind === 'form');
   const mountAvatarTour = useEverTrue(canvasTool === 'avatar');
   const mountIllustrateTour = useEverTrue(ctx.editorMode.mode === 'illustrate');
   useEditorAccent(activeTab.theme);
@@ -753,6 +759,8 @@ export function EditorView() {
                                     {/* The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md): the first time a person works in Facilitate. */}
                                     {mountFacilitateTour ? <FacilitateTourHost /> : null}
                                     {mountDrawTour ? <DrawTourHost /> : null}
+                                    {/* The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab. */}
+                                    {mountFormTour ? <FormTourHost /> : null}
                                     {/* The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the first time a person walks as an avatar. */}
                                     {mountAvatarTour ? <AvatarTourHost /> : null}
                                     {mountIllustrateTour ? <IllustrateTourHost /> : null}
