@@ -92,6 +92,14 @@ export {
   useCommunityEnabled,
 } from './community/useCommunityEnabled';
 export { clerkPublishableKeyOrNull } from './clerk-key';
+export {
+  TRUSTED_TYPES_CSP,
+  isAllowedScriptUrl,
+  parseInert,
+  trustedHtml,
+  trustedScriptOrigins,
+  trustedTypesBootScript,
+} from './trusted-types';
 export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';
 export {
   SITE_URL,

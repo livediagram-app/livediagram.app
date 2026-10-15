@@ -5,6 +5,8 @@
 import { render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ArrowElement } from '@livediagram/document';
+import { resetMarkersTakeLineColourForTests } from './arrow-defs';
+import { DrawnArrowPreview } from './DrawnArrowPreview';
 
 const arrow: ArrowElement = {
   id: 'drawn',
@@ -15,12 +17,12 @@ const arrow: ArrowElement = {
   strokeColor: '#e2e8f0',
 };
 
-async function draw(supported: boolean) {
-  vi.resetModules();
+// The browser's answer is read once and kept; each case forgets it, then answers through its own CSS.supports.
+function draw(supported: boolean) {
+  resetMarkersTakeLineColourForTests();
   vi.stubGlobal('CSS', {
     supports: (p: string, v: string) => supported || !(p === 'fill' && v === 'context-stroke'),
   });
-  const { DrawnArrowPreview } = await import('./DrawnArrowPreview');
   const { container } = render(
     <DrawnArrowPreview
       arrow={arrow}
@@ -40,16 +42,16 @@ beforeEach(() => vi.unstubAllGlobals());
 afterEach(() => vi.unstubAllGlobals());
 
 describe('arrowheads where markers cannot take the line’s colour', () => {
-  it('gives the arrow its own marker, in its line’s colour, at both ends', async () => {
-    const { container, line } = await draw(false);
+  it('gives the arrow its own marker, in its line’s colour, at both ends', () => {
+    const { container, line } = draw(false);
     expect(line.getAttribute('marker-end')).toBe('url(#arrowhead-drawn)');
     expect(line.getAttribute('marker-start')).toBe('url(#arrowhead-drawn)');
     const head = container.querySelector('marker#arrowhead-drawn path')!;
     expect(head.getAttribute('fill')).toBe('#e2e8f0');
   });
 
-  it('keeps the shared markers where context-stroke paints them', async () => {
-    const { container, line } = await draw(true);
+  it('keeps the shared markers where context-stroke paints them', () => {
+    const { container, line } = draw(true);
     expect(line.getAttribute('marker-end')).toMatch(/^url\(#arrowhead-triangle-/);
     expect(container.querySelector('marker#arrowhead-drawn')).toBeNull();
   });

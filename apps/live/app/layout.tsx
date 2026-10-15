@@ -11,7 +11,14 @@ import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livediagram/document';
-import { APPEARANCE_BOOT_SCRIPT, BRAND_ICONS, DARK_READER_LOCK } from '@livediagram/ui';
+import {
+  APPEARANCE_BOOT_SCRIPT,
+  BRAND_ICONS,
+  DARK_READER_LOCK,
+  trustedHtml,
+  trustedScriptOrigins,
+  trustedTypesBootScript,
+} from '@livediagram/ui';
 import {
   REDUCE_MOTION_BOOT_SCRIPT,
   WEBFONTS_STYLESHEET_ID,
@@ -27,6 +34,16 @@ import './globals.css';
 // welcome flow that needs runtime identity to mean anything.
 // `noindex, nofollow` at the root layout cascades through every
 // nested page in the static export. See docs/specs/007-editor/live-app.md "SEO and indexing".
+// Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
+// violation log, this app's own scripts under its asset prefix, and the Clerk origin read from this build's key
+// (Next inlines only the literal expression).
+const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
+  '/live',
+  trustedScriptOrigins({
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+  }),
+);
+
 export const metadata: Metadata = {
   title: 'livediagram',
   description: 'Diagrams, whiteboards, illustrations and documents. Multiplayer canvas.',
@@ -93,12 +110,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // doesn't cascade to children), so real mismatches elsewhere still warn.
     <html lang="en-GB" suppressHydrationWarning>
       <head>
-        {/* First of all: the stale HTML guard (docs/specs/016-platform/stale-builds.md "The pre-boot
+        {/* Trusted Types before anything else (docs/specs/016-platform/trusted-types.md). */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
+        {/* Then the stale HTML guard (docs/specs/016-platform/stale-builds.md "The pre-boot
             guard"), listening before any build asset can fail to load. Its source is static; its
             settings ride as data attributes on this element. */}
         <script
           {...STALE_HTML_GUARD_ATTRIBUTES}
-          dangerouslySetInnerHTML={{ __html: STALE_HTML_GUARD_SCRIPT }}
+          dangerouslySetInnerHTML={{ __html: trustedHtml(STALE_HTML_GUARD_SCRIPT) }}
         />
         {/* The build this export was made from (docs/specs/016-platform/stale-builds.md), for
             developers, support and the e2e suite; the app itself compares EDITOR_BUILD_ID. */}
@@ -121,7 +140,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           media="print"
           suppressHydrationWarning
         />
-        <script dangerouslySetInnerHTML={{ __html: WEBFONTS_SWAP_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(WEBFONTS_SWAP_SCRIPT) }} />
       </head>
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100">
         {/* Apply the persisted appearance before first paint, so EVERY route
@@ -130,8 +149,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             useAppearance. Without this they'd render light over the dark body.
             The appearance snippet is shared by every app (@livediagram/ui);
             both are executed by tests against stub globals. */}
-        <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
-        <script dangerouslySetInnerHTML={{ __html: REDUCE_MOTION_BOOT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(APPEARANCE_BOOT_SCRIPT) }} />
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(REDUCE_MOTION_BOOT_SCRIPT) }} />
         <ErrorTelemetryBoot />
         <StaleBuildBoot />
         <PageViewBoot />

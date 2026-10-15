@@ -3,43 +3,53 @@
 Status: specified
 
 Every page on livediagram.app enforces Trusted Types, so a string can never reach a DOM injection sink
-(`innerHTML`, a script's `src` or text, `eval`) unless a named policy made it. A DOM-based script injection then needs
-a policy's help, and every policy is small, named and listed here.
+(`innerHTML`, `DOMParser`, a script's or a worker's URL, `eval`) unless a named policy made it. A DOM-based script
+injection then needs a policy's help, and every policy is small, named and listed here.
 
 ## The header
 
 - **Every HTML response carries** `Content-Security-Policy: require-trusted-types-for 'script'; trusted-types
-livediagram-markup default`, enforced from the start, never report-only.
+livediagram-markup livediagram-inert-parse nextjs ProseMirrorClipboard default`, enforced from the start, never
+  report-only.
 - **Where it is set**: the editor's worker (`apps/live/src/worker.ts`) beside its other security headers; the four
   static apps (marketing, help, community, telemetry) in their `public/_headers`. The router adds nothing; it holds no
   logic ([Router app](router-app.md)).
 - **Further policy names** (a third party's own policy) join the `trusted-types` list only with a row in
   "Third parties" below.
 
-## The policies
+## Our policies
 
-Both come from one shared module, `@livediagram/ui`'s `trusted-types`, and nothing else creates a policy.
+All three come from one shared module, `@livediagram/ui`'s `trusted-types`, and nothing else of ours creates a policy.
 
 - **`default` is created first**, by an inline script at the top of each layout's `<head>`
-  (`TRUSTED_TYPES_BOOT_SCRIPT`), before any other script can reach a sink.
-- **`livediagram-markup` is created on first use**, once per page, by `trustedHtml`.
-
+  (`trustedTypesBootScript`), before any other script can reach a sink. It is what the browser calls for a sink
+  given a plain string by code that has no policy. It allows a script URL on the page's own origin under the app's
+  own `<asset prefix>/_next/` (`/_next/` for marketing, `/live/_next/`, `/help/_next/` and so on), one on an origin in
+  "Third parties", and a worker from the page's own `blob:` URL; it refuses everything else: HTML, script text, and
+  any other URL. A `blob:` URL can only be minted by script already running on the page, and a worker has no DOM.
 - **`livediagram-markup`** turns markup that livediagram's own builders produced into `TrustedHTML`
   (`trustedHtml(markup)`). Its callers are the builders that escape every piece of content they place: the icon,
   sticker and template SVG builders (`@livediagram/icons`, `@livediagram/templates`), the headless tab renderer's
-  thumbnails, the JSON-LD block, and the inline boot scripts in each layout. It does not sanitise; the trust is that the
-  markup came from one of those builders, which is why nothing else may call it.
-- **`default`** is what the browser calls for a sink given a plain string by code that has no policy (a third party).
-  It allows a script URL on the page's own origin under `/_next/` or `/live/_next/`, or on an origin in "Third parties",
-  and refuses everything else: HTML, script text, and any other URL.
-- **Outside the browser** (the static prerender, tests without Trusted Types) `trustedHtml` returns the string itself.
+  thumbnails, the JSON-LD block, and the inline boot scripts in each layout. It does not sanitise; the trust is that
+  the markup came from one of those builders, which is why nothing else may call it.
+- **`livediagram-inert-parse`** lets `DOMParser` read a file a person opened (a draw.io diagram or library, a
+  draw.io label's HTML) through `parseInert(source, type)`. A parsed document is inert: nothing in it runs, and
+  nothing from it is inserted as markup; only its text and attributes are read.
+- **Outside the browser** (the static prerender, tests without Trusted Types) the helpers pass strings through.
 
 ## Third parties
 
-| Origin or code                        | Needs                                                      | Allowed by                                   |
-| ------------------------------------- | ---------------------------------------------------------- | -------------------------------------------- |
-| Next.js and Turbopack's chunk loading | Script URLs under `/_next/` (`/live/_next/` in the editor) | `default`                                    |
-| Clerk (editor, community sign-in)     | Script URLs on the Clerk frontend API origin               | `default`, origin from `NEXT_PUBLIC_CLERK_*` |
+| Code                                  | Needs                                                               | Allowed by                                       |
+| ------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------ |
+| Next.js and Turbopack's chunk loading | Script URLs under `/_next/` (`/live/_next/` in the editor)          | `default`                                        |
+| Next.js's own script helper           | Its pass-through policy                                             | The `nextjs` policy name                         |
+| ProseMirror (the article editor)      | Parsing pasted HTML into an inert template                          | The `ProseMirrorClipboard` policy name           |
+| Our web workers                       | Their script URLs under `/_next/`                                   | `default`                                        |
+| Clerk (editor, community sign-in)     | Script URLs on the Clerk frontend API origin                        | `default`, origin from the publishable key       |
+| Clerk's session timers                | A `Worker` from the page's own `blob:` URL (its fixed timer source) | `default`, for the Worker constructor sink alone |
+
+A worker's own scope is not the page's: its script is served from `/_next/` with no policy header, so the libraries
+it runs (transformers.js, TensorFlow.js, jsquash) are outside this boundary.
 
 A third party that needs anything else is a bug to fix with it, never a wider `default`.
 
@@ -47,7 +57,8 @@ A third party that needs anything else is a bug to fix with it, never a wider `d
 
 - **The browser blocks the sink and throws**, and the page logs `[trusted-types] violation` with the directive and
   the sink, from a `securitypolicyviolation` listener every app installs.
-- **A violation is a defect**: the end-to-end suite fails on one ([E2E smoke](../003-system-architecture/e2e-smoke.md)).
+- **A violation is a defect**: the end-to-end suite fails on one ([E2E smoke](../003-system-architecture/e2e-smoke.md)),
+  against a stack that sends the editor's header.
 
 ## Out of scope
 

@@ -1,5 +1,7 @@
 'use client';
 
+import { trustedHtml } from '@livediagram/ui';
+
 import { truncateName } from '@livediagram/document';
 import dynamic from 'next/dynamic';
 import {
@@ -621,8 +623,9 @@ export default function NewDocumentPage() {
           swaps in the opening screen. */}
       <script
         dangerouslySetInnerHTML={{
-          __html:
+          __html: trustedHtml(
             "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('mode')||p.has('q'))document.documentElement.setAttribute('data-wizard-preset','')}catch(e){}",
+          ),
         }}
       />
       <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-preset] [data-wizard-only]{visibility:hidden}`}</style>

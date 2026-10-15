@@ -44,6 +44,9 @@ import {
   isBuildAsset,
 } from '../apps/router/src/cache-policy.ts';
 import { EXPLORER_LANDING_PATH } from '../apps/live/lib/explorer-landing.ts';
+// Every page enforces Trusted Types in production (docs/specs/016-platform/trusted-types.md), so the suite runs
+// against the same header: a violation throws in the page, and the pageErrors fixture fails the spec on it.
+import { TRUSTED_TYPES_CSP } from '../packages/ui/src/trusted-types-csp.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // E2E_LIVE_OUT serves another export of the live app, e.g. the Clerk-enabled `.next/out-clerk-stub`
@@ -313,6 +316,9 @@ function serveFile(req, res, filePath, pathname) {
     'Content-Type': contentType,
     ETag: etag,
     'Cache-Control': cacheControlFor(req, pathname, 200, contentType).cacheControl,
+    ...(contentType.startsWith('text/html')
+      ? { 'Content-Security-Policy': TRUSTED_TYPES_CSP }
+      : {}),
   };
   if (req.headers['if-none-match'] === etag) {
     res.writeHead(304, headers);
@@ -337,7 +343,11 @@ function serveNotFound(req, res, pathname, notFoundPage) {
     res.end('Not found');
     return;
   }
-  res.writeHead(404, { 'Content-Type': html, 'Cache-Control': cacheControl });
+  res.writeHead(404, {
+    'Content-Type': html,
+    'Cache-Control': cacheControl,
+    'Content-Security-Policy': TRUSTED_TYPES_CSP,
+  });
   createReadStream(notFoundPage).pipe(res);
 }
 

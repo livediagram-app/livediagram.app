@@ -19,7 +19,13 @@ import {
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
-import { MenuTreeContext, useClickOutside, useControlMenu, Portal } from '@livediagram/ui';
+import {
+  MenuTreeContext,
+  useClickOutside,
+  useControlMenu,
+  Portal,
+  trustedHtml,
+} from '@livediagram/ui';
 
 // The menu's width (w-64) and its gap from the panel and the viewport edges, in px.
 const MENU_WIDTH = 256;
@@ -166,7 +172,7 @@ export function LayerRowMenu({
                   preserveAspectRatio="xMidYMid meet"
                   className="h-full w-full"
                   aria-hidden
-                  dangerouslySetInnerHTML={{ __html: thumbMarkup }}
+                  dangerouslySetInnerHTML={{ __html: trustedHtml(thumbMarkup) }}
                 />
               ) : null}
             </span>
