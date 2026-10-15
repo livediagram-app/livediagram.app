@@ -652,6 +652,21 @@ describe('tree', () => {
 });
 
 describe('person cards', () => {
+  it('is wide enough for the name as drawn, bold at md, whatever the role', () => {
+    const name = 'Alexandra Montgomery-Smith';
+    const els = lay({
+      style: 'tree',
+      // Past twelve nodes the look is sm, but the name still draws at md.
+      nodes: [
+        { id: 'p', label: name, role: 'CTO' },
+        ...Array.from({ length: 13 }, (_, i) => ({ id: `n${i}`, label: `Team ${i}` })),
+      ],
+      edges: Array.from({ length: 13 }, (_, i) => ({ from: 'p', to: `n${i}` })),
+    });
+    const needed = labelBoxSize(name, 'square', { textSize: 'md', fontPx: 23 }, true).width;
+    expect(box(els, 'p').width).toBeGreaterThanOrEqual(needed);
+  });
+
   it('draws a node with a role as the template person card: name bold over role, a person icon', () => {
     const els = lay({
       style: 'tree',
