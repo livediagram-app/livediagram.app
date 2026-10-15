@@ -50,6 +50,9 @@ const NOT_HOSTS = new Set([
   'frame',
   'lane',
   'boundary',
+  // Containers too: a mark belongs on what a stack holds, not on the stack's outline, which reflows under it.
+  'stack',
+  'diagram-key',
 ]);
 
 /** Whether an element can hold a badge or a step number. */
