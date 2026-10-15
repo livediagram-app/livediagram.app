@@ -39,7 +39,8 @@ export type FormActions = {
   newFormFor: (boardElementId: string) => void;
   // One builder edit to the active Form tab's form; `kind` names it for telemetry where it is counted.
   changeForm: (change: (form: FormDefinition) => FormDefinition) => void;
-  // The heading, which is the tab's name too: both in one step.
+  // The heading, which is the tab's name too: both in one step, and the board or sheet its responses go to follows
+  // while it is still on its automatic name ("<Form> Responses").
   renameForm: (name: string) => void;
   // New Field "<Prompt>": a custom field of the question's kind on the destination's card type; answers its id.
   addFieldFor: (question: FormQuestion, type: ItemTypeDef) => string | null;
@@ -77,6 +78,7 @@ export function useFormActions({
   markTabLoaded,
   openTab,
   makeSheet,
+  retitleSheets,
 }: {
   activeId: string;
   tabs: readonly Tab[];
@@ -88,9 +90,19 @@ export function useFormActions({
   openTab?: (tabId: string) => void;
   // Makes a sheet on a tab just added, without opening it (a sheet starter's responses sheet).
   makeSheet?: (create: { id: string; tabId: string; title: string }) => void;
+  // Renames sheets still titled `from` (a Sheet tab renamed, as useTabActions does).
+  retitleSheets?: (sheetIds: readonly string[], from: string, to: string) => void;
 }): FormActions {
   // Read when used, so the actions keep one identity while tabs and types change underneath.
-  const live = useLatest({ tabs, itemTypes, statusNames, markTabLoaded, openTab, makeSheet });
+  const live = useLatest({
+    tabs,
+    itemTypes,
+    statusNames,
+    markTabLoaded,
+    openTab,
+    makeSheet,
+    retitleSheets,
+  });
   const commitTabs = useCallback(
     (map: (ts: Tab[]) => Tab[]) =>
       commitAnyTabs((ts) => (ts.find((t) => t.id === activeId)?.locked ? ts : map(ts))),
@@ -205,19 +217,29 @@ export function useFormActions({
     (name) => {
       const trimmed = name.trim();
       if (!trimmed) return;
+      const formTab = live.current.tabs.find((t) => t.id === activeId);
+      if (!formTab) return;
+      const form = readForm(formTab.form) ?? blankForm(formTab.name);
+      // Where responses go, renamed with the form while on its automatic name (withAutoBoardName).
+      const destId = form.sheet?.tabId ?? form.destination?.tabId;
+      const dest = live.current.tabs.find((t) => t.id === destId);
+      const followed = dest
+        ? withAutoBoardName(dest, { heading: form.heading, to: trimmed })
+        : null;
       commitTabs((ts) =>
         ts.map((t) =>
           t.id === activeId
-            ? {
-                ...t,
-                name: trimmed,
-                form: { ...(readForm(t.form) ?? blankForm(t.name)), heading: trimmed },
-              }
-            : t,
+            ? { ...t, name: trimmed, form: { ...form, heading: trimmed } }
+            : followed && t.id === followed.id
+              ? followed
+              : t,
         ),
       );
+      // A Sheet tab's sheet keeps its tab's name, as when the tab itself is renamed.
+      if (dest && followed && followed !== dest && form.sheet)
+        live.current.retitleSheets?.([form.sheet.sheetId], dest.name, followed.name);
     },
-    [activeId, commitTabs],
+    [activeId, commitTabs, live],
   );
 
   const addFieldFor = useCallback<FormActions['addFieldFor']>(

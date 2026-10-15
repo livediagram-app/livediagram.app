@@ -122,7 +122,9 @@ previewing), the help link and the form's **cog**.
   `@livediagram/page-background` shape a slide's colours share). A hover previews on the band; a press sets it.
   Without a cover, a 10 px band of the form colour. **Add Cover** / **Change Cover** on hover (always shown on a
   touch screen, which has no hover) opens the cover popover, with **Remove Cover**.
-- **Heading**: the form's name (1 to 80 characters), edited in place; **Description** under it (up to 1,000
+- **Heading**: the form's name (1 to 80 characters), edited in place (renaming it renames the board or sheet its
+  responses go to while that is still on its automatic name, "<Form> Responses" or a default tab name, and a Sheet
+  tab's sheet with it); **Description** under it (up to 1,000
   characters, plain text with line breaks and links made clickable), placeholder "Add a description".
 - **Questions**, each a card. The selected one (click, or Tab onto it and Enter) shows its editing chrome: a
   **left accent bar** in the form colour, the prompt as an editable field beside its **type button**, the help text
