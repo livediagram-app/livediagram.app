@@ -80,7 +80,9 @@ CHAIR_SITTER_FACING[facing])`. A chair has one seat; a sofa two; a desk one (eac
    snaps the feet, sets the facing, marks seated, and records the chair as under the feet so
    standing still does not re-seat.
 2. **Seat point.** `seatPoints(element)`: the facing's view (`facingView`), each seat's `(u, v)` as
-   fractions of the box, `u` mirrored for `w`. A chair's seats keep the old points: `n` `(0.5, 0.62)`,
+   fractions of the drawing as drawn, `u` mirrored for `w`: both renderers fit the view's grid whole and centred in
+   the box (`preserveAspectRatio` meet), so a box of other proportions (a quarter turn written by an agent without
+   swapping the box, an aspect unlocked) letterboxes it, and the seats follow the drawn rectangle (`drawnRect`). A chair's seats keep the old points: `n` `(0.5, 0.62)`,
    `s` `(0.5, 0.38)`, `e` `(0.38, 0.5)`, `w` `(0.62, 0.5)` (D123).
 3. **Stand.** `standUp()` clears the seat; the character stays where the chair put it.
 4. **Wave and react.** `playReaction` and `jump` do not read `seatedRef`; a seated character keeps
