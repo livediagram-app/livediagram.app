@@ -36,7 +36,9 @@ describe('brand icon', () => {
   // Next's icon file convention (both app/icon.svg and app/icon.png), the 256px white tile the other three name in
   // BRAND_ICONS (docs/specs/016-platform/nextjs.md "Features used and declined").
   it('gives help and community the PNG fallback, the same tile marketing serves', () => {
-    const tile = readFileSync(fileURLToPath(new URL('apps/marketing/public/livediagram-icon-256.png', REPO)));
+    const tile = readFileSync(
+      fileURLToPath(new URL('apps/marketing/public/livediagram-icon-256.png', REPO)),
+    );
     for (const app of ['help', 'community'])
       expect(
         readFileSync(fileURLToPath(new URL(`apps/${app}/app/icon.png`, REPO))).equals(tile),

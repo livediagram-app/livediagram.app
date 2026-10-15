@@ -83,7 +83,10 @@ for (const size of [256, 512]) {
 }
 // The apps that serve their own icon under a basePath pair app/icon.svg with this PNG (Next emits both links).
 for (const app of ['help', 'community']) {
-  copyFileSync(`${root}apps/marketing/public/livediagram-icon-256.png`, `${root}apps/${app}/app/icon.png`);
+  copyFileSync(
+    `${root}apps/marketing/public/livediagram-icon-256.png`,
+    `${root}apps/${app}/app/icon.png`,
+  );
   console.log(`brand-icons: apps/${app}/app/icon.png`);
 }
 await browser.close();
