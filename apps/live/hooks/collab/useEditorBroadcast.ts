@@ -83,7 +83,11 @@ type EditorBroadcastApi = {
   // for everyone rather than only the person who pressed it.
   broadcastReaction: (elementId: string, reaction: string) => void;
   // Publish where we are looking (docs/specs/012-collaboration/follow-me-viewport.md), for anyone following us.
-  broadcastViewport: (pan: { x: number; y: number }, zoom: number) => void;
+  broadcastViewport: (
+    pan: { x: number; y: number },
+    zoom: number,
+    size: { width: number; height: number },
+  ) => void;
   // Ask everyone else to come and look at a point (docs/specs/012-collaboration/bring-focus.md). Returns whether
   // it went out, so the presser can be told when nobody is listening rather
   // than watching a button do nothing.
@@ -100,6 +104,16 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   const lastCursorSentRef = useRef(0);
   const lastLaserSentRef = useRef(0);
   const lastAvatarSentRef = useRef(0);
+  // The packet a throttle window held back, sent when the window ends, so the last thing said (a status picked, the
+  // step a walk ends on) is never the one dropped.
+  const pendingAvatarRef = useRef<AvatarPresence | null>(null);
+  const avatarTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (avatarTimerRef.current) clearTimeout(avatarTimerRef.current);
+    },
+    [],
+  );
   const lastViewportSentRef = useRef(0);
 
   // Clear the local trail when leaving laser mode (or switching tabs)
@@ -184,17 +198,40 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     const now = performance.now();
-    if (avatar && now - lastAvatarSentRef.current < BROADCAST_THROTTLE_MS) return;
-    lastAvatarSentRef.current = now;
-    deps.roomRef.current?.send({
-      kind: 'op',
-      op: { kind: 'avatar', tabId: deps.activeId, avatar },
-    });
+    const send = (packet: AvatarPresence | null) => {
+      lastAvatarSentRef.current = performance.now();
+      deps.roomRef.current?.send({
+        kind: 'op',
+        op: { kind: 'avatar', tabId: deps.activeId, avatar: packet },
+      });
+    };
+    const wait = BROADCAST_THROTTLE_MS - (now - lastAvatarSentRef.current);
+    if (avatar && wait > 0) {
+      pendingAvatarRef.current = avatar;
+      avatarTimerRef.current ??= setTimeout(() => {
+        avatarTimerRef.current = null;
+        const pending = pendingAvatarRef.current;
+        pendingAvatarRef.current = null;
+        if (pending) send(pending);
+      }, wait);
+      return;
+    }
+    // Sent now (or leaving the mode): nothing held back is still true.
+    pendingAvatarRef.current = null;
+    if (avatarTimerRef.current) {
+      clearTimeout(avatarTimerRef.current);
+      avatarTimerRef.current = null;
+    }
+    send(avatar);
   };
 
   // Viewport (docs/specs/012-collaboration/follow-me-viewport.md): where we are looking. Same presence gate as the
   // cursor — no room, no publish — on its own slower throttle.
-  const broadcastViewport = (pan: { x: number; y: number }, zoom: number) => {
+  const broadcastViewport = (
+    pan: { x: number; y: number },
+    zoom: number,
+    size: { width: number; height: number },
+  ) => {
     if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
@@ -203,7 +240,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     lastViewportSentRef.current = now;
     deps.roomRef.current?.send({
       kind: 'op',
-      op: { kind: 'viewport', tabId: deps.activeId, pan, zoom },
+      op: { kind: 'viewport', tabId: deps.activeId, pan, zoom, size },
     });
   };
 

@@ -33,6 +33,49 @@ const recording = () => {
   return { calls, log };
 };
 
+describe('applyReplace: elements sent back', () => {
+  // Fourteen labelled boxes in a column, the first two joined by an arrow with no style: past twelve boxes a new raw
+  // box takes `sm` text and a new raw arrow takes angled lines, but these are the tab's own.
+  const boxes = Array.from({ length: 14 }, (_, i) => ({
+    id: `n${i}`,
+    type: 'shape',
+    shape: 'square',
+    label: `Step ${i}`,
+    x: 0,
+    y: i * 120,
+    width: 140,
+    height: 60,
+  }));
+  const tab = {
+    id: 't',
+    name: 'T',
+    elements: [...boxes, arrowBetween('a1', 'n0', 'n1')],
+  } as unknown as Tab;
+
+  it('keeps the look of the elements the tab already holds', () => {
+    const { tab: next } = applied(
+      applyReplace(tab, { elements: tab.elements, layout: 'preserve' } as ReplaceBody, options),
+    );
+    const arrow = next.elements.find((e) => e.id === 'a1')!;
+    expect(arrow).not.toHaveProperty('arrowStyle');
+    expect(arrow).not.toHaveProperty('curvePoints');
+    // Not shrunk to the small size a fresh list of this many boxes takes.
+    expect(next.elements.find((e) => e.id === 'n3')).not.toHaveProperty('textSize', 'sm');
+  });
+
+  it('gives an element new to the tab the raw defaults', () => {
+    const fresh = arrowBetween('a2', 'n2', 'n3');
+    const { tab: next } = applied(
+      applyReplace(
+        tab,
+        { elements: [...tab.elements, fresh], layout: 'preserve' } as ReplaceBody,
+        options,
+      ),
+    );
+    expect(next.elements.find((e) => e.id === 'a2')).toHaveProperty('arrowStyle');
+  });
+});
+
 describe('applyReplace on an existing tab', () => {
   it('swaps the elements for a laid-out graph, keeping every tab field', () => {
     const tab = themed('ocean');

@@ -39,4 +39,33 @@ describe('useCloseVanishedDialogs', () => {
     rerender({ elements: [el('x')] });
     expect(close).toHaveBeenCalledTimes(1);
   });
+
+  // Hidden by its own check (a lock, a role change), not by the element going: closed too, so it does not reopen
+  // by itself when the lock or the role is undone.
+  it('closes a dialog its own check stops showing while its element stays', () => {
+    const close = vi.fn();
+    let locked = false;
+    const { rerender } = renderHook(
+      ({ elements, gate }: { elements: Element[]; gate: string }) =>
+        useCloseVanishedDialogs(elements, [['a', close, () => !locked]], gate),
+      { initialProps: { elements: [el('a')], gate: 'edit' } },
+    );
+    expect(close).not.toHaveBeenCalled();
+    // The session turns read-only: same elements, a new gate.
+    locked = true;
+    rerender({ elements: [el('a')], gate: 'view' });
+    expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes a dialog whose element is no longer of its kind', () => {
+    const close = vi.fn();
+    const { rerender } = renderHook(
+      ({ elements }: { elements: Element[] }) =>
+        useCloseVanishedDialogs(elements, [['a', close, (e) => e.type === 'table']]),
+      { initialProps: { elements: [{ ...el('a'), type: 'table' } as unknown as Element] } },
+    );
+    expect(close).not.toHaveBeenCalled();
+    rerender({ elements: [el('a')] });
+    expect(close).toHaveBeenCalledTimes(1);
+  });
 });

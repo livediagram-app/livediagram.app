@@ -49,8 +49,10 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
 - Under the legend, **Show Values** (`chartValues`, off by default, so a chart made before it draws as it did) prints
   each mark's number on the chart: above a column, after a bar, above each point of a line, area or scatter series, and
   inside a pie's or doughnut's wedge (as a percentage when the values add up to 100). A column chart with values also
-  names each column under its baseline, so its legend can be turned off. Numbers read short from 10,000 up: 120000 as 120k,
-  1500000 as 1.5M, at most one decimal; under that in full (1,080). A wedge's number takes the ink that reads on its colour; the rest take the chart's text
+  names each column under its baseline, so its legend can be turned off; a name wider than its column's share is cut
+  with an ellipsis, and dropped when not one letter fits, so neighbours never overprint. Numbers read short from
+  10,000 up: 120000 as 120k, 1500000 as 1.5M, at most one decimal, in the unit the rounded number reads in (999,960 is
+  1M, not 1000k); under that in full (1,080). A wedge's number takes the ink that reads on its colour; the rest take the chart's text
   colour, at the key's size. The editor's toggle fires `Element·Changed·ChartValues`. It is a display option of the
   chart, so it follows the Chart category's gating: an Editor changes it; a Participant or Viewer sees the numbers.
 - The **Animation** category carries the chart-specific animations

@@ -105,6 +105,7 @@ import { useQuizElements } from '@/hooks/canvas/useQuizElements';
 import { useQaBoard } from '@/hooks/canvas/useQaBoard';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
+import { useFocusLanding } from '@/hooks/collab/useFocusLanding';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
 import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/palette.types';
@@ -1526,7 +1527,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useKeyboardAvoidance({ canvasMainRef, zoomRef, setViewportOffset });
 
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else to come and look at this
-  // element, at our zoom, on our tab.
+  // element, on our tab, each at their own zoom.
   //
   // Sends the element's CENTRE rather than our pan: two people rarely have the
   // same window size, so copying a pan lands the element off-centre for anyone
@@ -1536,7 +1537,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     (element: ShapeElement) => {
       const at = { x: element.x + element.width / 2, y: element.y + element.height / 2 };
       const sent = broadcastFocusHere(at, zoomRef.current);
-      const node = canvasMainRef.current;
       // A press that moves nobody is invisible from this side, so say which
       // kind of nobody it was: an empty room, or a room already looking at it.
       // `livePresence` is peers ONLY (the room excludes the asker from every
@@ -1547,7 +1547,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
             sent,
             peerIds: livePresence.map((p) => p.id),
             viewports: remoteViewports,
-            size: { width: node?.offsetWidth ?? 0, height: node?.offsetHeight ?? 0 },
             tabId: activeId,
             at,
           })
@@ -1555,7 +1554,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       );
       track('Element', 'Used', 'BringFocus');
     },
-    [broadcastFocusHere, livePresence, remoteViewports, activeId, zoomRef, canvasMainRef, toast],
+    [broadcastFocusHere, livePresence, remoteViewports, activeId, zoomRef, toast],
   );
 
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
@@ -1717,7 +1716,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // the viewport store (a pan or zoom renders no part of the editor) and sends again on a tab switch.
   const publishViewport = useEffectEvent(() => {
     const view = viewport.get();
-    broadcastViewport(view.offset, view.zoom);
+    const node = canvasMainRef.current;
+    broadcastViewport(view.offset, view.zoom, {
+      width: node?.offsetWidth ?? 0,
+      height: node?.offsetHeight ?? 0,
+    });
   });
   useEffect(() => {
     publishViewport();
@@ -1749,12 +1752,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press leaves on
   // screen, and what taking it does. Placed after the viewport because taking
   // one navigates through it.
+  const focusLanding = useFocusLanding({ activeId, setActiveId, centreOn });
   const focusInvite = useFocusInvite({
-    onFollowTab: (tabId) => {
-      if (tabId !== activeId) skipTabFitRef.current = tabId;
-      setActiveId(tabId);
-    },
-    onCentreOn: centreOn,
+    onFollowTab: focusLanding.onFollowTab,
+    onCentreOn: focusLanding.onCentreOn,
     isAlreadyThere: (tabId, at) => tabId === activeId && isCentredOn(at),
   });
   // The toast's Show (docs/specs/024-agents/agent-changesets.md "In the editor", CS34): the tab, then
@@ -1800,7 +1801,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     activeId,
     elementCount: activeTab.elements.length,
     tabLoaded: loadedTabIds.has(activeId),
-    fitToScreen: () => (frameFirstPageRef.current ?? fitToScreen)(),
+    fitToScreen: () => {
+      (frameFirstPageRef.current ?? fitToScreen)();
+      focusLanding.afterTabFit(activeId);
+    },
     skipFitForTabRef: skipTabFitRef,
   });
 

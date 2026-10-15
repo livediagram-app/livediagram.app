@@ -104,6 +104,10 @@ describe('the formula bar', () => {
     };
     type('Amounts');
     expect(h.store.sheet(h.ctl().sheet.id)!.layout.names).toMatchObject([{ name: 'Top' }]);
+    // Said, not swallowed: the same line any other change to the sheet's shape gives.
+    expect(h.toast).toHaveBeenCalledWith(
+      "Only an editor can change a Sheet's rows, columns or settings.",
+    );
     type('top');
     expect(h.ctl().selection.ranges).toEqual([{ r1: 0, c1: 0, r2: 0, c2: 0 }]);
   });

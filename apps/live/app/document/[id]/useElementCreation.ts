@@ -25,6 +25,7 @@ import {
   type SessionTool,
   type ShapeKind,
   type Tab,
+  withVariantColours,
 } from '@livediagram/document';
 import { takeInsertionSlot } from '@/lib/insertion-preview';
 import type { InsertionSlot } from '@/lib/insert-between';
@@ -457,8 +458,18 @@ export function useElementCreation(opts: {
                 : {}),
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
-      // kinds whose face isn't text (stickers, session buttons, ...).
-      { edit: true, insertion, style: styleNewElement },
+      // kinds whose face isn't text (stickers, session buttons, ...). A preset's own colour (the Warning badge's
+      // rose) is put back after the theme and the remembered style.
+      {
+        edit: true,
+        insertion,
+        style: (el) => {
+          const styled = styleNewElement(el);
+          return (
+            styled.type === 'shape' ? withVariantColours(styled, art?.choice) : styled
+          ) as typeof el;
+        },
+      },
     );
     // A tech-icon id maps to its own telemetry type (see addTechIcon);
     // line-art icons + shapes use the kind.

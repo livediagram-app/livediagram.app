@@ -76,4 +76,33 @@ describe('useFacilitator', () => {
     act(() => hook.result.current.receiveFacilitator({ holder: null, by: 'p9', reason: 'left' }));
     expect(onNotice).toHaveBeenCalledWith('Somebody left, so nobody is facilitating');
   });
+
+  // docs/specs/012-collaboration/facilitator.md "Being told you cannot": the 90 seconds an absent holder keeps
+  // the baton, the blocked buttons still name them.
+  it('keeps naming a holder who has left the roster but still holds the baton', () => {
+    const { hook, deps } = setup();
+    act(() => hook.result.current.receiveFacilitator({ holder: 'p2', reason: 'claim' }));
+    expect(hook.result.current.facilitatorName).toBe('name-p2');
+    hook.rerender({ ...deps, nameOf: () => null });
+    expect(hook.result.current.facilitatorName).toBe('name-p2');
+    // A rename while present is read from the roster.
+    hook.rerender({ ...deps, nameOf: (id) => `renamed-${id}` });
+    expect(hook.result.current.facilitatorName).toBe('renamed-p2');
+  });
+
+  it('forgets the name with the baton, and on another document', () => {
+    const { hook, deps } = setup();
+    act(() => hook.result.current.receiveFacilitator({ holder: 'p2', reason: 'claim' }));
+    act(() => hook.result.current.receiveFacilitator({ holder: null, reason: 'release' }));
+    hook.rerender({ ...deps, nameOf: () => null });
+    act(() => hook.result.current.receiveFacilitator({ holder: 'p2', reason: 'state' }));
+    // Held again, but never seen since: nothing stale to name them by.
+    expect(hook.result.current.facilitatorName).toBeNull();
+
+    const other = setup();
+    act(() => other.hook.result.current.receiveFacilitator({ holder: 'p3', reason: 'claim' }));
+    other.hook.rerender({ ...other.deps, documentId: 'd2', nameOf: () => null });
+    act(() => other.hook.result.current.receiveFacilitator({ holder: 'p3', reason: 'state' }));
+    expect(other.hook.result.current.facilitatorName).toBeNull();
+  });
 });

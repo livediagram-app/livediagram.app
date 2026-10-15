@@ -101,15 +101,16 @@ describe('PNG and PDF', () => {
 });
 
 describe('SVG', () => {
-  it('embeds the opening frame over the gradient and its pattern, as PNG, PDF and the screen do', () => {
+  // The frame is an opaque picture of the gradient with the motion in it: over the pattern it would hide it.
+  it('embeds the opening frame over the gradient and under its pattern, so the pattern still shows', () => {
     const { tab, laid } = deck(animated, 'dots');
     const svg = renderTabToSvg(tab, { page: laid[0]!, fontCss: '' });
     const gradient = svg.indexOf('linearGradient');
     const frame = svg.indexOf(`href="${FRAME}"`);
     const pattern = svg.indexOf('<pattern');
     expect(gradient).toBeGreaterThan(-1);
-    expect(pattern).toBeGreaterThan(gradient);
-    expect(frame).toBeGreaterThan(pattern);
+    expect(frame).toBeGreaterThan(gradient);
+    expect(pattern).toBeGreaterThan(frame);
     expect(motionFrameHref).toHaveBeenCalledWith(
       expect.objectContaining({ motion: 'aurora' }),
       laid[0]!.rect.width,

@@ -221,7 +221,10 @@ unchanged; only the mode they open in moved from Diagram.
   **RACI matrix** (`raci-matrix`) and **User story map** (`user-story-map`), and the **Strategy** group's **Business
   Model Canvas** (`business-model-canvas`), **Stakeholder map** (`stakeholder-map`) and **Opportunity solution
   tree** (`opportunity-solution-tree`). Their catalogue categories are unchanged.
-- The **Quizzes & Games** group, after Meetings: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions**
+- The **Spaces** group, after Meetings: **Virtual Office** (`virtual-office`), **Coworking Space**
+  (`coworking-space`), **Team Pod** (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), "Offices and halls to walk
+  round together in Avatar mode." ([Virtual Office template](../012-collaboration/virtual-office-template.md)).
+- The **Quizzes & Games** group, after Spaces: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions**
   (`icebreaker-questions`), **Two Truths and a Lie** (`two-truths-and-a-lie`), **Would You Rather**
   (`would-you-rather`) and **Find Someone Who Bingo** (`people-bingo`), "Quizzes, icebreakers and games to warm up
   the room." ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).

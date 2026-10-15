@@ -65,7 +65,9 @@ export default defineProject({ test: { environment: 'jsdom' } });
   M-series Mac (the Tidy Up hover: 24 ms locally, 101 to 104 ms on CI), so a
   budget set for a person's device sits at the line there and fails at random.
   Such a test asserts `cpuBudgetMs(ms)`: `ms` locally, `ms x CI_CPU_HEADROOM`
-  (3) when `CI` is set. A loose regression guard (a budget many times what the
+  (3) when `CI` is `true` or `1` (`CI=false` or `CI=0` is a developer's machine). Three is enough beside a
+  4x slower runner because each budget keeps its own room over the local timing (Tidy Up: 100 ms against 24).
+  A loose regression guard (a budget many times what the
   work measures) needs neither.
 - **A test never pays a cold module load.** When the code under test imports
   a module lazily (`await import(...)`), the test file also imports it

@@ -7,6 +7,8 @@
 // say. Same question, so one answer: a second copy of this arithmetic would
 // drift, and the two ends would disagree about who was asked.
 
+import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
+
 /** A view as either end can describe it: a canvas size, a pan, and a zoom. */
 export type FocusView = {
   size: { width: number; height: number };
@@ -50,7 +52,6 @@ export function focusPressOutcome({
   sent,
   peerIds,
   viewports,
-  size,
   tabId,
   at,
 }: {
@@ -59,11 +60,7 @@ export function focusPressOutcome({
   /** The other people in the room, self excluded, as presence reports them. */
   peerIds: string[];
   /** Their last published viewport, by presence id. Missing = unknown. */
-  viewports: Map<string, { tabId: string; pan: { x: number; y: number }; zoom: number }>;
-  /** OUR canvas size, used as a stand-in for theirs: the viewport op carries
-   *  no size, and this only picks which sentence to show. Erring towards
-   *  "asked" is the harmless direction. */
-  size: { width: number; height: number };
+  viewports: Map<string, RemoteViewport>;
   tabId: string;
   at: { x: number; y: number };
 }): FocusPressOutcome {
@@ -73,7 +70,11 @@ export function focusPressOutcome({
     // Somebody we have never heard from might be anywhere, so they count as
     // asked rather than as already there.
     if (!view || view.tabId !== tabId) return false;
-    return viewIsCentredOn({ size, pan: view.pan, zoom: view.zoom }, at);
+    // Judged on THEIR canvas, as their own receiver judges it: with zoom no
+    // longer compared, our size would call a point centred for a wider screen
+    // that their dialog still asks about. No size is unknown, so asked.
+    if (!view.size) return false;
+    return viewIsCentredOn({ size: view.size, pan: view.pan, zoom: view.zoom }, at);
   });
   return everyoneIsHere ? 'already-there' : 'asked';
 }

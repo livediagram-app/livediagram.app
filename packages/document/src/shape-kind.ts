@@ -206,7 +206,7 @@ export type ShapeKind =
   // the amount it carries. Carries `sankeyFlows` (below); lays itself out in columns.
   | 'sankey'
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): press it and everyone else in the room is offered
-  // a jump to it, at your zoom, on your tab.
+  // a jump to it, on your tab.
   | 'focus-button'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's

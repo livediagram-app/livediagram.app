@@ -18,7 +18,13 @@ import {
   type DrinkKind,
   type Element,
 } from '@livediagram/document';
-import { fenceReachFor, fenceSegments, fenceStalled, fenceStep } from '@/lib/avatar-fence';
+import {
+  fenceReachFor,
+  fenceSegments,
+  fenceStalled,
+  fenceStep,
+  type FenceSegment,
+} from '@/lib/avatar-fence';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import type { AvatarStatus } from '@/lib/avatar-status';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '@/lib/avatar-reactions';
@@ -72,6 +78,8 @@ export type AvatarSnapshot = {
   // Flag-wave frame, or null when the flag is down.
   wave: number | null;
 };
+
+const NO_FENCES: FenceSegment[] = [];
 
 export function useAvatarWalk({
   active,
@@ -164,7 +172,8 @@ export function useAvatarWalk({
   const posRef = useRef<AvatarPoint | null>(null);
   // Fences (docs/specs/009-elements/fence.md): the lines the walk may not cross, worked out once per
   // change to the elements rather than per frame.
-  const fences = useMemo(() => fenceSegments(elements), [elements]);
+  // Only while the mode is on: a scan of the whole tab on every edit is wasted when nobody is walking.
+  const fences = useMemo(() => (active ? fenceSegments(elements) : NO_FENCES), [active, elements]);
   const targetRef = useRef<AvatarPoint | null>(null);
   const heldRef = useRef<AvatarHeldKeys>({ ...NO_KEYS_HELD });
   const travelledRef = useRef(0);
@@ -443,8 +452,16 @@ export function useAvatarWalk({
           Math.hypot(wanted.x - from.x, wanted.y - from.y),
         )
       ) {
+        // Stopped by a wall: close enough to where it was going (a peer standing by a fence) is arriving there, so
+        // what was waiting on the arrival (the shove) still happens; further off, the walk just ends.
+        const target = targetRef.current;
+        const near =
+          Math.hypot(target.x - next.x, target.y - next.y) <=
+          2 * fenceReachFor(avatarScale(config.size));
         targetRef.current = null;
+        const arrived = near ? arriveRef.current : null;
         arriveRef.current = null;
+        arrived?.();
       }
       // Target reached — drop it so the avatar goes idle rather than
       // re-arriving on every subsequent frame, and fire whatever was waiting
@@ -551,7 +568,8 @@ export function useAvatarWalk({
           wave: waveStartRef.current === null ? null : 0,
           seatedOn: seatedRef.current,
           holding: holdingRef.current,
-          status,
+          // Only when set: a missing status reads as none, and a walk sends ~30 a second.
+          ...(status ? { status } : null),
           ...(live ? { reaction: { kind: live.kind, elapsedMs: now - live.startedAt } } : null),
         });
       }
@@ -593,7 +611,8 @@ export function useAvatarWalk({
       wave: null,
       seatedOn: seatedRef.current,
       holding: holdingRef.current,
-      status,
+      // Only when set: a missing status reads as none, and a walk sends ~30 a second.
+      ...(status ? { status } : null),
     });
   });
   // `facing` is read as the snapshot's value only (an effect event), since re-publishing on a turn would
@@ -619,7 +638,8 @@ export function useAvatarWalk({
       wave: null,
       seatedOn: seatedRef.current,
       holding: holdingRef.current,
-      status,
+      // Only when set: a missing status reads as none, and a walk sends ~30 a second.
+      ...(status ? { status } : null),
     });
   // Take a drink (docs/specs/009-elements/office.md "Using it"): held for DRINK_HOLD_MS, replacing any other,
   // and told to the room at once rather than at the next step.

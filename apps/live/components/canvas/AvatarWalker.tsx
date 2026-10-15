@@ -83,6 +83,15 @@ export function AvatarWalker({
   const box = avatarBox(scale);
   return (
     <>
+      {/* The status for a screen reader (docs/specs/008-canvas/avatar-mode.md "Status"): the character itself is
+          hidden from assistive tech, so its status is said here, with the name when it is a peer's. */}
+      {status ? (
+        <span className="sr-only">
+          {name
+            ? `${name}, ${avatarStatusLabel(status)}`
+            : `Your status: ${avatarStatusLabel(status)}`}
+        </span>
+      ) : null}
       {/* Standing-on ring: what makes the mode useful for narration — the
           audience sees which box the character has arrived at. Sits under the
           sprite, inert to pointers like everything in this layer. */}
@@ -120,24 +129,23 @@ export function AvatarWalker({
       >
         {name ? (
           <div
-            className={`absolute left-1/2 flex max-w-[120px] -translate-x-1/2 items-center gap-1 truncate rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${IDENTITY_FILL}`}
+            className={`absolute left-1/2 z-10 flex max-w-[120px] -translate-x-1/2 items-center gap-1 overflow-hidden rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${IDENTITY_FILL}`}
             // Pinned just above the HEAD, not the (headroom-extended) box, and
             // tracking the size choice so it hugs a small character too.
             style={{
               ...identityVars(shirt ?? AVATAR_FALLBACK_COLOUR),
               top: box.offsetY - AVATAR_HEIGHT * scale - 16,
             }}
-            aria-label={status ? `${name}, ${avatarStatusLabel(status)}` : undefined}
           >
             {status ? <StatusDot status={status} /> : null}
-            {name}
+            {/* Its own box, so a long name ends in an ellipsis: a flex item's bare text cannot. */}
+            <span className="min-w-0 truncate">{name}</span>
           </div>
         ) : status ? (
           // Your own character has no name chip: its status sits alone where the chip would be.
           <div
-            className="absolute left-1/2 -translate-x-1/2"
+            className="absolute left-1/2 z-10 -translate-x-1/2"
             style={{ top: box.offsetY - AVATAR_HEIGHT * scale - 22 }}
-            aria-label={avatarStatusLabel(status)}
           >
             <StatusDot status={status} />
           </div>
@@ -146,7 +154,7 @@ export function AvatarWalker({
           // Away: a slow Zz rising over the head (a CSS loop, still under reduced motion).
           <div
             aria-hidden
-            className="animate-avatar-zz pointer-events-none absolute text-[11px] font-bold italic text-slate-400"
+            className="animate-avatar-zz pointer-events-none absolute z-10 text-[11px] font-bold italic text-slate-400"
             style={{
               left: box.offsetX + 8 * scale,
               top: box.offsetY - AVATAR_HEIGHT * scale - 24,

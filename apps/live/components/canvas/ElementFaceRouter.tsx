@@ -256,6 +256,7 @@ export function ElementFaceRouter({
           timer={tabTimer ?? null}
           durationMs={(element.session.minutes ?? 5) * 60_000}
           readOnly={!timerControls.pause}
+          runBy={sessionRunBy ?? null}
           borderPx={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           onStart={
             onPressSessionButton && !sessionStartBlocked
@@ -303,7 +304,7 @@ export function ElementFaceRouter({
         />
       ) : element.type === 'shape' && element.shape === 'focus-button' && !isEditing ? (
         /* Bring Focus (docs/specs/012-collaboration/bring-focus.md): asks everyone else in the room to come and
-           look at this, at your zoom, on your tab. */
+           look at this, on your tab. */
         <FocusButtonFace
           label={label}
           textColor={textColor}

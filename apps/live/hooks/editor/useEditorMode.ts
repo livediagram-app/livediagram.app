@@ -13,6 +13,7 @@
 //   with what entering it brings (withEditorModeSwitched). One undo puts the tab back in the mode
 //   it was in, for everyone. A no-op when the switch is not offered or `next` is already the mode.
 import { useCallback } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 import {
   crossesPlan,
   editorModeLabel,
@@ -76,16 +77,23 @@ export function useEditorMode(
   const tabId = tab?.id;
   const { mode, canSwitch, lockedReason } = resolveEditorMode({ tab, canEdit });
   const crossPlan = canSwitch && (tab?.elements.length ?? 0) === 0;
+  // The tab as it is now, read when a switch is asked for: a stable setter rather than a new one per edit of the tab.
+  const tabRef = useLatest(tab);
   const setMode = useCallback(
     (next: EditorMode, alsoChange?: (tab: Tab) => Tab) => {
       // Never into or out of Plan (crossesPlan) unless the tab is empty: the mode menu offers a new tab in it instead.
       if (!canSwitch || !tabId || next === mode || (crossesPlan(mode, next) && !crossPlan)) return;
       trackModeSwitch(next);
       // Whether the board goes onto a page is read from the tab as it is, not from inside the commit's updater,
-      // which React may run after this returns (the toast and its event would be lost).
-      const paged = !!tab && switchedTab(tab, next, alsoChange).pagedContent;
+      // which React may run after this returns (the toast and its event would be lost). The switch worked out
+      // here is the one committed, unless the tab moved on meanwhile: a board's transform, layout and fit once.
+      const seen = tabRef.current;
+      const out = seen ? switchedTab(seen, next, alsoChange) : null;
+      const paged = !!out?.pagedContent;
       commitTabs((ts) =>
-        ts.map((t) => (t.id === tabId ? switchedTab(t, next, alsoChange).tab : t)),
+        ts.map((t) =>
+          t.id !== tabId ? t : t === seen && out ? out.tab : switchedTab(t, next, alsoChange).tab,
+        ),
       );
       if (paged) {
         toastInfo(`Put onto a page that fits it. Undo switches back to ${editorModeLabel(mode)}.`);
@@ -93,7 +101,7 @@ export function useEditorMode(
       }
       debugLog('[editor-mode] switched', { tabId, from: mode, to: next, paged });
     },
-    [canSwitch, crossPlan, tab, tabId, mode, commitTabs, toastInfo],
+    [canSwitch, crossPlan, tabRef, tabId, mode, commitTabs, toastInfo],
   );
   return {
     mode,

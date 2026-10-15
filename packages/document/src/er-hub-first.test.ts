@@ -1,6 +1,6 @@
 // ER relationships hub first (docs/specs/020-import-export/mermaid.md "Hub first").
 import { describe, expect, it } from 'vitest';
-import { hubFirst, reversedArrow } from './er-hub-first';
+import { hubFirst, reversedArrow, turnBack } from './er-hub-first';
 import { arrowPolyline } from './arrow-path-hits';
 import { elementIndexFor } from './geometry';
 import { layoutGraph, resolveGraphInput } from './graph-input';
@@ -66,5 +66,24 @@ describe('turned back after layout', () => {
         [...arrowPolyline(a, index)].reverse(),
       );
     }
+  });
+});
+
+describe('turnBack', () => {
+  it('turns back only the edge that was turned when two run between the same entities', () => {
+    const arrow = (id: string): ArrowElement => ({
+      id,
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'B', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'A', anchor: 'w' },
+    });
+    // `B ||--o{ A : owns` as written; `A ||--|| B : uses` turned to B>A for the layout.
+    const edges: GraphEdge[] = [
+      { from: 'B', to: 'A', label: 'owns' },
+      { from: 'B', to: 'A', label: 'uses', turned: true },
+    ];
+    const [owns, uses] = turnBack([arrow('owns'), arrow('uses')], edges) as ArrowElement[];
+    expect(owns!.from).toMatchObject({ elementId: 'B' });
+    expect(uses!.from).toMatchObject({ elementId: 'A' });
   });
 });

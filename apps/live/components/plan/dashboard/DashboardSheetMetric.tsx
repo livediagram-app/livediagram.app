@@ -7,6 +7,7 @@
 // Editor changes it from Change Source in the slot's cog (SlotSection). Anyone may read it.
 import { useMemo, useRef, useState } from 'react';
 import type { SheetMetricContent } from '@livediagram/document';
+import { percentDone } from '@livediagram/plan-art';
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideTable } from '@livediagram/icons/lucide';
 import { tabsStateOf, useDashboard } from './dashboard-context';
@@ -182,7 +183,7 @@ function SheetMetricBody({
           <span
             className={`text-[12px] font-medium tabular-nums ${shown.progress.met ? GREEN : MUTED}`}
           >
-            {Math.round(shown.progress.share * 100)}%
+            {percentDone(shown.progress.share, 1)}%
           </span>
         </div>
       ) : null}

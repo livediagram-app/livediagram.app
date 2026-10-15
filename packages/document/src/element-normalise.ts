@@ -290,19 +290,22 @@ const isPlainBox = (el: unknown): el is Raw =>
   typeof el.label === 'string' &&
   el.label.trim() !== '' &&
   !PLAIN_BOX_EXCLUDED.has(String(el.shape));
-function withLookTextSize(elements: unknown[]): unknown[] {
+function withLookTextSize(elements: unknown[], kept: ReadonlySet<string>): unknown[] {
   if (elements.filter(isPlainBox).length <= LOOK_MD_MAX_NODES) return elements;
   return elements.map((el) =>
-    isPlainBox(el) && el.textSize === undefined ? { ...el, textSize: 'sm' } : el,
+    isPlainBox(el) && el.textSize === undefined && !kept.has(String(el.id))
+      ? { ...el, textSize: 'sm' }
+      : el,
   );
 }
 
 // A raw arrow pinned at both ends draws as graph input's lines do (docs/specs/015-api/mcp-server.md): angled when it
 // names no style, and an angled one with no bends given its two, along the axis its start leaves by, so it meets
 // both ends square; ends that line up run straight.
-function withRawElbows(elements: DocElement[]): DocElement[] {
+function withRawElbows(elements: DocElement[], kept: ReadonlySet<string>): DocElement[] {
   return elements.map((el) => {
     if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.to.kind !== 'pinned') return el;
+    if (kept.has(el.id)) return el;
     const styled = el.arrowStyle ?? 'angled';
     if (styled !== 'angled' || (el.curvePoints?.length ?? 0) > 0)
       return el.arrowStyle ? el : { ...el, arrowStyle: styled };
@@ -314,9 +317,15 @@ function withRawElbows(elements: DocElement[]): DocElement[] {
   });
 }
 
-export function normaliseElements<T>(elements: T): T {
+// `kept` names elements that already exist (a replace that sends a tab's own elements back): the look defaults a new
+// raw element takes (`sm` text past 12 boxes, angled lines) are for content arriving fresh, never a restyle of what
+// the person made.
+export function normaliseElements<T>(
+  elements: T,
+  { kept = new Set<string>() }: { kept?: ReadonlySet<string> } = {},
+): T {
   if (!Array.isArray(elements)) return elements;
-  const sized = withLookTextSize(elements);
+  const sized = withLookTextSize(elements, kept);
   // An agent's badges and step numbers land fitted, numbered and on their hosts' points, as the editor's commits
   // keep them (docs/specs/009-elements/badge.md "Agents").
   const normalised = lanesToFront(sized.map(normaliseElement));
@@ -325,7 +334,7 @@ export function normaliseElements<T>(elements: T): T {
   // came, for validation to refuse by name rather than the request failing whole.
   if (!normalised.every(isRecord)) return normalised as T;
   try {
-    return withRawElbows(settleChips([], normalised as DocElement[])) as T;
+    return withRawElbows(settleChips([], normalised as DocElement[]), kept) as T;
   } catch {
     return normalised as T;
   }

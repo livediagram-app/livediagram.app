@@ -363,17 +363,36 @@ type Box = { x: number; y: number; width: number; height: number };
 export function seatPoints(
   el: Box & { shape: SeatingKind; chairFacing?: ChairFacing },
 ): { x: number; y: number; facing?: ChairSitterFacing }[] {
-  if (el.shape === 'meeting-table')
+  if (el.shape === 'meeting-table') {
+    const drawn = drawnRect(el, MEETING_TABLE_VIEW);
     return MEETING_TABLE_VIEW.tableSeats.map(({ u, v, facing }) => ({
-      x: el.x + el.width * u,
-      y: el.y + el.height * v,
+      x: drawn.x + drawn.width * u,
+      y: drawn.y + drawn.height * v,
       facing,
     }));
+  }
   const { view: name, mirrored } = facingView(seatingFacing(el));
-  return FURNITURE_ART[el.shape][name].seats.map(({ u, v }) => ({
-    x: el.x + el.width * (mirrored ? 1 - u : u),
-    y: el.y + el.height * v,
+  const view = FURNITURE_ART[el.shape][name];
+  const drawn = drawnRect(el, view);
+  return view.seats.map(({ u, v }) => ({
+    x: drawn.x + drawn.width * (mirrored ? 1 - u : u),
+    y: drawn.y + drawn.height * v,
   }));
+}
+
+// Where the drawing actually lies in the box: both renderers fit its grid whole and centred (preserveAspectRatio
+// meet), so a box of other proportions (a quarter turn written without swapping the box, an aspect unlocked and
+// stretched) letterboxes it, and a seat measured on the whole box would miss the drawn cushion.
+function drawnRect(box: Box, view: { width: number; height: number }): Box {
+  const scale = Math.min(box.width / view.width, box.height / view.height);
+  const width = view.width * scale;
+  const height = view.height * scale;
+  return {
+    x: box.x + (box.width - width) / 2,
+    y: box.y + (box.height - height) / 2,
+    width,
+    height,
+  };
 }
 
 /** The occupied ring at a facing, in grid units (mirrored for facing right). */

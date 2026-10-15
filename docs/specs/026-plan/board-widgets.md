@@ -39,7 +39,9 @@ header; they are not in the palette.
 - **Completion without a done column** offers **Set Done Column** to someone who may edit: it makes the board's
   last column the done one.
 - **Completion's percent** (and Points', and the dashboard tiles') is the share done, rounded, but reads 100% only when
-  every card is done and 0% only when none is: 199 of 200 is 99%, 1 of 300 is 1%.
+  every card is done and 0% only when none is: 199 of 200 is 99%, 1 of 300 is 1%. Points counts points, not cards,
+  so it reads 100% once every point is done (an unestimated card left open counts for nothing); a dashboard Sheet
+  Metric's goal percent reads 100% only once its target is met.
 - Lone counts in widgets and column heads are badges: the figure in a small pill.
 - The Filter and Only Mine widgets are each viewer's own and unsaved (the quick filter, see plan-board.md); taking
   either widget off the board clears that narrowing.

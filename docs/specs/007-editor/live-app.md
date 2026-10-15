@@ -193,6 +193,16 @@ Non-destructive everyday actions (delete an element, clear a comment, undo a str
 
 Its confirm button is the brand primary button for every action, a delete included ([Destructive actions](../004-interface-design/destructive-actions.md): never red or yellow). Esc cancels, Enter confirms, backdrop click cancels, focus lands on the confirm button so keyboard-only users get the same muscle memory as `window.confirm`.
 
+## Element dialogs and popovers
+
+A dialog or popover opened for one element (its link, a table cell's link, line data, code, Sankey Flows, a
+Sequence, a picture's image picker, comments, an action, a note) shows only while it can be shown for that element:
+the element is on the active tab, of the kind the dialog edits, and the session may still use it. The moment that
+stops being true (a collaborator deletes the element, an undo takes it away, the tab changes, the element locks, the
+session turns read-only), the dialog **closes**, rather than hiding with its element still named, so it never
+reopens by itself when the element, the lock or the role comes back (`useCloseVanishedDialogs`, with each dialog's own
+check). Edit Outline closes itself the same way (`useMindOutline`).
+
 ## Toasts
 
 Asynchronous failures that previously fell through to silent `catch` blocks (link-tab, gallery delete, image upload from a background flow) now surface through a bottom-right toast stack: `apps/live/hooks/ui/useToast.tsx` (`ToastProvider` + `useToast`). Three tones: `error` (rose), `success` (emerald), `info` (slate). Each toast auto-dismisses after 4 seconds, can be closed early, and dedupes against an identical message already on-screen so a tight retry loop can't drown the surface.

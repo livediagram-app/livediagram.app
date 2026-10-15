@@ -11,6 +11,7 @@ import { isBehaviourShape } from './behaviour-shapes';
 import { LIVE_ELEMENT_FIELDS } from './comments';
 import { diffToElementOps, type ElementOp, type RoomElementOp } from './element-ops';
 import type { Element, ShapeElement, Tab } from './index';
+import { TEXT_PX_MAX } from './label-font';
 import { isLayerLocked, resolveLayerId, tabLayers } from './layers';
 import { isMindNode } from './mind-map';
 import { isValidElement } from './validate';
@@ -31,6 +32,11 @@ export const PARTICIPANT_STICKY_FIELDS = [
 // text box is not one: it often labels the board's structure, so it stays where its author put it.
 export const PARTICIPANT_PLACE_TYPES = ['sticky', 'image'] as const;
 export const PARTICIPANT_PLACE_FIELDS = ['x', 'y', 'width', 'height'] as const;
+// The most a Participant's writing may grow anyone's mind node, per character of its label: a line of the
+// largest label there is (TEXT_PX_MAX) at double line height, as if every character wrapped alone. Generous for
+// any real label, and a bound, so one changed letter cannot stretch a node to ten million pixels that only an
+// Editor could put back (it never shrinks on its own).
+export const MIND_GROW_PX_PER_CHAR = TEXT_PX_MAX * 2;
 // What a Participant may change on anyone's mind node: where it sits, so growing a map re-lays it tidily.
 export const PARTICIPANT_MIND_FIELDS = ['x', 'y'] as const;
 // What a Participant may change on anyone's flowchart step: where it sits, so growing a chart lays it out
@@ -239,8 +245,10 @@ function mergeOthers(tab: Tab, stored: Element, incoming: Element): Element {
     // A node grows to fit its label (docs/specs/009-elements/mind-node.md), so writing on it may make it taller in
     // the same change, as a text box that sizes to its words follows them; never shorter.
     const wrote = PARTICIPANT_TEXT_FIELDS.some((f) => !sameValue(s[f], inc[f]));
+    const label = typeof inc.label === 'string' ? inc.label : '';
+    const ceiling = (s.height as number) + Math.max(1, label.length) * MIND_GROW_PX_PER_CHAR;
     if (wrote && isPositive(inc.height) && inc.height > (s.height as number)) {
-      next.height = inc.height;
+      next.height = Math.min(inc.height, ceiling);
     }
   }
   if (isFlowchartStep(stored)) {

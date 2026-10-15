@@ -41,12 +41,16 @@ showing it is up to date.
 | Loaded                                          | The drawing                                                                        |
 
 A tab's content arrives only when it is opened or fetched (per-tab storage), so a window asks for its tab's content
-as it is shown, as a Dashboard's Diagram slot does. A tab the person may not see is never fetched or drawn: the
-window says it is not available rather than leaking it.
+as it is shown, as a Dashboard's Diagram slot does. A fetch of that tab already under way elsewhere (the visit-time
+load, the side pane, an export, the search sweep) is waited for, not repeated, and the window shows how it ended:
+the drawing, or "Couldn't load" with **Retry**. Nothing asks again on a timer. **Retry** shows Loading until it
+settles, also for a tab the editor's own visit failed on, and a tab that then loads clears that failure everywhere.
+A tab the person may not see is never fetched or drawn: the window says it is not available rather than leaking it.
 
 ## Choosing the tab
 
-**Choose a Tab** (the empty window's button, and the menu's **Tab Window** section) opens a list of the tabs a window
+**Choose a Tab** (the empty window's button, and the menu's **Tab Window** section, offered only where the session
+may edit and the window is not locked) opens a list of the tabs a window
 may show, in tab-bar order, each its mode icon and name, the current one marked. A press shows that tab (one edit,
 one undo). With no tab to offer it says "No other tab to show yet." The list follows the tab bar live (a tab added,
 renamed or deleted).
@@ -56,10 +60,17 @@ renamed or deleted).
 **Open <name>** goes to the shown tab: a button in the window's top-right corner while it is hovered or selected,
 and the menu's Tab Window section. Opening is navigation, so it is everyone's who can see the tab.
 
+## Copying the document
+
+A copy of the whole document (Make a Copy, the Explorer's Duplicate, a copy from the Community, a Drive import) gives
+its tabs fresh ids and re-points each window at the copy's own tab, as tab links are (`remapTabLinks`), so the copy's
+windows show the copy rather than "This tab isn't available".
+
 ## Exports
 
 A PDF, PNG or SVG export draws each window's tab inside it, fitted, as on screen: the export fetches each shown tab's
-content and photos first. A window inside a shown tab is drawn as its frame (no recursion). Ids inside a shown tab's
+content and photos first, waiting for a fetch already under way rather than drawing the tab's empty placeholder. It
+fetches only the tabs a window may show: a Plan tab draws as unavailable, so its content is never downloaded for it. A window inside a shown tab is drawn as its frame (no recursion). Ids inside a shown tab's
 drawing are prefixed per window, so its gradients, patterns and markers never collide with the page's. Thumbnails
 (Contents, the Slide Deck, layouts) and the API's tab render draw the frame, named for its tab where the caller
 knows it, else "Tab Window".

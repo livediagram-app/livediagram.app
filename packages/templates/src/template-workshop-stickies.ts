@@ -8,3 +8,4 @@ export const YELLOW = { fillColor: '#fde68a', textColor: '#451a03' };
 export const BLUE = { fillColor: '#bae6fd', textColor: '#082f49' };
 export const PINK = { fillColor: '#fecdd3', textColor: '#4c0519' };
 export const ORANGE = { fillColor: '#fed7aa', textColor: '#431407' };
+export const LILAC = { fillColor: '#e9d5ff', textColor: '#3b0764' };

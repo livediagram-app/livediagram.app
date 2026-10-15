@@ -9,9 +9,10 @@ import { useLatest } from './useLatest';
 // (docs/specs/006-document/tab-folders.md) and this follows it, with pointer events instead of HTML5 dnd so it works
 // on touch. Each row carries `data-<slot>={index}`; the caller says what a drop means.
 
-/** How soon after a drag's release a click still counts as that release's own. A mouse or pen sends
- *  it within the same task; a touch drag sends none, and a person's next tap comes far later than
- *  this, so it is never mistaken for one. */
+/** How soon after a drag's release a click still counts as that release's own, measured between the two events'
+ *  own timestamps (when the input happened), so a slow re-render of the drop between them never lets the
+ *  release's click through. A mouse or pen sends it at once; a touch drag sends none, and a person's next tap
+ *  comes far later than this, so it is never mistaken for one. */
 export const DRAG_CLICK_WINDOW_MS = 250;
 
 /** Where a dropped row lands: beside the row at `index`, in the half the pointer is over. */
@@ -84,13 +85,16 @@ export function useRowReorderDrag({
     setDropAt(slotUnder(e.clientX, e.clientY));
   };
 
+  // Also the pointercancel handler: a cancelled drag (a system gesture, the page scrolling) never drops, since the
+  // person never let go over the caret.
   const endDrag = (e: React.PointerEvent) => {
     if (dragging.current && e.currentTarget.hasPointerCapture?.(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
     const target = dropRef.current;
-    if (dragging.current && draggingId && target) onDrop(draggingId, target);
-    dragEndedAt.current = dragging.current ? performance.now() : null;
+    if (dragging.current && draggingId && target && e.type !== 'pointercancel')
+      onDrop(draggingId, target);
+    dragEndedAt.current = dragging.current ? e.timeStamp : null;
     setDraggingId(null);
     setMoving(false);
     setDropAt(null);
@@ -105,11 +109,12 @@ export function useRowReorderDrag({
     (dropAt.side === 'before' ? dropAt.index === i : dropAt.index === i - 1);
   /** Whether the caret shows past the last row, for a drop below everything. */
   const caretAfterLast = moving && dropAt?.side === 'after' && dropAt.index === count - 1;
-  /** True once, for the click that follows a drag's release: the row should not act on it. */
-  const consumeDragClick = () => {
+  /** True once, for the click that follows a drag's release: the row should not act on it. Pass the click's
+   *  `timeStamp`, so the time spent re-rendering the drop is not counted. */
+  const consumeDragClick = (clickedAt: number = performance.now()) => {
     const at = dragEndedAt.current;
     dragEndedAt.current = null;
-    return at !== null && performance.now() - at < DRAG_CLICK_WINDOW_MS;
+    return at !== null && clickedAt - at < DRAG_CLICK_WINDOW_MS;
   };
 
   return {

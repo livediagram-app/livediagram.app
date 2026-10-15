@@ -24,6 +24,15 @@ describe('remapTabDataLinks', () => {
     ]);
   });
 
+  // docs/specs/009-elements/tab-window.md: a copy's windows show the copy's tabs.
+  it("re-points a Tab Window's tab, with no link anywhere on the tab", () => {
+    const data = JSON.stringify({
+      elements: [{ id: 'w', type: 'shape', shape: 'tab-window', windowTabId: 't1' }],
+    });
+    const out = JSON.parse(remapTabDataLinks(data, map));
+    expect(out.elements[0].windowTabId).toBe('T1');
+  });
+
   it('copies link-free and unparseable data byte for byte', () => {
     const plain = '{"elements":[{"id":"a","type":"shape"}]}';
     expect(remapTabDataLinks(plain, map)).toBe(plain);
