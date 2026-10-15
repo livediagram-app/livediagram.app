@@ -84,8 +84,10 @@ export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
     timer.current = null;
   };
   useEffect(() => clearTimer, []);
-  // A tile dragged out of the flyout: it stays open until the drop, since closing it would unmount the tile mid-drag.
+  // A tile dragged out of the flyout: it stays open until the drop, since closing it would unmount the tile mid-drag,
+  // but it turns see-through and lets presses pass (`dragActive`), so a drop on the canvas it covers lands there.
   const dragging = useRef(false);
+  const [dragActive, setDragActive] = useState(false);
   const close = (refocus: boolean) => {
     clearTimer();
     popover.setOpen(false);
@@ -121,12 +123,15 @@ export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
         popover.setOpen(false);
       }, HOVER_CLOSE_MS);
     },
+    dragActive: popover.open && dragActive,
     dragStarted: () => {
       clearTimer();
       dragging.current = true;
+      setDragActive(true);
     },
     dragEnded: () => {
       dragging.current = false;
+      setDragActive(false);
       close(false);
     },
   };
@@ -323,6 +328,7 @@ export function CategoryBarFlyout({
         scale={scale}
         dataAttr="data-category-flyout"
         widthClass={WIDTH_CLASS[width] ?? 'w-[26rem]'}
+        seeThrough={bar.dragActive}
         glide
         bare
       >
@@ -355,6 +361,7 @@ export function CategoryBarFlyout({
           actions={actions}
           pendingDraw={pendingDraw}
           openBody={openBody}
+          seeThrough={bar.dragActive}
           hoverHandlers={{
             ...surface,
             onPointerEnter: (e) => {

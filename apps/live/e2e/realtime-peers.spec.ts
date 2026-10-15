@@ -6,6 +6,7 @@ import {
   guestSigFor,
   mintSignedGuest,
   ownerHeaders,
+  paletteTile,
 } from './fixtures';
 
 // Two people on one shared document (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
@@ -92,10 +93,9 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   await expect.poll(() => online.count()).toBeGreaterThanOrEqual(2);
 
   // A peer's edit reaches the owner live.
-  await peerPage
-    .getByRole('button', { name: 'Add Square', exact: true })
-    .first()
-    .dragTo(peerPage.locator(CANVAS), { targetPosition: { x: 700, y: 500 } });
+  await (
+    await paletteTile(peerPage, 'Add Square')
+  ).dragTo(peerPage.locator(CANVAS), { targetPosition: { x: 700, y: 500 } });
   await peerPage.keyboard.press('Escape');
   await expect(squares(ownerPage)).toHaveCount(2);
 

@@ -50,6 +50,7 @@ export function CategoryFlyoutSide({
   actions,
   pendingDraw,
   openBody,
+  seeThrough = false,
   hoverHandlers,
 }: {
   side: SideOpen;
@@ -59,6 +60,8 @@ export function CategoryFlyoutSide({
   pendingDraw: PendingDraw | null;
   // An opener's body: the category it stands for, at its group.
   openBody: (categoryId: string, group: string | null) => ReactNode;
+  // A tile is being dragged out: faded, and a drop on it lands on the canvas beneath (`data-drop-through`).
+  seeThrough?: boolean;
   hoverHandlers: {
     onPointerEnter: (e: React.PointerEvent) => void;
     onPointerLeave: (e: React.PointerEvent) => void;
@@ -84,6 +87,7 @@ export function CategoryFlyoutSide({
   return (
     <div
       data-category-flyout-side=""
+      {...(seeThrough ? { 'data-drop-through': '' } : {})}
       data-floating-panel=""
       ref={panelRef}
       role="dialog"
@@ -94,7 +98,7 @@ export function CategoryFlyoutSide({
           ? { top: side.top - lift }
           : { ...uiUnscaleStyle(scale), top: side.top - lift, right: side.right }
       }
-      className={`absolute ${isMobile ? 'inset-x-3' : 'w-[19rem]'} max-h-[calc(100dvh-10rem)] origin-top-left animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/50`}
+      className={`absolute ${isMobile ? 'inset-x-3' : 'w-[19rem]'} max-h-[calc(100dvh-10rem)] origin-top-left animate-dropdown-down transition-opacity duration-short ${seeThrough ? 'opacity-30' : ''} overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/50`}
     >
       <FlyoutHeader
         icon={def.icon}

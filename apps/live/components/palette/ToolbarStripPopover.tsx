@@ -88,6 +88,7 @@ export function StripPopover({
   widthClass = 'w-[26rem]',
   glide = false,
   bare = false,
+  seeThrough = false,
   children,
 }: {
   right: number;
@@ -103,6 +104,10 @@ export function StripPopover({
   glide?: boolean;
   // No padding: the body lays out its own edges.
   bare?: boolean;
+  // A tile is being dragged out of it: faded, and a drop on it lands on the canvas beneath (`data-drop-through`,
+  // which the canvas's drop guard reads, lib/canvas-pointer `overFloatingPanel`). Not `pointer-events: none`: the
+  // dragged tile is inside it, and taking hit-testing from a drag's own source stalls the drag.
+  seeThrough?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -128,13 +133,14 @@ export function StripPopover({
     <div
       ref={ref}
       {...{ [dataAttr]: '' }}
+      {...(seeThrough ? { 'data-drop-through': '' } : {})}
       // Chrome, not canvas, like the strip it hangs from.
       data-floating-panel=""
       // A menu, so it stays at design size while the strip is scaled
       // (docs/specs/007-editor/ui-scale.md): the counter-zoom brings it back to 1, so `right`
       // (screen px) and the classes' width and height cap apply as written.
       style={isMobile ? undefined : { ...uiUnscaleStyle(scale), right }}
-      className={`absolute top-full mt-2 max-h-[calc(100dvh-14rem)] ${isMobile ? 'inset-x-3' : widthClass} ${glide ? 'transition-[right,width] duration-short ease-out' : ''} origin-top-right animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white ${bare ? '' : 'px-2 py-2.5'} shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
+      className={`absolute top-full mt-2 max-h-[calc(100dvh-14rem)] ${isMobile ? 'inset-x-3' : widthClass} ${glide ? 'transition-[right,width,opacity] duration-short ease-out' : ''} ${seeThrough ? 'opacity-30' : ''} origin-top-right animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white ${bare ? '' : 'px-2 py-2.5'} shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
     >
       {label ? (
         <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">

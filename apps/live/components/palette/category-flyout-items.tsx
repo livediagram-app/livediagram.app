@@ -1,7 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { ChevronRightIcon } from '@livediagram/ui';
+import { ChevronRightIcon, Tooltip } from '@livediagram/ui';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import { usePlanCardTileDisabled } from '@/hooks/plan/card-types-taken';
@@ -142,7 +143,9 @@ export function TileGrid({
 function GridTile(item: ItemProps) {
   const { def } = item;
   const { props, glyph, active, disabled, side } = useFlyoutItem(item);
-  return (
+  // Minimal chrome (docs/specs/007-editor/power-user-mode.md): the icon alone, named by a Tooltip.
+  const minimal = useMinimalChrome();
+  const button = (
     <button
       {...props}
       className={`group relative flex h-[72px] w-full flex-col items-center justify-center gap-1.5 rounded-xl px-1 ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500 ${
@@ -160,9 +163,11 @@ function GridTile(item: ItemProps) {
       >
         {def.icon}
       </span>
-      <span className="w-full truncate text-center text-[11px] leading-none">
-        {tileDisplayName(def)}
-      </span>
+      {minimal ? null : (
+        <span className="w-full truncate text-center text-[11px] leading-none">
+          {tileDisplayName(def)}
+        </span>
+      )}
       {def.shortcut && !disabled ? (
         <span className="pointer-events-none absolute right-1.5 top-1.5 pointer-coarse:hidden">
           <Kbd small>{def.shortcut}</Kbd>
@@ -173,6 +178,7 @@ function GridTile(item: ItemProps) {
       ) : null}
     </button>
   );
+  return minimal ? <Tooltip label={def.label}>{button}</Tooltip> : button;
 }
 
 export function CardList({

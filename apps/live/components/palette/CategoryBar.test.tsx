@@ -9,6 +9,7 @@ import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import { HOVER_CLOSE_MS, HOVER_OPEN_MS } from './CategoryBar';
+import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
 
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {
@@ -27,20 +28,22 @@ afterEach(() => {
   cleanup();
 });
 
-function show(mode: EditorMode = 'diagram') {
+function show(mode: EditorMode = 'diagram', { minimal = false }: { minimal?: boolean } = {}) {
   const h = Object.fromEntries(
     PALETTE_ADD_HANDLER_KEYS.map((k) => [k, vi.fn()]),
   ) as unknown as PaletteAddHandlers;
   render(
-    <EditorModeProvider value={{ mode, setMode: vi.fn(), canSwitch: true, canEdit: true }}>
-      <ToolbarPalette
-        canvasTool="select"
-        onSetCanvasTool={vi.fn()}
-        canvasEmpty={false}
-        pendingDraw={null}
-        {...h}
-      />
-    </EditorModeProvider>,
+    <MinimalChromeProvider value={minimal}>
+      <EditorModeProvider value={{ mode, setMode: vi.fn(), canSwitch: true, canEdit: true }}>
+        <ToolbarPalette
+          canvasTool="select"
+          onSetCanvasTool={vi.fn()}
+          canvasEmpty={false}
+          pendingDraw={null}
+          {...h}
+        />
+      </EditorModeProvider>
+    </MinimalChromeProvider>,
   );
   return h;
 }
@@ -119,6 +122,19 @@ describe('hover intent', () => {
     fireEvent.pointerLeave(flyout()!.firstElementChild!, mouse);
     wait(HOVER_CLOSE_MS * 2);
     expect(flyout()).not.toBeNull();
+  });
+});
+
+describe('minimal chrome (docs/specs/007-editor/power-user-mode.md)', () => {
+  it('shows a picture tile’s icon alone, keeping its name, and a card its name', () => {
+    show('diagram', { minimal: true });
+    fireEvent.click(button('Shapes'), { detail: 1 });
+    const square = within(flyout()!).getByRole('button', { name: 'Add Square' });
+    expect(square.textContent).not.toContain('Square');
+    fireEvent.click(button('Build'), { detail: 1 });
+    expect(
+      within(flyout()!).getAllByRole('button', { name: /Mind Node/ })[0]!.textContent,
+    ).toContain('Mind Node');
   });
 });
 

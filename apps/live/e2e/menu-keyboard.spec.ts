@@ -10,6 +10,7 @@ import {
   ownerHeaders,
   startBlankDocument,
   test,
+  paletteTile,
 } from './fixtures';
 
 // Menus by keyboard alone (docs/specs/004-interface-design/menus.md): a command menu is a `menu` of
@@ -135,7 +136,7 @@ test.describe('menus by keyboard', () => {
   }) => {
     await startBlankDocument(page);
     await dismissQuickTour(page);
-    await page.getByRole('button', { name: 'Add Square', exact: true }).click();
+    await (await paletteTile(page, 'Add Square')).click();
     await page.locator('[data-canvas-a11y-root]').click({ position: { x: 520, y: 360 } });
     const square = page.getByRole('img', { name: 'Square', exact: true });
     await expect(square).toHaveCount(1);

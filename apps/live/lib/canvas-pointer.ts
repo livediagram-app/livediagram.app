@@ -11,6 +11,15 @@ export function pastePointer(
 ): { x: number; y: number } | null {
   if (x === null || y === null) return null;
   const el = target as Element | null;
-  if (el?.closest?.('[data-floating-panel]')) return null;
+  if (overFloatingPanel(el)) return null;
   return { x, y };
+}
+
+/** Whether a pointer or drag target is over a floating panel (the palette, the explorer, the map) rather than the
+ *  canvas beneath it. A panel marked `data-drop-through` doesn't count: the category bar's flyout while one of its
+ *  tiles is being dragged out of it (docs/specs/007-editor/toolbar-layout.md "The category bar"), so a drop on the
+ *  canvas it covers lands there. */
+export function overFloatingPanel(target: EventTarget | null): boolean {
+  const panel = (target as Element | null)?.closest?.('[data-floating-panel]');
+  return !!panel && !panel.hasAttribute('data-drop-through');
 }
