@@ -269,7 +269,9 @@ tests where it's cheap.
 
 - `apps/live/playwright.config.ts`: the `chromium` and `sites` projects (plus the opt-in ones),
   `webServer` → `scripts/e2e-stack.mjs`, `reuseExistingServer` locally.
-- `apps/live/e2e/*.spec.ts`: the spec files above.
+- `apps/live/e2e/*.spec.ts`: the spec files above. Playwright collects only `.spec.ts` (`testMatch`); a
+  `.test.ts` beside them is a Vitest unit test of a pure helper (`optical-snap.test.ts`, `perf/*.test.ts`),
+  which `vitest.config.ts` runs and Playwright never loads.
 - `apps/live/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
   shared flows (`startBlankDocument`, `startTemplateDocument`, `startEventStormingRow`, `seedTab`,
   `dismissQuickTour`, `openJustDraw`). `startTemplateDocument` exists because the blank helper skips the
