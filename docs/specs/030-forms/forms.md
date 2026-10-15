@@ -48,11 +48,24 @@ it is what the tab is and it brings its own behaviour. It is always in Plan mode
 ### Starting a form
 
 Start Planning ([Plan mode](../026-plan/plan-mode.md#starting-a-board)) gains a **Forms** category after
-Spreadsheets, its cards each a picture of the form over its name and line:
+Spreadsheets ("A form anyone can fill in from a link. Each response becomes a card on a board or a row in a
+sheet."), its cards each a picture of the form over its name and line. Each starter's responses go to a board (cards
+to work through) or a sheet (rows to count and read across), and its picture carries a badge in its top right corner
+saying which, a board's icon or a sheet's; Blank Form, which goes nowhere yet, has none:
+
+| Starter             | Responses to |
+| ------------------- | ------------ |
+| **Blank Form**      | Nowhere yet  |
+| **Bug Report**      | A board      |
+| **Feedback**        | A sheet      |
+| **Feature Request** | A board      |
+| **Event RSVP**      | A sheet      |
+| **Job Application** | A board      |
+| **Contact**         | A board      |
 
 | Starter             | Line                                     | Questions (type → mapping)                                                                                                                                                                                                                                                       |
 | ------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Blank Form**      | Start from one question                  | Untitled Question (Short Answer, unmapped)                                                                                                                                                                                                                                       |
+| **Blank Form**      | Start from nothing                       | None: the add bar offers the first                                                                                                                                                                                                                                               |
 | **Bug Report**      | Reports land on your triage board        | Summary (Short Answer → Title, required); What happened? (Paragraph → Description, required); Severity (Single Choice → Severity); Email (Email → Email)                                                                                                                         |
 | **Feedback**        | Ratings and comments, ready to sort      | How would you rate us? (Rating, stars → Rating, required); What did you like? (Paragraph); What could be better? (Paragraph); Email (Email → Email)                                                                                                                              |
 | **Feature Request** | Ideas from anyone, voted on by your team | Idea (Short Answer → Title, required); Why do you need it? (Paragraph → Description); How important is it? (Rating, numbers "Nice to have" to "Essential" → Importance)                                                                                                          |
@@ -64,9 +77,11 @@ Choosing a starter makes the tab and any new Board tab in one change and one und
 it brings are a card-type change of their own and stay after an undo, as a template's types do:
 
 1. makes the tab a Form tab holding the starter's form;
-2. picks the **destination**: the document's first Board tab whose board takes a card type the starter suits (a
-   Bug for Bug Report, an Idea for Feature Request), else a new Board tab after the Form tab named
-   "<Form> Responses" with three columns (**New**, **In Progress**, **Done**), its status **New**;
+2. picks the **destination**: for a board starter, the document's first Board tab whose board takes a card type the
+   starter suits (a Bug for Bug Report, an Idea for Feature Request), else a new Board tab after the Form tab named
+   "<Form> Responses" with three columns (**New**, **In Progress**, **Done**), its status **New**; for a sheet
+   starter, a new Sheet tab "<Form> Responses" after the Form tab (in its theme) holding one blank sheet, made at
+   once (without opening its tab) so responses have a sheet before anyone opens it, and steps 3 and 4 are skipped;
 3. picks the **card type**: the starter's ready-made type, the document's own copy first (Bug for Bug Report, Idea
    for Feature Request, Candidate for Job Application, Request for Contact), else a new type named after the form
    ("Feedback", "Event RSVP") in the starter's colour with the checklist glyph;
@@ -74,8 +89,9 @@ it brings are a card-type change of their own and stay after an undo, as a templ
    reused, never doubled, and a choice field gains any option it lacks); a new choice or rating field (Severity,
    Rating, Importance, Attending) is drawn on the card face, so it reads at a glance on the board.
 
-Blank Form takes the document's first board and the first card type it takes; with no board, it makes the Responses
-board and a "Response" card type.
+Blank Form makes no board, sheet or card type: its responses go nowhere until one is chosen, from the
+[connect box](#responses-go-to-and-settings) above its title or Responses Go To, as a sheet may be wanted rather
+than a board.
 
 **From a board**: a Board tab's board (not an All Cards or Archive one) offers **New Form** as its own row at the end of
 its cog's menu, for an Editor. It makes a Blank form named "<Board> Form" on a new Form tab right after the board's

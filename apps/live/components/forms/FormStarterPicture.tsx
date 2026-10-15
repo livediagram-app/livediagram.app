@@ -1,7 +1,10 @@
 // A starter's picture on Start Planning (docs/specs/030-forms/forms.md "Starting a form"): the form drawn small from
 // its own questions, its cover in the starter's colour, each question its prompt line and a hint of its control
-// (a box, a paragraph, radio dots, checkboxes, stars), in the tab's own light or dark look.
+// (a box, a paragraph, radio dots, checkboxes, stars), in the tab's own light or dark look; a badge in its top right
+// corner says where its responses go, a board or a sheet (none for Blank, which goes nowhere yet).
 import { formStarter, type QuestionType, type StarterId } from '@livediagram/forms';
+import { lucideSquareKanban, lucideTable } from '@livediagram/icons/lucide';
+import { Prims } from '@livediagram/ui';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 
 const W = 160;
@@ -96,6 +99,28 @@ function Control({
   );
 }
 
+// Where the starter's responses go: a board's or a sheet's icon on a disc in the picture's top right corner.
+function DestinationBadge({ to, palette }: { to: 'board' | 'sheet'; palette: PlanPalette }) {
+  const r = 12;
+  const cx = W - 13;
+  const cy = 16;
+  return (
+    <g data-starter-goes-to={to}>
+      <circle cx={cx} cy={cy} r={r} fill={palette.surface} stroke={palette.border} />
+      <g
+        transform={`translate(${cx - 7.2} ${cy - 7.2}) scale(0.6)`}
+        fill="none"
+        stroke={palette.text}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <Prims prims={to === 'board' ? lucideSquareKanban : lucideTable} />
+      </g>
+    </g>
+  );
+}
+
 export function FormStarterPicture({
   starter: id,
   palette,
@@ -143,6 +168,7 @@ export function FormStarterPicture({
           </g>
         );
       })}
+      {starter.respondsTo ? <DestinationBadge to={starter.respondsTo} palette={palette} /> : null}
     </svg>
   );
 }

@@ -28,6 +28,9 @@ export interface FormStarter {
   line: string;
   // The telemetry type (a preset value).
   telemetry: string;
+  // Where its responses go when it is started (docs/specs/030-forms/forms.md "Starting a form"): cards on a board (to
+  // be worked through), rows in a sheet (to be counted and read across), or nowhere yet (Blank: chosen after).
+  respondsTo?: 'board' | 'sheet';
   // The ready-made card type its responses suit; absent makes a type named after the form.
   readyType?: 'bug' | 'idea' | 'candidate' | 'request';
   // Its picture's colour and the colour of a card type it makes; the form itself takes its tab theme's.
@@ -53,6 +56,7 @@ export const FORM_STARTERS: readonly FormStarter[] = [
     name: 'Bug Report',
     line: 'Reports land on your triage board',
     telemetry: 'BugReport',
+    respondsTo: 'board',
     readyType: 'bug',
     accent: '#dc2626',
     description: 'Tell us what went wrong and we’ll look into it.',
@@ -89,6 +93,7 @@ export const FORM_STARTERS: readonly FormStarter[] = [
     name: 'Feedback',
     line: 'Ratings and comments, ready to sort',
     telemetry: 'Feedback',
+    respondsTo: 'sheet',
     accent: '#0d9488',
     description: 'We read every response.',
     sections: [
@@ -115,6 +120,7 @@ export const FORM_STARTERS: readonly FormStarter[] = [
     name: 'Feature Request',
     line: 'Ideas from anyone, voted on by your team',
     telemetry: 'FeatureRequest',
+    respondsTo: 'board',
     readyType: 'idea',
     accent: '#ca8a04',
     sections: [
@@ -141,6 +147,7 @@ export const FORM_STARTERS: readonly FormStarter[] = [
     name: 'Event RSVP',
     line: 'Who is coming, and what they need',
     telemetry: 'Rsvp',
+    respondsTo: 'sheet',
     accent: '#7c3aed',
     sections: [
       {
@@ -179,6 +186,7 @@ export const FORM_STARTERS: readonly FormStarter[] = [
     name: 'Job Application',
     line: 'Candidates straight into your pipeline',
     telemetry: 'JobApplication',
+    respondsTo: 'board',
     readyType: 'candidate',
     accent: '#db2777',
     sections: [
@@ -221,6 +229,7 @@ export const FORM_STARTERS: readonly FormStarter[] = [
     name: 'Contact',
     line: 'Messages you can assign and close',
     telemetry: 'Contact',
+    respondsTo: 'board',
     readyType: 'request',
     accent: '#ea580c',
     sections: [

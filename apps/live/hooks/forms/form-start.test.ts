@@ -60,7 +60,7 @@ describe('planFormStart', () => {
 
   it('makes a Responses board after the form when no board fits, in the form’s theme', () => {
     const plan = planFormStart({
-      starter: formStarter('feedback'),
+      starter: formStarter('contact'),
       formTab,
       tabs: [formTab],
       types: [],
@@ -68,7 +68,7 @@ describe('planFormStart', () => {
       random,
     });
     expect(plan.newBoardTab).toMatchObject({
-      name: 'Feedback Responses',
+      name: 'Contact Responses',
       kind: 'board',
       theme: 'ocean',
     });
@@ -79,10 +79,11 @@ describe('planFormStart', () => {
       typeId: plan.type.id,
       status: setup.columns[0]!.status,
     });
-    expect(plan.type).toMatchObject({ label: 'Feedback', glyph: 'checklist' });
+    expect(plan.newSheet).toBeNull();
   });
 
-  it('gives a blank form the first board’s first type, written as it is', () => {
+  // The user's call (2026-10-15): a Blank form makes nothing that might not be wanted, as a sheet may be.
+  it('sends a blank form nowhere, making no board, even with a board to hand', () => {
     const plan = planFormStart({
       starter: formStarter('blank'),
       formTab,
@@ -91,9 +92,49 @@ describe('planFormStart', () => {
       statusNames: [],
       random,
     });
+    expect(plan.form.destination).toBeUndefined();
+    expect(plan.form.sheet).toBeUndefined();
+    expect(plan.newBoardTab).toBeNull();
+    expect(plan.newSheet).toBeNull();
+    expect(plan.saveType).toBe(false);
+  });
+
+  it('gives a blank form from a board’s cog that board and its first type, written as it is', () => {
+    const board = boardTab('b');
+    const plan = planFormStart({
+      starter: formStarter('blank'),
+      formTab,
+      tabs: [formTab, board],
+      types: [...ITEM_TYPES],
+      statusNames: [],
+      random,
+      board: { tabId: 'b', elementId: boardsOf(board)[0]!.element.id },
+    });
     expect(plan.form.destination?.tabId).toBe('b');
     // Kanban takes Tasks: the form's cards are Tasks, the catalogue's own.
     expect(plan.type).toBe(ITEM_TYPES.find((t) => t.id === 'task'));
+    expect(plan.saveType).toBe(false);
+  });
+
+  it('sends a sheet starter’s responses to a new Sheet tab after the form, in its theme', () => {
+    const plan = planFormStart({
+      starter: formStarter('rsvp'),
+      formTab,
+      tabs: [formTab, boardTab('b')],
+      types: [...ITEM_TYPES],
+      statusNames: [],
+      random,
+      newSheetId: () => 'AAAAAAAAAAA1',
+    });
+    expect(plan.newSheet).toMatchObject({ sheetId: 'AAAAAAAAAAA1', title: 'Event RSVP Responses' });
+    expect(plan.newSheet!.tab).toMatchObject({
+      kind: 'sheet',
+      name: 'Event RSVP Responses',
+      theme: 'ocean',
+    });
+    expect(plan.form.sheet).toEqual({ tabId: plan.newSheet!.tab.id, sheetId: 'AAAAAAAAAAA1' });
+    expect(plan.form.destination).toBeUndefined();
+    expect(plan.newBoardTab).toBeNull();
     expect(plan.saveType).toBe(false);
   });
 });

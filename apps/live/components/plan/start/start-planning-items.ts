@@ -68,7 +68,7 @@ export const START_CATEGORIES: readonly { id: StartCategory; name: string; line:
   {
     id: 'forms',
     name: 'Forms',
-    line: 'A form anyone can fill in from a link. Every response becomes a card on your board.',
+    line: 'A form anyone can fill in from a link. Each response becomes a card on a board or a row in a sheet.',
   },
   {
     id: 'visualisations',

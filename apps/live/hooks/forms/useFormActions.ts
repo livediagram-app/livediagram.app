@@ -15,7 +15,7 @@ import {
   type FormQuestion,
   type StarterId,
 } from '@livediagram/forms';
-import { createShape, isDefaultTabName, type Element, type Tab } from '@livediagram/document';
+import { isDefaultTabName, newPlanSheetId, type Tab } from '@livediagram/document';
 import { placeNewSheet } from '@/lib/sheet-seeds';
 import { newCustomFieldId, newItemTypeId, type ItemTypeDef } from '@livediagram/items';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
@@ -25,6 +25,7 @@ import {
   boardsOf,
   planFormStart,
   responsesBoardTab,
+  responsesSheetTab,
   uniqueTypeLabel,
   withAutoBoardName,
   withBoardTaking,
@@ -75,6 +76,7 @@ export function useFormActions({
   statusNames,
   markTabLoaded,
   openTab,
+  makeSheet,
 }: {
   activeId: string;
   tabs: readonly Tab[];
@@ -84,9 +86,11 @@ export function useFormActions({
   markTabLoaded?: (tabId: string) => void;
   // Opens a tab (the Form tab New Form makes).
   openTab?: (tabId: string) => void;
+  // Makes a sheet on a tab just added, without opening it (a sheet starter's responses sheet).
+  makeSheet?: (create: { id: string; tabId: string; title: string }) => void;
 }): FormActions {
   // Read when used, so the actions keep one identity while tabs and types change underneath.
-  const live = useLatest({ tabs, itemTypes, statusNames, markTabLoaded, openTab });
+  const live = useLatest({ tabs, itemTypes, statusNames, markTabLoaded, openTab, makeSheet });
   const commitTabs = useCallback(
     (map: (ts: Tab[]) => Tab[]) =>
       commitAnyTabs((ts) => (ts.find((t) => t.id === activeId)?.locked ? ts : map(ts))),
@@ -105,6 +109,7 @@ export function useFormActions({
         tabs: now,
         types: slice.types,
         statusNames: [...names],
+        ...(live.current.makeSheet ? { newSheetId: newPlanSheetId } : {}),
       });
       // A tab with a name of its own gives it to the form (docs/specs/030-forms/forms.md "The Form tab").
       const name = isDefaultTabName(formTab.name) ? plan.form.heading : formTab.name;
@@ -122,12 +127,19 @@ export function useFormActions({
               }
             : t,
         );
-        if (!plan.newBoardTab) return next;
+        const made = plan.newBoardTab ?? plan.newSheet?.tab;
+        if (!made) return next;
         const at = next.findIndex((t) => t.id === activeId);
-        next.splice(at + 1, 0, plan.newBoardTab);
+        next.splice(at + 1, 0, made);
         return next;
       });
       if (plan.newBoardTab) live.current.markTabLoaded?.(plan.newBoardTab.id);
+      if (plan.newSheet) {
+        const { tab, sheetId, title } = plan.newSheet;
+        live.current.markTabLoaded?.(tab.id);
+        // Made now, so responses have a sheet before anyone opens its tab.
+        live.current.makeSheet?.({ id: sheetId, tabId: tab.id, title });
+      }
       // The card type is a catalogue change of its own: it stays after an undo, as a template's types do.
       if (plan.saveType) slice.saveType(plan.type);
       track('Form', 'Created', starter.telemetry);
@@ -336,17 +348,11 @@ export function useFormActions({
     const formTab = now.find((t) => t.id === activeId);
     if (!formTab || formTab.locked) return;
     const form = readForm(formTab.form) ?? blankForm(formTab.name);
-    const name = `${form.heading} Responses`.slice(0, 80);
-    const { sheetId } = placeNewSheet({ title: name, blank: true });
-    const sheetTab: Tab = {
-      id: crypto.randomUUID(),
-      name,
-      elements: [{ ...createShape('plan-sheet', 0, 0), planSheet: { sheetId } } as Element],
-      defaultTextSize: 'sm',
-      kind: 'sheet',
-      opensIn: 'plan',
-      ...(formTab.theme ? { theme: formTab.theme } : {}),
-    };
+    const { sheetId } = placeNewSheet({
+      title: `${form.heading} Responses`.slice(0, 80),
+      blank: true,
+    });
+    const sheetTab = responsesSheetTab(form.heading, formTab, sheetId);
     commitTabs((ts) => {
       const next = ts.map((t) =>
         t.id === activeId ? { ...t, form: { ...form, sheet: { tabId: sheetTab.id, sheetId } } } : t,

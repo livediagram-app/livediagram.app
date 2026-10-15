@@ -1,7 +1,8 @@
 // Starting a form (docs/specs/030-forms/forms.md "Starting a form"): what a starter makes, worked out before anything
-// is committed. The destination is the document's first Board tab whose board takes the starter's card type, else a
-// new Board tab after the Form tab; the card type is the starter's ready-made one or a new one named after the form,
-// with the fields its questions map to. Pure: useFormActions commits it.
+// is committed. A starter whose responses are cards goes to the document's first Board tab whose board takes its card
+// type, else a new Board tab after the Form tab (the card type the starter's ready-made one or a new one named after
+// the form, with the fields its questions map to); one whose responses are rows goes to a new Sheet tab after it; a
+// Blank form goes nowhere until one is chosen (its connect box). Pure: useFormActions commits it.
 import {
   SHAPE_DEFAULT_SIZE,
   createShape,
@@ -39,7 +40,23 @@ export type FormStartPlan = {
   saveType: boolean;
   // A Board tab made for the responses, when no board of the document took the type.
   newBoardTab: Tab | null;
+  // A Sheet tab made for the responses (a row each), and its sheet, to be made as the tab is.
+  newSheet: { tab: Tab; sheetId: string; title: string } | null;
 };
+
+// The Sheet tab a form's responses go to (New Sheet, a sheet starter): "<Form> Responses" after the Form tab, in its
+// theme, holding one blank sheet.
+export function responsesSheetTab(heading: string, formTab: Tab, sheetId: string): Tab {
+  return {
+    id: crypto.randomUUID(),
+    name: `${heading} Responses`.slice(0, 80),
+    elements: [{ ...createShape('plan-sheet', 0, 0), planSheet: { sheetId } } as Element],
+    defaultTextSize: 'sm',
+    kind: 'sheet',
+    opensIn: 'plan',
+    ...(formTab.theme ? { theme: formTab.theme } : {}),
+  };
+}
 
 // The live boards of a tab, in order (none for a tab that is no Board tab, or not loaded).
 export function boardsOf(tab: Tab): { element: Element; setup: PlanBoardSetup }[] {
@@ -147,6 +164,8 @@ export function planFormStart(input: {
   random?: () => number;
   // The board responses go to (a form made from a board's cog), in place of the first that fits.
   board?: { tabId: string; elementId: string };
+  // A new sheet's id, for a starter whose responses are rows.
+  newSheetId?: () => string;
 }): FormStartPlan {
   const { starter, formTab, tabs, types } = input;
   const random = input.random ?? Math.random;
@@ -168,6 +187,22 @@ export function planFormStart(input: {
   // The catalogue's own type, untouched, needs no write; a ready-made type it lacks, a new one or one given fields do.
   const saveType = !types.includes(type);
 
+  // Rows in a sheet: a new Sheet tab, no card type to write.
+  if (!input.board && starter.respondsTo === 'sheet' && input.newSheetId) {
+    const sheetId = input.newSheetId();
+    const tab = responsesSheetTab(form.heading, formTab, sheetId);
+    return {
+      form: { ...form, sheet: { tabId: tab.id, sheetId } },
+      type,
+      saveType: false,
+      newBoardTab: null,
+      newSheet: { tab, sheetId, title: tab.name },
+    };
+  }
+  // Nowhere yet (Blank): its connect box asks, and nothing is made that might not be wanted.
+  if (!input.board && starter.respondsTo !== 'board')
+    return { form, type, saveType: false, newBoardTab: null, newSheet: null };
+
   let newBoardTab: Tab | null = null;
   let tabId: string;
   let status: string;
@@ -184,6 +219,7 @@ export function planFormStart(input: {
     type,
     saveType,
     newBoardTab,
+    newSheet: null,
   };
 }
 

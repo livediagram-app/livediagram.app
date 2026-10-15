@@ -23,6 +23,7 @@ import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
 import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
 import { useFormActions } from '@/hooks/forms/useFormActions';
+import { makeFormSheet } from '@/lib/forms-make-sheet';
 import { usePlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { usePlanTabConversion } from '@/hooks/plan/usePlanTabConversion';
 import { usePlanCoverWiring } from '@/hooks/plan/usePlanCoverWiring';
@@ -2303,6 +2304,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     statusNames: planStatusNames,
     markTabLoaded,
     openTab: setActiveId,
+    makeSheet: (create) => makeFormSheet(sheets.bridge, create),
   });
   // Old Plan tabs become the Plan kinds when an Editor opens them (docs/specs/026-plan/plan-tabs.md).
   usePlanTabConversion({
