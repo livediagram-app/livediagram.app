@@ -11,13 +11,19 @@
 
 import { anchorPrimarySide } from './anchors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
-import { endpointPosition } from './geometry';
+import { buildElementGrid, queryElementGrid, type ElementGrid } from './element-grid';
+import { buildElementIndex, endpointPosition, type ElementIndex } from './geometry';
 import { isContainer } from './containment';
 import { isBoxed, type Anchor, type ArrowElement, type Element } from './index';
 
 // An arrow's end where the renderers draw it: its anchor, fanned (arrowEndpointSpread).
-function spreadEnd(arrow: ArrowElement, end: 'from' | 'to', elements: Element[]) {
-  const p = endpointPosition(arrow[end], elements);
+function spreadEnd(
+  arrow: ArrowElement,
+  end: 'from' | 'to',
+  elements: Element[],
+  index: Element[] | ElementIndex = elements,
+) {
+  const p = endpointPosition(arrow[end], index);
   const s = arrowEndpointSpread(arrow.id, end, elements);
   return { x: p.x + s.x, y: p.y + s.y };
 }
@@ -76,7 +82,7 @@ type Pt = { x: number; y: number };
 
 // The flow an angled arrow's ends face each other along, or null: a bottom to a lower top, a top to a higher bottom
 // (TB), a right side to a box further right, a left side to one further left (LR).
-function facingAxis(arrow: ArrowElement, elements: Element[]): 'TB' | 'LR' | null {
+function facingAxis(arrow: ArrowElement, elements: Element[] | ElementIndex): 'TB' | 'LR' | null {
   if (arrow.from.kind !== 'pinned' || arrow.to.kind !== 'pinned') return null;
   const [fs, ts] = [anchorPrimarySide(arrow.from.anchor), anchorPrimarySide(arrow.to.anchor)];
   const from = endpointPosition(arrow.from, elements);
@@ -98,12 +104,12 @@ const SAME_SIDE_REACH = 24;
 
 // An angled arrow whose ends sit on the same side of their boxes (a bottom to a bottom): its two bends, out past the
 // farther end by SAME_SIDE_REACH and back, a U, or null. Its plain L ran along the boxes' own edges.
-function sameSideBends(arrow: ArrowElement, elements: Element[]): Pt[] | null {
+function sameSideBends(arrow: ArrowElement, elements: Element[], index: ElementIndex): Pt[] | null {
   if (arrow.from.kind !== 'pinned' || arrow.to.kind !== 'pinned') return null;
   const side = anchorPrimarySide(arrow.from.anchor);
   if (side !== anchorPrimarySide(arrow.to.anchor)) return null;
-  const from = spreadEnd(arrow, 'from', elements);
-  const to = spreadEnd(arrow, 'to', elements);
+  const from = spreadEnd(arrow, 'from', elements, index);
+  const to = spreadEnd(arrow, 'to', elements, index);
   if (side === 's' || side === 'n') {
     const y =
       side === 's'
@@ -139,7 +145,7 @@ function crossLevel(
   from: { x: number; y: number },
   to: { x: number; y: number },
   arrow: ArrowElement,
-  elements: Element[],
+  grid: ElementGrid,
   runs: readonly CrossRun[] = [],
 ): number {
   const tb = axis === 'TB';
@@ -152,7 +158,16 @@ function crossLevel(
     : [Math.min(from.y, to.y), Math.max(from.y, to.y)];
   const ends = new Set([arrow.from, arrow.to].map((e) => (e.kind === 'pinned' ? e.elementId : '')));
   const blocked: [number, number][] = [];
-  for (const el of elements) {
+  // Only what lies across the run's span and between its ends (a container's heading band reaching down into it):
+  // a grid query, not a scan of the tab, as a board of thousands bends thousands of arrows.
+  const [s0, s1] = [Math.min(a, b) - FACING_HEADING_BAND, Math.max(a, b)];
+  const near = queryElementGrid(
+    grid,
+    tb
+      ? { x: c0, y: s0, width: Math.max(1, c1 - c0), height: s1 - s0 }
+      : { x: s0, y: c0, width: s1 - s0, height: Math.max(1, c1 - c0) },
+  );
+  for (const el of near) {
     if (!isBoxed(el) || ends.has(el.id)) continue;
     const [p0, p1] = tb ? [el.y, el.y + el.height] : [el.x, el.x + el.width];
     const [q0, q1] = tb ? [el.x, el.x + el.width] : [el.y, el.y + el.height];
@@ -167,7 +182,13 @@ function crossLevel(
   // Off the runs placed before it on the same axis, where their spans overlap or meet end to end (one line on, it read
   // as the other's continuation).
   for (const r of runs)
-    if (r.axis === axis && r.hi >= c0 - FACING_RUN_GAP && r.lo <= c1 + FACING_RUN_GAP)
+    if (
+      r.axis === axis &&
+      r.at > lo - FACING_RUN_GAP &&
+      r.at < hi + FACING_RUN_GAP &&
+      r.hi >= c0 - FACING_RUN_GAP &&
+      r.lo <= c1 + FACING_RUN_GAP
+    )
       blocked.push([r.at - FACING_RUN_GAP, r.at + FACING_RUN_GAP]);
   const free = (v: number) => blocked.every(([s0, s1]) => v <= s0 || v >= s1);
   if (free(mid)) return mid;
@@ -183,22 +204,25 @@ function crossLevel(
 // given no curve points whose ends face each other takes two bends, its cross run at a clear level (crossLevel), or
 // runs straight when its ends line up. Its plain L ran its last stretch along the far box's edge.
 export function withFacingBends(elements: Element[]): Element[] {
+  if (!elements.some((el) => el.type === 'arrow' && el.arrowStyle === 'angled')) return elements;
   const runs: CrossRun[] = [];
+  const index = buildElementIndex(elements);
+  const grid = buildElementGrid(elements);
   return elements.map((el) => {
     if (el.type !== 'arrow' || el.arrowStyle !== 'angled' || el.curvePoints?.length) return el;
-    const loop = sameSideBends(el, elements);
+    const loop = sameSideBends(el, elements, index);
     if (loop) {
-      const [f, t] = [spreadEnd(el, 'from', elements), spreadEnd(el, 'to', elements)];
+      const [f, t] = [spreadEnd(el, 'from', elements, index), spreadEnd(el, 'to', elements, index)];
       const mid = { x: (f.x + t.x) / 2, y: (f.y + t.y) / 2 };
       return { ...el, curvePoints: loop.map((p) => ({ dx: p.x - mid.x, dy: p.y - mid.y })) };
     }
-    const axis = facingAxis(el, elements);
+    const axis = facingAxis(el, index);
     if (!axis) return el;
-    const from = spreadEnd(el, 'from', elements);
-    const to = spreadEnd(el, 'to', elements);
+    const from = spreadEnd(el, 'from', elements, index);
+    const to = spreadEnd(el, 'to', elements, index);
     if (axis === 'TB' ? Math.abs(to.x - from.x) < 1 : Math.abs(to.y - from.y) < 1)
       return { ...el, arrowStyle: 'straight' as const };
-    const level = crossLevel(axis, from, to, el, elements, runs);
+    const level = crossLevel(axis, from, to, el, grid, runs);
     const [c0, c1] =
       axis === 'TB' ? [from.x, to.x].sort((p, q) => p - q) : [from.y, to.y].sort((p, q) => p - q);
     runs.push({ axis, at: level, lo: c0!, hi: c1! });
