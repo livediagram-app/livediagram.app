@@ -2,12 +2,7 @@
 // link", "Who may do what"): a Form tab's link, as its document's people see and change it. Anyone who may read the
 // tab sees the response count; only an Editor sees the code and publishes, opens, closes or deletes the link.
 import type { FormLinkResponse } from '@livediagram/api-schema';
-import {
-  FORM_SUSPENSIONS_MAX,
-  destinationProblem,
-  destinationType,
-  publishProblems,
-} from '@livediagram/forms';
+import { FORM_SUSPENSIONS_MAX, destinationType, publishProblems } from '@livediagram/forms';
 import { typesOf } from '@livediagram/items';
 import {
   countSuspendedFormLinks,
@@ -20,8 +15,9 @@ import {
   setFormLinkOpen,
   unseenResponses,
 } from '../db';
-import { boardsOnTab, readFormTab } from '../forms/form-tab';
-import { respond } from '../forms/respond';
+import { readFormTab, responsesProblem } from '../forms/form-tab';
+import { previewToSheet, respond } from '../forms/respond';
+import { writer } from './item-route-kit';
 import { conflict, forbidden, json, methodNotAllowed, notFound } from '../responses';
 import {
   gateEdit,
@@ -90,7 +86,13 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
     if (request.method !== 'POST') return methodNotAllowed();
     if (!editor) return forbidden();
     const live = await getLiveFormLink(env, documentId, tabId);
-    if (!live) return json({ error: 'form_not_published' }, { status: 404 });
+    if (!live) {
+      // A sheet's preview is written here, unnumbered; a board's card the editor makes itself.
+      const formTab = await readFormTab(env, documentId, tabId);
+      if (formTab?.form.sheet)
+        return previewToSheet(ctx, doc, formTab.form, await writer(ctx, owner));
+      return json({ error: 'form_not_published' }, { status: 404 });
+    }
     const upToDate = (await unseenResponses(env, live.code, owner)) === 0;
     const sent = await respond(ctx, live.code, { preview: true });
     if (sent.status === 201 && upToDate) await markFormSeen(env, live.code, owner);
@@ -106,11 +108,8 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
     const formTab = await readFormTab(env, documentId, tabId);
     if (!formTab) return notFound();
     const { form } = formTab;
-    const boards = form.destination
-      ? await boardsOnTab(env, documentId, form.destination.tabId)
-      : [];
     const types = typesOf(doc.itemTypes);
-    const problem = destinationProblem(form.destination, boards, types);
+    const problem = await responsesProblem(env, documentId, form, types);
     if (problem) return conflict('form_destination_missing');
     // A form not ready to fill in (no questions, an unworded one, a broken mapping or rule) is not published.
     const problems = publishProblems(form, destinationType(form.destination, types));

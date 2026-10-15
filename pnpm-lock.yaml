@@ -1143,6 +1143,9 @@ importers:
       '@livediagram/items':
         specifier: workspace:*
         version: link:../items
+      '@livediagram/sheets':
+        specifier: workspace:*
+        version: link:../sheets
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*

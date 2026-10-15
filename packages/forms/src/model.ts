@@ -91,6 +91,13 @@ export interface FormSection {
   questions: FormQuestion[];
 }
 
+// Where every response goes when it goes to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sheet"): a row
+// each, a column per question, no mapping. Set, it wins over `destination`, which is kept for switching back.
+export interface FormSheetDestination {
+  tabId: string;
+  sheetId: string;
+}
+
 // Where every response goes: a Board tab, a card type, a status.
 export interface FormDestination {
   tabId: string;
@@ -128,6 +135,7 @@ export interface FormDefinition {
   cover?: FormCover;
   sections: FormSection[];
   destination?: FormDestination;
+  sheet?: FormSheetDestination;
   closesAt?: number;
   limit?: number;
   confirmation?: string;

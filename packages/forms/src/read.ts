@@ -2,6 +2,7 @@
 // never refuses a form for one bad part: the part is dropped or capped, so a form from an older or newer editor, an
 // agent or a hand-edited file still opens.
 import { CUSTOM_FIELD_ID_PATTERN, ITEM_TYPE_PATTERN } from '@livediagram/items';
+import { SHEET_ID_PATTERN } from '@livediagram/sheets';
 import {
   FORM_DESCRIPTION_MAX,
   FORM_HEADING_MAX,
@@ -210,6 +211,15 @@ export function readForm(raw: unknown): FormDefinition | null {
   }
   const destination = readDestination(raw['destination']);
   if (destination) form.destination = destination;
+  const sheet = raw['sheet'];
+  if (
+    isObj(sheet) &&
+    typeof sheet['tabId'] === 'string' &&
+    TAB_ID.test(sheet['tabId']) &&
+    typeof sheet['sheetId'] === 'string' &&
+    SHEET_ID_PATTERN.test(sheet['sheetId'])
+  )
+    form.sheet = { tabId: sheet['tabId'], sheetId: sheet['sheetId'] };
   if (finite(raw['closesAt']) && raw['closesAt'] > 0) form.closesAt = raw['closesAt'];
   const limit = raw['limit'];
   if (

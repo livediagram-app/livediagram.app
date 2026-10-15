@@ -20,6 +20,7 @@ import { relay } from '../routes/item-route-kit';
 import type { RouteContext } from '../routes/context';
 import { reportServerEvent } from '../server-telemetry';
 import { boardsOnTab, readFormTab } from './form-tab';
+import { sheetThere, writeResponseRow } from './sheet-response';
 
 // How many responses one form takes an hour from everyone (docs/specs/030-forms/forms.md "Abuse and limits").
 // Safe range 100..2000.
@@ -58,12 +59,10 @@ function isClosed(form: FormDefinition, link: FormLinkRow, now: number): boolean
 // `preview`: an Editor's Preview of the published form (docs/specs/030-forms/forms.md "Preview"), sent through the
 // form-preview route: a counted response like any other, titled "Preview: …", taken even while the form is closed,
 // with no hidden field to check and no email (the Editor made it).
-export async function respond(
-  ctx: RouteContext,
-  code: string,
-  { preview = false }: { preview?: boolean } = {},
-): Promise<Response> {
-  const { env } = ctx;
+type ResponseBodyRaw = { answers: object; other?: unknown; website?: unknown };
+
+// The request's body: within RESPONSE_BODY_MAX, JSON with `answers`.
+async function readResponseBody(ctx: RouteContext): Promise<ResponseBodyRaw | Response> {
   const text = await ctx.request.text();
   if (text.length > RESPONSE_BODY_MAX) return refuse({ error: 'form_busy' }, 413);
   let body: { answers?: unknown; other?: unknown; website?: unknown };
@@ -74,6 +73,52 @@ export async function respond(
   }
   if (!body || typeof body !== 'object' || !body.answers || typeof body.answers !== 'object')
     return json({ error: 'invalid_answers', errors: {} }, { status: 400 });
+  return body as ResponseBodyRaw;
+}
+
+// An Editor's Preview of a form with no live link that sends its responses to a Sheet (docs/specs/030-forms/forms.md
+// "Preview"): nothing counts it, so its row reads Preview; the editor makes a board's preview card itself.
+export async function previewToSheet(
+  ctx: RouteContext,
+  doc: { id: string },
+  form: FormDefinition,
+  by: ItemPerson,
+): Promise<Response> {
+  const body = await readResponseBody(ctx);
+  if (body instanceof Response) return body;
+  const checked = checkResponse(form, {
+    answers: body.answers as Record<string, unknown>,
+    other:
+      body.other && typeof body.other === 'object' ? (body.other as Record<string, unknown>) : {},
+  });
+  if (!checked.ok) return refuse({ error: 'invalid_answers', errors: checked.errors }, 400);
+  const wrote = await writeResponseRow(ctx, {
+    documentId: doc.id,
+    sheet: form.sheet!,
+    form,
+    answers: checked.answers,
+    number: null,
+    preview: true,
+    by,
+  });
+  if (wrote !== 'written')
+    return refuse(
+      { error: wrote === 'missing' ? 'form_closed' : wrote === 'full' ? 'form_full' : 'form_busy' },
+      wrote === 'missing' ? 409 : wrote === 'full' ? 413 : 429,
+    );
+  ctx.waitUntil?.(reportServerEvent(ctx.env, 'Form', 'Sent', 'Preview'));
+  const accepted: FormResponseAccepted = { number: 0 };
+  return json(accepted, { status: 201 });
+}
+
+export async function respond(
+  ctx: RouteContext,
+  code: string,
+  { preview = false }: { preview?: boolean } = {},
+): Promise<Response> {
+  const { env } = ctx;
+  const body = await readResponseBody(ctx);
+  if (body instanceof Response) return body;
 
   const opened = await openFormLink(ctx, code);
   if (!opened) return refuse({ error: 'form_not_found' }, 404);
@@ -99,6 +144,39 @@ export async function respond(
   if (!checked.ok) {
     console.info('[forms] form.response.refused', { error: 'invalid_answers' });
     return refuse({ error: 'invalid_answers', errors: checked.errors }, 400);
+  }
+
+  // To a Sheet: a row, no card (sheet-response.ts).
+  if (form.sheet) {
+    if (!(await sheetThere(ctx, doc.id, form.sheet))) {
+      console.warn('[forms] form.destination.broken', {
+        documentId: doc.id,
+        problem: 'sheet_missing',
+      });
+      return refuse({ error: 'form_closed' }, 409);
+    }
+    const number = await claimResponseNumber(ctx.env, code, now, FORM_RESPONSES_PER_HOUR);
+    if (number === null) {
+      console.info('[forms] form.response.refused', { error: 'form_busy' });
+      return refuse({ error: 'form_busy' }, 429);
+    }
+    const wrote = await writeResponseRow(ctx, {
+      documentId: doc.id,
+      sheet: form.sheet,
+      form,
+      answers: checked.answers,
+      number,
+      preview,
+      by: formPerson(code, form),
+    });
+    // The number stays claimed whatever happened, so numbers never repeat.
+    if (wrote === 'full') return refuse({ error: 'form_full' }, 413);
+    if (wrote !== 'written')
+      return refuse(
+        { error: wrote === 'missing' ? 'form_closed' : 'form_busy' },
+        wrote === 'missing' ? 409 : 429,
+      );
+    return accepted(ctx, { doc, form, code, number, preview, title: `${form.heading} #${number}` });
   }
 
   const types = typesOf(doc.itemTypes);
@@ -145,17 +223,40 @@ export async function respond(
     return refuse({ error: 'form_busy' }, 429);
   }
   relay(ctx, doc.id, made.items, [], made.rev);
+  return accepted(ctx, {
+    doc,
+    form,
+    code,
+    number,
+    preview,
+    title: String(made.items[0]?.fields['title'] ?? ''),
+  });
+}
+
+// A response taken (a card or a sheet row): logged, counted, the owner emailed (not for a preview), and answered.
+function accepted(
+  ctx: RouteContext,
+  r: {
+    doc: { id: string; ownerId: string; name: string };
+    form: Pick<FormDefinition, 'heading'>;
+    code: string;
+    number: number;
+    preview: boolean;
+    title: string;
+  },
+): Response {
+  const { doc, form, code, number, preview } = r;
   console.info('[forms] form.response.accepted', { documentId: doc.id, number, preview });
-  ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', preview ? 'Preview' : 'Response'));
+  ctx.waitUntil?.(reportServerEvent(ctx.env, 'Form', 'Sent', preview ? 'Preview' : 'Response'));
   if (!preview)
     ctx.waitUntil?.(
       notifyFormResponse(
         ctx.env,
         { id: doc.id, ownerId: doc.ownerId, name: doc.name },
         { code, heading: form.heading },
-        String(made.items[0]?.fields['title'] ?? ''),
+        r.title,
       ),
     );
-  const accepted: FormResponseAccepted = { number };
-  return json(accepted, { status: 201 });
+  const body: FormResponseAccepted = { number };
+  return json(body, { status: 201 });
 }

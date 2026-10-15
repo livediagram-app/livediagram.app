@@ -385,6 +385,63 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
   });
 });
 
+describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sheet")', () => {
+  const SHEET = 'shtAAAAAA001';
+  const seedSheet = () =>
+    sql.sql
+      .prepare(
+        `INSERT INTO sheets (document_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+         VALUES ('d1', ?, 'stab', 'Responses', '{"rows":["ra01","ra02","ra03"],"cols":["ca01","ca02"]}', 0, 1, 1, '{}')`,
+      )
+      .run(SHEET);
+  const cells = () =>
+    sql.sql
+      .prepare(
+        `SELECT row_id, col_id, input FROM sheet_cells WHERE sheet_id = ? ORDER BY row_id, col_id`,
+      )
+      .all(SHEET) as { row_id: string; col_id: string; input: string }[];
+  const textAt = (row: string) =>
+    cells()
+      .filter((c) => c.row_id === row)
+      .map((c) => JSON.parse(c.input) as Record<string, unknown>);
+
+  it('adds a row under the headers it writes, a column per question, no card', async () => {
+    seedSheet();
+    writeForm(form({ sheet: { tabId: 'stab', sheetId: SHEET } }));
+    const code = await publish();
+    const res = await pub('POST', `${code}/responses`, {
+      answers: { 'q-sum': 'Crash on save', 'q-sev': 'High' },
+    });
+    expect(res).toEqual({ status: 201, body: { number: 1 } });
+    expect(await items()).toEqual([]);
+    expect(textAt('ra01').map((i) => i['s'])).toContain('Summary');
+    const row = textAt('ra02');
+    expect(row).toContainEqual({ n: 1 });
+    expect(row).toContainEqual({ s: 'Crash on save' });
+    await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'Again' } });
+    expect(textAt('ra03')).toContainEqual({ s: 'Again' });
+    expect((await owner('GET', 'form-link')).body).toMatchObject({ responses: 2 });
+  });
+
+  it('closes when its sheet is gone, and previews an unpublished form into a Preview row', async () => {
+    writeForm(form({ sheet: { tabId: 'stab', sheetId: SHEET } }));
+    expect((await owner('POST', 'form-link')).status).toBe(409);
+    seedSheet();
+    const preview = await owner('POST', 'form-preview', { body: { answers: { 'q-sum': 'Try' } } });
+    expect(preview).toEqual({ status: 201, body: { number: 0 } });
+    expect(textAt('ra02')).toContainEqual({ s: 'Preview' });
+    expect((await owner('POST', 'form-preview', { body: { answers: {} } })).body).toMatchObject({
+      error: 'invalid_answers',
+    });
+    const code = await publish();
+    sql.sql.prepare(`DELETE FROM sheets WHERE id = ?`).run(SHEET);
+    expect((await pub<PublicFormResponse>('GET', code)).body.state).toBe('closed');
+    expect((await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'x' } })).status).toBe(
+      409,
+    );
+  });
+});
+
 describe('an Editor\'s Preview (docs/specs/030-forms/forms.md "Preview")', () => {
   it("counts a published form's preview as a response, titled Preview, even while closed", async () => {
     expect(

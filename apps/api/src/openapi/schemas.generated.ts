@@ -6772,6 +6772,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "sheet": {
+        "$ref": "#/components/schemas/FormSheetDestination"
+      },
       "starter": {
         "$ref": "#/components/schemas/StarterId"
       },
@@ -7064,6 +7067,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id",
       "title",
       "questions"
+    ],
+    "type": "object"
+  },
+  "FormSheetDestination": {
+    "additionalProperties": false,
+    "properties": {
+      "sheetId": {
+        "type": "string"
+      },
+      "tabId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tabId",
+      "sheetId"
     ],
     "type": "object"
   },

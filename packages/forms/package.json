@@ -17,7 +17,8 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livediagram/items": "workspace:*"
+    "@livediagram/items": "workspace:*",
+    "@livediagram/sheets": "workspace:*"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",

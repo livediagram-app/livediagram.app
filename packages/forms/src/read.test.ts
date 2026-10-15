@@ -179,6 +179,16 @@ describe('readForm', () => {
     expect(num).toEqual({ id: 'q-1', type: 'number', prompt: 'N' });
   });
 
+  it('keeps a sheet to send responses to, and drops a malformed one', () => {
+    expect(readForm({ sheet: { tabId: 'tab-1', sheetId: 'AbCdEf123456' } })!.sheet).toEqual({
+      tabId: 'tab-1',
+      sheetId: 'AbCdEf123456',
+    });
+    expect(readForm({ sheet: { tabId: 'tab-1', sheetId: 'x' } })!.sheet).toBeUndefined();
+    expect(readForm({ sheet: { tabId: 'tab 1', sheetId: 'AbCdEf123456' } })!.sheet).toBeUndefined();
+    expect(readForm({ sheet: 'AbCdEf123456' })!.sheet).toBeUndefined();
+  });
+
   it('keeps a question with no prompt yet, its prompt empty', () => {
     expect(readForm(form([{ id: 'q-1', type: 'short' }]))!.sections[0]!.questions[0]).toEqual({
       id: 'q-1',

@@ -8,19 +8,13 @@ import {
   type PublicFormResponse,
 } from '@livediagram/api-schema';
 import { formLook } from '@livediagram/document';
-import {
-  FORM_CODE_PATTERN,
-  closedMessageOf,
-  closedReason,
-  destinationProblem,
-  publicForm,
-} from '@livediagram/forms';
+import { FORM_CODE_PATTERN, closedMessageOf, closedReason, publicForm } from '@livediagram/forms';
 import { typesOf } from '@livediagram/items';
 import { clientIp } from '../client-ip';
 import { communityNetwork } from '../community-network';
 import { addFormReport, countSuspendedFormLinks, suspendFormLink } from '../db';
 import { notifyFormSuspended } from '../email/notifications';
-import { boardsOnTab } from '../forms/form-tab';
+import { responsesProblem } from '../forms/form-tab';
 import { reportServerEvent } from '../server-telemetry';
 import { openFormLink, respond } from '../forms/respond';
 import { json, methodNotAllowed, notFound } from '../responses';
@@ -50,13 +44,8 @@ async function read(ctx: RouteContext, code: string): Promise<Response> {
     now: Date.now(),
   });
   // A destination broken since publishing shows as closed: a response could not be made.
-  if (!closed) {
-    const boards = form.destination
-      ? await boardsOnTab(ctx.env, doc.id, form.destination.tabId)
-      : [];
-    if (destinationProblem(form.destination, boards, typesOf(doc.itemTypes)))
-      closed = 'no_destination';
-  }
+  if (!closed && (await responsesProblem(ctx.env, doc.id, form, typesOf(doc.itemTypes))))
+    closed = 'no_destination';
   const body: PublicFormResponse = closed
     ? {
         state: 'closed',

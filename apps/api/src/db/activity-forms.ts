@@ -9,7 +9,7 @@ export const FORM_RESPONSES_SQL = `WITH ${VISIBLE_DOCUMENTS_CTES}
   SELECT l.code, v.id AS document_id, v.name AS document_name, v.team_id AS document_team_id, v.via,
          l.tab_id, t.name AS tab_name,
          json_extract(t.data, '$.form.heading') AS heading,
-         json_extract(t.data, '$.form.destination.tabId') AS board_tab_id,
+         COALESCE(json_extract(t.data, '$.form.sheet.tabId'), json_extract(t.data, '$.form.destination.tabId')) AS board_tab_id,
          l.responses - COALESCE(r.seen_number, 0) AS unseen,
          COALESCE(l.last_response_at, l.created_at) AS latest_at
     FROM visible v

@@ -12,3 +12,4 @@ export * from './ids';
 export * from './destination';
 export * from './branching';
 export * from './publish-check';
+export * from './sheet-row';
