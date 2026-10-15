@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { runInlineScript } from '@livediagram/vitest-config/inline-script';
 import {
   RECENT_DIAGRAMS_KEY,
   RECENT_DIAGRAMS_LIMIT,
@@ -103,7 +104,7 @@ describe('helpers', () => {
       const document = {
         documentElement: { setAttribute: (k: string, v: string) => (attrs[k] = v) },
       };
-      new Function('localStorage', 'document', RETURNING_BOOT_SCRIPT)(localStorage, document);
+      runInlineScript(RETURNING_BOOT_SCRIPT, { localStorage, document });
       return 'data-returning' in attrs;
     };
     expect(run(serializeRecentDiagrams(pickRecentDiagrams([doc('a', 1)])))).toBe(true);

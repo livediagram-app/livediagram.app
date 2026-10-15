@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { runInlineScript } from '@livediagram/vitest-config/inline-script';
 import {
   INERT_PARSE_POLICY,
   MARKUP_POLICY,
@@ -143,7 +144,17 @@ describe('parseInert', () => {
 });
 
 describe('trustedTypesBootScript', () => {
-  const run = (script: string) => new Function(script)();
+  // The page it runs in: this window (with the Trusted Types stub when a test installs one), its
+  // origin, events and URL parser, and the console the tests spy on.
+  const run = (script: string) =>
+    runInlineScript(script, {
+      window,
+      location,
+      URL,
+      addEventListener: (type: string, listener: EventListener) =>
+        window.addEventListener(type, listener),
+      console,
+    });
 
   it('creates the default policy, which lets only allowed script URLs through and logs a refusal', () => {
     const { created } = stubTrustedTypes();

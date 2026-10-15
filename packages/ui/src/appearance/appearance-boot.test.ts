@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { runInlineScript } from '@livediagram/vitest-config/inline-script';
 import {
   APPEARANCE_BOOT_SCRIPT,
   APPEARANCE_STORAGE_KEY,
@@ -77,11 +78,7 @@ function runAppearanceBoot(opts: {
         : (query: string) => ({ matches: !!opts.osPrefersDark && query.includes('dark') }),
     document: { documentElement: { classList: { add: (c: string) => classes.push(c) } } },
   };
-  new Function('localStorage', 'matchMedia', 'document', APPEARANCE_BOOT_SCRIPT)(
-    stubs.localStorage,
-    stubs.matchMedia,
-    stubs.document,
-  );
+  runInlineScript(APPEARANCE_BOOT_SCRIPT, stubs);
   return { classes };
 }
 
