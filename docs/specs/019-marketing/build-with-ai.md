@@ -36,7 +36,7 @@ Status: shipped
 | `windsurf`    | Windsurf    | Editors       | Cascade's MCP settings › raw config (`mcp_config.json`), an entry with `serverUrl`; refresh, then sign in.                                                                                                       |
 | `other`       | Any client  | Anything else | Add a remote (Streamable HTTP) server with the address; OAuth is discovered, no client id or secret. Without OAuth: an API token as `Authorization: Bearer lvd_…`.                                               |
 
-Third-party menu names drift, so each client's last line says where to look if a label has moved, and the page never shows third-party logos: each tab wears a generic glyph for its group (chat, terminal, editor, plug).
+Third-party menu names drift, so a client whose menus are known to move (ChatGPT) says where to look if a label has moved, and the page never shows third-party logos: each tab wears a generic glyph for its group (a chat bubble, a code square, an app window, a link).
 
 ## Behaviour
 
@@ -58,4 +58,4 @@ The page is public marketing, outside any document, so Editor, Participant and V
 
 ## Performance
 
-The page ships one client island for the picker, the copy buttons and the prompts; the rest is static. No new dependency. The chat art reuses `DiagramBuildAnimation` (CSS keyframes, no JS tick).
+The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art reuses `DiagramBuildAnimation` (CSS keyframes, no JS tick).
