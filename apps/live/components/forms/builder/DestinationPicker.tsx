@@ -21,7 +21,14 @@ import { useFormBuilder } from './form-builder-context';
 // The value of each select's last choice, New Board or New Card Type.
 const NEW = '__new';
 
-export function DestinationPicker({ tabs }: { tabs: readonly Tab[] }) {
+// `onLeave` closes the panel holding it: the card type's editor is a dialog of its own, never under the panel.
+export function DestinationPicker({
+  tabs,
+  onLeave,
+}: {
+  tabs: readonly Tab[];
+  onLeave?: () => void;
+}) {
   const b = useFormBuilder();
   const sheets = sheetsOf(tabs);
   const toSheet = !!b.form.sheet;
@@ -56,7 +63,11 @@ export function DestinationPicker({ tabs }: { tabs: readonly Tab[] }) {
           else b.actions.newResponsesSheet();
         })}
       </div>
-      {toSheet ? <SheetDestination tabs={tabs} /> : <BoardDestination tabs={tabs} />}
+      {toSheet ? (
+        <SheetDestination tabs={tabs} />
+      ) : (
+        <BoardDestination tabs={tabs} onLeave={onLeave} />
+      )}
     </div>
   );
 }
@@ -110,7 +121,7 @@ function SheetDestination({ tabs }: { tabs: readonly Tab[] }) {
 }
 
 // Cards on a Board: the board, the card type (with its editor) and the column, and a sentence reading it back.
-function BoardDestination({ tabs }: { tabs: readonly Tab[] }) {
+function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: () => void }) {
   const b = useFormBuilder();
   const plan = usePlan();
   const dest = b.form.destination;
@@ -185,7 +196,10 @@ function BoardDestination({ tabs }: { tabs: readonly Tab[] }) {
               <button
                 type="button"
                 aria-label={`Edit card type ${b.type.label}`}
-                onClick={() => plan.editType(b.type!.id)}
+                onClick={() => {
+                  onLeave?.();
+                  plan.editType(b.type!.id);
+                }}
                 className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
               >
                 <PencilIcon />

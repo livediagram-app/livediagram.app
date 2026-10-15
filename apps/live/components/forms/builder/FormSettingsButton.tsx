@@ -50,7 +50,7 @@ export function FormSettingsButton({
       </Tooltip>
       {open !== false && anchor ? (
         <FormSheet anchor={anchor} name="Form Settings" width={320} onClose={onClose}>
-          <Sections tabs={tabs} link={link} first={open} />
+          <Sections tabs={tabs} link={link} first={open} onLeave={onClose} />
           {/* The Forms tour, again (docs/specs/030-forms/forms.md "The Forms tour"). */}
           <div className="mt-3 flex justify-end border-t border-slate-100 pt-2 dark:border-slate-800">
             <button
@@ -74,10 +74,13 @@ function Sections({
   tabs,
   link,
   first,
+  onLeave,
 }: {
   tabs: readonly Tab[];
   link: FormLinkState;
   first: FormSettingsSection | null;
+  // Closes the panel, for a choice that opens something of its own (the card type's editor).
+  onLeave: () => void;
 }) {
   const [shown, setShown] = useState<FormSettingsSection>(first ?? 'destination');
   const tab = (id: FormSettingsSection, name: string) => (
@@ -107,7 +110,7 @@ function Sections({
       </div>
       <div role="tabpanel" aria-label={shown === 'destination' ? 'Responses Go To' : 'Settings'}>
         {shown === 'destination' ? (
-          <DestinationPicker tabs={tabs} />
+          <DestinationPicker tabs={tabs} onLeave={onLeave} />
         ) : (
           <FormSettingsTab link={link} />
         )}

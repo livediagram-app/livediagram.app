@@ -94,12 +94,14 @@ export function FormTourHost() {
 
   // Armed on opening a Form tab, and by Show Me Around; disarmed once offered or answered.
   const [armed, setArmed] = useState(false);
+  // Show Me Around asked for it: offered at once, even to someone who has seen it.
+  const [rerun, setRerun] = useState(false);
   const [wasOn, setWasOn] = useState(false);
   if (onForm !== wasOn) {
     setWasOn(onForm);
     if (onForm) setArmed(true);
   }
-  if (armed && seen) setArmed(false);
+  if (armed && seen && !rerun) setArmed(false);
 
   const endTour = (outcome: TourOutcome) => {
     apiRef.current.backToForm();
@@ -118,7 +120,6 @@ export function FormTourHost() {
   const engineRef = useLatest(engine);
 
   // The offer: armed, on a Form tab, usable, not seen (a rerun clears that), and no other tour on screen.
-  const [rerun, setRerun] = useState(false);
   useEffect(() => {
     if (!armed || active || (seen && !rerun)) return;
     if (!onForm || !canWork || otherTour) return;
