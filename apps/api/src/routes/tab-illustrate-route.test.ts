@@ -170,6 +170,8 @@ describe('an article write', () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as IllustrateAnswer;
     expect(body.article).toMatchObject({ title: 'Brief', pages: [1], blocks: 3, created: true });
+    // The answer says how many pages the writing takes, as estimated.
+    expect(body.lines.at(-1)).toMatch(/^It takes about 1 page once laid out \(estimated/);
     const tab = stored(db);
     expect(Object.values(tab.articles)).toHaveLength(1);
     const kinds = room.bodies.map((b) => b.op.kind);

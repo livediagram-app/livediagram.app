@@ -181,6 +181,6 @@ export function applyArticleWrite(
   if (gone.length)
     lines.push(`Removed zones and what was in them: ${gone.map((z) => z.id).join(', ')}.`);
   if (markersGone) lines.push(`Removed margin notes whose text is gone (${markersGone}).`);
-  lines.push('The writing flows onto as many pages as it needs when it is laid out in the editor.');
+  // How many pages it takes is said by the caller, which estimates the layout (illustrate-summary.ts).
   return { tab: current, flow: flow!, created, lines, switched: entered.switched };
 }

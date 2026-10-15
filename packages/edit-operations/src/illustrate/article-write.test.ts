@@ -62,7 +62,6 @@ describe('a new article', () => {
     expect(out.lines).toEqual([
       'Switched the tab to Illustrate.',
       'Started the article "Brief" (art-1): 2 blocks.',
-      'The writing flows onto as many pages as it needs when it is laid out in the editor.',
     ]);
   });
 

@@ -1120,7 +1120,8 @@ The output literals that named the container changed with it: `renamed`, `delete
   `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One
   that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@livediagram/icons/resolve`).
 - Article summaries (`write_article`, `change_pages`, the `pages` view) carry `estimatedPages`, the pages the writing
-  reaches once laid out, from the same estimate.
+  reaches once laid out, from the same estimate; `write_article`'s last line says it in words ("It takes about 2 pages
+  once laid out"), so an agent asked for one page sees at once that it ran over.
 
 ## 5. Visualise — inline image render
 
