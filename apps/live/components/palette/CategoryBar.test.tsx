@@ -125,6 +125,38 @@ describe('hover intent', () => {
     expect(heading()).toBe('Shapes');
   });
 
+  it('closes the open category on a second tap', () => {
+    show();
+    fireEvent.pointerDown(button('Shapes'), { pointerType: 'touch' });
+    fireEvent.click(button('Shapes'), { detail: 1 });
+    expect(heading()).toBe('Shapes');
+    fireEvent.pointerDown(button('Shapes'), { pointerType: 'touch' });
+    fireEvent.click(button('Shapes'), { detail: 1 });
+    expect(flyout()).toBeNull();
+    // And a third opens it again.
+    fireEvent.pointerDown(button('Shapes'), { pointerType: 'touch' });
+    fireEvent.click(button('Shapes'), { detail: 1 });
+    expect(heading()).toBe('Shapes');
+  });
+
+  it('moves a tap on another category there rather than closing', () => {
+    show();
+    fireEvent.pointerDown(button('Shapes'), { pointerType: 'touch' });
+    fireEvent.click(button('Shapes'), { detail: 1 });
+    fireEvent.pointerDown(button('Build'), { pointerType: 'touch' });
+    fireEvent.click(button('Build'), { detail: 1 });
+    expect(heading()).toBe('Build');
+  });
+
+  it('keeps a second mouse click on the open category from closing it', () => {
+    show();
+    fireEvent.pointerDown(button('Shapes'), mouse);
+    fireEvent.click(button('Shapes'), { detail: 1 });
+    fireEvent.pointerDown(button('Shapes'), mouse);
+    fireEvent.click(button('Shapes'), { detail: 1 });
+    expect(heading()).toBe('Shapes');
+  });
+
   it('stays open while a tile is dragged out, and closes on the drop', () => {
     show();
     fireEvent.pointerEnter(button('Shapes'), mouse);
