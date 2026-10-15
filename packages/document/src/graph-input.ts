@@ -329,6 +329,8 @@ export function layoutGraph(
   // rank then go round the outside instead.
   const axis = style === 'lanes' ? 'LR' : flowDir;
   if (lines === 'angled') {
+    // Across lanes, a step's exits leave by different sides: a decision's, or any step's that branches.
+    if (style === 'lanes') laid = branchExits(laid, { axis: 'LR' });
     // Trunks and buses (graph-branches.ts); then, down a flow, a step's exits that keep their own start
     // leave by different sides.
     laid = withExactEnds(laid);
@@ -340,7 +342,8 @@ export function layoutGraph(
       laid = sideRejoins(laid, axis, routes);
     if (stacked.size) laid = stackBuses(laid, stacked, routes);
     if (style === 'flow' || style === 'lanes') laid = routeLoops(laid, axis, flat, routes);
-    laid = withoutNotches(placeElbowLabels(applyRoutes(laid, routes)));
+    // Straightened first, so each label is placed on the line as it is drawn.
+    laid = placeElbowLabels(withoutNotches(applyRoutes(laid, routes)));
   }
   return withHeaderAndKey(turnBack(laid, g.edges), {
     ...(g.title ? { title: g.title } : {}),

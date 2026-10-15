@@ -22,7 +22,7 @@ Status: shipped
 
 ## The clients
 
-`lib/ai-clients.ts` holds the clients as data: an `id` (the URL hash), a `name`, a `group`, a one-line `blurb`, and `steps`, each step a sentence with optional code (`{ lang, code }`) or a link button (`{ href, label }`). One address constant, `MCP_URL`, feeds every snippet.
+`lib/ai-clients.ts` holds the clients as data: an `id` (the URL hash), a `name`, a `group`, a one-line `blurb`, and `steps`, each step a sentence with optional code (`{ lang, code }`) or a link button (`{ href, label }`). One address constant, `MCP_URL`, feeds every snippet: this deployment's MCP worker, read from `NEXT_PUBLIC_MCP_ORIGIN` through the resolver the live app's consent pages use (`resolveMcpOrigin`, `@livediagram/api-schema`), so a self-hosted build shows its own address and the hosted one shows `https://mcp.livediagram.app/mcp`.
 
 | id            | Name        | Group         | The way in                                                                                                                                                                                                       |
 | ------------- | ----------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -36,12 +36,12 @@ Status: shipped
 | `windsurf`    | Windsurf    | Editors       | Cascade's MCP settings › raw config (`mcp_config.json`), an entry with `serverUrl`; refresh, then sign in.                                                                                                       |
 | `other`       | Any client  | Anything else | Add a remote (Streamable HTTP) server with the address; OAuth is discovered, no client id or secret. Without OAuth: an API token as `Authorization: Bearer lvd_…`.                                               |
 
-Third-party menu names drift, so each client's last line says where to look if a label has moved, and the page never shows third-party logos: each tab wears a generic glyph for its group (chat, terminal, editor, plug).
+Third-party menu names drift, so a client whose menus are known to move (ChatGPT) says where to look if a label has moved, and the page never shows third-party logos: each tab wears a generic glyph for its group (a chat bubble, a code square, an app window, a link).
 
 ## Behaviour
 
-- **Copy** buttons use `navigator.clipboard.writeText` and `useCopiedFlash`: the label turns to "Copied" with a check for two seconds and a polite live region announces it. A blocked clipboard leaves the button as it was; the text is always selectable.
-- **Tabs** follow the WAI-ARIA tabs pattern: `role="tablist"`, roving `tabIndex`, Left/Right/Home/End move and select, each tab `aria-controls` its panel.
+- **Copy** buttons use `navigator.clipboard.writeText` and `useCopiedFlash`: the label turns to "Copied" with a check for two seconds and a polite live region beside the button (never inside it, where a button's children are not read as a region) announces it. A button's accessible name starts with the words it shows ("Copy prompt: Map a codebase"), so it can be named by voice. A blocked clipboard leaves the button as it was; the text is always selectable. A command's `$ ` prompt is drawn by CSS, so selecting and copying the block by hand never takes it along.
+- **Tabs** follow the WAI-ARIA tabs pattern: `role="tablist"`, roving `tabIndex`, the arrow keys (either pair) and Home/End move and select, each tab `aria-controls` its panel. The list's `aria-orientation` follows its layout: vertical down the side from `lg`, horizontal across the top below it. Its group headings cannot sit in a tablist, so each tab is `aria-describedby` its group's heading. A link to `/ai#<client>` opens on that client in the hydrating render, before paint; the static HTML itself shows the first client until the page's script runs.
 - **One-click links** (`cursor:`, `vscode:`) open the editor app when it is installed; the manual config sits right under each, so nothing depends on the link.
 
 ## Share roles
@@ -58,4 +58,4 @@ The page is public marketing, outside any document, so Editor, Participant and V
 
 ## Performance
 
-The page ships one client island for the picker, the copy buttons and the prompts; the rest is static. No new dependency. The chat art reuses `DiagramBuildAnimation` (CSS keyframes, no JS tick).
+The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art reuses `DiagramBuildAnimation` (CSS keyframes, no JS tick).

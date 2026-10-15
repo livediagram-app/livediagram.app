@@ -213,7 +213,7 @@ export function DiagramBuildAnimation({
   className?: string;
   /** Whose cursor draws (default "You"). */
   cursorLabel?: string;
-  /** The picture's accessible name. */
+  /** The picture's accessible name; empty, it is decorative and hidden from assistive tech. */
   label?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -222,7 +222,11 @@ export function DiagramBuildAnimation({
 
   return (
     <div ref={ref} className={`mx-auto w-full ${className}`}>
-      <svg viewBox="0 0 300 180" className="w-full overflow-visible" role="img" aria-label={label}>
+      <svg
+        viewBox="0 0 300 180"
+        className="w-full overflow-visible"
+        {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
+      >
         <defs>
           {EDGES.map((e) => {
             const [a, , , d] = e.p;

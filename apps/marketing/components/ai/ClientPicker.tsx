@@ -9,7 +9,7 @@ import {
   lucideSquareCode,
 } from '@livediagram/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 
 import { AI_CLIENT_GROUPS, AI_CLIENTS, type AiClient, type AiClientGroup } from '@/lib/ai-clients';
 
@@ -31,14 +31,28 @@ const GROUP_ICONS: Record<AiClientGroup, ReturnType<typeof lucideGlyph>> = {
 const ExternalIcon = lucideGlyph(lucideExternalLink, 14);
 const DownIcon = lucideGlyph(lucideArrowDown, 14);
 
+const groupId = (group: AiClientGroup) => `ai-group-${group.toLowerCase().replace(/\s+/g, '-')}`;
+
 const ORDERED = AI_CLIENT_GROUPS.flatMap((g) => AI_CLIENTS.filter((c) => c.group === g));
 
 export function ClientPicker() {
   const [active, setActive] = useState(ORDERED[0]!.id);
   const tabs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  // A hash naming a client opens on it (on arrival and when the hash changes in place).
+  // The list runs down the side from lg, across the top below it: its orientation follows, so a screen reader's
+  // arrow-key hint matches what is on screen (both pairs of arrows move either way).
+  const [vertical, setVertical] = useState(false);
   useEffect(() => {
+    const wide = window.matchMedia('(min-width: 64rem)');
+    const sync = () => setVertical(wide.matches);
+    sync();
+    wide.addEventListener('change', sync);
+    return () => wide.removeEventListener('change', sync);
+  }, []);
+
+  // A hash naming a client opens on it (on arrival and when the hash changes in place). Before paint, so a deep
+  // link swaps from the static first client to its own in the hydrating render, not a frame later.
+  useLayoutEffect(() => {
     function fromHash(scroll: boolean) {
       const id = window.location.hash.slice(1);
       if (!ORDERED.some((c) => c.id === id)) return;
@@ -92,7 +106,7 @@ export function ClientPicker() {
       <div
         role="tablist"
         aria-label="AI tools"
-        aria-orientation="vertical"
+        aria-orientation={vertical ? 'vertical' : 'horizontal'}
         className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0 lg:pb-0"
       >
         {ORDERED.map((client, i) => {
@@ -104,6 +118,7 @@ export function ClientPicker() {
               {firstOfGroup ? (
                 <p
                   aria-hidden
+                  id={groupId(client.group)}
                   className={`hidden px-3 text-xs font-semibold tracking-wider text-slate-500 uppercase lg:block dark:text-slate-400 ${
                     i === 0 ? '' : 'mt-4'
                   }`}
@@ -120,6 +135,9 @@ export function ClientPicker() {
                 id={`tab-${client.id}`}
                 aria-selected={selected}
                 aria-controls={`panel-${client.id}`}
+                // The group heading is not a tab, so it cannot sit in the list for a screen reader: each tab is
+                // described by its group instead ("Claude, tab, Chat apps").
+                aria-describedby={groupId(client.group)}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => select(client.id)}
                 onKeyDown={onKeyDown}

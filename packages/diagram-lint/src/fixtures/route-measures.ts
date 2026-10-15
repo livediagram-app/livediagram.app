@@ -8,7 +8,9 @@
 //   - crossings, behind, collisions: the lint's own counts; extent: the drawing's size.
 
 import {
+  arrowEndKey,
   arrowStyleOf,
+  KINK_RUN,
   type ArrowElement,
   type Element,
   type Point,
@@ -73,9 +75,6 @@ function sharedLength(a: readonly Run[], b: readonly Run[]): number {
   return total;
 }
 
-// A run between two turns shorter than this reads as a notch, not a bend.
-const KINK_RUN = 12;
-
 // Whether a route kinks: an interior run with length but shorter than KINK_RUN, or two runs in a row heading
 // opposite ways.
 function kinked(points: readonly Point[]): boolean {
@@ -93,13 +92,10 @@ function kinked(points: readonly Point[]): boolean {
   return false;
 }
 
-const endKey = (end: ArrowElement['from']) =>
-  end.kind === 'pinned' ? `${end.elementId}:${end.anchor}` : null;
-
 // Whether two arrows meet at a pinned end: the same anchor of the same box.
 function sharesEnd(a: ArrowElement, b: ArrowElement): boolean {
-  const mine = [endKey(a.from), endKey(a.to)].filter((k): k is string => !!k);
-  return [endKey(b.from), endKey(b.to)].some((k) => !!k && mine.includes(k));
+  const mine = [arrowEndKey(a.from), arrowEndKey(a.to)].filter((k): k is string => !!k);
+  return [arrowEndKey(b.from), arrowEndKey(b.to)].some((k) => !!k && mine.includes(k));
 }
 
 type Rect = { x: number; y: number; width: number; height: number };

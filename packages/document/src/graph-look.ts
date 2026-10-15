@@ -15,6 +15,7 @@ import { arrowRoutePoints } from './arrow-label-layout';
 import { frameHeadingRect } from './auto-layout-cluster-seats';
 import { rectGrid, type RectGrid } from './auto-layout-route-grid';
 import { anchorPosition, endpointPosition } from './geometry';
+import { rectsIntersect, type Rect } from './geometry-primitives';
 import type { GraphEdge, GraphNode } from './graph-authoring';
 import {
   ROUTER_BUDGET,
@@ -213,6 +214,7 @@ export function routeLoops(
       b.y + b.height <= f.y + f.height);
   const wallsFor = (src: BoxedElement, dst: BoxedElement) =>
     frames.filter((f) => !holds(f, src) && !holds(f, dst));
+  const frameGrid = rectGrid(frames, 0);
   const main = (b: BoxedElement) => (axis === 'TB' ? b.y + b.height / 2 : b.x + b.width / 2);
   const spanOf = (b: BoxedElement): [number, number] =>
     axis === 'TB' ? [b.y, b.y + b.height] : [b.x, b.x + b.width];
@@ -229,7 +231,13 @@ export function routeLoops(
     const [f, t] = [pinnedId(el.from), pinnedId(el.to)];
     if (!f || !t || f === t || flat.has(edgeKey(f, t)) || !boxes.has(f) || !boxes.has(t))
       return false;
-    return backward(el) || crossesABox(el, elements, solidGrid);
+    if (backward(el) || crossesABox(el, elements, solidGrid)) return true;
+    // A line through a group it does not join goes round it too, though it touches none of the group's members.
+    const [src, dst] = [boxes.get(f)!, boxes.get(t)!];
+    return (
+      frames.length > 0 &&
+      crossesABox(el, elements, frameGrid, (b) => holds(b, src) || holds(b, dst))
+    );
   });
   if (loops.length === 0) return elements;
 
@@ -256,9 +264,11 @@ export function routeLoops(
   // "no" climbing the very line a "yes" climbs into its step) read as that line's; the router prices sharing them.
   const routing = new Set(loops.map((l) => l.id));
   const round = (p: Pt) => ({ x: Math.round(p.x), y: Math.round(p.y) });
-  const taken: Run[] = elements
+  // Lines an earlier pass routed (a rejoin, a bus) are measured on their routes, not the elbows they still carry.
+  const drawn = applyRoutes(elements, routes);
+  const taken: Run[] = drawn
     .filter((el): el is ArrowElement => el.type === 'arrow' && !routing.has(el.id))
-    .flatMap((a) => runsOf(arrowRoutePoints(a, elements).map(round)));
+    .flatMap((a) => runsOf(arrowRoutePoints(a, drawn).map(round)));
   // Every route of this layout draws on one budget: spent, the rest take their outside tracks.
   const budget: RouterBudget = { left: ROUTER_BUDGET };
   let next = elements;
@@ -293,7 +303,7 @@ export function routeLoops(
       taken.push(...runsOf([found.from, ...found.corners, found.to]));
       continue;
     }
-    const single = backward(current) ? singleBend(current, src, dst, solid, axis, next) : null;
+    const single = backward(current) ? singleBend(current, src, dst, obstacles, axis, next) : null;
     if (single) {
       next = next.map((el) => (el.id === loop.id ? single : el));
       routes.set(loop.id, { kind: 'corner', first: axis === 'TB' ? 'v' : 'h' });
@@ -395,7 +405,13 @@ function bestRoute(
 }
 
 // Whether an arrow's drawn path (its ends and bends) passes through a box it does not connect.
-function crossesABox(arrow: ArrowElement, elements: Element[], solid: RectGrid): boolean {
+function crossesABox(
+  arrow: ArrowElement,
+  elements: Element[],
+  solid: RectGrid,
+  // Boxes the path may pass through (a frame holding one of its ends).
+  skip?: (box: BoxedElement) => boolean,
+): boolean {
   const from = endAt(arrow, 'from', elements);
   const to = endAt(arrow, 'to', elements);
   const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
@@ -410,13 +426,13 @@ function crossesABox(arrow: ArrowElement, elements: Element[], solid: RectGrid):
       Math.max(a.x, p.x),
       Math.max(a.y, p.y),
     ) as BoxedElement[];
-    return near.some((b) => !ends.has(b.id) && segmentHitsBox(a, p, b));
+    return near.some((b) => !ends.has(b.id) && !skip?.(b) && segmentHitsBox(a, p, b));
   });
 }
 
 // Whether the segment a→b passes through `box` shrunk by `inset` (positive: grazing is not hitting; negative: the
 // box grown, a clearance).
-function segmentHitsBox(a: Pt, b: Pt, box: BoxedElement, inset = 4): boolean {
+export function segmentHitsBox(a: Pt, b: Pt, box: BoxedElement, inset = 4): boolean {
   const x0 = box.x + inset;
   const x1 = box.x + box.width - inset;
   const y0 = box.y + inset;
@@ -892,7 +908,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
           ) &&
           !holders.some(
             ({ rect, heading }) =>
-              straddles(plate, rect) || (heading !== null && rectsMeet(plate, heading)),
+              straddles(plate, rect) || (heading !== null && rectsIntersect(plate, heading)),
           ) &&
           // Strict, off every other line too, not only labelled ones: a neighbour's drop struck a label through.
           (!strict ||
@@ -901,7 +917,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
                 l.id !== a.id &&
                 l.pts.some((p, k) => k > 0 && segmentHitsRect(l.pts[k - 1]!, p, plate)),
             ));
-        if (clear && !plates.some((r) => rectsMeet(plate, r))) return f;
+        if (clear && !plates.some((r) => rectsIntersect(plate, r))) return f;
       }
       return null;
     };
@@ -921,15 +937,15 @@ export function placeElbowLabels(elements: Element[]): Element[] {
           const cy = p.y + (q.y - p.y) * f + n.y * reach * sign;
           const plate = { x: cx - width / 2, y: cy - LABEL_CLEAR / 2, width, height: LABEL_CLEAR };
           const clear =
-            !boxes.some((b) => rectsMeet(plate, b)) &&
+            !boxes.some((b) => rectsIntersect(plate, b)) &&
             !holders.some(
               ({ rect, heading }) =>
-                straddles(plate, rect) || (heading !== null && rectsMeet(plate, heading)),
+                straddles(plate, rect) || (heading !== null && rectsIntersect(plate, heading)),
             ) &&
             !lines.some((l) =>
               l.pts.some((pt, k) => k > 0 && segmentHitsRect(l.pts[k - 1]!, pt, plate)),
             );
-          if (clear && !plates.some((r) => rectsMeet(plate, r)))
+          if (clear && !plates.some((r) => rectsIntersect(plate, r)))
             return { f, offset: Number((reach * sign).toFixed(2)) };
         }
       return null;
@@ -979,7 +995,6 @@ export function placeElbowLabels(elements: Element[]): Element[] {
   return elements.map((el) => placed.get(el.id) ?? el);
 }
 
-type Rect = { x: number; y: number; width: number; height: number };
 // How far a label's plate keeps off a frame's or lane's border, in px: inside by a pixel, "HTTPS" read as sitting
 // on the Clients frame's edge.
 const LABEL_BORDER_CLEAR = 6;
@@ -991,7 +1006,7 @@ const straddles = (plate: Rect, rect: Rect) => {
     width: plate.width + 2 * LABEL_BORDER_CLEAR,
     height: plate.height + 2 * LABEL_BORDER_CLEAR,
   };
-  return rectsMeet(near, rect) && !rectWithin(near, rect);
+  return rectsIntersect(near, rect) && !rectWithin(near, rect);
 };
 // Whether a segment passes through a rectangle (its interior; touching an edge does not count).
 function segmentHitsRect(a: Pt, b: Pt, r: Rect): boolean {
@@ -1016,8 +1031,6 @@ function segmentHitsRect(a: Pt, b: Pt, r: Rect): boolean {
   }
   return true;
 }
-const rectsMeet = (a: Rect, b: Rect) =>
-  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 const rectWithin = (a: Rect, b: Rect) =>
   a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height;
 

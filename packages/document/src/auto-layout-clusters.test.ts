@@ -116,6 +116,21 @@ describe('layoutClusteredGraph', () => {
     expect(right.x).toBeGreaterThanOrEqual(left.x + left.width);
   });
 
+  it('leaves room between a group and an outside node for the label of the line between them', () => {
+    const graph: DiagramGraph = {
+      nodes: ['client', 'api', 'db'].map((id) => ({ id, label: id })),
+      edges: [
+        { from: 'client', to: 'api', label: 'HTTPS / REST over the public gateway' },
+        { from: 'api', to: 'db' },
+      ],
+      clusters: [{ id: 'backend', members: ['api', 'db'] }],
+    };
+    const els = layoutClusteredGraph(graph, { direction: 'LR', makeEdgeId: makeIds() });
+    const [client, frame] = [byId(els, 'client'), byId(els, 'backend')];
+    // The label's width (capped at 160) and its room either side: more than the plain 90 px gap.
+    expect(frame.x - (client.x + client.width)).toBeGreaterThan(160);
+  });
+
   it('pins an arrow to the frame when an edge references the cluster id', () => {
     const graph: DiagramGraph = {
       nodes: [
