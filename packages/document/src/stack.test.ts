@@ -54,6 +54,26 @@ describe('a stack', () => {
     expect(at(out, 's')).toMatchObject({ w: 16 + 80 + 16 + 80 + 16, h: 16 + 60 + 16 });
   });
 
+  // A badge riding on a child, or a comment pin, is a mark on the board, never a slot of its own.
+  it('leaves attached marks and comment pins out of its children', () => {
+    const badge = {
+      ...(createShape('badge', 0, 0) as ShapeElement),
+      id: 'k',
+      x: 90,
+      y: 30,
+      attachedTo: 'a',
+      attachAt: 'ne',
+    } as ShapeElement;
+    const pin = {
+      ...(createShape('comment-pin', 0, 0) as ShapeElement),
+      id: 'p',
+      x: 300,
+      y: 80,
+    } as ShapeElement;
+    const els = [stack(), box('a', 30, 40), badge, pin];
+    expect(stackChildren(els, els[0] as ShapeElement).map((k) => k.id)).toEqual(['a']);
+  });
+
   it('reorders when a child is dragged past a sibling (I2), and settling again changes nothing (I3)', () => {
     const first = settleStacks([stack(), box('a', 30, 40), box('b', 150, 40)]);
     const dragged = first.map((e) => (e.id === 'a' ? { ...e, x: 140 } : e));
