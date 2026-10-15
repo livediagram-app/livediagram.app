@@ -34,7 +34,7 @@ afterEach(() => {
 describe("a collaborator's drag preview", () => {
   it('is drawn from an editor', () => {
     receivePeerDragPreview('p1', move(90), role('edit'));
-    expect((drawn()?.changed.get(a.id) as { x: number }).x).toBe(90);
+    expect((drawn()?.changed.get(a.id) as { x: number } | undefined)?.x).toBe(90);
   });
 
   it('is ignored from anyone who may only view, or whose role is unknown', () => {
@@ -69,7 +69,7 @@ describe("a collaborator's drag preview", () => {
     receivePeerDragPreview('p1', move(90), role('edit'));
     receivePeerDragPreview('p2', move(50), role('edit'));
     prunePeerDragPreviews(new Set(['p2']));
-    expect((drawn()?.changed.get(a.id) as { x: number }).x).toBe(50);
+    expect((drawn()?.changed.get(a.id) as { x: number } | undefined)?.x).toBe(50);
   });
 
   it('drops a malformed op whole', () => {
@@ -95,7 +95,7 @@ describe('a landed drag', () => {
       { kind: 'drag-preview', tabId: 't', end: true, landed: true },
       role('edit'),
     );
-    expect((drawn()?.changed.get(a.id) as { x: number }).x).toBe(90);
+    expect((drawn()?.changed.get(a.id) as { x: number } | undefined)?.x).toBe(90);
     endPeerDragPreview('p1');
     expect(drawn()).toBeNull();
   });

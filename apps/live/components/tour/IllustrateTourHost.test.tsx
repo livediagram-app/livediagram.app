@@ -53,7 +53,10 @@ vi.mock('./illustrate-tour-page', () => ({
     dom.page && unseen(dom.page.kind) ? dom.page : null,
 }));
 const ctx = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
+vi.mock('@/app/document/[id]/EditorContext', () => ({
+  useEditorContext: () => ctx.current,
+  useOptionalEditorContext: () => ctx.current,
+}));
 
 const setUserPreferences = vi.fn();
 const writeUserPreferences = vi.fn();

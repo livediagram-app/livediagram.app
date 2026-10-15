@@ -7,6 +7,7 @@ import {
   boardCsvRows,
   boardTakesCsv,
   cardDateOf,
+  multiChoiceOf,
   type BoardCsvImportContext,
 } from './board-csv';
 import type { Item } from './item';
@@ -431,4 +432,60 @@ describe('boardCsvMessage', () => {
       'Cards cannot be imported onto an Archive board',
     ],
   ])('%j says %s', (result, text) => expect(boardCsvMessage(result)).toBe(text));
+});
+
+describe('Multiple Choice and Rating fields', () => {
+  const survey: ItemTypeDef = {
+    ...note,
+    id: 'survey',
+    label: 'Survey',
+    fields: ['title', 'status', 'f-diet', 'f-stars'],
+    custom: [
+      {
+        id: 'f-diet',
+        label: 'Diet',
+        kind: 'multichoice',
+        options: ['Vegan', 'Halal', 'Nuts, none'],
+      },
+      { id: 'f-stars', label: 'Stars', kind: 'rating', scale: 5 },
+    ],
+  };
+  const surveySetup: PlanBoardSetup = { ...setup, addTypes: ['survey'] };
+
+  it('writes a Multiple Choice’s picks apart by semicolons, and a Rating as its number', () => {
+    const picked = item(
+      { title: 'A', status: 'todo', 'f-diet': ['Vegan', 'Nuts, none'], 'f-stars': 4 },
+      { type: 'survey' },
+    );
+    const lone = item({ title: 'B', status: 'todo', 'f-diet': 'Halal' }, { type: 'survey' });
+    const rows = boardCsvRows(surveySetup, mapOf([picked, lone]), [survey]);
+    expect(rows[0]!.slice(-2)).toEqual(['Diet', 'Stars']);
+    expect(rows.find((r) => r[1] === 'A')!.slice(-2)).toEqual(['Vegan; Nuts, none', '4']);
+    expect(rows.find((r) => r[1] === 'B')!.slice(-2)).toEqual(['Halal', '']);
+  });
+
+  it('reads them back, dropping picks that are not options and ratings off the scale', () => {
+    const { creates } = boardCsvImport(
+      [
+        ['Title', 'Diet', 'Stars'],
+        ['A', 'nuts, none; vegan', '5'],
+        ['B', 'Salad', '6'],
+        ['C', 'Vegan, Halal', '2.5'],
+      ],
+      { setup: surveySetup, types: [survey], people: [], room: 100 },
+    );
+    expect(creates.map((c) => [c.fields['f-diet'], c.fields['f-stars']])).toEqual([
+      [['Vegan', 'Nuts, none'], 5],
+      [undefined, undefined],
+      [['Vegan', 'Halal'], undefined],
+    ]);
+  });
+
+  it('splits on commas only when every part is an option', () => {
+    const options = ['Vegan', 'Halal', 'Nuts, none'];
+    expect(multiChoiceOf(options, 'Halal, Vegan')).toEqual(['Vegan', 'Halal']);
+    expect(multiChoiceOf(options, 'Nuts, none')).toEqual(['Nuts, none']);
+    expect(multiChoiceOf(options, 'Vegan, Salad')).toBeUndefined();
+    expect(multiChoiceOf(options, '')).toBeUndefined();
+  });
 });

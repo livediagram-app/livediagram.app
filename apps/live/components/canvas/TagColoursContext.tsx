@@ -17,7 +17,7 @@ export function TagColoursProvider({
 }) {
   const map = tagColoursOf(tab);
   const key = map.map((r) => `${r.tag}:${r.color}`).join('|');
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the rows, not the array
+  // oxlint-disable-next-line react/exhaustive-deps -- keyed on the rows, not the array
   const stable = useMemo(() => (map.length ? map : undefined), [key]);
   return <TagColoursContext.Provider value={stable}>{children}</TagColoursContext.Provider>;
 }

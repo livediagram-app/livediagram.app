@@ -1606,6 +1606,17 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
+    slug: 'forms',
+    title: 'Forms',
+    description:
+      'A form anyone can fill in from a link, each response a card on your board: questions, where answers go, publishing and closing.',
+    keywords:
+      'form forms survey surveys questionnaire google forms typeform intake submission submissions responses response respondents rsvp feedback bug report contact job application public link share link publish questions question answers mapping fields card type board column close limit report anonymous',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
     slug: 'dashboards',
     title: 'Dashboards',
     description:

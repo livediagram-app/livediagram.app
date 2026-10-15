@@ -11,12 +11,15 @@ import {
   PLAN_TOUR_OFFERED,
   FACILITATE_TOUR_OFFERED,
   DRAW_TOUR_OFFERED,
+  FORM_TOUR_OFFERED,
   AVATAR_TOUR_OFFERED,
   ILLUSTRATE_TOUR_OFFERED,
+  ELEMENT_TOURS_OFFERED,
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
 import { chart } from './helpers';
+import { ELEMENT_TOUR_KINDS, elementTourTokens } from '../element-tour-kinds';
 
 export const NEW_VISITORS: Metric = {
   category: 'Participant',
@@ -395,6 +398,63 @@ export const DRAW_TOUR: MetricStack = {
   headline: DRAW_TOURS_STARTED,
 };
 
+// The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): its own funnel, beside the Draw tour's.
+export const FORM_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Forms Tours Declined',
+  'The Forms tour turned down on its welcome card, before it started.',
+  { types: ['FormTourOffer'], rising: 'neutral' },
+);
+
+export const FORM_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Forms Tours Started',
+  'The Forms tour started.',
+  { types: ['FormTour'] },
+);
+
+export const FORM_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Forms Tour Steps Viewed',
+  'A step of the Forms tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('FormTourStep') },
+);
+
+export const FORM_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Forms Tours Completed',
+  'The Forms tour run to its last step.',
+  { types: ['FormTourCompleted'] },
+);
+
+export const FORM_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Forms Tours Skipped',
+  'The Forms tour closed before its end.',
+  { types: ['FormTourSkipped'], rising: 'neutral' },
+);
+
+export const FORM_TOUR: MetricStack = {
+  stack: true,
+  title: 'Forms Tour',
+  blurb:
+    'The first time on a Form tab: the Forms tour offered, stepped through, finished or skipped.',
+  members: [
+    FORM_TOUR_OFFERED,
+    FORM_TOUR_DECLINED,
+    FORM_TOURS_STARTED,
+    FORM_TOUR_STEPS_VIEWED,
+    FORM_TOURS_COMPLETED,
+    FORM_TOURS_SKIPPED,
+  ],
+  headline: FORM_TOURS_STARTED,
+};
+
 // The Avatar tour (docs/specs/008-canvas/avatar-tour.md): its own funnel, beside the Draw tour's.
 export const AVATAR_TOUR_DECLINED = chart(
   'UI',
@@ -507,6 +567,71 @@ export const ILLUSTRATE_TOUR: MetricStack = {
     ILLUSTRATE_TOURS_SKIPPED,
   ],
   headline: ILLUSTRATE_TOURS_STARTED,
+};
+
+// Element tours (docs/specs/007-editor/element-tours.md): a tour of one element type, offered beside a selected one.
+// One stack for them all, as Show Me's: offered, declined, started (and started per element), steps, how they end.
+export const ELEMENT_TOURS_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Element Tours Declined',
+  'An element tour turned down with the cross on its Tour toolbar.',
+  { types: elementTourTokens('Offer'), rising: 'neutral' },
+);
+
+export const ELEMENT_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Element Tours Started',
+  'Play pressed on the Tour toolbar beside a selected element.',
+  { types: elementTourTokens() },
+);
+
+export const ELEMENT_TOURS_BY_KIND: Metric[] = ELEMENT_TOUR_KINDS.map((k) =>
+  chart('UI', 'Started', `${k.title} Tours Started`, `Play pressed beside a selected ${k.title}.`, {
+    types: [k.token],
+  }),
+);
+
+export const ELEMENT_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Element Tour Steps Viewed',
+  'A step of an element tour shown.',
+  { typeIn: (t) => ELEMENT_TOUR_KINDS.some((k) => (t ?? '').startsWith(`${k.token}Step`)) },
+);
+
+export const ELEMENT_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Element Tours Completed',
+  'An element tour run to its last card.',
+  { types: elementTourTokens('Completed') },
+);
+
+export const ELEMENT_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Element Tours Skipped',
+  'An element tour closed before its end.',
+  { types: elementTourTokens('Skipped'), rising: 'neutral' },
+);
+
+export const ELEMENT_TOURS: MetricStack = {
+  stack: true,
+  title: 'Element Tours',
+  blurb:
+    'Tours of one element type, offered beside a selected one: offered, declined, started, stepped through, finished or skipped.',
+  members: [
+    ELEMENT_TOURS_OFFERED,
+    ELEMENT_TOURS_DECLINED,
+    ELEMENT_TOURS_STARTED,
+    ...ELEMENT_TOURS_BY_KIND,
+    ELEMENT_TOUR_STEPS_VIEWED,
+    ELEMENT_TOURS_COMPLETED,
+    ELEMENT_TOURS_SKIPPED,
+  ],
+  headline: ELEMENT_TOURS_STARTED,
 };
 
 // Show Me (docs/specs/007-editor/show-me.md): the on-demand tours of one surface each. Never offered, so each starts

@@ -48,9 +48,9 @@ describe('Delete in the tab menu', () => {
     render(<PortalMenu {...props({ anchor })} />);
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(
-      screen.getByText(
-        "Delete this tab? Unless another document also holds it, its content can't be recovered.",
-      ),
+      screen.getByRole('dialog', {
+        name: "Delete this tab? Unless another document also holds it, its content can't be recovered.",
+      }),
     ).toBeTruthy();
   });
 });

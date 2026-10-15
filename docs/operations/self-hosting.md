@@ -254,6 +254,15 @@ Optional knobs (plain `[vars]`):
 
 If you enable this on a deployment that already has signed-in users, run the one-time backfill in [Transactional & lifecycle email (Resend) §4](../specs/014-identity/transactional-email.md) first, so existing users aren't "welcomed" on their next sign-in.
 
+## Forms
+
+Form tabs ([Forms](../specs/030-forms/forms.md)) need nothing extra: migration `0092_forms.sql` creates their tables
+with the others, and a form link is served by the live worker (`/form/<code>`) and the api (`/api/forms/...`).
+
+- `FORM_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): 60 reads and 60 responses a minute
+  per network. Without the binding every request is allowed; the per-form cap of 500 responses an hour still holds.
+- The new-response and suspension emails go only where email is configured (`RESEND_API_KEY`).
+
 ## Workbenches (optional, needs Clerk)
 
 A workbench is a developer tool that frames the editor signed in, beside an agent ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)). It needs API tokens, so it exists only where Clerk is configured; without Clerk the routes answer as for any caller without a token and nothing breaks.

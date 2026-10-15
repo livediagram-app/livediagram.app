@@ -27,6 +27,7 @@ import {
   placementDefaultTelemetryType,
 } from '@livediagram/api-schema';
 import { countedVerbs, SYNC_WATCH_TYPE } from '@livediagram/agent-verbs';
+import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@livediagram/forms';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
@@ -210,6 +211,57 @@ export const FACILITATE_TOUR_STEP_SOURCE: string[] = [
 
 // The Draw tour's steps, as drawTourStepTelemetryType makes them (apps/live draw-tour-steps.ts,
 // docs/specs/023-draw-mode/draw-tour.md). The welcome card sends no step view.
+// The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
+// it runs inside the dialog (each `flows-` prefixed), then its closing card.
+const pascal = (id: string) =>
+  id
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+export const SANKEY_TOUR_STEP_SOURCE: string[] = [
+  ...[
+    ...read('live/components/tour/sankey-element-tour-steps.ts').matchAll(
+      /canvasStep\(\s*'([a-z-]+)'/g,
+    ),
+  ].map((m) => m[1]!),
+  ...[
+    ...read('live/components/tour/sankey-flows-tour-steps.ts').matchAll(/step\(\s*'([a-z-]+)'/g),
+  ].map((m) => `flows-${m[1]!}`),
+  'outro',
+].map((id) => `SankeyTourStep${pascal(id)}`);
+
+// A concept graphic's tour (docs/specs/007-editor/element-tours.md): its steps file's builders and any step of its own
+// (`id: '…'`), then its closing card.
+const conceptTourSteps = (token: string, file: string): string[] =>
+  [
+    ...[
+      ...read(`live/components/tour/${file}`).matchAll(
+        /(?:(?:onGraphic|addRowStep|inTheMenu|onCanvas|inDialog)\(\s*|\bid: )'([a-z-]+)'/g,
+      ),
+    ].map((m) => m[1]!),
+    'outro',
+  ].map((id) => `${token}Step${pascal(id)}`);
+
+// Every element tour (ElementTourHost runs them all): its token, from the registry, and its steps.
+export const ELEMENT_TOUR_TOKENS: string[] = [
+  ...read('live/components/tour/element-tour-defs.ts').matchAll(/token: '(\w+)'/g),
+].map((m) => m[1]!);
+
+export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
+  ...SANKEY_TOUR_STEP_SOURCE,
+  ...conceptTourSteps('LayerStackTour', 'layer-stack-tour-steps.ts'),
+  ...conceptTourSteps('PyramidTour', 'pyramid-tour-steps.ts'),
+  ...conceptTourSteps('FunnelTour', 'funnel-tour-steps.ts'),
+  ...conceptTourSteps('CycleTour', 'cycle-tour-steps.ts'),
+  ...conceptTourSteps('HubTour', 'hub-tour-steps.ts'),
+  ...conceptTourSteps('OnionTour', 'onion-tour-steps.ts'),
+  ...conceptTourSteps('ChevronsTour', 'chevrons-tour-steps.ts'),
+  ...conceptTourSteps('MindMapTour', 'mind-node-tour-steps.ts'),
+  ...conceptTourSteps('FlowchartTour', 'flowchart-tour-steps.ts'),
+  ...conceptTourSteps('OrgChartTour', 'org-chart-tour-steps.ts'),
+  ...conceptTourSteps('SequenceTour', 'sequence-tour-steps.ts'),
+];
+
 export const DRAW_TOUR_STEP_SOURCE: string[] = [
   ...read('live/components/tour/draw-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
@@ -218,6 +270,22 @@ export const DRAW_TOUR_STEP_SOURCE: string[] = [
   .map(
     (id) =>
       `DrawTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
+// The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
+// docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
+// The welcome card sends no step view.
+export const FORM_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/form-tour-steps.ts').matchAll(/^ {2}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `FormTourStep${id
         .split('-')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')}`,
@@ -459,6 +527,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'SheetRestored',
     ],
   },
+  // A form started names its starter, a question added its type (docs/specs/030-forms/forms.md "Telemetry").
+  'apps/live/hooks/forms/useFormActions.ts Form·Created': {
+    values: FORM_STARTERS.map((s) => s.telemetry),
+  },
+  'apps/live/components/forms/builder/FormAddBar.tsx Form·Added': {
+    values: Object.values(QUESTION_TYPE_TELEMETRY),
+  },
   // A Sheet change names its kind (api-schema SHEET_CHANGE_KINDS); a formula's first use of a function, its name.
   'apps/live/components/sheets/sheet-controller.tsx Sheet·Changed': {
     values: [...SHEET_CHANGE_KINDS],
@@ -579,6 +654,18 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: FACILITATE_TOUR_STEP_SOURCE,
   },
   'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Ended': {
+    values: ELEMENT_TOUR_TOKENS.flatMap((t) => [`${t}Completed`, `${t}Skipped`]),
+  },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Opened': {
+    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
+  },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Closed': {
+    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
+  },
   'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
   'apps/live/components/tour/IllustrateTourHost.tsx UI·View': {
     values: ILLUSTRATE_TOUR_STEP_SOURCE,

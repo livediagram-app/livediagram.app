@@ -17,6 +17,15 @@ export const DASHBOARD_LINK_URL_MAX = 2000;
 export const DASHBOARD_STATUSES = ['on-track', 'at-risk', 'off-track'] as const;
 export type DashboardStatus = (typeof DASHBOARD_STATUSES)[number];
 
+// A figure from a form (docs/specs/026-plan/plan-tabs.md "Form Metrics"): which Form tab, and what of it: its responses
+// so far, how many are new to the reader, whether it takes responses, its responses against its limit, when it closes,
+// or its link to copy. An empty tab id is one not chosen yet (the document's only form is chosen as it is placed).
+export const FORM_METRICS = ['responses', 'new', 'status', 'limit', 'closes', 'link'] as const;
+export type FormMetricKind = (typeof FORM_METRICS)[number];
+export type FormMetricContent = { type: 'form-metric'; metric: FormMetricKind; formTabId: string };
+// A tab id as stored: any short string (ids are minted by the editor and checked against the tabs when read).
+const TAB_ID_MAX = 80;
+
 export type DashboardChecklistItem = { id: string; text: string; done: boolean };
 // A link to a site (`url`, http, https or mailto) or to a tab of this document (`tabId`).
 export type DashboardLink = { id: string; label: string } & (
@@ -54,7 +63,8 @@ export type DashboardCardContent =
   // `date`: a calendar day, YYYY-MM-DD.
   | { type: 'key-date'; title: string; date: string; style?: DashboardCardStyle }
   | { type: 'links'; title: string; links: DashboardLink[]; style?: DashboardCardStyle }
-  | SheetMetricContent;
+  | SheetMetricContent
+  | FormMetricContent;
 
 export type DashboardCardType = DashboardCardContent['type'];
 // The cards written on the page (a sheet metric is filled from a Sheet instead).
@@ -74,6 +84,16 @@ const readCell = (v: unknown): SheetMetricCell | undefined => {
     ? { r, c }
     : undefined;
 };
+
+function readFormMetric(c: Record<string, unknown>): FormMetricContent | undefined {
+  if (!(FORM_METRICS as readonly unknown[]).includes(c['metric'])) return undefined;
+  const raw = c['formTabId'];
+  return {
+    type: 'form-metric',
+    metric: c['metric'] as FormMetricKind,
+    formTabId: typeof raw === 'string' && raw.length <= TAB_ID_MAX ? raw : '',
+  };
+}
 
 function readSheetMetric(c: Record<string, unknown>): SheetMetricContent | undefined {
   if (!(SHEET_METRICS as readonly unknown[]).includes(c['metric'])) return undefined;
@@ -186,6 +206,8 @@ export function readDashboardCard(c: Record<string, unknown>): DashboardCardCont
       };
     case 'sheet-metric':
       return readSheetMetric(c);
+    case 'form-metric':
+      return readFormMetric(c);
     case 'links':
       return {
         type: 'links',

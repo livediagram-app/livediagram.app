@@ -3,7 +3,9 @@
 // A Plan board's header (docs/specs/026-plan/board-widgets.md "The header"): the title, the board's
 // widgets, then Reveal and Retry when they apply, Maximise Board, and the list of items not on the board. The header's
 // own background is the board's handle: a press there moves the board, its controls do not.
+import { FormBoardStrip } from '@/components/forms/FormBoardStrip';
 import { useRef, useState } from 'react';
+import { useToday } from '@/hooks/ui/useToday';
 import { useKeepOnScreen } from '@/hooks/plan/useKeepOnScreen';
 import {
   itemTitle,
@@ -85,6 +87,8 @@ export function PlanBoardHeader({
   end?: React.ReactNode;
 }) {
   const [trayOpen, setTrayOpen] = useState(false);
+  // The widgets count by the day (due, overdue, stale): today, moving on at midnight (useToday).
+  const today = useToday();
   const widgets = widgetsOf(setup);
   const ctx: WidgetContext = {
     setup,
@@ -97,7 +101,7 @@ export function PlanBoardHeader({
     canFilterMine,
     trayOpen,
     onToggleTray: () => setTrayOpen((o) => !o),
-    now: new Date(),
+    now: today,
     canEdit,
     onSetup,
     onOpenItem,
@@ -107,29 +111,33 @@ export function PlanBoardHeader({
   const nameSlot = useMenuNameSlot();
   const [bandMarker, inBand] = useInHeaderBand();
   const inBox = inBand && !!nameSlot;
-  // The board's widgets: in the header on a canvas; in a header band, in the controls card before the cog.
+  // The board's widgets: in the header on a canvas; in a header band, in the controls card before the cog. A form
+  // sending its responses here leads them (FormBoardStrip), with no one adding it.
   const widgetZone = (
-    <BoardWidgetZone
-      widgets={widgets}
-      canEdit={canEdit}
-      selected={selected}
-      // In a header band the board is maximised or fills its tab, where no selection shows: an empty zone keeps its +.
-      offerAdd={inBox}
-      palette={palette}
-      onChange={(next) => {
-        // Taking a widget off clears what it narrowed.
-        const kept: QuickFilter = { ...quick };
-        if (!next.includes('filter')) delete kept.text;
-        if (!next.includes('mine')) delete kept.mine;
-        if (!next.includes('types')) delete kept.type;
-        if (!next.includes('due')) delete kept.due;
-        if (!next.includes('priorities')) delete kept.priority;
-        if (!next.includes('people') && !next.includes('unassigned')) delete kept.person;
-        if (Object.keys(kept).length !== Object.keys(quick).length) onQuick(kept);
-        onWidgets(next);
-      }}
-      render={(kind) => <BoardWidgetView kind={kind} ctx={ctx} />}
-    />
+    <>
+      <FormBoardStrip palette={palette} />
+      <BoardWidgetZone
+        widgets={widgets}
+        canEdit={canEdit}
+        selected={selected}
+        // In a header band the board is maximised or fills its tab, where no selection shows: an empty zone keeps its +.
+        offerAdd={inBox}
+        palette={palette}
+        onChange={(next) => {
+          // Taking a widget off clears what it narrowed.
+          const kept: QuickFilter = { ...quick };
+          if (!next.includes('filter')) delete kept.text;
+          if (!next.includes('mine')) delete kept.mine;
+          if (!next.includes('types')) delete kept.type;
+          if (!next.includes('due')) delete kept.due;
+          if (!next.includes('priorities')) delete kept.priority;
+          if (!next.includes('people') && !next.includes('unassigned')) delete kept.person;
+          if (Object.keys(kept).length !== Object.keys(quick).length) onQuick(kept);
+          onWidgets(next);
+        }}
+        render={(kind) => <BoardWidgetView kind={kind} ctx={ctx} />}
+      />
+    </>
   );
 
   // The header's buttons stay on screen when the board runs past the canvas's right edge (a phone, zoomed in).

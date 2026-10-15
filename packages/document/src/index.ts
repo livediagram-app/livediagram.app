@@ -3,6 +3,8 @@
 // handles document data. See docs/specs/006-document/document-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
+import type { FormDefinition } from '@livediagram/forms';
+
 // Live session-tool types used by the `Tab.timer` / `Tab.vote` fields
 // below. Type-only import (erased at build) so the index <-> session
 // circular reference is fine. The runtime helpers are re-exported lower
@@ -315,6 +317,8 @@ export type Tab = {
   kind?: TabKind;
   // A Dashboard tab's rows and slots (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), read via `readDashboard`.
   dashboard?: DashboardLayout;
+  // A Form tab's form (docs/specs/030-forms/forms.md), read via `readForm` from @livediagram/forms.
+  form?: FormDefinition;
   // The tab's editor mode, the same for everyone on it and the mode it opens in
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
   // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
@@ -714,6 +718,7 @@ export {
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './mind-template';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
+export { SKETCH_FACE_FILTER } from './svg-render-sketch';
 export * from './svg-render-plan-sheet';
 export * from './svg-render-table';
 // The marks the editor's Plan tab images draw with (docs/specs/026-plan/plan-tabs.md "Export"): text, line fitting,
@@ -732,6 +737,8 @@ export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';
 export * from './theme-presets';
+// A Form tab's look: its theme, finish and font as the builder and the form link's page draw them.
+export * from './form-look';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
 // used by selection captions and any surface that names what's selected.

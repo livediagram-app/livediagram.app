@@ -988,6 +988,76 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     },
     statuses: [200, 403, 404],
   },
+  // ---- Form links (docs/specs/030-forms/forms.md) ----
+  {
+    method: 'GET',
+    path: '/documents/{id}/tabs/{tabId}/form-link',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "A Form tab's link: whether it is published and open, how many responses it has, and how many the caller has not seen. Anyone who may read the tab; the code itself only to someone who may edit it.",
+    auth: 'guest-or-clerk',
+    responseSchema: ref('FormLinkResponse'),
+    statuses: [200, 400, 403, 404],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/form-link',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Publish the Form tab: make its public link. 409 form_already_published, 409 form_destination_missing (its board, column or card type is gone), 409 form_not_ready with its problems (no questions, an unworded question, a choice without options, a broken mapping or section rule), 403 form_suspensions (this document has had too many links suspended).',
+    auth: 'guest-or-clerk',
+    responseSchema: ref('FormLinkResponse'),
+    statuses: [200, 400, 403, 404, 409],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/tabs/{tabId}/form-link',
+    segment: 'documents',
+    tag: 'Documents',
+    summary: 'Open or close the published form, keeping its link. Edit access.',
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { open: { type: 'boolean' } },
+      required: ['open'],
+    },
+    responseSchema: ref('FormLinkResponse'),
+    statuses: [200, 400, 403, 404],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/tabs/{tabId}/form-link',
+    segment: 'documents',
+    tag: 'Documents',
+    summary: 'Delete the form link; publishing again makes a new one. Edit access.',
+    auth: 'guest-or-clerk',
+    responseSchema: ref('FormLinkResponse'),
+    statuses: [200, 400, 403, 404],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/form-seen',
+    segment: 'documents',
+    tag: 'Documents',
+    summary: "Mark the form's responses so far as seen by the caller (the Inbox and the New dots).",
+    auth: 'guest-or-clerk',
+    responseSchema: ref('FormLinkResponse'),
+    statuses: [200, 400, 403, 404],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/form-preview',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'An Editor\'s Preview of the published form: sent as a counted response, its card titled "Preview: ...", taken while the form is closed too, with no email. 404 form_not_published when the form has no live link.',
+    auth: 'guest-or-clerk',
+    requestSchema: ref('FormResponseBody'),
+    responseSchema: ref('FormResponseAccepted'),
+    statuses: [201, 400, 403, 404, 409, 413, 429],
+  },
   {
     method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/qa',
@@ -1516,6 +1586,41 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
 
   // ---- Shared with you ----
+  // ---- Forms, the public side (docs/specs/030-forms/forms.md "Filling in a form") ----
+  {
+    method: 'GET',
+    path: '/forms/{code}',
+    segment: 'forms',
+    tag: 'Forms',
+    summary:
+      'A published form as respondents see it (never where its answers go), or that it is closed and why. 404 form_not_found for an unknown, deleted or suspended link. Limited per network.',
+    auth: 'public',
+    responseSchema: ref('PublicFormResponse'),
+    statuses: [200, 404, 429],
+  },
+  {
+    method: 'POST',
+    path: '/forms/{code}/responses',
+    segment: 'forms',
+    tag: 'Forms',
+    summary:
+      "Send a response: it becomes one card on the form's board. 400 invalid_answers with an error per question, 409 form_closed, 413 form_full, 429 form_busy (the form's hourly cap) or rate_limited (per network).",
+    auth: 'public',
+    requestSchema: ref('FormResponseBody'),
+    responseSchema: ref('FormResponseAccepted'),
+    statuses: [201, 400, 404, 409, 413, 429],
+  },
+  {
+    method: 'POST',
+    path: '/forms/{code}/reports',
+    segment: 'forms',
+    tag: 'Forms',
+    summary:
+      'Report a form (spam, phishing, offensive, other), once per browser. Reports from three networks suspend its link for good.',
+    auth: 'public',
+    requestSchema: ref('FormReportBody'),
+    statuses: [201, 400, 404, 429],
+  },
   {
     method: 'GET',
     path: '/community/posts',
@@ -1972,6 +2077,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         cardThreads: {
           type: 'array',
           items: { $ref: '#/components/schemas/ActivityCardThread' },
+        },
+        formResponses: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/ActivityFormResponses' },
         },
       },
       required: ['actions', 'threads', 'cards', 'cardThreads'],

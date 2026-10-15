@@ -630,6 +630,12 @@ There is **no hint chip** under the selected node. One would announce the two
 shortcuts to everybody forever rather than to whoever is looking for them, and a
 centred one would land underneath the very "+" the actions live in.
 
+## Element tour
+
+The first time an Editor selects a mind node, a small **Tour** toolbar beside its selection toolbar offers the
+[Mind Map tour](../007-editor/element-tours.md#the-mind-map-tour): Add Child and Add Sibling (with their keys), a
+branch moved as one, and the Mind Map menu. A person node is the org chart's, with its own tour.
+
 ## What it is not
 
 Not an auto-layout of anything else on the tab. Tidy growth re-lays out only

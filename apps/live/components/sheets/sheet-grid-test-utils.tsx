@@ -1,7 +1,7 @@
 // A live Sheet grid for component tests: a real SheetStore over a fake api, the real controller, the real actions
 // (each call logged), a jsdom with the sizes and APIs the grid reads, and a SheetGrid drawn inside its provider.
 import { render, within } from '@testing-library/react';
-import { useMemo, useSyncExternalStore, type ReactNode } from 'react';
+import { useLayoutEffect, useMemo, useSyncExternalStore, type ReactNode } from 'react';
 import {
   Workbook,
   cellKey,
@@ -211,7 +211,9 @@ export async function mountGrid(o: MountOptions = {}): Promise<MountedGrid> {
             : v;
       return out as SheetActions;
     }, [real]);
-    ref.actions = actions;
+    useLayoutEffect(() => {
+      ref.actions = actions;
+    }, [actions]);
     const input = useFormulaInput(actions);
     return (
       <SheetGrid
@@ -241,7 +243,9 @@ export async function mountGrid(o: MountOptions = {}): Promise<MountedGrid> {
       toast: (m) => toasts.push(m),
       notify: () => {},
     });
-    ref.c = c;
+    useLayoutEffect(() => {
+      ref.c = c;
+    }, [c]);
     return (
       <SheetControllerProvider value={c}>
         <Inner />

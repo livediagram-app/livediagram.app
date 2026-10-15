@@ -19,12 +19,14 @@ describe('useToday', () => {
     expect(result.current.toDateString()).toBe(new Date(2026, 9, 12).toDateString());
   });
 
-  it('takes a new day on a render that finds one, with no timer having fired', () => {
+  it('takes a new day when the page is shown again, with no timer having fired', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date(2026, 9, 11, 12));
-    const { result, rerender } = renderHook(() => useToday());
+    const { result } = renderHook(() => useToday());
     vi.setSystemTime(new Date(2026, 9, 13, 9));
-    rerender();
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
     expect(result.current.toDateString()).toBe(new Date(2026, 9, 13).toDateString());
   });
 });

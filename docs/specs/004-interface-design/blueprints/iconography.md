@@ -19,7 +19,7 @@ Derived from [Iconography](../iconography.md).
 | Vendored Lucide    | one `lucide<Name>` export per glyph in `packages/icons/src/lucide.generated.ts`, subpath `@livediagram/icons/lucide` | written by `packages/icons/scripts/vendor-lucide.ts` |
 | Vendor manifest    | `packages/icons/lucide-manifest.json`                                                                                | pinned version + glyph names                         |
 | Centring exception | `CENTRING_EXCEPTIONS`, `ASYMMETRIC`                                                                                  | each centring test (named glyph → reason)            |
-| Art allow-list     | `ICON_ART_ALLOWLIST`, `RAW_ICON_SVG`                                                                                 | `packages/eslint-config/raw-svg.js`                  |
+| Art allow-list     | `ICON_ART_ALLOWLIST`, `RAW_ICON_SVG`                                                                                 | `packages/oxlint-config/raw-svg.ts`                  |
 
 "Glyph" is the rendered icon; "icon" in `shape: 'icon'` is the canvas element. Do not use either as a synonym for the other in code.
 
@@ -129,7 +129,7 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 | Weight on elements                | `style-presets.test.ts` (`applyIconWeightToEl`), `format-painter.test.ts`                                |
 | Furniture silhouettes distinct    | `icon-catalog.test.ts`: no two ids share prims                                                           |
 | No same-provider tech glyph dupes | `tech-icon-catalog.test.ts`                                                                              |
-| No raw svg outside homes          | `no-restricted-syntax` with `RAW_ICON_SVG` (literal width 8–24px), `raw-svg.test.ts`                     |
+| No raw svg outside homes          | `livediagram/no-raw-icon-svg` with `RAW_ICON_SVG` (literal width 8–24px), `raw-svg.test.ts`              |
 | Tech tiles centred                | `tech-centring.test.ts` (32px tile; rotated-orbit glyphs named in `CENTRED_BY_CONSTRUCTION`)             |
 | Menu icons: one step, centred     | `context-menu-icons.test.tsx` (`MENU_ICON_PX` 14, `QUICK_ACTION_ICON_PX` 16; `ASYMMETRIC` exceptions)    |
 | Palette tile step                 | `palette-tile-defs.test.tsx` (`TILE_GLYPH_PX` 18)                                                        |

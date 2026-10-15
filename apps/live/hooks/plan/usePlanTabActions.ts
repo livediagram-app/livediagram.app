@@ -358,6 +358,15 @@ export function usePlanTabActions({
           });
           return ts.map((t) => (t.id === activeId ? next : t));
         }
+        // A figure from a form: the document's first form, changed in the slot when it has more (DashboardFormMetric).
+        if (item.kind === 'form-metric') {
+          const next = withSlotContent(base, target, {
+            type: 'form-metric',
+            metric: item.metric,
+            formTabId: ts.find((t) => t.kind === 'form')?.id ?? '',
+          });
+          return ts.map((t) => (t.id === activeId ? next : t));
+        }
         // A figure from a Sheet: its source is chosen in the slot (DashboardSheetMetric).
         if (item.kind === 'sheet-metric') {
           const next = withSlotContent(base, target, {

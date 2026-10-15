@@ -209,6 +209,8 @@ packages/
   template-previews/ # per-template preview SVGs (editor picker + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
+  page-background/ # a page background's colours, patterns and motions + their parser (slides and form covers, pure)
+  forms/          # Form tabs: form model, answer checks, answer-to-card mapping, starters (pure)
   plan-art/       # Plan tab images (Board, Sheet, Dashboard as laid out) for editor exports + MCP previews (pure)
   items/          # items, item types, fields, ranks, writes and the Plan board projection (pure)
   sheets/         # the Sheet engine: A1 addressing, formulas, recalculation, writes, CSV (pure)
@@ -219,7 +221,8 @@ packages/
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles
   preview-env/  # CI tooling for per-PR previews: config generator, tier decision, teardown (Node-only)
-  eslint-config/  # shared ESLint flat config
+  source-ast/   # parses the repo's own TypeScript with TypeScript 7, for the static guards that read code
+  oxlint-config/  # shared oxlint config + the repo's own lint rules
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
   vitest-config/  # shared Vitest defaults (extended per workspace)
@@ -274,7 +277,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 - If two apps need the same thing (UI component, util, type, schema, API client, validator, config), it lives in `packages/`, not copied into each app.
 - If you find yourself copy-pasting code across apps or packages, stop and extract it. "I'll dedupe later" is how drift starts.
 - Design package APIs to be consumed by multiple callers — generic enough to reuse, specific enough to be useful.
-- Tailwind theme, ESLint, Prettier, TS config, and shared UI primitives all live in `packages/` for exactly this reason.
+- Tailwind theme, oxlint, Prettier, TS config, and shared UI primitives all live in `packages/` for exactly this reason.
 
 When the right place for code is genuinely unclear, default to `packages/`.
 

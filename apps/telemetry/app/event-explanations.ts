@@ -116,6 +116,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone clicked an action row in the Explorer's Inbox, jumping to the element it's assigned on.",
   'Activity|Selected|Card':
     "Someone clicked a Plan card row in the Explorer's Inbox, jumping to the card on its board.",
+  'Activity|Selected|FormResponses':
+    "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on.",
   'Activity|Selected|Thread':
     "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
   'Canvas|Used|AddNextNote':
@@ -712,6 +714,42 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A returning guest (not signed in) reopened the app on a later day, counted once per day.',
   'Participant|Returned|Authenticated':
     'A returning signed-in user reopened the app on a later day, counted once per day.',
+  'Form|Created|Blank': 'Someone started a form from Start Planning: a blank one.',
+  'Form|Created|BugReport': 'Someone started a form from the Bug Report starter.',
+  'Form|Created|Feedback': 'Someone started a form from the Feedback starter.',
+  'Form|Created|FeatureRequest': 'Someone started a form from the Feature Request starter.',
+  'Form|Created|Rsvp': 'Someone started a form from the Event RSVP starter.',
+  'Form|Created|JobApplication': 'Someone started a form from the Job Application starter.',
+  'Form|Created|Contact': 'Someone started a form from the Contact starter.',
+  'Form|Added|ShortAnswer': 'Someone added a Short Answer question to a form.',
+  'Form|Added|Paragraph': 'Someone added a Paragraph question to a form.',
+  'Form|Added|Number': 'Someone added a Number question to a form.',
+  'Form|Added|Email': 'Someone added an Email question to a form.',
+  'Form|Added|Link': 'Someone added a Link question to a form.',
+  'Form|Added|Date': 'Someone added a Date question to a form.',
+  'Form|Added|SingleChoice': 'Someone added a Single Choice question to a form.',
+  'Form|Added|MultipleChoice': 'Someone added a Multiple Choice question to a form.',
+  'Form|Added|Rating': 'Someone added a Rating question to a form.',
+  'Form|Added|Checkbox': 'Someone added a Checkbox question to a form.',
+  'Form|Linked|ConnectNewBoard':
+    'Someone connected a form that sent its responses nowhere to a new board, from the box above its title.',
+  'Form|Linked|ConnectNewSheet':
+    'Someone connected a form that sent its responses nowhere to a new sheet, from the box above its title.',
+  'Form|Linked|ConnectChoose':
+    "Someone opened Responses Go To from the box above a form's title, to choose an existing board or sheet.",
+  'Form|Shared|Link':
+    'Someone published a form, making the public link anyone can fill it in from.',
+  'Form|Toggled|Open': 'Someone switched Accepting Responses on for a published form.',
+  'Form|Toggled|Closed':
+    'Someone switched Accepting Responses off: the link stays, showing the closed message.',
+  'Form|Sent|Response':
+    'Someone filled in a form through its link, and the response became a card on its board.',
+  'Form|Sent|Dropped':
+    "A response that filled a form's hidden field was dropped: a bot, answered as if it were kept.",
+  'Form|Reported|Spam': 'Someone reported a form as spam.',
+  'Form|Reported|Phishing': 'Someone reported a form as phishing or asking for passwords.',
+  'Form|Reported|Offensive': 'Someone reported a form as offensive.',
+  'Form|Reported|Other': 'Someone reported a form for another reason.',
   'Sheet|Opened|Find': 'Someone opened Find on a Sheet, to search its cells.',
   'Sheet|Searched|Function':
     'Someone searched the functions a Sheet formula can use, from the toolbar’s function picker.',
@@ -1119,6 +1157,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
   'UI|Closed|FacilitateTourOffer':
     'Someone turned the Facilitate tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Facilitate).',
+  'UI|Closed|FormTourOffer': 'Someone turned the Forms tour down with No on its own card.',
   'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Cleared|BrowserRepair':
@@ -1163,6 +1202,54 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of the Tab Style dialog's Show Me tour.",
   'UI|Ended|TabStyleTourSkipped':
     "Someone left the Tab Style dialog's Show Me tour before its end.",
+  'UI|Ended|LayerStackTourCompleted':
+    'Someone reached the end of the Layer Stack tour, offered beside a selected layer stack.',
+  'UI|Ended|LayerStackTourSkipped':
+    'Someone left the Layer Stack tour before its end, or the stack it was on went away.',
+  'UI|Ended|PyramidTourCompleted':
+    'Someone reached the end of the Pyramid tour, offered beside a selected pyramid.',
+  'UI|Ended|PyramidTourSkipped':
+    'Someone left the Pyramid tour before its end, or the pyramid it was on went away.',
+  'UI|Ended|FunnelTourCompleted':
+    'Someone reached the end of the Funnel tour, offered beside a selected funnel.',
+  'UI|Ended|FunnelTourSkipped':
+    'Someone left the Funnel tour before its end, or the funnel it was on went away.',
+  'UI|Ended|CycleTourCompleted':
+    'Someone reached the end of the Cycle tour, offered beside a selected cycle.',
+  'UI|Ended|CycleTourSkipped':
+    'Someone left the Cycle tour before its end, or the cycle it was on went away.',
+  'UI|Ended|HubTourCompleted':
+    'Someone reached the end of the Hub and Spoke tour, offered beside a selected hub and spoke.',
+  'UI|Ended|HubTourSkipped':
+    'Someone left the Hub and Spoke tour before its end, or the hub and spoke it was on went away.',
+  'UI|Ended|OnionTourCompleted':
+    'Someone reached the end of the Onion tour, offered beside a selected onion.',
+  'UI|Ended|OnionTourSkipped':
+    'Someone left the Onion tour before its end, or the onion it was on went away.',
+  'UI|Ended|ChevronsTourCompleted':
+    'Someone reached the end of the Chevrons tour, offered beside a selected chevron process.',
+  'UI|Ended|ChevronsTourSkipped':
+    'Someone left the Chevrons tour before its end, or the chevron process it was on went away.',
+  'UI|Ended|MindMapTourCompleted':
+    'Someone reached the end of the Mind Map tour, offered beside a selected mind map node.',
+  'UI|Ended|MindMapTourSkipped':
+    'Someone left the Mind Map tour before its end, or the mind map node it was on went away.',
+  'UI|Ended|FlowchartTourCompleted':
+    'Someone reached the end of the Flowchart tour, offered beside a selected flowchart step.',
+  'UI|Ended|FlowchartTourSkipped':
+    'Someone left the Flowchart tour before its end, or the flowchart step it was on went away.',
+  'UI|Ended|OrgChartTourCompleted':
+    'Someone reached the end of the Org Chart tour, offered beside a selected person in an org chart.',
+  'UI|Ended|OrgChartTourSkipped':
+    'Someone left the Org Chart tour before its end, or the person in an org chart it was on went away.',
+  'UI|Ended|SequenceTourCompleted':
+    'Someone reached the end of the Sequence tour, offered beside a selected sequence diagram.',
+  'UI|Ended|SequenceTourSkipped':
+    'Someone left the Sequence tour before its end, or the sequence diagram it was on went away.',
+  'UI|Ended|SankeyTourCompleted':
+    'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
+  'UI|Ended|SankeyTourSkipped':
+    'Someone left the Sankey tour before its end, or the diagram it was on went away.',
   'UI|Ended|SankeyFlowsTourCompleted':
     "Someone reached the end of a Sankey Flows dialog's Show Me tour.",
   'UI|Ended|SankeyFlowsTourSkipped':
@@ -1180,6 +1267,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|DrawTourCompleted':
     "Someone reached the end of the Draw tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|DrawTourSkipped': 'Someone closed the Draw tour before its end.',
+  'UI|Ended|FormTourCompleted':
+    "Someone reached the end of the Forms tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|FormTourSkipped':
+    'Someone closed the Forms tour before its end, or left the form for a tab other than where its responses go.',
   'UI|Ended|FacilitateTourCompleted':
     "Someone reached the end of the Facilitate tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|FacilitateTourSkipped': 'Someone closed the Facilitate tour before its end.',
@@ -1281,8 +1372,34 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour".',
   'UI|Opened|AvatarPanel':
     'Someone opened the Avatar panel from its button beside Undo and Redo, in Avatar mode.',
+  'UI|Opened|LayerStackTourOffer':
+    'The Layer Stack tour was offered, as a small Tour toolbar beside a selected layer stack (counted once per visit).',
+  'UI|Opened|PyramidTourOffer':
+    'The Pyramid tour was offered, as a small Tour toolbar beside a selected pyramid (counted once per visit).',
+  'UI|Opened|FunnelTourOffer':
+    'The Funnel tour was offered, as a small Tour toolbar beside a selected funnel (counted once per visit).',
+  'UI|Opened|CycleTourOffer':
+    'The Cycle tour was offered, as a small Tour toolbar beside a selected cycle (counted once per visit).',
+  'UI|Opened|HubTourOffer':
+    'The Hub and Spoke tour was offered, as a small Tour toolbar beside a selected hub and spoke (counted once per visit).',
+  'UI|Opened|OnionTourOffer':
+    'The Onion tour was offered, as a small Tour toolbar beside a selected onion (counted once per visit).',
+  'UI|Opened|ChevronsTourOffer':
+    'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit).',
+  'UI|Opened|MindMapTourOffer':
+    'The Mind Map tour was offered, as a small Tour toolbar beside a selected mind map node (counted once per visit).',
+  'UI|Opened|FlowchartTourOffer':
+    'The Flowchart tour was offered, as a small Tour toolbar beside a selected flowchart step (counted once per visit).',
+  'UI|Opened|OrgChartTourOffer':
+    'The Org Chart tour was offered, as a small Tour toolbar beside a selected person in an org chart (counted once per visit).',
+  'UI|Opened|SequenceTourOffer':
+    'The Sequence tour was offered, as a small Tour toolbar beside a selected sequence diagram (counted once per visit).',
+  'UI|Opened|SankeyTourOffer':
+    'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
     'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour".',
+  'UI|Opened|FormTourOffer':
+    'The Forms tour was offered: as its own card the first time an Editor opened a Form tab, or replayed from Show Me Around in the form cog or Settings\' Tours › "Forms Tour".',
   'UI|Opened|FacilitateTourOffer':
     'The Facilitate tour was offered: as its own card the first time someone worked in Facilitate mode, or replayed from Settings\' Tours › "Facilitate Tour". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Facilitate").',
   'UI|Opened|PlanTourOffer':
@@ -1357,6 +1474,30 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the photo import review, starting its tour of checking the notes found on the wall.',
   'UI|Started|TabStyleTour':
     'Someone pressed Show Me in the Tab Style dialog, starting its tour of looks and fine-tuning.',
+  'UI|Started|LayerStackTour':
+    'Someone pressed Play on the Tour toolbar beside a selected layer stack, starting its tour.',
+  'UI|Started|PyramidTour':
+    'Someone pressed Play on the Tour toolbar beside a selected pyramid, starting its tour.',
+  'UI|Started|FunnelTour':
+    'Someone pressed Play on the Tour toolbar beside a selected funnel, starting its tour.',
+  'UI|Started|CycleTour':
+    'Someone pressed Play on the Tour toolbar beside a selected cycle, starting its tour.',
+  'UI|Started|HubTour':
+    'Someone pressed Play on the Tour toolbar beside a selected hub and spoke, starting its tour.',
+  'UI|Started|OnionTour':
+    'Someone pressed Play on the Tour toolbar beside a selected onion, starting its tour.',
+  'UI|Started|ChevronsTour':
+    'Someone pressed Play on the Tour toolbar beside a selected chevron process, starting its tour.',
+  'UI|Started|MindMapTour':
+    'Someone pressed Play on the Tour toolbar beside a selected mind map node, starting its tour.',
+  'UI|Started|FlowchartTour':
+    'Someone pressed Play on the Tour toolbar beside a selected flowchart step, starting its tour.',
+  'UI|Started|OrgChartTour':
+    'Someone pressed Play on the Tour toolbar beside a selected person in an org chart, starting its tour.',
+  'UI|Started|SequenceTour':
+    'Someone pressed Play on the Tour toolbar beside a selected sequence diagram, starting its tour.',
+  'UI|Started|SankeyTour':
+    'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
     "Someone pressed Show Me in a Sankey's Flows dialog, starting its tour of writing flows.",
   'UI|Started|ShareTour':
@@ -1367,6 +1508,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Yes on the Avatar tour's first card, beginning its walkthrough of Avatar mode.",
   'UI|Started|DrawTour':
     "Someone pressed Yes on the Draw tour's first card, beginning its walkthrough of the dock.",
+  'UI|Started|FormTour':
+    "Someone pressed Yes on the Forms tour's first card, beginning its walkthrough of the form builder.",
   'UI|Started|FacilitateTour':
     "Someone pressed Show me around on the Facilitate tour's first card, beginning its walkthrough of the session kit.",
   'UI|Started|PlanTour':
@@ -1435,6 +1578,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone stopped showing their profile picture to collaborators, in Settings > Account.',
   'UI|Toggled|ShowProfilePictureOn':
     'Someone started showing their profile picture to collaborators again, in Settings > Account.',
+  'UI|Toggled|NotifyFormResponsesOff':
+    'Someone turned off the email they get when somebody fills in one of their forms.',
+  'UI|Toggled|NotifyFormResponsesOn':
+    'Someone turned back on the email they get when somebody fills in one of their forms.',
   'UI|Toggled|NotifyMentionsOff':
     'Someone turned off the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
   'UI|Toggled|NotifyMentionsOn':
@@ -1520,10 +1667,66 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Avatar Tour" in Settings, marking the Avatar tour as not yet seen.',
   'UI|Toggled|AvatarTourSeenOn':
     'Someone switched off Tours › "Avatar Tour" in Settings, marking the Avatar tour as seen.',
+  'UI|Toggled|ElementToursSeenOff':
+    'Someone switched on Tours › Element Tours in Settings, so every element tour is offered again.',
+  'UI|Toggled|ElementToursSeenOn':
+    'Someone switched off Tours › Element Tours in Settings, so no element tour is offered.',
+  'UI|Toggled|LayerStackTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Layer Stack Tour" in Settings, so it is offered again.',
+  'UI|Toggled|LayerStackTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Layer Stack Tour" in Settings, so it is not offered.',
+  'UI|Toggled|PyramidTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Pyramid Tour" in Settings, so it is offered again.',
+  'UI|Toggled|PyramidTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Pyramid Tour" in Settings, so it is not offered.',
+  'UI|Toggled|FunnelTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Funnel Tour" in Settings, so it is offered again.',
+  'UI|Toggled|FunnelTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Funnel Tour" in Settings, so it is not offered.',
+  'UI|Toggled|CycleTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Cycle Tour" in Settings, so it is offered again.',
+  'UI|Toggled|CycleTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Cycle Tour" in Settings, so it is not offered.',
+  'UI|Toggled|HubTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Hub and Spoke Tour" in Settings, so it is offered again.',
+  'UI|Toggled|HubTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Hub and Spoke Tour" in Settings, so it is not offered.',
+  'UI|Toggled|OnionTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Onion Tour" in Settings, so it is offered again.',
+  'UI|Toggled|OnionTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Onion Tour" in Settings, so it is not offered.',
+  'UI|Toggled|ChevronsTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Chevrons Tour" in Settings, so it is offered again.',
+  'UI|Toggled|ChevronsTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Chevrons Tour" in Settings, so it is not offered.',
+  'UI|Toggled|MindMapTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Mind Map Tour" in Settings, so it is offered again.',
+  'UI|Toggled|MindMapTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Mind Map Tour" in Settings, so it is not offered.',
+  'UI|Toggled|FlowchartTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Flowchart Tour" in Settings, so it is offered again.',
+  'UI|Toggled|FlowchartTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Flowchart Tour" in Settings, so it is not offered.',
+  'UI|Toggled|OrgChartTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Org Chart Tour" in Settings, so it is offered again.',
+  'UI|Toggled|OrgChartTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Org Chart Tour" in Settings, so it is not offered.',
+  'UI|Toggled|SequenceTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Sequence Tour" in Settings, so it is offered again.',
+  'UI|Toggled|SequenceTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Sequence Tour" in Settings, so it is not offered.',
+  'UI|Toggled|SankeyTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
+  'UI|Toggled|SankeyTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is not offered.',
   'UI|Toggled|DrawTourSeenOff':
     'Someone switched on Tours › "Draw Tour" in Settings, marking the Draw tour as not yet seen.',
   'UI|Toggled|DrawTourSeenOn':
     'Someone switched off Tours › "Draw Tour" in Settings, marking the Draw tour as seen.',
+  'UI|Toggled|FormTourSeenOff':
+    'Someone switched on Tours › "Forms Tour" in Settings, marking the Forms tour as not yet seen.',
+  'UI|Toggled|FormTourSeenOn':
+    'Someone switched off Tours › "Forms Tour" in Settings, marking the Forms tour as seen.',
   'UI|Toggled|FacilitateTourSeenOff':
     'Someone switched on Tours › "Facilitate Tour" in Settings, marking the Facilitate tour as not yet seen.',
   'UI|Toggled|FacilitateTourSeenOn':
@@ -1606,6 +1809,190 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Avatar tour reached its "Give Someone a Push" step, on the person\'s own character.',
   'UI|View|AvatarTourStepOutro':
     'The Avatar tour reached its closing "You\'re Ready to Roam" card.',
+  'UI|View|LayerStackTourStepLayers':
+    'The Layer Stack tour reached its "One Element, Many Layers" step, on the whole stack.',
+  'UI|View|LayerStackTourStepEdit':
+    'The Layer Stack tour reached its "Type Over a Layer" step, on the top layer\'s name.',
+  'UI|View|LayerStackTourStepNotes':
+    'The Layer Stack tour reached its "Side Notes" step, on a layer\'s side note.',
+  'UI|View|LayerStackTourStepAdd':
+    'The Layer Stack tour reached its "Add a Layer" step, with the "+" ring open on Add Layer.',
+  'UI|View|LayerStackTourStepRows':
+    'The Layer Stack tour reached its "Reorder in the Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|LayerStackTourStepColours':
+    'The Layer Stack tour reached its "One Colour, a Whole Ramp" step, on the bottom layer.',
+  'UI|View|LayerStackTourStepAnimate':
+    'The Layer Stack tour reached its "Build It Up" step, playing the Build animation on the stack.',
+  'UI|View|LayerStackTourStepOutro':
+    'The Layer Stack tour reached its closing "That Is a Layer Stack" card.',
+  'UI|View|PyramidTourStepTiers':
+    'The Pyramid tour reached its "Tiers Cut From One Triangle" step, on the whole pyramid.',
+  'UI|View|PyramidTourStepEdit':
+    'The Pyramid tour reached its "Type Over a Tier" step, on the first tier\'s name.',
+  'UI|View|PyramidTourStepAdd':
+    'The Pyramid tour reached its "Add a Tier" step, with the "+" ring open on Add Tier.',
+  'UI|View|PyramidTourStepShape':
+    'The Pyramid tour reached its "Pyramid, Inverted or Funnel" step, on the selection toolbar\'s More button.',
+  'UI|View|PyramidTourStepColours':
+    'The Pyramid tour reached its "From the Accent Down" step, on the last tier.',
+  'UI|View|PyramidTourStepAnimate':
+    'The Pyramid tour reached its Build step, playing the Build animation on the pyramid.',
+  'UI|View|PyramidTourStepOutro': 'The Pyramid tour reached its closing card.',
+  'UI|View|FunnelTourStepStages':
+    'The Funnel tour reached its "Narrowing Stage by Stage" step, on the whole funnel.',
+  'UI|View|FunnelTourStepEdit':
+    'The Funnel tour reached its "Type Over a Stage" step, on the first band\'s name.',
+  'UI|View|FunnelTourStepValues':
+    'The Funnel tour reached its "A Number on Each Band" step, on a band\'s value.',
+  'UI|View|FunnelTourStepAdd':
+    'The Funnel tour reached its "Add a Stage" step, with the "+" ring open on Add Tier.',
+  'UI|View|FunnelTourStepShape':
+    'The Funnel tour reached its "Funnel, Pyramid or Inverted" step, on the selection toolbar\'s More button.',
+  'UI|View|FunnelTourStepColours':
+    'The Funnel tour reached its "From the Accent Down" step, on the last band.',
+  'UI|View|FunnelTourStepAnimate':
+    'The Funnel tour reached its "Pour It In" step, playing the Build animation on the funnel.',
+  'UI|View|FunnelTourStepOutro': 'The Funnel tour reached its closing "That Is a Funnel" card.',
+  'UI|View|CycleTourStepLoop':
+    'The Cycle tour reached its "A Loop, Clockwise" step, on the whole cycle.',
+  'UI|View|CycleTourStepFirst':
+    'The Cycle tour reached its "Where It Starts" step, on the first step.',
+  'UI|View|CycleTourStepCentre':
+    'The Cycle tour reached its "Name the Loop" step, on the words in the middle.',
+  'UI|View|CycleTourStepAdd':
+    'The Cycle tour reached its "Add a Step" step, with the "+" ring open on Add Step.',
+  'UI|View|CycleTourStepRows':
+    'The Cycle tour reached its "Reorder in the Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|CycleTourStepAnimate':
+    'The Cycle tour reached its "Set It Turning" step, playing the Flow animation on the cycle.',
+  'UI|View|CycleTourStepOutro': 'The Cycle tour reached its closing "That Is a Cycle" card.',
+  'UI|View|HubTourStepHub':
+    'The Hub and Spoke tour reached its "One Thing in the Middle" step, on the hub.',
+  'UI|View|HubTourStepSatellites':
+    'The Hub and Spoke tour reached its "Round It, Clockwise" step, on the whole hub and spoke.',
+  'UI|View|HubTourStepEdit':
+    'The Hub and Spoke tour reached its "Type Over a Satellite" step, on the first satellite.',
+  'UI|View|HubTourStepAdd':
+    'The Hub and Spoke tour reached its "Add a Satellite" step, with the "+" ring open on Add Satellite.',
+  'UI|View|HubTourStepSpokes':
+    'The Hub and Spoke tour reached its "Spokes or None" step, on the selection toolbar\'s More button.',
+  'UI|View|HubTourStepAnimate':
+    'The Hub and Spoke tour reached its "Light Them Up" step, playing the Pulse animation on the hub.',
+  'UI|View|HubTourStepOutro':
+    'The Hub and Spoke tour reached its closing "That Is a Hub and Spoke" card.',
+  'UI|View|OnionTourStepRings':
+    'The Onion tour reached its "Nested, Not Overlapping" step, on the whole onion.',
+  'UI|View|OnionTourStepCore': 'The Onion tour reached its "The Core" step, on the core\'s name.',
+  'UI|View|OnionTourStepOuter':
+    'The Onion tour reached its "Outward From There" step, on the outermost ring\'s name.',
+  'UI|View|OnionTourStepAdd':
+    'The Onion tour reached its "Add a Ring" step, with the "+" ring open on Add Ring.',
+  'UI|View|OnionTourStepRows':
+    'The Onion tour reached its "Reorder in the Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|OnionTourStepAnimate':
+    'The Onion tour reached its "Ripple Outward" step, playing the Pulse animation on the onion.',
+  'UI|View|OnionTourStepOutro': 'The Onion tour reached its closing "That Is an Onion" card.',
+  'UI|View|ChevronsTourStepStages':
+    'The Chevrons tour reached its "Stages, Left to Right" step, on the whole process.',
+  'UI|View|ChevronsTourStepEdit':
+    'The Chevrons tour reached its "Type Over a Stage" step, on the first stage\'s name.',
+  'UI|View|ChevronsTourStepBar':
+    'The Chevrons tour reached its "Each Stage\'s Own Bar" step, with a stage\'s bar held open.',
+  'UI|View|ChevronsTourStepNotes':
+    'The Chevrons tour reached its "A Note Under Each" step, on a stage\'s note.',
+  'UI|View|ChevronsTourStepAdd':
+    'The Chevrons tour reached its "Add a Stage" step, with the "+" ring open on Add Stage.',
+  'UI|View|ChevronsTourStepAnimate':
+    'The Chevrons tour reached its "Run the Pipeline" step, playing the Pulse animation on the process.',
+  'UI|View|ChevronsTourStepOutro':
+    'The Chevrons tour reached its closing "That Is a Chevron Process" card.',
+  'UI|View|MindMapTourStepNode':
+    'The Mind Map tour reached its "A Node That Knows Its Parent" step, on the selected node.',
+  'UI|View|MindMapTourStepChild':
+    'The Mind Map tour reached its "Grow a Child" step, on the toolbar\'s Add Child.',
+  'UI|View|MindMapTourStepSibling':
+    'The Mind Map tour reached its "Add a Sibling" step, on the toolbar\'s Add Sibling.',
+  'UI|View|MindMapTourStepBranch':
+    'The Mind Map tour reached its branch-moving step, on the selected node.',
+  'UI|View|MindMapTourStepMenu':
+    'The Mind Map tour reached its "The Mind Map Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|MindMapTourStepOutro':
+    'The Mind Map tour reached its closing "That Is a Mind Map" card.',
+  'UI|View|FlowchartTourStepStep':
+    'The Flowchart tour reached its "A Step in a Flowchart" step, on the selected step.',
+  'UI|View|FlowchartTourStepNext':
+    'The Flowchart tour reached its "The Next Step" step, on the toolbar\'s Add Step.',
+  'UI|View|FlowchartTourStepBranch':
+    'The Flowchart tour reached its "Add a Branch" step, on the toolbar\'s Add Branch.',
+  'UI|View|FlowchartTourStepType':
+    'The Flowchart tour reached its "Change Its Type" step, on the toolbar\'s Step Type.',
+  'UI|View|FlowchartTourStepLane':
+    'The Flowchart tour reached its "Its Lane" step, on the toolbar\'s Lane.',
+  'UI|View|FlowchartTourStepMenu':
+    'The Flowchart tour reached its "The Flowchart Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|FlowchartTourStepOutro':
+    'The Flowchart tour reached its closing "That Is a Flowchart" card.',
+  'UI|View|OrgChartTourStepPerson':
+    'The Org Chart tour reached its "A Person in the Chart" step, on the selected person.',
+  'UI|View|OrgChartTourStepRole':
+    'The Org Chart tour reached its "Their Role" step, on the role line.',
+  'UI|View|OrgChartTourStepInitials':
+    'The Org Chart tour reached its "Initials, Made for You" step, on the initials disc.',
+  'UI|View|OrgChartTourStepReport':
+    'The Org Chart tour reached its "Add a Report" step, on the toolbar\'s Add Child.',
+  'UI|View|OrgChartTourStepPeer':
+    'The Org Chart tour reached its "Add a Peer" step, on the toolbar\'s Add Sibling.',
+  'UI|View|OrgChartTourStepTeam':
+    'The Org Chart tour reached its team-moving step, on the selected person.',
+  'UI|View|OrgChartTourStepMenu':
+    'The Org Chart tour reached its "The Mind Map Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|OrgChartTourStepOutro':
+    'The Org Chart tour reached its closing "That Is an Org Chart" card.',
+  'UI|View|SequenceTourStepDiagram':
+    'The Sequence tour reached its "Who Calls Whom" step, on the whole diagram.',
+  'UI|View|SequenceTourStepMenu':
+    'The Sequence tour reached its "The Sequence Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|SequenceTourStepWrite':
+    'The Sequence tour reached its "Write It as a List" step, on the whole diagram.',
+  'UI|View|SequenceTourStepParticipants':
+    'The Sequence tour reached its "The Participants" step, inside the Sequence dialog it opened.',
+  'UI|View|SequenceTourStepMessages':
+    'The Sequence tour reached its "A Row a Message" step, inside the Sequence dialog.',
+  'UI|View|SequenceTourStepKind':
+    'The Sequence tour reached its "Call, Async or Reply" step, on a message\'s kind.',
+  'UI|View|SequenceTourStepAdd':
+    'The Sequence tour reached its "Add a Message" step, inside the Sequence dialog.',
+  'UI|View|SequenceTourStepText':
+    'The Sequence tour reached its "Or Type It" step, on the Sequence dialog\'s Text tab.',
+  'UI|View|SequenceTourStepPreview':
+    'The Sequence tour reached its "Live Preview" step, inside the Sequence dialog.',
+  'UI|View|SequenceTourStepNumbered':
+    'The Sequence tour reached its "Number Them" step, on Numbered.',
+  'UI|View|SequenceTourStepOutro':
+    'The Sequence tour reached its closing "That Is a Sequence Diagram" card.',
+  'UI|View|SankeyTourStepBands':
+    'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
+  'UI|View|SankeyTourStepLeftover':
+    'The Sankey tour reached its "What Is Left Over" step, lifting a leftover band.',
+  'UI|View|SankeyTourStepStyle':
+    'The Sankey tour reached its "Style It" step, on the selection toolbar\'s More button.',
+  'UI|View|SankeyTourStepFlows':
+    'The Sankey tour reached its "Write the Flows" step, on the whole diagram.',
+  'UI|View|SankeyTourStepFlowsNodes':
+    'The Sankey tour reached its "Your Nodes" step, inside the Flows dialog it opened.',
+  'UI|View|SankeyTourStepFlowsRows':
+    'The Sankey tour reached its "Flows, Step by Step" step, inside the Flows dialog.',
+  'UI|View|SankeyTourStepFlowsAdd':
+    'The Sankey tour reached its "Add a Flow" step, inside the Flows dialog.',
+  'UI|View|SankeyTourStepFlowsBalance':
+    'The Sankey tour reached its "In and Out Differ" step, inside the Flows dialog.',
+  'UI|View|SankeyTourStepFlowsText':
+    'The Sankey tour reached its "Or Type Them" step, on the Flows dialog\'s Text tab.',
+  'UI|View|SankeyTourStepFlowsImport':
+    'The Sankey tour reached its "Import a File" step, inside the Flows dialog.',
+  'UI|View|SankeyTourStepFlowsPreview':
+    'The Sankey tour reached its "Live Preview" step, inside the Flows dialog.',
+  'UI|View|SankeyTourStepOutro': 'The Sankey tour reached its closing "That Is a Sankey" card.',
   'UI|View|DrawTourStepDrawingTools':
     'The Draw tour reached its "Pens and Tools" step, on the dock\'s Drawing tools group.',
   'UI|View|DrawTourStepQuickStyle':
@@ -1617,6 +2004,19 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|DrawTourStepOutro': 'The Draw tour reached its closing "You\'re ready to draw" card.',
   'UI|View|FacilitateTourStepCollaborate':
     'The Facilitate tour reached its "Collaborate" step, ringing the Collaborate band of the palette\'s category picker.',
+  'UI|View|FormTourStepAdd':
+    'The Forms tour reached its "Add Questions" step, ringing the add bar.',
+  'UI|View|FormTourStepDestination':
+    'The Forms tour reached its "Responses Arrive Here" step, opening the board or sheet the form sends its responses to.',
+  'UI|View|FormTourStepForm':
+    'The Forms tour reached its "Build It Here" step, ringing the questions in the form builder.',
+  'UI|View|FormTourStepOutro': 'The Forms tour reached its closing "That Is a Form" card.',
+  'UI|View|FormTourStepSettings':
+    'The Forms tour reached its "Where Responses Go" step, ringing the form cog.',
+  'UI|View|FormTourStepShare':
+    'The Forms tour reached its "Share Form" step, ringing Share Form in the header.',
+  'UI|View|FormTourStepStatus':
+    'The Forms tour reached its "Responses and Preview" step, ringing the form status bar.',
   'UI|View|FacilitateTourStepSessionStrip':
     'The Facilitate tour reached its "Run the room" step, on the Session strip.',
   'UI|View|FacilitateTourStepShare':
@@ -1699,6 +2099,14 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Activity|Loaded':
     "Something happened while loading the Explorer's Inbox (the list of outstanding actions and comment threads).",
   'Activity|Opened': "Someone opened or interacted with the Explorer's Inbox.",
+  'Form|Created': 'Someone started a form from Start Planning.',
+  'Form|Added': 'Someone added a question to a form.',
+  'Form|Linked':
+    'Someone connected a form to where its responses go, from the box above its title.',
+  'Form|Shared': 'Someone published a form, making its public link.',
+  'Form|Toggled': 'Someone switched Accepting Responses on or off for a published form.',
+  'Form|Sent': 'A response came in through a form link.',
+  'Form|Reported': 'Someone reported a form they were sent.',
   'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",
   'Canvas|Used': 'Someone picked up one of the canvas tools or modes, or used a canvas feature.',
   'Canvas|Zoomed': 'Someone changed the zoom from the zoom controls.',

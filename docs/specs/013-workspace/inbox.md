@@ -67,7 +67,10 @@ count, and each hidden entirely when empty:
 2. **You Assigned** — open actions the reader assigned to _somebody
    else_. Self-assignments are excluded so one action never appears
    twice.
-3. **Open Comment Threads** — unresolved threads the reader is in.
+3. **Form Responses** — forms with responses the reader has not seen, in documents they own or reach through a
+   team ([Forms](../030-forms/forms.md#hearing-about-responses)): "3 new responses to **Bug Report**", opening the
+   board they land on. Listed between Assigned to You and You Assigned; the Inbox badge does not count them.
+4. **Open Comment Threads** — unresolved threads the reader is in.
    "In" means one of two things, and the row says which:
    - the reader wrote at least one comment in the thread, or
    - the thread is on a document the reader **owns** (owners are

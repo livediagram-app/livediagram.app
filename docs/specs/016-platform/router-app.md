@@ -8,16 +8,16 @@ A small Cloudflare Worker that fronts the apex domain (`livediagram.app`) and ro
 
 ## Routing table
 
-| Path                                                                                                                                            | Forwards to                            |
-| ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `/api`, `/api/*`                                                                                                                                | api worker (`apps/api`)                |
-| `/telemetry`, `/telemetry/*`                                                                                                                    | telemetry app (`apps/telemetry`)       |
-| `/help`, `/help/*`                                                                                                                              | help app (`apps/help`), stripped       |
-| `/community`, `/community/*`                                                                                                                    | Community (`apps/community`), stripped |
-| `/live/*` (the live app's `_next` assets only)                                                                                                  | live app (`apps/live`), stripped       |
-| live page routes: `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/sso-callback`, `/icon.svg` | live app (`apps/live`), as-is          |
-| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                | 308 redirect to `/help/<path>`         |
-| everything else                                                                                                                                 | marketing app (`apps/marketing`)       |
+| Path                                                                                                                                                       | Forwards to                            |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `/api`, `/api/*`                                                                                                                                           | api worker (`apps/api`)                |
+| `/telemetry`, `/telemetry/*`                                                                                                                               | telemetry app (`apps/telemetry`)       |
+| `/help`, `/help/*`                                                                                                                                         | help app (`apps/help`), stripped       |
+| `/community`, `/community/*`                                                                                                                               | Community (`apps/community`), stripped |
+| `/live/*` (the live app's `_next` assets only)                                                                                                             | live app (`apps/live`), stripped       |
+| live page routes: `/document/*`, `/explorer/*`, `/form/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/sso-callback`, `/icon.svg` | live app (`apps/live`), as-is          |
+| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                           | 308 redirect to `/help/<path>`         |
+| everything else                                                                                                                                            | marketing app (`apps/marketing`)       |
 
 The live app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livediagram/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the live worker's `out/` files are already prefix-free).
 

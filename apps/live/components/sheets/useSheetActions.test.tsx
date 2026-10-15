@@ -514,11 +514,11 @@ describe('sort, filter, freeze, dates', () => {
     const h = await rich();
     h.run((a) => a.typeNow('date'));
     expect(h.cell(0, 0)?.format?.nf).toBe('date');
-    expect(Number.isInteger((h.cell(0, 0)?.input as { n: number }).n)).toBe(true);
+    expect(Number.isInteger((h.cell(0, 0)?.input as { n: number } | undefined)?.n)).toBe(true);
     h.select(1, 0);
     h.run((a) => a.typeNow('time'));
-    const n = (h.cell(1, 0)?.input as { n: number }).n;
+    const n = (h.cell(1, 0)?.input as { n: number } | undefined)?.n;
     expect(h.cell(1, 0)?.format?.nf).toBe('time');
-    expect(n >= 0 && n < 1).toBe(true);
+    expect(n !== undefined && n >= 0 && n < 1).toBe(true);
   });
 });

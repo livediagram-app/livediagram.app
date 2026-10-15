@@ -1,19 +1,56 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 
-// The moment the current day began being seen, as state that moves on at local midnight (and on any render that
-// finds the day has changed, after a laptop sleeps through midnight), so a reading by the day (a metric's due or
-// overdue count) rolls over without a reload. Stable for the whole day, so memos keyed on it recompute once a day.
-// One timeout per caller, re-armed each day: nothing ticks in between.
+// The moment the current day was first seen, as a store that moves on at local midnight (and when the page is
+// shown again, after a laptop sleeps through midnight), so a reading by the day (a metric's due or overdue count)
+// rolls over without a reload. Stable for the whole day, so memos keyed on it recompute once a day. One timeout
+// for every reader, re-armed each day: nothing ticks in between, and nothing reads the clock while rendering.
+
+let seen = Date.now();
+const listeners = new Set<() => void>();
+// `window.setTimeout` returns a number in the DOM lib; pinned against @types/node's `Timeout`.
+let timer: number | null = null;
+
+/** Takes the new day when the clock has crossed into one, and tells every reader. */
+function check(): void {
+  const now = Date.now();
+  if (new Date(now).toDateString() === new Date(seen).toDateString()) return;
+  seen = now;
+  for (const listener of listeners) listener();
+}
+
+/** Wakes a moment past the next midnight, so the new day has surely begun when it fires. */
+function arm(): void {
+  const day = new Date(seen);
+  const next = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1);
+  timer = window.setTimeout(
+    () => {
+      check();
+      arm();
+    },
+    next.getTime() - Date.now() + 50,
+  );
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  if (listeners.size === 1) {
+    // Idle since the last reader left: catch up with the clock before waiting for midnight.
+    check();
+    arm();
+    document.addEventListener('visibilitychange', check);
+  }
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size > 0) return;
+    if (timer !== null) window.clearTimeout(timer);
+    timer = null;
+    document.removeEventListener('visibilitychange', check);
+  };
+}
+
+const getSeen = () => seen;
+
 export function useToday(): Date {
-  const [today, setToday] = useState(() => new Date());
-  const seen = new Date();
-  // A render on a new day takes it at once (derived state: React re-renders before committing).
-  if (seen.toDateString() !== today.toDateString()) setToday(seen);
-  useEffect(() => {
-    const next = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-    // A moment past midnight, so the new day has surely begun when it fires.
-    const id = window.setTimeout(() => setToday(new Date()), next.getTime() - Date.now() + 50);
-    return () => window.clearTimeout(id);
-  }, [today]);
-  return today;
+  const instant = useSyncExternalStore(subscribe, getSeen, getSeen);
+  return useMemo(() => new Date(instant), [instant]);
 }

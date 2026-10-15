@@ -16,6 +16,7 @@ import {
   writesFormats,
   type CellChange,
   type Sheet,
+  type SheetPerson,
   type SheetWrite,
 } from '@livediagram/sheets';
 import {
@@ -129,9 +130,23 @@ export async function writeSheet(
     body = { ...read, write: values };
   }
   const by = await writer(ctx, caller.owner);
+  return storeSheetWrite(ctx, documentId, sheetId, body, by, caller.scopeTab ?? null);
+}
+
+// A checked write stored (docs/specs/029-sheets/sheet-store.md "Changing a sheet"): validated and applied by the engine,
+// capped, stored in one batch guarded by the sheet's rev (retried on a lost race), answered with the cells it touched
+// and relayed. The sheet route's, after its gates, and a form's response row's (forms/sheet-response.ts).
+export async function storeSheetWrite(
+  ctx: RouteContext,
+  documentId: string,
+  sheetId: string,
+  body: SheetWriteRequest,
+  by: SheetPerson,
+  scopeTab: string | null,
+): Promise<Response> {
   for (let attempt = 0; attempt < SHEET_WRITE_RETRIES; attempt++) {
     const head = await readSheetHead(ctx.env, documentId, sheetId);
-    if (!head || (caller.scopeTab && head.tabId !== caller.scopeTab)) return sheetNotFound();
+    if (!head || (scopeTab && head.tabId !== scopeTab)) return sheetNotFound();
     const write = body.write;
     if (write.kind === 'title') {
       const heads = await listSheetHeads(ctx.env, documentId, head.tabId);

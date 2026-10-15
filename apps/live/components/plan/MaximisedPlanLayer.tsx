@@ -112,7 +112,8 @@ export function CanvasCover({
     <div
       ref={coverRef}
       data-canvas-cover=""
-      className={`absolute inset-0 ${CANVAS_LAYER_Z}`}
+      // The default cursor: it takes every press, so the canvas's pan hand (inherited from `main`) never shows over it.
+      className={`absolute inset-0 cursor-default ${CANVAS_LAYER_Z}`}
       // An opaque backdrop: the canvas's own background (colour and pattern, from the canvas `main` it sits in), so
       // nothing on the canvas shows through around the element, yet it still reads as the canvas.
       style={{ background: 'inherit' }}

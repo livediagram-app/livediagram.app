@@ -5,6 +5,7 @@
 // month steps are each viewer's own. Someone who may move cards drags an entry to another day, or moves it with
 // Alt+Arrows, to move its date there (calendarMove).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useToday } from '@/hooks/ui/useToday';
 import {
   ITEM_TYPES,
   MONTH_LONG,
@@ -76,7 +77,8 @@ export function CalendarView({
   const copy = CALENDAR_COPY[field];
   const phases = plan?.statusPhases ?? NO_PHASES;
   const types = plan?.types ?? ITEM_TYPES;
-  const now = new Date();
+  // Today, as a store that moves on at midnight (useToday); never the clock read while rendering.
+  const now = useToday();
   const [offset, setOffset] = useState(0);
   // This month as one number, so the model is kept until the month, the cards or the step change.
   const thisMonth = now.getFullYear() * 12 + now.getMonth();

@@ -2,7 +2,7 @@
 // Cell comments on the grid (docs/specs/029-sheets/sheet.md "Cell comments"): a marker on each cell with an open
 // thread, its preview on hover, the anchor the thread popover sits beside, the cell menu's Comment row (by role),
 // Ctrl + Alt + M, and the Comments panel naming and selecting a cell.
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, renderHook, screen } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CellCommentThreads, Comment } from '@livediagram/document';
 import { cellKey } from '@livediagram/sheets';
@@ -218,42 +218,36 @@ describe('Ctrl + Alt + M on the grid', () => {
 describe('the editor-level providers', () => {
   it('hands the open cell and actions through, and the bridge beside them', () => {
     const open = vi.fn();
-    let seen: ReturnType<typeof useSheetComments> = null;
-    function Probe() {
-      seen = useSheetComments();
-      return null;
-    }
-    render(
-      <SheetsProviders
-        bridge={null}
-        openComments={open}
-        openId="el1"
-        openCell="row1:col1"
-        canComment={false}
-      >
-        <Probe />
-      </SheetsProviders>,
-    );
-    expect(seen!.openCell).toEqual({ elementId: 'el1', cell: 'row1:col1' });
-    expect(seen!.canComment).toBe(false);
-    seen!.open('el1', 'row1:col1');
+    const on = renderHook(() => useSheetComments(), {
+      wrapper: ({ children }) => (
+        <SheetsProviders
+          bridge={null}
+          openComments={open}
+          openId="el1"
+          openCell="row1:col1"
+          canComment={false}
+        >
+          {children}
+        </SheetsProviders>
+      ),
+    });
+    expect(on.result.current?.openCell).toEqual({ elementId: 'el1', cell: 'row1:col1' });
+    expect(on.result.current?.canComment).toBe(false);
+    on.result.current?.open('el1', 'row1:col1');
     expect(open).toHaveBeenCalledWith('el1', 'row1:col1');
     cleanup();
-    render(
-      <SheetCommentsProvider open={open} openId={null} openCell={null} canComment off>
-        <Probe />
-      </SheetCommentsProvider>,
-    );
-    expect(seen).toBeNull();
+    const off = renderHook(() => useSheetComments(), {
+      wrapper: ({ children }) => (
+        <SheetCommentsProvider open={open} openId={null} openCell={null} canComment off>
+          {children}
+        </SheetCommentsProvider>
+      ),
+    });
+    expect(off.result.current).toBeNull();
   });
 
   it('names a cell only once its Sheet is drawn', () => {
-    let ref: string | null | undefined = 'x';
-    function Probe() {
-      ref = useCellRef('nowhere', 'row1:col1');
-      return null;
-    }
-    render(<Probe />);
-    expect(ref).toBeUndefined();
+    const { result } = renderHook(() => useCellRef('nowhere', 'row1:col1'));
+    expect(result.current).toBeUndefined();
   });
 });

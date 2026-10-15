@@ -22,6 +22,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { PageKind } from '@livediagram/document';
+import type { ElementTourKind } from './element-tours';
 import type { PlanTourTrack } from './plan-tour';
 import type { SkipLocationStep } from './skip-location-step';
 import type { SwatchOverrideStore } from './swatch-overrides';
@@ -190,6 +191,8 @@ export type UserPreferences = {
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
+  // "Someone fills in one of my forms" (docs/specs/030-forms/forms.md "Hearing about responses").
+  notifyFormResponses?: boolean;
   // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
   // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
   // always sees their own picture whatever this says.
@@ -214,6 +217,9 @@ export type UserPreferences = {
   // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
+  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me in the
+  // form's cog panel reruns it. Missing / undefined === not seen.
+  formTourSeen?: boolean;
   // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
@@ -223,6 +229,12 @@ export type UserPreferences = {
   // The page kinds whose Illustrate tour track has been offered and answered (taken, skipped or declined), so each
   // kind offers its own once ever. Cleared with `illustrateTourSeen` when the Settings switch is turned on.
   illustrateTourKinds?: PageKind[];
+  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
+  // (Play or Cancel), so each offers itself once ever. Surfaced in Settings as Tours › Element Tours, one switch
+  // per kind (inverted). Read through lib/element-tours.
+  elementTourKinds?: ElementTourKind[];
+  // Counts every element tour as answered while Power user mode is on (lib/tour-tracks.ts); written by its preset.
+  elementToursSeen?: boolean;
   // Documents this user has hidden from the Explorer's Recent list
   // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent
   // is your view of your own work, and on a shared document one

@@ -43,6 +43,9 @@ export type PlanContextValue = {
   createTypeForView: (viewId: string) => void;
   // Setup Board on a board that has columns (its Board Setup's Setup Board): the board showing it, or null.
   setupBoardId: string | null;
+  // New Form on a board's cog (docs/specs/030-forms/forms.md "Starting a form"): a Blank form whose responses go to
+  // this board, on a new Form tab, opened. Absent where no form may be made.
+  newFormFor?: (boardElementId: string) => void;
   openBoardSetup: (boardId: string | null) => void;
   status: PlanItemsStatus;
   self: ItemPerson | null;

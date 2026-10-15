@@ -1,3 +1,4 @@
+import { FORM_TEMPLATES, type FormTemplateKind } from './form-templates';
 import { titleCase } from '@livediagram/api-schema';
 import { UNTITLED_DOCUMENT_NAME } from './legacy-untitled';
 
@@ -246,7 +247,9 @@ export type TemplateKind =
   | 'inventory'
   | 'guest-list'
   | 'grade-book'
-  | 'habit-tracker';
+  | 'habit-tracker'
+  // Form templates (docs/specs/030-forms/forms.md "Starting a form"): one a form starter (form-templates.ts).
+  | FormTemplateKind;
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -267,6 +270,9 @@ export type TemplateDescriptor = {
   // one-word change rather than a new concept. `templates.test.ts` asserts
   // the set is empty, so this stays honest.
   hidden?: boolean;
+  // Made in the editor only (a form template: the editor starts the form on its tab), so left out of the agents'
+  // catalogue (templateCatalogue), whose creates are built on the api.
+  editorOnly?: boolean;
 };
 
 export const TEMPLATES: TemplateDescriptor[] = [
@@ -1110,6 +1116,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
       'A six-slide workshop opener on rolling waves: the outcomes, the agenda, how each round runs, the one rule and the close.',
     extra: true,
   },
+  ...FORM_TEMPLATES,
 ];
 
 // True when `value` names a template in the catalogue. The guard for a kind

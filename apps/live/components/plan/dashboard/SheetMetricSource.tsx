@@ -84,7 +84,7 @@ function CellPicker({
   const suggestions = useMemo(
     () => figureSuggestions(read.wb, read.sheet, read.locale),
     // The workbook changes in place: the store's version says when.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     [read.wb, read.sheet, read.locale, read.version],
   );
   const [typed, setTyped] = useState('');
@@ -203,7 +203,7 @@ function ColumnSource({
 }) {
   const columns = useMemo(
     () => numberColumns(read.wb, read.sheet),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     [read.wb, read.sheet, read.version],
   );
   return (

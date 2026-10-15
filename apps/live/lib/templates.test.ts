@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "125 templates (11 default + 114 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "132 templates (11 default + 121 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -161,24 +161,32 @@ describe('TEMPLATES catalogue', () => {
     'guest-list',
     'grade-book',
     'habit-tracker',
+    // Form templates (docs/specs/030-forms/forms.md "Starting a form").
+    'blank-form',
+    'bug-report-form',
+    'feedback-form',
+    'feature-request-form',
+    'rsvp-form',
+    'job-application-form',
+    'contact-form',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "125 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "132 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 125 templates (11 default + 114 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(125);
+  it('lists exactly 132 templates (11 default + 121 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(132);
   });
 
-  it('splits cleanly into 11 default + 114 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 121 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(114);
+    expect(extras).toHaveLength(121);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -228,7 +236,9 @@ describe('TEMPLATES catalogue', () => {
         // An empty Plan tab, which opens on Start Planning.
         kind === 'blank-plan' ||
         // An empty session tab, in Facilitate.
-        kind === 'blank-session';
+        kind === 'blank-session' ||
+        // A form template's Plan tab, which the editor starts the form on.
+        kind.endsWith('-form');
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });

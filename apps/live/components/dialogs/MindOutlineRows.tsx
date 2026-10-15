@@ -232,7 +232,7 @@ export function MindOutlineRows({
       if (e.key === 'ArrowUp' && atEdge(el, true)) go(all[i - 1], 'end');
       if (e.key === 'ArrowDown' && atEdge(el, false)) go(all[i + 1], 'start');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reads the latest rows through rowsRef
+    // oxlint-disable-next-line react/exhaustive-deps -- reads the latest rows through rowsRef
   }, []);
 
   const onPaste = useCallback((id: string, e: ClipboardEvent<HTMLDivElement>) => {
@@ -247,7 +247,7 @@ export function MindOutlineRows({
     if (!pasted) return typed(id, text);
     const { id: to, offset } = pasted.caret;
     commit(pasted.rows, { id: to, start: offset, end: offset });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reads the latest rows through rowsRef
+    // oxlint-disable-next-line react/exhaustive-deps -- reads the latest rows through rowsRef
   }, []);
 
   const active = activeId ? rows.findIndex((r) => r.id === activeId) : -1;

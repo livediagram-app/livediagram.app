@@ -35,11 +35,7 @@ export function useObjectDropCaret({
   });
 
   useEffect(() => {
-    if (gesture !== 'move') {
-      held.current = null;
-      setCaret(null);
-      return;
-    }
+    if (gesture !== 'move') return;
     const { target: t, selectedIds: ids } = latest.current;
     if (!t || t.zone.zone !== 'object' || ids.size !== 1) return;
     held.current = { ...t, elementId: [...ids][0]! };
@@ -76,8 +72,14 @@ export function useObjectDropCaret({
           : next,
       );
     });
-    return () => cancelAnimationFrame(frame);
+    // The move ended: the object is out of hand and the caret goes with it.
+    return () => {
+      cancelAnimationFrame(frame);
+      held.current = null;
+      setCaret(null);
+    };
   }, [gesture]);
 
-  return caret;
+  // Outside a move there is no caret, even for the render before the cleanup above clears it.
+  return gesture === 'move' ? caret : null;
 }

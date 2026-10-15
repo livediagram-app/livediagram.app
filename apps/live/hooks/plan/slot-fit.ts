@@ -40,6 +40,7 @@ export function fitKindOf(item: DashboardItem): SlotFitKind | null {
     case 'card':
       return 'note';
     case 'sheet-metric':
+    case 'form-metric':
       return 'metric';
     case 'sheet-chart':
       return 'chart';
@@ -69,7 +70,7 @@ export function contentFitKind(
 ): SlotFitKind | null {
   if (!content) return null;
   if (content.type === 'tab') return content.of ?? 'board';
-  if (content.type === 'sheet-metric') return 'metric';
+  if (content.type === 'sheet-metric' || content.type === 'form-metric') return 'metric';
   if (content.type !== 'element') return 'note';
   const el = elements.get(content.elementId);
   if (!el || el.type !== 'shape') return null;

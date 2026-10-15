@@ -17,7 +17,7 @@ Vitest with the same shared config.
 
 Per the repo's reuse-over-duplication rule, test configuration lives in one
 place: `packages/vitest-config`. It sits alongside the other shared configs
-(`eslint-config`, `prettier-config`, `tailwind-config`).
+(`oxlint-config`, `prettier-config`, `tailwind-config`).
 
 It exports:
 
@@ -305,8 +305,11 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     builder tests, `apps/marketing`'s gallery, and `apps/help`'s article guard.
   - `packages/tailwind-config`: the theme's budgets, motion and optical
     utilities, scrollbars.
-  - `packages/eslint-config`: the custom rules (raw SVG, native `title`) and
-    the TypeScript alias wiring.
+  - `packages/oxlint-config`: the shared lint config, linting scratch files
+    with the real config (every rule family, the custom raw SVG and native
+    `title` rules, directives).
+  - `packages/source-ast`: parsing a batch of `.ts` and `.tsx` files with
+    TypeScript 7 (order, parents, positions, JSX) and naming a file it could not read.
   - `packages/telemetry-client`: the shared buffer / flush / beacon engine
     both apps emit through: batching, caps, opt-in gates, page-hide beacon,
     error-tracking caps.
@@ -329,7 +332,8 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     UI-label, template and shortcut guards over article text, search and
     article telemetry, the schema.org JSON-LD builders, and the docs guards: every repo path quoted in
     `docs/` exists, and every blueprint DEFAULTS.md ledger id, COMPLETENESS.md section and README.md
-    index entry is unique, so a merge that keeps both sides of one fails a test.
+    index entry is unique, so a merge that keeps both sides of one fails a test; and the
+    one-TypeScript guard (every workspace on the root's TypeScript 7, no alias to another).
   - `apps/community`: component tests for the gallery (search words, the
     controls, My Shares, Load More), the post page and the like button's
     optimistic rollback, the switched-off gate and the lazy Clerk session; the

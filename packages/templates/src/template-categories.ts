@@ -9,6 +9,7 @@ export type TemplateCategory =
   | 'planning'
   | 'finance'
   | 'spreadsheets'
+  | 'forms'
   | 'meetings'
   | 'mindmaps'
   | 'timelines'
@@ -48,6 +49,12 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'spreadsheets',
     label: 'Spreadsheets',
     description: 'Ready-made sheets with formulas and charts.',
+  },
+  {
+    id: 'forms',
+    label: 'Forms',
+    searchWords: 'survey questionnaire',
+    description: 'Forms to share by link, answers kept for you.',
   },
   {
     id: 'meetings',
@@ -130,7 +137,8 @@ type BlankKind =
   | 'blank-logo'
   | 'blank-plan'
   | 'blank-spreadsheet'
-  | 'blank-session';
+  | 'blank-session'
+  | 'blank-form';
 
 // Every non-blank template's primary category.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
@@ -157,6 +165,13 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'guest-list': 'spreadsheets',
   'grade-book': 'spreadsheets',
   'habit-tracker': 'spreadsheets',
+  // Forms (form-templates.ts).
+  'bug-report-form': 'forms',
+  'feedback-form': 'forms',
+  'feature-request-form': 'forms',
+  'rsvp-form': 'forms',
+  'job-application-form': 'forms',
+  'contact-form': 'forms',
   // Meetings and Workshops: agendas, retros, live Q&A and the boards a team runs together.
   'meeting-agenda': 'meetings',
   'lean-coffee': 'meetings',

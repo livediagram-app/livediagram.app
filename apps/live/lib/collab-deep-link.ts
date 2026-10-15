@@ -12,7 +12,7 @@
 // builds the link) and the editor (which reads it), so the two halves
 // cannot drift on the parameter names.
 
-import type { ActivityCard, ActivityPlace } from '@livediagram/api-schema';
+import type { ActivityCard, ActivityFormResponses, ActivityPlace } from '@livediagram/api-schema';
 
 export type CollabPopover = 'action' | 'comments';
 
@@ -47,6 +47,17 @@ export function cardDeepLinkHref(
   return documentHref(
     card,
     card.board ? `${pin(card.board.tabId, card.board.elementId)}&${item}` : item,
+  );
+}
+
+// A form's responses (docs/specs/030-forms/forms.md "Hearing about responses"): the board they land on, else the
+// Form tab. A plain tab pin, so the editor opens that tab.
+export function formResponsesHref(
+  form: Pick<ActivityFormResponses, 'documentId' | 'tabId' | 'boardTabId'>,
+): string {
+  return documentHref(
+    { documentId: form.documentId, via: 'own', shareCode: null },
+    `t=${encodeURIComponent(form.boardTabId ?? form.tabId)}`,
   );
 }
 

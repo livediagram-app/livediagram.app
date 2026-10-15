@@ -270,6 +270,9 @@ type UserPreferences = {
   // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
+  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `drawTourSeen`; Show Me Around
+  // in the form's cog panel reruns it. Missing / undefined === not seen.
+  formTourSeen?: boolean;
   // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
@@ -279,6 +282,11 @@ type UserPreferences = {
   // The page kinds whose Illustrate tour track has been offered and answered (taken, skipped or declined), so each
   // kind offers its own once ever. Cleared with `illustrateTourSeen` when the Settings switch is turned on.
   illustrateTourKinds?: PageKind[];
+  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
+  // (Play or Cancel). Surfaced in Settings as Tours › Element Tours, one switch per kind (inverted).
+  elementTourKinds?: ElementTourKind[];
+  // Counts every element tour as answered while Power user mode is on; written by its preset.
+  elementToursSeen?: boolean;
   // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
   // read through lib/presentation-config. Surfaced in Settings as Editor › Presenting. Missing === what this
   // browser kept before they followed the account, else the defaults.
@@ -782,11 +790,17 @@ and the dialog stays as the one complete, browsable index of them.
   Plan once a board or Sheet is open), so closing the dialog only reruns it, when it was turned on from off
   ([Plan tour](../026-plan/plan-tour.md)). **Facilitate Tour** works the same way against
   `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)), **Draw Tour** against
-  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Avatar Tour** against `avatarTourSeen`
+  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), **Forms Tour** against `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"), **Avatar Tour** against `avatarTourSeen`
   ([Avatar tour](../008-canvas/avatar-tour.md)), and **Illustrate Tour** is built as Plan Tour is
   ([Illustrate tour](illustrate-tour.md)), one track per page kind: `illustrateTourKinds` lists the kinds answered.
   A multi-track tour's old single flag (`planTourSeen`, `illustrateTourSeen`) counts every track only while Power
   user mode is on, so an answer given before the tour split offers each track once more.
+
+  Below the mode tours, **Element Tours** is its own section, a closed accordion naming how many are on
+  ([Element tours](element-tours.md#settings)): **Element Tours**, built as Plan Tour is against `elementToursSeen`
+  and `elementTourKinds`, with one switch per toured kind nested under it (**Sankey Diagram Tour**). Element tours
+  need no relaunch: the offer shows the next time such an element is selected. A category may mark any section
+  closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
 
   **Toggle groups.** Several related switches that share one description are
   one `toggleGroup` row: the label and description over a row of **chips**, one

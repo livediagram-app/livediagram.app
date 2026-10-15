@@ -9,7 +9,7 @@ const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
  * Shared Vitest defaults for every workspace. Workspaces extend this
  * via `defineProject` so coverage, reporters, and conventions stay
  * identical across the monorepo — the same reasoning behind the
- * shared eslint / prettier / tailwind configs. See docs/specs/003-system-architecture/testing.md.
+ * shared oxlint / prettier / tailwind configs. See docs/specs/003-system-architecture/testing.md.
  */
 export const baseConfig = defineConfig({
   test: {

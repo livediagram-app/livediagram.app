@@ -38,7 +38,7 @@ function LiveChart({ element, bridge, children }: Props & { bridge: SheetsBridge
     const wb = store.workbook(tabId);
     const kept = sheetChartTable(wb, source, AGENT_LOCALE);
     return { kept, shown: locale === AGENT_LOCALE ? kept : sheetChartTable(wb, source, locale) };
-  }, [store, tabId, source, locale, version]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [store, tabId, source, locale, version]); // oxlint-disable-line react/exhaustive-deps
   // The fields those tables give this chart: its type (a Scatter takes a numbered read's first column as its x) and
   // its slices' or series' colours (by position) decide them.
   const { shape, chartVariant, pieSlices, lineSeries, lineCategories } = element;

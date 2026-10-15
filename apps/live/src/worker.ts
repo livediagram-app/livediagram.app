@@ -93,8 +93,18 @@ export default {
         );
       }
     }
+    // A form link's page (docs/specs/030-forms/forms.md): one placeholder file backs every /form/<code>, as
+    // /document/<id> is backed above.
+    if (isFormPath(url.pathname) && url.pathname !== FORM_PLACEHOLDER_PATH) {
+      const rewritten = new URL(request.url);
+      rewritten.pathname = FORM_PLACEHOLDER_PATH;
+      return withSecurityHeaders(
+        await env.ASSETS.fetch(new Request(rewritten.toString(), request)),
+      );
+    }
     return withSecurityHeaders(await env.ASSETS.fetch(request), { frameable });
   },
 };
 import { isEditorPath } from '../lib/legacy-editor-path';
+import { FORM_PLACEHOLDER_PATH, isFormPath } from '../lib/form-path';
 import { EXPLORER_LANDING_PATH } from '../lib/explorer-landing';

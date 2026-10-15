@@ -11,7 +11,7 @@
     "./png": "./scripts/png.ts"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "oxlint",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules .turbo",
@@ -21,12 +21,11 @@
     "@livediagram/document": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@playwright/test": "^1.63.0",
-    "@typescript/native": "npm:typescript@^7.0.2",
-    "eslint": "^10.12.0",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   }
 }

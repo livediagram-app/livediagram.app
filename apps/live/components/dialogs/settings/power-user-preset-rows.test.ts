@@ -11,8 +11,10 @@ const ALL = new Set([
   'planTourSeen',
   'facilitateTourSeen',
   'drawTourSeen',
+  'formTourSeen',
   'avatarTourSeen',
   'illustrateTourSeen',
+  'elementToursSeen',
   'aiSuggestedPrompts',
 ]);
 
@@ -27,8 +29,10 @@ describe('presetSummaryLines', () => {
       ['Plan Tour', 'Off', 'Tours'],
       ['Facilitate Tour', 'Off', 'Tours'],
       ['Draw Tour', 'Off', 'Tours'],
+      ['Forms Tour', 'Off', 'Tours'],
       ['Avatar Tour', 'Off', 'Tours'],
       ['Illustrate Tour', 'Off', 'Tours'],
+      ['Element Tours', 'Off', 'Tours'],
       ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);
     expect(lines.every((l) => !l.changed && l.reachable)).toBe(true);

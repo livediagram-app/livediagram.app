@@ -5,6 +5,7 @@
 // top (apps/live/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
+import { isFormTemplateKind } from './form-templates';
 import { buildVirtualOffice } from './template-builders-office';
 import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
 import type { Element, Tab } from '@livediagram/document';
@@ -105,6 +106,8 @@ import { buildObjectivesPlanner } from './template-builders-objectives';
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
+  // A form template's tab starts empty: the editor starts the form on it (form-templates.ts).
+  if (isFormTemplateKind(kind)) return [];
   switch (kind) {
     case 'blank':
       return buildBlank();

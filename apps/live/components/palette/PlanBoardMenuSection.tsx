@@ -16,13 +16,19 @@ import {
   TextInput,
   lucideGlyph,
 } from '@livediagram/ui';
-import { lucideColumns3, lucideLayoutGrid, lucideRows2 } from '@livediagram/icons/lucide';
+import {
+  lucideClipboardList,
+  lucideColumns3,
+  lucideLayoutGrid,
+  lucideRows2,
+} from '@livediagram/icons/lucide';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
-import { MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { usePlan } from '@/components/plan/PlanContext';
 import { BoardColumnsSection } from '@/components/plan/BoardColumnsSection';
 import { CardSizeOptions, MenuGroup, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';
 import { trackSetup } from '@/components/plan/track-board-setup';
+import { usePlanTabKind } from '@/hooks/plan/plan-cover-store';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
 
@@ -180,6 +186,7 @@ export function PlanCardLayoutSettings({ element }: { element: ShapeElement }) {
 const RowsIcon = lucideGlyph(lucideRows2, 16);
 const ColumnsIcon = lucideGlyph(lucideColumns3, 16);
 const LayoutIcon = lucideGlyph(lucideLayoutGrid, 16);
+const FormIcon = lucideGlyph(lucideClipboardList, 16);
 
 // The four sections, in order, for the element menu and the cog alike. `shows` leaves one out where it has nothing
 // (Supported Cards on an Archive board).
@@ -281,7 +288,18 @@ export function PlanBoardMenuSections({
   onClose?: (() => void) | undefined;
 }) {
   const board = useBoard(element);
+  const plan = usePlan();
+  const onBoardTab = usePlanTabKind() === 'board';
   if (!board) return null;
+  const { setup } = board;
+  // New Form (docs/specs/030-forms/forms.md "Starting a form"): a form whose responses come to this board. Only a
+  // Board tab's board with columns, the one place a form can send its responses.
+  const offersForm =
+    !!plan?.newFormFor &&
+    onBoardTab &&
+    !setup.allCards &&
+    !setup.archive &&
+    setup.columns.length > 0;
   return (
     <>
       <MenuGroupSeparator />
@@ -298,6 +316,20 @@ export function PlanBoardMenuSections({
           );
         },
       )}
+      {offersForm ? (
+        <>
+          <MenuGroupSeparator />
+          <MenuActionRow
+            plain
+            label="New Form"
+            icon={<FormIcon aria-hidden />}
+            onClick={() => {
+              onClose?.();
+              plan.newFormFor?.(element.id);
+            }}
+          />
+        </>
+      ) : null}
     </>
   );
 }

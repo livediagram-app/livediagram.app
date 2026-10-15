@@ -122,6 +122,55 @@ export function finishWobblesArt(el: { type: string; shape?: string }): boolean 
   return el.type === 'shape' && (el.shape === 'icon' || el.shape === 'sticker');
 }
 
+// The shapes whose whole body the sketched outline draws, their face being the label alone: Sketch has nothing
+// more of theirs to draw by hand (unless they carry an inline icon). The sequence diagram redraws itself in its
+// finish, and icons and stickers go through the wobble whole (finishWobblesArt).
+const SKETCHED_BY_BODY = new Set<string>([
+  'square',
+  'circle',
+  'diamond',
+  'cylinder',
+  'parallelogram',
+  'hexagon',
+  'document',
+  'mind-node',
+  'stadium',
+  'actor',
+  'final-state',
+  'cloud',
+  'triangle',
+  'trapezoid',
+  'star',
+  'speech-bubble',
+  'frame',
+  'monitor',
+  'laptop',
+  'phone',
+  'tablet',
+  'foldable',
+  'smartwatch',
+  'sequence',
+  'icon',
+  'sticker',
+]);
+
+/** The element kinds Sketch draws a face of by hand (docs/specs/008-canvas/finish.md "Every other face is drawn by
+ *  hand too"): its ink through the wobble, its words crisp above it. Everything that draws more than a label, a
+ *  table's grid, a link card, a video's frame, an annotation marker, and a plain box carrying an inline icon. */
+export function finishSplitsFace(el: { type: string; shape?: string; iconId?: string }): boolean {
+  switch (el.type) {
+    case 'table':
+    case 'link-card':
+    case 'video':
+    case 'annotation':
+      return true;
+    case 'shape':
+      return !SKETCHED_BY_BODY.has(el.shape ?? '') || (!!el.iconId && !finishWobblesArt(el));
+    default:
+      return false;
+  }
+}
+
 /** Whether a freshly drawn arrow may take a draw-time avoidance curve. */
 export function finishCurvesNewArrows(finish: Finish): boolean {
   return finish !== 'professional';

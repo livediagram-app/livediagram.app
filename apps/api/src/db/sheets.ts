@@ -195,6 +195,20 @@ export async function readCells(
   });
 }
 
+// The rows of a sheet holding any cell (a form's response goes under the last of them).
+export async function usedSheetRows(
+  env: Env,
+  documentId: string,
+  sheetId: string,
+): Promise<Set<string>> {
+  const rows = await env.DB.prepare(
+    `SELECT DISTINCT row_id FROM sheet_cells WHERE document_id = ? AND sheet_id = ?`,
+  )
+    .bind(documentId, sheetId)
+    .all<{ row_id: string }>();
+  return new Set((rows.results ?? []).map((r) => r.row_id));
+}
+
 // How many of `keys` exist, and their stored bytes, for an exact cap check near the limit.
 export async function existingCells(
   env: Env,

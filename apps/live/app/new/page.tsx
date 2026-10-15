@@ -71,7 +71,13 @@ import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
-import { isBlankTemplate, isPlanTemplateKind } from '@livediagram/templates';
+import {
+  formTemplateStarter,
+  isBlankTemplate,
+  isFormTemplateKind,
+  isPlanTemplateKind,
+} from '@livediagram/templates';
+import { markPendingFormStart } from '@/lib/pending-form-start';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -404,6 +410,9 @@ export default function NewDocumentPage() {
 
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md); the first opens.
     const built = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
+    // A form template: the editor starts its form on the tab once it opens (lib/pending-form-start.ts).
+    if (templateKind && isFormTemplateKind(templateKind))
+      markPendingFormStart(tabId, formTemplateStarter(templateKind));
     // The first tab is named after its template unless the template names it (template-tab-name.ts).
     const tabs =
       built && templateKind && built[0]!.name === 'Tab 1'

@@ -487,6 +487,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M4.5 16h2.5M17 16h2.5" />
     </Glyph>
   ),
+  // A clipboard holding two ticked lines: a form filled in.
+  forms: (
+    <Glyph>
+      <rect x="4.5" y="4" width="15" height="17.5" rx="1.5" />
+      <rect x="9" y="2.5" width="6" height="3" rx="1" />
+      <path d="M7.5 10.5l1.2 1.2 2.3-2.4M13 10.5h4M7.5 16l1.2 1.2 2.3-2.4M13 16h4" />
+    </Glyph>
+  ),
   // A page of rows and slots, a wide one over two, the first holding a small ring: a dashboard.
   dashboards: (
     <Glyph>

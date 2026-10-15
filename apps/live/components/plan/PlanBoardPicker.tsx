@@ -8,6 +8,7 @@
 // for, in the tab's own light or dark look. Blank comes first; the Archive board, never a first board, is
 // left to the palette. Choosing one places that board, empty, in the
 // middle of the view. Gone once the tab has a board; never shown to someone who may only view.
+import type { StarterId } from '@livediagram/forms';
 import { useEffect } from 'react';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 import {
@@ -131,8 +132,11 @@ export function PlanBoardPicker({
   loadTabs,
   onSuggestedDashboard,
   onVisualisation,
+  onForm,
 }: {
   onPick: (preset: string) => void;
+  // Makes the tab a Form tab from a starter (Start Planning's Forms, docs/specs/030-forms/forms.md).
+  onForm?: (starter: StarterId) => void;
   // The document's tabs and their fetch, and making a Dashboard built from its work (Start Planning's Dashboards).
   tabs?: readonly Tab[];
   loadTabs?: () => void;
@@ -174,6 +178,7 @@ export function PlanBoardPicker({
       loadTabs={loadTabs}
       onSuggestedDashboard={onSuggestedDashboard}
       onVisualisation={onVisualisation}
+      onForm={onForm}
     />
   );
 }

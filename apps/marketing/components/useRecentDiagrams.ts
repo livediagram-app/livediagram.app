@@ -29,7 +29,7 @@ export function useRecentDiagrams(): RecentDiagram[] | null {
     const read = parseRecentDiagrams(raw);
     // Reading browser storage is the one thing this effect is for; it cannot happen in render, since
     // the static HTML has to match for everyone.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // oxlint-disable-next-line react/set-state-in-effect
     if (read.length > 0) setDiagrams(read);
     else document.documentElement.removeAttribute('data-returning');
   }, []);

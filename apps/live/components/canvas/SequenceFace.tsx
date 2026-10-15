@@ -45,7 +45,7 @@ export const SequenceFace = memo(function SequenceFace({
         '<svg$1 width="100%" height="100%" preserveAspectRatio="xMidYMid meet"',
       ),
     // The drawing depends on the rows and the look only.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     [
       element.sequenceParticipants,
       element.sequenceMessages,
