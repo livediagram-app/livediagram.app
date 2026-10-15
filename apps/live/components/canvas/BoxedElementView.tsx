@@ -142,7 +142,6 @@ function BoxedElementViewImpl({
   onRollPicker,
   collab,
   chairSitters,
-  machineAnswered,
   onEnterPortal,
   onFireReaction,
   reactionBurst,
@@ -603,7 +602,6 @@ function BoxedElementViewImpl({
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
           fill={own.fill ?? defaultFillColor(element, surface)}
           sitters={chairSitters?.(element.id) ?? []}
-          answered={machineAnswered?.(element.id)}
           animClass={artAnimClass}
         />
       ) : null}

@@ -41,7 +41,7 @@ Owner-side paths that must still see expired rows (the Share dialog's list, dele
 ## API
 
 - `POST /api/documents/:id/share` body gains optional `expiry: 'never' | 'week' | 'month' | 'sixMonths'` (default / unknown value → `never`).
-- `POST /api/documents/:id/share/:code/extend` — owner-only. Re-arms the link: `expires_at = now + lifetime(expiry)`, where `expiry` is the duration **chosen when the link was created**. Works on active links too (pushes the deadline out from now), though the Share dialog only offers Extend on expired passes. `400` on a never-expiring link (nothing to extend). Returns the updated link.
+- `POST /api/documents/:id/share/:code/extend` — owner, or a joined team member on a team document. Re-arms the link: `expires_at = now + lifetime(expiry)`, where `expiry` is the duration **chosen when the link was created**. Works on active links too (pushes the deadline out from now), though the Share dialog only offers Extend on expired passes. `400` on a never-expiring link (nothing to extend). Returns the updated link.
 - `GET /api/documents/:id/share` (owner list) returns all links, expired included; the client splits them.
 
 ## Share dialog

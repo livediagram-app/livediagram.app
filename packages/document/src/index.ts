@@ -596,7 +596,7 @@ export * from './quiz';
 export * from './shape-geometry';
 // Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
 export * from './fence';
-// Seating (docs/specs/009-elements/chair.md): the desk and sofa drawings and every seat's feet point.
+// Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
 export * from './office';
 export * from './actor-figure';

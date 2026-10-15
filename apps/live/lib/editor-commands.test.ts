@@ -53,7 +53,7 @@ const base: CommandContext = {
   singleIsShape: false,
   hasAnimation: false,
   marker: null,
-  isOwner: true,
+  canShare: true,
   isOffline: false,
   // A drawn-on desktop canvas in Select, which is where most of these
   // assertions live; the tool commands have their own describe block.
@@ -82,7 +82,7 @@ describe('buildEditorCommands — document/tab commands', () => {
   });
 
   it('hides Share for non-owners', () => {
-    expect(ids({ ...base, isOwner: false })).not.toContain('share');
+    expect(ids({ ...base, canShare: false })).not.toContain('share');
   });
 
   it('hides Share for offline documents (docs/specs/006-document/offline-mode.md)', () => {
@@ -100,11 +100,11 @@ describe('buildEditorCommands — document/tab commands', () => {
 // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
 describe('buildEditorCommands — in a workbench', () => {
   it('offers neither Share nor Delete document, and keeps the rest', () => {
-    const inWorkbench = ids({ ...base, isOwner: true, workbench: true });
+    const inWorkbench = ids({ ...base, canShare: true, workbench: true });
     expect(inWorkbench).not.toContain('share');
     expect(inWorkbench).not.toContain('delete-document');
     expect(inWorkbench).toContain('rename-document');
-    expect(ids({ ...base, isOwner: true })).toEqual(
+    expect(ids({ ...base, canShare: true })).toEqual(
       expect.arrayContaining(['share', 'delete-document']),
     );
   });
@@ -260,7 +260,8 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     // the canvas. Nothing here writes to the document, which is the property
     // this test exists to hold: the eraser and the format painter are
     // withheld, and so is every command below the read-only return.
-    expect(ids({ ...base, isReadOnly: true })).toEqual([
+    // In Facilitate, so Avatar is among them (docs/specs/008-canvas/avatar-mode.md "Where it is offered").
+    expect(ids({ ...base, isReadOnly: true, facilitateMode: true })).toEqual([
       'zen',
       'fit-to-screen',
       'export',
@@ -280,7 +281,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     // valid alone, on someone else's link, or on an offline document.
     for (const over of [
       {},
-      { isOwner: false },
+      { canShare: false },
       { isOffline: true },
       { isReadOnly: true },
     ] as Partial<CommandContext>[]) {
@@ -338,7 +339,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 // Isometric; the search panel offered none of them.
 describe('canvas tool commands', () => {
   it('offers every tool but the one already in force', () => {
-    const got = ids(base).filter((id) => id.startsWith('tool:'));
+    const got = ids({ ...base, facilitateMode: true }).filter((id) => id.startsWith('tool:'));
     expect(got).toEqual([
       'tool:pan',
       'tool:eraser',
@@ -357,7 +358,7 @@ describe('canvas tool commands', () => {
 
   it('runs the tool setter with the tool id', () => {
     const h = handlers();
-    buildEditorCommands(base, h)
+    buildEditorCommands({ ...base, facilitateMode: true }, h)
       .find((c) => c.id === 'tool:avatar')!
       .run();
     expect(h.setTool).toHaveBeenCalledWith('avatar');
@@ -495,5 +496,10 @@ describe('buildEditorCommands — locked tab and Plan mode', () => {
     expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
     expect(got).toContain('tool:laser');
+  });
+
+  it('offers Avatar Mode in Facilitate only', () => {
+    expect(ids(base)).not.toContain('tool:avatar');
+    expect(ids({ ...base, facilitateMode: true })).toContain('tool:avatar');
   });
 });

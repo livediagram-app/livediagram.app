@@ -18,6 +18,7 @@ import { hasOwnFace } from './collab-shapes';
 import { isConceptShape } from './concept';
 import { FENCE_WOOD } from './fence';
 import { isOfficeShape, ROOM_FLOOR, RUG_FILL } from './office';
+import { isSeatingShape } from './seating';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
@@ -241,13 +242,7 @@ function behaviourSkin(
       ? { fill, stroke: DARK_INK.stroke, text: DARK_INK.text }
       : { fill, ...OUTLINE_SKIN_LIGHT };
   }
-  if (
-    kind === 'reveal' ||
-    kind === 'chair' ||
-    kind === 'desk' ||
-    kind === 'sofa' ||
-    isOfficeShape(kind)
-  ) {
+  if (kind === 'reveal' || isSeatingShape(kind) || isOfficeShape(kind)) {
     if (surface === 'dark') {
       return { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text };
     }

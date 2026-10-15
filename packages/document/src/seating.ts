@@ -12,14 +12,17 @@ import { MEETING_TABLE_ART, MEETING_TABLE_VIEW } from './office';
 import type { ShapeKind } from './shape-kind';
 
 export type SeatingKind = 'chair' | 'desk' | 'sofa' | 'meeting-table';
-export type FurnitureKind = 'desk' | 'sofa';
 
 export function isSeatingShape(kind: ShapeKind | string): kind is SeatingKind {
   return kind === 'chair' || kind === 'desk' || kind === 'sofa' || kind === 'meeting-table';
 }
 
-export function isFurnitureShape(kind: ShapeKind | string): kind is FurnitureKind {
-  return kind === 'desk' || kind === 'sofa';
+/** Whether a seating kind takes a facing: a chair, desk or sofa; a meeting table seats six all round and never
+ *  turns (docs/specs/009-elements/office.md). */
+export function turnsWithFacing(
+  kind: ShapeKind | string,
+): kind is Exclude<SeatingKind, 'meeting-table'> {
+  return isSeatingShape(kind) && kind !== 'meeting-table';
 }
 
 // Where a new one's back is. A chair and a sofa face the reader; a desk is placed with its desk at
@@ -70,7 +73,7 @@ export type FurniturePart = (
 ) & { fill?: string };
 
 // One drawing of a piece, from the room's camera (docs/specs/009-elements/chair.md "Facing").
-export type FurnitureView = {
+export type FurnitureDrawing = {
   // The drawing grid.
   width: number;
   height: number;
@@ -79,12 +82,20 @@ export type FurnitureView = {
   seats: readonly { u: number; v: number }[];
   // The occupied ring, in grid units: under the seats.
   ring: { cx: number; cy: number; rx: number; ry: number };
+  // Where the ring is painted among the parts: before `parts[ringUnder]`, so it lies on the seat and under
+  // whatever stands nearer the camera (a backrest's back, the desk and its monitor, a sofa's arms). Left out,
+  // over every part (a piece that never shows a ring: the meeting table and the office pieces).
+  ringUnder?: number;
 };
 
 // A piece's three drawings: `front` with the sitter facing down the canvas ('n'), `back` facing up
 // ('s'), `side` facing left ('e'); facing right ('w') is the side drawing mirrored. Nothing is ever
 // rotated, so legs always stand under the piece and its shadow always falls below it.
-export type FurnitureArt = { front: FurnitureView; back: FurnitureView; side: FurnitureView };
+export type FurnitureArt = {
+  front: FurnitureDrawing;
+  back: FurnitureDrawing;
+  side: FurnitureDrawing;
+};
 
 export type FurnitureViewName = keyof FurnitureArt;
 
@@ -125,6 +136,7 @@ export const CHAIR_ART: FurnitureArt = {
     ],
     seats: [{ u: 0.5, v: 0.62 }],
     ring: { cx: 32, cy: 40, rx: 24, ry: 10 },
+    ringUnder: 6,
   },
   // Its back to you: the seat beyond, and the backrest's back nearest you, over it.
   back: {
@@ -140,6 +152,7 @@ export const CHAIR_ART: FurnitureArt = {
     ],
     seats: [{ u: 0.5, v: 0.38 }],
     ring: { cx: 32, cy: 27, rx: 24, ry: 9 },
+    ringUnder: 4,
   },
   // Facing left: the seat from above with its front edge, the backrest a bar along its right.
   side: {
@@ -156,6 +169,7 @@ export const CHAIR_ART: FurnitureArt = {
     ],
     seats: [{ u: 0.38, v: 0.5 }],
     ring: { cx: 26, cy: 38, rx: 20, ry: 9 },
+    ringUnder: 4,
   },
 };
 
@@ -186,6 +200,7 @@ export const DESK_ART: FurnitureArt = {
     ],
     seats: [{ u: 0.5, v: 0.26 }],
     ring: { cx: 60, cy: 28, rx: 28, ry: 8 },
+    ringUnder: 4,
   },
   // Its back to you: the desk at the back, the monitor's screen toward you, the chair's back nearest.
   back: {
@@ -210,6 +225,7 @@ export const DESK_ART: FurnitureArt = {
     ],
     seats: [{ u: 0.5, v: 0.68 }],
     ring: { cx: 60, cy: 72, rx: 28, ry: 9 },
+    ringUnder: 13,
   },
   // Facing left: the desk a long top down the left with its near end toward you, the monitor side-on
   // and its screen toward the chair, the chair on the right with its backrest along its right.
@@ -241,6 +257,7 @@ export const DESK_ART: FurnitureArt = {
     ],
     seats: [{ u: 0.62, v: 0.52 }],
     ring: { cx: 70, cy: 62, rx: 24, ry: 14 },
+    ringUnder: 14,
   },
 };
 
@@ -266,6 +283,7 @@ export const SOFA_ART: FurnitureArt = {
       { u: 92 / 136, v: 0.58 },
     ],
     ring: { cx: 68, cy: 44, rx: 56, ry: 12 },
+    ringUnder: 8,
   },
   // Its back to you: the cushions beyond, the arms, and the back's broad back nearest you.
   back: {
@@ -286,6 +304,7 @@ export const SOFA_ART: FurnitureArt = {
       { u: 92 / 136, v: 0.27 },
     ],
     ring: { cx: 68, cy: 20, rx: 56, ry: 10 },
+    ringUnder: 4,
   },
   // Facing left: tall, its two cushions one above the other, the back a long bar on the right, the
   // arms at either end, and its legs only under its lower end.
@@ -307,6 +326,7 @@ export const SOFA_ART: FurnitureArt = {
       { u: 33 / 76, v: 88 / 136 },
     ],
     ring: { cx: 33, cy: 66, rx: 24, ry: 48 },
+    ringUnder: 5,
   },
 };
 
@@ -331,7 +351,7 @@ export const FURNITURE_FACE_SHADE = 0.22;
 export function furnitureFrame(
   art: FurnitureArt,
   facing: ChairFacing,
-): { viewBox: string; transform: string; view: FurnitureView } {
+): { viewBox: string; transform: string; view: FurnitureDrawing } {
   const { view: name, mirrored } = facingView(facing);
   const view = art[name];
   return {
@@ -339,11 +359,6 @@ export function furnitureFrame(
     transform: mirrored ? `translate(${view.width} 0) scale(-1 1)` : '',
     view,
   };
-}
-
-/** The parts to paint at a facing. */
-export function furnitureParts(art: FurnitureArt, facing: ChairFacing): readonly FurniturePart[] {
-  return art[facingView(facing).view].parts;
 }
 
 type Box = { x: number; y: number; width: number; height: number };
@@ -385,13 +400,6 @@ function drawnRect(box: Box, view: { width: number; height: number }): Box {
     width,
     height,
   };
-}
-
-/** The occupied ring at a facing, in grid units (mirrored for facing right). */
-export function furnitureRing(art: FurnitureArt, facing: ChairFacing): FurnitureView['ring'] {
-  const { view: name, mirrored } = facingView(facing);
-  const view = art[name];
-  return mirrored ? { ...view.ring, cx: view.width - view.ring.cx } : view.ring;
 }
 
 /** The seat nearest a point (where the character walked in), so a sofa seats you on your side. */

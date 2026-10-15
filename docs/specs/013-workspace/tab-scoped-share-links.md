@@ -99,7 +99,7 @@ Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessio
 ## API
 
 - `POST /api/documents/:id/share` body gains optional `tabId: string | null`. An unknown tab, or one not in this document, is `400 invalid tab`.
-- `PUT /api/documents/:id/share/:code` (owner-only), body `{ tabId: string | null }`: rescope. `400 invalid tab` as above, `404` for an unknown code. Returns `{ link }` and broadcasts `share-rescoped`.
+- `PUT /api/documents/:id/share/:code` (owner, or a joined team member on a team document), body `{ tabId: string | null }`: rescope. `400 invalid tab` as above, `404` for an unknown code. Returns `{ link }` and broadcasts `share-rescoped`.
 - `GET /api/share/:code` returns `tabId` alongside `role`.
 
 ## Testing

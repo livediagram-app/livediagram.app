@@ -6,6 +6,8 @@ import {
   defaultFillColor,
   defaultStrokeColor,
   hasOwnBodySet,
+  isOfficeShape,
+  isSeatingShape,
   keptAnimation,
   type BoxedElement,
   type ShapeAnimation,
@@ -107,11 +109,11 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
     element.type === 'annotation' ||
     (element.type === 'shape' &&
       (element.shape === 'sticker' ||
-        element.shape === 'chair' ||
-        element.shape === 'desk' ||
-        element.shape === 'sofa' ||
+        isSeatingShape(element.shape) ||
         element.shape === 'fence' ||
-        element.shape === 'timeline-rail'));
+        element.shape === 'timeline-rail' ||
+        // An office's furniture, rooms and rugs (docs/specs/009-elements/office.md), drawn as a chair is.
+        isOfficeShape(element.shape)));
   const isTextNativeAnim = (element.type === 'text' || isDrawnArt) && silhouetteAnim;
   // `gradient` is a background clipped to the glyphs, which drawn art has
   // nothing to clip to, so it gets a hue cycle over its own colours instead,
@@ -129,10 +131,10 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   const hasArtView =
     element.type === 'shape' &&
     (element.shape === 'sticker' ||
-      element.shape === 'chair' ||
-      element.shape === 'desk' ||
-      element.shape === 'sofa' ||
-      element.shape === 'fence');
+      isSeatingShape(element.shape) ||
+      element.shape === 'fence' ||
+      // FurnitureView and RoomView mount it on their art.
+      isOfficeShape(element.shape));
   const labelAnimClass = isDrawnArt ? undefined : silhouetteAnimClass;
   const artAnimClass = isDrawnArt && hasArtView ? silhouetteAnimClass : undefined;
   const ownAnimClass = isDrawnArt && !hasArtView ? silhouetteAnimClass : undefined;

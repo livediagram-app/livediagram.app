@@ -108,6 +108,8 @@ export function svgConcept(
     const l = hubLayout(el.width, el.height, n);
     const spokes = hubDrawsSpokes(el)
       ? l.spokes
+          // One spoke per satellite drawn: the layout keeps one even for a hub with no rows, which the canvas draws bare.
+          .slice(0, rows.length)
           .map(
             (sp) =>
               `<line x1="${r2(el.x + sp.x1)}" y1="${r2(el.y + sp.y1)}" x2="${r2(el.x + sp.x2)}" y2="${r2(el.y + sp.y2)}"` +

@@ -1214,8 +1214,8 @@ is while the rest of the tab is worked on.
 
 ## Getting around the pages
 
-- **A page's label zooms to it**: a press on the label fits that page in the view, as entering the
-  mode fits the first: the page itself fills the view (below the Toolbar strip), whatever its
+- **A page's label zooms to it**: a press on the label fits that page in the view, as landing on
+  the tab fits the page you were on: the page itself fills the view (below the Toolbar strip), whatever its
   shape, not a square around it.
 - **The Map shows the pages**: each page's sheet in its own background (a picture as its tone) with a crisp outline,
   under the content, counted in the Map's bounds (so a tab of empty pages still has a Map), and
@@ -1240,6 +1240,14 @@ is while the rest of the tab is worked on.
   move; a page just added glides into view the same way, and under reduced motion each lands at
   once. A second press mid-glide starts from where the view has got to. For everyone who can see
   the pages; not in zen or isometric view.
+- **Back to the page you were on**: landing on a tab of pages (switching back to it, a reload,
+  entering the mode) fits the page you were last on rather than the first, so moving between tabs
+  never loses your place. The page you are on is the one under the middle of the view (else the
+  nearest), taken once the view has rested for 400 ms (`LAST_ILLUSTRATE_PAGE_SETTLE_MS`), and
+  straight away as you leave the tab or close the page. It is each person's, kept in this browser
+  per document and tab (the latest 200 tabs), never in the document: a collaborator lands on their
+  own page. The first time, or once that page is deleted, landing fits the first page. For everyone
+  who can see the pages, whatever their role.
 - **A page is something in view**: the canvas's "Nothing's in view" nudge counts every page, an
   empty one or an article's, as content, so it never shows while a page is on screen.
 

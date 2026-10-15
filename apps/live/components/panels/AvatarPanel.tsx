@@ -27,6 +27,7 @@ import {
   type AvatarConfig,
 } from '@/lib/avatar-config';
 import { AVATAR_REACTIONS, type AvatarReactionKind } from '@/lib/avatar-reactions';
+import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@/lib/avatar-action-keys';
 import { AvatarSprite } from '@/components/canvas/avatar-sprite';
 // The same glyph the welcome flow's "shuffle a random name" button uses — same
 // meaning (give me another random one), so it stays the same icon.
@@ -64,7 +65,8 @@ function ActionRow({
   label: string;
   open: boolean;
   onToggle: () => void;
-  items: { id: string; label: string }[];
+  // Each item's key (lib/avatar-action-keys), shown on it where there is a keyboard.
+  items: { id: string; label: string; shortcut?: string }[];
   onPick: (id: string) => void;
 }) {
   return (
@@ -89,9 +91,15 @@ function ActionRow({
               key={item.id}
               type="button"
               onClick={() => onPick(item.id)}
-              className="rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-500 dark:hover:bg-brand-500/10"
+              aria-keyshortcuts={item.shortcut}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-500 dark:hover:bg-brand-500/10"
             >
               {item.label}
+              {item.shortcut ? (
+                <kbd className="rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-400 dark:border-slate-700">
+                  {item.shortcut}
+                </kbd>
+              ) : null}
             </button>
           ))}
         </div>
@@ -252,7 +260,11 @@ export function AvatarPanel({
               label="Behaviour"
               open={openRow === 'behaviour'}
               onToggle={() => toggle('behaviour')}
-              items={AVATAR_REACTIONS.map((r) => ({ id: r.id, label: r.label }))}
+              items={AVATAR_REACTIONS.map((r) => ({
+                id: r.id,
+                label: r.label,
+                shortcut: isMobile ? undefined : AVATAR_BEHAVIOUR_KEYS[r.id],
+              }))}
               onPick={(id) => onReaction(id as AvatarReactionKind)}
             />
             <ActionRow
@@ -262,6 +274,7 @@ export function AvatarPanel({
               items={REACTIONS.map((r) => ({
                 id: r,
                 label: `${REACTION_EMOJI[r]} ${REACTION_LABEL[r]}`,
+                shortcut: isMobile ? undefined : AVATAR_BURST_KEYS[r],
               }))}
               onPick={(id) => onBurst?.(id as Reaction)}
             />
