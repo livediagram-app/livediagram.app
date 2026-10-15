@@ -40,6 +40,7 @@ import { chartsReadLive } from '@livediagram/agent-verbs';
 import { svgToPngBase64 } from './render';
 import { INTER_ITALIC, previewFonts } from './preview-fonts';
 import { planPreviewFor } from './plan-preview';
+import { coversAnother } from './board-growth';
 import { apiFetch, apiJson } from './api';
 import type { Env } from './env';
 import { textResult, type StructuredValue, type ToolResult } from './tool-helpers';
@@ -181,26 +182,24 @@ export async function tabPreview(
     auth ? buildImageResolver(auth.env, auth.token, drawn) : undefined,
     planContentFor(drawn, auth, laidOut?.sheets),
   ]);
-  // A Board tab's board scrolls on its tab, so its preview grows to every card rather than cutting the rest off.
-  const shown =
-    laidOut && planTabKindOf(tab) === 'board'
-      ? {
-          ...drawn,
-          elements: drawn.elements.map((el) =>
-            el.type === 'shape' && el.shape === 'plan-board'
-              ? {
-                  ...el,
-                  height: planBoardFitHeight(
-                    el,
-                    content.items,
-                    canvasSurface(drawn.backgroundColor ?? '#ffffff'),
-                    content.itemTypes,
-                  ),
-                }
-              : el,
-          ),
-        }
-      : drawn;
+  // A board scrolls on its tab, so its preview grows to every card rather than cutting the rest off ("+2 more", a lane
+  // cut away): always on a Board tab, and on any other wherever the grown board covers nothing else on the canvas.
+  const boardTab = !!laidOut && planTabKindOf(tab) === 'board';
+  const shown = {
+    ...drawn,
+    elements: drawn.elements.map((el) => {
+      if (el.type !== 'shape' || el.shape !== 'plan-board') return el;
+      const height = planBoardFitHeight(
+        el,
+        content.items,
+        canvasSurface(drawn.backgroundColor ?? '#ffffff'),
+        content.itemTypes,
+      );
+      if (height <= el.height) return el;
+      const grown = { ...el, height };
+      return boardTab || !coversAnother(grown, el.y + el.height, drawn.elements) ? grown : el;
+    }),
+  };
   // Charts linked to a sheet draw what its cells hold now, not what they were saved with.
   const { sheetJson, ...drawWith } = content;
   const live = sheetJson

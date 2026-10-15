@@ -125,8 +125,9 @@ Every write takes what a person would say, and stores the ids:
 - A tab of another kind that holds a board or a Sheet (a Blank Plan tab given a board by `add_board`) can be shown;
   a Dashboard draws it as its canvas.
 - A Cards by Field chart grouped by a Card field names each linked card, of whatever type.
-- A Board tab's preview grows its board to every card it holds, as the board scrolls on its tab, rather than cutting
-  lower rows off.
+- A preview grows a board to every card it holds, as the board scrolls on its tab, rather than cutting lower rows or
+  lanes off ("+2 more"): always on a Board tab, and on any other tab wherever the grown board covers nothing that
+  starts below it (`board-growth.ts`). The stored board keeps its height.
 
 ## What a change says
 
