@@ -66,7 +66,7 @@ function StepChip({
   const circle = lit
     ? `bg-brand-700 text-white shadow-sm shadow-brand-500/30 ${SOLID_BRAND_DARK}`
     : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-300';
-  const text = lit ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400';
+  const text = lit ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400';
   // The current step sits in a soft brand pill so "you are here" reads at
   // a glance; the other chips stay flush (matching padding keeps the row
   // from shifting as the active step moves). The pill's round cap is

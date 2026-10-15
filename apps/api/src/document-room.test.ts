@@ -81,6 +81,7 @@ type FakeState = {
     list: (opts: { prefix: string }) => Promise<Map<string, unknown>>;
     setAlarm: (when: number) => Promise<void>;
     deleteAlarm: () => Promise<void>;
+    deleteAll: () => Promise<void>;
   };
   blockConcurrencyWhile: (fn: () => Promise<void>) => Promise<void>;
   waitUntil: (promise: Promise<unknown>) => void;
@@ -129,6 +130,10 @@ function makeState(store: Map<string, unknown> = new Map()): FakeState {
       },
       deleteAlarm: () => {
         state.alarms.push(null);
+        return Promise.resolve();
+      },
+      deleteAll: () => {
+        store.clear();
         return Promise.resolve();
       },
     },
@@ -561,9 +566,11 @@ describe('DocumentRoom op-role enforcement', () => {
   const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview', 'focus-here'];
   // `poll-answer` relays only once the room accepts it for a running poll, under the key the room chose
   // (docs/specs/012-collaboration/vote-integrity.md); its own tests below and in the live poll block pin that.
-  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer'];
+  // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
+  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer', 'follow'];
   // A reaction is taking part (docs/specs/013-workspace/share-roles.md): a Participant's, never a Viewer's.
-  const PARTICIPANT_PRESENCE_KINDS = ['reaction'];
+  // So is speaking (docs/specs/008-canvas/avatar-mode.md "Who may speak").
+  const PARTICIPANT_PRESENCE_KINDS = ['reaction', 'avatar-say'];
   for (const kind of PARTICIPANT_PRESENCE_KINDS) {
     it(`drops a '${kind}' from a Viewer and relays a Participant's`, () => {
       const { room } = newRoom();
@@ -571,12 +578,26 @@ describe('DocumentRoom op-role enforcement', () => {
       const viewer = connect(room, 'viewer', 'view');
       const participant = connect(room, 'participant', 'participate');
       editor.ws.sent.length = 0;
-      sendFrame(room, viewer.ws, { kind: 'op', op: { kind, tabId: 't', x: 1, y: 2 } });
+      const op = { kind, tabId: 't', id: 'b1', text: 'hi', x: 1, y: 2 };
+      sendFrame(room, viewer.ws, { kind: 'op', op });
       expect(opsReceived(editor.ws)).toHaveLength(0);
-      sendFrame(room, participant.ws, { kind: 'op', op: { kind, tabId: 't', x: 1, y: 2 } });
+      sendFrame(room, participant.ws, { kind: 'op', op });
       expect(opsReceived(editor.ws)).toHaveLength(1);
     });
   }
+  it('drops a malformed avatar-say even from an editor', () => {
+    const { room } = newRoom();
+    const speaker = connect(room, 'speaker', 'edit');
+    const peer = connect(room, 'peer', 'edit');
+    peer.ws.sent.length = 0;
+    for (const bad of [{ text: 'x'.repeat(301) }, { text: '   ' }, { text: 7 }, { x: 'left' }]) {
+      sendFrame(room, speaker.ws, {
+        kind: 'op',
+        op: { kind: 'avatar-say', tabId: 't', id: 'b1', text: 'hi', x: 1, y: 2, ...bad },
+      });
+    }
+    expect(opsReceived(peer.ws)).toHaveLength(0);
+  });
   for (const kind of [...PRESENCE_OP_KINDS].filter(
     (k) =>
       !ADDRESSED_PRESENCE_KINDS.includes(k) &&
@@ -2647,5 +2668,86 @@ describe('DocumentRoom agent presence (docs/specs/024-agents/agent-presence.md)'
     await Promise.resolve();
     await new Promise((r) => setTimeout(r, 0));
     expect(woken.agents.live().map((r) => r.tokenId)).toEqual(['tok_1']);
+  });
+});
+
+// docs/specs/012-collaboration/realtime-conflict-resolution.md "Keepalive": the runtime answers the client's ping
+// itself, so a keepalive never wakes the room.
+describe('DocumentRoom keepalive', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('asks the runtime to answer ping with pong', () => {
+    class Pair {
+      request: string;
+      response: string;
+      constructor(request: string, response: string) {
+        this.request = request;
+        this.response = response;
+      }
+    }
+    vi.stubGlobal('WebSocketRequestResponsePair', Pair);
+    const state = makeState();
+    const setWebSocketAutoResponse = vi.fn();
+    new DocumentRoom({ ...state, setWebSocketAutoResponse } as unknown as DurableObjectState);
+    expect(setWebSocketAutoResponse).toHaveBeenCalledWith(new Pair('ping', 'pong'));
+  });
+});
+
+// docs/specs/015-api/api.md "Purging a room": a document removed for good leaves nothing in its room.
+describe('DocumentRoom /purge', () => {
+  it('ends every session and drops everything stored, the ledger included', async () => {
+    const { room, state } = newRoom();
+    const ws = makeSocket() as FakeSocket & { closed?: [number, string] };
+    (ws as unknown as { close: (code: number, reason: string) => void }).close = (code, reason) => {
+      ws.closed = [code, reason];
+    };
+    seedSession(state, ws, presence('p-a', 'edit'));
+    state.store.set('ledger:t1:el-1', { comments: [{ id: 'c1', text: 'private words' }] });
+    expect(state.store.size).toBeGreaterThan(0);
+
+    const res = await room.fetch(new Request('https://room/purge', { method: 'POST' }));
+
+    expect(res.status).toBe(204);
+    expect(ws.closed).toEqual([4004, 'document-purged']);
+    expect(state.store.size).toBe(0);
+    expect(state.alarms.at(-1)).toBeNull();
+  });
+});
+
+// docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom": the room keeps who follows whom and tells
+// each person, on their own socket, who follows them. Nobody else hears it.
+describe('DocumentRoom follow', () => {
+  const followers = (ws: FakeSocket) =>
+    ws.sent
+      .map((s) => JSON.parse(s))
+      .filter((m) => m.kind === 'followers')
+      .map((m) => m.ids);
+
+  it('tells the person followed, and only them, as follows start, move, stop and leave', () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    const c = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'view'));
+    seedSession(state, c, presence('p-c', 'edit'));
+
+    sendFrame(room, b, { kind: 'op', op: { kind: 'follow', target: 'p-a' } });
+    sendFrame(room, c, { kind: 'op', op: { kind: 'follow', target: 'p-a' } });
+    expect(followers(a)).toEqual([['p-b'], ['p-b', 'p-c']]);
+    // Nothing relayed to anyone else.
+    expect(b.sent.concat(c.sent).some((s) => s.includes('"follow"'))).toBe(false);
+
+    // c moves to b: a loses one, b gains one.
+    sendFrame(room, c, { kind: 'op', op: { kind: 'follow', target: 'p-b' } });
+    expect(followers(a).at(-1)).toEqual(['p-b']);
+    expect(followers(b)).toEqual([['p-c']]);
+
+    // b stops; then c leaves the room.
+    sendFrame(room, b, { kind: 'op', op: { kind: 'follow', target: null } });
+    expect(followers(a).at(-1)).toEqual([]);
+    state.sockets = state.sockets.filter((s) => s !== asWs(c));
+    room.webSocketClose(asWs(c));
+    expect(followers(b).at(-1)).toEqual([]);
   });
 });

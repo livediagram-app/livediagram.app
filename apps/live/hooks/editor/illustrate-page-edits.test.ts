@@ -24,6 +24,7 @@ function harness(tab: Tab) {
   const edits = () =>
     illustratePageEdits({
       tabId: tab.id,
+      tab: tabs[0]!,
       current: illustratePagesOf(tabs[0]!),
       elements: tabs[0]!.elements,
       commitTabs,
@@ -133,15 +134,33 @@ describe('Illustrate page edits', () => {
     expect(illustratePagesOf(h.tab())[1]!.background).toBeUndefined();
   });
 
-  it('replaces a page with a layout inside its margins, leaving other pages alone', () => {
+  it('replaces a page with a layout inside its margins, leaving other pages alone', async () => {
     const h = harness(twoPages());
     expect(h.edits().contentCount('page-1')).toBe(1);
-    h.edits().applyLayout('page-1', 'key-stats');
+    await h.edits().applyLayout('page-1', 'key-stats');
     const els = h.tab().elements;
     expect(els.some((e) => e.id === 'a')).toBe(false);
     expect(els.some((e) => e.id === 'b')).toBe(true);
     expect(h.edits().contentCount('page-1')).toBe(els.length - 1);
     expect(h.onLayoutPlaced).toHaveBeenCalled();
+  });
+
+  it('carries what was written on the page into the new layout', async () => {
+    const h = harness(twoPages());
+    await h.edits().applyLayout('page-1', 'title');
+    const written = h
+      .tab()
+      .elements.map((e) =>
+        e.type === 'text' && e.label === 'Your big headline' ? { ...e, label: 'Q3 Results' } : e,
+      );
+    h.commitTabs((ts) => [{ ...ts[0]!, elements: written }]);
+    await h.edits().applyLayout('page-1', 'poster');
+    const labels = h.tab().elements.flatMap((e) => (e.type === 'text' ? [e.label] : []));
+    expect(labels).toContain('Q3 Results');
+    // The poster's own placeholder headline gave its place up.
+    expect(labels).not.toContain('Make it bold');
+    // The other page's content stays where it is.
+    expect(h.tab().elements.some((e) => e.id === 'b')).toBe(true);
   });
 
   it('frames a turned or resized page again, as the view frames the page itself', () => {
@@ -153,9 +172,9 @@ describe('Illustrate page edits', () => {
     expect(h.onGoTo).toHaveBeenLastCalledWith('page-1');
   });
 
-  it('re-fits a full page into the page when it turns, text scaling with it', () => {
+  it('re-fits a full page into the page when it turns, text scaling with it', async () => {
     const h = harness(twoPages());
-    h.edits().applyLayout('page-1', 'top-tips');
+    await h.edits().applyLayout('page-1', 'top-tips');
     h.edits().setOrientation('page-1', 'landscape');
     const [page] = layOutIllustratePages(illustratePagesOf(h.tab()));
     const r = page!.rect;
@@ -273,12 +292,18 @@ describe('slide page edits', () => {
     });
   });
 
-  it('never turns an infographic page in the slide size', () => {
+  it('never gives an infographic page a slide size, nor turns one still on it', () => {
     const h = harness(slideTab());
     h.edits().setSize('page-1', 'slide');
-    h.commitTabs.mockClear();
-    h.edits().setOrientation('page-1', 'landscape');
-    expect(h.commitTabs).not.toHaveBeenCalled();
+    expect(illustratePagesOf(h.tab())[0]).toMatchObject({ size: 'social' });
+    const old = harness({
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [{ id: 'page-1', orientation: 'portrait', size: 'slide', kind: 'infographic' }],
+    } as unknown as Tab);
+    old.edits().setOrientation('page-1', 'landscape');
+    expect(old.commitTabs).not.toHaveBeenCalled();
   });
 
   it('chooses Slide for the only, empty page', async () => {
@@ -362,7 +387,7 @@ describe('locking a page (docs/specs/007-editor/illustrate-pages.md "Locking a p
     expect(illustratePagesOf(h.tab())[0]!.locked).toBeUndefined();
   });
 
-  it('refuses every edit of a locked page, and duplicates it unlocked', () => {
+  it('refuses every edit of a locked page, and duplicates it unlocked', async () => {
     const h = harness(twoPages());
     h.edits().setLocked('page-1', true);
     const before = h.tab();
@@ -370,7 +395,7 @@ describe('locking a page (docs/specs/007-editor/illustrate-pages.md "Locking a p
     h.edits().setOrientation('page-1', 'landscape');
     h.edits().setSize('page-1', 'a3');
     h.edits().setBackground('page-1', { fill: { kind: 'solid', color: '#000000' } });
-    h.edits().applyLayout('page-1', 'top-tips');
+    await h.edits().applyLayout('page-1', 'top-tips');
     h.edits().removePage?.('page-1');
     expect(h.tab()).toBe(before);
     h.edits().duplicatePage?.('page-1');
@@ -475,6 +500,60 @@ describe('Fit to Content page edits', () => {
     expect(pages).toHaveLength(2);
     expect(h.toastInfo).toHaveBeenCalledWith('Split into 2 pages. Undo puts it back.');
     expect(h.onGoTo).toHaveBeenLastCalledWith(pages[0]!.id);
+  });
+
+  it('says what a split did and goes to its first page even when the commit runs later', () => {
+    const tab = fitTab([box('a', -1200), box('b', 1200)]);
+    const later: ((ts: Tab[]) => Tab[])[] = [];
+    const toastInfo = vi.fn();
+    const onGoTo = vi.fn();
+    const edits = illustratePageEdits({
+      tabId: tab.id,
+      tab,
+      current: illustratePagesOf(tab),
+      elements: tab.elements,
+      commitTabs: (map) => void later.push(map),
+      onGoTo,
+      onLayoutPlaced: vi.fn(),
+      toastInfo,
+    });
+    edits.splitPage('f');
+    expect(toastInfo).toHaveBeenCalledWith('Split into 2 pages. Undo puts it back.');
+    const [after] = later[0]!([tab]);
+    expect(onGoTo).toHaveBeenLastCalledWith(illustratePagesOf(after!)[0]!.id);
+  });
+
+  // docs/specs/003-system-architecture/react-state-and-effects.md "A handler decides before it commits": an edit that
+  // cannot land (no longer editing, or the tab locked) says nothing and goes nowhere.
+  it('neither tells nor glides for a split or duplicate that cannot land', () => {
+    for (const blocked of [
+      { tab: fitTab([box('a', -1200), box('b', 1200)]), mayEdit: () => false },
+      {
+        tab: { ...fitTab([box('a', -1200), box('b', 1200)]), locked: true } as Tab,
+        mayEdit: () => true,
+      },
+    ]) {
+      const toastInfo = vi.fn();
+      const onGoTo = vi.fn();
+      const commitTabs = vi.fn();
+      const edits = illustratePageEdits({
+        tabId: blocked.tab.id,
+        tab: blocked.tab,
+        current: illustratePagesOf(blocked.tab),
+        elements: blocked.tab.elements,
+        commitTabs,
+        onGoTo,
+        onLayoutPlaced: vi.fn(),
+        toastInfo,
+        mayEdit: blocked.mayEdit,
+      });
+      edits.splitPage('f');
+      edits.duplicatePage?.('f');
+      edits.addPage?.('infographic');
+      expect(toastInfo).not.toHaveBeenCalled();
+      expect(onGoTo).not.toHaveBeenCalled();
+      expect(commitTabs).not.toHaveBeenCalled();
+    }
   });
 
   it('says there is nothing to split on a page that is one group', () => {

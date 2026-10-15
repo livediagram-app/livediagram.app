@@ -109,6 +109,34 @@ const PRESENTATION_FIELDS = (() => {
   return [...block.matchAll(/^ {2}([a-zA-Z]+)\??:/gm)].map((m) => `Presentation-${m[1]}`);
 })();
 
+// The Settings dialog's presenter rows (settings-catalogue.ts presentingToggle / presentingChoice): a toggle sends
+// `Presentation-<field>On|Off` for each boolean field, a choice `Presentation-<field><Option>` (choiceTelemetryType).
+const PRESENTATION_SETTINGS = (() => {
+  const source = read('live/lib/presentation-config.ts');
+  const start = source.indexOf('export type PresentationConfig = {');
+  const block = source.slice(start, source.indexOf('\n};', start));
+  const fields = [...block.matchAll(/^ {2}([a-zA-Z]+)\??: ([A-Za-z]+);/gm)].map(
+    (m) => [m[1]!, m[2]!] as const,
+  );
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const unionOf = (type: string) => {
+    const m = new RegExp(`export type ${type} = ([^;]+);`).exec(source);
+    return m ? [...m[1]!.matchAll(/'([^']+)'/g)].map((x) => x[1]!) : [];
+  };
+  const seconds = [...source.matchAll(/\{ seconds: (\d+),/g)].map((m) => m[1]!);
+  return {
+    toggled: fields
+      .filter(([, type]) => type === 'boolean')
+      .flatMap(([f]) => [`Presentation-${f}On`, `Presentation-${f}Off`]),
+    changed: [
+      ...fields
+        .filter(([, type]) => type !== 'boolean' && type !== 'number')
+        .flatMap(([f, type]) => unionOf(type).map((o) => `Presentation-${f}${cap(o)}`)),
+      ...seconds.map((n) => `Presentation-autoAdvanceSeconds${n}`),
+    ],
+  };
+})();
+
 // The photo import's detector tokens (apps/live photo-model/telemetry.ts):
 // PhotoDetectHybrid<Backend> or PhotoDetectClassical<Reason>.
 const PHOTO_DETECTORS = (() => {
@@ -195,20 +223,37 @@ export const DRAW_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Illustrate tour's steps, as illustrateTourStepTelemetryType makes them (apps/live
-// illustrate-tour-steps.ts, docs/specs/007-editor/illustrate-tour.md). The welcome card sends no step view.
-export const ILLUSTRATE_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/illustrate-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+// The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/live avatar-tour-steps.ts,
+// docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
+export const AVATAR_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/avatar-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
   .filter((id) => id !== 'welcome')
   .map(
     (id) =>
-      `IllustrateTourStep${id
+      `AvatarTourStep${id
         .split('-')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')}`,
   );
+
+// The Illustrate tour's steps, as illustrateTourStepTelemetryType makes them (apps/live IllustrateTourHost.tsx,
+// docs/specs/007-editor/illustrate-tour.md): each page kind's track names its kind before the step. The welcome card
+// sends no step view.
+const camel = (id: string) =>
+  id
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+export const ILLUSTRATE_TOUR_STEP_SOURCE: string[] = (
+  ['slide', 'infographic', 'article', 'logo'] as const
+).flatMap((kind) =>
+  [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
+    .map((m) => m[1]!)
+    .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
+    .map((id) => `IllustrateTourStep${camel(`${kind}-${id}`)}`),
+);
 
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
 const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
@@ -339,6 +384,12 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: ELEMENT_WHY,
   },
   'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
+  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Toggled': {
+    values: PRESENTATION_SETTINGS.toggled,
+  },
+  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
+    values: PRESENTATION_SETTINGS.changed,
+  },
   // ARTICLE_BLOCK_INSERT_EVENT (apps/live/lib/article/article-telemetry.ts): a block put into an
   // article from the page toolbar's Insert or the slash menu.
   'apps/live/components/canvas/article/PageToolbar.tsx Element·Added': {
@@ -528,6 +579,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: FACILITATE_TOUR_STEP_SOURCE,
   },
   'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
   'apps/live/components/tour/IllustrateTourHost.tsx UI·View': {
     values: ILLUSTRATE_TOUR_STEP_SOURCE,
   },
@@ -568,7 +620,39 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['LogoGuideStrengthFaint', 'LogoGuideStrengthMedium', 'LogoGuideStrengthStrong'],
   },
   'apps/live/hooks/canvas/useStylePreview.ts Element·Changed': {
-    values: ['TextTracking', 'TextWeight', 'TextCase', 'TextArc'],
+    // The wordmark fields, and the types the element menu's generic style ops pass through it
+    // (apps/live/lib/element-style-ops.ts): the accent edge, card slots and chip looks.
+    values: [
+      'TextTracking',
+      'TextWeight',
+      'TextCase',
+      'TextArc',
+      'AccentEdge',
+      'CardSlots',
+      'ChipLook',
+      'ChipDetach',
+      'BoundaryStyle',
+      'BoundaryMeta',
+      'PyramidVariant',
+      'HubSpokes',
+      'PointerDetach',
+      'StackDirection',
+      'StackColumns',
+      'StackGap',
+      'StackPadding',
+      'StackAlign',
+      'SequenceNumbered',
+      'SequenceAnim',
+      'ConceptAnim',
+    ],
+  },
+  // The Sequence dialog's writes (apps/live/hooks/canvas/useSequenceSetters.ts): which part of it changed.
+  'apps/live/hooks/canvas/useSequenceSetters.ts Element·Changed': {
+    values: ['SequenceParticipants', 'SequenceMessages', 'SequenceText'],
+  },
+  // The element menu's whole-tab writes (apps/live/lib/element-style-ops.ts `commitTab`).
+  'apps/live/components/palette/EditorContextMenuHost.tsx Element·Changed': {
+    values: ['RenumberSteps', 'StepSequence'],
   },
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],

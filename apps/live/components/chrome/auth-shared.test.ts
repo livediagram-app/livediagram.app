@@ -6,6 +6,8 @@ import {
   messageOf,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
+  ssoCallbackDestination,
+  ssoCallbackUrl,
 } from '@/components/chrome/auth-shared';
 
 // resolvePostAuthDestination decides where the sign-in and sign-up
@@ -160,12 +162,15 @@ describe('messageOf', () => {
     expect(messageOf(err, 'fallback')).toBe('Incorrect verification code');
   });
 
-  it('returns the empty string when Clerk returns an empty errors array', () => {
-    // Edge: a malformed Clerk response with `errors: []`. The empty
-    // join produces "" rather than falling through to the fallback,
-    // matching the current implementation (the empty array IS the
-    // signal we matched the Clerk shape).
-    expect(messageOf({ errors: [] }, 'fallback')).toBe('');
+  it('falls back when Clerk returns an empty errors array, so a failure never shows no message', () => {
+    expect(messageOf({ errors: [] }, 'fallback')).toBe('fallback');
+  });
+
+  it("prefers Clerk's longMessage, written for people, over its terse message", () => {
+    const err = {
+      errors: [{ message: 'is invalid', longMessage: 'Enter a valid email address.' }],
+    };
+    expect(messageOf(err, 'fallback')).toBe('Enter a valid email address.');
   });
 
   it('falls through to the next branch when `errors` is not an array', () => {
@@ -228,5 +233,32 @@ describe('sign-in default (POST_AUTH_SIGNIN_DEFAULT)', () => {
   it('leaves the sign-up flow (no default arg) on the welcome flow (/new)', () => {
     expect(resolvePostAuthDestination(params(''))).toBe(POST_AUTH_DEFAULT);
     expect(resolveOAuthCompleteUrl(params(''))).toBe(POST_AUTH_DEFAULT);
+  });
+});
+
+// The OAuth callback leg (issue #612): a Google round-trip that ends on
+// /sso-callback used to land on a default, dropping an MCP consent mid-connect.
+// The destination now rides on the callback URL, through the same guard.
+describe('ssoCallbackUrl / ssoCallbackDestination', () => {
+  const consent = '/oauth/consent/?session=abc123&client=Claude&to=claude.ai';
+
+  it('carries a safe return path onto the callback and reads it back intact', () => {
+    const url = ssoCallbackUrl(params(`redirect_url=${encodeURIComponent(consent)}`));
+    expect(url).toBe(`/sso-callback?redirect_url=${encodeURIComponent(consent)}`);
+    const back = new URL(url, 'https://livediagram.app').searchParams;
+    expect(ssoCallbackDestination(back)).toBe(consent);
+  });
+
+  it('is the bare callback, and no destination, when there is nothing safe to carry', () => {
+    for (const qs of [
+      '',
+      'redirect_url=https://evil.example',
+      'redirect_url=//evil.example',
+      'redirect_url=/sign-in/',
+      'redirect_url=/get-started',
+    ]) {
+      expect(ssoCallbackUrl(params(qs))).toBe('/sso-callback');
+      expect(ssoCallbackDestination(params(qs))).toBeUndefined();
+    }
   });
 });

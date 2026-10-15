@@ -8,8 +8,11 @@ import {
   elementSupportsText,
   isBoxed,
   isCompoundPath,
+  isFlowchartStep,
   isMindNode,
   takesAttachments,
+  threadAt,
+  type Element,
 } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import {
@@ -22,6 +25,7 @@ import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
+import { flowchartStepToolbarFor } from '@/components/flowchart/flowchart-step-toolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { useInsertionSlot } from '@/lib/insertion-preview';
 
@@ -54,7 +58,7 @@ export function CanvasSelectionToolbars({
     showPlus,
     multiToolbarBounds,
     showMultiToolbar,
-  } = useCanvasSelectionView(selectionInput);
+  } = useCanvasSelectionView(selectionInput, props.activeTabId ?? '');
   const multiSelectedIds = useSelectionOf(multiOf);
   // The toolbars mirror the canvas transform, so they follow the view, but only while they show:
   // with nothing selected a zoom renders none of this (docs/specs/008-canvas/blueprints/viewport-store.md).
@@ -123,11 +127,11 @@ export function CanvasSelectionToolbars({
             zoom={viewportZoom}
             suspended={moving}
             title={selected ? `Selected ${elementKindLabel(selected)}` : 'Selected Element'}
-            // In view-only mode we mount the popover with just
-            // `onOpenComments`: visitors should be able to read +
-            // post comments on a document they don't own, but no
-            // other edit affordances apply. Every other handler
-            // becomes undefined and the matching button drops out.
+            // In a read-only session we mount the popover with just
+            // `onOpenComments` (below): a Participant reads and posts
+            // comments, a Viewer only reads them. No other edit affordance
+            // applies: every other handler becomes undefined and the
+            // matching button drops out.
             locked={readOnly ? undefined : selectedLocked}
             // Edit text: on every text-CAPABLE element, even before it has
             // a label — an empty shape's "Add Text" button teaches that
@@ -162,6 +166,21 @@ export function CanvasSelectionToolbars({
                   onAddMindSibling: () => props.onGrowMindNode(selected.id, 'sibling'),
                 }
               : {})}
+            // Flowchart (docs/specs/009-elements/flowchart.md): Add Step / Add Branch for whoever grows
+            // the chart; Step Type and Lane for an Editor. Not on a locked step: growing re-lays the chart.
+            {...((!readOnly || !!props.participantPalette) &&
+            !selectedLocked &&
+            selected &&
+            isFlowchartStep(selected)
+              ? {
+                  flowchartStep: flowchartStepToolbarFor(
+                    props.elements,
+                    selected,
+                    props.onGrowMindNode,
+                    props.flowchartActions,
+                  ),
+                }
+              : {})}
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
             // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
@@ -170,18 +189,24 @@ export function CanvasSelectionToolbars({
             onSendToBack={readOnly || !selected ? undefined : props.onSendSelectedToBack}
             onToggleLock={readOnly ? undefined : onToggleLockSelected}
             onDelete={readOnly ? undefined : onDeleteSelected}
-            // Comment button is VIEW-ROLE ONLY now. Editors reach
-            // comments via the right-click / ellipsis context menu (which
-            // is gated !isReadOnly), so the toolbar button was a
-            // duplicate for them. View-role visitors get no context menu,
-            // so the toolbar stays their only way into a thread.
+            // The comment button is a read-only session's only (Participant and Viewer). Editors
+            // reach comments via the right-click / ellipsis context menu (gated !isReadOnly), so the
+            // toolbar button was a duplicate for them; a read-only session has no context menu, so
+            // the toolbar is its way into a thread.
             // Not where the reader has no comments to open (an embed's viewer, a Community visitor).
+            // A Viewer writes no comment (docs/specs/013-workspace/share-roles.md): it reads the thread an
+            // element has, behind Show Comments, and gets no button on one with none.
             onOpenComments={
               // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
-              readOnly && selected && commentsShown && takesAttachments(selected)
+              readOnly &&
+              selected &&
+              commentsShown &&
+              takesAttachments(selected) &&
+              (props.takePart || hasComments(selected))
                 ? () => onOpenComments(selected.id)
                 : undefined
             }
+            commentsReadOnly={!props.takePart}
             onOpenContextMenu={
               readOnly
                 ? undefined
@@ -235,7 +260,6 @@ export function CanvasSelectionToolbars({
             title={`Selected Elements (${multiSelectedIds.size})`}
           >
             <MultiSelectionToolbar
-              anyLocked={elements.some((el) => multiSelectedIds.has(el.id) && el.locked === true)}
               allLocked={elements
                 .filter((el) => multiSelectedIds.has(el.id))
                 .every((el) => el.locked === true)}
@@ -253,4 +277,9 @@ export function CanvasSelectionToolbars({
       ) : null}
     </>
   );
+}
+
+// Whether an element carries a comment thread to read (resolved ones included: a reader opens those too).
+function hasComments(el: Element): boolean {
+  return (threadAt(el)?.comments.length ?? 0) > 0;
 }

@@ -7,12 +7,16 @@
 import { LABEL_LINE_HEIGHT, labelMeasure, r2, xmlEscape } from './svg-render-primitives';
 
 // One resolved span of a rich label (run + element defaults).
+import { MUTED_RUN_OPACITY } from './title-caption';
+
 export type ExportRun = {
   text: string;
   color: string;
   size: number;
   bold: boolean;
   italic: boolean;
+  // Drawn at MUTED_RUN_OPACITY (a Title and Caption caption, docs/specs/009-elements/block-type-picker.md).
+  muted?: boolean;
 };
 
 // The default face an export paints in when nothing else is asked for — the
@@ -151,7 +155,8 @@ export function wrapExportRuns(
           last.color === run.color &&
           last.size === run.size &&
           last.bold === run.bold &&
-          last.italic === run.italic
+          last.italic === run.italic &&
+          !!last.muted === !!run.muted
         ) {
           last.text += frag;
         } else {
@@ -190,7 +195,7 @@ export function svgRichWrappedLabel(
       const frags = line
         .map(
           (run) =>
-            `<tspan fill="${xmlEscape(run.color)}" font-size="${run.size}"` +
+            `<tspan fill="${xmlEscape(run.color)}"${run.muted ? ` fill-opacity="${MUTED_RUN_OPACITY}"` : ''} font-size="${run.size}"` +
             ` font-weight="${run.bold ? 600 : weightOf(false, wordmark)}"${run.italic ? ' font-style="italic"' : ''}>` +
             `${xmlEscape(run.text)}</tspan>`,
         )

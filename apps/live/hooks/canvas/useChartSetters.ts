@@ -2,6 +2,7 @@ import {
   chartTypeChange,
   clampRating,
   isChartShape,
+  LINE_DEFAULT_SERIES,
   type ChartType,
   type AnimationSpeed,
   type ChartLegendPosition,
@@ -69,6 +70,31 @@ export function useChartSetters({
     setPieFieldSelected({ pieAnimRepeat: value }, 'ChartAnim');
   const setChartLegendSelected = (value: boolean) =>
     setPieFieldSelected({ chartLegend: value }, 'ChartLegend');
+  // Show Values (docs/specs/009-elements/pie-chart.md): each mark's number on the chart.
+  const setChartValuesSelected = (value: boolean) =>
+    setPieFieldSelected({ chartValues: value }, 'ChartValues');
+  // Show Axis (docs/specs/009-elements/pie-chart.md): the value axis, its tick labels and gridlines.
+  const setChartAxisSelected = (value: boolean) =>
+    setPieFieldSelected({ chartAxis: value }, 'ChartAxis');
+  // Right Axis (pie-chart.md "A second axis"): the one series a line chart draws against its own scale, or none. Each
+  // selected line chart its own patch, since each has its own series; one commit, so one undo step.
+  const setChartRightAxisSelected = (index: number | null) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) => {
+        if (!ids.has(el.id) || el.type !== 'shape' || el.shape !== 'line-chart') return el;
+        const series = el.lineSeries?.length ? el.lineSeries : LINE_DEFAULT_SERIES;
+        return {
+          ...el,
+          lineSeries: series.map(({ axis: _axis, ...s }, i) =>
+            i === index ? { ...s, axis: 'right' as const } : s,
+          ),
+        };
+      }),
+    );
+    track('Element', 'Changed', 'ChartAxis');
+  };
   // Legend placement (docs/specs/009-elements/pie-chart.md): picking a side also turns the legend on, so the
   // position tiles double as "on" while the Off tile uses setChartLegendSelected.
   const setChartLegendPositionSelected = (position: ChartLegendPosition) =>
@@ -107,6 +133,9 @@ export function useChartSetters({
     setPieAnimSpeedSelected,
     setPieAnimRepeatSelected,
     setChartLegendSelected,
+    setChartValuesSelected,
+    setChartAxisSelected,
+    setChartRightAxisSelected,
     setChartLegendPositionSelected,
     setLineDataSelected,
   };

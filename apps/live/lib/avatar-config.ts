@@ -36,6 +36,9 @@ import type {
 // Whole-config absence is different — a first-time visitor gets a RANDOM
 // character instead (see randomAvatarConfig), so the mode doesn't open with
 // everyone looking identical.
+/** The colour a character and its speech take before its person's presence colour is known: the brand sky. */
+export const AVATAR_FALLBACK_COLOUR = '#0ea5e9';
+
 export const DEFAULT_AVATAR_CONFIG: AvatarConfig = {
   gender: 'male',
   clothing: 'tee',

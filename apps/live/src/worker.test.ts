@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { TRUSTED_TYPES_CSP } from '@livediagram/ui/trusted-types';
 import worker from './worker';
 
 function env() {
@@ -36,6 +37,15 @@ describe('live worker editor route', () => {
 });
 
 describe('live worker security headers', () => {
+  // docs/specs/016-platform/trusted-types.md: every page enforces Trusted Types, the embed included.
+  it('enforces Trusted Types on every page', async () => {
+    const { env: e } = env();
+    for (const path of ['/document/abc', '/embed', '/explorer/home', '/oauth/consent']) {
+      const res = await worker.fetch(new Request(`https://livediagram.app${path}`), e);
+      expect(res.headers.get('Content-Security-Policy'), path).toBe(TRUSTED_TYPES_CSP);
+    }
+  });
+
   it('denies framing on the MCP OAuth consent screen', async () => {
     const { env: e } = env();
     const res = await worker.fetch(new Request('https://livediagram.app/oauth/consent'), e);

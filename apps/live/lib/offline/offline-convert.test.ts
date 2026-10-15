@@ -62,6 +62,8 @@ vi.mock('./offline-images', () => ({
     imageIds: new Map(),
   })),
   isDataImageId: (id: string) => id.startsWith('data:'),
+  tabImageIds: (t: { elements: { type: string; imageId?: string | null }[] }) =>
+    t.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
 }));
 
 // The successive states the record is in when a sync goes to remove it (a write landing during

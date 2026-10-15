@@ -7,7 +7,12 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TabTimer } from '@livediagram/document';
-import { SessionClusterStrip, sessionStripTools } from './SessionClusterStrip';
+import {
+  SessionClusterStrip,
+  sessionStripTools,
+  stripCanStart,
+  stripSegmentGone,
+} from './SessionClusterStrip';
 
 afterEach(cleanup);
 
@@ -102,17 +107,104 @@ describe('SessionClusterStrip', () => {
   });
 });
 
+describe('Illustrate: a running Vote or Poll only', () => {
+  // Illustrate passes canStart false and offersTimer false (sessionStripTools runningOnly).
+  const illustrate = { canStart: false, offersTimer: false } as const;
+
+  it('shows nothing while nothing runs, even to an editor', () => {
+    strip(illustrate);
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('shows the running vote and poll so they can be controlled', () => {
+    strip({ ...illustrate, voteRunning: true, pollRunning: true });
+    expect(screen.getByRole('button', { name: 'Open Vote' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Open Poll' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Timer/ })).toBeNull();
+  });
+
+  it('shows only the one that runs', () => {
+    strip({ ...illustrate, pollRunning: true });
+    expect(screen.getByRole('button', { name: 'Open Poll' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Vote/ })).toBeNull();
+  });
+
+  it('never shows a Timer, running or not', () => {
+    strip({ ...illustrate, timer: paused });
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+});
+
 describe('sessionStripTools', () => {
-  it('offers all three in Facilitate, Timer and Vote in Plan, none in Diagram, Draw or Illustrate', () => {
+  it('offers all three in Facilitate, Timer and Vote in Plan, none in Diagram or Draw', () => {
     expect(sessionStripTools('facilitate')).toEqual({ timer: true, vote: true, poll: true });
     expect(sessionStripTools('plan')).toEqual({ timer: true, vote: true, poll: false });
     expect(sessionStripTools(undefined)).toBeNull();
     expect(sessionStripTools('diagram')).toBeNull();
     expect(sessionStripTools('draw')).toBeNull();
-    expect(sessionStripTools('illustrate')).toBeNull();
+  });
+
+  it('offers Illustrate a running Vote or Poll only', () => {
+    expect(sessionStripTools('illustrate')).toEqual({
+      timer: false,
+      vote: true,
+      poll: true,
+      runningOnly: true,
+    });
   });
 
   it('keeps all three on an event-storming board, a workshop that is always Diagram', () => {
     expect(sessionStripTools('diagram', true)).toEqual({ timer: true, vote: true, poll: true });
+  });
+});
+
+describe('stripCanStart', () => {
+  it('offers the idle tools to an editor, never in a running-only strip or to a view role', () => {
+    expect(stripCanStart(sessionStripTools('facilitate')!, false)).toBe(true);
+    expect(stripCanStart(sessionStripTools('facilitate')!, true)).toBe(false);
+    expect(stripCanStart(sessionStripTools('illustrate')!, false)).toBe(false);
+  });
+});
+
+describe('stripSegmentGone', () => {
+  const idle = { timer: false, vote: false, poll: false };
+  const all = { timer: true, vote: true, poll: true };
+  const illustrate = sessionStripTools('illustrate');
+  const facilitate = sessionStripTools('facilitate');
+
+  it('keeps nothing open when no popover is', () => {
+    expect(stripSegmentGone({ segment: null, tools: null, readOnly: false, running: idle })).toBe(
+      false,
+    );
+  });
+
+  it('closes when the strip or that tool leaves (a mode switch)', () => {
+    const at = { readOnly: false, running: all };
+    expect(stripSegmentGone({ ...at, segment: 'session-vote', tools: null })).toBe(true);
+    expect(
+      stripSegmentGone({ ...at, segment: 'session-poll', tools: sessionStripTools('plan') }),
+    ).toBe(true);
+    expect(stripSegmentGone({ ...at, segment: 'session-timer', tools: illustrate })).toBe(true);
+  });
+
+  it("keeps an editor's idle popover open where the strip offers starting one", () => {
+    for (const segment of ['session-timer', 'session-vote', 'session-poll'] as const)
+      expect(stripSegmentGone({ segment, tools: facilitate, readOnly: false, running: idle })).toBe(
+        false,
+      );
+  });
+
+  it("closes an editor's Vote and Poll in Illustrate when the activity ends, never offering the set-up", () => {
+    const at = { tools: illustrate, readOnly: false };
+    expect(stripSegmentGone({ ...at, segment: 'session-vote', running: all })).toBe(false);
+    expect(stripSegmentGone({ ...at, segment: 'session-vote', running: idle })).toBe(true);
+    expect(stripSegmentGone({ ...at, segment: 'session-poll', running: all })).toBe(false);
+    expect(stripSegmentGone({ ...at, segment: 'session-poll', running: idle })).toBe(true);
+  });
+
+  it("closes a view role's popover when its tool ends", () => {
+    const at = { tools: facilitate, readOnly: true };
+    expect(stripSegmentGone({ ...at, segment: 'session-timer', running: all })).toBe(false);
+    expect(stripSegmentGone({ ...at, segment: 'session-timer', running: idle })).toBe(true);
   });
 });

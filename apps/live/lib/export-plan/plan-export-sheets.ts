@@ -12,7 +12,7 @@ import {
 import { renderFrameWindow, sheetFramesOf } from '@livediagram/sheets';
 import type { SheetStore } from '@/components/sheets/sheet-store-client';
 import { sheetMetricShown } from '@/components/plan/dashboard/sheet-metric-shown';
-import type { SheetMetricArt } from './dashboard-card-art';
+import type { SheetMetricArt } from '@livediagram/plan-art';
 
 // The cells each Sheet element shows, by sheet id: the window its frame has room for. A sheet the store has not
 // loaded is left out (it draws its frame and headers).

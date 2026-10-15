@@ -2,6 +2,7 @@ import type { AgentPresence } from './agent-presence';
 import type { ArticleOp, ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
+import type { AvatarSayOp } from './avatar-say';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
@@ -17,6 +18,12 @@ import type { SheetsRoomOp } from './sheets';
 // animation inputs and the costume ride along so a peer draws the same
 // character, walk cycle, hop, and flag wave the sender sees. Deliberately
 // small — this goes out at cursor rates.
+
+// The statuses a character can show in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), the one list both
+// ends of the wire read: the editor's picker and labels are keyed to it, so a status can never be sent that a
+// receiver's type does not name.
+export const AVATAR_STATUS_IDS = ['available', 'focus', 'meeting', 'away'] as const;
+export type AvatarStatus = (typeof AVATAR_STATUS_IDS)[number];
 
 export type AvatarPresence = {
   x: number;
@@ -50,6 +57,13 @@ export type AvatarPresence = {
   // clients, and reaches D1 and undo not at all. Optional so a
   // packet from an older client still parses as "standing".
   seatedOn?: string | null;
+  // A drink in the hand (docs/specs/009-elements/office.md "Using it"), from a water cooler or a coffee machine,
+  // or none. Presence like the seat: put down after a minute or on leaving the mode, never in the document.
+  // Optional so an older client's packet parses as empty-handed; anything else draws nothing.
+  holding?: 'water' | 'coffee' | null;
+  // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none. Presence for the session only;
+  // a receiver draws only a status it knows. Optional so an older client's packet parses as no status.
+  status?: AvatarStatus | null;
 };
 
 // Room op kinds that are ephemeral signals: they mutate no document state,
@@ -85,6 +99,9 @@ export const PRESENCE_OP_KINDS = [
   // A shove (docs/specs/008-canvas/avatar-mode.md) moves nothing on the server and nothing in the
   // document — it asks one peer to step aside. Same trust level as `avatar`.
   'avatar-push',
+  // A character saying something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): a message that floats
+  // away in seconds, so nothing to order, log or replay. The room relays it from an Editor or a Participant only.
+  'avatar-say',
   // A reaction burst (docs/specs/009-elements/reaction-pad.md) is pure theatre: nothing on the server,
   // nothing in the document, and nothing worth replaying to somebody who
   // arrives after it finished.
@@ -129,6 +146,10 @@ export const PRESENCE_OP_KINDS = [
   // Someone's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"): outlined in their colour.
   // Ephemeral, never logged, from any session (a viewer selects too).
   'sheet-presence',
+  // Who the sender is following (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"). The room
+  // keeps it on the session and is the only one who reads it: it tells each person, on their own socket, who
+  // follows them (`followers`). Never relayed, from any session (a viewer follows too).
+  'follow',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
@@ -328,6 +349,10 @@ export type ServerMessage =
   // every other peer's lock clears through the ordinary path and the room needs
   // to tell nobody else anything.
   | { kind: 'selection-released'; elementId: string; by: string }
+  // Who is following you (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): their presence
+  // ids, sent to YOUR SOCKET ALONE whenever the list changes, the same addressing as `selection-released`. It is
+  // how a client counts its followers and refuses to follow one of them back.
+  | { kind: 'followers'; ids: string[] }
   // The ordering cursor this session has reached (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1), sent on
   // `hello` and to the SENDER of each ordered op, which the relay skips. Without
   // it a client only learned seqs from other people's ops, so a reconnect
@@ -545,6 +570,9 @@ export type RoomOp =
   // its owner's machine, so a push is a request, never a remote write, and a
   // peer who has left the mode simply ignores it.
   | { kind: 'avatar-push'; tabId: string; targetId: string; dx: number; dy: number }
+  // A character SAYS something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): `id` names the bubble,
+  // `x, y` the canvas point above the speaker's head it rises from. Parsed by `parseAvatarSay` at both ends.
+  | AvatarSayOp
   // Somebody set off a REACTION PAD (docs/specs/009-elements/reaction-pad.md). Ephemeral exactly like cursor
   // / laser / avatar: never logged, never ordered, never replayed to a
   // reconnecting client — a burst you missed is a burst that is over.
@@ -581,16 +609,29 @@ export type RoomOp =
   // presenter reloads mid-follow, all for three numbers on an
   // already-throttled channel. The cost is accepted and written down: a room
   // where nobody follows anybody still carries these while people scroll.
-  | { kind: 'viewport'; tabId: string; pan: { x: number; y: number }; zoom: number }
+  //
+  // `size` is the sender's canvas, so Bring Focus can tell a presser whether
+  // the room is already looking at a point on each viewer's own screen
+  // (docs/specs/012-collaboration/bring-focus.md). Optional: a client from before it
+  // sends none, and a viewport without one counts as unknown.
+  | {
+      kind: 'viewport';
+      tabId: string;
+      pan: { x: number; y: number };
+      zoom: number;
+      size?: { width: number; height: number };
+    }
+  // Who the sender follows (a presence id), or null when they stop: to the room, never relayed.
+  | { kind: 'follow'; target: string | null }
   // --- Bring Focus (docs/specs/012-collaboration/bring-focus.md) ----------------------------------------
   // Somebody pressed a Bring Focus element: offer everyone else a jump to it.
   //
-  // Carries the element's CENTRE and the presser's zoom, not the presser's
-  // pan. Two people rarely have the same window size, so copying a pan lands
-  // the element off-centre (or off-screen) for anyone whose canvas is a
-  // different shape; centring the point is the correct translation of "come
-  // and look at this", and the zoom is what makes their view show the same
-  // amount of canvas.
+  // Carries the element's CENTRE, not the presser's pan. Two people rarely
+  // have the same window size, so copying a pan lands the element off-centre
+  // (or off-screen) for anyone whose canvas is a different shape; centring the
+  // point is the correct translation of "come and look at this". The
+  // presser's `zoom` still rides along for clients from before receivers kept
+  // their own zoom; a receiver ignores it.
   //
   // No sender name: the envelope already identifies the sender and the
   // receiver resolves the name from the presence list it holds, so a renamed
@@ -683,6 +724,7 @@ export type RoomIncoming =
     }
   // Addressed by being sent at all — see ServerMessage above.
   | { kind: 'selection-released'; elementId: string; by: string }
+  | { kind: 'followers'; ids: string[] }
   | CursorMessage
   | FormatMessage;
 
@@ -696,3 +738,9 @@ export const ACCESS_CHANGED_CLOSE = 4005;
 // The close code for a workbench session whose pairing or token ended (docs/specs/013-workspace/workbench-embeds.md):
 // the page turns read-only and does not reconnect.
 export const WORKBENCH_ENDED_CLOSE = 4006;
+
+// The room's keepalive (docs/specs/012-collaboration/realtime-conflict-resolution.md "Keepalive"): the client sends
+// the bare text ROOM_PING on an idle socket and the room answers ROOM_PONG without waking from hibernation
+// (setWebSocketAutoResponse). Plain text, never JSON, so neither side's message handler ever sees them as ops.
+export const ROOM_PING = 'ping';
+export const ROOM_PONG = 'pong';

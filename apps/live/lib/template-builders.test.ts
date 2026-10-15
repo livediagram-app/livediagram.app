@@ -72,10 +72,22 @@ const ALL_KINDS = [
   'user-story-map',
   'affinity-map',
   'lean-coffee',
+  'pub-quiz',
+  'icebreaker-questions',
+  'virtual-office',
+  'coworking-space',
+  'team-pod',
+  'all-hands-hall',
+  'two-truths-and-a-lie',
+  'would-you-rather',
+  'people-bingo',
+  'brainstorm',
+  'workshop-board',
   'town-hall',
   'business-model-canvas',
   'empathy-map',
   'funnel',
+  'sankey',
   'okr-tree',
   'sitemap',
   'browser-wireframe',
@@ -100,6 +112,10 @@ const ALL_KINDS = [
   'whiteboard',
   'article',
   'blank-illustration',
+  'blank-slide-deck',
+  'blank-article',
+  'blank-infographic',
+  'blank-logo',
   'sketchnote',
   'rich-picture',
   'comic-strip',
@@ -112,6 +128,10 @@ const ALL_KINDS = [
   'how-it-works',
   'versus',
   'social-carousel',
+  'launch-keynote',
+  'quarterly-review',
+  'team-welcome',
+  'workshop-kickoff',
   'paper-prototype',
   'journey-doodle',
   'pre-mortem',
@@ -181,6 +201,15 @@ const PAGED_KINDS = [
   'how-it-works',
   'versus',
   'social-carousel',
+  'launch-keynote',
+  'quarterly-review',
+  'team-welcome',
+  'workshop-kickoff',
+  'floor-plan',
+  'storyboard',
+  'browser-wireframe',
+  'laptop-wireframe',
+  'mobile-wireframe',
 ] as const;
 
 // An element's centre, from its box or, for an arrow, its free endpoints' midpoint.
@@ -201,12 +230,24 @@ describe('templates on pages', () => {
   // A deck is built of slide pages, the logo exploration's lockups of logo pages; every other paged
   // template of infographic pages. Either way a chosen kind, so the first page's kind choice is
   // never offered.
+  // The decks: the Slide Deck and the decks built from slide layouts.
+  const SLIDE_DECK_KINDS = new Set<string>([
+    'slide-deck',
+    'launch-keynote',
+    'quarterly-review',
+    'team-welcome',
+    'workshop-kickoff',
+  ]);
   it.each(PAGED_KINDS)('%s: opens in Illustrate on pages of its kind', (kind) => {
     const o = templateCanvasOverrides(kind);
     expect(o.opensIn).toBe('illustrate');
     expect(o.pages?.length).toBeGreaterThan(0);
     const want = (i: number) =>
-      kind === 'slide-deck' ? 'slide' : kind === 'logo-design' && i < 6 ? 'logo' : 'infographic';
+      SLIDE_DECK_KINDS.has(kind)
+        ? 'slide'
+        : kind === 'logo-design' && i < 6
+          ? 'logo'
+          : 'infographic';
     expect(o.pages!.every((p, i) => p.kind === want(i))).toBe(true);
     expect(new Set(o.pages!.map((p) => p.id)).size).toBe(o.pages!.length);
   });
@@ -239,9 +280,9 @@ describe('templates on pages', () => {
     },
   );
 
-  it('keeps the slide deck’s speaker notes on each slide’s headline', () => {
+  it('leaves the slide deck’s elements without notes', () => {
     const notes = buildTemplate('slide-deck', 0, 0).filter((el) => 'note' in el && el.note);
-    expect(notes).toHaveLength(6);
+    expect(notes).toHaveLength(0);
   });
 
   it('keeps the group card a card the team signs: seven signed notes and an open slot', () => {
@@ -299,6 +340,11 @@ describe('buildTemplate translation invariance', () => {
         k !== 'whiteboard' &&
         k !== 'article' &&
         k !== 'blank-illustration' &&
+        // One empty page of a chosen kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind").
+        k !== 'blank-slide-deck' &&
+        k !== 'blank-article' &&
+        k !== 'blank-infographic' &&
+        k !== 'blank-logo' &&
         // An empty Plan tab: it opens on Start Planning (docs/specs/026-plan/plan-templates.md).
         k !== 'blank-plan' &&
         // An empty session tab (docs/specs/012-collaboration/facilitate-mode.md "Templates").
@@ -477,9 +523,13 @@ describe('system architecture is a vendor-neutral tiered diagram', () => {
     );
     expect(nodes.length).toBeGreaterThan(0);
     for (const n of nodes) {
-      expect(n.label?.length).toBeGreaterThan(0);
+      // A service node is a Card named by its title; a store keeps its label.
+      expect((n.shape === 'card' ? n.pageTitle : n.label)?.length).toBeGreaterThan(0);
       if (n.iconId) expect(isTechIconId(n.iconId)).toBe(false);
     }
+    expect(nodes.filter((n) => n.shape === 'card').every((n) => n.accentEdge === 'left')).toBe(
+      true,
+    );
   });
 
   it('pins and labels every edge', () => {

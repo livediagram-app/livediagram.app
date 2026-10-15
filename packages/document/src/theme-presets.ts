@@ -1,6 +1,7 @@
 import type { BorderStroke, BorderStyle } from './border-style';
-import { isLightColor, shade, tint } from './colors';
+import { canvasSurface, isLightColor, shade, tint } from './colors';
 import type { Element } from './index';
+import { labelOn as readableLabelOn, reachContrast, THEME_TEXT_CONTRAST } from './readable-colour';
 import type { ThemeDefinition } from './themes';
 
 // Design-system defaults used when a theme defers its element colours
@@ -121,12 +122,43 @@ export type ShapeColorPreset = {
 // fill+stroke+text triple; not capped, so no group is ever cut short (a
 // six-branch theme shows 26 tiles).
 export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
+  return buildShapeColorPresets(theme, true);
+}
+
+/**
+ * The presets as they were derived before every label was held to the text
+ * floor: Bold put white on a mid-tone fill (about 4:1 in most dark halves,
+ * 2.9:1 on Pine), Solid white on a mid sky blue, and the Border tier the bare
+ * accent on white. Shapes styled then still store those colours, so the theme
+ * colour map (theme-halves.ts) reads them too and draws each as today's
+ * preset of the same id. Never offered in a menu.
+ */
+export function legacyShapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
+  return buildShapeColorPresets(theme, false);
+}
+
+function buildShapeColorPresets(theme: ThemeDefinition, readable: boolean): ShapeColorPreset[] {
   const accent = theme.elementStroke ?? DEFAULT_SHAPE_STROKE;
   const baseFill = theme.elementFill ?? DEFAULT_SHAPE_FILL;
   const baseText = theme.elementText ?? DEFAULT_SHAPE_TEXT;
   // A readable label colour for a filled tile: white on a dark fill, a deep
-  // shade of the fill on a light one.
-  const labelOn = (fill: string) => (isLightColor(fill) ? shade(fill, 0.6) : '#ffffff');
+  // shade of the fill on a light one, walked on to the text floor when that
+  // misses it.
+  const labelOn = readable
+    ? readableLabelOn
+    : (fill: string) => (isLightColor(fill) ? shade(fill, 0.6) : '#ffffff');
+  // Bold is white on a deep fill, so the fill darkens until white reads on it;
+  // its edge then stays the same step darker than the fill.
+  const legacyBoldFill = shade(accent, 0.3);
+  const boldFill = readable
+    ? reachContrast(legacyBoldFill, '#ffffff', THEME_TEXT_CONTRAST)
+    : legacyBoldFill;
+  const boldStroke = boldFill === legacyBoldFill ? shade(accent, 0.55) : shade(boldFill, 0.36);
+  // A theme's dark half (docs/specs/011-theme/light-and-dark.md) takes the quiet tiers toward its canvas instead of
+  // toward white: a pale card on a dark canvas glares.
+  const dark = canvasSurface(theme.backgroundColor) === 'dark';
+  const quiet = (c: string, amount: number) => (dark ? shade(c, amount) : tint(c, amount));
+  const ink = (c: string, amount: number) => (dark ? tint(c, amount) : shade(c, amount));
 
   const pool: ShapeColorPreset[] = [];
   // ── Theme: the accent, quiet → loud ──
@@ -146,9 +178,9 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       pool.push({
         id: `branch-${i}`,
         name: 'Branch',
-        fill: tint(entry.stroke, 0.8),
+        fill: quiet(entry.stroke, 0.8),
         stroke: entry.stroke,
-        text: shade(entry.stroke, 0.45),
+        text: ink(entry.stroke, 0.45),
         borderStroke: 'medium',
         borderStyle: 'solid',
       });
@@ -158,18 +190,18 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
     {
       id: 'soft',
       name: 'Soft',
-      fill: tint(accent, 0.85),
-      stroke: tint(accent, 0.4),
-      text: shade(accent, 0.5),
+      fill: quiet(accent, 0.85),
+      stroke: dark ? accent : tint(accent, 0.4),
+      text: ink(accent, 0.5),
       borderStroke: 'thin',
       borderStyle: 'solid',
     },
     {
       id: 'tinted',
       name: 'Tinted',
-      fill: tint(accent, 0.6),
+      fill: quiet(accent, 0.6),
       stroke: accent,
-      text: shade(accent, 0.45),
+      text: ink(accent, 0.6),
       borderStroke: 'medium',
       borderStyle: 'solid',
     },
@@ -185,9 +217,9 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
     {
       id: 'bold',
       name: 'Bold',
-      fill: shade(accent, 0.3),
-      stroke: shade(accent, 0.55),
-      text: labelOn(shade(accent, 0.3)),
+      fill: boldFill,
+      stroke: boldStroke,
+      text: labelOn(boldFill),
       borderStroke: 'thick',
       borderStyle: 'solid',
     },
@@ -341,7 +373,12 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
 
   const seen = new Set<string>();
   const out: ShapeColorPreset[] = [];
-  for (const p of pool) {
+  for (const preset of pool) {
+    // Every label reads on its fill (the Border tier's accent text on white is
+    // 1.4:1 for Pine's dark half): walked darker or lighter until it does.
+    const p = readable
+      ? { ...preset, text: reachContrast(preset.text, preset.fill, THEME_TEXT_CONTRAST) }
+      : preset;
     const key = `${p.fill}|${p.stroke}|${p.text}`.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
@@ -479,7 +516,6 @@ export function tableColorPresets(theme: ThemeDefinition): TablePreset[] {
   const accent = theme.elementStroke ?? DEFAULT_SHAPE_STROKE;
   const baseFill = theme.elementFill ?? DEFAULT_SHAPE_FILL;
   const baseText = theme.elementText ?? DEFAULT_SHAPE_TEXT;
-  const labelOn = (fill: string) => (isLightColor(fill) ? shade(fill, 0.6) : '#ffffff');
   return [
     // ── Theme: the accent, quiet to loud ──
     {
@@ -509,7 +545,7 @@ export function tableColorPresets(theme: ThemeDefinition): TablePreset[] {
       stroke: tint(accent, 0.4),
       text: baseText,
       headerFill: accent,
-      headerText: labelOn(accent),
+      headerText: readableLabelOn(accent),
       zebra: false,
     },
     {

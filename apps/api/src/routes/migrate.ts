@@ -6,7 +6,7 @@ import { guestSignatureEnforced, isLegacyGuestEra } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';
 import { getParticipant, migrateOwnerId } from '../db';
 import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
-import type { RouteContext } from './context';
+import { readOptionalBody, type RouteContext } from './context';
 
 const ZERO = { documents: 0, folders: 0, shared: 0, images: 0 };
 
@@ -37,17 +37,17 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
   if (!(segments[1] === 'migrate' && segments.length === 2)) return notFound();
   if (request.method !== 'POST') return notFound();
 
-  const body = (await request.json().catch(() => null)) as {
-    guestOwnerId?: string;
-    guestSignature?: string | null;
-    toOwnerId?: string;
-    toSignature?: string | null;
-  } | null;
+  const body = (await readOptionalBody(request)) as {
+    guestOwnerId?: unknown;
+    guestSignature?: unknown;
+    toOwnerId?: unknown;
+    toSignature?: unknown;
+  };
   const secret = env.GUEST_ID_HMAC_SECRET;
 
   // Flow 1 — sign-up: claim guest data into the Clerk account.
   if (clerkUserId) {
-    const fromOwnerId = body?.guestOwnerId?.trim();
+    const fromOwnerId = typeof body.guestOwnerId === 'string' ? body.guestOwnerId.trim() : '';
     if (!fromOwnerId) return badRequest('guestOwnerId is required');
     if (fromOwnerId === clerkUserId) return json({ migrated: ZERO });
     // A guest id is a server-minted UUID, never an account id. Without this,
@@ -56,7 +56,7 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
     // workspace by naming its (harvestable) Clerk id.
     if (isClerkIdShape(fromOwnerId)) return forbidden();
     // Possession proof: the caller must hold the source id's signature.
-    if (secret && !(await verifyOwnerId(secret, fromOwnerId, body?.guestSignature))) {
+    if (secret && !(await verifyOwnerId(secret, fromOwnerId, stringOrNull(body.guestSignature)))) {
       return forbidden();
     }
     const migrated = await migrateOwnerId(env, fromOwnerId, clerkUserId);
@@ -67,7 +67,7 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
   // signing is on; with no secret there are no signed ids to upgrade to.
   if (!secret) return missingAuth();
   const fromOwnerId = resolveOwner();
-  const toOwnerId = body?.toOwnerId?.trim();
+  const toOwnerId = typeof body.toOwnerId === 'string' ? body.toOwnerId.trim() : '';
   if (!fromOwnerId) return missingAuth();
   // The source here is only the unsigned bearer header, so it must never be
   // an account id: Clerk ids are harvestable (team member lists), and this
@@ -91,7 +91,12 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
   }
   if (!toOwnerId) return badRequest('toOwnerId is required');
   if (fromOwnerId === toOwnerId) return json({ migrated: ZERO });
-  if (!(await verifyOwnerId(secret, toOwnerId, body?.toSignature))) return forbidden();
+  if (!(await verifyOwnerId(secret, toOwnerId, stringOrNull(body.toSignature)))) return forbidden();
   const migrated = await migrateOwnerId(env, fromOwnerId, toOwnerId);
   return json({ migrated });
+}
+
+// A signature as sent: anything but a string is no signature at all.
+function stringOrNull(v: unknown): string | null {
+  return typeof v === 'string' ? v : null;
 }

@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { ICON_CATALOG_1 } from './icon-catalog-1';
 import { iconPrimMarkup } from './markup';
-import { resolveIconExportArt } from './resolve';
+import {
+  emojiArtOf,
+  iconEmojiGlyph,
+  previewResolvers,
+  resolveIconExportArt,
+  resolveIconPreviewArt,
+  resolveStickerArt,
+  resolveStickerPreviewArt,
+  stickerEmojiGlyph,
+  twemojiFileName,
+} from './resolve';
+import { STICKER_CATALOG } from './sticker-catalog';
 import { TECH_ICON_CATALOG } from './tech-icon-catalog';
 
 describe('resolveIconExportArt', () => {
@@ -79,5 +90,66 @@ describe('iconPrimMarkup', () => {
     const markup = iconPrimMarkup({ t: 'text', text: '<&>', x: 12, y: 12, size: 20 });
     expect(markup).toContain('>&lt;&amp;&gt;</text>');
     expect(markup).not.toContain('<&');
+  });
+});
+
+// docs/specs/015-api/mcp-server.md §5: a preview with no emoji font draws an emoji as a labelled disc.
+describe('the preview resolvers', () => {
+  it('draw an emoji icon or sticker as its placeholder, and every other as ever', () => {
+    expect(resolveIconPreviewArt('emoji-fire')).toMatchObject({
+      colored: true,
+      markup: expect.stringContaining('>emoji<'),
+    });
+    expect(resolveIconPreviewArt('clock')).toEqual(resolveIconExportArt('clock'));
+    expect(resolveIconPreviewArt('nope')).toBeUndefined();
+    expect(resolveStickerPreviewArt('emoji-thumbs-up')?.markup).toContain('>emoji<');
+    const badge = STICKER_CATALOG.find((s) => s.kind !== 'emoji')!;
+    expect(resolveStickerPreviewArt(badge.id)).toEqual(resolveStickerArt(badge.id));
+  });
+
+  it('draw an emoji from its art when it was fetched, by its glyph', () => {
+    const art = { viewBox: '0 0 36 36', markup: '<path d="M0 0h36v36z"/>' };
+    const {
+      resolveIconArt,
+      resolveStickerArt: sticker,
+      resolveEmojiArt,
+    } = previewResolvers(new Map([['👍', art]]));
+    expect(sticker('emoji-thumbs-up')?.markup).toContain(
+      '<svg x="23" y="23" width="54" height="54" viewBox="0 0 36 36"><path d="M0 0h36v36z"/></svg>',
+    );
+    expect(resolveIconArt('emoji-thumbs-up')).toEqual({
+      colored: true,
+      markup:
+        '<svg x="2" y="2" width="20" height="20" viewBox="0 0 36 36"><path d="M0 0h36v36z"/></svg>',
+    });
+    // An emoji not fetched stays the disc; anything else draws as ever.
+    expect(sticker('emoji-fire')?.markup).toContain('>emoji<');
+    expect(resolveIconArt('clock')).toEqual(resolveIconExportArt('clock'));
+    expect(resolveEmojiArt('👍')).toBe(art);
+    expect(resolveEmojiArt('🔥')).toBeUndefined();
+  });
+});
+
+describe('emoji art', () => {
+  it('names an emoji as Twemoji does, keeping the variation selector only in a joined sequence', () => {
+    expect(twemojiFileName('🚀')).toBe('1f680');
+    expect(twemojiFileName('❤️')).toBe('2764');
+    expect(twemojiFileName('👩‍💻')).toBe('1f469-200d-1f4bb');
+    expect(twemojiFileName('🏳️‍🌈')).toBe('1f3f3-fe0f-200d-1f308');
+  });
+
+  it("reads an emoji SVG's viewBox and contents, and nothing else", () => {
+    expect(
+      emojiArtOf('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><path/></svg>'),
+    ).toEqual({ viewBox: '0 0 36 36', markup: '<path/>' });
+    expect(emojiArtOf('<svg><path/></svg>')).toBeNull();
+    expect(emojiArtOf('Not Found')).toBeNull();
+  });
+
+  it('knows the emoji a sticker or icon draws', () => {
+    expect(stickerEmojiGlyph('emoji-thumbs-up')).toBe('👍');
+    expect(iconEmojiGlyph('emoji-thumbs-up')).toBe('👍');
+    expect(stickerEmojiGlyph(STICKER_CATALOG.find((s) => s.kind !== 'emoji')!.id)).toBeUndefined();
+    expect(iconEmojiGlyph('clock')).toBeUndefined();
   });
 });

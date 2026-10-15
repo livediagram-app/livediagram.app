@@ -1,5 +1,4 @@
 import { Button } from '@livediagram/ui';
-import { type ReactNode } from 'react';
 import {
   CHECKLIST_MAX_ITEMS,
   CHECKLIST_MAX_TEXT,
@@ -9,18 +8,12 @@ import {
   PIE_PALETTE,
   type ChecklistItem,
   type LegendItem,
-  MIND_FLOWS,
-  MIND_FLOW_HINT,
-  MIND_FLOW_LABEL,
-  type MindFlow,
   type LineSeries,
   type PieSlice,
 } from '@livediagram/document';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
-import { MenuActionButton } from '@/components/primitives/PortalMenu';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
@@ -223,6 +216,9 @@ export function LineDataSummary({
               style={{ backgroundColor: s.color ?? palette[i % palette.length]! }}
             />
             <span className="truncate">{s.name || `Series ${i + 1}`}</span>
+            {s.axis === 'right' ? (
+              <span className="shrink-0 text-slate-500 dark:text-slate-400">(right)</span>
+            ) : null}
           </div>
         ))}
       </div>
@@ -420,99 +416,5 @@ export function CodeSummary({
         <MenuToggleRow label="Wrap Long Lines" checked={wrap} onToggle={() => onSetWrap(!wrap)} />
       </div>
     </div>
-  );
-}
-
-// Mind-map flow tiles (docs/specs/009-elements/mind-node.md): the shape the map grows in. Drawn rather
-// than named, because "Balanced" and "Bubble" mean nothing until you see the
-// arrangement; each glyph is the branch pattern its flow produces.
-const MIND_FLOW_ICON: Record<MindFlow, ReactNode> = {
-  tree: (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden>
-      <rect x="1.5" y="9" width="7" height="6" rx="1.5" fill="currentColor" />
-      <rect x="15" y="3" width="7.5" height="5" rx="1.5" fill="currentColor" opacity="0.55" />
-      <rect x="15" y="16" width="7.5" height="5" rx="1.5" fill="currentColor" opacity="0.55" />
-      <path d="M8.5 12H12V5.5h3M12 12v6h3" stroke="currentColor" strokeWidth="1.3" />
-    </svg>
-  ),
-  balanced: (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden>
-      <rect x="8.5" y="9.5" width="7" height="5" rx="1.5" fill="currentColor" />
-      <rect x="0.5" y="3" width="6" height="4.5" rx="1.5" fill="currentColor" opacity="0.55" />
-      <rect x="0.5" y="16.5" width="6" height="4.5" rx="1.5" fill="currentColor" opacity="0.55" />
-      <rect x="17.5" y="3" width="6" height="4.5" rx="1.5" fill="currentColor" opacity="0.55" />
-      <rect x="17.5" y="16.5" width="6" height="4.5" rx="1.5" fill="currentColor" opacity="0.55" />
-      <path
-        d="M8.5 12H6.5V5.25M8.5 12H6.5v6.75M15.5 12h2V5.25M15.5 12h2v6.75"
-        stroke="currentColor"
-        strokeWidth="1.3"
-      />
-    </svg>
-  ),
-  downward: (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden>
-      <rect x="8.5" y="1.5" width="7" height="5" rx="1.5" fill="currentColor" />
-      <rect x="1.5" y="16" width="7" height="5" rx="1.5" fill="currentColor" opacity="0.55" />
-      <rect x="15" y="16" width="7.5" height="5" rx="1.5" fill="currentColor" opacity="0.55" />
-      <path d="M12 6.5v5H5v4.5M12 11.5h7v4.5" stroke="currentColor" strokeWidth="1.3" />
-    </svg>
-  ),
-  bubble: (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden>
-      <circle cx="12" cy="12" r="4" fill="currentColor" />
-      <circle cx="12" cy="3" r="2.4" fill="currentColor" opacity="0.55" />
-      <circle cx="20" cy="9" r="2.4" fill="currentColor" opacity="0.55" />
-      <circle cx="17" cy="19.5" r="2.4" fill="currentColor" opacity="0.55" />
-      <circle cx="4.5" cy="16" r="2.4" fill="currentColor" opacity="0.55" />
-      <path
-        d="M12 8V5.4M15.7 10.2l2.2-1.6M14.2 15.3l1.9 2.4M8.7 13.6l-2.4 1.2"
-        stroke="currentColor"
-        strokeWidth="1.3"
-      />
-    </svg>
-  ),
-};
-
-export function MindFlowTiles({
-  current,
-  onSet,
-  onTidy,
-  onEditOutline,
-}: {
-  current: MindFlow;
-  onSet: (flow: MindFlow) => void;
-  onTidy: () => void;
-  // A root only (docs/specs/009-elements/mind-node.md "Edit Outline").
-  onEditOutline?: () => void;
-}) {
-  return (
-    <>
-      <p className="px-3 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-        {MIND_FLOW_HINT[current]}
-      </p>
-      {/* Two per row: four tiles across a menu column squeezed the labels
-          into each other ("BalancedDownward"). */}
-      <MenuTileGrid cols={2}>
-        {MIND_FLOWS.map((flow) => (
-          <MenuTile
-            key={flow}
-            icon={MIND_FLOW_ICON[flow]}
-            label={MIND_FLOW_LABEL[flow]}
-            active={current === flow}
-            onClick={() => onSet(flow)}
-          />
-        ))}
-      </MenuTileGrid>
-      {/* Tidy Map (docs/specs/009-elements/mind-node.md): the way back to a tidy map after dragging
-          nodes around, and from then on growth keeps it tidy. */}
-      <div className="px-2 pb-1.5 pt-1">
-        <MenuActionButton label="Tidy Map" onClick={onTidy} />
-      </div>
-      {onEditOutline ? (
-        <div className="px-2 pb-1.5">
-          <MenuActionButton label="Edit Outline" onClick={onEditOutline} />
-        </div>
-      ) : null}
-    </>
   );
 }

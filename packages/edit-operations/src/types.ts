@@ -3,8 +3,16 @@
 // @livediagram/api-schema, where the changeset response carries them.
 
 import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@livediagram/api-schema';
-import type { ElementId, ElementOp, GraphInput, Tab, ThemeDefinition } from '@livediagram/document';
+import type {
+  ElementId,
+  ElementOp,
+  Finish,
+  GraphInput,
+  Tab,
+  ThemeDefinition,
+} from '@livediagram/document';
 import type { PlacementRelation } from './vocabulary';
+import type { DashboardSpec } from '@livediagram/templates';
 
 // A ref, a quoted label, or `key:value` terms joined by spaces, all of which must match.
 export type Selector = string;
@@ -15,8 +23,11 @@ export type Fields = Readonly<Record<string, FieldValue>>;
 
 // Where `add` and `move` put an element: beside, after, inside or aligned with a reference, or at a
 // point relative to the content origin.
+// `within` (a frame or lane, from `inside:<frame> right-of:<x>`) says the reference must be inside it; `alignTo`
+// (from `below:<frame> align:<x>`) centres the placed box on x across the side.
 export type Placement =
-  { rel: PlacementRelation; ref: Selector; gap?: number } | { rel: 'at'; x: number; y: number };
+  | { rel: PlacementRelation; ref: Selector; gap?: number; within?: Selector; alignTo?: Selector }
+  | { rel: 'at'; x: number; y: number };
 
 // `add` with a whole raw element, as the MCP's `ops` mode sends: taken as given, its geometry kept.
 export type AddElementOperation = { op: 'add'; element: Readonly<Record<string, unknown>> };
@@ -121,12 +132,20 @@ export type ApplyOptions = {
 };
 
 // `themeId` names a created tab's theme by id (custom themes included); it wins over `theme`.
-export type ReplaceOptions = ApplyOptions & { tabId: string; name: string; themeId?: string };
+export type ReplaceOptions = ApplyOptions & {
+  tabId: string;
+  name: string;
+  themeId?: string;
+  // The new tab's finish (docs/specs/008-canvas/finish.md); only a replace that creates the tab sets one.
+  finish?: Finish;
+};
 
 export type ReplaceBody =
   | { graph: GraphInput }
   | { mermaid: string }
   | { template: string }
+  // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard"); never onto an existing tab.
+  | { dashboard: DashboardSpec }
   | { elements: unknown[]; layout?: 'auto' | 'preserve' };
 
 export type ApplySuccess = {

@@ -57,6 +57,22 @@ describe('useSnapColours', () => {
     expect(track).toHaveBeenCalledExactlyOnceWith('Draw', 'Changed', 'SnapColours');
   });
 
+  it('returns the count and reports it even when the commit runs later', () => {
+    const elements = [stroke('a', '#e03131'), stroke('b', '#868e96')];
+    const later: ((els: Element[]) => Element[])[] = [];
+    const hook = renderHook(() =>
+      useSnapColours({
+        elements,
+        inertIds: new Set(),
+        editsBlocked: false,
+        commit: (map) => void later.push(map),
+      }),
+    );
+    expect(hook.result.current.snap()).toBe(2);
+    expect(track).toHaveBeenCalledExactlyOnceWith('Draw', 'Changed', 'SnapColours');
+    expect(later[0]!(elements)).toEqual([{ ...stroke('a'), penColour: 'red' }, stroke('b')]);
+  });
+
   it('does nothing while edits are blocked or with nothing to snap', () => {
     const blocked = setup([stroke('a', '#e03131')], { editsBlocked: true });
     expect(blocked.hook.result.current.blocked).toBe(true);

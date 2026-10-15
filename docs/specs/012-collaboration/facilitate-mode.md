@@ -78,23 +78,25 @@ mode as today:
 
 ## The palette
 
-Facilitate's layout, in order:
+Facilitate's layout, in order (no Concepts: concept graphics lay out an idea for a diagram, which a session does not
+stop to draw):
 
-| Band        | Categories                                            |
-| ----------- | ----------------------------------------------------- |
-| _(none)_    | Popular                                               |
-| Common      | Shapes, My shapes (with a shape library), Write, Draw |
-| Structure   | Build                                                 |
-| Decorate    | Icons, Stickers, Media                                |
-| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate   |
+| Band        | Categories                                                    |
+| ----------- | ------------------------------------------------------------- |
+| _(none)_    | Popular                                                       |
+| Common      | Shapes, My shapes (with a shape library), Write & Build, Draw |
+| Decorate    | Icons, Stickers, Media                                        |
+| Dynamic     | Data                                                          |
+| Collaborate | Ask, Tools, Record, React, Selection Mode, Navigate           |
 
-- **Popular** (the landing category), twelve fixed tiles: Sticky note, Text, Frame, Arrow,
-  Timer button, Vote button, Poll button, Reveal zone, Agenda, Idea box, Q&A board, Temperature
-  check.
-- **Write, Draw and Build hold what a session uses, not what a diagram or a page does.** Write is
-  Text and Sticky note (no Page, no Annotation); Draw is Pencil, Highlighter, Arrow and Line (no
-  Shape Pen, no Polygon); Build is Mind node, Table and Frame (no Lane, no Timeline). Search still
-  finds the six left out and places them, as it does any other mode's tile.
+- **Popular** (the landing category), fixed: Square, Sticky note, Text, Frame, Arrow, Image, then behind a divider **Ask**,
+  **Tools**, **Record** and **React** as openers ([Editor modes](../007-editor/editor-modes.md) "Popular"): each draws its category's glyph
+  with a chevron and opens that category's tiles in a popover under it, on a desktop and a phone.
+- **Write & Build and Draw hold what a session uses, not what a diagram or a page does.** Write & Build is Write
+  and Build as one category (Write's place and glyph): Text and Sticky note, then behind a divider Table, Checklist and Frame
+  (no Page, no Annotation, no Mind node, no Flowchart, no Lane, no Timeline, no Sankey); Draw is Pencil,
+  Highlighter, Arrow and Line (no Shape Pen, no Polygon). Search still finds those left out and places them, as it
+  does any other mode's tile.
 - **The Collaborate elements are six categories, not one.** Each group of
   [Collaborate](../010-palette/palette-top-level-categories.md#collaborate-one-category-fully-grouped)
   is its own category in a **Collaborate** band (the heading names the elements, where Dynamic
@@ -104,7 +106,12 @@ Facilitate's layout, in order:
   - **Record**: Comment panel, Action card, Agenda, Decision record, Roll call.
   - **React**: the five reaction pads.
   - **Selection Mode**: one button per selection mode.
-  - **Navigate**: Portal, Bring focus, Chair, Link card.
+  - **Navigate**: Portal, Bring focus, Chair, Desk, Sofa, Fence, Link card.
+- **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows the
+  layout as **Shapes, Draw · Icons, Stickers, Media · Data · Ask, Session**: no Popular; Write & Build and Draw as
+  one category, **Draw**, its flyout a Write section then a Draw section; and Tools, Record, React, Selection Mode
+  and Navigate gathered into **Session**, browsed in two panes (the groups down the side, a search across all of
+  them). **Ask** keeps its own button: putting a question to the room is the session's main act.
 
   In Facilitate every one of them is a tile you reach for mid-session, so a parent category was a
   click in front of each, with a group browser one level down. Six categories put every group one
@@ -113,19 +120,19 @@ Facilitate's layout, in order:
 - Technology, Components, Devices, Data and Event Storming are not offered: they build diagrams
   and pages, not sessions.
 - A **Participant** gets the participant palette Facilitate's landing category gives
-  ([Participant share role](#share-roles)): sticky notes and text from Popular, and an image.
+  ([Participant share role](#share-roles)): sticky notes and text, and an image.
 
 ## The Session strip per mode
 
 `sessionStripTools(mode, esBoard)`:
 
-| Mode       | Strip tools       |
-| ---------- | ----------------- |
-| Facilitate | Timer, Vote, Poll |
-| Plan       | Timer, Vote       |
-| Diagram    | none              |
-| Draw       | none (as today)   |
-| Illustrate | none (as today)   |
+| Mode       | Strip tools              |
+| ---------- | ------------------------ |
+| Facilitate | Timer, Vote, Poll        |
+| Plan       | Timer, Vote              |
+| Diagram    | none                     |
+| Draw       | none (as today)          |
+| Illustrate | Vote, Poll while running |
 
 - **An event-storming board keeps all three.** It is a workshop board, always Diagram, with no
   switch, so it could never reach Facilitate's strip; the tab kind brings the strip itself.
@@ -134,8 +141,10 @@ Facilitate's layout, in order:
   session button on it, or before the tab was switched out of Facilitate) runs as before and shows
   on its own canvas element, but its strip button and popover do not: watching turnout, ending a
   poll or keeping its results is done from Facilitate (or Plan for a timer or vote). This is the
-  same rule Draw and Illustrate already follow, and the price of a Diagram mode with no session
-  chrome.
+  same rule Draw already follows, and the price of a Diagram mode with no session chrome.
+- **Illustrate shows a running Vote or Poll only.** Nothing is started from its strip (the session
+  buttons on a page do that), but once a vote or poll runs, its button and popover appear for
+  everyone so it can be watched and ended, and go again when it ends. It never shows a Timer.
 - A popover whose button leaves (a mode switch, the tool ending) closes, as today.
 
 ## Templates
@@ -145,9 +154,17 @@ Session templates open in Facilitate, as the Draw templates open in Draw
 
 - the Retrospectives family's `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`
   and `sailboat` (`team-retro` stays in Plan: it is a board of cards);
-- `town-hall`, `lean-coffee`, `crazy-eights` and `meeting-agenda`;
+- `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board` and `brainstorm`;
 - the boards that ship a dot vote, `affinity-map`, `prioritization-matrix` and `risk-matrix`, since
-  only a mode with a Session strip can watch, end and keep that vote.
+  only a mode with a Session strip can watch, end and keep that vote;
+- the boards a team fills in together: `incident-postmortem`, `user-persona`, `objectives-planner`,
+  `roadmap`, `raci-matrix`, `user-story-map`, `business-model-canvas`, `stakeholder-map` and
+  `opportunity-solution-tree` (grouped in Start Facilitating under Retrospectives, Workshops, Planning
+  and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#facilitate-templates));
+- the quizzes and games, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather` and
+  `people-bingo` ([Quiz and game templates](quiz-and-game-templates.md));
+- the spaces to walk round in Avatar mode, `virtual-office`, `coworking-space`, `team-pod` and `all-hands-hall`
+  ([Virtual Office template](virtual-office-template.md)).
 
 Brainstorm mind maps stay in Diagram and the drawn warm-ups (`doodle-warmup`, `pre-mortem`,
 `idea-garden`) stay in Draw.

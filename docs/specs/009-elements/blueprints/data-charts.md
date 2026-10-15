@@ -86,8 +86,12 @@ On the canvas `themeRamp = themeChartPalette(getTheme(activeTab.theme))`; in the
 palette entry's stroke, then accent tints and shades, then the text colour, deduplicated; it is
 never empty.
 
-Legend element ladder: `item.color ?? (chartPaletteColors(chartPalette) ?? PIE_PALETTE)[i % n]`;
-the theme ramp is not consulted [QE3].
+Every ladder goes through `chartRamp(chartPalette, themeRamp)` (`chart-palettes.ts`): the element's
+palette, then the theme ramp, then `PIE_PALETTE`. The legend element's is
+`item.color ?? chartRamp(chartPalette, themeRamp)[i % n]`, on the canvas (`LegendView`, fed the
+canvas ramp) and in the export (`svgLegendShape`, fed `opts.chartPalette`), so a legend matches the
+chart beside it on any theme. The menu's data-row swatches read the same ladder through
+`chartThemeRamp`.
 
 ### Layout (`chartFrame`)
 
@@ -155,8 +159,9 @@ independent of the key (D106).
 5. Style band: Colours and Border are hidden; **Presets** shows `ChartPalettePresets` (eight
    tiles, hover previews, click commits `'ChartPalette'`) and a Reset that clears `chartPalette`
    [GE1]. The quick style panel offers no colour row on a chart [GE18].
-6. Legend element, Tools flyout, **Legend** section: `LegendDataEditor` (rows) and
-   `LegendTextSize`.
+6. Legend element, Tools flyout, **Legend** section: `LegendDataEditor` (rows),
+   `LegendTextSize`, then a **Palette** caption over `ChartPalettePresets`, whose reset commits
+   `applyChartPaletteToEl(el, null)` (back to the theme's ramp).
 
 ### Setters (`useChartSetters`, `makeShapePatcher({ matches: isChartShape })`)
 
@@ -325,7 +330,7 @@ fallbacks are silent [GE12].
 | Every kind renders without NaN                   | never emits NaN or undefined                                                                                                               | `packages/document/src/svg-render-coverage.test.ts`               |
 | Ladder: datum > chart palette > theme > built-in | partial (`chartFrame` only); none for `themeChartPalette` [GE11]                                                                           |                                                                   |
 | Reset clears the palette                         | none [GE1]                                                                                                                                 |                                                                   |
-| Legend matches an adjacent chart                 | none [QE3]                                                                                                                                 |                                                                   |
+| Legend matches an adjacent chart                 | exported legend takes the theme ramp                                                                                                       | `packages/document/src/chart-palettes.test.ts`                    |
 | Grow / pop once, spin / pulse loop               | none [GE11]                                                                                                                                |                                                                   |
 | Readout on hover regardless of the key           | none [GE11]                                                                                                                                |                                                                   |
 

@@ -13,7 +13,12 @@
 // parameters are derived from the `{param}` placeholders in `path` by
 // document.ts, so they aren't repeated here.
 
-import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livediagram/api-schema';
+import {
+  LINT_VIEW_NAME,
+  TAB_VIEW_NAMES,
+  TEAM_RECENT_INCLUDE,
+  TEAM_RECENT_LIMIT,
+} from '@livediagram/api-schema';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livediagram/document-views';
 import type { BodySchema } from './types';
@@ -270,7 +275,33 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: "List the caller's documents (metadata only, no tab contents).",
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    responseSchema: listOf('documents', 'DocumentSummary'),
+    query: [
+      {
+        name: 'include',
+        required: false,
+        description: `${TEAM_RECENT_INCLUDE} adds \`teamRecent\`: the ${TEAM_RECENT_LIMIT} newest non-empty documents of the teams the caller has joined, newest first, each with its \`teamName\`.`,
+      },
+    ],
+    responseSchema: {
+      type: 'object',
+      properties: {
+        documents: { type: 'array', items: ref('DocumentSummary') },
+        teamRecent: {
+          type: 'array',
+          items: {
+            allOf: [
+              ref('DocumentSummary'),
+              {
+                type: 'object',
+                properties: { teamName: { type: 'string' } },
+                required: ['teamName'],
+              },
+            ],
+          },
+        },
+      },
+      required: ['documents'],
+    },
     statuses: [200, 401],
   },
   {
@@ -1210,7 +1241,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['id', 'name'],
     },
     responseSchema: wrap('folder', 'Folder'),
-    statuses: [201, 400, 401, 403, 404],
+    statuses: [201, 400, 401, 403, 404, 409],
   },
   {
     method: 'PUT',
@@ -2004,6 +2035,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Teams',
     summary: "List the caller's teams.",
     auth: 'clerk',
+    tokenUsable: true,
     responseSchema: listOf('teams', 'TeamListItem'),
     statuses: [200, 401],
   },
@@ -2062,6 +2094,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Teams',
     summary: 'Get a team with its members and (for admins) its invite link.',
     auth: 'clerk',
+    tokenUsable: true,
     responseSchema: { type: 'object' },
     statuses: [200, 401, 404],
   },
@@ -2221,6 +2254,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Teams',
     summary: "Get a team's shared folder tree and documents (joined member).",
     auth: 'clerk',
+    tokenUsable: true,
     responseSchema: {
       type: 'object',
       properties: {

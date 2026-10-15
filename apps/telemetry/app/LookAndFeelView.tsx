@@ -9,7 +9,7 @@ import {
   type TelemetryWindowKey,
 } from '@livediagram/api-schema';
 import { useCategoryColor } from './useCategoryColor';
-import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './look-feel-types';
+import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES, isNonThemePick } from './look-feel-types';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
 import { CardColumns } from './CardColumns';
@@ -43,8 +43,7 @@ export function LookAndFeelView({
   const templates = rank(rows, (r) => r.category === 'Template' && r.action === 'Used');
   const themes = rank(
     rows,
-    (r) =>
-      r.category === 'Theme' && r.action === 'Changed' && !CUSTOM_THEME_TYPES.has(r.type ?? ''),
+    (r) => r.category === 'Theme' && r.action === 'Changed' && !isNonThemePick(r.type),
     THEME_ALIASES,
   );
   const canvas = rank(
@@ -134,7 +133,7 @@ function CustomThemeCard({
       <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
         Custom Theme Builder
       </h3>
-      <p className="mt-0.5 text-xs text-slate-400">
+      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
         Building, applying, and tweaking bespoke palettes
       </p>
       {anyData ? (
@@ -146,7 +145,7 @@ function CustomThemeCard({
                 key={m.label}
                 className="rounded-lg border border-slate-200 p-3 dark:border-slate-700"
               >
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   {m.label}
                 </p>
                 <div className="mt-1 flex items-end justify-between gap-2">

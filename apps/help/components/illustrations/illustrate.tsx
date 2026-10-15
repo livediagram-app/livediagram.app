@@ -1,13 +1,22 @@
 // Illustrate mode illustrations for the Canvas articles on Illustrate Mode, Infographic Layouts,
 // Exporting and Presenting Pages and Writing Articles (docs/specs/018-help/help-app.md). Each draws
-// the real surface with its real labels: the pages in a row with their labels, cogs, navigator and
-// add button (IllustratePages.tsx, PageNavigator.tsx, AddPageButton.tsx), the page panel
-// (IllustratePagePanel.tsx, illustrate-page-panel-sections.tsx), the Layouts browser
-// (infographic-page-layouts-section.tsx), the export page picker (ExportPagePicker.tsx) and the
+// the real surface with its real labels: the pages in a row with their labels, title-bar buttons,
+// cogs, navigator and add button (IllustratePages.tsx, PageNavigator.tsx, AddPageButton.tsx), the
+// page panel (IllustratePagePanel.tsx, illustrate-page-panel-sections.tsx), the Layout button's
+// popover (PageLayoutsButton.tsx, infographic-page-layouts-section.tsx), the export page picker (ExportPagePicker.tsx) and the
 // article formatting toolbar (article/PageToolbar.tsx). Composed from the shared primitives.
 
 import type { ReactNode } from 'react';
 import { Scene, Label, TextBar, Tabs } from './primitives';
+import {
+  BackgroundGlyph,
+  LayoutGlyph,
+  PadlockGlyph,
+  TidyUpGlyph,
+  TitleButton,
+  TitleIcon,
+  titleButtonWidth,
+} from './page-title-bar';
 
 // --- Shared bits -------------------------------------------------------------------------------
 
@@ -140,15 +149,29 @@ function SolidSegments({
 
 // --- Pages in a row ----------------------------------------------------------------------------
 
-/** Two pages in a row: each with its label above its top-left corner and its cog above its
- *  top-right, the page navigator under the first, and the + after the last. */
+/** An infographic page's title-bar buttons as icons alone (the page too small on screen to name
+ *  them): Layout, Background, Tidy and the padlock, left of the cog at `cogX`. */
+function PageIcons({ cogX, cy }: { cogX: number; cy: number }) {
+  return (
+    <g>
+      <TitleIcon cx={cogX - 70} cy={cy} Glyph={LayoutGlyph} />
+      <TitleIcon cx={cogX - 54} cy={cy} Glyph={BackgroundGlyph} />
+      <TitleIcon cx={cogX - 38} cy={cy} Glyph={TidyUpGlyph} />
+      <TitleIcon cx={cogX - 22} cy={cy} Glyph={PadlockGlyph} />
+    </g>
+  );
+}
+
+/** Two pages in a row: each with its label above its top-left corner and its buttons and cog
+ *  above its top-right, the page navigator under the first, and the + after the last. */
 export function IllustratePagesScene() {
   return (
     <Scene w={480} h={250}>
       {/* Page 1: A4 landscape, a title and a small chart */}
       <Label x={20} y={38} size={9} weight={600} tone="body">
-        Page 1 · A4 · Landscape · Infographic
+        Page 1 · A4 · Landscape
       </Label>
+      <PageIcons cogX={211} cy={38} />
       <Cog cx={211} cy={38} />
       <Sheet x={20} y={52} w={200} h={141}>
         <TextBar x={36} y={68} w={110} h={9} tone="accent" />
@@ -203,8 +226,9 @@ export function IllustratePagesScene() {
       </g>
       {/* Page 2: a square social post */}
       <Label x={244} y={38} size={9} weight={600} tone="body">
-        Page 2 · Square · Infographic
+        Page 2 · Square
       </Label>
+      <PageIcons cogX={395} cy={38} />
       <Cog cx={395} cy={38} />
       <Sheet x={244} y={52} w={160} h={160}>
         <rect x={244} y={52} width={160} height={160} rx={2} className="fill-brand-50" />
@@ -248,6 +272,7 @@ export function IllustratePagesScene() {
 
 // --- The page panel ----------------------------------------------------------------------------
 
+// An infographic page's six sizes (a slide size is a slide page's alone).
 const SIZE_TILES: { label: string; w: number; h: number }[] = [
   { label: 'A4', w: 10, h: 14 },
   { label: 'Letter', w: 11, h: 14 },
@@ -255,12 +280,12 @@ const SIZE_TILES: { label: string; w: number; h: number }[] = [
   { label: 'Square', w: 13, h: 13 },
   { label: 'Post', w: 11, h: 14 },
   { label: 'Story', w: 8, h: 14 },
-  { label: 'Slide', w: 16, h: 9 },
 ];
 
-/** The page panel open beside its page, on its Page tab: the name, the Page, Background and
- *  Layouts tabs, the Size tiles four to a row (an infographic's seven, Slide last), Portrait and
- *  Landscape, and the page actions along the bottom. The backgrounds have a tab of their own. */
+/** An infographic page's panel open beside it: the name (Untitled page, the tab's only page), the
+ *  Size tiles four to a row, Portrait and Landscape, and the page actions along the bottom. Its
+ *  one section needs no tabs: the page's layouts and background are on the title bar's buttons,
+ *  drawn as icons beside the lit cog. */
 export function PagePanelScene() {
   const px = 196;
   const pw = 230;
@@ -269,23 +294,24 @@ export function PagePanelScene() {
   const gap = 4;
   const tw = (pw - 20 - (cols - 1) * gap) / cols;
   return (
-    <Scene w={436} h={262}>
+    <Scene w={436} h={266}>
       {/* The page, its cog lit while its panel is open */}
-      <Label x={20} y={50} size={10} weight={600} tone="body">
-        Page 2 · A4 · Portrait
+      <Label x={20} y={32} size={10} weight={600} tone="body">
+        A4 · Portrait
       </Label>
-      <Cog cx={161} cy={50} on />
-      <Sheet x={30} y={64} w={130} h={180}>
-        <TextBar x={46} y={84} w={84} h={9} tone="accent" />
-        <TextBar x={46} y={102} w={60} />
-        <rect x={46} y={120} width={98} height={104} rx={4} className="fill-brand-50" />
+      <PageIcons cogX={161} cy={32} />
+      <Cog cx={161} cy={32} on />
+      <Sheet x={20} y={46} w={150} h={212}>
+        <TextBar x={36} y={70} w={90} h={9} tone="accent" />
+        <TextBar x={36} y={88} w={66} />
+        <rect x={36} y={106} width={118} height={136} rx={4} className="fill-brand-50" />
       </Sheet>
       {/* The panel */}
       <rect
         x={px}
         y={10}
         width={pw}
-        height={244}
+        height={234}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -300,22 +326,14 @@ export function PagePanelScene() {
         strokeWidth={1.2}
       />
       <Label x={ix + 8} y={31.5} size={11} tone="muted">
-        Page 2
+        Untitled page
       </Label>
-      <Tabs
-        x={ix}
-        y={50}
-        items={['Page', 'Background', 'Layouts']}
-        active={0}
-        tabW={(pw - 20) / 3}
-        h={22}
-      />
-      <SectionTitle x={ix} y={88}>
+      <SectionTitle x={ix} y={60}>
         Size
       </SectionTitle>
       {SIZE_TILES.map((t, i) => {
         const tx = ix + (i % cols) * (tw + gap);
-        const ty = 96 + Math.floor(i / cols) * 40;
+        const ty = 68 + Math.floor(i / cols) * 40;
         const on = i === 0;
         return (
           <g key={t.label}>
@@ -351,27 +369,27 @@ export function PagePanelScene() {
           </g>
         );
       })}
-      <SectionTitle x={ix} y={188}>
+      <SectionTitle x={ix} y={164}>
         Orientation
       </SectionTitle>
       <Tabs
         x={ix}
-        y={196}
+        y={172}
         items={['Portrait', 'Landscape']}
         active={0}
         tabW={(pw - 20) / 2}
         h={22}
       />
       {/* Page actions: duplicate, move left, move right, delete */}
-      <line x1={px} y1={230} x2={px + pw} y2={230} className="stroke-slate-100" strokeWidth={1.2} />
+      <line x1={px} y1={210} x2={px + pw} y2={210} className="stroke-slate-100" strokeWidth={1.2} />
       <g className="stroke-slate-500" fill="none" strokeWidth={1.5} strokeLinecap="round">
-        <rect x={ix + 6} y={236} width={9} height={9} rx={2} />
-        <rect x={ix + 9} y={239} width={9} height={9} rx={2} />
-        <path d={`M${ix + 40} 237 l-4 4.5 l4 4.5`} />
-        <path d={`M${ix + 62} 237 l4 4.5 l-4 4.5`} />
+        <rect x={ix + 6} y={218} width={9} height={9} rx={2} />
+        <rect x={ix + 9} y={221} width={9} height={9} rx={2} />
+        <path d={`M${ix + 40} 219 l-4 4.5 l4 4.5`} />
+        <path d={`M${ix + 62} 219 l4 4.5 l-4 4.5`} />
       </g>
       <path
-        d={`M${ix + 86} 238 h10 M${ix + 88} 238 v8 h6 v-8 M${ix + 89.5} 236 h3`}
+        d={`M${ix + 86} 220 h10 M${ix + 88} 220 v8 h6 v-8 M${ix + 89.5} 218 h3`}
         fill="none"
         className="stroke-rose-500"
         strokeWidth={1.4}
@@ -383,135 +401,302 @@ export function PagePanelScene() {
 
 // --- The Layouts browser -----------------------------------------------------------------------
 
-const LAYOUT_CATEGORIES: [string, number][] = [
-  ['Covers', 5],
-  ['Data', 8],
-  ['Steps and Time', 7],
-  ['Compare', 4],
-  ['People and Ideas', 4],
-  ['Social', 3],
+// The eight infographic categories in the order the browser shows them, with how many each holds
+// and the name's width at 10 units semibold (measured), so a card centres its name and count.
+const LAYOUT_CATEGORIES: [string, number, number][] = [
+  ['Covers', 12, 35],
+  ['Posters', 11, 38.5],
+  ['Data', 12, 23.5],
+  ['Steps and Time', 12, 78],
+  ['Compare', 12, 45.5],
+  ['People and Ideas', 12, 86],
+  ['Social', 12, 30.5],
+  ['Explainers', 9, 52.5],
 ];
 
-/** Two small fanned pages fronting a category card. */
-function FannedPages({ cx, cy, i }: { cx: number; cy: number; i: number }) {
+// A category card's front tile is a landscape page (the scene's page is A4 landscape).
+const THUMB_W = 52;
+const THUMB_H = 37;
+
+/** A small landscape layout tile, drawn as the card's front (each category's own look) or as the
+ *  plainer layout peeking behind it. */
+function MiniLayout({ x, y, motif }: { x: number; y: number; motif: number | 'back' }) {
+  const W = THUMB_W;
+  const H = THUMB_H;
+  let body: ReactNode;
+  switch (motif) {
+    case 0: // Covers: a title over a line beside a picture
+      body = (
+        <g>
+          <TextBar x={x + 5} y={y + 10} w={22} h={4} tone="accent" />
+          <TextBar x={x + 5} y={y + 18} w={17} h={2.5} />
+          <rect x={x + 5} y={y + 23} width={8} height={1.5} className="fill-brand-500" />
+          <rect x={x + 31} y={y + 6} width={16} height={25} rx={1} className="fill-brand-100" />
+        </g>
+      );
+      break;
+    case 1: // Posters: a big image over a bold headline
+      body = (
+        <g>
+          <rect x={x + 4} y={y + 4} width={W - 8} height={17} rx={1} className="fill-brand-200" />
+          <TextBar x={x + 4} y={y + 24} w={30} h={4} tone="accent" />
+          <TextBar x={x + 4} y={y + 31} w={20} h={2.5} />
+        </g>
+      );
+      break;
+    case 2: // Data: a title and a bar chart
+      body = (
+        <g>
+          <TextBar x={x + 5} y={y + 5} w={20} h={3.5} tone="accent" />
+          {[10, 17, 13, 21, 15].map((bh, i) => (
+            <rect
+              key={i}
+              x={x + 7 + i * 8}
+              y={y + 32 - bh}
+              width={5}
+              height={bh}
+              rx={0.8}
+              className="fill-brand-400"
+            />
+          ))}
+        </g>
+      );
+      break;
+    case 3: // Steps and Time: discs joined along a line, a note under each
+      body = (
+        <g>
+          <TextBar x={x + 5} y={y + 5} w={20} h={3.5} tone="accent" />
+          <line
+            x1={x + 9}
+            y1={y + 19}
+            x2={x + W - 9}
+            y2={y + 19}
+            className="stroke-brand-300"
+            strokeWidth={1}
+          />
+          {[0, 1, 2, 3].map((i) => (
+            <g key={i}>
+              <circle cx={x + 9 + i * 11.3} cy={y + 19} r={3} className="fill-brand-500" />
+              <TextBar x={x + 6 + i * 11.3} y={y + 26} w={7} h={2} />
+            </g>
+          ))}
+        </g>
+      );
+      break;
+    case 4: // Compare: two columns of points under their heads
+      body = (
+        <g>
+          {[0, 1].map((c) => (
+            <g key={c}>
+              <TextBar x={x + 5 + c * 23} y={y + 6} w={14} h={3.5} tone="accent" />
+              {[0, 1, 2].map((r) => (
+                <g key={r}>
+                  <circle
+                    cx={x + 6.5 + c * 23}
+                    cy={y + 15 + r * 6}
+                    r={1.4}
+                    className={c === 0 ? 'fill-emerald-500' : 'fill-rose-500'}
+                  />
+                  <TextBar x={x + 9.5 + c * 23} y={y + 14 + r * 6} w={11} h={2} />
+                </g>
+              ))}
+            </g>
+          ))}
+          <line
+            x1={x + W / 2}
+            y1={y + 5}
+            x2={x + W / 2}
+            y2={y + 31}
+            className="stroke-slate-200"
+            strokeWidth={0.8}
+          />
+        </g>
+      );
+      break;
+    case 5: // People and Ideas: three round photos, a name under each
+      body = (
+        <g>
+          <TextBar x={x + 5} y={y + 5} w={20} h={3.5} tone="accent" />
+          {[0, 1, 2].map((i) => (
+            <g key={i}>
+              <circle cx={x + 12 + i * 14} cy={y + 19} r={4.5} className="fill-brand-200" />
+              <TextBar x={x + 8 + i * 14} y={y + 27} w={8} h={2} />
+            </g>
+          ))}
+        </g>
+      );
+      break;
+    case 6: // Social: a badge, a big figure and a button
+      body = (
+        <g>
+          <rect x={x + 18} y={y + 5} width={16} height={4} rx={2} className="fill-brand-200" />
+          <TextBar x={x + 12} y={y + 13} w={28} h={7} tone="accent" />
+          <TextBar x={x + 16} y={y + 23} w={20} h={2} />
+          <rect x={x + 19} y={y + 28} width={14} height={4} rx={2} className="fill-brand-500" />
+        </g>
+      );
+      break;
+    case 7: // Explainers: a big idea in a hub and the ideas round it
+      body = (
+        <g>
+          {[
+            [-15, -9],
+            [15, -9],
+            [-15, 9],
+            [15, 9],
+          ].map(([dx, dy], i) => (
+            <g key={i}>
+              <line
+                x1={x + W / 2}
+                y1={y + H / 2}
+                x2={x + W / 2 + dx!}
+                y2={y + H / 2 + dy!}
+                className="stroke-brand-300"
+                strokeWidth={0.9}
+              />
+              <circle cx={x + W / 2 + dx!} cy={y + H / 2 + dy!} r={3} className="fill-brand-200" />
+            </g>
+          ))}
+          <circle cx={x + W / 2} cy={y + H / 2} r={6} className="fill-brand-500" />
+        </g>
+      );
+      break;
+    default: // The layout behind: a title and a few lines
+      body = (
+        <g>
+          <TextBar x={x + 5} y={y + 6} w={22} h={3.5} tone="accent" />
+          <TextBar x={x + 5} y={y + 14} w={36} h={2.5} tone="faint" />
+          <TextBar x={x + 5} y={y + 20} w={30} h={2.5} tone="faint" />
+          <TextBar x={x + 5} y={y + 26} w={33} h={2.5} tone="faint" />
+        </g>
+      );
+  }
   return (
     <g>
-      <g transform={`rotate(-8 ${cx} ${cy})`}>
-        <rect
-          x={cx - 22}
-          y={cy - 15}
-          width={22}
-          height={30}
-          rx={2}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1}
-        />
-        <TextBar x={cx - 18} y={cy - 9} w={12} h={3} tone="faint" />
-      </g>
-      <g transform={`rotate(6 ${cx} ${cy})`}>
-        <rect
-          x={cx - 4}
-          y={cy - 16}
-          width={22}
-          height={30}
-          rx={2}
-          className="fill-white stroke-slate-300"
-          strokeWidth={1}
-        />
-        <TextBar x={cx} y={cy - 10} w={14} h={3} tone="accent" />
-        {i % 2 === 0 ? (
-          <rect x={cx} y={cy - 3} width={14} height={9} rx={1} className="fill-brand-100" />
-        ) : (
-          <g>
-            <TextBar x={cx} y={cy - 2} w={13} h={2.5} tone="faint" />
-            <TextBar x={cx} y={cy + 3} w={10} h={2.5} tone="faint" />
-          </g>
-        )}
-      </g>
+      <rect
+        x={x}
+        y={y}
+        width={W}
+        height={H}
+        rx={1.5}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1}
+      />
+      {body}
     </g>
   );
 }
 
-/** An empty infographic page with Start from a layout in its title bar, and the panel's
- *  Layouts tab open on the six categories, each with how many layouts it holds. */
+/** An infographic page's title bar with its Layout button pressed, and the Layout popover open
+ *  under it on the eight categories: each a card fronted by its first two layouts (drawn upright,
+ *  the second peeking behind the first), its name and how many layouts it holds. */
 export function LayoutCategoriesScene() {
-  const px = 182;
-  const pw = 244;
-  const ix = px + 10;
-  const cw = (pw - 20 - 8) / 2;
+  // The page: A4 landscape, its only page, so its label is its size alone.
+  const pageX = 20;
+  const pageW = 360;
+  const right = pageX + pageW;
+  const barY = 32;
+  // The title bar from the right: the cog, the padlock, Tidy (its icon alone), then Background
+  // and Layout, named, the gaps the title bar's own.
+  const tidyCx = right - 18 - 4 - 22 - 4 - 10;
+  const bgX = tidyCx - 10 - 4 - titleButtonWidth('Background');
+  const layoutX = bgX - 4 - titleButtonWidth('Layout');
+  // The popover, left-aligned under the Layout button: four cards across.
+  const cols = 4;
+  const cw = 110;
+  const ch = 88;
+  const gap = 6;
+  const pad = 10;
+  const popX = layoutX;
+  const popY = barY + 16;
+  const popW = pad * 2 + cols * cw + (cols - 1) * gap;
+  const popH = pad * 2 + 2 * ch + gap;
   return (
-    <Scene w={436} h={272}>
-      {/* The empty page and its title bar */}
-      <g>
-        <rect
-          x={20}
-          y={34}
-          width={124}
-          height={22}
-          rx={7}
-          className="fill-white stroke-slate-300"
-          strokeWidth={1.2}
-        />
-        <rect
-          x={28}
-          y={41}
-          width={8}
-          height={8}
-          rx={1.5}
-          fill="none"
-          className="stroke-brand-500"
-          strokeWidth={1.3}
-        />
-        <Label x={41} y={45.5} size={10} weight={600} tone="body">
-          Start from a layout
-        </Label>
-      </g>
-      <Cog cx={160} cy={45} on />
-      <Sheet x={20} y={62} w={148} h={180} />
-      {/* The panel, on its Layouts tab */}
+    <Scene w={popX + popW + 12} h={318}>
+      {/* The title bar */}
+      <Label x={pageX} y={barY} size={10} weight={600} tone="body">
+        A4 · Landscape
+      </Label>
+      <TitleButton x={layoutX} cy={barY} name="Layout" on Glyph={LayoutGlyph} />
+      <TitleButton x={bgX} cy={barY} name="Background" Glyph={BackgroundGlyph} />
+      <TitleIcon cx={tidyCx} cy={barY} Glyph={TidyUpGlyph} />
+      <PadlockGlyph cx={right - 18 - 4 - 11} cy={barY} />
+      <Cog cx={right - 9} cy={barY} />
+      {/* The page, with what is on it now: a layout placed over it replaces it, one Undo back */}
+      <Sheet x={pageX} y={barY + 14} w={pageW} h={255}>
+        <TextBar x={pageX + 18} y={barY + 34} w={78} h={10} tone="accent" />
+        <TextBar x={pageX + 18} y={barY + 54} w={60} />
+        <TextBar x={pageX + 18} y={barY + 66} w={70} tone="faint" />
+        <TextBar x={pageX + 18} y={barY + 76} w={52} tone="faint" />
+        {[34, 52, 42, 64, 48].map((bh, i) => (
+          <rect
+            key={i}
+            x={pageX + 22 + i * 18}
+            y={barY + 248 - bh}
+            width={11}
+            height={bh}
+            rx={2}
+            className="fill-brand-400"
+          />
+        ))}
+      </Sheet>
+      {/* The popover, its soft shadow under it */}
       <rect
-        x={px}
-        y={10}
-        width={pw}
-        height={252}
-        rx={10}
+        x={popX + 2}
+        y={popY + 3}
+        width={popW}
+        height={popH}
+        rx={9}
+        className="fill-slate-200"
+      />
+      <rect
+        x={popX}
+        y={popY}
+        width={popW}
+        height={popH}
+        rx={9}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={1.3}
       />
-      <Tabs
-        x={ix}
-        y={20}
-        items={['Page', 'Background', 'Layouts']}
-        active={2}
-        tabW={(pw - 20) / 3}
-        h={22}
-      />
-      <SectionTitle x={ix} y={58}>
-        Start From a Layout
-      </SectionTitle>
-      {LAYOUT_CATEGORIES.map(([name, count], i) => {
-        const col = i % 2;
-        const row = Math.floor(i / 2);
-        const cx = ix + col * (cw + 8);
-        const cy = 68 + row * 64;
-        const badgeX = cx + cw - 20;
+      {LAYOUT_CATEGORIES.map(([name, count, textW], i) => {
+        const cx = popX + pad + (i % cols) * (cw + gap);
+        const cy = popY + pad + Math.floor(i / cols) * (ch + gap);
+        const mid = cx + cw / 2;
+        const badgeW = count > 9 ? 18 : 14;
+        const startX = mid - (textW + 5 + badgeW) / 2;
         return (
           <g key={name}>
             <rect
               x={cx}
               y={cy}
               width={cw}
-              height={58}
+              height={ch}
               rx={7}
               className="fill-slate-50 stroke-slate-200"
               strokeWidth={1}
             />
-            <FannedPages cx={cx + cw / 2} cy={cy + 22} i={i} />
-            <Label x={cx + 8} y={cy + 49} size={10} weight={600} tone="strong">
+            {/* The second layout behind, the first in front, offset as the real card sets them */}
+            <MiniLayout x={mid - THUMB_W / 2 + 9} y={cy + 9} motif="back" />
+            <MiniLayout x={mid - THUMB_W / 2 - 9} y={cy + 15} motif={i} />
+            <Label x={startX} y={cy + 72} size={10} weight={600} tone="strong">
               {name}
             </Label>
-            <rect x={badgeX} y={cy + 6} width={14} height={13} rx={4} className="fill-slate-200" />
-            <Label x={badgeX + 7} y={cy + 13} anchor="middle" size={10} weight={600} tone="body">
+            <rect
+              x={startX + textW + 5}
+              y={cy + 65.5}
+              width={badgeW}
+              height={13}
+              rx={6.5}
+              className="fill-slate-200"
+            />
+            <Label
+              x={startX + textW + 5 + badgeW / 2}
+              y={cy + 72.5}
+              anchor="middle"
+              size={10}
+              weight={600}
+              tone="body"
+            >
               {String(count)}
             </Label>
           </g>
@@ -563,7 +748,7 @@ export function ExportPagePickerScene() {
         strokeWidth={1.2}
       />
       <Label x={52} y={122.5} size={10} tone="body">
-        Preview: Page 1 · A4 · Portrait · Infographic
+        Preview: Page 1 · A4 · Portrait
       </Label>
       <path
         d="M362 120 l3.5 3.5 l3.5 -3.5"

@@ -56,6 +56,13 @@ export const DRAWIO_MARKERS: Record<string, Marker> = {
   box: { shape: 'diamond', exact: false },
   halfCircle: { shape: 'circle', exact: false },
   circlePlus: { shape: 'circle', exact: false },
+  // The ER ends; `ERone` is a single bar, drawn as the two-bar one.
+  ERmandOne: { shape: 'one', exact: true },
+  ERone: { shape: 'one', exact: false },
+  ERzeroToOne: { shape: 'zero-or-one', exact: true },
+  ERmany: { shape: 'many', exact: true },
+  ERzeroToMany: { shape: 'zero-or-many', exact: true },
+  ERoneToMany: { shape: 'one-or-many', exact: true },
 };
 
 const HOLLOW: Partial<Record<ArrowheadShape, ArrowheadShape>> = {
@@ -151,13 +158,9 @@ export function buildArrow(input: EdgeInput, ctx: PageContext, id: string): Arro
   const end = marker(s, 'end');
   const arrowEnds = start && end ? 'both' : start ? 'from' : end ? 'to' : 'none';
   const head = (end ?? start)?.shape;
-  if (
-    (start && !start.exact) ||
-    (end && !end.exact) ||
-    (start && end && start.shape !== end.shape)
-  ) {
-    ctx.tally.add('arrowhead-approximated');
-  }
+  if ((start && !start.exact) || (end && !end.exact)) ctx.tally.add('arrowhead-approximated');
+  // Two different heads keep both: the start's as its own (an ER relationship's two cardinalities).
+  const startHead = start && end && start.shape !== end.shape ? start.shape : undefined;
   const stroke = readInk(s.str('strokeColor'));
   const width = s.num('strokeWidth') ?? 1;
   const headSize = arrowheadSizePreset(
@@ -203,6 +206,7 @@ export function buildArrow(input: EdgeInput, ctx: PageContext, id: string): Arro
     routeBehind: false,
     ...(arrowEnds !== 'to' ? { arrowEnds } : {}),
     ...(head && head !== 'triangle' ? { arrowheadShape: head } : {}),
+    ...(startHead ? { arrowheadStartShape: startHead } : {}),
     ...(headSize !== 'medium' ? { arrowheadSize: headSize } : {}),
     ...(shape.arrowStyle !== 'straight' ? { arrowStyle: shape.arrowStyle } : {}),
     ...(shape.curvePoints ? { curvePoints: shape.curvePoints } : {}),

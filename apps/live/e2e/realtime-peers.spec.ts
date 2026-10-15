@@ -6,6 +6,7 @@ import {
   guestSigFor,
   mintSignedGuest,
   ownerHeaders,
+  paletteTile,
 } from './fixtures';
 
 // Two people on one shared document (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
@@ -30,6 +31,11 @@ async function openAs(
         if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
         localStorage.setItem('livediagram:v2:name-confirmed', '1');
       }
+      // The Facilitate tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
+      localStorage.setItem(
+        'livediagram:user-preferences:v1',
+        JSON.stringify({ facilitateTourSeen: true }),
+      );
     },
     { o: owner, sig: owner ? guestSigFor(owner) : null },
   );
@@ -58,6 +64,8 @@ test('two peers see each other, edit live, and every edit is kept', async ({
         {
           id: tabId,
           name: 'Board',
+          // Facilitate, the mode that offers Avatar in the tool picker (docs/specs/008-canvas/avatar-mode.md).
+          opensIn: 'facilitate',
           elements: [
             { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
           ],
@@ -85,18 +93,18 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   await expect.poll(() => online.count()).toBeGreaterThanOrEqual(2);
 
   // A peer's edit reaches the owner live.
-  await peerPage
-    .getByRole('button', { name: 'Add Square', exact: true })
-    .first()
-    .dragTo(peerPage.locator(CANVAS), { targetPosition: { x: 700, y: 500 } });
+  await (
+    await paletteTile(peerPage, 'Add Square')
+  ).dragTo(peerPage.locator(CANVAS), { targetPosition: { x: 700, y: 500 } });
   await peerPage.keyboard.press('Escape');
   await expect(squares(ownerPage)).toHaveCount(2);
 
   // The owner edits too; the autosave keeps both, and a reload shows both.
-  await ownerPage
-    .getByRole('button', { name: 'Add Square', exact: true })
-    .first()
-    .dragTo(ownerPage.locator(CANVAS), { targetPosition: { x: 300, y: 600 } });
+  await (
+    await paletteTile(ownerPage, 'Add Square')
+  ).dragTo(ownerPage.locator(CANVAS), {
+    targetPosition: { x: 300, y: 600 },
+  });
   await ownerPage.keyboard.press('Escape');
   await expect
     .poll(async () => {

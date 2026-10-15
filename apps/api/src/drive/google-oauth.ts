@@ -25,12 +25,18 @@ type TokenResponse = {
   error?: string;
 };
 
+// The longest one call to Google may take (its OAuth and Drive endpoints answer in well under a second):
+// past it the call fails as a network failure would, rather than hold a consent or a sync open.
+// Safe range: 3 s to 30 s.
+export const GOOGLE_CALL_TIMEOUT_MS = 10_000;
+
 async function postForm(url: string, form: Record<string, string>): Promise<Response> {
   try {
     return await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(form).toString(),
+      signal: AbortSignal.timeout(GOOGLE_CALL_TIMEOUT_MS),
     });
   } catch (err) {
     throw new GoogleOAuthError('failed', err instanceof Error ? err.message : 'network');

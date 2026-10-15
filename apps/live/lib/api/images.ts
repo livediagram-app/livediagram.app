@@ -10,6 +10,7 @@ import {
   apiFetch,
   getWorkbenchConfinement,
 } from './core';
+import { blobToDataUrl } from '@/lib/blob-data-url';
 
 // Listing the owner's gallery. Returns null when the server reports
 // 503 (R2 not provisioned on this deployment), letting the picker
@@ -156,13 +157,4 @@ async function fetchImage(
   const headers = new Headers(await apiHeaders(ownerId, { share: opts.shareCode ?? null }));
   const res = await apiFetch(url, { headers });
   return res.ok ? res : null;
-}
-
-function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error ?? new Error('image read failed'));
-    reader.readAsDataURL(blob);
-  });
 }

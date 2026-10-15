@@ -16,6 +16,10 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'pre-mortem': 'draw',
   'idea-garden': 'draw',
   'blank-illustration': 'illustrate',
+  'blank-slide-deck': 'illustrate',
+  'blank-article': 'illustrate',
+  'blank-infographic': 'illustrate',
+  'blank-logo': 'illustrate',
   article: 'illustrate',
   'slide-deck': 'illustrate',
   'logo-design': 'illustrate',
@@ -28,6 +32,16 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'how-it-works': 'illustrate',
   versus: 'illustrate',
   'social-carousel': 'illustrate',
+  'launch-keynote': 'illustrate',
+  'quarterly-review': 'illustrate',
+  'team-welcome': 'illustrate',
+  'workshop-kickoff': 'illustrate',
+  // Design templates (template-design-pages.ts): drawn on a page sized for what each is.
+  'floor-plan': 'illustrate',
+  storyboard: 'illustrate',
+  'browser-wireframe': 'illustrate',
+  'laptop-wireframe': 'illustrate',
+  'mobile-wireframe': 'illustrate',
   // Plan templates (docs/specs/026-plan/plan-templates.md).
   'blank-plan': 'plan',
   'blank-spreadsheet': 'plan',
@@ -63,12 +77,34 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   sailboat: 'facilitate',
   'town-hall': 'facilitate',
   'lean-coffee': 'facilitate',
+  brainstorm: 'facilitate',
+  'workshop-board': 'facilitate',
   'crazy-eights': 'facilitate',
   'meeting-agenda': 'facilitate',
+  // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): run on quiz cards, pickers and polls.
+  'pub-quiz': 'facilitate',
+  'icebreaker-questions': 'facilitate',
+  'virtual-office': 'facilitate',
+  'coworking-space': 'facilitate',
+  'team-pod': 'facilitate',
+  'all-hands-hall': 'facilitate',
+  'two-truths-and-a-lie': 'facilitate',
+  'would-you-rather': 'facilitate',
+  'people-bingo': 'facilitate',
   // Boards that ship a dot vote: only Facilitate's Session strip can watch, end and keep a vote.
   'affinity-map': 'facilitate',
   'prioritization-matrix': 'facilitate',
   'risk-matrix': 'facilitate',
+  // Boards a team fills in together in a session, rather than a diagram one person draws.
+  'incident-postmortem': 'facilitate',
+  'objectives-planner': 'facilitate',
+  roadmap: 'facilitate',
+  'raci-matrix': 'facilitate',
+  'user-story-map': 'facilitate',
+  'business-model-canvas': 'facilitate',
+  'stakeholder-map': 'facilitate',
+  'opportunity-solution-tree': 'facilitate',
+  'user-persona': 'facilitate',
 };
 
 /** The mode a template's tab opens in. */
@@ -86,10 +122,17 @@ export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>>
 };
 
 // The blanks beyond each mode's own (docs/specs/007-editor/templates-by-mode.md "The blanks"): Blank Spreadsheet, an
-// empty Sheet, beside Blank Plan.
-export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = ['blank-spreadsheet'];
+// empty Sheet, beside Blank Plan; the blanks of a page kind ("Blanks of a page kind"), one empty page of a chosen kind,
+// beside Blank Illustration, in the order the landing page's Blank Slate lists them.
+export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [
+  'blank-slide-deck',
+  'blank-article',
+  'blank-infographic',
+  'blank-logo',
+  'blank-spreadsheet',
+];
 
-/** True for the blanks: each mode's, and Blank Spreadsheet. Quick-picks on Popular, never on a category shelf or tile. */
+/** True for the blanks: each mode's, Blank Spreadsheet and the blanks of a page kind. Quick-picks on Popular, never on a category shelf or tile. */
 export function isBlankTemplate(kind: TemplateKind): boolean {
   return (
     Object.values(BLANK_TEMPLATE_FOR_MODE).includes(kind) || EXTRA_BLANK_TEMPLATES.includes(kind)

@@ -1,5 +1,5 @@
-import type { Page } from '@playwright/test';
-import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
+import type { Locator, Page } from '@playwright/test';
+import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
 
 // The runtime motion guard (docs/specs/004-interface-design/motion.md "Enforcement").
 //
@@ -63,13 +63,17 @@ async function startBlank(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
-/** Open a chrome surface, let its motion play out, and close it again. */
+/** Open a chrome surface, let its motion play out, and close it again. `shown` is the surface
+ *  itself, for one whose code loads on demand (Settings, Search): its motion starts only once it
+ *  arrives, which on a cold CI runner can be most of the 400ms, so the wait starts from there. */
 async function openAndClose(
   page: Page,
   open: () => Promise<void>,
   close: () => Promise<void> = () => page.keyboard.press('Escape'),
+  shown?: Locator,
 ): Promise<void> {
   await open();
+  if (shown) await shown.waitFor();
   await page.waitForTimeout(400);
   await close();
   await page.waitForTimeout(300);
@@ -86,14 +90,17 @@ async function toggle(page: Page, name: string): Promise<void> {
 }
 
 async function tourTheChrome(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Add Square', exact: true }).click();
+  await (await paletteTile(page, 'Add Square')).click();
   await page.locator('[data-canvas-a11y-root]').click({ position: { x: 520, y: 360 } });
   const square = page.getByRole('img', { name: 'Square', exact: true });
   await expect(square).toHaveCount(1);
   await page.waitForTimeout(400);
 
   await toggle(page, 'Selection mode');
-  await toggle(page, 'Palette category');
+  // A category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar").
+  await openAndClose(page, () =>
+    page.locator('[data-category-bar-button][aria-label="Build"]').click(),
+  );
   await toggle(page, 'Fit to screen');
   // The Explorer popover, and the Document menu on its Current Document card.
   const explorer = page.getByRole('button', { name: 'Explorer', exact: true });
@@ -104,10 +111,19 @@ async function tourTheChrome(page: Page): Promise<void> {
   await page.waitForTimeout(300);
   await openAndClose(page, () => page.getByRole('button', { name: 'Tab menu' }).click());
   await openAndClose(page, () => square.click({ button: 'right' }));
-  await openAndClose(page, () =>
-    page.getByRole('button', { name: 'Application settings' }).click(),
+  await openAndClose(
+    page,
+    () => page.getByRole('button', { name: 'Application settings' }).click(),
+    undefined,
+    page.getByRole('dialog', { name: 'Settings' }),
   );
-  await openAndClose(page, () => page.getByRole('button', { name: 'Search', exact: true }).click());
+  // The Search panel is the tour's one fly-up-in, which the budget test asserts it saw.
+  await openAndClose(
+    page,
+    () => page.getByRole('button', { name: 'Search', exact: true }).click(),
+    undefined,
+    page.locator('.animate-fly-up-in').first(),
+  );
 }
 
 test.describe('Motion budget', () => {

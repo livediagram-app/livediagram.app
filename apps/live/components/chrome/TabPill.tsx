@@ -41,6 +41,7 @@ export type TabPillCtx = {
   // Threaded to the presence stack: the follow ring (docs/specs/012-collaboration/follow-me-viewport.md) and the
   // Collaborators modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md).
   followingId?: string | null;
+  followerCount?: number;
   onOpenCollaborators?: (participantId: string | null) => void;
   canvasActions?: CanvasMenuActions;
   // The shared tab-menu callback bundle (see TabBar.tabMenuProps): the
@@ -74,6 +75,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
     selfId,
     selfRole,
     followingId,
+    followerCount,
     onOpenCollaborators,
     canvasActions,
     tabMenuProps,
@@ -182,7 +184,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
               pinned because the trimmed name no longer props it open. */}
           <span className="text-optical-centre">{tab.name}</span>
           {beside ? (
-            <span className="flex items-center text-brand-500 dark:text-brand-300">
+            <span className="flex items-center text-brand-700 dark:text-brand-300">
               <SideBySideIcon size={12} />
               <span className="sr-only">, open side by side</span>
             </span>
@@ -194,6 +196,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
         selfId={selfId}
         selfRole={selfRole}
         followingId={followingId}
+        followerCount={followerCount}
         onOpenCollaborators={onOpenCollaborators}
       />
       {isActive && !isEditing && !readOnly ? (

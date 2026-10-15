@@ -29,11 +29,14 @@ import { sameOriginPath } from '@/lib/same-origin-path';
 export function AuthCard({
   subtitle,
   error,
+  notice,
   children,
   footer,
 }: {
   subtitle: string;
   error: string;
+  // Good news for the person (a new code is on its way): a calm status line, never the error box. An error wins.
+  notice?: string;
   children: ReactNode;
   footer?: ReactNode;
 }) {
@@ -52,8 +55,18 @@ export function AuthCard({
           </div>
 
           {error ? (
-            <div className="mb-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+            <div
+              role="alert"
+              className="mb-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
+            >
               {error}
+            </div>
+          ) : notice ? (
+            <div
+              role="status"
+              className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+            >
+              {notice}
             </div>
           ) : null}
 
@@ -385,8 +398,17 @@ export function OrDivider() {
 
 export function messageOf(err: unknown, fallback: string): string {
   if (err && typeof err === 'object' && 'errors' in err) {
-    const list = (err as { errors: Array<{ message: string }> }).errors;
-    if (Array.isArray(list)) return list.map((e) => e.message).join(', ');
+    // Clerk's `longMessage` is the sentence written for people ("Enter a valid email address."); `message` is
+    // its terse form ("is invalid"), so it is only the fallback.
+    const list = (err as { errors: Array<{ message?: string; longMessage?: string }> }).errors;
+    if (Array.isArray(list)) {
+      const joined = list
+        .map((e) => e.longMessage || e.message)
+        .filter(Boolean)
+        .join(', ');
+      // An empty list still failed: say so rather than show no error at all.
+      return joined || fallback;
+    }
   }
   if (err instanceof Error) return err.message;
   return fallback;
@@ -451,6 +473,30 @@ export function resolveOAuthCompleteUrl(
   defaultDest: string = POST_AUTH_DEFAULT,
 ): string {
   return resolvePostAuthDestination(searchParams, defaultDest);
+}
+
+// The OAuth round-trip's callback URL, carrying a valid `?redirect_url` on.
+// `redirectUrlComplete` only covers a round-trip Clerk finishes on its own;
+// one that ends on /sso-callback (a Google sign-in Clerk turns into a
+// sign-up, an extra step) navigates from that page instead, so the
+// destination has to travel there too or the user lands on a default and
+// loses where they were going (an MCP consent, issue #612).
+export const SSO_CALLBACK_PATH = '/sso-callback';
+export function ssoCallbackUrl(searchParams: { get: (key: string) => string | null }): string {
+  const redirect = searchParams.get('redirect_url');
+  return isSafeInternalPath(redirect)
+    ? `${SSO_CALLBACK_PATH}?redirect_url=${encodeURIComponent(redirect)}`
+    : SSO_CALLBACK_PATH;
+}
+
+// Where /sso-callback sends a finished round-trip: the carried
+// `?redirect_url` when it is safe, else nothing, leaving the callback's own
+// per-flow defaults (Explorer after sign-in, /new after sign-up) in charge.
+export function ssoCallbackDestination(searchParams: {
+  get: (key: string) => string | null;
+}): string | undefined {
+  const redirect = searchParams.get('redirect_url');
+  return isSafeInternalPath(redirect) ? redirect : undefined;
 }
 
 // ---------------------------------------------------------------------

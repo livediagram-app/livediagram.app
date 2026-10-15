@@ -13,7 +13,11 @@ import {
 } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
+import { canEditSankey } from '@/lib/sankey-edit';
+import { canEditSequence } from '@/lib/sequence-edit';
+import { getTheme, themeChartPalette } from '@/lib/themes';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 
 const LinkPickerDialog = dynamic(
   () => import('@/components/dialogs/LinkPickerDialog').then((m) => m.LinkPickerDialog),
@@ -29,6 +33,14 @@ const MindOutlineDialog = dynamic(
 );
 const CodeEditDialog = dynamic(
   () => import('@/components/dialogs/CodeEditDialog').then((m) => m.CodeEditDialog),
+  { ssr: false },
+);
+const SequenceDialog = dynamic(
+  () => import('@/components/dialogs/SequenceDialog').then((m) => m.SequenceDialog),
+  { ssr: false },
+);
+const SankeyFlowsDialog = dynamic(
+  () => import('@/components/dialogs/SankeyFlowsDialog').then((m) => m.SankeyFlowsDialog),
   { ssr: false },
 );
 const ImagePicker = dynamic(
@@ -62,6 +74,12 @@ export function EditorElementDialogs() {
     codeEditOpenForId,
     setCodeSelected,
     setCodeEditOpenForId,
+    sankeyFlowsOpenForId,
+    setSankeyFlowsOpenForId,
+    sequenceOpenForId,
+    setSequenceOpenForId,
+    sankey,
+    sequence,
     mindOutline,
     imagePickerOpenFor,
     selfParticipant,
@@ -72,6 +90,48 @@ export function EditorElementDialogs() {
     workbenchMode,
     can,
   } = useEditorContext();
+
+  // Each dialog closes whenever its own render check below fails, not only when its element goes: hidden by a lock
+  // or a role change, it would otherwise reopen by itself when that is undone. Edit Outline closes itself
+  // (useMindOutline), so it is not listed.
+  const editable = () => !isReadOnly;
+  useCloseVanishedDialogs(
+    activeTab.elements,
+    [
+      [linkPickerOpenForId, () => setLinkPickerOpenForId(null), editable],
+      [
+        cellLinkPickerOpenFor?.tableId ?? null,
+        () => setCellLinkPickerOpenFor(null),
+        (el) => !isReadOnly && el.type === 'table',
+      ],
+      [
+        lineDataOpenForId,
+        () => setLineDataOpenForId(null),
+        (el) => !isReadOnly && el.type === 'shape',
+      ],
+      [
+        codeEditOpenForId,
+        () => setCodeEditOpenForId(null),
+        (el) => !isReadOnly && el.type === 'shape',
+      ],
+      [
+        sankeyFlowsOpenForId,
+        () => setSankeyFlowsOpenForId(null),
+        (el) => el.type === 'shape' && el.shape === 'sankey' && canEditSankey(can, el),
+      ],
+      [
+        sequenceOpenForId,
+        () => setSequenceOpenForId(null),
+        (el) => el.type === 'shape' && el.shape === 'sequence' && canEditSequence(can, el),
+      ],
+      [
+        imagePickerOpenFor?.forElementId ?? null,
+        closeImagePicker,
+        () => !isReadOnly || !!can.addContent,
+      ],
+    ],
+    `${isReadOnly}|${can.level}|${!!can.addContent}`,
+  );
 
   // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
   // only, validated as a YouTube link. Every other element keeps the full
@@ -214,6 +274,42 @@ export function EditorElementDialogs() {
                 language={el.codeLanguage ?? 'plain'}
                 onCommit={setCodeSelected}
                 onClose={() => setCodeEditOpenForId(null)}
+              />
+            );
+          })()
+        : null}
+      {/* Sankey Flows dialog (docs/specs/009-elements/sankey.md "The Flows dialog"): an Editor's, on an
+          unlocked diagram; it closes itself if the diagram goes (deleted, or the tab changed). */}
+      {sankeyFlowsOpenForId !== null
+        ? (() => {
+            const el = activeTab.elements.find((e) => e.id === sankeyFlowsOpenForId);
+            if (!el || el.type !== 'shape' || el.shape !== 'sankey' || !canEditSankey(can, el))
+              return null;
+            return (
+              <SankeyFlowsDialog
+                key={el.id}
+                element={el}
+                palette={themeChartPalette(getTheme(activeTab.theme))}
+                onCommit={(flows, nodes) => sankey.setSankeyFlows(el.id, flows, nodes)}
+                onClose={() => setSankeyFlowsOpenForId(null)}
+              />
+            );
+          })()
+        : null}
+      {/* The Sequence dialog (docs/specs/009-elements/sequence-diagram.md "The Sequence dialog"): an Editor's, on
+          an unlocked diagram; it closes itself if the diagram goes (deleted, or the tab changed). */}
+      {sequenceOpenForId !== null
+        ? (() => {
+            const el = activeTab.elements.find((e) => e.id === sequenceOpenForId);
+            if (!el || el.type !== 'shape' || el.shape !== 'sequence' || !canEditSequence(can, el))
+              return null;
+            return (
+              <SequenceDialog
+                key={el.id}
+                element={el}
+                onCommit={(rows, type) => sequence.setSequenceRows(el.id, rows, type)}
+                onNumbered={(on) => sequence.setSequenceNumbered(el.id, on)}
+                onClose={() => setSequenceOpenForId(null)}
               />
             );
           })()

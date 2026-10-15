@@ -40,7 +40,7 @@ Scope, by file:
 | `apps/live/app/explorer/page.tsx`, `apps/live/src/worker.ts`            | The landing goes to `EXPLORER_LANDING_PATH`                                             |
 | `scripts/e2e-stack.mjs`                                                 | The e2e stack's `/explorer` redirect reads the same constant                            |
 | `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                      | The Home row selects and opens Home                                                     |
-| `apps/live/components/panels/explorer-tree/PanelOverviewGroup.tsx`      | The panel's Home row opens Home                                                         |
+| `apps/live/components/panels/explorer-panel/PanelViews.tsx`             | The panel's Home section shows `HomePane`; See timeline shows the Timeline section      |
 | `apps/live/app/explorer/useTimelineFeed.ts`                             | `Timeline·Opened·Landing` only for a load that started on `/explorer/timeline`          |
 | `apps/live/app/explorer/useTimelineUnread.ts`                           | A clear outlives a count still in flight                                                |
 | `packages/ui/src/timeline/useTimelineGrouping.ts`                       | `formatDay` exported, shared by the day headings                                        |

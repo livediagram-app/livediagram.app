@@ -8,6 +8,7 @@
 // for, in the tab's own light or dark look. Blank comes first; the Archive board, never a first board, is
 // left to the palette. Choosing one places that board, empty, in the
 // middle of the view. Gone once the tab has a board; never shown to someone who may only view.
+import { useEffect } from 'react';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 import {
   READY_MADE_CARD_TYPES,
@@ -147,6 +148,21 @@ export function PlanBoardPicker({
   // Opens the regular Quick Start for this tab (a diagram template or another kind of tab instead).
   onQuickStart?: () => void;
 }) {
+  // What Start Planning makes fills the tab: its view's chunk is fetched while the panel is read, so the choice
+  // opens on the view rather than its loading cover (FillTabPending). Idle, so the panel's own paint is first.
+  useEffect(() => {
+    const warm = () => {
+      void import('@/components/sheets/PlanSheetView');
+      void import('@/components/plan/PlanBoardView');
+      void import('@/components/plan/views/PlanViewView');
+    };
+    if (typeof requestIdleCallback === 'undefined') {
+      const t = window.setTimeout(warm, 200);
+      return () => window.clearTimeout(t);
+    }
+    const handle = requestIdleCallback(warm, { timeout: 1000 });
+    return () => cancelIdleCallback(handle);
+  }, []);
   return (
     <StartPlanning
       onPickBoard={onPick}

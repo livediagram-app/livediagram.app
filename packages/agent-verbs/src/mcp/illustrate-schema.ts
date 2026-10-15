@@ -82,7 +82,9 @@ const pageChange = z
         layout: layout.optional(),
         at: z.number().int().min(1).optional().describe('The place it goes to (default: the end).'),
       })
-      .describe('A new page; on a fresh tab its empty first page becomes it.'),
+      .describe(
+        'A new page; on a fresh tab its empty first page (or a blank deck’s one empty slide) becomes it.',
+      ),
     z
       .object({
         op: z.literal('set').describe('Change a page.'),
@@ -109,6 +111,16 @@ const pageChange = z
     z
       .object({ op: z.literal('duplicate').describe('Copy a page.'), page: pageRef })
       .describe('A copy after it, content and all (an article: the whole article).'),
+    z
+      .object({
+        op: z
+          .literal('apply_background_to_all')
+          .describe("Give every other page of this page's kind its background."),
+        page: pageRef,
+      })
+      .describe(
+        'Every other page of the same kind (every slide, say) takes this page’s background and pattern, as the Background tab’s Apply to All; a locked page keeps its own.',
+      ),
     z
       .object({ op: z.literal('delete').describe('Delete a page.'), page: pageRef })
       .describe(
@@ -159,6 +171,12 @@ const articleOut = z
     pages: z.array(z.number()).describe('The places of its pages.'),
     blocks: z.number().describe('How many blocks its writing has.'),
     words: z.number().describe('How many words.'),
+    estimatedPages: z
+      .number()
+      .optional()
+      .describe(
+        'About how many pages its writing reaches once laid out (an estimate): the editor grows the article to them, so more than its pages means it runs on.',
+      ),
     look: z.string().nullable().describe('Its look, or null for the default.'),
   })
   .describe('An article.');

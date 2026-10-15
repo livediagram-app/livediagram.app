@@ -285,8 +285,9 @@ layouts because they're solving different problems.
 ### The editor's Explorer (editor + `/new`)
 
 This is the Explorer the editor's menu button opens as a popover
-([Toolbar layout](../007-editor/toolbar-layout.md)), a stand-alone corner panel on the status screens. Space is tight; the user is mid-task; "find this thing fast"
-beats "browse my whole library." The panel header carries a single
+([Toolbar layout](../007-editor/toolbar-layout.md)), a stand-alone corner panel on the status screens: a rail of
+sections beside a pane that shows the picked one, so the whole library is browsable without leaving the document
+([Explorer structure: the editor's Explorer](explorer-structure.md#the-editors-explorer)). The panel header carries a single
 **⋯** button, left of the help `?`, whose click-open menu of full-width
 icon-left rows holds the document's and the app's verbs in three bands
 split by separators:
@@ -296,7 +297,7 @@ split by separators:
 
 The panel does not carry the import entry: its header holds only
 **⋯** and **?**, and a row of source icons would crowd it. Importing boards
-from other tools lives on the full-page Explorer (below). 2. **Share** (owners only, the header Share button's gate) and
+from other tools lives on the full-page Explorer (below). 2. **Share** (the owner, or any joined member of a team document's team: the header Share button's gate) and
 **Export** (the active tab, as the tab menu's Export). 3. **Search**, **GitHub** (the open-source repo, new tab), **Licences** (the
 third-party licences page, new tab, see
 [Third-party licences](../002-project-scope/third-party-licences.md)), **Settings**.
@@ -346,6 +347,10 @@ link.
   optimistic update. Drag transfer uses a custom MIME type
   (`application/x-livediagram-id`) so dragging a document never
   triggers a browser navigation when dropped outside any target.
+  The editor's Explorer floats over the canvas, so the canvas's own drop
+  handling stands aside for a drag a target inside it has already
+  accepted; otherwise its "dropped back on a panel" guard would turn the
+  folder's accepted move into a no-drop (`usePaletteDrop`).
   **Resting a drag on a row with a chevron** for 800 ms
   (`DRAG_HOVER_TOGGLE_MS`) opens it, so a document reaches a subfolder in
   one gesture; resting on an open row closes it. One rest toggles once:

@@ -7,7 +7,7 @@ import { lucidePalette } from '@livediagram/icons/lucide';
 // custom themes. Lists each as a swatch preview + name with icon actions
 // (edit / duplicate / delete), and a New-theme card. Editing / creating
 // opens the shared CustomThemeBuilder in a modal (the same builder the
-// Tab Look & Feel dialog hosts, so the two can't drift). Reads the
+// Tab Style dialog hosts, so the two can't drift). Reads the
 // reactive list + CRUD from CustomThemeProvider, which the Explorer shell
 // mounts.
 
@@ -28,7 +28,8 @@ import {
 import { ThemeBuilderModal, themeDeleteConfirm } from './ThemeBuilderModal';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 
-export function ThemesPane() {
+// `compact`: inside the editor's Explorer pane: two cards to a row and the small empty state.
+export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
   const { themes, loading, createTheme, updateTheme, deleteTheme } = useCustomThemes();
   const confirm = useConfirm();
   const [building, setBuilding] = useState<null | 'new' | string>(null);
@@ -64,6 +65,7 @@ export function ThemesPane() {
     <div>
       {themes.length === 0 ? (
         <EmptyState
+          compact={compact}
           icon={<PaletteIcon />}
           title="No custom themes yet"
           description="Build your own colour palette and reuse it across every document, just like a built-in one."
@@ -77,7 +79,13 @@ export function ThemesPane() {
           </button>
         </EmptyState>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div
+          className={
+            compact
+              ? 'grid grid-cols-2 gap-2.5'
+              : 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'
+          }
+        >
           {themes.map((t) => (
             <div
               key={t.id}
@@ -112,7 +120,7 @@ export function ThemesPane() {
           <button
             type="button"
             onClick={() => setBuilding('new')}
-            className="flex min-h-[7rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:text-slate-400"
+            className="flex min-h-[7rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-700 dark:border-slate-600 dark:text-slate-400"
           >
             <PlusIcon size={20} />
             <span className="text-xs font-medium">New theme</span>

@@ -29,10 +29,14 @@ import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
-import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
+import { showsSlidesButton, SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
 import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
-import { SessionClusterStrip, sessionStripTools } from '@/components/canvas/SessionClusterStrip';
+import {
+  SessionClusterStrip,
+  sessionStripTools,
+  stripCanStart,
+} from '@/components/canvas/SessionClusterStrip';
 import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
 import { usePlanVoting } from '@/hooks/plan/usePlanVoting';
@@ -42,6 +46,8 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 // little more in, and past the element's bottom scrollbar up.
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
+import { ContentsClusterSegment } from './ContentsClusterSegment';
+import { PagesClusterStrip } from './PagesClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
@@ -69,11 +75,13 @@ import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-it
 import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
+import { AvatarClusterButton } from './AvatarClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { loadWhiteboardDock } from '@/lib/editor-deferred-code';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
 // Draw mode's dock shows only on a Draw tab, so its code loads on demand (lib/editor-deferred-code.ts
 // fetches it as the editor mounts).
@@ -129,6 +137,13 @@ type ChromeExtras = {
   onAvatarReaction: (kind: import('@/lib/avatar-reactions').AvatarReactionKind) => void;
   // Throw one of the Reaction Pad's bursts (docs/specs/009-elements/reaction-pad.md) around the character.
   onAvatarBurst?: (reaction: import('@livediagram/document').Reaction) => void;
+  // Say something from the Avatar panel (docs/specs/008-canvas/avatar-mode.md "The message popover"): absent for
+  // a Viewer, who may not speak. Answers whether the message went; `avatarSpeechCooling` holds Send meanwhile.
+  onSendAvatarMessage?: (text: string) => boolean;
+  // Your status (docs/specs/008-canvas/avatar-mode.md "Status"), set from the Avatar panel.
+  avatarStatus?: import('@/lib/avatar-status').AvatarStatus | null;
+  onSetAvatarStatus?: (status: import('@/lib/avatar-status').AvatarStatus | null) => void;
+  avatarSpeechCooling?: boolean;
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
   // persists per browser, like the avatar's costume) and edited down here.
   laserConfig?: import('@/lib/laser-config').LaserConfig;
@@ -171,12 +186,7 @@ type ChromeExtras = {
   formatConfig?: import('@/lib/format-config').FormatConfig;
   onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
   onSetFormatMode?: (mode: import('@/lib/format-config').FormatMode) => void;
-  formatBrushSource?: {
-    name: string;
-    fill?: string;
-    stroke?: string;
-    textColor?: string;
-  } | null;
+  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;
   onResetFormatPanel?: () => void;
@@ -248,9 +258,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     readOnly,
     selfParticipant,
     settings,
-    snapGuides,
-    distGuides,
-    snapTargets,
+    snapGuideStore,
     showTemplatePicker,
     tabThemeId,
     templatePickerLockedName,
@@ -310,6 +318,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     // board itself, so there is nothing to gate beyond "is this that board".
     timeline: props.esBoard === true ? ES_LANES : null,
   });
+  // The drag's snap guides, from the editor's store: a new set renders this chrome only.
+  const { snapGuides, distGuides, snapTargets } = useSnapGuides(snapGuideStore);
   // A tick as a move catches an alignment guide (Android; lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
   const { alignGuides, allSnapTargets } = computeDrawGuides({
@@ -375,6 +385,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const clusterInset = elementCovers ? COVERED_CLUSTER_INSET : NO_CLUSTER_INSET;
   // Plan's Timer and Vote, only for a board made for voting (or a session running), never on a Dashboard.
   const planVoting = usePlanVoting(elements, !!props.tabVote || !!props.sessionTools?.timer);
+  const stripTools = sessionStripTools(props.editorMode, props.esBoard === true, planVoting);
   // Plan's card strip shows only while the tab has something that shows cards (items.md "The Plan strip").
   const tabShowsCards = useTabShowsCards(elements);
   // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
@@ -392,10 +403,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
     cardFinderPopoverEl,
     sessionPopoverEl,
     tidyUpPopoverEl,
+    contentsPopoverEl,
+    avatarPopoverEl,
     paletteTint,
   } = useCanvasChromePanels({
     props,
-    planVoting,
+    stripTools,
     chromeHidden,
     isMobile,
     panelWiringFor,
@@ -564,6 +577,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
       {tidyUpPopoverEl}
+      {contentsPopoverEl}
+      {avatarPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
       {paletteShown ? (
@@ -585,7 +600,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           logoPages={!!props.illustratePages?.pages.some((p) => p.kind === 'logo')}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
-          onAddPage={readOnly ? undefined : props.illustratePages?.edit?.addPage}
           tabElements={elements}
         />
       ) : null}
@@ -611,7 +625,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.collaborate}
           {panelEls.ai}
           {panelEls.minimap}
-          {panelEls.avatar}
           {panelEls.laser}
           {panelEls.spotlight}
           {panelEls.eraser}
@@ -666,18 +679,28 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canRedo={canRedo}
               />
             ) : null}
+            {/* Avatar (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): beside Undo / Redo while the mode
+                is on, for every role, Zen included: it is the mode's one piece of chrome. */}
+            {props.canvasTool === 'avatar' ? (
+              <AvatarClusterButton
+                popoverOpen={activeDockPanel === 'avatar'}
+                onTogglePopover={(button) => handleDockButtonClick('avatar', button, true)}
+                canSpeak={!!props.onSendAvatarMessage}
+              />
+            ) : null}
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
                 Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
-                chrome a facilitator still needs there. Diagram has all three, Plan its Timer and
-                Vote; Draw and Illustrate keep their bottom bar to their own tools. */}
-            {props.sessionTools &&
-            sessionStripTools(props.editorMode, props.esBoard === true, planVoting) ? (
+                chrome a facilitator still needs there. Facilitate has all three, Plan its Timer and
+                Vote, Illustrate a running Vote or Poll only; Diagram and Draw keep their bottom bar to
+                their own tools. */}
+            {props.sessionTools && stripTools ? (
               <div className="contents">
                 <SessionClusterStrip
                   timer={props.sessionTools.timer}
                   voteRunning={!!props.tabVote}
                   voteDotsLeft={
-                    props.tabVote?.active && !readOnly
+                    // A Participant votes too (docs/specs/013-workspace/share-roles.md), so it sees its dots left.
+                    props.tabVote?.active && (!readOnly || props.takePart)
                       ? Math.max(
                           0,
                           props.tabVote.votesPerPerson -
@@ -688,10 +711,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   voteReviewing={!!props.voteReview}
                   voteButtonRef={voteButtonRef}
                   pollRunning={!!props.pollPanel}
-                  canStart={!readOnly}
-                  offersPoll={
-                    !!sessionStripTools(props.editorMode, props.esBoard === true, planVoting)?.poll
-                  }
+                  canStart={stripCanStart(stripTools, !!readOnly)}
+                  offersTimer={stripTools.timer}
+                  offersPoll={stripTools.poll}
                   open={
                     activeDockPanel === 'session-timer' ||
                     activeDockPanel === 'session-vote' ||
@@ -703,14 +725,30 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 />
               </div>
             ) : null}
-            {/* Slides (docs/specs/007-editor/illustrate-pages.md "Slides"): in Illustrate mode, where
-                Layers would be, the deck one press away. */}
-            {/* Desktop only, as the Slide Deck itself is; an Editor's, since building and presenting a deck
-                runs the session (docs/specs/013-workspace/share-roles.md). */}
-            {!zenMode && !isMobile && !readOnly && props.illustratePages && props.slideDeck ? (
-              <SlidesClusterButton
-                popoverOpen={activeDockPanel === 'slides'}
-                onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
+            {/* Contents and Slides (docs/specs/007-editor/illustrate-pages.md "Contents", "Slides"): in Illustrate
+                mode, one strip where Layers would be. Contents for every role and on a phone too; Slides on a
+                desktop only, as the Slide Deck itself is, and an Editor's, since building and presenting a deck
+                runs the session (docs/specs/013-workspace/share-roles.md), once a page is a slide: before that
+                the deck has nothing to hold. */}
+            {!zenMode && props.illustratePages ? (
+              <PagesClusterStrip
+                contents={
+                  <ContentsClusterSegment
+                    popoverOpen={activeDockPanel === 'contents'}
+                    onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
+                  />
+                }
+                slides={
+                  !isMobile &&
+                  !readOnly &&
+                  showsSlidesButton(props.illustratePages.pages) &&
+                  props.slideDeck ? (
+                    <SlidesClusterSegment
+                      popoverOpen={activeDockPanel === 'slides'}
+                      onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
+                    />
+                  ) : null
+                }
               />
             ) : null}
             {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): in Plan

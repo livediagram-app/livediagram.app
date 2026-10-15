@@ -46,7 +46,7 @@ export function TemplatePickerHeader({
             {!isIdentity
               ? step === 'template'
                 ? isWelcome
-                  ? 'What are you making? Pick a mode, and its templates are ready on the canvas.'
+                  ? 'What are you making today?'
                   : 'Build anything, start from scratch or find inspiration in a template.'
                 : 'Name your document and choose where it lives.'
               : nameLocked

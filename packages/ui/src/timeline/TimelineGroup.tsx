@@ -85,7 +85,7 @@ export function TimelineGroup({
           >
             {label}
           </p>
-          <p className="text-[10px] text-slate-400">{year}</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">{year}</p>
         </div>
         <div className={CARD_GRID}>{children}</div>
       </div>

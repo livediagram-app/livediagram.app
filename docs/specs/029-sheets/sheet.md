@@ -218,8 +218,7 @@ rule under it, gridlines off), **Plain** (no fills, colours or borders; bold and
 | Data Validation        | Each validation rule with its range and line, **Edit**, **Go To** and **Remove** ([Data validation](data-validation.md#making-and-changing-rules))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Conditional Formatting | Each format rule in list order with its swatch and range, **Edit**, **Go To** and **Remove** ([Conditional formatting](conditional-formatting.md#making-and-changing-rules))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |     |
 
-- Sheet Setup opens first. The same sections are the element menu's **Sheet** flyout (right-click the Sheet), as a board's
-  settings are its Board flyout, acting on the same sheet. Numbers apply on Enter or leaving the field, kept within the limits (a column
+- Sheet Setup opens first. The same sections are rows of the element menu itself (right-click the Sheet), each a flyout under Style and a separator, as a board's are, with no **Sheet** parent row; they act on the same sheet. Numbers apply on Enter or leaving the field, kept within the limits (a column
   20 to 2,000 px, a row 16 to 2,000 px, frozen lines as Freeze's); Escape closes the popover without saving.
 - Everything but the totals is the sheet's own: saved, seen by everyone, and one undo step each. A sheet without
   headers starts its cells at the frame's edge; without gridlines only fills and set borders show. Exports and
@@ -230,7 +229,8 @@ rule under it, gridlines off), **Plain** (no fills, colours or borders; bold and
 ### Toolbar
 
 One row, shown for someone who may edit, in Plan mode: on its left a **category switcher** (the palette's own
-category dropdown, in its toolbar style, a tile grid), and to its right the chosen category's buttons only:
+category dropdown, in its toolbar style, a tile grid; in a header band it fills the card's height, flush to its
+inset, as the menu box's mode tile does), and to its right the chosen category's buttons only:
 
 | Category  | Buttons                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -262,6 +262,10 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
   its name beside it (a wide Sheet on a desktop), the names show and the tooltips are dropped. On a phone, or when
   they would not fit, glyphs alone; buttons that still do not fit fold from the right into a **More** (⋯) menu, so
   it never wraps.
+- On a phone the toolbar packs tighter so each category shows as much as it can before More: there is no Search
+  (All Functions… still lists every function), the gaps and dividers are slimmer, menu buttons drop their chevron,
+  the switcher and the function families are their glyph alone (named by the tooltip), and the wide controls (the
+  colour swatches, Font, Font Size's stepper) are their glyph opening the menu they open from More.
 - Each button reads the selection's active cell (Bold pressed when it is bold) and acts on the whole selection.
 - Undo and Redo are the canvas's own (its controls and the keys), not repeated in the toolbar.
 
@@ -334,7 +338,8 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   - **let go unmoved**, it opens the cell's (or the header's) menu at the finger, the browser's own long-press menu
     never showing.
 - **The grip**: the selection's corner handle is drawn round and twice the size (14 px), and a finger within 22 px of
-  it drags the range's far corner (its top left stays put), for anyone who can select, viewers too. Fill by dragging is
+  it drags the range's far corner (its top left stays put) once it moves 6 px, for anyone who can select, viewers too;
+  lifted unmoved it is a tap, selecting the cell under it. Fill by dragging is
   for a mouse or pen; on a touch screen **Ctrl+D** (Fill Down, with a keyboard) or the menu's commands fill.
 - While a finger selects (from the hold or the grip until it lifts) the page never scrolls under it; a second finger
   is never a hold (it is the pinch, the canvas's or the browser's).
@@ -410,7 +415,9 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   references shift with them (`=A1` copied one row down becomes `=A2`). A paste of a cut moves the cells: their
   old place is cleared and every formula pointing at them follows them.
 - **Paste** from elsewhere reads an HTML table (from Google Sheets, Excel, a web page: values, bold, italic,
-  colours and alignment) or tab-separated, comma-separated or plain text (a line a row). Values are read as if
+  colours and alignment) or tab-separated, comma-separated or plain text (a line a row). Commas split columns
+  only across two lines or more that split alike: one line, like "Thanks, Sam", stays in one cell. One quoted
+  field running over two lines counts as two lines, so `"Line one⏎line two",B` is two cells. Values are read as if
   typed.
 - A paste into a selection larger than what was copied, whose size is a whole multiple of it, repeats it to fill.
 - A paste past the grid's edge grows the grid, up to its limit; a paste past the limit is cut at it, and says so.
@@ -436,38 +443,35 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   (columns), as many as selected; **Delete**; **Clear**; **Hide**; **Resize…**; and on a column **Sort A to Z**,
   **Sort Z to A**. Hidden rows and columns show a small double arrow on the headers either side (**Show Column C**,
   **Show Rows 2 to 3**, with the shared tooltip), which unhides them; a sheet without headers draws the arrows at the
-  grid's own edge, so hidden lines can always come back.
+  grid's own edge, so hidden lines can always come back. Rows a filter leaves out are not hidden lines and draw no
+  arrow ([Filter](#filter)).
 - Rows and columns can be dragged by their selected headers to a new place.
 - Inserting, deleting and moving keep every formula right: references move with their cells, a reference to a
   deleted cell becomes `#REF!`, and a range shrinks or grows with what is inside it.
 
 ### Cell menu
 
-Right-click on a cell (or a selection) opens the cell menu, built from the editor's menu parts, as the Explorer's
-document menu is: a header, a toolbar of the clipboard verbs, then icon-left rows in groups, the everyday verbs
-named in full and on show, the rarer ones in side flyouts, short enough to fit a laptop's window. Each row names what it will do to this selection
-("Insert 3 Rows Above", "Delete Columns B to C"), so nothing has to be guessed.
+Right-click on a cell (or a selection) opens the cell menu, built from the editor's menu parts: a header, a toolbar
+of the clipboard verbs, the comment row, then **closed categories**, as the element menu has them (an icon, the
+category's name in small capitals, a chevron), each opening its rows in a side flyout, so the menu is short and reads
+at a glance rather than as a long list. Each row names what it will do to this selection ("Insert 3 Rows Above",
+"Delete Columns B to C"), so nothing has to be guessed.
 
 - **Header**: the selection (`B2:C4`, or `B4` for one cell) and how many cells it covers ("6 Cells").
 - **Toolbar**: **Cut**, **Copy**, **Paste**, **Paste Values**, **Clear Contents** and **Clear Formatting** (icon
   buttons with their names, and keys where they have them, in the hover card: Cut ⌘X, Copy ⌘C, Paste ⌘V, Paste
   Values ⇧⌘V, Clear Contents Delete; Ctrl on other systems).
-- **Rows and columns**: **Insert Row Above**, **Insert Row Below**, **Insert Column Left**, **Insert Column Right**
-  (as many as the selection spans: "Insert 3 Rows Above"), then **Delete Row 4** or **Delete Rows 2 to 4**, and
-  **Delete Column B** or **Delete Columns B to C**.
-- **Merge Cells** (a selection of more than one cell; asking first when it would drop values) or **Unmerge Cells**
-  (a selection touching a merge).
-- **Conditional Formatting…** (an Editor's; [Conditional formatting](conditional-formatting.md)).
-- **Flyouts**, each a side panel of rows:
+- **Categories**, each a side flyout of rows:
 
-| Flyout          | Rows                                                                                                                                           |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sort            | **Sort A to Z**, **Sort Z to A** (the sheet by the active cell's column, as the toolbar's Sort), **Custom Sort…**                              |
-| Shift Cells     | **Insert Cells, Shift Right**, **Insert Cells, Shift Down**, **Delete Cells, Shift Left**, **Delete Cells, Shift Up**                          |
-| Hide            | **Hide Row 4** / **Hide Rows 2 to 4**, **Hide Column B** / **Hide Columns B to C**                                                             |
-| Paste Special   | **Values Only**, **Formatting Only**                                                                                                           |
-| Data Validation | **Dropdown**, **Checkbox**, **Data Validation…**, **Remove Validation** (the selection touches a rule) ([Data validation](data-validation.md)) |
-| Insert Chart    | **Column Chart**, **Bar Chart**, **Line Chart**, **Area Chart**, **Scatter Chart**, **Pie Chart**, **Doughnut Chart**                          |
+| Category        | Rows                                                                                                                                                                                                                                                                                                                   |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Insert          | **Insert Row Above**, **Insert Row Below**, **Insert Column Left**, **Insert Column Right** (as many as the selection spans: "Insert 3 Rows Above"), then **Insert Cells, Shift Right**, **Insert Cells, Shift Down**                                                                                                  |
+| Delete          | **Delete Row 4** / **Delete Rows 2 to 4**, **Delete Column B** / **Delete Columns B to C**, then **Delete Cells, Shift Left**, **Delete Cells, Shift Up**                                                                                                                                                              |
+| Cells           | **Merge Cells** (a selection of more than one cell; asking first when it would drop values) or **Unmerge Cells** (a selection touching a merge), **Hide Row 4** / **Hide Rows 2 to 4**, **Hide Column B** / **Hide Columns B to C**, **Conditional Formatting…** ([Conditional formatting](conditional-formatting.md)) |
+| Sort            | **Sort A to Z**, **Sort Z to A** (the sheet by the active cell's column, as the toolbar's Sort), **Custom Sort…**                                                                                                                                                                                                      |
+| Paste Special   | **Values Only**, **Formatting Only**                                                                                                                                                                                                                                                                                   |
+| Data Validation | **Dropdown**, **Checkbox**, **Data Validation…**, **Remove Validation** (the selection touches a rule) ([Data validation](data-validation.md))                                                                                                                                                                         |
+| Chart           | **Column Chart**, **Bar Chart**, **Line Chart**, **Area Chart**, **Scatter Chart**, **Pie Chart**, **Doughnut Chart**                                                                                                                                                                                                  |
 
 Every row closes the menu once it has acted. A merge that would drop values asks the same thing from here and
 from the toolbar: "Merging keeps only the top-left value. Merge B2:C4?" (**Cancel**, **Merge**). Someone who may only
@@ -479,7 +483,7 @@ view gets the header and **Copy** alone.
   fill colour, font (one of the editor's [fonts](../004-interface-design/fonts.md), by id; unset, the tab's font; the
   toolbar's **Font** is a button naming the active cell's font in its own face, left of Font Size, opening a menu of
   **Default** then every font, each named in its own face, the active cell's ticked; an id the editor no longer
-  offers draws in the tab's font), font size (any whole size from 6 to 96 points, 10 by default; the toolbar's Font Size is a number between − and +
+  offers draws in the tab's font), font size (any whole size from 6 to 96 points, 10 by default; the toolbar's Font Size is a number between − and +, worn in the Sheet's own colours as the Font button beside it is
   that step through 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 36, 48 and 72, and takes a typed size, kept within the
   limits; folded into More it is a menu of those sizes), horizontal alignment, vertical alignment (top, middle,
   bottom; middle when unset), wrap (overflow, wrap, clip), a border on each side (thin, medium, thick, dashed or dotted, in a colour) and,
@@ -574,8 +578,11 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
   column's values with counts, **Select All** and **Clear**), and **Filter by Condition** (is empty, is not empty,
   text contains, does not contain, starts with, ends with, is exactly, date is before / after / on, greater than,
   less than, between, equal to, not equal to).
+- The filter menu's **Sort A to Z / Z to A** sorts the filter's rows under its header by that column (whichever cell
+  is active), moving whole rows. The header row stays on top, and the filter covers the same rows on screen after.
 - Rows that do not match every column's filter are hidden; a filtered column's button is filled. Row numbers of
-  the visible rows stay as they are, so a gap shows rows are filtered.
+  the visible rows stay as they are, so a gap shows rows are filtered. A filtered-out row draws no **Show Row**
+  arrow: those are only for rows someone hid, and the filter is what brings filtered rows back.
 - The filter is the sheet's, seen by everyone, as in a spreadsheet; turning it off shows every row again.
 - Functions over a filtered range still read the hidden rows, as in a spreadsheet; the status bar's Sum reads the
   visible ones.
@@ -595,10 +602,11 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
   are, so it grows with rows inserted inside it and follows moves ([Formulas](formulas.md#named-ranges)).
 - A name: 1 to 60 characters, starting with a letter or `_`, then letters, digits, `_` or `.`; not `TRUE` or
   `FALSE`; not one that reads as a cell reference (`AB12`, `R1C1`); unique on its sheet, case aside. Up to 100 a sheet.
-- **Naming**: select the cells and type the name in the formula bar's name box, then Enter (one undo step). Typing an
-  existing name there selects its range.
+- **Naming** (an Editor): select the cells and type the name in the formula bar's name box, then Enter (one undo
+  step). Typing an existing name there selects its range, for anyone.
 - **Sheet Settings** has a **Named Ranges** section: each name with its range (`A1:B4`), **Go To** (selects it) and
-  **Remove** (one undo step); "No named ranges yet. Select cells and type a name in the name box." when there are none.
+  **Remove** (an Editor; one undo step); "No named ranges yet. Select cells and type a name in the name box." when there
+  are none, and "No named ranges." for a Participant or Viewer, who cannot name cells.
 - Formulas offer the sheet's names in their autocomplete, after the functions that match.
 - Deleting every row or every column a range covers removes its name; Clear Sheet removes them all. A copied sheet
   keeps its names (they are its own).
@@ -671,8 +679,9 @@ whole Sheet.
   (State or Status, Assignee, Owner or Assigned To, Due or Due Date, and so on). A new row (directly under a linked row, a draft row or the header) becomes a card: its type from its
   Type cell or the table's, its State from its State cell or the table's first card's, its title from its Title cell
   (else the type's new-card title); its Number fills in. A row directly under a draft row joins the table too,
-  so a block of rows pasted under the table becomes a block of new rows, each a draft. A value the plan does not know ("No column 'Doing'") is
-  refused with a toast and the row stays a draft. The draft ends only once the card write lands: a write the plan
+  so a block of rows pasted under the table becomes a block of new rows, each a draft. A value the plan does not know ("No column 'Doing'"), or one
+  its field cannot hold ("1000 is not an Estimate: give a number from 0 to 999", checked by `resolveFields` against
+  the api's own field rules), is refused with a toast and the row stays a draft. The draft ends only once the card write lands: a write the plan
   store refuses keeps the row a draft ("That row could not be saved to its card. Its edits are kept: try Save
   again."), and a second Save while one is on its way does nothing. **Cancel** puts a card's row back as its card is, and empties a
   new row.
@@ -701,7 +710,7 @@ whole Sheet.
 
 - **Insert Chart** makes a chart of any of the seven chart types (Column, Bar, Line, Area, Scatter, Pie, Doughnut;
   [Chart types](../009-elements/pie-chart.md#chart-types)) from the sheet's cells: the toolbar's **Data** category
-  (its **Insert Chart** menu) and the cell menu's **Insert Chart** flyout. It reads the selection; a single cell reads the block of data around it (a spreadsheet's current
+  (its **Insert Chart** menu) and the cell menu's **Chart** category. It reads the selection; a single cell reads the block of data around it (a spreadsheet's current
   region). A single empty cell with nothing around it says "Select the cells to chart first".
 - Several ranges picked together (Ctrl or ⌘ and a drag: the labels in A2:A5 and the amounts in C2:C5) chart as one:
   the rows they span, and only the columns picked, in the sheet's order, so a column between them (Category in B) is
@@ -846,7 +855,10 @@ not in Sheet Settings, not anywhere.
 
 - **Read** with any access: open the sheet, scroll, select, copy, find, Download CSV.
 - **Write cells** (a Participant and an Editor): type, paste, pick from a [dropdown](data-validation.md), tick a
-  checkbox, each checked by the sheet's validation rules.
+  checkbox, each checked by the sheet's validation rules. A Participant writes **values, never formats**: a paste,
+  a fill or a cut lands as its values (`valuesOnly`, in the editor and the api alike), a change of formats alone
+  (bold by its shortcut, a number format) is refused with "Only an editor can format a Sheet's cells.", and the
+  cell menu offers them no Clear Formatting.
 - **Edit** with edit access: everything else, the sheet's validation and format rules included.
 - Someone who may only view sees no toolbar, the formula bar read-only, and no menus that change anything.
 
@@ -872,7 +884,11 @@ not in Sheet Settings, not anywhere.
 
 ## CSV
 
-- **Import CSV…** (Sheet Settings) opens a file picker for a `.csv` or `.tsv`; on a sheet with filled cells it asks
+- **Import CSV…** (Sheet Settings) opens a file picker for a `.csv` or `.tsv`, read as tab-separated when its first
+  line holds a tab, semicolon-separated when its first lines (up to 20) read with semicolons split into the same
+  number of fields on every line, more than one, and read with commas do not, or into no more (Excel's CSV where
+  the decimal mark is a comma, so `Tea;3,50` and a header like `Amount, EUR` stay semicolon lines; a quoted comma or
+  semicolon is the field's, never a separator), else comma-separated; on a sheet with filled cells it asks
   first: **Replace Sheet**, **Insert at Selection** or **Cancel**. Values are read as if typed; the grid grows to fit,
   up to its limit (past it: "Imported the first 10,000 rows").
 - Dropping a `.csv` on the canvas in Plan mode places a new sheet with it (above).

@@ -11,6 +11,7 @@ import type {
   PieAnim,
   ProgressAnim,
   RatingAnim,
+  SankeyAnim,
   ShapeElement,
 } from '@livediagram/document';
 import { ArrowFlowOverlays, FLOW_PATH_CLASS, FLOW_PATH_DASH } from '@/components/canvas/arrow-flow';
@@ -18,6 +19,7 @@ import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { ProgressView } from '@/components/canvas/ProgressView';
 import { RatingView } from '@/components/canvas/RatingView';
 import { PieChartView } from '@/components/canvas/PieChartView';
+import { SankeyView } from '@/components/canvas/SankeyView';
 
 const ACCENT = '#0ea5e9';
 const ARROW_D = 'M3 15 C 13 3, 25 19, 37 7';
@@ -160,6 +162,34 @@ export function PieAnimPreview({ anim }: { anim: PieAnim | null }) {
           pieAnimSpeed: 'normal',
         })}
         textColor="currentColor"
+      />
+    </span>
+  );
+}
+
+// Two sources merging and splitting, bare (no labels), so the tile shows the bands' motion alone.
+const SANKEY_PREVIEW_FLOWS = [
+  { from: 'a', to: 'c', value: 3 },
+  { from: 'b', to: 'c', value: 2 },
+  { from: 'c', to: 'd', value: 3 },
+  { from: 'c', to: 'e', value: 2 },
+];
+
+export function SankeyAnimPreview({ anim }: { anim: SankeyAnim | null }) {
+  return (
+    <span className="relative block h-[24px] w-[36px]">
+      <SankeyView
+        element={shape({
+          shape: 'sankey',
+          width: 36,
+          height: 24,
+          sankeyFlows: SANKEY_PREVIEW_FLOWS,
+          sankeyAnim: anim ?? undefined,
+          sankeyAnimSpeed: 'normal',
+        })}
+        textColor="currentColor"
+        editable={false}
+        bare
       />
     </span>
   );

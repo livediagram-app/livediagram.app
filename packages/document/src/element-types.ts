@@ -3,6 +3,8 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livediagram/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
+import type { RoomDoor } from './office';
+import type { Finish } from './finish';
 import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@livediagram/items';
 import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from './rich-text';
@@ -12,12 +14,28 @@ import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
+import type { AccentEdge } from './accent-edge';
+import type { CardMedia } from './card';
+import type { ChipLook } from './chip';
+import type { AttachPoint } from './attachment';
+import type { BoundaryStyle } from './boundary';
+import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
-import type { MindFlow } from './mind-flow';
+import type { MindFlow, MindSpacing } from './mind-flow';
+import type { FlowchartDirection } from './flowchart';
 import type { ChartPaletteId } from './chart-palettes';
 import type { ChartVariant } from './chart-types';
+import type {
+  SankeyAlign,
+  SankeyLeftover,
+  SankeyAnim,
+  SankeyFlow,
+  SankeyLinkColor,
+  SankeyNodeStyle,
+  SankeyValueLabel,
+} from './sankey-model';
 import type { ChartSource, SheetAnchor } from './chart-source';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
@@ -57,7 +75,12 @@ import type {
   TextAlignX,
   TextAlignY,
   TextSize,
+  TextSizePreset,
 } from './index';
+import type { KeyRow } from './diagram-key';
+import type { MindLook } from './person-node';
+import type { SequenceElementMessage, SequenceElementParticipant } from './sequence-element';
+import type { StackAlign, StackDirection } from './stack';
 
 // Where a chart's legend sits relative to the plot (docs/specs/009-elements/pie-chart.md). 'off' is modelled
 // separately by `chartLegend: false`, so this only covers the four placements.
@@ -155,6 +178,8 @@ export type ShapeElement = {
   // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
+  // Drawing style (docs/specs/008-canvas/finish.md); unset follows the tab's.
+  finish?: Finish;
   fillColor?: string;
   strokeColor?: string;
   // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
@@ -208,6 +233,10 @@ export type ShapeElement = {
   strokeWidth?: BorderStroke;
   strokeStyle?: BorderStyle;
   borderRadius?: BorderRadius;
+  // A coloured bar along one edge of a box shape (docs/specs/008-canvas/accent-edge.md); absent = none. Only
+  // the kinds in ACCENT_EDGE_SHAPES draw it. Its colour is its own, else the border's as drawn.
+  accentEdge?: AccentEdge;
+  accentEdgeColor?: string;
   // Colour-preset binding (docs/specs/010-palette/style-presets.md). When a one-click colour preset is applied
   // to a shape, we store the preset's stable id (e.g. 'bold', 'soft',
   // 'branch-0') alongside the concrete fill / stroke / text it wrote. This lets
@@ -232,6 +261,9 @@ export type ShapeElement = {
   // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
   // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
   portalTarget?: ElementId;
+  // Tab window (docs/specs/009-elements/tab-window.md): the id of the tab of this document it shows. Only meaningful
+  // on the 'tab-window' kind. Absent until chosen; a tab that is gone (or not shared) shows as unavailable.
+  windowTabId?: string;
   // Session button (docs/specs/012-collaboration/session-button.md): which session tool pressing this element starts
   // for the room, and its one setting. Only meaningful on 'session-button';
   // absent means a default five-minute timer, so a button authored without one
@@ -252,6 +284,9 @@ export type ShapeElement = {
   // deliberately NOT here — occupancy rides the avatar presence op, so a chair
   // can't be left stuck by someone who disconnected.
   chairFacing?: ChairFacing;
+  // Room (docs/specs/009-elements/office.md "Room"): the wall its doorway is in, or 'none' for a closed room.
+  // Absent = DEFAULT_ROOM_DOOR ('s', the front wall).
+  roomDoor?: RoomDoor;
   // --- The collaboration family (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md) ---------------------
   // One value per participant (docs/specs/012-collaboration/participant-responses.md), shared by the estimate card and the
   // temperature check. At most one entry per participant: re-casting REPLACES,
@@ -333,6 +368,10 @@ export type ShapeElement = {
   pieAnimSpeed?: AnimationSpeed;
   pieAnimRepeat?: boolean;
   chartLegend?: boolean;
+  // Show Values (docs/specs/009-elements/pie-chart.md): each mark's number printed on the chart. Absent = off.
+  chartValues?: boolean;
+  // Show Axis (docs/specs/009-elements/pie-chart.md): the value axis, its tick labels and gridlines. Absent = off.
+  chartAxis?: boolean;
   // Legend placement (docs/specs/009-elements/pie-chart.md); ignored when `chartLegend` is false. Missing /
   // undefined === 'right', the historical default.
   chartLegendPosition?: ChartLegendPosition;
@@ -347,6 +386,20 @@ export type ShapeElement = {
   // Legend (docs/specs/009-elements/pie-chart.md): the colour-coded rows. Only meaningful on the 'legend'
   // kind; bounded in validate.ts.
   legendItems?: LegendItem[];
+  // Sankey diagram (docs/specs/009-elements/sankey.md): the flows (by node name), the nodes somebody
+  // recoloured, and how the diagram draws. Only meaningful on the 'sankey' kind; bounded in validate.ts.
+  // Absent options read as their defaults: bands blended, end nodes to the right, amounts shown, no unit.
+  sankeyFlows?: SankeyFlow[];
+  sankeyNodes?: SankeyNodeStyle[];
+  sankeyLinkColor?: SankeyLinkColor;
+  sankeyAlign?: SankeyAlign;
+  sankeyValueLabel?: SankeyValueLabel;
+  sankeyUnit?: string;
+  sankeyLeftover?: SankeyLeftover;
+  sankeyLeftoverName?: string;
+  sankeyAnim?: SankeyAnim;
+  sankeyAnimSpeed?: AnimationSpeed;
+  sankeyAnimRepeat?: boolean;
   // Chart palette (docs/specs/009-elements/pie-chart.md): which categorical ramp the slices / series take
   // when they carry no colour of their own. Only meaningful on the chart
   // kinds; absent = the tab theme's palette, as before.
@@ -387,6 +440,17 @@ export type ShapeElement = {
   // applied to the whole tree; absent = 'tree', the one arrangement growth
   // shipped with, so every map already drawn keeps its shape.
   mindFlow?: MindFlow;
+  // How far apart the map's nodes sit (docs/specs/009-elements/mind-node.md "Spacing"). Read off the ROOT like
+  // `mindFlow`; absent = 'comfortable', the gaps every map had before, so no map moves.
+  mindSpacing?: MindSpacing;
+  // Flowchart (docs/specs/009-elements/flowchart.md): the chart this step or lane belongs to, minted as the
+  // id of its first step. The ONLY thing that makes a shape a step: a diamond without it is a diamond.
+  flowchartId?: string;
+  // Which way the chart flows, written to every step together so no single delete loses it. Absent =
+  // down, or right once the chart has lanes.
+  flowDirection?: FlowchartDirection;
+  // The chart's lane this step sits in. Absent, or naming a lane that is gone, reads as the first lane.
+  flowLaneId?: ElementId;
   // Page masthead (docs/specs/009-elements/page-element.md): the fixed heading + subtitle above the body.
   // Meaningful on the 'page' kind, and reused by two web components
   // (docs/specs/009-elements/web-components-and-no-groups.md) for the same job — a single-line heading beside the
@@ -402,6 +466,48 @@ export type ShapeElement = {
   // Plain strings, not rich runs: a title has one look, set by the element.
   pageTitle?: string;
   pageSubtitle?: string;
+  // Card slots (docs/specs/009-elements/card.md): media at the top left (absent = none), the header band (stored
+  // only when on) and up to six tag chips along the bottom. Title and meta line are pageTitle / pageSubtitle.
+  cardMedia?: CardMedia;
+  cardHeader?: boolean;
+  tags?: string[];
+  // Badge and Step number (docs/specs/009-elements/badge.md): the look (absent = the kind's default), the host it is
+  // attached to and the point it sits on (both or neither), and a step's Play in Order (stored only when true).
+  chipLook?: ChipLook;
+  attachedTo?: ElementId;
+  attachAt?: AttachPoint;
+  stepSequence?: boolean;
+  // A pointer note's tip, relative to its top-left (docs/specs/009-elements/pointer-note.md).
+  pointerTip?: { x: number; y: number };
+  // A diagram key's derived rows and the author's meaning per row id (docs/specs/009-elements/diagram-key.md).
+  keyRows?: KeyRow[];
+  keyMeanings?: Record<string, string>;
+  // A stack's arrangement (docs/specs/009-elements/stack.md); each absent = its default.
+  stackDirection?: StackDirection;
+  stackAlign?: StackAlign;
+  stackGap?: number;
+  stackPadding?: number;
+  stackColumns?: number;
+  // A sequence diagram's rows, Numbered and Play (docs/specs/009-elements/sequence-diagram.md).
+  sequenceParticipants?: SequenceElementParticipant[];
+  sequenceMessages?: SequenceElementMessage[];
+  sequenceNumbered?: boolean;
+  sequenceAnim?: 'play';
+  sequenceAnimSpeed?: AnimationSpeed;
+  sequenceAnimRepeat?: boolean;
+  // A mind node drawn as a person (docs/specs/009-elements/org-chart.md); absent = an ordinary mind node.
+  mindLook?: MindLook;
+  // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
+  boundaryStyle?: BoundaryStyle;
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows (a layer, tier or step each, with an
+  // optional note), a pyramid's variant (absent = pyramid) and the Concept animation with its speed and repeat.
+  conceptRows?: ConceptRow[];
+  pyramidVariant?: PyramidVariant;
+  conceptAnim?: ConceptAnim;
+  conceptAnimSpeed?: AnimationSpeed;
+  conceptAnimRepeat?: boolean;
+  // A hub's spokes (docs/specs/009-elements/concept-graphics.md); absent = drawn, `false` = off.
+  hubSpokes?: boolean;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), bounded in validate.ts: a stat row's KPI
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.
@@ -424,9 +530,9 @@ export type ShapeElement = {
   cellComments?: CellCommentThreads;
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
-  // is a TextSize bucket where 'scale' tracks the element's text size.
+  // is a TextSize preset where 'scale' tracks the element's text size (never a px: a marker is a dot).
   marker?: ShapeMarker;
-  markerSize?: TextSize;
+  markerSize?: TextSizePreset;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
   // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.
@@ -511,6 +617,8 @@ export type TextElement = {
   // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
+  // Drawing style (docs/specs/008-canvas/finish.md); unset follows the tab's.
+  finish?: Finish;
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
@@ -680,6 +788,8 @@ export type TableElement = {
   // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
+  // Drawing style (docs/specs/008-canvas/finish.md); unset follows the tab's.
+  finish?: Finish;
   // fillColor tints the cell background; strokeColor draws the grid
   // lines + border; textColor is the cell text.
   fillColor?: string;
@@ -778,6 +888,8 @@ export type StickyElement = {
   // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
+  // Drawing style (docs/specs/008-canvas/finish.md); unset follows the tab's.
+  finish?: Finish;
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
@@ -1013,6 +1125,8 @@ export type FreehandElement = {
   font?: string;
   textColor?: string;
   fillColor?: string;
+  // Keep this fill through a theme change (themeColourFields), as a shape may: a drawn scene's colours.
+  themeLockFill?: boolean;
   strokeColor?: string;
   strokeWidth?: BorderStroke;
   strokeStyle?: BorderStyle;
@@ -1392,6 +1506,8 @@ export type VideoElement = {
 // something that isn't theirs to edit.
 const UNTYPED_SHAPES = new Set<string>([
   'sticker',
+  // A fence (docs/specs/009-elements/fence.md) carries no label.
+  'fence',
   'session-button',
   'reaction-pad',
   'mode-button',
@@ -1402,6 +1518,8 @@ const UNTYPED_SHAPES = new Set<string>([
   'plan-card',
   'plan-view',
   'plan-sheet',
+  // A tab window shows another tab (docs/specs/009-elements/tab-window.md); there is nothing to write on it.
+  'tab-window',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {

@@ -22,7 +22,9 @@ import {
   isBoxed,
   supportsBorder,
   supportsShadow,
+  supportsFinish,
   type ArrowFlow,
+  type Finish,
   type ElementShadow,
   type ArrowThickness,
   type BorderRadius,
@@ -34,7 +36,8 @@ import {
   type IconWeight,
   type Padding,
   type ShapeKind,
-  isChartShape,
+  takesChartPalette,
+  isLegendShape,
   supportsRotation,
   type ChartPaletteId,
   type CodeThemeId,
@@ -42,11 +45,13 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
+  type TextSizePreset,
   clampLetterSpacing,
   clampTextArc,
   type FontWeight,
   type TextCase,
   type TextElement,
+  withInlineIcon,
 } from '@livediagram/document';
 import type { ShapeColorPreset } from './themes';
 import { isTechIconId } from './tech-icons';
@@ -104,9 +109,11 @@ export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
 // A chart's palette (docs/specs/009-elements/pie-chart.md). One field, like the code block's scheme: the
 // ramp is resolved at render, so this never touches the data and a slice the
 // user coloured deliberately keeps its colour.
-export function applyChartPaletteToEl(el: Element, id: ChartPaletteId): Element {
-  if (el.type !== 'shape' || !isChartShape(el.shape)) return el;
-  return { ...el, chartPalette: id };
+// A Legend takes one too, from its Legend section, so a legend and a chart set to the same palette stay in step;
+// `null` puts either back on the theme's ramp.
+export function applyChartPaletteToEl(el: Element, id: ChartPaletteId | null): Element {
+  if (el.type !== 'shape' || !(takesChartPalette(el.shape) || isLegendShape(el.shape))) return el;
+  return { ...el, chartPalette: id ?? undefined };
 }
 
 // A code block's colour scheme (docs/specs/009-elements/code-block.md). Its own kind of preset: the card
@@ -238,6 +245,17 @@ export function applyShadowToEl(el: Element, shadow: ElementShadow | null): Elem
   return supportsShadow(el) ? { ...el, shadow: shadow ? clampShadow(shadow) : undefined } : el;
 }
 
+// An element's own finish (docs/specs/008-canvas/finish.md). `null` is Follow Tab: the key is removed, never
+// stored as the tab's value, so the element follows a later tab change. Shapes, arrows, text, stickies and
+// tables only.
+export function applyFinishToEl(el: Element, finish: Finish | null): Element {
+  if (!supportsFinish(el)) return el;
+  if (finish) return { ...el, finish } as Element;
+  if (!('finish' in el)) return el;
+  const { finish: _cleared, ...rest } = el as Element & { finish?: Finish };
+  return rest as Element;
+}
+
 // Rotation in degrees clockwise about the centre, normalised to 0..359; 0 is
 // stored as undefined (upright). Boxed elements only.
 export function applyRotationToEl(el: Element, deg: number): Element {
@@ -279,7 +297,7 @@ export function applyMarkerToEl(el: Element, marker: ShapeMarker | null): Elemen
   return el.type === 'shape' ? { ...el, marker: marker ?? undefined } : el;
 }
 
-export function applyMarkerSizeToEl(el: Element, size: TextSize): Element {
+export function applyMarkerSizeToEl(el: Element, size: TextSizePreset): Element {
   return el.type === 'shape' ? { ...el, markerSize: size } : el;
 }
 
@@ -316,9 +334,7 @@ export function applyPaddingToEl(el: Element, padding: Padding): Element {
 // shapes only — the dedicated 'icon' shape has no inline-icon slot. Mirrors
 // dropIconOnElement in useInlineIconMutators.
 export function applyInlineIconToEl(el: Element, iconId: string, position: IconPosition): Element {
-  return el.type === 'shape' && el.shape !== 'icon'
-    ? { ...el, iconId, iconPosition: position }
-    : el;
+  return el.type === 'shape' && el.shape !== 'icon' ? withInlineIcon(el, iconId, position) : el;
 }
 
 // Apply a line preset (pattern × thickness × optional flow) to an arrow. A

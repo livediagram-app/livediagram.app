@@ -18,6 +18,7 @@ import {
   deleteDocumentOutput,
   findDocumentsOutput,
   listTemplatesOutput,
+  searchIconsOutput,
   listTrashOutput,
   readDocumentOutput,
   renameDocumentOutput,
@@ -34,6 +35,7 @@ import {
   readDocumentShape,
   renameDocumentShape,
   restoreDocumentShape,
+  searchIconsShape,
   shareDocumentShape,
   updateDocumentShape,
 } from '../mcp/schema';
@@ -138,12 +140,28 @@ export const mcpListTemplates = mcpTool('list_templates', {
   outputSchema: listTemplatesOutput,
 });
 
+export const mcpSearchIcons = mcpTool('search_icons', {
+  behaviour: 'read',
+  title: 'Search icons',
+  description:
+    'Find icons by what they show, best match first: the line-art set and the Technology set ' +
+    '(brand, cloud and database marks such as aws-lambda, postgresql, kafka). Each hit\u2019s id is ' +
+    'what an element\u2019s "iconId" takes; an iconId that names no icon is refused. An emoji- id draws ' +
+    'in the viewer\u2019s colour emoji, which a PNG preview cannot draw: it shows a disc labelled emoji there.',
+  inputSchema: searchIconsShape,
+  outputSchema: searchIconsOutput,
+});
+
 export const mcpCreateDocument = mcpTool('create_document', {
   behaviour: 'write',
   title: 'Create a document',
   description:
-    'Create a new document from diagram elements you produce. The full element format is ' +
-    'documented inline on the "tabs" argument below. ' +
+    'Create a new document: a diagram (flowchart, architecture, org chart, mind map, sequence, ER), a whiteboard, a ' +
+    'slide deck or presentation (a tab from the "blank-slide-deck" template, then change_pages adds the slides), an ' +
+    'article or report (write_article), an infographic, a Plan board or a spreadsheet. Each tab takes a "graph" ' +
+    '(nodes and edges, laid out in the template look: ' +
+    'sizes, elbows, side exits, loops round the outside, title and key), "mermaid", raw "elements" (the full ' +
+    'format is documented inline on the "tabs" argument below) or a "template". ' +
     'Pass one tab, or several to build a multi-tab document in one call (an ' +
     'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
     'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
@@ -173,8 +191,11 @@ export const mcpUpdateDocument = mcpTool('update_document', {
   title: 'Update a document',
   description:
     'Edit an existing tab. mode "replace" swaps the whole tab’s elements (validated + ' +
-    'auto-laid-out); mode "ops" applies an ordered list of add/update/remove against ' +
-    'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout). On an event-storming tab, ' +
+    'auto-laid-out) and paints every element in the tab’s theme, its own colours replaced (a sticky keeps its own); ' +
+    'mode "ops" keeps the colours it is given, and applies an ordered list of add/update/remove against ' +
+    'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or ' +
+    'takes "edits": edit operations as text (insert between, wrap in a frame, connect, layout a selection, ' +
+    'place beside another element), the form each lint finding\u2019s fix is written in. On an event-storming tab, ' +
     'event-storming notes you add or move land on the board’s horizontal lanes (240px apart, ' +
     'lane 0 centred at y=100). Returns an inline PNG.',
   inputSchema: updateDocumentShape,
@@ -186,7 +207,8 @@ export const mcpShareDocument = mcpTool('share_document', {
   title: 'Share a document',
   description:
     'Create a shareable link to a document so anyone with the URL can open it — no ' +
-    'sign-in required. Choose "view" (read-only, the default) or "edit". Returns the ' +
+    'sign-in required. Choose "participate" (the default: comment, add stickies and vote), ' +
+    '"view" (read-only) or "edit". Returns the ' +
     'link URL. Use after creating or finding a document to hand it to teammates.',
   inputSchema: shareDocumentShape,
   outputSchema: shareDocumentOutput,
@@ -288,10 +310,15 @@ export const mcpChangeCardTypes = mcpTool('change_card_types', {
   description:
     'Add, edit or delete a document’s card types (the kinds of card its boards hold, like Task ' +
     'or Bug), with custom fields by name: add {name, color, glyph, fields, custom, defaultStatus, ' +
-    'excludedStatuses}, set {type, ...}, delete {type} (its cards go to the Trash), add_default_types ' +
+    'excludedStatuses, display, tabs, detailsLabel}, set {type, ...; editCustom renames a field or replaces a ' +
+    'choice field’s options in place}, delete {type} (its cards go to the Trash), add_default_types ' +
     '(any of Project, Task, Note, Idea and Action it lacks). ' +
-    'Checked and saved together; answers the ids it made. A board shows a new type only once it takes it: ' +
-    'see change_board.',
+    'A type is a name, a colour, a glyph, built-in fields (Title and Status always), up to 12 custom fields, ' +
+    'a card face per size (display: Minimal is one line, Compact a title over one row, Detailed a header, the ' +
+    'title, what sits under it and a footer; a board picks its size) and its item panel’s tabs. Up to 32 types ' +
+    'and 24 fields each. A type renamed earlier in the same call still answers to its former name. ' +
+    'Checked and saved together; answers the ids it made and each type as list_items lists it. A board shows ' +
+    'a new type only once it takes it: see change_board.',
   inputSchema: changeCardTypesShape,
   outputSchema: changeCardTypesOutput,
 });
@@ -323,11 +350,16 @@ export const mcpChangeSheet = mcpTool('change_sheet', {
   behaviour: 'destructive',
   title: 'Change a sheet',
   description:
-    'Change a sheet, in order: set {at, rows} writes rows of values from a cell (text read as typed in en-GB, a ' +
-    'leading = a formula), clear {range}, format {range, format}, insert_rows {at, count}, insert_cols {at, ' +
-    'count}, delete_rows {rows}, delete_cols {cols}, rename {title}, sort {by, range}, freeze {rows, cols}. ' +
-    'Cells by A1, rows by number, columns by letter. A formula that cannot be read is refused, naming the cell. ' +
-    'Everyone with the document open sees each change at once.',
+    'Change a sheet, in order: design {design} lays an empty sheet out as a template is (heading, tables with ' +
+    'totals, formats, dropdown and checkbox columns, fields, notes, charts; in a look and an accent, widths fitted, ' +
+    'header frozen), set {at, rows} writes rows of values from a cell (text read as typed in en-GB, a leading = a ' +
+    'formula), clear {range}, format {range, format}, border {range, sides}, merge {range}, unmerge {range}, ' +
+    'resize {cols or rows, px or fit}, insert_rows {at, count}, insert_cols {at, count}, delete_rows {rows}, ' +
+    'delete_cols {cols}, rename {title}, sort {by, range}, freeze {rows, cols}, filter {range}, validate {range, ' +
+    'rule} (dropdowns, checkboxes, number, date and text rules), conditional_format {range, when or scale, style}, ' +
+    'chart {type, range} (a chart over the cells, read live), clear_charts {range}. Cells by A1, rows by number, columns by letter. A ' +
+    'formula that cannot be read is refused, naming the cell. Everyone with the document open sees each change at ' +
+    'once.',
   inputSchema: changeSheetShape,
   outputSchema: changeSheetOutput,
 });
@@ -336,9 +368,10 @@ export const mcpAddSheet = mcpTool('add_sheet', {
   behaviour: 'write',
   title: 'Add a sheet',
   description:
-    'Put a new Sheet (a spreadsheet) on a tab, beside what the tab holds, titled uniquely on the tab, blank or ' +
-    'filled from A1 with rows of values or CSV text read as typed. Then read and change it with read_sheet and ' +
-    'change_sheet.',
+    'Put a new Sheet (a spreadsheet) on a tab, beside what the tab holds, titled uniquely on the tab: blank, ' +
+    'filled from A1 with rows of values or CSV text read as typed, or laid out from a design as a template is ' +
+    '(change_sheet’s design), the Sheet sized to show it. Then read and change it with read_sheet and change_sheet. ' +
+    'A document of its own sheet is create_document with the blank-spreadsheet template, its sheet "Sheet 1".',
   inputSchema: addSheetShape,
   outputSchema: addSheetOutput,
 });
@@ -347,13 +380,16 @@ export const mcpChangePages = mcpTool('change_pages', {
   behaviour: 'destructive',
   title: 'Change Illustrate pages',
   description:
-    'Change the pages of a tab in Illustrate mode, in order, as one edit: add {kind, layout, ...} an ' +
+    'Build a slide deck or presentation, an infographic or a logo: change the pages of a tab in Illustrate mode, in ' +
+    'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} an ' +
     'infographic, slide or logo page, set {page, name, size, orientation, background, locked}, layout ' +
-    '{page, layout}, move {page, to}, duplicate {page}, delete {page}. A tab in another mode, named by tabId, ' +
+    '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
+    "other page of its kind, every slide say, takes that page's background). A tab in another mode, named by tabId, " +
     'is switched into Illustrate. The answer gives every page with its rectangle in canvas coordinates, the ' +
     "same as an element's x and y in update_document (the layout view prints positions from the content's " +
     'corner instead). A layout fills a page with sample text: read_document view "pages" lists it, with each ' +
-    "list's items, to replace. Articles are written with write_article. " +
+    "list's items, to replace. A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
+    'mocha, ocean, forest...), a page\u2019s background its own. Articles are written with write_article. ' +
     'Everyone with the document open sees it at once.',
   inputSchema: changePagesShape,
   outputSchema: changePagesOutput,
@@ -365,7 +401,8 @@ export const mcpWriteArticle = mcpTool('write_article', {
   description:
     'Write an article (a document of text on pages, in Illustrate mode) from Markdown: a new one, or replace ' +
     'or append to one named by id or title, with its look. The editor flows the text onto as many pages as ' +
-    'it needs. read_document with view "pages" shows each article as Markdown to edit and write back.',
+    'it needs. read_document with view "pages" shows each article as Markdown to edit and write back. Not for ' +
+    'slides: an article flows as running text, where a slide deck is slide pages, made with change_pages.',
   inputSchema: writeArticleShape,
   outputSchema: writeArticleOutput,
 });
@@ -386,6 +423,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpFindDocuments,
   mcpReadDocument,
   mcpListTemplates,
+  mcpSearchIcons,
   mcpCreateDocument,
   mcpAddTab,
   mcpUpdateDocument,

@@ -11,6 +11,7 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState } fro
 import {
   filteredOutRows,
   single,
+  valuesOnly,
   type GridRange,
   type Selection,
   type Sheet,
@@ -120,6 +121,9 @@ export type SheetController = {
 const SheetControllerContext = createContext<SheetController | null>(null);
 
 export const SheetControllerProvider = SheetControllerContext.Provider;
+
+// What a Participant is told when a change to a Sheet's shape is held back (docs/specs/013-workspace/share-roles.md).
+export const SHAPE_REFUSED = "Only an editor can change a Sheet's rows, columns or settings.";
 
 export function useSheetController(): SheetController {
   const c = useContext(SheetControllerContext);
@@ -244,12 +248,20 @@ export function useSheetControllerState(opts: {
   // it too, so it is held back here rather than shown and taken away.
   const canShape = opts.canShape ?? opts.canEdit;
   const shapeRefused = useLatest(() => {
-    opts.toast("Only an editor can change a Sheet's rows, columns or settings.");
+    opts.toast(SHAPE_REFUSED);
+    return false;
+  });
+  // And its cells' values, never their formats (sheet.md "Who may do what"): a paste or a fill lands as its values,
+  // and a change of formats alone is refused. The api holds a non-Editor's writes to the same (valuesOnly).
+  const formatRefused = useLatest(() => {
+    opts.toast("Only an editor can format a Sheet's cells.");
     return false;
   });
   const write = useCallback(
-    (w: SheetWrite, kind: SheetChangeKind, alongside?: ItemUndoStep) => {
-      if (!canShape && w.kind !== 'cells') return shapeRefused.current();
+    (given: SheetWrite, kind: SheetChangeKind, alongside?: ItemUndoStep) => {
+      if (!canShape && given.kind !== 'cells') return shapeRefused.current();
+      const w = canShape ? given : valuesOnly(given);
+      if (!w) return formatRefused.current();
       const before = store.sheet(sheet.id);
       const refused = store.write(sheet.id, w, alongside ? { alongside } : {});
       if (refused) return false;
@@ -258,16 +270,23 @@ export function useSheetControllerState(opts: {
       if (before) onWrote.current?.(before, w);
       return true;
     },
-    [store, sheet.id, onWrote, canShape, shapeRefused],
+    [store, sheet.id, onWrote, canShape, shapeRefused, formatRefused],
   );
   // Writes to several sheets as one change, one undo step (Insert Cells, a cut other sheets' formulas follow).
   const writeAll = useCallback(
     (
-      edits: readonly { sheetId: string; write: SheetWrite }[],
+      given: readonly { sheetId: string; write: SheetWrite }[],
       kind: SheetChangeKind,
       opts?: { unchecked?: boolean },
     ) => {
-      if (!canShape && edits.some((e) => e.write.kind !== 'cells')) return shapeRefused.current();
+      if (!canShape && given.some((e) => e.write.kind !== 'cells')) return shapeRefused.current();
+      const edits = canShape
+        ? given
+        : given.flatMap((e) => {
+            const write = valuesOnly(e.write);
+            return write ? [{ ...e, write }] : [];
+          });
+      if (!edits.length) return formatRefused.current();
       const before = store.sheet(sheet.id);
       const refused = store.writeAll(edits, opts?.unchecked ? { unchecked: true } : {});
       if (refused) return false;
@@ -278,7 +297,7 @@ export function useSheetControllerState(opts: {
         for (const e of edits) if (e.sheetId === sheet.id) onWrote.current?.(before, e.write);
       return true;
     },
-    [store, sheet.id, onWrote, canShape, shapeRefused],
+    [store, sheet.id, onWrote, canShape, shapeRefused, formatRefused],
   );
   const focusGrid = useCallback(() => gridEl?.focus({ preventScroll: true }), [gridEl]);
   return {

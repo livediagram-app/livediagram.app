@@ -54,12 +54,14 @@ export type CommandContext = {
   // True when the single selection already carries a looping animation
   // (boxed `animation` or arrow `flow`) — gates "Clear animation".
   hasAnimation: boolean;
+  // True when the tab holds a step number, so Renumber Steps has something to number.
+  tabHasSteps?: boolean;
   // The single shape's current marker, or null — gates "Clear marker" and
   // hides the redundant "add <current marker>" entry.
   marker: ShapeMarker | null;
-  // Owner-only: the Share command is hidden for non-owners (a visitor with
-  // an edit link gets "Make a copy" instead, which isn't a palette command).
-  isOwner: boolean;
+  // The owner, or a joined member of a team document: the Share command is hidden for
+  // visitors (one with an edit link gets "Make a copy" instead, which isn't a palette command).
+  canShare: boolean;
   // Offline document (docs/specs/006-document/offline-mode.md): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
@@ -82,6 +84,15 @@ export type CommandContext = {
   // A whiteboard (docs/specs/023-draw-mode/draw-mode.md): its dock replaces the format painter, so
   // search does not offer it either.
   whiteboard?: boolean;
+  // Plan mode (docs/specs/026-plan/plan-mode.md) leaves Eraser and Format out of the tool dropdown, so search
+  // does too.
+  planMode?: boolean;
+  // Facilitate (docs/specs/008-canvas/avatar-mode.md "Where it is offered") is the one mode offering Avatar, as in
+  // the dropdown.
+  facilitateMode?: boolean;
+  // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
+  // offers none of them: no selection verbs, no layout cleanup, no Eraser or Format.
+  tabLocked?: boolean;
   // Are timeline lanes on right now (docs/specs/021-event-storming/event-storming.md Phase 6)? Names the verb
   // honestly rather than offering a switch whose direction you have to guess.
   // Can this deployment read a photographed wall (docs/specs/021-event-storming/event-storming.md Phase 8)? False
@@ -118,6 +129,8 @@ export type CommandHandlers = {
   fitToScreen: () => void;
   autoLayout: (choice?: AutoLayoutChoice) => void;
   autoAlign: () => void;
+  // Number every step on the tab 1, 2, 3 in reading order (docs/specs/009-elements/step-number.md).
+  renumberSteps: () => void;
   openExport: () => void;
   openImport: () => void;
   openSettings: () => void;
@@ -147,7 +160,11 @@ export const CANVAS_TOOLS: {
   needsContent?: boolean;
   // Changes the document, so a view-only visitor never sees it.
   mutates?: boolean;
+  // Edits the tab's elements, so it goes on a locked tab and in Plan mode, as in the dropdown.
+  editsElements?: boolean;
   desktopOnly?: boolean;
+  // Offered in Facilitate only, as in the dropdown.
+  facilitateOnly?: boolean;
 }[] = [
   { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
   { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
@@ -157,6 +174,7 @@ export const CANVAS_TOOLS: {
     keywords: 'eraser erase rub out delete remove e',
     needsContent: true,
     mutates: true,
+    editsElements: true,
   },
   {
     id: 'format',
@@ -164,6 +182,7 @@ export const CANVAS_TOOLS: {
     keywords: 'format painter copy style paste style match appearance brush',
     needsContent: true,
     mutates: true,
+    editsElements: true,
   },
   {
     id: 'laser',
@@ -183,6 +202,7 @@ export const CANVAS_TOOLS: {
     name: 'Avatar Mode',
     keywords: 'avatar walk character presence walkthrough tour steer w',
     needsContent: true,
+    facilitateOnly: true,
   },
   {
     // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). A presenter tool like the Laser and Spotlight,
@@ -217,7 +237,9 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
       t.id !== ctx.canvasTool &&
       !(t.needsContent && ctx.canvasEmpty) &&
       !(t.desktopOnly && ctx.isMobile) &&
+      !(t.facilitateOnly && !ctx.facilitateMode) &&
       !(t.mutates && ctx.isReadOnly) &&
+      !(t.editsElements && (ctx.tabLocked || ctx.planMode)) &&
       !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),
   ).map((t) => ({
     id: `tool:${t.id}`,
@@ -267,7 +289,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
 
   const out: EditorCommand[] = [];
 
-  out.push(...selectionCommands(ctx, h));
+  if (!ctx.tabLocked) out.push(...selectionCommands(ctx, h));
 
   // History. Offered only when there's actually something to un/redo, so
   // the palette never lists a dead verb.
@@ -293,7 +315,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // clearing what's selected.
   // Event-storming board verbs (docs/specs/021-event-storming/event-storming.md). Only on such a board: a timeline
   // lane on an ordinary diagram would be a grid for nothing.
-  if (ctx.esBoard) {
+  if (ctx.esBoard && !ctx.tabLocked) {
     if (ctx.photoImportAvailable) {
       out.push({
         id: 'photo-import',
@@ -342,7 +364,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: 'canvas background pattern grid options style backdrop',
     run: h.openCanvasOptions,
   });
-  if (ctx.isOwner && !ctx.isOffline && !ctx.workbench) {
+  if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
       name: 'Share Document',
@@ -354,27 +376,39 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // Layout cleanup (docs/specs/008-canvas/layout-cleanup.md, here and nowhere else) + the app-level dialogs, then the
   // view-safe verbs last so selection / document commands keep the better
   // ranks for ambiguous queries.
-  out.push({
-    id: 'auto-layout',
-    name: AUTO_LAYOUT_CHOICES.smart.commandName,
-    keywords: AUTO_LAYOUT_CHOICES.smart.keywords,
-    run: () => h.autoLayout(),
-  });
-  // One command per explicit layout style (docs/specs/008-canvas/layout-cleanup.md "Layout styles").
-  for (const styleId of AUTO_LAYOUT_STYLE_IDS) {
+  // Layout cleanup moves the tab's elements, so a locked tab offers none of it.
+  if (!ctx.tabLocked) {
     out.push({
-      id: `auto-layout-${styleId}`,
-      name: AUTO_LAYOUT_CHOICES[styleId].commandName,
-      keywords: AUTO_LAYOUT_CHOICES[styleId].keywords,
-      run: () => h.autoLayout(styleId),
+      id: 'auto-layout',
+      name: AUTO_LAYOUT_CHOICES.smart.commandName,
+      keywords: AUTO_LAYOUT_CHOICES.smart.keywords,
+      run: () => h.autoLayout(),
     });
+    // One command per explicit layout style (docs/specs/008-canvas/layout-cleanup.md "Layout styles").
+    for (const styleId of AUTO_LAYOUT_STYLE_IDS) {
+      out.push({
+        id: `auto-layout-${styleId}`,
+        name: AUTO_LAYOUT_CHOICES[styleId].commandName,
+        keywords: AUTO_LAYOUT_CHOICES[styleId].keywords,
+        run: () => h.autoLayout(styleId),
+      });
+    }
+    out.push({
+      id: 'auto-align',
+      name: 'Auto-align to Grid',
+      keywords: 'align grid snap straighten cleanup arrange',
+      run: () => h.autoAlign(),
+    });
+    if (ctx.tabHasSteps) {
+      out.push({
+        id: 'renumber-steps',
+        name: 'Renumber Steps',
+        keywords:
+          'renumber step steps number numbers order sequence walkthrough 1 2 3 reading order',
+        run: h.renumberSteps,
+      });
+    }
   }
-  out.push({
-    id: 'auto-align',
-    name: 'Auto-align to Grid',
-    keywords: 'align grid snap straighten cleanup arrange',
-    run: h.autoAlign,
-  });
   out.push({
     id: 'import',
     name: 'Import…',

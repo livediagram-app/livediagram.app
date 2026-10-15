@@ -4,6 +4,7 @@ import {
   buildElementIndex,
   createPinnedArrow,
   createShape,
+  MIND_CONNECTOR_LOOK,
 } from '@livediagram/document';
 import {
   arrowViewGeometry,
@@ -27,6 +28,16 @@ describe('sameArrowViewFrame', () => {
     ).toBe(true);
   });
 
+  it("anchors a shared end's dashes there, and sees the offset change", () => {
+    const bus = { ...arrow, strokeStyle: 'dashed' as const, exactEnd: true };
+    const frame = deriveArrowViewFrame(bus, buildElementIndex([a, b, bus]));
+    expect(frame.dashOffset).toBeTypeOf('number');
+    expect(
+      deriveArrowViewFrame(arrow, buildElementIndex([a, b, arrow])).dashOffset,
+    ).toBeUndefined();
+    expect(sameArrowViewFrame(frame, { ...frame, dashOffset: frame.dashOffset! + 1 })).toBe(false);
+  });
+
   it('sees an end that moved', () => {
     const before = deriveArrowViewFrame(arrow, buildElementIndex([a, b, arrow]));
     const after = deriveArrowViewFrame(arrow, buildElementIndex([a, { ...b, y: 30 }, arrow]));
@@ -47,5 +58,38 @@ describe('arrowViewGeometry', () => {
     expect(sameRects([r], [{ ...r }])).toBe(true);
     expect(sameRects([r], [{ ...r, x: 2 }])).toBe(false);
     expect(sameRects([], [r])).toBe(false);
+  });
+});
+
+// docs/specs/009-elements/mind-node.md "Connectors": under Professional a mind connector draws on the
+// map's bracket, and offers no bow or elbow handle, since the stored arrow has no such bend.
+describe('deriveArrowViewFrame in a finish', () => {
+  const root = { ...createShape('mind-node', 0, 0), id: 'root', width: 250, height: 80 };
+  const kid = {
+    ...createShape('mind-node', 314, 98),
+    id: 'kid',
+    width: 250,
+    height: 80,
+    mindParentId: 'root',
+  };
+  const link = {
+    ...createPinnedArrow('root', 'e', 'kid', 'w'),
+    ...MIND_CONNECTOR_LOOK,
+  };
+  const index = buildElementIndex([root, kid, link]);
+
+  it('draws the Professional bracket with no handles', () => {
+    const frame = deriveArrowViewFrame(link, index, 'professional');
+    expect(frame.style).toBe('angled');
+    expect(frame.pathD).toBe('M 250 40 L 282 40 L 282 138 L 314 138');
+    expect(frame.curveAnchors).toBeNull();
+    expect(frame.curveControl).toBeNull();
+    expect(frame.elbowPoint).toBeNull();
+  });
+
+  it('keeps the stored curve and its handle in Flexible', () => {
+    const frame = deriveArrowViewFrame(link, index);
+    expect(frame.style).toBe('curved');
+    expect(frame.curveControl).not.toBeNull();
   });
 });

@@ -1,7 +1,8 @@
 // The share-link family on a document: list, mint, revoke (one or all), the
-// share password, and extend. Every route here is owner-only and every one of
-// them changes who can reach the document, so the cases below are mostly about
-// two questions — does the owner gate hold, and does the request get exactly
+// share password, and extend. Every route here is for the owner (or, on a team
+// document, any joined member) and every one of them changes who can reach the
+// document, so the cases below are mostly about two questions — does that gate
+// hold, and does the request get exactly
 // the link it asked for rather than a more permissive one.
 //
 // The retraction of the "expires soon" warning at each site has its own suite
@@ -17,6 +18,7 @@ const { db } = vi.hoisted(() => ({
     extendShareLink: vi.fn(),
     generateShareCode: vi.fn(() => 'CODE1234'),
     getDocument: vi.fn(),
+    getMembership: vi.fn(),
     getCommunityPostForDocument: vi.fn(async () => null),
     getTrashedDocumentMeta: vi.fn(async () => null),
     // No Community post stands in the way of a password here.
@@ -66,12 +68,19 @@ function roomEnv() {
 function ctxFor(
   method: string,
   path: string,
-  opts: { body?: unknown; owner?: string | null; env?: Env; waitUntil?: boolean } = {},
+  opts: {
+    body?: unknown;
+    owner?: string | null;
+    clerkUserId?: string | null;
+    env?: Env;
+    waitUntil?: boolean;
+  } = {},
 ) {
   const dispatched: Promise<unknown>[] = [];
   const ctx = makeTestRouteContext(method, path, {
     body: opts.body,
     owner: opts.owner === undefined ? 'user_1' : opts.owner,
+    clerkUserId: opts.clerkUserId,
     env: opts.env,
     ...(opts.waitUntil
       ? {
@@ -165,6 +174,59 @@ describe('handleDocumentShareRoutes — the owner gate', () => {
   });
 });
 
+// A team's library belongs to every joined member (docs/specs/013-workspace/team-shared-documents.md),
+// so any of them may share its documents, checked on the verified account id.
+describe('handleDocumentShareRoutes — a team document', () => {
+  const teamDoc = { id: 'd_1', ownerId: 'user_owner', teamId: 'team_1', tabs: [] };
+  beforeEach(() => db.getDocument.mockResolvedValue(teamDoc));
+
+  it('lets a joined member list, mint and revoke, and records them as the sharer', async () => {
+    db.getMembership.mockResolvedValue({ status: 'joined' });
+    email.emailEnabled.mockReturnValue(true);
+    const member = { owner: 'user_member', clerkUserId: 'user_member', env: roomEnv().env };
+    expect(
+      (await handleDocumentShareRoutes(ctxFor('GET', '/api/documents/d_1/share', member).ctx))
+        ?.status,
+    ).toBe(200);
+    const mint = ctxFor('POST', '/api/documents/d_1/share', {
+      ...member,
+      body: {},
+      waitUntil: true,
+    });
+    expect((await handleDocumentShareRoutes(mint.ctx))?.status).toBe(201);
+    await mint.settled();
+    expect(db.getMembership).toHaveBeenCalledWith(expect.anything(), 'team_1', 'user_member');
+    expect(timeline.recordShareLinkCreated).toHaveBeenCalledWith(
+      expect.anything(),
+      teamDoc,
+      'edit',
+      'user_member',
+    );
+    expect(email.notifyFirstShare).toHaveBeenCalledWith(expect.anything(), 'user_member');
+    const revoke = ctxFor('DELETE', '/api/documents/d_1/share/c1', member);
+    expect((await handleDocumentShareRoutes(revoke.ctx))?.status).toBe(204);
+  });
+
+  it('403s an invited (not yet joined) member and a stranger', async () => {
+    for (const membership of [{ status: 'invited' }, null]) {
+      db.getMembership.mockResolvedValue(membership);
+      const { ctx } = ctxFor('POST', '/api/documents/d_1/share', {
+        owner: 'user_member',
+        clerkUserId: 'user_member',
+        body: {},
+      });
+      expect((await handleDocumentShareRoutes(ctx))?.status).toBe(403);
+    }
+    expect(db.createShareLink).not.toHaveBeenCalled();
+  });
+
+  it('403s a member id that arrives only as the unsigned guest header', async () => {
+    db.getMembership.mockResolvedValue({ status: 'joined' });
+    const { ctx } = ctxFor('GET', '/api/documents/d_1/share', { owner: 'user_member' });
+    expect((await handleDocumentShareRoutes(ctx))?.status).toBe(403);
+  });
+});
+
 describe('GET /api/documents/:id/share', () => {
   // The column holds only a hash, and even the owner gets just whether one is
   // set (docs/specs/013-workspace/share-password.md).
@@ -194,6 +256,17 @@ describe('POST /api/documents/:id/share — minting a link', () => {
     const res = await handleDocumentShareRoutes(ctx);
     expect(res!.status).toBe(201);
     expect(db.createShareLink).toHaveBeenCalledWith({}, 'd_1', 'CODE1234', 'edit', 'never', null);
+  });
+
+  // A body that parses to something other than an object (`null`, a string) read a field off it and threw: a 500.
+  it('treats a null or non-object body like an empty one, minting the default link', async () => {
+    for (const body of [null, 'edit', [1]]) {
+      db.createShareLink.mockClear();
+      const { ctx } = ctxFor('POST', '/api/documents/d_1/share', { body });
+      const res = await handleDocumentShareRoutes(ctx);
+      expect(res!.status, JSON.stringify(body)).toBe(201);
+      expect(db.createShareLink).toHaveBeenCalledWith({}, 'd_1', 'CODE1234', 'edit', 'never', null);
+    }
   });
 
   it('honours an explicit view role', async () => {

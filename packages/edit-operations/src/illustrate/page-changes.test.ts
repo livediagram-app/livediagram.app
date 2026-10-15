@@ -9,6 +9,7 @@ import {
   type IllustratePage,
   type Tab,
 } from '@livediagram/document';
+import { getBuiltInTheme } from '@livediagram/document';
 import { layoutCatalogueFor } from '@livediagram/templates';
 import { applyPageChanges, backgroundPatch } from './page-changes';
 import { pageSummaries } from './summary';
@@ -91,6 +92,33 @@ describe('adding', () => {
     const out = run(tabOf(), [{ op: 'add', kind: 'slide' }]);
     expect(kinds(out.tab)).toEqual(['slide']);
     expect(out.lines).toEqual(['Added page 1 (slide, Slide (16:9)).']);
+  });
+
+  it('turns a blank of the kind asked for (a blank deck’s one empty slide) into the page asked for', () => {
+    const blank = tabOf({ pages: [page('p1', { kind: 'slide' })] });
+    const slide = layoutCatalogueFor('slide').layouts[0]!;
+    const out = run(blank, [
+      { op: 'add', kind: 'slide', name: 'Cover', layout: slide.id },
+      { op: 'add', kind: 'slide', name: 'Problem' },
+    ]);
+    expect(illustratePagesOf(out.tab).map((p) => [p.id, p.name])).toEqual([
+      ['p1', 'Cover'],
+      ['pg-1', 'Problem'],
+    ]);
+    // Of another kind, named or holding anything, the one page stays and the new one follows it.
+    for (const kept of [
+      tabOf({ pages: [page('p1', { kind: 'infographic' })] }),
+      tabOf({ pages: [page('p1', { kind: 'slide', name: 'Title' })] }),
+    ])
+      expect(illustratePagesOf(run(kept, [{ op: 'add', kind: 'slide' }]).tab)).toHaveLength(2);
+  });
+
+  it('never takes a page the same call added as a blank', () => {
+    const out = run(tabOf(), [
+      { op: 'add', kind: 'slide' },
+      { op: 'add', kind: 'slide', name: 'Two' },
+    ]);
+    expect(illustratePagesOf(out.tab).map((p) => p.name ?? null)).toEqual([null, 'Two']);
   });
 
   it('adds after the last page, with its fields, a layout and a place', () => {
@@ -202,6 +230,25 @@ describe('setting', () => {
     );
   });
 
+  it('keeps a picture background through a pattern change, and a colour replaces it', () => {
+    const picture = {
+      kind: 'image' as const,
+      imageId: 'img-1',
+      overlay: { kind: 'dark' as const, strength: 0.6 },
+    };
+    const tab = tabOf({ pages: [page('p1', { background: { fill: picture } })] });
+    expect(pageSummaries(tab)[0]!.background).toBe('image, dark 60%');
+    const patterned = run(tab, [{ op: 'set', page: 1, background: { pattern: 'dots' } }]);
+    expect(illustratePagesOf(patterned.tab)[0]!.background).toEqual({
+      fill: picture,
+      pattern: 'dots',
+    });
+    const coloured = run(tab, [{ op: 'set', page: 1, background: { color: '#fef9c3' } }]);
+    expect(illustratePagesOf(coloured.tab)[0]!.background).toEqual({
+      fill: { kind: 'solid', color: '#fef9c3' },
+    });
+  });
+
   it('unlocks before editing, and refuses an edit of a locked page', () => {
     const tab = tabOf({ pages: [page('p1', { locked: true })] });
     expect(refusal(tab, [{ op: 'set', page: 1, name: 'A' }]).code).toBe('page_locked');
@@ -302,6 +349,44 @@ describe('laying out, moving, duplicating, deleting', () => {
     );
   });
 
+  it('takes a delete of a page an earlier delete took with its article as done', () => {
+    const pages = [
+      page('s1'),
+      page('a1', { kind: 'article', flow: 'f' }),
+      page('a2', { kind: 'article', flow: 'f' }),
+      page('a3', { kind: 'article', flow: 'f' }),
+    ];
+    const tab = tabOf({ pages, articles: { f: { blocks: [] } } });
+    const out = run(tab, [
+      { op: 'delete', page: 'a1' },
+      { op: 'delete', page: 'a2' },
+      { op: 'delete', page: 'a3' },
+    ]);
+    expect(illustratePagesOf(out.tab).map((p) => p.id)).toEqual(['s1']);
+    expect(out.lines).toEqual([
+      'Deleted the article on page 2 (3 pages, writing and 0 elements).',
+      'Page a2 went with what an earlier delete in this change took.',
+      'Page a3 went with what an earlier delete in this change took.',
+    ]);
+  });
+
+  it('takes a delete naming a page an earlier delete took, by its name, as done', () => {
+    const pages = [
+      page('s1'),
+      page('a1', { kind: 'article', flow: 'f' }),
+      page('a2', { kind: 'article', flow: 'f', name: 'Chapter 2' }),
+    ];
+    const tab = tabOf({ pages, articles: { f: { blocks: [] } } });
+    const out = run(tab, [
+      { op: 'delete', page: 'a1' },
+      { op: 'delete', page: 'Chapter 2' },
+    ]);
+    expect(illustratePagesOf(out.tab).map((p) => p.id)).toEqual(['s1']);
+    expect(out.lines[1]).toBe(
+      'Page Chapter 2 went with what an earlier delete in this change took.',
+    );
+  });
+
   it('stops at the first refusal and writes nothing, naming the change', () => {
     const tab = tabOf({ pages: [page('p1')] });
     const r = refusal(tab, [
@@ -353,5 +438,59 @@ describe('worst case', () => {
     run(tab, changes);
     // Measured 29 to 57 ms on a loaded machine (load average 50); held at 2,000 ms for CI under load.
     expect(performance.now() - started).toBeLessThan(2000);
+  });
+});
+
+// docs/specs/007-editor/illustrate-pages.md "Layouts": a layout placed on a themed tab takes the theme where it sets no
+// colour, as any element made on the tab does.
+describe('a layout on a themed tab', () => {
+  it('takes the tab’s theme', () => {
+    const out = run(tabOf({ pages: [page('p1', { kind: 'slide' })], theme: 'mocha' }), [
+      { op: 'layout', page: 1, layout: 'slide-three-points' },
+    ]);
+    const circle = out.tab.elements.find((el) => el.type === 'shape' && el.shape === 'circle') as
+      (Element & { strokeColor?: string }) | undefined;
+    expect(circle?.strokeColor).toBe(getBuiltInTheme('mocha').elementStroke);
+  });
+});
+
+// docs/specs/024-agents/illustrate-for-agents.md "change_pages": apply_background_to_all, the
+// Background tab's Apply to All.
+describe('giving every page of a kind one background', () => {
+  const slide = (id: string, extra: Partial<IllustratePage> = {}) =>
+    page(id, { kind: 'slide', orientation: 'landscape', ...extra });
+
+  it('sets a slide, then gives every other slide its background, in one call', () => {
+    const tab = tabOf({ pages: [slide('s1'), slide('s2'), page('i1'), slide('s3')] });
+    const out = run(tab, [
+      { op: 'set', page: 1, background: { gradient: ['#1e1b4b', '#4c1d95'], pattern: 'dots' } },
+      { op: 'apply_background_to_all', page: 1 },
+    ]);
+    expect(out.lines[1]).toBe('Gave 2 other slide pages the background of page 1.');
+    const bg = Object.fromEntries(pageSummaries(out.tab).map((p) => [p.id, p.background]));
+    expect(bg.s2).toBe(bg.s1);
+    expect(bg.s3).toBe(bg.s1);
+    expect(bg.i1).toBeNull();
+  });
+
+  it('says how many locked slides kept their own', () => {
+    const tab = tabOf({
+      pages: [
+        slide('s1', { background: { fill: { kind: 'solid', color: '#0f172a' } } }),
+        slide('s2', { locked: true }),
+        slide('s3'),
+      ],
+    });
+    expect(run(tab, [{ op: 'apply_background_to_all', page: 's1' }]).lines[0]).toBe(
+      'Gave 1 other slide page the background of page 1; 1 locked kept their own.',
+    );
+  });
+
+  it('is refused with no other page of the kind', () => {
+    const tab = tabOf({ pages: [slide('s1'), page('i1')] });
+    expect(refusal(tab, [{ op: 'apply_background_to_all', page: 1 }])).toMatchObject({
+      code: 'no_other_pages',
+      change: 0,
+    });
   });
 });

@@ -18,7 +18,12 @@
 // `schemaVersion` so a future breaking change can be refused with a clear
 // message instead of pasting nonsense.
 
-import { isValidElement, migrateIncomingElements, type Element } from '@livediagram/document';
+import {
+  isValidElement,
+  migrateIncomingElements,
+  ORIGINAL_ONLY_FIELDS,
+  type Element,
+} from '@livediagram/document';
 import type { SheetJson } from '@livediagram/sheets';
 import { sheetsForClipboard, stashSheetSeeds } from './sheet-seeds';
 
@@ -67,20 +72,10 @@ export type ClipboardEnvelope = {
 // Exported for the in-app buffer, which a paste falls back to when the OS
 // clipboard write is refused, so both routes carry the same thing.
 export function stripIdentity(el: Element): Element {
-  const out = { ...el } as Element & {
-    commentThread?: unknown;
-    cellComments?: unknown;
-    responses?: unknown;
-    action?: unknown;
-    actions?: unknown;
-  };
-  delete out.commentThread;
-  // A Sheet's cell threads go the same way (docs/specs/029-sheets/sheet.md "Cell comments").
-  delete out.cellComments;
-  delete out.responses;
-  delete out.action;
-  delete out.actions;
-  return out;
+  const out: Record<string, unknown> = { ...el };
+  // The same list a Duplicate drops (freshCopyFields), so the two routes to a copy agree.
+  for (const field of ORIGINAL_ONLY_FIELDS) delete out[field];
+  return out as Element;
 }
 
 /** The clipboard text for a selection. */

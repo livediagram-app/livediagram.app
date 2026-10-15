@@ -23,7 +23,7 @@ changes.
 | contour              | `PathElement.nodes` (the first) and each of `PathElement.subpaths`; `pathContours(el)`                   |
 | logo kit             | `exportLogoKit`; `LOGO_KIT_PNG_SIZES`; `encodeIco`; Export dialog format `'logo-kit'` (`LogoKitPanel`)   |
 | guide preferences    | `UserPreferences.logoGuides` (absent is on), `.logoGuidesHidden`, `.logoGuideStrength`                   |
-| Show Me (logo)       | `useLogoTour`, `LogoShowMeButton`, `LogoTourStage`; `logoTourSteps`; `LogoTourApi`                       |
+| Show Me (logo)       | `usePageTour`, `PageShowMeButton`, `PageTourStage`; `logoTourSteps`; `PageTourApi`                       |
 
 No synonyms: the UI says **Logo**, **Guides**, **Mirror**, **Combine** (Unite, Subtract, Intersect,
 Exclude), **Wordmark**, **Logo Kit**.
@@ -178,7 +178,7 @@ Exclude), **Wordmark**, **Logo Kit**.
 
 ### Beside the cog (`apps/live/components/canvas/LogoTitleBar.tsx`)
 
-- Before the cog, cog-sized (`h-6 w-6`) `Tooltip` buttons: Tidy Up (`lucideWandSparkles`; a
+- Before the cog, cog-sized (`h-6 w-6`) `Tooltip` buttons: Tidy (`lucideWandSparkles`; a
   `TidyUpButton` re-rendered by `useSelectionOf`, mounted only with the editor context and a
   selection store, `useHasSelectionStore`), Mirror (`MirrorAxisGlyph` of the page's axis) and
   Guides (`lucideGrid3x3`), the last two `aria-pressed` while on. Both are `TitlePopoverButton`s
@@ -193,8 +193,8 @@ Exclude), **Wordmark**, **Logo Kit**.
   dimmed while off. All three show their names beside the icon unless
   `useIsMobileViewport()`. `logoTitleBarRoom(true, !mobile)` (room for Tidy Up always kept: 72 px
   each named, or 28 px each icon-only, three times) is reserved from the label.
-- Layout tiles: `LayoutThumb` hands a logo page's tile to `LogoLayoutThumb`
-  (`components/canvas/logo-layout-thumb.tsx`) when `EditorContext` has an `activeTab` (else the
+- Layout tiles: `LayoutThumb` hands a logo page's tile to `LayoutRenderThumb`
+  (`components/canvas/layout-render-thumb.tsx`) when `EditorContext` has an `activeTab` (else the
   wireframe): `logoLayoutSvg(tab, page, layout)` = `renderTabToSvg({ ...tab, elements:
 buildPageLayout(layout, page) }, { page })`, memoised on the layout, the page's rect and
   background, the tab's theme and font, and `useIconCatalogs()`; set as the markup of a div of the
@@ -208,17 +208,18 @@ DashedAddButton.tsx`, shared with `AddCardTypeButton`) labelled **Start From Scr
   `edit.startBlank(pageId)`, which sets `IllustratePage.startedBlank: true` (refused on a locked
   page); `showsLayoutCard` skips a page with it. Hide stays the session-only `layoutsHidden`.
 
-### Show Me (`apps/live/components/tour/LogoTour.tsx`, `logo-tour-steps.ts`)
+### Show Me (`apps/live/components/tour/PageTour.tsx`, `logo-tour-steps.ts`)
 
-- `IllustratePages` calls `useLogoTour({ openLayouts, closePanel })` and hands the panel of a logo
-  page `showMe={<LogoShowMeButton tour onStart={() => freeze(pageId)} />}`, which
-  `IllustratePagePanel` heads beside the labelled `HelpArticleLink` (`logoPages`); `LogoTourStage`
-  (`article="logoPages"`, `helpLabel="Logo Pages Help"`, overlay layer) is mounted once.
-- `freeze(pageId)` imports `logo-tour-steps` at the press and fixes `logoTourSteps(combineShowing)`
-  (`combineShowing`: `[aria-label="Combine shapes"]` is in the DOM): `layouts` (rings
-  `[data-page-panel]`, `prepare` reopens the panel on Layouts, `cleanup` closes it), `guides` and
-  `mirror` (the page's `[data-logo-title-bar]` buttons by name), `combine` (the Combine button, else
-  an unanchored card), `outro`.
+- A logo page's Show Me is one of the page Show Mes ([Illustrate tour](../illustrate-tour.md)):
+  `IllustratePages` calls `usePageTour(editable)` and hands every page's panel
+  `showMe={{ button: <PageShowMeButton tour kind onStart={() => freeze(pageId, kind)} />, article }}`, which
+  `IllustratePagePanel` heads beside the labelled `HelpArticleLink` (`PAGE_TOUR_HELP.logo`: `logoPages`, "Logo Pages
+  Help"); `PageTourStage` (overlay layer) is mounted once.
+- `freeze(pageId, 'logo')` imports `page-tour-steps` at the press and fixes `logoTourSteps(combineShowing)`
+  (`combineShowing`: `[aria-label="Combine shapes"]` is in the DOM): `layouts` (rings `[data-page-panel]`, `requires`
+  the page's cog, `prepare` opens the panel on Layouts through `requestPagePanel`, `cleanup` closes it), `guides` and
+  `mirror` (the page's `[data-logo-title-bar]` buttons by name), `combine` (the Combine button, else an unanchored
+  card), `outro`. The same steps follow `LOGO_WELCOME` as the Illustrate tour's Logo track.
 - `UI · Started · LogoTour` on the press; `UI · Ended · LogoTourCompleted` / `LogoTourSkipped` on
   finish.
 
@@ -485,7 +486,7 @@ Measured (vitest on this branch):
 
 - Copy: card **Logo** "A square artboard for a logo, with guides and drawing tools."; panel tabs
   **Background**, **Layouts**; in-page card **Start From a Layout** with **Start From Scratch**;
-  title bar **Tidy Up** (tooltip "Tidy Up: straighten the selected drawing"), **Mirror**,
+  title bar **Tidy** (tooltip "Tidy: straighten the selected drawing"), **Mirror**,
   **Guides** (tooltip "<name>: on" while on); Guides popover: **Show Guides**, the six part tiles,
   **Strength**; menu item **Mirror Copy**; Mirror popover:
   **Mirror While Drawing**, **Axis** (Vertical, Horizontal, Both, Radial), **Copies**, **Merge Into
@@ -495,9 +496,11 @@ Measured (vitest on this branch):
   `Exclude Shapes`, `Mirror Copy`; Export card **Logo Kit** ("An SVG, PNGs from 16 to 1024 px and a
   favicon.ico, in one .zip."), subtitle "Download a logo page as an SVG, PNGs and a favicon.",
   button **Download .zip**.
-- Settings: Editor, then **Illustrate**: Logo Guides, Logo Guide Strength, and Logo Centre Lines,
-  Logo Diagonals, Logo Safe Area, Logo Circles, Logo Square and Logo Grid, each with `alsoIn` "a logo
-  page's Guides button" (the guides live in the Guides popover beside the cog, not the page panel).
+- Settings: Editor, then **Illustrate**, one **Logo Pages** section: the Logo Guides switch (with
+  `alsoIn` "a logo page's Guides button": the guides live in the Guides popover beside the cog, not
+  the page panel), and nested under it while it is on, Logo Guide Strength and **Guides Shown**, a
+  `toggleGroup` of one chip per guide (Centre Lines, Diagonals, Safe Area, Circles, Square, Grid), each
+  its own preference and telemetry pair.
 
 ## Accessibility
 
@@ -552,9 +555,9 @@ Measured (vitest on this branch):
 | Mirror merge                                      | `apps/live/lib/mirror-merge.test.ts`                                                                                           |
 | The Logo palette and its markers                  | `apps/live/components/palette/PaletteLogoTab.test.tsx`, `apps/live/components/palette/MarkerPaletteTile.test.tsx`              |
 | The palette follows the page                      | `apps/live/hooks/canvas/useLogoPaletteSwitch.test.tsx`                                                                         |
-| Layout tiles rendered                             | `apps/live/components/canvas/logo-layout-thumb.test.tsx`                                                                       |
+| Layout tiles rendered                             | `apps/live/components/canvas/layout-render-thumb.test.tsx`                                                                     |
 | No quick-connect pluses                           | `apps/live/components/canvas/LayerSelectionChrome.test.ts`                                                                     |
-| Show Me                                           | `apps/live/components/tour/LogoTour.test.tsx`                                                                                  |
+| Show Me                                           | `apps/live/components/tour/PageTour.test.tsx`                                                                                  |
 
 ## Assets and external resources
 

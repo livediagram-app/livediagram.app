@@ -13,6 +13,18 @@ describe('canvas-motion.css', () => {
     );
   });
 
+  // docs/specs/004-interface-design/motion.md "Reduced motion": an animated element rests still and visible. The
+  // shared reduced-motion rule stops the animation and nothing else; #638 added `opacity: 0` to it for the pointer
+  // tip's pulse and so hid every animated arrow, icon, chart and concept graphic for those who asked for less motion.
+  it('stops every animation under reduced motion without hiding the elements', () => {
+    const css = read('./canvas-motion.css');
+    const shared = /\.lvd-arrow-flow,[^{]*\{([^}]*)\}/.exec(css);
+    if (!shared)
+      throw new Error('the shared reduced-motion rule is missing from canvas-motion.css');
+    expect(shared[1]).toContain('animation: none');
+    expect(shared[1]).not.toMatch(/opacity|display|visibility/);
+  });
+
   it('is imported by the editor stylesheet', () => {
     expect(read('./globals.css')).toContain("@import './canvas-motion.css';");
   });
@@ -34,5 +46,13 @@ describe('the editor fade-in rule', () => {
       '[data-editor-tabbar]',
       '[data-zoom-cluster]',
     ]);
+  });
+});
+
+// The element plane (docs/specs/008-canvas/blueprints/canvas-performance.md): without this rule the plane passes the
+// canvas's cursor down and a tool switch or a pan restyles every element on the board.
+describe('the element plane rule', () => {
+  it('stops the canvas cursor at the plane', () => {
+    expect(read('./globals.css')).toMatch(/\[data-element-plane\]\s*\{[^}]*cursor:\s*auto/);
   });
 });

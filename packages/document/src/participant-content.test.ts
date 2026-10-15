@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { createImage, createPinnedArrow, createShape } from './factories';
 import type { Element, Tab } from './index';
 import { applyMindMoves, planMindGrowth } from './mind-grow';
+import { createFlowchartStart } from './flowchart';
+import { addFlowchartLane, applyFlowchartStep, planFlowchartStep } from './flowchart-grow';
 import {
   applyParticipantOp,
+  MIND_GROW_PX_PER_CHAR,
   participantTabChange,
   type ParticipantOpResult,
 } from './participant-content';
@@ -594,6 +597,36 @@ describe('mind maps and images (docs/specs/013-workspace/share-roles.md)', () =>
     expect((t.tab.elements[2] as { to: Endpoint }).to).toEqual(arrow.to);
   });
 
+  // docs/specs/009-elements/mind-node.md "A node grows to fit its label": writing a longer label on anyone's node
+  // grows it in the same change, which must land whole; a taller node with no new words is still a resize.
+  it("writes on anyone's mind node and lets it grow to fit, never resizing it otherwise", () => {
+    const before = tabOf(map());
+    const c1 = map()[1] as Element & { height: number };
+    const relabelled = { ...c1, label: 'A much longer idea', height: c1.height + 24 } as Element;
+    const allowed = participantTabChange(before, tabOf([map()[0]!, relabelled, map()[2]!]), ME);
+    expect(allowed?.elements[1]).toMatchObject({
+      label: 'A much longer idea',
+      height: c1.height + 24,
+    });
+    const stretched = { ...c1, height: c1.height + 24 } as Element;
+    expect(participantTabChange(before, tabOf([map()[0]!, stretched, map()[2]!]), ME)).toBeNull();
+    const shrunk = { ...c1, label: 'x', height: c1.height - 10 } as Element;
+    expect(participantTabChange(before, tabOf([map()[0]!, shrunk, map()[2]!]), ME)).toBeNull();
+    // Grown, but only as far as its label could need: one changed letter never stretches it 10 million px.
+    // The room's op lands it at the ceiling; a whole-tab change asking past it does not land at all.
+    const stretchedFar = { ...c1, label: 'Ab', height: 1e7 } as Element;
+    const capped = applied(
+      applyParticipantOp(before, { kind: 'update', element: stretchedFar }, ME),
+    );
+    expect(capped.tab.elements[1]).toMatchObject({
+      label: 'Ab',
+      height: c1.height + 2 * MIND_GROW_PX_PER_CHAR,
+    });
+    expect(
+      participantTabChange(before, tabOf([map()[0]!, stretchedFar, map()[2]!]), ME),
+    ).toBeNull();
+  });
+
   it('keeps what it added addable: its connector stays on the map, its node stays one', () => {
     const own = { ...createPinnedArrow('root', 'e', 'c1', 'w'), id: 'a2', addedBy: ME };
     const tab = tabOf([...map(), sticky('s1'), own as Element]);
@@ -649,5 +682,58 @@ describe('removing mind nodes (docs/specs/013-workspace/share-roles.md)', () => 
       result: 'refused',
       reason: 'not-own',
     });
+  });
+});
+
+describe('flowcharts (docs/specs/009-elements/flowchart.md "Share roles")', () => {
+  const chart = (): Element[] => {
+    const start = { ...createFlowchartStart(0, 0), id: 'start', flowchartId: 'start' };
+    return [start];
+  };
+
+  it('grows a step, laying out the steps and lanes someone else added', () => {
+    const laned = addFlowchartLane(
+      applyFlowchartStep(
+        chart(),
+        planFlowchartStep(chart(), 'start', 'next', { step: 'p1', connector: 'c1' })!,
+      ),
+      'start',
+      ['l1', 'l2'],
+    );
+    const before = tabOf(laned);
+    const plan = planFlowchartStep(laned, 'p1', 'next', { step: 'p2', connector: 'c2' })!;
+    const allowed = participantTabChange(before, tabOf(applyFlowchartStep(laned, plan)), ME);
+    expect(allowed).not.toBeNull();
+    const added = allowed!.elements.filter((e) => (e as { addedBy?: string }).addedBy === ME);
+    expect(added.map((e) => e.id).sort()).toEqual(['c2', 'p2']);
+  });
+
+  it('refuses a step in no chart on the tab, and an arrow from a step to anything else', () => {
+    const tab = tabOf([...chart(), sticky('s1')]);
+    const stray = { ...createFlowchartStart(0, 400), id: 'x', flowchartId: 'elsewhere' } as Element;
+    expect(applyParticipantOp(tab, { kind: 'add', element: stray, at: 2 }, ME).result).toBe(
+      'refused',
+    );
+    const arrow = { ...createPinnedArrow('start', 's', 's1', 'n'), id: 'a9' } as Element;
+    expect(applyParticipantOp(tab, { kind: 'add', element: arrow, at: 2 }, ME).result).toBe(
+      'refused',
+    );
+  });
+
+  it("moves anyone's step and resizes a chart's lane, never retyping a step", () => {
+    const start = chart()[0]!;
+    const lane = { ...createShape('lane', 0, 0), id: 'l1', flowchartId: 'start' } as Element;
+    const tab = tabOf([start, lane]);
+    const moved = { ...start, x: 300, y: 40, shape: 'diamond' } as Element;
+    const r = applied(applyParticipantOp(tab, { kind: 'update', element: moved }, ME));
+    expect(r.tab.elements[0]).toMatchObject({ x: 300, y: 40, shape: 'stadium' });
+    const grown = { ...lane, width: 1400, height: 260 } as Element;
+    const g = applied(applyParticipantOp(tab, { kind: 'update', element: grown }, ME));
+    expect(g.tab.elements[1]).toMatchObject({ width: 1400, height: 260 });
+  });
+
+  it("never removes someone else's step", () => {
+    const tab = tabOf(chart());
+    expect(applyParticipantOp(tab, { kind: 'remove', id: 'start' }, ME).result).toBe('refused');
   });
 });

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ModeBanner } from './ModeBanner';
 import { usePaletteStripBox } from './PaletteTray';
 
@@ -36,6 +36,49 @@ function Banner({ onAction }: { onAction: () => void }) {
 }
 
 describe('the palette tray', () => {
+  it("follows the strip's card when its centring box moves it without resizing it", () => {
+    // The card sits in SnapWidth's two boxes; the outer one takes its whole-pixel width a beat later, which moves
+    // the centred card without the card resizing again.
+    const observed: Element[] = [];
+    let fire: () => void = () => {};
+    const Original = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = class {
+      constructor(cb: () => void) {
+        fire = cb;
+      }
+      observe(el: Element) {
+        observed.push(el);
+      }
+      unobserve() {}
+      disconnect() {}
+    } as unknown as typeof ResizeObserver;
+    try {
+      const root = document.createElement('div');
+      root.setAttribute('data-toolbar-palette', '');
+      const outer = document.createElement('div');
+      const inner = document.createElement('div');
+      const card = document.createElement('div');
+      card.setAttribute('data-tour-id', 'palette');
+      const rect = vi
+        .spyOn(card, 'getBoundingClientRect')
+        .mockReturnValue(new DOMRect(300, 12, 600, 46));
+      inner.append(card);
+      outer.append(inner);
+      root.append(outer);
+      document.body.append(root);
+      render(<Banner onAction={() => {}} />);
+      expect(observed).toContain(card);
+      expect(observed).toContain(outer);
+      rect.mockReturnValue(new DOMRect(380, 12, 440, 46));
+      act(() => fire());
+      const slot = (document.querySelector('[data-palette-tray]') as HTMLElement).parentElement!;
+      expect(slot.style.left).toBe('380px');
+      expect(slot.style.width).toBe('440px');
+    } finally {
+      globalThis.ResizeObserver = Original;
+    }
+  });
+
   it('hangs a mode banner from the strip, flush with its bottom edge and no wider', () => {
     mountStrip();
     const onAction = vi.fn();

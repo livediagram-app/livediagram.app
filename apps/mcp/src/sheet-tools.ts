@@ -66,8 +66,8 @@ export function registerSheetTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpAddSheet, async (args, extra) => {
     const api = clientFor(env, requireToken(extra as Extra));
     const { documentId, ...input } = args;
-    if (input.rows && input.csv !== undefined)
-      return errorResult('Give the first cells as rows or as csv, not both.');
+    if ([input.rows, input.csv, input.design].filter((x) => x !== undefined).length > 1)
+      return errorResult('Give the first cells as rows, csv or a design, one of them.');
     const result = await addSheet(api, documentId, input, 'mcp');
     if (!result.ok) return errorResult(result.message);
     const { ok: _ok, ...sheet } = result;

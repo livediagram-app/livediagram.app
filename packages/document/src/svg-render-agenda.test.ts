@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
+import { agendaFitHeight } from './svg-render-agenda';
+import { buildTab } from './tab-builders';
 import { createShape } from './factories';
 import type { ShapeElement, Tab } from './index';
 
@@ -51,5 +53,46 @@ describe('Agenda export', () => {
 
   it('invites segments when there are none', () => {
     expect(svgOf(agenda({ agendaItems: [] }))).toContain('No segments yet');
+  });
+});
+
+describe('agendaFitHeight', () => {
+  const eight = Array.from({ length: 8 }, (_, i) => ({ label: `Step ${i + 1}`, minutes: 15 }));
+
+  it('is tall enough to draw every segment, where a shorter card leaves the last off', () => {
+    const short = agenda({ width: 360, height: 300, agendaItems: eight });
+    expect(svgOf(short)).not.toContain('Step 8');
+    const fitted = agendaFitHeight(short);
+    expect(fitted).toBeGreaterThan(300);
+    expect(svgOf({ ...short, height: fitted })).toContain('Step 8');
+    // Wrapped names and the current step's drain bar take room too.
+    const long = eight.map((s) => ({ ...s, label: `${s.label} with a long name that wraps` }));
+    expect(agendaFitHeight({ ...short, agendaItems: long, agendaCurrent: 2 })).toBeGreaterThan(
+      fitted,
+    );
+  });
+
+  it('leaves room for the current step, so a session started later still draws the last', () => {
+    const short = agenda({ width: 360, height: 300, agendaItems: eight });
+    // Fitted before the session starts, then the last segment becomes current.
+    const fitted = agendaFitHeight(short);
+    expect(svgOf({ ...short, height: fitted, agendaCurrent: 7 })).toContain('Step 8');
+    expect(svgOf({ ...short, height: fitted, agendaCurrent: 0 })).toContain('Step 8');
+  });
+
+  it('never shrinks a card, and leaves one with no segments as it is', () => {
+    expect(agendaFitHeight(agenda({ width: 330, height: 900 }))).toBe(900);
+    expect(agendaFitHeight(agenda({ height: 120, agendaItems: [] }))).toBe(120);
+  });
+
+  it('is applied as a tab is built from elements', () => {
+    const tab = buildTab(
+      't',
+      'T',
+      [agenda({ height: 300, agendaItems: eight })],
+      'preserve',
+      undefined,
+    );
+    expect(tab.elements[0]!.type === 'shape' && tab.elements[0]!.height).toBeGreaterThan(300);
   });
 });

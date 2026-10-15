@@ -3,6 +3,7 @@
 // in the package so both the editor (apps/live) and the MCP worker (apps/mcp,
 // docs/specs/015-api/mcp-server.md) theme tabs identically. Custom-theme (per-owner) resolution +
 // deriveNewBoxedColours stay in apps/live/lib/themes.ts, which re-exports this.
+import { themeHalf } from './theme-halves';
 import {
   deriveTextColorForBg,
   type BackgroundPattern,
@@ -52,11 +53,17 @@ export type ThemeId =
   | 'rainbow'
   | 'pastel'
   | 'tropical'
-  | 'autumn'
-  | 'jewel'
   // Formal: standard notations. UML paints each shape kind its
   // conventional colour (docs/specs/011-theme/canvas-and-theme-dialog.md).
-  | 'uml';
+  | 'uml'
+  // Seasonal: reached only through the seasonal looks (docs/specs/011-theme/canvas-and-theme-dialog.md
+  // "Seasonal looks"), never listed in a theme picker.
+  | 'sparkle'
+  | 'spring'
+  | 'pumpkin'
+  | 'yuletide'
+  | 'frost'
+  | 'evergreen';
 
 // One branch colour for a multi-colour theme: the fill / stroke / text
 // triple a single limb of the hierarchy is painted with. Unlike the
@@ -116,19 +123,13 @@ export type ThemeDefinition = {
   // ThemeCategoryBrowser now (docs/specs/008-canvas/canvas-and-palette.md), so every theme is reachable by
   // category and there is no "Show more" left to sit behind.
   extra?: boolean;
+  // A seasonal theme (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks"): it paints a tab that wears
+  // it like any theme, but no theme picker lists it and the Mashup never draws it; a seasonal look is the way in.
+  seasonal?: true;
 };
 
-// Picker grouping, mirroring the template catalogue's categories. Themes
-// are bucketed by colour temperament so the picker reads as titled
-// sections (Cool / Warm / Neutral / Multi-colour) instead of one flat
-// grid. The mapping lives beside the catalogue so a new theme slots into
-// a section with a one-line edit; the picker renders sections in
-// THEME_CATEGORIES order and skips empties.
-export type ThemeCategory = 'cool' | 'warm' | 'dark' | 'multicolour' | 'formal';
-
-// Which chrome a viewer is looking at (docs/specs/007-editor/live-app.md). The Default colour scheme is
-// the only one that reads it: every other scheme paints the same colours for
-// everybody, because those colours are stored in the document.
+// Which chrome a viewer is looking at (docs/specs/007-editor/live-app.md). Every scheme reads it: each viewer sees a
+// tab in the half of its scheme that matches their appearance (docs/specs/011-theme/light-and-dark.md).
 export type Appearance = 'light' | 'dark';
 
 // The id of the Default colour scheme. Stays 'brand' — it is the value saved
@@ -164,12 +165,16 @@ export function isDefaultSchemeBackdrop(backdrop: {
   );
 }
 
-// The backdrops a scheme could have painted. One for every scheme except
-// Default, which has a light and a dark half — and the preserve-customs rules
-// have to accept BOTH as "still on the scheme", or a tab saved in one
-// appearance looks hand-coloured to a viewer in the other and freezes.
+// The backdrops a scheme could have painted: every scheme has a light and a dark half
+// (docs/specs/011-theme/light-and-dark.md), and the preserve-customs rules have to accept BOTH as "still on the
+// scheme", or a tab saved in one appearance looks hand-coloured to a viewer in the other and freezes.
 function backdropVariants(scheme: ThemeDefinition): ThemeDefinition[] {
-  return scheme.id === DEFAULT_SCHEME_ID ? [DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK] : [scheme];
+  if (scheme.id === DEFAULT_SCHEME_ID) return [DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK];
+  const written = THEMES.find((t) => t.id === scheme.id);
+  return [
+    scheme,
+    ...(written ? [written, themeHalf(written, 'light'), themeHalf(written, 'dark')] : []),
+  ];
 }
 
 // Resolve an id to a BUILT-IN ThemeDefinition, falling back to Default. A
@@ -187,7 +192,9 @@ export function getBuiltInTheme(
   appearance: Appearance = 'light',
 ): ThemeDefinition {
   if (id === undefined || id === DEFAULT_SCHEME_ID) return defaultScheme(appearance);
-  return THEMES.find((t) => t.id === id) ?? defaultScheme(appearance);
+  // Every theme in the viewer's half (docs/specs/011-theme/light-and-dark.md).
+  const theme = THEMES.find((t) => t.id === id);
+  return theme ? themeHalf(theme, appearance) : defaultScheme(appearance);
 }
 
 // Which element-colour fields each element type writes from a theme.
@@ -284,6 +291,31 @@ export function recolourElementForTheme(el: Element, theme: ThemeDefinition): El
     if (value) patch[element] = value;
   }
   return { ...el, ...patch } as Element;
+}
+
+// A page layout's elements in its tab's theme (docs/specs/007-editor/illustrate-pages.md "Layouts"): a layout is built
+// without colours of its own where it means the theme's, so each colour an element leaves unset takes the tab's
+// built-in theme's, as any element made on the tab does; a colour the layout set (an accent, a callout's tint) is
+// kept. The default scheme and a custom theme (resolved only in the editor) leave it as built. On a dark page (`dark`,
+// pageIsDark) the theme's dark half is used, so the layout's words are light on it: an unset colour would have been
+// inked light for the page, and a colour written from the light half was dark on dark.
+export function themedForTab<E extends Element>(
+  elements: readonly E[],
+  themeId: string | undefined,
+  { dark = false }: { dark?: boolean } = {},
+): E[] {
+  const found =
+    themeId && themeId !== DEFAULT_SCHEME_ID ? THEMES.find((t) => t.id === themeId) : undefined;
+  if (!found) return [...elements];
+  const theme = themeHalf(found, dark ? 'dark' : 'light');
+  return elements.map((el) => {
+    const patch: Record<string, string> = {};
+    for (const { element, theme: key } of themeColourFields(el)) {
+      const value = theme[key];
+      if (value && (el as Record<string, unknown>)[element] === undefined) patch[element] = value;
+    }
+    return Object.keys(patch).length ? ({ ...el, ...patch } as E) : el;
+  });
 }
 
 // Soft theme switch: change the tab's theme but preserve every

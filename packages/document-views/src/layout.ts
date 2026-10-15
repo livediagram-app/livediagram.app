@@ -113,6 +113,17 @@ function exactLayout(model: ViewModel, options: LayoutOptions, origin: Origin) {
   return { lines: [...records.map((r) => r.line), ...arrowLines], records, arrows: arrowJson };
 }
 
+// Coordinates are printed from the content origin; a stored one is the printed one plus it, said once on the
+// header (before its rev) whenever the two differ (docs/specs/024-agents/document-views.md "The views").
+function withOrigin(header: string, origin: Origin): string {
+  const [x, y] = [Math.round(origin.x), Math.round(origin.y)];
+  if (x === 0 && y === 0) return header;
+  return header.replace(
+    / · rev \d+$/,
+    (rev) => ` · origin ${x},${y}: stored = shown + origin${rev}`,
+  );
+}
+
 export function layoutView(model: ViewModel, options: LayoutOptions = {}): ViewResult<LayoutView> {
   const origin = contentOrigin(model.printed);
   const header = headerLine(model.facts);
@@ -134,7 +145,12 @@ export function layoutView(model: ViewModel, options: LayoutOptions = {}): ViewR
     };
   }
   const exact = exactLayout(model, options, origin);
-  const fitted = fitLines({ header, lines: exact.lines, budget: options.budget, door });
+  const fitted = fitLines({
+    header: withOrigin(header, origin),
+    lines: exact.lines,
+    budget: options.budget,
+    door,
+  });
 
   return {
     text: fitted.text,

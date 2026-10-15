@@ -30,7 +30,6 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVote,
-  lucideZap,
 } from '@livediagram/icons/lucide';
 import { topCategorySlug } from '@livediagram/help-registry';
 import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
@@ -188,6 +187,18 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8 11l8-4M8 12h8M8 13l8 4" />
     </Glyph>
   ),
+  // A flowchart's own vocabulary: a Start over a Decision diamond, its two exits leaving by the
+  // corners. `auto-layout` draws plain boxes; the diamond is what makes this one a flowchart.
+  flowcharts: (
+    <Glyph>
+      <rect x="7.5" y="2.5" width="9" height="4" rx="2" />
+      <path d="M12 6.5v2.5" />
+      <path d="M12 9l4 3.5-4 3.5-4-3.5z" />
+      <path d="M8 12.5H5v5M16 12.5h3v5" />
+      <rect x="2.5" y="17.5" width="5" height="4" rx="0.5" />
+      <rect x="16.5" y="17.5" width="5" height="4" rx="0.5" />
+    </Glyph>
+  ),
   // The same map as an indented list: a bold root line, then bullets stepping
   // in a level each. The stepped indent is what makes it an outline rather
   // than the plain bullet list `checklists` or `markdown-import` would be.
@@ -218,6 +229,21 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="7" y="3.5" width="10" height="9" rx="2" />
       <path d="M5 15h14" />
       <path d="M8 15v5.5M16 15v5.5" />
+    </Glyph>
+  ),
+  // Three pointed pickets on two rails: a fence, not a grid.
+  fences: (
+    <Glyph>
+      <path d="M5 20V7l1.5-2.5L8 7v13M11 20V7l1.5-2.5L14 7v13M17 20V7l1.5-2.5L20 7v13" />
+      <path d="M3 10.5h18M3 15.5h18" />
+    </Glyph>
+  ),
+  // A room's walls with a doorway, a little table and a plant: an office floor plan.
+  'virtual-office': (
+    <Glyph>
+      <path d="M10 21H3V3h18v18h-7" />
+      <rect x="7" y="8" width="7" height="4" rx="1" />
+      <path d="M17.5 13v-3M16 10h3" />
     </Glyph>
   ),
   lanes: (
@@ -435,6 +461,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="12" cy="12" r="9" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
+  // A speech bubble over a little figure, under a dashed spotlight ring: a guided look at Avatar mode.
+  'avatar-tour': (
+    <Glyph>
+      <path d="M8 6h8a2 2 0 012 2v2a2 2 0 01-2 2h-3l-1 2-1-2H8a2 2 0 01-2-2V8a2 2 0 012-2z" />
+      <circle cx="12" cy="16" r="1.4" />
+      <path d="M10 20c0-1.2.9-2 2-2s2 .8 2 2" />
+      <circle cx="12" cy="12" r="10" strokeDasharray="1.6 1.4" />
+    </Glyph>
+  ),
   // A page with its colour band under a dashed spotlight ring: a guided look at Illustrate.
   'illustrate-tour': (
     <Glyph>
@@ -518,6 +553,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8 5.5V3.5a1 1 0 011-1h9.5a1 1 0 011 1v13a1 1 0 01-1 1H16" />
       <rect x="4.5" y="6" width="11.5" height="15.5" rx="1" />
       <path d="M10.25 10.5v6.5M7.75 14.5l2.5 2.5 2.5-2.5" />
+    </Glyph>
+  ),
+  // A slide with a window onto a small diagram: another tab shown live inside it.
+  'tab-windows': (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
+      <rect x="6.5" y="8" width="11" height="8" rx="1" />
+      <circle cx="9.5" cy="12" r="1.25" />
+      <circle cx="14.5" cy="12" r="1.25" />
+      <path d="M10.75 12h2.5" />
     </Glyph>
   ),
   'using-tabs': (
@@ -998,6 +1043,89 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   //
   // A labelled container that sits BEHIND its contents. `lanes` is banded; the
   // label tab is what makes this one a Frame.
+  // Two inputs merging into a node and splitting three ways: the shape of every Sankey.
+  'sankey-diagram': (
+    <Glyph>
+      <path d="M3 5h2M3 13h2M11 7v10M19 4v4M19 11v3M19 17v3" />
+      <path d="M5 4c4 0 2 4 6 4M5 14c4 0 2 2 6 2M11 9c4 0 4-3 8-3M11 12c4 0 4 0 8 1M11 15c4 0 4 3 8 3" />
+    </Glyph>
+  ),
+  // A node with its slots: a tile at the top left, a title and a meta line beside it, a tag along the bottom.
+  'cards-and-callouts': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2.5" />
+      <rect x="6" y="7" width="4" height="4" rx="1" />
+      <path d="M12.5 8h5.5M12.5 10.5h3.5M6 14.5h12" />
+      <rect x="6" y="16.5" width="5" height="1.5" rx=".75" />
+    </Glyph>
+  ),
+  // A box with a numbered disc riding its top-left corner.
+  'badges-and-step-numbers': (
+    <Glyph>
+      <rect x="6" y="7" width="15" height="12" rx="2" />
+      <circle cx="6" cy="7" r="3.5" fill="currentColor" stroke="none" />
+      <path d="M11 13h7" />
+    </Glyph>
+  ),
+  // Nested dashed zones, the outer one titled in a tab on its edge.
+  boundaries: (
+    <Glyph>
+      <rect x="3" y="6" width="18" height="14" rx="2" strokeDasharray="2.5 2" />
+      <rect x="5" y="3.5" width="7" height="3.5" rx="1" fill="currentColor" stroke="none" />
+      <rect x="9" y="10" width="9" height="7" rx="1.5" strokeDasharray="2 1.8" />
+    </Glyph>
+  ),
+  // A note box with a leader line out to a dot.
+  'pointer-notes': (
+    <Glyph>
+      <rect x="3" y="3.5" width="12" height="8" rx="1.5" />
+      <path d="M8 11.5 17 18.5" />
+      <circle cx="18" cy="19" r="2" fill="currentColor" stroke="none" />
+    </Glyph>
+  ),
+  // A dashed tray holding three evenly spaced boxes.
+  stacks: (
+    <Glyph>
+      <rect x="2.5" y="6" width="19" height="12" rx="2" strokeDasharray="2.5 2" />
+      <rect x="5" y="9" width="4" height="6" rx="1" />
+      <rect x="10" y="9" width="4" height="6" rx="1" />
+      <rect x="15" y="9" width="4" height="6" rx="1" />
+    </Glyph>
+  ),
+  // A legend: a solid and a dashed line sample, each beside its meaning.
+  'diagram-keys': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M6 9.5h4M13 9.5h5M13 14.5h5" />
+      <path d="M6 14.5h4" strokeDasharray="1.6 1.4" />
+    </Glyph>
+  ),
+  // One box over two, joined by an elbow trunk.
+  'org-charts': (
+    <Glyph>
+      <rect x="8" y="2.5" width="8" height="5" rx="1.5" />
+      <rect x="2" y="16.5" width="8" height="5" rx="1.5" />
+      <rect x="14" y="16.5" width="8" height="5" rx="1.5" />
+      <path d="M12 7.5V12M6 16.5V12h12v4.5" />
+    </Glyph>
+  ),
+  // Two heads over dashed lifelines, a call across and a reply back.
+  'sequence-diagrams': (
+    <Glyph>
+      <rect x="2" y="2" width="6" height="4" rx="1" />
+      <rect x="16" y="2" width="6" height="4" rx="1" />
+      <path d="M5 6v16M19 6v16" strokeDasharray="2 2" />
+      <path d="M5 11h12.5M15.5 9l2.5 2-2.5 2" />
+      <path d="M19 17H6.5" strokeDasharray="2 1.5" />
+    </Glyph>
+  ),
+  // A pyramid cut into three tiers.
+  'concept-graphics': (
+    <Glyph>
+      <path d="M12 3.5L21 20H3Z" />
+      <path d="M8.2 10.5h7.6M5.9 15h12.2" />
+    </Glyph>
+  ),
   frames: (
     <Glyph>
       <path d="M3.5 7.5V6a1.5 1.5 0 011.5-1.5h4.5V7.5" />
@@ -1352,13 +1480,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideCpu} />
     </Glyph>
   ),
-  // Palette → Popular: a bolt, for the tiles one tap away. Not the tab's own sparkles, which the
-  // AI Tools card already wears here.
-  popular: (
-    <Glyph>
-      <Prims prims={lucideZap} />
-    </Glyph>
-  ),
   // Two overlapping panels with the back one showing through.
   'panel-opacity': (
     <Glyph>
@@ -1484,6 +1605,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
         opacity="0.3"
       />
       <rect x="4" y="4" width="12" height="12" rx="2" />
+    </Glyph>
+  ),
+  // How an element is drawn: one box whose left half is a clean ruled edge and whose right half is two loose
+  // hand-drawn strokes, the crisp and the sketched finish in one outline.
+  finish: (
+    <Glyph>
+      <path d="M12 4H5.5a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 5.5 20H12" />
+      <path d="M11 3.6q5 -.6 9.2 .6M19.6 3.4q.8 8.4 -.2 17M20.4 19.6q-4.4 .8 -9.2 .2" />
+      <path d="M12.4 4.6q4 -.2 7 .4M18.8 5.2q.4 7 -.2 13.6" opacity="0.6" />
     </Glyph>
   ),
   // A selected box with a slim panel of swatches beside it: the panel is what

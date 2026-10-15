@@ -10,6 +10,8 @@ import { themeColourSet, type ColourField } from '../theme-colours';
 import type { Check } from './types';
 
 const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+// The layer a layered template's scaffold sits on (@livediagram/templates template-layers.ts).
+const TEMPLATE_SCAFFOLD_LAYER = 'layer:template:scaffold';
 
 const FIELDS: readonly { field: ColourField; alias: 'fill' | 'stroke'; swatch: string }[] = [
   { field: 'fillColor', alias: 'fill', swatch: 'fillSwatch' },
@@ -31,9 +33,25 @@ function offTheme(theme: string | undefined, el: Element): ('fill' | 'stroke')[]
   return out;
 }
 
+// A mind map's nodes and connectors wear their branch's hue on purpose (docs/specs/009-elements/mind-node.md): the
+// colour is which branch it is, not a stray override.
+function mindMapColoured(el: Element, mindNodes: ReadonlySet<string>): boolean {
+  if (el.type === 'shape') return el.shape === 'mind-node';
+  if (el.type !== 'arrow') return false;
+  return [el.from, el.to].every((end) => end.kind === 'pinned' && mindNodes.has(end.elementId));
+}
+
 export const colourOnThemed: Check = (ctx) => {
   const findings = [];
+  const mindNodes = new Set(
+    ctx.visible.filter((el) => el.type === 'shape' && el.shape === 'mind-node').map((el) => el.id),
+  );
   for (const el of ctx.visible) {
+    if (mindMapColoured(el, mindNodes)) continue;
+    // A write is judged on the colours it set, not on those a template or a person set before it.
+    if (ctx.coloured && !ctx.coloured.has(el.id)) continue;
+    // A template's scaffold (its board, axes and headings) is coloured by its design, not by the agent.
+    if (Reflect.get(el, 'layerId') === TEMPLATE_SCAFFOLD_LAYER) continue;
     const fields = offTheme(ctx.theme, el);
     if (fields === null) {
       ctx.log('[lint] theme unresolved', {});

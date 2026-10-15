@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createPinnedArrow, createShape } from './factories';
-import { drawnBounds, supportsRotation } from './rotation';
+import { drawnBounds, rotationOf, supportsRotation } from './rotation';
+import { svgBoxed } from './svg-render';
 import type { BoxedElement, Element } from './index';
 
 // docs/specs/009-elements/blueprints/annotations.md [QD8]: Rotation is hidden for annotations.
@@ -12,6 +13,17 @@ describe('supportsRotation', () => {
   it('never rotates an annotation marker', () => {
     const marker = { ...createShape('square', 0, 0), type: 'annotation' } as unknown as Element;
     expect(supportsRotation(marker)).toBe(false);
+  });
+
+  it('never rotates a pointer note, and draws a stored turn on one upright', () => {
+    // docs/specs/009-elements/pointer-note.md: the tip is pinned to a point, so the note does not turn.
+    const note = { ...createShape('pointer-note', 0, 0), rotation: 30 } as BoxedElement;
+    expect(supportsRotation(note)).toBe(false);
+    expect(rotationOf(note)).toBe(0);
+    expect(svgBoxed(note)).not.toContain('rotate(');
+    const square = { ...createShape('square', 0, 0), rotation: 30 } as BoxedElement;
+    expect(rotationOf(square)).toBe(30);
+    expect(svgBoxed(square)).toContain('rotate(30');
   });
 
   it('never rotates an arrow', () => {

@@ -121,6 +121,13 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
   },
   changed('PanelLayout', 'Panel Layout', 'Floating or Toolbar chrome. No longer recorded.'),
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
+  toggle(
+    'UI',
+    'DockButtonNamesOn',
+    'DockButtonNamesOff',
+    'Button Labels',
+    'Names beside the bottom-right buttons\u2019 icons on a wide desktop.',
+  ),
   changed('PanelOpacity', 'Panel Opacity', 'The panels\u2019 transparency slider.', true),
   changed('UiScale', 'UI Scale', 'The panels, toolbar and corner buttons\u2019 size slider.', true),
   changed('UiScalePanels', 'Panel Scale', 'The panels\u2019 own size slider.', true),
@@ -267,44 +274,56 @@ export const NOTIFICATION_SETTINGS = settingsStack(
   ],
 );
 
-export const ACCESSIBILITY_SETTINGS = settingsStack(
-  'Accessibility Settings',
-  'Motion and the Diagram, Plan and Facilitate tours.',
+export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'Motion.', [
+  toggle('UI', 'ReduceMotionOn', 'ReduceMotionOff', 'Reduce Motion', 'Turning animation down.'),
+]);
+
+// The tours, a Settings category of their own since October 2026 (Accessibility's Onboarding
+// Tutorials before). Each switch's tokens track its PREFERENCE, so switching a tour on is `…SeenOff`.
+export const TOURS_SETTINGS = settingsStack(
+  'Tours Settings',
+  'The Diagram, Plan, Facilitate, Draw and Illustrate tours switched back on or off.',
   [
-    toggle('UI', 'ReduceMotionOn', 'ReduceMotionOff', 'Reduce Motion', 'Turning animation down.'),
     toggle(
       'UI',
       'TourSeenOff',
       'TourSeenOn',
-      'Onboarding Tutorials: Diagram',
+      'Diagram Tour',
       'The Diagram tour (the welcome tour until October 2026) switched back on or off.',
     ),
     toggle(
       'UI',
       'PlanTourSeenOff',
       'PlanTourSeenOn',
-      'Onboarding Tutorials: Plan',
+      'Plan Tour',
       'The Plan tour switched back on or off.',
     ),
     toggle(
       'UI',
       'FacilitateTourSeenOff',
       'FacilitateTourSeenOn',
-      'Onboarding Tutorials: Facilitate',
+      'Facilitate Tour',
       'The Facilitate tour switched back on or off.',
     ),
     toggle(
       'UI',
       'DrawTourSeenOff',
       'DrawTourSeenOn',
-      'Onboarding Tutorials: Draw',
+      'Draw Tour',
       'The Draw tour switched back on or off.',
+    ),
+    toggle(
+      'UI',
+      'AvatarTourSeenOff',
+      'AvatarTourSeenOn',
+      'Avatar Tour',
+      'The Avatar tour switched back on or off.',
     ),
     toggle(
       'UI',
       'IllustrateTourSeenOff',
       'IllustrateTourSeenOn',
-      'Onboarding Tutorials: Illustrate',
+      'Illustrate Tour',
       'The Illustrate tour switched back on or off.',
     ),
   ],
@@ -336,8 +355,8 @@ export const DOCUMENTS_SETTINGS = settingsStack('Documents Settings', 'Where new
     'UI',
     'SkipLocationStepOn',
     'SkipLocationStepOff',
-    'Skip the Location Step',
-    "Saving every new document in one place without the wizard's Location step: turned on from that step, off in Settings.",
+    'Always Save in One Place',
+    "Always Save in One Place: every new document saved without the wizard's Location step, turned on from that step and off in Settings.",
   ),
 ]);
 
@@ -363,6 +382,7 @@ export const SETTINGS_STACKS: readonly MetricStack[] = [
   PANELS_SETTINGS,
   NOTIFICATION_SETTINGS,
   ACCESSIBILITY_SETTINGS,
+  TOURS_SETTINGS,
   AI_SETTINGS,
   DOCUMENTS_SETTINGS,
   PRIVACY_SETTINGS,

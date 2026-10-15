@@ -6,7 +6,7 @@
 // (text-hug-measure.ts), handed in as a function, so the numbers here are exact to the font.
 
 import {
-  LABEL_FONT_PX,
+  labelFontPx,
   PADDING_PX,
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
@@ -53,7 +53,7 @@ export function textHugPaddingCss(el: TextElement): string {
 // The label px a hugging text box draws at: its size preset (a hugging box draws 'scale' at the
 // preset's fixed px rather than fitting it to the box) times its Shift-resize scale.
 export function textHugFontPx(el: TextElement): number {
-  return LABEL_FONT_PX[el.textSize ?? 'scale'] * (el.textScale ?? 1);
+  return labelFontPx(el.textSize ?? 'scale') * (el.textScale ?? 1);
 }
 
 // The box that hugs the measured text. A 'fit' box takes the text's width (up to the wrap

@@ -10,7 +10,9 @@ import { ApiError } from './api';
 import {
   baseFor,
   changesetErrorText,
+  editsBase,
   mcpOpsToEditOperations,
+  mcpResultText,
   replaceBodyFrom,
 } from './changeset-client';
 import { connectTestClient } from './mcp-test-client';
@@ -22,7 +24,113 @@ const box = (id: string, label = id): Element =>
   ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label }) as Element;
 const tab: Tab & { rev: number } = { id: 't1', name: 'T', elements: [box('a'), box('b')], rev: 7 };
 
+describe('editsBase', () => {
+  it('bases edits on the revision read and every element as loaded, since the text may name any', () => {
+    const base = editsBase(tab, 5);
+    expect(base.rev).toBe(5);
+    expect(Object.keys(base.elements).sort()).toEqual(['a', 'b']);
+    expect(editsBase(tab).rev).toBe(7);
+  });
+});
+
 describe('mcpOpsToEditOperations', () => {
+  const ends = (from: string, to: string) => ({
+    from: { kind: 'pinned', elementId: from, anchor: 's' },
+    to: { kind: 'pinned', elementId: to, anchor: 'n' },
+  });
+  const refTab: Tab = {
+    id: 't2',
+    name: 'T',
+    elements: [box('4aeb12f0-aaaa'), box('9c11aa00-bbbb')],
+  };
+
+  it('packs a stroke’s new points with its new box, and refuses points it cannot draw', () => {
+    const stroke = {
+      id: 'ring',
+      type: 'freehand',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      closed: true,
+      packedPoints: 'AQA=',
+    } as unknown as Element;
+    const tab: Tab = { id: 't3', name: 'T', elements: [stroke] };
+    const points = [
+      [100, 50],
+      [140, 90],
+      [100, 130],
+    ];
+    const ops = mcpOpsToEditOperations(
+      [{ op: 'update', elementId: 'ring', element: { points, penColour: 'red' } }],
+      tab,
+    ) as { fields: Record<string, unknown> }[];
+    expect(ops[0]!.fields).toMatchObject({
+      x: 100,
+      y: 50,
+      width: 40,
+      height: 80,
+      penColour: 'red',
+    });
+    expect(ops[0]!.fields.points).toBeUndefined();
+    expect(ops[0]!.fields.packedPoints).not.toBe('AQA=');
+    expect(
+      mcpOpsToEditOperations([{ op: 'update', elementId: 'ring', element: { points: [] } }], tab),
+    ).toMatch(/^ops\[1\]: element 1: "points" takes 1 to/);
+  });
+
+  it('pins an added arrow by the refs read_document prints, and to an element added in the same call', () => {
+    const ops = mcpOpsToEditOperations(
+      [
+        {
+          op: 'add',
+          element: { id: 'new', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
+        },
+        { op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb', 'new') } },
+      ],
+      refTab,
+    );
+    expect(ops).toEqual([
+      expect.anything(),
+      { op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb12f0-aaaa', 'new') } },
+    ]);
+  });
+
+  it('refuses an arrow end that names nothing rather than storing an arrow to nowhere', () => {
+    const ops = mcpOpsToEditOperations(
+      [{ op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb', 'gone') } }],
+      refTab,
+    );
+    expect(ops).toMatch(/^ops\[1\]: arrow "a1": "to" is pinned to "gone"/);
+  });
+
+  it('resolves refs in an update that re-pins an existing arrow', () => {
+    const withArrow: Tab = {
+      ...refTab,
+      elements: [
+        ...refTab.elements,
+        { id: 'ar', type: 'arrow', ...ends('4aeb12f0-aaaa', '9c11aa00-bbbb') } as Element,
+      ],
+    };
+    const ops = mcpOpsToEditOperations(
+      [
+        {
+          op: 'update',
+          elementId: 'ar',
+          element: { to: { kind: 'pinned', elementId: '4aeb', anchor: 'e' } },
+        },
+      ],
+      withArrow,
+    );
+    expect(ops).toEqual([
+      {
+        op: 'set',
+        target: 'id:"ar"',
+        fields: { to: { kind: 'pinned', elementId: '4aeb12f0-aaaa', anchor: 'e' } },
+      },
+    ]);
+  });
+
   it('maps add, update and remove onto add, set and rm, dropping an unchanged id or type', () => {
     expect(
       mcpOpsToEditOperations(
@@ -226,5 +334,30 @@ describe('the tools on changesets', () => {
     expect(JSON.stringify(result.content)).toContain('held by Bea');
     const events = sent.filter((s) => s.path === '/events').map((s) => JSON.stringify(s.body));
     expect(events.some((e) => e.includes('"Error"'))).toBe(false);
+  });
+});
+
+describe('mcpResultText', () => {
+  it('says how printed positions map to canvas coordinates when the content does not start at 0,0', () => {
+    const text = '+ a  square "A" @10,20 140×60\nrev 1→2 · cs_1 · lint clean';
+    expect(mcpResultText(text, { x: 120, y: 75.6 })).toBe(
+      `${text}\n@x,y above are from the content's top-left: an element's x, y = @x + 120, @y + 76.`,
+    );
+    expect(mcpResultText(text, { x: 0, y: 0 })).toBe(text);
+    expect(mcpResultText(text, { x: 0, y: -104 })).toMatch(/x, y = @x \+ 0, @y - 104\.$/);
+    expect(mcpResultText('rev 1→2 · cs_1 · lint clean', { x: 5, y: 5 })).toBe(
+      'rev 1→2 · cs_1 · lint clean',
+    );
+  });
+
+  it('leaves off the CLI revert line no MCP tool runs, keeping the rest', () => {
+    expect(
+      mcpResultText(
+        '+ a\nrev 1→2 · cs_1 · lint clean · revert: livediagram changeset revert doc_1 cs_1',
+      ),
+    ).toBe('+ a\nrev 1→2 · cs_1 · lint clean');
+    expect(mcpResultText('dry run · rev 4 · lint clean · nothing written')).toBe(
+      'dry run · rev 4 · lint clean · nothing written',
+    );
   });
 });

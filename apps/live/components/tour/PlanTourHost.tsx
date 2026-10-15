@@ -1,10 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
-import { PLAN_TOUR_RELAUNCH_EVENT, type PlanTourTrack } from '@/lib/plan-tour';
+import {
+  markPlanTracksSeen,
+  PLAN_TOUR_RELAUNCH_EVENT,
+  PLAN_TOUR_TRACKS,
+  planTrackSeen,
+  type PlanTourTrack,
+} from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
@@ -19,20 +25,32 @@ import {
   sheetRoot,
   visiblePlanWork,
 } from './plan-tour-steps';
-import { PlanTourArt } from './PlanTourArt';
+import { BoardsTourArt, PlanChoiceTourArt, SheetsTourArt } from './art/plan-tour-art';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 
 // The settle delay before the offer, as the Diagram tour's.
 export const OFFER_DELAY_MS = 800;
 
-const PLAN_TOUR_COPY = {
-  welcomeEyebrow: 'Plan tour',
+// Each welcome card names what it shows: a track, or both on a choice card (docs/specs/026-plan/plan-tour.md
+// "The steps"); the copy after a pick follows the track picked.
+const BOARDS_TOUR_COPY = {
+  welcomeEyebrow: 'Boards tour',
   helpHref: '/help/canvas/plan-mode/',
   finish: 'Start Planning',
 };
-
-const SHEETS_TOUR_COPY = { ...PLAN_TOUR_COPY, helpHref: '/help/canvas/plan-mode/sheets/' };
+const SHEETS_TOUR_COPY = {
+  ...BOARDS_TOUR_COPY,
+  welcomeEyebrow: 'Sheets tour',
+  helpHref: '/help/canvas/plan-mode/sheets/',
+};
+const TRACK_NAME: Record<PlanTourTrack, string> = { boards: 'Boards tour', sheets: 'Sheets tour' };
+const CHOICE_TOUR_COPY = { ...BOARDS_TOUR_COPY, welcomeEyebrow: 'Boards and Sheets tour' };
+const WELCOME_ART = {
+  boards: <BoardsTourArt />,
+  sheets: <SheetsTourArt />,
+  choice: <PlanChoiceTourArt />,
+} satisfies Record<PlanTourOffer, ReactNode>;
 
 // The tour subject's element: a board or a Sheet (docs/specs/026-plan/plan-tour.md "Domain language").
 type PlanWork = { type: string; shape?: string; id: string };
@@ -103,7 +121,9 @@ export function PlanTourHost() {
   }, [active]);
 
   const inPlan = ctx.editorMode.mode === 'plan';
-  const seen = ctx.userPreferences?.planTourSeen === true;
+  // Each track offers itself once (lib/plan-tour.ts): a track already answered is not offered again.
+  const prefs = ctx.userPreferences;
+  const owed = PLAN_TOUR_TRACKS.filter((t) => !planTrackSeen(prefs, t));
   const canWork =
     ctx.hydrated &&
     !ctx.anyWelcomeOpen &&
@@ -113,34 +133,47 @@ export function PlanTourHost() {
 
   // The plan work on the open tab: the tour is offered only once there is a board or Sheet to show, so an empty
   // tab is started first (Start Planning), never talked over, and a Dashboard waits for a Board or Sheet tab.
+  // Only the work of a track still owed counts: a board once Boards is answered offers nothing.
   const elements = ctx.activeTab.elements as readonly PlanWork[];
-  const boardIds = elements.filter(isBoard).map((el) => el.id);
-  const sheetIds = elements.filter(isSheet).map((el) => el.id);
+  const boardIds = owed.includes('boards') ? elements.filter(isBoard).map((el) => el.id) : [];
+  const sheetIds = owed.includes('sheets') ? elements.filter(isSheet).map((el) => el.id) : [];
   const hasPlanWork = boardIds.length > 0 || sheetIds.length > 0;
   // A stable key for the effect below: the ids themselves, not a fresh array each render.
   const workKey = `${boardIds.join(',')}|${sheetIds.join(',')}`;
-  // Armed on entering Plan (or mounting in it), and by a relaunch; disarmed on leaving it or once offered.
-  // Adjusted during render when the mode changes. A relaunch waits for a board or Sheet like a first offer.
+  // Which owed tracks have work on the tab: one arriving (a Sheet added beside a toured board) arms the offer again.
+  const offerKey = `${boardIds.length > 0}|${sheetIds.length > 0}`;
+  // Armed on entering Plan (or mounting in it), on an owed track's work arriving, and by a relaunch; disarmed on
+  // leaving it or once offered. Adjusted during render when the mode or the work changes. A relaunch waits for a
+  // board or Sheet like a first offer.
   const [armed, setArmed] = useState(false);
   const [wasInPlan, setWasInPlan] = useState(false);
+  const [lastOffer, setLastOffer] = useState(offerKey);
   if (inPlan !== wasInPlan) {
     setWasInPlan(inPlan);
     setArmed(inPlan);
   }
-  // Answered already (here, or on another device): nothing is owed on this entry, so a later Settings
+  if (offerKey !== lastOffer) {
+    setLastOffer(offerKey);
+    if (inPlan && hasPlanWork) setArmed(true);
+  }
+  // Every track answered already (here, or on another device): nothing is owed on this entry, so a later Settings
   // change while in Plan does not offer it behind the dialog (only the rerun does).
+  const seen = owed.length === 0;
   if (armed && seen) setArmed(false);
 
   const endTour = (outcome: TourOutcome) => {
     apiRef.current.closeCard();
     // Onto the freshest preferences, not this render's: the whole blob is written.
-    const next = rebaseUserPreferences(ctx.userPreferences, {
-      ...ctx.userPreferences,
-      planTourSeen: true,
-    });
+    // The track shown is answered; declining a choice card answers both, as both were offered.
+    const answered: PlanTourTrack[] =
+      outcome === 'declined' && offerKind === 'choice' ? ['boards', 'sheets'] : [tourTrack];
+    const next = rebaseUserPreferences(
+      ctx.userPreferences,
+      markPlanTracksSeen(ctx.userPreferences, answered),
+    );
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
-    debugLog('[plan-tour] end', { outcome });
+    debugLog('[plan-tour] end', { outcome, answered });
     if (outcome === 'declined') track('UI', 'Closed', 'PlanTourOffer');
     else track('UI', 'Ended', outcome === 'completed' ? 'PlanTourCompleted' : 'PlanTourSkipped');
   };
@@ -171,9 +204,9 @@ export function PlanTourHost() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [armed, active, seen, inPlan, canWork, otherTour, hasPlanWork, workKey, engineRef]);
 
-  // Settings rerun (the Onboarding Tutorials › "Plan" row, turned on from off + closed): offers again in Plan once a
+  // Settings rerun (the Tours › "Plan Tour" row, turned on from off + closed): offers again in Plan once a
   // board or Sheet is open, and otherwise the next time the person enters it (the row has cleared
-  // `planTourSeen`). It places nothing to show: an empty tab offers Start Planning, which makes one.
+  // the answered tracks). It places nothing to show: an empty tab offers Start Planning, which makes one.
   const inPlanRef = useLatest(inPlan);
   useEffect(() => {
     const onRelaunch = () => {
@@ -214,9 +247,15 @@ export function PlanTourHost() {
   return (
     <TourStage
       engine={engine}
-      ariaPrefix="Plan tour"
-      copy={tourTrack === 'sheets' ? SHEETS_TOUR_COPY : PLAN_TOUR_COPY}
-      welcomeArt={<PlanTourArt />}
+      ariaPrefix={offerKind === 'choice' ? 'Boards and Sheets tour' : TRACK_NAME[tourTrack]}
+      copy={
+        offerKind === 'choice' && engine.stepIndex === 0
+          ? CHOICE_TOUR_COPY
+          : tourTrack === 'sheets'
+            ? SHEETS_TOUR_COPY
+            : BOARDS_TOUR_COPY
+      }
+      welcomeArt={WELCOME_ART[offerKind]}
       {...(offerKind === 'choice'
         ? {
             welcomeChoices: [

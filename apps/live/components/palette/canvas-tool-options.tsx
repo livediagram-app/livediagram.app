@@ -12,6 +12,10 @@ import {
 } from '@/components/palette/palette-icons';
 import type { PaletteDropdownOption } from '@/components/palette/PaletteDropdown';
 
+// The tools only Facilitate offers (docs/specs/008-canvas/avatar-mode.md "Where it is offered"): the dropdown, the
+// W key and search leave them out elsewhere, while a Selection Mode button still hands them out in any mode.
+export const FACILITATE_ONLY_TOOLS: ReadonlySet<string> = new Set(['avatar']);
+
 // The canvas-tool dropdown's option set (Select / Hand / Eraser / Format /
 // Laser / Spotlight / Avatar / Isometric / Zen), grouped (group index drives
 // the menu dividers): editing tools, then presenter tools, then the view modes.
@@ -26,14 +30,19 @@ export function buildCanvasToolOptions({
   isMobile,
   includeZen,
   planMode,
+  facilitateMode,
 }: {
   canvasEmpty?: boolean;
   isMobile: boolean;
   includeZen?: boolean;
   // Plan mode leaves Eraser and Format out (docs/specs/026-plan/plan-mode.md).
   planMode?: boolean;
+  // Avatar is a Facilitate tool (docs/specs/008-canvas/avatar-mode.md): every other mode leaves it out.
+  facilitateMode?: boolean;
 }): PaletteDropdownOption[] {
-  const options = buildAll(canvasEmpty, isMobile, includeZen);
+  const options = buildAll(canvasEmpty, isMobile, includeZen).filter(
+    (o) => facilitateMode || !FACILITATE_ONLY_TOOLS.has(o.id),
+  );
   return planMode ? options.filter((o) => o.id !== 'eraser' && o.id !== 'format') : options;
 }
 

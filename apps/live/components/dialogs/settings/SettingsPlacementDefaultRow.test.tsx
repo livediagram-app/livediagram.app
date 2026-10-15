@@ -55,7 +55,7 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('SettingsPlacementDefaultRow', () => {
-  it('lists the eight entries in title case under Where New Documents Go', () => {
+  it('lists the eight entries in title case under Default Folders', () => {
     const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.rows;
     expect(rows.filter((r) => r.kind === 'placementDefault').map((r) => r.label)).toEqual([
       'Diagrams',
@@ -67,7 +67,13 @@ describe('SettingsPlacementDefaultRow', () => {
       'Retrospectives',
       'Kanban Boards',
     ]);
-    expect(new Set(rows.map((r) => r.section))).toEqual(new Set(['Where New Documents Go']));
+    expect(
+      new Set(rows.filter((r) => r.kind === 'placementDefault').map((r) => r.section)),
+    ).toEqual(new Set(['Default Folders']));
+    // What they share is said once, under the heading, with the article.
+    expect(
+      SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.sectionNotes?.['Default Folders'],
+    ).toMatchObject({ helpArticle: 'defaultFolders' });
   });
 
   it('says My documents without a default, and offers no Clear', async () => {

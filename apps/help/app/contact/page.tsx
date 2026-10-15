@@ -67,14 +67,14 @@ export default function ContactPage() {
               Many questions are already answered here. Try the search on the{' '}
               <a
                 href="/help/"
-                className="text-brand-600 underline underline-offset-2 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
+                className="text-brand-700 underline underline-offset-2 hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"
               >
                 help home
               </a>
               , or browse the{' '}
               <a
                 href="/help/features/"
-                className="text-brand-600 underline underline-offset-2 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
+                className="text-brand-700 underline underline-offset-2 hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"
               >
                 feature guides
               </a>

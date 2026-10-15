@@ -1,7 +1,10 @@
 import { ICON_CATEGORIES, ICON_DND_MIME, iconsInCategory, type IconDef } from '@/lib/icons';
 import { IconButton } from '@/components/palette/palette-controls';
 import { CatalogIconThumb } from '@/components/primitives/icon-glyph';
-import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
+import {
+  PaletteCategoryBrowser,
+  type BrowserCategory,
+} from '@/components/palette/PaletteCategoryBrowser';
 
 type IconPickerTabProps = {
   addIcon: (iconId: string) => void;
@@ -38,6 +41,23 @@ function IconTile({ icon, onAdd }: { icon: IconDef; onAdd: (id: string) => void 
   );
 }
 
+// The Icons browse's groups, also the Toolbar strip's tiles for the category. Category artwork = the category's first
+// glyph, mirroring the Tools tab's "a category looks like what it holds".
+export function iconBrowseGroups(): BrowserCategory<IconDef>[] {
+  return ICON_CATEGORIES.map((cat) => {
+    const items = iconsInCategory(cat.id);
+    const first = items[0];
+    return {
+      id: cat.id,
+      label: cat.label,
+      // No description: "People" and "Arrows" say what they hold, and a
+      // hover card restating the label would just be a delay.
+      icon: first ? <CatalogIconThumb iconId={first.id} /> : null,
+      items,
+    };
+  });
+}
+
 // The command palette's Icons tab (docs/specs/010-palette/palette-category-browse.md): the same drill-in browse the
 // Tools tab uses, over the line-art catalogue.
 //
@@ -57,20 +77,7 @@ export function IconPickerTab({
   iconResults,
   loading = false,
 }: IconPickerTabProps) {
-  // Category artwork = the category's first glyph, mirroring the Tools tab's
-  // "a category looks like what it holds".
-  const categories = ICON_CATEGORIES.map((cat) => {
-    const items = iconsInCategory(cat.id);
-    const first = items[0];
-    return {
-      id: cat.id,
-      label: cat.label,
-      // No description: "People" and "Arrows" say what they hold, and a
-      // hover card restating the label would just be a delay.
-      icon: first ? <CatalogIconThumb iconId={first.id} /> : null,
-      items,
-    };
-  });
+  const categories = iconBrowseGroups();
   return (
     <PaletteCategoryBrowser
       root="Icons"

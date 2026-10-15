@@ -215,7 +215,8 @@ fixture, which collects every `pageerror` and `console.error` the page raises,
 minus known benign noise (a favicon or manifest 404, dev-server Fast Refresh
 chatter, Chromium's generic "Failed to load resource" line, and the blocked
 model fetches of the photo tests). A test that takes `pageErrors` ends with
-**`expectNoPageErrors(pageErrors)`**, which fails naming what leaked.
+**`expectNoPageErrors(pageErrors)`**, which fails naming what leaked. A Trusted Types violation is one of them:
+the page logs `[trusted-types] violation` as an error ([Trusted Types](../016-platform/trusted-types.md)).
 
 The same `test` sets the editor's debug flag (`livediagram:debug` = `*`) on its browser
 context before any page loads, so the production build the suite drives writes its trace lines
@@ -268,7 +269,9 @@ tests where it's cheap.
 
 - `apps/live/playwright.config.ts`: the `chromium` and `sites` projects (plus the opt-in ones),
   `webServer` → `scripts/e2e-stack.mjs`, `reuseExistingServer` locally.
-- `apps/live/e2e/*.spec.ts`: the spec files above.
+- `apps/live/e2e/*.spec.ts`: the spec files above. Playwright collects only `.spec.ts` (`testMatch`); a
+  `.test.ts` beside them is a Vitest unit test of a pure helper (`optical-snap.test.ts`, `perf/*.test.ts`),
+  which `vitest.config.ts` runs and Playwright never loads.
 - `apps/live/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
   shared flows (`startBlankDocument`, `startTemplateDocument`, `startEventStormingRow`, `seedTab`,
   `dismissQuickTour`, `openJustDraw`). `startTemplateDocument` exists because the blank helper skips the

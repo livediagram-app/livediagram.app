@@ -8,6 +8,7 @@
 // the pages were missing the Moved / Duplicated telemetry, and /new
 // dismissed Shared rows without the confirm.)
 
+import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 import { truncateName } from '@livediagram/document';
 import type { Dispatch, SetStateAction } from 'react';
 import {
@@ -179,7 +180,9 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
       await apiDeleteDocument(ownerId, id)
         .then(() => track('Document', 'Deleted'))
         .catch(() => {});
-      window.location.assign(`${window.location.origin}/explorer`);
+      // Straight to the landing section: `/explorer` is only an index that redirects, one more page
+      // between the delete and the Explorer for something to flash on.
+      window.location.assign(`${window.location.origin}${EXPLORER_LANDING_PATH}`);
       return;
     }
     await beforeRemove?.();

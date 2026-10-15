@@ -176,8 +176,9 @@ nothing. To run it:
    custom domain) — the same way every other worker here gets its hostname, since
    the deploy token only uploads scripts, not zone routes. Then set
    `CONSENT_BASE_URL` (in `apps/mcp/wrangler.toml`) to your live app's origin and
-   `NEXT_PUBLIC_MCP_ORIGIN` (live build env) to the MCP origin, so the consent
-   page posts the minted token only to your trusted host.
+   `NEXT_PUBLIC_MCP_ORIGIN` (live and marketing build env) to the MCP origin, so the
+   consent page posts the minted token only to your trusted host and the Build
+   with AI page (`/ai`) gives AI tools your address, not the hosted one.
 
 3. **Deploy after the api worker** (it reaches api over a service binding). The
    deploy workflow already orders `mcp` after `api`. Tokens minted via the MCP

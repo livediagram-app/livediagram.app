@@ -7,7 +7,7 @@ function and a test here; nothing here adds design.
 
 | Spec term         | Identifier                                                                                                                                                                                    | Where                                                                                   |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| page change       | `PageChange` (union on `op`: `add`, `set`, `layout`, `move`, `duplicate`, `delete`)                                                                                                           | `packages/api-schema/src/illustrate.ts`                                                 |
+| page change       | `PageChange` (union on `op`: `add`, `set`, `layout`, `move`, `duplicate`, `delete`, `apply_background_to_all`)                                                                                | `packages/api-schema/src/illustrate.ts`                                                 |
 | article write     | `ArticleWrite` `{ article?, new?, markdown, mode?, size?, orientation?, look?, accent?, pageNumbers? }`                                                                                       | `packages/api-schema/src/illustrate.ts`                                                 |
 | page ref          | `PageRef = string \| number` (id, place, or name)                                                                                                                                             | `packages/api-schema/src/illustrate.ts`                                                 |
 | page summary      | `PageSummary` `{ place, id, name, kind, size, orientation, rect, background?, locked?, flow?, elements }`                                                                                     | `packages/api-schema/src/illustrate.ts`                                                 |
@@ -63,7 +63,8 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
    - resolve `page` (`resolvePage`: id, then integer place 1..n, then name by `nameKey`) else `page_unknown` listing
      `1 Cover (slide), 2 (slide)`;
    - `add`: `kind === 'article'` → `article_by_write`; if the only page is unchosen and empty
-     (`offersPageKindChoice`) → `withPageKindChosen`, else `pageAdded(tab, kind, newId(), newFlowId())`; then
+     (`offersPageKindChoice`) → `withPageKindChosen`; else if the only page is of `kind`, unnamed and empty → that
+     page; else `pageAdded(tab, kind, newId(), newFlowId())`; then
      `name`, `size`, `orientation`, `background` through `pageRenamed`, `pageResized`, `pageTurned`,
      `pageBackgroundSet`, `at` through `pageMovedTo`, `layout` through `pageLaidOut`. Line:
      `Added page 3 (slide, Slide (16:9)) from layout Title Slide: name "Cover".`;
@@ -73,6 +74,9 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
      `pageLaidOut(tab, pageId, buildPageLayout(id, laidOutPage))`, exactly as the page panel places it. Line: `Laid out page 1 as Title (replaced 4 elements)`;
    - `move`: `to` clamped to 1..units; `pageMovedTo`. Line: `Moved page 4 to 1`;
    - `duplicate`: `pageDuplicated`. Line: `Duplicated page 2 as page 3`;
+   - `apply_background_to_all`: `pageBackgroundSpread` (no ink memory, as `set`); refused `no_other_pages` with
+     no other page of the kind. Line: `Gave 34 other slide pages the background of page 1` plus `; 2 locked kept
+their own` when it skipped any;
    - `delete`: `pageRemoved`; refused `last_page` when one unit is left. Line: `Deleted page 2 and 4 elements on it`
      (an article: `Deleted article "Brief" (3 pages)`);
    - a `refused` from a pure edit maps to its code (`unknown_page` → `page_unknown`, `locked` → `page_locked`,
@@ -153,6 +157,7 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
 | { op: 'move'; page: PageRef; to: number }
 | { op: 'duplicate'; page: PageRef }
 | { op: 'delete'; page: PageRef }
+| { op: 'apply_background_to_all'; page: PageRef }
 PageBackgroundInput = { color?: string; gradient?: [string, string]; angle?: number;
                         pattern?: 'dots' | 'grid' | 'lines' | 'none'; paper?: true }
 ```
@@ -168,7 +173,7 @@ Refusals: `400 { error, message, change? }` for every engine code and `invalid_b
 tab, `409 tab_busy`, `413 tab_too_large`.
 
 `IllustrateRefusalCode`: `invalid_body`, `invalid_value`, `tab_locked`, `tab_kind`, `page_unknown`,
-`article_by_write`, `size_not_offered`, `no_orientation`, `pattern_not_offered`, `layout_unknown`, `page_locked`,
+`article_by_write`, `size_not_offered`, `no_orientation`, `pattern_not_offered`, `no_other_pages`, `layout_unknown`, `page_locked`,
 `page_limit`, `last_page`, `article_unknown`, `article_ambiguous`, `zone_unknown`, `article_too_large`.
 
 ### MCP
@@ -193,7 +198,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 
 - `page ls <doc> [--tab]` → the `pages` view.
 - `page set <doc> [--tab] --changes <file|->` (a JSON list, or one change) or flags for one change (`--add slide
---layout slide-title`, `--page 2 --name Cover`, `--page 2 --delete`, `--move`, `--duplicate`, `--size`,
+--layout slide-title`, `--page 2 --name Cover`, `--page 2 --delete`, `--move`, `--duplicate`, `--background-to-all`, `--size`,
   `--orientation`).
 - `article get <doc> [--tab] [--article]` → Markdown on stdout.
 - `article set <doc> <file|-> [--tab] [--article] [--new] [--append] [--size] [--orientation] [--look]
@@ -215,10 +220,12 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | Diagram tab                                                   | switched, `switched: true`, line "Switched the tab to Illustrate"      |
 | Fresh tab whose only page is unchosen and empty               | first `add` / new article takes that page                              |
+| Only page already of the kind added, unnamed and empty        | first `add` of that kind takes that page (its fields and layout set)   |
 | `add` article                                                 | `article_by_write`                                                     |
 | Size not offered / `fit`                                      | `size_not_offered` with the kind's sizes                               |
 | Turn a slide or logo                                          | `no_orientation`                                                       |
 | Pattern on a logo page                                        | `pattern_not_offered`                                                  |
+| `apply_background_to_all` with no other page of the kind      | `no_other_pages`                                                       |
 | Layout of another kind                                        | `layout_unknown` with the kind's layouts                               |
 | Delete the only unit                                          | `last_page`                                                            |
 | 101st page                                                    | `page_limit`                                                           |

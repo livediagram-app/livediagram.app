@@ -12,7 +12,7 @@
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, supportsRotation, takesAttachments } from '@livediagram/document';
+import { isBoxed, renumberSteps, supportsRotation, takesAttachments } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -39,6 +39,7 @@ const INERT_HANDLERS: CommandHandlers = {
   combine: noop,
   mirrorCopy: noop,
   clearAnimation: noop,
+  renumberSteps: noop,
   setMarker: noop,
   addComment: noop,
   editNote: noop,
@@ -79,9 +80,11 @@ export function useEditorCommands(open: boolean): {
   );
   // Draw mode (docs/specs/007-editor/editor-modes.md) has no format painter.
   const whiteboard = ctx.editorMode.mode === 'draw';
+  const planMode = ctx.editorMode.mode === 'plan';
+  const facilitateMode = ctx.editorMode.mode === 'facilitate';
   const {
     isReadOnly,
-    isOwner,
+    canShareDocument,
     documentId,
     activeTab,
     deleteSelected,
@@ -94,6 +97,7 @@ export function useEditorCommands(open: boolean): {
     bringSelectedToFront,
     setRotationSelected,
     clearAnimationsSelected,
+    commitElements,
     setArrowFlowSelected,
     setMarkerSelected,
     openComments,
@@ -160,6 +164,8 @@ export function useEditorCommands(open: boolean): {
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
   // visitors keep the view-safe subset, editors get the full catalogue.
   const canvasEmpty = activeTab.elements.length === 0;
+  const tabHasSteps = activeTab.elements.some((el) => el.type === 'shape' && el.shape === 'step');
+  const tabLocked = activeTab.locked === true;
   const cmdCtx = useMemo<CommandContext>(
     () => ({
       isReadOnly,
@@ -174,8 +180,9 @@ export function useEditorCommands(open: boolean): {
       canMirrorCopy: mirrorable,
       singleIsShape,
       hasAnimation,
+      tabHasSteps,
       marker,
-      isOwner,
+      canShare: canShareDocument,
       isOffline,
       workbench: workbenchMode,
       canvasTool,
@@ -186,6 +193,9 @@ export function useEditorCommands(open: boolean): {
       isMobile,
       esBoard,
       whiteboard,
+      planMode,
+      facilitateMode,
+      tabLocked,
       photoImportAvailable,
     }),
     [
@@ -201,8 +211,9 @@ export function useEditorCommands(open: boolean): {
       mirrorable,
       singleIsShape,
       hasAnimation,
+      tabHasSteps,
       marker,
-      isOwner,
+      canShareDocument,
       isOffline,
       workbenchMode,
       canvasTool,
@@ -210,6 +221,9 @@ export function useEditorCommands(open: boolean): {
       isMobile,
       esBoard,
       whiteboard,
+      planMode,
+      facilitateMode,
+      tabLocked,
       photoImportAvailable,
     ],
   );
@@ -229,6 +243,11 @@ export function useEditorCommands(open: boolean): {
     clearAnimation: () =>
       single?.type === 'arrow' ? setArrowFlowSelected(null) : clearAnimationsSelected(),
     setMarker: setMarkerSelected,
+    // The step menu's own write (ChipMenuSection), one history step over the tab, with its telemetry.
+    renumberSteps: () => {
+      commitElements(renumberSteps);
+      track('Element', 'Changed', 'RenumberSteps');
+    },
     // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
     addComment: () => {
       if (selectedId && singleTakesAttachments) openComments(selectedId);

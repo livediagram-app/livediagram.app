@@ -69,6 +69,44 @@ describe('CSV', () => {
     expect(parseCsv('').rows).toEqual([]);
     expect(parseCsv('x').rows).toEqual([['x']]);
   });
+
+  it('reads a semicolon-separated file, as Excel writes it where the decimal mark is a comma', () => {
+    expect(parseCsv('Name;Amount\nTea;3,50\n').rows).toEqual([
+      ['Name', 'Amount'],
+      ['Tea', '3,50'],
+    ]);
+    // A comma file with a semicolon in one field stays comma-separated.
+    expect(parseCsv('a,b;c\n1,2').rows).toEqual([
+      ['a', 'b;c'],
+      ['1', '2'],
+    ]);
+    // A comma-decimal value with no header, and a comma in a header: still semicolons.
+    expect(parseCsv('Tea;3,50\nCoffee;2,80').rows).toEqual([
+      ['Tea', '3,50'],
+      ['Coffee', '2,80'],
+    ]);
+    expect(parseCsv('Name;Amount, EUR\nTea;3,50\n').rows).toEqual([
+      ['Name', 'Amount, EUR'],
+      ['Tea', '3,50'],
+    ]);
+    // A quoted comma is a field's, not a separator; a blank line takes no part.
+    expect(parseCsv('"Doe, J";Score\n\nAl;7').rows).toEqual([
+      ['Doe, J', 'Score'],
+      [''],
+      ['Al', '7'],
+    ]);
+    // And a quoted semicolon in a comma file is a field's too.
+    expect(parseCsv('Item,Notes\nA,"x;y"').rows).toEqual([
+      ['Item', 'Notes'],
+      ['A', 'x;y'],
+    ]);
+  });
+
+  it("reads a one-column sheet's download back as one column", () => {
+    const rows = [['Item; qty'], ['x']];
+    expect(parseCsv(toCsv(rows)).rows).toEqual(rows);
+  });
+
   it('cuts at the limits', () => {
     expect(parseCsv(`${'a,'.repeat(250)}a`).rows[0]).toHaveLength(200);
     const big = parseCsv('1\n'.repeat(10_005));

@@ -24,6 +24,7 @@ import {
   Tooltip,
   TrashIcon,
   noMatchTitle,
+  useMediaQuery,
 } from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -61,9 +62,7 @@ export function CardFinderPanel({
   const palette = planPalette(useCanvasSurface());
   const [show, setShow] = useState<CardFinderShow>('all');
   // Focused on open with a mouse; on a phone the keyboard waits until the field is tapped.
-  const [finePointer] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches,
-  );
+  const finePointer = useMediaQuery('(pointer: fine)');
   const boardStatuses = plan?.statusTypes ?? NO_STATUS_TYPES;
   const live = useMemo(
     () => findCards(plan?.items.values() ?? [], { query: '', show: 'all', boardStatuses }),

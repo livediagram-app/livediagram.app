@@ -56,7 +56,7 @@ function expectSound(page: ImportedPage) {
   ).toBe(true);
 }
 
-const FLOWCHART_NOTES: ImportNote[] = [{ kind: 'arrowhead-approximated', count: 1 }];
+const FLOWCHART_NOTES: ImportNote[] = [];
 
 describe('flowchart.drawio', () => {
   it('imports every shape and connection', async () => {
@@ -183,10 +183,7 @@ describe('uml.drawio', () => {
     expect(report).toEqual({
       pages: 1,
       elements: 13,
-      notes: [
-        { kind: 'shape-approximated', count: 2 },
-        { kind: 'arrowhead-approximated', count: 1 },
-      ],
+      notes: [{ kind: 'shape-approximated', count: 2 }],
     });
     // The actor's name sits under the figure, as in draw.io: the box grows to hold it.
     const shopper = byLabel(page, 'Shopper') as ShapeElement;

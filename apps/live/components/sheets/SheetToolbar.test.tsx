@@ -580,6 +580,30 @@ describe('the sheet toolbar', () => {
     }
   });
 
+  it("fills a header band card's height with the category switcher, as the menu box's mode tile does", () => {
+    renderSheet(h, ({ actions }) => <SheetToolbar actions={actions} inBand />);
+    const wrap = screen.getByRole('button', { name: 'Toolbar category' }).parentElement!
+      .parentElement!;
+    expect(wrap.className).toContain('self-stretch');
+    expect(wrap.className).toContain('[&>div>button]:h-full');
+  });
+
+  it('keeps the switcher its own size on the canvas', () => {
+    show(h);
+    const wrap = screen.getByRole('button', { name: 'Toolbar category' }).parentElement!
+      .parentElement!;
+    expect(wrap.className).not.toContain('self-stretch');
+  });
+
+  it("wears the Sheet's colours on Font and Font Size", () => {
+    show(h);
+    pickCategory('Text');
+    const font = screen.getByRole('button', { name: /^Font: / });
+    expect(font.style.borderColor).not.toBe('');
+    const size = screen.getByLabelText('Font Size');
+    expect((size as HTMLElement).style.color).not.toBe('');
+  });
+
   it('opens Search as a menu', () => {
     show(h);
     expect(screen.getByRole('button', { name: 'Search' }).getAttribute('aria-haspopup')).toBe(
@@ -623,6 +647,28 @@ describe('the sheet toolbar', () => {
     pickCategory('Cells');
     expect(screen.queryByText('Wrap Text')).toBeNull();
     expect(screen.getByRole('button', { name: 'Wrap Text' })).toBeTruthy();
+  });
+
+  it('packs a phone’s toolbar: no Search, and wide controls as glyphs opening their menus', () => {
+    // A phone's Sheet: on a desktop the swatches alone overflow this.
+    width = 376;
+    phone = true;
+    show(h);
+    pickCategory('Text');
+    expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'More' })).toBeNull();
+    for (const name of ['Bold', 'Italic', 'Underline', 'Strikethrough'])
+      expect(btn(name)).toBeTruthy();
+    const colour = btn('Text Colour');
+    expect(colour.getAttribute('aria-haspopup')).toBe('menu');
+    expect(btn('Font Size').getAttribute('aria-haspopup')).toBe('menu');
+    fireEvent.click(btn('Font Size'));
+    fireEvent.click(row('18'));
+    expect(h.cell('A1')?.format?.fs).toBe(18);
+    // The function families are their glyph alone, named by the tooltip.
+    pickCategory('Functions');
+    expect(btn('Maths Functions')).toBeTruthy();
+    expect(screen.queryByText('Maths')).toBeNull();
   });
 });
 

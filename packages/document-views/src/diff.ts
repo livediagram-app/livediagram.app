@@ -39,6 +39,7 @@ const SUMMARY_SOURCES = [
   'lineSeries',
   'lineCategories',
   'checklistItems',
+  'sankeyFlows',
 ];
 const ATTRIBUTE_SOURCES = [
   'iconId',

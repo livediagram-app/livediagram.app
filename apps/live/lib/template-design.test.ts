@@ -132,15 +132,14 @@ describe('slide deck template', () => {
   });
 
   it('builds each body from the element that suits it', () => {
-    for (const kind of ['circle', 'stat-row', 'line-chart', 'pie-chart', 'icon', 'sticker'])
+    for (const kind of ['step', 'stat-row', 'line-chart', 'pie-chart', 'icon', 'sticker'])
       expect(shapesOf(els, kind).length, kind).toBeGreaterThan(0);
   });
 
-  it('carries the speaker notes on every slide’s headline', () => {
+  it('carries no element notes on its slides', () => {
     for (let i = 0; i < slides.length; i++) {
       const noted = onSlide(i).filter((el) => (el as { note?: string }).note);
-      expect(noted, `slide ${i + 1}`).toHaveLength(1);
-      expect(noted[0]!.type).toBe('text');
+      expect(noted, `slide ${i + 1}`).toHaveLength(0);
     }
   });
 });

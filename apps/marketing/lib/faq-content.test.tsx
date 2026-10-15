@@ -78,7 +78,7 @@ describe('template counts in marketing copy', () => {
 
 // Theme counts are written out as digits or words; each must match the theme catalogue.
 describe('theme counts in marketing copy', () => {
-  const WORDS: Record<string, number> = { 'twenty-six': 26 };
+  const WORDS: Record<string, number> = { 'twenty-four': 24 };
   it('matches the catalogue in the FAQ, the landing page and every comparison page', () => {
     const copy = JSON.stringify([
       FAQ_CATEGORIES.map((c) => c.items.map((i) => faqAnswerText(i))),
@@ -89,7 +89,9 @@ describe('theme counts in marketing copy', () => {
       ...copy.matchAll(/\b(\d+|twenty-[a-z]+) (?:one-click )?(?:whole-canvas )?themes\b/gi),
     ].map((m) => (/^\d+$/.test(m[1]!) ? Number(m[1]) : WORDS[m[1]!.toLowerCase()]));
     expect(counts.length).toBeGreaterThan(0);
-    for (const n of counts) expect(n).toBe(THEMES.length);
+    // The seasonal themes are the seasonal looks' own, never offered in a picker, so the copy counts the rest.
+    const offered = THEMES.filter((t) => !t.seasonal).length;
+    for (const n of counts) expect(n).toBe(offered);
   });
 });
 
@@ -112,7 +114,7 @@ describe('slide layout counts in marketing copy', () => {
 
   it('matches the infographic and logo catalogues on the landing page', () => {
     // Written as words in the cards; a catalogue change fails here until the copy follows it.
-    const WORD: Record<number, string> = { 25: 'twenty-five', 31: 'Thirty-one' };
+    const WORD: Record<number, string> = { 25: 'twenty-five', 92: 'Ninety-two' };
     const copy = JSON.stringify(LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)));
     expect(copy).toContain(`${WORD[PAGE_LAYOUTS.length]} ready-made pages`);
     expect(copy).toContain(`${WORD[LOGO_LAYOUTS.length]} logo layouts`);

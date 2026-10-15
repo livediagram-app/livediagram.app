@@ -11,7 +11,6 @@ import {
   AGENDA_MAX_MINUTES,
   ESTIMATE_SCALE_VALUES,
   agendaTotalMinutes,
-  chairSeatPoint,
   CHAIR_FACINGS,
   CHAIR_FACING_LABELS,
   CHAIR_SITTER_FACING,
@@ -87,22 +86,6 @@ describe('chair', () => {
   it('accepts only the four facings', () => {
     expect(isChairFacing('n')).toBe(true);
     expect(isChairFacing('ne')).toBe(false);
-  });
-
-  it('seats the sitter below the box centre so they sit ON the seat', () => {
-    const seat = chairSeatPoint({ x: 100, y: 200, width: 80, height: 100 });
-    expect(seat.x).toBe(140);
-    expect(seat.y).toBeGreaterThan(250);
-    expect(seat.y).toBeLessThan(300);
-  });
-
-  it('moves the seat away from the back as the chair turns', () => {
-    const box = { x: 100, y: 200, width: 80, height: 100 };
-    // Back on the right ('e'), so the seat is left of centre, and so on.
-    expect(chairSeatPoint(box, 'e').x).toBeLessThan(140);
-    expect(chairSeatPoint(box, 's').y).toBeLessThan(250);
-    expect(chairSeatPoint(box, 'w').x).toBeGreaterThan(140);
-    expect(chairSeatPoint(box, 'n')).toEqual(chairSeatPoint(box));
   });
 
   it('turns the sitter the way the seat points', () => {
@@ -272,14 +255,14 @@ describe('supportsTextAlign', () => {
       'quiz',
       'stat-row',
       'sticker',
-      'icon',
     ] as const) {
       expect(supportsTextAlign(kind), kind).toBe(false);
     }
   });
 
   it('is on for plain shapes and for kinds that render the aligned label', () => {
-    for (const kind of ['square', 'circle', 'banner', 'callout', 'page'] as const) {
+    // An icon's alignment places its caption around the glyph (docs/specs/010-palette/technology-icons.md).
+    for (const kind of ['square', 'circle', 'banner', 'callout', 'page', 'icon'] as const) {
       expect(supportsTextAlign(kind), kind).toBe(true);
     }
   });

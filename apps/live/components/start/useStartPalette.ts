@@ -1,7 +1,7 @@
 import { planPalette, type PlanPalette } from '@livediagram/document';
 import { useEditorContext, type EditorContextValue } from '@/app/document/[id]/EditorContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { getTheme } from '@/lib/themes';
+import { getTheme, resolveTabBackdrop } from '@/lib/themes';
 import { startPanelColours } from './start-palette';
 
 // The editor around this surface, or none (a surface mounted on its own, as some tests mount a tour). The hook is
@@ -19,5 +19,8 @@ function useEditorIfAny(): Partial<EditorContextValue> | null {
 export function useStartPalette(): PlanPalette {
   const surface = useCanvasSurface();
   const tab = useEditorIfAny()?.activeTab;
-  return planPalette(surface, tab ? startPanelColours(tab, getTheme(tab.theme)) : {});
+  if (!tab) return planPalette(surface, {});
+  // The paper is the tab's canvas as this viewer sees it (its theme's half, docs/specs/011-theme/light-and-dark.md).
+  const paper = resolveTabBackdrop(tab).backgroundColor;
+  return planPalette(surface, startPanelColours({ backgroundColor: paper }, getTheme(tab.theme)));
 }

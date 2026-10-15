@@ -11,11 +11,11 @@ proved the better introduction.
 
 ## Domain language
 
-| Term             | Means                                                                                            |
-| ---------------- | ------------------------------------------------------------------------------------------------ |
-| **Diagram tour** | This tour. In the interface: **Diagram Tour**, and **Diagram** in Settings' Onboarding Tutorials |
-| **welcome tour** | Its name until October 2026; kept only in code identifiers and telemetry tokens                  |
-| **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)         |
+| Term             | Means                                                                                           |
+| ---------------- | ----------------------------------------------------------------------------------------------- |
+| **Diagram tour** | This tour. In the interface: **Diagram Tour**, and **Diagram Tour** in Settings' Tours category |
+| **welcome tour** | Its name until October 2026; kept only in code identifiers and telemetry tokens                 |
+| **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)        |
 
 ## Where it appears
 
@@ -37,8 +37,8 @@ proved the better introduction.
   must never read as nagging, and answering it once covers every device the user signs in from (guests get
   the same via their owner-keyed preference row + the localStorage warm cache). The preference keeps the
   welcome tour's name, so an answer given to the welcome tour still holds for this one.
-- **Replayable from Settings.** The Settings dialog's Accessibility category has a **Onboarding Tutorials** control whose
-  **Diagram** switch surfaces `tourSeen` (inverted: on means not seen). Turning a previously-off switch on and
+- **Replayable from Settings.** The Settings dialog's **Tours** category has a
+  **Diagram Tour** switch that surfaces `tourSeen` (inverted: on means not seen). Turning a previously-off switch on and
   closing Settings relaunches the tour from the top when the open tab is in Diagram, and otherwise offers it
   the next time the person is on a Diagram tab. The welcome card is always step 1, on a rerun too. Finishing
   the rerun turns it off again.
@@ -75,8 +75,10 @@ short sentences per step about diagramming ("concise" is the spec constraint; th
 1. **The Palette**: the strip across the top where every shape, arrow and icon comes from.
 2. **Selection Modes**: opens the canvas-tool dropdown (Select / Hand / Eraser / ...) and explains mode
    switching. No "default" claim in the copy: desktop defaults to Select but mobile to Hand.
-3. **Palette Categories**: opens the palette-category dropdown (Popular / Shapes / Tools / Components /
-   Devices / Icons / Technology). A dedicated "Tools category" step existed briefly and was cut: the category
+3. **Palette Categories**: opens the first category on the palette's category bar (Shapes), its flyout ringed
+   with the bar ([Toolbar layout](toolbar-layout.md#the-category-bar)): "The palette's categories sit along the
+   top: rest on one to see its elements, then click one to add it, or drag it onto the canvas." Plan's strip still
+   opens its category dropdown here. A dedicated "Tools category" step existed briefly and was cut: the category
    dropdown already tells that story.
 4. **The Element Menu**: selects an element (adding a theme-coloured square at the viewport centre first if the
    tab is empty) and opens its right-click menu programmatically. A square it added is the tour's own: placed
@@ -85,7 +87,7 @@ short sentences per step about diagramming ("concise" is the spec constraint; th
 5. **Tabs**: highlights the active tab pill and the "+" add button as one region (an `alsoHighlight` union,
    like the dropdown steps): one document holds many diagrams, one per tab, with the tab menu covered in the
    copy. A separate open-the-⋯-menu step existed briefly and was folded in here.
-6. **Theme & Canvas** (desktop only): highlights the paintbrush dock button
+6. **Theme & Canvas** (desktop only): highlights the Theme & canvas dock button
    ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) that opens the tab's theme + canvas
    background dialog. No prepare needed: the button is always in the desktop chrome for an editable session.
    Mobile reaches the same dialog through the canvas menu, so the step is skipped there.

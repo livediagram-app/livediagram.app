@@ -12,6 +12,7 @@
 import type { EditorMode } from '@livediagram/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
+import { openerById } from './palette-openers';
 
 export type PaletteLayoutEntry = {
   // A PALETTE_CATEGORIES id: the glyph, and the default label, blurb and band.
@@ -19,7 +20,8 @@ export type PaletteLayoutEntry = {
   label?: string;
   description?: string;
   band?: number;
-  // The tiles, in order, by tile id. Absent = the category's own tiles.
+  // The tiles, in order, by tile id (or opener id, palette-openers). `DIVIDE` between two puts a fixed divider there
+  // for this layout alone (a tile's own `dividerAfter` follows it everywhere). Absent = the category's own tiles.
   tiles?: readonly string[];
   // Offered only on an event-storming board.
   boardOnly?: true;
@@ -27,6 +29,10 @@ export type PaletteLayoutEntry = {
   // palette").
   logoOnly?: true;
 };
+
+// A layout's own fixed divider, between the tiles either side of it (docs/specs/007-editor/toolbar-layout.md "Fixed
+// dividers").
+export const DIVIDE = '|';
 
 export type PaletteLayout = {
   // The category the palette opens on (an event-storming board opens on its notation instead).
@@ -42,11 +48,15 @@ export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
   'technology',
 ]);
 
-/** A category's own tile ids, less the named ones: for a layout that drops a tile or two. */
+/** A category's own tile ids, less the named ones: for a layout that drops a tile or two. A dropped tile that ends a
+ *  group (`dividerAfter`) leaves its divider after the tile kept before it, so the group still ends there. */
 function tilesExcept(categoryId: string, ...drop: string[]): readonly string[] {
-  return tilesForCategory(categoryId)
-    .map((t) => t.id)
-    .filter((id) => !drop.includes(id));
+  const out: string[] = [];
+  for (const tile of tilesForCategory(categoryId)) {
+    if (!drop.includes(tile.id)) out.push(tile.id);
+    else if (tile.dividerAfter && out.length > 0 && out.at(-1) !== DIVIDE) out.push(DIVIDE);
+  }
+  return out;
 }
 
 // Media's embed providers (the Embed group).
@@ -59,16 +69,30 @@ const EMBED_TILES = [
   'media:embed-website',
 ];
 
-// Write's own tiles, then the Comment panel and the Action card: comments and assigned actions belong
-// to every mode, so Diagram keeps them though their Collaborate category is Facilitate's.
+// Write's own tiles and the Callout (a headed note, as much a diagram's as a page's), then the Comment
+// panel and the Action card: comments and assigned actions belong to every mode, so Diagram keeps them
+// though their Collaborate category is Facilitate's.
 const WRITE_WITH_COMMENTS = [
   ...tilesForCategory('write').map((t) => t.id),
+  'components:callout',
   'collab:comment-pin',
   'collab:action-card',
 ];
 
-// Image and Avatar; no embedded pages.
-const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);
+// The diagram-building elements Diagram's Build adds to the category's own tiles, the Entity (a class or table, a
+// data model's node) among them: it was Popular's alone, and the category bar has no Popular.
+const DIAGRAM_BUILD_EXTRAS = [
+  'components:card',
+  'components:badge',
+  'components:step',
+  'tools:entity',
+];
+
+// The concept graphics, then the Sankey (Diagram's and Illustrate's Concepts).
+const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
+
+// Image and Avatar; no embedded pages, and no Tab Window (an Illustrate element, docs/specs/009-elements/tab-window.md).
+const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES, 'media:tab-window');
 
 // Diagram mode: Popular, then every category but the mock-up kit (Components, Devices), the charts
 // (Data) and the session kit (Stickers, Collaborate: Facilitate's, docs/specs/012-collaboration/
@@ -77,9 +101,9 @@ const DIAGRAM: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
-      // The twelve tiles a diagram is most often built from (what used to be the default
-      // Favourites): the basic shapes, words, an arrow and a frame, a note and a picture, the
-      // shape pen, and the table, code block and entity.
+      // The twelve a diagram is most often built from: the basic shapes, words, an arrow and a frame, the
+      // structures (a mind node, a flowchart node, a Sankey, a table), the AWS marks (an opener, palette-openers) and
+      // the entity.
       id: 'popular',
       tiles: [
         'shapes:square',
@@ -88,11 +112,11 @@ const DIAGRAM: PaletteLayout = {
         'tools:text',
         'tools:arrow',
         'tools:frame',
-        'tools:sticky',
-        'tools:image',
-        'tools:shape-pen',
+        'tools:mind-node',
+        'tools:flowchart',
+        'tools:sankey',
         'tools:table',
-        'tools:code-block',
+        'open:technology/aws',
         'tools:entity',
       ],
     },
@@ -101,7 +125,14 @@ const DIAGRAM: PaletteLayout = {
     // Comments and assigned actions belong to every mode, so their two Collaborate tiles stay here.
     { id: 'write', tiles: WRITE_WITH_COMMENTS },
     { id: 'draw' },
-    { id: 'build' },
+    // The diagram-building elements join Build here (docs/specs/009-elements/card.md and its siblings).
+    {
+      id: 'build',
+      tiles: [...tilesExcept('build', 'tools:sankey'), ...DIAGRAM_BUILD_EXTRAS],
+    },
+    // Concept graphics (docs/specs/009-elements/concept-graphics.md), and the Sankey: a flow drawn as wide as what it
+    // carries explains an idea the way a funnel or a cycle does, so it sits with them rather than with the builders.
+    { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
     { id: 'event-storming', boardOnly: true },
     { id: 'icons' },
     { id: 'technology' },
@@ -152,8 +183,23 @@ const ILLUSTRATE: PaletteLayout = {
     { id: 'my-shapes' },
     // The page is the canvas here, so no Page element; and no Annotation, a diagram's marker.
     { id: 'write', tiles: tilesExcept('write', 'tools:page', 'tools:annotation') },
-    // Mind maps, lanes and frames organise a diagram, not a visual page.
-    { id: 'build', tiles: tilesExcept('build', 'tools:mind-node', 'tools:lane', 'tools:frame') },
+    // Mind maps, flowcharts, lanes and frames organise a diagram, not a visual page.
+    {
+      id: 'build',
+      tiles: tilesExcept(
+        'build',
+        'tools:mind-node',
+        'tools:org-chart',
+        'tools:flowchart',
+        'tools:sequence',
+        'tools:lane',
+        'tools:frame',
+        'tools:boundary',
+        'tools:diagram-key',
+        'tools:sankey',
+      ),
+    },
+    { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
     // The web blocks, without the data-model Entity.
     { id: 'components', tiles: tilesExcept('components', 'tools:entity') },
     { id: 'devices' },
@@ -167,37 +213,54 @@ const ILLUSTRATE: PaletteLayout = {
 // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette"): running a session
 // with a team. Popular, the drawing basics a session uses (no Page or Annotation, no Shape Pen or
 // Polygon, no Lane or Timeline), the decorations a room reaches for, and the Collaborate elements as
-// six categories, one per group; no tech icons, mock-up kit, charts or workshop notation.
+// six categories, one per group, plus the charts; no tech icons, mock-up kit or workshop notation.
 const FACILITATE: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
-      // Twelve tiles a session is most often run with: notes and words, a frame and an arrow to
-      // arrange them, the three session tools, then the reveal and the ask-the-room elements.
+      // What a session is most often run with: a square, notes and words, a frame and an arrow to arrange them,
+      // then, behind a divider, the session kit as four openers (palette-openers), each its Collaborate category in
+      // a popover.
       id: 'popular',
       tiles: [
+        'shapes:square',
         'tools:sticky',
         'tools:text',
         'tools:frame',
         'tools:arrow',
-        'tools:session-timer',
-        'tools:session-vote',
-        'tools:session-poll',
-        'tools:reveal',
-        'collab:agenda',
-        'collab:idea-box',
-        'collab:qa-board',
-        'collab:temperature',
+        'tools:image',
+        DIVIDE,
+        'open:collab-ask',
+        'open:collab-tools',
+        'open:collab-record',
+        'open:collab-react',
       ],
     },
     { id: 'shapes' },
     { id: 'my-shapes' },
-    { id: 'write', tiles: tilesExcept('write', 'tools:page', 'tools:annotation') },
+    // Write and Build as one, "Write & Build": words and notes, then a table and a frame to hold them. No Page or
+    // Annotation; and a Sankey reports on a flow, mind maps and flowcharts build a diagram, lanes and timelines lay
+    // one out: a session does not stop for them.
+    {
+      id: 'write',
+      label: 'Write & Build',
+      description: 'Text, sticky notes, tables, checklists and frames.',
+      tiles: [
+        ...tilesExcept('write', 'tools:page', 'tools:annotation'),
+        DIVIDE,
+        'tools:table',
+        'tools:checklist',
+        'tools:frame',
+      ],
+    },
     { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
-    { id: 'build', tiles: tilesExcept('build', 'tools:lane', 'tools:timeline') },
+    // No Concepts: concept graphics lay out an idea for a diagram (docs/specs/009-elements/concept-graphics.md),
+    // which a session does not stop to draw.
     { id: 'icons' },
     { id: 'stickers' },
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
+    // The charts and meters: a session reads results and sets targets as often as a page reports them.
+    { id: 'data' },
     { id: 'collab-ask' },
     { id: 'collab-tools' },
     { id: 'collab-record' },
@@ -254,13 +317,28 @@ export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {
 
 const IDENTITY = new Map(PALETTE_CATEGORIES.map((c) => [c.id, c]));
 
+// The listed tiles and openers; a DIVIDE marks the tile before it as ending a group, in this list only.
+function resolveTiles(ids: readonly string[]): PaletteTileDef[] {
+  const out: PaletteTileDef[] = [];
+  for (const id of ids) {
+    if (id === DIVIDE) {
+      const last = out.at(-1);
+      if (last) out[out.length - 1] = { ...last, dividerAfter: true };
+      continue;
+    }
+    const def = tileById(id) ?? openerById(id);
+    if (def) out.push(def);
+  }
+  return out;
+}
+
 function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
   const identity = IDENTITY.get(entry.id);
   if (!identity) throw new Error(`palette layout names an unknown category: ${entry.id}`);
   const tiles = CATALOGUE_CATEGORIES.has(entry.id)
     ? null
     : entry.tiles
-      ? entry.tiles.map(tileById).filter((t): t is PaletteTileDef => t !== undefined)
+      ? resolveTiles(entry.tiles)
       : tilesForCategory(entry.id);
   return {
     ...identity,
@@ -372,23 +450,19 @@ export function paletteLandingCategory(
 
 // A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
 // Participate, holding only what it may add, as the full palette's own tiles. On an Event Storming board that is the
-// notation's coloured notes; elsewhere the landing category's sticky and text tiles, else the Sticky and Text tiles;
-// then the Image tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
-const PARTICIPANT_FALLBACK_TILES = ['tools:sticky', 'tools:text'] as const;
+// notation's coloured notes; elsewhere the Sticky and Text tiles (whatever a mode's Popular holds); then the Image
+// tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
+const PARTICIPANT_TILES = ['tools:sticky', 'tools:text'] as const;
 const PARTICIPANT_IMAGE_TILE = 'tools:image';
 
 export function participantTiles(mode: EditorMode, esBoard: boolean): PaletteTileDef[] {
   const landing = paletteLandingCategory(mode, esBoard);
   const category = paletteCategoriesFor(mode, { esBoard }).find((c) => c.id === landing);
-  const tiles = (category?.tiles ?? []).filter(
-    (t) => t.action.type === 'sticky' || t.action.type === 'text',
-  );
+  const notation = esBoard ? (category?.tiles ?? []).filter((t) => t.action.type === 'sticky') : [];
   const base =
-    tiles.length > 0
-      ? tiles
-      : PARTICIPANT_FALLBACK_TILES.map(tileById).filter(
-          (t): t is PaletteTileDef => t !== undefined,
-        );
+    notation.length > 0
+      ? notation
+      : PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
   const image = tileById(PARTICIPANT_IMAGE_TILE);
   return image ? [...base, image] : base;
 }

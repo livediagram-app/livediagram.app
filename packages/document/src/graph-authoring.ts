@@ -13,6 +13,9 @@
 // referencing an unknown node id is dropped rather than producing an arrow
 // to nowhere.
 
+import { BOLD_EM } from './article-layout-estimate';
+import { personCardText } from './person-card';
+import type { ErShape } from './er-heads';
 import { SHAPE_DEFAULT_SIZE } from './factories';
 import { ARROW_THICKNESS_PX } from './arrow-style';
 import { coerceShapeKind } from './validate';
@@ -42,6 +45,9 @@ export type GraphNode = {
   // `label` as its title. What an ER import makes of each table
   // (docs/specs/020-import-export/mermaid.md).
   fields?: EntityField[];
+  // A person's role: the node draws as the org-chart template's person card, the label (the name) in bold over it,
+  // with a person glyph unless the node names its own icon.
+  role?: string;
 };
 
 export type GraphEdge = {
@@ -59,6 +65,12 @@ export type GraphEdge = {
   // Head marker: 'circle' → hollow circle, 'cross' → the open-V head (the
   // closest marker to Mermaid's x terminal). Omitted = the filled triangle.
   head?: 'triangle' | 'circle' | 'cross';
+  // The ER ends (docs/specs/020-import-export/mermaid.md "ER diagram coverage"): each table's cardinality where the
+  // line meets it, its start's and its end's. Set, they take over from `head`.
+  er?: { from: ErShape; to: ErShape };
+  // Turned round for the layout only (er-hub-first.ts): the arrow it lays out is turned back after, so the stored
+  // relationship reads as written.
+  turned?: true;
 };
 
 // A named cluster of nodes (docs/specs/020-import-export/mermaid.md: a Mermaid subgraph). Rendered as a
@@ -98,6 +110,7 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
     ...(e.ends && e.ends !== 'to' ? { arrowEnds: e.ends } : {}),
     ...(e.head === 'circle' ? { arrowheadShape: 'circle-hollow' as const } : {}),
     ...(e.head === 'cross' ? { arrowheadShape: 'line' as const } : {}),
+    ...(e.er ? { arrowheadShape: e.er.to, arrowheadStartShape: e.er.from } : {}),
   };
 }
 
@@ -112,30 +125,111 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
 // needs. A diamond's text only fits its inner half, so it gets more room.
 // The side of an unlabelled circle node (see graphToElements).
 export const DOT_SIZE = 28;
+export const FINAL_STATE_SIZE = 34;
 const CHAR_PX = 7.4;
 // Capitals set about 30% wider than the average glyph CHAR_PX assumes, so an
 // all-caps name ("TEAM_MEMBER", an ER table) was sized short and wrapped
 // mid-word. Text length in average-glyph units.
 const CAPS_WIDTH = 1.3;
+// How wide `text` sets at `px`, estimated (no DOM here): what a header measures its caption with.
+export const glyphWidth = (text: string, px: number) => glyphUnits(text) * px * GLYPH_EM;
 const glyphUnits = (text: string) =>
   [...text].reduce((sum, ch) => sum + (ch >= 'A' && ch <= 'Z' ? CAPS_WIDTH : 1), 0);
 const LINE_PX = 19;
 const PAD_PX = 40;
 const MAX_BOX_W = 240;
 
+// The template look graph input wears (docs/specs/015-api/mcp-server.md §4.7 "The graph look"): boxes at the
+// flowchart template's proportions, never the palette's 120×120 square, and one text size for every node, picked by
+// the caller from how many nodes there are. The editor's own Mermaid import keeps the plain sizing.
+// `fontPx` measures at a box's own label size in place of the look's (a box an edit adds at its own text size).
+export type GraphLook = { textSize: 'sm' | 'md'; fontPx?: number };
+
+// The smallest box per kind in the template look: wide and short like the template's steps. A kind not listed keeps
+// its palette size (an actor is a figure with its name under it, a device a device).
+const LOOK_FLOOR: Readonly<Partial<Record<string, { width: number; height: number }>>> = {
+  square: { width: 180, height: 64 },
+  stadium: { width: 180, height: 60 },
+  diamond: { width: 180, height: 104 },
+  parallelogram: { width: 200, height: 64 },
+  hexagon: { width: 180, height: 72 },
+  document: { width: 180, height: 80 },
+  cylinder: { width: 140, height: 96 },
+  cloud: { width: 180, height: 100 },
+  trapezoid: { width: 180, height: 72 },
+  circle: { width: 96, height: 96 },
+};
+// The widest a box grows before its label wraps, per text size: about eighteen characters a line.
+const LOOK_MAX_W: Readonly<Record<GraphLook['textSize'], number>> = { sm: 240, md: 300 };
+// Average glyph width and line height as fractions of the font size (Inter at its label weight); CHAR_PX below is
+// this at 14px.
+const GLYPH_EM = 0.53;
+const LINE_EM = 1.35;
+const LOOK_FONT_PX: Readonly<Record<GraphLook['textSize'], number>> = { sm: 14, md: 22 };
+
 export function labelBoxSize(
   label: string | undefined,
   shape: string,
+  look?: GraphLook,
+  hasIcon = false,
+  // In the look, the smallest box in place of the kind's: a box joining siblings starts at their size.
+  floor?: { width: number; height: number },
 ): { width: number; height: number } {
+  if (look) return lookBoxSize(label, coerceShapeKind(shape), look, hasIcon, floor);
   const base = SHAPE_DEFAULT_SIZE[coerceShapeKind(shape)];
   const text = (label ?? '').trim();
   if (!text) return { width: base.width, height: base.height };
   const roomy = shape === 'diamond' ? 1.45 : 1;
-  const units = glyphUnits(text);
-  const oneLine = units * CHAR_PX * roomy + PAD_PX;
-  const width = Math.round(Math.min(MAX_BOX_W * roomy, Math.max(base.width, oneLine)));
-  const lines = Math.max(1, Math.ceil((units * CHAR_PX * roomy) / (width - PAD_PX)));
+  // Line by line, as the look measures: the widest line sets the width, and each wraps on its own.
+  const lineW = text.split('\n').map((l) => glyphUnits(l) * CHAR_PX * roomy);
+  const width = Math.round(
+    Math.min(MAX_BOX_W * roomy, Math.max(base.width, Math.max(...lineW) + PAD_PX)),
+  );
+  const lines = lineW.reduce((n, w) => n + Math.max(1, Math.ceil(w / (width - PAD_PX))), 0);
   const height = Math.round(Math.max(base.height, lines * LINE_PX + 28) * (lines > 1 ? roomy : 1));
+  return { width, height };
+}
+
+// A box in the template look: the kind's floor, wider for a longer label up to the cap, then taller by a line for
+// each wrap. A circle stays round and a diamond's text gets the room its inner half leaves.
+function lookBoxSize(
+  label: string | undefined,
+  kind: string,
+  look: GraphLook,
+  hasIcon: boolean,
+  given?: { width: number; height: number },
+): { width: number; height: number } {
+  const base = SHAPE_DEFAULT_SIZE[kind as keyof typeof SHAPE_DEFAULT_SIZE];
+  const floor = given ?? LOOK_FLOOR[kind] ?? base;
+  const text = (label ?? '').trim();
+  if (!text) return { ...floor };
+  const px = look.fontPx ?? LOOK_FONT_PX[look.textSize];
+  // The wrap width grows with a larger font, so a line holds as many words.
+  const maxW = LOOK_MAX_W[look.textSize] * Math.max(1, px / LOOK_FONT_PX[look.textSize]);
+  // An inline icon beside the label takes its glyph and gap (inlineIconMetrics: about 1.6 × the font, a third
+  // of that again between).
+  const iconRoom = hasIcon ? Math.round(px * 1.6 * 1.32) : 0;
+  const roomy =
+    kind === 'diamond' ? 1.5 : kind === 'parallelogram' || kind === 'hexagon' ? 1.15 : 1;
+  // A label written over several lines is measured line by line: its widest line sets the width, and each wraps on its own.
+  const lineW = text.split('\n').map((l) => glyphUnits(l) * px * GLYPH_EM * roomy);
+  const textW = Math.max(...lineW) + iconRoom;
+  const pad = 48;
+  const width = Math.round(Math.min(maxW * roomy, Math.max(floor.width, textW + pad)));
+  const lines = lineW.reduce(
+    (n, w, i) => n + Math.max(1, Math.ceil((w + (i === 0 ? iconRoom : 0)) / (width - pad))),
+    0,
+  );
+  const textH = lines * px * LINE_EM + 28;
+  // A box joining siblings keeps their height while it holds the one line with room above and below.
+  const siblingHolds = !!given && lines === 1 && given.height >= px * LINE_EM + 16;
+  const height = siblingHolds
+    ? given.height
+    : Math.round(Math.max(floor.height, kind === 'diamond' ? textH * 1.6 : textH));
+  if (kind === 'circle') {
+    const side = Math.max(width, height);
+    return { width: side, height: side };
+  }
   return { width, height };
 }
 
@@ -171,6 +265,7 @@ function entityNode(n: GraphNode, raw: EntityField[]): Element {
 export function graphToElements(
   graph: DiagramGraph,
   makeEdgeId: () => string = () => crypto.randomUUID(),
+  look?: GraphLook,
 ): Element[] {
   const nodeIds = new Set(graph.nodes.map((n) => n.id));
 
@@ -181,20 +276,39 @@ export function graphToElements(
     // waiting for text. Solid in the theme's accent via the preset binding,
     // which a theme walk resolves (docs/specs/020-import-export/mermaid.md).
     if (n.fields) return entityNode(n, n.fields);
-    if (shape === 'circle' && !(n.label ?? '').trim()) {
+    // A final state is its bullseye, a little larger than the start's dot so the ring reads.
+    if ((shape === 'circle' || shape === 'final-state') && !(n.label ?? '').trim()) {
+      const size = shape === 'final-state' ? FINAL_STATE_SIZE : DOT_SIZE;
       return {
         id: n.id,
         type: 'shape' as const,
         shape,
         x: 0,
         y: 0,
-        width: DOT_SIZE,
-        height: DOT_SIZE,
+        width: size,
+        height: size,
         colorPreset: 'solid',
         ...(n.note ? { note: n.note } : {}),
       };
     }
-    const { width, height } = labelBoxSize(n.label, shape);
+    const role = n.role?.trim();
+    const hasIcon = !!(n as { icon?: string }).icon || !!role;
+    // A person card is as wide as its wider line, each measured as it is drawn (personRuns): the name bold at md (the
+    // headless estimate's bold widening, BOLD_EM), the role at the card's own size; and a line taller than one.
+    const sized = role
+      ? labelBoxSize(
+          n.label,
+          shape,
+          { textSize: 'md', fontPx: Math.round(LOOK_FONT_PX.md * BOLD_EM) },
+          hasIcon,
+        )
+      : labelBoxSize(n.label, shape, look, hasIcon);
+    const width = role
+      ? Math.max(sized.width, labelBoxSize(role, shape, look, hasIcon).width)
+      : sized.width;
+    const height = role
+      ? sized.height + Math.round(LOOK_FONT_PX[look?.textSize ?? 'sm'] * 1.4)
+      : sized.height;
     return {
       id: n.id,
       type: 'shape' as const,
@@ -206,8 +320,15 @@ export function graphToElements(
       // One fixed size for every node's text, the size labelBoxSize measures
       // against. The default 'scale' fills each box, so a short heading came
       // out huge beside a long one set small.
-      textSize: 'sm' as const,
-      ...(n.label !== undefined ? { label: n.label } : {}),
+      textSize: look?.textSize ?? ('sm' as const),
+      ...(role
+        ? {
+            ...personCardText(n.label ?? '', role),
+            ...((n as { icon?: string }).icon ? {} : { iconId: 'user' }),
+          }
+        : n.label !== undefined
+          ? { label: n.label }
+          : {}),
       ...(n.link !== undefined ? { link: { kind: 'url' as const, url: n.link } } : {}),
       ...(n.note ? { note: n.note } : {}),
     };
@@ -217,5 +338,23 @@ export function graphToElements(
     .filter((e) => nodeIds.has(e.from) && nodeIds.has(e.to))
     .map((e) => edgeToArrow(e, makeEdgeId()));
 
-  return [...nodes, ...arrows];
+  return [...(look ? sizedAlike(nodes) : nodes), ...arrows];
+}
+
+// In the template look, the boxes of one kind share one size, the largest any of them needs, as a template's steps
+// do: a step whose label wrapped stood taller than its neighbours, and the column read as ragged.
+function sizedAlike(nodes: Element[]): Element[] {
+  const size = new Map<string, { width: number; height: number }>();
+  for (const el of nodes) {
+    if (el.type !== 'shape' || !LOOK_FLOOR[el.shape] || !el.label) continue;
+    const was = size.get(el.shape) ?? { width: 0, height: 0 };
+    size.set(el.shape, {
+      width: Math.max(was.width, el.width),
+      height: Math.max(was.height, el.height),
+    });
+  }
+  return nodes.map((el) => {
+    const alike = el.type === 'shape' && el.label ? size.get(el.shape) : undefined;
+    return alike ? { ...el, ...alike } : el;
+  });
 }

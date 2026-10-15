@@ -32,6 +32,7 @@ export function usePortalSetters({
   tabs,
   activeId,
   setSelectedId,
+  sessionToolsBlocked,
 }: {
   currentSelectionIds: () => Set<string>;
   // The element the open context menu is acting on. The menu can be opened on
@@ -44,6 +45,9 @@ export function usePortalSetters({
   tabs: Tab[];
   activeId: string;
   setSelectedId: (id: string | null) => void;
+  // Somebody else holds the baton (docs/specs/012-collaboration/facilitator.md "What the facilitator runs"):
+  // configuring a session button and lifting a cover for the room are theirs.
+  sessionToolsBlocked: boolean;
 }) {
   // The selected portals on the active tab — the only place a selection can
   // live, so the sources are always local even when the target isn't.
@@ -175,9 +179,14 @@ export function usePortalSetters({
     track('Element', 'Changed', telemetry);
   };
 
-  const setSessionConfigSelected = (session: SessionButtonConfig) =>
+  const setSessionConfigSelected = (session: SessionButtonConfig) => {
+    if (sessionToolsBlocked) return;
     patchTarget({ session }, 'session-button', 'SessionButton');
-  const setRevealedSelected = (revealed: boolean) => patchTarget({ revealed }, 'reveal', 'Reveal');
+  };
+  const setRevealedSelected = (revealed: boolean) => {
+    if (sessionToolsBlocked) return;
+    patchTarget({ revealed }, 'reveal', 'Reveal');
+  };
   const setPickerSourceSelected = (pickerSource: PickerSource) =>
     patchTarget({ pickerSource }, 'picker', 'Picker');
   const setPickerOptionsSelected = (pickerOptions: string[]) =>

@@ -11,6 +11,7 @@
 // './index', so the public package surface is unchanged.
 
 import type { ShapeKind } from './index';
+import { isSankeyShape } from './sankey-model';
 
 // The two progress ShapeKinds, grouped so renderers + context-menu gates can
 // branch on "is this a progress element" without repeating the literal pair.
@@ -78,7 +79,8 @@ export const PIE_DEFAULT_SLICES: readonly PieSlice[] = [
 // `lineSeries`, each a named line with a value per category (+ an optional
 // colour override). Editable as a grid and importable from CSV. Reuses the
 // shared `pieAnim` / `chartLegend` fields. The legend lists series names.
-export type LineSeries = { name: string; color?: string; values: number[] };
+// `axis: 'right'` draws the series against a scale of its own, the chart's second axis (pie-chart.md "A second axis").
+export type LineSeries = { name: string; color?: string; values: number[]; axis?: 'right' };
 export const LINE_DEFAULT_CATEGORIES: readonly string[] = ['Jan', 'Feb', 'Mar', 'Apr'];
 export const LINE_DEFAULT_SERIES: readonly LineSeries[] = [
   { name: 'Series 1', values: [10, 25, 18, 32] },
@@ -183,6 +185,13 @@ export function isChartShape(kind: ShapeKind): boolean {
   return isPieShape(kind) || isBarShape(kind) || isLineShape(kind);
 }
 
+// The kinds whose Presets grid is a chart palette (docs/specs/009-elements/pie-chart.md "Chart palettes"):
+// the charts, and the Sankey diagram (docs/specs/009-elements/sankey.md), whose nodes take the same ladder.
+// Both colour per datum or per node, so a fill-and-border look has nothing to set on them.
+export function takesChartPalette(kind: ShapeKind): boolean {
+  return isChartShape(kind) || isSankeyShape(kind);
+}
+
 // The "self-drawing" shape kinds: progress (bar / ring), timeline rail, rating,
 // the data charts, the code block, the checklist, and the sticker. They render
 // their own bespoke content (no fill/border box) and carry no editable text
@@ -198,6 +207,8 @@ export function isChartShape(kind: ShapeKind): boolean {
 // type into. The banner, callout and header DO carry a label and are not here.
 export function isSelfDrawingShape(kind: ShapeKind): boolean {
   return (
+    // A tab window (docs/specs/009-elements/tab-window.md) draws another tab; it takes no label.
+    kind === 'tab-window' ||
     kind === 'stat-row' ||
     kind === 'process' ||
     isProgressShape(kind) ||
@@ -207,8 +218,24 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     isCodeBlockShape(kind) ||
     isChecklistShape(kind) ||
     isLegendShape(kind) ||
+    isSankeyShape(kind) ||
     isPlanShape(kind) ||
-    kind === 'sticker'
+    kind === 'sticker' ||
+    // A fence (docs/specs/009-elements/fence.md) is posts and rails, with nothing to write on.
+    kind === 'fence' ||
+    // The office's scenery and machines (docs/specs/009-elements/office.md) have nothing to write on; a room
+    // keeps its label (its name plate) and a meeting table and the furniture theirs (under them).
+    kind === 'plant' ||
+    kind === 'bookshelf' ||
+    kind === 'water-cooler' ||
+    kind === 'coffee-machine' ||
+    kind === 'rug' ||
+    // A layer stack, a pyramid, an onion and a chevron process draw all their own text
+    // (docs/specs/009-elements/concept-graphics.md); a cycle and a hub keep their label, the words at the centre.
+    kind === 'layer-stack' ||
+    kind === 'pyramid' ||
+    kind === 'onion' ||
+    kind === 'chevrons'
   );
 }
 

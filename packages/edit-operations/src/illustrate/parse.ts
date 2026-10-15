@@ -182,6 +182,7 @@ function pageChange(v: unknown, i: number): PageChange {
       return { op, page: pageRef(v.page, i), to: place(v.to, 'to', i) };
     case 'duplicate':
     case 'delete':
+    case 'apply_background_to_all':
       onlyKeys(v, [...COMMON, 'page'], op, i);
       return { op, page: pageRef(v.page, i) };
   }

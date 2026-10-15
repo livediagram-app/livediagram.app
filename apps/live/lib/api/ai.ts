@@ -10,7 +10,7 @@ import type {
   ReadNotesResponse,
 } from '@livediagram/api-schema';
 import { READ_MAX_CROPS_PER_REQUEST } from '@livediagram/api-schema';
-import { isValidElement, type Element } from '@livediagram/document';
+import { isTextSize, isValidElement, type Element } from '@livediagram/document';
 import { API_BASE, apiHeaders, apiFetch } from './core';
 
 // Fetch server capabilities. Returns everything fail-closed (false) on any
@@ -133,9 +133,12 @@ function normalizeAiElement(obj: Record<string, unknown>): unknown {
     if (typeof obj.shape !== 'string' || !AI_SHAPE_KINDS.has(obj.shape)) {
       patch.shape = 'square';
     }
-    // Pin a non-fixed textSize to 'md' (else 'scale' balloons the label).
+    // Pin a non-fixed textSize to 'md' (else 'scale' balloons the label). A slider px is fixed too: an
+    // element's own size echoed back by Clean is kept, not flattened to 'md'.
     const ts = obj.textSize;
-    if (ts !== 'sm' && ts !== 'md' && ts !== 'lg') patch.textSize = 'md';
+    const fixed =
+      ts === 'sm' || ts === 'md' || ts === 'lg' || (typeof ts === 'number' && isTextSize(ts));
+    if (!fixed) patch.textSize = 'md';
   }
   return Object.keys(patch).length ? { ...obj, ...patch } : obj;
 }

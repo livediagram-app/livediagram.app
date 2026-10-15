@@ -101,7 +101,11 @@ that let `viewport` through.
   lives in memory only: a client that fell behind across a wake finds the log
   empty and re-fetches, which is the safe path and never loses data.
 - The client (`apps/live/lib/api/room.ts`) gained auto-reconnect with capped
-  backoff + seq/epoch tracking.
+  backoff + seq/epoch tracking. The backoff's six attempts span about 30
+  seconds; once they are used up the client waits for the browser to come back
+  online or the tab to be shown again and starts a fresh round then, so an
+  outage longer than the attempts (a laptop asleep, wifi gone a while) does not
+  end live collaboration for the rest of the session.
 - **The cursor must include the client's own ops.** The relay skips the
   sender, so a client used to learn seqs only from other people's ops: a
   reconnect asked for its own ops back, and a session that had heard nothing
@@ -134,6 +138,23 @@ persistence path without making it hold the document: the tab PUT merges the
 room's collaboration ledger in before writing
 ([Collaboration race hardening](collab-race-hardening.md) phase 3), and Q&A board writes are performed
 by the room itself, one at a time ([Q&A board](qa-board.md)).
+
+### Keepalive
+
+A socket can die without a close event: a laptop asleep, a NAT or proxy that dropped an idle
+connection. It then reads as open while nothing arrives, so collaborators' changes stop reaching
+the editor until a reload, and nothing says so. The client therefore checks its socket:
+
+- After 20 seconds with nothing heard (`ROOM_KEEPALIVE_IDLE_MS`, `apps/live/lib/api/room.ts`) it
+  sends the bare text `ping` (`ROOM_PING` in `room-messages.ts`). Any traffic resets the clock, so
+  a busy room sends none.
+- The room answers `pong` through the runtime's `setWebSocketAutoResponse`, which never wakes a
+  hibernating room, so a keepalive costs the room nothing.
+- A ping with no answer at all within 10 seconds (`ROOM_KEEPALIVE_TIMEOUT_MS`) ends the socket as a
+  drop, and the reconnect and catch-up above take over. Only an unanswered ping counts, never
+  silence alone: a background tab whose timers the browser slows to once a minute is never dropped
+  for being quiet.
+- `ping` and `pong` are plain text, never JSON, so neither side's message handler reads them as ops.
 
 ## Locked decisions
 

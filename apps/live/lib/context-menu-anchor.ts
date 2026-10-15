@@ -34,3 +34,19 @@ export function elementMenuAnchor(rect: { left: number; right: number; top: numb
   }
   return { x, y: rect.top };
 }
+
+// The menu that opens beside a label being edited (useEditModeContextMenu): beside the element AND its floating text
+// toolbar, which is centred on the element and wider than a small one (an icon, a short pill). Anchored on the
+// element alone, the menu sat over the toolbar's right end, where its alignment control is. The toolbar widens the
+// rect only sideways: the menu still starts at the element's top.
+export function editMenuAnchor(
+  element: { left: number; right: number; top: number },
+  toolbar: { left: number; right: number } | null,
+): { x: number; y: number } {
+  if (!toolbar) return elementMenuAnchor(element);
+  return elementMenuAnchor({
+    left: Math.min(element.left, toolbar.left),
+    right: Math.max(element.right, toolbar.right),
+    top: element.top,
+  });
+}

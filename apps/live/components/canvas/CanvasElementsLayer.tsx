@@ -1,19 +1,20 @@
-import { Fragment, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
 import { idBound } from './element-layer-props';
 import { arrowViewGeometry } from './arrow-view-frame';
-import { affectedArrows, buildArrowLinks, previewArrowGeometry } from './drag-affected-arrows';
-import { useDragPreview } from '@/lib/drag-preview';
+import { buildArrowLinks } from './drag-affected-arrows';
+import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';
+import { CanvasElementList } from './CanvasElementList';
+import { usePublishSketchBackdrops } from '@/lib/sketch-backdrop-store';
 import { useFontEpoch } from './useFontEpoch';
 import {
-  eventStormingNoteFont,
+  elementFontId,
   resolveFontStack,
+  resolveFinish,
   isSelectionMode,
   alignmentCoordinates,
   buildElementIndex,
-  isBoxed,
-  isVotableInVote,
   layerBands,
   laneSeamCoordinates,
   layerOpacityOf,
@@ -21,11 +22,12 @@ import {
   type CommentMention,
   createElementGridTracker,
   type ElementIndex,
+  stackedElementIds,
 } from '@livediagram/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
-import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
+import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import { DrawnArrowPreview } from '@/components/canvas/DrawnArrowPreview';
 import {
   SelectionGripsContext,
@@ -35,11 +37,6 @@ import {
 import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
-import {
-  FreeArrowFrame,
-  SelectableArrowView,
-  SelectableBoxedView,
-} from '@/components/canvas/selection-aware-views';
 import { useSheetChartRenderer, type BoxedShared } from '@/components/canvas/sheet-chart-renderer';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
@@ -48,21 +45,15 @@ import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { IllustratePageClip } from '@/components/canvas/IllustratePageClip';
 import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteContext';
-import type { RemoteSelector } from '@/lib/presence-rows';
 import {
   SheetChartsContext,
   type SheetChartsValue,
 } from '@/components/sheets/sheet-charts-context';
 import { sheetDrawnChartIds } from '@livediagram/document';
+import { GifOmit } from './GifOmit';
 
-// Stable empty-array constant for the `remoteSelectors` prop on the
-// (very common) "no remote participants have this element selected"
-// path, so BoxedElementView's memo isn't invalidated by a fresh [] per
-// render.
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
 const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
-
-const EMPTY_REMOTE_SELECTORS: RemoteSelector[] = [];
 
 // Canvas-computed values threaded into the element layer alongside the
 // raw props.
@@ -84,7 +75,7 @@ type ElementsExtras = {
   setQuickRingOpen: (placement: QuickConnectDirection | null) => void;
 };
 
-type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
+export type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
 
 // The element-rendering layer of the canvas: the shared arrow defs, every
 // element (arrows + boxed views interleaved in z-order), remote cursors,
@@ -131,6 +122,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onToggleChecklistItem,
     onSetPageHeading,
     onSetWebRows,
+    onSetPointerTip,
     onAppendWebRow,
     onSetHeroCaptionLine,
     chartPalette,
@@ -142,6 +134,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onPressFocusButton,
     onPressSessionButton,
     sessionStartBlocked,
+    sessionRunBy,
     timerState,
     // The tab's live timer plus the handlers that drive it, so a Timer
     // session element can BE the timer (docs/specs/012-collaboration/session-button.md) rather than a button that
@@ -168,7 +161,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenAction,
     onOpenNote,
     onEditLink,
-    onEditCode,
+    onOpenEditDialog,
     onDropIcon,
     onLinkCell,
     onShiftSelect,
@@ -191,6 +184,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     shiftDupGhostIds,
     voteReview,
     tabFont,
+    tabFinish,
     tabLocked,
     tabSummaries,
     quickRingOpen,
@@ -241,6 +235,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
     onSetPageHeading,
     onSetWebRows: readOnly ? undefined : onSetWebRows,
+    onSetPointerTip: readOnly ? undefined : onSetPointerTip,
     onSetHeroCaptionLine: readOnly ? undefined : onSetHeroCaptionLine,
     onFollowLink,
     onPressModeButton,
@@ -252,7 +247,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenAction,
     onOpenNote,
     onEditLink,
-    onEditCode,
+    onOpenEditDialog,
     onDropIcon,
     onLinkCell,
     // docs/specs/008-canvas/canvas-performance.md: the rest of what each view receives, stable too.
@@ -314,9 +309,12 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // Auto-fit measures the face it paints, and webfonts land after first
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontEpoch).
-  useFontEpoch();
-  // Resolved tab default font once; per-element falls back to it (docs/specs/004-interface-design/fonts.md).
-  const tabFontStack = resolveFontStack(tabFont);
+  const fontEpoch = useFontEpoch();
+  // What the tab's stacks hold, for the reflow glide (docs/specs/009-elements/stack.md "Animation").
+  const stackedIds = useMemo(() => stackedElementIds(elements), [elements]);
+  // The font an element following the tab letters in, resolved once (docs/specs/004-interface-design/fonts.md):
+  // the tab's, or the handwriting font on a Sketch tab (docs/specs/008-canvas/finish.md).
+  const tabFontStack = resolveFontStack(elementFontId({}, tabFont, tabFinish));
   // Highest dot count on the tab (docs/specs/012-collaboration/session-tools.md), computed once so each element's
   // vote pill can flag itself a winner once results are revealed.
   const voteMax = tabVote
@@ -400,6 +398,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onToggleChecklistItem: h.onToggleChecklistItem,
       onSetPageHeading: h.onSetPageHeading,
       onSetWebRows: h.onSetWebRows,
+      onSetPointerTip: h.onSetPointerTip,
       onSetHeroCaptionLine: h.onSetHeroCaptionLine,
       chartPalette: stablePalette,
       onCancelEdit: h.onCancelEdit,
@@ -408,6 +407,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onPressFocusButton: h.onPressFocusButton,
       onPressSessionButton: h.onPressSessionButton,
       sessionStartBlocked,
+      sessionRunBy,
       timerState,
       tabTimer: tabTimer ?? null,
       onSetSessionConfig: h.onSetSessionConfig,
@@ -430,7 +430,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onOpenAction: h.onOpenAction,
       onOpenNote: h.onOpenNote,
       onEditLink: h.onEditLink,
-      onEditCode: h.onEditCode,
+      onOpenEditDialog: h.onOpenEditDialog,
       onDropIcon: h.onDropIcon,
       onLinkCell: h.onLinkCell,
       imageContext,
@@ -448,6 +448,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       voteReview,
       stablePalette,
       sessionStartBlocked,
+      sessionRunBy,
       timerState,
       tabTimer,
       commentSelfId,
@@ -467,6 +468,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // The elements actually drawn, for the arrows' pass-behind breaks: a box on
   // a hidden layer must not cut a gap in a line (docs/specs/008-canvas/arrow-route-behind.md).
   const drawnElements = useMemo(() => ordered.map((o) => o.element), [ordered]);
+  // Shapes something sits on keep a solid fill under Sketch (docs/specs/008-canvas/finish.md).
+  usePublishSketchBackdrops(props.activeTabId ?? '', drawnElements, tabFinish);
   // The drawn elements' grid (docs/specs/008-canvas/canvas-performance.md "Questions about neighbours
   // ask a spatial index"), re-bucketing only what changed since the last one, and every arrow's frame
   // and holes from it, once per element change. ArrowView compares both by value, so a move
@@ -477,66 +480,36 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     if (!elementIndex) return out;
     const grid = gridTracker.gridFor(drawnElements);
     for (const el of drawnElements) {
-      if (el.type === 'arrow') out.set(el.id, arrowViewGeometry(el, elementIndex, grid));
+      if (el.type === 'arrow')
+        out.set(
+          el.id,
+          arrowViewGeometry(el, elementIndex, grid, resolveFinish(el.finish, tabFinish)),
+        );
     }
     return out;
-  }, [drawnElements, elementIndex, gridTracker]);
-  // A drag in progress, ours or a collaborator's (docs/specs/008-canvas/drag-preview.md): the elements
-  // it changes are drawn from it, and only the arrows depending on them are re-derived; the maps
-  // above stay as built from the document.
-  const overlay = useDragPreview(props.activeTabId ?? '', drawnElements);
+  }, [drawnElements, elementIndex, gridTracker, tabFinish]);
   const arrowLinks = useMemo(
     () => (hasArrows ? buildArrowLinks(drawnElements) : null),
     [hasArrows, drawnElements],
   );
-  const preview = useMemo(() => {
-    if (!overlay) return null;
-    const shown = ordered.flatMap((o) =>
-      overlay.removed.has(o.element.id)
-        ? []
-        : [
-            {
-              element: overlay.changed.get(o.element.id) ?? o.element,
-              layerOpacity: o.layerOpacity,
-            },
-            ...overlay.added
-              .filter((a) => a.after === o.element.id)
-              .map((a) => ({ element: a.el, layerOpacity: o.layerOpacity })),
-          ],
-    );
-    const placed = new Set(shown.map((o) => o.element.id));
-    for (const a of overlay.added)
-      if (!placed.has(a.el.id)) shown.push({ element: a.el, layerOpacity: 1 });
-    const geometry = new Map<string, ReturnType<typeof arrowViewGeometry>>();
-    const labels = new Map<string, ArrowLabelRender>();
-    if (elementIndex && arrowLinks) {
-      const index = new Map(elementIndex);
-      for (const [id, el] of overlay.changed) index.set(id, el);
-      for (const { el } of overlay.added) index.set(el.id, el);
-      const grid = gridTracker.gridFor(drawnElements);
-      const ids = affectedArrows(overlay, drawnElements, arrowLinks);
-      for (const { el } of overlay.added) if (el.type === 'arrow') ids.add(el.id);
-      const virtual = shown.map((o) => o.element);
-      for (const id of ids) {
-        const arrow = index.get(id);
-        if (!arrow || arrow.type !== 'arrow') continue;
-        geometry.set(id, previewArrowGeometry(arrow, index, grid, overlay));
-        if (arrow.label) {
-          const base = arrowLabels.renderOf(id);
-          const layout = arrowLabels.draftLayout(arrow, arrow.label, virtual);
-          labels.set(id, {
-            layout,
-            knockouts: [
-              ...base.knockouts.filter((k) => k !== base.layout?.knockout),
-              ...(layout?.knockout ? [layout.knockout] : []),
-            ],
-          });
-        }
-      }
-    }
-    return { shown, geometry, labels };
-  }, [overlay, ordered, elementIndex, arrowLinks, gridTracker, drawnElements, arrowLabels]);
-  const shownOrder = preview?.shown ?? ordered;
+  // A drag in progress, ours or a collaborator's (docs/specs/008-canvas/drag-preview.md): each element
+  // it changes, and each arrow depending on them, reads its own preview entry (PreviewedElement), so a
+  // preview frame renders those and not this layer; the maps above stay as built from the document.
+  // The layer renders for a preview only when it adds or removes elements, which changes the list.
+  const { store: previewStore, structure: previewStructure } = useLayerDragPreview({
+    tabId: props.activeTabId ?? '',
+    ordered,
+    drawnElements,
+    elementIndex,
+    arrowLinks,
+    gridFor: (els) => gridTracker.gridFor(els),
+    arrowLabels,
+    tabFinish,
+  });
+  const shownOrder = useMemo(
+    () => (previewStructure ? shownWithOverlay(ordered, previewStructure) : ordered),
+    [ordered, previewStructure],
+  );
   // The grips layer's portal hosts (docs/specs/008-canvas/canvas-and-palette.md "Resize"), set once
   // it mounts; every element view portals its grips into them.
   const [gripHosts, setGripHosts] = useState<SelectionGripHosts | null>(null);
@@ -602,185 +575,89 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             // A page under a layout preview shows only the preview.
             hiddenPageId={props.illustratePages?.layoutPreview?.pageId ?? null}
             elements={elements}
+            layers={tabLayers}
           >
-            {shownOrder.map(({ element, layerOpacity }, isoDepth) => {
-              // Shift-duplicate ghost (docs/specs/008-canvas/shift-drag-duplicate.md): the dragged set renders
-              // translucent while its materialised copy holds the start
-              // position, multiplied over any per-layer opacity.
-              const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
-              // Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): while one is open, everything that
-              // is NOT part of it recedes, so the notes the photo brought are the
-              // most visible thing on the board. A render-time style, local to the
-              // importing session — the board itself is untouched.
-              const isDraftNote = element.type === 'sticky' && element.esDraft === true;
-              const draftFade = draftView && !isDraftNote ? 0.5 : 1;
-              const effOpacity = ghostFactor * layerOpacity * draftFade;
-              if (element.type === 'arrow') {
-                return (
-                  <Fragment key={element.id}>
-                    <svg
-                      className="absolute inset-0 h-full w-full"
-                      // Tagged so isometric mode can lift arrows just off the base
-                      // plane (globals.css [data-iso] rule): an arrow's surface is
-                      // coplanar with the boxes it crosses under preserve-3d, and
-                      // coplanar layers z-fight — which is what made a FLOWING arrow
-                      // shimmer in isometric while a static one looked fine (the
-                      // animation repaints every frame, so the fight is visible
-                      // continuously rather than only while the camera orbits).
-                      data-arrow-svg=""
-                      // An arrow travels whole or not at all in the preview (see
-                      // insert-between.ts): one that straddles the insertion point
-                      // stretches, which a transform cannot express, so it waits for
-                      // the drop.
-                      data-insert-shift={insertShift.animates ? '' : undefined}
-                      style={{
-                        pointerEvents: 'none',
-                        overflow: 'visible',
-                        ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
-                        ...(insertShift.xFor(element.id)
-                          ? { transform: `translateX(${insertShift.xFor(element.id)}px)` }
-                          : {}),
-                      }}
-                    >
-                      <SelectableArrowView
-                        arrow={element}
-                        frame={
-                          (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!)
-                            .frame
-                        }
-                        holes={
-                          (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!)
-                            .holes
-                        }
-                        labelRender={
-                          preview?.labels.get(element.id) ?? arrowLabels.renderOf(element.id)
-                        }
-                        draftLayout={arrowLabels.draftLayout}
-                        isPaintMode={isPaintMode}
-                        isEditing={element.id === editingId}
-                        editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-                        tabLocked={tabLocked}
-                        readOnly={readOnly}
-                        onSelect={h.handleArrowSelect}
-                        onContextSelect={h.handleElementContextSelect}
-                        onBeginEndpointDrag={h.onBeginEndpointDrag}
-                        onBeginEdit={h.onBeginEdit}
-                        onCommitLabel={h.onCommitLabel}
-                        onCancelEdit={h.onCancelEdit}
-                        onBeginCurveDrag={h.onBeginArrowCurveDrag}
-                        onBeginCurvePointDrag={h.onBeginArrowCurvePointDrag}
-                        onBeginArrowBend={h.onBeginArrowBend}
-                        onDeleteCurvePoint={h.onDeleteCurvePoint}
-                        onBeginElbowDrag={h.onBeginArrowElbowDrag}
-                        onBeginLabelDrag={h.onBeginArrowLabelDrag}
-                        fontFamily={resolveFontStack(element.font) ?? tabFontStack}
-                      />
-                    </svg>
-                    <FreeArrowFrame
-                      arrow={element}
-                      elements={elements}
-                      standsDown={
-                        element.id === editingId ||
-                        element.id === props.reshapingArrowId ||
-                        readOnly ||
-                        tabLocked ||
-                        isPaintMode
-                      }
-                      onBeginArrowTranslate={h.onBeginArrowTranslate}
-                      onBeginArrowScale={h.onBeginArrowScale}
-                    />
-                  </Fragment>
-                );
-              }
-              if (!isBoxed(element)) return null;
-              return (
-                <SelectableBoxedView
-                  key={element.id}
-                  editingId={editingId}
-                  {...boxedShared}
-                  element={element}
-                  // Paint index, used only by isometric mode to stagger each element
-                  // onto its own z-plane (globals.css --iso-z): coplanar layers
-                  // z-fight under preserve-3d, which is the flicker.
-                  isoDepth={isoDepth}
-                  insertShiftX={insertShift.xFor(element.id)}
-                  insertShiftAnimates={insertShift.animates}
-                  // Resolved once here, where both the vote and the tab's layers
-                  // are in scope, rather than threading `layers` down to the
-                  // gesture hook and the overlay separately (docs/specs/012-collaboration/vote-layer-scope.md).
-                  votableInVote={isVotableInVote(element, tabVote, tabLayers)}
-                  layerOpacity={effOpacity < 1 ? effOpacity : undefined}
-                  // The draft treatment, and the "already here" badge on a note the
-                  // photo matched (with what it read, when that differed).
-                  photoDraft={isDraftNote}
-                  photoMatched={draftView?.matchedIds.has(element.id) === true}
-                  photoReadAs={draftView?.differences.get(element.id)}
-                  remoteSelectors={
-                    remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS
-                  }
-                  isEditing={element.id === editingId}
-                  editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-                  movable={!readOnly || canMove?.(element) === true}
-                  writable={!readOnly || canWriteText?.(element) === true}
-                  resizable={!readOnly || canResize?.(element) === true}
-                  isVoteFocus={voteReview?.focusId === element.id}
-                  commentActions={commentActionsFor?.(element.id)}
-                  actionActions={actionActionsFor?.(element.id)}
-                  revealedForMe={revealedIds?.has(element.id)}
-                  reactionBurst={reactionBursts?.get(element.id)}
-                  // A workshop note writes in marker (docs/specs/021-event-storming/event-storming.md): the notation names
-                  // the face, so it outranks the tab default — but not an explicit
-                  // per-element font, which is a deliberate author choice.
-                  fontFamily={
-                    resolveFontStack(element.font ?? eventStormingNoteFont(element)) ?? tabFontStack
-                  }
-                />
-              );
-            })}
+            <CanvasElementList
+              shownOrder={shownOrder}
+              previewStore={previewStore}
+              h={h}
+              boxedShared={boxedShared}
+              arrowGeometry={arrowGeometry}
+              arrowLabels={arrowLabels}
+              elements={elements}
+              editingId={editingId}
+              editCursorAtEnd={editCursorAtEnd}
+              reshapingArrowId={props.reshapingArrowId}
+              isPaintMode={isPaintMode}
+              tabLocked={tabLocked}
+              readOnly={readOnly}
+              insertShift={insertShift}
+              shiftDupGhostIds={shiftDupGhostIds}
+              draftView={draftView}
+              tabVote={tabVote}
+              tabLayers={tabLayers}
+              remoteSelectionsByElement={remoteSelectionsByElement}
+              canMove={canMove}
+              canWriteText={canWriteText}
+              canResize={canResize}
+              voteReview={voteReview}
+              commentActionsFor={commentActionsFor}
+              actionActionsFor={actionActionsFor}
+              revealedIds={revealedIds}
+              reactionBursts={reactionBursts}
+              tabFont={tabFont}
+              tabFinish={tabFinish}
+              fontEpoch={fontEpoch}
+              stackedIds={stackedIds}
+            />
           </IllustratePageClip>
 
-          {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
+          {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
+          <GifOmit>
+            {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
           element the release lands, after every element, where it will land. */}
-          {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
-            <DrawnArrowPreview
-              arrow={props.previewDrawnArrow(
-                props.pendingDraw,
-                drawDrag.startX,
-                drawDrag.startY,
-                drawDrag.currentX,
-                drawDrag.currentY,
-              )}
-              elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
-              occluders={drawnElements}
-              draftLayout={arrowLabels.draftLayout}
-              fontFamily={tabFontStack}
-              withDefs={!hasArrows}
-            />
-          ) : null}
+            {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
+              <DrawnArrowPreview
+                arrow={props.previewDrawnArrow(
+                  props.pendingDraw,
+                  drawDrag.startX,
+                  drawDrag.startY,
+                  drawDrag.currentX,
+                  drawDrag.currentY,
+                )}
+                elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
+                occluders={drawnElements}
+                draftLayout={arrowLabels.draftLayout}
+                fontFamily={tabFontStack}
+                withDefs={!hasArrows}
+              />
+            ) : null}
 
-          {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
+            {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
           above the elements, beneath the remote cursors. */}
-          <AgentFocusOverlay elements={elements} />
+            <AgentFocusOverlay elements={elements} />
 
-          {remoteCursors.map((c) => (
-            <ZoomedRemoteCursor key={c.id} cursor={c} />
-          ))}
+            {remoteCursors.map((c) => (
+              <ZoomedRemoteCursor key={c.id} cursor={c} />
+            ))}
 
-          {/* Laser overlay sits inside the viewport-transformed wrapper
+            {/* Laser overlay sits inside the viewport-transformed wrapper
             so trail coordinates (canvas-space) pan + zoom with
             elements. The overlay component owns its own RAF loop
             and only runs while there's at least one active trail. */}
-          <ZoomedLaserOverlay trails={laserTrails} />
+            <ZoomedLaserOverlay trails={laserTrails} />
 
-          {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
+            {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}
-          <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
+            <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
+          </GifOmit>
 
           {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
           <SelectionGripsLayer onHosts={setGripHosts} isoDepth={ordered.length}>
             <LayerSelectionChrome
               selectionInput={props.selectionInput}
+              tabId={props.activeTabId ?? ''}
               elements={elements}
               editingId={editingId}
               nextNote={

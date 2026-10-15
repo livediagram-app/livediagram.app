@@ -19,6 +19,9 @@ const edits = (): IllustratePageEdits =>
     setSize: vi.fn(),
     rename: vi.fn(),
     setBackground: vi.fn(),
+    applyToAllReach: vi.fn(() => 0),
+    applyBackgroundToAll: vi.fn(),
+    copyBackground: vi.fn(() => false),
     movePage: vi.fn(),
     movePageTo: vi.fn(),
     choosePageKind: vi.fn(),
@@ -52,16 +55,22 @@ function renderPanel(page: IllustratePage, initialTab: PagePanelTab, onPreview =
 }
 
 describe('pagePanelTabs', () => {
-  it('gives an infographic page Page, Background and Layouts', () => {
+  it('gives an infographic page Page alone, its Layouts and Background beside the cog', () => {
     expect(
       pagePanelTabs(laidOut({ id: 'p', orientation: 'portrait', kind: 'infographic' })),
-    ).toEqual(['page', 'background', 'layouts']);
+    ).toEqual(['page']);
   });
 
-  it('gives an article page Page, Background, Style and Text', () => {
+  it('gives a slide page Page and Background, its Layouts beside the cog', () => {
+    expect(
+      pagePanelTabs(laidOut({ id: 'p', orientation: 'landscape', kind: 'slide', size: 'slide' })),
+    ).toEqual(['page', 'background']);
+  });
+
+  it('gives an article page Page alone, its Style, Text and Background beside the cog', () => {
     expect(
       pagePanelTabs(laidOut({ id: 'p', orientation: 'portrait', kind: 'article', flow: 'f' })),
-    ).toEqual(['page', 'background', 'style', 'text']);
+    ).toEqual(['page']);
   });
 
   it('drops Page from a logo page, which has no size or orientation to choose', () => {
@@ -72,15 +81,21 @@ describe('pagePanelTabs', () => {
 });
 
 describe('the Background tab', () => {
-  const infographic: IllustratePage = { id: 'p', orientation: 'portrait', kind: 'infographic' };
+  const slide: IllustratePage = { id: 'p', orientation: 'landscape', kind: 'slide', size: 'slide' };
 
   it('holds the backgrounds, which the Page tab no longer shows', () => {
-    renderPanel(infographic, 'page');
+    renderPanel(slide, 'page');
     expect(screen.getByText('Size')).toBeTruthy();
     expect(screen.queryByText('Pattern')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Background' }));
     expect(screen.getByText('Pattern')).toBeTruthy();
     expect(screen.queryByText('Size')).toBeNull();
+  });
+
+  it('opens an infographic page asked for Background on Page, with no tab switch', () => {
+    renderPanel({ id: 'p', orientation: 'portrait', kind: 'infographic' }, 'background');
+    expect(screen.queryByRole('group', { name: 'Page panel section' })).toBeNull();
+    expect(screen.getByText('Size')).toBeTruthy();
   });
 
   it('opens a logo page on Background, its first tab', () => {
@@ -92,7 +107,10 @@ describe('the Background tab', () => {
   });
 
   it('takes a hovered preview off the page when leaving it', () => {
-    const onPreview = renderPanel(infographic, 'background');
+    const onPreview = renderPanel(
+      { id: 'p', orientation: 'portrait', kind: 'logo', size: 'logo' },
+      'background',
+    );
     onPreview.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'Layouts' }));
     expect(onPreview).toHaveBeenCalledWith(null);

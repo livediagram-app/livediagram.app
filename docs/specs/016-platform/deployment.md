@@ -55,6 +55,12 @@ CI is the gate you check before deploying to production, but it does **not** tri
 
 **Testing** runs via [Vitest](https://vitest.dev). Workspaces opt in by adding `"test": "vitest run"` to their `package.json` scripts and `vitest` to their `devDependencies`; turbo then picks the task up automatically. Tests live next to the source they cover as `*.test.ts` files. Most workspaces are opted in (`pnpm turbo run test --dry` lists them); a workspace mirrors the pattern when it adds its first test.
 
+### Runs on main are never cancelled
+
+`ci.yml`, `e2e.yml` and `codeql.yml` cancel a run only on a pull request, where a newer push makes the older run moot. On `main` every commit runs to the end, each in a concurrency group of its own (keyed by the commit), because a shared group keeps only one pending run and a burst of merges would still drop the middle ones. Cancelling there left most merges without a result (37 of 42 CI runs on `main` cancelled in the 11 hours to 2026-10-15), so a failure could not be pinned on its commit, and a pull request whose base had no finished run had no Codecov base to compare against, failing its [Coverage report](../003-system-architecture/testing.md#coverage-report) with a 404.
+
+The cost is runner time: a merge on `main` is about a dozen jobs (CI's six, E2E's shards, CodeQL), so a burst of merges queues for runners alongside open pull requests' runs. Runs on `main` finishing out of order is handled by the staging deploy, which deploys only `main`'s tip ([Staging environment](staging-environment.md)).
+
 ## Deploy
 
 The deploy is split in two: `.github/workflows/deploy-reusable.yml` holds every job below as a **reusable workflow** (`workflow_call`), and two thin callers trigger it — `deploy.yml` for production and `deploy-staging.yml` for staging. Both environments therefore run byte-identical steps; the only difference is the inputs (`wrangler_env`, the MCP origin) and which secrets the caller passes. One body, because a staging deploy that has drifted from production's tests nothing. A third caller, `deploy-preview.yml`, deploys a per-PR preview through the same body ([PR previews](pr-previews.md)).

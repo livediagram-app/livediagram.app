@@ -61,7 +61,7 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
       }
     }
     const next = { ...stored.tab, elements: plan.elements };
-    const lint = lintResult(next, where);
+    const lint = lintResult(next, where, stored.tab);
     const outcome = await writeChangeset(env, {
       documentId: document.id,
       tabId: record.tabId,

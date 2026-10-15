@@ -14,6 +14,7 @@ import {
   useAuth,
   useClerk,
   useReverification,
+  useSession,
   useUser,
 } from '@clerk/react';
 import { useEffect } from 'react';
@@ -22,6 +23,16 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import { resolveProfilePicture } from '@/lib/account-avatar';
 import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
 import type { DeferredAuthState } from './deferred-auth';
+
+// Clerk's reverification hint (`reverificationError('strict')` in @clerk/shared/authorization-errors): the shape
+// useReverification answers with its step-up modal.
+const REVERIFY_STRICT = {
+  clerk_error: {
+    type: 'forbidden',
+    reason: 'reverification-error',
+    metadata: { reverification: 'strict' },
+  },
+} as const;
 
 export function ClerkBridge({ onState }: { onState: (state: DeferredAuthState) => void }) {
   return (
@@ -50,6 +61,14 @@ function Publisher({ onState }: { onState: (state: DeferredAuthState) => void })
   // Clerk's hook re-mints it per render; the published closure calls the newest one, so the state is
   // only republished when an auth field that matters changes.
   const deleteUserRef = useLatest(deleteUserReverified);
+  // The same step-up on its own (docs/specs/014-identity/auth-and-guest-access.md "Deleting an account"): asks for
+  // a strict reverification when the session has none, by answering with Clerk's documented hint, which
+  // useReverification meets with its modal and then retries.
+  const { session } = useSession();
+  const confirmReverified = useReverification(async () =>
+    session && !session.checkAuthorization({ reverification: 'strict' }) ? REVERIFY_STRICT : true,
+  );
+  const confirmRef = useLatest(confirmReverified);
 
   useEffect(() => {
     onState({
@@ -81,8 +100,18 @@ function Publisher({ onState }: { onState: (state: DeferredAuthState) => void })
             await forgetRecentDiagrams();
           }
         : null,
+      confirmIdentity: isSignedIn
+        ? async () => {
+            try {
+              return (await confirmRef.current()) === true;
+            } catch {
+              // Cancelled (`reverification_cancelled`) or failed: either way, not confirmed.
+              return false;
+            }
+          }
+        : undefined,
     });
-  }, [isLoaded, isSignedIn, userId, user, getToken, signOut, onState, deleteUserRef]);
+  }, [isLoaded, isSignedIn, userId, user, getToken, signOut, onState, deleteUserRef, confirmRef]);
 
   return null;
 }

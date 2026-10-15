@@ -194,10 +194,15 @@ whose deploy has drifted from production's tests nothing.
 
 `deploy-staging.yml` triggers on `workflow_run` — CI completing successfully on `main` —
 not on `push`. Deploying a red `main` to staging would mean the environment's state no
-longer tells you anything. `concurrency: cancel-in-progress: true` means a rapid series
-of merges deploys the last one rather than queueing all of them; production keeps
-`cancel-in-progress: false`, because cancelling a half-finished production deploy is
-worse than queueing.
+longer tells you anything. Every commit on `main` runs CI to the end
+([Deployment](deployment.md#runs-on-main-are-never-cancelled)), so those runs can finish
+out of order: a first job (**Still main's tip**) lets a run deploy only when its commit
+is still `main`'s tip, and an older commit finishing last is skipped rather than putting
+staging behind `main`. The deploy job's own `concurrency: cancel-in-progress: true` means
+a rapid series of merges deploys the last one rather than queueing all of them; it sits
+on the job, not the workflow, so a skipped run never cancels the tip's deploy. Production
+keeps `cancel-in-progress: false`, because cancelling a half-finished production deploy
+is worse than queueing.
 
 ## One-time setup
 

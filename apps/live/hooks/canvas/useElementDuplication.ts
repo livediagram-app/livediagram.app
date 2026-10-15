@@ -13,11 +13,13 @@ import {
   landArrivals,
   sheetDrawnChartIds,
   withSheetCharts,
+  withAttached,
   type ElementId,
   type ArrowElement,
   type BoxedElement,
   type Element,
   type Tab,
+  detachChip,
 } from '@livediagram/document';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { PASTE_OFFSET } from '@/lib/paste-placement';
@@ -62,7 +64,11 @@ export function useElementDuplication(deps: {
     if (multiSelectedIds.size === 0) return;
     const { dx, dy, lanes } = duplicateOffset(activeTab, multiSelectedIds);
     // A Sheet's copy takes the charts it draws (docs/specs/029-sheets/sheet.md "Charts"), which are never selected.
-    const ids = withSheetCharts(activeTab.elements, multiSelectedIds);
+    // ...and a host's copy takes its badges and step numbers (docs/specs/009-elements/badge.md).
+    const ids = withAttached(
+      activeTab.elements,
+      withSheetCharts(activeTab.elements, multiSelectedIds),
+    );
     const { newElements: copies } = duplicateElements(activeTab.elements, ids, dx, dy);
     if (copies.length === 0) return;
     commit((els) => landCopies(els, copies, lanes));
@@ -80,7 +86,11 @@ export function useElementDuplication(deps: {
     // to it), offset diagonally so it's visible next to the original.
     const offset = PASTE_OFFSET;
     // A Sheet drawing charts copies with them, through duplicateElements, so they read the Sheet's copy.
-    const withCharts = withSheetCharts(activeTab.elements, new Set([source.id]));
+    // ...and its badges and step numbers (docs/specs/009-elements/badge.md).
+    const withCharts = withAttached(
+      activeTab.elements,
+      withSheetCharts(activeTab.elements, new Set([source.id])),
+    );
     if (withCharts.size > 1) {
       const { dx, dy, lanes } = duplicateOffset(activeTab, withCharts);
       const { newElements: copies, idMap } = duplicateElements(
@@ -98,14 +108,16 @@ export function useElementDuplication(deps: {
     }
     if (isBoxed(source)) {
       const { dx, dy, lanes } = duplicateOffset(activeTab, new Set([source.id]));
-      const copy: BoxedElement = {
+      // A copy of a badge, step number or pointer note on its own is let go of the host (detachChip), as a copy made
+      // with others is: still attached, settling would centre it straight back over the original.
+      const copy: BoxedElement = detachChip({
         ...source,
         id: crypto.randomUUID(),
         x: source.x + dx,
         y: source.y + dy,
         // Whatever a copy regenerates rather than inherits (docs/specs/021-event-storming/event-storming.md tilt).
         ...freshCopyFields(source),
-      };
+      });
       commit((els) => landCopies(els, [copy], lanes));
       trackDuplicated([copy]);
       setSelectedId(copy.id);

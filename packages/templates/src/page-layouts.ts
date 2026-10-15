@@ -28,6 +28,14 @@ import { buildBeforeAfter, buildFeatureMatrix, buildProsCons } from './page-layo
 import { buildAnnouncement, buildDidYouKnow, buildSaveTheDate } from './page-layouts-social';
 import { buildCycle, buildFunnel, buildPictogram, buildRanking } from './page-layouts-figures';
 
+import { COVERS_SET_LAYOUTS, type CoversSetLayoutId } from './page-layouts-set-covers';
+import { POSTERS_SET_LAYOUTS, type PostersSetLayoutId } from './page-layouts-set-posters';
+import { DATA_SET_LAYOUTS, type DataSetLayoutId } from './page-layouts-set-data';
+import { STEPS_SET_LAYOUTS, type StepsSetLayoutId } from './page-layouts-set-steps';
+import { COMPARE_SET_LAYOUTS, type CompareSetLayoutId } from './page-layouts-set-compare';
+import { PEOPLE_SET_LAYOUTS, type PeopleSetLayoutId } from './page-layouts-set-people';
+import { SOCIAL_SET_LAYOUTS, type SocialSetLayoutId } from './page-layouts-set-social';
+import { EXPLAINERS_SET_LAYOUTS, type ExplainersSetLayoutId } from './page-layouts-set-explainers';
 import type { LogoLayoutId } from './logo-layouts';
 import type { SlideLayoutId } from './slide-layouts';
 
@@ -38,6 +46,14 @@ export type { LayoutBox } from './page-layout-kit';
 export type PageLayoutId =
   | SlideLayoutId
   | LogoLayoutId
+  | CoversSetLayoutId
+  | PostersSetLayoutId
+  | DataSetLayoutId
+  | StepsSetLayoutId
+  | CompareSetLayoutId
+  | PeopleSetLayoutId
+  | SocialSetLayoutId
+  | ExplainersSetLayoutId
   | 'title'
   | 'big-number'
   | 'key-stats'
@@ -71,15 +87,18 @@ export type PageLayoutId =
   | 'funnel';
 
 // The layout picker's categories (docs/specs/007-editor/illustrate-pages.md "Layouts"), in order.
-export type PageLayoutCategoryId = 'covers' | 'data' | 'steps' | 'compare' | 'people' | 'social';
+export type PageLayoutCategoryId =
+  'covers' | 'posters' | 'data' | 'steps' | 'compare' | 'people' | 'social' | 'explainers';
 
 export const PAGE_LAYOUT_CATEGORIES: readonly { id: PageLayoutCategoryId; label: string }[] = [
   { id: 'covers', label: 'Covers' },
+  { id: 'posters', label: 'Posters' },
   { id: 'data', label: 'Data' },
   { id: 'steps', label: 'Steps and Time' },
   { id: 'compare', label: 'Compare' },
   { id: 'people', label: 'People and Ideas' },
   { id: 'social', label: 'Social' },
+  { id: 'explainers', label: 'Explainers' },
 ];
 
 function titlePage(k: Kit): Element[] {
@@ -176,7 +195,7 @@ function keyStats(k: Kit): Element[] {
     );
   }
   els.push(
-    k.shape('callout', 0, H - calloutH, W, calloutH, {
+    k.callout(0, H - calloutH, W, calloutH, {
       pageTitle: 'Takeaway',
       label: 'Say what the numbers mean in one or two sentences.',
       textSize: 'md',
@@ -207,7 +226,7 @@ function process(k: Kit): Element[] {
         textAlignX: 'center',
       }),
     ),
-    k.shape('callout', 0, k.box.height - u * 20, W, u * 20, {
+    k.callout(0, k.box.height - u * 20, W, u * 20, {
       pageTitle: 'Why it works',
       label: 'Small steps, real feedback, and a loop that never stops.',
       textSize: 'md',
@@ -321,7 +340,7 @@ function comparison(k: Kit): Element[] {
       'One source of truth',
       'Answers right now',
     ]),
-    k.shape('callout', 0, H - verdictH, W, verdictH, {
+    k.callout(0, H - verdictH, W, verdictH, {
       pageTitle: 'The verdict',
       label: 'Sum up the difference in one sentence.',
       textSize: 'md',
@@ -431,7 +450,7 @@ export type PageLayout = {
   build: (box: LayoutBox) => Element[];
 };
 
-export const PAGE_LAYOUTS: readonly PageLayout[] = [
+const CORE_LAYOUTS: readonly PageLayout[] = [
   {
     id: 'title',
     category: 'covers',
@@ -532,7 +551,7 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
   },
   {
     id: 'poster',
-    category: 'covers',
+    category: 'posters',
     label: 'Poster',
     description: 'A large image, a bold headline and a footer',
     build: buildPoster,
@@ -649,4 +668,17 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
     description: 'Four narrowing stages and the conversion between them',
     build: buildFunnel,
   },
+];
+
+// The core layouts, then each category's further set, the picker showing them by category.
+export const PAGE_LAYOUTS: readonly PageLayout[] = [
+  ...CORE_LAYOUTS,
+  ...COVERS_SET_LAYOUTS,
+  ...POSTERS_SET_LAYOUTS,
+  ...DATA_SET_LAYOUTS,
+  ...STEPS_SET_LAYOUTS,
+  ...COMPARE_SET_LAYOUTS,
+  ...PEOPLE_SET_LAYOUTS,
+  ...SOCIAL_SET_LAYOUTS,
+  ...EXPLAINERS_SET_LAYOUTS,
 ];

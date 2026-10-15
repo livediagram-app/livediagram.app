@@ -40,12 +40,35 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   vertical strip for a left/right legend or a horizontal band for a top/bottom
   one, and the chart body fills the remaining `area`; `ChartLegend` stacks in a
   column on the side, or wraps in a centred row on top/bottom.
-- Under the placement tiles (while the legend is on), **Text Size**
-  (**Small / Medium / Large**) sets the key's row size. It writes the element's
-  ordinary `textSize` (a chart has no label, so the Text flyout never offers
-  it) and reads through `legendFontPx` (`label-font.ts`): 11 / 14 / 18px, with
-  Medium the default. A key is not a name, so it has its own scale rather than
+- Under the placement tiles (while the legend is on), **Text Size** (the one
+  [Text Size](../004-interface-design/fonts.md#text-size) slider, 6 to 48 px, without Scale) sets the
+  key's row size. It writes the element's ordinary `textSize` (a chart has no label, so the Text
+  flyout never offers it) and reads through `legendFontPx` (`label-font.ts`): a px is itself, and
+  the presets earlier charts carry read 11 / 14 / 18px, with Medium the default. A key is not a name, so it has its own scale rather than
   the label one. An absent `textSize` reads as Medium.
+- Under the legend, **Show Values** (`chartValues`, off by default, so a chart made before it draws as it did) prints
+  each mark's number on the chart: above a column, after a bar, above each point of a line, area or scatter series, and
+  inside a pie's or doughnut's wedge (as a percentage when the values add up to 100). A column chart with values also
+  names each column under its baseline, so its legend can be turned off; a name wider than its column's share is cut
+  with an ellipsis, and dropped when not one letter fits, so neighbours never overprint. Numbers read short from
+  10,000 up: 120000 as 120k, 1500000 as 1.5M, at most one decimal, in the unit the rounded number reads in (999,960 is
+  1M, not 1000k); under that in full (1,080). A wedge's number takes the ink that reads on its colour; the rest take the chart's text
+  colour, at the key's size. The editor's toggle fires `Element·Changed·ChartValues`. It is a display option of the
+  chart, so it follows the Chart category's gating: an Editor changes it; a Participant or Viewer sees the numbers.
+- Under Show Values, **Show Axis** (`chartAxis`, off by default, so a chart made before it draws as it did) draws the
+  value axis on a column, bar, line, area or scatter chart (a pie has none): tick labels at round values (1, 2 or 5
+  times a power of ten, four or five of them, the range widened to the next round value past the largest and
+  smallest, zero always in it) and a faint gridline across the plot at each, the plot drawn in from the side the
+  labels take. A column or line chart labels its left side; a bar chart its bottom. Numbers read as Show Values'
+  do (120k, 1.5M). The toggle fires `Element·Changed·ChartAxis`; the gating is Show Values'.
+- **A second axis**: a line, area or scatter series marked `axis: "right"` is drawn against a scale of its own,
+  worked out from the right-hand series alone, so a series in the thousands and one in the tens both read (signups
+  against paid). With Show Axis on, the right side carries that scale's tick labels in the chart's text colour,
+  the plot's right edge drawn in the first right-hand series' colour so the two read as one (labels in a light
+  series' colour were too faint to read); the gridlines follow the left scale. A chart whose series are all on the right draws them on the left
+  scale, as if none were. In the editor, the Chart category of a line chart with two or more series has **Right
+  Axis**, a choice of None or one series, which moves that series to the right (one commit, `Element·Changed·
+ChartAxis`); a series on the right shows "(right)" after its name in the Data summary. An Editor changes it.
 - The **Animation** category carries the chart-specific animations
   (None / Grow / Pop / Spin / Pulse, with a **Speed** row + **Repeat** toggle)
   in place of the boxed-element animation set — a chart animates its marks, not
@@ -98,6 +121,10 @@ not a new top-level type — so they inherit boxed-element behaviour. `isChartSh
 groups all three (they're all in `isSelfDrawingShape` too).
 
 - Pie + bar: `ShapeElement.pieSlices?: PieSlice[]` (`{ label, value, color? }`).
+- `ShapeElement.chartValues?: boolean`: the numbers on the marks (Show Values); absent means off.
+- `ShapeElement.chartAxis?: boolean`: the value axis, its tick labels and gridlines (Show Axis); absent means off.
+  A `LineSeries` may carry `axis?: 'right'`, its own scale (a second axis); any other value reads as absent. The
+  axes are laid out with the marks, in `chartValueAxis` (`packages/document/src/chart-axis.ts`) for both renderers.
 - Line: `ShapeElement.lineCategories?: string[]` + `lineSeries?: LineSeries[]`
   (`{ name, color?, values: number[] }`), aligned to the categories — a 2-D
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.
@@ -106,7 +133,8 @@ groups all three (they're all in `isSelfDrawingShape` too).
   `chartShapeOf(type)` map between a chart and its type, `chartTypeChange(el, type)` gives the patch that changes it
   (`packages/document/src/chart-types.ts`), and `pieMarks` / `barMarks` / `lineMarks`
   (`packages/document/src/chart-marks.ts`) lay out every type's marks for both the canvas views and the exporter, so
-  the two never draw a chart differently.
+  the two never draw a chart differently. An exported chart's (and Sankey's) text names the theme's font, else the
+  export's sans default, never bare: a standalone viewer drew bare text in its serif default.
   The types + constants + `isPieShape` / `isBarShape` / `isLineShape` /
   `isChartShape` live in `@livediagram/document` (`src/data-shapes.ts`).
 - Rendered by `PieChartView` / `BarChartView` / `LineChartView`: SVG marks in the
@@ -176,9 +204,12 @@ legend dropped beside a chart already match it: first row, first slice. A row
 added from the menu is created with no colour for the same reason, so it picks up
 the next colour rather than leaving a blank swatch to go and fill in. Setting a
 legend's own `chartPalette` re-colours every uncoloured row, so a legend and a
-chart set to the same palette stay in step.
+chart set to the same palette stay in step. It is set from the **Palette** tiles at
+the foot of the Legend section (the same eight as a chart's Presets, with a reset
+back to the theme's ramp); the legend's Presets grid keeps the card looks, which
+colour the card itself.
 
-The **Legend** section also carries **Text Size** (Small / Medium / Large), on
+The **Legend** section also carries **Text Size** (the same slider, without Scale), on
 the same `legendFontPx` scale as a chart's key, so a Legend beside a chart can
 match it. The dot and row pitch scale with it.
 

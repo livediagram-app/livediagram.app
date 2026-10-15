@@ -1,20 +1,15 @@
 import { useRef, useState } from 'react';
 import {
   EDITOR_MODES,
-  crossesPlan,
   editorModeLabel,
   modesBesidePlanRule,
   nextEditorMode,
 } from '@livediagram/document';
 import {
-  CheckIcon,
   ChevronDownIcon,
   useClickOutside,
-  useMenu,
   useMenuButton,
-  type MenuInitialFocus,
   EDITOR_MODE_ICONS,
-  MENU_PANEL,
 } from '@livediagram/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
 import {
@@ -22,16 +17,15 @@ import {
   MODE_SWITCH_FOCUS,
   type EditorModeSwitchProps,
 } from './editor-mode-copy';
-import { ModeKeyHint } from './ModeKeyHint';
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { ModeMenu } from './ModeMenu';
+import { useLockedModePick } from './useLockedModePick';
 
 // The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip
-// showing the current mode's glyph and a chevron, that opens a menu DOWNWARD (it sits in
-// the top chrome), one compact row per mode from the catalogue (glyph and name, at the
-// palette dropdowns' size; no hover card, which would cover the menu), a check on the
-// current mode, and Shift+D on the row the key leads to. The chip wears the
-// strip's faint dropdown tint (docs/specs/007-editor/toolbar-layout.md "Look"), so it reads as a
-// menu. The menu hangs from the chip's left edge, into the room beside the menu button.
+// showing the current mode's glyph and a chevron (icon only in the top chrome, named on a start
+// panel's rail), that opens the mode menu (ModeMenu) DOWNWARD, hanging from the chip's left edge:
+// a list of the modes and a preview of one. No hover card, which would cover the menu. The chip
+// wears the strip's faint dropdown tint (docs/specs/007-editor/toolbar-layout.md "Look"), so it
+// reads as a menu.
 //
 // Menu button pattern (docs/specs/004-interface-design/menus.md): the chip is a menu button, the rows
 // are `menuitemradio`, and the shared hooks give it the menu keyboard: opening focuses the checked
@@ -47,21 +41,8 @@ export function ModeMenuChip({
   crossPlan = false,
   labelled = false,
 }: EditorModeSwitchProps & { labelled?: boolean }) {
-  const confirm = useConfirm();
   // On a tab that keeps its mode, another mode is a new tab in it, asked first (docs/specs/026-plan/plan-tabs.md).
-  const pickLocked = async (next: EditorModeSwitchProps['mode']) => {
-    const name = editorModeLabel(next);
-    // Plan stands apart (crossesPlan): a tab never switches into or out of it.
-    const why =
-      lockedReason ??
-      (mode === 'plan' ? 'A Plan tab stays in Plan.' : 'Plan works in tabs of its own.');
-    const ok = await confirm({
-      title: `Open a New ${name} Tab?`,
-      message: `${why} Its mode can’t change, but you can carry on in a new ${name} tab.`,
-      confirmLabel: `New ${name} Tab`,
-    });
-    if (ok) newTabIn?.(next);
-  };
+  const pickLocked = useLockedModePick({ mode, lockedReason, newTabIn });
   const {
     open,
     close,
@@ -139,6 +120,7 @@ export function ModeMenuChip({
           onClose={close}
           crossPlan={crossPlan}
           lockedReason={lockedReason}
+          fill={labelled}
           // No new tab to offer (a session that cannot add tabs, such as a tab-scoped link): the
           // locked rows are inert.
           {...(newTabIn
@@ -146,86 +128,6 @@ export function ModeMenuChip({
             : {})}
         />
       ) : null}
-    </div>
-  );
-}
-
-function ModeMenu({
-  mode,
-  modes,
-  keyLeadsTo,
-  chip,
-  initialFocus,
-  hostZoom,
-  onChange,
-  onClose,
-  crossPlan,
-  lockedReason,
-  onLockedPick,
-}: {
-  crossPlan: boolean;
-  mode: EditorModeSwitchProps['mode'];
-  modes: readonly EditorModeSwitchProps['mode'][];
-  keyLeadsTo: EditorModeSwitchProps['mode'] | null;
-  chip: HTMLElement | null;
-  initialFocus: MenuInitialFocus;
-  hostZoom: number;
-  onChange: EditorModeSwitchProps['onChange'];
-  onClose: () => void;
-  lockedReason?: string | undefined;
-  onLockedPick?: (mode: EditorModeSwitchProps['mode']) => void;
-}) {
-  const { attach, surfaceProps } = useMenu({
-    onClose,
-    trigger: chip,
-    initialFocus,
-    label: 'Editor mode',
-  });
-  return (
-    <div
-      ref={attach}
-      {...surfaceProps}
-      data-tour-id="editor-mode-menu"
-      style={hostZoom === 1 ? undefined : { zoom: 1 / hostZoom }}
-      className={`absolute left-0 top-full z-(--z-popover) mt-1.5 w-max min-w-36 outline-none ${MENU_PANEL}`}
-    >
-      {modes.map((option) => {
-        const checked = option === mode;
-        const locked = (!!lockedReason && !checked) || (!crossPlan && crossesPlan(mode, option));
-        // A locked row with no new tab to offer does nothing.
-        const inert = locked && !onLockedPick;
-        const RowIcon = EDITOR_MODE_ICONS[option];
-        return (
-          <button
-            key={option}
-            type="button"
-            role="menuitemradio"
-            aria-checked={checked}
-            aria-disabled={inert || undefined}
-            tabIndex={-1}
-            onClick={() => {
-              if (inert) return;
-              onClose();
-              if (locked) onLockedPick?.(option);
-              else if (!checked) onChange(option);
-            }}
-            className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition-colors ${MODE_SWITCH_FOCUS} ${
-              checked
-                ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                : inert
-                  ? 'cursor-not-allowed text-slate-600 opacity-50 dark:text-slate-300'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-            }`}
-          >
-            <RowIcon size={16} aria-hidden className="shrink-0" />
-            <span className="flex-1">{editorModeLabel(option)}</span>
-            <span className="flex w-7 shrink-0 justify-end">
-              {checked ? <CheckIcon aria-hidden /> : null}
-              {option === keyLeadsTo && !checked && !lockedReason ? <ModeKeyHint /> : null}
-            </span>
-          </button>
-        );
-      })}
     </div>
   );
 }

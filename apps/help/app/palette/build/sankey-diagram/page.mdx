@@ -1,0 +1,123 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SankeyBudget, SankeyFlowsTable } from '@/components/illustrations/palette-sankey';
+
+export const metadata = helpMetadata({
+  title: 'Sankey Diagram',
+  description:
+    'Show how much moves where with a Sankey diagram: write flows as a table, as text or from a spreadsheet, and each band is drawn as wide as its amount.',
+  path: '/help/palette/build/sankey-diagram/',
+});
+
+<ArticleLayout
+  title="Sankey Diagram"
+  description="Show how much moves where: every band is drawn as wide as the amount it carries."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Build Elements', slug: 'build' }}
+  subArticles={getSubArticles('build').filter((a) => a.slug !== 'sankey-diagram')}
+>
+
+A **Sankey diagram** shows how a quantity moves from one stage to the next. Nodes stand in columns, and a band joins two nodes for every flow between them, as wide as the amount it carries. Where something splits, merges or leaks away, you see it at a glance: the wide bands are where most of it goes.
+
+It is the classic picture for an energy balance, a budget from income to spending, a supply chain, a website journey or a sales funnel. It is named after Captain Matthew Sankey, whose 1898 drawing of a steam engine's energy losses made the idea famous.
+
+<Figure caption="The diagram a new Sankey starts as: two incomes pooling into a budget, which splits into needs, wants and savings.">
+  <SankeyBudget />
+</Figure>
+
+## Adding one
+
+<Step n={1}>Open the **Concepts** category in the palette.</Step>
+<Step n={2}>
+  Pick **Sankey**, then tap the canvas to drop it, or drag to draw it at a size. It arrives as a small
+  household budget, so every part is there to read and overwrite.
+</Step>
+<Step n={3}>Double-click it to open its flows and make it yours.</Step>
+
+You find it in Diagram and Illustrate mode, where it makes a good infographic.
+
+## Reading it
+
+Hover a band and it lifts while the rest fade back, with a readout of where it runs, how much it carries and its share of what leaves its source. Hover a node to lift every band touching it and read what arrives and what leaves.
+
+<Figure caption="Hovering a band lifts it and reads it out: Salary sends all 3,200 of its amount to Budget.">
+  <SankeyBudget hover />
+</Figure>
+
+A node is as tall as the larger of what flows in and what flows out.
+
+## Leftovers
+
+When a middle node sends on less than it receives (a budget of 1,000 that spends 800), the diagram draws the rest as a grey band to a **Leftover** node, so the difference is visible rather than a gap. It follows your amounts as they change; you never write it yourself.
+
+- In the menu, **Sankey**, then **Leftovers**, turns them off for the whole diagram, and **Leftover Name** renames the node they run to.
+- In the Flows dialog, a node that keeps some back shows its leftover under its flows with a switch, to turn it off for just that node.
+- A node that sends on **more** than it receives has no leftover: the notes under the table point it out, since that is usually a typo.
+
+## Writing the flows
+
+Double-click the diagram, or right-click it and open **Sankey**, then **Flows**, then **Edit Flows**. The flows read the way the diagram does, step by step from left to right: under each node, where it sends and how much.
+
+<Figure caption="The Flows dialog's table: each node lists where it sends, its leftover has a switch, and Add a Flow always has a blank line ready.">
+  <SankeyFlowsTable />
+</Figure>
+
+- **Add a flow from a node** with **Add a Flow From** under its flows. A row whose destination sends nothing on yet has a **+** to carry on from it, one step further right.
+- **Start somewhere new** in **Add a Flow** at the bottom, which always has a blank line: write a From, a To and an amount. It moves to its step once you click away, never while you type.
+- **Names connect the diagram.** Two flows that name the same node meet at it. From and To suggest the names you have already used.
+- **The keyboard does the work.** Enter moves through a row's boxes, then to the next row.
+- **Paste from a spreadsheet.** Copy three columns (From, To, Amount) and paste them into any cell: each line becomes a row.
+- **Rename a node everywhere.** Click a node above the table and type its new name; every flow and its colour follow. Typing the name of another node merges the two.
+- **See it as you go.** A preview beside the rows redraws as you type, and the diagram on the canvas updates as each change is saved. Notes under the table point out any middle node that sends on more than it receives.
+
+Press **Show Me** at the top of the dialog for a short tour of it, run on the dialog itself: each step points at a real control you can use as you go.
+
+### As text
+
+The **Text** tab holds the same flows as lines, one per flow:
+
+```
+Salary [3200] Budget
+Budget [2000] Needs
+// a line starting with two slashes is a note
+```
+
+That is the SankeyMATIC format, so a diagram from there pastes straight in. It also reads `Salary -> Budget: 3200` and spreadsheet rows such as `Salary, Budget, 3200`. **Import CSV** reads a `.csv` or `.tsv` file the same way, and skips a header row.
+
+### Flows it will not draw
+
+A flow is never dropped silently. The rest of the diagram draws, and the row says why:
+
+| The flow                                 | What it says                                   |
+| ---------------------------------------- | ---------------------------------------------- |
+| Has an empty From or To                  | Needs a From and a To                          |
+| Flows from a node into itself            | Flows into itself                              |
+| Has an amount of zero or less            | Needs an amount above zero                     |
+| Leads back to an earlier node (a loop)   | Loops back to an earlier node, so it is hidden |
+
+A Sankey's columns run one way, so a loop has no column to go back to. Of a loop, it is the flow that closes it that is hidden, so everything you wrote before it keeps drawing. A diagram holds up to 200 flows.
+
+## Styling it
+
+Right-click it and open **Sankey**. Each part of its look has its own section:
+
+- **Bands** colours each band by **Blend** (from its source's colour to its target's, the default), **From** (its source's, good for "where does each income go"), **To** (its target's, good for "where did each cost come from") or **Grey**, when the nodes carry the meaning.
+- **Layout**: **Ends Right** puts every end node in the last column, so all the outcomes line up; **By Step** leaves each at its own step from the start.
+- **Labels** shows each node's **Amount**, its **Percent** of everything entering the diagram, or **Names Only**.
+- **Leftovers** shows or hides what middle nodes keep back ([above](#leftovers)).
+- **Text**: **Unit** adds a unit of up to eight characters. A currency mark goes before the amount (£1,200); anything else after it (1,200 kWh). The **Text Size** slider sets the labels anywhere from 6 to 48 pixels.
+
+Under **Sankey**, then **Flows**, each node has a colour swatch: pick any colour, or **Palette** to hand it back. **Style**, then **Presets**, switches the whole diagram to another palette, and new nodes keep following it. Under **Animation**, **Grow** sweeps the diagram in once, **Flow** runs a soft current along every band, **Cascade** brings the columns in one after another, **Pulse** sends a slow wave across the bands, and **Rise** grows each column's nodes before fading their bands in. All stay still if your device asks for reduced motion.
+
+<Tip>
+  Keep it to a handful of columns and a dozen or two flows. A Sankey is read for its largest
+  bands; past that, merge the small ones into an "Other" node.
+</Tip>
+
+## Sharing it
+
+Everyone on a shared document can hover a Sankey and read it. Only an Editor can change its flows or its look; a Participant or a Viewer sees no menu for it, and double-clicking does nothing. Exports and thumbnails draw the same diagram, without the hover or the motion, and AI assistants connected through MCP can write one from a list of flows.
+
+</ArticleLayout>

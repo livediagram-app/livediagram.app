@@ -14,6 +14,7 @@ import {
   useToolbarBox,
 } from '@/components/chrome/PaletteTray';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
+import { useViewportHeight } from '@/hooks/ui/useViewportHeight';
 import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
 import { startClosedKey } from './start-closed-key';
@@ -28,7 +29,7 @@ const DOCK_GAP = 10;
 // with no dock, below the top chrome.
 export function pillPlace(
   dock: { top: number; bottom: number } | null,
-  viewportHeight = typeof window === 'undefined' ? 0 : window.innerHeight,
+  viewportHeight: number,
 ): { top: number } | { bottom: number } {
   if (!dock) return { top: 80 };
   return dock.top < viewportHeight / 2
@@ -50,13 +51,14 @@ export function StartAgainTray({
   const strip = usePaletteStripBox(closed);
   // Without a strip, Draw's dock: the pill sits just clear of it, below a top dock and above a bottom one.
   const dock = useToolbarBox('[data-whiteboard-dock]', closed && !strip);
+  const viewportHeight = useViewportHeight();
   if (!closed) return null;
   const reopen = () => restoreEmptyCard(key);
   if (!strip)
     return (
       <div
-        className="pointer-events-none fixed inset-x-0 z-[var(--z-chrome)] flex justify-center px-4"
-        style={pillPlace(dock)}
+        className="pointer-events-none fixed inset-x-0 z-[var(--z-chrome)] flex justify-center px-4 [body[data-explorer-open]_&]:hidden"
+        style={pillPlace(dock, viewportHeight)}
       >
         <TopCenterBanner
           tone="brand"

@@ -1,7 +1,7 @@
 'use client';
 
-// A Plan board's settings (docs/specs/026-plan/plan-board.md "The board set-up"), in four sections shown as one panel
-// by its element menu (its Board flyout) and its own cog, a collapsible each: **Board Setup** (title, Setup Board and
+// A Plan board's settings (docs/specs/026-plan/plan-board.md "The board set-up"), in five sections: in its element
+// menu (which its own cog opens) a flyout row each, and in a Dashboard slot's cog one panel of collapsibles: **Board Setup** (title, Setup Board and
 // Fill Tab), **Swimlanes** (built in or by a field, in one grid), **Supported Cards** (the card types it shows and takes) and **Card Layout**
 // (the card size; what a card shows is its type's Display). A column's own settings sit on the column, behind its
 // cog. Each change is one element edit, through PlanContext.
@@ -16,9 +16,11 @@ import {
   TextInput,
   lucideGlyph,
 } from '@livediagram/ui';
-import { lucideLayoutGrid, lucideRows2 } from '@livediagram/icons/lucide';
+import { lucideColumns3, lucideLayoutGrid, lucideRows2 } from '@livediagram/icons/lucide';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { usePlan } from '@/components/plan/PlanContext';
+import { BoardColumnsSection } from '@/components/plan/BoardColumnsSection';
 import { CardSizeOptions, MenuGroup, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';
 import { trackSetup } from '@/components/plan/track-board-setup';
 
@@ -176,15 +178,20 @@ export function PlanCardLayoutSettings({ element }: { element: ShapeElement }) {
 }
 
 const RowsIcon = lucideGlyph(lucideRows2, 16);
+const ColumnsIcon = lucideGlyph(lucideColumns3, 16);
 const LayoutIcon = lucideGlyph(lucideLayoutGrid, 16);
 
 // The four sections, in order, for the element menu and the cog alike. `shows` leaves one out where it has nothing
 // (Supported Cards on an Archive board).
 export const PLAN_BOARD_SECTIONS: readonly {
-  id: 'board-setup' | 'swimlanes' | 'supported-cards' | 'card-layout';
+  id: 'board-setup' | 'columns' | 'swimlanes' | 'supported-cards' | 'card-layout';
   title: string;
   icon: ReactNode;
-  Body: (props: { element: ShapeElement; onClose?: (() => void) | undefined }) => ReactNode;
+  Body: (props: {
+    element: ShapeElement;
+    open: boolean;
+    onClose?: (() => void) | undefined;
+  }) => ReactNode;
   shows: (setup: PlanBoardSetup) => boolean;
 }[] = [
   {
@@ -193,6 +200,14 @@ export const PLAN_BOARD_SECTIONS: readonly {
     icon: <PlanIcon size={16} />,
     Body: PlanBoardSetupSection,
     shows: () => true,
+  },
+  {
+    id: 'columns',
+    title: 'Columns',
+    icon: <ColumnsIcon />,
+    Body: BoardColumnsSection,
+    // Not on an All Cards or Archive board, which have no columns of their own, nor one not set up yet (Setup Board).
+    shows: (setup) => !setup.allCards && !setup.archive && setup.columns.length > 0,
   },
   {
     id: 'swimlanes',
@@ -244,7 +259,7 @@ export function PlanBoardSectionsPanel({
             open={open === id}
             onToggle={() => setOpen(open === id ? null : id)}
           >
-            <Body element={element} onClose={onClose} />
+            <Body element={element} open={open === id} onClose={onClose} />
           </BoardSettingsSection>
         ),
       )}
@@ -253,7 +268,9 @@ export function PlanBoardSectionsPanel({
   );
 }
 
-// A board's settings in its element menu: one Board flyout, beside Style, holding the four sections.
+// A board's settings in its element menu: each section its own flyout row in the menu's main list, set apart from
+// Style by a separator. They used to sit one level down, inside a Board flyout, which cost a click and hid what was
+// there behind a name that said nothing the rows did not (docs/specs/026-plan/plan-board.md "The board set-up").
 export function PlanBoardMenuSections({
   element,
   flyoutProps,
@@ -263,19 +280,25 @@ export function PlanBoardMenuSections({
   flyoutProps: (id: string) => FlyoutProps;
   onClose?: (() => void) | undefined;
 }) {
-  if (!useBoard(element)) return null;
+  const board = useBoard(element);
+  if (!board) return null;
   return (
-    // One surface of settings, so a flyout row the menu keeps collapsible, never promoted inline.
-    <MenuFlyoutSection
-      title="Board"
-      icon={<PlanIcon size={16} />}
-      panel
-      {...flyoutProps('plan-board')}
-    >
-      <div className="flex flex-col py-1">
-        <PlanBoardSectionsPanel element={element} onClose={onClose} />
-      </div>
-    </MenuFlyoutSection>
+    <>
+      <MenuGroupSeparator />
+      {PLAN_BOARD_SECTIONS.filter((x) => x.shows(board.setup)).map(
+        ({ id, title, icon, Body }, i) => {
+          const props = flyoutProps(`plan-board-${id}`);
+          return (
+            // One surface of settings each, so a flyout row the menu keeps, never promoted inline.
+            <MenuFlyoutSection key={id} title={title} icon={icon} panel {...props} flush={i === 0}>
+              <div className="flex flex-col py-1">
+                <Body element={element} open={props.open ?? true} onClose={onClose} />
+              </div>
+            </MenuFlyoutSection>
+          );
+        },
+      )}
+    </>
   );
 }
 

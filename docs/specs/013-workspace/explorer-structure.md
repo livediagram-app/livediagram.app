@@ -185,31 +185,114 @@ and the backdrop.
 
 ## The editor's Explorer
 
-The editor's Explorer, the popover under the menu button ([Folders: the editor's Explorer](folders.md#the-editors-explorer-editor--new)), shows
-the same three groups, built from the same rows, layout rules and keyboard model, at the panel's width. Under its
-Current Document card it holds one `nav` named "Explorer" with Overview, Spaces and More, in place of the tabs it had.
+The editor's Explorer, the panel under the menu button ([Folders: the editor's Explorer](folders.md#the-editors-explorer-editor--new)),
+is a small Explorer page beside the canvas: the same groups, rows and views, without leaving the document. It replaced
+a single stacked tree, which was cramped and sent half its rows off to the Explorer page.
 
-What differs is what a row does in an editor, where leaving the document is a bigger step:
+### Layout
 
-- **Rows with documents open in place.** Shared with me, My documents, each folder, each team and This browser
-  expand to show their documents as rows beneath them; My documents and a team show their root folders, then their
-  root documents. My documents with nothing in it goes to its Explorer page, as an empty team does. Shared with me with nothing shared, and a team
-  with nothing in it, go to their Explorer page instead. Activating such a row expands or collapses it; it
-  never leaves the editor. A document row opens the document, carries the document menu (`⋯`, right-click,
-  Shift+F10), its favourite star and, for an offline document, the Local only pill. The open document's row is the
-  selected one.
-- **Rows without documents go to the Explorer.** Home, Inbox, Timeline, the Library pages and Trash open their Explorer page.
-- **No team management.** The panel shows no Invites row, no New team row and no sign-in nudge: answering invites and
-  creating teams happen in the Explorer, and the panel keeps its own sign-in notice under the tree.
-- **Compact on open.** Every expandable row starts collapsed (My documents included), so the panel opens at its
-  smallest; expansion lasts as long as the editor is open.
-- **Filing.** One of the reader's own document rows drags onto a personal folder row, or onto My documents to file
-  it at the root; a drag resting on a row with a chevron opens or closes it
-  ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)). On the Explorer page every folder, My
-  documents and each team take a dropped document ([Folders: standalone page](folders.md#standalone-explorer-page)). A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
+Top to bottom:
+
+1. **The panel header**: "Explorer", the `⋯` menu ([Folders](folders.md#the-editors-explorer-editor--new)) and Help;
+   a phone's sheet drops the `⋯` menu, every entry of it a tap away there already.
+2. **The Current Document card**, when a document is open: its thumbnail, the label "Current Document", the
+   document's **name**, "Updated <relative time>". The document's **visibility badge** (the editor header's badge:
+   Private, Shared, Team, Public or Local only, with its legend, [Offline Mode](../006-document/offline-mode.md)) sits
+   at the right of the label's row and its `⋯` (the document menu) at the right of the date's, so the name has the
+   card's whole width. The badge's legend opens over everything, right-aligned under it, never clipped
+   by the panel.
+   - **Click the name to rename it**, for someone who may rename the document (an Editor of their own or a shared
+     document); hovering the name underlines it (dotted) and shows a pencil, the name's own width, never a block of
+     fill. The name becomes a text field in place: Enter or leaving it saves, Escape keeps the old name, an empty name
+     keeps the old one. For anyone else it is plain text.
+3. **The rail and the pane**, side by side on a desktop: the rail on the left lists the sections, the pane on the right
+   shows the picked one.
+4. **The footer**: the product's surfaces as links, one row: **Home** (the landing page), **Explorer** (the Explorer
+   page), **Community** (while the Community is on), **Help**. They are the product menu's entries but Telemetry; the editor
+   header carries no product menu ([Live app: header](../007-editor/live-app.md)).
+5. **The sign-in note** for a signed-out guest: one quiet line under the Current Document card ("Keep your work. A free
+   account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one
+   line; on a deployment without sign-in, "Browser only. Clearing site data deletes it."), dismissible as the sign-in
+   notice is. Minimal chrome drops it.
+
+While the panel is open, the trays that hang from the palette strip (a tab's "is empty" tray, the mode banners) step
+aside: the panel reaches under the strip and they would cover its header.
+
+### The rail
+
+The rail opens with **New Document** (one click to a new document; a "New" chip first in the row on a phone), then the
+sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
+Shared with me; My documents and each team; This browser, Library and Trash. Shared with me and This browser carry
+their counts (the panel reads no other feed until its section is shown). No
+Invites, New team or sign-in nudge: those are the Explorer page's.
+
+- **Every entry is a mode of the pane.** Picking one shows it in the pane; none leaves the editor. The picked entry is
+  marked (`aria-current`) and is remembered for this viewer in this browser, so the panel reopens on it.
+- **First open** shows **Home**.
+- Group titles and separators follow Minimal chrome as in the sidebar.
+
+### The pane
+
+A header (the section's name, then quiet actions: the section's own, and **Open Page** to its Explorer page) over its
+content, which scrolls inside the pane with room round it. Every section is drawn for the pane from the same parts:
+**cards**: rows (a 60 × 44 thumbnail or tile, the name over one quiet line, a trailing slot for pills and the `⋯`
+menu) and two-column preview cards (a picture across the top, the name and a line under it), each a raised surface that
+lifts on hover, the open document's ringed in brand. Tiles take a tone by what they show (made: emerald, talked about:
+sky, shared: violet, moved: amber, removed: rose, changed: brand);
+**section headings** (small capitals with an action at the end), the Explorer's **illustrated empty state** at a
+compact size, skeleton rows while loading, and one line with **Try Again** when a read fails.
+
+| Section        | The pane shows                                                                                                                                                                                                                                                                                                         | Action     |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Home           | **Jump back in**: up to six documents (most used, then most recent), never the one already open, as preview cards, with **See all** (Recent). **What happened**, only when someone else did something: each document's summary sentence under its day, with **See timeline** (the Timeline in the pane)                | None       |
+| Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                                                                     | None       |
+| Timeline       | The Timeline ([Timeline](timeline.md)) as a list: each event a row (its glyph, its subject, its reason and time) under its day, **Show Earlier** to page back                                                                                                                                                          | None       |
+| Shared with me | The documents shared with the reader, as rows                                                                                                                                                                                                                                                                          | None       |
+| My documents   | The root folders as preview cards (their counts on the picture), then the root documents as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it | New Folder |
+| A team         | The team's folders, then its documents, the same way                                                                                                                                                                                                                                                                   | New Folder |
+| This browser   | The documents saved only in this browser                                                                                                                                                                                                                                                                               | None       |
+| Library        | Three tabs: Image gallery, Themes, Shape libraries, each the Explorer page's own view at the pane's width; Open Page goes to the tab shown                                                                                                                                                                             | None       |
+| Trash          | A line on the 30 days, then each deleted document as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                | None       |
+
+- **Every document the pane shows** (a place's rows, Home's cards and What happened, the Timeline's document events)
+  carries the Explorer page's document menu (`⋯`, right-click, Shift+F10), the same verbs as on the Explorer page. The
+  `⋯` shows on hover or focus under a mouse, always on a touch screen.
+- **Rows with documents**: a document row shows its thumbnail and "Updated <relative time>"; activating it opens the
+  document; it carries the document menu, its favourite star and, for an offline
+  document, the Local only pill; the open document's row is the current one. A folder row shows its counts ("2
+  folders · 5 documents") and opens the folder in the pane; Up and Down move between rows.
+- **Filing.** One of the reader's own document rows drags onto a personal folder row (resting on it opens it), or onto
+  the My documents rail entry to file it at the root ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)).
+  A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
   the session may use; My documents carries its Use as default for menu.
-- Group titles and separators follow Minimal chrome exactly as in the sidebar.
-- The tree scrolls inside the panel when it is taller than the space it has.
+- **An empty place** says so in the Explorer's empty state: "Nothing shared with you yet", "Nothing in this browser",
+  "No documents yet", "This folder is empty", "Nothing waiting on you", "No activity yet", "Nothing in the Trash right
+  now".
+- **Motion**: picking a section slides its content in, opening a folder slides its contents in, and rows and cards
+  cascade in as they arrive (the dialogs' view and row motions, a fade alone under reduced motion).
+- The views load only when their section is first shown, so opening the editor costs nothing more. The Timeline's
+  card menus and calendar are the Explorer page's (Open Page).
+
+### On a phone
+
+The panel is a **sheet** under the menu button: the canvas's full width, edge to edge, reaching down to the tab bar,
+and it **opens on Home every time** (a pick lasts while it is open and is not remembered). The rail becomes a **row of
+section chips** under the Current Document card, scrolling sideways, the picked chip filled and scrolled into view;
+the chips are squared (rounded corners, not pills), 36 px to the eye with a 44 px tap. The pane fills the rest of the
+sheet's height above its footer, its header tight under the chips, its header actions their glyph alone, and the
+footer links spread across its width (scrolling sideways should they not fit). Every row and link is at least 44 px tall.
+
+### Keyboard and ARIA
+
+The rail is a `nav` named "Explorer sections" of buttons; Up and Down move between entries (Left and Right on a phone's
+chip row), Enter or Space picks one. The pane's rows are lists of buttons named by the document or folder (the open
+document's `aria-current`); Up and Down move between them, Enter opens one, and the `⋯` menu, right-click or Shift+F10
+opens its menu. A folder's breadcrumb is a `nav` named "Folder path". The footer is a `nav` named "Go to".
+
+### Who may do what
+
+The panel is the reader's own: it lists their documents and views whatever the open document's share role. Renaming
+from the card follows the editor's rename (an Editor only); a Participant or Viewer sees the name as text.
 
 ## Local only documents
 

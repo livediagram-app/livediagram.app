@@ -103,4 +103,26 @@ describe('find on odd shapes', () => {
     expect(findView(model, 'needle').text.split('\n').slice(1, 2)).toEqual(['frame box']);
     expect(findView(model, 'needle').json.matches.map((m) => m.field)).toEqual(['cell']);
   });
+
+  it('finds a Sankey by the nodes its flows name, each once', () => {
+    const model = buildViewModel(
+      {
+        id: 't',
+        name: 'T',
+        elements: [
+          shapeAt('sankey' as never, 'sk', 0, 0, 400, 200, {
+            sankeyFlows: [
+              { from: 'Salary', to: 'Budget', value: 3 },
+              { from: 'Budget', to: 'Savings', value: 1 },
+              'not a flow',
+            ] as never,
+          }),
+        ] as Element[],
+      } as never,
+      { rev: 1 },
+    );
+    const { json } = findView(model, 'budget');
+    expect(json.matches.map((m) => [m.ref, m.field])).toHaveLength(1);
+    expect(json.matches[0]!.field).toBe('node');
+  });
 });

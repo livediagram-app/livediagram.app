@@ -41,7 +41,7 @@ export function DeleteAccountDialog({
   // Silence the canvas shortcut/paste listeners behind the modal
   // (see lib/modal-guard).
   useModalGuard(open);
-  const { user, deleteAccount } = useDeferredAuth();
+  const { user, deleteAccount, confirmIdentity } = useDeferredAuth();
   const expectedEmail = user?.email ?? '';
   // `deleteAccount` wraps Clerk's `user.delete()` in the reverification
   // flow (step-up auth modal, built inside ClerkBridge where the Clerk
@@ -89,6 +89,14 @@ export function DeleteAccountDialog({
     if (!emailsMatch || phase === 'submitting' || !user || !deleteAccount) return;
     setPhase('submitting');
     setErrorMsg('');
+    // Step-up auth first (docs/specs/014-identity/auth-and-guest-access.md "Deleting an account"): Clerk asks for it
+    // before deleting the account, and asked AFTER the server data had gone, a cancelled prompt left an account
+    // with nothing in it. Confirmed here, nothing is deleted until the person has passed it.
+    if (confirmIdentity && !(await confirmIdentity())) {
+      setPhase('error');
+      setErrorMsg('Identity not confirmed, so nothing was deleted. Try again when you are ready.');
+      return;
+    }
     const result = await apiDeleteAccount();
     if (!result) {
       setPhase('error');

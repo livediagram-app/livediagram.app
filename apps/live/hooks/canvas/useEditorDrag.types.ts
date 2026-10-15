@@ -1,8 +1,6 @@
 import type { Selection } from '@/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type {
-  AlignmentGuide,
-  DistributionGuide,
   Anchor,
   Element,
   IconPosition,
@@ -12,7 +10,7 @@ import type {
 } from '@livediagram/document';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
 import type { InsertionGate } from '@/lib/insert-between';
-import type { SnapTarget } from '@/components/canvas/Canvas.types';
+import type { SnapGuideStore } from './useSnapGuideState';
 
 // External state + callbacks the drag machine reads on every move.
 // Bundled into one object so the hook signature doesn't sprout
@@ -85,11 +83,6 @@ export type EditorDragDeps = {
   // element id) does not show the card's type or the type leaves the status out. 'refused' sends the card back to
   // where the drag started, with no undo step. Omitted when edits are blocked.
   onPlanCardDroppedOnBoard?: (card: Element, status: string, boardId?: string) => 'refused' | void;
-  // An annotation marker was pressed + released without moving (a click,
-  // not a drag): open its note editor (docs/specs/009-elements/annotations.md). Distinguished from a drag
-  // by the same DRAG_ENGAGE_PX travel test the icon-fold uses. Omitted when
-  // note edits are blocked (read-only / locked tab).
-  onAnnotationClicked?: (id: string) => void;
   // Per-user preference (docs/specs/007-editor/user-preferences.md) controlling whether connected
   // arrows re-pin to the most-natural face as a box is dragged.
   // Defaults to true; setting `false` keeps anchors frozen at
@@ -129,18 +122,10 @@ export type EditorDragApi = {
   // position, so the set following the cursor shows as a ghost. Null
   // outside a shift-held move drag.
   shiftDupGhostIds: ReadonlySet<string> | null;
-  // Faint alignment guides for the in-progress move / resize: the edge
-  // and centre lines the dragged element currently shares with its
-  // neighbours, drawn so the user can see why it snapped. Empty when no
-  // snap is in effect, and cleared on release. See `alignmentGuides`.
-  snapGuides: AlignmentGuide[];
-  // Equal-spacing guides for the in-progress move: the gap segments shown
-  // when the element snaps to even spacing with its neighbours.
-  distGuides: DistributionGuide[];
-  // Connection-point markers for the in-progress arrow-endpoint drag: the
-  // anchors of nearby shapes, with the snapped one flagged `active`. Empty
-  // outside an endpoint drag.
-  snapTargets: SnapTarget[];
+  // The in-progress gesture's snap guides (alignment lines, equal-spacing gaps, the arrow-endpoint
+  // markers), empty when no snap is in effect and cleared on release. A store, not state, so a new set
+  // renders only the chrome that draws it (useSnapGuideState).
+  snapGuideStore: SnapGuideStore;
   beginDrag: (elementId: string, mode: DragMode, e: ReactPointerEvent) => void;
   beginAnchorDrag: (
     elementId: string,

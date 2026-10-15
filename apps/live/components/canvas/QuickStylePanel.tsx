@@ -24,6 +24,7 @@ import {
   type QuickIconAlign,
   type QuickStrokeStyle,
   QUICK_INK,
+  QUICK_TRANSPARENT,
   type QuickColourValue,
   type QuickStyleView,
   type QuickWidth,
@@ -84,7 +85,11 @@ const ICON_ALIGN_NAMES: Record<QuickIconAlign, string> = {
 
 // A colour row's options: the theme's seven swatches, then, on the Stroke and Text colour rows,
 // Ink (docs/specs/007-editor/editor-modes.md "One look"), stored by name.
-const swatchOptions = (swatches: ShownSwatch[], ink?: string): QuickOption<QuickColourValue>[] => [
+const swatchOptions = (
+  swatches: ShownSwatch[],
+  ink?: string,
+  transparent = false,
+): QuickOption<QuickColourValue | typeof QUICK_TRANSPARENT>[] => [
   ...swatches.map((s) => ({
     value: s.slot,
     name: s.name,
@@ -93,6 +98,18 @@ const swatchOptions = (swatches: ShownSwatch[], ink?: string): QuickOption<Quick
     overridden: s.override !== undefined,
   })),
   ...(ink ? [inkOption(ink)] : []),
+  // The Background row ends in Transparent: no fill, what is behind shows through.
+  ...(transparent
+    ? [
+        {
+          value: QUICK_TRANSPARENT as typeof QUICK_TRANSPARENT,
+          name: 'Transparent',
+          content: null,
+          swatch: 'transparent',
+          none: true,
+        },
+      ]
+    : []),
 ];
 const inkOption = (ink: string): QuickOption<QuickColourValue> => ({
   value: QUICK_INK,
@@ -335,14 +352,21 @@ function QuickStyleSections({
         }
         const colours = view.sections[row.section];
         return colours ? (
-          <QuickRadioRow
+          <QuickRadioRow<QuickColourValue | typeof QUICK_TRANSPARENT>
             key={row.role}
             title={row.title}
             testId={row.testId}
             showTitle={showTitles}
-            options={swatchOptions(colours.swatches, 'ink' in colours ? colours.ink : undefined)}
+            options={swatchOptions(
+              colours.swatches,
+              'ink' in colours ? colours.ink : undefined,
+              row.role === 'fill',
+            )}
             columns={QUICK_ROW_TARGETS}
-            onOptionContext={editFor(row.role)}
+            // Transparent has no colour to edit.
+            onOptionContext={(value, button) => {
+              if (value !== QUICK_TRANSPARENT) editFor(row.role)(value, button);
+            }}
             value={colours.value}
             more={
               <QuickMoreColours
@@ -367,8 +391,10 @@ function QuickStyleSections({
               />
             }
             onChoose={(value) => {
-              // Ink is a choice of the Stroke and Text colour rows only.
-              if (value !== QUICK_INK) quickStyle[row.set](value);
+              // Transparent is the Background row's alone; Ink the Stroke and Text colour rows'.
+              if (value === QUICK_TRANSPARENT) {
+                if (row.role === 'fill') quickStyle.setBackground(QUICK_TRANSPARENT);
+              } else if (value !== QUICK_INK) quickStyle[row.set](value);
               else if (row.role === 'stroke') quickStyle.setStroke(value);
               else if (row.role === 'text') quickStyle.setTextColour(value);
             }}

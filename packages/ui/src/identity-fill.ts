@@ -1,7 +1,7 @@
 // A runtime colour under white text (avatar initials, cursor and presence labels, a participant's or
 // team's colour) in dark mode (docs/specs/004-interface-design/color-scheme.md, Dark palette rules).
 // White falls below AA on every participant colour, so dark mode paints a deeper shade of the same
-// hue and keeps the white text. Light mode keeps the colour exactly (#74's light half).
+// hue and keeps the white text. Light mode keeps the colour exactly.
 import type { CSSProperties } from 'react';
 import { contrastRatio, shade } from '@livediagram/document';
 

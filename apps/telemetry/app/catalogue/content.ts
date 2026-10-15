@@ -78,11 +78,27 @@ export const TAB_TEXT_DEFAULTS = chart(
   { types: ['Font', 'DefaultTextSize'] },
 );
 
+export const TAB_FINISH = chart(
+  'Tab',
+  'Changed',
+  'Tab Finish',
+  'A tab’s finish changed (Flexible, Professional or Sketch).',
+  { types: ['Finish'] },
+);
+
+export const TAB_LOOKS_PICKED = chart(
+  'Tab',
+  'Changed',
+  'Tab Looks',
+  'A look picked in Tab Style: theme, finish, font and canvas pattern set at once, a random Mashup rolled, or a seasonal look picked.',
+  { types: ['Look', 'Mashup', 'SeasonalLook'] },
+);
+
 export const TABS_ARRANGED = chart(
   'Tab',
   'Aligned',
   'Tabs Auto-Arranged',
-  'A tab laid out automatically: tree, flowchart or mindmap.',
+  'A tab laid out automatically (tree, flowchart or mindmap), or an infographic page tidied.',
 );
 
 export const TABS_REORDERED = chart(
@@ -360,6 +376,8 @@ const TAB_CHANGES = [
   TABS_DELETED,
   TABS_DUPLICATED,
   TAB_TEXT_DEFAULTS,
+  TAB_FINISH,
+  TAB_LOOKS_PICKED,
   TABS_ARRANGED,
   TABS_REORDERED,
   TABS_LINKED,
@@ -380,6 +398,8 @@ export const TAB_ACTIONS: MetricStack = {
     TABS_DELETED,
     TABS_DUPLICATED,
     TAB_TEXT_DEFAULTS,
+    TAB_FINISH,
+    TAB_LOOKS_PICKED,
     TIDY_UP_OPENED,
     TABS_ARRANGED,
     TABS_REORDERED,
@@ -460,7 +480,13 @@ export const COLLABORATE_ADDED = addedFrom(
 export const COMPONENTS_ADDED = addedFrom(
   'components',
   'Components Added',
-  'Web components that lay themselves out: banners, callouts, stat rows, heroes.',
+  'Blocks that lay themselves out: cards, badges, step numbers, banners, callouts, stat rows, heroes.',
+);
+
+export const CONCEPTS_ADDED = addedFrom(
+  'concepts',
+  'Concepts Added',
+  'Concept graphics that lay out their own rows: layer stacks, pyramids, funnels and cycles.',
 );
 
 export const DEVICES_ADDED = addedFrom('devices', 'Devices Added', 'Device frames and mockups.');
@@ -490,6 +516,7 @@ export const ELEMENTS_ADDED: MetricStack = {
     TOOLS_ADDED,
     COLLABORATE_ADDED,
     COMPONENTS_ADDED,
+    CONCEPTS_ADDED,
     DEVICES_ADDED,
     ICONS_ADDED,
     OTHER_ELEMENTS_ADDED,

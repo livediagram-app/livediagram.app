@@ -45,11 +45,13 @@ import {
   receivePeerDragPreview,
 } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
+import { receivePeerSay, resetSpeechBubbles } from '@/lib/avatar-speech-store';
 import {
   receiveArticleCaret,
   resetArticlePeers,
   syncArticlePeople,
 } from '@/lib/article/article-carets-store';
+import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 // Realtime room: one WebSocket per document, opened for every document saved on
 // the server (docs/specs/024-agents/agent-changesets.md "Rooms for personal documents"). Lifted out of editor-page.tsx verbatim — the
@@ -115,9 +117,7 @@ export function useRoomConnection(opts: {
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking, latest sample each.
   // Only read while somebody is being followed; kept for everyone because the
   // op is unsolicited (see the RoomOp comment).
-  setRemoteViewports: Dispatch<
-    SetStateAction<Map<string, { tabId: string; pan: { x: number; y: number }; zoom: number }>>
-  >;
+  setRemoteViewports: Dispatch<SetStateAction<Map<string, RemoteViewport>>>;
   setDocumentName: Dispatch<SetStateAction<string>>;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   // Live poll (docs/specs/012-collaboration/live-poll.md) inbound handlers, owned by useLivePoll. Stable
@@ -130,12 +130,8 @@ export function useRoomConnection(opts: {
   // written, so there is nothing here to persist, order, or undo.
   receiveReaction: (elementId: string, reaction: string) => void;
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): somebody is asking the room to come and look.
-  receiveFocusHere: (
-    from: string,
-    tabId: string,
-    at: { x: number; y: number },
-    zoom: number,
-  ) => void;
+  // The op also carries the presser's zoom, which is not used: taking it keeps your own.
+  receiveFocusHere: (from: string, tabId: string, at: { x: number; y: number }) => void;
   // The facilitator baton (docs/specs/012-collaboration/facilitator.md): the room's answer, and the token we
   // present on every hello so a refresh keeps it.
   receiveFacilitator: (msg: {
@@ -145,6 +141,10 @@ export function useRoomConnection(opts: {
     token?: string;
   }) => void;
   readFacilitatorToken: () => string | null;
+  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): who follows us, from the room,
+  // and who we follow, said again on every new socket.
+  setFollowerIds: Dispatch<SetStateAction<readonly string[]>>;
+  readFollowing: () => string | null;
   // The facilitator freed an element we were holding (docs/specs/007-editor/live-app.md lock). Only our
   // socket is sent this, so there is nothing to check it against.
   receiveSelectionReleased: (msg: { elementId: string; by: string }) => void;
@@ -226,6 +226,8 @@ export function useRoomConnection(opts: {
     receiveFacilitator,
     receiveSelectionReleased,
     readFacilitatorToken,
+    setFollowerIds,
+    readFollowing,
     receivePoll,
     receivePollAnswer,
     receivePollEnd,
@@ -278,6 +280,8 @@ export function useRoomConnection(opts: {
   const nameByPresenceRef = useRef<Map<string, string>>(new Map());
   // The facilitator token is read on demand by the room, always as it is now.
   const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
+  const roomReadFollowing = useEffectEvent(() => readFollowing());
+  const roomFollowers = useEffectEvent((ids: string[]) => setFollowerIds(ids));
 
   // Whether this connection has had its first presence list: reset by every (re)open below.
   const joinedRef = useRef(false);
@@ -492,7 +496,7 @@ export function useRoomConnection(opts: {
         // 10 Hz stream needs no coalescing.
         setRemoteViewports((prev) => {
           const next = new Map(prev);
-          next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom });
+          next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom, size: op.size });
           return next;
         });
       } else if (op.kind === 'avatar-push') {
@@ -504,6 +508,10 @@ export function useRoomConnection(opts: {
         // written to the document either way: our client decides what to do
         // with the request, and does nothing if we've left the mode.
         receiveAvatarPush(op.dx, op.dy);
+      } else if (op.kind === 'avatar-say') {
+        // A peer said something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): parsed, deduped and
+        // drawn by the speech layer, never written.
+        receivePeerSay(from, op);
       } else if (op.kind === 'reaction') {
         // No tab check here, unlike the laser: a burst is keyed to the
         // ELEMENT, and only the active tab's elements are rendered, so a
@@ -514,7 +522,7 @@ export function useRoomConnection(opts: {
         // No tab check: the invitation names its own tab and taking it is
         // what switches you, so one sent from another tab is exactly the
         // case this element exists for.
-        receiveFocusHere(from, op.tabId, op.at, op.zoom);
+        receiveFocusHere(from, op.tabId, op.at);
       } else if (op.kind === 'tab-focus') {
         setRemoteTabFocus((prev) => {
           const next = new Map(prev);
@@ -650,6 +658,8 @@ export function useRoomConnection(opts: {
       onOp: (from, op) => roomOp(from, migrateRoomOp(op), presence),
       onFacilitator: (msg) => roomFacilitator(msg),
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
+      // Called for this socket alone: being called is the addressing (we never learn our own presence id).
+      onFollowers: (ids) => roomFollowers(ids),
       onDocumentTrashed: () => roomDocumentTrashed(),
       // Reload so the access gates run again (a password prompt, a refusal page, or the editor).
       onAccessChanged: () => roomAccessChanged(),
@@ -700,6 +710,7 @@ export function useRoomConnection(opts: {
             if (again?.adderKey) announceAdderKey(again.adderKey);
             return again?.ticket ?? null;
           },
+          readFollowing: roomReadFollowing,
         },
         roomReadFacilitatorToken,
       );
@@ -709,6 +720,8 @@ export function useRoomConnection(opts: {
       cancelled = true;
       presence.cancel();
       resetArticlePeers();
+      // Nobody's words outlive the room they were said in.
+      resetSpeechBubbles();
       openedRoom?.close();
       roomRef.current = null;
     };

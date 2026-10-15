@@ -2,8 +2,15 @@
 // writes ("In Progress", "Bug", "Severity", "Sam", "#12") resolved to what items store (a status id, a type id, a
 // custom field id, a person, an item id). Unknown names are refused with what is there, never stored.
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
-import type { ItemTypeDef } from './item-types';
-import { PRIORITIES } from './fields';
+import { isEmailAddress, type ItemTypeDef } from './item-types';
+import { knownFieldKind, PRIORITIES, validateFields } from './fields';
+import {
+  ITEM_CHECKLIST_MAX,
+  ITEM_LABEL_MAX,
+  ITEM_LABELS_MAX,
+  ITEM_NUMBER_MAX,
+  ITEM_TITLE_MAX,
+} from './limits';
 import type { PlanStatusName } from './plan-outline';
 import { resolveItemRef } from './refs';
 import { statusKey } from './status-names';
@@ -11,7 +18,12 @@ import { isBuiltInFieldId, PLAN_TYPE_COLOURS, slugOf } from './type-catalogue';
 import { itemSummary } from './views';
 
 export type NameRefusalCode =
-  'status_unknown' | 'type_unknown' | 'field_unknown' | 'choice_unknown' | 'item_unknown';
+  | 'status_unknown'
+  | 'type_unknown'
+  | 'field_unknown'
+  | 'choice_unknown'
+  | 'item_unknown'
+  | 'value_invalid';
 
 export interface NameRefusal {
   code: NameRefusalCode;
@@ -67,9 +79,10 @@ export function resolveType(
   );
 }
 
-// An item by number or id prefix, as people say it.
+// An item by number or id prefix, as people say it; "#12 Fix login", as list_items reads a card link, by its number.
 export function resolveItem(input: string, items: readonly Item[]): Named<{ item: Item }> {
-  const found = resolveItemRef(items, input);
+  const titled = /^(#\d+)\s+\S/.exec(input.trim());
+  const found = resolveItemRef(items, titled ? titled[1]! : input);
   if (found.ok) return { ok: true, item: found.item };
   return refuse(
     'item_unknown',
@@ -89,8 +102,9 @@ export function assignedPeople(items: readonly Item[]): ItemPerson[] {
   return [...seen.values()];
 }
 
-// A person by name: one already assigned on the document, else a named person whose id and colour come from the
-// name, so the same name is the same person on every card.
+// A person by name: one already assigned on the document, else a named person whose id comes from the name, so the
+// same name is the same person on every card. A new person's colour starts from the name and steps on past any
+// colour someone on the document already has, so two people never share one while colours remain.
 export function personNamed(name: string, people: readonly ItemPerson[]): ItemPerson {
   const key = statusKey(name);
   const known = people.find((p) => statusKey(p.name) === key);
@@ -98,11 +112,12 @@ export function personNamed(name: string, people: readonly ItemPerson[]): ItemPe
   const slug = slugOf(name, 30) || 'person';
   let hash = 0;
   for (const ch of slug) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return {
-    id: `n-${slug}`,
-    name: name.trim(),
-    color: PLAN_TYPE_COLOURS[hash % PLAN_TYPE_COLOURS.length]!,
-  };
+  const taken = new Set(people.map((p) => p.color.toLowerCase()));
+  const n = PLAN_TYPE_COLOURS.length;
+  let pick = hash % n;
+  for (let step = 0; step < n && taken.has(PLAN_TYPE_COLOURS[pick]!.toLowerCase()); step++)
+    pick = (pick + 1) % n;
+  return { id: `n-${slug}`, name: name.trim(), color: PLAN_TYPE_COLOURS[pick]! };
 }
 
 // Built-in fields by the names the interface gives them, beside their ids.
@@ -125,6 +140,20 @@ function builtInKey(key: string): string | undefined {
 export interface FieldNaming {
   statuses: readonly PlanStatusName[];
   items: readonly Item[];
+}
+
+// A Choice option as written: the option itself, else the one option equal case and spacing aside, else the one
+// whose letters and digits match ("in-progress" for "In Progress"). Options of symbols alone ("★", "★★") match only
+// exactly, and a key two options share names neither, so a value is never stored as the wrong option.
+export function choiceOption(options: readonly string[], value: string): string | undefined {
+  if (options.includes(value)) return value;
+  const loose = (s: string) => s.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ');
+  const byCase = options.filter((o) => loose(o) === loose(value));
+  if (byCase.length === 1) return byCase[0];
+  const key = statusKey(value);
+  if (!key) return undefined;
+  const byKey = options.filter((o) => statusKey(o) === key);
+  return byKey.length === 1 ? byKey[0] : undefined;
 }
 
 // Fields as an agent writes them, for an item of `type`: built-in fields by id or interface name, custom fields
@@ -164,18 +193,36 @@ export function resolveFields(
     if (isBuiltInFieldId(key)) {
       const v = builtInValue(key, value, naming);
       if (!v.ok) return v;
-      out[key] = v.value;
+      const checked = checkedBuiltIn(key, v.value);
+      if (!checked.ok) return checked;
+      out[key] = checked.value;
       continue;
     }
     const field = type.custom!.find((f) => f.id === key)!;
     if (field.kind === 'choice' && typeof value === 'string') {
-      const option = field.options?.find((o) => statusKey(o) === statusKey(value));
+      const option = choiceOption(field.options ?? [], value);
       if (!option)
         return refuse(
           'choice_unknown',
           `"${value}" is not a ${field.label} option. Options: ${list(field.options ?? [])}.`,
         );
       out[key] = option;
+    } else if (field.kind === 'currency' && typeof value === 'string') {
+      // "£12,500" or "1200.50": the amount, its symbols and grouping aside.
+      const amount = Number(value.replace(/[^\d.-]/g, ''));
+      if (!/\d/.test(value) || !Number.isFinite(amount))
+        return refuse(
+          'value_invalid',
+          `"${value}" is not an amount for ${field.label}: give a number.`,
+        );
+      out[key] = Math.round(amount * 100) / 100;
+    } else if (field.kind === 'currency' && typeof value === 'number') {
+      out[key] = Math.round(value * 100) / 100;
+    } else if (field.kind === 'email' && typeof value === 'string') {
+      const address = value.trim();
+      if (!isEmailAddress(address))
+        return refuse('value_invalid', `"${value}" is not an email address for ${field.label}.`);
+      out[key] = address;
     } else if (field.kind === 'card' && typeof value === 'string') {
       const linked = resolveItem(value, naming.items);
       if (!linked.ok) return linked;
@@ -211,4 +258,38 @@ function builtInValue(key: string, value: unknown, naming: FieldNaming): Named<{
         .filter(Boolean),
     };
   return { ok: true, value };
+}
+
+// A built-in field's value held to the rules the server holds it to (validateFields), so a card table row or an
+// agent's change is refused here, naming the field and what it takes, rather than as a bare `field_value_invalid`
+// from the api (the production Error·Api·Http400.ItemChange.FieldValueInvalid). A number given as text ("5") is
+// read as the number.
+function checkedBuiltIn(key: string, value: unknown): Named<{ value: unknown }> {
+  const kind = knownFieldKind(key);
+  if (!kind) return { ok: true, value };
+  const given =
+    kind === 'number' &&
+    typeof value === 'string' &&
+    value.trim() !== '' &&
+    Number.isFinite(Number(value))
+      ? Number(value)
+      : value;
+  const result = validateFields({ [key]: given }, 'patch');
+  if (result.ok) return { ok: true, value: result.fields[key] };
+  const label = key.charAt(0).toUpperCase() + key.slice(1);
+  const shown = typeof value === 'string' ? `"${value}"` : JSON.stringify(value);
+  const takes: Partial<Record<string, string>> = {
+    number: `a number from 0 to ${ITEM_NUMBER_MAX}`,
+    date: 'a date, such as 2026-10-14',
+    priority: `one of ${list(PRIORITIES.map((p) => p.charAt(0).toUpperCase() + p.slice(1)))}`,
+    flag: 'TRUE, or nothing to leave it off',
+    colour: 'a colour as #rrggbb',
+    labels: `up to ${ITEM_LABELS_MAX} labels of up to ${ITEM_LABEL_MAX} characters`,
+    checklist: `up to ${ITEM_CHECKLIST_MAX} rows`,
+    text: `up to ${ITEM_TITLE_MAX} characters`,
+  };
+  return refuse(
+    'value_invalid',
+    `${shown} is not ${/^[aeiou]/i.test(label) ? 'an' : 'a'} ${label}: give ${takes[kind] ?? 'a value it can hold'}.`,
+  );
 }

@@ -51,3 +51,17 @@ export function choosePlacementAgainUrl(search: string): string {
   const qs = params.toString();
   return qs ? `/new?${qs}` : '/new';
 }
+
+/**
+ * The placement context a /new URL carries (docs/specs/013-workspace/team-shared-documents.md): `?folder=<id>`,
+ * `?team=<id>` or both pre-select the Save In picker; neither is no placement (the Location step then pre-selects
+ * the reader's default folder).
+ */
+export function placementContextFromSearch(search: string): string | undefined {
+  const params = new URLSearchParams(search);
+  const folderId = params.get('folder');
+  const teamId = params.get('team');
+  if (teamId) return folderId ? `team:${teamId}:folder:${folderId}` : `team:${teamId}`;
+  if (folderId) return `folder:${folderId}`;
+  return undefined;
+}

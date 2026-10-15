@@ -3,6 +3,7 @@
 // cycle observable at runtime.
 import type { Element, ElementId, Tab } from './index';
 import { eventStormingKindOf } from './event-storming';
+import { isFloorShape } from './office';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md). A tab optionally carries an ordered
 // `layers` array (BOTTOM -> TOP: index 0 paints lowest) and each element
@@ -64,12 +65,31 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 }
 
 // The paint tier of an element within its band, back to front:
-// - frames are section backdrops that paint below their band-mates (docs/specs/008-canvas/canvas-and-palette.md);
+// - frames, and an office's rooms and rugs, are backdrops that paint below their band-mates
+//   (docs/specs/008-canvas/canvas-and-palette.md), the larger first;
 // - event-storming actors sit in front of every other note, and hotspots in
 //   front of actors (docs/specs/021-event-storming/event-storming.md Phase 4).
 // Array order decides within a tier.
 function paintTier(el: Element): number {
-  if (el.type === 'shape' && el.shape === 'frame') return 0;
+  // Frames and boundaries are backdrops (docs/specs/009-elements/boundary.md "A container"), and so are an office's
+  // floors (docs/specs/009-elements/office.md): a room and a rug lie under the furniture however they were added (drawn
+  // to size, pasted, by an agent), and the larger paints first, so a rug lies on its room's floor.
+  if (
+    el.type === 'shape' &&
+    (el.shape === 'frame' ||
+      el.shape === 'boundary' ||
+      el.shape === 'stack' ||
+      isFloorShape(el.shape))
+  )
+    return 0;
+  // An attached badge or step number (docs/specs/009-elements/badge.md) sits above everything in its band, so a
+  // later element never covers the mark on its host.
+  if (
+    el.type === 'shape' &&
+    el.attachedTo &&
+    (el.shape === 'badge' || el.shape === 'step' || el.shape === 'pointer-note')
+  )
+    return 4;
   const kind = eventStormingKindOf(el);
   if (kind === 'actor') return 2;
   if (kind === 'hotspot') return 3;
@@ -80,10 +100,17 @@ function paintTier(el: Element): number {
 // order, which is every band without frames, actors or hotspots out of place.
 function paintOrderIn(elements: Element[]): Element[] {
   const tiers = elements.map(paintTier);
-  if (tiers.every((t, i) => i === 0 || tiers[i - 1]! <= t)) return elements;
+  // Among the backdrops the larger paints first, so a boundary nested in another is never hidden behind it.
+  const area = (el: Element) =>
+    'width' in el && 'height' in el ? (el.width as number) * (el.height as number) : 0;
+  const backdropsInOrder = elements.every(
+    (el, i) =>
+      i === 0 || tiers[i] !== 0 || tiers[i - 1] !== 0 || area(elements[i - 1]!) >= area(el),
+  );
+  if (backdropsInOrder && tiers.every((t, i) => i === 0 || tiers[i - 1]! <= t)) return elements;
   return elements
-    .map((el, i) => ({ el, i, tier: tiers[i]! }))
-    .sort((a, b) => a.tier - b.tier || a.i - b.i)
+    .map((el, i) => ({ el, i, tier: tiers[i]!, area: tiers[i] === 0 ? area(el) : 0 }))
+    .sort((a, b) => a.tier - b.tier || b.area - a.area || a.i - b.i)
     .map((x) => x.el);
 }
 

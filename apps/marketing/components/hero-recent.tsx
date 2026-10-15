@@ -1,7 +1,7 @@
 'use client';
 
 import type { RecentDiagram } from '@livediagram/api-schema';
-import { ChevronRightIcon, EDITOR_MODE_ICONS, relativeSince } from '@livediagram/ui';
+import { ChevronRightIcon, EDITOR_MODE_ICONS, relativeSince, TeamIcon } from '@livediagram/ui';
 import { useState, type MouseEvent } from 'react';
 import { CANVAS } from './hero-editor-window';
 import { useRecentThumb } from './useRecentDiagrams';
@@ -9,7 +9,8 @@ import { useRecentThumb } from './useRecentDiagrams';
 // Welcome back (docs/specs/019-marketing/returning-visitor.md): the hero's first window for a
 // returning visitor, in place of the overview. The same bare board (no editor chrome) holds their six
 // most recent diagrams, three over two on a wide window and two across on a phone, each opening it,
-// and a link under them to Explorer Home for everything else.
+// and a link under them to Explorer Home for everything else. A diagram from a team's library carries
+// the team mark before its name.
 
 export const EXPLORER_HOME_HREF = '/explorer/home';
 
@@ -114,8 +115,15 @@ function RecentTile({
           </span>
         ) : null}
       </span>
-      <span className="mt-1.5 truncate px-0.5 text-[11px] font-semibold text-slate-700 transition-colors group-hover/tile:text-brand-700 sm:text-xs dark:text-slate-200 dark:group-hover/tile:text-brand-300">
-        {diagram.name || 'Untitled diagram'}
+      <span className="mt-1.5 flex min-w-0 items-center gap-1 px-0.5 text-[11px] font-semibold text-slate-700 transition-colors group-hover/tile:text-brand-700 sm:text-xs dark:text-slate-200 dark:group-hover/tile:text-brand-300">
+        {diagram.teamName != null ? (
+          <TeamIcon
+            size={12}
+            data-team-mark=""
+            className="shrink-0 text-slate-400 transition-colors group-hover/tile:text-brand-700 dark:text-slate-500 dark:group-hover/tile:text-brand-400"
+          />
+        ) : null}
+        <span className="truncate">{diagram.name || 'Untitled diagram'}</span>
       </span>
       <span className="px-0.5 text-[10px] text-slate-500 dark:text-slate-400">
         {relativeSince(diagram.savedAt, now)}

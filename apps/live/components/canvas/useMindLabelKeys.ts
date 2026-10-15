@@ -1,5 +1,5 @@
 import { useEffectEvent, useLayoutEffect, type KeyboardEvent, type RefObject } from 'react';
-import { isMindNode, type Element } from '@livediagram/document';
+import { isFlowchartStep, isMindNode, type Element } from '@livediagram/document';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
 import { claimMindHandoff } from '@/lib/mind-handoff';
@@ -11,7 +11,8 @@ import { claimMindHandoff } from '@/lib/mind-handoff';
 //
 // - On mount it claims the keystroke handoff: whatever was typed for this node
 //   before its editor existed is typed in now (see lib/mind-handoff.ts).
-// - Tab and Enter commit the label and grow the next node.
+// - Tab and Enter commit the label and grow the next node. Shift+Enter is left to the editor,
+//   which starts a new line in the label ("New lines" in the spec).
 // - Escape commits rather than cancels, and removes a node that was left empty.
 export function useMindLabelKeys(opts: {
   element: Element;
@@ -23,7 +24,9 @@ export function useMindLabelKeys(opts: {
 }): { onMindKeyDown: (e: KeyboardEvent) => boolean } {
   const { element, initialLabel, editorRef, syncFromDom, commitNow, handleCancel } = opts;
   const mind = useMindGrow();
-  const active = !!mind && isMindNode(element);
+  // A flowchart step takes the same keys (docs/specs/009-elements/flowchart.md): Tab its next step,
+  // Enter a parallel one, Escape keeps the label.
+  const active = !!mind && (isMindNode(element) || isFlowchartStep(element));
 
   const leave = (how: 'child' | 'sibling' | 'escape') => {
     // Only from a real key press in this editor, so the label commit reads a
@@ -68,8 +71,8 @@ export function useMindLabelKeys(opts: {
 
   const onMindKeyDown = (e: KeyboardEvent): boolean => {
     if (!active) return false;
-    // Shift+Enter still inserts a newline, so a multi-line label is not lost
-    // to the shortcut.
+    // Shift+Enter is not ours: the editor inserts a newline, so a label can run
+    // over several lines while plain Enter keeps growing the map.
     if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
       e.preventDefault();
       leave(e.key === 'Tab' ? 'child' : 'sibling');

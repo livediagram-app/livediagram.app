@@ -36,6 +36,14 @@ editor views.
   `svgPlanCard(el, items, surface, itemTypes)`. `renderElementsToSvg`'s options carry `items?: ReadonlyMap<string, Item>`
   and `itemTypes?`. Without items, columns draw
   with names and empty bodies; a card draws "Item".
+- Card faces: `svg-render-plan-card.ts` `planCardFace(item, x, y, w, ctx, measureOnly)` draws from `typeCardLayout` at
+  the board's `cardSize` (slots lead/trail, lead/row/trail, head/headEnd/body/foot/footEnd), gating built-ins by
+  `cardFieldsAt(size, cardFields)`; custom fields as `Label: value` pills via `customFieldText`; the title wraps to 2
+  (Minimal, Compact) or 3 (Detailed) lines; returns `{ svg, height }`. `ctx.height` pins a Plan card element's frame.
+  Card values (`dayLabel`, `customFieldText`, `checklistProgress`) live in `@livediagram/items` `card-text.ts`.
+- Board layout: `plan-board-layout.ts` `planBoardLayout(el, items, types, cardHeight?)` stacks cards at
+  `cardHeight(item, width)` (absent: `PLAN_CARD_H`) and, with swimlanes, returns `lanes: PlanLaneSlot[]`, each a
+  `PLAN_LANE_HEAD_H` header row plus its fullest column.
 - `edit-operations` `SHAPE_KIND_FIELDS`: `plan-board` → `planBoard`, `plan-card` → `planCard`.
 - `document-views` `content-summary` / `find`: board → title + column names; card → item id.
 
@@ -64,7 +72,8 @@ OptionRows.tsx           Plan's option list (spec "Option lists"): `kind` single
 SetupStepper.tsx         the wizard stepper: circles joined by lines (`@container`, names under the circles below
                          `@md`), `aria-current="step"`, done steps are buttons "{Step}, done: go back"
 PlanColumnHeader.tsx     a column's head: colour bar, name, count, and the cog (PlanColumnPopover)
-AddColumnPicker.tsx      the column picker, used by the popover's + Add Column After: one field (TextInput compact, "New
+AddColumnPicker.tsx      the column picker, used by the popover's + Add Column After and the board's Columns section
+                         (`short`: the button reads Add, aria-label Add Column; no autoFocus there): one field (TextInput compact, "New
                          column name", autoFocus) and Add Column. With existing statuses the field is a combobox
                          (role=combobox, aria-controls the listbox, aria-activedescendant the highlighted row,
                          aria-autocomplete=list); `narrowStatuses` filters rows by statusKey substring; ArrowDown
@@ -82,13 +91,35 @@ AddColumnPickerPopover.tsx the picker hung from + Add Column After (304px wide):
                          `[data-add-column-picker]` as inside
                          (column-status-picks.ts: matchStatus, addStatusColumn, addStatusColumns, columnRename; it
                          re-exports statusKey, missingStatuses, pickableStatuses from packages/items)
-PlanColumnPopover.tsx    a column's settings popover; while the picker is open it works out `missingBoardStatuses`
+PlanColumnPopover.tsx    a column's settings popover. On top a role=toolbar "Column actions" (bg-slate-50/70, hairline
+                         under): Move Left / Move Right as one bordered h-8 segmented control of w-9 icon buttons
+                         (`ToolbarButton`, each in the shared Tooltip, disabled at the ends), and at the end (justify-
+                         between) Remove: ColumnOffIcon + "Remove", aria-label and tooltip "Remove Column", rose hover;
+                         only while another column remains. Below it: + Add Column After and Delete Status rows. While the picker is open it works out `missingBoardStatuses`
                          (setup, pickableStatuses(names, items, types), { items, types, boards: statusBoards }),
                          memoised on those, nothing while closed. A row or a matched name adds with part
                          `ColumnAddedExisting` (Add All too), a new name with `ColumnAdded`; + Add Column After asks the new column's head to open its own
                          (column-settings-request.ts, a one-shot module request read on the head's mount) and
                          closes, and the new popover selects its name (`selectName`)
 board-setup-edits.ts     the set-up's edits as pure functions (rename, recolour, WIP, done, move, add, remove)
+column-move-flip.ts      a column moved left or right glides (FLIP): `captureColumns(root)` notes each `[data-plan-column]`
+                         part's offsetLeft (the head in PlanColumnHeader, each cell in PlanBoardView); `playColumnMove`
+                         animates each from its old left via `el.animate` translateX → 0 over COLUMN_MOVE_MS (240) on
+                         COLUMN_MOVE_EASING; the moved column's parts also carry zIndex 2 and a boxShadow that fades.
+                         `useColumnMoveFlip(gridRef, order)` gives `beforeMove(columnId)` (PlanBoardView calls it for a
+                         `ColumnReordered` change; nothing under prefersReducedMotion) and `isMoving()`, true until the
+                         glide ends, passed to usePlanCardFlip as `hold` so cards are measured but not played.
+                         PlanColumnPopover follows: when its column's index changes it re-places itself under the cog
+                         each animation frame (style written directly) for COLUMN_MOVE_MS + 40 ms, then setPos; not on a
+                         phone
+BoardColumnsSection.tsx  the board's Columns section (cog and element menu): InfoNote, "On This Board" + count, an `ol`
+                         option list of the columns (number, StatusSwatch, name, WIP n / Done pills, chevron), each row
+                         a button "Open {Name} settings" that calls onClose then requestColumnSettings(id); then the
+                         inline AddColumnPicker (`short`) adding after `columnsInsertAfter(setup)` (the last column,
+                         or the one before a done column that ends the board; null when empty), parts as the popover.
+                         `pickableStatuses` and `missingBoardStatuses` run only while `open` (memoised on
+                         planBoard). The added column's row is tinted bg-brand-50 for ADDED_TINT_MS (1600) and
+                         fades in. At PLAN_COLUMNS_MAX a role=status note replaces the picker. Null without canEdit
 track-board-setup.ts     Plan · Changed · <part>
 PlanBoardCells.tsx       a row's band, one card in a cell (right-click → onMenu), and the drag ghost
 PlanBoardHeader.tsx      title, count, progress, unplaced chip and its tray, votes left, quick filter, Only
@@ -106,7 +137,9 @@ PlanCardView.tsx         the plan-card element body (themed; a lone card's fill 
 PlanModal.tsx            the Plan forms' modal (through Dialog) and SheetRow; fields are the shared TextInput/TextArea `compact`
 plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
-../palette/PlanBoardMenuSection.tsx  the board's element-menu Board (title, swimlanes) and Cards (fields) flyouts
+../palette/PlanBoardMenuSection.tsx  the board menu's five flyout rows and the slot cog panel: PLAN_BOARD_SECTIONS (Board Setup, Columns,
+                         Swimlanes, Supported Cards, Card Layout; Columns `shows` only with columns and not All
+                         Cards / Archive), each Body given `open` so it can defer work while shut
 ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, close), main column
                          (title, tabs from tabsOf, the tab's fields), Details aside (w-80: detailFieldsOf rows,
                          then made/changed); phone: one column, a Details tab first, sheet 85dvh
@@ -331,7 +364,9 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
 - Copy: "Add card", "Add your first card", "Add a Card", "Or type a title and press Enter", "Open",
   "Duplicate", "Delete", "Card duplicated", "Card deleted", "Not on this board", "Move to", "Hidden until reveal", "Reveal", "Votes left: 3",
   "Item not found", "Remove card", "Only mine", "Column", "WIP Limit", "Counts as Done",
-  "Move Left", "Move Right", "+ Add Column After", "Remove Column", "Move and Remove", "Keep It",
+  "Move Left", "Move Right", "+ Add Column After", "Remove Column", "Remove", "Column actions", "Columns",
+  "The board’s columns, left to right. Press one to open its settings.", "On This Board", "WIP {n}", "Done",
+  "Open {Name} settings", "Add", "A board holds up to 12 columns.", "Move and Remove", "Keep It",
   "Linked as {Field}", "No cards link here as {Field} yet.", "Archived", "Card trail".
 - Item panel: a modal through the shared `Dialog` (`size="lg"`, `phoneSheet`: a sheet from the bottom with a grab
   handle below `sm`), max height 44rem, header with type picker + key, title
@@ -392,51 +427,53 @@ section). The column picker sends `Plan · Changed · ColumnAdded | ColumnAddedE
 
 ## Testing
 
-| Rule                                             | Test                                                                                                                                                                  |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Set-up edits                                     | `apps/live/components/plan/board-setup-edits.test.ts`                                                                                                                 |
-| Column picker statuses, counts, boards           | `packages/items/src/board-status-picks.test.ts`                                                                                                                       |
-| Fill Tab: which board, deletion, copy            | `apps/live/components/plan/fill-tab.test.ts`                                                                                                                          |
-| Setup Board Layout step, stepper, Fill Tab       | `apps/live/components/plan/PlanSetupBoard.test.tsx`                                                                                                                   |
-| Layout read from and written to the board        | `apps/live/components/plan/setup-board.test.ts`                                                                                                                       |
-| Maximised/filled insets from the chrome          | `apps/live/lib/canvas-layer-insets.test.ts`, `apps/live/hooks/ui/useCanvasLayerInsets.test.ts`                                                                        |
-| The header band, and the cover's band variables  | `apps/live/lib/canvas-layer-insets.test.ts`, `apps/live/components/plan/MaximisedPlanLayer.test.tsx`                                                                  |
-| Zoom off while the canvas is covered             | `apps/live/components/chrome/ZoomControls.test.tsx`                                                                                                                   |
-| Five slots across a maximised board              | `apps/live/components/plan/plan-board-columns.test.ts`                                                                                                                |
-| Option list roles, keys, menu items              | `apps/live/components/plan/OptionRows.test.tsx`                                                                                                                       |
-| Edge auto-scroll math and drag wiring            | `apps/live/hooks/plan/edge-auto-scroll.test.ts`                                                                                                                       |
-| Map hidden while covered                         | `apps/live/components/canvas/view-readers.minimap.test.tsx`                                                                                                           |
-| Cover store: re-renders only on a change         | `apps/live/hooks/plan/plan-cover-store.test.tsx`                                                                                                                      |
-| Palette offers only Cards, then restores         | `apps/live/components/palette/palette-layouts.test.ts`, `apps/live/components/palette/ToolbarPalette.test.tsx`                                                        |
-| Palette hidden for a filling Sheet; restore pick | `apps/live/components/palette/ToolbarPalette.test.tsx`, `apps/live/components/palette/palette-tile-actions.test.ts`, `apps/live/hooks/plan/plan-cover-store.test.tsx` |
-| The name rides in the menu box                   | `apps/live/components/plan/menu-name-slot.test.tsx`, `apps/live/lib/canvas-layer-insets.test.ts`                                                                      |
-| The Plan strip shows only with cards to show     | `apps/live/hooks/sheets/card-table-sheets.test.ts`                                                                                                                    |
-| No selection chrome over a covered canvas        | `apps/live/lib/canvas-selection.test.ts`, `apps/live/hooks/canvas/useCanvasSelectionView.covered.test.ts`                                                             |
-| Nothing under a covered canvas moves             | `FilledTabLayer.test.tsx`, `apps/live/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`, `apps/live/hooks/canvas/useCanvasSurfaceGestures.test.tsx`               |
-| No Status swimlanes on a board (All Cards aside) | `board.test.ts`, `apps/live/components/palette/PlanBoardMenuSection.test.tsx`                                                                                         |
-| Filled layer, maximise released, no Escape       | `apps/live/components/plan/FilledTabLayer.test.tsx`                                                                                                                   |
-| Fill Tab normalised and patched                  | `board.test.ts`, `packages/document/src/plan-board-patch.test.ts`                                                                                                     |
-| Column picker combobox, rows, keys, Add All      | `apps/live/components/plan/AddColumnPicker.test.tsx`                                                                                                                  |
-| Picker adds an existing status's column          | `apps/live/components/plan/PlanColumnHeader.test.tsx`                                                                                                                 |
-| Factory, validation, size, labels                | `packages/document/src/plan-shapes.test.ts`                                                                                                                           |
-| SVG render with and without items                | `plan-shapes.test.ts`, `svg-render-coverage.test.ts`                                                                                                                  |
-| Projection: columns, rows, unplaced, filter      | `packages/items/src/board.test.ts`                                                                                                                                    |
-| Drop moves, between boards, refusals             | `apps/live/components/plan/plan-board-moves.test.ts`                                                                                                                  |
-| Keyboard moves and their announcement            | `apps/live/components/plan/plan-board-keys.test.ts`                                                                                                                   |
-| New card types, deleted-type fallback            | `packages/items/src/archive.test.ts`                                                                                                                                  |
-| Face-down and votes spent                        | `packages/items/src/board.test.ts`                                                                                                                                    |
-| A palette card lands only in a column            | `apps/live/hooks/plan/plan-card-drop.test.ts`                                                                                                                         |
-| Plan templates' boards                           | `apps/live/lib/template-boards.test.ts`                                                                                                                               |
-| Card trail steps, cut-back, cap; children        | `apps/live/components/plan/item-trail.test.ts`                                                                                                                        |
-| Linked as rows, empty state, open                | `apps/live/components/plan/LinkedCards.test.tsx`                                                                                                                      |
-| Breadcrumb crumbs, fold, step back               | `apps/live/components/plan/ItemTrailCrumbs.test.tsx`                                                                                                                  |
-| Phone look: Minimal, no widgets, columns, touch  | `apps/live/components/plan/phone-board.test.ts`, `plan-board-columns.test.ts`                                                                                         |
-| Phone's shared top row                           | `apps/live/lib/canvas-layer-insets.test.ts` (`phoneRow`)                                                                                                              |
-| Empty widget zone keeps its + in a band          | `apps/live/components/plan/widgets/BoardWidgetZone.test.tsx`                                                                                                          |
-| Dashboard Settings steps aside while maximised   | `apps/live/components/plan/dashboard/DashboardSettings.test.tsx`                                                                                                      |
-| Maximise, restore, Escape, unmount ends it       | `apps/live/hooks/plan/maximised-plan.test.ts`                                                                                                                         |
-| No remount, maximised size, one Escape           | `apps/live/components/plan/MaximisedPlanLayer.test.tsx`                                                                                                               |
-| Drag, Add card, card menu, item panel            | checked by hand against the dev stack (screenshots in the PR)                                                                                                         |
+| Rule                                               | Test                                                                                                                                                                  |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Set-up edits                                       | `apps/live/components/plan/board-setup-edits.test.ts`                                                                                                                 |
+| Column picker statuses, counts, boards             | `packages/items/src/board-status-picks.test.ts`                                                                                                                       |
+| Fill Tab: which board, deletion, copy              | `apps/live/components/plan/fill-tab.test.ts`                                                                                                                          |
+| Setup Board Layout step, stepper, Fill Tab         | `apps/live/components/plan/PlanSetupBoard.test.tsx`                                                                                                                   |
+| Layout read from and written to the board          | `apps/live/components/plan/setup-board.test.ts`                                                                                                                       |
+| Maximised/filled insets from the chrome            | `apps/live/lib/canvas-layer-insets.test.ts`, `apps/live/hooks/ui/useCanvasLayerInsets.test.ts`                                                                        |
+| The header band, and the cover's band variables    | `apps/live/lib/canvas-layer-insets.test.ts`, `apps/live/components/plan/MaximisedPlanLayer.test.tsx`                                                                  |
+| Zoom off while the canvas is covered               | `apps/live/components/chrome/ZoomControls.test.tsx`                                                                                                                   |
+| Five slots across a maximised board                | `apps/live/components/plan/plan-board-columns.test.ts`                                                                                                                |
+| Option list roles, keys, menu items                | `apps/live/components/plan/OptionRows.test.tsx`                                                                                                                       |
+| Edge auto-scroll math and drag wiring              | `apps/live/hooks/plan/edge-auto-scroll.test.ts`                                                                                                                       |
+| Map hidden while covered                           | `apps/live/components/canvas/view-readers.minimap.test.tsx`                                                                                                           |
+| Cover store: re-renders only on a change           | `apps/live/hooks/plan/plan-cover-store.test.tsx`                                                                                                                      |
+| Palette offers only Cards, then restores           | `apps/live/components/palette/palette-layouts.test.ts`, `apps/live/components/palette/ToolbarPalette.test.tsx`                                                        |
+| Palette hidden for a filling Sheet; restore pick   | `apps/live/components/palette/ToolbarPalette.test.tsx`, `apps/live/components/palette/palette-tile-actions.test.ts`, `apps/live/hooks/plan/plan-cover-store.test.tsx` |
+| The name rides in the menu box                     | `apps/live/components/plan/menu-name-slot.test.tsx`, `apps/live/lib/canvas-layer-insets.test.ts`                                                                      |
+| The Plan strip shows only with cards to show       | `apps/live/hooks/sheets/card-table-sheets.test.ts`                                                                                                                    |
+| No selection chrome over a covered canvas          | `apps/live/lib/canvas-selection.test.ts`, `apps/live/hooks/canvas/useCanvasSelectionView.covered.test.ts`                                                             |
+| Nothing under a covered canvas moves               | `FilledTabLayer.test.tsx`, `apps/live/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`, `apps/live/hooks/canvas/useCanvasSurfaceGestures.test.tsx`               |
+| No Status swimlanes on a board (All Cards aside)   | `board.test.ts`, `apps/live/components/palette/PlanBoardMenuSection.test.tsx`                                                                                         |
+| Filled layer, maximise released, no Escape         | `apps/live/components/plan/FilledTabLayer.test.tsx`                                                                                                                   |
+| Fill Tab normalised and patched                    | `board.test.ts`, `packages/document/src/plan-board-patch.test.ts`                                                                                                     |
+| Column picker combobox, rows, keys, Add All        | `apps/live/components/plan/AddColumnPicker.test.tsx`                                                                                                                  |
+| Columns section: list, open, add, place, tint, cap | `apps/live/components/plan/BoardColumnsSection.test.tsx`, `apps/live/components/palette/PlanBoardMenuSection.test.tsx`                                                |
+| Column toolbar: order, ends, move                  | `apps/live/components/plan/PlanColumnPopover.remove.test.tsx`                                                                                                         |
+| Picker adds an existing status's column            | `apps/live/components/plan/PlanColumnHeader.test.tsx`                                                                                                                 |
+| Factory, validation, size, labels                  | `packages/document/src/plan-shapes.test.ts`                                                                                                                           |
+| SVG render with and without items                  | `plan-shapes.test.ts`, `svg-render-coverage.test.ts`                                                                                                                  |
+| Projection: columns, rows, unplaced, filter        | `packages/items/src/board.test.ts`                                                                                                                                    |
+| Drop moves, between boards, refusals               | `apps/live/components/plan/plan-board-moves.test.ts`                                                                                                                  |
+| Keyboard moves and their announcement              | `apps/live/components/plan/plan-board-keys.test.ts`                                                                                                                   |
+| New card types, deleted-type fallback              | `packages/items/src/archive.test.ts`                                                                                                                                  |
+| Face-down and votes spent                          | `packages/items/src/board.test.ts`                                                                                                                                    |
+| A palette card lands only in a column              | `apps/live/hooks/plan/plan-card-drop.test.ts`                                                                                                                         |
+| Plan templates' boards                             | `apps/live/lib/template-boards.test.ts`                                                                                                                               |
+| Card trail steps, cut-back, cap; children          | `apps/live/components/plan/item-trail.test.ts`                                                                                                                        |
+| Linked as rows, empty state, open                  | `apps/live/components/plan/LinkedCards.test.tsx`                                                                                                                      |
+| Breadcrumb crumbs, fold, step back                 | `apps/live/components/plan/ItemTrailCrumbs.test.tsx`                                                                                                                  |
+| Phone look: Minimal, no widgets, columns, touch    | `apps/live/components/plan/phone-board.test.ts`, `plan-board-columns.test.ts`                                                                                         |
+| Phone's shared top row                             | `apps/live/lib/canvas-layer-insets.test.ts` (`phoneRow`)                                                                                                              |
+| Empty widget zone keeps its + in a band            | `apps/live/components/plan/widgets/BoardWidgetZone.test.tsx`                                                                                                          |
+| Dashboard Settings steps aside while maximised     | `apps/live/components/plan/dashboard/DashboardSettings.test.tsx`                                                                                                      |
+| Maximise, restore, Escape, unmount ends it         | `apps/live/hooks/plan/maximised-plan.test.ts`                                                                                                                         |
+| No remount, maximised size, one Escape             | `apps/live/components/plan/MaximisedPlanLayer.test.tsx`                                                                                                               |
+| Drag, Add card, card menu, item panel              | checked by hand against the dev stack (screenshots in the PR)                                                                                                         |
 
 ## Constants and configuration
 

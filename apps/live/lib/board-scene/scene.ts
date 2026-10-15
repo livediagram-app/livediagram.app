@@ -48,7 +48,11 @@ export type SceneHead =
   | 'circle-hollow'
   | 'diamond'
   | 'diamond-hollow'
-  | 'bar';
+  | 'bar'
+  // The ER ends (crow's feet).
+  | 'one'
+  | 'many'
+  | 'one-or-many';
 
 type Base = {
   /** Unique within its scene: bindings and assets refer to it. */

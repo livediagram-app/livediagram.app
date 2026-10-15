@@ -10,6 +10,7 @@
 // Value import from the data-shapes LEAF module (it imports only types from
 // here, so no cycle at runtime) — elementSupportsText excludes the
 // self-drawing data shapes the same way the inline editor does.
+import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
@@ -29,6 +30,7 @@ import type { Layer } from './layers';
 // Only the BoxedElement union members are imported for local use; the full set
 // (incl. TableCellStyle / LinkCardMeta sub-types) is re-exported just below.
 import type { ArrowElement } from './arrow-types';
+import type { Finish } from './finish';
 export type { Anchor, ArrowEnds, ArrowElement, Endpoint } from './arrow-types';
 export type { ShapeKind } from './shape-kind';
 export { ALL_ANCHORS } from './arrow-types';
@@ -102,7 +104,11 @@ export type ElementId = string;
 
 // --- Shared boxed-element fields ------------------------------------------
 
-export type TextSize = 'scale' | 'sm' | 'md' | 'lg';
+// A label's size (docs/specs/004-interface-design/fonts.md "Text size"): one of the named
+// presets ('scale' fits a note's text to its box), or an exact whole px from the Size slider,
+// TEXT_PX_MIN to TEXT_PX_MAX (label-font.ts).
+export type TextSizePreset = 'scale' | 'sm' | 'md' | 'lg';
+export type TextSize = TextSizePreset | number;
 
 // Padding between the element's box and its label. Stored as a t-shirt
 // size for round-trip simplicity; the renderer converts to px.
@@ -197,6 +203,13 @@ export type BackgroundPattern =
   | 'hexagonal'
   | 'engineering'
   | 'checkerboard'
+  // Seasonal patterns (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks"): static motif tiles worn
+  // by the seasonal looks only, never listed in a pattern picker.
+  | 'sparkles'
+  | 'eggs'
+  | 'cobwebs'
+  | 'snowflakes'
+  | 'candy-stripes'
   // Animated patterns (docs/specs/008-canvas/canvas-and-palette.md): soft ambient motion rendered as an
   // overlay layer rather than a CSS background image. They theme off the
   // pattern colour like the static ones. Kept last so the static catalogue
@@ -220,6 +233,21 @@ export const ANIMATED_BACKGROUND_PATTERNS = [
 ] as const;
 
 export type AnimatedBackgroundPattern = (typeof ANIMATED_BACKGROUND_PATTERNS)[number];
+
+// The seasonal members of BackgroundPattern: static tiles the seasonal looks wear, kept out of the pattern pickers.
+export const SEASONAL_BACKGROUND_PATTERNS = [
+  'sparkles',
+  'eggs',
+  'cobwebs',
+  'snowflakes',
+  'candy-stripes',
+] as const satisfies readonly BackgroundPattern[];
+
+export type SeasonalBackgroundPattern = (typeof SEASONAL_BACKGROUND_PATTERNS)[number];
+
+export function isSeasonalPattern(pattern: BackgroundPattern): boolean {
+  return (SEASONAL_BACKGROUND_PATTERNS as readonly string[]).includes(pattern);
+}
 
 export function isAnimatedPattern(
   pattern: BackgroundPattern,
@@ -310,6 +338,8 @@ export type Tab = {
   // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
   // `customColoursOf`; every picker in the document offers them as Custom Colours.
   customColours?: string[];
+  // Tag colours (docs/specs/009-elements/tag-colours.md): a card tag mapped to a colour, read with `tagColoursOf`.
+  tagColours?: TagColour[];
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
@@ -339,6 +369,8 @@ export type Tab = {
   // one; unset = the editor default. Lets a whole tab adopt a font in
   // one move while individual elements can still override.
   font?: string;
+  // Drawing style for every element without its own (docs/specs/008-canvas/finish.md); unset = Flexible.
+  finish?: Finish;
   // Default text size for NEW elements added from the palette on this
   // tab. Unlike `font`, this is a create-time seed — copied onto each
   // new element's own `textSize`, not resolved at render — so changing
@@ -392,10 +424,28 @@ export {
   type PlanTabKind,
   type TabKind,
 } from './tab-kind';
+export * from './accent-edge';
+export * from './card';
+export * from './chip';
+export * from './attachment';
+export * from './pointer-note';
+export * from './tag-colours';
+export * from './diagram-key';
+export * from './stack';
+export * from './sequence-element';
+export * from './sequence-text';
+export { sequenceDrawing, type SequenceLook } from './svg-render-sequence';
+export * from './person-node';
+export * from './boundary';
+export * from './concept';
+export * from './concept-ramp';
+export * from './shape-variants';
+export * from './title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
 export * from './illustrate-page';
 export * from './illustrate-page-fit';
+export * from './illustrate-page-image';
 export * from './page-lock';
 export * from './page-of';
 export * from './logo-page';
@@ -404,6 +454,11 @@ export * from './element-symmetry';
 export * from './logo-guide-snap';
 export * from './wordmark';
 export * from './illustrate-page-content';
+export * from './illustrate-page-frame';
+export * from './page-ink';
+export * from './page-ink-contrast';
+export * from './page-ink-ground';
+export * from './page-ink-rules';
 export * from './illustrate-paginate';
 export * from './editor-mode-switch';
 export * from './article-flow';
@@ -417,7 +472,10 @@ export * from './article-intake';
 export * from './article-markdown';
 export * from './article-markdown-io';
 export * from './illustrate-page-paint';
+export * from './page-default-background';
 export * from './illustrate-edits';
+export * from './illustrate-background-copy';
+export * from './tab-window';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
@@ -473,26 +531,40 @@ export * from './animation';
 export * from './animation-membership';
 export * from './arrow-avoidance';
 export * from './nearest-towards';
+export * from './flowchart';
+export * from './flowchart-layout';
+export * from './flowchart-grow';
+export * from './flowchart-settle';
 export * from './mind-flow';
+export * from './mind-connector-route';
 export * from './mind-map';
 export * from './mind-layout';
 export * from './mind-grow';
+export * from './mind-fit';
 export * from './mind-outline-text';
 export * from './mind-outline-marks';
 export * from './mind-outline';
 export * from './youtube';
 export * from './arrow-path';
+export * from './arrow-dash';
 export * from './arrow-label';
 export * from './arrow-label-layout';
 export * from './arrow-label-wrap';
 export * from './arrow-bend';
 export * from './arrow-scale';
 export * from './label-font';
+export * from './table-cell-font';
 export * from './lane-gutter';
 export * from './arrow-style';
+export * from './er-heads';
+export * from './er-hub-first';
 export * from './border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
+export * from './finish';
+export * from './sketch';
+export * from './sketch-element';
+export * from './sketch-backdrop';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
 export * from './shape-marker';
@@ -522,12 +594,19 @@ export * from './plural';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
 export * from './data-shapes';
+export * from './sankey-model';
+export * from './sankey-layout';
+export * from './sankey-frame';
+export * from './sankey-text';
 export * from './entity-geometry';
 export * from './code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
+export * from './chart-ink';
 export * from './chart-types';
 export * from './chart-marks';
+export * from './chart-axis';
+export * from './chart-values';
 export * from './chart-source';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
@@ -537,8 +616,14 @@ export * from './agenda-current';
 // Quiz (docs/specs/012-collaboration/quiz.md). A leaf module, for the same cycle.
 export * from './quiz';
 export * from './shape-geometry';
+// Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
+export * from './fence';
+// Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
+export * from './seating';
+export * from './office';
 export * from './actor-figure';
 export * from './color-wash';
+export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
 // The Q&A board (docs/specs/012-collaboration/qa-board.md)
@@ -549,12 +634,15 @@ export * from './web-components';
 export * from './behaviour-shapes';
 export * from './colors';
 export * from './cell-colours';
+export * from './table-header-colours';
+export * from './progress-colours';
 export * from './icon-size';
 export * from './icon-weight';
 
 // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure
 // helpers shared by the canvas renderer and the contentEditable editor.
 export * from './rich-text';
+export * from './person-card';
 
 export * from './factories';
 export * from './event-storming';
@@ -594,9 +682,12 @@ export * from './element-fields';
 
 // Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md).
 export * from './auto-layout';
+// The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
+export { tidyLayoutElements, tidyMindmapFits } from './auto-layout-tidy';
 
 // Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
 export * from './auto-layout-clusters';
+export { frameHeadingRect } from './auto-layout-cluster-seats';
 // The layout engine's gaps, which edit operations place and make room by.
 export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
 
@@ -604,6 +695,7 @@ export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
 // §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
 export * from './element-normalise';
 export * from './graph-input';
+export { KINK_RUN, arrowEndKey } from './graph-notches';
 export * from './graph-limits';
 export * from './tab-builders';
 
@@ -612,6 +704,16 @@ export * from './tab-builders';
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
+export {
+  isSequenceDiagram,
+  parseSequenceDiagram,
+  SEQUENCE_MAX_ITEMS,
+  SEQUENCE_MAX_PARTICIPANTS,
+  type SequenceDiagram,
+} from './mermaid-sequence';
+export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
+export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './mind-template';
+export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export * from './svg-render-plan-sheet';
 export * from './svg-render-table';
 // The marks the editor's Plan tab images draw with (docs/specs/026-plan/plan-tabs.md "Export"): text, line fitting,
@@ -622,13 +724,13 @@ export {
   text as svgText,
   wrapLines as svgWrapLines,
 } from './svg-render-face-kit';
-export { svgCardFace } from './svg-render-plan';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
 // MCP worker (docs/specs/015-api/mcp-server.md). Custom-theme resolution stays in apps/live/lib/themes.ts.
 export * from './theme-graph';
 export * from './themes';
+export * from './theme-halves';
 export * from './theme-presets';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
@@ -736,3 +838,10 @@ export * from './dashboard';
 export * from './dashboard-cards';
 export * from './dashboard-card-style';
 export * from './tab-names';
+export { planBoardFitHeight } from './svg-render-plan';
+export * from './svg-render-pages';
+export * from './article-draw-ops';
+export * from './article-layout-estimate';
+export { agendaFitHeight } from './svg-render-agenda';
+export * from './session-button-text';
+export { lineChars } from './svg-render-web';

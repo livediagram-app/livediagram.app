@@ -113,4 +113,14 @@ describe('Add Link', () => {
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Label' }), { key: 'Escape' });
     expect(screen.queryByRole('form', { name: 'Add Link' })).toBeNull();
   });
+
+  it('shows no links as the shared empty state, pointing an Editor at Add Link', () => {
+    show([]);
+    expect(screen.getByText('No links yet').closest('[data-empty-state]')).toBeTruthy();
+    expect(screen.getByText(/Add Link puts a site/)).toBeTruthy();
+    cleanup();
+    show([], false);
+    expect(screen.getByText('No links yet')).toBeTruthy();
+    expect(screen.queryByText(/Add Link puts a site/)).toBeNull();
+  });
 });

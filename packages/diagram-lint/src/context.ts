@@ -4,7 +4,7 @@
 
 import {
   arrowLabelPass,
-  arrowPolyline,
+  arrowRoutePoints,
   boundsOfPoints,
   buildElementGrid,
   buildElementIndex,
@@ -99,7 +99,8 @@ export function prepareLintContext(
   const drawable = arrows
     .filter((arrow) => !danglingIds.has(arrow.id))
     .map((arrow): DrawableArrow => {
-      const polyline = arrowPolyline(arrow, index);
+      // As drawn: ends sharing an anchor fanned, as the label pass and both renderers place them.
+      const polyline = arrowRoutePoints(arrow, visible);
       return {
         arrow,
         polyline,
@@ -163,3 +164,9 @@ export function padded(ctx: LintContext, rect: Rect): Rect {
 
 // The ref the views print for an element.
 export const refOf = (ctx: LintContext, id: ElementId) => ctx.refs.refOf(id);
+
+// Whether anything on the tab sits in a frame or lane: a layout of the shapes alone would leave those behind.
+export function framedTab(ctx: Pick<LintContext, 'containers'>): boolean {
+  for (const holder of ctx.containers.values()) if (holder !== null) return true;
+  return false;
+}

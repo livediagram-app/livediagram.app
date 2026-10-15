@@ -54,3 +54,39 @@ describe('loadTabImages accepts a raster data URL', () => {
     expect(map.get(id)?.href).toBe(id);
   });
 });
+
+describe('loadTabImages loads a page’s picture', () => {
+  it('fetches a page background’s gallery picture with the element images, once each', async () => {
+    vi.stubGlobal(
+      'Image',
+      class {
+        onload: (() => void) | null = null;
+        set src(_: string) {
+          queueMicrotask(() => this.onload?.());
+        }
+      },
+    );
+    const { apiFetchImageDataUrl } = await import('./api/images');
+    vi.mocked(apiFetchImageDataUrl).mockImplementation(
+      async (_o, id) => `data:image/png;base64,${id}`,
+    );
+    const tab = {
+      elements: [{ id: 'e', type: 'image', imageId: 'el' }],
+      pages: [
+        {
+          id: 'p',
+          orientation: 'portrait',
+          background: { fill: { kind: 'image', imageId: 'bg' } },
+        },
+        {
+          id: 'q',
+          orientation: 'portrait',
+          background: { fill: { kind: 'image', imageId: 'el' } },
+        },
+      ],
+    } as unknown as Tab;
+    const map = await loadTabImages(tab, { ownerId: 'o', documentId: 'd', shareCode: null });
+    expect([...map.keys()].sort()).toEqual(['bg', 'el']);
+    expect(vi.mocked(apiFetchImageDataUrl)).toHaveBeenCalledTimes(2);
+  });
+});

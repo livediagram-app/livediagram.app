@@ -1,4 +1,4 @@
-import type { WorkbenchRole } from '@livediagram/api-schema';
+import { objectOrEmpty, type WorkbenchRole } from '@livediagram/api-schema';
 // Shared per-request context for the route handlers. The worker's
 // `fetch` entry (src/index.ts) builds one of these after resolving the
 // caller's identity + running the cross-cutting gates (CORS, write
@@ -269,12 +269,13 @@ export async function ownsDocument(
   return ctx.resolveOwner() === liveDoc.ownerId;
 }
 
-// May `ctx` delete this document? Its owner, OR a joined member of its team
-// (docs/specs/013-workspace/team-shared-documents.md: members fully manage team
-// documents, delete included). NOT a share-link visitor: editing content via a
-// link is one thing, destroying the document is owner/team-only. Also gates
-// what the delete confirmation reads first (the shared-tabs notice).
-export async function mayDeleteDocument(
+// Does `ctx` manage this document? Its owner, OR a joined member of its team
+// (docs/specs/013-workspace/team-shared-documents.md: a team's library belongs to
+// every joined member, so each may share, delete and restore its documents). NOT a
+// share-link visitor: editing content via a link is one thing, deciding who else
+// gets in or destroying the document is owner/team-only. The member leg is checked
+// against the verified account id, never the header, like ownsDocument.
+export async function managesDocument(
   ctx: RouteContext,
   liveDoc: Pick<DocumentDTO, 'ownerId' | 'teamId'>,
 ): Promise<boolean> {
@@ -283,6 +284,10 @@ export async function mayDeleteDocument(
   const membership = await getMembership(ctx.env, liveDoc.teamId, ctx.verifiedUserId);
   return membership?.status === 'joined';
 }
+
+// May `ctx` delete this document? Exactly who manages it (managesDocument). Also
+// gates what the delete confirmation reads first (the shared-tabs notice).
+export const mayDeleteDocument = managesDocument;
 
 // The answer for a document id no LIVE row holds (docs/specs/013-workspace/trash.md):
 // 410 `document_trashed` when it is in the Trash and the caller could have
@@ -320,6 +325,22 @@ export async function requireOwnedDocument(
   return existing;
 }
 
+// The share-link family's guard (docs/specs/013-workspace/team-shared-documents.md): the
+// same 400 / 404 / 403 ladder as requireOwnedDocument, but a joined member of a team
+// document passes as well as its owner, since the team's documents are all of theirs
+// to share.
+export async function requireManagedDocument(
+  ctx: RouteContext,
+  documentId: string,
+): Promise<DocumentDTO | Response> {
+  const owner = ctx.resolveOwner();
+  if (!owner) return missingAuth();
+  const existing = await getDocument(ctx.env, documentId);
+  if (!existing) return missingDocument(ctx, documentId);
+  if (!(await managesDocument(ctx, existing))) return forbidden();
+  return existing;
+}
+
 // A refused request on a tab: 404 when the caller's grant is confined to another tab, 403 otherwise.
 export async function deniedOnTab(
   ctx: RouteContext,
@@ -341,6 +362,13 @@ export async function deniedParticipate(
   if (grant)
     console.info('[access-levels] participation refused', { documentId: liveDoc.id, tabId });
   return forbidden();
+}
+
+// A body whose every field is optional: the JSON object, or `{}` for an empty, unparseable or non-object body
+// (`null`, a string, an array), so reading a field off it never throws. An absent body is the documented
+// default on these routes, so anything that is not an object reads the same way.
+export async function readOptionalBody(request: Request): Promise<Record<string, unknown>> {
+  return objectOrEmpty(await request.json().catch(() => null));
 }
 
 // The request's JSON body as an object, or the 400 to return: `invalid json` when it doesn't

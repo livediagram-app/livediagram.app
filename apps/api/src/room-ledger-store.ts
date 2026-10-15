@@ -50,6 +50,11 @@ export class RoomLedgerStore {
       .catch(() => {});
   }
 
+  // Resolves once every write already queued has landed, so a purge cannot be followed by a late put.
+  settled(): Promise<void> {
+    return this.queue;
+  }
+
   async read(tabId: string): Promise<TabLedger> {
     await this.queue;
     return tabLedgerFrom(tabId, await this.storage.list({ prefix: ledgerPrefix(tabId) }));

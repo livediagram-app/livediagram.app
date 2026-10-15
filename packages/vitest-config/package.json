@@ -17,7 +17,8 @@
     }
   },
   "scripts": {
-    "clean": "rm -rf node_modules .turbo"
+    "clean": "rm -rf node_modules .turbo",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "@testing-library/react": "^16.3.3",
@@ -27,5 +28,8 @@
     "@testing-library/react": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "vitest": "^5.0.3"
   }
 }

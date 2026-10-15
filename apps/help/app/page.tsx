@@ -45,6 +45,8 @@ export default function HelpHome() {
 
       <section className="mx-auto max-w-7xl px-4 pb-12 md:px-8">
         <div className="mb-10 border-t border-slate-200 dark:border-slate-800" />
+        {/* The category cards title themselves with h3, like the Features grid under its h2 below. */}
+        <h2 className="sr-only">Help Topics</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {supportCategories.map((category) => (
             <CategoryCard key={category.slug} category={category} />

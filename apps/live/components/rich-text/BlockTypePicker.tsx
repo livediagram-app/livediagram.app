@@ -25,11 +25,14 @@ export function BlockTypePicker({
   listStyle,
   onApplyHeading,
   onApplyList,
+  onApplyTitleCaption,
 }: {
   heading: RunHeading | null;
   listStyle: ListStyle;
   onApplyHeading: (level: RunHeading | null) => void;
   onApplyList: (style: ListStyle) => void;
+  // The label's whole-label Title and Caption preset; the note toolbar passes none, so it shows none.
+  onApplyTitleCaption?: () => void;
 }) {
   const blockType = blockTypeOf(heading, listStyle);
   const apply = (next: BlockType) => {
@@ -64,6 +67,21 @@ export function BlockTypePicker({
           {b.label}
         </button>
       ))}
+      {onApplyTitleCaption ? (
+        <>
+          <div role="separator" className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
+          <button
+            type="button"
+            role="option"
+            aria-selected={false}
+            onMouseDown={noFocusSteal}
+            onClick={onApplyTitleCaption}
+            className="flex w-full items-center justify-between gap-3 px-2.5 py-1.5 text-left text-xs text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            Title and Caption
+          </button>
+        </>
+      ) : null}
     </ToolbarDropdown>
   );
 }

@@ -6,7 +6,7 @@
 // Each is purely presentational: props in, JSX out, with every action a
 // callback. Siblings of context-menu-tiles.tsx / context-menu-icons.tsx.
 import { type ReactNode } from 'react';
-import { SHAPE_MARKERS, type ShapeMarker, type TextSize } from '@livediagram/document';
+import { SHAPE_MARKERS, type ShapeMarker, type TextSizePreset } from '@livediagram/document';
 
 import { SizeButton } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';
@@ -35,7 +35,6 @@ export {
   EntityFieldsEditor,
   CodeSummary,
   LegendDataEditor,
-  MindFlowTiles,
   LineDataSummary,
   LinkedChartData,
   PieDataEditor,
@@ -58,10 +57,17 @@ export function BorderGrid({
   children,
 }: {
   label: string;
-  cols: 3 | 4 | 5;
+  cols: 2 | 3 | 4 | 5;
   children: ReactNode;
 }) {
-  const colClass = cols === 5 ? 'grid-cols-5' : cols === 4 ? 'grid-cols-4' : 'grid-cols-3';
+  const colClass =
+    cols === 5
+      ? 'grid-cols-5'
+      : cols === 4
+        ? 'grid-cols-4'
+        : cols === 3
+          ? 'grid-cols-3'
+          : 'grid-cols-2';
   return (
     <div className="mb-1.5 last:mb-0">
       <p className="px-1 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
@@ -76,7 +82,8 @@ export function BorderGrid({
 export const MarkersMenuGlyph = lucideGlyph(lucideCircleDot, MENU_ICON_PX);
 
 // Markers control (docs/specs/009-elements/shape-markers.md): a None option + one illustrated tile per marker,
-// then a Size row (Scale / S / M / L, mirroring the Text size control).
+// then a Size row (Scale / S / M / L: a marker is a dot, so it keeps the presets the Text Size
+// slider replaced).
 // 'scale' tracks the element's text size. The Size row is always present —
 // see the note on it below (docs/specs/004-interface-design/flyout-height-stability.md).
 export function MarkerTiles({
@@ -89,13 +96,13 @@ export function MarkerTiles({
   onPreviewEnd,
 }: {
   marker: ShapeMarker | null;
-  size: TextSize;
+  size: TextSizePreset;
   onSet: (v: ShapeMarker | null) => void;
-  onSetSize: (v: TextSize) => void;
+  onSetSize: (v: TextSizePreset) => void;
   // Optional hover-preview pair (docs/specs/010-palette/style-presets.md flow) for the marker tiles and the
   // Size row: hovering shows the marker live, leaving reverts.
   onPreview?: (v: ShapeMarker | null) => void;
-  onPreviewSize?: (v: TextSize) => void;
+  onPreviewSize?: (v: TextSizePreset) => void;
   onPreviewEnd?: () => void;
 }) {
   return (
@@ -130,7 +137,7 @@ export function MarkerTiles({
         aria-hidden={marker ? undefined : true}
       >
         <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">Size</p>
-        <TextSizeTiles
+        <MarkerSizeTiles
           current={size}
           onSet={onSetSize}
           onPreview={onPreviewSize}
@@ -191,21 +198,19 @@ export function TextToggle({
   );
 }
 
-// The four-up text-size picker (Scale / Small / Medium / Large) shown in the
-// Text categories. `current` is the already-resolved size to highlight (the
-// caller decides its default), so the single-element + multi menus share one
-// grid.
-export function TextSizeTiles({
+// The marker's four-up size picker (Scale / Small / Medium / Large). `current` is the
+// already-resolved size to highlight (the caller decides its default).
+function MarkerSizeTiles({
   current,
   onSet,
   onPreview,
   onPreviewEnd,
 }: {
-  current: TextSize | undefined;
-  onSet: (size: TextSize) => void;
+  current: TextSizePreset | undefined;
+  onSet: (size: TextSizePreset) => void;
   // Optional hover-preview pair (docs/specs/010-palette/style-presets.md flow): hovering a tile shows the
   // size live, leaving reverts. Callers without preview (table cells) omit.
-  onPreview?: (size: TextSize) => void;
+  onPreview?: (size: TextSizePreset) => void;
   onPreviewEnd?: () => void;
 }) {
   return (

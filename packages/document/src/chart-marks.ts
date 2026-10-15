@@ -2,6 +2,14 @@
 // the canvas views draw them as React SVG, the exporter as SVG text. Before this each renderer worked the geometry
 // out for itself, and a new chart type would have had to be drawn the same way twice. Pure; `ox` / `oy` shift every
 // point (the exporter draws in canvas coordinates, the views in the element's own).
+import {
+  AXIS_TICK_FONT_PX,
+  AXIS_TICK_GAP,
+  axisLabelRoom,
+  axisScale,
+  rightAxisSeries,
+  type AxisScale,
+} from './chart-axis';
 import type { ChartRect } from './chart-frame';
 import { chartAxisLabel } from './chart-frame';
 import type { LineSeries, PieSlice } from './data-shapes';
@@ -74,6 +82,9 @@ export type BarMarks = {
   bars: BarRect[];
   // Where the bars grow from (the animation's origin).
   origin: ChartPoint;
+  // Show Axis (pie-chart.md): each tick at its place along the value axis (a y on a column chart, an x on a bar
+  // chart), its gridline running across the plot from `span` to its end. Empty without.
+  axis: { ticks: { at: number; text: string }[]; span: [number, number] };
 };
 
 // Upright columns from a baseline near the bottom, or (horizontal) bars to the right from a baseline at the left.
@@ -84,15 +95,22 @@ export function barMarks(
   horizontal: boolean,
   ox = 0,
   oy = 0,
+  // Show Axis: tick labels and gridlines, the plot drawn in from the side they take.
+  showAxis = false,
 ): BarMarks {
-  const maxVal = data.reduce((m, d) => Math.max(m, Math.max(0, d.value)), 0) || 1;
+  const top = data.reduce((m, d) => Math.max(m, Math.max(0, d.value)), 0) || 1;
+  // With Show Axis the bars run to a round top tick.
+  const scale = showAxis ? axisScale(0, top) : null;
+  const maxVal = scale ? scale.max : top;
   const n = Math.max(1, data.length);
   const share = (d: PieSlice) => Math.max(0, d.value) / maxVal;
   if (horizontal) {
+    // The bottom keeps a row for the tick labels.
     const padY = Math.min(20, area.h * 0.08);
+    const tickRow = scale ? AXIS_TICK_FONT_PX + AXIS_TICK_GAP : 0;
     const baseX = ox + area.x + area.w * 0.06;
     const fullW = Math.max(1, ox + area.x + area.w * 0.94 - baseX);
-    const innerH = Math.max(1, area.h - padY * 2);
+    const innerH = Math.max(1, area.h - padY * 2 - tickRow);
     const slot = innerH / n;
     const thick = Math.min(slot * 0.7, 48);
     const y0 = oy + area.y + padY;
@@ -111,16 +129,23 @@ export function barMarks(
         };
       }),
       origin: { x: baseX, y: y0 + innerH / 2 },
+      axis: {
+        ticks:
+          scale?.ticks.map((t) => ({ at: baseX + (t.value / maxVal) * fullW, text: t.text })) ?? [],
+        span: [y0, y0 + innerH],
+      },
     };
   }
   const padX = Math.min(20, area.w * 0.08);
+  // The left keeps a column for the tick labels.
+  const tickCol = scale ? axisLabelRoom(scale) : 0;
   const topPad = oy + area.y + area.h * 0.1;
   const baseY = oy + area.y + area.h * 0.88;
-  const innerW = Math.max(1, area.w - padX * 2);
+  const innerW = Math.max(1, area.w - padX * 2 - tickCol);
   const slot = innerW / n;
   const thick = Math.min(slot * 0.7, 48);
   const fullH = Math.max(1, baseY - topPad);
-  const x0 = ox + area.x + padX;
+  const x0 = ox + area.x + padX + tickCol;
   return {
     baseline: { x1: x0, y1: baseY, x2: x0 + innerW, y2: baseY },
     bars: data.map((d, i) => {
@@ -136,6 +161,11 @@ export function barMarks(
       };
     }),
     origin: { x: ox + area.x + area.w / 2, y: baseY },
+    axis: {
+      ticks:
+        scale?.ticks.map((t) => ({ at: baseY - (t.value / maxVal) * fullH, text: t.text })) ?? [],
+      span: [x0, x0 + innerW],
+    },
   };
 }
 
@@ -152,7 +182,12 @@ export type LineMarks = {
   labels: { x: number; text: string }[];
   // The point marker's radius.
   dot: number;
+  // The value axes with Show Axis (pie-chart.md): the left one's ticks at their y (its gridlines too), and the right
+  // one's when a series is on it. Empty without.
+  axis: { left: AxisTick[]; right: AxisTick[] };
 };
+
+export type AxisTick = { y: number; text: string };
 
 // A category read as a number for a scatter chart's x ("1,200" is 1200), or null.
 export function scatterX(category: string): number | null {
@@ -181,26 +216,43 @@ export function lineMarks(
   variant: LineVariant,
   ox = 0,
   oy = 0,
+  // Show Axis: tick labels and gridlines, the plot drawn in from the sides they take.
+  showAxis = false,
 ): LineMarks {
   const n = categories.length;
-  const padL = 10;
+  // A series on the second axis, when another is on the first (chart-axis.ts).
+  const onRight = rightAxisSeries(series);
+  // Zero is always in range so the baseline reads naturally; an all-equal range widens so the line is not flat
+  // against the top edge. With Show Axis the range runs to round ticks.
+  const range = (right: boolean): { min: number; max: number; scale: AxisScale | null } => {
+    let minV = 0;
+    let maxV = 0;
+    series.forEach((s, i) => {
+      if (onRight[i] !== right) return;
+      for (const v of s.values) {
+        if (v < minV) minV = v;
+        if (v > maxV) maxV = v;
+      }
+    });
+    if (maxV === minV) maxV = minV + 1;
+    if (!showAxis) return { min: minV, max: maxV, scale: null };
+    const scale = axisScale(minV, maxV);
+    return { min: scale.min, max: scale.max, scale };
+  };
+  const left = range(false);
+  const right = onRight.some(Boolean) ? range(true) : null;
+  const padL = left.scale ? axisLabelRoom(left.scale) : 10;
+  const padR = right?.scale ? axisLabelRoom(right.scale) : 8;
   const padTop = 12;
   const padBottom = 22;
   const plotX0 = ox + area.x + padL;
-  const plotW = Math.max(1, area.w - padL - 8);
+  const plotW = Math.max(1, area.w - padL - padR);
   const plotY0 = oy + area.y + padTop;
   const plotH = Math.max(1, area.h - padTop - padBottom);
-  // Zero is always in range so the baseline reads naturally; an all-equal range widens so the line is not flat
-  // against the top edge.
-  let minV = 0;
-  let maxV = 0;
-  for (const s of series)
-    for (const v of s.values) {
-      if (v < minV) minV = v;
-      if (v > maxV) maxV = v;
-    }
-  if (maxV === minV) maxV = minV + 1;
-  const yAt = (v: number) => plotY0 + plotH - ((v - minV) / (maxV - minV)) * plotH;
+  const yOn = (r: { min: number; max: number }) => (v: number) =>
+    plotY0 + plotH - ((v - r.min) / (r.max - r.min)) * plotH;
+  const yAt = yOn(left);
+  const yRight = right ? yOn(right) : yAt;
   const evenX = (i: number) => (n <= 1 ? plotX0 + plotW / 2 : plotX0 + (i / (n - 1)) * plotW);
 
   // Scatter places each point at its category's number when every category is one.
@@ -226,20 +278,21 @@ export function lineMarks(
     labels = categories.map((c, i) => ({ x: evenX(i), text: chartAxisLabel(c, plotW, n) }));
   }
 
-  const zeroY = yAt(0);
-  const points = series.map((s) =>
-    categories.map((_, i) => ({ x: xAt(i), y: yAt(s.values[i] ?? 0) })),
+  const points = series.map((s, si) =>
+    categories.map((_, i) => ({ x: xAt(i), y: (onRight[si] ? yRight : yAt)(s.values[i] ?? 0) })),
   );
   const lines = points.map((pts) =>
     variant === 'scatter' ? '' : pts.map((p) => `${q(p.x)},${q(p.y)}`).join(' '),
   );
   const areas =
     variant === 'area'
-      ? points.map((pts) =>
-          pts.length === 0
+      ? points.map((pts, si) => {
+          // Down to its own axis's zero.
+          const zeroY = (onRight[si] ? yRight : yAt)(0);
+          return pts.length === 0
             ? ''
-            : `M ${q(pts[0]!.x)} ${q(zeroY)} ${pts.map((p) => `L ${q(p.x)} ${q(p.y)}`).join(' ')} L ${q(pts[pts.length - 1]!.x)} ${q(zeroY)} Z`,
-        )
+            : `M ${q(pts[0]!.x)} ${q(zeroY)} ${pts.map((p) => `L ${q(p.x)} ${q(p.y)}`).join(' ')} L ${q(pts[pts.length - 1]!.x)} ${q(zeroY)} Z`;
+        })
       : [];
   return {
     plot: { x: plotX0, y: plotY0, w: plotW, h: plotH },
@@ -248,6 +301,10 @@ export function lineMarks(
     areas,
     labels,
     dot: variant === 'scatter' ? 4 : 3,
+    axis: {
+      left: left.scale?.ticks.map((t) => ({ y: yAt(t.value), text: t.text })) ?? [],
+      right: right?.scale?.ticks.map((t) => ({ y: yRight(t.value), text: t.text })) ?? [],
+    },
   };
 }
 

@@ -49,18 +49,40 @@ where it is and changes only how the next mark is made.
   - It stays up in Draw mode, so the switch never moves when the mode
     changes.
   - Not in the tab bar or the Explorer.
-- **A dropdown chip** (`EditorModeSwitch`): a fixed-width chip showing the
-  current mode's icon and a chevron, on the faint tint the
-  editor's menu-like controls use. A press opens a menu **below** it, hanging
-  from its left edge, beside the menu button, with one compact row per mode at the palette dropdowns' size: its
-  icon and name, a check on the current mode and **Shift+D** on the row the
-  key leads to. Choosing a row switches and closes the menu; Escape or a
-  press outside closes it.
-  - **No hover card:** it would cover the menu the chip opens.
+- **A dropdown chip** (`EditorModeSwitch`): a fixed-width chip showing only the current mode's
+  icon and a chevron, never its name, on the faint tint the editor's menu-like controls use. A press opens the **mode menu** below it, hanging from its left edge, beside the menu button.
+  Choosing a row switches and closes the menu; Escape or a press outside closes it.
+  - **No hover card:** it would cover the menu the chip opens. The menu's preview does that job.
   - Semantics: a menu button (`aria-haspopup="menu"`, `aria-expanded`) named
     "Editor mode: Diagram", over a `menu` of `menuitemradio` rows; arrow keys
     open it and move within it, wrapping, Home and End jump.
   - The same for everyone, power user mode or not.
+- **The mode menu** is two panes: a **list** of the modes and a **preview** of one.
+  - **The list:** one row per mode in catalogue order, each its mark on a small tile in the
+    mode's tint, its name, then a check on the current mode, or a **New tab** mark on a mode across
+    Plan's line ("Plan stands apart").
+  - **The preview** shows the row under the pointer, else the focused row, else the current mode:
+    a picture of the mode's work on its tint, its name with **Shift+D** when the key leads there,
+    its **description** (one line on what the mode is for, from the mode catalogue) and the mode's
+    **main tools** as small chips. It holds **no button**: choosing is the row's alone, by a click
+    or by Enter or Space on the focused row.
+  - The preview is for the pointer: assistive technology hears each row's name and description
+    on the row itself, and the preview is hidden from it.
+  - **Narrow (under 640px wide):** the preview is left out and the list stands alone, each row
+    showing its description under its name.
+  - **Each mode has a tint**, used only by the mode menu (the list's tiles and the preview's
+    picture): Diagram sky, Draw orange, Facilitate violet, Illustrate pink, Plan
+    emerald. The current row and the focus ring stay the brand colour.
+- **The mode descriptions** say what each mode is for, in the catalogue (`EDITOR_MODE_CATALOGUE`):
+  - Diagram: "Flowcharts, architecture and org charts with snapping shapes."
+  - Draw: "Sketch freehand with pens, tidied into shapes as you go."
+  - Facilitate: "Run a live session: timers, votes, polls and reveals."
+  - Illustrate: "Lay out slides, infographics, articles and logos on pages."
+  - Plan: "Boards of cards moving through columns, with types and fields."
+- **The same switch everywhere it switches a tab's mode:** the top chrome's chip, and every start
+  panel's rail ([Template starts](start-diagramming.md) "Changing mode"), where the chip is named
+  and full width (the rail has no chrome around it to explain an icon) and opens the same menu. The tab menu's mode rows stay names only, so that menu stays
+  short; the New Document wizard's mode cards are a choice of what to make, not a switch.
 - **One mode chosen:** Diagram, Draw, Facilitate, Illustrate or Plan.
   Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, and no element changes (the tab's
@@ -71,9 +93,9 @@ where it is and changes only how the next mark is made.
   visitor, and everyone on a locked tab, sees no switch and sees the tab in its mode.
 - **Not on event-storming boards:** the tab kind keeps its own tools and
   notation, and shows no switch.
-- **Zero layout shift:** the switch has a fixed size, and nothing next to it
-  moves when the mode changes.
-- **Shift+D** moves to the next mode, wrapping round, shown in the switch's menu, `aria-keyshortcuts` and Settings ›
+- **Zero layout shift:** the switch has a fixed size, and
+  nothing next to it moves when the mode changes.
+- **Shift+D** moves to the next mode, wrapping round, shown in the switch's preview, `aria-keyshortcuts` and Settings ›
   Keyboard; a switch by key is announced politely ("Draw mode"). It obeys
   the character-key shortcuts setting.
 - **Accessible:** reachable by keyboard, its state exposed to assistive
@@ -90,8 +112,8 @@ Facilitating, Start Illustrating or Start Drawing (a pen in hand) ([Template sta
 Start Planning for Plan, with no Quick Start over any of them. A session that cannot add
 tabs (a tab-scoped link, docs/specs/013-workspace/tab-scoped-share-links.md) is offered no new tab: those rows show,
 inert (`aria-disabled`), and ask nothing. **Shift+D** steps only through the modes beside the tab's
-own (Diagram, Draw, Facilitate, Illustrate; on a Plan tab it does nothing), and the tab menu's Mode lists only those
-(none on a Plan tab).
+own (Diagram, Draw, Facilitate, Illustrate; on a Plan tab it does nothing). The tab menu's Mode lists all five, as
+the switch does, a mode across Plan's line asking for a new tab the same way.
 
 **Except on an empty tab.** A general tab with no elements has nothing either side's tools could not hold, so it
 crosses the line freely, into Plan and out of it, as one plain switch (`crossPlan` on `useEditorMode`): the mode
@@ -128,24 +150,32 @@ first element closes the line again. A Board, Sheet or Dashboard tab keeps its k
 - **Nothing is remembered per person.** A mode chosen before this change and kept in a browser
   (`livediagram:v2:editor-mode:<tab>`) is no longer read: the tab's own mode wins. The keys are
   left in place and ignored.
-- **New documents and new tabs open in Diagram.** Whatever mode its creator
-  is in, a new document or a tab added from the tab bar (or Quick Start)
-  opens in Diagram, **except from Plan**: a tab added while its maker is in Plan mode opens in Plan
-  (its mode is Plan, for everyone), showing Plan's own **Start Planning**
-  ([Plan mode](../026-plan/plan-mode.md#starting-a-board)). A new tab never opens the Quick Start: it opens on its
-  mode's start (Start Diagramming in Diagram, [Template starts](start-diagramming.md); `newTabOpening` in
-  `apps/live/lib/new-tab-seed.ts`), whose **Something Else** brings the Quick Start for another
-  kind of tab. Only the template chosen for it changes that: every template opens in its own mode
-  ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw, Blank in Diagram, and an
-  **Event Storming** board is always Diagram. A new document's Mode step on `/new` picks its mode's
-  blank, so the document opens in that mode ([New document route](new-document-route.md)). An
-  import that sets its own mode wins.
-- **Mode in the tab menu:** the tab menu holds a **Mode** group of full-width rows for editors (straight in the menu,
-  not behind a submenu), listing every editor mode beside the tab's own (Diagram, Draw, Facilitate, Illustrate; Plan
-  alone on a Plan tab, so no rows there: "Plan stands apart") as a radio choice with the tab's mode checked, each its
-  glyph and name only (no description line, so the menu stays short).
-  Choosing one switches the tab, exactly as the switch does (one tab edit, one undo step).
-  Choosing the checked mode does nothing. It is a phone's way to switch. The submenu lists modes
+- **A new tab opens in the mode it was made from.** A tab added from the tab bar's **+** or the command palette's
+  **Create New Tab** opens in the mode of the tab its maker was on (the active tab's mode, for everyone on the new
+  tab): made from an Illustrate tab it is an Illustrate tab, from a Draw tab a Draw tab, from a Plan tab (a Board,
+  Sheet or Dashboard tab included) a Plan tab, and from an event-storming board, always Diagram, a Diagram tab. The
+  **+** makes the tab straight away, with no picker: it is a general tab (never the source's kind) carrying the
+  source's look ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Selecting & adding"), and only its mode
+  follows. A tab asked for in a mode (**New <Mode> Tab**, "Plan stands apart") opens in that mode instead. A new tab
+  never opens the Quick Start: it opens empty on its mode's own start (Start Diagramming, Start Drawing, Start
+  Facilitating, Start Illustrating, Start Planning: [Template starts](start-diagramming.md), [Plan
+  mode](../026-plan/plan-mode.md#starting-a-board); `newTabOpening` in `apps/live/lib/new-tab-seed.ts`), whose
+  **Something Else** brings the Quick Start for another kind of tab. Only the template chosen for it changes that:
+  every template opens in its own mode ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw,
+  Blank in Diagram, and an **Event Storming** board is always Diagram. **Duplicate** is not a new tab: the copy
+  keeps the original's mode. Adding a tab is an Editor's alone: a Participant, a Viewer and any tab-scoped link add
+  no tab ([Share roles](../013-workspace/share-roles.md), [Tab-scoped share
+  links](../013-workspace/tab-scoped-share-links.md)), so who may add one is unchanged by the mode it opens in.
+- **A new document opens in Diagram** unless its maker chose otherwise: a new document's Mode step on `/new` picks
+  its mode's blank, so the document opens in that mode ([New document route](new-document-route.md)). An import that
+  sets its own mode wins.
+- **Mode in the tab menu:** the tab menu holds a **Mode** section for editors, closed until opened as every menu
+  section is (on a desktop and a phone), listing **every** editor mode as a radio choice with the tab's mode checked,
+  each its glyph and name only (no description line, so the menu stays short). Choosing one beside the tab's own
+  switches the tab, exactly as the switch does (one tab edit, one undo step). Choosing one across Plan's line ("Plan
+  stands apart": Plan from another mode, or another mode from a Plan tab) asks the switch's question, "Open a New
+  Plan Tab?", and opens one if confirmed; with no new tab to offer the row shows, inert. Choosing the checked mode
+  does nothing. It is a phone's way to switch. The submenu lists modes
   from one catalogue, so a further mode joins it as one entry. Not offered on event-storming
   boards, to a visitor, or on a locked tab.
 - **The tab pill shows the tab's mode.** Each tab pill leads with the icon of its mode (the same
@@ -278,41 +308,52 @@ holds.
   and Components' collapsed groups); it
   renders whatever tiles the layout hands it. A category with no body of its
   own, such as Popular, is a tile grid.
-- **Every surface reads the layout:** the Toolbar strip and its More popover.
+- **Every surface reads the layout:** the Toolbar strip, its category bar and flyouts (Diagram, Facilitate,
+  Illustrate: [The category bar](toolbar-layout.md#the-category-bar), which shows the layout without Popular, with
+  one-word names, Write and Draw as one, and Facilitate's session tools as Session) and its More popover (Plan).
 - Draw mode shows its own tools in place of the palette, so it borrows
   Diagram's layout.
 
 Today the layouts differ as below. Diagram offers no **Stickers** and no **Collaborate**: both are Facilitate's ([Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette)), though Search still finds and places them in Diagram. Within the shared categories,
+**Sankey** sits in **Concepts**, after the concept graphics, in Diagram and Illustrate: a flow drawn as wide as
+what it carries explains an idea the way a funnel or a cycle does. Facilitate offers no **Concepts**: concept
+graphics lay out an idea for a diagram, which a session does not stop to draw.
 Illustrate's **Write** leaves out **Page** (the page is the canvas there) and
 **Annotation**, its **Build** leaves out **Mind Node**, **Lane** and **Frame**
 (they organise a diagram, not a visual page), and its **Components** leaves
 out **Entity**; Diagram's
 **Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
-Docs, Website), keeping Image and Avatar. Facilitate's **Write** also leaves out **Page** and
-**Annotation**, its **Draw** leaves out **Shape Pen** and **Polygon**, and its **Build** leaves out
-**Lane** and **Timeline**: a session needs none of them. Facilitate offers the Collaborate elements as
+Docs, Website), keeping Image and Avatar; its **Build** adds the **Card**, **Badge**, **Step Number**, **Entity** (Popular's alone until the category bar had no
+Popular) and
+**Boundary** ([The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
+[The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md)), and its **Write** adds the **Callout** from Components (a headed
+note belongs to a diagram as much as a page) ahead of the Comment panel and Action card. Facilitate joins **Write** and **Build** as one category, **Write &
+Build** (Text, Sticky note, Table, Checklist, Frame: no Page, Annotation, Mind node, Flowchart, Lane, Timeline or Sankey), and
+its **Draw** leaves out **Shape Pen** and **Polygon**: a session needs none of them. Facilitate offers the Collaborate elements as
 six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** and **Navigate**
-("Collaborate's six" below).
+("Collaborate's six" below), and shares Illustrate's **Data**: every chart and meter, since a session reads results
+and sets targets as often as a page reports them.
 
-| Category          | Diagram | Illustrate | Plan | Facilitate |
-| ----------------- | ------- | ---------- | ---- | ---------- |
-| Popular           | yes     | yes        | no   | yes        |
-| Plan's seven      | no      | no         | yes  | no         |
-| Logo              | no      | logo page  | no   | no         |
-| Shapes            | yes     | yes        | no   | yes        |
-| My shapes         | yes     | yes        | no   | yes        |
-| Write             | yes     | yes        | no   | yes        |
-| Draw              | yes     | no         | no   | yes        |
-| Build             | yes     | yes        | no   | yes        |
-| Components        | no      | yes        | no   | no         |
-| Devices           | no      | yes        | no   | no         |
-| Event Storming    | board   | no         | no   | no         |
-| Icons             | yes     | yes        | no   | yes        |
-| Stickers          | no      | yes        | no   | yes        |
-| Tech              | yes     | no         | no   | no         |
-| Media             | yes     | yes        | no   | yes        |
-| Data              | no      | yes        | no   | no         |
-| Collaborate's six | no      | no         | no   | yes        |
+| Category          | Diagram | Illustrate | Plan | Facilitate          |
+| ----------------- | ------- | ---------- | ---- | ------------------- |
+| Popular           | yes     | yes        | no   | yes                 |
+| Plan's seven      | no      | no         | yes  | no                  |
+| Logo              | no      | logo page  | no   | no                  |
+| Shapes            | yes     | yes        | no   | yes                 |
+| My shapes         | yes     | yes        | no   | yes                 |
+| Write             | yes     | yes        | no   | yes (Write & Build) |
+| Draw              | yes     | no         | no   | yes                 |
+| Build             | yes     | yes        | no   | in Write            |
+| Components        | no      | yes        | no   | no                  |
+| Concepts          | yes     | yes        | no   | no                  |
+| Devices           | no      | yes        | no   | no                  |
+| Event Storming    | board   | no         | no   | no                  |
+| Icons             | yes     | yes        | no   | yes                 |
+| Stickers          | no      | yes        | no   | yes                 |
+| Tech              | yes     | no         | no   | no                  |
+| Media             | yes     | yes        | no   | yes                 |
+| Data              | no      | yes        | no   | yes                 |
+| Collaborate's six | no      | no         | no   | yes                 |
 
 Illustrate offers **Logo** only while the tab has a logo page, and turns to it when one is added
 or pressed into ([Logo pages](logo-pages.md#the-logo-palette)).
@@ -324,18 +365,21 @@ Plan shows no palette: its boards, sheets and dashboards carry their own tools
   event-storming board
   (the layout's `landing`). Switching mode re-lands the palette there, so it
   never shows a category the new mode leaves out.
-- **Popular** is the landing category of every mode but Plan: twelve tiles that mode is most
-  often built from, listed in its layout entry, fixed (not edited or
-  reordered). It replaced the per-browser **Favourites**
+- **Popular** is the landing category of every mode but Plan: the tiles that mode is most
+  often built from (twelve at most), listed in its layout entry, fixed (not edited or
+  reordered). A layout may put a divider of its own between two entries (`DIVIDE`), shown on the strip as a
+  tile's own fixed divider is. An entry may be an **opener** instead of a tile (`palette-openers`): it stands for a whole category, or
+  one group of a catalogue, and on the strip opens it in a popover under itself, drawn with a chevron as the
+  catalogue groups are ([Toolbar layout](toolbar-layout.md) "More"); in the Palette panel it moves the palette to
+  that category. An opener places nothing and is not a search result. It replaced the per-browser **Favourites**
   ([Palette Favourites](../010-palette/palette-favourites.md), removed).
-  - **Diagram**: Square, Circle, Diamond, Text, Arrow, Frame, Sticky note,
-    Image, Shape pen, Table, Code block, Entity (what were the default
-    Favourites).
+  - **Diagram**: Square, Circle, Diamond, Text, Arrow, Frame, Mind node, Flowchart node, Sankey, Table, the
+    **AWS** opener (Technology's AWS marks), Entity.
   - **Illustrate**: Text, Square, Circle, Image, Speech bubble, Pie, Bar,
     Donut, Stat row, Process, Timeline, Callout, each also reachable from
     another category the mode offers.
-  - **Facilitate**: Sticky note, Text, Frame, Arrow, Timer button, Vote button, Poll button,
-    Reveal zone, Agenda, Idea box, Q&A board, Temperature check
+  - **Facilitate**: Square, Sticky note, Text, Frame, Arrow, then, behind a divider, the session kit as four openers: **Ask**, **Tools**,
+    **Record**, **React** (each its Collaborate category)
     ([Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette)).
 - Elements already on the canvas are untouched: narrowing the palette only
   changes what is offered to add.
@@ -365,7 +409,7 @@ actions, snapping, export, putting content onto a page, page slides) is
 - **The surround** is the tab's own canvas: its colour, and every canvas setting, apply behind the pages exactly
   as in Diagram mode. Its pattern is **plain** while the tab keeps its theme's pattern (see One look, "Each mode's
   default canvas"); a pattern someone picked shows as it does in Diagram mode.
-- **Each page's label** sits above its top-left corner (**A4 · Portrait · Infographic**, or
+- **Each page's label** sits above its top-left corner (**A4 · Portrait** on an infographic page, or
   **Page 2 · A4 · Landscape · Article** once there is more than one, or its name), and
   **its settings cog** above its top-right, both held at one screen size at any
   zoom. The cog (tooltip **Page settings**, or **Page 2 settings**) opens the
@@ -435,9 +479,9 @@ something on it asks first:
 ## Every mode, always offered
 
 Every mode of the catalogue is offered to everyone: the mode switch and the template picker's
-mode filter always list all five, and a tab always opens in its stored mode. The tab menu's Mode
-and Shift+D keep to the modes beside the tab's own ("Plan stands apart"), all five on an empty
-tab for Shift+D.
+mode filter always list all five, and a tab always opens in its stored mode. Shift+D keeps to the modes
+beside the tab's own ("Plan stands apart"), all five on an empty tab; the tab menu's Mode lists all five, a mode
+across the line offering a new tab.
 
 Illustrate and Plan each had a switch in **Settings › Experimental** while they
 were new. Both graduated on 2026-10-06, and the **Experimental** category went

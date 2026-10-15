@@ -139,7 +139,6 @@ export function TemplateGallery() {
                     <li key={t.kind} style={{ '--tg-i': i } as CSSProperties}>
                       <a
                         href={ctaHref(templateCreateHref(t.kind), 'Home.Gallery')}
-                        aria-label={`Create a ${t.title}`}
                         className={`preview-motion-host group flex h-full flex-col p-3 ${BAND_CARD} ${BAND_CONTROL_HOVER}`}
                       >
                         {/* The picker's preview, drawn for a light tile and re-lit onto the dark
@@ -156,6 +155,9 @@ export function TemplateGallery() {
                             aria-hidden
                             className="shrink-0 text-slate-500 dark:text-slate-400"
                           />
+                          {/* The link's name is its own text, "Create a Blank Diagram" and the
+                              description, so its visible title is part of it (WCAG 2.5.3). */}
+                          <span className="sr-only">Create a </span>
                           {t.title}
                         </span>
                         <span className="mt-1 block text-xs leading-relaxed text-slate-600 dark:text-slate-400">

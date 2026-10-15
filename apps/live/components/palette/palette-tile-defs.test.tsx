@@ -131,8 +131,8 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  build: 5,
-  write: 4,
+  build: 12,
+  write: 5,
   draw: 6,
   // The Pen alone: the layout adds the Pencil and each person's markers (palette-layouts, PaletteLogoTab).
   logo: 1,
@@ -141,8 +141,9 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   stickers: 0,
   technology: 0,
   'my-shapes': 0,
-  media: 8,
-  components: 9,
+  media: 9,
+  components: 12,
+  concepts: 7,
   data: 7,
   // The Collaborate elements, one category per group (docs/specs/012-collaboration/facilitate-mode.md
   // "The palette"): 34 tiles between them.
@@ -151,7 +152,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-record': 5,
   'collab-react': 5,
   'collab-mode': 8,
-  'collab-navigate': 4,
+  'collab-navigate': 14,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
   // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): nine boards, one

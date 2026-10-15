@@ -18,7 +18,8 @@ Five markers, plus a **None** option that clears it:
   has **no label**, it is **centred** in the shape. It composes with the
   existing inline icon (drag-an-icon-onto-a-shape) — the marker hugs the label;
   the icon keeps its chosen side.
-- **Size** is a `TextSize` bucket: **Scale / Small / Medium / Large**. `Scale`
+- **Size** is a `TextSizePreset`: **Scale / Small / Medium / Large** (never a px: the
+  [Text Size](../004-interface-design/fonts.md#text-size) slider sizes type, not a marker's dot). `Scale`
   (the default) tracks the element's text size, so the marker grows and shrinks
   with the label; the fixed buckets are small / medium / large dots.
 - Self-drawing shapes (`isSelfDrawingShape`: progress, charts, rating, code

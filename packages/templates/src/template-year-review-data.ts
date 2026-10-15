@@ -63,7 +63,7 @@ export const QUARTERS: readonly (readonly [string, number])[] = [
 export const MOMENTS = [
   {
     month: 'JAN',
-    title: 'Moved into the Harbour Street studio',
+    title: 'Moved to Harbour Street',
     note: 'Big windows, a proper kitchen and room for all eight of us.',
     iconId: 'home',
     color: '#0d9488',

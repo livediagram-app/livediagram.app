@@ -91,6 +91,66 @@ describe('reshapeBoard', () => {
     expect(dropped.ok && dropped.setup.doneColumnId).toBeUndefined();
   });
 
+  it('renames a column in place, keeping its status, limit and done mark, before reordering', () => {
+    const r = reshapeBoard(
+      setup,
+      { renameColumns: { 'to do': 'Backlog', Done: 'Shipped' }, columns: ['Shipped', 'Backlog'] },
+      others,
+      fixed,
+    );
+    if (!r.ok) throw new Error(r.message);
+    expect(r.setup.columns).toEqual([
+      { id: 'done', status: 'done~b', name: 'Shipped' },
+      { id: 'todo', status: 'todo~b', name: 'Backlog', wipLimit: 4 },
+    ]);
+    expect(r.setup.doneColumnId).toBe('done');
+  });
+
+  it('refuses renaming a column it lacks, to nothing, or onto another column', () => {
+    const renames: Record<string, string>[] = [
+      { Doing: 'X' },
+      { 'To Do': ' ' },
+      { 'To Do': 'done' },
+    ];
+    for (const renameColumns of renames) {
+      const r = reshapeBoard(setup, { renameColumns }, others, fixed);
+      expect(r.ok, JSON.stringify(renameColumns)).toBe(false);
+    }
+  });
+
+  it('sets the card size and the card fields by name', () => {
+    const r = reshapeBoard(
+      setup,
+      { cardSize: 'compact', cardFields: ['Due Date', 'number', 'Priority'] },
+      others,
+    );
+    if (!r.ok) throw new Error(r.message);
+    expect(r.setup.cardSize).toBe('compact');
+    expect(r.setup.cardFields).toEqual(['key', 'priority', 'due']);
+    const back = reshapeBoard(r.setup, { cardSize: 'detailed' }, others);
+    expect(back.ok && back.setup.cardSize).toBeUndefined();
+    expect(reshapeBoard(setup, { cardFields: ['Mood'] }, others)).toMatchObject({ ok: false });
+  });
+
+  it('sets the swimlanes and the done column by name', () => {
+    const r = reshapeBoard(
+      setup,
+      { swimlanes: { by: 'field', field: 'f-sev' }, doneColumn: 'to do' },
+      others,
+    );
+    if (!r.ok) throw new Error(r.message);
+    expect(r.setup).toMatchObject({
+      swimlaneBy: 'field',
+      swimlaneField: 'f-sev',
+      doneColumnId: 'todo',
+    });
+    const none = reshapeBoard(r.setup, { swimlanes: { by: 'none' }, doneColumn: null }, others);
+    if (!none.ok) throw new Error(none.message);
+    expect(none.setup.swimlaneField).toBeUndefined();
+    expect(none.setup.doneColumnId).toBeUndefined();
+    expect(reshapeBoard(setup, { doneColumn: 'Shipped' }, others)).toMatchObject({ ok: false });
+  });
+
   it('never gives two columns one id, a kept column keeping its own', () => {
     // Kanban's "In Progress" has the id `doing`; a new "Doing" column slugs to the same id.
     const kanban = presetSetup('kanban');

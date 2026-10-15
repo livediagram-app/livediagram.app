@@ -46,9 +46,13 @@ export function positionMindmapComponent(
   // Deterministic branch order following the user's rough angular intent
   // (angle of each child's current position around the hub).
   const hubC = centers.get(hub)!;
+  // Measured clockwise from 12 o'clock, where placement starts (placeWedge below): measured from
+  // 9 o'clock, the branches drawn up and to the left sorted first and were placed first at 12, so
+  // every tidy turned the map a little further.
   const angleOf = (id: ElementId) => {
     const c = centers.get(id)!;
-    return Math.atan2(c.y - hubC.y, c.x - hubC.x);
+    const a = Math.atan2(c.y - hubC.y, c.x - hubC.x) + Math.PI / 2;
+    return a < 0 ? a + 2 * Math.PI : a;
   };
   for (const kids of children.values()) kids.sort((a, b) => angleOf(a) - angleOf(b));
 

@@ -69,7 +69,7 @@ export function MetricStackCard({
     >
       <p className="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
         {stack.blurb}
-        {caption ? <span className="text-slate-400"> {caption}</span> : null}
+        {caption ? <span className="text-slate-500 dark:text-slate-400"> {caption}</span> : null}
       </p>
       {/* Legend: which line is which, with each member's window count. A
           stack too big to draw one line per member shows its busiest
@@ -86,12 +86,12 @@ export function MetricStackCard({
             </span>
           </li>
         ))}
-        {hidden > 0 ? <li className="text-slate-400">+{hidden} more</li> : null}
+        {hidden > 0 ? <li className="text-slate-500 dark:text-slate-400">+{hidden} more</li> : null}
       </ul>
       {days ? (
         <div className="mt-auto pt-4">
           <StackTrendChart days={days} series={chart} highlightFromIndex={highlightFromIndex} />
-          <div className="mt-2 flex justify-between text-[10px] text-slate-400">
+          <div className="mt-2 flex justify-between text-[10px] text-slate-500 dark:text-slate-400">
             <span>{fmtDay(days[0] ?? 0)}</span>
             <span>{fmtDay(days[days.length - 1] ?? 0)}</span>
           </div>

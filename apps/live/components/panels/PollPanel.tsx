@@ -16,7 +16,10 @@
 import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { DockAnchor } from '@/lib/canvas-chrome';
-import { buttonClassName, HoverCard } from '@livediagram/ui';
+import { buttonClassName, CompactEmptyState, HoverCard, lucideGlyph } from '@livediagram/ui';
+import { lucideMessageSquare } from '@livediagram/icons/lucide';
+
+const AnswerGlyph = lucideGlyph(lucideMessageSquare, 14);
 
 // A popover never moves.
 const NO_MOVE = () => {};
@@ -77,7 +80,12 @@ export function PollPanel({
         <div className="flex flex-col gap-1.5">
           {poll.style === 'text' ? (
             textAnswers.length === 0 ? (
-              <p className="text-[11px] italic text-slate-400">No answers yet.</p>
+              <CompactEmptyState
+                size="small"
+                icon={<AnswerGlyph />}
+                title="No answers yet"
+                description="Answers show up here as people send them."
+              />
             ) : (
               <ul className="flex max-h-40 flex-col gap-1 overflow-y-auto">
                 {textAnswers.map((text, i) => (

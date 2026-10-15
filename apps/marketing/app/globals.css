@@ -24,7 +24,7 @@
 @import './licences.css';
 
 /* Scan the shared UI package so utility classes used inside its
- * components (e.g. `text-brand-500` in <Brand>'s wordmark) are
+ * components (e.g. `text-brand-700` in <Brand>'s wordmark) are
  * generated here too. Tailwind v4 skips node_modules by default, and
  * these workspace components are the only place some of those classes
  * appear in the marketing app. */

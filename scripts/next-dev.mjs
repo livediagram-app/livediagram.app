@@ -22,14 +22,15 @@
 //     server's `_buildManifest.js.tmp.*` mid-flight, and dev then 500s
 //     with `ENOENT: ... _buildManifest.js.tmp.*`.
 //
-// The cure for all three is the same: free the port, point dev at its own
-// `.next-dev/` cache dir (so a concurrent build's `.next/` can never race
-// it), and wipe that dir on every start so a corrupted cache never
-// survives a restart. Each app's `next.config` reads `NEXT_DISTDIR` and
-// falls back to `.next/` when unset, so build / CI keep the default.
+// The cures: free the port (1), and point dev at its own `.next-dev/` cache
+// dir (3) so a concurrent build's `.next/` can never race it. The shared
+// config (@livediagram/next-config) reads `NEXT_DISTDIR` and falls back to
+// `.next/` when unset, so build / CI keep the default. (2) was the webpack-era
+// dev cache; Turbopack's file-system cache reconciles a route restructure
+// itself, so the cache is kept between starts and `turbopackGc` keeps it lean
+// (docs/specs/016-platform/nextjs.md "The Turbopack cache").
 
 import { execSync, spawn } from 'node:child_process';
-import { rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 
@@ -89,15 +90,10 @@ function freePort(p) {
   console.log(`[dev] freed port ${p} (killed ${pids.replace(/\s+/g, ', ')} + children)`);
 }
 
-// Dev's isolated cache directory (see header comment). Wiped on every
-// start so a corrupted cache never survives a restart.
+// Dev's isolated cache directory (see header comment), kept between starts.
 const DEV_DIST_DIR = '.next-dev';
-function clearCache() {
-  rmSync(resolve(appRoot, DEV_DIST_DIR), { recursive: true, force: true });
-}
 
 freePort(port);
-clearCache();
 
 // `dev` must stay first, it's the next subcommand; a flag before it is
 // parsed as the project directory.

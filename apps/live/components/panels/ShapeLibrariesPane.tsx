@@ -30,7 +30,8 @@ const ShapesBadge = lucideGlyph(lucideShapes, 28);
 const BUTTON =
   'rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:text-slate-300';
 
-export function ShapeLibrariesPane() {
+// `compact`: inside the editor's Explorer pane: the small empty state and four shapes to a row.
+export function ShapeLibrariesPane({ compact = false }: { compact?: boolean } = {}) {
   const { libraries, status, reload } = useShapeLibraries();
   if (status === 'loading') {
     return (
@@ -57,6 +58,7 @@ export function ShapeLibrariesPane() {
   if (libraries.length === 0) {
     return (
       <EmptyState
+        compact={compact}
         icon={<ShapesBadge />}
         title="No shape libraries yet"
         description="Import a draw.io library with Import from draw.io."
@@ -71,13 +73,13 @@ export function ShapeLibrariesPane() {
         <HelpArticleLink article="shapeLibraries" variant="text" />
       </div>
       {libraries.map((library) => (
-        <LibraryCard key={library.id} library={library} />
+        <LibraryCard key={library.id} library={library} compact={compact} />
       ))}
     </div>
   );
 }
 
-function LibraryCard({ library }: { library: ShapeLibrary }) {
+function LibraryCard({ library, compact = false }: { library: ShapeLibrary; compact?: boolean }) {
   const { renameLibrary, deleteLibrary, deleteItem } = useShapeLibraries();
   const confirm = useConfirm();
   const [renaming, setRenaming] = useState(false);
@@ -159,7 +161,7 @@ function LibraryCard({ library }: { library: ShapeLibrary }) {
       {open ? (
         <ul
           aria-label={`Shapes in ${library.name}`}
-          className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6"
+          className={`mt-3 grid gap-2 ${compact ? 'grid-cols-4' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6'}`}
         >
           {library.items.map((item, i) => (
             <li

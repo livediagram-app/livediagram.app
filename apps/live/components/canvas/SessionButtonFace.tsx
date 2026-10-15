@@ -11,7 +11,9 @@ import type { ReactNode } from 'react';
 
 import {
   sessionButtonPlan,
+  sessionButtonText,
   type SessionButtonConfig,
+  type TimerState,
   type SessionPlan,
 } from '@livediagram/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
@@ -26,37 +28,9 @@ const TOOL_ICON: Record<SessionPlan['tool'], React.ReactNode> = {
   poll: <PollIcon />,
 };
 
-// What the face says when the author hasn't written their own label. Derived
-// from the SETTING, not just the tool, so re-pointing a button relabels it and
-// the canvas reads as instructions ("Vote — 3 dots each").
-export function sessionButtonText(
-  plan: SessionPlan | null,
-  // What the tab's timer is doing, so a timer button reads as the control it
-  // is mid-session ("Pause timer") rather than always promising a fresh start.
-  timerState: TimerState = 'none',
-): { kicker: string; action: string } {
-  if (!plan) return { kicker: 'Poll', action: 'Not set up' };
-  if (plan.tool === 'timer') {
-    if (timerState === 'running') return { kicker: 'Pause', action: 'the timer' };
-    if (timerState === 'paused') return { kicker: 'Continue', action: 'the timer' };
-    return { kicker: 'Start', action: `${plan.minutes} min timer` };
-  }
-  if (plan.tool === 'stopwatch') {
-    if (timerState === 'running') return { kicker: 'Pause', action: 'the stopwatch' };
-    if (timerState === 'paused') return { kicker: 'Continue', action: 'the stopwatch' };
-    return { kicker: 'Start', action: 'a stopwatch' };
-  }
-  if (plan.tool === 'vote') {
-    return {
-      kicker: 'Start vote',
-      action: `${plan.dots} ${plan.dots === 1 ? 'dot' : 'dots'} each`,
-    };
-  }
-  return { kicker: 'Ask', action: plan.question };
-}
-
-// A tab's timer is either absent, counting, or held.
-export type TimerState = 'none' | 'running' | 'paused';
+// What the face says when the author hasn't written their own label (@livediagram/document, shared with the
+// headless render).
+export { sessionButtonText, type TimerState } from '@livediagram/document';
 
 const TOOL_BLURB: Record<SessionPlan['tool'], string> = {
   timer: 'Starts a countdown everyone in the room can see.',
@@ -74,6 +48,7 @@ export function SessionButtonFace({
   // False on a read-only surface (a view-role visitor, an embed): the face
   // renders inert and says why rather than looking live.
   canStart,
+  runBy = null,
   timerState = 'none',
   onPress,
   onSetConfig,
@@ -83,6 +58,9 @@ export function SessionButtonFace({
   label: string;
   textColor: string;
   canStart: boolean;
+  // Somebody else runs the session (docs/specs/012-collaboration/facilitator.md): the inert face names them, since
+  // the person reading it may well have edit access.
+  runBy?: string | null;
   timerState?: TimerState;
   onPress?: () => void;
   // Per-element settings from the button's own `…` menu (docs/specs/012-collaboration/session-button.md): the
@@ -162,14 +140,17 @@ export function SessionButtonFace({
     );
   }
   if (!onPress || !canStart) {
+    const name = text || `${derived.kicker} ${derived.action}`;
     return (
       <div
         aria-disabled
-        aria-label={
+        aria-label={`${name}. ${
           canStart
-            ? `${text || `${derived.kicker} ${derived.action}`}. ${TOOL_BLURB[plan.tool]}`
-            : `${text || `${derived.kicker} ${derived.action}`}. Only people with edit access can start this.`
-        }
+            ? TOOL_BLURB[plan.tool]
+            : runBy
+              ? `${runBy} is facilitating this session; ask them to start it.`
+              : 'Only people with edit access can start this.'
+        }`}
         className={`pointer-events-auto cursor-default opacity-60 ${layout}`}
       >
         {inner}

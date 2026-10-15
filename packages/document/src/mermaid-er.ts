@@ -1,23 +1,33 @@
 // Mermaid ER diagram -> DiagramGraph (docs/specs/020-import-export/mermaid.md). Import-only: entities are
 // Entity elements (the name is the title, each attribute a field row with its
-// type and any PK / FK / UK marker as the row's type text), relationships are edges whose cardinality maps onto arrow ends —
-// a "many" side (crow's foot) gets the open-V head on that end, one-to-one
-// renders headless, and non-identifying (dotted) relationships render
+// type and any PK / FK / UK marker as the row's type text), relationships are edges whose cardinality is an ER end
+// at each table (one, zero or one, one or many, zero or many), and non-identifying (dotted) relationships render
 // dashed. Export always emits flowchart text.
 
 import type { EntityField } from './data-shapes';
+import type { ErShape } from './er-heads';
+import { hubFirst } from './er-hub-first';
 import type { GraphEdge, GraphNode } from './graph-authoring';
-import { cleanLine, decodeLabel, type ParseMermaidResult } from './mermaid-shared';
+import {
+  cleanLine,
+  decodeLabel,
+  directionOf,
+  type MermaidDirection,
+  type ParseMermaidResult,
+} from './mermaid-shared';
 
 const HEADER_RE = /^erDiagram$/i;
 // `CUSTOMER ||--o{ ORDER : places` — left tokens |o || }o }| , right tokens
 // o| || o{ |{ , line -- (identifying) or .. (non-identifying).
 // The label is `(\S.*)` rather than `(.+)`: after `\s*` the two both match a
 // space, and that overlap is what makes a failed match backtrack quadratically.
+// Each name may carry an alias in square brackets (`BOOK_AUTHOR[Book author]`), the title shown.
 const REL_RE =
-  /^([A-Za-z0-9_-]+)\s+(\|o|\|\||\}o|\}\|)(--|\.\.)(o\||\|\||o\{|\|\{)\s+([A-Za-z0-9_-]+)\s*(?::\s*(\S.*))?$/;
+  /^([A-Za-z0-9_-]+)(?:\[([^\]]*)\])?\s+(\|o|\|\||\}o|\}\|)(--|\.\.)(o\||\|\||o\{|\|\{)\s+([A-Za-z0-9_-]+)(?:\[([^\]]*)\])?\s*(?::\s*(\S.*))?$/;
 // `CUSTOMER {` opens an attribute block; `CUSTOMER {}` is an empty one.
-const BLOCK_OPEN_RE = /^([A-Za-z0-9_-]+)\s*\{\s*(\})?$/;
+const BLOCK_OPEN_RE = /^([A-Za-z0-9_-]+)(?:\[([^\]]*)\])?\s*\{\s*(\})?$/;
+// A bare entity line, with an optional alias.
+const BARE_RE = /^([A-Za-z0-9_-]+)(?:\[([^\]]*)\])?$/;
 // `string name PK, FK "comment"` — keep the type, name and key markers, drop
 // the comment.
 const ATTR_RE =
@@ -27,10 +37,23 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
   const nodes = new Map<string, GraphNode>();
   const edges: GraphEdge[] = [];
   let block: { id: string; attrs: EntityField[] } | null = null;
+  // Mermaid's `direction` line (TB by default, the layered flow that reads best).
+  let direction: MermaidDirection = 'TB';
 
-  const touch = (id: string) => {
+  // An alias, quoted or not, is the title; the first one given wins.
+  const aliased = new Set<string>();
+  const touch = (id: string, alias?: string) => {
     if (!nodes.has(id)) nodes.set(id, { id, label: id, fields: [] });
-    return nodes.get(id)!;
+    const node = nodes.get(id)!;
+    const title = alias
+      ?.trim()
+      .replace(/^"(.*)"$/, '$1')
+      .trim();
+    if (title && !aliased.has(id)) {
+      node.label = decodeLabel(title);
+      aliased.add(id);
+    }
+    return node;
   };
 
   const closeBlock = () => {
@@ -43,6 +66,11 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
     const line = cleanLine(rawLine);
     if (!line) continue;
     if (HEADER_RE.test(line)) continue;
+    const dir = !block && /^direction\s+([A-Za-z]{2})$/i.exec(line);
+    if (dir) {
+      direction = directionOf(dir[1]);
+      continue;
+    }
 
     if (block) {
       if (line === '}') {
@@ -59,42 +87,53 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
 
     const open = BLOCK_OPEN_RE.exec(line);
     if (open) {
+      touch(open[1]!, open[2]);
       block = { id: open[1]!, attrs: [] };
-      if (open[2]) closeBlock(); // `NAME {}` on one line
+      if (open[3]) closeBlock(); // `NAME {}` on one line
       continue;
     }
 
     const rel = REL_RE.exec(line);
     if (rel) {
-      const from = touch(rel[1]!).id;
-      const to = touch(rel[5]!).id;
-      // Crow's foot = the "many" side: `}` on the left token, `{` on the
-      // right. The open-V arrowhead points at each many side.
-      const fromMany = rel[2]!.includes('}');
-      const toMany = rel[4]!.includes('{');
-      const ends: GraphEdge['ends'] =
-        fromMany && toMany ? 'both' : toMany ? 'to' : fromMany ? 'from' : 'none';
-      const dashed = rel[3] === '..';
-      const label = rel[6] ? decodeLabel(rel[6]) : undefined;
+      const from = touch(rel[1]!, rel[2]).id;
+      const to = touch(rel[6]!, rel[7]).id;
+      // Each table's cardinality as an ER end where the line meets it: the left token at the start, the right at
+      // the end.
+      const dashed = rel[4] === '..';
+      // The verb alone: the ER ends say the multiplicity ("1 : 0..*" in words was there while the heads could only
+      // say "many").
+      const said = rel[8] ? decodeLabel(rel[8]).trim() : '';
       edges.push({
         from,
         to,
-        ...(label ? { label } : {}),
+        ...(said ? { label: said } : {}),
         ...(dashed ? { line: 'dashed' as const } : {}),
-        ends,
-        ...(fromMany || toMany ? { head: 'cross' as const } : {}),
+        ends: 'both',
+        er: { from: erEndOf(rel[3]!), to: erEndOf(rel[5]!) },
       });
       continue;
     }
 
     // A bare entity name declares it; anything else is decoration.
-    if (/^[A-Za-z0-9_-]+$/.test(line)) touch(line);
+    const bare = BARE_RE.exec(line);
+    if (bare) touch(bare[1]!, bare[2]);
   }
   closeBlock();
 
   if (nodes.size === 0) {
     return { ok: false, error: 'No entities found in the ER diagram.' };
   }
-  // ER has no direction syntax; the layered TB flow reads best.
-  return { ok: true, graph: { nodes: [...nodes.values()], edges }, direction: 'TB' };
+  return {
+    ok: true,
+    graph: { nodes: [...nodes.values()], edges: hubFirst([...nodes.keys()], edges) },
+    direction,
+  };
+}
+
+// A cardinality token as an ER end: `||` one, `|o` / `o|` zero or one, `}|` / `|{` one or many, `}o` / `o{` zero or
+// many.
+function erEndOf(token: string): ErShape {
+  const many = token.includes('{') || token.includes('}');
+  const optional = token.includes('o');
+  return many ? (optional ? 'zero-or-many' : 'one-or-many') : optional ? 'zero-or-one' : 'one';
 }

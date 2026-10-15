@@ -70,7 +70,8 @@ export function parseStateDiagram(rawLines: string[]): ParseMermaidResult {
     if (token !== '[*]') return token;
     const id = pseudoId(kind);
     if (!nodes.has(id)) {
-      nodes.set(id, { id, label: '', shape: 'circle' });
+      // The start a solid dot, the end a bullseye (a ring round the dot), as UML draws them.
+      nodes.set(id, { id, label: '', shape: kind === 'end' ? 'final-state' : 'circle' });
       if (currentCluster) currentCluster.members.push(id);
     }
     return id;

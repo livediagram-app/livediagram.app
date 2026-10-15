@@ -220,7 +220,10 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   secondary until results are shown).
 - **Votable targets** (`isVotable`): shapes, sticky notes, and images — **not**
   the `frame` shape (a section backdrop) and not text / freehand / table /
-  arrow / annotation.
+  arrow / annotation. Nor the controls: the Behaviour elements and the
+  collaboration panels (estimate, temperature, done check, idea box, Q&A, agenda,
+  roll call, decision, quiz), whose own presses answer them, so a dot would give
+  one tap two meanings.
 - **Casting**: while `vote.active`, pressing a votable element places one of
   your dots (`BoxedElementView` intercepts the pointer-down before
   select/drag); your budget (`votesPerPerson`), and the one-per-item rule when it is on, are enforced by `canCastVote`, the one check the cast handler and the stepper's plus both read.
@@ -299,9 +302,13 @@ panes are disabled under a note naming them.
 workshop that is always Diagram; **Plan** has Timer and
 Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) only on a tab with a board made for voting,
 one taking a card type with a **Votes** field (a Retro's Notes and Ideas, or a type someone gave Votes), and never on
-a Dashboard tab, a timer or vote already running keeping its button so it can be stopped; Plan has no Poll; **Diagram**,
-**Draw** and **Illustrate** have no strip, keeping their bottom bar to their own tools, even while a
-tool runs (a session button on the canvas still starts one there). A popover whose button
+a Dashboard tab, a timer or vote already running keeping its button so it can be stopped; Plan has no Poll;
+**Illustrate** shows a **Vote** or **Poll** button **only while one runs**, for everyone (an
+editor included), so a vote or poll started from a session button on a page can be watched and
+ended (the Poll button, like the Poll panel anywhere, only for the poll's host and anyone who has
+answered: answering is what buys you the tally, and only the host ends it), and nothing is started from the strip there (the session buttons on the page do that); it
+never shows a Timer; **Diagram** and **Draw** have no strip, keeping their bottom bar to their own
+tools, even while a tool runs (a session button on the canvas still starts one there). A popover whose button
 leaves (a mode switch) closes.
 
 Order, left to right: Timer, Vote, Poll. **On a phone** the strip stays in the cluster's one row, between Undo and Redo and Layers: the cluster's buttons share the row's width, each from 36px up to the usual 44px (always 44px tall to tap), with 6px gaps, so Undo, Redo, the three tools, Layers, the theme brush and Fit fill the row on a 360px screen and up. On a narrower one the cluster wraps from the right, so Undo is never pushed off the screen. Each segment opens its
@@ -330,7 +337,9 @@ on the tab. Two phases, one panel:
   winning" but never "is everyone done", which is the question that decides
   when to press End vote. It deliberately counts **people, not just dots**:
   "8 of 12 dots" reads as nearly finished when one person holds all four
-  remaining, which is exactly when you shouldn't call it.
+  remaining, which is exactly when you shouldn't call it. The people are those
+  who can cast: one per person however many tabs they have open, never a
+  view-link guest or an agent row (the [Participant responses](participant-responses.md) "Who counts" rule).
 - **Once results are revealed — the ranked list.** Every voted element, most
   dots first, each row clickable to **jump the results walkthrough** straight
   to that element (`jumpToVoteResult`, the same clamped setter Previous /

@@ -14,13 +14,14 @@ its own start ([Template starts](start-diagramming.md)).
   canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
   the mode the tab opens in can never disagree.
 - Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
-- Illustrate templates: Blank Illustration, Article, Slide deck, Logo design, Group card and the
+- Illustrate templates: Blank Illustration, the four [blanks of a page kind](#blanks-of-a-page-kind), Article,
+  Slide deck, Logo design, Group card and the
   eight [Illustrate templates](#illustrate-templates) below.
 - Plan templates: Blank Plan and the twenty-two [Plan templates](../026-plan/plan-templates.md), Kanban Board
   among them. Plan templates open on a worked example of cards: each but Blank Plan sets up a way of working across
   several tabs, or a ready-made spreadsheet (the twelve
   [spreadsheet templates](../026-plan/plan-templates.md#spreadsheet-templates)), every tab opening in Plan.
-- Facilitate templates: Blank Session and the twelve [Facilitate templates](#facilitate-templates)
+- Facilitate templates: Blank Session and the [Facilitate templates](#facilitate-templates)
   below.
 - Every other template is a Diagram template.
 
@@ -87,6 +88,39 @@ not what the New Document wizard creates; the editor's Popular lists are unchang
 search), and Start Planning, which has its own Empty Sheet, does not offer it. The landing page's **Blank Slate**
 shelf lists it after Blank Plan ([Marketing site](../019-marketing/marketing-site.md)).
 
+### Blanks of a page kind
+
+Blank Illustration's one page asks what it is for. Four more Illustrate blanks have already answered, for someone
+who knows they are making a deck, an article, an infographic or a logo (`EXTRA_BLANK_TEMPLATES`, beside Blank
+Spreadsheet):
+
+| Template          | Kind id             | What it makes                                                     |
+| ----------------- | ------------------- | ----------------------------------------------------------------- |
+| Blank Slide Deck  | `blank-slide-deck`  | One empty 16:9 slide page.                                        |
+| Blank Article     | `blank-article`     | One empty article page, its writing an empty Title and paragraph. |
+| Blank Infographic | `blank-infographic` | One empty A4 portrait infographic page.                           |
+| Blank Logo        | `blank-logo`        | One empty logo page (the 1024 artboard).                          |
+
+- **Exactly one page and nothing else**: no elements, the page's kind already chosen. The page is made the way the
+  first page's **What Is This Page For?** makes it (`withPageKindChosen` on an unchosen page, through
+  `blankPageTemplateOverrides`), so a blank of a kind and a chosen Blank Illustration are the same page.
+- **No kind choice.** The page has a kind, so it never asks What Is This Page For? and Start Illustrating does not
+  show over it ([Template starts](start-diagramming.md) "When it shows").
+- **Its layouts are offered as usual.** The empty slide, infographic or logo page shows its in-page **Start From a
+  Layout** card with its own kind's layouts (slide layouts on a slide, logo layouts on a logo page), as any empty
+  page of that kind does ([Illustrate pages](illustrate-pages.md)); an article page never shows one.
+- **Blanks like the others** (`isBlankTemplate`): in no category and on no category shelf, the tab keeps its name, a
+  `/new?template=` link to one opens with the start closed. None is a mode's blank, so none leads Recommended or is
+  what the wizard creates. One is recommended: **Blank Slide Deck** takes the Slide Deck's place in Illustrate's
+  Popular (so in Start Illustrating's Recommended, after Blank Illustration and Article), since a deck is most often
+  built from its own slides; the others are found in their groups or by search.
+- **Each leads its group in Start Illustrating**: Blank Slide Deck first in **Slides**, Blank Infographic in
+  **Infographics**, Blank Article in **Articles**, Blank Logo in **Logos** ([Template starts](start-diagramming.md)).
+  **Slides** holds decks alone; the Social Carousel, made to post rather than present, is in **Posters and Social**
+  (posters, cards and social posts to print, pin up or share).
+- The landing page's **Blank Slate** shelf lists them after Blank Illustration, in that order (Slide Deck, Article,
+  Infographic, Logo).
+
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.
 - None of the blanks is on a category shelf or a category tile.
@@ -145,6 +179,26 @@ already infographic pages, built with the page layouts' kit.
 - **Social Carousel** _(Presentations)_: five Square slides for a LinkedIn or Instagram carousel: a hook,
   three tips and a call to action, with slide numbers and swipe cues.
 
+### Design templates
+
+Five templates for showing a design open in Illustrate, each on one infographic page sized for what it is
+(`template-design-pages.ts`). Their drawings are the ones they had as Diagram templates, built by the same builders
+at the same size (the Floor plan is drawn to a captioned metric scale, so none is scaled) and centred on the page.
+Start Illustrating lists them in their own group, **Design** ("Wireframes, storyboards and floor plans, drawn to
+show."), after Logos; their catalogue category stays Design.
+
+| Template           | Kind id             | Page                                                         |
+| ------------------ | ------------------- | ------------------------------------------------------------ |
+| Web page wireframe | `browser-wireframe` | Widescreen (16:9), "Landing Page", on a cool studio grey     |
+| Laptop wireframe   | `laptop-wireframe`  | Widescreen (16:9), "Dashboard", on a cool studio grey        |
+| Mobile wireframe   | `mobile-wireframe`  | Widescreen (16:9), "Order Ahead Flow", on a cool studio grey |
+| Storyboard         | `storyboard`        | A3 landscape, "Storyboard", plain paper                      |
+| Floor plan         | `floor-plan`        | A3 landscape, "Floor Plan", ruled in the page's grid pattern |
+
+- Screens sit on the shape they are shown on (16:9); the storyboard and the plan on the sheet they are printed on (A3).
+- The page carries the backdrop: none of the five ships a canvas pattern any more (the Floor plan's graph paper
+  became its page's grid, the Storyboard's crosshatch is gone).
+
 ## Facilitate templates
 
 Session formats open in Facilitate ([Facilitate mode](../012-collaboration/facilitate-mode.md#templates)),
@@ -155,11 +209,25 @@ unchanged; only the mode they open in moved from Diagram.
   (`start-stop-continue`), **Mad, Sad, Glad** (`mad-sad-glad`), **4Ls** (`four-ls`) and **Sailboat**
   (`sailboat`). **Team Retro** (`team-retro`) stays in Plan: it is a board of cards.
 - **Town Hall Q&A** (`town-hall`), **Lean Coffee** (`lean-coffee`), **Crazy Eights**
-  (`crazy-eights`) and **Meeting Agenda** (`meeting-agenda`).
+  (`crazy-eights`), **Meeting Agenda** (`meeting-agenda`), **Workshop Board** (`workshop-board`) and
+  **Brainstorm Board** (`brainstorm`).
 - The boards that ship a dot vote: **Affinity map** (`affinity-map`), **Prioritization matrix**
   (`prioritization-matrix`) and **Risk matrix** (`risk-matrix`). Diagram has no Session strip, so a
   vote on a Diagram tab could be started but not watched, ended or kept; every template carrying a
   session tool opens in Facilitate.
+- The boards a team fills in together in a session, rather than a diagram one person draws: **Incident
+  postmortem** (`incident-postmortem`, a look back, under Retrospectives), **User persona** (`user-persona`, under
+  Workshops), the **Planning** group's **Objectives planner** (`objectives-planner`), **Roadmap** (`roadmap`),
+  **RACI matrix** (`raci-matrix`) and **User story map** (`user-story-map`), and the **Strategy** group's **Business
+  Model Canvas** (`business-model-canvas`), **Stakeholder map** (`stakeholder-map`) and **Opportunity solution
+  tree** (`opportunity-solution-tree`). Their catalogue categories are unchanged.
+- The **Spaces** group, after Meetings: **Virtual Office** (`virtual-office`), **Coworking Space**
+  (`coworking-space`), **Team Pod** (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), "Offices and halls to walk
+  round together in Avatar mode." ([Virtual Office template](../012-collaboration/virtual-office-template.md)).
+- The **Quizzes & Games** group, after Spaces: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions**
+  (`icebreaker-questions`), **Two Truths and a Lie** (`two-truths-and-a-lie`), **Would You Rather**
+  (`would-you-rather`) and **Find Someone Who Bingo** (`people-bingo`), "Quizzes, icebreakers and games to warm up
+  the room." ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).
 
 ## Testing
 
@@ -178,3 +246,24 @@ unchanged; only the mode they open in moved from Diagram.
   tab is "Flowchart", an infographic's its template's title): the template's own name for the tab where it gives one
   (a Plan template's tabs), else for a Board or Sheet template the board's title, else the template's title. It does
   so whatever the tab was called before. A blank template leaves the name as it was (`templateTabName`).
+
+## Slide deck templates
+
+Besides the **Slide Deck** (a six-slide seed pitch), four decks are built from the slide layouts
+(`template-builders-layout-decks.ts`), six 16:9 slide pages each, every page one slide layout with
+its sample text replaced by the deck's own; no element carries a note. Each opens and
+closes on an animated background in colours of its own (custom colours, so they keep through a theme
+change) and sets the slides between on a soft still gradient, so they read and print plainly:
+
+- **Launch Keynote** (Aurora): a launch for a made-up notes app, Lumen: Keynote Title, Opening
+  Question, Three Points, Three Big Numbers, Process Flow, Call to Action.
+- **Quarterly Review** (Mesh): a support team's quarter: Keynote Title, Agenda Grid, Big Chart, Goals
+  Progress, Now Next Later, Questions.
+- **Team Welcome** (Bokeh): a new joiner's first morning: Keynote Title, About the Speaker (their
+  manager), Objectives (the first week), Four Ideas (how we work), Milestones, Contact (their buddy).
+- **Workshop Kickoff** (Waves): a design workshop's opening: Keynote Title, Objectives, Agenda Grid,
+  Process Flow (how each round runs), Key Takeaway (the one rule), Call to Action.
+
+They sit in Start Illustrating's **Slides** group after the Slide Deck, and in the Presentations
+category. A test pins each slide's text to its layout one for one, so a layout change that adds or
+drops a line fails until the deck follows.

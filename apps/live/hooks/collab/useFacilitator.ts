@@ -43,6 +43,12 @@ function writeToken(documentId: string | null, token: string | null): void {
 export type FacilitatorApi = {
   /** The holder's presence id, or null when nobody is facilitating. */
   facilitatorId: string | null;
+  /**
+   * The holder's name: as the roster has it, else as last seen, so the 90 seconds an absent holder keeps the
+   * baton still name them (docs/specs/012-collaboration/facilitator.md). Null when nobody holds it or a holder was
+   * never seen.
+   */
+  facilitatorName: string | null;
   /** Are we the ones running this session? */
   isFacilitator: boolean;
   /**
@@ -91,8 +97,8 @@ export function useFacilitator(deps: {
   ) => void;
   /** Announce a change to this user, gated by their notification preference. */
   onNotice: (message: string) => void;
-  /** Resolve a presence id to a name for those announcements. */
-  nameOf: (presenceId: string) => string;
+  /** Resolve a presence id to a name for those announcements; null for somebody no longer present. */
+  nameOf: (presenceId: string) => string | null;
 }): FacilitatorApi {
   const { documentId } = deps;
   const [facilitatorId, setFacilitatorId] = useState<string | null>(null);
@@ -105,6 +111,22 @@ export function useFacilitator(deps: {
   // Live deps so the socket handler never reads a stale closure: it is wired
   // once, and the names it announces change every time somebody renames.
   const ref = useLatest(deps);
+  // The holder's name as last seen. An absent holder keeps the baton a while, and by the time the room says
+  // they timed out (docs/specs/012-collaboration/facilitator.md "Telling the room") they have left the
+  // roster, so both the blocked buttons and the announcement name them from here. Kept in step during render
+  // (a roster read, only when somebody holds it), and dropped with the baton.
+  const [lastSeen, setLastSeen] = useState<{ id: string; name: string } | null>(null);
+  const rosterName = facilitatorId ? deps.nameOf(facilitatorId) : null;
+  if (
+    facilitatorId &&
+    rosterName &&
+    (lastSeen?.id !== facilitatorId || lastSeen.name !== rosterName)
+  )
+    setLastSeen({ id: facilitatorId, name: rosterName });
+  if (!facilitatorId && lastSeen) setLastSeen(null);
+  const facilitatorName =
+    rosterName ?? (facilitatorId && lastSeen?.id === facilitatorId ? lastSeen.name : null);
+  const lastSeenRef = useLatest(lastSeen);
 
   // A different document is a different session, reset during render.
   const [sessionDocumentId, setSessionDocumentId] = useState(documentId);
@@ -112,13 +134,18 @@ export function useFacilitator(deps: {
     setSessionDocumentId(documentId);
     setFacilitatorId(null);
     setIsFacilitator(false);
+    setLastSeen(null);
   }
 
   const readFacilitatorToken = useCallback(() => readToken(ref.current.documentId), [ref]);
 
   const receiveFacilitator = useCallback(
     (msg: { holder: string | null; by?: string; reason: FacilitatorReason; token?: string }) => {
-      const { onNotice, nameOf } = ref.current;
+      const { onNotice } = ref.current;
+      // One lookup for every sentence: the roster, else the holder as last seen (gone by a 'left').
+      const held = lastSeenRef.current;
+      const nameOf = (id: string) =>
+        ref.current.nameOf(id) ?? (held?.id === id ? held.name : null) ?? 'Somebody';
       const mine = msg.token !== undefined;
       setFacilitatorId(msg.holder);
       setIsFacilitator(mine);
@@ -148,7 +175,7 @@ export function useFacilitator(deps: {
       }
       onNotice(`${nameOf(msg.holder)} is now facilitating`);
     },
-    [ref],
+    [ref, lastSeenRef],
   );
 
   // Telemetry (docs/specs/017-telemetry/telemetry.md) on the ASK rather than the answer: a refused ask is
@@ -182,6 +209,7 @@ export function useFacilitator(deps: {
 
   return {
     facilitatorId,
+    facilitatorName,
     isFacilitator,
     sessionToolsBlocked: facilitatorId !== null && !isFacilitator,
     claimFacilitator,

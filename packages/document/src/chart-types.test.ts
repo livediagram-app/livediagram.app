@@ -11,7 +11,8 @@ import {
 } from './chart-types';
 import { createShape } from './shape-factory';
 import { normaliseElement } from './element-normalise';
-import { shapeValidationIssue } from './validate-shape';
+import { shapeValidationIssue, CHART_PALETTE_IDS_RULE } from './validate-shape';
+import { CHART_PALETTES } from './chart-palettes';
 
 describe('chart types (docs/specs/009-elements/pie-chart.md "Chart types")', () => {
   it('round-trips every type through its kind and variant', () => {
@@ -137,5 +138,12 @@ describe('chart types (docs/specs/009-elements/pie-chart.md "Chart types")', () 
     expect((normaliseElement(pie) as typeof pie).chartVariant).toBe('doughnut');
     const dropped = normaliseElement({ ...pie, chartVariant: 'area' }) as Record<string, unknown>;
     expect(dropped.chartVariant).toBeUndefined();
+  });
+});
+
+// A refusal of a chartPalette lists the ids, written out in validate-shape so it reads none while loading.
+describe('the palette ids a refusal lists', () => {
+  it('are every palette, in order', () => {
+    expect([...CHART_PALETTE_IDS_RULE]).toEqual(CHART_PALETTES.map((p) => p.id));
   });
 });

@@ -52,6 +52,12 @@ describe('CTA_SOURCES', () => {
       'Faq.HeaderPlan',
       'Faq.HeaderSession',
       'Faq.Card',
+      'Ai.Header',
+      'Ai.HeaderDraw',
+      'Ai.HeaderWhiteboard',
+      'Ai.HeaderIllustration',
+      'Ai.HeaderPlan',
+      'Ai.HeaderSession',
       'Status.Header',
       'Status.HeaderDraw',
       'Status.HeaderWhiteboard',
@@ -152,6 +158,7 @@ describe('ctaSurfaceOfPath', () => {
     expect(ctaSurfaceOfPath('/alternatives')).toBe('Compare');
     expect(ctaSurfaceOfPath('/alternatives/miro')).toBe('Compare');
     expect(ctaSurfaceOfPath('/faq')).toBe('Faq');
+    expect(ctaSurfaceOfPath('/ai')).toBe('Ai');
     expect(ctaSurfaceOfPath('/status')).toBe('Status');
     expect(ctaSurfaceOfPath('/telemetry')).toBe('Dashboard');
     expect(ctaSurfaceOfPath('/community/post')).toBe('Community');

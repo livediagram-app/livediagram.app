@@ -36,7 +36,7 @@ describe('pageSlideLabels', () => {
       ],
     };
     const labels = pageSlideLabels(deck, tabs);
-    expect(labels.get('s1')).toBe('Page 1 · A4 · Portrait · Infographic');
+    expect(labels.get('s1')).toBe('Page 1 · A4 · Portrait');
     expect(labels.get('s2')).toBe('Launch · Slide (16:9) · Slide');
     expect(labels.get('s3')).toBeNull();
     expect(labels.get('s4')).toBeNull();
@@ -50,6 +50,8 @@ function deckHook(framePage: (tabId: string, pageId: string) => void) {
   const setMultiSelectedIds = vi.fn();
   const hook = renderHook(() =>
     useSlideDeck({
+      prefs: {},
+      commitPrefs: () => {},
       tabs,
       activeTabId: 'a',
       setActiveId,

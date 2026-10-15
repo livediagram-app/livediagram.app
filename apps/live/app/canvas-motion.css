@@ -763,6 +763,27 @@
     stroke-dashoffset: 0;
   }
 }
+/* The bar's split percentage label (docs/specs/009-elements/progress.md "The percentage stays
+ * legible"): each copy's clip grows with the fill, from the empty / full clip to its resting
+ * inline clip-path, on the fill's own timing, so the ink changes where the fill's edge is. */
+@keyframes lvd-prog-ink-fill {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+@keyframes lvd-prog-ink-track {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.lvd-prog-ink-fill {
+  animation: lvd-prog-ink-fill calc(1.8s * var(--lvd-prog-speed, 1)) ease-out
+    var(--lvd-prog-iter, 1) forwards;
+}
+.lvd-prog-ink-track {
+  animation: lvd-prog-ink-track calc(1.8s * var(--lvd-prog-speed, 1)) ease-out
+    var(--lvd-prog-iter, 1) forwards;
+}
 .lvd-prog-ring-grow {
   animation: lvd-prog-ring-grow calc(1.8s * var(--lvd-prog-speed, 1)) ease-out
     var(--lvd-prog-iter, 1) forwards;
@@ -890,6 +911,226 @@
     var(--lvd-pie-iter, infinite);
 }
 
+/* Sankey diagram (docs/specs/009-elements/sankey.md "The menu"): Grow sweeps the diagram in from the left
+ * once, revealing it with a clip rather than scaling it, so the bands never distort; Flow runs a soft
+ * current along each band's middle line (a dashed stroke marching from source to target), looping. Speed
+ * and iteration from the inline --lvd-sankey-* custom properties. */
+@keyframes lvd-sankey-grow {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.lvd-sankey-grow {
+  animation: lvd-sankey-grow calc(0.9s * var(--lvd-sankey-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1)
+    var(--lvd-sankey-iter, 1) both;
+}
+@keyframes lvd-sankey-flow {
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+.lvd-sankey-flow .lvd-sankey-current {
+  animation: lvd-sankey-flow calc(1.4s * var(--lvd-sankey-speed, 1)) linear
+    var(--lvd-sankey-iter, infinite);
+}
+/* The staggered three: each part carries its column as --lvd-sk-col (a plain value, never animated), which
+ * delays it so the motion runs left to right. Cascade brings the columns in one after another, sliding a
+ * little from the left, once; Pulse dims and restores the bands in a slow wave, looping; Rise grows each
+ * column's node bars from their middles, then fades their bands and labels in, once. Opacity and transform
+ * only, so nothing is laid out again while they run. */
+@keyframes lvd-sankey-cascade {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lvd-sankey-cascade .lvd-sk-band,
+.lvd-sankey-cascade .lvd-sk-node,
+.lvd-sankey-cascade .lvd-sk-label {
+  animation: lvd-sankey-cascade calc(0.55s * var(--lvd-sankey-speed, 1))
+    cubic-bezier(0.22, 1, 0.36, 1) calc(var(--lvd-sk-col, 0) * 0.28s * var(--lvd-sankey-speed, 1))
+    var(--lvd-sankey-iter, 1) both;
+}
+@keyframes lvd-sankey-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+.lvd-sankey-pulse .lvd-sk-band {
+  animation: lvd-sankey-pulse calc(2.2s * var(--lvd-sankey-speed, 1)) ease-in-out
+    calc(var(--lvd-sk-col, 0) * 0.35s * var(--lvd-sankey-speed, 1)) var(--lvd-sankey-iter, infinite)
+    both;
+}
+@keyframes lvd-sankey-rise {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes lvd-sankey-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.lvd-sankey-rise .lvd-sk-node {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lvd-sankey-rise calc(0.5s * var(--lvd-sankey-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1)
+    calc(var(--lvd-sk-col, 0) * 0.3s * var(--lvd-sankey-speed, 1)) var(--lvd-sankey-iter, 1) both;
+}
+.lvd-sankey-rise .lvd-sk-band,
+.lvd-sankey-rise .lvd-sk-label {
+  animation: lvd-sankey-fade-in calc(0.5s * var(--lvd-sankey-speed, 1)) ease-out
+    calc((var(--lvd-sk-col, 0) * 0.3s + 0.3s) * var(--lvd-sankey-speed, 1))
+    var(--lvd-sankey-iter, 1) both;
+}
+
+/* Concept graphics (docs/specs/009-elements/concept-graphics.md "Animation"): each row carries its place in
+ * reading order as --lvd-cg-i (a plain value, never animated) and the face its row count as --lvd-cg-n, speed
+ * and iteration as --lvd-concept-*. Build brings the rows in one after another, once; with Repeat it builds,
+ * holds and clears on a steady cycle (every row the same length, so the stagger survives each loop). Pulse
+ * lights each row in turn and rests after the last, looping. Flow marches dashes along a cycle's arcs. Opacity,
+ * transform and filter only, except Flow's dash offset on a handful of arcs. */
+@keyframes lvd-concept-build {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lvd-concept-build-loop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  14%,
+  82% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+.lvd-concept-build .lvd-cg-row {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lvd-concept-build calc(0.45s * var(--lvd-concept-speed, 1))
+    cubic-bezier(0.22, 1, 0.36, 1) calc(var(--lvd-cg-i, 0) * 0.18s * var(--lvd-concept-speed, 1)) 1
+    both;
+}
+.lvd-concept-build-loop .lvd-cg-row {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lvd-concept-build-loop calc(4s * var(--lvd-concept-speed, 1)) ease-out
+    calc(var(--lvd-cg-i, 0) * 0.18s * var(--lvd-concept-speed, 1)) infinite both;
+}
+@keyframes lvd-concept-pulse {
+  0%,
+  16%,
+  100% {
+    filter: none;
+    transform: none;
+  }
+  8% {
+    filter: brightness(1.18);
+    transform: scale(1.03);
+  }
+}
+.lvd-concept-pulse .lvd-cg-row {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lvd-concept-pulse
+    calc((var(--lvd-cg-n, 4) * 0.6s + 0.8s) * var(--lvd-concept-speed, 1)) ease-in-out
+    calc(var(--lvd-cg-i, 0) * 0.6s * var(--lvd-concept-speed, 1)) var(--lvd-concept-iter, infinite)
+    both;
+}
+/* A pointer note's tip under Pulse (docs/specs/009-elements/pointer-note.md "Animation"): a ring grows from the dot
+ * and fades, drawing the eye to the spot the note is about. Transform and opacity only. */
+@keyframes lvd-pointer-tip-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  70%,
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+.lvd-pointer-tip-pulse {
+  animation: lvd-pointer-tip-pulse 1.6s ease-out infinite;
+}
+
+/* A sequence diagram's Play (docs/specs/009-elements/sequence-diagram.md "Animation"): the picture is uncovered top
+ * to bottom, 0.4 s per message scaled by Speed (--lvd-seq-dur, set by the face), so messages appear in the order they
+ * happen. Once, or with Repeat a reveal, hold and clear on a loop. A clip-path on one layer per diagram. */
+@keyframes lvd-seq-play {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes lvd-seq-play-loop {
+  0% {
+    clip-path: inset(0 0 100% 0);
+  }
+  70%,
+  92% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+}
+.lvd-seq-play {
+  animation: lvd-seq-play var(--lvd-seq-dur, 2s) linear 1 both;
+}
+.lvd-seq-play-loop {
+  animation: lvd-seq-play-loop calc(var(--lvd-seq-dur, 2s) / 0.7) linear infinite both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lvd-seq-play,
+  .lvd-seq-play-loop {
+    animation: none;
+  }
+}
+
+@keyframes lvd-concept-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+.lvd-concept-flow .lvd-cg-arc {
+  stroke-dasharray: 6 6;
+  animation: lvd-concept-flow calc(1.2s * var(--lvd-concept-speed, 1)) linear
+    var(--lvd-concept-iter, infinite);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lvd-anim-text-glow,
   .lvd-anim-text-pulse,
@@ -918,6 +1159,8 @@
   .lvd-icon-swing,
   .lvd-icon-float,
   .lvd-prog-grow,
+  .lvd-prog-ink-fill,
+  .lvd-prog-ink-track,
   .lvd-prog-pulse,
   .lvd-prog-stripes,
   .lvd-prog-ring-grow,
@@ -929,8 +1172,31 @@
   .lvd-pie-grow,
   .lvd-pie-pop,
   .lvd-pie-spin,
-  .lvd-pie-pulse {
+  .lvd-pie-pulse,
+  .lvd-sankey-grow,
+  .lvd-sankey-flow .lvd-sankey-current,
+  .lvd-sankey-cascade .lvd-sk-band,
+  .lvd-sankey-cascade .lvd-sk-node,
+  .lvd-sankey-cascade .lvd-sk-label,
+  .lvd-sankey-pulse .lvd-sk-band,
+  .lvd-sankey-rise .lvd-sk-node,
+  .lvd-sankey-rise .lvd-sk-band,
+  .lvd-sankey-rise .lvd-sk-label,
+  .lvd-concept-build .lvd-cg-row,
+  .lvd-concept-build-loop .lvd-cg-row,
+  .lvd-concept-pulse .lvd-cg-row,
+  .lvd-concept-flow .lvd-cg-arc,
+  .lvd-pointer-tip-pulse {
     animation: none;
+  }
+  /* The tip's pulse ring alone has no rest frame: it is hidden, never the elements above, which rest still and
+     visible. */
+  .lvd-pointer-tip-pulse {
+    opacity: 0;
+  }
+  /* A still Flow is the rest frame: solid arcs. */
+  .lvd-concept-flow .lvd-cg-arc {
+    stroke-dasharray: none;
   }
 }
 
@@ -942,6 +1208,15 @@
    above collapse it to ~instant. */
 [data-insert-shift] {
   transition: transform 120ms ease-out;
+}
+
+/* A stack's reflow (docs/specs/009-elements/stack.md "Animation"): a child the stack holds glides from where it was to
+   its new slot. Only on children nothing is dragging (the attribute is dropped for the gesture's elements), so a drag
+   still tracks the pointer exactly. The global reduce-motion rules above collapse it to ~instant. */
+[data-stack-glide] {
+  transition:
+    left 160ms ease-out,
+    top 160ms ease-out;
 }
 
 /* Done check: the all-done flash (docs/specs/012-collaboration/done-check.md).
@@ -1055,53 +1330,84 @@
   }
 }
 
-/* The animation targets the canvas SURFACE, never the content wrapper inside
-   it. That wrapper carries the pan/zoom transform
-   (`scale(z) translate(x, y)`), and a CSS animation on `transform` REPLACES
-   the inline one for its whole duration — so animating it dropped every slide
-   to unzoomed, untranslated top-left for 420ms and read as a broken load.
-   The surface has no transform of its own, so it is free to carry this one,
-   and moving it takes the slide's backdrop along with its content, which is
-   what a slide sliding away should look like anyway. */
-html[data-presenting] [data-canvas-a11y-root] {
-  will-change: transform, opacity;
+/* Slide moves and the entrance are React View Transitions (docs/specs/012-collaboration/presentation-mode.md
+   "Motion"; components/canvas/slide-transition.ts). The browser takes a picture of the canvas SURFACE before and
+   after, and these classes animate the two pictures, so the canvas's content wrapper (which carries the pan/zoom
+   transform) is never animated, and a hundred-element slide moves exactly like a one-element one. Reduced motion
+   starts no transition at all (lib/view-transition.ts), so it needs nothing here. */
+
+/* The first slide holds back until fullscreen has landed and the slide is fitted to it, then arrives as a
+   `slide-in` (PresentationHost), so the card never arrives and then jumps when the screen resizes under it. */
+html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
+  opacity: 0;
 }
 
-/* Entering: the deck arrives as a card over the editor. */
-html[data-presenting][data-slide-transition='none'][data-slide-move] [data-canvas-a11y-root] {
-  /* Cut straight to it. No animation at all, so nothing to wait on. */
+/* The pictures move; the group they sit in stays put. */
+::view-transition-group(.slide-in),
+::view-transition-group(.slide-forward),
+::view-transition-group(.slide-back),
+::view-transition-group(.slide-fade) {
   animation: none;
 }
-html[data-presenting][data-slide-transition='fade'][data-slide-move] [data-canvas-a11y-root] {
-  animation: lvd-slide-fade var(--lvd-slide-ms, 380ms) ease;
+
+/* Entering: the deck arrives as a card over the editor. The old picture is the surface held hidden. */
+::view-transition-old(.slide-in) {
+  animation: none;
+  opacity: 0;
+}
+::view-transition-new(.slide-in) {
+  animation: lvd-slide-in var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-html[data-presenting][data-slide-transition='slide'][data-slide-move='in'] [data-canvas-a11y-root],
-html[data-presenting]:not([data-slide-transition]) [data-slide-move='in'] [data-canvas-a11y-root] {
-  animation: lvd-slide-in var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1);
+/* Advancing: the new slide travels in from the RIGHT edge, all the way across the screen, while the old one leaves
+   to the left, so the deck reads as one strip of slides moving together. A gentle 6% nudge was the first attempt
+   and read as a wobble rather than as a slide. The curve is a plain decelerate: easing with a long slow tail
+   (0.22, 1, 0.36, 1 and friends) reads as rubber-banding, the slide arriving and then creeping. */
+::view-transition-old(.slide-forward) {
+  animation: lvd-slide-out-forward var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
 }
-/* Advancing: the new slide travels in from the RIGHT edge, all the way across
-   the screen. A gentle 6% nudge was the first attempt and read as a wobble
-   rather than as a slide — a deck changing slides is a big, obvious movement,
-   and because the animated node is the canvas SURFACE it takes the backdrop
-   with it, so the whole screen moves rather than what's on the canvas sliding around
-   inside a stationary frame.
+::view-transition-new(.slide-forward) {
+  animation: lvd-slide-forward var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+/* Going back mirrors it, so the direction always says which way you are travelling through the deck. */
+::view-transition-old(.slide-back) {
+  animation: lvd-slide-out-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+::view-transition-new(.slide-back) {
+  animation: lvd-slide-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+/* A fade crosses the two: the old slide fades out as the new one fades in. */
+::view-transition-old(.slide-fade) {
+  animation: lvd-slide-fade-out var(--lvd-slide-ms, 380ms) ease both;
+}
+::view-transition-new(.slide-fade) {
+  animation: lvd-slide-fade var(--lvd-slide-ms, 380ms) ease both;
+}
 
-   The curve is a plain decelerate. The first two attempts used easing with a
-   long slow tail (0.22, 1, 0.36, 1 and friends), which reads as rubber-banding
-   — the slide appears to arrive, then keeps creeping. A deck slide should land
-   and stop. */
-html[data-presenting][data-slide-transition='slide'][data-slide-move='forward']
-  [data-canvas-a11y-root] {
-  animation: lvd-slide-forward var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1);
+@keyframes lvd-slide-out-forward {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
 }
-/* Going back mirrors it, so the direction always says which way you are
-   travelling through the deck. */
-html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
-  [data-canvas-a11y-root] {
-  animation: lvd-slide-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1);
+@keyframes lvd-slide-out-back {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
-
+@keyframes lvd-slide-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
 @keyframes lvd-slide-fade {
   from {
     opacity: 0;
@@ -1134,17 +1440,6 @@ html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
   }
   to {
     transform: translateX(0);
-  }
-}
-
-/* Reduced motion still gets a transition, because "the slide changed" has to
-   be legible — it just loses the travel. Same durations, so the deck feels
-   the same to drive. */
-@media (prefers-reduced-motion: reduce) {
-  /* Whatever the transition setting says, reduced motion gets the fade: the
-     deck still reads as changing slides, without the travel. */
-  html[data-presenting][data-slide-move] [data-canvas-a11y-root] {
-    animation: lvd-slide-fade 380ms ease;
   }
 }
 

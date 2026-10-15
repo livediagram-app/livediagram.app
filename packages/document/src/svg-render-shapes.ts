@@ -7,6 +7,7 @@
 // without a scaled stroke. A silhouette changes in the table, never here.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
 import { actorFigureRect } from './actor-figure';
+import { finishBorderStroke, type Finish } from './finish';
 import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
 import { isCompoundPath, pathElementD } from './path-element';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -15,9 +16,8 @@ import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { codeTheme } from './code-themes';
-import { chartPaletteColors } from './chart-palettes';
+import { chartRamp } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
-import { PIE_PALETTE } from './data-shapes';
 import { legendFontPx } from './label-font';
 import {
   BROWSER_CHROME,
@@ -116,11 +116,12 @@ export function svgShapeSilhouette(
   el: BoxedElement & { type: 'shape' },
   fill: string,
   stroke: string,
+  finish: Finish = 'flexible',
 ): string | null {
   if (!hasShapeSilhouette(el.shape)) return null;
   const geometry = shapeGeometry(el.shape, el.height > 0 ? el.width / el.height : 1);
   if (!geometry) return null;
-  const strokeWidth = BORDER_STROKE_PX[el.strokeWidth ?? 'medium'] || 2;
+  const strokeWidth = BORDER_STROKE_PX[finishBorderStroke(el.strokeWidth, finish)] || 2;
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'] ?? undefined;
   // Mapped into the box rather than nested in a stretched <svg>, so no
   // renderer scales the stroke (svg-shape-fit.ts).
@@ -325,12 +326,14 @@ export function svgLegendShape(
   fill: string,
   stroke: string,
   textColor: string,
+  // The tab theme's chart ramp, the rung a chart beside it uses (chartRamp).
+  themeRamp?: readonly string[],
 ): string {
   const card =
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
     ` rx="8" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
   const items = el.legendItems ?? [];
-  const colors = chartPaletteColors(el.chartPalette) ?? PIE_PALETTE;
+  const colors = chartRamp(el.chartPalette, themeRamp);
   // Text Size (docs/specs/009-elements/pie-chart.md): the row pitch and the dot scale with the words, the
   // way LegendView's do.
   const fontPx = legendFontPx(el.textSize);

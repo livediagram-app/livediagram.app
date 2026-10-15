@@ -16,19 +16,23 @@ An **animation set** is the catalogue of animations offered for one family of el
 belongs to exactly one **body set**, which animates the element itself. An element that carries words also takes the
 **Text set**, which animates its words. The two compose: a box can pulse while its label types itself in.
 
-| Set     | Menu section | Members                                                                             | Field           |
-| ------- | ------------ | ----------------------------------------------------------------------------------- | --------------- |
-| Shape   | Shape        | shapes (every shape kind without a set of its own below), annotations, link cards   | `animation`     |
-| Sticky  | Sticky       | sticky notes                                                                        | `animation`     |
-| Drawing | Drawing      | freehand strokes, paths                                                             | `animation`     |
-| Media   | Media        | images, videos                                                                      | `animation`     |
-| Table   | Table        | tables                                                                              | `animation`     |
-| Text    | Text         | the words of a text element, a shape's label, a sticky note's text, a table's cells | `textAnimation` |
+| Set       | Menu section | Members                                                                                            | Field           |
+| --------- | ------------ | -------------------------------------------------------------------------------------------------- | --------------- |
+| Shape     | Shape        | shapes (every shape kind without a set of its own below), annotations, link cards                  | `animation`     |
+| Container | Shape        | boundaries ([The boundary](../009-elements/boundary.md)): the Shape set without its moving motions | `animation`     |
+| Sticky    | Sticky       | sticky notes                                                                                       | `animation`     |
+| Drawing   | Drawing      | freehand strokes, paths                                                                            | `animation`     |
+| Media     | Media        | images, videos                                                                                     | `animation`     |
+| Table     | Table        | tables                                                                                             | `animation`     |
+| Text      | Text         | the words of a text element, a shape's label, a sticky note's text, a table's cells                | `textAnimation` |
 
 A standalone **text element** has no body set: its words are the whole element, so it shows only Text Animation.
 
 A shape **carries words** when its kind takes a label. Icons, charts, progress, rating, stickers and chairs keep
-their own sets (below) and take no Text set.
+their own sets (below) and take no Text set; nor do badges and step numbers, whose few characters are part of their
+body, or the concept graphics, which animate their rows with the Concept set. A Shape animation stored on a concept graphic or a sequence
+before they had sets of their own does not play: their menu has no Shape category to change or clear it. A step number's
+**Play in Order** offsets its Shape animation by its number ([The step number](../009-elements/step-number.md)).
 
 ### Sets that already exist
 
@@ -40,14 +44,18 @@ These keep their catalogues and fields unchanged; they are listed so the menu ru
 | Chart            | Chart                                                                | pie, bar and line charts         | `pieAnim`                    | [Data charts](../009-elements/pie-chart.md)                                   |
 | Arrow            | Arrow                                                                | arrows                           | `flow`                       | [Canvas and palette](../008-canvas/canvas-and-palette.md) "Animated elements" |
 | Progress, Rating | (inside their own Progress / Rating category, not the Animation row) | progress bars and rings, ratings | `progressAnim`, `ratingAnim` | [Progress](../009-elements/progress.md), [Rating](../009-elements/rating.md)  |
+| Concept          | (inside the element's Tools section, like a chart's)                 | layer stacks, pyramids, cycles   | `conceptAnim`                | [Concept graphics](../009-elements/concept-graphics.md)                       |
 
 ## The menu
 
 - The element context menu has one **Animation** row. Its flyout holds **one section per set present in the
-  selection**, named by its set (Shape, Text, Sticky, Drawing, Media, Table, Icon, Chart, Arrow), and no others.
+  selection**, named by its set (Shape, Text, Sticky, Drawing, Media, Table, Icon, Chart, Sankey, Progress, Rating, Concept,
+  Sequence, Arrow), and no others. An element's own animation is always one of these sections, never a picker inside
+  the element's own section (its Tools section holds only what the element is, not how it moves).
   A single shape with a label shows Shape and Text. When only one set is present (a single text element), there
   is nothing to choose between, so its section shows inline in the menu, titled Animation.
-- Sections appear in a fixed order: Shape, Sticky, Drawing, Media, Table, Icon, Chart, Text, Arrow. A body set
+- Sections appear in a fixed order: Shape, Sticky, Drawing, Media, Table, Icon, Chart, Sankey, Progress, Rating,
+  Concept, Sequence, Text, Arrow. A body set
   comes before the words it carries; arrows come last, as today.
 - A section applies to **every member of its set in the selection** and to nothing else. With a shape and a text
   element selected, the Shape section animates the shape, and the Text section animates the text element and the

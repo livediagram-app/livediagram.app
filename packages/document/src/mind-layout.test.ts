@@ -202,3 +202,76 @@ describe('reanchorMindConnectors', () => {
     expect(out[0]).toMatchObject({ from: { anchor: 'n' }, to: { anchor: 's' } });
   });
 });
+
+// docs/specs/009-elements/mind-node.md "Flows": Leftward and Upward mirror Tree and Downward.
+describe('layoutMindTree: mirrored flows', () => {
+  const at = (flow: MindFlow) => apply(map(), layoutMindTree(map(), 'r', flow));
+
+  it('leftward puts each level the child gap to the left, mirroring the tree', () => {
+    const left = at('leftward');
+    const tree = at('tree');
+    const r = box(left, 'r');
+    expect(box(left, 'b').x + box(left, 'b').width).toBe(r.x - MIND_CHILD_GAP_X);
+    for (const id of ['a', 'b', 'c', 'b1', 'b2']) expect(box(left, id).y).toBe(box(tree, id).y);
+  });
+
+  it('upward puts each level above, mirroring the downward map', () => {
+    const up = at('upward');
+    const down = at('downward');
+    const r = box(up, 'r');
+    expect(box(up, 'a').y + box(up, 'a').height).toBe(r.y - MIND_CHILD_GAP_Y);
+    for (const id of ['a', 'b', 'c', 'b1', 'b2']) expect(box(up, id).x).toBe(box(down, id).x);
+  });
+
+  it('both are fixed points, so a laid-out map reads as tidy', () => {
+    for (const flow of ['leftward', 'upward'] as const)
+      expect(isMindTreeTidy(at(flow), 'r', flow)).toBe(true);
+  });
+
+  it('upward connectors leave the parent top and enter the child bottom', () => {
+    const els = at('upward');
+    const arrow = { ...createPinnedArrow('r', 'e', 'a', 'w'), id: 'ra' } as ArrowElement;
+    const [moved] = reanchorMindConnectors(
+      [...els, arrow],
+      new Set(['r', 'a']),
+      'upward',
+      new Map(),
+    );
+    expect([moved!.from, moved!.to].map((e) => (e as { anchor: string }).anchor)).toEqual([
+      'n',
+      's',
+    ]);
+  });
+});
+
+// docs/specs/009-elements/mind-node.md "Spacing": the root's spacing scales both gaps.
+describe('layoutMindTree: spacing', () => {
+  const withSpacing = (spacing?: 'tight' | 'compact' | 'comfortable' | 'wide') =>
+    map().map((el) => (el.id === 'r' && spacing ? { ...el, mindSpacing: spacing } : el));
+  const gapsOf = (spacing?: 'tight' | 'compact' | 'comfortable' | 'wide') => {
+    const els = apply(withSpacing(spacing), layoutMindTree(withSpacing(spacing), 'r', 'tree'));
+    const r = box(els, 'r');
+    return {
+      child: box(els, 'a').x - (r.x + r.width),
+      sibling: box(els, 'c').y - (box(els, 'b2').y + box(els, 'b2').height),
+    };
+  };
+
+  it('comfortable is exactly the gaps a map without a spacing has', () => {
+    expect(gapsOf('comfortable')).toEqual(gapsOf());
+    expect(gapsOf()).toEqual({ child: MIND_CHILD_GAP_X, sibling: MIND_SIBLING_GAP_Y });
+  });
+
+  it('tight, compact and wide scale both gaps', () => {
+    expect(gapsOf('tight')).toEqual({ child: 32, sibling: 9 });
+    expect(gapsOf('compact')).toEqual({ child: 48, sibling: 14 });
+    expect(gapsOf('wide')).toEqual({ child: 96, sibling: 27 });
+  });
+
+  it('a spaced map is still a fixed point', () => {
+    for (const s of ['tight', 'wide'] as const) {
+      const els = apply(withSpacing(s), layoutMindTree(withSpacing(s), 'r', 'balanced'));
+      expect(isMindTreeTidy(els, 'r', 'balanced')).toBe(true);
+    }
+  });
+});

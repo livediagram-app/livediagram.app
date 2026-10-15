@@ -168,9 +168,11 @@ function method(k: Kit): Element[] {
   STEPS.forEach((s, i) => {
     const y = stepsTop + i * rowH;
     els.push(
-      k.shape('circle', 0, y, d, d, {
+      // A Step number (docs/specs/009-elements/step-number.md) in the Solid look, tomato on the rail.
+      k.shape('step', 0, y, d, d, {
         label: String(i + 1),
         textBold: true,
+        chipLook: 'solid',
         textColor: PAPER,
         ...lockedFill(TOMATO),
       }),

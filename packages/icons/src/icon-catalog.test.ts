@@ -4,9 +4,10 @@ import { markupBounds } from './centring';
 import * as LUCIDE from './lucide.generated';
 import { ICON_CATALOG_1 } from './icon-catalog-1';
 import { ICON_CATALOG_2 } from './icon-catalog-2';
+import { ICON_CATALOG_3 } from './icon-catalog-3';
 import { iconPrimsMarkup } from './markup';
 
-const CATALOG = [...ICON_CATALOG_1, ...ICON_CATALOG_2];
+const CATALOG = [...ICON_CATALOG_1, ...ICON_CATALOG_2, ...ICON_CATALOG_3];
 
 // Floor-plan furniture (docs/specs/008-canvas/canvas-and-palette.md, the palette's Furniture chip).
 const FURNITURE = [

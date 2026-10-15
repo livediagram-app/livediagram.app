@@ -4,6 +4,7 @@
 // its set-up projected over the document's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
+import { planFontStyle } from '@/lib/plan-font';
 import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
 import { SlotBoardCog } from './SlotBoardCog';
 import { isCardVotableInVote } from '@livediagram/document';
@@ -12,6 +13,7 @@ import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
 import { markPanThrough } from '@/hooks/canvas/pan-through';
+import { mayCreateCardType } from './may-create-card-type';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cornerRadiusPx, type ShapeElement } from '@livediagram/document';
@@ -28,7 +30,6 @@ import {
   boardAddTypes,
   newItemId,
   isTrashed,
-  ITEM_TYPES_MAX,
 } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
@@ -47,7 +48,7 @@ import { boardRowTemplate } from './plan-board-rows';
 import { PlanSetupBoard } from './PlanSetupBoard';
 import { setUpBoard, setupFromBoard, setupLayoutOf, withSetupLayout } from './setup-board';
 import { pickableStatuses } from './column-status-picks';
-import { boardItems } from './widgets/widget-stats';
+import { boardItems } from '@livediagram/plan-art';
 import { trackSetup } from './track-board-setup';
 import { boardColumnTemplate } from './plan-board-columns';
 import { boardLook, shownQuick } from './phone-board';
@@ -55,6 +56,7 @@ import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
+import { COLUMN_ATTR, useColumnMoveFlip } from './column-move-flip';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
 import { ExampleCardsNotice } from './ExampleCardsNotice';
@@ -218,7 +220,10 @@ export function PlanBoardView({
         : '',
     [projection, collapsed],
   );
-  usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null);
+  // A column moved left or right glides there (column-move-flip.ts), its cards riding along rather than gliding too.
+  const gridRef = useRef<HTMLDivElement>(null);
+  const columnMove = useColumnMoveFlip(gridRef, setup?.columns.map((c) => c.id).join('|') ?? '');
+  usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null, columnMove.isMoving);
   // Maximised (or filling its tab, or a phone's Dashboard slot, one column a screen), a card dragged near the columns'
   // left or right edge scrolls them sideways.
   useEdgeAutoScroll(
@@ -251,9 +256,9 @@ export function PlanBoardView({
   // Setup Board asked for again from the board's Board Setup (a board that has columns), for this person only.
   const settingUp = canEdit && plan?.setupBoardId === element.id;
   // The Add a Card menu's Add New Card Type: a new type with only this board's statuses, added to it once saved
-  // (docs/specs/026-plan/plan-board.md "Add New Card Type"); not offered once the catalogue is full.
+  // (docs/specs/026-plan/plan-board.md "Add New Card Type"), for an Editor while the catalogue has room.
   const createType =
-    plan && plan.types.length < ITEM_TYPES_MAX
+    plan && mayCreateCardType(plan)
       ? () =>
           plan.createTypeForBoard(
             element.id,
@@ -275,6 +280,8 @@ export function PlanBoardView({
         ?.focus();
     } else if (action.kind === 'open') plan.openItem(item.id);
     else if (action.kind === 'trash') {
+      // Focus goes on to a neighbour rather than falling to the page with the card.
+      focusNextRef.current = action.focusAfter;
       plan.trashItem(item.id);
       plan.announce(`#${item.key} moved to the Trash`);
     } else if (action.kind === 'add') setAdding({ status: action.status, laneKey: action.laneKey });
@@ -319,7 +326,7 @@ export function PlanBoardView({
         borderColor: palette.border,
         color: palette.text,
         borderRadius: radius,
-        ...(fontFamily ? { fontFamily } : {}),
+        ...planFontStyle(fontFamily),
       }}
     >
       <PlanBoardHeader
@@ -417,7 +424,7 @@ export function PlanBoardView({
                   onCancel: () => plan?.openBoardSetup(null),
                 }
               : {})}
-            {...(plan && plan.types.length < ITEM_TYPES_MAX
+            {...(plan && mayCreateCardType(plan)
               ? { onCreateType: () => plan.editType('new') }
               : {})}
             layout={setupLayoutOf(setup)}
@@ -434,6 +441,7 @@ export function PlanBoardView({
           />
         ) : (
           <div
+            ref={gridRef}
             className="grid min-h-full gap-3"
             style={{
               gridTemplateColumns: columnTemplate,
@@ -452,6 +460,7 @@ export function PlanBoardView({
                 palette={palette}
                 canEdit={canEdit}
                 onChange={(next, part) => {
+                  if (part === 'ColumnReordered') columnMove.beforeMove(col.column.id);
                   plan?.updateBoard(element.id, next);
                   trackSetup(part);
                 }}
@@ -530,6 +539,7 @@ export function PlanBoardView({
                         return (
                           <div
                             key={col.column.id}
+                            {...{ [COLUMN_ATTR]: col.column.id }}
                             data-plan-status={col.column.status}
                             data-plan-lane={lane.key}
                             role="list"
@@ -569,7 +579,7 @@ export function PlanBoardView({
                                 onKey={onCardKey}
                                 onMenu={(it, at) => setMenu({ itemId: it.id, at })}
                                 cardVote={cardVote}
-                                {...(interactive && canEdit
+                                {...(interactive && canEditCards
                                   ? {
                                       onLongPress: (it: Item, at: { x: number; y: number }) => {
                                         // The held press opens the menu instead of becoming a drag or a click.
@@ -629,7 +639,9 @@ export function PlanBoardView({
           menu={menu}
           plan={plan}
           setup={setup}
-          canEdit={canEdit}
+          // A Participant works on cards (duplicates, moves, flags) and never retires them, as in the item panel.
+          canEdit={canEditCards}
+          canRetire={canEdit}
           onClose={() => setMenu(null)}
         />
       ) : null}

@@ -10,6 +10,7 @@
     ".": "./src/index.ts",
     "./icon-catalog-1": "./src/icon-catalog-1.ts",
     "./icon-catalog-2": "./src/icon-catalog-2.ts",
+    "./icon-catalog-3": "./src/icon-catalog-3.ts",
     "./tech-icon-catalog": "./src/tech-icon-catalog.ts",
     "./resolve": "./src/resolve.ts",
     "./sticker-catalog": "./src/sticker-catalog.ts",

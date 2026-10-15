@@ -1,3 +1,4 @@
+import { isFloorShape } from '@livediagram/document';
 import type { Dispatch, SetStateAction } from 'react';
 import {
   takesTypedLabel,
@@ -17,6 +18,7 @@ import {
 } from '@/lib/format-painter';
 import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
 import { track } from '@/lib/telemetry';
+import { brushPageId } from '@/lib/format-page-brush';
 import { patchTab } from './editor-page-helpers';
 import { selectionIds, type Selection } from '@/lib/selection-store';
 
@@ -147,7 +149,14 @@ export function useElementHelpers(opts: {
     // and immediately work with it matches every other editor; the
     // Layer accordion's "Send to back" covers the rarer reverse case.
     const before = activeTab.elements;
-    const after = insertion ? insertElementAt(before, insertion, el) : [...before, el];
+    // A room or a rug is the floor (docs/specs/009-elements/office.md): it goes in behind everything, so the
+    // furniture already there, and any dropped on it later, stands on it.
+    const onFloor = el.type === 'shape' && isFloorShape(el.shape);
+    const after = insertion
+      ? insertElementAt(before, insertion, el)
+      : onFloor
+        ? [el, ...before]
+        : [...before, el];
     // Insert between (docs/specs/021-event-storming/event-storming.md): the ripple runs against whatever the tab
     // holds NOW, not the snapshot the drag started with, so a peer's mid-drag
     // move isn't reverted by the drop that follows it. One commitTabs = one
@@ -198,13 +207,22 @@ export function useElementHelpers(opts: {
     // Every toggle off means there is nothing to paint: leave the brush and
     // the target alone rather than committing an empty change per tap.
     if (!formatPaintsAnything(formatConfig)) return;
+    // A page's background in the brush paints pages, not elements: the brush is kept
+    // (docs/specs/007-editor/illustrate-pages.md "Copying a background").
+    if (brushPageId(formatSourceId)) return;
     const keepSource = formatConfig.mode === 'keep';
     const source = activeTab.elements.find((el) => el.id === formatSourceId);
-    const target = activeTab.elements.find((el) => el.id === targetId);
-    if (!source || !target || source.id === target.id) {
-      if (!keepSource) setFormatSourceId(null);
+    // The source is gone (deleted, or another tab): the brush holds nothing any more.
+    if (!source) {
+      setFormatSourceId(null);
       return;
     }
+    const target = activeTab.elements.find((el) => el.id === targetId);
+    // Only an apply empties a Paint once brush (or counts as a paint): a tap on the source itself, or on an
+    // element of the other kind (a shape's look onto an arrow, a no-op), leaves the brush loaded.
+    const boxedPair = !!target && isBoxed(source) && isBoxed(target);
+    const arrowPair = source.type === 'arrow' && target?.type === 'arrow';
+    if (!target || source.id === target.id || !(boxedPair || arrowPair)) return;
     track('Element', 'Changed', 'FormatPainter');
     // Field projections live in lib/format-painter.ts so the list
     // of painted fields (and the rule that future additions to

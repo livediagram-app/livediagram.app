@@ -72,81 +72,7 @@ const g = {
   strokeLinejoin: 'round',
 } as const;
 
-// Diagram mode's Popular, in its own order (palette-layouts DIAGRAM).
-const POPULAR: { label: string; glyph: ReactNode }[] = [
-  { label: 'Square', glyph: <rect x={-6} y={-6} width={12} height={12} rx={2} {...g} /> },
-  { label: 'Circle', glyph: <circle r={6.5} {...g} /> },
-  { label: 'Diamond', glyph: <path d="M0 -7 L7 0 L0 7 L-7 0 Z" {...g} /> },
-  { label: 'Text', glyph: <path d="M-5 -5h10M0 -5v11" {...g} /> },
-  { label: 'Arrow', glyph: <path d="M-6 6 L6 -6 M0 -6 H6 V0" {...g} /> },
-  {
-    label: 'Frame',
-    glyph: <path d="M-3 -7 V7 M3 -7 V7 M-7 -3 H7 M-7 3 H7" {...g} />,
-  },
-  { label: 'Note', glyph: <path d="M-6 -6 h12 v7 l-5 5 h-7 Z M1 6 v-5 h5" {...g} /> },
-  {
-    label: 'Image',
-    glyph: (
-      <g {...g}>
-        <rect x={-7} y={-6} width={14} height={12} rx={2} />
-        <path d="M-7 3 L-2 -1 L2 2 L4 0 L7 3" />
-      </g>
-    ),
-  },
-  {
-    label: 'Shape Pen',
-    glyph: (
-      <g {...g}>
-        <path d="M-6 6 L-5 2 L3 -6 L6 -3 L-2 5 Z" />
-      </g>
-    ),
-  },
-  {
-    label: 'Table',
-    glyph: (
-      <g {...g}>
-        <rect x={-7} y={-6} width={14} height={12} rx={1.5} />
-        <path d="M-7 -1h14M-1 -6v12" />
-      </g>
-    ),
-  },
-  { label: 'Code', glyph: <path d="M-3 -5 L-7 0 L-3 5 M3 -5 L7 0 L3 5" {...g} /> },
-  {
-    label: 'Entity',
-    glyph: (
-      <g {...g}>
-        <rect x={-7} y={-6} width={14} height={12} rx={1.5} />
-        <path d="M-7 -2h14M-4 1.5h6M-4 4h4" />
-      </g>
-    ),
-  },
-];
-
-/** Popular in Diagram mode: twelve tiles, four across, with the divider after the Diamond. */
-export function PopularGrid() {
-  return (
-    <Scene w={420} h={250} bg="plain">
-      <PaletteFrame category="Popular" h={230}>
-        {POPULAR.map((t, i) => {
-          const col = i % 4;
-          const row = Math.floor(i / 4);
-          return (
-            <g key={t.label}>
-              <Tile x={92 + col * 66} y={84 + row * 50} size={30}>
-                {t.glyph}
-              </Tile>
-              <Label x={107 + col * 66} y={124 + row * 50} size={10} anchor="middle" tone="muted">
-                {t.label}
-              </Label>
-            </g>
-          );
-        })}
-      </PaletteFrame>
-    </Scene>
-  );
-}
-
-/** Write: rows, not tiles, each with the one-line blurb that tells the four apart. */
+/** Write: rows, not tiles, each with the one-line blurb that tells the five apart. */
 export function WriteRows() {
   const rows: { name: string; blurb: string; key?: string; glyph: ReactNode }[] = [
     {
@@ -171,10 +97,20 @@ export function WriteRows() {
       blurb: 'A marker that holds a note',
       glyph: <path d="M-7 -5 h14 v8 h-8 l-3 3 v-3 h-3 Z" {...g} />,
     },
+    {
+      name: 'Pointer Note',
+      blurb: 'A note with a line to one spot',
+      glyph: (
+        <path
+          d="M-7 -7 h9 v6 h-9 Z M-2 -1 L5 5 M5 5 m-1.5 0 a1.5 1.5 0 1 0 3 0 a1.5 1.5 0 1 0 -3 0"
+          {...g}
+        />
+      ),
+    },
   ];
   return (
-    <Scene w={420} h={250} bg="plain">
-      <PaletteFrame category="Write" h={230}>
+    <Scene w={420} h={290} bg="plain">
+      <PaletteFrame category="Write" h={270}>
         {rows.map((r, i) => {
           const ry = 80 + i * 40;
           return (

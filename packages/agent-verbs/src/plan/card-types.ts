@@ -16,7 +16,7 @@ import {
   type CardTypeChange,
 } from '@livediagram/items';
 import { apiRefusalOf } from './api-refusal';
-import { listedType, type ListedType } from './plan-listing';
+import { listedTypes, type ListedType } from './plan-listing';
 import { itemsPath } from '../verbs/shared';
 import {
   CARD_TYPES_SAVE_ATTEMPTS,
@@ -47,7 +47,7 @@ export async function changeCardTypes(
       return {
         applied: [],
         trashed: [],
-        types: state.plan.types.map(listedType),
+        types: listedTypes(state.plan.types, state.plan.statuses),
         refusal: {
           code: result.code,
           message: `${result.message}${result.applied.length ? ` Nothing was saved (it would have applied: ${result.applied.join('; ')}).` : ''}`,
@@ -63,7 +63,12 @@ export async function changeCardTypes(
       if (isCardTypesStale(err) && attempt < CARD_TYPES_SAVE_ATTEMPTS) continue;
       const refusal = apiRefusalOf(err);
       if (!refusal) throw err;
-      return { applied: [], trashed: [], types: state.plan.types.map(listedType), refusal };
+      return {
+        applied: [],
+        trashed: [],
+        types: listedTypes(state.plan.types, state.plan.statuses),
+        refusal,
+      };
     }
     return trashDeletedTypes(api, documentId, state, result);
   }
@@ -76,7 +81,7 @@ async function trashDeletedTypes(
   state: PlanState,
   result: Extract<ReturnType<typeof applyCardTypeChanges>, { ok: true }>,
 ): Promise<CardTypeChangesResult> {
-  const types = typesOf(result.catalogue).map(listedType);
+  const types = listedTypes(typesOf(result.catalogue), state.plan.statuses);
   const gone = new Set(result.deleted);
   const trashed: string[] = [];
   try {

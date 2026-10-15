@@ -14,10 +14,14 @@
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createPinnedArrow, createShape, createText, type Element } from '@livediagram/document';
+import {
+  createPinnedArrow,
+  createShape,
+  type Element,
+  type ShapeElement,
+} from '@livediagram/document';
 import {
   BUTTON_H,
-  BUTTON_W,
   GAP,
   HEAD_GAP,
   SECTION_H,
@@ -25,8 +29,11 @@ import {
   TITLE_H,
   checklist,
   heading,
-  note,
+  kitRow,
   section,
+  sessionButton,
+  stepCards,
+  type SessionStep,
 } from './template-session-parts';
 
 // The Town Hall lives in its own module; re-exported so build-template keeps
@@ -42,9 +49,7 @@ export { buildTownHall } from './template-builders-town-hall';
 // upvote, spotlight, Done, next) sits in the middle. On the right, the
 // facilitator's kit is laid out in the order it is pressed: the 8-minute
 // timebox, the keep-going poll, the 4-minute extension. Takeaways close it.
-type Step = { n: string; title: string; hint: string; icon: string; fill: string; ink: string };
-
-const LEAN_COFFEE_STEPS: Step[] = [
+const LEAN_COFFEE_STEPS: SessionStep[] = [
   {
     n: '1',
     title: 'Propose',
@@ -109,64 +114,9 @@ export function buildLeanCoffee(cx: number, cy: number): Element[] {
 
   // The loop: four step cards, each a tinted card with a number disc, glyph,
   // name and one line of how.
-  const stepIds: string[] = [];
-  LEAN_COFFEE_STEPS.forEach((s, i) => {
-    const y = top + SECTION_H + 12 + i * (stepH + stepGap);
-    const card = {
-      ...createShape('square', x0, y),
-      width: stepsW,
-      height: stepH,
-      fillColor: s.fill,
-      strokeColor: s.ink,
-    };
-    stepIds.push(card.id);
-    const disc = 36;
-    elements.push(
-      card,
-      {
-        ...createShape('circle', x0 + 16, y + 16),
-        width: disc,
-        height: disc,
-        label: s.n,
-        textSize: 'md',
-        textBold: true,
-        padding: 'none',
-        fillColor: s.ink,
-        strokeColor: '#ffffff',
-        textColor: '#ffffff',
-        themeLockFill: true,
-      },
-      {
-        ...createText(x0 + 16 + disc + 12, y + 16),
-        width: stepsW - 32 - disc - 12 - 40,
-        height: disc,
-        label: s.title,
-        textSize: 'md',
-        textBold: true,
-        textAlignX: 'left',
-        textColor: s.ink,
-      },
-      {
-        ...createShape('icon', x0 + stepsW - 16 - 32, y + 18),
-        width: 32,
-        height: 32,
-        iconId: s.icon,
-        strokeColor: s.ink,
-      },
-      {
-        ...createText(x0 + 16, y + 16 + disc + 8),
-        width: stepsW - 32,
-        height: stepH - 16 - disc - 8 - 12,
-        label: s.hint,
-        textSize: 'sm',
-        textAlignX: 'left',
-        textAlignY: 'top',
-      },
-    );
-  });
-  for (let i = 0; i < stepIds.length - 1; i++) {
-    elements.push(createPinnedArrow(stepIds[i]!, 's', stepIds[i + 1]!, 'n'));
-  }
+  const steps = stepCards(x0, top + SECTION_H + 12, stepsW, stepH, stepGap, LEAN_COFFEE_STEPS);
+  const stepIds = steps.ids;
+  elements.push(...steps.elements);
   // Back round the loop: Keep going? returns to Discuss with the next topic.
   elements.push({
     ...createPinnedArrow(stepIds[3]!, 'e', stepIds[2]!, 'e'),
@@ -183,42 +133,25 @@ export function buildLeanCoffee(cx: number, cy: number): Element[] {
   });
 
   // The kit, top to bottom in the order it is pressed.
-  const kit = (y: number, button: ReturnType<typeof createShape>, text: string): Element[] => [
-    { ...button, x: sideX, y },
-    note(sideX + BUTTON_W + 16, y, sideW - BUTTON_W - 16, BUTTON_H, text),
-  ];
+  const kit = (y: number, button: ShapeElement, text: string): Element[] =>
+    kitRow(sideX, y, sideW, button, text);
   const kitTop = top + SECTION_H + 12;
   const kitPitch = BUTTON_H + 20;
   elements.push(
     section(sideX, top, sideW, 'Facilitator kit'),
     ...kit(
       kitTop,
-      {
-        ...createShape('session-button', 0, 0),
-        width: BUTTON_W,
-        height: BUTTON_H,
-        session: { tool: 'timer', minutes: 8 },
-      },
+      sessionButton({ tool: 'timer', minutes: 8 }),
       'Step 3: start the timebox as the top topic is spotlit.',
     ),
     ...kit(
       kitTop + kitPitch,
-      {
-        ...createShape('session-button', 0, 0),
-        width: BUTTON_W,
-        height: BUTTON_H,
-        session: { tool: 'poll', question: 'Keep going on this topic?', style: 'yesNo' },
-      },
+      sessionButton({ tool: 'poll', question: 'Keep going on this topic?', style: 'yesNo' }),
       'Step 4: when it rings, ask the room.',
     ),
     ...kit(
       kitTop + kitPitch * 2,
-      {
-        ...createShape('session-button', 0, 0),
-        width: BUTTON_W,
-        height: BUTTON_H,
-        session: { tool: 'timer', minutes: 4 },
-      },
+      sessionButton({ tool: 'timer', minutes: 4 }),
       'A yes buys 4 more minutes. A no: Done, next.',
     ),
   );

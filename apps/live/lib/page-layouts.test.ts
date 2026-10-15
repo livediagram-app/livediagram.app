@@ -15,41 +15,132 @@ const boxes = (els: Element[]) =>
     el.type === 'arrow' ? [] : [{ x: el.x, y: el.y, r: el.x + el.width, b: el.y + el.height }],
   );
 
+// The ninety-two of the spec, by category in the picker's order.
+const BY_CATEGORY: Record<string, string[]> = {
+  covers: [
+    'title',
+    'quote',
+    'event',
+    'section-divider',
+    'report-cover',
+    'magazine-cover',
+    'book-cover',
+    'proposal-cover',
+    'case-study-cover',
+    'newsletter-front',
+    'contents',
+    'certificate',
+  ],
+  posters: [
+    'poster',
+    'gig-poster',
+    'research-poster',
+    'coming-soon',
+    'exhibition',
+    'travel-poster',
+    'workshop',
+    'hiring',
+    'big-sale',
+    'notice',
+    'motivational',
+  ],
+  data: [
+    'big-number',
+    'key-stats',
+    'chart-story',
+    'facts-grid',
+    'survey-results',
+    'progress-report',
+    'pictogram',
+    'ranking',
+    'kpi-dashboard',
+    'trend-story',
+    'market-share',
+    'stat-mosaic',
+  ],
+  steps: [
+    'process',
+    'timeline',
+    'checklist',
+    'roadmap',
+    'agenda',
+    'cycle',
+    'funnel',
+    'staircase',
+    'customer-journey',
+    'project-plan',
+    'decision-flow',
+    'how-to',
+  ],
+  compare: [
+    'comparison',
+    'pros-cons',
+    'before-after',
+    'feature-matrix',
+    'versus',
+    'pricing-tiers',
+    'swot',
+    'effort-impact',
+    'scorecard',
+    'spectrum',
+    'venn',
+    'three-options',
+  ],
+  people: [
+    'top-tips',
+    'team',
+    'questions',
+    'profile',
+    'org-chart',
+    'testimonials',
+    'meet-the-speakers',
+    'employee-spotlight',
+    'values',
+    'idea-board',
+    'persona',
+    'shout-outs',
+  ],
+  social: [
+    'announcement',
+    'did-you-know',
+    'save-the-date',
+    'carousel-cover',
+    'tip-of-the-day',
+    'milestone',
+    'behind-the-scenes',
+    'countdown',
+    'product-spotlight',
+    'giveaway',
+    'welcome',
+    'webinar',
+  ],
+  explainers: [
+    'explain-how-it-works',
+    'explain-anatomy',
+    'explain-key-concepts',
+    'explain-cheat-sheet',
+    'explain-glossary',
+    'explain-myths-facts',
+    'explain-fact-file',
+    'explain-lesson-summary',
+    'explain-formula',
+  ],
+};
+
 describe('page layouts', () => {
-  it('are the thirty-one of the spec, each unique', () => {
-    expect(PAGE_LAYOUTS.map((l) => l.id)).toEqual([
-      'title',
-      'big-number',
-      'key-stats',
-      'process',
-      'timeline',
-      'comparison',
-      'chart-story',
-      'top-tips',
-      'quote',
-      'team',
-      'facts-grid',
-      'checklist',
-      'event',
-      'section-divider',
-      'poster',
-      'survey-results',
-      'progress-report',
-      'roadmap',
-      'agenda',
-      'questions',
-      'profile',
-      'pros-cons',
-      'before-after',
-      'feature-matrix',
-      'announcement',
-      'did-you-know',
-      'save-the-date',
-      'pictogram',
-      'ranking',
-      'cycle',
-      'funnel',
-    ]);
+  it('are the ninety-two of the spec, by category, each unique, at most twelve to a category', () => {
+    for (const c of PAGE_LAYOUT_CATEGORIES) {
+      expect(
+        PAGE_LAYOUTS.filter((l) => l.category === c.id).map((l) => l.id),
+        c.id,
+      ).toEqual(BY_CATEGORY[c.id]);
+    }
+    const ids = PAGE_LAYOUTS.map((l) => l.id);
+    expect(ids).toHaveLength(92);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const c of PAGE_LAYOUT_CATEGORIES) {
+      expect(PAGE_LAYOUTS.filter((l) => l.category === c.id).length).toBeLessThanOrEqual(12);
+    }
   });
 
   it('each sit in one of the picker categories, every category used', () => {

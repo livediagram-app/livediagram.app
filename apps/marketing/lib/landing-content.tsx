@@ -250,7 +250,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Ask the room to look here',
         description:
-          'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, your zoom, the thing you mean. It asks rather than drags, so nobody loses the place they were working in.',
+          'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, the thing you mean, centred on their screen. It asks rather than drags, so nobody loses the place they were working in.',
       },
       {
         art: <FacilitatorArt />,
@@ -467,9 +467,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'A hundred and four starter templates',
+        title: 'A hundred and twenty-five starter templates',
         description:
-          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, meeting agendas and risk matrices, budgets and invoices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by the job to be done in the picker, edit one, or start blank.',
+          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, meeting agendas and risk matrices, pub quizzes and icebreakers, budgets and invoices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by the job to be done in the picker, edit one, or start blank.',
       },
       {
         art: <ThemesArt />,
@@ -477,7 +477,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Templates & themes',
         title: 'Twenty-six preset themes',
         description:
-          'Default, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more, plus multi-colour Rainbow, Pastel, Tropical, Autumn, and Jewel schemes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow. Default has a light and a dark half, and follows your own appearance.',
+          'Default, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more, plus multi-colour Rainbow, Pastel and Tropical schemes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow. Every theme has a light and a dark half, and follows your own appearance.',
       },
       {
         art: <CustomThemesArt />,
@@ -810,7 +810,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/illustrate/infographic-layouts/',
         title: 'Start a page from a layout',
         description:
-          'Thirty-one ready-made pages in six categories, from a title page and key stats to a feature matrix, a funnel and a save-the-date. Hover one to preview it on your page, press it to place it, then make it yours.',
+          'Ninety-two ready-made pages in eight categories, from a magazine cover and a gig poster to a KPI dashboard, a SWOT and a cheat sheet. Hover one to preview it on your page, press it to place it, then make it yours.',
       },
       {
         art: <IllustrateBackgroundsArt />,
@@ -905,7 +905,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present',
         title: 'Slide pages, ready-made layouts',
         description:
-          'Add a 16:9 or classic 4:3 slide page and start it from one of seventeen layouts: a title, an agenda, two columns, image and text, a timeline and more. One press puts it in the deck, and it presents edge to edge.',
+          'Add a 16:9 or classic 4:3 slide page and start it from one of 46 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
       },
       {
         art: <SlideDeckArt />,

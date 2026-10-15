@@ -126,19 +126,20 @@ export function BuildRows() {
   const rows: {
     name: string;
     blurb: string;
-    glyph: 'mind' | 'lane' | 'frame' | 'timeline' | 'table';
+    glyph: 'mind' | 'lane' | 'frame' | 'timeline' | 'table' | 'sankey';
   }[] = [
     { name: 'Mind Node', blurb: 'Tab adds a child, Enter a sibling', glyph: 'mind' },
     { name: 'Table', blurb: 'An editable grid of cells', glyph: 'table' },
     { name: 'Lane', blurb: 'A titled band that carries its steps', glyph: 'lane' },
     { name: 'Frame', blurb: 'A labelled box that groups a section', glyph: 'frame' },
     { name: 'Timeline', blurb: 'A track for sequencing events', glyph: 'timeline' },
+    { name: 'Sankey', blurb: 'Flows drawn as wide as the amount they carry', glyph: 'sankey' },
   ];
   const px = 62;
   const py = 12;
   return (
-    <Scene w={420} h={226} bg="plain">
-      <Panel x={px} y={py} w={296} h={204} title="BUILD">
+    <Scene w={420} h={260} bg="plain">
+      <Panel x={px} y={py} w={296} h={238} title="BUILD">
         {rows.map((r, i) => {
           const y = py + 32 + i * 34;
           const gx = px + 26;
@@ -176,6 +177,21 @@ export function BuildRows() {
                   <>
                     <rect x={gx - 8} y={gy - 7} width={16} height={13} />
                     <path d={`M${gx + 1} ${gy - 3} H${gx + 5}`} />
+                  </>
+                ) : r.glyph === 'sankey' ? (
+                  <>
+                    <path
+                      d={`M${gx - 9} ${gy - 6} C${gx - 3} ${gy - 6} ${gx - 3} ${gy - 1} ${gx + 1} ${gy - 1}`}
+                    />
+                    <path
+                      d={`M${gx - 9} ${gy + 5} C${gx - 3} ${gy + 5} ${gx - 3} ${gy + 2} ${gx + 1} ${gy + 2}`}
+                    />
+                    <path
+                      d={`M${gx + 1} ${gy - 1} C${gx + 5} ${gy - 1} ${gx + 5} ${gy - 6} ${gx + 9} ${gy - 6}`}
+                    />
+                    <path
+                      d={`M${gx + 1} ${gy + 2} C${gx + 5} ${gy + 2} ${gx + 5} ${gy + 6} ${gx + 9} ${gy + 6}`}
+                    />
                   </>
                 ) : (
                   <>

@@ -9,6 +9,7 @@ import {
   penColourHex,
   type Tab,
 } from '@livediagram/document';
+import { canvasSurface } from '@livediagram/document';
 import { tabAsSeen } from './export-as-seen';
 import { renderTabToSvg } from './export-tab';
 
@@ -39,9 +40,12 @@ describe('tabAsSeen', () => {
     expect(tabAsSeen(tab, 'light').backgroundColor).toBe(DEFAULT_BACKGROUND_COLOR);
   });
 
-  it('keeps a themed tab’s canvas', () => {
+  it('draws a themed tab’s canvas in the export’s half, and a picked canvas as it is', () => {
     const tab = { id: 't', name: 'Tab', theme: 'slate', backgroundColor: '#fdf2f8' } as Tab;
-    expect(tabAsSeen({ ...tab, elements: [] }, 'dark').backgroundColor).toBe('#fdf2f8');
+    expect(tabAsSeen({ ...tab, elements: [] }, 'light').backgroundColor).toBe('#fdf2f8');
+    expect(canvasSurface(tabAsSeen({ ...tab, elements: [] }, 'dark').backgroundColor)).toBe('dark');
+    const picked = { ...tab, backgroundColor: '#123456' };
+    expect(tabAsSeen({ ...picked, elements: [] }, 'dark').backgroundColor).toBe('#123456');
   });
 
   it('exports a named marker colour in its version for the appearance, on any tab', () => {

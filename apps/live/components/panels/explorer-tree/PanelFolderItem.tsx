@@ -6,11 +6,10 @@ import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { FolderActionsMenu } from '@/app/explorer/folder-actions-menu';
-import { SidebarRow } from '@/app/explorer/sidebar/SidebarRow';
+import { FolderPreview, PaneCard } from '../explorer-panel/pane-parts';
 import { trackSidebar } from '@/app/explorer/sidebar/sidebar-telemetry';
 import type { PaneDocument } from '@/app/explorer/views';
 import { useDocumentDropTarget } from '../useDocumentDropTarget';
-import { PanelDocumentItem } from './PanelDocumentItem';
 import { usePanelTree } from './PanelTreeContext';
 import { useDefaultFolderDescription } from '@/components/placement/DefaultFolderMarker';
 import { FolderLabel } from '@/app/explorer/sidebar/SidebarFolderSubtree';
@@ -29,34 +28,33 @@ export type PanelFolderIndex = {
   documentsByFolder: Map<string | null, PaneDocument[]>;
 };
 
-// A folder row of the panel's tree, personal or team
-// (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel): activating it
-// opens or closes it, showing its subfolders, then its documents. It carries the folder menu
-// plus Show in Explorer; a personal folder takes a dragged document; a folder just created
-// opens renaming.
+// A folder row of the editor's Explorer pane, personal or team (docs/specs/013-workspace/explorer-structure.md "The
+// pane"): activating it opens it in the pane (its subfolders, then its documents, under a breadcrumb). It carries the
+// folder menu plus Show in Explorer; a personal folder takes a dragged document, opening on a resting drag; a folder
+// just created opens renaming.
 export function PanelFolderItem({
   folder,
-  depth,
   index,
   team,
 }: {
   folder: PanelFolder;
-  depth: number;
   index: PanelFolderIndex;
   team?: { id: string; name: string };
 }) {
   const tree = usePanelTree();
   const subfolders = index.foldersByParent.get(folder.id) ?? [];
   const documents = index.documentsByFolder.get(folder.id) ?? [];
-  const expandable = subfolders.length + documents.length > 0;
-  const expanded = tree.expanded[folder.id] ?? false;
+  const open = () => {
+    trackSidebar(personal ? 'Folder' : 'TeamFolder', 'panel');
+    tree.onOpenFolder?.(folder.id);
+  };
   const [editing, setEditing] = useState(false);
   const menu = useRowMenu({ disabled: editing });
   const markerWords = useDefaultFolderDescription(folder.id);
   const personal = !team;
   const fileHere = personal ? tree.onMoveDocumentToFolder : undefined;
   const drop = useDocumentDropTarget(fileHere ? (id) => fileHere(id, folder.id) : undefined, {
-    onLongHover: expandable ? () => tree.onToggle(folder.id) : undefined,
+    onLongHover: () => tree.onOpenFolder?.(folder.id),
   });
 
   // A folder just created enters renaming in the render that finds it pending, and the tree is
@@ -86,35 +84,33 @@ export function PanelFolderItem({
     setEditing(false);
   };
 
+  const count = [
+    subfolders.length
+      ? `${subfolders.length} ${subfolders.length === 1 ? 'folder' : 'folders'}`
+      : '',
+    `${documents.length} ${documents.length === 1 ? 'document' : 'documents'}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
   return (
-    <SidebarRow
-      icon={<FolderSolidIcon open={expanded} />}
-      label={
+    <PaneCard
+      preview={<FolderPreview icon={<FolderSolidIcon />} count={count} />}
+      title={
         editing ? (
           <InlineRenameInput
             initial={folder.name}
             onCommit={commitRename}
             onCancel={() => setEditing(false)}
-            className="rounded border border-brand-300 bg-white px-1 py-0 text-xs dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
+            className="w-full rounded border border-brand-300 bg-white px-1.5 py-0.5 text-[13px] dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
           />
         ) : (
           <FolderLabel folderId={folder.id} name={folder.name} />
         )
       }
-      textLabel={folder.name}
-      description={markerWords || undefined}
-      selected={false}
-      onActivate={() => {
-        trackSidebar(personal ? 'Folder' : 'TeamFolder', 'panel');
-        if (expandable) tree.onToggle(folder.id);
-      }}
-      depth={depth}
-      expandable={expandable}
-      expanded={expanded}
-      onToggleExpand={() => tree.onToggle(folder.id)}
-      renaming={editing}
-      onContextMenu={menu.onContextMenu}
-      rowProps={fileHere ? drop.handlers : undefined}
+      label={folder.name}
+      meta={markerWords || undefined}
+      onActivate={editing ? undefined : open}
+      rowProps={{ onContextMenu: menu.onContextMenu, ...(fileHere ? drop.handlers : {}) }}
       highlighted={drop.isDragOver}
       trailing={
         editing ? null : (
@@ -123,7 +119,6 @@ export function PanelFolderItem({
               {...menu.triggerProps}
               size="md"
               reveal
-              tabIndex={-1}
               label={`Menu for ${folder.name}`}
             />
             {menu.open ? (
@@ -150,18 +145,6 @@ export function PanelFolderItem({
           </>
         )
       }
-    >
-      {subfolders.map((f) => (
-        <PanelFolderItem key={f.id} folder={f} depth={depth + 1} index={index} team={team} />
-      ))}
-      {documents.map((d) => (
-        <PanelDocumentItem
-          key={d.id}
-          document={team ? { ...d, team } : d}
-          depth={depth + 1}
-          draggable={personal && !!tree.onMoveDocumentToFolder}
-        />
-      ))}
-    </SidebarRow>
+    />
   );
 }

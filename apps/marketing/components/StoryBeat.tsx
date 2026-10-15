@@ -70,7 +70,7 @@ export function StoryBeat({ section, index }: { section: LandingSection; index: 
                   href={featureHref(section.id, item.title)}
                   className="group flex items-start gap-2 rounded-sm text-[15px] text-slate-700 transition pointer-coarse:py-3 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-200 dark:hover:text-brand-200"
                 >
-                  <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300">
+                  <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
                     <CheckIcon size={11} aria-hidden />
                   </span>
                   {item.title}

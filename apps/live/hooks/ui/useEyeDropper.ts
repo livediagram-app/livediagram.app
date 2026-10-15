@@ -8,7 +8,8 @@
 // pipette is simply not offered, since there is no fallback worth the
 // button.
 
-import { useCallback, useMemo } from 'react';
+import { use, useCallback, useMemo } from 'react';
+import { browser } from 'react-dom';
 
 type EyeDropperResult = { sRGBHex: string };
 type EyeDropperCtor = new () => {
@@ -26,12 +27,12 @@ export function useEyeDropper(): {
   /** Resolves to a `#rrggbb`, or null when the pick was cancelled (Escape). */
   pick: () => Promise<string | null>;
 } {
-  const supported = useMemo(
-    () => typeof window !== 'undefined' && typeof window.EyeDropper === 'function',
-    [],
-  );
+  // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser
+  // only"): the editor never renders at build time, and this says so where the address is read.
+  use(browser());
+  const supported = useMemo(() => typeof window.EyeDropper === 'function', []);
   const pick = useCallback(async () => {
-    const Ctor = typeof window !== 'undefined' ? window.EyeDropper : undefined;
+    const Ctor = window.EyeDropper;
     if (!Ctor) return null;
     try {
       const { sRGBHex } = await new Ctor().open();

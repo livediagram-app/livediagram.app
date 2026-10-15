@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_LASER_CONFIG, laserLifetimeMs } from './laser-config';
 import {
   LASER_BUFFER_TTL_MS,
   LASER_MAX_POINTS,
@@ -91,5 +92,18 @@ describe('trimLaserBuffer', () => {
     ]);
     expect(result).toHaveLength(1);
     expect(result[0]?.x).toBe(1);
+  });
+
+  // docs/specs/008-canvas/laser-panel.md: the Long trail fades over its whole lifetime, so a buffer drawn at the
+  // ~30 Hz send rate keeps every sample of it.
+  it('keeps a whole Long trail drawn at the send rate', () => {
+    const now = 100_000;
+    const lifetime = laserLifetimeMs({ ...DEFAULT_LASER_CONFIG, trail: 'long' });
+    const samples: LaserPoint[] = Array.from({ length: Math.floor(lifetime / 33) + 1 }, (_, i) => ({
+      x: i,
+      y: 0,
+      t: now - lifetime + i * 33,
+    }));
+    expect(trimLaserBuffer(samples, now)).toEqual(samples);
   });
 });

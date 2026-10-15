@@ -1,6 +1,6 @@
 import type { WebComponentShape } from '@livediagram/document';
 import { BannerFace } from '@/components/canvas/web/BannerFace';
-import { CalloutFace } from '@/components/canvas/web/CalloutFace';
+import { CardFace } from '@/components/canvas/web/CardFace';
 import { ProcessFace } from '@/components/canvas/web/ProcessFace';
 import { SiteHeaderFace } from '@/components/canvas/web/SiteHeaderFace';
 import { StatRowFace } from '@/components/canvas/web/StatRowFace';
@@ -13,8 +13,10 @@ export function WebComponentFace({ kind, ...props }: WebFaceProps & { kind: WebC
   switch (kind) {
     case 'banner':
       return <BannerFace {...props} />;
+    // A callout not yet migrated draws as the badge card it becomes (docs/specs/009-elements/card.md).
     case 'callout':
-      return <CalloutFace {...props} />;
+    case 'card':
+      return <CardFace {...props} />;
     case 'stat-row':
       return <StatRowFace {...props} />;
     case 'process':

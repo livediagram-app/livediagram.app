@@ -12,6 +12,8 @@ import {
   cellKey,
   cellsFromJson,
   validateWrite,
+  valuesOnly,
+  writesFormats,
   type CellChange,
   type Sheet,
   type SheetWrite,
@@ -115,9 +117,17 @@ export async function writeSheet(
   // (docs/specs/013-workspace/share-roles.md "What a Participant changes").
   const caller = await sheetCaller(ctx, documentId, 'participate');
   if (caller instanceof Response) return caller;
-  const body = readWrite(await readBody(ctx));
-  if (!body) return sheetRejected('write_invalid');
-  if (body.write.kind !== 'cells' && !(await sheetCallerEdits(ctx, caller))) return forbidden();
+  const read = readWrite(await readBody(ctx));
+  if (!read) return sheetRejected('write_invalid');
+  if (read.write.kind !== 'cells' && !(await sheetCallerEdits(ctx, caller))) return forbidden();
+  // And a cell's value, never its format (docs/specs/029-sheets/sheet.md "Who may do what"): a Participant's
+  // write lands as its values, and one of formats alone is refused. Only a write carrying formats asks the gate.
+  let body = read;
+  if (writesFormats(read.write) && !(await sheetCallerEdits(ctx, caller))) {
+    const values = valuesOnly(read.write);
+    if (!values) return forbidden();
+    body = { ...read, write: values };
+  }
   const by = await writer(ctx, caller.owner);
   for (let attempt = 0; attempt < SHEET_WRITE_RETRIES; attempt++) {
     const head = await readSheetHead(ctx.env, documentId, sheetId);

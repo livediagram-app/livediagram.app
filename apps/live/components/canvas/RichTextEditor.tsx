@@ -75,6 +75,7 @@ export function RichTextEditor({
     onPatch,
     applyList,
     applyHeading,
+    applyTitleCaptionPreset,
     liveText,
   } = useRichTextSession({
     element,
@@ -247,6 +248,8 @@ export function RichTextEditor({
           size despite the canvas world transform; flip below near the top. */}
       <div
         ref={toolbarWrapRef}
+        // The edit-mode element menu opens clear of this (useEditModeContextMenu).
+        data-rich-text-toolbar
         // Stop pointer events reaching the canvas — otherwise a click on a
         // toolbar button reads as a click-off the editing element and the
         // canvas commits + exits edit mode (the same guard the editable div
@@ -282,6 +285,7 @@ export function RichTextEditor({
           onToggle={onToggle}
           onApplyList={applyList}
           onApplyHeading={applyHeading}
+          onApplyTitleCaption={applyTitleCaptionPreset}
           listStyle={listStyleOfText(liveText)}
           onColor={(color) => onPatch({ color })}
           onSetAlign={(x, y) => onSetAlign?.(x, y)}

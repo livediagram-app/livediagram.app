@@ -35,7 +35,7 @@ export function TimingCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{chart.title}</p>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             {histogram.total.toLocaleString()} {histogram.total === 1 ? 'timing' : 'timings'}
           </p>
         </div>
@@ -43,7 +43,7 @@ export function TimingCard({
           <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
             {enough ? p(0.75) : '–'}
           </p>
-          <p className="text-xs text-slate-400">p75</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">p75</p>
         </div>
       </div>
       <p className="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
@@ -75,7 +75,7 @@ export function TimingCard({
             />
           ))}
         </div>
-        <div className="mt-1 flex justify-between text-[11px] text-slate-400">
+        <div className="mt-1 flex justify-between text-[11px] text-slate-500 dark:text-slate-400">
           <span>{formatTiming(histogram.scale, 0)}</span>
           <span>{bucketLabel(histogram.scale, histogram.buckets.at(-1)!.bucket)}</span>
         </div>
@@ -106,7 +106,7 @@ function P75Line({ values, color }: { values: (number | null)[]; color: string }
   if (run.length > 1) runs.push(run.join(' '));
   return (
     <div className="mt-3">
-      <p className="text-[11px] text-slate-400">Daily p75, last 30 days</p>
+      <p className="text-[11px] text-slate-500 dark:text-slate-400">Daily p75, last 30 days</p>
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-10 w-full" aria-hidden>
         {runs.map((points) => (
           <polyline

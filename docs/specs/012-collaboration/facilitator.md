@@ -181,7 +181,12 @@ Enforcement is therefore uneven, and deliberately so:
 - **Room-side for the ops that are already distinct.** `poll-start` /
   `poll-end` are their own mutation kinds, so refusing them from a non-holder
   costs a few lines and closes the one case where a second client could end
-  somebody's poll.
+  somebody's poll. The facilitator may end a poll they did not start, so a
+  baton taken mid-poll hands them its End control (`pollHostFor`) rather than
+  leaving the poll with none; the starter's falls away, as the room would
+  refuse it. A vote's starter likewise loses its host controls while somebody
+  else holds the baton, and ending a vote tallies its Plan cards only when the
+  end was not refused.
 - **Not room-side for the timer and the vote.** They are plain tab state riding
   the same `tab` / `tab-meta` ops that carry every shape move, so the room
   cannot tell "started a timer" from "dragged a box" without inspecting
@@ -337,6 +342,14 @@ vote or a poll.") and wrap their pane in a disabled `fieldset`, which disables
 every control inside it natively, including ones added later. Hiding the panel
 would teach a different editor to every participant, and somebody who had never
 seen the timer would not know there was one.
+
+A **session button** on the canvas has no popover, so its face carries the reason: while somebody else
+facilitates, an Editor's Vote or Poll button is drawn disabled and reads "{name} is facilitating this session;
+ask them to start it.", and a Timer element shows its clock without its controls and reads "{name} is
+facilitating this session; ask them to run the timer." (screen-reader text, as the button's label is). The
+name is the roster's, else the holder's as last seen, so the 90 seconds an absent holder keeps the baton
+still name them rather than "Someone else". A Participant or a Viewer, who could never start one, is told
+"Only people with edit access can start this." instead.
 
 The **card-level** verbs — an idea box's Reveal, an estimate's Clear, a done
 check's Reset Everyone, the roll call, the picker's spin, a reveal zone's cover

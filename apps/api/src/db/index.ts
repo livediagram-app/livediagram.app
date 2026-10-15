@@ -8,6 +8,7 @@
 // a new module here) rather than growing one file.
 
 export * from './documents';
+export * from './team-recent';
 export * from './tab-save-document';
 export * from './tabs';
 export * from './participants';

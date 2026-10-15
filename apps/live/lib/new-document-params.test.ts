@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { templateCreateHref } from '@livediagram/templates';
 import {
   choosePlacementAgainUrl,
+  placementContextFromSearch,
   wizardBypassKind,
   SEARCH_PRESET_MAX,
   wizardPresetMode,
@@ -67,5 +68,18 @@ describe('wizardPresetMode / wizardPresetQuery', () => {
     expect(wizardPresetQuery(`?q=${'x'.repeat(80)}`)).toHaveLength(SEARCH_PRESET_MAX);
     expect(wizardPresetQuery('?q=%20')).toBeNull();
     expect(wizardPresetQuery('?mode=draw')).toBeNull();
+  });
+});
+
+describe('placementContextFromSearch', () => {
+  it('reads a folder, a team, or a team folder', () => {
+    expect(placementContextFromSearch('?folder=f1')).toBe('folder:f1');
+    expect(placementContextFromSearch('?team=t1')).toBe('team:t1');
+    expect(placementContextFromSearch('?team=t1&folder=f1')).toBe('team:t1:folder:f1');
+  });
+
+  it('is no placement without either', () => {
+    expect(placementContextFromSearch('')).toBeUndefined();
+    expect(placementContextFromSearch('?blank=1')).toBeUndefined();
   });
 });

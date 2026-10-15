@@ -12,6 +12,7 @@ export function DataChartView(props: {
   fontFamily?: string;
   textColor: string;
   palette?: readonly string[];
+  ground?: readonly string[];
 }) {
   if (isPieShape(props.element.shape)) return <PieChartView {...props} />;
   if (isBarShape(props.element.shape)) return <BarChartView {...props} />;

@@ -11,17 +11,49 @@
 //    clustered layout), tree or mindmap, in the requested direction.
 //  - The arrows get their routing (lines), defaulting per style.
 
-import { autoLayoutElements, type LayoutStyle } from './auto-layout';
+import { autoLayoutElements, type LayoutDirection, type LayoutStyle } from './auto-layout';
 import { layoutClusteredGraph, sweepEdgelessNodes } from './auto-layout-clusters';
 import { withOrthogonalBends } from './arrow-orthogonal';
+import { withoutNotches } from './graph-notches';
 import type { ArrowStyle } from './arrow-style';
 import {
   graphToElements,
   type GraphCluster,
   type GraphEdge,
-  type GraphNode,
+  type GraphLook,
 } from './graph-authoring';
+import {
+  applyRoutes,
+  isFlowchart,
+  placeElbowLabels,
+  routeLoops,
+  sideRejoins,
+  sideStepEdges,
+  spreadChannels,
+  stackBuses,
+  stackedParents,
+  straightenSpine,
+  withTones,
+  type LookNode,
+  type Routes,
+} from './graph-look';
+import { unionRects } from './geometry-primitives';
+import { isBoxed } from './index';
+import { withHeaderAndKey, type GraphKey } from './graph-header';
+import { layoutLanes } from './graph-lanes';
+import { branchExits, withExactEnds } from './graph-branches';
+import { layoutCycle } from './graph-cycle';
+import { layoutMindmapGraph } from './graph-mindmap';
+import { layoutStormGraph } from './graph-storm';
 import { parseMermaid } from './mermaid';
+import { turnBack } from './er-hub-first';
+import {
+  afterWord,
+  isSequenceDiagram,
+  parseSequenceDiagram,
+  type SequenceDiagram,
+} from './mermaid-sequence';
+import { layoutSequence } from './sequence-layout';
 import { graphTooLargeError } from './graph-limits';
 import type { Element } from './index';
 
@@ -29,16 +61,33 @@ export const GRAPH_LABEL_MAX = 40;
 
 // A node may name its group itself (`group`), as well as or instead of being
 // listed in the group's `members`: the natural shape for a model to write.
-export type GraphInputNode = GraphNode & { group?: string };
+export type GraphInputNode = LookNode & { group?: string; esKind?: string };
+
+// The layouts graph input offers: the editor's three, and two of its own (docs/specs/015-api/mcp-server.md §4.7).
+export type GraphStyle = LayoutStyle | 'lanes' | 'cycle' | 'storm' | 'sequence';
 
 export type GraphInput = {
+  // A heading and a muted caption above the drawing, and a key of the shapes it uses (graph-header.ts).
+  title?: string;
+  subtitle?: string;
+  key?: GraphKey;
   nodes: GraphInputNode[];
   edges: GraphEdge[];
   groups?: (Omit<GraphCluster, 'members'> & { members?: string[] })[];
   direction?: 'down' | 'right';
-  style?: LayoutStyle;
+  style?: GraphStyle;
   lines?: ArrowStyle;
+  // A sequence diagram read from Mermaid (mermaid-sequence.ts); style sequence draws it, else its nodes and edges.
+  sequence?: SequenceDiagram;
 };
+
+// Up to this many nodes a graph's text is `md`, the template's size; past it `sm`, so a large system still fits.
+export { LOOK_MD_MAX_NODES } from './look-size';
+import { LOOK_MD_MAX_NODES } from './look-size';
+// Auto direction lays a graph out both ways up to this size (two layouts' cost) and keeps the one whose aspect is
+// nearer LANDSCAPE; past it, down.
+export const AUTO_DIRECTION_MAX_NODES = 150;
+const LANDSCAPE = 1.5;
 
 // The words that start a clause after a noun phrase: "Orders service WHICH
 // creates orders", "Message queue FOR async events". The part before the first
@@ -76,8 +125,16 @@ function firstChars(s: string, k: number): string {
 // the regular expressions these replace backtracked quadratically over a long run of spaces,
 // brackets or punctuation.
 export function capLabel(text: string, max = GRAPH_LABEL_MAX): { label: string; cut: boolean } {
+  // A label that fits keeps the line breaks it was written with ("App tasks\nECS Fargate"), runs of other space
+  // made one; one that is cut is read as one line.
+  const lines = text
+    .replace(/[^\S\n]+/g, ' ')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .join('\n');
+  if (fitsIn(lines, max)) return { label: lines, cut: false };
   const whole = text.replace(/\s+/g, ' ').trim();
-  if (fitsIn(whole, max)) return { label: whole, cut: false };
   const clean = withoutAsides(whole).trim() || whole;
   if (fitsIn(clean, max)) return { label: clean, cut: true };
   const clause = CLAUSE_START.exec(clean);
@@ -162,21 +219,36 @@ function withNodeGroups(input: GraphInput): GraphCluster[] | undefined {
   return groups;
 }
 
-const DEFAULT_LINES: Record<LayoutStyle, ArrowStyle> = {
-  flow: 'straight',
+const DEFAULT_LINES: Record<GraphStyle, ArrowStyle> = {
+  flow: 'angled',
   tree: 'angled',
   mindmap: 'curved',
+  lanes: 'angled',
+  cycle: 'curved',
+  storm: 'straight',
+  sequence: 'straight',
 };
 
-// Laid-out elements for a graph: capped, positioned in the chosen style and
-// direction, arrows routed. Groups force the flow style (the clustered layout
-// is layered).
+// Laid-out elements for a graph: capped, positioned in the chosen style and direction, worn in the template look
+// (graph-look.ts: sizes, tones, side steps, loops round the outside, elbows), with its title and key. Groups force the
+// flow style (the clustered layout is layered) unless the style is lanes, where each group is a lane.
 // `makeEdgeId` names the arrows the edges become; random ids when omitted.
 export function layoutGraph(
   input: GraphInput,
   options: { makeEdgeId?: () => string } = {},
 ): Element[] {
   const { makeEdgeId } = options;
+  // A sequence diagram: lifelines and messages in order (sequence-layout.ts), from Mermaid or the graph itself.
+  if (input.style === 'sequence') {
+    const diagram = input.sequence ?? sequenceFromGraph(input);
+    return layoutSequence(input.title ? { ...diagram, title: input.title } : diagram, {
+      ...(input.subtitle ? { subtitle: input.subtitle } : {}),
+      ...(makeEdgeId ? { makeId: makeEdgeId } : {}),
+    });
+  }
+  // An event-storming board is paper only: notes on lanes, no arrows, no heading (graph-storm.ts). A note's label is
+  // its content, kept whole as a sticky's always is, so it skips the heading cap.
+  if (input.style === 'storm') return layoutStormGraph(input);
   const g = conciseGraph(input);
   const direction =
     g.direction === 'right'
@@ -184,64 +256,208 @@ export function layoutGraph(
       : g.direction === 'down'
         ? ('TB' as const)
         : undefined;
-  const style: LayoutStyle = g.groups?.length ? 'flow' : (g.style ?? 'flow');
+  const asked = g.style ?? 'flow';
+  const style: GraphStyle = g.groups?.length && asked !== 'lanes' ? 'flow' : asked;
+  const look: GraphLook = { textSize: g.nodes.length <= LOOK_MD_MAX_NODES ? 'md' : 'sm' };
   const graph = {
     nodes: g.nodes,
     edges: g.edges,
     clusters: g.groups as GraphCluster[] | undefined,
   };
-  const laid =
-    style === 'flow'
-      ? layoutClusteredGraph(graph, { direction, ...(makeEdgeId ? { makeEdgeId } : {}) })
-      : sweepEdgelessNodes(
-          autoLayoutElements(graphToElements(graph, makeEdgeId), {
-            direction,
-            style,
-            // Boxes keep their label-fitted sizes, as in the flow layout.
-            fixedSizeIds: new Set(graph.nodes.map((n) => n.id)),
-          }),
-        );
+  const flat = style === 'flow' ? sideStepEdges(g.nodes, g.edges) : new Set<string>();
+  // A tree's leaf groups stack under their parent, the compact org chart (graph-look.ts).
+  const stacked = style === 'tree' ? stackedParents(g.nodes, g.edges) : new Set<string>();
+  const flowLayout = (dir: LayoutDirection) =>
+    layoutClusteredGraph(graph, {
+      direction: dir,
+      look,
+      flatEdges: flat,
+      ...(makeEdgeId ? { makeEdgeId } : {}),
+    });
+  let flowDir: LayoutDirection = direction ?? 'TB';
+  let laid: Element[];
+  if (style === 'mindmap') laid = layoutMindmapGraph(graph, { look, makeEdgeId });
+  else if (style === 'lanes') laid = layoutLanes(graph, { look, makeEdgeId });
+  else if (style === 'cycle') laid = layoutCycle(graph, { look, makeEdgeId });
+  else if (style === 'flow') {
+    // Auto direction: a flowchart reads down the page, as the template does; anything else takes whichever
+    // direction lands nearer a landscape page (docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
+    if (direction || isFlowchart(g.nodes) || g.nodes.length > AUTO_DIRECTION_MAX_NODES)
+      laid = flowLayout(flowDir);
+    else {
+      const down = flowLayout('TB');
+      const across = flowLayout('LR');
+      const off = (els: Element[]) => {
+        const b = unionRects(els.filter(isBoxed));
+        return b ? Math.abs(Math.log(b.width / Math.max(1, b.height) / LANDSCAPE)) : 0;
+      };
+      if (off(across) < off(down)) [laid, flowDir] = [across, 'LR'];
+      else laid = down;
+    }
+  } else
+    laid = sweepEdgelessNodes(
+      autoLayoutElements(graphToElements(graph, makeEdgeId, look), {
+        direction,
+        // The one style left by here (storm returned early; flow, mindmap, lanes and cycle have their own).
+        style: 'tree',
+        stackedParents: stacked,
+        // Boxes keep their label-fitted sizes, as in the flow layout.
+        fixedSizeIds: new Set(graph.nodes.map((n) => n.id)),
+      }),
+    );
+  // A flow without groups runs its main path down one line, side steps beside it.
+  if (style === 'flow' && !g.groups?.length)
+    laid = straightenSpine(laid, g.nodes, g.edges, flat, flowDir);
+  laid = withTones(laid, g.nodes, g.edges);
+  // A tree shows belonging, not flow: its lines carry no heads, as the org-chart template's do, unless an edge asks.
+  if (style === 'tree') {
+    const asked = new Set(g.edges.filter((e) => e.ends).map((e) => `${e.from}->${e.to}`));
+    laid = laid.map((el) =>
+      el.type === 'arrow' &&
+      el.from.kind === 'pinned' &&
+      el.to.kind === 'pinned' &&
+      !asked.has(`${el.from.elementId}->${el.to.elementId}`)
+        ? { ...el, arrowEnds: 'none' as const }
+        : el,
+    );
+  }
   const lines = g.lines ?? DEFAULT_LINES[style];
-  if (lines === 'straight') return laid;
-  const styled = laid.map((el) => (el.type === 'arrow' ? { ...el, arrowStyle: lines } : el));
-  // Angled lines bend twice (down, across, down), the org-chart shape, along
-  // the flow; a tree always flows down, and so does a flow left on auto.
-  return lines === 'angled' ? withOrthogonalBends(styled, direction ?? 'TB') : styled;
+  // A mind map and a cycle draw their own connectors.
+  if (lines !== 'straight' && style !== 'cycle' && style !== 'mindmap')
+    laid = laid.map((el) => (el.type === 'arrow' ? { ...el, arrowStyle: lines } : el));
+  // Angled lines bend twice (down, across, down), the org-chart shape, along the flow; edges back to an earlier
+  // rank then go round the outside instead.
+  const axis = style === 'lanes' ? 'LR' : flowDir;
+  if (lines === 'angled') {
+    // Across lanes, a step's exits leave by different sides: a decision's, or any step's that branches.
+    if (style === 'lanes') laid = branchExits(laid, { axis: 'LR' });
+    // Trunks and buses (graph-branches.ts); then, down a flow, a step's exits that keep their own start
+    // leave by different sides.
+    laid = withExactEnds(laid);
+    if (style === 'flow') laid = branchExits(laid, { axis, eligible: (a) => !a.exactStart });
+    laid = spreadChannels(withOrthogonalBends(laid, axis), axis);
+    // Anchors first, every pass; then each routed arrow's bends from its final, fanned ends.
+    const routes: Routes = new Map();
+    if (style === 'flow' && !g.groups?.length && isFlowchart(g.nodes))
+      laid = sideRejoins(laid, axis, routes);
+    if (stacked.size) laid = stackBuses(laid, stacked, routes);
+    if (style === 'flow' || style === 'lanes') laid = routeLoops(laid, axis, flat, routes);
+    // Straightened first, so each label is placed on the line as it is drawn.
+    laid = placeElbowLabels(withoutNotches(applyRoutes(laid, routes)));
+  }
+  return withHeaderAndKey(turnBack(laid, g.edges), {
+    ...(g.title ? { title: g.title } : {}),
+    ...(g.subtitle ? { subtitle: g.subtitle } : {}),
+    ...(g.key ? { key: g.key, flowchart: isFlowchart(g.nodes) } : {}),
+    ...(makeEdgeId ? { makeId: makeEdgeId } : {}),
+  });
 }
 
 // The same graph from Mermaid, through the editor's own importer: its direction
 // and subgraphs become `direction` and `groups`.
 export function graphFromMermaid(
   text: string,
-): { ok: true; graph: GraphInput } | { ok: false; error: string } {
-  const parsed = parseMermaid(text);
+): { ok: true; graph: GraphInput; notes?: string[] } | { ok: false; error: string } {
+  if (isSequenceDiagram(text)) {
+    const read = parseSequenceDiagram(text);
+    return read.ok
+      ? { ok: true, graph: { nodes: [], edges: [], style: 'sequence', sequence: read.diagram } }
+      : read;
+  }
+  // Mermaid's front matter (`---` / `title: …` / `---`) heads the diagram, as `title` does on a graph.
+  const front = /^\s*---\r?\n([\s\S]*?)\r?\n---\s*\r?\n/.exec(text);
+  const title = front
+    ? front[1]!
+        .split(/\r?\n/)
+        .map((l) => afterWord(l.trim(), 'title', ':'))
+        .find((t) => !!t)
+        ?.replace(/^["']|["']$/g, '')
+    : undefined;
+  const parsed = parseMermaid(front ? text.slice(front[0].length) : text);
   if (!parsed.ok) return parsed;
   return {
     ok: true,
     graph: {
+      ...(title ? { title: title.slice(0, 120) } : {}),
       nodes: parsed.graph.nodes,
       edges: parsed.graph.edges,
       groups: parsed.graph.clusters,
       direction: parsed.direction === 'LR' ? 'right' : 'down',
     },
+    // Said, not dropped: what the drawing cannot keep of what the Mermaid asked.
+    ...(parsed.folded
+      ? {
+          notes: [
+            `${parsed.folded} nested subgraph${parsed.folded === 1 ? '' : 's'} folded into their outer group: groups draw one level deep`,
+          ],
+        }
+      : {}),
+  };
+}
+
+// A sequence from a graph: its nodes the participants (a node shaped actor a stick figure), its edges the messages in
+// order, a dashed edge a reply.
+export function sequenceFromGraph(input: GraphInput): SequenceDiagram {
+  return {
+    participants: input.nodes.map((n) => ({
+      id: n.id,
+      label: n.label ?? n.id,
+      ...(n.shape === 'actor' ? { actor: true } : {}),
+      ...(n.icon ? { icon: n.icon } : {}),
+    })),
+    items: input.edges.map((e) => ({
+      kind: 'message' as const,
+      from: e.from,
+      to: e.to,
+      label: e.label ?? '',
+      style: e.line === 'dashed' ? ('reply' as const) : ('call' as const),
+    })),
   };
 }
 
 // A tool's graph-shaped input, from whichever of `graph` / `mermaid` it gave:
 // the graph, nothing (the call used elements or a template), or an error that
 // names what Mermaid supports.
+// What a graph asks that it cannot be drawn as, said rather than dropped: an id naming both a node and a group, a group listed as another's member (groups
+// do not nest, and the member was silently left out), and a node in no lane on a lanes graph (it went to an
+// unlabelled lane of its own).
+export function graphShapeError(graph: GraphInput): string | undefined {
+  const groupIds = new Set((graph.groups ?? []).map((g) => g.id));
+  // Each node and each group becomes an element of its id, so one id cannot name both.
+  const nodeIds = new Set(graph.nodes.map((n) => n.id));
+  const shared = [...groupIds, ...graph.nodes.flatMap((n) => (n.group ? [n.group] : []))].find(
+    (id) => nodeIds.has(id),
+  );
+  if (shared !== undefined)
+    return `id "${shared}" names both a node and a group: nodes and groups share one set of ids; give each its own`;
+  for (const g of graph.groups ?? []) {
+    const nested = (g.members ?? []).find((m) => groupIds.has(m));
+    if (nested)
+      return `group "${g.id}" lists group "${nested}" as a member: groups do not nest; list nodes, one group each`;
+  }
+  if (graph.style !== 'lanes') return undefined;
+  const laned = new Set((withNodeGroups(graph) ?? []).flatMap((g) => g.members));
+  const loose = graph.nodes.filter((n) => !laned.has(n.id)).map((n) => `"${n.id}"`);
+  return loose.length
+    ? `a lanes graph puts every node in a lane: ${loose.slice(0, 5).join(', ')}${loose.length > 5 ? ` and ${loose.length - 5} more` : ''} in no group`
+    : undefined;
+}
+
 export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }): {
   graph?: GraphInput;
   error?: string;
+  // What the drawing could not keep, to say back (a Mermaid subgraph nested in another).
+  notes?: string[];
 } {
   if (args.graph) {
     // The MCP schema caps these too; this holds for every caller (graph-limits.ts).
     const tooLarge = graphTooLargeError(args.graph.nodes.length, args.graph.edges.length);
-    return tooLarge ? { error: tooLarge } : { graph: args.graph };
+    const shape = tooLarge ?? graphShapeError(args.graph);
+    return shape ? { error: shape } : { graph: args.graph };
   }
   if (args.mermaid === undefined) return {};
   const parsed = graphFromMermaid(args.mermaid);
   return parsed.ok
-    ? { graph: parsed.graph }
+    ? { graph: parsed.graph, ...(parsed.notes ? { notes: parsed.notes } : {}) }
     : { error: `Could not read the Mermaid: ${parsed.error}` };
 }

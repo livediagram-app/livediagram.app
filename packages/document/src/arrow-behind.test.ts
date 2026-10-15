@@ -110,6 +110,13 @@ describe('routeBehindHoles', () => {
     expect(holes).toEqual([]);
   });
 
+  it('ignores swimlanes, which a hand-off arrow crosses by design', () => {
+    const holes = routeBehindHoles(arrow(), from, to, [
+      box('lane', -100, -100, { shape: 'lane', width: 800, height: 400 }),
+    ]);
+    expect(holes).toEqual([]);
+  });
+
   it('ignores text and annotations, which have no fill to hide behind', () => {
     const text: Element = {
       id: 't',

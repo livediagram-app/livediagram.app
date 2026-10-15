@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig, mergeConfig } from 'vitest/config';
+import { UNDER_COVERAGE_ENV } from './cpu-time.js';
 
 // The monorepo root: this file sits at packages/vitest-config/index.js.
 const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
@@ -20,6 +21,9 @@ export const baseConfig = defineConfig({
     environment: 'node',
     include: ['**/*.{test,spec}.{ts,tsx}'],
     clearMocks: true,
+    // A coverage run tells its workers so, and speed tests widen their CPU budgets for the instrumentation
+    // (cpu-time.js cpuBudgetMs; docs/specs/003-system-architecture/testing.md).
+    env: process.argv.includes('--coverage') ? { [UNDER_COVERAGE_ENV]: '1' } : {},
     coverage: {
       provider: 'v8',
       // lcov names each file from the repo root (`apps/live/lib/x.ts`, not `lib/x.ts`), so Codecov

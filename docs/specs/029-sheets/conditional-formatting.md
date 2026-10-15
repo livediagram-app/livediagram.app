@@ -71,7 +71,8 @@ the sheet's, seen by everyone, and worked out in every browser that shows it, as
     never sent); Cancel takes it away.
 - **Sheet Settings** gains a **Conditional Formatting** section (after Data Validation): every rule as a row (its
   swatch, line and range), **Edit** (the popover's rule form, anchored to the row), **Go To** and **Remove**; "No format
-  rules yet. Select cells and choose Conditional Formatting from the toolbar's Data menu." when there are none.
+  rules yet. Select cells and choose Conditional Formatting from the toolbar's Data menu." when there are none ("No
+  format rules." for a Participant or Viewer, who has no toolbar). Edit and Remove are an Editor's.
 - Telemetry: `Sheet · Changed · ConditionalFormat` for each rule change (made, edited, reordered, removed); never the
   condition's values.
 

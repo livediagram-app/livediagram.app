@@ -243,7 +243,7 @@ describe('Fit to Content pages', () => {
   it('has no orientation and says Fit to Content', () => {
     const [page] = illustratePagesOf({ pages: [fit()] });
     expect(pageHasOrientation(page!)).toBe(false);
-    expect(pageLabel(page!, 0, 1)).toBe('Fit to Content · Infographic');
+    expect(pageLabel(page!, 0, 1)).toBe('Fit to Content');
   });
 });
 

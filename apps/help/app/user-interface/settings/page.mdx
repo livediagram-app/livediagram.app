@@ -26,13 +26,23 @@ The dialog lists its categories down the left, with a **Search settings** field 
 
 Some categories hold **sub-categories** (Editor holds Draw and Illustrate; Panels holds one per panel; Account holds Notifications and API Tokens). On a computer, click the parent (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap the parent and its sub-categories are listed at the bottom of its page.
 
+Each category groups its settings into cards, one card per section, with a short line under each setting saying what it does. A setting that only matters while another is on (a panel's own options under its switch) sits indented beneath it, and shows only while that switch is on.
+
 ## Editor
 
-- **Quick-Add on Hover**: opens an element's quick-add **+** menu when you hover it, instead of waiting for a click; the **+** buttons still only appear on the selected element. Off by default. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
-- **Element Indicators**: how an element shows that it has a link, a note, an action or comments. **Top** (the default) puts small icons near its top, **Footer** puts a labelled row along its bottom edge, and **Off** hides them. See [Element Indicators](/help/canvas/element-indicators/).
+Under **Canvas**:
+
 - **Alignment Guides**: snap lines while you move or resize, so elements line up with their neighbours. On by default. See [Alignment Guides](/help/palette/alignment-guides/).
 - **Auto-Attach Arrows**: when a move leaves an arrow running through a shape it connects, its end moves to the side facing the other end. On by default. See [Auto-Attach Arrows](/help/palette/auto-attach-arrows/).
+- **Element Indicators**: how an element shows that it has a link, a note, an action or comments. **Top** (the default) puts small icons near its top, **Footer** puts a labelled row along its bottom edge, and **Off** hides them. See [Element Indicators](/help/canvas/element-indicators/).
+
+Under **Mouse**:
+
+- **Quick-Add on Hover**: opens an element's quick-add **+** menu when you hover it, instead of waiting for a click; the **+** buttons still only appear on the selected element. Off by default. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
 - **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
+
+Then:
+
 - **Power User Mode**, under **Power User**: applies a set of recommended settings in one go and unlocks **Minimal Chrome**, which hides labels and hints while keeping every control. Switching it off puts back the settings you did not change. See [Power User Mode](/help/user-interface/power-user-mode/).
 
 ### Draw
@@ -42,12 +52,13 @@ Some categories hold **sub-categories** (Editor holds Draw and Illustrate; Panel
 ### Illustrate
 
 - **Logo Guides**: shows a [logo page](/help/canvas/illustrate/logo-pages/)'s construction guides, which the artwork snaps to while they show. On by default; a page you switch them on or off for keeps its own choice.
-- **Logo Guide Strength**: how strongly the guides show, **Faint**, **Medium** (the default) or **Strong**.
-- **Logo Centre Lines**, **Logo Diagonals**, **Logo Safe Area**, **Logo Circles**, **Logo Square** and **Logo Grid**: one switch per guide, all on by default.
+- **Logo Guide Strength**, beneath it: how strongly the guides show, **Faint**, **Medium** (the default) or **Strong**.
+- **Guides Shown**, beneath it: one chip per guide, **Centre Lines**, **Diagonals**, **Safe Area**, **Circles**, **Square** and **Grid**, all on by default. Tap a chip to hide or show that guide.
 
 ## Appearance
 
 - **Theme**: **Light**, **Dark** or **System**, which follows your device. This is the editor's own chrome, not a diagram's [theme](/help/canvas/themes/), although a tab on the Default theme follows it. The same control sits in the bottom bar. Saved on this device only (see below). See [Dark Mode](/help/tools/dark-mode/).
+- **Button Labels**: names the buttons in the bottom-right corner (such as **Layers**, **Style** and **Tidy Up**) beside their icons, on a screen wide enough for them. On by default; turn it off for icons alone. A phone always shows icons alone.
 - **UI Scale**: makes the panels, the toolbar and the buttons in the bottom-right corner (zoom, undo and redo, layers) bigger or smaller, from 80% to 120%, with 100% in the middle of the slider. The canvas, dialogs and menus stay as they are, so it is not the same as your browser's zoom. Beneath it, **Panel Scale**, **Toolbar Scale** and **Corner Buttons Scale** size each of those on its own (**Toolbar Scale** goes up to 140%); moving **UI Scale** again sets all three back to the same size. The chrome resizes as you drag. Desktop only: a phone always uses 100%.
 
 ## Keyboard
@@ -57,7 +68,7 @@ Some categories hold **sub-categories** (Editor holds Draw and Illustrate; Panel
 
 ## Panels
 
-- **Panel Opacity**: fades every panel and the toolbar, from 30% to 100%, so the canvas shows through (buttons stay opaque); a panel snaps back to fully opaque while you hover or focus it. See [Panel Opacity](/help/palette/panel-opacity/).
+- **Panel Opacity**: fades every panel and the toolbar, from 30% to 100%, so the canvas shows through (buttons and the Explorer stay opaque); a panel snaps back to fully opaque while you hover or focus it. See [Panel Opacity](/help/palette/panel-opacity/).
 
 **Panels** holds four sub-categories, one per panel. Each starts with a switch that turns its panel on or off; the panel's other settings show beneath it only while it is on.
 
@@ -69,19 +80,24 @@ Some categories hold **sub-categories** (Editor holds Draw and Illustrate; Panel
 ## Accessibility
 
 - **Reduce Motion**: turns off the decorative animations and transitions (panels, popovers, the snap guides) so the interface appears instantly instead of sliding. Your device's own reduce-motion setting is always respected; this lets you force it on even where the device doesn't ask for it. See [Accessibility](/help/getting-started/accessibility/).
-- **Onboarding Tutorials**: one switch for each guided tour, **Diagram**, **Plan** and **Facilitate**. Each switches itself off once you have taken or dismissed its tour; switch it back on and close Settings to run that tour again. See [The Diagram Tour](/help/getting-started/diagram-tour/), [The Plan Tour](/help/canvas/plan-mode/plan-tour/) and [The Facilitate Tour](/help/canvas/facilitate-mode/facilitate-tour/).
+- **UI Scale**: **Open Appearance** takes you to **UI Scale**, for bigger panels, toolbar and corner buttons.
+
+## Tours
+
+One switch per guided tour: **Diagram Tour**, **Plan Tour**, **Facilitate Tour**, **Draw Tour** and **Illustrate Tour**. Each tour offers itself once, in its own mode, and its switch turns itself off once you have taken or dismissed it. The Plan and Illustrate tours have a tour for each part (boards and sheets, each kind of page), each offered once, so their switch stays on until you have answered every one. Switch one back on and close Settings to take that tour again: it starts straight away if you are in its mode, or the next time you are. See [The Diagram Tour](/help/getting-started/diagram-tour/), [The Plan Tour](/help/canvas/plan-mode/plan-tour/), [The Facilitate Tour](/help/canvas/facilitate-mode/facilitate-tour/), [The Draw Tour](/help/canvas/draw-mode/draw-tour/) and [The Illustrate Tour](/help/canvas/illustrate/illustrate-tour/).
 
 ## AI Tools
 
 Only present on a deployment with AI configured.
 
 - **AI Assistant**: shows the AI panel, with its **Ask** and **Clean** modes. Off by default. See [AI Tools](/help/tools/ai/ai-tools/).
-- **Suggested Prompts**: a row of one-click starter prompts under the AI panel's mode buttons. On by default.
+- **Suggested Prompts**, beneath it while it is on: a row of one-click starter prompts under the AI panel's mode buttons. On by default.
 - **API Tokens**: **Manage API Tokens** jumps to **Account › API Tokens**, since the AI tools you connect over MCP use a token.
 
 ## Documents
 
-- **Where New Documents Go**: the default folder for each kind of new document (diagrams, whiteboards, plans and so on), used when you create one without choosing a place. **Skip the Location Step** saves every new document in one place without asking; you turn it on from the **Location** step of the New Document wizard. See [Default Folders](/help/explorer/folders/default-folders/).
+- **Always Save in One Place**, under **New Documents**: saves every new document in one place without the New Document wizard asking where. Its **On** or **Off** label says which; you turn it on from the **Location** step of the wizard, and **Turn Off** here brings that step back.
+- **Default Folders**: the folder each kind of new document goes to (diagrams, whiteboards, plans and so on) when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
 
 ## Account
 

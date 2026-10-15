@@ -10,7 +10,7 @@ import { BOARD_WIDGET_KINDS, type BoardWidgetKind } from '@livediagram/items';
 import { CheckIcon, CompactEmptyState, NoMatches, lucideGlyph } from '@livediagram/ui';
 import { lucideSearch } from '@livediagram/icons/lucide';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
-import { BOARD_WIDGET_INFO } from '../board-widget-catalogue';
+import { BOARD_WIDGET_INFO } from '@livediagram/plan-art';
 import { BoardWidgetArt } from '../plan-tile-art';
 import type { PlanPalette } from '../plan-palette';
 
@@ -203,7 +203,7 @@ function WidgetCard({
       </span>
       <span className="flex min-w-0 flex-col gap-0.5 px-3 py-2.5 text-left">
         <span className="flex items-center gap-1.5 text-[13px] font-medium text-slate-800 dark:text-slate-100">
-          <span aria-hidden className="flex shrink-0 text-slate-400 group-hover:text-brand-500">
+          <span aria-hidden className="flex shrink-0 text-slate-400 group-hover:text-brand-700">
             <BoardWidgetArt kind={kind} size={14} />
           </span>
           <span className="truncate">{info.label}</span>

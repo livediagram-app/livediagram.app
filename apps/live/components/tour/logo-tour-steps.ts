@@ -1,19 +1,20 @@
-// The steps of Show Me on a logo page (docs/specs/007-editor/logo-pages.md "Show Me"): a tour of the logo tools, run on
-// the page itself. Each step rings a real control of the page it was started on, which stays usable, so the person
-// can pick a layout or turn the guides on while the step is up.
-import type { TourStepOf } from './tour-step';
+// The steps of Show Me on a logo page (docs/specs/007-editor/logo-pages.md "Show Me"), and the Illustrate tour's Logo
+// track (docs/specs/007-editor/illustrate-tour.md "Logo track"): a tour of the logo tools, run on the page itself.
+// Each step rings a real control of the page it was started on, which stays usable, so the person can pick a layout
+// or turn the guides on while the step is up.
+import type { PageTourApi, PageTourStep } from './page-tour-api';
+import { pageCog } from './page-tour-dom';
 
-export type LogoTourApi = {
-  // The logo page the tour was started on.
-  pageId: string;
-  // Opens that page's panel on its Layouts tab, and closes it again.
-  openLayouts: (pageId: string) => void;
-  closePanel: () => void;
+type LogoTourStep = PageTourStep;
+
+export const LOGO_WELCOME: LogoTourStep = {
+  id: 'welcome',
+  card: 'welcome',
+  title: 'Getting started with logos?',
+  body: 'Want a quick look at designing a logo? We will open its layouts and show you the guides, mirror drawing and combining shapes.',
 };
 
-type LogoTourStep = TourStepOf<LogoTourApi>;
-
-const titleButton = (name: string) => (api: LogoTourApi) =>
+const titleButton = (name: string) => (api: PageTourApi) =>
   `[data-logo-title-bar="${api.pageId}"] button[aria-label="${name}"]`;
 
 const LAYOUTS: LogoTourStep = {
@@ -21,7 +22,8 @@ const LAYOUTS: LogoTourStep = {
   title: 'Start From a Logo Layout',
   body: 'Lockups, wordmarks, emblems and marks, each a whole logo in your theme and font, ready to make your own. Pick one now if you like.',
   selector: () => '[data-page-panel]',
-  prepare: (api) => api.openLayouts(api.pageId),
+  requires: (api) => pageCog(api.pageId),
+  prepare: (api) => api.openPanel(api.pageId, 'layouts'),
   cleanup: (api) => api.closePanel(),
 };
 

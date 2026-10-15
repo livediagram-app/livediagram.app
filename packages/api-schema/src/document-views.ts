@@ -1,7 +1,7 @@
 // Document views (docs/specs/024-agents/document-views.md): the view names, the query the api's two
 // doors take, and every view's JSON form, shared by the api, the MCP, the CLI and
 // `@livediagram/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
-import type { PageKind, TabKind } from '@livediagram/document';
+import type { EditorMode, Finish, PageKind, TabKind } from '@livediagram/document';
 import type { ArticleSummary, PageSummary } from './illustrate';
 
 // Every view. `lint` is answered by `@livediagram/diagram-lint` (docs/specs/024-agents/diagram-lint.md), not
@@ -103,6 +103,10 @@ export type ViewHeader = {
   unknown: number;
   threads: { open: number; total: number };
   rev: number | null;
+  // The tab's mode when it is not Diagram, and its finish when one is set (docs/specs/024-agents/blueprints/
+  // document-views.md "The outline grammar"), so a reader knows a Draw tab or a sketch finish took.
+  mode?: EditorMode;
+  finish?: Finish;
   // An Illustrate tab's pages, by kind (docs/specs/024-agents/illustrate-for-agents.md "Reading");
   // absent on a tab in another mode.
   illustrate?: { pages: number; kinds: Partial<Record<PageKind, number>> };
@@ -203,6 +207,7 @@ export const FIND_FIELDS = [
   'cell',
   'field',
   'item',
+  'node',
   'code',
   'comment',
 ] as const;

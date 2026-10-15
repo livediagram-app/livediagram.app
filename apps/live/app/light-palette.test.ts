@@ -32,8 +32,14 @@ function luminance(hex: string): number {
   return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
 }
 
-/** WCAG 2.2 contrast ratio of white text on `hex`. */
+/** WCAG 2.2 contrast ratio of white text on `hex`, which is also `hex` text on white. */
 const whiteOn = (hex: string) => 1.05 / (luminance(hex) + 0.05);
+
+/** WCAG 2.2 contrast ratio between two `#rrggbb` colours. */
+function ratio(a: string, b: string): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi! + 0.05) / (lo! + 0.05);
+}
 
 describe('the light brand ramp under white text', () => {
   const brand = lightBrand();
@@ -46,6 +52,21 @@ describe('the light brand ramp under white text', () => {
   it('fails AA on brand-500 and brand-600, which is why neither carries white text', () => {
     expect(whiteOn(brand['500']!)).toBeLessThan(4.5);
     expect(whiteOn(brand['600']!)).toBeLessThan(4.5);
+  });
+});
+
+describe('light brand ink', () => {
+  const brand = lightBrand();
+
+  it('clears AA in brand-700 on white and on the brand tints it sits on', () => {
+    for (const ground of ['#ffffff', brand['50']!, brand['100']!]) {
+      expect(ratio(brand['700']!, ground)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('fails AA in brand-500 and brand-600 on white, which is why neither is text', () => {
+    expect(ratio(brand['500']!, '#ffffff')).toBeLessThan(4.5);
+    expect(ratio(brand['600']!, '#ffffff')).toBeLessThan(4.5);
   });
 });
 
@@ -74,13 +95,16 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-// Only a file holding both halves can hold an offender, so the rest are never parsed.
-const CANDIDATES = ['apps', 'packages']
+const SOURCES = ['apps', 'packages']
   .flatMap((top) => readdirSync(`${REPO}${top}`).map((name) => `${REPO}${top}/${name}`))
   .filter((dir) => statSync(dir).isDirectory())
   .flatMap((dir) => sourceFiles(dir))
-  .map((path) => ({ path, text: readFileSync(path, 'utf8') }))
-  .filter(({ text }) => text.includes('text-white') && /bg-brand-(500|600)\b/.test(text));
+  .map((path) => ({ path, text: readFileSync(path, 'utf8') }));
+
+// Only a file holding both halves can hold an offender, so the rest are never parsed.
+const CANDIDATES = SOURCES.filter(
+  ({ text }) => text.includes('text-white') && /bg-brand-(500|600)\b/.test(text),
+);
 
 /** Each string literal on its own, and each template literal with its static chunks joined. */
 function classStrings(path: string, text: string): { path: string; text: string }[] {
@@ -102,6 +126,9 @@ function classStrings(path: string, text: string): { path: string; text: string 
 }
 
 const STRINGS = CANDIDATES.flatMap(({ path, text }) => classStrings(path, text));
+const INK_STRINGS = SOURCES.filter(({ text }) => /text-brand-(500|600)\b/.test(text)).flatMap(
+  ({ path, text }) => classStrings(path, text),
+);
 const tokens = (text: string) => text.split(/\s+/).filter(Boolean);
 /** A light-mode utility (no `dark:` variant), with any other variant (`hover:`, `group-hover:`…). */
 const light = (re: RegExp) => (token: string) => !token.includes('dark:') && re.test(token);
@@ -116,6 +143,28 @@ describe('solid brand fills in light mode', () => {
       const t = tokens(text);
       return t.some(light(/(^|:)bg-brand-(500|600)$/)) && t.some(light(/(^|:)text-white$/));
     }).map(({ path, text }) => `${path}: ${text.slice(0, 90)}`);
+    expect(offenders).toEqual([]);
+  });
+});
+
+// Brand-coloured ink that carries no meaning a reader needs, so the contrast minimum does not apply
+// (WCAG 1.4.3 and 1.4.11 exempt pure decoration). Everything else in light brand ink is brand-700.
+const DECORATIVE_INK = new Set([
+  'apps/live/components/canvas/TabLoadOverlay.tsx', // the loading spinner's arc
+  'apps/live/components/canvas/PaletteDragGhost.tsx', // the translucent ghost under a drag
+  'apps/live/components/plan/dashboard/DashboardSheetMetric.tsx', // an aria-hidden sparkline
+]);
+
+describe('brand ink in light mode', () => {
+  it('scans a real candidate set', () => {
+    expect(INK_STRINGS.length).toBeGreaterThan(0);
+  });
+
+  it('is brand-700, never brand-500 or brand-600, outside decoration', () => {
+    const offenders = INK_STRINGS.filter(
+      ({ path, text }) =>
+        !DECORATIVE_INK.has(path) && tokens(text).some(light(/(^|:)text-brand-(500|600)$/)),
+    ).map(({ path, text }) => `${path}: ${text.slice(0, 90)}`);
     expect(offenders).toEqual([]);
   });
 });

@@ -1,38 +1,13 @@
 import type { NextConfig } from 'next';
-import { typescriptConfig } from '@livediagram/next-config';
+import { livediagramNextConfig } from '@livediagram/next-config';
 
-// `output: 'export'` is required for the production build (Cloudflare
-// Static Assets fronts a fully static export — no Node runtime). In
-// dev we omit it so the dynamic-segment route at `/document/[id]` can
-// resolve arbitrary user-minted ids without needing them enumerated
-// in `generateStaticParams`. The production build still ships a
-// single placeholder file backed by the live worker's path rewrite
-// (docs/specs/007-editor/new-document-route.md).
-const isProdBuild = process.env.NODE_ENV === 'production';
-
-// distDir split keeps `next dev` from racing `next build` on
-// `apps/live/.next/`. Without this, a build kicked off in the same
-// checkout (e.g. from a pre-commit suite) overwrites the dev
-// server's `_buildManifest.js.tmp.*` files mid-flight, and dev
-// then 500s with `ENOENT: ... _buildManifest.js.tmp.*` until the
-// cache is wiped by hand. We move DEV (not build) to its own
-// directory because the build's `.next/` layout is what CI + the
-// deploy workflow expect, and a build invoked without env vars
-// (e.g. ad-hoc `next build`) should still work. `scripts/dev.mjs`
-// sets `NEXT_DISTDIR=.next-dev` before exec'ing `next dev` so dev
-// always lands in `.next-dev/`; everything else defaults to `.next/`.
-const distDir = process.env.NEXT_DISTDIR ?? '.next';
-
-// The React Compiler runs as its native Rust port inside Turbopack
-// (docs/specs/003-system-architecture/react-state-and-effects.md). That port throws under webpack, so
-// the `dev:webpack` escape hatch runs without the compiler. Next sets `TURBOPACK` before loading config.
-const isTurbopack = Boolean(process.env.TURBOPACK);
-
+// The shared settings live in @livediagram/next-config (docs/specs/016-platform/nextjs.md). The editor alone
+// exports only its production build: in dev the dynamic-segment route at `/document/[id]` resolves arbitrary
+// user-minted ids without enumerating them in `generateStaticParams`; production ships a single placeholder file
+// backed by the live worker's path rewrite (docs/specs/007-editor/new-document-route.md).
 const nextConfig: NextConfig = {
-  ...(isProdBuild ? { output: 'export' } : {}),
-  distDir,
-  // Type-checked by CI's Checks; only E2E builds skip it here (@livediagram/next-config).
-  typescript: typescriptConfig(),
+  // The React Compiler runs here alone: the editor re-renders constantly (docs/specs/016-platform/nextjs.md).
+  ...livediagramNextConfig({ exportInDev: false, reactCompiler: true }),
   // Pages serve at clean root paths (/document, /explorer, /new, ...);
   // the router selects the live app by route (docs/specs/016-platform/router-app.md), so there's no
   // `/live` basePath in the URL any more. Only the bundled `_next`
@@ -43,12 +18,6 @@ const nextConfig: NextConfig = {
   // local router (docs/specs/016-platform/router-app.md) can disambiguate `/_next` the same way prod
   // does; standalone `localhost:3002` keeps working either way.
   assetPrefix: '/live',
-  images: {
-    unoptimized: true,
-  },
-  ...(isTurbopack
-    ? { reactCompiler: true, experimental: { turbopackRustReactCompiler: true } }
-    : {}),
   transpilePackages: ['@livediagram/ui', '@livediagram/document', '@livediagram/api-schema'],
 };
 

@@ -52,7 +52,11 @@ describe('PARTICIPANT_CANVAS_TOOLS', () => {
   });
 
   it("names real selection modes, and none of an Editor's tools", () => {
-    const ids = buildCanvasToolOptions({ isMobile: false, includeZen: true }).map((o) => o.id);
+    const ids = buildCanvasToolOptions({
+      isMobile: false,
+      includeZen: true,
+      facilitateMode: true,
+    }).map((o) => o.id);
     for (const tool of PARTICIPANT_CANVAS_TOOLS) expect(ids).toContain(tool);
     for (const tool of ['eraser', 'format', 'slide-deck']) {
       expect(PARTICIPANT_CANVAS_TOOLS).not.toContain(tool);

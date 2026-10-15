@@ -10,22 +10,59 @@ export const fixes = {
   boxOverlap: (s: LintSource, a: string, b: string) =>
     pick(s, `move ${b} right-of:${a}`, 'graph lint --compare direction,groups'),
   arrowDangling: (s: LintSource, arrow: string) => pick(s, `rm ${arrow}`, 'remove the edge'),
-  arrowBehindBox: (s: LintSource, arrow: string, angled: boolean) =>
+  // A style whose route clears every box, else advice: a style suggested blind passed behind another box, and the
+  // next lint suggested the style back.
+  arrowBehindBox: (
+    s: LintSource,
+    arrow: string,
+    style: string | null,
+    move: { box: string; by: { dx: number; dy: number } },
+  ) =>
     pick(
       s,
-      `set ${arrow} line=${angled ? 'curved' : 'angled'}`,
+      style ? `set ${arrow} line=${style}` : `move ${move.box} by=${move.by.dx},${move.by.dy}`,
       'drop the groups, or lines: angled',
     ),
-  edgeCrossings: (s: LintSource) =>
-    pick(s, 'layout type:shape', 'graph lint --compare direction,groups,lines'),
-  labelCollision: (s: LintSource, arrow: string) =>
-    pick(s, `set ${arrow} label="<text>"`, 'shorten the edge label'),
+  // `layout` lays out shapes alone, so on a tab with frames or lanes it would leave them behind: there the fix
+  // reroutes the most-crossed arrow instead.
+  // On a framed tab, a line style for one of the most-crossed arrows that strictly lowers its crossings, else advice:
+  // a style suggested blind added crossings, and the next lint then suggested the style back.
+  edgeCrossings: (s: LintSource, framed: { arrow: string; style: string | null } | null) =>
+    pick(
+      s,
+      framed
+        ? framed.style
+          ? `set ${framed.arrow} line=${framed.style}`
+          : `move a box so ${framed.arrow} crosses fewer lines`
+        : 'layout type:shape',
+      'graph lint --compare direction,groups,lines',
+    ),
+  labelCollision: (s: LintSource, arrow: string, fits: number) =>
+    pick(
+      s,
+      `set ${arrow} label="<at most ${fits} characters>"`,
+      `shorten the edge label to ${fits} characters`,
+    ),
+  // A struck label moved along its own line to a spot clear of every other line and box.
+  labelStruck: (s: LintSource, arrow: string, t: number) =>
+    pick(
+      s,
+      `set ${arrow} labelOffset={"t":${t},"offset":0}`,
+      'shorten the edge label, or move one of the boxes',
+    ),
   labelOverflow: (s: LintSource, a: string, smaller: boolean) =>
     pick(
       s,
       smaller ? `set ${a} text=sm` : `set ${a} label="<text>" note="<text>"`,
       'shorten the label; detail goes in note',
     ),
+  // A card's title or subtitle cut short: the card widened to hold it.
+  cardTextCut: (s: LintSource, a: string, width: number) =>
+    pick(s, `set ${a} width=${width}`, 'shorten the title, or widen the card'),
+  // A page's text: grown to hold its lines; two texts over each other moved apart.
+  textOverflow: (a: string, height: number) => `set ${a} height=${height}`,
+  textOverflowWidth: (a: string, width: number) => `set ${a} width=${width}`,
+  textOverlap: (a: string, b: string) => `move ${b} below:${a}`,
   nodeIsolated: (s: LintSource, a: string) =>
     pick(s, `connect <ref> -> ${a}`, `add an edge to ${a}, or drop it`),
   groupEscape: (s: LintSource, a: string, frame: string) =>

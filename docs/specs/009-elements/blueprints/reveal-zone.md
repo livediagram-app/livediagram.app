@@ -46,13 +46,13 @@ permission), "unhide".
 
 States per viewer: **covered**, **revealed for me**, **revealed for all**.
 
-| From             | Event                     | Guard       | To                          |
-| ---------------- | ------------------------- | ----------- | --------------------------- |
-| covered          | double press on the cover | not blocked | revealed for me             |
-| revealed for me  | single press on Hide      | not blocked | covered (unreachable, GF16) |
-| any              | menu **Reveal for All**   | [QF15]      | revealed for all            |
-| revealed for all | menu **Hide for All**     | [QF15]      | covered or revealed for me  |
-| revealed for me  | reload                    |             | covered                     |
+| From             | Event                     | Guard       | To                         |
+| ---------------- | ------------------------- | ----------- | -------------------------- |
+| covered          | double press on the cover | not blocked | revealed for me            |
+| revealed for me  | single press on Hide      | not blocked | covered                    |
+| any              | menu **Reveal for All**   | [QF15]      | revealed for all           |
+| revealed for all | menu **Hide for All**     | [QF15]      | covered or revealed for me |
+| revealed for me  | reload                    |             | covered                    |
 
 1. **Double press.** `onClick` swallows a dragged click (`isDragTravel`), then pairs presses with
    `isDoublePress(last, now)`: `now - last <= DOUBLE_PRESS_MS && now >= last` (D118). The first
@@ -113,7 +113,7 @@ setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
 | E5  | Content added above the zone later            | Paints over the cover (document order) [QF12]       |
 | E6  | Blocked viewer presses the cover              | Nothing happens; copy still says "to reveal" [QF15] |
 | E7  | Lifted locally, then a facilitator takes over | Stays lifted; `onToggleForMe` is absent [QF15]      |
-| E11 | Hide pill pressed                             | Takes no pointer: the click passes through (GF16)   |
+| E11 | Hide pill pressed                             | Takes the press (`pointer-events-auto`); covered    |
 | E8  | Blocked viewer uses the menu                  | **Reveal for All** still writes [QF15]              |
 | E9  | Revealed for all, then Hide for All           | Viewers with a personal lift keep it                |
 | E10 | Element deleted while lifted locally          | Stale id in `revealedIds`, harmless                 |
@@ -141,17 +141,19 @@ setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
   paper `#64748b` over `#ffffff` (D144).
 - **No hover card** on the cover or the pill; the help article carries the honesty line.
 - **Revealed for me:** only the Hide pill: blurred dark glass (`bg-slate-900/75`, `backdrop-blur`),
-  an eye with a slash, "Hide" at 10 px. The spec puts it in the corner; the code gives it no
-  position and no pointer events (GF16).
+  an eye with a slash, "Hide" at 10 px, in the top-right corner (`right-2 top-2`). Its layer is
+  `pointer-events-none`, so the pill sets `pointer-events-auto` on itself; without it the pill
+  inherited none and a press fell through to the element (GF16, closed).
 - **Revealed for all:** the face renders nothing; the element stays selectable by its outline.
 - **Export:** `revealCover` draws the base, both glows, the border, the lock disc, the label and
   "Double-click to reveal" (an export has no pointer), on the wrapper's `REVEAL_RADIUS_PX`
   corners; the sweep is motion and stays out.
-- **Menu:** accordion **Reveal**, hint "Anyone can click the cover to peek for themselves. This
-  takes it off for everyone." [QF14], tiles **Reveal for All** / **Hide for All** [QF14].
+- **Menu:** accordion **Reveal**, hint "Anyone can double-click the cover to peek for themselves. This
+  takes it off for everyone.", tiles **Reveal for All** / **Hide for All**. While somebody else
+  holds the baton ([Facilitator](../../012-collaboration/facilitator.md)) the section is absent and the setter refuses.
 - **Palette:** tile `tools:reveal` ("Add Reveal Zone") in the **Tools** accordion
-  (`tileGroup: 'facilitate'`); blurb "Double-click to look underneath"; its hover card reads "Click
-  it to uncover it just for you" although a single click never uncovers [QF14].
+  (`tileGroup: 'facilitate'`); blurb "Double-click to look underneath"; its hover card reads
+  "Double-click it to uncover it just for you, or reveal it for everyone from the menu."
 - **Telemetry:** placing emits `Element·Added·Reveal`; both menu tiles emit
   `Element·Changed·Reveal`; a local lift emits nothing.
 
@@ -191,8 +193,8 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Double press within 450 ms, single never (I3)    | none                                                           | (gap, `isDoublePress` is pure)                      |
 | Local lift never writes (I1)                     | none                                                           | (gap)                                               |
 | Blocked viewer cannot lift                       | none                                                           | (gap) [QF15]                                        |
-| Revealed for all hides the cover everywhere      | none                                                           | (gap)                                               |
-| Hide pill takes the press and restores the cover | none                                                           | (gap GF16)                                          |
+| Revealed for all hides the cover everywhere      | "draws nothing once it is revealed for everyone"               | `apps/live/components/canvas/RevealFace.test.tsx`   |
+| Hide pill takes the press and restores the cover | "lets the Hide pill take the press that puts the cover back"   | `apps/live/components/canvas/RevealFace.test.tsx`   |
 
 ## Constants and configuration
 

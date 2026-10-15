@@ -16,7 +16,7 @@ const vote = (active: boolean): TabVote => ({
   votes: { [el.id]: ['me'] },
 });
 
-function overlay(v: TabVote | null, zoom = 2) {
+function overlay(v: TabVote | null, zoom = 2, canCast = true) {
   return render(
     <CanvasZoomProvider zoom={zoom}>
       <ElementVoteOverlay
@@ -26,6 +26,7 @@ function overlay(v: TabVote | null, zoom = 2) {
         selfId="me"
         voteMax={1}
         votableInVote
+        onCastVote={canCast ? () => {} : undefined}
       />
     </CanvasZoomProvider>,
   ).container;
@@ -41,6 +42,13 @@ describe('ElementVoteOverlay', () => {
   it('shows a counter-scaled count once casting has closed', () => {
     const scaled = overlay(vote(false)).querySelector<HTMLElement>('[style*="scale(0.5)"]');
     expect(scaled?.textContent).toContain('1');
+  });
+
+  // docs/specs/012-collaboration/session-tools.md "Roles": a Viewer watches the live counts but cannot vote.
+  it('shows a Viewer the live count, not a stepper whose plus would do nothing', () => {
+    const c = overlay(vote(true), 2, false);
+    expect(c.querySelector('.lvd-vote-stepper')).toBeNull();
+    expect(c.querySelector('[aria-label="1 votes"]')).not.toBeNull();
   });
 
   it('draws nothing without a vote', () => {

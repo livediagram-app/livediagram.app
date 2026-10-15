@@ -13,6 +13,7 @@ import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
 import { usePlanTourLeftovers } from '@/hooks/plan/usePlanTourLeftovers';
 import { usePublishTabRename } from '@/hooks/editor/active-tab-name-store';
+import { openSearchWithPrefetch } from '@/lib/open-search';
 import { planHidesCursors } from '@/lib/plan-cursors';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
@@ -83,7 +84,9 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID, isVoteHost, opensInOf } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID, opensInOf, settleFlowcharts } from '@livediagram/document';
+import { settleChipsInTabs } from '@/lib/settle-tabs';
+import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { useArticles } from '@/hooks/editor/useArticles';
 import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
@@ -93,6 +96,7 @@ import { announce } from '@/lib/announcer';
 import { useTabModeMenu } from '@/hooks/editor/useTabModeMenu';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
+import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
 import { useLeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
@@ -101,6 +105,7 @@ import { useQuizElements } from '@/hooks/canvas/useQuizElements';
 import { useQaBoard } from '@/hooks/canvas/useQaBoard';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
+import { useFocusLanding } from '@/hooks/collab/useFocusLanding';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
 import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/palette.types';
@@ -206,6 +211,9 @@ import { useElementHelpers } from './useElementHelpers';
 import { usePruneInertSelection } from '@/hooks/canvas/usePruneInertSelection';
 import { useElementCreation } from './useElementCreation';
 import { useMindGrowth } from './useMindGrowth';
+import { useFlowchartGrowth } from './useFlowchartGrowth';
+import { routeGrowth } from './growth-routing';
+import { useFlowchartSetters } from '@/hooks/canvas/useFlowchartSetters';
 import { useMindOutline } from './useMindOutline';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
@@ -300,7 +308,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
     (mapTabs: (ts: Tab[]) => Tab[]) =>
-      rawTickTabs((ts) => guardLockedPagesIn(ts, mapTabs(ts), pageLockGuardRef.current)),
+      rawTickTabs((ts) =>
+        guardLockedPagesIn(ts, settleChipsInTabs(ts, mapTabs(ts)), pageLockGuardRef.current),
+      ),
     [rawTickTabs],
   );
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
@@ -320,10 +330,24 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // are stamped: an untouched tab may be a placeholder whose content has not loaded, and stamping it would make
       // it look edited to the autosave (docs/specs/006-document/per-tab-storage.md).
       const before = new Set<Tab>(ts);
-      const mapped = mapTabs(ts).map((t) => (before.has(t) ? t : stampTabKind(t)));
+      // Flowcharts (docs/specs/009-elements/flowchart.md "The layout"): a chart whose structure this
+      // commit changed (an arrow drawn between steps, a step deleted, a step dragged into another
+      // lane) is laid out again in the same commit, whichever path made the change.
+      const mapped = mapTabs(ts).map((t) => {
+        if (before.has(t)) return t;
+        const prev = ts.find((p) => p.id === t.id);
+        const settled = prev
+          ? settleFlowcharts(prev.elements, t.elements, () =>
+              lockedElementIds(t.elements, t.layers),
+            )
+          : t.elements;
+        return stampTabKind(settled === t.elements ? t : { ...t, elements: settled });
+      });
       // Locked pages (docs/specs/007-editor/illustrate-pages.md "Locking a page"): in Illustrate
       // mode nothing is added to, moved onto, changed on or taken off a locked page.
-      const next = guardLockedPagesIn(ts, mapped, pageLockGuardRef.current);
+      // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after any chart re-layout moved
+      // their hosts.
+      const next = guardLockedPagesIn(ts, settleChipsInTabs(ts, mapped), pageLockGuardRef.current);
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
       return next.map((t) => {
@@ -736,7 +760,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setRemoteAvatars,
     remoteViewports,
     setRemoteViewports,
+    followerIds,
+    setFollowerIds,
   } = usePresenceState();
+  // Who we follow, for the room connection to say again on a new socket; filled once useFollowMe exists below.
+  const followingRef = useRef<string | null>(null);
   // Local laser trail — held in state so the overlay re-renders when
   // we append a point, but mutations stay cheap by always producing a
   // bounded array.
@@ -1089,7 +1117,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onNotice: (message) => toast.info(message),
     // Names come from the roster we already hold, so a renamed participant's
     // announcement reads correctly.
-    nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? 'Somebody',
+    nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? null,
   });
   useAssignRef(sessionBlockedRef, facilitator.sessionToolsBlocked);
 
@@ -1249,7 +1277,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Filled by the hook below, which cannot be declared up here because
     // taking an invitation navigates through the viewport (declared later
     // still). Same knot, and the same ref, as the portal's travel callback.
-    receiveFocusHere: (from, tabId, at, zoom) => receiveFocusRef.current?.(from, tabId, at, zoom),
+    receiveFocusHere: (from, tabId, at) => receiveFocusRef.current?.(from, tabId, at),
     receiveFacilitator: facilitator.receiveFacilitator,
     receiveSelectionReleased,
     // Everyone follows a collaborator's switch of the tab's mode; the one on this tab is said.
@@ -1257,6 +1285,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       if (tabId === activeId) toast.info(peerModeSwitchMessage(name, mode));
     },
     readFacilitatorToken: facilitator.readFacilitatorToken,
+    setFollowerIds,
+    readFollowing: () => followingRef.current,
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,
     receivePollEnd: livePoll.receivePollEnd,
@@ -1309,7 +1339,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTabLoadErrors,
     retryNonce: tabLoadRetryNonce,
     lastSavedTabsRef,
-    resetTabs,
+    applyLoaded: applyRemoteOp,
     noteChangesetSeen: realtime.changesetSeen.noteSeen,
   });
   // A Plan document's statuses are read from every tab: load the rest once (usePlanTabSweep).
@@ -1363,6 +1393,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useAssignRef(sheetsModeRef, rawEditorMode.setMode);
   // A colour picked with + joins the tab's custom colours, which every picker offers.
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
+  // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
+  const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
   // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
   // Plan asks nothing: a board outside Plan is an element like any other
   // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
@@ -1404,6 +1436,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     broadcastLaser,
     broadcastAvatar,
     broadcastAvatarPush,
+    broadcastAvatarSay,
     broadcastReaction,
     broadcastViewport,
     broadcastFocusHere,
@@ -1482,6 +1515,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     viewportOffsetRef,
     canvasMainRef,
     getViewportCenter,
+    getViewportCanvasRect,
     fitToScreen,
     fitToBounds,
     focusOn,
@@ -1493,7 +1527,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useKeyboardAvoidance({ canvasMainRef, zoomRef, setViewportOffset });
 
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else to come and look at this
-  // element, at our zoom, on our tab.
+  // element, on our tab, each at their own zoom.
   //
   // Sends the element's CENTRE rather than our pan: two people rarely have the
   // same window size, so copying a pan lands the element off-centre for anyone
@@ -1503,7 +1537,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     (element: ShapeElement) => {
       const at = { x: element.x + element.width / 2, y: element.y + element.height / 2 };
       const sent = broadcastFocusHere(at, zoomRef.current);
-      const node = canvasMainRef.current;
       // A press that moves nobody is invisible from this side, so say which
       // kind of nobody it was: an empty room, or a room already looking at it.
       // `livePresence` is peers ONLY (the room excludes the asker from every
@@ -1514,16 +1547,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
             sent,
             peerIds: livePresence.map((p) => p.id),
             viewports: remoteViewports,
-            size: { width: node?.offsetWidth ?? 0, height: node?.offsetHeight ?? 0 },
             tabId: activeId,
             at,
-            zoom: zoomRef.current,
           })
         ],
       );
       track('Element', 'Used', 'BringFocus');
     },
-    [broadcastFocusHere, livePresence, remoteViewports, activeId, zoomRef, canvasMainRef, toast],
+    [broadcastFocusHere, livePresence, remoteViewports, activeId, zoomRef, toast],
   );
 
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
@@ -1536,6 +1567,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Set by the pages' hook (below): a page slide's row frames its page once its tab is open.
   const framePageRef = useRef<((pageId: string) => void) | null>(null);
   const slideDeck = useSlideDeck({
+    prefs: userPreferences,
+    // Built on this render's preferences: moved onto the freshest before the whole blob is written.
+    commitPrefs: (next) =>
+      setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id)),
     tabs,
     framePage: (_tabId, pageId) => framePageRef.current?.(pageId),
     plan: slideThumbnailPlan,
@@ -1681,7 +1716,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // the viewport store (a pan or zoom renders no part of the editor) and sends again on a tab switch.
   const publishViewport = useEffectEvent(() => {
     const view = viewport.get();
-    broadcastViewport(view.offset, view.zoom);
+    const node = canvasMainRef.current;
+    broadcastViewport(view.offset, view.zoom, {
+      width: node?.offsetWidth ?? 0,
+      height: node?.offsetHeight ?? 0,
+    });
   });
   useEffect(() => {
     publishViewport();
@@ -1699,7 +1738,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     viewport,
     onFollowTab: setActiveId,
     onNotice: (message) => toast.info(message),
+    followerIds,
+    nameOf: (id) => livePresence.find((p) => p.id === id)?.name ?? 'Someone',
+    sendFollow: (target) => roomRef.current?.send({ kind: 'op', op: { kind: 'follow', target } }),
   });
+  useAssignRef(followingRef, followMe.followingId);
 
   // A tab we are about to land on already aimed, so the tab-entry
   // fit-to-screen below leaves it alone (it runs a frame later and would
@@ -1709,13 +1752,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press leaves on
   // screen, and what taking it does. Placed after the viewport because taking
   // one navigates through it.
+  const focusLanding = useFocusLanding({ activeId, setActiveId, centreOn });
   const focusInvite = useFocusInvite({
-    onFollowTab: (tabId) => {
-      if (tabId !== activeId) skipTabFitRef.current = tabId;
-      setActiveId(tabId);
-    },
-    onCentreOn: centreOn,
-    isAlreadyThere: (tabId, at, zoom) => tabId === activeId && isCentredOn(at, zoom),
+    onFollowTab: focusLanding.onFollowTab,
+    onCentreOn: focusLanding.onCentreOn,
+    isAlreadyThere: (tabId, at) => tabId === activeId && isCentredOn(at),
   });
   // The toast's Show (docs/specs/024-agents/agent-changesets.md "In the editor", CS34): the tab, then
   // every element the changeset touched that is still there, framed no closer than 100%.
@@ -1730,7 +1771,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fitToBounds(bounds, { maxZoom: 1 });
   });
   const receiveFocusRef = useLatest<
-    ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
+    ((from: string, tabId: string, at: { x: number; y: number }) => void) | null
   >(focusInvite.receiveFocusHere);
 
   // Server capabilities (docs/specs/007-editor/ai-assistance.md). Fetched once at mount; determines
@@ -1752,15 +1793,18 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const collabDeepLink = useCollabDeepLinkCapture();
 
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
-  // entry). See useTabEntryEffects. A tab showing pages frames its first page
-  // instead (set by useIllustratePages below), never the whole row.
+  // entry). See useTabEntryEffects. A tab showing pages frames the page you were
+  // last on (else its first) instead (set by useIllustratePages below), never the whole row.
   const frameFirstPageRef = useRef<(() => void) | null>(null);
   const { requestFit } = useTabEntryEffects({
     hydrated,
     activeId,
     elementCount: activeTab.elements.length,
     tabLoaded: loadedTabIds.has(activeId),
-    fitToScreen: () => (frameFirstPageRef.current ?? fitToScreen)(),
+    fitToScreen: () => {
+      (frameFirstPageRef.current ?? fitToScreen)();
+      focusLanding.afterTabFit(activeId);
+    },
     skipFitForTabRef: skipTabFitRef,
   });
 
@@ -1792,7 +1836,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     remoteAvatars,
     localLaserTrail,
     selfLaserConfig: laserPen.config,
-    cursorsHidden: voteCursorsHidden,
+    // A presenter sees nobody else's cursor, laser or character: it is their screen on a projector
+    // (docs/specs/012-collaboration/presentation-mode.md). Inbound only; our own laser still broadcasts.
+    cursorsHidden: voteCursorsHidden || presenting,
   });
   // Everyone in the document, as poll candidates (docs/specs/012-collaboration/live-poll.md). Self first, then
   // whoever is present on any tab — the order the Collaborators modal uses, so
@@ -1860,6 +1906,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       activeTab.elements.some(
         (e) => e.id === elementId && e.type === 'shape' && e.shape === 'action-card',
       ),
+    actionCount: (elementId) => {
+      const el = activeTab.elements.find((e) => e.id === elementId);
+      return el && isBoxed(el) ? elementActions(el).length : 0;
+    },
     // The signed-in account, or the hydrated guest participant identity
     // (guests may self-assign, docs/specs/012-collaboration/assigned-actions.md §2). Null only pre-hydration.
     self: {
@@ -1948,6 +1998,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitTabs,
     activeId,
     switchActive: editorMode.setMode,
+    newTabIn: isStructureReadOnly ? undefined : (mode) => newTabInRef.current?.(mode),
   });
   // Illustrate mode's pages: their edits, and the view centred on them.
   // Set once the documents' hook exists (below): a new document's title takes the caret.
@@ -1970,6 +2021,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onArticleCreated: (flow) => articleFocusRef.current?.(flow),
     framePageRef,
     frameFirstPageRef,
+    documentId: documentId ?? undefined,
+    viewport,
   });
   // What a locked page holds is inert, as on a locked layer (Illustrate mode only).
   const pageLockedIds = usePageLockedIds(activeTab.elements, illustratePages?.pages ?? null);
@@ -2335,10 +2388,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   >(null);
   // A slide page's add-to-deck / hide-from-deck button reaches the deck (pageDeckControls).
   // Memoised so the pages' view keeps its identity across renders where nothing changed.
-  const { deck: currentDeck, newPageSlide, toggleSlideHidden } = slideDeck;
+  const { deck: currentDeck, newPageSlide, toggleSlideHidden, setSlideNotes } = slideDeck;
   const pageDeck = useMemo(
-    () => pageDeckControls(currentDeck, activeId, !isReadOnly, { newPageSlide, toggleSlideHidden }),
-    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden],
+    () =>
+      pageDeckControls(currentDeck, activeId, !isReadOnly, {
+        newPageSlide,
+        toggleSlideHidden,
+        setSlideNotes,
+      }),
+    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNotes],
   );
   const illustrateView = useMemo(
     () =>
@@ -2613,19 +2671,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const {
     autoAlignTab,
     autoLayoutTab,
-    applyTabFontToAll,
+    setTabFinish,
+    applyTabLook,
     setTabFont,
     setTabDefaultTextSize,
     setBackgroundPattern,
     setTheme,
     resetTabsUsingTheme,
-    resetElementsToTheme,
     setBackgroundColor,
     setBackgroundOpacity,
     setPatternColor,
     setBackgroundPatternScale,
     setBackgroundAnimationSpeed,
   } = useTabCanvas({
+    notify: (message) => toast.info(message),
     editsBlocked: structureBlocked,
     activeId,
     activeTab,
@@ -2756,7 +2815,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     imagePickerOpenFor,
     imageContext,
     addImageFromGallery,
-    openImagePickerFor,
     applyImageToElement,
     removeImageFromElement,
     refreshRecentImages,
@@ -2832,7 +2890,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelectedId,
     setMultiSelectedIds,
     setEditingId,
-    openImagePickerFor,
     zoomRef,
     styleNewElement: styleMemory.styleNewElement,
     onPlanCardPlace: placePaletteCard,
@@ -2841,13 +2898,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { commitPath, commitPathEdit } = usePathCommits({
     editsBlocked: structureCreateBlocked,
     commit: logo.drawCommit,
+    elements: () => activeTab.elements,
     styleNewElement: styleMemory.styleNewElement,
     setSelectedId,
   });
 
-  // Mind-map growth (docs/specs/009-elements/mind-node.md): Tab / Enter / the "+" ring. See useMindGrowth.
-  const { canGrowMindNode, growMindNode, abandonMindNode, escapeGrownMindNode } = useMindGrowth({
-    // A Participant grows a mind map (docs/specs/013-workspace/share-roles.md): branches are content.
+  // Mind-map growth (docs/specs/009-elements/mind-node.md) and flowchart growth
+  // (docs/specs/009-elements/flowchart.md): Tab / Enter / the "+" ring, routed through one API
+  // (growth-routing.ts) so the keyboard and label-editor plumbing serves both.
+  const growthOpts = {
+    // A Participant grows a mind map or a flowchart (docs/specs/013-workspace/share-roles.md): branches
+    // and steps are content.
     editsBlocked: participant.participating
       ? createBlocked || !participant.can.addContent
       : structureCreateBlocked,
@@ -2858,7 +2919,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelectedId,
     setEditingId,
     scrollIntoView,
-  });
+  };
+  const flowchartGrowth = useFlowchartGrowth(growthOpts);
+  const { canGrowMindNode, growMindNode, abandonMindNode, escapeGrownMindNode } = routeGrowth(
+    useMindGrowth(growthOpts),
+    flowchartGrowth,
+  );
 
   // Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"). See useMindOutline.
   const mindOutline = useMindOutline({
@@ -2885,6 +2951,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addCallout,
     addStatRow,
     addProcess,
+    addFlowchart,
     addAvatar,
     dropPaletteItem,
     placeIntentAt,
@@ -3083,6 +3150,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTableHeaderColumnSelected,
     setTableZebraSelected,
     setHeaderFillSelected,
+    burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
     setTableHeaderTextColorSelected,
@@ -3108,6 +3176,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    setMindSpacingSelected,
     tidyMindMapSelected,
     tidyMindMap,
     setPageHeading,
@@ -3124,6 +3193,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setDecisionDateSelected,
     setDecisionDriversSelected,
     setChairFacingSelected,
+    setRoomDoorSelected,
     setButtonModeSelected,
     setRatingSelected,
     setRatingAnimSelected,
@@ -3134,10 +3204,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setPieAnimSpeedSelected,
     setPieAnimRepeatSelected,
     setChartLegendSelected,
+    setChartValuesSelected,
+    setChartAxisSelected,
+    setChartRightAxisSelected,
     setChartLegendPositionSelected,
     setChartTypeSelected,
     unlinkChartSelected,
     setLineDataSelected,
+    sankey,
+    sequence,
     resetShapeStyleSelected,
     resetArrowStyleSelected,
     clearAnimationsSelected,
@@ -3166,6 +3241,16 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitActiveTab,
     tickTabs: rememberingTickTabs,
     checkpointBurst,
+    notify: (tone, message) => toast[tone](message),
+  });
+
+  // The flowchart's step type, direction, lanes and Tidy (docs/specs/009-elements/flowchart.md): one
+  // bundle the step toolbar and the Flowchart menu section read from the editor context.
+  const flowchartActions = useFlowchartSetters({
+    currentSelectionIds,
+    commitActiveTab,
+    elements: () => activeTab.elements,
+    editsBlocked,
     notify: (tone, message) => toast[tone](message),
   });
 
@@ -3216,6 +3301,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tabs,
     activeId,
     setSelectedId,
+    sessionToolsBlocked: facilitator.sessionToolsBlocked,
   });
 
   // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on
@@ -3225,6 +3311,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // state.
   const {
     clearPreview: clearStylePreview,
+    previewElementStyle,
+    commitElementStyle,
     previewShapeColorPreset,
     commitShapeColorPreset,
     previewArrowPreset,
@@ -3261,6 +3349,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitBorderRadius,
     previewShadow,
     commitShadow,
+    previewFinish,
+    commitFinish,
     previewRotation,
     commitRotation,
     previewShapeKind,
@@ -3298,7 +3388,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // The same idea one level up (docs/specs/008-canvas/layout-cleanup.md "Hover to see it first"):
   // hovering a Tidy Up tile lays the whole tab out behind the popover, and it only sticks on press.
-  const { previewCleanup, endCleanupPreview } = useCleanupPreview({
+  const { previewCleanup, endCleanupPreview, assessCleanupKind } = useCleanupPreview({
     editsBlocked: structureBlocked,
     activeId,
     tabsRef,
@@ -3399,12 +3489,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   // Ending a vote adds its Plan cards' dots to the cards (docs/specs/026-plan/items.md "Tally"): the host's editor,
-  // once, after the end lands. Undo does not take it back.
+  // once, after the end lands. Undo does not take it back. Only when endVote really ended it: a vote's starter
+  // while somebody else facilitates is refused there, and tallying anyway counted the cards twice.
   const endVoteAndTally = () => {
     const vote = activeTab.vote;
-    const ending = !!vote?.active && isVoteHost(vote, voteSelfId, facilitator.isFacilitator);
-    endVote();
-    if (!ending || !vote) return;
+    if (!endVote() || !vote) return;
     void voteTallies(vote).then((tallies) => {
       if (tallies.length) void planItems.writeQuiet({ kind: 'tally', tallies });
     });
@@ -3436,9 +3525,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const {
     drag,
     shiftDupGhostIds,
-    snapGuides,
-    distGuides,
-    snapTargets,
+    snapGuideStore,
     beginDrag,
     beginAnchorDrag,
     beginArrowTranslate,
@@ -3473,9 +3560,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cancelToCheckpoint,
     onIconElementDroppedOnShape: editsBlocked ? undefined : dropIconElementOnShape,
     onPlanCardDroppedOnBoard: editsBlocked ? undefined : plan.dropPlanCardOnBoard,
-    // Click (not drag) on an annotation marker opens its note editor
-    // (docs/specs/009-elements/annotations.md). Blocked alongside other edits on a locked / read-only tab.
-    onAnnotationClicked: editsBlocked ? undefined : openNote,
     autoRebindArrowsRef,
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
@@ -3520,6 +3604,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     toast,
     onPastePhoto: readPhotoFile,
     canvasPointerRef,
+    getViewportCanvasRect,
     // An Excalidraw copy or file lands through the board-scene insert below (called at paste time).
     insertBoardScene: (scene, at) => void boardSceneInsert.insertScene(scene, at),
   });
@@ -3627,7 +3712,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onCut: () => {
       // Copy to the in-app clipboard, then delete: the two halves the
       // editor already exposes, composed into one undo-friendly action.
-      copySelection();
+      copySelection({ cut: true });
       if (readSelection().multiSelectedIds.size > 0) {
         deleteMultiSelected({ cut: true });
       } else {
@@ -3638,6 +3723,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onSendToBack: sendSelectedToBack,
     onFitToScreen: fitToScreen,
     onCycleEditorMode: editorModeShortcut(editorMode, announce),
+    facilitateMode: editorMode.mode === 'facilitate',
     onDeselect: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
@@ -3647,7 +3733,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onZoomReset: () => setViewportZoom(1),
     zenMode: panelLayout.zenMode,
     onToggleZen: toggleZenMode,
-    onOpenSearch: () => dialogs.setSearchOpen(true),
+    onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
     onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
     // A whiteboard's keys are its dock's (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
@@ -3707,6 +3793,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     surface,
     tourSquare,
     addCustomColour,
+    setTagColour,
     workbenchMode,
     appChrome,
     workbench,
@@ -3753,6 +3840,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Re-sweep the team libraries after a team-folder mutation made from
     // the Explorer panel (docs/specs/013-workspace/team-shared-documents.md), and the confirm dialog its delete uses.
     refreshTeamLibraries,
+    // Refetch the reader's own document list: the Explorer panel's Trash restored or deleted one.
+    refreshOwnDocuments: () => refreshDocumentList(selfParticipant.id),
     confirm,
     // Clipboard copy, also exposed to the event-storming note menu (docs/specs/021-event-storming/event-storming.md),
     // plus paste + its enabled flag for the canvas menu's Paste row.
@@ -3846,6 +3935,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addCallout,
     addStatRow,
     addProcess,
+    addFlowchart,
     addAvatar,
     dropPaletteItem,
     // The empty Plan tab's board picker places its board in the middle of the view.
@@ -3860,9 +3950,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     autoLayoutTab,
     previewCleanup,
     endCleanupPreview,
+    assessCleanupKind,
     // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running this session.
     facilitator,
-    applyTabFontToAll,
+    setTabFinish,
+    applyTabLook,
     // Live session tools (docs/specs/012-collaboration/session-tools.md)
     startTimer,
     pauseTimer,
@@ -3899,6 +3991,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     bringSelectedToFront,
     broadcastAvatar,
     broadcastAvatarPush,
+    broadcastAvatarSay,
     avatarShove,
     fireReaction,
     pressFocusButton,
@@ -4051,6 +4144,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     resetColorsSelected,
     // Style-preset hover preview + click commit (docs/specs/010-palette/style-presets.md).
     clearStylePreview,
+    previewElementStyle,
+    commitElementStyle,
+    // A whole-tab write in one history step, for menu controls that change many elements at once (renumbering
+    // steps, Play in Order): lib/element-style-ops.ts.
+    commitElements: commit,
     previewShapeColorPreset,
     commitShapeColorPreset,
     previewArrowPreset,
@@ -4088,6 +4186,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitBorderRadius,
     previewShadow,
     commitShadow,
+    previewFinish,
+    commitFinish,
     previewRotation,
     commitRotation,
     previewShapeKind,
@@ -4112,7 +4212,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitPadding,
     previewInlineIcon,
     commitInlineIcon,
-    resetElementsToTheme,
     resolveThread,
     retryActiveTabLoad,
     revokeShareLink,
@@ -4133,6 +4232,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTableHeaderColumnSelected,
     setTableZebraSelected,
     setHeaderFillSelected,
+    burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
     setTableHeaderTextColorSelected,
@@ -4157,6 +4257,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    setMindSpacingSelected,
     tidyMindMapSelected,
     tidyMindMap,
     toggleChecklistItem,
@@ -4168,6 +4269,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setHeroCaptionSelected,
     growMindNode,
     abandonMindNode,
+    flowchartActions,
     mindOutline,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
@@ -4177,6 +4279,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setDecisionDateSelected,
     setDecisionDriversSelected,
     setChairFacingSelected,
+    setRoomDoorSelected,
     setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,
@@ -4203,10 +4306,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setPieAnimSpeedSelected,
     setPieAnimRepeatSelected,
     setChartLegendSelected,
+    setChartValuesSelected,
+    setChartAxisSelected,
+    setChartRightAxisSelected,
     setChartLegendPositionSelected,
     setChartTypeSelected,
     unlinkChartSelected,
     setLineDataSelected,
+    sankey,
+    sequence,
     resetShapeStyleSelected,
     resetArrowStyleSelected,
     clearAnimationsSelected,
@@ -4262,9 +4370,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     shortcutsEnabled,
     skipTemplatePicker,
     shiftDupGhostIds,
-    snapGuides,
-    distGuides,
-    snapTargets,
+    snapGuideStore,
     tabLoadErrors,
     tabs,
     tabSummaries,

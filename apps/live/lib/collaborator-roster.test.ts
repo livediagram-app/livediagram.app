@@ -134,6 +134,15 @@ describe('rosterSummary', () => {
 describe('participantBadges', () => {
   it('tags you with your role', () => {
     expect(participantBadges(p('me'), 'me', 'view')).toEqual(['You', 'Viewer']);
+    // docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"
+    expect(participantBadges(p('me'), 'me', 'edit', null, { followerCount: 2 })).toEqual([
+      'You',
+      'Editor',
+      '2 Following You',
+    ]);
+    expect(participantBadges(p('x'), 'me', 'edit', null, { followerCount: 2 })).not.toContain(
+      '2 Following You',
+    );
   });
   it('tags a peer with a known role and a follow', () => {
     expect(participantBadges(p('a', { role: 'edit' }), 'me', 'edit', 'a')).toEqual([

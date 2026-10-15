@@ -1,5 +1,7 @@
+import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
+import { BadgePresetGlyph } from './BadgePresetGlyph';
 import { headlineCase } from '@livediagram/api-schema';
-import type { PenColour } from '@livediagram/document';
+import { badgePresetFace, type PenColour } from '@livediagram/document';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/document';
@@ -16,6 +18,16 @@ import {
   AgendaIcon,
   AvatarModeIcon,
   ChairIcon,
+  DeskIcon,
+  FenceIcon,
+  RoomIcon,
+  MeetingTableIcon,
+  PlantIcon,
+  BookshelfIcon,
+  WaterCoolerIcon,
+  CoffeeMachineIcon,
+  RugIcon,
+  SofaIcon,
   DecisionIcon,
   EraserIcon,
   EstimateIcon,
@@ -44,6 +56,7 @@ import {
   lucideFileText,
   lucideGlobe,
   lucideImage,
+  lucideAppWindow,
   lucideMoveRight,
   lucidePanelTop,
   lucideSquare,
@@ -126,6 +139,8 @@ export type PaletteTileSection =
   // They are now Collaborate elements, offered as six categories: see COLLABORATE_CATEGORY_GROUPS.
   | 'media'
   | 'components'
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md).
+  | 'concepts'
   | 'devices'
   | 'stickers'
   | 'icons'
@@ -148,8 +163,12 @@ type PaletteTileAction =
       estimateScale?: EstimateScale;
       // Plan board preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md "The palette").
       plan?: string;
+      // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
+      variant?: string;
     }
   | { type: 'text' }
+  // An opener (palette-openers): stands for a category, or one group of a catalogue, and opens it; places nothing.
+  | { type: 'open'; category: string; group?: string }
   | { type: 'freehand' }
   // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md), the recognising pen
   // (docs/specs/008-canvas/two-pens.md) and the click-to-place vertex tool (docs/specs/008-canvas/polygon-tool.md)
@@ -274,6 +293,11 @@ export type PaletteTileDef = {
   // strip, between it and the next tile shown (docs/specs/007-editor/toolbar-layout.md "Fixed
   // dividers"). Never more than two per category.
   dividerAfter?: true;
+  // Presets of this tile's element (docs/specs/009-elements/card.md "Card presets"): on the Toolbar strip the tile is
+  // drawn as an opener (its glyph with a caret) whose popover offers them; elsewhere the tile places its own element.
+  variants?: readonly PaletteTileDef[];
+  // The line under the presets popover's title: what can still change after one is placed.
+  variantsHint?: string;
   action: PaletteTileAction;
 };
 
@@ -474,6 +498,67 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <rect x="15" y="3" width="7.5" height="5" rx="2" />
         <rect x="15" y="16" width="7.5" height="5" rx="2" />
         <path d="M9.5 12h2.5v-6.5H15M12 12v6.5h3" />
+      </Glyph>
+    ),
+  },
+  {
+    // The org chart (docs/specs/009-elements/org-chart.md): a person root in the Downward flow; Tab adds a report.
+    id: 'tools:org-chart',
+    blurb: 'Tab adds a report, Enter a peer',
+    caption: 'Org Chart',
+    section: 'build',
+    label: 'Add Org Chart',
+    description:
+      'Org chart. A person with a name and role; with it selected, Tab adds a report below and Enter a peer beside it.',
+    action: { type: 'shape', kind: 'mind-node', variant: 'org-chart' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="8" y="2.5" width="8" height="5" rx="1.5" />
+        <rect x="2" y="16.5" width="8" height="5" rx="1.5" />
+        <rect x="14" y="16.5" width="8" height="5" rx="1.5" />
+        <path d="M12 7.5V12M6 16.5V12h12v4.5" />
+      </Glyph>
+    ),
+  },
+  {
+    // Flowchart (docs/specs/009-elements/flowchart.md): drops a Start that IS a chart; the steps grow
+    // from it and the chart lays itself out.
+    id: 'tools:flowchart',
+    blurb: 'Tab adds the next step',
+    caption: 'Flowchart',
+    section: 'build',
+    label: 'Add Flowchart',
+    description:
+      'A flowchart that lays itself out. With a step selected, Tab adds the next step and Enter a parallel one; change any step to a Decision, Input / Output and more.',
+    action: { type: 'component', kind: 'flowchart' },
+    icon: (
+      <Glyph size={18} units={24}>
+        {/* A start, a decision and two exits: the picture IS the behaviour. */}
+        <rect x="7" y="1.5" width="10" height="4.5" rx="2.25" />
+        <path d="M12 9.5l4 3.5-4 3.5-4-3.5z" />
+        <path d="M12 6v3.5M8 13H4.5v4.5M16 13h3.5v4.5" />
+        <rect x="1.5" y="17.5" width="6" height="5" rx="0.5" />
+        <rect x="16.5" y="17.5" width="6" height="5" rx="0.5" />
+      </Glyph>
+    ),
+  },
+  {
+    // The sequence diagram (docs/specs/009-elements/sequence-diagram.md): participants and messages, laid out as UML.
+    id: 'tools:sequence',
+    blurb: 'Who calls whom, in order',
+    caption: 'Sequence',
+    section: 'build',
+    label: 'Add Sequence Diagram',
+    description:
+      'Sequence diagram. Participants side by side and the messages between them in order; add a message by typing a row and the diagram lays itself out.',
+    action: { type: 'shape', kind: 'sequence' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="2" y="2" width="6" height="4" rx="1" />
+        <rect x="16" y="2" width="6" height="4" rx="1" />
+        <path d="M5 6v16M19 6v16" strokeDasharray="2 2" />
+        <path d="M5 10h13M15.5 8l2.5 2-2.5 2" />
+        <path d="M19 16H6M8.5 14 6 16l2.5 2" strokeDasharray="2 1.5" />
       </Glyph>
     ),
   },
@@ -1034,7 +1119,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Bring Focus',
     caption: 'Bring Focus',
     description:
-      'Bring Focus. Press it and everyone else in the room is offered a jump to it, at your zoom, on your tab.',
+      'Bring Focus. Press it and everyone else in the room is offered a jump to it, on your tab.',
     filled: true,
     action: { type: 'shape', kind: 'focus-button' },
     icon: (
@@ -1062,6 +1147,157 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     action: { type: 'shape', kind: 'chair' },
     icon: <ChairIcon size={TILE_GLYPH_PX} />,
   },
+  {
+    // Desk (docs/specs/009-elements/chair.md "Desk and sofa"): a chair pulled up to a desk with a
+    // computer on it; whoever sits faces the screen.
+    id: 'tools:desk',
+    tileGroup: 'move',
+    blurb: 'A desk with a computer for an Avatar to sit at',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Desk',
+    caption: 'Desk',
+    description:
+      'A desk with a computer and a chair for Avatar mode: walk your character in and it sits down facing the screen.',
+    filled: true,
+    action: { type: 'shape', kind: 'desk' },
+    icon: <DeskIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Sofa (docs/specs/009-elements/chair.md "Desk and sofa"): two seats side by side.
+    id: 'tools:sofa',
+    tileGroup: 'move',
+    blurb: 'A two-seater sofa for Avatars',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Sofa',
+    caption: 'Sofa',
+    description:
+      'A two-seater sofa for Avatar mode: walk your character in and it sits on the nearer cushion, room for two.',
+    filled: true,
+    action: { type: 'shape', kind: 'sofa' },
+    icon: <SofaIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
+    id: 'tools:fence',
+    tileGroup: 'move',
+    blurb: 'A barrier Avatars cannot walk through',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Fence',
+    caption: 'Fence',
+    description:
+      'A fence Avatar-mode characters cannot cross. Join fences end to end to wall off an area: people can walk round it, not into it.',
+    filled: true,
+    action: { type: 'shape', kind: 'fence' },
+    icon: <FenceIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Room (docs/specs/009-elements/office.md).
+    id: 'tools:room',
+    tileGroup: 'move',
+    blurb: 'A room with walls and a doorway',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Room',
+    caption: 'Room',
+    description:
+      'A room for a virtual office: walls Avatar-mode characters walk round, a doorway they walk through, and its name on the back wall. It goes in behind everything, so furniture stands on its floor.',
+    filled: true,
+    action: { type: 'shape', kind: 'room' },
+    icon: <RoomIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Meeting Table (docs/specs/009-elements/office.md).
+    id: 'tools:meeting-table',
+    tileGroup: 'move',
+    blurb: 'A table with six seats round it',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Meeting Table',
+    caption: 'Meeting Table',
+    description:
+      'A meeting table with six chairs for Avatar mode: walk your character in and it sits on the nearest seat, facing the table.',
+    filled: true,
+    action: { type: 'shape', kind: 'meeting-table' },
+    icon: <MeetingTableIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Plant (docs/specs/009-elements/office.md).
+    id: 'tools:plant',
+    tileGroup: 'move',
+    blurb: 'A potted plant Avatars walk round',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Plant',
+    caption: 'Plant',
+    description:
+      'A potted plant to make an office feel lived in. Avatar-mode characters walk round its pot.',
+    filled: true,
+    action: { type: 'shape', kind: 'plant' },
+    icon: <PlantIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Bookshelf (docs/specs/009-elements/office.md).
+    id: 'tools:bookshelf',
+    tileGroup: 'move',
+    blurb: 'Shelves of books Avatars walk round',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Bookshelf',
+    caption: 'Bookshelf',
+    description:
+      'A bookshelf to stand against a wall. Avatar-mode characters walk along in front of it, not through it.',
+    filled: true,
+    action: { type: 'shape', kind: 'bookshelf' },
+    icon: <BookshelfIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Water Cooler (docs/specs/009-elements/office.md).
+    id: 'tools:water-cooler',
+    tileGroup: 'move',
+    blurb: 'Walk up for a cup of water',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Water Cooler',
+    caption: 'Water Cooler',
+    description:
+      'A water cooler for Avatar mode: walk your character up to it and it gets a cup of water, sipping it for a minute where everyone can see.',
+    filled: true,
+    action: { type: 'shape', kind: 'water-cooler' },
+    icon: <WaterCoolerIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Coffee Machine (docs/specs/009-elements/office.md).
+    id: 'tools:coffee-machine',
+    tileGroup: 'move',
+    blurb: 'Walk up for a coffee',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Coffee Machine',
+    caption: 'Coffee Machine',
+    description:
+      'A coffee machine for Avatar mode: walk your character up to it and it gets a steaming coffee, sipping it for a minute where everyone can see.',
+    filled: true,
+    action: { type: 'shape', kind: 'coffee-machine' },
+    icon: <CoffeeMachineIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Rug (docs/specs/009-elements/office.md).
+    id: 'tools:rug',
+    tileGroup: 'move',
+    blurb: 'A rug on the floor',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Rug',
+    caption: 'Rug',
+    description:
+      'A rug that lies on the floor under the furniture, to mark out a lounge or a reception.',
+    filled: true,
+    action: { type: 'shape', kind: 'rug' },
+    icon: <RugIcon size={TILE_GLYPH_PX} />,
+  },
   // --- Collaborate (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) ----------------------------------
   // Elements that collect what the ROOM thinks. Rows with a blurb, like
   // Behaviour: none of these glyphs can say what the element does, and
@@ -1076,7 +1312,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     tileGroup: 'record',
     label: 'Add Comment Panel',
     description:
-      'A marker that carries a comment thread. Drop it on any spot and click it to talk about that spot, rather than attaching the remark to whichever shape happens to be nearest.',
+      'A card that carries a whole comment thread, read and answered where it sits. Drop it on any spot to talk about that spot, rather than attaching the remark to whichever shape happens to be nearest.',
     filled: true,
     action: { type: 'shape', kind: 'comment-pin' },
     icon: (
@@ -1090,7 +1326,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // Action panel (docs/specs/012-collaboration/action-panel.md): one assigned action as a card on the canvas, the
     // Comment panel's sibling.
     id: 'collab:action-card',
-    blurb: 'An assigned action as a card on the canvas',
+    blurb: 'Assigned actions as a card on the canvas',
     caption: 'Action',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -1233,7 +1469,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Roll Call',
     caption: 'Roll Call',
     description:
-      'Press Take roll and it records everyone in the room at that moment, and keeps them after they leave.',
+      'Press Take Roll and it records everyone in the room at that moment, and keeps them after they leave.',
     filled: true,
     action: { type: 'shape', kind: 'roll-call' },
     icon: <RollCallIcon size={TILE_GLYPH_PX} />,
@@ -1266,11 +1502,27 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: '9',
     noTint: true,
     needsImage: true,
-    dividerAfter: true,
     action: { type: 'image' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucideImage} />
+      </Glyph>
+    ),
+  },
+  {
+    // The tab window (docs/specs/009-elements/tab-window.md): another tab of the document, live, fitted inside it.
+    id: 'media:tab-window',
+    blurb: 'Another tab, live',
+    caption: 'Tab Window',
+    section: 'media',
+    label: 'Add Tab Window',
+    description:
+      'Tab Window. Shows another tab of this document, live and fitted inside it, so a slide stays up to date with the diagram it shows.',
+    dividerAfter: true,
+    action: { type: 'shape', kind: 'tab-window' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideAppWindow} />
       </Glyph>
     ),
   },
@@ -1294,7 +1546,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Vimeo Embed',
     description:
-      'Embeds a Vimeo link on the canvas. Double-click it to set the link; it loads when you press play.',
+      'Embeds a Vimeo link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'vimeo' },
     icon: <VimeoTileArt />,
   },
@@ -1306,7 +1558,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Loom Embed',
     description:
-      'Embeds a Loom link on the canvas. Double-click it to set the link; it loads when you press play.',
+      'Embeds a Loom link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'loom' },
     icon: <LoomTileArt />,
   },
@@ -1318,7 +1570,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Figma Embed',
     description:
-      'Embeds a Figma link on the canvas. Double-click it to set the link; it loads when you press play.',
+      'Embeds a Figma link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'figma' },
     icon: <FigmaTileArt />,
   },
@@ -1330,7 +1582,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Google Docs Embed',
     description:
-      'Embeds a Google Docs link on the canvas. Double-click it to set the link; it loads when you press play.',
+      'Embeds a Google Docs link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'gdocs' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
@@ -1346,7 +1598,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Website Embed',
     description:
-      'Embeds any website on the canvas. Double-click it to set the address; it loads when you press play. Some sites refuse to be framed and will come up blank.',
+      'Embeds any website on the canvas. Double-click it to set the address; it loads when you press Load embed. Some sites refuse to be framed and will come up blank.',
     dividerAfter: true,
     action: { type: 'video', provider: 'website' },
     icon: (
@@ -1392,6 +1644,64 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The card (docs/specs/009-elements/card.md): a diagram node with slots, placed like any shape so the theme
+    // paints it. The Callout below is its preset.
+    id: 'components:card',
+    blurb: 'A node with an icon, title, meta and tags',
+    caption: 'Card',
+    section: 'components',
+    label: 'Add Card',
+    description:
+      'Card. A diagram node with slots you switch on: a header band, an icon, a title and meta line, a body and tags. Tap to drop or drag to size.',
+    filled: true,
+    action: { type: 'shape', kind: 'card' },
+    variants: CARD_PRESET_TILES,
+    variantsHint: 'Start from a preset, then switch any part on or off.',
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
+        <rect x="5.5" y="6.5" width="4.5" height="4.5" rx="1.2" />
+        <path d="M12.5 7.5h6M12.5 10h4M5.5 14h13" />
+        <rect x="5.5" y="16.5" width="4" height="1.6" rx="0.8" />
+        <rect x="11" y="16.5" width="4" height="1.6" rx="0.8" />
+      </Glyph>
+    ),
+  },
+  {
+    // The badge (docs/specs/009-elements/badge.md): a pill that attaches to a point on a node when dropped there.
+    id: 'components:badge',
+    blurb: 'A small tag that sits on a node',
+    caption: 'Badge',
+    section: 'components',
+    label: 'Add Badge',
+    description:
+      'Badge. A small pill like "Beta" or "v2". Drop it on a corner or edge of a node and it stays there as the node moves.',
+    // Drawn as the badge it drops (a New pill), so untinted: the glyph carries the theme's colours itself.
+    noTint: true,
+    action: { type: 'shape', kind: 'badge' },
+    variants: BADGE_PRESET_TILES,
+    variantsHint: 'Start from a preset, then change its text, look or colour.',
+    icon: <BadgePresetGlyph {...badgePresetFace(undefined)} />,
+  },
+  {
+    // The step number (docs/specs/009-elements/step-number.md): numbers itself as it lands.
+    id: 'components:step',
+    blurb: 'A numbered disc for walkthroughs',
+    caption: 'Step Number',
+    section: 'components',
+    label: 'Add Step Number',
+    description:
+      'Step number. A numbered disc for walking through a diagram in order; each new one takes the next number.',
+    filled: true,
+    action: { type: 'shape', kind: 'step' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M10.5 9.5 12.5 8v8" />
+      </Glyph>
+    ),
+  },
+  {
     id: 'tools:lane',
     blurb: 'A titled band that carries its steps',
     caption: 'Lane',
@@ -1424,6 +1734,182 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The stack (docs/specs/009-elements/stack.md): a container that arranges what is dropped into it.
+    id: 'tools:stack',
+    blurb: 'Lines things up with even gaps',
+    caption: 'Stack',
+    section: 'build',
+    label: 'Add Stack',
+    description:
+      'Stack. Drop elements in and it lines them up in a row, a column or a grid with even gaps, and reflows as they change.',
+    action: { type: 'shape', kind: 'stack' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="2.5" y="6" width="19" height="12" rx="2" strokeDasharray="2.5 2" />
+        <rect x="5" y="9" width="4" height="6" rx="1" />
+        <rect x="10" y="9" width="4" height="6" rx="1" />
+        <rect x="15" y="9" width="4" height="6" rx="1" />
+      </Glyph>
+    ),
+  },
+  {
+    // The boundary (docs/specs/009-elements/boundary.md): a titled, tinted container for regions and systems.
+    id: 'tools:boundary',
+    blurb: 'A titled zone: a region, a VPC, a system',
+    section: 'build',
+    label: 'Add Boundary',
+    description:
+      'Boundary. A titled, tinted container for a cloud region, a network or a system. It carries what is inside it, and nested boundaries tint deeper.',
+    action: { type: 'shape', kind: 'boundary' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="3" y="6" width="18" height="15" rx="2" strokeDasharray="3 2.5" />
+        <rect x="5" y="3.5" width="9" height="5" rx="1.5" />
+      </Glyph>
+    ),
+  },
+  {
+    // The diagram key (docs/specs/009-elements/diagram-key.md): a legend of the tab's line patterns and tag colours.
+    id: 'tools:diagram-key',
+    blurb: 'A legend that fills itself in',
+    caption: 'Diagram Key',
+    section: 'build',
+    label: 'Add Diagram Key',
+    description:
+      'Diagram key. Lists the line styles and tag colours this tab uses, each with a meaning you type.',
+    filled: true,
+    action: { type: 'shape', kind: 'diagram-key' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
+        <path d="M5.5 9h5M15 9h3.5" />
+        <path d="M5.5 14h1.5M9 14h1.5M15 14h3.5" />
+        <path d="M5.5 17.5h5" strokeOpacity={0.5} />
+      </Glyph>
+    ),
+  },
+  // --- Concepts (docs/specs/009-elements/concept-graphics.md) --------------------------------------
+  {
+    id: 'concepts:layer-stack',
+    blurb: 'Stacked layers with side notes',
+    caption: 'Layer Stack',
+    section: 'concepts',
+    label: 'Add Layer Stack',
+    description:
+      'Layer stack. Horizontal bands for a tech stack, the OSI model or architecture tiers.',
+    action: { type: 'shape', kind: 'layer-stack' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="3" y="3.5" width="18" height="4.5" rx="1.2" />
+        <rect x="3" y="9.75" width="18" height="4.5" rx="1.2" />
+        <rect x="3" y="16" width="18" height="4.5" rx="1.2" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:pyramid',
+    blurb: 'Tiers in a triangle',
+    caption: 'Pyramid',
+    section: 'concepts',
+    label: 'Add Pyramid',
+    description: 'Pyramid. Tiers cut from one triangle: a hierarchy, a strategy stack, needs.',
+    action: { type: 'shape', kind: 'pyramid' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M12 3 15.4 9H8.6Z" />
+        <path d="M7.7 10.6h8.6l2.9 5H4.8Z" />
+        <path d="M3.9 17.2h16.2l1.4 3.3h-19Z" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:funnel',
+    blurb: 'Narrowing bands with values',
+    caption: 'Funnel',
+    section: 'concepts',
+    label: 'Add Funnel',
+    description: 'Funnel. Bands narrowing downward, each with a value: a conversion story.',
+    action: { type: 'shape', kind: 'pyramid', variant: 'funnel' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M3 4h18l-2.2 4.5H5.2Z" />
+        <path d="M6 10.5h12l-2 4H8Z" />
+        <path d="M8.8 16.5h6.4l-1.2 3.5h-4Z" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:cycle',
+    blurb: 'Steps round a loop',
+    caption: 'Cycle',
+    section: 'concepts',
+    label: 'Add Cycle',
+    description: 'Cycle. Steps round a ring joined by arrows: PDCA, a flywheel, a release loop.',
+    action: { type: 'shape', kind: 'cycle' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <circle cx="12" cy="4.5" r="2.3" />
+        <circle cx="19.5" cy="12" r="2.3" />
+        <circle cx="12" cy="19.5" r="2.3" />
+        <circle cx="4.5" cy="12" r="2.3" />
+        <path d="M15 5.5a8 8 0 0 1 3.5 3.5M18.5 15a8 8 0 0 1-3.5 3.5M9 18.5A8 8 0 0 1 5.5 15M5.5 9A8 8 0 0 1 9 5.5" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:hub',
+    blurb: 'Satellites round a centre',
+    caption: 'Hub and Spoke',
+    section: 'concepts',
+    label: 'Add Hub and Spoke',
+    description:
+      'Hub and spoke. Satellites round a central hub, joined by spokes: an ecosystem, stakeholders, integrations.',
+    action: { type: 'shape', kind: 'hub' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <circle cx="12" cy="12" r="3.2" />
+        <circle cx="12" cy="3.5" r="1.8" />
+        <circle cx="19.4" cy="16.2" r="1.8" />
+        <circle cx="4.6" cy="16.2" r="1.8" />
+        <path d="M12 8.8V5.3M14.8 13.6l3 1.7M9.2 13.6l-3 1.7" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:onion',
+    blurb: 'Rings from a core outward',
+    caption: 'Onion',
+    section: 'concepts',
+    label: 'Add Onion',
+    description:
+      'Onion rings. Concentric rings from a core outward: clean architecture, trust layers, a maturity model.',
+    action: { type: 'shape', kind: 'onion' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <circle cx="12" cy="12" r="9" />
+        <circle cx="12" cy="12" r="6" />
+        <circle cx="12" cy="12" r="3" />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'concepts:chevrons',
+    blurb: 'Arrow-shaped stages in a row',
+    caption: 'Chevrons',
+    section: 'concepts',
+    label: 'Add Chevrons',
+    description:
+      'Chevron process. Arrow-shaped stages in a row, each pointing into the next: a pipeline, a value chain, phases.',
+    action: { type: 'shape', kind: 'chevrons' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M2 8h5l2.5 4L7 16H2l2.5-4Z" />
+        <path d="M9 8h5l2.5 4L14 16H9l2.5-4Z" />
+        <path d="M16 8h4.5l2 4-2 4H16l2.5-4Z" />
+      </Glyph>
+    ),
+  },
+  {
     id: 'tools:annotation',
     blurb: 'A marker that holds a note',
     section: 'tools',
@@ -1435,7 +1921,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // which is the distinction the row order now carries.
     toolGroup: 'write',
     label: 'Add Annotation',
-    description: 'Annotation. A note marker: hover to read it, click to edit.',
+    description: 'Annotation. A note marker: hover to read it, double-click to edit.',
     filled: true,
     action: { type: 'annotation' },
     icon: (
@@ -1443,6 +1929,27 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <path d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v8a1.5 1.5 0 0 1-1.5 1.5H10l-4 3v-3H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5Z" />
         <path d="M6.5 9.75h11" />
         <path d="M6.5 12.5h7" />
+      </Glyph>
+    ),
+  },
+  {
+    // The pointer note (docs/specs/009-elements/pointer-note.md): a note whose leader's tip pins to a point on a shape.
+    id: 'tools:pointer-note',
+    blurb: 'A note that points at a spot',
+    caption: 'Pointer Note',
+    section: 'tools',
+    toolGroup: 'write',
+    label: 'Add Pointer Note',
+    description:
+      'Pointer note. A short note with a line to a dot; drag the dot onto a corner or edge of a shape and the note follows it.',
+    filled: true,
+    action: { type: 'shape', kind: 'pointer-note' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="9" y="3" width="12.5" height="8" rx="2" />
+        <path d="M11.5 6h7.5M11.5 8.5h4.5" />
+        <path d="M9 11 4.5 18" />
+        <circle cx="4" cy="19" r="1.6" fill="currentColor" />
       </Glyph>
     ),
   },
@@ -1484,6 +1991,25 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <circle cx="4.5" cy="6" r="1.8" fill="currentColor" stroke="none" />
         <circle cx="9" cy="6" r="1.8" fill="currentColor" stroke="none" />
         <circle cx="13.5" cy="6" r="1.8" fill="currentColor" stroke="none" />
+      </Glyph>
+    ),
+  },
+  {
+    // Sankey diagram (docs/specs/009-elements/sankey.md): last in Build, after the containers, because it is
+    // the one Build element that lays itself out from data rather than holding work you place in it.
+    id: 'tools:sankey',
+    blurb: 'Flows drawn as wide as the amount they carry',
+    caption: 'Sankey',
+    section: 'build',
+    label: 'Add Sankey Diagram',
+    description:
+      'A Sankey diagram: how much moves where, each band as wide as its amount. Double-click it to edit the flows.',
+    action: { type: 'shape', kind: 'sankey' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        {/* Two inputs merging into a node, splitting three ways: the shape of every Sankey. */}
+        <path d="M3 5h2M3 13h2M11 7v10M19 4v4M19 11v3M19 17v3" />
+        <path d="M5 4c4 0 2 4 6 4M5 14c4 0 2 2 6 2M11 9c4 0 4-3 8-3M11 12c4 0 4 0 8 1M11 15c4 0 4 3 8 3" />
       </Glyph>
     ),
   },

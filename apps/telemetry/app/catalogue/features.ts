@@ -3,7 +3,7 @@
 
 import { isHelpArticleType, isSettingsCategory } from '../opened-types';
 import { SELECTION_MODES } from '../palette-types';
-import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES } from '../look-feel-types';
+import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '../look-feel-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 import { LOGO_TOOL_TYPES } from '../logo-types';
@@ -347,17 +347,41 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
   'Tab',
   'Changed',
   'Illustrate Pages Set Up',
-  "An Illustrate page's size, name, background or pattern changed from its panel, or a page locked or unlocked.",
+  "An Illustrate page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), or a page locked or unlocked.",
   {
     types: [
       'PageSize',
       'PageRenamed',
       'PageBackground',
+      'PageBackgroundImage',
+      'PageBackgroundAnimated',
+      'PageBackgroundAnimatedSpeed',
+      'PageBackgroundAppliedToAll',
+      'PageBackgroundPainted',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',
     ],
   },
+);
+
+// Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): a press on a page in the list,
+// going there, or a page dragged to a new place in it.
+export const PAGE_CONTENTS_JUMPS = chart(
+  'UI',
+  'Used',
+  'Contents Jumps and Reorders',
+  "A page pressed in Illustrate's Contents list (the canvas gliding to it), or dragged to a new place there.",
+  { types: ['PageContentsJump', 'PageContentsReorder'], rising: 'neutral' },
+);
+
+// Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
+export const TAB_WINDOW_USE = chart(
+  'UI',
+  'Used',
+  'Tab Windows Opened',
+  'A tab opened from a Tab Window showing it, on a slide or page.',
+  { types: ['TabWindowOpen'], rising: 'neutral' },
 );
 
 // Building Illustrate pages: a layout placed, a page duplicated or moved.
@@ -465,6 +489,8 @@ export const WHITEBOARDS: MetricStack = {
     ILLUSTRATE_PAGES,
     ILLUSTRATE_PAGE_SETUP,
     ILLUSTRATE_PAGE_BUILDING,
+    PAGE_CONTENTS_JUMPS,
+    TAB_WINDOW_USE,
     LOGO_TOOLS,
     LOGO_MIRROR_TWINS,
     LOGO_SWITCHES,
@@ -808,11 +834,30 @@ export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
   ),
 );
 
+// The office's machines (docs/specs/009-elements/office.md "Using it"): a drink taken in Avatar mode.
+export const OFFICE_DRINKS = chart(
+  'Canvas',
+  'Used',
+  'Office Drinks',
+  'A drink taken at a water cooler or a coffee machine in Avatar mode.',
+  { types: ['WaterCooler', 'CoffeeMachine'] },
+);
+
+// Avatar-mode speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): that somebody spoke, by
+// either door, never what they said.
+export const AVATAR_MESSAGES = chart(
+  'Canvas',
+  'Used',
+  'Avatar Messages',
+  'A message said in a speech bubble in Avatar mode, typed above the character or sent from the Avatar panel.',
+  { types: ['AvatarMessage', 'AvatarMessagePanel'] },
+);
+
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, MODE_OPTIONS],
+  members: [...MODE_METRICS, OFFICE_DRINKS, AVATAR_MESSAGES, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
   seeAlso: { view: 'modes', label: 'See Each Mode on the Modes Tab' },
@@ -932,6 +977,13 @@ export const DRAW_TOUR_OFFERED = opened(
   'Draw Tour Offered',
   'The Draw tour offered, the first time someone works in Draw mode.',
   (t) => t === 'DrawTourOffer',
+);
+
+// The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
+export const AVATAR_TOUR_OFFERED = opened(
+  'Avatar Tour Offered',
+  'The Avatar tour offered, the first time someone walks as an avatar.',
+  (t) => t === 'AvatarTourOffer',
 );
 
 // The Illustrate tour's offer (docs/specs/007-editor/illustrate-tour.md); charted in its funnel on the Visitors tab.
@@ -1057,7 +1109,7 @@ export const THEMES_CHOSEN = chart(
   'Changed',
   'Themes Chosen',
   'A built-in theme picked, at creation or later.',
-  { typeIn: (t) => !CUSTOM_THEME_TYPES.has(t ?? '') },
+  { typeIn: (t) => !isNonThemePick(t) },
 );
 
 export const CANVAS_STYLES_PICKED = chart(
@@ -1080,7 +1132,7 @@ export const CUSTOM_THEMES = chart(
   'Theme',
   'Created',
   'Custom Themes',
-  'The custom-theme builder: created, applied, edited, deleted, and elements reset to their theme.',
+  'The custom-theme builder: created, applied, edited and deleted.',
   { actionIn: ['Changed', 'Deleted'], typeIn: (t) => CUSTOM_THEME_TYPES.has(t ?? '') },
 );
 
@@ -1104,6 +1156,16 @@ export const HIGHLIGHTER_SETTINGS = chart(
   { types: ['HighlighterColour', 'HighlighterWidth'], rising: 'neutral' },
 );
 
+// The Tab Style popover's Finish filter beside its Looks carousel (docs/specs/011-theme/
+// canvas-and-theme-dialog.md).
+export const LOOKS_FILTERED = chart(
+  'UI',
+  'Changed',
+  'Looks Filtered',
+  "The Tab Style popover's Looks narrowed to one finish with its Finish filter, or switched to the seasonal looks with its Seasonal toggle.",
+  { types: ['LooksFinishFilter', 'LooksSeasonal'], rising: 'neutral' },
+);
+
 export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
@@ -1116,6 +1178,7 @@ export const LOOK_AND_FEEL: MetricStack = {
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_THEMES,
     CUSTOM_SWATCHES,
+    LOOKS_FILTERED,
     HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],

@@ -5,19 +5,14 @@
 // picks the date in place; each lands as one step (the date when the field is left or Enter pressed, so typing a year
 // is one step, not four; the count follows the date as it is typed). The count moves on with the shared clock.
 import { calendarDayAfter, daysUntil, isCalendarDay } from '@livediagram/document';
+import { keyDateCount } from '@livediagram/plan-art';
 import { useRelativeNow } from '@/lib/relative-time';
 import { useDashboard } from './dashboard-context';
 import { CARD_BODY, CardHeading } from './card-parts';
 import { useSlotDraft } from './useSlotDraft';
 
-// What the count reads, and whether it has passed.
-export function keyDateCount(days: number): { figure: string; unit: string; past: boolean } {
-  if (days === 0) return { figure: 'Today', unit: '', past: false };
-  if (days === 1) return { figure: 'Tomorrow', unit: '', past: false };
-  if (days === -1) return { figure: 'Yesterday', unit: '', past: true };
-  if (days > 0) return { figure: String(days), unit: 'days to go', past: false };
-  return { figure: String(-days), unit: 'days ago', past: true };
-}
+// What the count reads, and whether it has passed: shared with the card's picture in an image export.
+export { keyDateCount };
 
 const longDate = (day: string) =>
   new Date(`${day}T12:00:00`).toLocaleDateString(undefined, {

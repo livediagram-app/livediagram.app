@@ -8,7 +8,8 @@
 // scrolls when the slot is short, top-aligned.
 import { useState } from 'react';
 import { DASHBOARD_LINKS_MAX, type DashboardLink } from '@livediagram/document';
-import { lucideGlyph } from '@livediagram/ui';
+import { linkLabelOf } from '@livediagram/plan-art';
+import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
 import {
   lucideExternalLink,
   lucideGlobe,
@@ -33,22 +34,14 @@ const PlusGlyph = lucideGlyph(lucidePlus, 14);
 const ROW_HIT =
   'flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-300';
 const ICON_WELL =
-  'flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition group-hover/link:bg-brand-50 group-hover/link:text-brand-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover/link:bg-brand-500/15 dark:group-hover/link:text-brand-300';
+  'flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition group-hover/link:bg-brand-50 group-hover/link:text-brand-700 dark:bg-slate-800 dark:text-slate-400 dark:group-hover/link:bg-brand-500/15 dark:group-hover/link:text-brand-300';
 // Shown on hover or focus; always on a screen with no hover (a phone).
 const ON_HOVER =
   'opacity-0 transition group-hover/link:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
-// The label a link shows: its own, else its site's host (an email's address), else the tab's name.
-export function labelOf(link: DashboardLink, tabName: (id: string) => string | undefined): string {
-  if (link.label) return link.label;
-  if (link.tabId) return tabName(link.tabId) ?? 'Tab';
-  if (link.url?.startsWith('mailto:')) return link.url.slice(7) || link.url;
-  try {
-    return new URL(link.url!).host || link.url!;
-  } catch {
-    return link.url!;
-  }
-}
+// The label a link shows: shared with the card's picture in an image export.
+const labelOf = linkLabelOf;
+export { labelOf };
 
 function LinkText({ label, detail }: { label: string; detail: string }) {
   return (
@@ -146,7 +139,13 @@ export function DashboardLinksCard({
             })}
           </ul>
         ) : !adding ? (
-          <p className="px-1.5 text-[13px] text-slate-500 dark:text-slate-400">No links yet.</p>
+          <CompactEmptyState
+            icon={<LinkGlyph />}
+            title="No links yet"
+            description={
+              canEdit ? 'Add Link puts a site or a tab of this document here.' : undefined
+            }
+          />
         ) : null}
         {canEdit && adding ? (
           <AddLinkForm

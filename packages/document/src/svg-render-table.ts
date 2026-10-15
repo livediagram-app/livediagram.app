@@ -6,13 +6,10 @@
 // thumbnail, and the MCP inline render via svgBoxed.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
 import { defaultStrokeColor, defaultTextColor, type CanvasSurface } from './colors';
-import { PADDING_PX, type TableElement, type TextSize } from './index';
+import { PADDING_PX, type TableElement } from './index';
+import { tableCellFontPx } from './table-cell-font';
+import { tableHeaderColours } from './table-header-colours';
 import { LABEL_LINE_HEIGHT, labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
-
-// Cell font size per preset, mirroring TableView's CELL_FONT_PX; 'scale'
-// tracks the row height like the editor.
-const CELL_FONT_PX: Record<string, number> = { sm: 11, md: 13, lg: 16 };
-const scaleCellFontPx = (rowH: number): number => Math.max(9, Math.min(40, Math.round(rowH * 0.4)));
 
 // Track sizes for one axis: pinned entries keep their px, the rest share
 // whatever remains evenly (the CSS `minmax(0, 1fr)` behaviour TableView's
@@ -41,7 +38,9 @@ export function svgTableShape(el: TableElement, surface: CanvasSurface = 'light'
   if (rows === 0 || cols === 0) return '';
   const stroke = el.strokeColor ?? defaultStrokeColor(el, surface);
   const textColor = el.textColor ?? defaultTextColor(el, surface);
-  const headerTextColor = el.headerTextColor ?? textColor;
+  // The header band and its ink, resolved for the surface the table is on (the canvas reads the same).
+  const header = tableHeaderColours(el, surface);
+  const headerTextColor = header.ink;
   const borderW = BORDER_STROKE_PX[el.strokeWidth ?? 'thin'];
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'];
   const dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
@@ -51,8 +50,7 @@ export function svgTableShape(el: TableElement, surface: CanvasSurface = 'light'
   const xs = cumulative(tableTrackSizes(el.width, cols, el.colWidths)).map((v) => el.x + v);
   const ys = cumulative(tableTrackSizes(el.height, rows, el.rowHeights)).map((v) => el.y + v);
   const rowH = rows > 0 ? el.height / rows : el.height;
-  const baseFontPx =
-    el.textSize === 'scale' ? scaleCellFontPx(rowH) : (CELL_FONT_PX[el.textSize ?? 'md'] ?? 13);
+  const baseFontPx = tableCellFontPx(el.textSize, rowH);
   const alignX = el.textAlignX ?? 'center';
   const alignY = el.textAlignY ?? 'middle';
 
@@ -75,31 +73,29 @@ export function svgTableShape(el: TableElement, surface: CanvasSurface = 'light'
       const cw = xs[c + 1]! - cx0;
       const ch = ys[r + 1]! - cy0;
       // Cell background: an explicit per-cell colour wins; otherwise the
-      // header band / zebra stripe render as a translucent wash of the grid
-      // stroke over the body fill (~18% / ~7%, matching the editor's
-      // color-mix / #RRGGBB11 tints without relying on CSS color-mix, which
-      // headless rasterisers don't parse).
+      // header band is the opaque tint the canvas paints (tableHeaderColours,
+      // a resolved hex rather than CSS color-mix, which headless rasterisers
+      // don't parse), and the zebra stripe a ~7% wash of the grid stroke,
+      // matching the editor's #RRGGBB11 tint.
       if (cs?.bg) {
         parts.push(
           `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(cs.bg)}"/>`,
         );
-      } else if (el.headerFill && isHeader) {
+      } else if (isHeader) {
+        if (header.fill !== 'transparent') {
+          parts.push(
+            `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(header.fill)}"/>`,
+          );
+        }
+      } else if (zebra) {
         parts.push(
-          `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(el.headerFill)}"/>`,
-        );
-      } else if (isHeader || zebra) {
-        parts.push(
-          `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(stroke)}" opacity="${isHeader ? 0.18 : 0.07}"/>`,
+          `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(stroke)}" opacity="0.07"/>`,
         );
       }
 
       const text = el.cells[r]?.[c] ?? '';
       if (!text) continue;
-      const fontPx = cs?.textSize
-        ? cs.textSize === 'scale'
-          ? scaleCellFontPx(rowH)
-          : (CELL_FONT_PX[cs.textSize as TextSize] ?? baseFontPx)
-        : baseFontPx;
+      const fontPx = tableCellFontPx(cs?.textSize, rowH, baseFontPx);
       const bold = isHeader || (cs?.bold ?? el.textBold) === true;
       const weight = isHeader ? 700 : bold ? 600 : 400;
       const italic = (cs?.italic ?? el.textItalic) === true;

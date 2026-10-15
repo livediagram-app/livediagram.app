@@ -28,6 +28,13 @@ export const TECH_ICON_IDS: ReadonlySet<string> = new Set([
   'aws-iam',
   'aws-lake-formation',
   'aws-msk',
+  'aws-elb',
+  'aws-elasticache',
+  'aws-fargate',
+  'aws-cognito',
+  'aws-kinesis',
+  'aws-step-functions',
+  'aws-secrets-manager',
   // ---- Azure ----
   'azure-vm',
   'azure-blob',

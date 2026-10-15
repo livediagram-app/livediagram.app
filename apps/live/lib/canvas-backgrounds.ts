@@ -1,4 +1,5 @@
 import type { BackgroundPattern } from '@livediagram/document';
+import { seasonalPatternTile } from '@/lib/seasonal-patterns';
 
 // Canvas pattern + backdrop builders lifted out of Canvas.tsx. Pure
 // functions: given a tab's chosen `BackgroundPattern`, the current
@@ -123,6 +124,16 @@ function patternStyleFor(
   const minorPatternColor = applyAlpha(patternColor, backgroundOpacity * 0.4);
   const px = offset.x;
   const py = offset.y;
+  // The seasonal motifs are one SVG tile each, drawn from the same source as their export tile.
+  const seasonal = seasonalPatternTile(pattern, fadedPatternColor);
+  if (seasonal) {
+    return {
+      ...base,
+      backgroundImage: svgTileUrl(seasonal),
+      backgroundSize: `${seasonal.w}px ${seasonal.h}px`,
+      backgroundPosition: `${px}px ${py}px`,
+    };
+  }
   switch (pattern) {
     // Blank + the animated patterns paint no static background image: the
     // animated ones draw their motion via the AnimatedCanvasBackground
@@ -287,6 +298,20 @@ function patternStyleFor(
 // CSS `url(...)` value — `#` MUST become `%23`. These pick up the
 // tab's `patternColor` (already alpha-adjusted by the caller).
 
+// A raw SVG tile as a CSS `url(...)`: `#` becomes %23, as in the builders below.
+// Memoised per tile object, which seasonalPatternTile already caches, so a pan frame re-encodes nothing.
+const tileUrls = new WeakMap<object, string>();
+function svgTileUrl(tile: { w: number; h: number; inner: string }): string {
+  let url = tileUrls.get(tile);
+  if (!url) {
+    url =
+      `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${tile.w}' height='${tile.h}'>` +
+      `${tile.inner.replace(/#/g, '%23')}</svg>")`;
+    tileUrls.set(tile, url);
+  }
+  return url;
+}
+
 // Isometric rhombi: both ~30° diagonals corner-to-corner in a 28×16
 // tile (atan(16/28) ≈ 30°). Corner-to-corner lines always tile
 // seamlessly, so the rhombus grid is continuous and drift-free.
@@ -380,6 +405,8 @@ export function backgroundPatternTile(
   // [baseW, baseH, inner SVG]. Geometry mirrors patternStyleFor / the *Bg
   // builders above; a `default` (grid dots) covers grid + any unlisted kind.
   const spec = ((): { w: number; h: number; inner: string } | null => {
+    const seasonal = seasonalPatternTile(pattern, c);
+    if (seasonal) return seasonal;
     switch (pattern) {
       case 'blank':
       case 'flow':

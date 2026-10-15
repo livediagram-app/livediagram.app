@@ -10,7 +10,7 @@ import {
   type ShapeKind,
   type ShapeMarker,
   type Tab,
-  type TextSize,
+  type TextSizePreset,
 } from '@livediagram/document';
 import { getTheme, type ShapeColorPreset } from '@/lib/themes';
 import {
@@ -67,13 +67,14 @@ export function useShapeStyleSetters({
   // proportion comes from SHAPE_DEFAULT_SIZE (the canonical look each
   // shape ships with); we keep the element's current visual area so it
   // doesn't jump in size, just snaps the width:height back to default,
-  // and recentre about the old centre so it doesn't drift.
+  // and recentre about the old centre so it doesn't drift. Every shape of a multi-selection resets (the
+  // multi-selection menu offers it); a locked one keeps its size, as on a drag handle.
   const resetAspectRatioSelected = () => {
-    const { selectedId } = readSelection();
-    if (!selectedId) return;
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) =>
       els.map((el) => {
-        if (el.id !== selectedId || el.type !== 'shape') return el;
+        if (!ids.has(el.id) || el.type !== 'shape' || el.locked === true) return el;
         const def = SHAPE_DEFAULT_SIZE[el.shape];
         const ratio = def.width / def.height;
         const area = el.width * el.height;
@@ -186,11 +187,11 @@ export function useShapeStyleSetters({
     track('Element', 'Changed', telemetryType);
   };
   // Status markers (docs/specs/009-elements/shape-markers.md). A glyph shown inside the shape, left of its
-  // label; `null` clears it. `markerSize` is a TextSize bucket ('scale' tracks
+  // label; `null` clears it. `markerSize` is a TextSize preset ('scale' tracks
   // the element's text). Shapes only.
   const setMarkerSelected = (marker: ShapeMarker | null) =>
     setShapeFieldSelected({ marker: marker ?? undefined }, 'Marker');
-  const setMarkerSizeSelected = (size: TextSize) =>
+  const setMarkerSizeSelected = (size: TextSizePreset) =>
     setShapeFieldSelected({ markerSize: size }, 'MarkerSize');
 
   // A preset is one complete look (docs/specs/010-palette/style-presets.md): in a single history step it writes

@@ -22,6 +22,7 @@
 // eight-hairstyles-by-three-facings combinations live) and
 // avatar-sprite-palette.ts (the colours both halves have to agree on).
 
+import type { DrinkKind } from '@livediagram/document';
 import type { AvatarConfig } from '@/lib/avatar-config';
 import { BARE_ARM_CLOTHING, BARE_LEG_CLOTHING } from '@/lib/avatar-config';
 import type { ReactionPose } from '@/lib/avatar-reactions';
@@ -528,6 +529,60 @@ function TorsoProfile({
   );
 }
 
+// --- A held drink -------------------------------------------------------------
+
+const CUP_WHITE = '#f8fafc';
+const CUP_EDGE = '#94a3b8';
+const DRINK_TOP: Record<DrinkKind, string> = { water: '#7dd3fc', coffee: '#78350f' };
+
+// A cup in the hand (docs/specs/009-elements/office.md "Using it"): water or coffee, lifted for a sip every few
+// seconds, a coffee steaming. In the right hand from the front, the one visible hand in profile; from behind it
+// is half hidden by the body, as a hand would be. The loops are CSS (globals.css), still under reduced motion.
+function HeldCup({ kind, profile, back }: { kind: DrinkKind; profile: boolean; back: boolean }) {
+  const x = profile ? 2 : 13;
+  const y = profile ? 12 : 11;
+  return (
+    <g className="animate-avatar-sip" style={{ transformBox: 'fill-box' }} opacity={back ? 0.7 : 1}>
+      {kind === 'coffee' ? (
+        <g className="animate-avatar-steam">
+          <rect x={x + 1} y={y - 3} width={1} height={2} fill="#cbd5e1" />
+          <rect x={x + 2} y={y - 4} width={1} height={2} fill="#cbd5e1" />
+        </g>
+      ) : null}
+      <rect x={x} y={y} width={3} height={4} fill={CUP_WHITE} />
+      <rect x={x} y={y} width={3} height={1} fill={DRINK_TOP[kind]} />
+      <rect x={x} y={y + 3} width={3} height={1} fill={CUP_EDGE} />
+      {kind === 'coffee' ? <rect x={x + 3} y={y + 1} width={1} height={2} fill={CUP_EDGE} /> : null}
+      <rect x={profile ? x + 2 : x - 1} y={y + 2} width={2} height={2} fill={SKIN} />
+    </g>
+  );
+}
+
+// --- Headphones ---------------------------------------------------------------
+
+const PHONES_BAND = '#334155';
+const PHONES_CUP = '#8b5cf6';
+
+// Focusing (docs/specs/008-canvas/avatar-mode.md "Status"): a band over the head and an ear cup either side (one
+// in profile), drawn over the hair.
+function Headphones({ profile }: { profile: boolean }) {
+  return profile ? (
+    <g>
+      <rect x={6} y={0} width={4} height={1} fill={PHONES_BAND} />
+      <rect x={9} y={0} width={1} height={4} fill={PHONES_BAND} />
+      <rect x={8} y={4} width={3} height={3} fill={PHONES_CUP} />
+    </g>
+  ) : (
+    <g>
+      <rect x={4} y={0} width={8} height={1} fill={PHONES_BAND} />
+      <rect x={3} y={1} width={1} height={3} fill={PHONES_BAND} />
+      <rect x={12} y={1} width={1} height={3} fill={PHONES_BAND} />
+      <rect x={2} y={4} width={2} height={3} fill={PHONES_CUP} />
+      <rect x={12} y={4} width={2} height={3} fill={PHONES_CUP} />
+    </g>
+  );
+}
+
 // --- Flag -------------------------------------------------------------------
 
 // An arm raised above the head holding a pole, with a cloth that snaps through
@@ -562,6 +617,8 @@ export function AvatarSprite({
   portrait = false,
   pose = null,
   seated = false,
+  holding = null,
+  headphones = false,
 }: {
   facing: AvatarFacing;
   config: AvatarConfig;
@@ -583,6 +640,10 @@ export function AvatarSprite({
   // already uses, so sitting needs no second set of artwork. It is a pose, not
   // a new sprite: a character who sits down is still the character you built.
   seated?: boolean;
+  // A drink in the hand (docs/specs/009-elements/office.md "Using it"), or none.
+  holding?: DrinkKind | null;
+  // Focusing (docs/specs/008-canvas/avatar-mode.md "Status"): headphones on.
+  headphones?: boolean;
 }) {
   // Seated characters never walk (walkTo refuses while seated), so the stride
   // is forced off rather than merely unlikely.
@@ -651,6 +712,7 @@ export function AvatarSprite({
             />
             {config.clothing === 'hoodie' ? <Hood shirtDark={shirtDark} /> : null}
             <HeadProfile hair={config.hair} />
+            {headphones ? <Headphones profile /> : null}
           </>
         ) : (
           <>
@@ -677,8 +739,12 @@ export function AvatarSprite({
             ) : (
               <HeadFront gender={config.gender} hair={config.hair} />
             )}
+            {headphones ? <Headphones profile={false} /> : null}
           </>
         )}
+        {holding && !pose && wave === null ? (
+          <HeldCup kind={holding} profile={profile} back={facing === 'up'} />
+        ) : null}
         {wave !== null ? <Flag frame={wave} /> : null}
       </g>
     </svg>

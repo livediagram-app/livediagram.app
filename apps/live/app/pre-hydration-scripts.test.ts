@@ -20,7 +20,7 @@ const LAYOUT = read('./layout.tsx');
 
 describe('the reduce-motion pre-hydration script', () => {
   it('is inlined by the layout', () => {
-    expect(LAYOUT).toContain('__html: REDUCE_MOTION_BOOT_SCRIPT');
+    expect(LAYOUT).toContain('__html: trustedHtml(REDUCE_MOTION_BOOT_SCRIPT)');
   });
 
   it('carries a key that survives being quoted', () => {
@@ -59,7 +59,7 @@ describe('the webfonts stylesheet', () => {
   it('is linked so it never blocks first paint, with the swap script right after it', () => {
     expect(LAYOUT).toMatch(/id=\{WEBFONTS_STYLESHEET_ID\}[\s\S]*?media="print"/);
     expect(LAYOUT).toMatch(
-      /media="print"[\s\S]*?\/>\s*<script dangerouslySetInnerHTML=\{\{ __html: WEBFONTS_SWAP_SCRIPT \}\} \/>/,
+      /media="print"[\s\S]*?\/>\s*<script dangerouslySetInnerHTML=\{\{ __html: trustedHtml\(WEBFONTS_SWAP_SCRIPT\) \}\} \/>/,
     );
   });
 

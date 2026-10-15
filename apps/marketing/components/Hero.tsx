@@ -26,12 +26,12 @@ export function Hero() {
               together,
               <span className="max-sm:hidden">
                 {' '}
-                <span className="text-brand-600 dark:text-brand-300">live</span>.
+                <span className="text-brand-700 dark:text-brand-300">live</span>.
               </span>
             </HeroTitleLine>
           </span>
           <span aria-hidden className="block sm:hidden">
-            <span className="text-brand-600 dark:text-brand-300">live</span>.
+            <span className="text-brand-700 dark:text-brand-300">live</span>.
           </span>
         </h1>
         <p

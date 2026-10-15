@@ -12,14 +12,11 @@ import { ModeMark, type Mode } from './mode-mark';
 
 // The five modes as the tab menu's mode rows list them: name, then the catalogue's description, wrapped.
 const OPENS_IN: { mode: Mode; lines: string[] }[] = [
-  { mode: 'Diagram', lines: ['Shapes, arrows, the palette and snapping.'] },
-  { mode: 'Draw', lines: ['Pens, the eraser and shape recognition.'] },
-  { mode: 'Illustrate', lines: ['Pages: infographics, slides, articles', 'and logos.'] },
-  { mode: 'Plan', lines: ['Boards of items: columns, cards and', 'the work moving through them.'] },
-  {
-    mode: 'Facilitate',
-    lines: ['Run a session with your team: timers,', 'votes, polls and reveals.'],
-  },
+  { mode: 'Diagram', lines: ['Flowcharts, architecture and org charts', 'with snapping shapes.'] },
+  { mode: 'Draw', lines: ['Sketch freehand with pens, tidied into', 'shapes as you go.'] },
+  { mode: 'Facilitate', lines: ['Run a live session: timers, votes, polls', 'and reveals.'] },
+  { mode: 'Illustrate', lines: ['Lay out slides, infographics, articles', 'and logos on pages.'] },
+  { mode: 'Plan', lines: ['Boards of cards moving through columns,', 'with types and fields.'] },
 ];
 
 /** The foot of the tab menu: the content rows (Import, Export, Clear), a hairline, then the five
@@ -165,7 +162,7 @@ export function LeaveIllustrateScene() {
       <rect x={362} y={102} width={52} height={5} rx={2.5} className="fill-slate-300" />
       <rect x={362} y={114} width={38} height={5} rx={2.5} className="fill-slate-300" />
       <Label x={390} y={170} size={10} tone="muted" anchor="middle">
-        A4 · Portrait · Infographic
+        A4 · Portrait
       </Label>
       {/* The card, pointing up at the switch */}
       <rect

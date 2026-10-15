@@ -110,6 +110,8 @@ export type BoxedElementViewProps = {
   // role), so the face renders inert and explains rather than lying.
   onPressSessionButton?: (element: import('@livediagram/document').ShapeElement) => void;
   sessionStartBlocked?: boolean;
+  // The facilitator's name when the face is blocked because somebody else runs the session.
+  sessionRunBy?: string | null;
   // What the tab's timer is doing, so a timer button can say "Pause" /
   // "Continue" instead of always promising a fresh countdown.
   timerState?: import('@/components/canvas/SessionButtonFace').TimerState;
@@ -180,7 +182,7 @@ export type BoxedElementViewProps = {
   // document, so a disconnected sitter vacates for free.
   chairSitters?: (
     elementId: string,
-  ) => import('@/components/canvas/collab/ChairView').ChairSitter[];
+  ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
   // The viewer's current mode, so a Selection Mode button offering it renders
   // disabled (docs/specs/009-elements/mode-button.md).
   activeMode?: import('@livediagram/document').SelectionMode;
@@ -215,9 +217,9 @@ export type BoxedElementViewProps = {
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;
-  // Open the code edit dialog for a code-block shape (docs/specs/009-elements/code-block.md), on
-  // double-click. Omitted for read-only viewers.
-  onEditCode?: (id: string) => void;
+  // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md),
+  // a Sankey's flows (docs/specs/009-elements/sankey.md). Omitted for read-only viewers.
+  onOpenEditDialog?: (id: string) => void;
   // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md), from the on-canvas
   // checkbox. Omitted for read-only viewers.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
@@ -235,11 +237,15 @@ export type BoxedElementViewProps = {
   // outlive the offset itself: were the transition removed in the same commit
   // as the transform, the board would snap shut instead of easing.
   insertShiftAnimates?: boolean;
+  // Held by a stack and not being dragged: glides to its slot when the stack reflows (docs/specs/009-elements/stack.md).
+  stackGlide?: boolean;
   // The Page masthead (docs/specs/009-elements/page-element.md), and the banner / callout lines (docs/specs/009-elements/web-components-and-no-groups.md).
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components' rows and a hero's caption lines, edited in place
   // (docs/specs/009-elements/web-components-and-no-groups.md). Omitted in read-only.
   onSetWebRows?: (elementId: string, rows: WebRows) => void;
+  // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md).
+  onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
   onSetHeroCaptionLine?: (elementId: string, field: keyof HeroCaption, value: string) => void;
   // Live dot-vote (docs/specs/012-collaboration/session-tools.md). `vote` is the active tab's vote session
   // (undefined when none). `selfId` is the local participant (for "my

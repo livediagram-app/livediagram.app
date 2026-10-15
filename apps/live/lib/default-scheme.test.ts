@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { DEFAULT_BACKGROUND_COLOR, createShape, type Tab } from '@livediagram/document';
+import {
+  DEFAULT_BACKGROUND_COLOR,
+  canvasSurface,
+  createShape,
+  type Tab,
+} from '@livediagram/document';
 import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
 import { deriveNewBoxedColours, getTheme, resolveTabBackdrop, switchThemeBackdrop } from './themes';
 
@@ -33,12 +38,15 @@ describe('getTheme under an appearance', () => {
     expect(getTheme(undefined).backgroundColor).toBe('#0d121a');
   });
 
-  it('leaves every other scheme alone', () => {
+  it('gives every other scheme a half for each appearance (docs/specs/011-theme/light-and-dark.md)', () => {
     setAppearance('dark');
-    // Pink is a choice somebody made and stored; the viewer's chrome does not
-    // get to reinterpret it.
-    expect(getTheme('slate').backgroundColor).toBe('#fdf2f8');
+    // Pink is written light: a dark viewer sees its derived dark half.
+    expect(canvasSurface(getTheme('slate').backgroundColor)).toBe('dark');
+    // Midnight is written dark: a dark viewer sees it as written.
     expect(getTheme('midnight').backgroundColor).toBe('#0f172a');
+    setAppearance('light');
+    expect(getTheme('slate').backgroundColor).toBe('#fdf2f8');
+    expect(canvasSurface(getTheme('midnight').backgroundColor)).toBe('light');
   });
 
   it('takes an explicit appearance, for callers that are not the viewer', () => {
@@ -114,10 +122,12 @@ describe('resolveTabBackdrop', () => {
     });
   });
 
-  it('leaves a tab on any other scheme untouched', () => {
+  it('draws any scheme’s own canvas in the viewer’s half, and a picked canvas as it is', () => {
     const t = tab({ theme: 'slate', backgroundColor: '#fdf2f8', patternColor: '#fbcfe8' });
     setAppearance('dark');
-    expect(resolveTabBackdrop(t).backgroundColor).toBe('#fdf2f8');
+    expect(canvasSurface(resolveTabBackdrop(t).backgroundColor)).toBe('dark');
+    const picked = tab({ theme: 'slate', backgroundColor: '#123456', patternColor: '#fbcfe8' });
+    expect(resolveTabBackdrop(picked).backgroundColor).toBe('#123456');
   });
 });
 

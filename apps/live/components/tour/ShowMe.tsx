@@ -43,7 +43,8 @@ export function ShowMeButton<Api>({
       }}
     >
       <FootprintsIcon />
-      Show Me
+      {/* The glyph alone on a phone, where a dialog's header has no room for the words beside its close button. */}
+      <span className="max-sm:sr-only">Show Me</span>
     </button>
   );
 }

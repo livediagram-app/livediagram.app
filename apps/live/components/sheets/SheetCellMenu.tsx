@@ -1,8 +1,9 @@
 'use client';
 
-// The cell menu (docs/specs/029-sheets/sheet.md "Cell menu"), built from the editor's menu parts as the Explorer's
-// document menu is: a header naming the selection, the clipboard verbs as a toolbar, then icon-left rows in groups,
-// each named for what it does to this selection, with the rarer verbs in side flyouts. Someone who may only view gets
+// The cell menu (docs/specs/029-sheets/sheet.md "Cell menu"), built from the editor's menu parts: a header naming the
+// selection, the clipboard verbs as a toolbar, the comment row, then closed categories as the element menu has
+// (Insert, Delete, Cells, Sort, Paste Special, Data Validation, Chart), each a side flyout of icon-left rows named for
+// what they do to this selection. Someone who may only view gets
 // the header and Copy alone.
 import { Fragment, useState } from 'react';
 import { CHART_TYPE_LABELS, CHART_TYPES } from '@livediagram/document';
@@ -49,7 +50,7 @@ export const Glyph = ({ t }: { t: string }) => (
   </span>
 );
 
-type Flyout = 'sort' | 'shift' | 'hide' | 'paste' | 'chart' | 'validation';
+type Flyout = 'insert' | 'delete' | 'cells' | 'sort' | 'paste' | 'chart' | 'validation';
 
 export function SheetCellMenu({
   at,
@@ -69,7 +70,6 @@ export function SheetCellMenu({
   const flyout = (id: Flyout) => ({
     open: open === id,
     onToggle: () => setOpen((s) => (s === id ? null : id)),
-    plain: true,
   });
   // Every verb runs, then the menu gets out of the way, as the element menu's do.
   const act = (fn: () => void) => () => {
@@ -138,12 +138,15 @@ export function SheetCellMenu({
               description="Clear what the cells hold, keeping their formats (Delete)."
               onClick={act(() => actions.clear('inputs'))}
             />
-            <MenuToolButton
-              icon={<ClearFormatIcon />}
-              label="Clear Formatting"
-              description="Clear the cells' formats, keeping what they hold."
-              onClick={act(() => actions.clear('formats'))}
-            />
+            {/* Formats are an Editor's (sheet.md "Who may do what"). */}
+            {c.canShape ? (
+              <MenuToolButton
+                icon={<ClearFormatIcon />}
+                label="Clear Formatting"
+                description="Clear the cells' formats, keeping what they hold."
+                onClick={act(() => actions.clear('formats'))}
+              />
+            ) : null}
           </>
         ) : null}
       </MenuToolbar>
@@ -159,51 +162,88 @@ export function SheetCellMenu({
         />
       ) : (
         <>
-          {row(
-            words.insertAbove,
-            <InsertRowAboveIcon />,
-            act(() => actions.insert('r', 'before')),
-          )}
-          {row(
-            words.insertBelow,
-            <InsertRowBelowIcon />,
-            act(() => actions.insert('r', 'after')),
-          )}
-          {row(
-            words.insertLeft,
-            <InsertColumnLeftIcon />,
-            act(() => actions.insert('c', 'before')),
-          )}
-          {row(
-            words.insertRight,
-            <InsertColumnRightIcon />,
-            act(() => actions.insert('c', 'after')),
-          )}
           <MenuGroupSeparator />
-          {row(
-            words.deleteRows,
-            <DeleteIcon />,
-            act(() => actions.remove('r')),
-          )}
-          {row(
-            words.deleteCols,
-            <DeleteIcon />,
-            act(() => actions.remove('c')),
-          )}
-          {canMerge ? row('Merge Cells', <MergeCellsIcon />, merge) : null}
-          {canUnmerge
-            ? row(
-                'Unmerge Cells',
-                <UnmergeCellsIcon />,
-                act(() => actions.unmerge()),
-              )
-            : null}
-          {row(
-            'Conditional Formatting…',
-            <ConditionalFormatIcon />,
-            act(() => actions.openFormatRules('cell')),
-          )}
-          <MenuGroupSeparator />
+          <MenuFlyoutSection title="Insert" icon={<InsertRowBelowIcon />} {...flyout('insert')}>
+            {row(
+              words.insertAbove,
+              <InsertRowAboveIcon />,
+              act(() => actions.insert('r', 'before')),
+            )}
+            {row(
+              words.insertBelow,
+              <InsertRowBelowIcon />,
+              act(() => actions.insert('r', 'after')),
+            )}
+            {row(
+              words.insertLeft,
+              <InsertColumnLeftIcon />,
+              act(() => actions.insert('c', 'before')),
+            )}
+            {row(
+              words.insertRight,
+              <InsertColumnRightIcon />,
+              act(() => actions.insert('c', 'after')),
+            )}
+            <MenuGroupSeparator />
+            {row(
+              'Insert Cells, Shift Right',
+              <Glyph t="→" />,
+              act(() => actions.shift('insertRight')),
+            )}
+            {row(
+              'Insert Cells, Shift Down',
+              <Glyph t="↓" />,
+              act(() => actions.shift('insertDown')),
+            )}
+          </MenuFlyoutSection>
+          <MenuFlyoutSection title="Delete" icon={<DeleteIcon />} {...flyout('delete')}>
+            {row(
+              words.deleteRows,
+              <DeleteIcon />,
+              act(() => actions.remove('r')),
+            )}
+            {row(
+              words.deleteCols,
+              <DeleteIcon />,
+              act(() => actions.remove('c')),
+            )}
+            <MenuGroupSeparator />
+            {row(
+              'Delete Cells, Shift Left',
+              <Glyph t="←" />,
+              act(() => actions.shift('deleteLeft')),
+            )}
+            {row(
+              'Delete Cells, Shift Up',
+              <Glyph t="↑" />,
+              act(() => actions.shift('deleteUp')),
+            )}
+          </MenuFlyoutSection>
+          <MenuFlyoutSection title="Cells" icon={<MergeCellsIcon />} {...flyout('cells')}>
+            {canMerge ? row('Merge Cells', <MergeCellsIcon />, merge) : null}
+            {canUnmerge
+              ? row(
+                  'Unmerge Cells',
+                  <UnmergeCellsIcon />,
+                  act(() => actions.unmerge()),
+                )
+              : null}
+            {row(
+              words.hideRows,
+              <HideIcon />,
+              act(() => actions.hide('r', true)),
+            )}
+            {row(
+              words.hideCols,
+              <HideIcon />,
+              act(() => actions.hide('c', true)),
+            )}
+            {row(
+              'Conditional Formatting…',
+              <ConditionalFormatIcon />,
+              act(() => actions.openFormatRules('cell')),
+            )}
+          </MenuFlyoutSection>
           <MenuFlyoutSection title="Sort" icon={<SortIcon />} {...flyout('sort')}>
             {row(
               'Sort A to Z',
@@ -216,44 +256,6 @@ export function SheetCellMenu({
               act(() => actions.sortColumn(false)),
             )}
             {row('Custom Sort…', <SortIcon />, () => c.setMenu({ kind: 'sort' }))}
-          </MenuFlyoutSection>
-          <MenuFlyoutSection
-            title="Shift Cells"
-            icon={<InsertColumnRightIcon />}
-            {...flyout('shift')}
-          >
-            {row(
-              'Insert Cells, Shift Right',
-              <Glyph t="→" />,
-              act(() => actions.shift('insertRight')),
-            )}
-            {row(
-              'Insert Cells, Shift Down',
-              <Glyph t="↓" />,
-              act(() => actions.shift('insertDown')),
-            )}
-            {row(
-              'Delete Cells, Shift Left',
-              <Glyph t="←" />,
-              act(() => actions.shift('deleteLeft')),
-            )}
-            {row(
-              'Delete Cells, Shift Up',
-              <Glyph t="↑" />,
-              act(() => actions.shift('deleteUp')),
-            )}
-          </MenuFlyoutSection>
-          <MenuFlyoutSection title="Hide" icon={<HideIcon />} {...flyout('hide')}>
-            {row(
-              words.hideRows,
-              <HideIcon />,
-              act(() => actions.hide('r', true)),
-            )}
-            {row(
-              words.hideCols,
-              <HideIcon />,
-              act(() => actions.hide('c', true)),
-            )}
           </MenuFlyoutSection>
           <MenuFlyoutSection title="Paste Special" icon={<PasteMenuIcon />} {...flyout('paste')}>
             {row(
@@ -296,7 +298,7 @@ export function SheetCellMenu({
               : null}
           </MenuFlyoutSection>
           <MenuFlyoutSection
-            title="Insert Chart"
+            title="Chart"
             icon={<ChartTypeIcon type="column" />}
             {...flyout('chart')}
           >

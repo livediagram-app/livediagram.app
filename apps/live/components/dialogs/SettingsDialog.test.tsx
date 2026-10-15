@@ -286,6 +286,6 @@ describe('SettingsDialog', () => {
     const sw = screen.getByRole('switch', { name: 'Alignment Guides' });
     const describedBy = sw.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
-    expect(document.getElementById(describedBy!)?.textContent).toContain('snap lines');
+    expect(document.getElementById(describedBy!)?.textContent).toMatch(/snap lines/i);
   });
 });

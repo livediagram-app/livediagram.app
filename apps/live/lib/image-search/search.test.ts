@@ -28,6 +28,14 @@ describe('searchOpenverse', () => {
     expect(init).toMatchObject({ credentials: 'omit', referrerPolicy: 'no-referrer' });
   });
 
+  it('asks with the filters it is given', async () => {
+    const fetchImpl = answer(200, { page_count: 1, results: [] });
+    await searchOpenverse('sea', 1, fetchImpl, { aspectRatio: 'wide', size: 'large' });
+    const url = new URL(String(vi.mocked(fetchImpl).mock.calls[0]![0]));
+    expect(url.searchParams.get('aspect_ratio')).toBe('wide');
+    expect(url.searchParams.get('size')).toBe('large');
+  });
+
   it('reports 429 as rate-limited', async () => {
     expect(await kindOf(searchOpenverse('cat', 1, answer(429, {})))).toBe('rate-limited');
   });

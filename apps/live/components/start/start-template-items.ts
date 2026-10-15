@@ -46,30 +46,79 @@ const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
 // Recommended leaves these to their group (Timeline, under Timelines).
 const NOT_RECOMMENDED: ReadonlySet<TemplateKind> = new Set(['timeline']);
 
+// Start Illustrating's Recommended opens on two blanks of a page kind in place of the Popular shelf's Blank Illustration
+// and Article: a page already of its kind is the quicker start (docs/specs/007-editor/start-diagramming.md
+// "Recommended and groups"). The shelf itself, shared with the Quick Start and the gallery, is unchanged.
+const RECOMMENDED_SWAPS: Partial<
+  Record<TemplateStartMode, ReadonlyMap<TemplateKind, TemplateKind>>
+> = {
+  illustrate: new Map<TemplateKind, TemplateKind>([
+    ['blank-illustration', 'blank-infographic'],
+    ['article', 'blank-article'],
+  ]),
+};
+
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
 
 // The modes whose templates nearly all share one catalogue category (Workshops, Presentations) group them their own
-// way: Facilitate by the session each runs, Illustrate by what each makes. A template of the mode in none of its groups
-// is placed in the last.
+// way: Facilitate by the session each runs, Illustrate by what each makes, each Illustrate group but Posters and Design led by
+// its blank of a page kind. A template of the mode in none of its groups is placed in the last.
 const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonly OwnGroup[]>> = {
   facilitate: [
     {
       id: 'retrospectives',
       name: 'Retrospectives',
       line: 'Look back as a team: what went well, what to change.',
-      kinds: ['retrospective', 'sailboat', 'start-stop-continue', 'mad-sad-glad', 'four-ls'],
+      kinds: [
+        'retrospective',
+        'sailboat',
+        'start-stop-continue',
+        'mad-sad-glad',
+        'four-ls',
+        'incident-postmortem',
+      ],
     },
     {
       id: 'meetings',
       name: 'Meetings',
       line: 'Agendas, Q&A and open discussion with the room.',
-      kinds: ['meeting-agenda', 'town-hall', 'lean-coffee'],
+      kinds: ['meeting-agenda', 'workshop-board', 'town-hall', 'lean-coffee'],
+    },
+    {
+      id: 'spaces',
+      name: 'Spaces',
+      line: 'Offices and halls to walk round together in Avatar mode.',
+      kinds: ['virtual-office', 'coworking-space', 'team-pod', 'all-hands-hall'],
+    },
+    {
+      id: 'games',
+      name: 'Quizzes & Games',
+      line: 'Quizzes, icebreakers and games to warm up the room.',
+      kinds: [
+        'pub-quiz',
+        'icebreaker-questions',
+        'two-truths-and-a-lie',
+        'would-you-rather',
+        'people-bingo',
+      ],
     },
     {
       id: 'workshops',
       name: 'Workshops',
       line: 'Hands-on formats for ideas and design work.',
-      kinds: ['crazy-eights', 'affinity-map'],
+      kinds: ['brainstorm', 'crazy-eights', 'affinity-map', 'user-persona'],
+    },
+    {
+      id: 'planning',
+      name: 'Planning',
+      line: 'Agree the goals, the roadmap and who does what.',
+      kinds: ['objectives-planner', 'roadmap', 'raci-matrix', 'user-story-map'],
+    },
+    {
+      id: 'strategy',
+      name: 'Strategy',
+      line: 'Map the business, the people and the opportunities.',
+      kinds: ['business-model-canvas', 'stakeholder-map', 'opportunity-solution-tree'],
     },
     {
       id: 'decisions',
@@ -102,32 +151,51 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
     {
       id: 'slides',
       name: 'Slides',
-      line: 'Decks and carousels, one idea to a page.',
-      kinds: ['slide-deck', 'social-carousel'],
+      line: 'Decks to present, one idea to a slide.',
+      kinds: [
+        'blank-slide-deck',
+        'slide-deck',
+        'launch-keynote',
+        'quarterly-review',
+        'team-welcome',
+        'workshop-kickoff',
+      ],
     },
     {
       id: 'infographics',
       name: 'Infographics',
       line: 'Numbers, comparisons and how-tos told visually.',
-      kinds: ['year-in-review', 'data-story', 'how-it-works', 'versus'],
+      kinds: ['blank-infographic', 'year-in-review', 'data-story', 'how-it-works', 'versus'],
     },
     {
-      id: 'documents',
-      name: 'Documents',
+      id: 'articles',
+      name: 'Articles',
       line: 'Articles, résumés and cards of text on pages.',
-      kinds: ['article', 'resume', 'recipe-card'],
+      kinds: ['blank-article', 'article', 'resume', 'recipe-card'],
     },
     {
       id: 'posters',
-      name: 'Posters',
-      line: 'Posters and cards to print, pin up or send.',
-      kinds: ['event-poster', 'live-card'],
+      name: 'Posters and Social',
+      line: 'Posters, cards and social posts to print, pin up or share.',
+      kinds: ['event-poster', 'social-carousel', 'live-card'],
     },
     {
       id: 'logos',
       name: 'Logos',
       line: 'Marks, wordmarks and lockups for a brand.',
-      kinds: ['logo-design'],
+      kinds: ['blank-logo', 'logo-design'],
+    },
+    {
+      id: 'design',
+      name: 'Design',
+      line: 'Wireframes, storyboards and floor plans, drawn to show.',
+      kinds: [
+        'browser-wireframe',
+        'laptop-wireframe',
+        'mobile-wireframe',
+        'storyboard',
+        'floor-plan',
+      ],
     },
   ],
 };
@@ -146,7 +214,9 @@ function build(mode: TemplateStartMode): TemplateStart {
     id: 'recommended',
     name: 'Recommended',
     line: RECOMMENDED_LINE[mode],
-    kinds: popularKindsFor(mode).filter((k) => !NOT_RECOMMENDED.has(k)),
+    kinds: popularKindsFor(mode)
+      .filter((k) => !NOT_RECOMMENDED.has(k))
+      .map((k) => RECOMMENDED_SWAPS[mode]?.get(k) ?? k),
   };
   const rest: TemplateStartGroup[] =
     mode === 'diagram'

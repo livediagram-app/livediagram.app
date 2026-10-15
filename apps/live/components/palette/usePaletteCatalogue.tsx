@@ -82,6 +82,7 @@ export function usePaletteCatalogue({
   onAddCallout,
   onAddStatRow,
   onAddProcess,
+  onAddFlowchart,
   onAddAvatar,
   onAddImage,
   onAddArrow,
@@ -134,6 +135,7 @@ export function usePaletteCatalogue({
       mode?: import('@livediagram/document').SelectionMode;
       estimateScale?: import('@livediagram/document').EstimateScale;
       plan?: string;
+      variant?: string;
     },
   ) => armed(() => onAddShape(kind, opts))();
   // Icons, stickers and tech icons arm the draw gesture too (they ride the
@@ -173,6 +175,7 @@ export function usePaletteCatalogue({
       callout: onAddCallout,
       stat: onAddStatRow,
       process: onAddProcess,
+      flowchart: onAddFlowchart,
     } as const;
     armed(byKind[kind])();
   };
@@ -307,6 +310,7 @@ export function usePaletteCatalogue({
     isMobile,
     includeZen: !!onToggleZen,
     planMode: editorMode === 'plan',
+    facilitateMode: editorMode === 'facilitate',
   });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))

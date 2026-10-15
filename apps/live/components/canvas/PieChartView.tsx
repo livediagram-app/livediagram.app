@@ -8,7 +8,15 @@
 // deterministic + reduced-motion-safe like the other element animations. The
 // first of the chart family, so the anim set is its own.
 
-import { chartTypeOf, legendFontPx, pieMarks, type ShapeElement } from '@livediagram/document';
+import {
+  chartTypeOf,
+  chartValueFontPx,
+  legendFontPx,
+  pieMarks,
+  pieValueLabels,
+  type ShapeElement,
+} from '@livediagram/document';
+import { ChartValues } from '@/components/primitives/ChartValues';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';
@@ -19,6 +27,7 @@ export function PieChartView({
   fontFamily,
   textColor,
   palette,
+  ground,
 }: {
   element: ShapeElement;
   fontFamily?: string;
@@ -26,13 +35,17 @@ export function PieChartView({
   // Default slice colours (theme-derived, docs/specs/009-elements/pie-chart.md). Falls back to the built-in
   // categorical palette when absent (e.g. an export with no theme context).
   palette?: readonly string[];
+  // What the chart sits on (chartPageGrounds): its series drawn adapted to it.
+  ground?: readonly string[];
 }) {
-  const { w, h, data: slices, colorAt, area, legend } = chartFrame(element, palette);
+  const { w, h, data: slices, colorAt, area, legend } = chartFrame(element, palette, ground);
   const { hover, markProps } = useChartHover<number>();
   // The pie (or doughnut) fills the chart area chartFrame leaves after the legend strip, laid out by the marks the
   // export draws too.
   const doughnut = chartTypeOf(element) === 'doughnut';
-  const { cx, cy, rad, wedges } = pieMarks(area, slices, doughnut);
+  const pie = pieMarks(area, slices, doughnut);
+  const { cx, cy, rad, wedges } = pie;
+  const valuePx = chartValueFontPx(element.textSize);
 
   const group = chartAnim(element, `${cx}px ${cy}px`);
 
@@ -81,6 +94,15 @@ export function PieChartView({
           ) : null,
         )}
       </g>
+      {element.chartValues ? (
+        <ChartValues
+          labels={pieValueLabels(pie, slices, valuePx)}
+          textColor={textColor}
+          fillOf={(i) => colorAt(i, slices[i]!)}
+          fontPx={valuePx}
+          fontFamily={fontFamily}
+        />
+      ) : null}
     </ChartSurface>
   );
 }

@@ -13,7 +13,7 @@ import { IN_BOX_TITLE_CLASS, InMenuBox } from '../menu-name-slot';
 import { BAND_CONTROLS_CLASS, bandControlsProps } from '../band-controls';
 
 // The phase colours and the overdue red (phase-colours.ts), shared with the views' still pictures.
-import { OVERDUE_RED, PHASE_COLOURS } from './phase-colours';
+import { OVERDUE_RED, PHASE_COLOURS } from '@livediagram/plan-art';
 export { OVERDUE_RED, PHASE_COLOURS };
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();

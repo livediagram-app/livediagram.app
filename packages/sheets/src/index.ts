@@ -37,6 +37,7 @@ export * from './write-caps';
 export * from './a1-io';
 export * from './chart-data';
 export * from './sheet-metrics';
+export * from './fit-widths';
 export * from './sheet-starters';
 export * from './template-starts';
 export * from './sheet-templates';
@@ -52,9 +53,11 @@ export {
   renderFrameWindow,
   renderModelsForTab,
   renderWindow,
+  sheetContentSize,
   sheetFramesOf,
   type RenderCell,
   type SheetFrame,
   type SheetRenderModel,
 } from './engine/render';
 export type { Frame, RangeRef, EvalValue } from './engine/frame';
+export { valuesOnly, writesFormats } from './values-only';

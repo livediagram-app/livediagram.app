@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button, CloseIcon, DialogHeader } from '@livediagram/ui';
 import type { LineSeries } from '@livediagram/document';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -28,10 +28,25 @@ export function LineDataDialog({
   // every external commit would fight the user's typing).
   const [cats, setCats] = useState<string[]>(categories);
   const [rows, setRows] = useState<LineSeries[]>(series);
+  // What was last committed: a commit that would change nothing is skipped, so tabbing through cells
+  // (or closing after a blur already stored) leaves no empty undo steps.
+  const lastCommitted = useRef(JSON.stringify([categories, series]));
+  const store = (c: string[], s: LineSeries[]) => {
+    const key = JSON.stringify([c, s]);
+    if (key === lastCommitted.current) return;
+    lastCommitted.current = key;
+    onCommit(c, s);
+  };
   const commit = (c: string[], s: LineSeries[]) => {
     setCats(c);
     setRows(s);
-    onCommit(c, s);
+    store(c, s);
+  };
+  // Escape unmounts the dialog without blurring the focused cell, so its commit-on-blur never runs:
+  // closing commits whatever is still being typed.
+  const close = () => {
+    store(cats, rows);
+    onClose();
   };
   const cell =
     'min-w-0 rounded border border-slate-200 bg-white px-1.5 py-1 text-sm text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
@@ -48,7 +63,7 @@ export function LineDataDialog({
   };
 
   return (
-    <Dialog open onClose={onClose} ariaLabel="Edit chart data" size="xl" className="max-h-[90vh]">
+    <Dialog open onClose={close} ariaLabel="Edit chart data" size="xl" className="max-h-[90vh]">
       <DialogHeader
         title="Chart data"
         subtitle="A row per category, a column per series. Or import a CSV (header = series names, first column = categories)."
@@ -56,7 +71,7 @@ export function LineDataDialog({
         <HelpArticleLink article="dataElements" size="md" />
         <button
           type="button"
-          onClick={onClose}
+          onClick={close}
           aria-label="Close"
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
         >
@@ -97,7 +112,7 @@ export function LineDataDialog({
                           r.map((x, j) => (j === si ? { ...x, name: e.target.value } : x)),
                         )
                       }
-                      onBlur={() => onCommit(cats, rows)}
+                      onBlur={() => store(cats, rows)}
                     />
                     <button
                       type="button"
@@ -144,7 +159,7 @@ export function LineDataDialog({
                     onChange={(e) =>
                       setCats((cc) => cc.map((v, j) => (j === i ? e.target.value : v)))
                     }
-                    onBlur={() => onCommit(cats, rows)}
+                    onBlur={() => store(cats, rows)}
                   />
                 </td>
                 {rows.map((s, si) => (
@@ -169,7 +184,7 @@ export function LineDataDialog({
                           ),
                         );
                       }}
-                      onBlur={() => onCommit(cats, rows)}
+                      onBlur={() => store(cats, rows)}
                     />
                   </td>
                 ))}
@@ -208,7 +223,7 @@ export function LineDataDialog({
         >
           + Add row
         </button>
-        <Button variant="primary" size="md" onClick={onClose}>
+        <Button variant="primary" size="md" onClick={close}>
           Done
         </Button>
       </div>

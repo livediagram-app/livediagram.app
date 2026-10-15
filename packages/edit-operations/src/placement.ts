@@ -15,7 +15,7 @@ import {
   type ElementId,
 } from '@livediagram/document';
 import { resolveOne } from './selectors';
-import { currentElements, refsOf, type EditState } from './state';
+import { currentElements, holdersOf, refsOf, type EditState } from './state';
 import type { Placement } from './types';
 import { PLACEMENT_GAP } from './vocabulary';
 
@@ -54,6 +54,28 @@ function occupiers(state: EditState, moving: ReadonlySet<ElementId>): Box[] {
   return currentElements(state).flatMap((el) => {
     const box = boxOf(el);
     return box && !isContainer(el) && !moving.has(el.id) ? [box] : [];
+  });
+}
+
+// The boxes a new box beside a framed one makes way for: the frame's own contents, at any depth. What lies outside
+// the frame is moved on when the frame grows to hold it (make room), so the new box sits beside its neighbour
+// rather than being pushed past the frame's surroundings. Null when the box is in no frame, or a locked one, which
+// cannot grow.
+function frameOccupiers(
+  state: EditState,
+  ref: Element,
+  moving: ReadonlySet<ElementId>,
+): Box[] | null {
+  const holders = holdersOf(state);
+  const frame = holders.get(ref.id);
+  if (!frame || state.locked.has(frame)) return null;
+  const within = (id: ElementId): boolean => {
+    const holder = holders.get(id);
+    return holder === frame || (!!holder && within(holder));
+  };
+  return currentElements(state).flatMap((el) => {
+    const box = boxOf(el);
+    return box && !isContainer(el) && !moving.has(el.id) && within(el.id) ? [box] : [];
   });
 }
 
@@ -244,6 +266,9 @@ export function resolvePlacement(
   moving: ReadonlySet<ElementId>,
   operation: number,
   start?: Box,
+  // An add, which grows a frame to hold what lands beside one of its members (growToHold), so it need only keep
+  // clear of that frame's contents. A move grows nothing, so it keeps clear of everything on the tab.
+  { growsFrame = false }: { growsFrame?: boolean } = {},
 ): Placed | { rejection: EditRejection } {
   if (placement === undefined) {
     const box = start ?? defaultSpot(state, size, moving);
@@ -265,6 +290,19 @@ export function resolvePlacement(
   });
   if (!refBox) return refusal('is an arrow; place against a box');
   if (moving.has(ref.id)) return refusal('moves with it');
+  // `inside:<frame> right-of:<x>`: x must be inside that frame or lane, at any depth.
+  if (placement.within !== undefined) {
+    const holder = resolveOne(state, placement.within, operation);
+    if ('rejection' in holder) return holder;
+    if (!isContainer(holder.el))
+      return refusal(`is placed inside ${placement.within}, which is not a frame or lane`);
+    const holders = holdersOf(state);
+    const inside = (id: ElementId): boolean => {
+      const h = holders.get(id);
+      return h === holder.el.id || (!!h && inside(h));
+    };
+    if (!inside(ref.id)) return refusal(`is not inside ${placement.within}`);
+  }
   const gap = placement.gap ?? PLACEMENT_GAP;
   const taken = occupiers(state, moving);
   switch (placement.rel) {
@@ -286,7 +324,22 @@ export function resolvePlacement(
     }
     default: {
       const side = placement.rel === 'after' ? sideAfter(state, ref, refBox) : placement.rel;
-      const box = nudgeUntilFree(beside(refBox, side, size, gap), side, gap, taken);
+      const among =
+        placement.rel === 'after' || !growsFrame ? null : frameOccupiers(state, ref, moving);
+      let start = beside(refBox, side, size, gap);
+      // `below:<frame> align:<x>`: beside the reference, centred on x across the side.
+      if (placement.alignTo !== undefined) {
+        const to = resolveOne(state, placement.alignTo, operation);
+        if ('rejection' in to) return to;
+        const toBox = boxOf(to.el);
+        if (!toBox) return refusal(`aligns to ${placement.alignTo}, an arrow; align to a box`);
+        const c = centre(toBox);
+        start =
+          side === 'above' || side === 'below'
+            ? { ...start, x: c.x - start.width / 2 }
+            : { ...start, y: c.y - start.height / 2 };
+      }
+      const box = nudgeUntilFree(start, side, gap, among ?? taken);
       return { x: Math.round(box.x), y: Math.round(box.y), ref };
     }
   }

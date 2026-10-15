@@ -36,6 +36,14 @@ describe('optical guard', () => {
     ).toEqual([]);
   });
 
+  it('accepts a truncated label wrapped in the line utility', () => {
+    expect(
+      scan(
+        `export const A = () => <span className="${DISC}"><span className="text-optical-line truncate">Wg</span></span>;`,
+      ),
+    ).toEqual([]);
+  });
+
   it('accepts icons, null branches and icon-named identifiers', () => {
     expect(
       scan(`export const A = ({ on, icon }: { on: boolean; icon: unknown }) => (

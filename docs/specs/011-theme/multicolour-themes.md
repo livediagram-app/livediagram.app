@@ -15,15 +15,13 @@ Every palette entry and `rootColor` of a built-in theme keeps its `text` at a co
 
 A theme with no `palette` is a single-colour theme and behaves exactly as before. The backdrop half (background colour + pattern + pattern colour) is unchanged — multi-colour applies only to **element** colours.
 
-The catalogue ships five multi-colour themes, all extra (grouped under the picker's Multi-colour category):
+The catalogue ships three multi-colour themes, all extra:
 
-| Theme    | Feel                                                           |
-| -------- | -------------------------------------------------------------- |
-| Rainbow  | Saturated six-hue spectrum (red → orange → … → purple)         |
-| Pastel   | Soft, low-saturation version of the same wheel                 |
-| Tropical | Vivid teal / cyan / lime / orange / pink / violet              |
-| Autumn   | Warm seasonal palette: reds, oranges, ambers, browns, olive    |
-| Jewel    | Rich gem tones: emerald, sapphire, amethyst, ruby, topaz, teal |
+| Theme    | Feel                                                   |
+| -------- | ------------------------------------------------------ |
+| Rainbow  | Saturated six-hue spectrum (red → orange → … → purple) |
+| Pastel   | Soft, low-saturation version of the same wheel         |
+| Tropical | Vivid teal / cyan / lime / orange / pink / violet      |
 
 ## How a branch is decided
 
@@ -58,10 +56,13 @@ A brand-new element dropped on a multi-colour-themed tab has no place in the arr
 
 Theme cards (the Theme accordion grid and the welcome / template picker grid) render through a shared `ThemeSwatch` component. The swatch is a miniature diagram in the theme's own colours: a titled node flowing into two others over the theme's backdrop. A single-colour theme draws all three nodes in its element colours; a multi-colour theme gives the three nodes its first three palette entries (cycling when the palette is shorter), so the card reads as "many colours" at a glance. The swatch is decorative (`aria-hidden`); the card's own text names the theme.
 
+Six of the Tab Style dialog's one-click looks use these themes (and UML), so a multi-colour tab is one click away
+([Canvas + Theme dialog](canvas-and-theme-dialog.md) "Looks").
+
 ## Telemetry
 
 Applying any theme already emits `track('Theme', 'Changed', <label>)` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)); the multi-colour themes reuse that with their own labels, so no enum change is needed.
 
 ## Counts
 
-The catalogue ships **26 themes** (12 default + 14 extra), the extras including a Dark category (led by Default’s dark half, then Pine, Plum, Abyss, Espresso) and five multicolour themes (Rainbow, Pastel, Tropical, Autumn, Jewel). It was 27 until Basic and Charcoal merged into the single, appearance-following **Default** scheme ([Live app](../007-editor/live-app.md)); documents saved against Charcoal are migrated to Default on load ([Retired colour schemes](retired-schemes.md)). The counts are pinned by `apps/live/lib/themes.test.ts` and cited in [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), and [Marketing assets](../019-marketing/marketing-assets.md); all four move together.
+The catalogue ships **24 themes** (12 default + 12 extra), the extras including the dark schemes (Pine, Plum, Abyss, Espresso) and three multicolour themes (Rainbow, Pastel, Tropical). It was 27 until Basic and Charcoal merged into the single **Default** scheme ([Live app](../007-editor/live-app.md)), and 26 until Autumn and Jewel retired ([Light and dark halves](light-and-dark.md)); documents saved against a retired scheme are migrated on load ([Retired colour schemes](retired-schemes.md)). The counts are pinned by `apps/live/lib/themes.test.ts` and cited in [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), and [Marketing assets](../019-marketing/marketing-assets.md); all four move together. Six **seasonal themes** (three of them multicolour: Spring, Pumpkin, Yuletide) sit outside these counts: no picker lists them, and a tab wears one only through a seasonal look ([Seasonal looks](canvas-and-theme-dialog.md#seasonal-looks)).

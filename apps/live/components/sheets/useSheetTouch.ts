@@ -4,7 +4,8 @@
 // "Pointer"). A finger pans the cells (useSheetPan; maximised, the grid scrolls natively) and a tap selects. A finger
 // held still for LONG_PRESS_MS grabs the cell or header under it: dragging on from there selects a range (or several
 // rows or columns), and letting go unmoved opens its menu. The selection's grip, a round handle at its bottom right,
-// drags its corner. While a finger selects, the page never scrolls under it.
+// drags its corner once the finger moves; a tap on or near it is a tap. While a finger selects, the page never
+// scrolls under it.
 import { useRef } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useLongPress } from '@/hooks/ui/useLongPress';
@@ -40,8 +41,13 @@ export function useSheetTouch(deps: SheetTouchDeps) {
   // When the last finger selection ended (performance.now()), for the click it leaves behind.
   const ended = useRef(-Infinity);
 
-  // From a hold (or a grip press) until the finger lifts: no page scroll, and the end is stamped.
-  const own = (onEnd?: (moved: boolean) => void, moving?: (ev: PointerEvent) => boolean) => {
+  // From a hold (or a grip press) until the finger lifts: no page scroll, and the end is stamped (unless `tapUnmoved`:
+  // a grip press let go unmoved leaves its click to select as a tap).
+  const own = (
+    onEnd?: (moved: boolean) => void,
+    moving?: (ev: PointerEvent) => boolean,
+    tapUnmoved = false,
+  ) => {
     const stop = (ev: TouchEvent) => {
       if (ev.cancelable) ev.preventDefault();
     };
@@ -54,7 +60,7 @@ export function useSheetTouch(deps: SheetTouchDeps) {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', done);
       window.removeEventListener('pointercancel', done);
-      ended.current = performance.now();
+      if (moved || !tapUnmoved) ended.current = performance.now();
       onEnd?.(moved);
     };
     window.addEventListener('touchmove', stop, { passive: false });
@@ -95,8 +101,16 @@ export function useSheetTouch(deps: SheetTouchDeps) {
     if (d.onGrip(x, y)) {
       e.preventDefault();
       e.stopPropagation();
-      own();
-      d.extend('grip', e.clientX, e.clientY);
+      const [x0, y0] = [e.clientX, e.clientY];
+      own(
+        undefined,
+        (ev) => {
+          if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < HOLD_DRAG_PX) return false;
+          latest.current.extend('grip', ev.clientX, ev.clientY);
+          return true;
+        },
+        true,
+      );
       return;
     }
     if (!d.pan.begin(e, { maximised: d.maximised })) e.stopPropagation();

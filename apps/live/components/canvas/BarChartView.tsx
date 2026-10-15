@@ -7,7 +7,16 @@
 // edited from the context menu's Data category. The slice group carries the
 // `lvd-pie-*` animation (grow / pop / spin / pulse), reduced-motion-safe.
 
-import { barMarks, chartTypeOf, legendFontPx, type ShapeElement } from '@livediagram/document';
+import {
+  barMarks,
+  barValueLabels,
+  chartTypeOf,
+  chartValueFontPx,
+  legendFontPx,
+  type ShapeElement,
+} from '@livediagram/document';
+import { ChartValues } from '@/components/primitives/ChartValues';
+import { BarChartAxis } from './ChartAxis';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';
@@ -18,16 +27,22 @@ export function BarChartView({
   fontFamily,
   textColor,
   palette,
+  ground,
 }: {
   element: ShapeElement;
   fontFamily?: string;
   textColor: string;
   palette?: readonly string[];
+  // What the chart sits on (chartPageGrounds): its series drawn adapted to it.
+  ground?: readonly string[];
 }) {
-  const { w, h, data, colorAt, area, legend } = chartFrame(element, palette);
+  const { w, h, data, colorAt, area, legend } = chartFrame(element, palette, ground);
   const { hover, markProps } = useChartHover<number>();
   // Upright columns, or (the Bar chart type) bars to the right; laid out by the marks the export draws too.
-  const { baseline, bars, origin } = barMarks(area, data, chartTypeOf(element) === 'bar');
+  const horizontal = chartTypeOf(element) === 'bar';
+  const marks = barMarks(area, data, horizontal, 0, 0, element.chartAxis === true);
+  const { baseline, bars, origin } = marks;
+  const valuePx = chartValueFontPx(element.textSize);
   const group = chartAnim(element, `${origin.x}px ${origin.y}px`);
 
   return (
@@ -52,6 +67,12 @@ export function BarChartView({
       }
     >
       {/* Baseline. */}
+      <BarChartAxis
+        marks={marks}
+        horizontal={horizontal}
+        textColor={textColor}
+        fontFamily={fontFamily}
+      />
       <line
         x1={baseline.x1}
         y1={baseline.y1}
@@ -74,6 +95,15 @@ export function BarChartView({
           />
         ))}
       </g>
+      {element.chartValues ? (
+        <ChartValues
+          labels={barValueLabels(marks, data, horizontal, valuePx)}
+          textColor={textColor}
+          fillOf={(i) => colorAt(i, data[i]!)}
+          fontPx={valuePx}
+          fontFamily={fontFamily}
+        />
+      ) : null}
     </ChartSurface>
   );
 }

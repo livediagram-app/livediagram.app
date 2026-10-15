@@ -12,6 +12,7 @@ import { PlanViewArt } from '@/components/plan/plan-view-art';
 import {
   BehaviourTabIcon,
   BuildTabIcon,
+  ConceptsTabIcon,
   ComponentsTabIcon,
   DataTabIcon,
   DevicesTabIcon,
@@ -186,7 +187,7 @@ export const PALETTE_CATEGORIES: {
     id: 'write',
     label: 'Write',
     group: 0,
-    description: 'The wordy elements: pages, text, sticky notes, and annotations.',
+    description: 'The wordy elements: pages, text, sticky notes, annotations and pointer notes.',
     icon: <WriteTabIcon />,
   },
   {
@@ -210,15 +211,25 @@ export const PALETTE_CATEGORIES: {
     id: 'build',
     label: 'Build',
     group: 1,
-    description: 'The structural elements: mind nodes, lanes, frames, timelines, and tables.',
+    description:
+      'The structural elements: mind nodes, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, a diagram key, timelines, tables, and Sankey diagrams.',
     icon: <BuildTabIcon />,
+  },
+  {
+    // Concept graphics (docs/specs/009-elements/concept-graphics.md): the shapes ideas come in, as single elements.
+    id: 'concepts',
+    label: 'Concepts',
+    group: 1,
+    description:
+      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel, a cycle, a hub and spoke, onion rings and chevrons. Add, reorder and retitle rows in place.',
+    icon: <ConceptsTabIcon />,
   },
   {
     id: 'components',
     label: 'Components',
     group: 1,
     description:
-      'Ready-made web components that follow the tab theme: Banner, Callout, Stat row, Process, Hero, and Header. Each is one element that re-flows as you resize it, with every line of text editable in place.',
+      'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the web components (Banner, Callout, Stat row, Process, Hero, Header) and the code block, checklist and entity. Each is one element that re-flows as you resize it, with every line of text editable in place.',
     icon: <ComponentsTabIcon />,
   },
   {
@@ -267,7 +278,8 @@ export const PALETTE_CATEGORIES: {
     id: 'media',
     label: 'Media',
     group: 2,
-    description: 'Pictures and figures: an uploaded image, or a circular avatar.',
+    description:
+      'Pictures and figures: an uploaded image or a circular avatar; in Illustrate, embeds and a Tab Window onto another tab.',
     icon: <MediaTabIcon />,
   },
   {
@@ -329,7 +341,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Navigate',
     group: 6,
     description:
-      'Take people somewhere: a portal to another tab, a bring-focus button, a chair or a link card.',
+      'Take people somewhere and build an office: a portal, a bring-focus button, a chair, desk or sofa, a fence, a link card, rooms, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs.',
     icon: <MoveGroupIcon />,
   },
 ];

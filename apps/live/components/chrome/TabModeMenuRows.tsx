@@ -1,6 +1,9 @@
 import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { EDITOR_MODE_CATALOGUE, crossesPlan, type EditorMode } from '@livediagram/document';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { OpenIcon } from '@/components/primitives/explorer-icons';
+import { useLockedModePick } from '@/components/chrome/editor-mode/useLockedModePick';
 import { useMenuItemProps } from '@/components/primitives/menu-item-props';
 
 // "Mode" (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the tab menu's choice of
@@ -12,43 +15,67 @@ import { useMenuItemProps } from '@/components/primitives/menu-item-props';
 export type TabModeChoice = {
   mode: EditorMode;
   onChange: (mode: EditorMode) => void;
+  // A new tab in a mode across Plan's line; absent where the session cannot add tabs (those rows show, inert).
+  newTabIn?: ((mode: EditorMode) => void) | undefined;
 };
 
-// The modes as full-width rows straight in the menu, not behind a category: the tab menu is short
-// enough now to show them (docs/specs/007-editor/editor-modes.md "Where the mode lives").
+// "Mode", one section closed until opened (docs/specs/007-editor/editor-modes.md "Mode in the tab menu"), holding every
+// mode: one beside the tab's own switches it, one across Plan's line asks for a new tab in it, as the switch does.
 export function TabModeMenuRows({ choice }: { choice: TabModeChoice }) {
-  // Plan stands apart (crossesPlan): a Plan tab offers no other mode, and no other tab offers Plan.
-  const modes = EDITOR_MODE_CATALOGUE.filter(({ id }) => !crossesPlan(choice.mode, id));
-  if (modes.length < 2) return null;
+  const [open, setOpen] = useState(false);
+  const pickLocked = useLockedModePick({ mode: choice.mode, newTabIn: choice.newTabIn });
+  const CurrentIcon = EDITOR_MODE_ICONS[choice.mode];
   return (
-    <div role="group" aria-label="Mode" className="flex flex-col">
-      {modes.map(({ id, label }) => {
-        const Icon = EDITOR_MODE_ICONS[id];
-        const checked = id === choice.mode;
-        return (
-          <TabModeChoiceRow
-            key={id}
-            checked={checked}
-            onClick={() => {
-              if (!checked) choice.onChange(id);
-            }}
-            className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-1.5 text-left text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <span className="flex w-4 shrink-0 items-center justify-center">
-              <Icon className="h-4 w-4" />
-            </span>
-            {/* The mode's name alone, no description line: the tab menu stays short. */}
-            <span className="min-w-0 flex-1 text-[13px] font-medium">{label}</span>
-            <span
-              aria-hidden
-              className={`h-2 w-2 shrink-0 rounded-full ${
-                checked ? 'bg-brand-600 dark:bg-brand-400' : 'bg-transparent'
+    <MenuAccordionSection
+      title="Mode"
+      icon={<CurrentIcon className="h-4 w-4" />}
+      open={open}
+      onToggle={() => setOpen((v) => !v)}
+      flush
+    >
+      <div role="group" aria-label="Mode" className="flex flex-col">
+        {EDITOR_MODE_CATALOGUE.map(({ id, label }) => {
+          const Icon = EDITOR_MODE_ICONS[id];
+          const checked = id === choice.mode;
+          const crossing = crossesPlan(choice.mode, id);
+          const inert = crossing && !choice.newTabIn;
+          return (
+            <TabModeChoiceRow
+              key={id}
+              checked={checked}
+              inert={inert}
+              onClick={() => {
+                if (checked || inert) return;
+                if (crossing) void pickLocked(id);
+                else choice.onChange(id);
+              }}
+              className={`flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-slate-700 transition dark:text-slate-200 ${
+                inert
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
-            />
-          </TabModeChoiceRow>
-        );
-      })}
-    </div>
+            >
+              <span className="flex w-4 shrink-0 items-center justify-center">
+                <Icon className="h-4 w-4" />
+              </span>
+              {/* The mode's name alone, no description line: the tab menu stays short. */}
+              <span className="min-w-0 flex-1 text-[13px] font-medium">{label}</span>
+              {crossing ? (
+                // Across Plan's line: a new tab, marked as the switch marks it.
+                <OpenIcon aria-hidden className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              ) : (
+                <span
+                  aria-hidden
+                  className={`h-2 w-2 shrink-0 rounded-full ${
+                    checked ? 'bg-brand-600 dark:bg-brand-400' : 'bg-transparent'
+                  }`}
+                />
+              )}
+            </TabModeChoiceRow>
+          );
+        })}
+      </div>
+    </MenuAccordionSection>
   );
 }
 
@@ -56,11 +83,13 @@ export function TabModeMenuRows({ choice }: { choice: TabModeChoice }) {
 // tile there is; inside a command menu it would be a menuitemradio.
 function TabModeChoiceRow({
   checked,
+  inert,
   onClick,
   className,
   children,
 }: {
   checked: boolean;
+  inert: boolean;
   onClick: () => void;
   className: string;
   children: ReactNode;
@@ -71,6 +100,7 @@ function TabModeChoiceRow({
       type="button"
       {...itemProps}
       aria-pressed={inCommandMenu ? undefined : checked}
+      aria-disabled={inert || undefined}
       onClick={onClick}
       className={className}
     >

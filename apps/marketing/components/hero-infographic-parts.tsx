@@ -86,7 +86,7 @@ export function InfoSheet({
   return (
     <g>
       <text x={x} y={y - 7} fontFamily={FONT} fontSize="7" fontWeight="500" className={chrome}>
-        {name} · A4 · Portrait · Infographic
+        {name} · A4 · Portrait
       </text>
       <InfoIcon prims={lucideLock} x={x + w - 25} y={y - 15} size={9} colour="#94a3b8" />
       <InfoIcon prims={lucideSettings} x={x + w - 10} y={y - 15} size={9} colour="#94a3b8" />

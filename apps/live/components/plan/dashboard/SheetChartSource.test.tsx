@@ -125,6 +125,7 @@ describe('Choose a Chart', () => {
   it('says when a sheet has no charts yet', () => {
     read = budgetRead();
     show([{ ...sheetTab, elements: sheetTab.elements.slice(0, 1) }], SHEET_ID);
-    expect(screen.getByText('No charts from this sheet yet.')).toBeTruthy();
+    // The shared empty state, not a bare line (docs/specs/004-interface-design/empty-states.md).
+    expect(screen.getByText('No charts yet').closest('[data-empty-state]')).toBeTruthy();
   });
 });

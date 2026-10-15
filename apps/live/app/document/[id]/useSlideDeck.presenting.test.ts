@@ -19,6 +19,8 @@ function presenting(tabs: Tab[]) {
   const hook = renderHook(
     ({ tabs }: { tabs: Tab[] }) =>
       useSlideDeck({
+        prefs: {},
+        commitPrefs: () => {},
         tabs,
         activeTabId: 'a',
         setActiveId: vi.fn(),

@@ -8,10 +8,11 @@ export {
 } from './social-card';
 export { brandLogoSvg } from './brand-logo-svg';
 export { PRISM_PALETTES, prismPalette, type PrismPalette, type PrismScheme } from './brand-prism';
-export { ProductNav, type ProductNavKey } from './ProductNav';
+export { ProductNav, ProductNavLinks, type ProductNavKey } from './ProductNav';
 export { SiteHeader } from './SiteHeader';
 export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
 export { StartBlankMenu } from './StartBlankMenu';
+export { BuildWithAiLink } from './BuildWithAiLink';
 export { ModeFilterMenu, type ModeFilterOption } from './ModeFilterMenu';
 export { CountBadge } from './CountBadge';
 export { SiteFooter } from './SiteFooter';
@@ -91,6 +92,14 @@ export {
   useCommunityEnabled,
 } from './community/useCommunityEnabled';
 export { clerkPublishableKeyOrNull } from './clerk-key';
+export {
+  TRUSTED_TYPES_CSP,
+  isAllowedScriptUrl,
+  parseInert,
+  trustedHtml,
+  trustedScriptOrigins,
+  trustedTypesBootScript,
+} from './trusted-types';
 export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';
 export {
   SITE_URL,
@@ -127,5 +136,6 @@ export {
   SHEET_FULL_HEIGHT,
   type SheetDrag,
 } from './useSheetDrag';
+export { SheetHandle, SHEET_HANDLE_PX } from './SheetHandle';
 export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';
 export * from './browser-repair';

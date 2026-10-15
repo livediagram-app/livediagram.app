@@ -8,7 +8,7 @@
 import { SHAPE_DEFAULT_SIZE } from './shape-factory';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
-import { canvasSurface, hexToRgb, inkOn } from './colors';
+import { canvasSurface, inkOn } from './colors';
 
 export type Face = BoxedElement & { type: 'shape' };
 
@@ -261,18 +261,9 @@ export function wrapLines(body: string, width: number, size: number, max: number
 // pale accent on a pale card would vanish as a word).
 export type CollabAccent = { accent: string; on: string; ink: string };
 
-/** `color-mix(in srgb, a share, b)` for two hexes, as a hex; `a` when either
- *  won't parse. SVG exports can't rely on CSS color-mix. */
-export function mixHex(a: string, b: string, share: number): string {
-  const x = hexToRgb(a);
-  const y = hexToRgb(b);
-  if (!x || !y) return a;
-  const m = (p: number, q: number) =>
-    Math.round(share * p + (1 - share) * q)
-      .toString(16)
-      .padStart(2, '0');
-  return `#${m(x.r, y.r)}${m(x.g, y.g)}${m(x.b, y.b)}`;
-}
+// mixHex lives in color-wash.ts, a leaf, so leaf modules can ramp colours at load; re-exported here for its callers.
+export { mixHex } from './color-wash';
+import { mixHex } from './color-wash';
 
 export function collabAccent(stroke: string, fill: string, textColor: string): CollabAccent {
   const on = inkOn(stroke);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { MCP_TOOL_VERBS } from './mcp-tools';
+import { MCP_TOOL_VERBS, mcpShareDocument } from './mcp-tools';
 
 // The MCP's tools as verbs (docs/specs/015-api/cli.md "One catalogue for the CLI and the MCP"). The MCP's own
 // parity test checks the server registers each as declared; this checks the declarations themselves.
@@ -22,6 +22,7 @@ describe('the MCP tool verbs', () => {
       'find_documents',
       'read_document',
       'list_templates',
+      'search_icons',
       'create_document',
       'add_tab',
       'update_document',
@@ -57,7 +58,16 @@ describe('the MCP tool verbs', () => {
       'find_documents',
       'read_document',
       'list_templates',
+      'search_icons',
       'list_trash',
     ]);
+  });
+});
+
+// docs/specs/015-api/mcp-server.md: share_document makes a Participant link when the agent names no level.
+describe('share_document', () => {
+  it('names the default level the api applies', () => {
+    expect(mcpShareDocument.description).toContain('"participate" (the default');
+    expect(mcpShareDocument.description).not.toMatch(/"view" \([^)]*default/);
   });
 });

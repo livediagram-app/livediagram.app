@@ -34,7 +34,7 @@ export function FunnelSurfaceCard({
         <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           {surface.label}
         </h3>
-        <span className="text-xs text-slate-400">
+        <span className="text-xs text-slate-500 dark:text-slate-400">
           {formatRate(rate(surface.created, surface.views))} of views became a document
         </span>
       </div>
@@ -73,7 +73,7 @@ export function FunnelSurfaceCard({
           <col className="w-16 sm:w-20" />
         </colgroup>
         <thead>
-          <tr className="text-left text-[11px] tracking-wide text-slate-400 uppercase">
+          <tr className="text-left text-[11px] tracking-wide text-slate-500 dark:text-slate-400 uppercase">
             <th className="pb-2 font-medium">Call to action</th>
             <th className="pb-2 pl-2 text-right font-medium">Arrived</th>
             <th className="pb-2 pl-2 text-right font-medium">Created</th>
@@ -86,7 +86,7 @@ export function FunnelSurfaceCard({
             return (
               <tr
                 key={slot.source}
-                className={`border-t border-slate-100 dark:border-slate-800 ${unused ? 'text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}
+                className={`border-t border-slate-100 dark:border-slate-800 ${unused ? 'text-slate-500' : 'text-slate-700 dark:text-slate-200'}`}
               >
                 <td className="py-2 pr-3">
                   <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
@@ -156,7 +156,7 @@ function StepRate({ value, verb }: { value: number | null; verb: string }) {
   return (
     <li
       aria-label={`${formatRate(value)} ${verb}`}
-      className="flex items-center gap-2 py-1.5 pl-1 text-xs text-slate-400"
+      className="flex items-center gap-2 py-1.5 pl-1 text-xs text-slate-500 dark:text-slate-400"
     >
       <Glyph size={10} units={10} className="h-2.5 w-2.5">
         <path d="M5 1v8M2 6l3 3 3-3" />

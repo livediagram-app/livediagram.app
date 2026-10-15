@@ -1,8 +1,7 @@
 'use client';
 
-// The poll prompt every participant sees when a host starts one (docs/specs/012-collaboration/live-poll.md).
-// Shown to view-role visitors too — polling an audience on a view link is the
-// main use for this.
+// The poll prompt everyone taking part sees when a host starts one (docs/specs/012-collaboration/live-poll.md):
+// an Editor or a Participant. A Viewer only looks and is never shown it (docs/specs/013-workspace/share-roles.md).
 //
 // A SHEET rising from the bottom edge, not a modal. It used to be a centred
 // Dialog with a backdrop, which stopped the room dead: a poll is a question
@@ -98,7 +97,7 @@ export function PollPromptSheet({
 
         <div className="flex flex-col gap-3 p-4">
           <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-300">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
               Quick poll
             </span>
             <h2 className="text-base font-semibold leading-snug text-slate-800 dark:text-slate-100">

@@ -41,6 +41,8 @@ const DRAWINGS: Element[][] = [
     arrow('1', 'a', 'x'),
     arrow('2', 'b', 'y'),
     arrow('3', 'a', 'z'),
+    // One arrow inside: a frame none of whose arrows run inside is a role group, split by design.
+    arrow('4', 'a', 'b'),
   ],
   [box('a', 0, 0, { label: 'Same' }), box('b', 300, 0, { label: 'same' })],
   [
@@ -48,20 +50,58 @@ const DRAWINGS: Element[][] = [
     box('b', 0, 200),
     box('c', 0, 400),
     box('d', 0, 600),
+    box('top', 300, -200),
     arrow('1', 'a', 'b', ['s', 'n']),
     arrow('2', 'b', 'c', ['s', 'n']),
     arrow('3', 'c', 'd', ['s', 'n']),
-    arrow('ret', 'd', 'a', ['n', 's']),
+    arrow('ret', 'd', 'top', ['n', 's']),
   ],
   [box('a', 0, 0), box('b', 600, 0), box('c', 1200, 0)],
   [box('a', 0, 0, { fillColor: '#123456', strokeColor: '#654321' })],
 ];
 
+// The codes only an Illustrate tab is linted for, each on a page's text.
+const PAGE_DRAWINGS: Element[][] = [
+  [
+    {
+      id: 'a',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 40,
+      label: 'A heading long enough to wrap onto three or more lines in its box',
+      textSize: 'lg',
+    } as Element,
+  ],
+  [
+    {
+      id: 'a',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 70,
+      height: 120,
+      label: '£4.6bn',
+      textSize: 'lg',
+    } as Element,
+  ],
+  [
+    { id: 'a', type: 'text', x: 0, y: 0, width: 200, height: 40, label: 'One' } as Element,
+    { id: 'b', type: 'text', x: 0, y: 8, width: 200, height: 40, label: 'Two' } as Element,
+  ],
+];
+
 describe('tab fixes', () => {
-  const findings = DRAWINGS.flatMap((elements) => {
-    const tab: Tab = { id: 't', name: 'T', theme: 'ocean', elements };
-    return lint(tab).findings.map((finding) => ({ finding, tab }));
-  });
+  const findings = [
+    ...DRAWINGS.map((elements): Tab => ({ id: 't', name: 'T', theme: 'ocean', elements })),
+    ...PAGE_DRAWINGS.map((elements): Tab => ({
+      id: 't',
+      name: 'T',
+      opensIn: 'illustrate',
+      elements,
+    })),
+  ].flatMap((tab) => lint(tab).findings.map((finding) => ({ finding, tab })));
 
   it('cover every code', () => {
     expect(new Set(findings.map(({ finding }) => finding.code))).toEqual(new Set(LINT_CODES));

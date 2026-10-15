@@ -8,11 +8,10 @@ import {
   createPinnedArrow,
   createShape,
   createText,
-  runsPlainText,
+  personCardText,
   type ArrowElement,
   type Element,
   type ShapeElement,
-  type TextRun,
 } from '@livediagram/document';
 import { BOTTOM_EXITS, rake, sideRake } from './template-rake';
 
@@ -110,13 +109,11 @@ function personCard(
   h: number,
   look: Partial<ShapeElement>,
 ): ShapeElement {
-  const runs: TextRun[] = [{ text: name, bold: true, size: 'md' }, { text: `\n${role}` }];
   return {
     ...createShape('square', x, y),
     width: w,
     height: h,
-    label: runsPlainText(runs),
-    richText: runs,
+    ...personCardText(name, role),
     textSize: 'sm',
     iconId: 'user',
     ...look,

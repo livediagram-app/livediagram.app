@@ -60,6 +60,27 @@ The words for the work a Plan board frames ([Items](../026-plan/items.md), [Plan
 - **Plan** is an editor mode, never a kind: a Plan board is an element on a general tab.
 - A **column** belongs to a Plan board and stands for a status; a **lane** is the Lane element.
 
+## Diagram elements
+
+The words for the diagram-building elements ([The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
+[The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md),
+[Concept graphics](../009-elements/concept-graphics.md)).
+
+| Term                | Means                                                                                   | Never called                              |
+| ------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **Card**            | The diagram element (`card`) with a header band, media, title, meta line, body and tags | node card, info card, Plan card           |
+| **slot**            | One part of a Card a person switches on or off                                          | section, field (in copy)                  |
+| **Badge**           | The small pill element (`badge`)                                                        | tag (a tag is a chip inside a Card), pill |
+| **Step number**     | The numbered disc element (`step`)                                                      | marker (that is a shape's status mark)    |
+| **attachment**      | A badge or step number held on one of eight points of a host element                    | group, pin, dock                          |
+| **host**            | The element an attached badge or step number sits on                                    | parent (that is a mind node's)            |
+| **Boundary**        | The titled, tinted container element (`boundary`)                                       | zone, group, frame (that is the Frame)    |
+| **concept graphic** | A Layer stack, Pyramid or Cycle: one element laying out its own rows                    | SmartArt, diagram                         |
+| **row**             | One layer, tier or step of a concept graphic (`conceptRows`)                            | item (that is a Plan record)              |
+
+- A Plan **card** draws an item and is always called a Plan card where the two could meet; the diagram **Card** is
+  never offered in Plan mode.
+
 ## Agents
 
 The words for a program working on documents for a person ([Agents](../024-agents/README.md)).
@@ -89,11 +110,32 @@ The words for choosing a colour ([Colour picker](../004-interface-design/colour-
 | ------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | **colour picker**        | The one control that chooses a colour, in any skin                                                | swatch picker, palette, colour well   |
 | **standard colours**     | The ten named colours every picker offers (Ink or White, Grey, Red ... Pink)                      | stock colours (outside Draw), presets |
-| **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills)   | shade, variant                        |
+| **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills)   | shade, variant, a drawing finish      |
 | **theme colours**        | The active theme's own colours, offered on the canvas only                                        | presets                               |
 | **Custom colours**       | The colours picked with + in the document, kept with its tabs                                     | custom swatches, recent colours       |
 | **custom colour editor** | The square, hue, hex and eyedropper panel that **Add a custom colour** (four coloured dots) opens | colour wheel, native picker           |
 | **skin**                 | Where and how a picker opens: inline, field, swatch button                                        | variant, mode                         |
+
+## Drawing
+
+The words for how elements are drawn, apart from their colours ([Finish](../008-canvas/finish.md)).
+
+| Term           | Means                                                                                   | Never called                   |
+| -------------- | --------------------------------------------------------------------------------------- | ------------------------------ |
+| **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional or Sketch | tone, look, style, render mode |
+| **Follow Tab** | An element with no finish of its own, drawn in its tab's                                | inherit, default               |
+
+## Flowcharts
+
+The words for a grown flowchart ([The flowchart](../009-elements/flowchart.md)).
+
+| Term          | Means                                                                     | Never called        |
+| ------------- | ------------------------------------------------------------------------- | ------------------- |
+| **flowchart** | Steps sharing a `flowchartId`, joined by connectors and laid out together | flow, diagram       |
+| **step**      | One shape of a flowchart                                                  | node, box           |
+| **step type** | What a step is (Process, Decision, ...), which is its shape kind          | node type, symbol   |
+| **lane**      | A swimlane of a flowchart: a Lane element carrying the chart's id         | swimlane (in code)  |
+| **direction** | Which way a flowchart flows: Down or Right                                | orientation, layout |
 
 ## Repositories and workbenches
 

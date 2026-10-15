@@ -134,7 +134,7 @@ export function TimelineCalendarView({
         {WEEKDAY_SHORT.map((day) => (
           <div
             key={day}
-            className="pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+            className="pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
           >
             {day}
           </div>
@@ -160,7 +160,7 @@ export function TimelineCalendarView({
                 className={`text-[11px] ${
                   isToday
                     ? 'font-semibold text-brand-700 dark:text-brand-300'
-                    : 'text-slate-400 dark:text-slate-400'
+                    : 'text-slate-500 dark:text-slate-400'
                 }`}
               >
                 {cell.day}
@@ -205,7 +205,7 @@ export function TimelineCalendarView({
             <button
               type="button"
               onClick={() => setOpenCell(null)}
-              className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
             >
               Close
             </button>

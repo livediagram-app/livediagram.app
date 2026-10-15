@@ -59,27 +59,36 @@ Up to **50** page changes, applied in order, each to the tab as the ones before 
 edit. A refused change stops the batch and nothing is written; the answer names the change and why, and what the
 changes before it would have done.
 
-| Change      | Fields                                                                                               | Does                                                                                                             |
-| ----------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `add`       | `kind` (infographic, slide, logo), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)        |
-| `set`       | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                                   | The page panel's edits; on an article page size, orientation and background change every page of the article     |
-| `layout`    | `page`, `layout`                                                                                     | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                              |
-| `move`      | `page`, `to`                                                                                         | Moves the page (an article page: its whole article) to place `to`, its content with it                           |
-| `duplicate` | `page`                                                                                               | A copy after it, content and all (an article: the whole article and its writing)                                 |
-| `delete`    | `page`                                                                                               | Removes the page and everything on it (an article page: the whole article, writing and all); never the last page |
+| Change                    | Fields                                                                                               | Does                                                                                                                                                                                                                                |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add`                     | `kind` (infographic, slide, logo), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                                                                           |
+| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                                   | The page panel's edits; on an article page size, orientation and background change every page of the article                                                                                                                        |
+| `layout`                  | `page`, `layout`                                                                                     | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                                                                                 |
+| `move`                    | `page`, `to`                                                                                         | Moves the page (an article page: its whole article) to place `to`, its content with it                                                                                                                                              |
+| `duplicate`               | `page`                                                                                               | A copy after it, content and all (an article: the whole article and its writing)                                                                                                                                                    |
+| `delete`                  | `page`                                                                                               | Removes the page and everything on it (an article page: the whole article, writing and all); never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
+| `apply_background_to_all` | `page`                                                                                               | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                                                                             |
 
 - **Article pages are made by `write_article`**, never by `add`: an `add` of kind `article` is refused
   (`article_by_write`) with that hint.
 - **The first page's choice**: while the tab's only page is unchosen and empty, an `add` of a kind makes that page
   the kind (`withPageKindChosen`) instead of adding a second page, so a fresh Illustrate tab does not keep an empty
-  first page.
+  first page. Likewise a blank of the kind asked for (the tab's only page already of that kind, unnamed and holding
+  nothing, as the Blank Slide Deck makes it) becomes the page added, so a deck made from it does not open on an empty
+  slide.
 - **Sizes**: a page takes only the sizes its kind offers (`pageSizesFor`); any other is refused (`size_not_offered`)
   naming the ones it takes. Fit to Content is never chosen (`size_not_offered`). A slide or logo page has no
   orientation; turning one is refused (`no_orientation`).
 - **Backgrounds**: `{ color }` (a hex) is a solid fill, `{ gradient: [from, to], angle? }` a two-stop gradient
   (angle in degrees, default 160, the panel's), `pattern` one of `dots`, `grid`, `lines` or `none`, `{ paper: true }` back to the
-  plain paper. A logo page takes no pattern (`pattern_not_offered`). A new fill re-inks the page's own-coloured
-  content as the panel does (`withPageInkFor`).
+  plain paper. A logo page takes no pattern (`pattern_not_offered`). A new fill re-inks what is on the page as the panel does
+  (`pageInkFor`, [Re-inking](../007-editor/illustrate-pages.md#re-inking)), from the colours as they are (the
+  editor's session memory is the editor's).
+- **Apply to all**: `apply_background_to_all` gives every other page of the page's kind (every slide, say) its
+  background, fill and pattern, re-inking each ([Copying a background](../007-editor/illustrate-pages.md#copying-a-background)).
+  A locked page keeps its own and the line says how many did ("Gave 34 other slide pages the background of page 1;
+  2 locked kept their own"). With no other page of the kind it is refused (`no_other_pages`). It is how an agent
+  gives a whole deck one background: `set` the first slide's, then this, in the same call.
 - **Layouts**: a layout id the page's kind offers (`layoutCatalogueFor`); any other is refused (`layout_unknown`)
   naming the kind's layouts. Laid out in the page's content box, in the tab's theme.
 - **Locks**: a locked page refuses every change but `set { locked: false }` (`page_locked`); on an article any
@@ -128,7 +137,8 @@ Writes an article's text from **Markdown**.
 
 ## Pages for the writing
 
-Where a line breaks is measured by the editor, so the server never counts an article's pages
+Where a line breaks is measured by the editor, so the server never sets an article's pages (an answer's
+`estimatedPages` and a preview's writing are estimates, `article-layout-estimate.ts`, and change nothing)
 ([Article pages](../007-editor/article-pages.md) "Flowing onto pages").
 
 - An article whose writing reaches past its last page is grown by an editor that is not its writer at two moments

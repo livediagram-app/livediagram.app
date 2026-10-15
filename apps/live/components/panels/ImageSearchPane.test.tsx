@@ -96,6 +96,59 @@ describe('ImageSearchPane loading', () => {
   });
 });
 
+describe('ImageSearchPane tiles', () => {
+  it('falls back to the picture itself when Openverse cannot render the thumbnail', async () => {
+    render(<ImageSearchPane ownerId="o" documentId="d" onPicked={vi.fn()} />);
+    await searchFor('mountains');
+    await act(async () => {
+      search.resolve!({ results: [result('a')], page: 1, pageCount: 1 });
+    });
+    const tile = screen.getByRole('button', { name: /Picture a/ });
+    const img = tile.querySelector('img')!;
+    expect(img.getAttribute('src')).toBe('https://api.openverse.org/a/thumb/');
+    fireEvent.error(img);
+    expect(img.getAttribute('src')).toBe('https://images.example/a.jpg');
+    // Still a placeholder while the picture loads; a second failure gives up rather than looping.
+    expect(tile.className).toContain('lvd-search-skeleton');
+    fireEvent.error(img);
+    expect(img.getAttribute('src')).toBe('https://images.example/a.jpg');
+    expect(tile.className).not.toContain('lvd-search-skeleton');
+  });
+});
+
+describe('ImageSearchPane for a page background', () => {
+  it('asks with the page’s filters and previews a hovered result until the pointer leaves', async () => {
+    const { searchOpenverse } = await import('@/lib/image-search/search');
+    const onPreview = vi.fn();
+    render(
+      <ImageSearchPane
+        ownerId="o"
+        documentId="d"
+        onPicked={vi.fn()}
+        filters={{ aspectRatio: 'tall', size: 'large' }}
+        onPreview={onPreview}
+        columns={3}
+        autoFocus={false}
+      />,
+    );
+    expect(document.activeElement).not.toBe(screen.getByRole('searchbox'));
+    await searchFor('sea');
+    expect(vi.mocked(searchOpenverse)).toHaveBeenLastCalledWith('sea', 1, expect.anything(), {
+      aspectRatio: 'tall',
+      size: 'large',
+    });
+    await act(async () => {
+      search.resolve!({ results: [result('a')], page: 1, pageCount: 1 });
+    });
+    const tile = screen.getByRole('button', { name: /Picture a/ });
+    expect(tile.closest('ul')!.className).toContain('grid-cols-3');
+    fireEvent.pointerEnter(tile);
+    expect(onPreview).toHaveBeenLastCalledWith(result('a'));
+    fireEvent.pointerLeave(tile.closest('ul')!);
+    expect(onPreview).toHaveBeenLastCalledWith(null);
+  });
+});
+
 describe('ImageSearchPane picking', () => {
   it('marks the picked tile busy and walks its stages, then hands the picture on', async () => {
     const onPicked = vi.fn();
@@ -118,7 +171,7 @@ describe('ImageSearchPane picking', () => {
 
     const picked = { id: 'img', width: 1, height: 1, originalName: 'a' };
     await act(async () => pick.resolve!({ ok: true, picked }));
-    expect(onPicked).toHaveBeenCalledWith(picked);
+    expect(onPicked).toHaveBeenCalledWith(picked, result('a'));
     expect(screen.queryByRole('status')).toBeNull();
   });
 });

@@ -26,6 +26,18 @@ describe('layoutView (R17)', () => {
     });
   });
 
+  it('names the origin on the header only when content does not start at 0,0', () => {
+    const at = (x: number, y: number) =>
+      buildViewModel(
+        { id: 'tab-1', name: 'T', elements: [shapeAt('square', 'a', x, y)] },
+        { rev: 3 },
+      );
+    expect(layoutView(at(0, 0)).text.split('\n')[0]).not.toContain('origin');
+    expect(layoutView(at(40, 20)).text.split('\n')[0]).toContain(
+      'origin 40,20: stored = shown + origin · rev 3',
+    );
+  });
+
   it('prints one subtree and the arrows touching it with only', () => {
     const exact = layoutView(checkout(), { only: CHECKOUT_IDS.data }).text.split('\n').slice(1);
     expect(exact).toEqual([
@@ -89,5 +101,22 @@ describe('layoutView (R17)', () => {
     expect(coarse.json.rows?.length).toBeLessThan(4);
     expect(coarse.json.rows?.length).toBeGreaterThan(0);
     expect(coarse.text.split('\n').at(-1)).toMatch(/^… \d containers? hidden: view --budget \d+$/);
+  });
+});
+
+describe('the layout header origin', () => {
+  it('says the origin only when content does not start at 0,0', () => {
+    const atZero = buildViewModel(
+      { id: 't', name: 'T', elements: [shapeAt('square', 'a', 0, 0)] },
+      { rev: 3 },
+    );
+    expect(layoutView(atZero).text.split('\n')[0]).not.toContain('origin');
+    const offset = buildViewModel(
+      { id: 't', name: 'T', elements: [shapeAt('square', 'a', 40, 20)] },
+      { rev: 3 },
+    );
+    expect(layoutView(offset).text.split('\n')[0]).toContain(
+      'origin 40,20: stored = shown + origin · rev 3',
+    );
   });
 });

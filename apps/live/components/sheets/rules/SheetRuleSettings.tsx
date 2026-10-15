@@ -21,6 +21,9 @@ export const NO_VALIDATION_RULES =
   "No validation rules yet. Select cells and choose Dropdown or Checkbox from the toolbar's Data menu.";
 export const NO_FORMAT_RULES =
   "No format rules yet. Select cells and choose Conditional Formatting from the toolbar's Data menu.";
+// For someone with no toolbar (a Participant, a Viewer): what is there, never how to do what they cannot.
+export const NO_VALIDATION_RULES_READ = 'No validation rules.';
+export const NO_FORMAT_RULES_READ = 'No format rules.';
 
 // A validation rule's short line: "Dropdown: To Do, Doing, Done", "Checkbox", "Number between 1 and 10".
 export function validationRuleShortLine(rule: ValidationRule, c: SheetController): string {
@@ -129,7 +132,7 @@ export function SheetValidationRules({
 }) {
   const c = useSheetController();
   const rules = c.sheet.layout.rules ?? [];
-  if (!rules.length) return empty(NO_VALIDATION_RULES);
+  if (!rules.length) return empty(c.canShape ? NO_VALIDATION_RULES : NO_VALIDATION_RULES_READ);
   return (
     <RuleRows
       rules={rules}
@@ -152,7 +155,7 @@ export function SheetFormatRuleList({
 }) {
   const c = useSheetController();
   const rules = c.sheet.layout.formatRules ?? [];
-  if (!rules.length) return empty(NO_FORMAT_RULES);
+  if (!rules.length) return empty(c.canShape ? NO_FORMAT_RULES : NO_FORMAT_RULES_READ);
   const lineOf = (r: FormatRule) =>
     formatRuleLine(r, r.fx ? renderFormula(r.fx, c.workbook.ctxFor(c.sheet.id)) : undefined);
   return (

@@ -21,6 +21,7 @@ export function NewCardSegment({
       hoverTitle="New Card"
       hoverDescription="Make a card of any type here and now, then put it on a board when you are ready."
       icon={<PlusIcon size={18} />}
+      name="New Card"
       popoverOpen={open}
       onTogglePopover={onToggle}
     />

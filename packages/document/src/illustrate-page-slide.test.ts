@@ -60,18 +60,10 @@ describe('slide pages', () => {
     expect(laid!.rect.width).toBe(1920);
   });
 
-  it('offer only the slide sizes; an infographic page adds the 16:9 slide to the rest', () => {
+  it('offer only the slide sizes; an infographic page none of them', () => {
     expect(pageSizesFor('slide')).toEqual(['slide', 'slide-classic']);
     expect(pageSizesFor('article')).toEqual(['a4', 'letter', 'a3', 'square', 'social', 'wide']);
-    expect(pageSizesFor('infographic')).toEqual([
-      'a4',
-      'letter',
-      'a3',
-      'square',
-      'social',
-      'wide',
-      'slide',
-    ]);
+    expect(pageSizesFor('infographic')).toEqual(pageSizesFor('article'));
   });
 
   it('are labelled as slides', () => {

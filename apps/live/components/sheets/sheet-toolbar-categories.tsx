@@ -146,7 +146,13 @@ export function toolbarCategories(
           menu: 'font',
           separatorBefore: true,
           controlPx: FONT_BUTTON_PX,
-          control: (openMenu) => <SheetFontButton font={f?.ff} onOpen={openMenu} />,
+          control: (openMenu) => (
+            <SheetFontButton
+              font={f?.ff}
+              tone={{ line: c.palette.cardBorder, text: c.palette.text }}
+              onOpen={openMenu}
+            />
+          ),
         },
         {
           id: 'fs',
@@ -161,6 +167,13 @@ export function toolbarCategories(
               min={FONT_SIZE_MIN}
               max={FONT_SIZE_MAX}
               stepBy={stepFontSize}
+              // The Sheet's own colours, as the toolbar around it wears (docs/specs/029-sheets/sheet.md "Toolbar").
+              tone={{
+                line: c.palette.cardBorder,
+                field: c.palette.column,
+                text: c.palette.text,
+                muted: c.palette.muted,
+              }}
               onCommit={(fs) => actions.format({ fs: fs === FONT_SIZE_DEFAULT ? null : fs })}
             />
           ),

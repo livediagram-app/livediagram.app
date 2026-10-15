@@ -153,8 +153,9 @@ Plan must cost nothing to a document that does not use it:
 - Plan mode has no empty-canvas Quick Start banner: Start Planning is its start, and its **Something Else?** opens the
   regular Quick Start for this tab, for a diagram template or another kind of tab instead.
 - **A new tab from Plan stays Plan**: adding a tab (the tab bar's **+**) while in Plan mode opens it in Plan
-  (`opensIn` Plan, for everyone), straight to **Start Planning**, with no Quick Start
-  ([Editor modes](../007-editor/editor-modes.md)). In any other mode a new tab opens as before.
+  (`opensIn` Plan, for everyone), straight to **Start Planning**, with no Quick Start. Every mode does the same: a
+  new tab opens in the mode it was made from ([Editor modes](../007-editor/editor-modes.md) "A new tab opens in the
+  mode it was made from").
 
 ## Switching modes keeps the tab
 

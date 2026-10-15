@@ -5,6 +5,8 @@
 // and a new custom field. The grouped field list is ItemTypeLayoutEditor.
 import { useState } from 'react';
 import {
+  COMMON_CURRENCIES,
+  CURRENCY_DEFAULT,
   CUSTOM_CHOICE_OPTIONS_MAX,
   CUSTOM_CHOICE_OPTION_MAX,
   CUSTOM_FIELD_KINDS,
@@ -41,9 +43,11 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   text: 'Text',
   longtext: 'Long Text',
   number: 'Number',
+  currency: 'Currency',
   date: 'Date',
   checkbox: 'Checkbox',
   link: 'Link',
+  email: 'Email',
   choice: 'Choice',
   card: 'Link to Card',
 };
@@ -70,6 +74,36 @@ export function optionsFrom(text: string): string[] {
 }
 
 // A Card field's target (docs/specs/026-plan/item-types.md "Card fields"): which card type its card is.
+// A Currency field's currency: the common codes, GBP first, and the field's own when it is another.
+function CurrencySelect({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (currency: string | undefined) => void;
+}) {
+  const code = value ?? CURRENCY_DEFAULT;
+  const codes: readonly string[] = COMMON_CURRENCIES.includes(code as never)
+    ? COMMON_CURRENCIES
+    : [...COMMON_CURRENCIES, code];
+  return (
+    <Select
+      aria-label="Currency"
+      className="w-full"
+      selectClassName="text-[13px]"
+      value={code}
+      // GBP is the default, so it stores no code.
+      onChange={(e) => onChange(e.target.value === CURRENCY_DEFAULT ? undefined : e.target.value)}
+    >
+      {codes.map((c) => (
+        <option key={c} value={c}>
+          {c}
+        </option>
+      ))}
+    </Select>
+  );
+}
+
 function LinksToSelect({
   value,
   onChange,
@@ -121,6 +155,9 @@ export function CustomFieldForm({
       />
       {field.kind === 'card' ? (
         <LinksToSelect value={field.linkType} onChange={(linkType) => onChange({ linkType })} />
+      ) : null}
+      {field.kind === 'currency' ? (
+        <CurrencySelect value={field.currency} onChange={(currency) => onChange({ currency })} />
       ) : null}
       {field.kind === 'choice' ? (
         <TextArea
@@ -208,6 +245,12 @@ export function NewFieldForm({
               onChange={(e) => setCustom({ ...custom, options: optionsFrom(e.target.value) })}
             />
           ) : null}
+          {custom.kind === 'currency' ? (
+            <CurrencySelect
+              value={custom.currency}
+              onChange={(currency) => setCustom({ ...custom, currency })}
+            />
+          ) : null}
           {custom.kind === 'card' ? (
             <LinksToSelect
               value={custom.linkType}
@@ -219,6 +262,7 @@ export function NewFieldForm({
             kind={custom.kind}
             options={custom.options ?? []}
             linkLabel={types.find((t) => t.id === custom.linkType)?.label}
+            currency={custom.currency}
           />
         </div>
       ) : null}
@@ -237,6 +281,7 @@ export function NewFieldForm({
                 label: custom.label.trim(),
                 ...(custom.kind === 'choice' ? {} : { options: undefined }),
                 ...(custom.kind === 'card' ? {} : { linkType: undefined }),
+                ...(custom.kind === 'currency' ? {} : { currency: undefined }),
               })
             }
           >

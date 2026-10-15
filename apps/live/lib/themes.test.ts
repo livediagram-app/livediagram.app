@@ -27,8 +27,6 @@ import {
   tableColorPresets,
   type ThemeDefinition,
 } from './themes';
-import { THEME_CATEGORIES, themeCategory } from './themes-taxonomy';
-import { darkCategorySchemes } from './theme-order';
 import {
   clearCustomThemeRegistry,
   registerCustomTheme,
@@ -60,38 +58,42 @@ describe('THEMES catalogue', () => {
   // copy. If the catalogue drifts from this the spec stops being
   // accurate. The extras include the multicolour themes from docs/specs/011-theme/multicolour-themes.md.
   // Mirrors the equivalent assertions in templates.test.ts.
-  // 26, not 27: Charcoal merged into Default and left the catalogue.
-  it('lists exactly 26 themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
-    expect(THEMES).toHaveLength(26);
+  // 24: Charcoal merged into Default, and Autumn and Jewel retired (docs/specs/011-theme/light-and-dark.md).
+  // The seasonal themes (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks") are the seasonal looks'
+  // own, never offered in a picker, so the catalogue's counts are of the year-round themes.
+  const yearRound = THEMES.filter((t) => !t.seasonal);
+
+  it('lists exactly 24 year-round themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
+    expect(yearRound).toHaveLength(24);
   });
 
-  it('splits cleanly into 12 default + 14 extra (retained as catalogue metadata)', () => {
-    const defaults = THEMES.filter((t) => !t.extra);
-    const extras = THEMES.filter((t) => t.extra);
+  it('holds six seasonal themes, all listed after the year-round ones', () => {
+    expect(THEMES.filter((t) => t.seasonal).map((t) => t.id)).toEqual([
+      'sparkle',
+      'spring',
+      'pumpkin',
+      'yuletide',
+      'frost',
+      'evergreen',
+    ]);
+    expect(THEMES.slice(0, yearRound.length)).toEqual(yearRound);
+  });
+
+  it('splits cleanly into 12 default + 12 extra (retained as catalogue metadata)', () => {
+    const defaults = yearRound.filter((t) => !t.extra);
+    const extras = yearRound.filter((t) => t.extra);
     expect(defaults).toHaveLength(12);
-    expect(extras).toHaveLength(14);
+    expect(extras).toHaveLength(12);
   });
 
   it('leads with the brand theme (the un-themed default is the most common pick)', () => {
     const brand = THEMES.find((t) => t.id === 'brand');
     expect(brand?.extra).toBeFalsy();
   });
-
-  it('assigns every theme to a known category (the picker groups themes by category)', () => {
-    const known = new Set(THEME_CATEGORIES.map((c) => c.id));
-    for (const t of THEMES) {
-      expect(known.has(themeCategory(t.id))).toBe(true);
-    }
-  });
 });
 
 describe('UML theme (per-shape colours, docs/specs/010-palette/technology-icons.md)', () => {
   const uml = getTheme('uml');
-
-  it('sits in the Formal category', () => {
-    expect(themeCategory('uml')).toBe('formal');
-    expect(THEME_CATEGORIES.some((c) => c.id === 'formal')).toBe(true);
-  });
 
   it('paints a new diamond its decision colour, not the base element colour', () => {
     const diamond = createShape('diamond', 0, 0);
@@ -137,8 +139,8 @@ describe('getTheme', () => {
     expect(getTheme(undefined).id).toBe('brand');
   });
 
-  it('returns the exact catalogue object (referential, not a copy)', () => {
-    expect(getTheme('forest')).toBe(THEMES.find((t) => t.id === 'forest'));
+  it('returns a theme as written in its own appearance (a light theme to a light viewer)', () => {
+    expect(getTheme('forest', 'light')).toEqual(THEMES.find((t) => t.id === 'forest'));
   });
 });
 
@@ -283,8 +285,8 @@ describe('table-preset re-derivation across themes (docs/specs/010-palette/style
 describe('resolveTheme (distinguishes unknown from the default)', () => {
   afterEach(() => clearCustomThemeRegistry());
 
-  it('resolves a built-in id to its catalogue object', () => {
-    expect(resolveTheme('slate')).toBe(THEMES.find((t) => t.id === 'slate'));
+  it('resolves a built-in id to its catalogue theme (as written, in its own appearance)', () => {
+    expect(resolveTheme('slate', 'light')).toEqual(THEMES.find((t) => t.id === 'slate'));
   });
 
   it('returns undefined for an unknown id (unlike getTheme, which falls back)', () => {
@@ -978,9 +980,9 @@ describe('deriveNewBoxedColours', () => {
 });
 
 describe('multi-colour (rainbow) themes', () => {
-  it('ships five palette themes (all in the Multi-colour category, all extra)', () => {
-    const palettes = THEMES.filter((t) => themeCategory(t.id) === 'multicolour');
-    expect(palettes).toHaveLength(5);
+  it('ships three year-round palette themes (all extra)', () => {
+    const palettes = THEMES.filter((t) => !!t.palette && !t.seasonal);
+    expect(palettes).toHaveLength(3);
     for (const t of palettes) {
       expect(t.extra).toBe(true);
       expect(t.palette && t.palette.length).toBeGreaterThan(0);
@@ -1003,7 +1005,7 @@ describe('multi-colour (rainbow) themes', () => {
     // unchanged (and did nothing visible on an empty canvas). Each must
     // shift the canvas colour and/or pattern away from the brand default.
     const brand = THEMES.find((t) => t.id === 'brand')!;
-    for (const t of THEMES.filter((x) => themeCategory(x.id) === 'multicolour')) {
+    for (const t of THEMES.filter((x) => !!x.palette)) {
       const changed =
         t.backgroundColor !== brand.backgroundColor ||
         t.backgroundPattern !== brand.backgroundPattern;
@@ -1094,34 +1096,5 @@ describe('multi-colour (rainbow) themes', () => {
     const [out] = resetThemeElementsToTheme([shape], slate) as [typeof shape];
     expect(out.colorPreset).toBeUndefined();
     expect(out.fillColor).toBe(slate.elementFill ?? undefined);
-  });
-});
-
-// The Dark category leads with Default (docs/specs/008-canvas/canvas-and-palette.md). It is the NEUTRAL dark
-// canvas — greys on near-black, no hue — so it is the one a reader compares
-// the tinted darks (Midnight's blue, Pine's green, Plum's purple) against,
-// and the one most people actually want when they ask for "dark". It leads
-// as Charcoal before the two merged, and it is the SAME entry that leads the
-// catalogue: one scheme, listed in both places under one name.
-//
-// Pinned because this drifted once already, silently: a commit claimed to
-// move Charcoal to the front and only moved it ahead of Pine, because the
-// picker orders by the THEMES array and Midnight sits earlier in it. Order
-// that matters to a user is behaviour, and behaviour gets a test.
-describe('dark colour-scheme order', () => {
-  const darkIds = () => darkCategorySchemes(THEMES).map((t) => t.id);
-
-  it('leads with Default', () => {
-    expect(darkIds()[0]).toBe('brand');
-  });
-
-  it('previews its DARK half there, whatever chrome the reader is in', () => {
-    // The card sits among dark canvases, so it has to look like one; the
-    // reader is being shown what the scheme looks like in that company.
-    expect(darkCategorySchemes(THEMES)[0]?.backgroundColor).toBe('#0d121a');
-  });
-
-  it('keeps the rest of the dark family intact behind it', () => {
-    expect(darkIds()).toEqual(['brand', 'midnight', 'pine', 'plum', 'abyss', 'espresso']);
   });
 });

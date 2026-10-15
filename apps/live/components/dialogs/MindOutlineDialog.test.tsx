@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type MindOutlineSummary, type ShapeElement } from '@livediagram/document';
 import { MindOutlineDialog } from './MindOutlineDialog';
@@ -114,5 +114,34 @@ describe('MindOutlineDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
     expect(onSave).toHaveBeenCalled();
+  });
+});
+
+// An iPad's keyboard: the visual viewport shrinks under the window and iOS pans it down the page.
+describe('MindOutlineDialog above the on-screen keyboard', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('stays in the visible band, capped to it, while a row is edited', () => {
+    const vv = Object.assign(new EventTarget(), {
+      height: window.innerHeight,
+      width: window.innerWidth,
+      offsetTop: 0,
+      offsetLeft: 0,
+    });
+    vi.stubGlobal('visualViewport', vv);
+    open();
+    const panel = screen.getByRole('dialog', { name: 'Edit Outline' });
+    act(() => {
+      level(1)[0]!.focus();
+      vv.height = 380;
+      vv.offsetTop = 90;
+      vv.dispatchEvent(new Event('resize'));
+    });
+    const layer = panel.parentElement!;
+    expect(layer.style.top).toBe('90px');
+    expect(layer.style.height).toBe('380px');
+    // Its own 90vh cap gives way to the band, and the panel scrolls inside it.
+    expect(panel.style.maxHeight).toBe('calc(100% - 2rem)');
+    expect(panel.style.overflowY).toBe('auto');
   });
 });

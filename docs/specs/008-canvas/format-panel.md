@@ -18,7 +18,7 @@ A short list of what-to-copy toggles turns the painter from one blunt action int
   - **Fill** — the fill colour, a table header's or lane gutter's fill, its theme-preset binding ([Style presets](../010-palette/style-presets.md)), and the fill's theme lock.
   - **Border** — stroke colour, width, pattern, corner radius; on an arrow, the line's look including arrowheads (and their colour), path style, and route-behind.
   - **Text** — colour, size, weight, italic / underline / strikethrough, font, alignment, a table header's text colour, and an arrow label's backing plate.
-  - **Effects** — shadow ([Element shadows](element-shadows.md)), opacity, and the looping / icon / flow animations.
+  - **Effects** — shadow ([Element shadows](element-shadows.md)), finish ([Finish](finish.md)), opacity, and the looping / icon / flow animations.
   - **Size** — width, height, aspect lock, padding, icon size.
 
   Turning them all off leaves nothing to paint, so the panel says so and the brush goes inert rather than silently doing nothing on every tap.

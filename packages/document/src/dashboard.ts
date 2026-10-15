@@ -14,6 +14,8 @@ export const DASHBOARD_SLOTS_MAX = 4;
 // A row's width in spans, and the narrowest a slot may be.
 export const DASHBOARD_SPANS = 12;
 export const DASHBOARD_SPAN_MIN = 2;
+// The gap between a row's slots, and between rows, in px (DashboardRowView draws it; an image export lays out by it).
+export const DASHBOARD_GAP_PX = 12;
 export const DASHBOARD_ROW_H_MIN = 120;
 export const DASHBOARD_ROW_H_MAX = 1200;
 export const DASHBOARD_ROW_H_DEFAULT = 320;

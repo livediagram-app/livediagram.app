@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "105 templates (11 default + 94 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "125 templates (11 default + 114 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -73,10 +73,22 @@ describe('TEMPLATES catalogue', () => {
     'user-story-map',
     'affinity-map',
     'lean-coffee',
+    'brainstorm',
+    'workshop-board',
     'town-hall',
+    'pub-quiz',
+    'icebreaker-questions',
+    'virtual-office',
+    'coworking-space',
+    'team-pod',
+    'all-hands-hall',
+    'two-truths-and-a-lie',
+    'would-you-rather',
+    'people-bingo',
     'business-model-canvas',
     'empathy-map',
     'funnel',
+    'sankey',
     'okr-tree',
     'sitemap',
     'browser-wireframe',
@@ -101,6 +113,10 @@ describe('TEMPLATES catalogue', () => {
     'whiteboard',
     'article',
     'blank-illustration',
+    'blank-slide-deck',
+    'blank-article',
+    'blank-infographic',
+    'blank-logo',
     'sketchnote',
     'rich-picture',
     'comic-strip',
@@ -113,6 +129,10 @@ describe('TEMPLATES catalogue', () => {
     'how-it-works',
     'versus',
     'social-carousel',
+    'launch-keynote',
+    'quarterly-review',
+    'team-welcome',
+    'workshop-kickoff',
     'paper-prototype',
     'journey-doodle',
     'pre-mortem',
@@ -144,21 +164,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "105 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "125 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 105 templates (11 default + 94 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(105);
+  it('lists exactly 125 templates (11 default + 114 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(125);
   });
 
-  it('splits cleanly into 11 default + 94 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 114 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(94);
+    expect(extras).toHaveLength(114);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -200,6 +220,11 @@ describe('TEMPLATES catalogue', () => {
         kind === 'whiteboard' ||
         kind === 'article' ||
         kind === 'blank-illustration' ||
+        // One empty page of a chosen kind.
+        kind === 'blank-slide-deck' ||
+        kind === 'blank-article' ||
+        kind === 'blank-infographic' ||
+        kind === 'blank-logo' ||
         // An empty Plan tab, which opens on Start Planning.
         kind === 'blank-plan' ||
         // An empty session tab, in Facilitate.
@@ -267,10 +292,9 @@ describe('templateCanvasOverrides', () => {
       backgroundOpacity: 0.4,
       layers: templateLayers('gantt'),
     });
-    expect(templateCanvasOverrides('mobile-wireframe')).toEqual({
+    expect(templateCanvasOverrides('sitemap')).toEqual({
       backgroundPattern: 'graph',
       backgroundOpacity: 0.4,
-      layers: templateLayers('mobile-wireframe'),
     });
   });
 
@@ -434,7 +458,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Tiers: title, caption, four lanes with their blurb and glyph, and the key
     // (label plus two line samples with their words). Components: 15 nodes
     // and the 14 edges between them.
-    'system-architecture': { names: ['Tiers', 'Components'], scaffold: 19, content: 29 },
+    'system-architecture': { names: ['Tiers', 'Components'], scaffold: 15, content: 29 }, // the key is one Diagram key (docs/specs/009-elements/diagram-key.md)
     // Frames: three phones, the how-to and the Notes heading.
     'mobile-wireframe': { names: ['Frames', 'UI'], scaffold: 5, content: 75 },
     // The laptop is lid, display, base and hinge notch.
@@ -491,6 +515,14 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // agenda, timer + vote, 32 zone notes (8 per zone), 3 shout-outs,
     // checklist, progress bar, clap sticker.
     sailboat: { names: ['Board', 'Stickies'], scaffold: 61, content: 43 },
+    // Board: the subtitle, the question's paper and heading, the rail note, 4 column panels with their
+    // header, glyph and hint. Stickies: the title, the question, the timer and vote, and 16 ideas.
+    brainstorm: { names: ['Board', 'Stickies'], scaffold: 20, content: 20 },
+    // Board: the subtitle, the icebreaker's paper and heading, 3 column panels with their header, glyph
+    // and hint, the Out of scope and Parking lot headings and the note under the agenda. Stickies: the
+    // title, the mood check, the icebreaker and its timer, the goals, 2 out-of-scope notes, the agenda,
+    // the vote, 4 rules and a parked note.
+    'workshop-board': { names: ['Board', 'Stickies'], scaffold: 18, content: 14 },
     // Report: caption, 4 section headings, 5 phase headers, the summary card,
     // the Blameless callout and 3 findings columns. Findings: title, 3 chips,
     // summary, stat row, 10 timeline cards, the impact spans, 5 whys, the
@@ -745,22 +777,22 @@ describe('wireframe templates', () => {
     expect(tab.elements.filter((el) => el.type === 'arrow')).toHaveLength(0);
   });
 
-  it('flywheel drops a hub plus four stages with a clockwise arrow loop', () => {
+  it('flywheel is one Cycle of four stages round Momentum', () => {
     const tab = buildTemplatedTab('flywheel', 'brand', 'tab-1', 'fly');
-    const circles = tab.elements.filter((el) => el.type === 'shape' && el.shape === 'circle');
-    // One hub + four stage circles.
-    expect(circles).toHaveLength(5);
-    const labels = circles
-      .map((c) => (c as { label?: string }).label)
-      .filter((l): l is string => Boolean(l));
-    expect(labels).toContain('Momentum');
-    expect(labels).toContain('More subscribers');
-    expect(labels).toContain('More weekly orders');
-    expect(labels).toContain('Better farm deals');
-    expect(labels).toContain('Lower box prices');
-    // Four arrows complete the clockwise loop.
-    const arrows = tab.elements.filter((el) => el.type === 'arrow');
-    expect(arrows).toHaveLength(4);
+    const cycles = tab.elements.filter(
+      (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> =>
+        el.type === 'shape' && el.shape === 'cycle',
+    );
+    expect(cycles).toHaveLength(1);
+    expect(cycles[0]!.label).toBe('Momentum');
+    expect(cycles[0]!.conceptRows?.map((r) => r.label)).toEqual([
+      'More subscribers',
+      'More weekly orders',
+      'Better farm deals',
+      'Lower box prices',
+    ]);
+    // The cycle draws its own clockwise arcs; no loose arrows.
+    expect(tab.elements.filter((el) => el.type === 'arrow')).toHaveLength(0);
   });
 });
 
@@ -883,21 +915,21 @@ describe('planning + strategy templates', () => {
     for (const h of headers) expect(personaName.y + personaName.height).toBeLessThan(h.y);
   });
 
-  it('funnel drops four narrowing flipped-trapezoid tiers with a count rail', () => {
+  it('funnel is one Funnel element with a count rail', () => {
     const tab = buildTemplatedTab('funnel', 'brand', 'tab-1', 'funnel');
     const labels = labelsOf('funnel');
-    for (const stage of ['Awareness', 'Interest', 'Decision', 'Action']) {
-      expect(labels).toContain(stage);
-    }
-    const tiers = tab.elements.filter(
+    const funnels = tab.elements.filter(
       (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> =>
-        el.type === 'shape' && el.shape === 'trapezoid',
+        el.type === 'shape' && el.shape === 'pyramid',
     );
-    expect(tiers).toHaveLength(4);
-    // Every tier is flipped wide-side-up and strictly narrower than the last.
-    expect(tiers.every((t) => t.rotation === 180)).toBe(true);
-    for (let i = 1; i < tiers.length; i++)
-      expect(tiers[i]!.width).toBeLessThan(tiers[i - 1]!.width);
+    expect(funnels).toHaveLength(1);
+    expect(funnels[0]!.pyramidVariant).toBe('funnel');
+    expect(funnels[0]!.conceptRows?.map((r) => r.label)).toEqual([
+      'Awareness',
+      'Interest',
+      'Decision',
+      'Action',
+    ]);
     expect(labels).toContain('12,400');
     expect(labels.filter((l) => l.includes('move on'))).toHaveLength(3);
   });

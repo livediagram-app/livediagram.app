@@ -124,3 +124,40 @@ describe('dropping a library shape on the canvas', () => {
     expect(h.onDropLibraryShape).not.toHaveBeenCalled();
   });
 });
+
+describe('a drag a panel inside the canvas already took', () => {
+  // docs/specs/013-workspace/folders.md "Drag-and-drop": a document dragged onto a folder in the Explorer panel,
+  // which floats over the canvas. The folder accepts it first; the canvas must not cancel that.
+  function panelDrag() {
+    const panel = document.createElement('div');
+    panel.setAttribute('data-floating-panel', '');
+    const target = document.createElement('div');
+    panel.appendChild(target);
+    return {
+      target,
+      clientX: 0,
+      clientY: 0,
+      defaultPrevented: true,
+      preventDefault: vi.fn(),
+      dataTransfer: {
+        files: [],
+        types: ['application/x-livediagram-id'],
+        getData: () => 'doc-1',
+        dropEffect: 'move',
+      },
+    } as unknown as ReactDragEvent<HTMLElement>;
+  }
+
+  it('keeps the move the folder chose rather than showing no-drop', () => {
+    const h = setup();
+    const event = panelDrag();
+    h.onDragOver(event);
+    expect(event.dataTransfer.dropEffect).toBe('move');
+  });
+
+  it('adds nothing to the canvas on the drop', () => {
+    const h = setup();
+    h.onDrop(panelDrag());
+    expect(h.onDropFile).not.toHaveBeenCalled();
+  });
+});

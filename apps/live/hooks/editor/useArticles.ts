@@ -97,7 +97,8 @@ const PLACE_INTENT = {
   chart: { type: 'shape', kind: 'bar-chart' },
   pie: { type: 'shape', kind: 'pie-chart' },
   line: { type: 'shape', kind: 'line-chart' },
-  callout: { type: 'shape', kind: 'callout' },
+  // The Callout is a Card preset (docs/specs/009-elements/card.md).
+  callout: { type: 'shape', kind: 'card', variant: 'callout' },
   sticky: { type: 'sticky' },
 } as const;
 

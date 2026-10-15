@@ -4,14 +4,25 @@
 // not touched, so it is never normalised (E1, I2).
 
 import type { EditRejection } from '@livediagram/api-schema';
-import type { Element } from '@livediagram/document';
+import type { ArrowElement, Element } from '@livediagram/document';
 import { sameValue } from '../equality';
 import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';
 import { layerLockOf } from '../locks';
 import { resolveSome } from '../selectors';
-import { type EditState, refsOf, refuseLocked, touch, writeFields } from '../state';
+import {
+  currentElements,
+  type EditState,
+  refsOf,
+  refuseLocked,
+  touch,
+  writeFields,
+} from '../state';
 import type { SetOperation } from '../types';
+import { ROUTE_KEYS, rerouted } from './connect';
+
+// The fields that are an arrow's route, which new ends drop.
+const ROUTE_KEY_SET: ReadonlySet<string> = new Set(ROUTE_KEYS);
 
 // Fields whose change can leave a shape's label outgrowing its box.
 const FIT_KEYS: ReadonlySet<string> = new Set(['label', 'shape', 'text', 'textSize']);
@@ -43,7 +54,13 @@ function setOne(
   const fitted = Object.keys(fields).some((key) => FIT_KEYS.has(key))
     ? fitToLabel(el, written.next)
     : { el: written.next, fit: {} };
-  const next = fitted.el;
+  // An arrow given new ends drops the route it had between the old ones (EO31), as connect and rewire do: kept, its
+  // bends were drawn from the new anchor through boxes and along their edges. A route the same set writes stays.
+  const reEnded =
+    fitted.el.type === 'arrow' &&
+    written.written.some((key) => key === 'from' || key === 'to') &&
+    !written.written.some((key) => ROUTE_KEY_SET.has(key));
+  const next = reEnded ? rerouted(fitted.el as ArrowElement, currentElements(state)) : fitted.el;
   if (sameValue(next, el)) return null;
   const layerLock = layerLockOf(state.tab.layers, next.layerId);
   if (layerLock) return refuseLocked(state, 'set', operation, next, layerLock);

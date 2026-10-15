@@ -40,6 +40,7 @@ import type {
   IconAnimation,
   IconPosition,
   ElementShadow,
+  Finish,
   IconSize,
   IconWeight,
   Padding,
@@ -49,6 +50,7 @@ import type {
   TextAlignX,
   TextAlignY,
   TextSize,
+  TextSizePreset,
 } from '@livediagram/document';
 import {
   applyArrowPresetToEl,
@@ -62,6 +64,7 @@ import {
   applyFillColorToEl,
   applyFontToEl,
   applyShadowToEl,
+  applyFinishToEl,
   applyIconSizeToEl,
   applyIconWeightToEl,
   applyInlineIconToEl,
@@ -211,6 +214,9 @@ export function useStylePreview(deps: {
 
   return {
     clearPreview,
+    // The preview / commit pair itself, for controls that map a field of their own (lib/element-style-ops.ts).
+    previewElementStyle: previewStyle,
+    commitElementStyle: commitStyle,
     // Shape colour preset
     previewShapeColorPreset: (p: ShapeColorPreset) =>
       previewStyle((el) => applyColorPresetToEl(el, p)),
@@ -221,9 +227,9 @@ export function useStylePreview(deps: {
     commitTablePreset: (p: TablePreset) =>
       commitStyle((el) => applyTablePresetToEl(el, p), 'TablePreset'),
     // Chart palette (docs/specs/009-elements/pie-chart.md): the chart's flavour of preset.
-    previewChartPalette: (id: ChartPaletteId) =>
+    previewChartPalette: (id: ChartPaletteId | null) =>
       previewStyle((el) => applyChartPaletteToEl(el, id)),
-    commitChartPalette: (id: ChartPaletteId) =>
+    commitChartPalette: (id: ChartPaletteId | null) =>
       commitStyle((el) => applyChartPaletteToEl(el, id), 'ChartPalette'),
     // Code-block scheme (docs/specs/009-elements/code-block.md): the code block's flavour of preset.
     previewCodeTheme: (id: CodeThemeId) => previewStyle((el) => applyCodeThemeToEl(el, id)),
@@ -268,6 +274,9 @@ export function useStylePreview(deps: {
     previewShadow: (v: ElementShadow | null) => previewStyle((el) => applyShadowToEl(el, v)),
     commitShadow: (v: ElementShadow | null) =>
       commitStyle((el) => applyShadowToEl(el, v), 'Shadow'),
+    // Finish tiles (docs/specs/008-canvas/finish.md); `null` is Follow Tab.
+    previewFinish: (v: Finish | null) => previewStyle((el) => applyFinishToEl(el, v)),
+    commitFinish: (v: Finish | null) => commitStyle((el) => applyFinishToEl(el, v), 'Finish'),
     // Rotation angle tiles (fixed 45° steps).
     previewRotation: (deg: number) => previewStyle((el) => applyRotationToEl(el, deg)),
     commitRotation: (deg: number) => commitStyle((el) => applyRotationToEl(el, deg), 'Rotation'),
@@ -288,8 +297,8 @@ export function useStylePreview(deps: {
     // Status markers (docs/specs/009-elements/shape-markers.md) + their size row.
     previewMarker: (v: ShapeMarker | null) => previewStyle((el) => applyMarkerToEl(el, v)),
     commitMarker: (v: ShapeMarker | null) => commitStyle((el) => applyMarkerToEl(el, v), 'Marker'),
-    previewMarkerSize: (v: TextSize) => previewStyle((el) => applyMarkerSizeToEl(el, v)),
-    commitMarkerSize: (v: TextSize) =>
+    previewMarkerSize: (v: TextSizePreset) => previewStyle((el) => applyMarkerSizeToEl(el, v)),
+    commitMarkerSize: (v: TextSizePreset) =>
       commitStyle((el) => applyMarkerSizeToEl(el, v), 'MarkerSize'),
     // Text alignment 3×3 grid + text size tiles.
     previewTextAlign: (x: TextAlignX, y: TextAlignY) =>

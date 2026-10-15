@@ -337,7 +337,64 @@ Measured 2026-10-06 on the reference board, local, calibrated 3.1-3.9x, interlea
   an accessibility walk over the board (`getTextAlternativeInternal` in a profile), and the keys it
   pressed ran the editor's handlers. It now reads the number first.
 
+## A drag frame: script, then raster
+
+Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main at `d5a083bc3`.
+
+- **Script first.** Every pointer move re-rendered the editor root, `Canvas` and the element layer,
+  which walked all 1,000 element views (memo comparisons and React's context checks): 50-90 ms
+  frames. Two causes: the drag preview was read by the layer and by `Canvas` (for the selection),
+  and the alignment guides, which change on most frames on a dense board, were the editor's state.
+  Now each element reads its own preview entry, the selection chrome reads the preview itself, and
+  the guides live in a store only `CanvasChrome` reads: no frame mid-drag over 50 ms of script, the
+  median frame 34 to 17 ms. A press or release that renders the editor no longer walks the element
+  slots either (`CanvasElementList` is memoised): select 91-112 to 52-67 ms.
+- **Then raster.** With the script gone, the drag row's longest task is still about 250 ms: a
+  `Commit` in which the main thread waits (`LayerTree::WaitForCommitCompletion`) while raster
+  workers play back the board's display list, 13-35 tiles a frame at 20-40 ms a tile at fit (each
+  tile holds hundreds of elements). The local build of main read 228-253 ms for the same row, so it
+  was there before, hidden behind the script. The nightly run on the hosted runner reads the same
+  `Commit` at about 650 ms. The browsers measured raster in software (headless, no GPU), which is
+  where the main thread waits on raster at commit.
+- **Tried and set aside: lifting the dragged element onto its own layer** (`will-change: transform`
+  while previewed). Promoting every movable element at once (an injected style over `.cursor-move`)
+  cut raster from about 5.8 s to 0.9 s over the gesture and the longest task to about 78 ms, but
+  that is a layer per element. Promoting only the dragged element doubled raster (to about 10.3 s)
+  and turned 13 long tasks into 59: everything painted above it that overlaps it has to be
+  composited too, and the overlaps change as it moves. Lifting would need the dragged element painted
+  above the board while it moves, which changes what a drag looks like; that is a spec question.
+- **Not the cause**: the alignment-guide overlay (a fixed full-screen SVG) on its own layer changed
+  nothing, and nothing resizes during a drag. The 300 full-canvas arrow `<svg>` roots are relaid out
+  ("Size changed") only at the press and the release, when the layer they share is relaid out.
+
+## A stroke's release, and containment
+
+Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main at `155fdefa9`.
+
+- **Containment does not help here.** `contain: layout` on every element wrapper (an injected style)
+  left a diagram stroke's release where it was (136-176 ms against 181 ms): layout was only about
+  8 ms of it.
+- **The cost was a restyle of the whole board**: 41-50 ms of style recalculation over 2,760 nodes in
+  the release. When a diagram stroke lands the tool goes back to Select, the canvas world's cursor
+  changes, and a cursor is inherited, so every element beneath it was restyled. Pinning the world's
+  cursor (an injected `!important` style) brought it to 186 nodes and 7 ms. The same change happens
+  on every tool switch and at the start and end of a pan.
+- **What shipped**: the elements sit in a `display: contents` plane with `cursor: auto`. Measured
+  interleaved (both builds served at once, runs alternating), a diagram stroke's release went from
+  142-151 ms to 111-120 ms over four pairs, its restyle from 2,760 nodes and 41-43 ms to 246 nodes
+  and 10-11 ms.
+- **Interleave A/B runs on a shared machine.** Measured one build after the other, whiteboard zoom at
+  fit read about 5 ms worse with the plane; another session's test suite was running alongside
+  (load average 17-26). Interleaved over five pairs the two builds could not be told apart, each
+  swinging with the load. Serve the second build with `E2E_LIVE_OUT` on other ports, from a folder
+  `next build` does not wipe (it empties `.next`). The
+  cursor the browser shows over bare canvas, a shape and an arrow, under Select, a draw tool, Hand
+  and a whiteboard pen, read identically on both builds, and isometric view draws the same.
+- **The isometric rule** `:root:has([data-iso]) [data-floating-panel]` makes the browser re-check the
+  root on each insertion and restyle the floating panels (ten times in one release); rewriting it
+  without `:has` saved only 3-4 ms, so it stays.
+
 ## Not tried
 
-- `contain` on element wrappers, a raster snapshot of still elements during a gesture, and fewer
-  SVG roots. Each is weighed in the spec.
+- A raster snapshot of still elements during a gesture, and fewer SVG roots. Each is weighed in the spec.
+  (`contain` on element wrappers was tried: see above.)

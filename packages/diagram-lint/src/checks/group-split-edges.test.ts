@@ -13,6 +13,7 @@ describe('group-split-edges', () => {
         arrow('1', 'a', 'x'),
         arrow('2', 'b', 'y'),
         arrow('3', 'a', 'z'),
+        arrow('4', 'a', 'b'),
       ),
     );
     expect(of(report, 'group-split-edges')).toEqual([
@@ -20,7 +21,7 @@ describe('group-split-edges', () => {
         code: 'group-split-edges',
         severity: 'info',
         refs: ['core'],
-        message: 'core: 3 of 3 arrows cross its border',
+        message: 'core: 3 of 4 arrows cross its border',
         fix: 'unwrap core',
       },
     ]);
@@ -33,12 +34,49 @@ describe('group-split-edges', () => {
             arrow('1', 'a', 'x'),
             arrow('2', 'b', 'y'),
             arrow('3', 'a', 'z'),
+            arrow('4', 'a', 'b'),
           ),
           { source: 'graph' },
         ),
         'group-split-edges',
       )[0]!.fix,
     ).toBe('group by ownership, or drop the groups');
+  });
+
+  it('stays quiet on a stage the flow passes through: in from before it, out to after it', () => {
+    // A pipeline stage: fed from above, drained below, one step inside.
+    const stage = (q: [number, number]) =>
+      lint(
+        tabOf(
+          ...core(),
+          box('p', 40, -200),
+          box('q', q[0], q[1]),
+          arrow('1', 'p', 'a', ['s', 'n']),
+          arrow('2', 'p', 'b', ['s', 'n']),
+          arrow('3', 'a', 'b', ['s', 'n']),
+          arrow('4', 'b', 'q', ['s', 'n']),
+        ),
+      );
+    expect(of(stage([40, 600]), 'group-split-edges')).toEqual([]);
+    // Drained to the side instead: split, not passed through.
+    expect(of(stage([400, 300]), 'group-split-edges')).toHaveLength(1);
+    // An arrow from a member to a loose point has no box beyond the frame: not passed through either.
+    const loose = lint(
+      tabOf(
+        ...core(),
+        box('p', 40, -200),
+        arrow('1', 'p', 'a', ['s', 'n']),
+        arrow('2', 'p', 'b', ['s', 'n']),
+        arrow('3', 'a', 'b', ['s', 'n']),
+        {
+          id: '4',
+          type: 'arrow',
+          from: { kind: 'pinned', elementId: 'b', anchor: 's' },
+          to: { kind: 'free', x: 100, y: 700 },
+        } as never,
+      ),
+    );
+    expect(of(loose, 'group-split-edges')).toHaveLength(1);
   });
 
   it('stays quiet under three arrows, when most stay inside, and for a lane', () => {
@@ -80,6 +118,7 @@ describe('group-split-edges', () => {
       frame('outer', 0, 0, 300, 400),
       frame('inner', 20, 20, 200, 200),
       box('a', 40, 40),
+      box('c', 40, 120),
     ];
     const outside = [box('x', 500, 40), box('y', 500, 300), box('z', 500, 500)];
     const report = lint(
@@ -89,8 +128,23 @@ describe('group-split-edges', () => {
         arrow('1', 'a', 'x'),
         arrow('2', 'a', 'y'),
         arrow('3', 'a', 'z'),
+        arrow('4', 'a', 'c'),
       ),
     );
     expect(of(report, 'group-split-edges').map((f) => f.refs[0])).toEqual(['outer', 'inner']);
+  });
+
+  it('stays quiet on a role group: none of its arrows runs inside it, so the split is its design', () => {
+    const outside = [box('x', 400, 40), box('y', 400, 300), box('z', 400, 500)];
+    const report = lint(
+      tabOf(
+        ...core(),
+        ...outside,
+        arrow('1', 'a', 'x'),
+        arrow('2', 'b', 'y'),
+        arrow('3', 'a', 'z'),
+      ),
+    );
+    expect(of(report, 'group-split-edges')).toEqual([]);
   });
 });

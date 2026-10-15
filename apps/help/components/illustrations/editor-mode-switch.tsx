@@ -1,79 +1,88 @@
 // Editor-mode illustrations for the Canvas articles on Draw mode and Illustrate Mode
-// (docs/specs/018-help/help-app.md): the mode switch beside the menu button with its menu open
-// (chrome/editor-mode/ModeMenuChip.tsx), and Draw mode's dock across the top of the canvas
-// (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout:
-// the five modes, the ⇧D hint on the row the key leads to, the dock's tools and their keys.
+// (docs/specs/018-help/help-app.md): the mode switch beside the menu button with its menu open, the
+// list of modes and the preview of one (chrome/editor-mode/ModeMenu.tsx), and Draw mode's dock
+// across the top of the canvas (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout: the
+// five modes, a mode's description and tools, ⇧D in the preview, the dock's tools and their keys.
 
 import type { ReactNode } from 'react';
 import { Scene, Label } from './primitives';
 import { MenuCard, Strip } from './toolbar-layout';
 import { ModeMark, type Mode } from './mode-mark';
 
-// --- Mode glyphs -------------------------------------------------------------------------------
+// The modes in the switch's order (the catalogue's), each with its tint in the menu.
+const MODES: { mode: Mode; tile: string; mark: string }[] = [
+  { mode: 'Diagram', tile: 'fill-sky-100', mark: 'stroke-sky-700' },
+  { mode: 'Draw', tile: 'fill-orange-100', mark: 'stroke-orange-700' },
+  { mode: 'Facilitate', tile: 'fill-violet-100', mark: 'stroke-violet-700' },
+  { mode: 'Illustrate', tile: 'fill-pink-100', mark: 'stroke-pink-700' },
+  { mode: 'Plan', tile: 'fill-emerald-100', mark: 'stroke-emerald-700' },
+];
 
-/** A small glyph per editor mode, centred on (0, 0): the app's own mark (ModeMark). */
-function ModeGlyph({ mode, tone = 'slate' }: { mode: Mode; tone?: 'slate' | 'brand' }) {
-  return (
-    <ModeMark
-      mode={mode}
-      className={tone === 'brand' ? 'stroke-brand-600' : 'stroke-slate-500'}
-      scale={0.55}
-    />
-  );
-}
-
-const MODES: Mode[] = ['Diagram', 'Draw', 'Illustrate', 'Plan', 'Facilitate'];
-
-/** The mode switch beside the menu button in the top-left card, its menu open: the five modes,
- *  the current one checked, and ⇧D on the row the key leads to. */
+/** The mode switch beside the menu button in the top-left card, its menu open: the list of the
+ *  five modes (the current one checked, Plan marked as a new tab) and the preview of the one under
+ *  the pointer, Draw: its picture, name with ⇧D, description and tools. */
 export function ModeSwitchScene() {
   const mx = 40;
-  const my = 64;
-  const rowH = 26;
+  const my = 54;
+  const listW = 118;
+  const pw = 210;
+  const rowH = 28;
+  const menuH = MODES.length * rowH + 12;
+  const shown = 1;
+  const px = mx + listW;
   return (
-    <Scene w={420} h={200}>
+    <Scene w={420} h={my + menuH + 14}>
       <MenuCard x={12} y={14} />
       <Strip x={82} y={14} />
       {/* The menu, hanging below the switch */}
       <rect
         x={mx}
-        y={my - 12}
-        width={144}
-        height={MODES.length * rowH + 8}
+        y={my}
+        width={listW + pw}
+        height={menuH}
         rx={9}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      {MODES.map((m, i) => {
-        const ry = my - 8 + i * rowH;
+      <line
+        x1={px}
+        y1={my}
+        x2={px}
+        y2={my + menuH}
+        className="stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      {MODES.map(({ mode, tile, mark }, i) => {
+        const ry = my + 6 + i * rowH;
         const on = i === 0;
         return (
-          <g key={m}>
-            {on && (
+          <g key={mode}>
+            {i === shown && (
               <rect
                 x={mx + 4}
                 y={ry}
-                width={136}
+                width={listW - 8}
                 height={rowH - 2}
                 rx={6}
-                className="fill-brand-100"
+                className="fill-slate-100"
               />
             )}
-            <g transform={`translate(${mx + 18} ${ry + rowH / 2 - 1})`}>
-              <ModeGlyph mode={m} tone={on ? 'brand' : 'slate'} />
+            <rect x={mx + 9} y={ry + 4} width={18} height={18} rx={5} className={tile} />
+            <g transform={`translate(${mx + 18} ${ry + 13})`}>
+              <ModeMark mode={mode} className={mark} scale={0.5} />
             </g>
             <Label
-              x={mx + 32}
-              y={ry + rowH / 2}
+              x={mx + 34}
+              y={ry + 13}
               size={11}
-              weight={600}
-              tone={on ? 'accent' : 'body'}
+              weight={on ? 600 : 500}
+              tone={on ? 'strong' : 'body'}
             >
-              {m}
+              {mode}
             </Label>
             {on && (
               <path
-                d={`M${mx + 118} ${ry + 12} l3.5 3.5 l6 -7`}
+                d={`M${mx + listW - 22} ${ry + 13} l3.5 3.5 l6 -7`}
                 fill="none"
                 className="stroke-brand-600"
                 strokeWidth={1.6}
@@ -81,47 +90,72 @@ export function ModeSwitchScene() {
                 strokeLinejoin="round"
               />
             )}
-            {i === 1 && (
-              <g>
-                <rect
-                  x={mx + 110}
-                  y={ry + 5}
-                  width={24}
-                  height={15}
-                  rx={3}
-                  className="fill-slate-50 stroke-slate-300"
-                  strokeWidth={1}
-                />
-                <Label x={mx + 122} y={ry + 13} anchor="middle" size={10} weight={600} tone="body">
-                  ⇧D
-                </Label>
-              </g>
+            {mode === 'Plan' && (
+              // Plan opens in a new tab from a tab with something on it: a box with an arrow leaving it.
+              <path
+                d={`M${mx + listW - 18} ${ry + 9} h4 v4 M${mx + listW - 14} ${ry + 9} l-5 5 M${mx + listW - 16} ${ry + 14} v3 h-7 v-7 h3`}
+                fill="none"
+                className="stroke-slate-400"
+                strokeWidth={1.3}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             )}
           </g>
         );
       })}
-      {/* The canvas beside it */}
+      {/* The preview of Draw */}
       <rect
-        x={264}
-        y={80}
-        width={70}
-        height={40}
+        x={px + 10}
+        y={my + 10}
+        width={pw - 20}
+        height={50}
         rx={7}
-        className="fill-white stroke-brand-300"
-        strokeWidth={2}
+        className="fill-orange-100"
       />
-      <path d="M334 100 h34" className="stroke-brand-400" strokeWidth={2.2} />
       <path
-        d="M270 160 c14 -20 26 12 40 -6 s20 -14 30 0"
+        d={`M${px + 30} ${my + 46} c10 -22 18 -26 24 -14 s10 14 18 -2 s16 -18 22 -4 s12 16 20 6 s10 -12 16 -10`}
         fill="none"
-        className="stroke-slate-600"
-        strokeWidth={2.4}
+        className="stroke-orange-700"
+        strokeWidth={2}
         strokeLinecap="round"
       />
+      <Label x={px + 10} y={my + 76} size={12} weight={600} tone="strong">
+        Draw
+      </Label>
+      <rect
+        x={px + pw - 34}
+        y={my + 69}
+        width={24}
+        height={15}
+        rx={3}
+        className="fill-slate-50 stroke-slate-300"
+        strokeWidth={1}
+      />
+      <Label x={px + pw - 22} y={my + 77} anchor="middle" size={10} weight={600} tone="body">
+        ⇧D
+      </Label>
+      <Label x={px + 10} y={my + 94} size={9.5} tone="body">
+        Sketch freehand with pens, tidied into
+      </Label>
+      <Label x={px + 10} y={my + 106} size={9.5} tone="body">
+        shapes as you go.
+      </Label>
+      {['Pens', 'Highlighter', 'Eraser'].map((tool, i) => {
+        const tx = px + 10 + [0, 34, 94][i]!;
+        const tw = [30, 56, 40][i]!;
+        return (
+          <g key={tool}>
+            <rect x={tx} y={my + 115} width={tw} height={14} rx={7} className="fill-slate-100" />
+            <Label x={tx + tw / 2} y={my + 122} anchor="middle" size={8.5} weight={500} tone="body">
+              {tool}
+            </Label>
+          </g>
+        );
+      })}
     </Scene>
   );
 }
-
 // --- Draw mode's dock --------------------------------------------------------------------------
 
 /** One dock button: a glyph, with its key in the corner. */

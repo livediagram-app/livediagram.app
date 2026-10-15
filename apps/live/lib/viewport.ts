@@ -67,7 +67,12 @@ export function computeFitBelow(
   maxZoom: number = FIT_TO_SCREEN_MAX_AT_FIT,
 ): { zoom: number; offset: Offset } {
   const inset = Math.max(0, Math.min(insetTop, rect.height / 2));
-  const { zoom } = computeFitToScreen({ ...rect, height: rect.height - inset }, bbox, maxZoom);
+  // Fields read one by one, never spread: a DOMRect's are prototype getters a spread drops.
+  const { zoom } = computeFitToScreen(
+    { width: rect.width, height: rect.height - inset },
+    bbox,
+    maxZoom,
+  );
   return {
     zoom,
     offset: {
@@ -75,6 +80,20 @@ export function computeFitBelow(
       y: rect.height / 2 - (bbox.y + bbox.height / 2) + inset / (2 * zoom),
     },
   };
+}
+
+// How much of the canvas's top a floating toolbar covers (the Palette strip laid over it), in screen px, plus a
+// small gap: what a fit leaves clear so nothing lands under the strip. 0 when there is no strip or it sits outside
+// the canvas.
+export const FIT_TOOLBAR_GAP = 8;
+export function topChromeInset(
+  canvas: { top: number; bottom: number },
+  strip: { top: number; bottom: number } | null,
+): number {
+  if (!strip || strip.bottom <= canvas.top || strip.top >= canvas.bottom) return 0;
+  // A whole, even number of px: the fit centres the content in the band below, shifting it by half the inset, so
+  // an odd or fractional inset would land every element on a half pixel and blur its edges.
+  return Math.ceil((Math.max(0, strip.bottom - canvas.top) + FIT_TOOLBAR_GAP) / 2) * 2;
 }
 
 // Canvas-coord position of the viewport centre. With transform
@@ -88,6 +107,16 @@ export function computeViewportCenter(rect: Rect, offset: Offset): { x: number; 
     x: rect.width / 2 - offset.x,
     y: rect.height / 2 - offset.y,
   };
+}
+
+// The canvas-coord rectangle the viewport shows at the current pan / zoom: the
+// viewport centre, spread by the screen size divided by the zoom. A paste whose
+// usual spot is outside it lands in the middle of it instead.
+export function computeViewportCanvasRect(rect: Rect, offset: Offset, zoom: number): BBox {
+  const centre = computeViewportCenter(rect, offset);
+  const width = rect.width / zoom;
+  const height = rect.height / zoom;
+  return { x: centre.x - width / 2, y: centre.y - height / 2, width, height };
 }
 
 // True when the elements' bounding box is entirely outside the viewport at

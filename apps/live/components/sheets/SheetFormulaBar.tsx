@@ -14,7 +14,7 @@ import {
   type GridRange,
   type SheetLayout,
 } from '@livediagram/sheets';
-import { useSheetController } from './sheet-controller';
+import { SHAPE_REFUSED, useSheetController } from './sheet-controller';
 import { ColouredDraft, FunctionAssist } from './SheetCellEditor';
 import { inputTextAt, type SheetActions } from './useSheetActions';
 import type { FormulaInput } from './useFormulaInput';
@@ -47,7 +47,9 @@ export function enterNameBox(
   const named = findRangeName(layout, text);
   const at = named && posRangeOf(layout, named);
   if (at) return actions.goTo(at);
-  if (!c.canEdit) return;
+  // Naming is a change to the sheet's layout: an Editor's (docs/specs/029-sheets/sheet.md "Who may do what"),
+  // said rather than swallowed, as any other shape change is.
+  if (!c.canShape) return c.toast(SHAPE_REFUSED);
   const problem = rangeNameProblem(text, layout);
   if (problem) return c.toast(problem);
   const sel = c.selection.ranges[c.selection.ranges.length - 1]!;

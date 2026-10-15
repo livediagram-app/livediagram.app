@@ -21,11 +21,15 @@ export type PathEditKind = 'edit' | 'join';
 export function usePathCommits({
   editsBlocked,
   commit,
+  elements,
   styleNewElement,
   setSelectedId,
 }: {
   editsBlocked: boolean;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // The active tab's elements as they are now: whether a path is continued is read here, not from inside the
+  // commit's updater, which React may run after the commit returns.
+  elements: () => Element[];
   // The board's style memory: a new path wears the style chosen for the next path.
   styleNewElement: <T extends Element>(el: T) => T;
   // A landed path is selected, so it can be edited at once (Edit points, Enter).
@@ -42,17 +46,17 @@ export function usePathCommits({
     }
     // The Path tool is a Draw mode tool: its path is written in Ink, unfilled (boardShape).
     const fresh = styleNewElement(boardShape(createPath(anchors, closed)));
-    let continued = false;
+    const continued =
+      !!continuing && elements().some((el) => el.id === continuing.id && el.type === 'path');
     commit((els) => {
       const original = continuing
         ? els.find((el) => el.id === continuing.id && el.type === 'path')
         : undefined;
       // A path deleted by a peer while it was being continued lands as a new one.
       if (!original || original.type !== 'path') return [...els, fresh];
-      continued = true;
       return els.map((el) => (el === original ? continuedPath(original, anchors, closed) : el));
     });
-    setSelectedId(continued && continuing ? continuing.id : fresh.id);
+    setSelectedId(continued ? continuing.id : fresh.id);
     track('Element', 'Added', 'Path');
     debugLog(
       `[path] committed nodes=${anchors.length} closed=${closed ? 'yes' : 'no'} continued=${continued ? 'yes' : 'no'}`,

@@ -18,7 +18,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // one-shot GET that merges the elements into local state. Failures fall
 // back to the placeholder so the editor doesn't lock up. The loaded-set
 // ref + its reactive mirror are seeded by hydration and passed in, as is
-// resetTabs (the history reset) and the remote-update guard ref.
+// applyLoaded (which puts content in place without touching undo) and the remote-update guard ref.
 //
 // Also returns `loadAllTabs`, the search panel's prefetch (docs/specs/008-canvas/canvas-and-palette.md
 // "Search panel"): element search walks local tab state, so unvisited
@@ -31,6 +31,12 @@ import { useLatest } from '@/hooks/ui/useLatest';
 function userHasEdited(t: Tab): boolean {
   return t.elements.length > 0;
 }
+
+// How a tab's fetch ended: its content landed (or the screen kept its own), it failed, or it was dropped because
+// the visit that started it moved on.
+type TabFetchEnd = 'loaded' | 'failed' | 'cancelled';
+// How many times loadAllTabs follows a tab's fetch from one cancelled run to the next before leaving it.
+const TAB_FETCH_FOLLOW_MAX = 3;
 
 export function usePerTabLoad(opts: {
   hydrated: boolean;
@@ -56,7 +62,12 @@ export function usePerTabLoad(opts: {
   // so it lands here too, or the next save would PUT and broadcast the whole
   // tab back as if we had just drawn it (docs/specs/012-collaboration/collab-race-hardening.md).
   lastSavedTabsRef: MutableRefObject<Tab[]>;
-  resetTabs: (updater: (prev: Tab[]) => Tab[]) => void;
+  // Puts fetched content in place in the present AND every undo / redo snapshot (the history's applyRemoteOp), so a
+  // tab loading for the first time (on opening it, or the search and Plan prefetch) never clears the undo history:
+  // a snapshot holding the tab's empty placeholder takes the loaded content too, so an undo can never put the
+  // placeholder back over it (and the autosave save it, empty, over the stored tab). `apply` returns its input
+  // when it changes nothing.
+  applyLoaded: (apply: (tabs: Tab[]) => Tab[]) => void;
   // Records what a tab put in place holds of the changesets (useChangesetSeen): every changeset
   // up to the revision it was read at. Stable.
   noteChangesetSeen: (tabId: string, rev: number) => void;
@@ -74,18 +85,18 @@ export function usePerTabLoad(opts: {
     setTabLoadErrors,
     retryNonce,
     lastSavedTabsRef,
-    resetTabs,
+    applyLoaded,
     noteChangesetSeen,
   } = opts;
 
-  // resetTabs is read through a ref, not listed as an effect dep. The load
+  // applyLoaded is read through a ref, not listed as an effect dep. The load
   // effect must re-run only for a genuine reason (the tab, the document, the
-  // identity, or the Retry nonce). When it listed resetTabs and the caller
+  // identity, or the Retry nonce). When it listed the history setter and the caller
   // passed a fresh function each render, every re-render (the 30s presence
   // tick among them) tore the effect down and refetched; on a tab whose load
   // had FAILED that meant a refetch, and an Error telemetry report, twice a
   // minute for as long as the tab stayed open (docs/specs/017-telemetry/telemetry.md).
-  const resetTabsRef = useLatest(resetTabs);
+  const applyLoadedRef = useLatest(applyLoaded);
   // Read by the search sweep when a fetch fails (see loadAllTabs).
   const activeIdRef = useLatest(activeId);
 
@@ -109,12 +120,17 @@ export function usePerTabLoad(opts: {
         );
         noteChangesetSeen(tab.id, rev);
       }
-      resetTabsRef.current((prev) =>
-        prev.map((t) => (t.id !== tab.id || userHasEdited(t) ? t : { ...tab, folder: t.folder })),
-      );
+      applyLoadedRef.current((prev) => {
+        const at = prev.findIndex((t) => t.id === tab.id);
+        const was = at < 0 ? undefined : prev[at]!;
+        if (!was || userHasEdited(was)) return prev;
+        const next = [...prev];
+        next[at] = { ...tab, folder: was.folder };
+        return next;
+      });
       return !onScreen || !userHasEdited(onScreen) || onScreen.elements.length > 0;
     },
-    [tabsRef, lastSavedTabsRef, resetTabsRef, noteChangesetSeen],
+    [tabsRef, lastSavedTabsRef, applyLoadedRef, noteChangesetSeen],
   );
 
   // The attempt that last failed, keyed on everything that makes a fetch
@@ -129,6 +145,18 @@ export function usePerTabLoad(opts: {
   // (X-Allow-Empty), so claiming a tab there before its GET answered let a commit that touched every tab (the kind
   // stamp in commitTabs) save the empty placeholder over the real row while the Plan sweep was in flight.
   const fetchingTabIdsRef = useRef<Set<string>>(new Set());
+  // How each fetch under way ends, by tab: so a caller asking for a tab another fetch is already loading waits for
+  // that one and hears how it went, rather than answering at once with neither the tab nor a failure (which left
+  // the Tab Window and its export asking again on a timer, docs/specs/009-elements/tab-window.md).
+  const inFlightRef = useRef<Map<string, Promise<TabFetchEnd>>>(new Map());
+  // Note a fetch under way and how it ends; forgotten once it has.
+  const noteInFlight = useCallback((targetId: string, run: Promise<TabFetchEnd>) => {
+    const inFlight = inFlightRef.current;
+    const settled = run.finally(() => {
+      if (inFlight.get(targetId) === settled) inFlight.delete(targetId);
+    });
+    inFlight.set(targetId, settled);
+  }, []);
 
   useEffect(() => {
     if (!hydrated || !documentId) return;
@@ -169,9 +197,9 @@ export function usePerTabLoad(opts: {
     // How long the switch took (docs/specs/017-telemetry/timing-telemetry.md): the fetch to the first
     // frame with the content in place. Only the loads that count Tab·Loaded; a failure records nothing.
     const timing = startEditorTiming('TabLoad');
-    apiLoadTabRevisioned(selfId, documentId, targetId, sessionShareCode)
-      .then((loaded) => {
-        if (cancelled) return;
+    const run = apiLoadTabRevisioned(selfId, documentId, targetId, sessionShareCode)
+      .then((loaded): TabFetchEnd => {
+        if (cancelled) return 'cancelled';
         if (!loaded) {
           // A null result is a 404 — the tab ROW is missing. We used to
           // treat that as "genuinely empty", mark the tab loaded, and drop
@@ -189,7 +217,7 @@ export function usePerTabLoad(opts: {
           fetching.delete(targetId);
           failedAttemptRef.current = attemptKey;
           setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
-          return;
+          return 'failed';
         }
         clearError();
         // Telemetry (docs/specs/017-telemetry/telemetry.md): a tab's content was fetched because the
@@ -214,9 +242,10 @@ export function usePerTabLoad(opts: {
           if (prev.has(targetId)) return prev;
           return new Set(prev).add(targetId);
         });
+        return 'loaded';
       })
-      .catch(() => {
-        if (cancelled) return;
+      .catch((): TabFetchEnd => {
+        if (cancelled) return 'cancelled';
         // Network / 5xx. Drop the id from the loaded-set so a later tab
         // switch (or the Retry button via retryNonce) refetches, and
         // flag it so the canvas shows the blocking error overlay instead
@@ -225,7 +254,9 @@ export function usePerTabLoad(opts: {
         fetching.delete(targetId);
         failedAttemptRef.current = attemptKey;
         setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
+        return 'failed';
       });
+    noteInFlight(targetId, run);
     return () => {
       cancelled = true;
       timing.cancel();
@@ -237,7 +268,7 @@ export function usePerTabLoad(opts: {
       // here so the next run actually fetches.
       if (!merged) fetching.delete(targetId);
     };
-    // resetTabs is read through resetTabsRef on purpose (see above); the refs and setters listed are stable.
+    // applyLoaded is read through applyLoadedRef on purpose (see above); the refs and setters listed are stable.
   }, [
     hydrated,
     documentId,
@@ -249,6 +280,7 @@ export function usePerTabLoad(opts: {
     loadedTabIdsRef,
     setLoadedTabIds,
     setTabLoadErrors,
+    noteInFlight,
   ]);
 
   // One-shot parallel fetch of every not-yet-loaded tab, so element
@@ -279,17 +311,16 @@ export function usePerTabLoad(opts: {
         if (targetId !== activeIdRef.current) return;
         setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
       };
-      const pending = tabsRef.current
+      const wanted = tabsRef.current
         .map((t) => t.id)
         .filter((id) => !only || only.includes(id))
-        .filter(
-          (id) =>
-            !loadedTabIds.has(id) && !fetching.has(id) && !isTabOutOfScope(id, sessionTabScope),
-        );
-      if (pending.length === 0) return failures;
+        .filter((id) => !loadedTabIds.has(id) && !isTabOutOfScope(id, sessionTabScope));
+      // A tab another fetch is already loading is waited for, and reported as that fetch ends.
+      const elsewhere = wanted.filter((id) => fetching.has(id));
+      const pending = wanted.filter((id) => !fetching.has(id));
       pending.forEach((id) => fetching.add(id));
-      await Promise.all(
-        pending.map(async (targetId) => {
+      const sweep = pending.map((targetId) => {
+        const run = (async (): Promise<TabFetchEnd> => {
           try {
             const loaded = await apiLoadTabRevisioned(
               selfId,
@@ -306,16 +337,40 @@ export function usePerTabLoad(opts: {
               // optimistic id so the normal visit-time load (with its error
               // overlay) retries when the user actually opens the tab.
               failed(targetId);
-              return;
+              return 'failed';
             }
             if (adoptLoadedTab(loaded)) loadedTabIds.add(targetId);
             fetching.delete(targetId);
             setLoadedTabIds((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
+            // A tab that failed on a visit and loads here is no longer failed: its overlay and a window's
+            // "Couldn't load" both go.
+            setTabLoadErrors((prev) => {
+              if (!prev.has(targetId)) return prev;
+              const next = new Set(prev);
+              next.delete(targetId);
+              return next;
+            });
+            return 'loaded';
           } catch {
             failed(targetId);
+            return 'failed';
           }
-        }),
-      );
+        })();
+        noteInFlight(targetId, run);
+        return run;
+      });
+      // A fetch elsewhere that was cancelled (its visit moved on) may have been started again: wait on that one too,
+      // a few times at most, then leave it to its own visit.
+      const awaitElsewhere = async (id: string) => {
+        for (let i = 0; i < TAB_FETCH_FOLLOW_MAX; i++) {
+          const run = inFlightRef.current.get(id);
+          if (!run) return;
+          const end = await run;
+          if (end === 'failed') failures.push(id);
+          if (end !== 'cancelled') return;
+        }
+      };
+      await Promise.all([...sweep, ...elsewhere.map(awaitElsewhere)]);
       return failures;
     },
     [
@@ -330,6 +385,7 @@ export function usePerTabLoad(opts: {
       setTabLoadErrors,
       tabsRef,
       activeIdRef,
+      noteInFlight,
     ],
   );
 

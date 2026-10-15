@@ -25,11 +25,17 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
   read-only, not an embed), and the tab not locked.
 - **On the person's own board or Sheet, never an example.** The tour places nothing: it runs on the tour
   subject (see [Tour subject](#tour-subject)).
-- **Once ever per person**, through the synced `planTourSeen` user preference
-  ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
-  itself again, on any device.
-- **Replayable from Settings**: the **Plan** switch in the Accessibility category's **Onboarding Tutorials** control,
-  beside **Diagram** and built the same way (on means "not seen yet"). Turning it on from off and closing
+- **Once ever per track, per person**, through the synced `planTourTracks` user preference
+  ([User preferences](../007-editor/user-preferences.md)): the **Boards** and **Sheets** tracks are each offered
+  once, so taking the Boards track still leaves the Sheets track to be offered the first time a Sheet is on the
+  tab, on any device. Whatever ends a track (taken, skipped mid-way or declined) answers that track; declining a
+  choice card answers both, as both were offered. A Sheet arriving beside a toured board (or a board beside a
+  toured Sheet) arms the offer again. The old single flag `planTourSeen` stands for both tracks only while
+  [Power user mode](../007-editor/power-user-mode.md) is on: an answer given before the tour offered each track once
+  named no track, so each is offered once more.
+- **Replayable from Settings**: the **Plan Tour** switch in Settings' **Tours** category,
+  beside **Diagram** and built the same way (on means a track is still owed; off answers both tracks, on forgets
+  them). Turning it on from off and closing
   Settings runs the tour straight away when the open tab is in Plan with a board or Sheet on it; otherwise it is
   offered the first time that is true, exactly as a first offer. Nothing is placed to give it something to show:
   an empty Plan tab already offers Start Planning, which makes a board or Sheet, and the switch's description
@@ -39,7 +45,7 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
 - The offer is the opt-in, as for the Diagram tour. With only boards or only Sheets on the tab, the welcome card
   names the one it will show and offers **Yes** and **No**. With both on the tab (a Plan
   canvas holding a board and a Sheet), it asks which: **Boards**, **Spreadsheets** and **No**, all with
-  equal weight. Taking the tour marks it seen; the other track is a Settings rerun away.
+  equal weight. Taking the tour answers the track picked; the other is offered on its own next time.
 
 ## Tour subject
 
@@ -73,17 +79,23 @@ A welcome card, then the track's steps, then its outro card. The bookend cards s
 is one or two short sentences per step and speaks of the person's board or sheet ("your board"); the exact
 strings live in `apps/live/components/tour/plan-tour-steps.ts`.
 
-0. **Welcome to Plan** (the offer): centred card with its own illustration (a card moving across a small
-   board). With one kind on the tab it says the tour will show around this board (or this sheet), without
-   changing anything, then **No** and **Yes**; with both it asks which, then **No**,
-   **Boards** and **Spreadsheets**.
+0. The offer, a centred card named for its track, never the mode: eyebrow **Boards tour** and title **Getting
+   started with boards?** over a board whose card moves to the next column; eyebrow **Sheets tour** and title
+   **Getting started with sheets?** over a sheet whose selection steps across as A1 is typed into; on a choice
+   card, eyebrow **Boards and Sheets tour** and title **Getting started with boards and sheets?** over both. With
+   one kind on the tab it says the tour will show around this board (or this sheet), without changing anything,
+   then **No** and **Yes**; with both it asks which, then **No**, **Boards** and **Spreadsheets**.
+
+A step rings a control, never a whole board, column or sheet: a ring that size would light most of the screen, so
+the opening step of each track is a card on its own (centred, counted, no ring).
 
 ### Boards
 
 Up to six steps.
 
-1. **Your Board**: highlights the board. Columns are the stages work moves through, left to right.
-2. **Add Cards**: highlights the board's first column. Each column ends in Add card, which adds a card of any
+1. **Your Board**: a centred card, no ring; it brings the board on screen. Columns are the stages work moves
+   through, left to right.
+2. **Add Cards**: highlights the first column's Add card. Each column ends in Add card, which adds a card of any
    type the board takes.
 3. **Move Work Along** (when the board has a card): highlights its first card. Drag a card to the next column as
    the work moves on, or Shift and an arrow key with it focused; everyone in the document sees it move.
@@ -100,9 +112,10 @@ Up to six steps.
 
 Five steps.
 
-1. **Your Sheet**: highlights the Sheet. A sheet is a spreadsheet in the document: cells, formulas and charts.
-2. **Type Into Cells**: highlights the grid. A click selects a cell and typing fills it; Enter moves down, Tab
-   across, and numbers, dates and percentages are read as typed.
+1. **Your Sheet**: a centred card, no ring; it brings the Sheet on screen. A sheet is a spreadsheet in the
+   document: cells, formulas and charts.
+2. **Type Into Cells**: highlights cell A1 alone (scrolled out of view, the step is left out). A click selects a
+   cell and typing fills it; Enter moves down, Tab across, and numbers, dates and percentages are read as typed.
 3. **Formulas**: highlights the formula bar, which shows the selected cell's value or formula; the tour selects
    nothing. A cell starting with `=` is a formula; clicking cells while writing one points at them.
 4. **The Toolbar**: highlights the Sheet's toolbar. Its category switcher picks the tools beside it (Text,

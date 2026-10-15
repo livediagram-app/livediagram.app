@@ -89,7 +89,7 @@ Top to bottom, each a small title over one row of option buttons:
 | Section            | Applies to                                         | Options                               |
 | ------------------ | -------------------------------------------------- | ------------------------------------- |
 | Stroke             | Shapes + arrows                                    | 7 colours, then Ink                   |
-| Background         | Shapes                                             | 7 colours                             |
+| Background         | Shapes                                             | 7 colours, then Transparent           |
 | Text colour        | Text elements                                      | 7 colours, then Ink                   |
 | Stroke width       | Shapes + arrows                                    | Thin / Medium / Thick                 |
 | Stroke style       | Shapes                                             | Solid / Dashed / Dotted               |
@@ -100,6 +100,12 @@ Top to bottom, each a small title over one row of option buttons:
 | Highlighter colour | Highlight strokes, or the armed Highlighter        | Yellow / Green / Pink / Blue / Orange |
 | Highlighter width  | Highlight strokes, or the armed Highlighter        | Thin / Medium / Bold                  |
 | Actions            | Shapes + arrows + text elements                    | Clear styles                          |
+
+**Transparent** ends the Background row, after its seven colours: the shared no-colour chip (white
+crossed by a diagonal), named "Transparent". A press clears the shape's fill to `transparent`
+(and its theme binding and colour preset), so what is behind it shows through; it is marked when
+every selected shape's fill is transparent. It has no colour to edit, so a right-click on it
+opens nothing.
 
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two

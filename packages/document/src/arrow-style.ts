@@ -81,7 +81,13 @@ export type ArrowheadShape =
   | 'circle'
   | 'circle-hollow'
   | 'diamond'
-  | 'diamond-hollow';
+  | 'diamond-hollow'
+  // The ER ends (docs/specs/008-canvas/canvas-and-palette.md): a table's cardinality where the line meets it.
+  | 'one'
+  | 'zero-or-one'
+  | 'many'
+  | 'zero-or-many'
+  | 'one-or-many';
 export const ARROWHEAD_SHAPES: ArrowheadShape[] = [
   'triangle',
   'triangle-hollow',
@@ -90,10 +96,19 @@ export const ARROWHEAD_SHAPES: ArrowheadShape[] = [
   'circle-hollow',
   'diamond',
   'diamond-hollow',
+  'one',
+  'zero-or-one',
+  'many',
+  'zero-or-many',
+  'one-or-many',
 ];
 export const DEFAULT_ARROWHEAD_SHAPE: ArrowheadShape = 'triangle';
 export function arrowheadShapeOf(arrow: ArrowElement): ArrowheadShape {
   return arrow.arrowheadShape ?? DEFAULT_ARROWHEAD_SHAPE;
+}
+// The start's head: its own when it differs (an ER relationship's two cardinalities), else the end's.
+export function arrowheadStartShapeOf(arrow: ArrowElement): ArrowheadShape {
+  return arrow.arrowheadStartShape ?? arrowheadShapeOf(arrow);
 }
 
 // Path geometry preset. Straight is the existing behaviour; curved

@@ -2,18 +2,8 @@
 // selecting elements, grouping, themes, templates, links, and annotations.
 // Composed only from the shared primitives so the house style holds.
 
-import {
-  Scene,
-  Shape,
-  Arrow,
-  SelectionBox,
-  Cursor,
-  Panel,
-  Dialog,
-  Tabs,
-  Label,
-} from './primitives';
-import { MenuCard, Strip } from './toolbar-layout';
+import { Scene, Shape, Arrow, SelectionBox, Cursor, Panel, Tabs, Label, Tile } from './primitives';
+import { MenuCard, Strip, stripCategory } from './toolbar-layout';
 
 /** The canvas with the menu button and the palette strip across the top and a small flow on
  *  it: the editor at a glance. */
@@ -21,7 +11,7 @@ export function CanvasOverview() {
   return (
     <Scene w={420} h={240}>
       <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} category="Popular" />
+      <Strip x={78} y={16} />
       <Shape x={40} y={92} w={84} h={48} kind="rect" label="Start" />
       <Shape x={172} y={92} w={84} h={48} kind="diamond" />
       <Shape x={172} y={172} w={84} h={44} kind="rect" accent label="Done" />
@@ -33,16 +23,43 @@ export function CanvasOverview() {
   );
 }
 
-/** Dropping a shape from the palette strip onto the canvas (a curved drag trail from the
- *  square tile to a freshly placed, still-selected shape). */
+/** Dropping a shape from a category's flyout onto the canvas (a curved drag trail from the Square tile in Shapes'
+ *  flyout to a freshly placed, still-selected shape). */
 export function AddingElements() {
+  const shapes = stripCategory(58, 'Shapes');
+  const px = Math.round(shapes.left + shapes.w / 2 - 60);
   return (
     <Scene w={420} h={200}>
-      <Strip x={58} y={16} category="Popular" />
-      <Arrow from={[198, 52]} to={[250, 104]} kind="curved" tone="muted" dashed />
-      <Shape x={250} y={104} w={96} h={56} kind="rect" />
-      <SelectionBox x={250} y={104} w={96} h={56} />
-      <Cursor x={300} y={132} colour="brand" />
+      <Strip x={58} y={16} open="Shapes" />
+      <Panel x={px} y={56} w={120} h={58}>
+        <Tile x={px + 8} y={64} size={30}>
+          <rect
+            x={-6}
+            y={-6}
+            width={12}
+            height={12}
+            rx={1.5}
+            className="stroke-brand-500"
+            strokeWidth={1.8}
+            fill="none"
+          />
+        </Tile>
+        <Tile x={px + 45} y={64} size={30}>
+          <circle r={6.5} className="stroke-slate-500" strokeWidth={1.6} fill="none" />
+        </Tile>
+        <Tile x={px + 82} y={64} size={30}>
+          <path
+            d="M0 -7 L7 0 L0 7 L-7 0 Z"
+            className="stroke-slate-500"
+            strokeWidth={1.6}
+            fill="none"
+          />
+        </Tile>
+      </Panel>
+      <Arrow from={[px + 23, 98]} to={[250, 120]} kind="curved" tone="muted" dashed />
+      <Shape x={250} y={120} w={96} h={56} kind="rect" />
+      <SelectionBox x={250} y={120} w={96} h={56} />
+      <Cursor x={300} y={148} colour="brand" />
     </Scene>
   );
 }
@@ -123,95 +140,6 @@ export function FormatPainter() {
           strokeWidth={1.5}
         />
       </g>
-    </Scene>
-  );
-}
-
-/** The theme picker as the Tab Look & Feel dialog opens it: Theme, Canvas and Font tabs, and the
- *  Theme tab's overview of a Default card plus one card per category, so you browse by mood. */
-export function ThemePicker() {
-  const cards: { name: string; swatch: string[] }[] = [
-    { name: 'Default', swatch: ['fill-brand-500', 'fill-brand-100'] },
-    { name: 'Formal', swatch: ['fill-slate-700', 'fill-amber-400'] },
-    { name: 'Cool', swatch: ['fill-sky-500', 'fill-emerald-500'] },
-    { name: 'Warm', swatch: ['fill-amber-500', 'fill-rose-500'] },
-    { name: 'Dark', swatch: ['fill-slate-800', 'fill-slate-500'] },
-    { name: 'Multi-colour', swatch: ['fill-violet-500', 'fill-emerald-500'] },
-    { name: 'Custom', swatch: ['fill-white', 'fill-slate-200'] },
-  ];
-  const tabs = ['Theme', 'Canvas', 'Font'];
-  return (
-    <Scene w={420} h={240} bg="plain">
-      <Dialog
-        x={60}
-        y={14}
-        w={300}
-        h={212}
-        title="Tab Look & Feel"
-        sceneW={420}
-        sceneH={240}
-        scrim={false}
-      >
-        {tabs.map((t, i) => (
-          <g key={t}>
-            <Label
-              x={80 + i * 56}
-              y={66}
-              size={10}
-              weight={i === 0 ? 700 : 500}
-              tone={i === 0 ? 'accent' : 'muted'}
-            >
-              {t}
-            </Label>
-            {i === 0 ? (
-              <line x1={78} y1={74} x2={114} y2={74} className="stroke-brand-500" strokeWidth={2} />
-            ) : null}
-          </g>
-        ))}
-        <line x1={61} y1={75} x2={359} y2={75} className="stroke-slate-200" strokeWidth={1} />
-        {cards.map((c, i) => {
-          const col = i % 4;
-          const row = Math.floor(i / 4);
-          const sx = 76 + col * 68;
-          const sy = 86 + row * 66;
-          const sel = i === 0;
-          return (
-            <g key={c.name}>
-              <rect
-                x={sx}
-                y={sy}
-                width={60}
-                height={56}
-                rx={8}
-                className={`fill-white ${sel ? 'stroke-brand-500' : 'stroke-slate-200'}`}
-                strokeWidth={sel ? 2.2 : 1.3}
-              />
-              <g className="help-art-as-drawn">
-                <rect
-                  x={sx + 10}
-                  y={sy + 10}
-                  width={18}
-                  height={18}
-                  rx={4}
-                  className={c.swatch[0]}
-                />
-                <rect
-                  x={sx + 32}
-                  y={sy + 10}
-                  width={18}
-                  height={18}
-                  rx={4}
-                  className={`${c.swatch[1]} stroke-slate-200`}
-                  strokeWidth={1}
-                />
-              </g>
-              <Label x={sx + 30} y={sy + 44} size={8.5} weight={600} anchor="middle" tone="body">
-                {c.name}
-              </Label>
-            </g>
-          );
-        })}
-      </Dialog>
     </Scene>
   );
 }

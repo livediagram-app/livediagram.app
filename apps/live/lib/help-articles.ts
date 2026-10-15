@@ -66,6 +66,7 @@ export const HELP_ARTICLES = {
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
   themes: 'canvas/themes',
   changingTheme: 'canvas/themes/changing-theme',
+  choosingAFinish: 'canvas/finish',
   customThemes: 'canvas/themes/custom-themes',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
@@ -80,6 +81,7 @@ export const HELP_ARTICLES = {
   // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
   eventStormingBoards: 'canvas/event-storming-boards',
   drawTour: 'canvas/draw-mode/draw-tour',
+  avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   illustrateTour: 'canvas/illustrate/illustrate-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
@@ -105,6 +107,8 @@ export const HELP_ARTICLES = {
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
+  sankeyDiagram: 'palette/build/sankey-diagram',
+  sequenceDiagram: 'palette/sequence-diagrams',
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
@@ -116,6 +120,10 @@ export const HELP_ARTICLES = {
   templates: 'canvas/templates',
   drawMode: 'canvas/draw-mode',
   logoPages: 'canvas/illustrate/logo-pages',
+  // Each page kind's Show Me links its own article (docs/specs/007-editor/illustrate-tour.md).
+  slidePages: 'canvas/illustrate/slide-pages',
+  infographicLayouts: 'canvas/illustrate/infographic-layouts',
+  articlePages: 'canvas/illustrate/articles',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -165,6 +173,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   drawTour: {
     title: 'Learn about the Draw Tour',
+    description: 'What the tour shows you and how replaying works.',
+  },
+  avatarTour: {
+    title: 'Learn about the Avatar Tour',
     description: 'What the tour shows you and how replaying works.',
   },
   illustrateTour: {
@@ -300,6 +312,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about custom themes',
     description: 'Build your own palette and reuse it across documents.',
   },
+  choosingAFinish: {
+    title: 'Learn about finishes',
+    description: 'Drawing a tab crisp and print-ready, or sketched by hand.',
+  },
   choosingFonts: {
     title: 'Learn about fonts',
     description: 'Tips for choosing a typeface and text size for a tab.',
@@ -385,6 +401,14 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about data elements',
     description: 'Charts and data-driven elements, and how to edit their data.',
   },
+  sankeyDiagram: {
+    title: 'Learn about Sankey diagrams',
+    description: 'Writing flows, reading the bands, and styling nodes and labels.',
+  },
+  sequenceDiagram: {
+    title: 'Learn about sequence diagrams',
+    description: 'Writing participants and messages, and the three kinds of arrow.',
+  },
   palette: {
     title: 'Learn about the Palette',
     description: 'Tips and tricks to help you get the most out of the Palette.',
@@ -420,6 +444,18 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   logoPages: {
     title: 'Learn about logo pages',
     description: 'Guides, mirror drawing, wordmarks, combining shapes and the logo kit.',
+  },
+  slidePages: {
+    title: 'Learn about slide pages',
+    description: 'Slide layouts, backgrounds, the deck and presenting.',
+  },
+  infographicLayouts: {
+    title: 'Learn about infographic layouts',
+    description: 'Starting a page from a layout, its theme, and making it your own.',
+  },
+  articlePages: {
+    title: 'Learn about articles',
+    description: 'Writing, the page toolbar, article style and how pages flow.',
   },
   livePresence: {
     title: 'Learn about live presence',

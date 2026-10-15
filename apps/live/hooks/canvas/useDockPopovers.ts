@@ -17,6 +17,12 @@ const POPOVER_WIDTH = 256;
 // A popover wider than the rest, so its placement keeps all of it on the canvas.
 export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
+  // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
+  layers: 352,
+  // The Slide Deck popover's `w-[420px]` (docs/specs/012-collaboration/presentation-mode.md).
+  slides: 420,
+  // The Contents popover's `w-[380px]` (docs/specs/007-editor/illustrate-pages.md "Contents").
+  contents: 380,
   // CardFinderPanel's `sm:w-[44rem]`: wide enough for each row's state, priority, due date and assignee.
   'plan-cards': 704,
   // CardTypesPanel's `sm:w-[34rem]`, two types to a row.
@@ -29,6 +35,8 @@ export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'session-poll': 288,
   // The Tidy Up popover's `w-80`: two tiles to a row (docs/specs/008-canvas/layout-cleanup.md).
   'tidy-up': 320,
+  // The Explorer's `w-[38rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
+  explorer: 608,
 };
 
 // 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card
@@ -38,6 +46,8 @@ export type DockPanel =
   | 'layers'
   | 'collaborate'
   | 'slides'
+  // Illustrate mode's Contents (docs/specs/007-editor/illustrate-pages.md "Contents").
+  | 'contents'
   | 'card-types'
   | 'plan-trash'
   | 'plan-cards'
@@ -47,7 +57,9 @@ export type DockPanel =
   | 'session-vote'
   | 'session-poll'
   // Diagram mode's Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
-  | 'tidy-up';
+  | 'tidy-up'
+  // Avatar mode's character sheet (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
+  | 'avatar';
 
 export type { DockAnchor };
 
@@ -58,6 +70,7 @@ function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
   else if (id === 'slides') track('UI', 'Opened', 'SlideDeck');
+  else if (id === 'contents') track('UI', 'Opened', 'PageContents');
   else if (id === 'card-types') track('Plan', 'Opened', 'CardTypes');
   else if (id === 'plan-trash') track('Plan', 'Opened', 'Trash');
   else if (id === 'plan-cards') track('Plan', 'Opened', 'CardFinder');
@@ -65,6 +78,7 @@ function trackDockPanelOpened(id: DockPanel): void {
   else if (id === 'session-vote') track('UI', 'Opened', 'SessionVote');
   else if (id === 'session-poll') track('UI', 'Opened', 'SessionPoll');
   else if (id === 'tidy-up') track('UI', 'Opened', 'TidyUp');
+  else if (id === 'avatar') track('UI', 'Opened', 'AvatarPanel');
 }
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {

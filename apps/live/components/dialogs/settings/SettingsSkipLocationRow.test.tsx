@@ -2,9 +2,9 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// Settings > Documents > Where New Documents Go > Skip the Location Step
-// (docs/specs/013-workspace/default-folders.md "Settings"): where new documents go while it is on,
-// with Turn Off; a plain line while it is off.
+// Settings > Documents > New Documents > Always Save in One Place
+// (docs/specs/013-workspace/default-folders.md "Settings"): an On / Off pill, where new documents go
+// while it is on with Turn Off, and how to turn it on while it is off.
 
 const { track } = vi.hoisted(() => ({ track: vi.fn() }));
 vi.mock('@/lib/telemetry', () => ({ track }));
@@ -19,18 +19,19 @@ const row = SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.rows.find(
 afterEach(cleanup);
 
 describe('SettingsSkipLocationRow', () => {
-  it('leads Where New Documents Go', () => {
+  it('leads Documents, in its own New Documents section', () => {
     const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.rows;
     expect(rows[0]).toBe(row);
-    expect(row.label).toBe('Skip the Location Step');
-    expect(row.section).toBe('Where New Documents Go');
+    expect(row.label).toBe('Always Save in One Place');
+    expect(row.section).toBe('New Documents');
   });
 
-  it('says it is off, with no button', () => {
+  it('says it is off and how to turn it on, with no button', () => {
     render(<SettingsSkipLocationRow row={row} settings={{}} onChange={vi.fn()} />);
-    expect(
-      screen.getByText('Off: the New Document wizard asks where each document goes.'),
-    ).toBeTruthy();
+    expect(document.querySelector('[data-skip-location-status]')!.textContent).toBe('Off');
+    expect(document.getElementById('skipLocationStep-description')!.textContent).toMatch(
+      /tick “Always save new documents in…” on its Location step/,
+    );
     expect(screen.queryByRole('button', { name: 'Turn Off' })).toBeNull();
   });
 
@@ -45,8 +46,9 @@ describe('SettingsSkipLocationRow', () => {
       },
     };
     render(<SettingsSkipLocationRow row={row} settings={settings} onChange={onChange} />);
-    expect(screen.getByText('Sprints · Design team').parentElement!.textContent).toBe(
-      'New documents are saved in Sprints · Design team',
+    expect(document.querySelector('[data-skip-location-status]')!.textContent).toBe('On');
+    expect(screen.getByText('Sprints · Design team').parentElement!.textContent).toMatch(
+      /^New documents go straight to Sprints · Design team, without the wizard asking where\./,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Turn Off' }));
     expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'SkipLocationStepOff');

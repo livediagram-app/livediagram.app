@@ -530,6 +530,15 @@ What decides it:
   `ldDocumentId` where it can.
 - **Account deletion** does the same revoke and delete as part of deleting the
   account. Drive files are the user's and stay.
+- **Not connected, the mirror asks Google for nothing.** Without a connection
+  there is nothing to sync, and the token broker answers 404. So a pass reads the
+  connection from our own server before asking for a token: a flush or a write
+  skips outright, and an arrival, focus or poll checks the connection (a plain 200
+  either way) and stops at "Not connected". A connection made on another device is
+  found at the next focus; one made here syncs at once. Before this, every
+  signed-in tab of someone who never connected Drive asked for a token on arrival,
+  on each focus and on each hide, each a 404 reported as an error (about 1,100 a
+  week in production, the top error by far).
 
 ## Data
 

@@ -2,7 +2,7 @@
 @import '@livediagram/tailwind-config';
 
 /* Scan the shared UI package so utility classes used only inside its
- * components (e.g. `text-brand-500` in <Brand>'s wordmark) are generated
+ * components (e.g. `text-brand-700` in <Brand>'s wordmark) are generated
  * here too. Tailwind v4 skips node_modules, where the workspace package
  * is symlinked. */
 @source '../../../packages/ui/src';

@@ -1,7 +1,16 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx, type ImageElement } from '@livediagram/document';
+import { useCanvasTheme, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { ImageEmptyFace } from '@/components/canvas/ImageEmptyFace';
+import {
+  IMAGE_BROKEN_TONE,
+  IMAGE_SKELETON_BODY,
+  imagePlaceholderMetrics,
+  imagePlaceholderTone,
+  placeholderThemeInk,
+} from '@/components/canvas/image-placeholder-look';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 import { bodySetClass } from '@/lib/animation-classes';
 import { Glyph } from '@livediagram/ui';
@@ -33,14 +42,15 @@ type ImageElementViewProps = {
   // Share code carried by the visitor, when any. Null for the owner
   // session. Drives the X-Share-Code header on the fetch.
   shareCode: string | null;
-  // True when the editor exposes an image-picker affordance for this
-  // session (signed-in editor / edit-role visitor). False for
-  // view-role visitors. The actual double-click handler that opens
-  // the picker lives in BoxedElementView; this flag only drives the
-  // empty-state placeholder copy. A plain boolean (rather than a
-  // pre-bound callback) keeps the memo's shallow equality cheap
-  // and stable.
-  canOpenPicker: boolean;
+  // Opens the image picker for an element: present when this session
+  // may pick (owner / edit-role visitor), absent for view-role visitors.
+  // Drives the empty placeholder's Select Image button; the double-click
+  // that opens it too lives in BoxedElementView. useEditorImages keeps
+  // it reference-stable, so the memo's shallow equality still holds.
+  onOpenPicker?: (elementId: string) => void;
+  // The element's resolved font stack (its own, else the tab's theme font): the placeholder's
+  // words are set in it, as its page's text is. Undefined falls back to the app's sans.
+  fontFamily?: string;
 };
 
 function ImageElementViewImpl({
@@ -48,7 +58,8 @@ function ImageElementViewImpl({
   ownerId,
   documentId,
   shareCode,
-  canOpenPicker,
+  onOpenPicker,
+  fontFamily,
 }: ImageElementViewProps) {
   const { imageId } = element;
   const state = useImageBlobUrl(ownerId, imageId, { documentId, shareCode });
@@ -69,43 +80,59 @@ function ImageElementViewImpl({
   const radiusStyle = { borderRadius: radius };
   const fit = element.objectFit ?? 'contain';
 
+  // The paper under the element (its page's fill, else the canvas), never the app's chrome: a
+  // light page in dark chrome keeps dark ink (docs/specs/009-elements/images.md "Placeholder rendering").
+  const surface = useElementSurface(element.id);
+  // Dressed in the tab's theme where it has colours of its own, kept legible on this paper.
+  const theme = useCanvasTheme();
+  const tone = useMemo(
+    () => imagePlaceholderTone(surface, theme ? placeholderThemeInk(theme) : null),
+    [surface, theme],
+  );
+
   if (!imageId) {
-    // Empty placeholder. Double-click opens the picker for editors
-    // so a single click (and the drag that follows it) can still
-    // move / resize the placeholder without spawning the modal.
-    // View-role visitors see the same hint with no picker.
-    // text-center + a side gutter because the hint WRAPS in a narrow box: the
-    // flex centring only centres the text block, so a wrapped second line sat
-    // hard left of it, which on a round avatar read as badly misaligned.
-    const placeholderBase =
-      'flex h-full w-full flex-col items-center justify-center gap-1 rounded border-2 border-dashed border-slate-300 bg-slate-50 px-2 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-white';
-    if (!canOpenPicker) {
-      return (
-        <div className={placeholderBase} style={radiusStyle}>
-          <ImageIcon />
-          <span className="text-[10px] font-medium">No image</span>
-        </div>
-      );
-    }
+    // Empty: the app's empty state on the canvas, with a Select Image button. Double-clicking the
+    // box opens the picker too (BoxedElementView), and a single click still selects, so the
+    // placeholder can be moved and resized. Someone who cannot pick sees the face with no button.
     return (
-      <div
-        className={`${placeholderBase} cursor-pointer transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10 dark:hover:text-brand-200`}
-        style={radiusStyle}
-      >
-        <ImageIcon />
-        <span className="text-[10px] font-medium">Double-click to upload</span>
-      </div>
+      <ImageEmptyFace
+        elementId={element.id}
+        width={element.width}
+        height={element.height}
+        round={element.borderRadius === 'full'}
+        tone={tone}
+        surface={surface}
+        radius={radius}
+        fontFamily={fontFamily}
+        onOpenPicker={onOpenPicker}
+      />
     );
   }
 
   if (state.status === 'broken') {
+    const tone = IMAGE_BROKEN_TONE[surface];
+    const metrics = imagePlaceholderMetrics(element.width, element.height);
     return (
       <div
-        className="flex h-full w-full flex-col items-center justify-center gap-1 rounded border border-rose-200 bg-rose-50/60 px-2 text-center text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-300"
-        style={radiusStyle}
+        className="flex h-full w-full flex-col items-center justify-center overflow-hidden rounded border px-2 text-center font-sans"
+        style={{
+          ...radiusStyle,
+          gap: metrics.gapPx,
+          background: tone.body,
+          borderColor: tone.border,
+          color: tone.ink,
+        }}
+        aria-label={metrics.showLabel ? undefined : 'Image unavailable'}
       >
-        <BrokenIcon />
-        <span className="text-[10px] font-medium">Image unavailable</span>
+        <BrokenIcon size={metrics.iconPx} />
+        {metrics.showLabel ? (
+          <span
+            className="font-medium not-italic leading-tight"
+            style={{ fontSize: metrics.labelPx }}
+          >
+            Image unavailable
+          </span>
+        ) : null}
       </div>
     );
   }
@@ -115,8 +142,8 @@ function ImageElementViewImpl({
     // image" while the bytes are in flight.
     return (
       <div
-        className="h-full w-full animate-pulse rounded bg-slate-100 dark:bg-slate-800"
-        style={radiusStyle}
+        className="h-full w-full animate-pulse rounded"
+        style={{ ...radiusStyle, background: IMAGE_SKELETON_BODY[surface] }}
       />
     );
   }
@@ -153,19 +180,9 @@ function ImageElementViewImpl({
 
 export const ImageElementView = memo(ImageElementViewImpl);
 
-function ImageIcon() {
+function BrokenIcon({ size }: { size: number }) {
   return (
-    <Glyph size={22} units={24}>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="8.5" cy="9" r="1.5" />
-      <path d="M3.5 17l5-5 4 4 3-3 5 5" />
-    </Glyph>
-  );
-}
-
-function BrokenIcon() {
-  return (
-    <Glyph size={22} units={24}>
+    <Glyph size={size} units={24}>
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <path d="M3 17l5-5 4 4 2-2" />
       <path d="M16 6l5 5" />

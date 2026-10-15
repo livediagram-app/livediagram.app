@@ -10,9 +10,23 @@
 // ephemeral presence snapshot handed to `onPresence` for peers (docs/specs/008-canvas/avatar-mode.md
 // Realtime), which the room relays like a cursor.
 
-import { useEffect, useEffectEvent, useInsertionEffect, useRef, useState } from 'react';
-import type { Element } from '@livediagram/document';
+import { useEffect, useEffectEvent, useInsertionEffect, useMemo, useRef, useState } from 'react';
+import {
+  drinkFrom,
+  DRINK_HOLD_MS,
+  isSeatingShape,
+  type DrinkKind,
+  type Element,
+} from '@livediagram/document';
+import {
+  fenceReachFor,
+  fenceSegments,
+  fenceStalled,
+  fenceStep,
+  type FenceSegment,
+} from '@/lib/avatar-fence';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
+import type { AvatarStatus } from '@/lib/avatar-status';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '@/lib/avatar-reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from '@/hooks/canvas/useAvatarKeys';
 import {
@@ -57,13 +71,20 @@ export type AvatarSnapshot = {
   // when standing. Occupancy is presence, never document state, so a chair is
   // vacated for free when its sitter disconnects.
   seatedOn?: string | null;
+  // A drink in the hand (docs/specs/009-elements/office.md "Using it"), or none.
+  holding?: DrinkKind | null;
+  // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none.
+  status?: AvatarStatus | null;
   // Flag-wave frame, or null when the flag is down.
   wave: number | null;
 };
 
+const NO_FENCES: FenceSegment[] = [];
+
 export function useAvatarWalk({
   active,
   config,
+  status = null,
   onToggleGender,
   elements,
   mainRef,
@@ -76,12 +97,15 @@ export function useAvatarWalk({
   onWalkIntoPortal,
   onWalkIntoChair,
   onWalkIntoReactionPad,
+  onWalkIntoDrink,
 }: {
   // True while the Avatar canvas tool is the active tool.
   active: boolean;
   // The character's costume (useAvatarConfig): published to peers, and its
   // size scales the right-click hit box.
   config: AvatarConfig;
+  // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"): rides every snapshot.
+  status?: AvatarStatus | null;
   // Right-clicking the character flips male / female — the costume state lives
   // in useAvatarConfig (it persists), so the flip is delegated to it.
   onToggleGender: () => void;
@@ -105,12 +129,19 @@ export function useAvatarWalk({
   // ARRIVAL, not every frame it stands there, and never for the portal it just
   // came out of.
   onWalkIntoPortal?: (element: import('@livediagram/document').ShapeElement) => void;
-  // Chair (docs/specs/009-elements/chair.md): the character walked onto a chair. Fired once on ARRIVAL,
-  // like the portal above.
-  onWalkIntoChair?: (element: import('@livediagram/document').ShapeElement) => void;
+  // Chair (docs/specs/009-elements/chair.md): the character walked onto a chair, a desk or a sofa.
+  // Fired once on ARRIVAL, like the portal above, with where the feet were when they got there (a
+  // sofa seats you on the cushion nearest that point).
+  onWalkIntoChair?: (
+    element: import('@livediagram/document').ShapeElement,
+    feet: AvatarPoint,
+  ) => void;
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): the character walked onto a pad. Same arrival
   // hook as the portal and the chair, so a pad costs no third mechanism.
   onWalkIntoReactionPad?: (element: import('@livediagram/document').ShapeElement) => void;
+  // The office's machines (docs/specs/009-elements/office.md "Using it"): the character walked onto a water
+  // cooler or a coffee machine. Fired once on ARRIVAL, like the portal and the chair.
+  onWalkIntoDrink?: (element: import('@livediagram/document').ShapeElement) => void;
 }) {
   // Rendered state. `pos` survives a detour to another tool (Canvas stays
   // mounted), so coming back finds the avatar where you left it; null until
@@ -130,10 +161,19 @@ export function useAvatarWalk({
   // standing. Kept in state (the sprite and the presence packet both read it)
   // AND in a ref (the rAF tick and walkTo read it between renders).
   const [seatedOn, setSeatedOn] = useState<string | null>(null);
+  // A drink in the hand (docs/specs/009-elements/office.md "Using it"): presence, like the seat, and put down
+  // after DRINK_HOLD_MS or on leaving the mode.
+  // `seq` changes with every drink taken, so taking the same drink again restarts its minute.
+  const [drink, setDrink] = useState<{ kind: DrinkKind; seq: number } | null>(null);
+  const holdingRef = useRef<DrinkKind | null>(null);
 
   // Loop-internal state. Refs (not state) because the rAF tick reads and
   // writes these many times between renders.
   const posRef = useRef<AvatarPoint | null>(null);
+  // Fences (docs/specs/009-elements/fence.md): the lines the walk may not cross, worked out once per
+  // change to the elements rather than per frame.
+  // Only while the mode is on: a scan of the whole tab on every edit is wasted when nobody is walking.
+  const fences = useMemo(() => (active ? fenceSegments(elements) : NO_FENCES), [active, elements]);
   const targetRef = useRef<AvatarPoint | null>(null);
   const heldRef = useRef<AvatarHeldKeys>({ ...NO_KEYS_HELD });
   const travelledRef = useRef(0);
@@ -219,6 +259,7 @@ export function useAvatarWalk({
       setLift(0);
       setWave(null);
       setSeatedOn(null);
+      setDrink(null);
     }
   }
   const enterOrLeave = useEffectEvent((isActive: boolean) => {
@@ -233,6 +274,7 @@ export function useAvatarWalk({
       // Tell peers to drop our character.
       onPresence?.(null);
       seatedRef.current = null;
+      holdingRef.current = null;
       return;
     }
     // A button asked for the character HERE: honour it even if the remembered
@@ -394,13 +436,39 @@ export function useAvatarWalk({
       const held = arrowDirection(heldRef.current);
       const travel = AVATAR_SPEED * dt;
       const step = held ? null : stepTowards(from, targetRef.current, dt);
-      const next = held ? { x: from.x + held.x * travel, y: from.y + held.y * travel } : step!.pos;
+      const wanted = held
+        ? { x: from.x + held.x * travel, y: from.y + held.y * travel }
+        : step!.pos;
+      // Fences (docs/specs/009-elements/fence.md "Blocking"): a step into one is refused, or slides
+      // along it. A click-walk that can make no progress stops rather than pressing on forever.
+      const fenced = fenceStep(from, wanted, fences, fenceReachFor(avatarScale(config.size)));
+      const next = fenced.pos;
+      if (
+        fenced.blocked &&
+        !held &&
+        targetRef.current &&
+        fenceStalled(
+          Math.hypot(next.x - from.x, next.y - from.y),
+          Math.hypot(wanted.x - from.x, wanted.y - from.y),
+        )
+      ) {
+        // Stopped by a wall: close enough to where it was going (a peer standing by a fence) is arriving there, so
+        // what was waiting on the arrival (the shove) still happens; further off, the walk just ends.
+        const target = targetRef.current;
+        const near =
+          Math.hypot(target.x - next.x, target.y - next.y) <=
+          2 * fenceReachFor(avatarScale(config.size));
+        targetRef.current = null;
+        const arrived = near ? arriveRef.current : null;
+        arriveRef.current = null;
+        arrived?.();
+      }
       // Target reached — drop it so the avatar goes idle rather than
       // re-arriving on every subsequent frame, and fire whatever was waiting
       // on the arrival (the shove, docs/specs/008-canvas/avatar-mode.md). `stepTowards` already decides
       // this, including the within-a-hair case; re-deriving it here from the
       // coordinates was a second, subtly different definition of "arrived".
-      if (!held && targetRef.current && step?.arrived) {
+      if (!held && !fenced.blocked && targetRef.current && step?.arrived) {
         targetRef.current = null;
         const arrived = arriveRef.current;
         arriveRef.current = null;
@@ -499,6 +567,9 @@ export function useAvatarWalk({
           lift: liftRef.current,
           wave: waveStartRef.current === null ? null : 0,
           seatedOn: seatedRef.current,
+          holding: holdingRef.current,
+          // Only when set: a missing status reads as none, and a walk sends ~30 a second.
+          ...(status ? { status } : null),
           ...(live ? { reaction: { kind: live.kind, elapsedMs: now - live.startedAt } } : null),
         });
       }
@@ -525,7 +596,8 @@ export function useAvatarWalk({
   // a null position, i.e. nothing, and a peer saw no character until the
   // walker moved (which needs animation frames the tab may not be getting).
   const publishStanding = useEffectEvent((at: AvatarPoint) => {
-    const costume = JSON.stringify(config);
+    // The costume and the status: a change to either is worth telling the room at once.
+    const costume = JSON.stringify([config, status]);
     if (publishedLookRef.current === costume) return;
     publishedLookRef.current = costume;
     onPresence?.({
@@ -538,17 +610,69 @@ export function useAvatarWalk({
       lift: 0,
       wave: null,
       seatedOn: seatedRef.current,
+      holding: holdingRef.current,
+      // Only when set: a missing status reads as none, and a walk sends ~30 a second.
+      ...(status ? { status } : null),
     });
   });
   // `facing` is read as the snapshot's value only (an effect event), since re-publishing on a turn would
   // fight the loop, which already publishes while walking.
   useEffect(() => {
     if (active && pos) publishStanding(pos);
-  }, [active, pos, config]);
+  }, [active, pos, config, status]);
 
   // Which element the avatar is standing on (the "you are here" ring). Cheap
   // rectangle scan, and only while the mode is on.
   const standingOnId = active && pos ? elementUnderFeet(elements, pos) : null;
+
+  // An idle snapshot, for the heartbeat and for a change that is not a step (a drink taken or put down).
+  const publishIdle = (at: AvatarPoint) =>
+    onPresence?.({
+      x: at.x,
+      y: at.y,
+      facing,
+      config,
+      walking: false,
+      stepFrame: 0,
+      lift: 0,
+      wave: null,
+      seatedOn: seatedRef.current,
+      holding: holdingRef.current,
+      // Only when set: a missing status reads as none, and a walk sends ~30 a second.
+      ...(status ? { status } : null),
+    });
+  // Take a drink (docs/specs/009-elements/office.md "Using it"): held for DRINK_HOLD_MS, replacing any other,
+  // and told to the room at once rather than at the next step.
+  // Whether the loop is publishing this frame (walking, airborne, waving, reacting): then it carries the drink in its
+  // next snapshot, and an idle one here would tell the room the character stopped, cutting off its walk or reaction.
+  const inMotion = () => {
+    const keys = heldRef.current;
+    return (
+      targetRef.current !== null ||
+      keys.up ||
+      keys.down ||
+      keys.left ||
+      keys.right ||
+      liftRef.current > 0 ||
+      waveStartRef.current !== null ||
+      reactionRef.current !== null
+    );
+  };
+  const giveDrink = (kind: DrinkKind) => {
+    holdingRef.current = kind;
+    setDrink((prev) => ({ kind, seq: (prev?.seq ?? 0) + 1 }));
+    if (posRef.current && !inMotion()) publishIdle(posRef.current);
+  };
+  const putDown = useEffectEvent(() => {
+    holdingRef.current = null;
+    setDrink(null);
+    if (posRef.current && !inMotion()) publishIdle(posRef.current);
+  });
+  useEffect(() => {
+    if (!drink) return;
+    const t = window.setTimeout(() => putDown(), DRINK_HOLD_MS);
+    return () => window.clearTimeout(t);
+  }, [drink]);
 
   // Standing heartbeat. The publish above only fires on a CHANGE, so a
   // character that arrived before you did was invisible to you until it next
@@ -561,17 +685,7 @@ export function useAvatarWalk({
     // Only while genuinely idle: a walk publishes at its own rate, and a
     // reaction / jump is a performance the peer is already following.
     if (!at || targetRef.current || reactionRef.current || liftRef.current > 0) return;
-    onPresence?.({
-      x: at.x,
-      y: at.y,
-      facing,
-      config,
-      walking: false,
-      stepFrame: 0,
-      lift: 0,
-      wave: null,
-      seatedOn: seatedRef.current,
-    });
+    publishIdle(at);
   });
   useEffect(() => {
     if (!active) return;
@@ -597,13 +711,22 @@ export function useAvatarWalk({
     if (el && el.type === 'shape' && el.shape === 'portal') onWalkIntoPortal?.(el);
     // Chair (docs/specs/009-elements/chair.md): the same arrival hook, so sitting down costs no second
     // mechanism. Skipped while already seated somewhere.
-    if (el && el.type === 'shape' && el.shape === 'chair' && !seatedRef.current) {
-      onWalkIntoChair?.(el);
+    // A desk and a sofa seat a character the same way (docs/specs/009-elements/chair.md "Desk and sofa").
+    if (
+      el &&
+      el.type === 'shape' &&
+      isSeatingShape(el.shape) &&
+      !seatedRef.current &&
+      posRef.current
+    ) {
+      onWalkIntoChair?.(el, posRef.current);
     }
     // Reaction pad (docs/specs/009-elements/reaction-pad.md). Fires on ARRIVAL like the others, so standing
     // on a pad throws one burst rather than one per frame; stepping off and
     // back on is a deliberate second press.
     if (el && el.type === 'shape' && el.shape === 'reaction-pad') onWalkIntoReactionPad?.(el);
+    // Water cooler and coffee machine (docs/specs/009-elements/office.md "Using it"): a drink, on arrival.
+    if (el && el.type === 'shape' && drinkFrom(el.shape)) onWalkIntoDrink?.(el);
   });
   // `elements` is read for the arrival lookup only (an effect event); the trigger is the change in what
   // the feet are on.
@@ -627,6 +750,8 @@ export function useAvatarWalk({
     standingOnId,
     pose,
     seatedOn,
+    holding: active ? (drink?.kind ?? null) : null,
+    giveDrink,
     sitOn,
     standUp,
     walkTo,

@@ -70,6 +70,22 @@ describe('document and tab names through the MCP SDK', () => {
     expect((create.body?.tabs as { name: string }[])[0]!.name).toBe(CAPPED);
   });
 
+  it('create_document takes a single tab alias, checked and capped as tabs are, and names what is wrong', async () => {
+    const { client, sent } = await connect();
+    await client.callTool({
+      name: 'create_document',
+      arguments: { name: 'Doc', tab: { name: LONG, elements: [] } },
+    });
+    const create = sent.find((s) => s.method === 'POST' && s.path === '/documents')!;
+    expect((create.body?.tabs as { name: string }[])[0]!.name).toBe(CAPPED);
+    const bad = await client.callTool({
+      name: 'create_document',
+      arguments: { name: 'Doc', tab: { name: 'One', elements: 'none' } },
+    });
+    expect(bad.isError).toBe(true);
+    expect((bad.content as { text: string }[])[0]!.text).toMatch(/^"tab": elements: .*Pass "tabs"/);
+  });
+
   it('add_tab and a tab rename send and report the shortened name', async () => {
     const { client, sent } = await connect();
     await client.callTool({

@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Element } from '@livediagram/document';
 import { apiAiStream, type AiMode, type AiConversationTurn } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { aiContextElements } from '@/lib/ai-context';
 
 type Status = 'idle' | 'loading' | 'done' | 'error';
 
@@ -74,6 +75,12 @@ export function useAiPanelSession({
     const userTurn: AiConversationTurn = { role: 'user', content: finalPrompt || `(${mode})` };
 
     const isTextMode = mode === 'ask';
+    const context = aiContextElements(contextElements, focusIds);
+    if (!context.ok) {
+      setStatusMsg(context.message);
+      setStatus('error');
+      return;
+    }
 
     try {
       await apiAiStream(
@@ -81,7 +88,7 @@ export function useAiPanelSession({
         {
           mode,
           prompt: finalPrompt,
-          elements: contextElements as unknown[],
+          elements: context.elements as unknown[],
           focusIds,
           tabName,
           history,

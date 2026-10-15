@@ -300,32 +300,6 @@ export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing> = {
   w: 'right',
 };
 
-// Where a seated character's FEET go, in canvas coords: the middle of the
-// seat, a little off centre AWAY from the back so the figure sits ON the seat
-// rather than floating at the box's midpoint. The chair's drawing rotates
-// with its facing, so the seat does too. Shared by the walk hook (which snaps
-// the sitter here) and the chair's own face (which draws the ring there).
-export const CHAIR_SEAT_DROP = 0.62;
-
-export function chairSeatPoint(
-  box: { x: number; y: number; width: number; height: number },
-  facing: ChairFacing = DEFAULT_CHAIR_FACING,
-): { x: number; y: number } {
-  const cx = box.x + box.width / 2;
-  const cy = box.y + box.height / 2;
-  const offset = CHAIR_SEAT_DROP - 0.5;
-  switch (facing) {
-    case 'e':
-      return { x: cx - box.width * offset, y: cy };
-    case 's':
-      return { x: cx, y: cy - box.height * offset };
-    case 'w':
-      return { x: cx + box.width * offset, y: cy };
-    default:
-      return { x: cx, y: box.y + box.height * CHAIR_SEAT_DROP };
-  }
-}
-
 // --- The family ------------------------------------------------------------
 
 // Every collaboration kind that draws a PRESSABLE FACE in place of the plain
@@ -371,6 +345,8 @@ export function hasOwnFace(kind: ShapeKind): boolean {
   return (
     isCollabPanelShape(kind) ||
     kind === 'chair' ||
+    kind === 'desk' ||
+    kind === 'sofa' ||
     kind === 'mode-button' ||
     kind === 'session-button' ||
     kind === 'focus-button' ||
@@ -390,18 +366,21 @@ export function hasOwnFace(kind: ShapeKind): boolean {
 // Edit Quiz dialog owns, and editing it inline would print the hidden question
 // over the closed disc for anybody who double-clicked the card.
 export function opensInlineLabelEditor(kind: ShapeKind): boolean {
-  return !isSelfDrawingShape(kind) && !isQuizShape(kind);
+  // A sequence diagram's words are its rows, written in its dialog (docs/specs/009-elements/sequence-diagram.md); its
+  // box keeps its border controls, so it is not self-drawing, but a click never opens a label editor on it.
+  return !isSelfDrawingShape(kind) && !isQuizShape(kind) && kind !== 'sequence';
 }
 
 // Whether text alignment does anything on this kind: not a self-drawing kind
 // (no label at all) and not one with its own face (the label is a fixed
-// title), nor an icon (a glyph with a short caption under it; the alignment
-// grid on it only ever nudged a caption nobody wanted moved; a sticker is
-// self-drawing, so it is already out). The one gate for both the context menu
+// title). An icon keeps it: its alignment places the caption above, below or
+// beside the glyph, and the glyph moves to make room
+// (docs/specs/010-palette/technology-icons.md "caption's alignment"); left out, an
+// icon's caption could never be moved. The one gate for both the context menu
 // and the quick style panel. Web components (banner, callout, header) and
 // pages keep it: they render the aligned label.
 export function supportsTextAlign(kind: ShapeKind): boolean {
-  return !isSelfDrawingShape(kind) && !hasOwnFace(kind) && kind !== 'icon';
+  return !isSelfDrawingShape(kind) && !hasOwnFace(kind);
 }
 
 // Whether shape markers (docs/specs/009-elements/shape-markers.md) do anything on this kind: a marker

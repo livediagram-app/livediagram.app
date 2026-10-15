@@ -289,8 +289,9 @@ export class DriveMirrorEngine {
   // What each document's last upload was is on our own server (drive_items),
   // so the Explorer can say it before any call to Google, and while syncing is
   // paused. Once per engine: later passes publish it with their result.
-  private async publishKnownMirror(): Promise<void> {
-    if (this.status.mirrored !== null) return;
+  // Returns the connection it read (null: none), or undefined when it did not read one.
+  private async publishKnownMirror(): Promise<DriveConnection | null | undefined> {
+    if (this.status.mirrored !== null) return undefined;
     try {
       const [items, connection] = await Promise.all([
         this.deps.port.listItems(),
@@ -300,15 +301,36 @@ export class DriveMirrorEngine {
         mirrored: mirroredFromItems(items),
         rootFolderId: connection?.rootFolderId ?? null,
       });
+      return connection;
     } catch (err) {
       driveWarn('known-mirror-failed', { error: String(err) });
+      return undefined;
     }
+  }
+
+  // Whether a pass can go on while there may be no connection (docs/specs/022-drive-mirror/drive-mirror.md
+  // "Disconnecting"). Without one there is nothing to sync and a token request only 404s, which is what every
+  // signed-in tab of someone who never connected Drive did on arrival, on every focus and on every hide. So a flush
+  // or a write skips outright, and any other pass asks our own server for the connection first (a 200 either way),
+  // which still finds one made on another device at the next focus.
+  private async connectedEnough(
+    kind: PassKind,
+    known: DriveConnection | null | undefined,
+  ): Promise<boolean> {
+    if (known !== null && this.status.state !== 'disconnected') return true;
+    if (kind === 'flush' || kind === 'write') return false;
+    const connection =
+      known === null ? null : await this.deps.port.getConnection().catch(() => undefined);
+    if (connection !== null) return true;
+    this.publish({ state: 'disconnected' });
+    return false;
   }
 
   private async runPass(kind: PassKind): Promise<void> {
     const { deps } = this;
     driveLog('pass-start', { kind });
-    await this.publishKnownMirror();
+    const known = await this.publishKnownMirror();
+    if (!(await this.connectedEnough(kind, known))) return;
     try {
       await deps.tokens.get();
     } catch (err) {

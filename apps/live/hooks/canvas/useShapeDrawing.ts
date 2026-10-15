@@ -19,7 +19,7 @@
 
 import type { Selection } from '@/lib/selection-store';
 import { useRef, useState } from 'react';
-import { createFreehand, type Element, type Tab } from '@livediagram/document';
+import { createFreehand, type Element, type Tab, withVariantColours } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -52,9 +52,6 @@ type ShapeDrawingDeps = {
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
   setEditingId: (id: string | null) => void;
-  // Opens the image picker after a draw-to-size image lands (mirrors
-  // the click-to-drop placeholder flow). From useEditorImages.
-  openImagePickerFor?: (elementId: string) => void;
   // Live viewport zoom — scales the freehand simplification tolerance.
   zoomRef: React.RefObject<number>;
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): dresses every user-drawn shape and arrow in
@@ -77,7 +74,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setSelectedId,
     setMultiSelectedIds,
     setEditingId,
-    openImagePickerFor,
     zoomRef,
     styleNewElement,
     onPlanCardPlace,
@@ -193,7 +189,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       onPlanCardPlace?.(intent.plan, endX, endY);
       return;
     }
-    const sized = dress(
+    const dressed = dress(
       buildDrawnBoxed(
         intent,
         startX,
@@ -205,6 +201,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         drawMode,
       ),
     );
+    // A preset's own colour (the Warning badge's rose) outlasts the theme and the remembered style it was dressed in.
+    const sized =
+      intent.type === 'shape' && dressed.type === 'shape'
+        ? withVariantColours(dressed, intent.variant)
+        : dressed;
     // Frames don't need special-casing here: the canvas + exporters
     // route through `framesFirst`, which keeps every frame painted
     // behind its contents regardless of array position (docs/specs/008-canvas/canvas-and-palette.md).
@@ -248,14 +249,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
                     'Video'
                   : 'Image';
     track('Element', 'Added', label);
-    // Image element specifically: opening the picker after the draw
-    // mirrors how the click-to-drop path drops a placeholder + lets
-    // the user pick a file via double-click. Skipping the picker
-    // here would leave the user with an empty box and no obvious
-    // next step.
-    if (intent.type === 'image' && openImagePickerFor) {
-      openImagePickerFor(sized.id);
-    }
+    // An image lands as its empty placeholder, selected, with no picker popping up: the
+    // placeholder's Select Image button (or a double-click) opens it when the person is ready
+    // (docs/specs/009-elements/images.md "Placeholder rendering").
   };
 
   const cancelDrawShape = () => setPendingDraw(null);

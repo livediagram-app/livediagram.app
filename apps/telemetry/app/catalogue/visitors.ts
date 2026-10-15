@@ -11,6 +11,7 @@ import {
   PLAN_TOUR_OFFERED,
   FACILITATE_TOUR_OFFERED,
   DRAW_TOUR_OFFERED,
+  AVATAR_TOUR_OFFERED,
   ILLUSTRATE_TOUR_OFFERED,
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
@@ -394,6 +395,63 @@ export const DRAW_TOUR: MetricStack = {
   headline: DRAW_TOURS_STARTED,
 };
 
+// The Avatar tour (docs/specs/008-canvas/avatar-tour.md): its own funnel, beside the Draw tour's.
+export const AVATAR_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Avatar Tours Declined',
+  'The Avatar tour turned down on its welcome card, before it started.',
+  { types: ['AvatarTourOffer'], rising: 'neutral' },
+);
+
+export const AVATAR_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Avatar Tours Started',
+  'The Avatar tour started.',
+  { types: ['AvatarTour'] },
+);
+
+export const AVATAR_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Avatar Tour Steps Viewed',
+  'A step of the Avatar tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('AvatarTourStep') },
+);
+
+export const AVATAR_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Avatar Tours Completed',
+  'The Avatar tour run to its last step.',
+  { types: ['AvatarTourCompleted'] },
+);
+
+export const AVATAR_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Avatar Tours Skipped',
+  'The Avatar tour closed before its end.',
+  { types: ['AvatarTourSkipped'], rising: 'neutral' },
+);
+
+export const AVATAR_TOUR: MetricStack = {
+  stack: true,
+  title: 'Avatar Tour',
+  blurb:
+    'The first time in Avatar mode: the Avatar tour offered, stepped through, finished or skipped.',
+  members: [
+    AVATAR_TOUR_OFFERED,
+    AVATAR_TOUR_DECLINED,
+    AVATAR_TOURS_STARTED,
+    AVATAR_TOUR_STEPS_VIEWED,
+    AVATAR_TOURS_COMPLETED,
+    AVATAR_TOURS_SKIPPED,
+  ],
+  headline: AVATAR_TOURS_STARTED,
+};
+
 // The Illustrate tour (docs/specs/007-editor/illustrate-tour.md): its own funnel, beside the Illustrate tour's.
 export const ILLUSTRATE_TOUR_DECLINED = chart(
   'UI',
@@ -459,6 +517,11 @@ const SHOW_ME_SURFACES = [
   { token: 'DashboardTour', title: 'Dashboard', where: 'Dashboard Settings' },
   { token: 'PhotoReviewTour', title: 'Photo Review', where: 'the photo import review' },
   { token: 'LogoTour', title: 'Logo', where: 'a logo page’s panel' },
+  { token: 'SlideTour', title: 'Slide', where: 'a slide page’s panel' },
+  { token: 'InfographicTour', title: 'Infographic', where: 'an infographic page’s panel' },
+  { token: 'ArticleTour', title: 'Article', where: 'an article page’s panel' },
+  { token: 'SankeyFlowsTour', title: 'Sankey Flows', where: 'a Sankey’s Flows dialog' },
+  { token: 'TabStyleTour', title: 'Tab Style', where: 'the Tab Style dialog' },
 ] as const;
 
 export const SHOW_ME_TOURS_STARTED = chart(

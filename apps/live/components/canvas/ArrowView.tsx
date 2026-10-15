@@ -2,6 +2,7 @@ import { memo, useRef, useState, type PointerEvent as ReactPointerEvent } from '
 import { useZoneClip } from '@/lib/article/zone-clip-store';
 import {
   arrowheadShapeOf,
+  arrowheadStartShapeOf,
   arrowheadSizeOf,
   BORDER_DASH_ARRAY,
   DEFAULT_BORDER_STYLE,
@@ -24,6 +25,7 @@ import { ArrowLabel } from './ArrowLabel';
 import { SelectedArrowHandles } from './SelectedArrowHandles';
 import { ArrowGripsPortal } from './SelectionGripsLayer';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
+import { useArrowFinish } from './arrow-finish';
 import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -157,7 +159,7 @@ function ArrowViewImpl({
   const longPress = useLongPress(contextSelectBeside);
   // Endpoints / path / midpoint / handle points / label placement — the
   // pure per-render frame, resolved in arrow-view-frame.ts.
-  const { from, to, pathD, curveAnchors, curveControl, elbowPoint } = frame;
+  const { from, to, pathD, dashOffset, curveAnchors, curveControl, elbowPoint } = frame;
   // While editing, the label follows the draft text: laid out live so the
   // editor, its wrap and the knockout move as you type.
   const [draft, setDraft] = useState<string | null>(null);
@@ -215,9 +217,22 @@ function ArrowViewImpl({
   const ownHeadColor = arrow.arrowheadColor ?? (markersTakeLineColour() ? undefined : baseStroke);
   const ownMarkerId = ownHeadColor ? `arrowhead-${arrow.id}` : null;
   const markerUrl = `url(#${ownMarkerId ?? arrowheadMarkerId(headShape, headSize)})`;
+  // A start with its own head (an ER relationship's other cardinality) takes its own marker; the sketch, which draws
+  // one shape for both ends, then leaves the heads to the markers.
+  const startShape = arrowheadStartShapeOf(arrow);
+  const mixedHeads = startShape !== headShape;
+  const ownStartMarkerId = ownHeadColor && mixedHeads ? `arrowhead-${arrow.id}-start` : null;
+  const startMarkerUrl = mixedHeads
+    ? `url(#${ownStartMarkerId ?? arrowheadMarkerId(startShape, headSize)})`
+    : markerUrl;
   // Per-arrow thickness with a small selected-state bump so the user
-  // can tell the difference between "selected" and "thicker stroke".
-  const baseStrokeWidth = arrow.strokeWidth ?? 2;
+  // can tell the difference between "selected" and "thicker stroke". The finish thins an unset width
+  // under Professional and draws the line by hand under Sketch (docs/specs/008-canvas/finish.md).
+  const { baseStrokeWidth, sketch } = useArrowFinish(arrow, pathD);
+  // Sketched heads replace the markers; circles and diamonds keep theirs.
+  const sketchedHeads = !!sketch?.sketchedHeads && !mixedHeads;
+  const headMarker = sketchedHeads ? undefined : markerUrl;
+  const startMarker = sketchedHeads ? undefined : startMarkerUrl;
   const strokeWidth = isSelected ? baseStrokeWidth + 0.5 : baseStrokeWidth;
   const hitCursor = isPaintMode ? 'copy' : 'pointer';
   // The line bends where it is grabbed, so an editable line says so.
@@ -284,6 +299,14 @@ function ArrowViewImpl({
       {ownMarkerId && ownHeadColor ? (
         <ArrowHeadMarker id={ownMarkerId} shape={headShape} size={headSize} color={ownHeadColor} />
       ) : null}
+      {ownStartMarkerId && ownHeadColor ? (
+        <ArrowHeadMarker
+          id={ownStartMarkerId}
+          shape={startShape}
+          size={headSize}
+          color={ownHeadColor}
+        />
+      ) : null}
       {behindMaskId ? (
         // White paints, black cuts. The backdrop is deliberately vast
         // rather than the arrow's bbox: a curve can bow well outside the
@@ -339,7 +362,8 @@ function ArrowViewImpl({
       ) : null}
       <path
         ref={flowPathRef}
-        d={pathD}
+        // The selection halo above and the hit band below keep the true path; only the ink is sketched.
+        d={sketch?.line ?? pathD}
         // The break itself. The hit band below is deliberately NOT masked:
         // the arrow stays clickable across the gap, so selecting one that
         // runs behind a box doesn't require finding a visible stub.
@@ -361,12 +385,14 @@ function ArrowViewImpl({
         strokeDasharray={
           flowPathDash ?? BORDER_DASH_ARRAY[arrow.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
         }
+        // A shared end's pattern anchored there (arrow-dash.ts); a flowing arrow marches its own.
+        strokeDashoffset={flowPathDash ? undefined : dashOffset}
         markerStart={
-          arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? markerUrl : undefined
+          arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? startMarker : undefined
         }
         markerEnd={
           arrow.arrowEnds === 'to' || arrow.arrowEnds === 'both' || arrow.arrowEnds === undefined
-            ? markerUrl
+            ? headMarker
             : undefined
         }
         style={
@@ -390,6 +416,18 @@ function ArrowViewImpl({
           } as React.CSSProperties
         }
       />
+      {sketch?.heads && sketchedHeads ? (
+        <path
+          d={sketch.heads}
+          mask={behindMask}
+          fill="none"
+          stroke={ownHeadColor ?? baseStroke}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ pointerEvents: 'none' }}
+        />
+      ) : null}
 
       <path
         // The wide transparent hit band. Carries data-element-id so DOM

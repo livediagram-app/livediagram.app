@@ -14,9 +14,13 @@ import {
   elementFingerprint,
   resolveRef,
   type Element,
+  type Finish,
   type Tab,
 } from '@livediagram/document';
 import { ApiError, apiJson } from './api';
+import { idsOf, resolveArrowEnds } from './arrow-ends';
+import { elementsIssue } from './element-values';
+import { packFreehandPoints } from './freehand-points';
 import type { Env } from './env';
 
 export async function submitChangeset(
@@ -36,6 +40,21 @@ export async function submitChangeset(
       body: JSON.stringify(body),
     },
   );
+}
+
+// The api's result text as the model reads it: its footer's revert line names the CLI command, which no
+// MCP tool runs, so it is left off rather than sending the model to a command it cannot reach. Its `@x,y`
+// positions are from the content's top-left as it was read, while an element's x and y are canvas coordinates:
+// when the two differ, a closing line says how to get from one to the other, as the layout view does.
+export function mcpResultText(
+  text: string,
+  origin: { x: number; y: number } = { x: 0, y: 0 },
+): string {
+  const plain = text.replace(/ · revert: livediagram changeset revert \S+ \S+/g, '');
+  const [ox, oy] = [Math.round(origin.x), Math.round(origin.y)];
+  if ((ox === 0 && oy === 0) || !/@-?\d+,-?\d+/.test(plain)) return plain;
+  const plus = (n: number) => (n < 0 ? `- ${-n}` : `+ ${n}`);
+  return `${plain}\n@x,y above are from the content's top-left: an element's x, y = @x ${plus(ox)}, @y ${plus(oy)}.`;
 }
 
 // One op of `update_document`'s ops mode, as the model sends it.
@@ -68,16 +87,44 @@ function targetOf(elementId: string, named: Element | undefined): string {
 // can change.
 export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unknown[] | string {
   const named = namedIn(current);
+  // The ids an arrow end may name: the tab's, and every element this call adds.
+  const known = [
+    ...current.elements.map((e) => e.id),
+    ...idsOf(ops.flatMap((op) => (op.op === 'add' && op.element ? [op.element] : []))),
+  ];
+  const withEnds = (element: Record<string, unknown>): Record<string, unknown> | string => {
+    const resolved = resolveArrowEnds([element], known);
+    return 'error' in resolved ? resolved.error : (resolved.elements[0] as Record<string, unknown>);
+  };
   const out: unknown[] = [];
   for (const [i, op] of ops.entries()) {
     const n = i + 1;
     if (op.op === 'add') {
       if (!op.element) return `ops[${n}]: add needs "element"`;
-      out.push({ op: 'add', element: op.element });
+      const drawn = packFreehandPoints([op.element]);
+      if ('error' in drawn) return `ops[${n}]: ${drawn.error}`;
+      const given = drawn.elements[0] as Record<string, unknown>;
+      const valueIssue = elementsIssue([given]);
+      if (valueIssue) return `ops[${n}]: ${valueIssue}`;
+      const element = withEnds(given);
+      if (typeof element === 'string') return `ops[${n}]: ${element}`;
+      out.push({ op: 'add', element });
     } else if (op.op === 'update') {
       if (!op.elementId || !op.element) return `ops[${n}]: update needs "elementId" and "element"`;
       const stored = named(op.elementId);
-      const fields = { ...op.element };
+      // New points for a stroke are packed as an added one's are: its box and its block, together.
+      let given = op.element;
+      if (stored?.type === 'freehand' && given.points !== undefined) {
+        const drawn = packFreehandPoints([{ ...given, type: 'freehand' }]);
+        if ('error' in drawn) return `ops[${n}]: ${drawn.error}`;
+        const { x, y, width, height, packedPoints } = drawn.elements[0] as Record<string, unknown>;
+        const { points: _points, ...rest } = given;
+        given = { ...rest, x, y, width, height, packedPoints };
+      }
+      const ended = withEnds(stored?.type === 'arrow' ? { type: 'arrow', ...given } : given);
+      if (typeof ended === 'string') return `ops[${n}]: ${ended}`;
+      const fields = { ...ended };
+      if (stored?.type === 'arrow' && given.type === undefined) delete fields.type;
       if (stored && fields.id === stored.id) delete fields.id;
       if (stored && fields.type === stored.type) delete fields.type;
       out.push({ op: 'set', target: targetOf(op.elementId, stored), fields });
@@ -102,14 +149,24 @@ export function baseFor(ops: readonly McpOp[], current: Tab & { rev: number }, r
   return { rev: rev ?? current.rev, elements };
 }
 
+// The base of an edits changeset: the revision the model read, and every element as loaded now, since the text may
+// name any of them; a person's change since is overwritten only on the fields the edits set.
+export function editsBase(current: Tab & { rev: number }, rev?: number) {
+  const elements: Record<string, string> = {};
+  for (const el of current.elements) elements[el.id] = elementFingerprint(el);
+  return { rev: rev ?? current.rev, elements };
+}
+
 // A whole-tab body from the tool's graph, Mermaid, template or elements input.
 export function replaceBodyFrom(args: {
   graph?: unknown;
   mermaid?: string;
   template?: string;
+  dashboard?: Record<string, unknown>;
   elements?: unknown[];
   layout?: 'auto' | 'preserve';
   theme?: string;
+  finish?: Finish;
   name?: string;
 }): ChangesetReplaceBody {
   const source = args.graph
@@ -118,11 +175,14 @@ export function replaceBodyFrom(args: {
       ? { mermaid: args.mermaid }
       : args.template
         ? { template: args.template }
-        : { elements: args.elements ?? [] };
+        : args.dashboard
+          ? { dashboard: args.dashboard }
+          : { elements: args.elements ?? [] };
   return {
     ...source,
     ...(args.layout ? { layout: args.layout } : {}),
     ...(args.theme ? { theme: args.theme } : {}),
+    ...(args.finish ? { finish: args.finish } : {}),
     ...(args.name ? { name: args.name } : {}),
   };
 }

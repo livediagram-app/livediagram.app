@@ -63,6 +63,7 @@ export function tileSignature(tile: PaletteTileDef): string | null {
           a.reaction ??
           a.mode ??
           a.estimateScale ??
+          a.variant ??
           (a.kind === 'plan-view' ? a.plan : undefined),
       );
     case 'component': {

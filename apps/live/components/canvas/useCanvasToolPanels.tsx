@@ -36,8 +36,12 @@ export function useCanvasToolPanels({
   chromeHidden,
   panelWiringFor,
   slidesPopover,
+  avatarPopover,
 }: {
   props: CanvasChromeProps;
+  // The Avatar panel as a popover over its cluster button (docs/specs/008-canvas/avatar-mode.md "The Avatar
+  // Panel"), while open: it has no corner form.
+  avatarPopover?: { anchor: DockAnchor | undefined; onClose: () => void } | null;
   // The Slide Deck as a popover over its cluster button (Illustrate mode), while open.
   slidesPopover?: { anchor: DockAnchor | undefined; onClose: () => void } | null;
   chromeHidden: boolean;
@@ -58,9 +62,10 @@ export function useCanvasToolPanels({
     onRandomiseAvatar,
     onAvatarReaction,
     onAvatarBurst,
-    avatarPanelPosition,
-    onMoveAvatarPanel,
-    onResetAvatarPanel,
+    onSendAvatarMessage,
+    avatarStatus,
+    onSetAvatarStatus,
+    avatarSpeechCooling,
     laserConfig,
     onChangeLaserField,
     laserPanelPosition,
@@ -97,9 +102,6 @@ export function useCanvasToolPanels({
   // and has no format painter (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
   const whiteboard = props.editorMode === 'draw';
 
-  const avatarWiring = panelWiringFor('avatar', avatarPanelPosition ?? null, () =>
-    onResetAvatarPanel?.(),
-  );
   const laserWiring = panelWiringFor('laser', laserPanelPosition ?? null, () =>
     onResetLaserPanel?.(),
   );
@@ -116,11 +118,12 @@ export function useCanvasToolPanels({
     onResetSlideDeckPanel?.(),
   );
 
-  // Avatar Panel (docs/specs/008-canvas/avatar-mode.md): the character sheet, mounted only while Avatar
-  // mode is active — so it joins and leaves its corner stack the way the
-  // session-tool panels do. Available to view-role too (the mode is).
+  // Avatar Panel (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): the character sheet, a popover over the
+  // Avatar button, mounted only while Avatar mode is active and the popover open. Available to view-role too
+  // (the mode is); only someone who may speak gets Send a Message. Shown in Zen, as its button is (the mode's one
+  // piece of chrome there); only the welcome flow hides it.
   const avatarEl =
-    !chromeHidden && canvasTool === 'avatar' && avatarConfig ? (
+    !props.welcomeOpen && canvasTool === 'avatar' && avatarConfig && avatarPopover ? (
       <AvatarPanel
         config={avatarConfig}
         onChange={(field, value) => onChangeAvatarField?.(field, value)}
@@ -128,10 +131,26 @@ export function useCanvasToolPanels({
         onReaction={onAvatarReaction}
         onBurst={onAvatarBurst}
         shirt={selfParticipant?.color}
-        position={avatarWiring.position}
-        onMoveTo={(x, y) => onMoveAvatarPanel?.(x, y)}
-        onReset={avatarWiring.onReset}
-        dock={avatarWiring.dock}
+        onSendMessage={
+          onSendAvatarMessage
+            ? (text) => {
+                const sent = onSendAvatarMessage(text);
+                // Close the panel so the bubble is seen rising (docs/specs/008-canvas/avatar-mode.md).
+                if (sent) avatarPopover.onClose();
+                return sent;
+              }
+            : undefined
+        }
+        speechCooling={!!avatarSpeechCooling}
+        status={avatarStatus ?? null}
+        onSetStatus={onSetAvatarStatus}
+        position={null}
+        onMoveTo={() => {}}
+        asPopover
+        popoverOpen
+        popoverAnchor={avatarPopover.anchor}
+        dismissOnOutside
+        onPopoverClose={avatarPopover.onClose}
       />
     ) : null;
 
@@ -211,6 +230,7 @@ export function useCanvasToolPanels({
         pages={props.illustratePages?.pages.map((p) => ({
           id: p.id,
           label: pageLabel(p, p.index, Math.max(2, props.illustratePages!.pages.length)),
+          slide: p.kind === 'slide',
         }))}
         position={slideDeckWiring.position}
         onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}

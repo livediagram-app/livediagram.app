@@ -9,7 +9,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./template-sheets": "./src/template-sheets.ts",
-    "./plan-template-seeds": "./src/plan-template-seeds.ts"
+    "./plan-template-seeds": "./src/plan-template-seeds.ts",
+    "./page-layout-build": "./src/page-layout-build.ts"
   },
   "scripts": {
     "lint": "eslint .",

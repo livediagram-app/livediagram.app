@@ -111,6 +111,9 @@ export type MovablePanelProps = {
   // The popover's width class (default w-64); a wider one names its width in useDockPopovers too, so it
   // is placed whole on the canvas.
   popoverWidth?: string;
+  // A phone's popover that opens down from its button as a sheet: the canvas's full width, edge to edge, down to
+  // its bottom edge (the tab bar), its body filling the height. `popoverWidth` is ignored.
+  popoverSheet?: boolean;
   // Whether the button that owns this popover has it open.
   popoverOpen?: boolean;
   // Close the popover on any press outside it, as a menu does. The button
@@ -158,5 +161,8 @@ export type MovablePanelProps = {
   // card search): a maximised or tab-filling Plan board stands beside it (lib/canvas-layer-insets.ts), while a passing
   // panel floats over the board and never moves it. Marked `data-layout-chrome`.
   layoutChrome?: boolean;
+  // Always fully opaque, whatever the Panel opacity preference (docs/specs/007-editor/user-preferences.md): the
+  // Explorer, whose menus open outside the panel, so a fade would set in while one is in use.
+  opaque?: boolean;
   children: ReactNode;
 };

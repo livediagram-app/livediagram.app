@@ -662,5 +662,30 @@ export const ICON_CATALOG_2: IconDef[] = [
     // Rising strength bars: distinct from Wi-Fi's arcs.
     prims: [...lucideSignal],
   },
+  {
+    id: 'browser',
+    label: 'Browser',
+    keywords: 'web browser window website page app tab',
+    // A window with its tab strip: a web page, distinct from the monitor's stand.
+    prims: [
+      { t: 'rect', x: 2, y: 4, w: 20, h: 16, rx: 2 },
+      { t: 'line', x1: 2, y1: 9, x2: 22, y2: 9 },
+      { t: 'line', x1: 6, y1: 6.5, x2: 6.01, y2: 6.5 },
+      { t: 'line', x1: 9, y1: 6.5, x2: 9.01, y2: 6.5 },
+    ],
+  },
+  {
+    id: 'router',
+    label: 'Router',
+    keywords: 'router network gateway wifi modem switch',
+    // A box with two aerials and its port lights.
+    prims: [
+      { t: 'rect', x: 2, y: 12, w: 20, h: 8, rx: 2 },
+      { t: 'line', x1: 6, y1: 12, x2: 4, y2: 4 },
+      { t: 'line', x1: 18, y1: 12, x2: 20, y2: 4 },
+      { t: 'line', x1: 6, y1: 16, x2: 6.01, y2: 16 },
+      { t: 'line', x1: 10, y1: 16, x2: 10.01, y2: 16 },
+    ],
+  },
   ...LEGACY_EMOJI_ICONS,
 ];

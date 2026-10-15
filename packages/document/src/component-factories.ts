@@ -12,6 +12,8 @@
 import type { Element, ImageElement, ShapeElement, ShapeKind } from './index';
 import { createImage } from './factories';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
+import { createFlowchartStart, FLOWCHART_STEP_SIZE } from './flowchart';
+import { applyShapeVariant } from './shape-variants';
 import { ACCENT_BAR_TEXT, HERO_DEFAULT_CAPTION } from './web-components';
 
 // Theme colours a component is built from. `accent` is the theme accent
@@ -25,12 +27,22 @@ export type ComponentColors = { accent: string; surface: string; ink: string };
 // and telemetry types all key off them), so they stay as they were even
 // where the shape kind behind one is spelled differently.
 export type ComponentKind =
-  'banner' | 'hero' | 'header' | 'callout' | 'stat' | 'process' | 'avatar';
+  | 'banner'
+  | 'hero'
+  | 'header'
+  // The Callout is a Card preset (docs/specs/009-elements/card.md); the Card itself is a plain shape tile.
+  | 'callout'
+  | 'stat'
+  | 'process'
+  | 'avatar'
+  // The flowchart's first step (docs/specs/009-elements/flowchart.md): a component because it is placed
+  // like one (tap or drag, at its own size) and is more than its shape kind: a Start that IS a chart.
+  | 'flowchart';
 
 const COMPONENT_SHAPE: Partial<Record<ComponentKind, ShapeKind>> = {
   banner: 'banner',
   header: 'site-header',
-  callout: 'callout',
+  callout: 'card',
   stat: 'stat-row',
   process: 'process',
 };
@@ -54,6 +66,7 @@ export const COMPONENT_SIZE: Record<ComponentKind, { width: number; height: numb
   process: SHAPE_DEFAULT_SIZE.process,
   hero: { width: HERO_WIDTH, height: HERO_HEIGHT },
   avatar: { width: AVATAR_SIZE, height: AVATAR_SIZE },
+  flowchart: FLOWCHART_STEP_SIZE.terminator,
 };
 
 // Avatar (docs/specs/008-canvas/canvas-and-palette.md): a circular image. Square + aspect-locked with a 'full'
@@ -99,6 +112,12 @@ function createWebShape(kind: ShapeKind, cx: number, cy: number, c: ComponentCol
   return { ...base, fillColor: c.surface, strokeColor: c.accent, textColor: c.ink };
 }
 
+/** A Callout (docs/specs/009-elements/card.md "The Callout is a Card preset") at (x, y), unpainted, for templates
+ *  and agents: a card with badge media and the callout's size and copy. */
+export function createCalloutCard(x: number, y: number): ShapeElement {
+  return applyShapeVariant(createShape('card', x, y), 'callout');
+}
+
 export function createComponent(
   kind: ComponentKind,
   cx: number,
@@ -106,6 +125,19 @@ export function createComponent(
   colors: ComponentColors,
 ): Element {
   if (kind === 'avatar') return createAvatar(cx, cy);
+  // Unpainted, so the theme paints it like any shape the palette drops.
+  if (kind === 'flowchart') return createFlowchartStart(cx, cy);
   if (kind === 'hero') return createHero(cx, cy, colors.accent);
+  // The Callout is a Card preset (docs/specs/009-elements/card.md): the callout's own size and copy, as a card with
+  // badge media.
+  if (kind === 'callout') {
+    const card = createWebShape('card', cx, cy, colors);
+    const callout = applyShapeVariant(card, 'callout');
+    return {
+      ...callout,
+      x: cx - callout.width / 2,
+      y: cy - callout.height / 2,
+    };
+  }
   return createWebShape(COMPONENT_SHAPE[kind]!, cx, cy, colors);
 }

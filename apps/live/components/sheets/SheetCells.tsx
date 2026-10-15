@@ -197,6 +197,22 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
           style={{ ...style, borderColor: showGrid ? palette.cardBorder : 'transparent' }}
         />,
       );
+      // Cell A1 alone, one column by one row even when merged wider: where the Sheets tour's Type Into Cells step
+      // points (plan-tour-steps.ts).
+      if (r === 0 && c === 0)
+        out.push(
+          <div
+            key="a1"
+            data-sheet-a1=""
+            className="pointer-events-none absolute"
+            style={{
+              left: box.x,
+              top: box.y,
+              width: g.cols[1]! - g.cols[0]!,
+              height: g.rows[1]! - g.rows[0]!,
+            }}
+          />,
+        );
       if (f && (f.bt || f.br || f.bb || f.bl))
         out.push(
           <div

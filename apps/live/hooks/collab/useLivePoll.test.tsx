@@ -8,7 +8,7 @@ vi.mock('@/lib/telemetry', () => ({
   track: (...args: unknown[]) => trackMock(...args),
 }));
 
-const { useLivePoll } = await import('./useLivePoll');
+const { pollHostFor, useLivePoll } = await import('./useLivePoll');
 
 const poll = (id: string): LivePoll => ({
   id,
@@ -189,5 +189,24 @@ describe('surviving reconnects and refreshes (docs/specs/012-collaboration/colla
     act(() => result.current.receivePoll({ ...poll('late'), startedAt: 9 }));
     act(() => result.current.receivePoll({ ...poll('early'), startedAt: 3 }));
     expect(result.current.poll?.id).toBe('late');
+  });
+});
+
+// docs/specs/012-collaboration/facilitator.md "Poll: start, end"
+describe('pollHostFor', () => {
+  const base = { started: false, open: true, sessionToolsBlocked: false, facilitating: false };
+
+  it('is the starter while nobody else holds the baton', () => {
+    expect(pollHostFor({ ...base, started: true })).toBe(true);
+    expect(pollHostFor(base)).toBe(false);
+  });
+
+  it('passes to the facilitator when the baton is taken mid-poll', () => {
+    expect(pollHostFor({ ...base, started: true, sessionToolsBlocked: true })).toBe(false);
+    expect(pollHostFor({ ...base, facilitating: true })).toBe(true);
+  });
+
+  it('is nobody once the poll has closed', () => {
+    expect(pollHostFor({ ...base, open: false, facilitating: true })).toBe(false);
   });
 });

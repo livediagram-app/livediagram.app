@@ -10,6 +10,7 @@ import { createImportImageSession } from './session';
 import type { DecodedImage, ImageCodec, ImportImageSession } from './types';
 import { createWebpEncoder, type WasmWebpEncode } from './webp';
 import { debugLog } from '@/lib/debug-log';
+import { blobToDataUrl } from '@/lib/blob-data-url';
 
 type Drawable = ImageBitmap | HTMLImageElement;
 type BrowserDecoded = DecodedImage & { source: Drawable };
@@ -120,15 +121,6 @@ export const browserImageCodec: ImageCodec = {
   decode: (blob, mimeType) => (mimeType === 'image/svg+xml' ? decodeSvg(blob) : decodeRaster(blob)),
   encode,
 };
-
-function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error ?? new Error('image read failed'));
-    reader.readAsDataURL(blob);
-  });
-}
 
 // One session per import: cloud documents upload to the owner's gallery,
 // Offline Mode documents embed (docs/specs/006-document/offline-mode.md).

@@ -11,6 +11,7 @@ import {
   apiFetchDocumentThumbnailSvg,
   apiFetchDocumentThumbnailUrl,
   apiListDocuments,
+  apiListDocumentsWithTeamRecent,
 } from './documents';
 
 const SVG = '<svg viewBox="0 0 4 2" width="400" height="200"><rect fill="#fafafa"/></svg>';
@@ -48,9 +49,46 @@ describe('apiListDocuments', () => {
     await apiListDocuments('owner-recent');
 
     expect(parseRecentDiagrams(localStorage.getItem(RECENT_DIAGRAMS_KEY))).toEqual([
-      { id: 'new', name: 'New', savedAt: 2, mode: null },
-      { id: 'old', name: 'Old', savedAt: 1, mode: 'draw' },
+      { id: 'new', name: 'New', savedAt: 2, mode: null, teamName: null },
+      { id: 'old', name: 'Old', savedAt: 1, mode: 'draw', teamName: null },
     ]);
+  });
+
+  it('asks for the team documents and notes them with their team, newest first', async () => {
+    __setOfflineBackend(memBackend());
+    const seen = stubFetch(() =>
+      Response.json({
+        documents: [{ id: 'mine', name: 'Mine', savedAt: 1, empty: false, opensIn: null }],
+        teamRecent: [
+          {
+            id: 'team',
+            name: 'Team',
+            savedAt: 3,
+            empty: false,
+            opensIn: 'plan',
+            teamName: 'Design',
+          },
+        ],
+      }),
+    );
+
+    // The personal library never mixes in the team ones; only the recent note does.
+    expect((await apiListDocuments('owner-team')).map((d) => d.id)).toEqual(['mine']);
+
+    expect(seen[0]).toMatch(/\/documents\?include=team-recent$/);
+    expect(parseRecentDiagrams(localStorage.getItem(RECENT_DIAGRAMS_KEY))).toEqual([
+      { id: 'team', name: 'Team', savedAt: 3, mode: 'plan', teamName: 'Design' },
+      { id: 'mine', name: 'Mine', savedAt: 1, mode: null, teamName: null },
+    ]);
+  });
+
+  it('reads a list without team documents (an older api) as none', async () => {
+    __setOfflineBackend(memBackend());
+    stubFetch(() => Response.json({ documents: [] }));
+    expect(await apiListDocumentsWithTeamRecent('owner-old-api')).toEqual({
+      documents: [],
+      teamRecent: [],
+    });
   });
 });
 

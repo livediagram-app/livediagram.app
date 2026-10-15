@@ -8,6 +8,7 @@ import { deleteDocumentOpensForOwner, migrateDocumentOpens } from './document-op
 import { COPY_COUNT_SQL } from './community-engagement';
 import { snapshotKeys } from './documents';
 import { documentRemovalStatements } from './document-removal';
+import { purgeRooms } from '../room-purge-client';
 import { detachUserFromTeams } from './teams';
 import { imageGrantOwnerChangeStatement } from './image-grants';
 import { disconnectDrive } from '../drive/disconnect';
@@ -69,11 +70,12 @@ export async function deleteAccount(
   // the images above — the cascade can't reach them. Enumerate the
   // owner's document ids while the rows still exist, then bulk-delete
   // their snapshot objects before the documents DELETE drops the ids.
+  const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
+    .bind(ownerId)
+    .all<{ id: string }>();
+  const documentIds = (documentRows.results ?? []).map((r) => r.id);
   if (env.IMAGES) {
-    const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
-      .bind(ownerId)
-      .all<{ id: string }>();
-    const thumbKeys = (documentRows.results ?? []).flatMap((r) => snapshotKeys(r.id));
+    const thumbKeys = documentIds.flatMap(snapshotKeys);
     for (let i = 0; i < thumbKeys.length; i += R2_DELETE_CHUNK) {
       await env.IMAGES.delete(thumbKeys.slice(i, i + R2_DELETE_CHUNK));
     }
@@ -84,6 +86,8 @@ export async function deleteAccount(
     documentRemovalStatements(env, { column: 'owner_id', value: ownerId }),
   );
   const documentsRes = removal[removal.length - 1]!;
+  // Their rooms' storage goes with them (the ledger keeps comment and idea text). Best effort.
+  await purgeRooms(env, documentIds);
   // Personal folders only. A team folder carries its creator's owner_id but
   // belongs to the team (access is by membership), and teammates' documents
   // sit in it: deleting it dropped them out of the team library behind a

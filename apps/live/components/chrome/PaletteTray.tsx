@@ -48,6 +48,7 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
   useEffect(() => {
     if (!active) return;
     let watched: HTMLElement | null = null;
+    let watchedParent: HTMLElement | null = null;
     const observer =
       typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => update()) : null;
     const update = () => {
@@ -56,6 +57,15 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
         if (watched) observer?.unobserve(watched);
         if (card) observer?.observe(card);
         watched = card;
+      }
+      // Its wrapper too: the strip's card is centred inside a whole-pixel box (SnapWidth's outer box, the card's
+      // grandparent) that takes its new width a beat after the card's, so the card MOVES without resizing again;
+      // that box's resize is the only signal of it (the category bar dropping its names left the tray off-centre).
+      const parent = card?.parentElement?.parentElement ?? null;
+      if (parent !== watchedParent) {
+        if (watchedParent) observer?.unobserve(watchedParent);
+        if (parent) observer?.observe(parent);
+        watchedParent = parent;
       }
       const next = measure(selector);
       setBox((prev) => (same(prev, next) ? prev : next));
@@ -100,7 +110,8 @@ export function PaletteTray({
   if (typeof document === 'undefined') return null;
   return createPortal(
     <div
-      className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center"
+      // Steps aside while the Explorer is open: its panel reaches under the strip (explorer-structure.md "Layout").
+      className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center [body[data-explorer-open]_&]:hidden [body[data-strip-popover-open]_&]:hidden"
       // Up a pixel, so the tray covers the strip's bottom border where they meet and the two read as one.
       style={{ left: box.left, width: box.width, top: box.bottom - 1 }}
     >
@@ -112,7 +123,7 @@ export function PaletteTray({
         className="pointer-events-auto flex min-w-0 max-w-full animate-fade-in items-center gap-2 rounded-b-xl border border-t-0 border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-[0_6px_10px_-6px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
         onPointerDown={(e) => e.stopPropagation()}
       >
-        <span className="flex shrink-0 items-center text-brand-600 dark:text-brand-300">
+        <span className="flex shrink-0 items-center text-brand-700 dark:text-brand-300">
           {lead}
         </span>
         <span className="min-w-0 truncate">{children}</span>

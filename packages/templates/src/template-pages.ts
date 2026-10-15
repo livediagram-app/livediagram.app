@@ -14,7 +14,9 @@ import { dataStoryPages } from './template-builders-data-story';
 import { howItWorksPages } from './template-builders-how-it-works';
 import { versusPages } from './template-builders-versus';
 import { socialCarouselPages } from './template-builders-social-carousel';
+import { layoutDeckPages } from './template-builders-layout-decks';
 import type { TemplateKind } from './templates';
+import { designTemplatePages, isDesignTemplate } from './template-design-pages';
 
 /** The pages a template opens on, or undefined for a template drawn on the open canvas. */
 export function templatePages(kind: TemplateKind): IllustratePage[] | undefined {
@@ -41,7 +43,12 @@ export function templatePages(kind: TemplateKind): IllustratePage[] | undefined 
       return versusPages();
     case 'social-carousel':
       return socialCarouselPages();
+    case 'launch-keynote':
+    case 'quarterly-review':
+    case 'team-welcome':
+    case 'workshop-kickoff':
+      return layoutDeckPages(kind);
     default:
-      return undefined;
+      return isDesignTemplate(kind) ? designTemplatePages(kind) : undefined;
   }
 }

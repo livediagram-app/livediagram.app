@@ -33,13 +33,13 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 105;
+export const TEMPLATE_COUNT = 125;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 12;
+export const TEMPLATE_CATEGORY_COUNT = 13;
 // Illustrate's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
-export const SLIDE_LAYOUT_COUNT = 17;
+export const SLIDE_LAYOUT_COUNT = 46;
 // Illustrate's infographic page layouts and logo layouts, pinned the same way.
-export const PAGE_LAYOUT_COUNT = 31;
+export const PAGE_LAYOUT_COUNT = 92;
 export const LOGO_LAYOUT_COUNT = 25;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
@@ -164,7 +164,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How many templates and themes are there?',
-        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-six themes that recolour every shape and arrow in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
+        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every shape and arrow in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
       },
       {
         q: 'What are the five modes?',
@@ -476,12 +476,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool
             and, after a one-time authorisation, it can find, read, create and edit the documents in
             your account, including writing articles, building slide decks and designing logos. Its
-            changes appear live for anyone on the tab, outlined so you can see them and undo them.
-            See <a href="/features/diagrams#build-diagrams-with-ai">AI and MCP</a>.
+            changes appear live for anyone on the tab, outlined so you can see them and undo them.{' '}
+            <a href="/ai">Build with AI</a> walks you through connecting Claude, ChatGPT, Cursor and
+            more.
           </>
         ),
         aText:
-          'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account, including writing articles, building slide decks and designing logos. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. See AI and MCP.',
+          'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account, including writing articles, building slide decks and designing logos. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
       },
       {
         q: 'Is there AI built into the editor?',

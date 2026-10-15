@@ -55,6 +55,7 @@ describe('page changes', () => {
         { op: 'move', page: 1, to: 3 },
         { op: 'duplicate', page: '2' },
         { op: 'delete', page: 3 },
+        { op: 'apply_background_to_all', page: 1 },
       ],
     });
     expect(out).toEqual({
@@ -75,6 +76,7 @@ describe('page changes', () => {
         { op: 'move', page: 1, to: 3 },
         { op: 'duplicate', page: '2' },
         { op: 'delete', page: 3 },
+        { op: 'apply_background_to_all', page: 1 },
       ],
     });
   });

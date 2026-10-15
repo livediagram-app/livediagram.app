@@ -24,7 +24,7 @@ Putting the tools ON the canvas makes the canvas self-facilitating. A retro temp
 - The press routes through the **same entry points the menus use** (`startTimer`, `startVote`, `startPoll`), so every rule those already enforce still applies: the edit-role gate, the "one vote at a time" rule, the telemetry. A vote button pressed while a vote is already running does nothing: starting over would reset every dot cast so far ([Collaboration race hardening](collab-race-hardening.md)).
 - **It starts the tool for the room**, unlike the Selection Mode button, which only ever changes the presser's own mode. That asymmetry is the point: a timer nobody else can see is not a timer. The element menu says so.
 - **A timer is not pressed at all any more**, so the rest of this section is about Vote and Poll. On any surface that can drive a timer, the element renders the countdown with its own pause / resume / reset / remove controls (see "The Timer element IS the timer" below); there is no whole-face press to interpret. The press-to-pause face it replaced — "Start 5 min timer" / "Pause the timer" / "Continue the timer", from `sessionButtonText` — is still what a surface WITHOUT timer controls draws, which today means a read-only one, so it reads as a live control and correctly refuses like every other read-only press.
-- **A read-only visitor's press does nothing**, and the face says why rather than looking live: starting a timer or a vote is an edit-role action ([Session tools (timer + voting)](session-tools.md) "Roles"). Answering the poll it starts is not — an audience on a view link can still take part.
+- **A read-only visitor's press does nothing**, and the face says why rather than looking live: starting a timer or a vote is an edit-role action ([Session tools (timer + voting)](session-tools.md) "Roles"). Answering the poll it starts is taking part, a Participant's as well as an Editor's; a Viewer only looks and is never shown the poll ([Live poll](live-poll.md), [Share roles](../013-workspace/share-roles.md)).
 - **Dragging it does not press it** (`usePressWithoutDrag`), same as every other Behaviour element.
 
 ## Configuring it
@@ -101,7 +101,7 @@ beside `LivePoll` in `@livediagram/api-schema`: the style is now a `Tab` field,
 api-schema depends on document and not the reverse, and re-exporting `PollStyle`
 from api-schema keeps every existing import resolving against one list.
 
-For **Vote and Poll**, the face's derived label follows that setting ("Vote — 3 dots each", "Ask"), and an author's own label wins over it, like any shape. A **Timer** has no label to win: `SessionTimerFace` draws the clock, showing the configured minutes until a timer is actually running and the live countdown after. The setting still drives what you see, just as the digits rather than as a sentence about them.
+For **Vote and Poll**, the face's derived label follows that setting ("Start vote · 3 dots each", "Ask · 4 options" over the question, a poll naming the shape of its answers in a few words that fit the kicker: yes / no, its options' count, a person, rating or open), and an author's own label wins over it, like any shape. A **Timer** has no label to win: `SessionTimerFace` draws the clock, showing the configured minutes until a timer is actually running and the live countdown after. The setting still drives what you see, just as the digits rather than as a sentence about them.
 
 ## Telemetry
 

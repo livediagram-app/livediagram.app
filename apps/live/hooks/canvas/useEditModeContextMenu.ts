@@ -9,7 +9,7 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { isBoxed, type Element } from '@livediagram/document';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
-import { elementMenuAnchor } from '@/lib/context-menu-anchor';
+import { editMenuAnchor } from '@/lib/context-menu-anchor';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 
 export function useEditModeContextMenu({
@@ -66,11 +66,17 @@ export function useEditModeContextMenu({
       if (!(layer instanceof HTMLElement) || layer.offsetWidth === 0) return;
       const layerRect = layer.getBoundingClientRect();
       const scale = layerRect.width / layer.offsetWidth;
-      const { x, y } = elementMenuAnchor({
-        left: layerRect.left + node.offsetLeft * scale,
-        right: layerRect.left + (node.offsetLeft + node.offsetWidth) * scale,
-        top: layerRect.top + node.offsetTop * scale,
-      });
+      // Clear of the floating text toolbar too, which a small element is narrower than (editMenuAnchor).
+      const toolbar =
+        node.querySelector('[data-rich-text-toolbar]')?.getBoundingClientRect() ?? null;
+      const { x, y } = editMenuAnchor(
+        {
+          left: layerRect.left + node.offsetLeft * scale,
+          right: layerRect.left + (node.offsetLeft + node.offsetWidth) * scale,
+          top: layerRect.top + node.offsetTop * scale,
+        },
+        toolbar,
+      );
       setContextMenu({ mode: 'element', elementId: editingId, x, y });
     } else if (prev) {
       // Edit ended (commit or Escape): close the menu the session opened.

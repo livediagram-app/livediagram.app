@@ -129,7 +129,7 @@ export function MetricCloud({
       <div className="relative px-6 pb-8 pt-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <MetricBreadcrumb crumbs={metricCrumbs(path)} onNavigate={setPath} />
-          <p className="text-xs tabular-nums text-slate-400">
+          <p className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
             {total.toLocaleString()} {total === 1 ? 'event' : 'events'} across {words.length}{' '}
             {levelNoun}
           </p>
@@ -176,7 +176,7 @@ export function MetricCloud({
           })}
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
+        <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
           {action !== undefined
             ? 'Pick one to chart it.'
             : 'Bigger words had more events in this window. Click one to look inside.'}

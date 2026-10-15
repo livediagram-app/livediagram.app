@@ -98,6 +98,15 @@ describe('parseMindOutline', () => {
     ]);
   });
 
+  it('reads a heading as shallow as the root as its child, nesting the deeper headings under it', () => {
+    expect(tree(parse('# Root\n# A\n## A1\n# B\n## B1\n### B2'))).toEqual([
+      'Root',
+      ['A', ['A1']],
+      ['B', ['B1', ['B2']]],
+    ]);
+    expect(tree(parse('# Root\n## A\n# B\n## B1'))).toEqual(['Root', ['A'], ['B', ['B1']]]);
+  });
+
   it('never skips a level, and reads a second root-level line as a child of the root', () => {
     expect(tree(parse('Root\n      - deep\nOther'))).toEqual(['Root', ['deep'], ['Other']]);
   });

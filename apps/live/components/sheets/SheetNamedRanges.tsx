@@ -1,13 +1,15 @@
 'use client';
 
 // Sheet Settings' Named Ranges (docs/specs/029-sheets/sheet.md "Named ranges"): each name with its range, Go To
-// (selects it) and, for someone who may edit, Remove (one undo step). Names are made in the name box.
+// (selects it) and, for an Editor, Remove (one undo step). Names are made in the name box.
 import { CloseIcon, Tooltip } from '@livediagram/ui';
 import { formatRange, posRangeOf } from '@livediagram/sheets';
 import { useSheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
 
 export const NO_NAMES = 'No named ranges yet. Select cells and type a name in the name box.';
+// For someone who cannot name cells: what is there, never how to do what they cannot.
+export const NO_NAMES_READ = 'No named ranges.';
 
 export function SheetNamedRanges({
   actions,
@@ -22,7 +24,7 @@ export function SheetNamedRanges({
   if (!names.length)
     return (
       <p className="px-0.5 text-[12px] leading-relaxed text-slate-500 dark:text-slate-400">
-        {NO_NAMES}
+        {c.canShape ? NO_NAMES : NO_NAMES_READ}
       </p>
     );
   return (
@@ -54,7 +56,7 @@ export function SheetNamedRanges({
                 Go To
               </button>
             ) : null}
-            {c.canEdit ? (
+            {c.canShape ? (
               <Tooltip label={`Remove ${x.name}`}>
                 <button
                   type="button"

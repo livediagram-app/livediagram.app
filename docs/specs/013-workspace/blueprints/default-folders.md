@@ -583,7 +583,7 @@ the 4 KB cap holds, the value is under 250 bytes).
 | `apps/live/components/palette/TemplatePicker.tsx`, `template-picker-props.ts` | Wiring; the props and `NewDocumentSettings` (gains `skipLocationStep?`) in their own file                                           |
 | `apps/live/components/palette/TemplatePickerFooter.tsx`                       | `oneStep` (Create on the template step), `note` above the buttons inside the footer rule                                            |
 | `apps/live/components/palette/template-picker-settings.tsx`                   | `stepFooter`, rendered last whatever the save location                                                                              |
-| `apps/live/components/dialogs/settings/SettingsSkipLocationRow.tsx`           | The Settings row (`kind: 'skipLocationStep'`), first in Where New Documents Go                                                      |
+| `apps/live/components/dialogs/settings/SettingsSkipLocationRow.tsx`           | The Settings row (`kind: 'skipLocationStep'`), first in Documents, alone in its New Documents section                               |
 
 **Behaviour and state**
 

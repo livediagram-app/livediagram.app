@@ -14,6 +14,7 @@ import {
   planViewSize,
   planViewMetric,
   statusPhasesOf,
+  breakdownTitle,
 } from './plan-views';
 import { isBoardWidgetKind } from './board-widgets';
 import { ITEM_TYPES } from './item-types';
@@ -153,5 +154,14 @@ describe('plan view settings', () => {
     // A named type without both fields drops out of what is drawn, and comes back when it has them.
     expect(ganttShownTypes({ types: ['project', 'task'] }, ITEM_TYPES)).toEqual(['project']);
     expect(ganttShownTypes({ types: ['project', 'task'] }, dated)).toEqual(['project', 'task']);
+  });
+});
+
+describe('breakdownTitle', () => {
+  it('names what Cards by Field groups by', () => {
+    expect(breakdownTitle({ by: 'assignee', field: undefined })).toBe('Cards by Assignee');
+    expect(breakdownTitle({ by: 'priority', field: undefined })).toBe('Cards by Priority');
+    expect(breakdownTitle({ by: 'field', field: 'labels' })).toBe('Cards by Labels');
+    expect(breakdownTitle({ by: 'field', field: 'f-gone' })).toBe('Cards by Field');
   });
 });

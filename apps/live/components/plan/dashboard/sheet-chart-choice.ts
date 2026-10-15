@@ -58,6 +58,7 @@ const NOT_COPIED = [
   'noteRich',
   'mindParentId',
   'mindFlow',
+  'mindSpacing',
 ] as const;
 
 // A slot's copy of a chart: the same type, range, columns and look, reading the same cells, as an element of its own.

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): an icon-only dropdown
-// chip, the same for everyone, reading the editor's resolved mode from EditorModeProvider;
+// chip opening the mode menu (its preview is covered in ModeMenu.test.tsx), the same for everyone, reading the editor's resolved mode from EditorModeProvider;
 // nothing where no switch is offered.
 
 import { useState } from 'react';
@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   EDITOR_MODES,
   ES_BOARD_LAYER_ID,
+  editorModeDescription,
   editorModeLabel,
   type EditorMode,
   type Tab,
@@ -85,25 +86,26 @@ describe('EditorModeSwitch chip', () => {
     expect(document.activeElement).toBe(rows[1]);
   });
 
-  it('keeps each row to its icon and name, no description', () => {
+  it('names each row by its mode alone, its description read as its description', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
-    expect(screen.queryByText('Shapes, arrows, the palette and snapping.')).toBeNull();
-    expect(screen.getAllByRole('menuitemradio').map((row) => row.textContent)).toEqual([
-      'Diagram',
-      'Draw⇧D',
-      'Facilitate',
-      'Illustrate',
-      'Plan',
-    ]);
+    const rows = screen.getAllByRole('menuitemradio');
+    expect(rows.map((row) => row.getAttribute('data-mode-row'))).toEqual([...EDITOR_MODES]);
+    for (const [i, row] of rows.entries()) {
+      const mode = EDITOR_MODES[i]!;
+      expect(row).toHaveProperty('textContent', expect.stringMatching(`^${editorModeLabel(mode)}`));
+      const description = document.getElementById(row.getAttribute('aria-describedby')!);
+      expect(description?.textContent).toContain(editorModeDescription(mode));
+    }
   });
 
-  it('shows Shift+D on the row it leads to', () => {
+  it('shows Shift+D in the preview of the mode it leads to', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
-    const [diagram, draw] = screen.getAllByRole('menuitemradio');
-    expect(diagram!.textContent).not.toContain('⇧D');
-    expect(draw!.textContent).toContain('⇧D');
+    const preview = () => document.querySelector('[data-mode-preview]')!;
+    expect(preview().textContent).not.toContain('⇧D');
+    fireEvent.pointerEnter(screen.getByRole('menuitemradio', { name: /^Draw/ }));
+    expect(preview().textContent).toContain('⇧D');
   });
 
   it.each(['ArrowDown', 'ArrowUp'])('opens from the keyboard with %s', (key) => {

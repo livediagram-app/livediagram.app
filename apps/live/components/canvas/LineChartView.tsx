@@ -7,9 +7,12 @@
 // animation (`pieAnim` -> lvd-pie-*) + legend toggle. The line + point group
 // animates; the axes + x-labels stay still.
 
+import { LineChartAxis } from './ChartAxis';
 import {
   AREA_FILL_OPACITY,
+  chartValueFontPx,
   lineMarks,
+  lineValueLabels,
   lineVariantOf,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
@@ -20,19 +23,23 @@ import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';
 import { ChartSurface } from '@/components/primitives/ChartSurface';
+import { ChartValues } from '@/components/primitives/ChartValues';
 
 export function LineChartView({
   element,
   fontFamily,
   textColor,
   palette,
+  ground,
 }: {
   element: ShapeElement;
   fontFamily?: string;
   textColor: string;
   palette?: readonly string[];
+  // What the chart sits on (chartPageGrounds): its series drawn adapted to it.
+  ground?: readonly string[];
 }) {
-  const { w, h, colorAt, area, legend } = chartFrame(element, palette);
+  const { w, h, colorAt, area, legend } = chartFrame(element, palette, ground);
   const { hover, markProps } = useChartHover<{ s: number; i: number }>(
     (a, b) => a.s === b.s && a.i === b.i,
   );
@@ -43,7 +50,20 @@ export function LineChartView({
   const series =
     element.lineSeries && element.lineSeries.length > 0 ? element.lineSeries : LINE_DEFAULT_SERIES;
   // Line, Area or Scatter, laid out by the marks the export draws too.
-  const m = lineMarks(area, categories, series, lineVariantOf(element));
+  const m = lineMarks(
+    area,
+    categories,
+    series,
+    lineVariantOf(element),
+    0,
+    0,
+    element.chartAxis === true,
+  );
+  // The second axis's labels in its first series' colour.
+  const right = Math.max(
+    0,
+    series.findIndex((s) => s.axis === 'right'),
+  );
   const { x: plotX0, y: plotY0, w: plotW, h: plotH } = m.plot;
   const pointAt = (s: number, i: number) => m.points[s]?.[i] ?? { x: 0, y: 0 };
   const valAt = (s: number, i: number) => series[s]?.values[i] ?? 0;
@@ -72,7 +92,13 @@ export function LineChartView({
         ) : null
       }
     >
-      {/* Axes. */}
+      {/* Axes: Show Axis's ticks and gridlines, then the plot's two edges. */}
+      <LineChartAxis
+        marks={m}
+        rightColor={colorAt(right, series[right] ?? {})}
+        textColor={textColor}
+        fontFamily={fontFamily}
+      />
       <line
         x1={plotX0}
         y1={plotY0}
@@ -136,6 +162,15 @@ export function LineChartView({
           {l.text}
         </text>
       ))}
+      {element.chartValues ? (
+        <ChartValues
+          labels={lineValueLabels(m, series)}
+          textColor={textColor}
+          fillOf={() => textColor}
+          fontPx={chartValueFontPx(element.textSize)}
+          fontFamily={fontFamily}
+        />
+      ) : null}
     </ChartSurface>
   );
 }

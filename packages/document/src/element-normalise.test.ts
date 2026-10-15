@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { entityHeight, isValidTab } from './index';
+import { createShape, entityHeight, isValidElement, isValidTab } from './index';
 import {
   lanesToFront,
   mergeElementUpdate,
@@ -183,5 +183,87 @@ describe('mergeElementUpdate', () => {
     const [f] = normaliseElements([merged]) as { packedPoints: string }[];
     expect(f!.packedPoints).not.toBe(packed.packedPoints);
     expect(valid([f])).toBe(true);
+  });
+});
+
+// docs/specs/009-elements/badge.md "Agents": an agent's attached badge (or pointer note) keeps its host through the
+// per-element normalise; a lone element used to be settled on its own, find no host and come back detached.
+describe('attached elements through normaliseElements', () => {
+  it('keeps a badge and a pointer note attached to their host', () => {
+    const host = { ...createShape('square', 100, 100), id: 'host', width: 120, height: 60 };
+    const badge = {
+      ...createShape('badge', 0, 0),
+      id: 'b',
+      attachedTo: 'host',
+      attachAt: 'top-right',
+    };
+    const note = {
+      ...createShape('pointer-note', 300, 20),
+      id: 'n',
+      attachedTo: 'host',
+      attachAt: 'top-left',
+      pointerTip: { x: -200, y: 80 },
+    };
+    const out = normaliseElements([host, badge, note]) as Array<Record<string, unknown>>;
+    expect(out.find((e) => e.id === 'b')!.attachedTo).toBe('host');
+    const n = out.find((e) => e.id === 'n')!;
+    expect(n.attachedTo).toBe('host');
+    expect(n.attachAt).toBe('top-left');
+  });
+});
+
+describe('settling an agent’s chips', () => {
+  it('writes an agent’s numbered step’s label as text, settled and valid', () => {
+    const step = {
+      id: 's',
+      type: 'shape',
+      shape: 'step',
+      x: 0,
+      y: 0,
+      width: 28,
+      height: 28,
+      label: 5,
+    };
+    const [out] = normaliseElements([step]) as Record<string, unknown>[];
+    expect(out!.label).toBe('5');
+    expect(isValidElement(out as never)).toBe(true);
+  });
+
+  it('leaves a label it cannot read for validation to refuse, rather than throwing', () => {
+    const step = {
+      id: 's',
+      type: 'shape',
+      shape: 'step',
+      x: 0,
+      y: 0,
+      width: 28,
+      height: 28,
+      label: { n: 5 },
+    };
+    let out: unknown;
+    expect(() => (out = normaliseElements([step]))).not.toThrow();
+    expect(isValidElement((out as unknown[])[0] as never)).toBe(false);
+  });
+});
+
+describe('an agent’s concept graphic', () => {
+  const concept = (shape: string, n: number) =>
+    normaliseElement({
+      ...createShape(shape as never, 0, 0),
+      conceptRows: Array.from({ length: n }, (_, i) => ({ label: `R${i + 1}` })),
+    }) as { conceptRows: { label: string }[] };
+
+  it('keeps its rows within its kind’s range, so every later edit takes', () => {
+    // A pyramid holds at most 6 tiers; a cycle at least 3 steps.
+    expect(concept('pyramid', 8).conceptRows.map((r) => r.label)).toEqual([
+      'R1',
+      'R2',
+      'R3',
+      'R4',
+      'R5',
+      'R6',
+    ]);
+    expect(concept('cycle', 2).conceptRows.map((r) => r.label)).toEqual(['R1', 'R2', 'Step 3']);
+    expect(concept('hub', 5).conceptRows).toHaveLength(5);
   });
 });

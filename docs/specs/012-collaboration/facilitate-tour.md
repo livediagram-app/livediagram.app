@@ -28,7 +28,7 @@ Back and outro card, driven by the same engine. Where this spec is silent, the P
 - **Once ever per person**, through the synced `facilitateTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
-- **Replayable from Settings**: the **Facilitate** switch in the Accessibility category's **Onboarding Tutorials**
+- **Replayable from Settings**: the **Facilitate Tour** switch in Settings' **Tours** category
   control, beside **Plan** and built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the
   tour straight away when the person is in Facilitate, or offers it the next time they enter Facilitate.
 
@@ -45,9 +45,10 @@ itself is the Diagram tour's, so this tour does not repeat it. The exact strings
 0. **Welcome to Facilitate** (the offer): centred card with its own illustration (a flipchart with two sticky
    notes and a timer), saying Facilitate is for running a session with a team and offering a quick look, then
    **No** and **Yes**.
-1. **Collaborate**: opens the palette's category picker and rings the **Collaborate** band alone, from its
-   heading to its last category. Ask, Tools, Record, React, Selection Mode and Navigate hold every element that
-   comes alive with the room.
+1. **Collaborate**: rings **Ask** and **Session** on the palette's category bar
+   ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), the session kit: Ask puts a question to
+   the room, and Session holds the timers, reveals, records, reactions, selection modes and places to go. It opens
+   nothing (the bar's buttons carry the anchors `bar-collab-ask` and `bar-session`).
 2. **Run the room**: highlights the Session strip. Timer, Vote and Poll run for everyone on the tab without
    placing anything on the canvas.
 3. **Bring people in**: highlights the header's Share button. A Participant link lets people add notes, vote and

@@ -97,7 +97,7 @@ export function StackModal({
         <div className="flex items-center justify-between gap-3 px-5 pb-1 pt-4">
           <div>
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</p>
-            <p className="text-xs text-slate-400">{subtitle}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
           </div>
           <button
             type="button"

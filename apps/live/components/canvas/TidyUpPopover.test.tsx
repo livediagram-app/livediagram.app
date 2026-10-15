@@ -5,18 +5,28 @@
 // order; a mouse hover previews and a touch does not; closing mid-hover reverts; an empty or locked tab
 // shows every tidier inert under its note.
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   ALIGN_NAME,
   TIDY_CAPTION,
   TIDY_EMPTY_NOTE,
+  TIDY_LANES_NOTE,
   TIDY_LOCKED_NOTE,
   TidyUpPopover,
 } from './TidyUpPopover';
 import type { TidyUpActions } from './tidy-up-actions';
+import type { CleanupKind } from '@/lib/tab-cleanup';
+import type { CleanupVerdict } from '@/lib/tidy-verdict';
+import { loadTidyEngine } from '@/lib/tidy-engine';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
+
+// The popover loads the tidiers, then judges one per task.
+const judgeAll = () => act(() => vi.runAllTimersAsync());
 
 // jsdom has no ResizeObserver; the popover measures itself with one.
 globalThis.ResizeObserver ??= class {
@@ -25,12 +35,19 @@ globalThis.ResizeObserver ??= class {
   disconnect() {}
 } as unknown as typeof ResizeObserver;
 
-function setup(opts: { blocked?: boolean; empty?: boolean } = {}) {
+function setup(
+  opts: {
+    blocked?: boolean;
+    empty?: boolean;
+    verdicts?: Partial<Record<CleanupKind, CleanupVerdict>>;
+  } = {},
+) {
   const calls: string[] = [];
   const actions: TidyUpActions = {
     run: vi.fn((kind) => calls.push(`run:${kind}`)),
     preview: vi.fn((kind) => calls.push(`preview:${kind}`)),
     endPreview: vi.fn(() => calls.push('end')),
+    assess: vi.fn((kind: CleanupKind) => opts.verdicts?.[kind] ?? { kind: 'ok' as const }),
     blocked: opts.blocked ?? false,
   };
   const onClose = vi.fn(() => calls.push('close'));
@@ -120,5 +137,87 @@ describe('TidyUpPopover', () => {
     fireEvent.click(tree);
     expect(actions.preview).not.toHaveBeenCalled();
     expect(actions.run).not.toHaveBeenCalled();
+  });
+
+  // docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work".
+  it('greys out a tidier that would not help, with its reason in place of its line', async () => {
+    vi.useFakeTimers();
+    const { calls } = setup({
+      verdicts: {
+        mindmap: { kind: 'unsuited' },
+        'flow-right': { kind: 'rearranges-lanes' },
+        align: { kind: 'unchanged' },
+      },
+    });
+    await judgeAll();
+    const byKind = Object.fromEntries(tiles().map((t) => [t.kind, t.disabled]));
+    expect(byKind).toMatchObject({
+      smart: false,
+      'flow-down': false,
+      'flow-right': true,
+      tree: false,
+      mindmap: true,
+      align: true,
+    });
+    expect(screen.getByText('For ideas that branch, not loop')).toBeTruthy();
+    expect(screen.getByText('Would rearrange your lanes')).toBeTruthy();
+    expect(screen.getByText('Already tidy')).toBeTruthy();
+    // A greyed-out tile neither previews nor runs.
+    const mindmap = document.querySelector<HTMLButtonElement>('[data-tidy-kind="mindmap"]')!;
+    fireEvent.pointerEnter(mindmap, { pointerType: 'mouse' });
+    fireEvent.click(mindmap);
+    expect(calls).toEqual([]);
+  });
+
+  it('judges every tidier once, after it opens, one per task', async () => {
+    vi.useFakeTimers();
+    const { actions, view } = setup();
+    // Nothing on the first paint: opening never waits on the layouts.
+    expect(actions.assess).not.toHaveBeenCalled();
+    await act(async () => {
+      await loadTidyEngine();
+    });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(actions.assess).toHaveBeenCalledTimes(1);
+    await judgeAll();
+    view.rerender(<TidyUpPopover actions={actions} empty={false} onClose={() => {}} />);
+    await judgeAll();
+    expect(actions.assess).toHaveBeenCalledTimes(6);
+  });
+
+  it('passes on whether a pressed tidier was judged already', async () => {
+    vi.useFakeTimers();
+    const { actions } = setup();
+    // Pressed before its turn: the command judges it.
+    fireEvent.click(document.querySelector('[data-tidy-kind="tree"]')!);
+    expect(actions.run).toHaveBeenLastCalledWith('tree', false);
+    cleanup();
+    const second = setup();
+    await judgeAll();
+    fireEvent.click(document.querySelector('[data-tidy-kind="tree"]')!);
+    expect(second.actions.run).toHaveBeenLastCalledWith('tree', true);
+  });
+
+  it('judges nothing on a locked tab', () => {
+    const { actions } = setup({ blocked: true });
+    expect(actions.assess).not.toHaveBeenCalled();
+  });
+
+  it('says once, over the tiles, when every layout is refused for the lanes', async () => {
+    vi.useFakeTimers();
+    setup({
+      verdicts: {
+        smart: { kind: 'rearranges-lanes' },
+        'flow-down': { kind: 'rearranges-lanes' },
+        'flow-right': { kind: 'rearranges-lanes' },
+        tree: { kind: 'rearranges-lanes' },
+        mindmap: { kind: 'rearranges-lanes' },
+      },
+    });
+    await judgeAll();
+    expect(screen.getByText(TIDY_LANES_NOTE)).toBeTruthy();
+    expect(document.querySelector<HTMLButtonElement>('[data-tidy-kind="align"]')!.disabled).toBe(
+      false,
+    );
   });
 });

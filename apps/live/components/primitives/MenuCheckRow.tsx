@@ -39,7 +39,7 @@ export function MenuCheckRow({
     >
       <span
         aria-hidden
-        className="flex w-4 shrink-0 items-center justify-center text-brand-600 dark:text-brand-300"
+        className="flex w-4 shrink-0 items-center justify-center text-brand-700 dark:text-brand-300"
       >
         {checked ? <CheckIcon size={12} /> : null}
       </span>

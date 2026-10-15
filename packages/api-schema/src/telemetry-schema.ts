@@ -410,6 +410,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Trapezoid',
     'Star',
     'Speech-bubble',
+    // The UML final state (a state machine's end), made by graph input and Mermaid.
+    'Final-state',
   ],
   tools: [
     'Text',
@@ -422,6 +424,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Actor',
     'Frame',
     'Annotation',
+    // Pointer note (docs/specs/009-elements/pointer-note.md): a Write element beside Annotation.
+    'PointerNote',
     'LinkCard',
     // Every embed tile (YouTube / Vimeo / Loom / Figma / Google Docs / the
     // website embed, docs/specs/009-elements/website-embed.md) creates a `video` element, and all six report
@@ -436,8 +440,21 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Page',
     // Mind node (docs/specs/009-elements/mind-node.md).
     'MindNode',
+    // Flowchart (docs/specs/009-elements/flowchart.md): the palette's Start, and every grown step.
+    'Flowchart',
+    'FlowchartStep',
     // Lane (docs/specs/009-elements/lane.md).
     'Lane',
+    // Boundary (docs/specs/009-elements/boundary.md): a Build container beside Frame and Lane.
+    'Boundary',
+    // Org chart (docs/specs/009-elements/org-chart.md): a person mind node, after Mind node.
+    'OrgChart',
+    // Stack (docs/specs/009-elements/stack.md): a Build container after Frame.
+    'Stack',
+    // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): a Build element after Flowchart.
+    'Sequence',
+    // Diagram key (docs/specs/009-elements/diagram-key.md): a Build element after Boundary.
+    'DiagramKey',
     // Entity (docs/specs/009-elements/entity.md).
     'Entity',
     'Checklist',
@@ -448,6 +465,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'PlanSheet',
     'ModeButton',
     'Portal',
+    // Tab window (docs/specs/009-elements/tab-window.md).
+    'TabWindow',
     'SessionButton',
     'Reveal',
     'Picker',
@@ -458,6 +477,18 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Quiz',
     // Chair (docs/specs/009-elements/chair.md): a Behaviour element, so it ranks with them.
     'Chair',
+    // Desk, sofa and fence (docs/specs/009-elements/chair.md, fence.md): beside the chair in Navigate.
+    'Desk',
+    'Sofa',
+    'Fence',
+    // The virtual office (docs/specs/009-elements/office.md), in Navigate.
+    'Room',
+    'Meeting-table',
+    'Plant',
+    'Bookshelf',
+    'Water-cooler',
+    'Coffee-machine',
+    'Rug',
     // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
     // token is what elementTelemetryType actually emits for the kind, which
     // for a hyphenated one is the hyphen kept (see Pie-chart above).
@@ -469,6 +500,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Progress-ring',
     'Rating',
     'Legend',
+    // Sankey diagram (docs/specs/009-elements/sankey.md): a Build element; its kind has no hyphen to keep.
+    'Sankey',
   ],
   // The Collaborate category (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) — its own bucket rather
   // than more entries under `tools`, because the palette gave it its own
@@ -489,7 +522,19 @@ export const PALETTE_TELEMETRY_TYPES = {
     // Action panel (docs/specs/012-collaboration/action-panel.md).
     'ActionPanel',
   ],
-  components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
+  components: [
+    'Banner',
+    'Hero',
+    'Header',
+    'Callout',
+    'StatRow',
+    'ProcessSteps',
+    'Card',
+    'Badge',
+    'Step',
+  ],
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): the Concepts category.
+  concepts: ['LayerStack', 'Pyramid', 'Cycle', 'Hub', 'Onion', 'Chevrons'],
   devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Foldable', 'Smartwatch'],
   icons: ['Icon', 'TechIcon', 'Sticker'],
 } as const satisfies Record<string, readonly string[]>;

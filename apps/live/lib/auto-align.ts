@@ -8,9 +8,10 @@
 // of less than 10 px" threshold and is the same step the other snap helpers use
 // as their floor.
 //
-// Auto-align is deliberately **conservative and structure-blind**: it only ever
-// rounds each element to the nearest grid line, so nothing moves more than half
-// a grid step (5 px) and nothing is resized relative to its neighbours. It can
+// Auto-align is deliberately **conservative**: it rounds each element's size to
+// the grid and moves each box only onto a grid line or onto a line it already
+// (nearly) shares with another box, so nothing moves far and nothing is
+// resized relative to its neighbours. It can
 // only tighten an already-roughly-aligned layout, never relocate or homogenise
 // it. An earlier version also unified same-type element SIZES and pulled edges
 // up to 24 px onto shared lines; that overreached — it resized deliberately
@@ -20,6 +21,7 @@
 
 import { MIN_SIZE } from './canvas';
 import { isBoxed, type Element, type ElementId } from '@livediagram/document';
+import { alignBoxes } from './auto-align-lines';
 
 // Snap step in canvas pixels. Picked so the rounding is visible
 // enough to tidy up drift (a 3 px misalignment becomes 0 or 10) but
@@ -28,10 +30,13 @@ export const AUTO_ALIGN_GRID = 10;
 
 const snap = (value: number): number => Math.round(value / AUTO_ALIGN_GRID) * AUTO_ALIGN_GRID;
 
-// Shape kinds whose silhouette assumes a 1:1 aspect ratio. Snapping
-// width and height independently would warp them, so we snap the
-// larger side and force the other to match.
-const SQUARE_SHAPES = new Set(['circle', 'diamond', 'actor']);
+// Shape kinds often drawn 1:1. Snapping width and height independently would
+// warp a square one, so one that is ALREADY square keeps both sides equal. One
+// drawn otherwise keeps its own proportions: a flowchart's decision is a wide
+// diamond, and squaring it doubled its height into the steps around it.
+export const SQUARE_SHAPES: ReadonlySet<string> = new Set(['circle', 'diamond', 'actor']);
+
+const drawnSquare = (width: number, height: number) => Math.abs(width - height) <= AUTO_ALIGN_GRID;
 
 // Apply the cleanup pass to one element. Pure, idempotent, and
 // leaves non-boxed-non-arrow elements unchanged.
@@ -43,7 +48,7 @@ export function autoAlignElement(el: Element): Element {
     // the two snapped sides so a "tall-ish circle" becomes a circle
     // around the taller axis (snapping down would shrink it past
     // user intent more often than snapping up).
-    if (el.type === 'shape' && SQUARE_SHAPES.has(el.shape)) {
+    if (el.type === 'shape' && SQUARE_SHAPES.has(el.shape) && drawnSquare(el.width, el.height)) {
       const side = Math.max(width, height);
       width = side;
       height = side;
@@ -86,15 +91,29 @@ export function autoAlignElement(el: Element): Element {
 
 // Top-level entry: grid-snap every element across a tab. `Element[] in,
 // Element[] out`, so the editor can drop it through `commit()` and pick up
-// undo behaviour for free. A pure per-element snap — no
-// cross-element resizing or relocation (see the header note); Auto Layout is
-// the structural pass.
+// undo behaviour for free. Sizes snap per element; positions snap by the lines
+// boxes share (auto-align-lines.ts), so boxes that line up by their centres or
+// edges still line up afterwards, and a snap that would make two boxes overlap
+// is undone. Auto Layout is the structural pass.
 // `lockedIds` (the editor's locked elements and everything on a locked layer) are left exactly as
 // they are (docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put").
 export function autoAlignElements(
   elements: Element[],
   lockedIds?: ReadonlySet<ElementId>,
 ): Element[] {
-  if (!lockedIds || lockedIds.size === 0) return elements.map(autoAlignElement);
-  return elements.map((el) => (lockedIds.has(el.id) ? el : autoAlignElement(el)));
+  let out = elements.map((el) =>
+    lockedIds?.has(el.id) ? el : el.type === 'arrow' ? autoAlignElement(el) : el,
+  );
+  // A pass can bring two boxes within reach of a line they did not share before, so passes repeat
+  // until one moves nothing: the result is settled, and Auto-align again finds it already tidy.
+  for (let pass = 0; pass < MAX_ALIGN_PASSES; pass++) {
+    const next = alignBoxes(out, autoAlignElement, lockedIds);
+    const settled = next.every((el, i) => el === out[i]);
+    out = next;
+    if (settled) break;
+  }
+  return out;
 }
+
+// Passes before Auto-align settles for what it has; two is the usual, and each is linear-ish.
+const MAX_ALIGN_PASSES = 4;

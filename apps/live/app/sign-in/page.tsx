@@ -37,6 +37,7 @@ import {
   messageOf,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
+  ssoCallbackUrl,
 } from '@/components/chrome/auth-shared';
 import { Button } from '@livediagram/ui';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
@@ -50,6 +51,7 @@ function SignInContent() {
 
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showCodeStep, setShowCodeStep] = useState(false);
@@ -83,7 +85,7 @@ function SignInContent() {
     try {
       await clerkSignIn.authenticateWithRedirect({
         strategy: 'oauth_google',
-        redirectUrl: '/sso-callback',
+        redirectUrl: ssoCallbackUrl(searchParams),
         // Honour ?redirect_url so an OAuth sign-in from a protected
         // page lands back where it came from, same as the email-code
         // path does. See docs/specs/014-identity/auth-and-guest-access.md "Routes" + auth-shared.tsx.
@@ -186,6 +188,7 @@ function SignInContent() {
 
   const handleResendCode = async () => {
     setError('');
+    setNotice('');
     setLoading(true);
     setCodeDigits(['', '', '', '', '', '']);
     try {
@@ -196,7 +199,7 @@ function SignInContent() {
             strategy: 'email_code',
             emailAddressId: factor.emailAddressId,
           });
-          setError('A new code has been sent. Check your email.');
+          setNotice('A new code has been sent. Check your email.');
           codeInputRefs.current[0]?.focus();
         }
       }
@@ -211,6 +214,7 @@ function SignInContent() {
     setShowCodeStep(false);
     setCodeDigits(['', '', '', '', '', '']);
     setError('');
+    setNotice('');
   };
 
   if (authLoaded && isSignedIn) {
@@ -221,12 +225,13 @@ function SignInContent() {
     <AuthCard
       subtitle="Sign in to keep your documents and work across multiple devices."
       error={error}
+      notice={notice}
       footer={
         <>
           New to livediagram?{' '}
           <Link
             href={authHrefWithReturn('/get-started/', searchParams.get('redirect_url'))}
-            className="font-medium text-brand-600 hover:underline dark:text-brand-400"
+            className="font-medium text-brand-700 hover:underline dark:text-brand-400"
           >
             Create an account
           </Link>

@@ -111,7 +111,7 @@ export function Brand({
           contrast audits skip it by this mark. */}
       <span className={`relative ${wordmarkClassName}`.trim()} data-logotype="">
         <span
-          className={accentColor ? '' : 'text-brand-600 dark:text-sky-400'}
+          className={accentColor ? '' : 'text-brand-700 dark:text-sky-400'}
           style={
             accentColor
               ? { color: accentColor, transition: COLOUR_TRANSITION }
@@ -130,7 +130,15 @@ export function Brand({
 
   if (href) {
     return (
-      <a href={href} className={classes} onClick={scrollTopIfHere} {...spinHandlers}>
+      // Named on the link itself: a caller may hide the wordmark (the editor header on a phone), and the
+      // mark alone has no text. The name is the wordmark's own text, so a visible one still matches it.
+      <a
+        href={href}
+        aria-label="livediagram"
+        className={classes}
+        onClick={scrollTopIfHere}
+        {...spinHandlers}
+      >
         {content}
       </a>
     );

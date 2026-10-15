@@ -11,6 +11,9 @@ script its static-export HTML references. It is measured from a production build
 the app), summing the `<script src=".../_next/static/...js">` files a page's HTML names. A change
 that could grow it is measured against `main` the same way before it ships.
 
+Why a page carries what it does is read from the Turbopack bundle analyzer (`next analyze`): its route
+summary, its table of the largest contributors, and its diff against an earlier snapshot.
+
 Measured 2026-10-11 (gzip level 9), before and after the changes that set these rules:
 
 | Page                                         | Before    | After     |

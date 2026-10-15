@@ -67,7 +67,7 @@ export function BrowserRepairTool() {
           Done. Open your document again.{' '}
           <a
             href="/explorer/recent"
-            className="font-medium text-brand-600 underline dark:text-brand-400"
+            className="font-medium text-brand-700 underline dark:text-brand-400"
           >
             Go to your documents
           </a>

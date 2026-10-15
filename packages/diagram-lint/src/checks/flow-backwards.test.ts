@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { arrow, box, lint, of, tabOf } from '../fixtures/build';
 
-// Three arrows down a column, and one back up.
-const column = () => [box('a', 0, 0), box('b', 0, 200), box('c', 0, 400), box('d', 0, 600)];
+// Three arrows down a column, and one back up to a box above it: against the flow, but not a loop (nothing leads
+// from that box back down).
+const column = () => [
+  box('a', 0, 0),
+  box('b', 0, 200),
+  box('c', 0, 400),
+  box('d', 0, 600),
+  box('top', 300, -200),
+];
 const down = () => [
   arrow('1', 'a', 'b', ['s', 'n']),
   arrow('2', 'b', 'c', ['s', 'n']),
@@ -11,21 +18,26 @@ const down = () => [
 
 describe('flow-backwards', () => {
   it('fires on a directed arrow against the inferred flow', () => {
-    const report = lint(tabOf(...column(), ...down(), arrow('back', 'd', 'a', ['n', 's'])));
+    const report = lint(tabOf(...column(), ...down(), arrow('back', 'd', 'top', ['n', 's'])));
     expect(of(report, 'flow-backwards')).toEqual([
       {
         code: 'flow-backwards',
         severity: 'info',
         refs: ['back'],
-        message: 'd→a points up, against the flow down',
-        fix: 'rewire back from=a to=d',
+        message: 'd→top points up, against the flow down',
+        fix: 'rewire back from=top to=d',
       },
     ]);
   });
 
+  it('stays quiet on an arrow that closes a loop: a retry runs back by design', () => {
+    const report = lint(tabOf(...column(), ...down(), arrow('retry', 'd', 'a', ['n', 's'])));
+    expect(of(report, 'flow-backwards')).toEqual([]);
+  });
+
   it('reads an arrow drawn from its from end the other way round, and skips undirected ones', () => {
-    const reversed = arrow('rev', 'a', 'd', ['s', 'n'], { arrowEnds: 'from' });
-    const both = arrow('both', 'd', 'a', ['n', 's'], { arrowEnds: 'both' });
+    const reversed = arrow('rev', 'top', 'd', ['s', 'n'], { arrowEnds: 'from' });
+    const both = arrow('both', 'd', 'top', ['n', 's'], { arrowEnds: 'both' });
     expect(
       of(lint(tabOf(...column(), ...down(), reversed, both)), 'flow-backwards').map(
         (f) => f.refs[0],
@@ -41,25 +53,37 @@ describe('flow-backwards', () => {
       message: 'b→a points left, against the flow right',
       fix: 'reverse the edge, unless it is a loop',
     });
-    const left = [box('a', 900, 0), box('b', 600, 0), box('c', 300, 0), box('d', 0, 0)];
+    const left = [
+      box('a', 900, 0),
+      box('b', 600, 0),
+      box('c', 300, 0),
+      box('d', 0, 0),
+      box('end', 1200, 200),
+    ];
     const leftArrows = [
       arrow('1', 'a', 'b', ['w', 'e']),
       arrow('2', 'b', 'c', ['w', 'e']),
       arrow('3', 'c', 'd', ['w', 'e']),
-      arrow('back', 'd', 'a', ['e', 'w']),
+      arrow('back', 'd', 'end', ['e', 'w']),
     ];
     expect(of(lint(tabOf(...left, ...leftArrows)), 'flow-backwards')[0]!.message).toBe(
-      'd→a points right, against the flow left',
+      'd→end points right, against the flow left',
     );
-    const up = [box('a', 0, 600), box('b', 0, 400), box('c', 0, 200), box('d', 0, 0)];
+    const up = [
+      box('a', 0, 600),
+      box('b', 0, 400),
+      box('c', 0, 200),
+      box('d', 0, 0),
+      box('end', 300, 800),
+    ];
     const upArrows = [
       arrow('1', 'a', 'b', ['n', 's']),
       arrow('2', 'b', 'c', ['n', 's']),
       arrow('3', 'c', 'd', ['n', 's']),
-      arrow('back', 'd', 'a', ['s', 'n']),
+      arrow('back', 'd', 'end', ['s', 'n']),
     ];
     expect(of(lint(tabOf(...up, ...upArrows)), 'flow-backwards')[0]!.message).toBe(
-      'd→a points down, against the flow up',
+      'd→end points down, against the flow up',
     );
   });
 

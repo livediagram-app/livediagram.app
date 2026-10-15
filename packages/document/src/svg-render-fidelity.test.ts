@@ -29,6 +29,33 @@ describe('Behaviour face export', () => {
     );
   });
 
+  it('draws a vote, poll or stopwatch Session button as its tool and what pressing it does', () => {
+    const vote = svgOf(shape('session-button', { session: { tool: 'vote', dots: 3 }, label: '' }));
+    expect(vote).toContain('>START VOTE<');
+    expect(vote).toContain('>3 dots each<');
+    expect(vote.match(/<circle[^<>]*r="3"/g)).toHaveLength(3);
+    const poll = svgOf(
+      shape('session-button', {
+        session: { tool: 'poll', question: 'Ship it?', options: ['Yes', 'No'] },
+        label: '',
+      }),
+    );
+    expect(poll).toContain('>Ship it?<');
+    // The kicker names the shape of its answers.
+    expect(poll).toContain('>ASK · 2 OPTIONS<');
+    const yesNo = svgOf(
+      shape('session-button', {
+        session: { tool: 'poll', style: 'yesNo', question: 'Ship it?' },
+        label: '',
+      }),
+    );
+    expect(yesNo).toContain('>ASK · YES / NO<');
+    expect(poll).toContain('rx="1"');
+    const watch = svgOf(shape('session-button', { session: { tool: 'stopwatch' }, label: 'Lap' }));
+    expect(watch).toContain('>Lap<');
+    expect(watch).toContain('r="10"');
+  });
+
   it('names an unlabelled Mode button by its destination', () => {
     const svg = svgOf(shape('mode-button', { mode: 'laser', label: '' }));
     expect(svg).toContain('>SWITCH TO<');
@@ -38,6 +65,17 @@ describe('Behaviour face export', () => {
   it('draws a portal as its lit ring when paired, and dim when not', () => {
     expect(svgOf(shape('portal', { portalTarget: 'x' }))).toContain('stop-opacity="0.95"');
     expect(svgOf(shape('portal'))).toContain('stop-opacity="0.35"');
+  });
+
+  it("draws a Reaction pad's emoji from its art when the caller has it, else as text", () => {
+    const pad = shape('reaction-pad', { reaction: 'applause', label: 'Applause' });
+    expect(svgOf(pad)).toMatch(/dominant-baseline="central"[^>]*>👏</);
+    const art = { viewBox: '0 0 36 36', markup: '<path d="M1 1"/>' };
+    const drawn = renderElementsToSvg({ id: 't', name: 'T', elements: [pad] } as unknown as Tab, {
+      resolveEmojiArt: (g) => (g === '👏' ? art : undefined),
+    });
+    expect(drawn).toContain('viewBox="0 0 36 36"><path d="M1 1"/></svg>');
+    expect(drawn).not.toContain('>👏<');
   });
 
   it('puts a Reaction pad label in its chip', () => {

@@ -31,9 +31,17 @@ function tokensOf(row: SettingsRowSpec): string[] {
 describe('settings catalogue', () => {
   it("points the logo guide rows at a logo page's Guides button, where they live, not its panel", () => {
     // docs/specs/007-editor/logo-pages.md: the guides moved out of the page panel into the Guides popover.
-    const logo = ALL_ROWS.filter((r) => r.key === 'logoGuides' || r.key.startsWith('logoGuide'));
-    expect(logo.length).toBeGreaterThan(2);
-    for (const row of logo) expect(row.alsoIn).toBe("a logo page's Guides button");
+    // The master switch says so once; the strength and the guides nest under it, so they do not repeat it.
+    const illustrate = SETTINGS_CATEGORIES.find((c) => c.id === 'illustrate')!;
+    expect(illustrate.rows.find((r) => r.key === 'logoGuides')!.alsoIn).toBe(
+      "a logo page's Guides button",
+    );
+    expect(
+      illustrate.rows.filter((r) => r.key !== 'logoGuides').map((r) => [r.key, r.parent]),
+    ).toEqual([
+      ['logoGuideStrength', 'logoGuides'],
+      ['logoGuideParts', 'logoGuides'],
+    ]);
   });
 
   it('shows Auto-Attach Arrows in the state the editor actually runs', () => {
@@ -110,11 +118,16 @@ describe('settings catalogue', () => {
 
   it('inverts the Plan tour row the same way, beside the Diagram tour in Accessibility', () => {
     // docs/specs/026-plan/plan-tour.md "Where it appears".
+    // One switch over both tracks: off answers both, on forgets them (lib/tour-tracks.ts).
     const row = SWITCHES.find((r) => r.key === 'planTourSeen')!;
-    expect(row.read({ planTourSeen: true })).toBe(false);
+    expect(row.read({ planTourTracks: ['boards', 'sheets'] })).toBe(false);
+    expect(row.read({ planTourTracks: ['boards'] })).toBe(true);
     expect(row.read({})).toBe(true);
-    expect(row.write({}, true).planTourSeen).toBe(false);
-    expect(row.write({}, false).planTourSeen).toBe(true);
+    expect(row.write({ planTourTracks: ['boards'] }, true)).toEqual({ planTourSeen: false });
+    expect(row.write({}, false)).toEqual({
+      planTourSeen: true,
+      planTourTracks: ['boards', 'sheets'],
+    });
     expect(row.event.on).toBe('PlanTourSeenOff');
     expect(row.event.off).toBe('PlanTourSeenOn');
   });
@@ -130,22 +143,48 @@ describe('settings catalogue', () => {
     expect(row.event.off).toBe('FacilitateTourSeenOn');
   });
 
-  // docs/specs/007-editor/user-preferences.md "Onboarding Tutorials": one control in Accessibility, the three switches
-  // in the order the tours come.
-  it('groups the five tour switches into one Onboarding Tutorials control in Accessibility', () => {
-    const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
-    const group = accessibility.rows.find((r) => r.key === 'tours');
-    expect(group?.kind).toBe('toggleGroup');
-    if (group?.kind !== 'toggleGroup') return;
-    expect(group.label).toBe('Onboarding Tutorials');
-    expect(group.toggles.map((t) => [t.key, t.label])).toEqual([
-      ['tourSeen', 'Diagram'],
-      ['planTourSeen', 'Plan'],
-      ['facilitateTourSeen', 'Facilitate'],
-      ['drawTourSeen', 'Draw'],
-      ['illustrateTourSeen', 'Illustrate'],
+  // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
+  // the order the tours come.
+  it('gives the six tours a category of their own, a switch each with its own article', () => {
+    const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
+    expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
+      ['tourSeen', 'toggle', 'Diagram Tour', 'diagramTour'],
+      ['planTourSeen', 'toggle', 'Plan Tour', 'planTour'],
+      ['facilitateTourSeen', 'toggle', 'Facilitate Tour', 'facilitateTour'],
+      ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
+      ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
+      ['illustrateTourSeen', 'toggle', 'Illustrate Tour', 'illustrateTour'],
     ]);
-    expect(accessibility.rows.some((r) => r.key === 'tourSeen')).toBe(false);
+    // One shared explanation under the section heading, not one per row.
+    expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
+    const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
+    expect(accessibility.rows.some((r) => r.key.toLowerCase().includes('tour'))).toBe(false);
+  });
+
+  it('tracks each tour switch against its preference, as it always has', () => {
+    const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
+    expect(tours.rows.map((r) => (r.kind === 'toggle' ? [r.event.on, r.event.off] : null))).toEqual(
+      [
+        ['TourSeenOff', 'TourSeenOn'],
+        ['PlanTourSeenOff', 'PlanTourSeenOn'],
+        ['FacilitateTourSeenOff', 'FacilitateTourSeenOn'],
+        ['DrawTourSeenOff', 'DrawTourSeenOn'],
+        ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
+        ['IllustrateTourSeenOff', 'IllustrateTourSeenOn'],
+      ],
+    );
+  });
+
+  it('offers Button Labels in Appearance, on by default and desktop only', () => {
+    const appearance = SETTINGS_CATEGORIES.find((c) => c.id === 'appearance')!;
+    const row = appearance.rows.find((r) => r.key === 'dockButtonNames');
+    if (row?.kind !== 'toggle') throw new Error('no Button Labels toggle');
+    expect(row.label).toBe('Button Labels');
+    expect(row.read({})).toBe(true);
+    expect(row.read({ dockButtonNames: false })).toBe(false);
+    expect(row.write({}, false)).toEqual({ dockButtonNames: false });
+    expect(row.desktopOnly).toMatch(/Phones always show these buttons as icons/);
+    expect(row.event).toMatchObject({ on: 'DockButtonNamesOn', off: 'DockButtonNamesOff' });
   });
 
   it('gives every grouped switch telemetry tokens the schema accepts, and a round trip', () => {
@@ -175,6 +214,11 @@ describe('settings catalogue', () => {
 
   it('writes only its own key, so one switch never moves another', () => {
     const before: UserPreferences = { alignmentGuides: false, telemetryEnabled: false };
+    // A tour of several tracks also writes its answered list (lib/tour-tracks.ts).
+    const own: Record<string, string[]> = {
+      planTourSeen: ['planTourSeen', 'planTourTracks'],
+      illustrateTourSeen: ['illustrateTourSeen', 'illustrateTourKinds'],
+    };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.
     for (const row of TOGGLES.filter((r) => r.key !== 'powerUserMode')) {
@@ -182,8 +226,26 @@ describe('settings catalogue', () => {
       const changed = Object.keys({ ...before, ...after }).filter(
         (k) => before[k as keyof UserPreferences] !== after[k as keyof UserPreferences],
       );
-      expect(changed, row.key).toHaveLength(1);
+      // A presenter switch writes the one `presentation` object (lib/presentation-config).
+      const presenting = row.key.startsWith('presentation-') ? ['presentation'] : undefined;
+      expect(changed, row.key).toEqual(own[row.key] ?? presenting ?? [row.key]);
     }
+  });
+
+  // docs/specs/007-editor/illustrate-tour.md "Where it appears": one switch over every page kind's track.
+  it('turns the Illustrate tour back on for every page kind', () => {
+    const row = TOGGLES.find((r) => r.key === 'illustrateTourSeen')!;
+    const seen: UserPreferences = {
+      illustrateTourSeen: true,
+      illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+    };
+    expect(row.read(seen)).toBe(false);
+    expect(row.write(seen, true)).toEqual({ illustrateTourSeen: false });
+    expect(row.read(row.write(seen, true))).toBe(true);
+    expect(row.write({}, false)).toEqual({
+      illustrateTourSeen: true,
+      illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+    });
   });
 
   it('keeps row keys and telemetry tokens unique', () => {
@@ -345,10 +407,10 @@ describe('settings catalogue', () => {
 
 // Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests one sub-category per mode with settings of its own under Editor: Draw, and no Diagram yet', () => {
+  it('nests one sub-category per mode with settings of its own under Editor (Draw, Illustrate; no Diagram yet), then Presenting', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['draw', 'illustrate']);
+    expect(children).toEqual(['draw', 'illustrate', 'presenting']);
     const at = ids.indexOf('editor');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });
@@ -356,10 +418,10 @@ describe('settings sub-categories', () => {
   it('keeps every setting that acts in both modes on Editor itself', () => {
     const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
     expect(keys).toEqual([
-      'quickAddOnHover',
-      'elementIndicatorStyle',
       'alignmentGuides',
       'autoRebindArrows',
+      'elementIndicatorStyle',
+      'quickAddOnHover',
       'middleMousePan',
       'powerUserMode',
       'minimalChrome',

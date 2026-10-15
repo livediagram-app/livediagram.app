@@ -1,0 +1,26 @@
+// Palette tiles in the tab's finish (docs/specs/008-canvas/finish.md "Where it shows"): every tile places an element,
+// so every tile draws its glyph in the finish that element will land in, and the whole palette previews the tab.
+// Professional squares and thins a line glyph; Sketch wobbles every glyph through the shared sketch filter
+// (SketchFilterDefs). Full-colour art (technology icons, stickers) keeps its weight under Professional, as on the
+// canvas, and only wobbles under Sketch.
+import type { Finish } from '@livediagram/document';
+import type { PaletteTileDef } from './palette-tile-defs';
+
+/** The id of the one SVG filter Sketch tiles are drawn through. */
+export const SKETCH_TILE_FILTER_ID = 'lvd-sketch-tile';
+
+/** Whether a tile's glyph is full-colour art, which Professional leaves as drawn. */
+function isColourArt(action: PaletteTileDef['action']): boolean {
+  return action.type === 'tech-icon' || action.type === 'sticker';
+}
+
+/** The class a tile's glyph wrapper carries in a finish (globals.css); empty under Flexible. */
+export function paletteFinishClass(
+  finish: Finish | undefined,
+  action?: PaletteTileDef['action'],
+): string {
+  if (finish === 'sketch') return 'palette-finish-sketch';
+  if (finish === 'professional' && !(action && isColourArt(action)))
+    return 'palette-finish-professional';
+  return '';
+}

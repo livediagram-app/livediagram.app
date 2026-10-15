@@ -353,9 +353,9 @@ The tier job also writes the tier and the reason to the run's step summary.
 | `PREVIEW_ZONE`       | `'livediagram.app'`  | Spec, "Naming"                                            | The zone holding the cert    |
 | `MAX_PR_NUMBER`      | `999_999`            | Keeps every name well under wrangler's 63-character limit | `<= 10^9`                    |
 | `API_PACKAGE`        | `'@livediagram/api'` | `apps/api/package.json`                                   | Must match the package name  |
-| Sweep schedule       | `0 4 * * *`          | D12                                                       | Daily, away from `0 3 * * *` |
+| Sweep schedule       | `0 4 * * *`          | D16                                                       | Daily, away from `0 3 * * *` |
 | Repository id        | `1253158818`         | `deploy-reusable.yml` `HOSTED`                            | The hosted repository only   |
 
 ## Defaults ledger
 
-D7 to D13 in [DEFAULTS.md](DEFAULTS.md).
+D11 to D17 in [DEFAULTS.md](DEFAULTS.md).

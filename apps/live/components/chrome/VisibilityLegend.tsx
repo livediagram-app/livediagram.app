@@ -46,7 +46,7 @@ const LOOK: Record<
     reach: 'Team',
     stop: 'bg-brand-700 text-white ring-brand-200 dark:bg-brand-600 dark:ring-brand-500/40',
     hero: 'from-brand-50 to-white dark:from-brand-500/15 dark:to-slate-900',
-    ink: 'text-brand-600 dark:text-brand-300',
+    ink: 'text-brand-700 dark:text-brand-300',
     eyebrow: 'text-brand-700 dark:text-brand-300',
   },
   community: {
@@ -279,8 +279,12 @@ function LocalOnlyRow({
 export function VisibilityLegend({
   current,
   onManage,
+  align = 'center',
 }: {
   current: ShareState;
+  // Centred under the pill (the header), or laid out by a host that places it (`floating`: the Explorer's card portals
+  // it over the panel, whose scroll would clip it).
+  align?: 'center' | 'floating';
   // Opens Share; absent where the reader may not change who can see the document.
   onManage?: () => void;
 }) {
@@ -292,7 +296,9 @@ export function VisibilityLegend({
     <div
       aria-hidden
       data-visibility-legend=""
-      className="absolute left-1/2 top-full z-10 w-[20rem] max-w-[calc(100vw-2rem)] -translate-x-1/2 pt-2 text-left"
+      className={`w-[20rem] max-w-[calc(100vw-2rem)] pt-2 text-left ${
+        align === 'floating' ? '' : 'absolute top-full z-10 left-1/2 -translate-x-1/2'
+      }`}
     >
       <div className="animate-dialog-in overflow-hidden rounded-xl border border-slate-200 bg-white pb-3 shadow-2xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/50">
         <Hero state={shown} current={shown === current} />

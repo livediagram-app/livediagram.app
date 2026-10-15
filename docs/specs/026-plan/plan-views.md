@@ -312,6 +312,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 - Its element menu's **View** flyout has **Group By**, the board's Swimlanes grid without None, listing what the
   view's card types offer (stored as `swimlaneBy` and `swimlaneField`; Assignee is the default, not stored).
   Telemetry: `Plan` · `Changed` · `ViewGrouping`.
+- Its header names what it groups by, "Cards by Assignee", "Cards by Severity" (a field gone reads "Cards by
+  Field"), unless the view has a title of its own; images draw the same heading.
 - A legend names the three phases, at the top right. The header counts the cards: `14 cards`.
 - The rows share the view's height (see [Using the space](#using-the-space)): each up to 96 px tall, its bar up to
   44 px thick, the names column a third of the width up to 260 px, the names and counts larger as the bars thicken.

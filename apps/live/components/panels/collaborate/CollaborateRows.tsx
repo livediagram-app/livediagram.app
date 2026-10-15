@@ -94,7 +94,7 @@ export function ActionRowItem({
       className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors ${
         shownDone
           ? 'border-emerald-500 bg-emerald-500 text-white'
-          : 'border-slate-300 text-transparent group-hover/check:border-brand-500 group-hover/check:text-brand-500 dark:border-slate-600'
+          : 'border-slate-300 text-transparent group-hover/check:border-brand-500 group-hover/check:text-brand-700 dark:border-slate-600'
       } ${pressed ? 'qa-pop' : ''}`}
     >
       <CheckIcon size={11} />

@@ -1,3 +1,4 @@
+import { trustedHtml } from '@livediagram/ui';
 // Renders a Technology (brand) icon: a brand-coloured rounded tile + the
 // icon's white line-art glyph (docs/specs/010-palette/technology-icons.md). Shared by the canvas element
 // (BoxedElementView, for shape==='icon' when the id is a tech icon) and the
@@ -73,7 +74,7 @@ export function TechIconArt({ iconId, sizePx }: { iconId: string | undefined; si
       <g
         {...GLYPH_GROUP}
         strokeWidth={techGlyphStrokeUnits(sizePx)}
-        dangerouslySetInnerHTML={{ __html: icon.glyph }}
+        dangerouslySetInnerHTML={{ __html: trustedHtml(icon.glyph) }}
       />
     </>
   );

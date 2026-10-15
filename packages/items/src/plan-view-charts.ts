@@ -84,9 +84,12 @@ export function breakdownModel(
   grouping: { by: SwimlaneBy; field?: string | undefined },
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   statusNames?: ReadonlyMap<string, string>,
+  // Every card of the document, so a row per linked card (a Card field grouping) names a card of a type the chart
+  // does not count (a Candidate's Role); the counted cards alone when absent.
+  everyCard?: ReadonlyMap<string, Item>,
 ): { rows: BreakdownRow[]; max: number; total: number } {
   const cards = liveCards(items);
-  const all = new Map(cards.map((c) => [c.id, c]));
+  const all = everyCard ?? new Map(cards.map((c) => [c.id, c]));
   const groups = laneGroups(grouping.by, grouping.field, cards, all, types, statusNames);
   const rows = new Map<string, BreakdownRow>(
     groups.lanes.map((l) => [

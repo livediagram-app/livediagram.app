@@ -67,13 +67,18 @@ sticker classes a kept Shape value still draws.
 | `table`                                                                | `table`              |
 | `text`                                                                 | undefined            |
 | `shape` that is an icon, chart, progress or rating                     | undefined (own sets) |
+| `shape` that is a concept graphic or a sequence diagram (words: Text)  | undefined (own sets) |
 | any other `shape` (stickers and chairs too), `annotation`, `link-card` | `shape`              |
 
 `carriesWords(el)`: `text`, `sticky` and `table` are true; a `shape` is true when `takesTypedLabel(el)`, not
 `selfLabelled(el)`, not icon / chart / progress / rating, and not `chair` or `sticker`; everything else is false.
 
-`animationCategoriesOf(elements)` adds icon, chart and arrow to `animationSetsOf` and orders all by
-`shape, sticky, drawing, media, table, icon, chart, text, arrow`.
+`animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, chart, sankey, progress,
+rating, concept, sequence, arrow) to `animationSetsOf` and orders all by
+`shape, sticky, drawing, media, table, icon, chart, sankey, progress, rating, concept, sequence, text, arrow`. Concept
+and Sequence render `ConceptAnimTiles` / `SequenceAnimTiles` (`apps/live/components/palette/ElementAnimationTiles.tsx`)
+through the menu's `elementStyle` ops; Progress and Rating render `ProgressAnimTiles` / `RatingAnimTiles` with their
+`onSet*Anim*` handlers.
 
 ## Data and persistence
 

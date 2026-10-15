@@ -238,7 +238,7 @@ export default function TelemetryDashboard() {
             )}
 
             {summary.generatedAt ? (
-              <p className="mt-10 text-xs text-slate-400">
+              <p className="mt-10 text-xs text-slate-500 dark:text-slate-400">
                 Anonymous, first-party, no vendors. Updated a few minutes at a time.
               </p>
             ) : null}

@@ -34,6 +34,7 @@ import {
   type Size,
 } from './auto-layout-shared';
 import { positionTreeComponent } from './auto-layout-tree';
+import { LABEL_PAD as LABEL_GAP_PAD, labelRoom } from './auto-layout-tidy-flow';
 import { reduceCrossings } from './auto-layout-crossings';
 import { LANE_WIDTH, splitLongEdges } from './auto-layout-long-edges';
 import { placeCrossAxis } from './auto-layout-placement';
@@ -63,7 +64,15 @@ export type AutoLayoutOptions = {
   // stay put"): the editor passes its locked elements and everything on a locked layer. A locked
   // box is not a graph node, so arrows to it are not edges, and a locked arrow keeps its anchors.
   lockedIds?: ReadonlySet<ElementId>;
+  // Edges (`from->to`) whose target ranks level with its source and sits just after it across the flow: a
+  // decision's side step (docs/specs/015-api/mcp-server.md §4.7 "Side steps sit level with their decision").
+  // Graph input only; Tidy Up never passes it.
+  flatEdges?: ReadonlySet<string>;
+  // Tree style: parents whose leaf children stack in a column under them (auto-layout-tree.ts). Graph input only.
+  stackedParents?: ReadonlySet<ElementId>;
 };
+
+export const edgeKey = (from: ElementId, to: ElementId) => `${from}->${to}`;
 
 // TB when the model's edges trend more vertical than horizontal, else LR.
 function detectDirection(centers: Map<ElementId, Pt>, edges: Edge[]): LayoutDirection {
@@ -93,7 +102,11 @@ export function flowDirectionOf(elements: readonly Element[]): LayoutDirection {
 // deepest predecessor. Cycles are broken by ignoring back edges (relax only
 // along the topological order; remaining cycle nodes are appended in input
 // order so the result is deterministic).
-function layerComponent(ids: ElementId[], edges: Edge[]): Map<ElementId, number> {
+export function layerComponent(
+  ids: ElementId[],
+  edges: Edge[],
+  flat?: ReadonlySet<string>,
+): Map<ElementId, number> {
   const idset = new Set(ids);
   const out = new Map<ElementId, ElementId[]>(ids.map((id) => [id, []]));
   const indeg = new Map<ElementId, number>(ids.map((id) => [id, 0]));
@@ -105,24 +118,43 @@ function layerComponent(ids: ElementId[], edges: Edge[]): Map<ElementId, number>
   const work = new Map(indeg);
   const queue = ids.filter((id) => work.get(id) === 0);
   const topo: ElementId[] = [];
-  while (queue.length) {
+  const inTopo = new Set<ElementId>();
+  while (topo.length < ids.length) {
+    // A cycle stalls the order: it goes on from a loop's entry, the waiting node some placed node already feeds,
+    // with the fewest predecessors still to come (its one unmet edge the loop back), earliest in input order on a
+    // tie. Appended wholesale in input order, a group laid out before the nodes that feed it took rank 0, and its
+    // line ran back up the page.
+    if (queue.length === 0) {
+      const rank = (id: ElementId) =>
+        [work.get(id)! < indeg.get(id)! ? 0 : 1, work.get(id)!] as const;
+      let pick: ElementId | null = null;
+      for (const id of ids) {
+        if (inTopo.has(id)) continue;
+        if (pick === null) {
+          pick = id;
+          continue;
+        }
+        const [a, b] = [rank(id), rank(pick)];
+        if (a[0] < b[0] || (a[0] === b[0] && a[1] < b[1])) pick = id;
+      }
+      queue.push(pick!);
+    }
     const u = queue.shift()!;
+    if (inTopo.has(u)) continue;
     topo.push(u);
+    inTopo.add(u);
     for (const v of out.get(u)!) {
       work.set(v, work.get(v)! - 1);
-      if (work.get(v) === 0) queue.push(v);
+      if (work.get(v) === 0 && !inTopo.has(v)) queue.push(v);
     }
-  }
-  if (topo.length < ids.length) {
-    const inTopo = new Set(topo);
-    for (const id of ids) if (!inTopo.has(id)) topo.push(id);
   }
   const topoIndex = new Map(topo.map((id, i) => [id, i]));
   const layer = new Map<ElementId, number>(ids.map((id) => [id, 0]));
   for (const u of topo) {
     for (const v of out.get(u)!) {
       if (topoIndex.get(u)! < topoIndex.get(v)!) {
-        layer.set(v, Math.max(layer.get(v)!, layer.get(u)! + 1));
+        const step = flat?.has(edgeKey(u, v)) ? 0 : 1;
+        layer.set(v, Math.max(layer.get(v)!, layer.get(u)! + step));
       }
     }
   }
@@ -143,6 +175,8 @@ function positionComponent(
   centers: Map<ElementId, Pt>,
   dir: LayoutDirection,
   realEdges: Edge[],
+  flat?: ReadonlySet<string>,
+  labelOf: (e: Edge) => string | undefined = () => undefined,
 ): PlacedComponent {
   const { ids, edges, layer, lanes } = splitLongEdges(realIds, realEdges, realLayer);
   const byLayer = new Map<number, ElementId[]>();
@@ -165,12 +199,34 @@ function positionComponent(
     layer,
   );
   layers.forEach((L, i) => byLayer.set(L, refined[i]!));
+  // A side step sits just after the node that sends it out, on the same rank.
+  if (flat?.size) {
+    for (const e of edges) {
+      if (!flat.has(edgeKey(e.from, e.to)) || layer.get(e.from) !== layer.get(e.to)) continue;
+      const rank = byLayer.get(layer.get(e.from)!)!;
+      rank.splice(rank.indexOf(e.to), 1);
+      rank.splice(rank.indexOf(e.from) + 1, 0, e.to);
+    }
+  }
 
   const mainSize = (id: ElementId) =>
     lanes.has(id) ? 0 : dir === 'TB' ? size.get(id)!.h : size.get(id)!.w;
   const crossSize = (id: ElementId) =>
     lanes.has(id) ? LANE_WIDTH : dir === 'TB' ? size.get(id)!.w : size.get(id)!.h;
 
+  // The gap after each rank fits the labels of the edges crossing it, as Tidy Up's does (auto-layout-tidy-flow.ts):
+  // left to right, a label's width; top to bottom, its line height either side of the jog there. A label longer
+  // than the gap otherwise sat on the box it pointed at. Top to bottom one line (64 px) fits LAYER_GAP (90) today,
+  // so only a left-to-right layout widens; the rule is kept so a narrower gap stays safe.
+  const gapAfter = new Map<number, number>();
+  for (const e of realEdges) {
+    const room = labelRoom(labelOf(e));
+    const [a, b] = [realLayer.get(e.from), realLayer.get(e.to)];
+    if (!room.w || a === undefined || b === undefined || a === b) continue;
+    const need = dir === 'LR' ? room.w : room.h * 2 + LABEL_GAP_PAD;
+    for (let L = Math.min(a, b); L < Math.max(a, b); L++)
+      gapAfter.set(L, Math.max(gapAfter.get(L) ?? LAYER_GAP, need));
+  }
   const layerMainStart = new Map<number, number>();
   const layerMainSize = new Map<number, number>();
   let mainCursor = 0;
@@ -178,7 +234,7 @@ function positionComponent(
     const lm = Math.max(...byLayer.get(L)!.map(mainSize));
     layerMainSize.set(L, lm);
     layerMainStart.set(L, mainCursor);
-    mainCursor += lm + LAYER_GAP;
+    mainCursor += lm + (gapAfter.get(L) ?? LAYER_GAP);
   }
 
   // Start packed and centred against the widest rank, then let each node
@@ -293,6 +349,11 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
     }
   }
   const edges = buildEdges(arrows, nodeIds);
+  // Each edge's label, for the gap it crosses to fit.
+  const labels = new Map<string, string>();
+  for (const a of arrows)
+    if (a.label?.trim() && a.from.kind === 'pinned' && a.to.kind === 'pinned')
+      labels.set(`${a.from.elementId}->${a.to.elementId}`, a.label);
   const centers = new Map<ElementId, Pt>(
     nodes.map((n) => [n.id, { x: n.x + n.width / 2, y: n.y + n.height / 2 }]),
   );
@@ -314,11 +375,20 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
   for (const comp of comps) {
     let placed: PlacedComponent;
     if (style === 'tree') {
-      placed = positionTreeComponent(comp, edges, size, centers);
+      placed = positionTreeComponent(comp, edges, size, centers, opts.stackedParents);
     } else if (style === 'mindmap') {
       placed = positionMindmapComponent(comp, edges, size, centers);
     } else {
-      placed = positionComponent(comp, layerComponent(comp, edges), size, centers, dir, edges);
+      placed = positionComponent(
+        comp,
+        layerComponent(comp, edges, opts.flatEdges),
+        size,
+        centers,
+        dir,
+        edges,
+        opts.flatEdges,
+        (e) => labels.get(`${e.from}->${e.to}`),
+      );
     }
     for (const id of comp) {
       const p = placed.pos.get(id)!;

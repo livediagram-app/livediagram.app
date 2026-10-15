@@ -5,7 +5,8 @@
 // the document. A colleague opening the same document gets their own. Never sent
 // to the api.
 
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import { readLocalStorageSafe } from './local-storage-safe';
+import type { UserPreferences } from './user-preferences';
 
 const KEY = 'livediagram:v2:presentation-config';
 
@@ -67,8 +68,8 @@ export const SLIDE_SPEEDS: readonly { id: SlideSpeed; label: string; ms: number 
 ];
 
 export const SLIDE_ZOOMS: readonly { id: SlideZoom; label: string; hint: string }[] = [
-  { id: 'fill', label: 'Fill screen', hint: 'A small slide is blown up to fill the screen' },
-  { id: 'actual', label: 'Actual size', hint: 'Never zoom past 100%, however small the slide' },
+  { id: 'fill', label: 'Fill Screen', hint: 'A small slide is blown up to fill the screen' },
+  { id: 'actual', label: 'Actual Size', hint: 'Never zoom past 100%, however small the slide' },
 ];
 
 // Off, then the intervals an unattended deck in a room actually wants. Paired
@@ -104,39 +105,58 @@ export function slideFitOptions(
     : { maxZoom: slideMaxZoom(config) };
 }
 
+/** A stored presenter config, trusted only once parsed: every field checked, the default where it is not valid. */
+export function parsePresentationConfig(raw: unknown): PresentationConfig {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw))
+    return DEFAULT_PRESENTATION_CONFIG;
+  const parsed = raw as Partial<PresentationConfig>;
+  const bool = (v: unknown, fallback: boolean) => (typeof v === 'boolean' ? v : fallback);
+  return {
+    transition: SLIDE_TRANSITIONS.some((t) => t.id === parsed.transition)
+      ? (parsed.transition as SlideTransition)
+      : DEFAULT_PRESENTATION_CONFIG.transition,
+    speed: SLIDE_SPEEDS.some((t) => t.id === parsed.speed)
+      ? (parsed.speed as SlideSpeed)
+      : DEFAULT_PRESENTATION_CONFIG.speed,
+    zoom: SLIDE_ZOOMS.some((t) => t.id === parsed.zoom)
+      ? (parsed.zoom as SlideZoom)
+      : DEFAULT_PRESENTATION_CONFIG.zoom,
+    autoAdvanceSeconds: AUTO_ADVANCE_CHOICES.some((c) => c.seconds === parsed.autoAdvanceSeconds)
+      ? (parsed.autoAdvanceSeconds as number)
+      : DEFAULT_PRESENTATION_CONFIG.autoAdvanceSeconds,
+    advanceOnClick: bool(parsed.advanceOnClick, DEFAULT_PRESENTATION_CONFIG.advanceOnClick),
+    loop: bool(parsed.loop, DEFAULT_PRESENTATION_CONFIG.loop),
+    showPosition: bool(parsed.showPosition, DEFAULT_PRESENTATION_CONFIG.showPosition),
+    keepControls: bool(parsed.keepControls, DEFAULT_PRESENTATION_CONFIG.keepControls),
+    hidePointer: bool(parsed.hidePointer, DEFAULT_PRESENTATION_CONFIG.hidePointer),
+    showElapsed: bool(parsed.showElapsed, DEFAULT_PRESENTATION_CONFIG.showElapsed),
+    showBudget: bool(parsed.showBudget, DEFAULT_PRESENTATION_CONFIG.showBudget),
+  };
+}
+
+/** The presenter config this browser kept before it followed the account: read once, as the first stored value. */
 export function loadPresentationConfig(): PresentationConfig {
   const raw = readLocalStorageSafe(KEY);
   if (!raw) return DEFAULT_PRESENTATION_CONFIG;
   try {
-    const parsed = JSON.parse(raw) as Partial<PresentationConfig>;
-    const bool = (v: unknown, fallback: boolean) => (typeof v === 'boolean' ? v : fallback);
-    return {
-      transition: SLIDE_TRANSITIONS.some((t) => t.id === parsed.transition)
-        ? (parsed.transition as SlideTransition)
-        : DEFAULT_PRESENTATION_CONFIG.transition,
-      speed: SLIDE_SPEEDS.some((t) => t.id === parsed.speed)
-        ? (parsed.speed as SlideSpeed)
-        : DEFAULT_PRESENTATION_CONFIG.speed,
-      zoom: SLIDE_ZOOMS.some((t) => t.id === parsed.zoom)
-        ? (parsed.zoom as SlideZoom)
-        : DEFAULT_PRESENTATION_CONFIG.zoom,
-      autoAdvanceSeconds: AUTO_ADVANCE_CHOICES.some((c) => c.seconds === parsed.autoAdvanceSeconds)
-        ? (parsed.autoAdvanceSeconds as number)
-        : DEFAULT_PRESENTATION_CONFIG.autoAdvanceSeconds,
-      advanceOnClick: bool(parsed.advanceOnClick, DEFAULT_PRESENTATION_CONFIG.advanceOnClick),
-      loop: bool(parsed.loop, DEFAULT_PRESENTATION_CONFIG.loop),
-      showPosition: bool(parsed.showPosition, DEFAULT_PRESENTATION_CONFIG.showPosition),
-      keepControls: bool(parsed.keepControls, DEFAULT_PRESENTATION_CONFIG.keepControls),
-      hidePointer: bool(parsed.hidePointer, DEFAULT_PRESENTATION_CONFIG.hidePointer),
-      showElapsed: bool(parsed.showElapsed, DEFAULT_PRESENTATION_CONFIG.showElapsed),
-      showBudget: bool(parsed.showBudget, DEFAULT_PRESENTATION_CONFIG.showBudget),
-    };
+    return parsePresentationConfig(JSON.parse(raw));
   } catch {
-    // A corrupt blob costs the settings, never the presentation.
     return DEFAULT_PRESENTATION_CONFIG;
   }
 }
 
-export function savePresentationConfig(config: PresentationConfig): void {
-  writeLocalStorageSafe(KEY, JSON.stringify(config));
+/** The presenter config (docs/specs/012-collaboration/presentation-mode.md "Settings"): the person's own, following
+ *  their account in the preferences blob; until they first change one, what this browser kept before. */
+export function readPresentationConfig(prefs: UserPreferences): PresentationConfig {
+  return prefs.presentation
+    ? parsePresentationConfig(prefs.presentation)
+    : loadPresentationConfig();
+}
+
+/** The preferences with the presenter config changed by `patch`, stored whole. */
+export function withPresentationConfig(
+  prefs: UserPreferences,
+  patch: Partial<PresentationConfig>,
+): UserPreferences {
+  return { ...prefs, presentation: { ...readPresentationConfig(prefs), ...patch } };
 }

@@ -54,13 +54,14 @@ export function postmortemFiveWhys(x0: number, top: number, w: number, h: number
     elements.push(
       card,
       {
-        ...createShape('circle', x0 + 16, y + (whyH - disc) / 2),
+        // The why's number: a Step number (docs/specs/009-elements/step-number.md) in the Quiet look.
+        ...createShape('step', x0 + 16, y + (whyH - disc) / 2),
         width: disc,
         height: disc,
         label: String(i + 1),
-        textSize: 'sm',
         textBold: true,
-        fillColor: '#f1f5f9',
+        chipLook: 'quiet',
+        fillColor: PAPER,
         strokeColor: '#94a3b8',
         textColor: INK,
         themeLockFill: true,

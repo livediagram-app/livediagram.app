@@ -1,6 +1,12 @@
 import { CombineOpGlyph, CombineTiles } from '@/components/canvas/CombineMenu';
 import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
-import type { BoxedElement, Element, ShapeElement } from '@livediagram/document';
+import {
+  rotationOf,
+  supportsRotation,
+  type BoxedElement,
+  type Element,
+  type ShapeElement,
+} from '@livediagram/document';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';
@@ -53,6 +59,9 @@ export function MultiPlacementSections({
 }) {
   const morphSrc = morphable[0];
   const morphIds = morphable.map((el) => el.id);
+  // The members that turn: a pointer note or an annotation marker does not (supportsRotation), so a selection of only
+  // those offers no Rotation, and the active tile reads a member that turns.
+  const turnable = boxedSel.filter(supportsRotation);
   return (
     <>
       {/* Combine (docs/specs/007-editor/logo-pages.md "Combine"): shapes on a logo page into one. */}
@@ -157,7 +166,7 @@ export function MultiPlacementSections({
         </MenuAccordionSection>
       ) : null}
       {/* Rotation — snap angles for every boxed member. */}
-      {boxedSel.length ? (
+      {turnable.length ? (
         <MenuAccordionSection
           title="Rotation"
           icon={<RotationMenuIcon />}
@@ -167,7 +176,7 @@ export function MultiPlacementSections({
             {ROTATION_ANGLES.map((deg) => (
               <SizeButton
                 key={deg}
-                active={(boxedSel[0]!.rotation ?? 0) % 360 === deg}
+                active={rotationOf(turnable[0]!) % 360 === deg}
                 onClick={() => props.onCommitRotation(deg)}
                 onPointerEnter={onMouseHover(() => props.onPreviewRotation(deg))}
                 onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}

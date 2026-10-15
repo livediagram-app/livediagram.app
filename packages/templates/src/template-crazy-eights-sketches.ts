@@ -124,8 +124,8 @@ export const SKETCHES: Sketch[] = [
         p.write(PX, 24, PW, 40, '17:00', { textSize: 'lg', textAlignX: 'center' }),
         p.shape('square', PX + 10, 74, PW - 20, 98, { borderRadius: 'md' }),
         p.write(PX + 20, 78, PW - 40, 24, 'Plateful', { textSize: 'sm', textBold: true }),
-        p.write(PX + 20, 100, PW - 40, 28, 'Tacos again?'),
-        p.cta(PX + 20, 134, PW - 40, 28, 'Reorder', 'stadium'),
+        p.write(PX + 20, 104, PW - 40, 28, 'Tacos again?', { textSize: 'sm' }),
+        p.cta(PX + 20, 136, PW - 40, 28, 'Reorder', 'stadium'),
         p.shape('icon', PX + PW / 2 - 18, 184, 36, 36, {
           iconId: 'smile',
           strokeColor: INK,

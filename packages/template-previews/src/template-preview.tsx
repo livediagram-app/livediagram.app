@@ -19,6 +19,10 @@ import { templatePreviewGroup16 } from './template-preview-16';
 import { templatePreviewGroup17 } from './template-preview-17';
 import { templatePreviewGroup18 } from './template-preview-18';
 import { templatePreviewGroup19 } from './template-preview-19';
+import { templatePreviewGroup20 } from './template-preview-20';
+import { templatePreviewGroup21 } from './template-preview-21';
+import { templatePreviewGroup22 } from './template-preview-22';
+import { templatePreviewGroup23 } from './template-preview-23';
 
 // Static SVG preview tiles, one branch per TemplateKind, rendered by the
 // editor's template picker and the marketing site's template gallery
@@ -27,7 +31,7 @@ import { templatePreviewGroup19 } from './template-preview-19';
 // switch case in a group file plus adding the kind to TEMPLATES in
 // @livediagram/templates; template-preview.test.ts fails until both exist.
 
-// The per-kind SVGs are split across template-preview-{1..19}.tsx (each a
+// The per-kind SVGs are split across template-preview-{1..23}.tsx (each a
 // switch returning null for kinds it doesn't own) to keep every file under the
 // ~1000-line budget; we try each group in turn.
 export function TemplatePreview({ kind }: { kind: TemplateKind }): ReactElement | null {
@@ -50,6 +54,10 @@ export function TemplatePreview({ kind }: { kind: TemplateKind }): ReactElement 
     templatePreviewGroup16(kind) ??
     templatePreviewGroup17(kind) ??
     templatePreviewGroup18(kind) ??
-    templatePreviewGroup19(kind)
+    templatePreviewGroup19(kind) ??
+    templatePreviewGroup20(kind) ??
+    templatePreviewGroup21(kind) ??
+    templatePreviewGroup22(kind) ??
+    templatePreviewGroup23(kind)
   );
 }

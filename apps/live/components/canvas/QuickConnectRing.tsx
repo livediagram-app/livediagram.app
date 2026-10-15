@@ -14,6 +14,8 @@ import {
   ADD_POINT_OPTION,
   webRowOption,
   ADD_ROW_OPTION,
+  FLOWCHART_NEXT_OPTION,
+  FLOWCHART_PARALLEL_OPTION,
   MIND_CHILD_OPTION,
   MIND_SIBLING_OPTION,
   OPTIONS,
@@ -77,6 +79,8 @@ type QuickConnectRingProps = {
   // Mind-map growth (docs/specs/009-elements/mind-node.md). Set only on a mind node, which is what
   // puts Add child / Add sibling on its ring.
   onGrowMind?: (relation: 'child' | 'sibling') => void;
+  // What `onGrowMind` grows, which names its two options. Absent: a mind map.
+  growing?: 'mind' | 'flowchart';
   onAddTableColumn?: () => void;
 };
 
@@ -161,6 +165,7 @@ export function QuickConnectRing({
   variant = 'default',
   onAddTableRow,
   onGrowMind,
+  growing = 'mind',
   onAddTableColumn,
 }: QuickConnectRingProps) {
   // The rail "Add Point" action only appears when the selected element is a
@@ -182,10 +187,12 @@ export function QuickConnectRing({
           : onGrowMind
             ? // A mind node's ring is how a map grows: its two growth actions
               // and Duplicate. A free arrow, a sketch or a loose label is not
-              // (docs/specs/009-elements/mind-node.md).
+              // (docs/specs/009-elements/mind-node.md). A flowchart step's is the same, named for steps
+              // (docs/specs/009-elements/flowchart.md).
               [
-                MIND_CHILD_OPTION,
-                MIND_SIBLING_OPTION,
+                ...(growing === 'flowchart'
+                  ? [FLOWCHART_NEXT_OPTION, FLOWCHART_PARALLEL_OPTION]
+                  : [MIND_CHILD_OPTION, MIND_SIBLING_OPTION]),
                 ...OPTIONS.filter((o) => o.kind === 'duplicate'),
               ]
             : OPTIONS;
@@ -384,8 +391,13 @@ export function QuickConnectRing({
                       else if (option.kind === 'add-web-row') webRow?.onAdd();
                       else if (option.kind === 'add-row') onAddTableRow?.();
                       else if (option.kind === 'add-column') onAddTableColumn?.();
-                      else if (option.kind === 'mind-child') onGrowMind?.('child');
-                      else if (option.kind === 'mind-sibling') onGrowMind?.('sibling');
+                      else if (option.kind === 'mind-child' || option.kind === 'flowchart-next')
+                        onGrowMind?.('child');
+                      else if (
+                        option.kind === 'mind-sibling' ||
+                        option.kind === 'flowchart-parallel'
+                      )
+                        onGrowMind?.('sibling');
                       else onSpawn(option.kind as QuickConnectKind);
                       onClose();
                     }}

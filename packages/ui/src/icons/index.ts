@@ -31,7 +31,14 @@ export {
   MinimizeIcon,
   SearchIcon,
 } from './navigation';
-export { CircleXIcon, PrivateDotIcon, SharedDotIcon, SparkleIcon, TabsLabelIcon } from './status';
+export {
+  CircleXIcon,
+  PrivateDotIcon,
+  SharedDotIcon,
+  SparkleIcon,
+  TabsLabelIcon,
+  TeamIcon,
+} from './status';
 export {
   ActionIcon,
   CommentIcon,
@@ -54,7 +61,7 @@ export {
   LayersStackIcon,
   RedoIcon,
   SettingsIcon,
-  ThemeBrushIcon,
+  ThemeLookIcon,
   TidyUpIcon,
   UndoIcon,
 } from './editor-chrome';

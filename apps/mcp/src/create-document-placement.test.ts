@@ -82,7 +82,8 @@ describe('create_document intent', () => {
     ['four-ls', { mode: 'facilitate', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
     ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
-    ['incident-postmortem', { mode: 'diagram', tabKind: 'diagram' }],
+    ['incident-postmortem', { mode: 'facilitate', tabKind: 'diagram' }],
+    ['floor-plan', { mode: 'illustrate', tabKind: 'diagram' }],
     ['lean-coffee', { mode: 'facilitate', tabKind: 'diagram' }],
     ['whiteboard', { mode: 'draw', tabKind: 'diagram' }],
     ['flowchart', { mode: 'diagram', tabKind: 'diagram' }],
@@ -191,5 +192,21 @@ describe('create_document lint', () => {
     expect((await run([elements])).structuredContent.lint).toEqual(['lint unavailable']);
     expect(errors[0]?.[0]).toBe('[lint] failed');
     vi.restoreAllMocks();
+  });
+});
+
+// A tab's own theme wins over the document's (docs/specs/015-api/mcp-server.md §4.3): a theme put on a tab was dropped.
+describe('create_document themes', () => {
+  it('gives each tab its own theme, else the document’s', async () => {
+    const { run, posted } = harness({ folderId: null, teamId: null });
+    await run(
+      [
+        { name: 'Own', elements: [], theme: 'mocha' },
+        { name: 'Doc', elements: [] },
+      ],
+      { theme: 'ocean' },
+    );
+    const tabs = (posted[0]!.tabs as { theme?: string }[]).map((t) => t.theme);
+    expect(tabs).toEqual(['mocha', 'ocean']);
   });
 });

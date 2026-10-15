@@ -3,9 +3,11 @@
 // `replace` body. Here rather than in @livediagram/document because the catalogue lives here and
 // this package already imports the document one (the reverse would be a cycle).
 
-import { buildTab, stampTabKind, type Tab } from '@livediagram/document';
+import { buildTab, getBuiltInTheme, stampTabKind, type Tab } from '@livediagram/document';
+import { withBlankPageThemed } from './blank-page-templates';
 import { buildTemplate, templateTabs } from './build-template';
-import { TEMPLATES, isTemplateKind, templateCanvasOverrides, type TemplateKind } from './templates';
+import { TEMPLATES, isTemplateKind, type TemplateKind } from './templates';
+import { templateCanvasOverrides } from './template-canvas-overrides';
 
 // A template argument resolved against the catalogue; null for an unknown kind, so the caller can
 // answer with the valid kinds and the model corrects itself without another round trip.
@@ -27,17 +29,32 @@ export function buildTemplateTab(
   kind: TemplateKind,
   themeId?: string,
 ): Tab {
-  return stampTabKind({
-    ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),
-    templateChosen: true,
-    ...templateCanvasOverrides(kind),
-    ...templateTabs(kind)[0]?.tab?.([tabId]),
-  });
+  return withBlankPageThemed(
+    stampTabKind({
+      ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),
+      templateChosen: true,
+      ...templateCanvasOverrides(kind),
+      ...templateTabs(kind)[0]?.tab?.([tabId]),
+    }),
+    kind,
+    getBuiltInTheme(themeId),
+  );
 }
 
 // Every tab a template makes (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"):
 // the first takes `first`'s id and name, the rest a fresh id each and the template's names. A template of
 // one tab makes exactly buildTemplateTab's.
+// The name a template's first tab takes where an agent or the api makes it (docs/specs/026-plan/plan-templates.md "How a
+// template with tabs is made"): the name given, unless it is one of the template's later tabs (the agent naming the
+// tab it wanted, which the template makes anyway), when the first keeps its template name, so no two tabs share one.
+// With no name given, the template's own first name, else Tab 1.
+export function templateTabName(given: string | undefined, kind: TemplateKind): string {
+  const [first, ...later] = templateTabs(kind).map((d) => d.name);
+  if (given === undefined || !given.trim()) return first ?? 'Tab 1';
+  const key = given.trim().toLowerCase();
+  return first && later.some((n) => n?.trim().toLowerCase() === key) ? first : given;
+}
+
 export function buildTemplateTabs(
   first: { id: string; name: string },
   kind: TemplateKind,
@@ -47,17 +64,21 @@ export function buildTemplateTabs(
   const defs = templateTabs(kind);
   const ids = defs.map((_, i) => (i === 0 ? first.id : newId()));
   return defs.map((def, i) =>
-    stampTabKind({
-      ...buildTab(
-        ids[i]!,
-        i === 0 ? first.name : (def.name ?? first.name),
-        def.build(0, 0),
-        'preserve',
-        themeId,
-      ),
-      templateChosen: true,
-      ...templateCanvasOverrides(kind),
-      ...def.tab?.(ids),
-    }),
+    withBlankPageThemed(
+      stampTabKind({
+        ...buildTab(
+          ids[i]!,
+          i === 0 ? first.name : (def.name ?? first.name),
+          def.build(0, 0),
+          'preserve',
+          themeId,
+        ),
+        templateChosen: true,
+        ...templateCanvasOverrides(kind),
+        ...def.tab?.(ids),
+      }),
+      kind,
+      getBuiltInTheme(themeId),
+    ),
   );
 }

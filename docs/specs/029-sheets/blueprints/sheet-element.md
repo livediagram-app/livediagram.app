@@ -95,7 +95,7 @@ SheetFace.tsx            the frame: loading (SheetBuildAnimation, "Opening Sheet
 SheetHeader.tsx          title (in-place edit), FocusElementButton kind="Sheet", MaximisePlanButton kind="Sheet"
                          (neither while the Sheet fills its tab), the Sheet Settings cog (plan/SettingsCog.tsx, shared
                          with BoardSettingsButton)
-SheetMenuSection.tsx     The element menu's Sheet flyout: SheetSettingsPanel with the Sheet's controller, read from
+SheetMenuSection.tsx     The element menu's Sheet rows: SheetSettingsPanel (its `asRow`, a flyout row per section) with the Sheet's controller, read from
                          sheet-settings-registry.ts (usePublishSheetSettings in PlanSheetView, useSheetSettingsEntry)
 SheetSettingsPanel.tsx   Sheet Settings' sections (BoardSettingsSection): Sheet Setup, Sheet Options (with Fill Tab's
                          OptionRows), Cells, Freeze (editors), Calculations, Named Ranges (SheetNamedRanges.tsx); options through actions.setOptions (LayoutChange
@@ -124,7 +124,9 @@ SheetBordersPicker.tsx   the Borders menu: a 4 x 2 grid of drawn borders and dra
 sheet-rename.ts          renameSheet: trim, unchanged, unique on the tab (TITLE_TAKEN toast); header and settings
 sheet-status-pick.ts     the viewer's totals pick (localStorage, useSyncExternalStore), status bar and settings
 SheetToolbar.tsx         the category switcher (PaletteDropdown) and the category's buttons, labelled when they
-                         all fit (never on a phone), folding into More when narrow (TOOLBAR_PX)
+                         all fit (never on a phone), folding into More when narrow (TOOLBAR_PX); on a phone no
+                         Search or chevrons, PHONE_GAP_PX / PHONE_SEPARATOR_PX, an iconOnly switcher, glyph-only
+                         word buttons, controls drawn as their menu's glyph
 sheet-toolbar-categories.tsx the six categories (Text, Cells, Numbers, Data, Charts, Functions) and their
                          buttons
 SheetToolbarMenus.tsx    number format, colours, font size, borders, merge (with its confirm), alignment, wrap,
@@ -265,7 +267,9 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
 to an engine command builder (`commands.ts`) and then the controller's write (`store.write`, plus `track('Sheet',
 'Changed', kind)`); e.g. `bold()` → `formatRange(sel,
 { b: !activeBold || null })`; `insertRowsAbove(n)` → layout `insertRows` after the row above with new ids;
-`sortColumn(dir)` → `sortSheetRows`; `merge('all')` → layout `merge` plus cleared cells after a confirm when any
+`sortColumn(dir)` → `sortSheet` (the active cell's column); `sortFilter(colId, dir)` (the filter menu's sort) →
+`sortFilter`, the filter's rows under its header by that column, its bottom row id carried to the row now in that
+place; `merge('all')` → layout `merge` plus cleared cells after a confirm when any
 non-top-left cell holds an input.
 
 ### Clipboard
@@ -375,7 +379,9 @@ interactive)`, a `BoxedElementView` with the layer's `boxedShared` (the props ev
 ### Headers and status bar
 
 - `SheetHeaders` draws the unhide markers between the neighbours of hidden lines even with headers hidden (at the
-  grid's own edge then), so hidden lines can always come back.
+  grid's own edge then), so hidden lines can always come back. It reads `Geometry.userHiddenRow` (the layout's
+  `hiddenRows`), not `hiddenRow` (which also counts the filter's rows, drawn at no height): a filtered-out row gets no
+  marker.
 - The status bar's totals pick opens in the shared `AnchoredPopover` (`STATS_MENU_PX` wide).
 
 ### Presence

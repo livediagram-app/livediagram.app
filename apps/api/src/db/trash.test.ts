@@ -6,6 +6,12 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { DAY, T0, liveDoc, insert, team } from './test-trash-fixtures';
 import type { Env } from '../types';
 import { deleteAccount } from './account';
+import { purgeRooms } from '../room-purge-client';
+
+// The rooms are another worker's storage; here only whether they are asked to purge is pinned.
+vi.mock('../room-purge-client', () => ({
+  purgeRooms: vi.fn(() => Promise.resolve({ rooms: 0, unreached: 0 })),
+}));
 import {
   getDocument,
   getDocumentMeta,
@@ -306,6 +312,8 @@ describe('purgeDocuments', () => {
     expect(count(db.sql, 'documents', 'id = ?', 'A')).toBe(0);
     expect(count(db.sql, 'tabs', 'id = ?', 't1')).toBe(0);
     expect(del).toHaveBeenCalledWith(['thumb/A', 'thumb-community/A']);
+    // Its room's storage, where the ledger keeps comment and idea text (docs/specs/015-api/api.md "Purging a room").
+    expect(vi.mocked(purgeRooms)).toHaveBeenCalledWith(db.env, ['A']);
   });
 
   it('keeps a tab another document still holds', async () => {
@@ -326,8 +334,10 @@ describe('purgeDocuments', () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'live');
 
+    vi.mocked(purgeRooms).mockClear();
     expect(await purgeDocuments(db.env, ['live'])).toBe(0);
     expect(count(db.sql, 'documents', 'id = ?', 'live')).toBe(1);
+    expect(vi.mocked(purgeRooms)).not.toHaveBeenCalled();
   });
 
   it('sweeps the document’s Timeline events', async () => {

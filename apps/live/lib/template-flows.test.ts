@@ -94,9 +94,12 @@ describe('the approval workflow template', () => {
     const loop = arrows(els).find((a) => a.label === 'Resubmit')!;
     expect(labelOf(pinnedIds(loop).from)).toBe('Revise request');
     expect(labelOf(pinnedIds(loop).to)).toBe('Submit request');
-    // Every No drops straight down out of the bottom of its gate.
-    for (const a of arrows(els).filter((x) => x.label === 'No'))
-      expect(a.from).toMatchObject({ anchor: 's' });
+    // The flowchart layout sends each No toward its lane: the manager's back left to the requester,
+    // Finance's on to the right, each out of the gate's side corner.
+    const noAnchors = arrows(els)
+      .filter((a) => a.label === 'No')
+      .map((a) => a.from.kind === 'pinned' && a.from.anchor);
+    expect(noAnchors).toEqual(['w', 'e']);
   });
 });
 

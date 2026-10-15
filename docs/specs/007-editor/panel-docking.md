@@ -111,22 +111,14 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // 'collaborate' is the merged Comments + Actions panel, a popover over its
 // cluster button that takes no corner. The Poll and Vote panels are not corner panels either: they
 // open over the Session strip's buttons (docs/specs/012-collaboration/session-tools.md), and a stored
-// layout naming them is read like any unknown id. Five panels are NOT always available — they exist only while
+// layout naming them is read like any unknown id, and so is the Avatar panel, a popover over its own button
+// (docs/specs/008-canvas/avatar-mode.md). Four panels are NOT always available — they exist only while
 // their mode is running, so they join and leave their
-// corner stack rather than sitting in it: 'avatar' (docs/specs/008-canvas/avatar-mode.md, the Avatar-mode character sheet),
-// 'laser' (docs/specs/008-canvas/laser-panel.md, the laser pen's settings), 'spotlight'
+// corner stack rather than sitting in it: 'laser' (docs/specs/008-canvas/laser-panel.md, the laser pen's settings), 'spotlight'
 // (docs/specs/008-canvas/spotlight-panel.md, the light's look), 'eraser' (docs/specs/008-canvas/eraser-panel.md, the brush),
 // and 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
 type PanelId =
-  | 'collaborate'
-  | 'ai'
-  | 'minimap'
-  | 'avatar'
-  | 'laser'
-  | 'spotlight'
-  | 'eraser'
-  | 'format'
-  | 'slide-deck';
+  'collaborate' | 'ai' | 'minimap' | 'laser' | 'spotlight' | 'eraser' | 'format' | 'slide-deck';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /

@@ -29,6 +29,7 @@ import {
   identityHeaders,
   tabForWire,
   apiFetch,
+  saveTimeoutSignal,
 } from './core';
 
 // Full tab payload, including elements + per-tab metadata. Pulled
@@ -138,10 +139,13 @@ export async function apiSaveTab(
   if (opts.changesetSeen !== undefined) {
     headers.set(CHANGESET_SEEN_HEADER, String(opts.changesetSeen));
   }
+  const body = JSON.stringify(tabForWire(tab));
   const res = await apiFetch(`${API_BASE}/documents/${documentId}/tabs/${tab.id}`, {
     method: 'PUT',
     headers,
-    body: JSON.stringify(tabForWire(tab)),
+    body,
+    // A hung save would hold every later save of this tab behind it (saveTimeoutMs).
+    signal: saveTimeoutSignal(body),
   });
   await expectOkVoid(res, 'save tab');
   return savedRevOf(res);

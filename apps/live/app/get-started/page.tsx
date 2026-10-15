@@ -33,6 +33,7 @@ import {
   messageOf,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
+  ssoCallbackUrl,
 } from '@/components/chrome/auth-shared';
 import { Button, TextInput } from '@livediagram/ui';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
@@ -51,6 +52,7 @@ function GetStartedContent() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState(() => searchParams.get('email')?.trim() ?? '');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [codeDigits, setCodeDigits] = useState<string[]>(['', '', '', '', '', '']);
@@ -75,7 +77,7 @@ function GetStartedContent() {
     try {
       await clerkSignUp.authenticateWithRedirect({
         strategy: 'oauth_google',
-        redirectUrl: '/sso-callback',
+        redirectUrl: ssoCallbackUrl(searchParams),
         // Honour ?redirect_url so an OAuth sign-up from a protected
         // page lands back where it came from, matching the email-code
         // path. See docs/specs/014-identity/auth-and-guest-access.md "Routes" + auth-shared.tsx.
@@ -199,11 +201,12 @@ function GetStartedContent() {
   const handleResendCode = async () => {
     if (!clerkSignUp) return;
     setError('');
+    setNotice('');
     setLoading(true);
     setCodeDigits(['', '', '', '', '', '']);
     try {
       await clerkSignUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-      setError('A new code has been sent. Check your email.');
+      setNotice('A new code has been sent. Check your email.');
       codeInputRefs.current[0]?.focus();
     } catch (err: unknown) {
       setError(messageOf(err, 'Failed to resend code'));
@@ -224,12 +227,13 @@ function GetStartedContent() {
           : 'Check your email'
       }
       error={error}
+      notice={notice}
       footer={
         <>
           Already have an account?{' '}
           <Link
             href={authHrefWithReturn('/sign-in/', searchParams.get('redirect_url'))}
-            className="font-medium text-brand-600 hover:underline dark:text-brand-400"
+            className="font-medium text-brand-700 hover:underline dark:text-brand-400"
           >
             Sign in
           </Link>
@@ -301,6 +305,7 @@ function GetStartedContent() {
           onBack={() => {
             setPhase(1);
             setError('');
+            setNotice('');
             setCodeDigits(['', '', '', '', '', '']);
           }}
         />

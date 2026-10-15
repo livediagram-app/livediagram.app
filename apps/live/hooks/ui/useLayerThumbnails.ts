@@ -10,6 +10,7 @@ import {
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
+  sketchBackdropIds,
   svgBoxed,
   type Element,
   type Layer,
@@ -17,6 +18,7 @@ import {
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 
 // Per-layer preview markup (docs/specs/006-document/layers.md), shared by the Layers panel rows and
 // the context menu's Move-to-layer tiles: the SAME headless renderer the
@@ -37,6 +39,8 @@ export function useLayerThumbnails(
   // The canvas paper (docs/specs/008-canvas/minimap.md "Fidelity"), so a
   // preview on a dark canvas shows the dark cards the canvas shows.
   const surface = useCanvasSurface();
+  // The tab's finish (docs/specs/008-canvas/finish.md), so a sketched layer previews sketched.
+  const tabFinish = useTabFinish();
   return useMemo(() => {
     // The resolvers find nothing until the catalogues land; gating them on the
     // flag makes the rebuild on landing a real input of this memo.
@@ -48,8 +52,10 @@ export function useLayerThumbnails(
     }
     const markup = new Map<string, string>();
     const labels = arrowLabelPass(elements, {
-      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
+      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
     });
+    // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+    const backdrops = sketchBackdropIds(elements, tabFinish);
     for (const band of layerBands(elements, layers, { includeHidden: true })) {
       const parts: string[] = [];
       for (const el of band.elements) {
@@ -58,6 +64,8 @@ export function useLayerThumbnails(
             svgBoxed(el, {
               ...art,
               tabFont,
+              tabFinish,
+              sketchBackdrop: backdrops.has(el.id),
               surface,
             }),
           );
@@ -75,6 +83,8 @@ export function useLayerThumbnails(
               labels,
               `lvd-layer-${band.layer.id}-ko-`,
               band.elements,
+              undefined,
+              tabFinish,
             ),
           );
       }
@@ -90,5 +100,5 @@ export function useLayerThumbnails(
       thumbMarkup: markup,
       thumbViewBox: `${r2(b.x - pad)} ${r2(b.y - pad)} ${r2(b.w + pad * 2)} ${r2(b.h + pad * 2)}`,
     };
-  }, [elements, layers, tabFont, iconsLoaded, surface]);
+  }, [elements, layers, tabFont, tabFinish, iconsLoaded, surface]);
 }

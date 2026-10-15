@@ -7,9 +7,12 @@ import {
   isParticipationOp,
   isPresenceOpKind,
   isRoomOpRef,
+  parseAvatarSay,
   parseBuildId,
   parseStoredLevel,
   isSystemOpKind,
+  ROOM_PING,
+  ROOM_PONG,
   type AccessLevel,
 } from '@livediagram/api-schema';
 import { ADDER_KEY_LENGTH, opForTheWire, stampCommentAuthor } from '@livediagram/document';
@@ -36,6 +39,7 @@ import {
   helloPresence,
   resolveCatchup,
 } from './document-room-rules';
+import { followerIdsOf, followTargetOf } from './room-follows';
 import { opForScope, scopedSenderMayRelay } from './room-scope';
 import {
   parseAccessCloseMatch,
@@ -88,9 +92,11 @@ import { writeQaAction, type QaWriteRequest } from './qa-board-write';
 //   - Anything left in memory silently resets when the DO hibernates
 //     and wakes (the constructor re-runs). Only `opRates` lives there,
 //     and that reset is deliberately acceptable — see its comment.
-//   - No `setWebSocketAutoResponse` ping/pong is configured: the room's
-//     wire protocol (room-messages.ts) has no keepalive frame and the
-//     live client doesn't send one, so there's nothing to auto-answer.
+//   - The keepalive is a `setWebSocketAutoResponse` pair (ROOM_PING answered
+//     with ROOM_PONG, room-messages.ts): the runtime answers it without waking
+//     the DO, so a client can learn its socket is still alive (or find out it
+//     died silently, a laptop asleep or a NAT that dropped the connection)
+//     without costing the room a wake per ping.
 
 // Max ops a single session may broadcast per 1s window. Far above any
 // legit client (cursor / laser broadcasts are throttled to a few dozen
@@ -182,6 +188,9 @@ type SessionAttachment = {
   //   - `networkTag`: the caller's network, hashed with the document id, from X-Verified-Network
   //     (docs/specs/012-collaboration/vote-integrity.md): what caps one network's poll answers. 32 hex characters.
   networkTag?: string | null;
+  //   - `following`: the presence id this session follows (docs/specs/012-collaboration/follow-me-viewport.md
+  //     "Who follows whom"), from its `follow` op; absent when it follows nobody.
+  following?: string;
   //   - `pollAnsweredAs`: the key this session answered the running poll under, so a socket cannot become a
   //     second person in the same poll (docs/specs/012-collaboration/vote-integrity.md).
   pollAnsweredAs?: { pollId: string; key: string } | null;
@@ -307,6 +316,10 @@ export class DocumentRoom implements DurableObject {
     this.poll = new RoomLivePoll(state.storage);
     this.pollAnswers = Promise.resolve();
     this.selections = new RoomSelectionStore(state.storage);
+    // The keepalive (see the hibernation notes above): answered by the runtime, never by this class. Absent from a
+    // test double of the state, and from a runtime without the hibernation API.
+    if (typeof WebSocketRequestResponsePair !== 'undefined')
+      state.setWebSocketAutoResponse?.(new WebSocketRequestResponsePair(ROOM_PING, ROOM_PONG));
     this.agents = new RoomAgentPresence(
       state.storage,
       () => Date.now(),
@@ -369,6 +382,12 @@ export class DocumentRoom implements DurableObject {
       const close = parseAccessCloseMatch(await readBody(request));
       if (!close) return new Response('unknown match', { status: 400 });
       this.closeSessionsForAccessChange(close);
+      return new Response(null, { status: 204 });
+    }
+    // Internal, like /broadcast: the document was removed for good (a Trash purge, Take Offline, account
+    // deletion), so everything the room kept about it goes too (docs/specs/015-api/api.md "Purging a room").
+    if (request.method === 'POST' && url.pathname === '/purge') {
+      await this.purge();
       return new Response(null, { status: 204 });
     }
     if (url.pathname === '/presence' && (request.method === 'PUT' || request.method === 'DELETE')) {
@@ -629,6 +648,25 @@ export class DocumentRoom implements DurableObject {
     console.info('[room-access] closed', { match: close.match, closed });
   }
 
+  // The document is gone for good: end every session, then drop everything stored here, which includes the
+  // collaboration ledger's comment, idea and answer text, the order state, the poll, the baton and the alarm.
+  // The ledger's queued writes land first, so none of them can re-create a key after the wipe.
+  private async purge(): Promise<void> {
+    for (const ws of this.state.getWebSockets()) {
+      try {
+        ws.close(DOCUMENT_TRASHED_CLOSE, 'document-purged');
+      } catch {
+        // Already gone.
+      }
+      this.opRates.delete(ws);
+    }
+    this.opLog = [];
+    await this.ledger.settled();
+    await this.state.storage.deleteAlarm();
+    await this.state.storage.deleteAll();
+    console.info('[room] purged');
+  }
+
   // After a document-trashed op has gone out, close every socket
   // (docs/specs/013-workspace/trash.md): the document is in the Trash, and its
   // admission refuses every new join until it is restored.
@@ -844,6 +882,9 @@ export class DocumentRoom implements DurableObject {
       // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a poll answer and a
       // reaction are taking part, so they need a Participant.
       if (level === 'view' && (opKind === 'poll-answer' || opKind === 'reaction')) return;
+      // Speaking is taking part too (docs/specs/008-canvas/avatar-mode.md "Who may speak"), and a message is held to
+      // the limits here as every receiver holds it, so a malformed one reaches nobody.
+      if (opKind === 'avatar-say' && (level === 'view' || !parseAvatarSay(msg.op))) return;
       // Bring Focus moves everyone's view (docs/specs/012-collaboration/bring-focus.md): running the session, so an
       // Editor's alone.
       if (opKind === 'focus-here' && level !== 'edit') return;
@@ -909,6 +950,11 @@ export class DocumentRoom implements DurableObject {
           else delete sender.besideTabId;
           ws.serializeAttachment({ ...session, presence: sender } satisfies SessionAttachment);
         }
+      }
+      // A follow is the room's to keep, never relayed: it tells the people followed, on their own sockets.
+      if (opKind === 'follow') {
+        this.noteFollow(ws, session, sender, msg.op);
+        return;
       }
       // Presence ops relay unordered (ephemeral, no catch-up). Mutation
       // ops get a monotonic seq within the epoch and land in the catch-up
@@ -1152,6 +1198,41 @@ export class DocumentRoom implements DurableObject {
     });
   }
 
+  // Who this session follows (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): kept on the
+  // session, then the person it stopped following and the one it now follows each hear their new list.
+  private noteFollow(
+    ws: WebSocket,
+    session: SessionAttachment,
+    sender: ParticipantPresence,
+    op: unknown,
+  ): void {
+    const target = followTargetOf(op, sender.id);
+    const before = session.following ?? null;
+    if (before === target) return;
+    const { following: _drop, ...rest } = session;
+    ws.serializeAttachment({
+      ...rest,
+      presence: sender,
+      ...(target ? { following: target } : {}),
+    } satisfies SessionAttachment);
+    if (before) this.sendFollowers(before);
+    if (target) this.sendFollowers(target);
+  }
+
+  // Tell `target` who follows them, on their socket alone; `except` is a socket on its way out.
+  private sendFollowers(target: string, except?: WebSocket): void {
+    const sessions = this.state
+      .getWebSockets()
+      .filter((s) => s !== except)
+      .map((s) => this.readSession(s))
+      .map((s) => ({ presenceId: s?.presence?.id, following: s?.following }));
+    this.sendToPresence(
+      target,
+      { kind: 'followers', ids: followerIdsOf(sessions, target) },
+      except,
+    );
+  }
+
   /** The target of a grant, as the rules need it. Null when they have left. */
   private sessionByPresence(presenceId: string): Asker | null {
     const ws = this.socketByPresence(presenceId);
@@ -1232,7 +1313,10 @@ export class DocumentRoom implements DurableObject {
 
   private dropSession(ws: WebSocket): void {
     this.opRates.delete(ws);
-    const presenceId = this.readSession(ws)?.presence?.id;
+    const leaving = this.readSession(ws);
+    // A follower leaving is one fewer for the person they followed.
+    if (leaving?.following) this.sendFollowers(leaving.following, ws);
+    const presenceId = leaving?.presence?.id;
     if (presenceId) {
       this.startFacilitatorGrace(presenceId);
       void this.selections.drop(presenceId).catch(() => {});

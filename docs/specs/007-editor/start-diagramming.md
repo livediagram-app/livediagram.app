@@ -20,7 +20,10 @@ draws them.
   mode's groups, each with its glyph and count; long names wrap beside the glyph on a wide rail. Below a further
   hairline, **Something Else** opens the Quick Start on every mode.
 - **Cards:** each template's preview on a soft plate, its name and its description in full. Choosing a card lands
-  the template on the tab at once (`chooseTemplate`), as the Quick Start does.
+  the template on the tab at once (`chooseTemplate`), as the Quick Start does, painted in the **tab's theme**: the
+  panel picks no theme, so the scaffold takes the colours the tab already wears (its own theme, or the one a new
+  tab inherited from the tab it was added beside) rather than the template's built-in ones. The tab's backdrop is
+  left as it is; only the Quick Start's theme pick switches it.
 - **Search:** the catalogue's own search (`templateMatchesQuery`, as the Quick Start and the marketing gallery),
   across the mode's templates; matches are grouped under their group, each once, in rail order. Escape clears a
   search first. No match offers **Browse More Templates** (the Quick Start).
@@ -30,19 +33,25 @@ draws them.
 ### Recommended and groups
 
 Recommended is the mode's Popular shelf (`popularKindsFor`, the picks the Quick Start leads with), **its blank
-first**, less **Timeline**, which is left to its group. The groups (`components/start/start-template-items.ts`,
+first**, less **Timeline**, which is left to its group. Start Illustrating swaps two of the shelf's picks for blanks
+of a page kind, a page already of its kind being the quicker start: **Blank Infographic** in place of Blank
+Illustration and **Blank Article** in place of the Article template, so it leads Blank Infographic, Blank Article,
+Blank Slide Deck. The shelf itself (the Quick Start's and the gallery's) is unchanged. The groups (`components/start/start-template-items.ts`,
 `TEMPLATE_STARTS`):
 
 - **Diagram:** the catalogue's categories that hold a Diagram template ([Canvas and
   palette](../008-canvas/canvas-and-palette.md) "Template categories"), in the catalogue's order, by their short names
   (Flowcharts, Org Charts, Timelines and so on).
 - **Draw**, whose templates are drawn, by what each is for: **Visual Notes**, **Workshops**, **Prototypes**.
-- **Facilitate**, whose templates nearly all share one category, by the session each runs: **Retrospectives**, **Meetings**, **Workshops** and **Decisions** (the boards with a dot vote).
-- **Illustrate**, likewise, by what each makes: **Slides**, **Infographics**, **Documents**, **Posters**, **Logos**.
+- **Facilitate**, whose templates nearly all share one category, by the session each runs: **Retrospectives**, **Meetings**, **Spaces** (offices and halls to walk round together in Avatar mode), **Quizzes & Games**, **Workshops**, **Planning** (goals, roadmaps and who does what), **Strategy** (the business, the people and the opportunities) and **Decisions** (the boards with a dot vote).
+- **Illustrate**, likewise, by what each makes: **Slides**, **Infographics**, **Articles**, **Posters and Social**, **Logos**, **Design** (wireframes, storyboards and floor plans, [Templates by mode](templates-by-mode.md#design-templates)).
+  Slides, Infographics, Articles and Logos each lead with their blank of that page kind (Blank Slide Deck, Blank
+  Infographic, Blank Article, Blank Logo: [Templates by mode](templates-by-mode.md#blanks-of-a-page-kind)), one empty
+  page of the kind meant.
 
 A template of the mode in none of its groups is placed in the last group, so every listed template is reachable.
-The blank appears only in Recommended. Choosing the blank closes the panel, as the × does, since it leaves the tab
-empty.
+The blank appears only in Recommended (Illustrate's, Blank Illustration, not at all: closing the panel leaves the
+same empty tab). Choosing the blank closes the panel, as the × does, since it leaves the tab empty.
 
 ## When it shows
 
@@ -76,24 +85,31 @@ tray read the same key and follow each other as it changes.
 ## Changing mode
 
 The rail is led by the editor's own mode switch, named and full width (`StartModeSwitch`, `ModeMenuChip` with
-`labelled`), so a tab begun in the wrong mode changes before anything is made. Its menu is the top chrome's, with
-the same rules.
+`labelled`), so a tab begun in the wrong mode changes before anything is made. Its menu is the top chrome's, the
+list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules. On a
+phone its menu spans the row it opens from, each mode a roomy row with its description across the full width.
 
 **An empty tab crosses Plan's line.** Plan stands apart ([Editor modes](editor-modes.md)): a tab never switches into
 or out of it, and the mode menu offers a new tab instead. An empty tab has nothing either side's tools could not
 hold, so while a general tab has no elements it switches freely into and out of Plan, from the start's switch, the
-top switch and Shift+D (`crossPlan` on `useEditorMode`). The first element closes the line again.
+top switch and Shift+D (`crossPlan` on `useEditorMode`). The first element closes the line again. Meanwhile the mode menu
+shows Plan (or, on a Plan tab, the other modes) as a plain switch: no New tab mark, and choosing its row switches.
 
-A mode change swaps one start for another. The new one **turns in place**: the frame stays still and only what is
-in it fades over, so a mode change reads as the same panel turning rather than a second one flying up
-(`startPanelJustLeft`, a start mounting within 400 ms of another leaving).
+A mode change swaps one start for another. The new one **turns in place**: the frame stays still and the old content
+crossfades into the new (the switch runs the change in `startTransition` typed `start-mode`, which the start's
+`<ViewTransition>` cross-fades over `short`), so a
+mode change reads as the same panel turning rather than a second one flying up or its content blinking out
+(`startPanelJustLeft`, a start mounting within 400 ms of another leaving). The new content arrives whole, its rail and
+cards not cascading in until the category or search changes. Without View Transitions, or with reduced motion, the
+content swaps at once.
 
 ## Start Illustrating
 
 The tab's first page is drawn only once the start is done: while Start Illustrating is open there is no page behind
 it (`EditorCanvasHost` passes no pages), so nothing waits under the panel. Picking a template lands its pages;
 closing the panel, or choosing **Blank Illustration**, shows the first page with its own **What Is This Page For?**
-([Illustrate pages](illustrate-pages.md)).
+([Illustrate pages](illustrate-pages.md)). A blank of a page kind (Blank Slide Deck, Blank Article, Blank Infographic,
+Blank Logo) lands one page of that kind, already chosen, so it asks nothing and the start does not come back over it.
 
 **The last page can be deleted.** Deleting it (or the last article) clears the tab, its pages, its writing and its
 elements, as one edit that Undo puts back, and brings Start Illustrating back even if it was closed. The agents'

@@ -57,6 +57,10 @@ const EXCLUDED_CATEGORIES = new Set([
 ]);
 
 // The palette tile behind each flyout shape that has one; Line and Arrow have none.
+// Kinds that are not board ink: a tab window (docs/specs/009-elements/tab-window.md) shows another tab, an Illustrate
+// element a whiteboard pen never draws.
+const EXCLUDED_KINDS = new Set<string>(['tab-window']);
+
 const DOCK_TILE_KIND: Partial<Record<WhiteboardShapeId, ShapeKind>> = {
   rectangle: 'square',
   ellipse: 'circle',
@@ -122,6 +126,7 @@ function buildCatalogue(): WhiteboardShapeEntry[] {
     stickyEntry(),
     ...SHAPE_TILES.filter((t) => !EXCLUDED_CATEGORIES.has(tileCategoryId(t)))
       .filter((t) => !(t.action.type === 'shape' && docked.has(t.action.kind)))
+      .filter((t) => !(t.action.type === 'shape' && EXCLUDED_KINDS.has(t.action.kind)))
       .map(tileEntry),
   ];
   // Grouped in the palette's category order; catalogue order within a group.
@@ -160,7 +165,8 @@ export function armedWhiteboardShape(intent: PendingDraw | null): WhiteboardShap
     (id) => DOCK_TILE_KIND[id] === intent.kind,
   );
   if (dock) return dock;
-  const choice = intent.session ?? intent.reaction ?? intent.mode ?? intent.estimateScale;
+  const choice =
+    intent.session ?? intent.reaction ?? intent.mode ?? intent.estimateScale ?? intent.variant;
   const key = choice ? `${intent.kind}:${choice}` : intent.kind;
   return isWhiteboardShapeKey(key) ? key : null;
 }

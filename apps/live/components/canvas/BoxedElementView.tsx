@@ -6,8 +6,9 @@ import {
   DEFAULT_BOX_RADIUS_PX,
   MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
+  finishBorderStroke,
+  finishCornerFallbackPx,
   BORDER_STROKE_PX,
-  DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   PADDING_PX,
   defaultPadding,
@@ -23,6 +24,8 @@ import {
   voteKeyOf,
   type ShapeMarker,
   type TextSize,
+  withTagAccent,
+  rotationOf,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
@@ -37,12 +40,21 @@ import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline
 import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
+import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
-import { ChairView } from '@/components/canvas/collab/ChairView';
+import { FenceView } from '@/components/canvas/collab/FenceView';
+import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/FurnitureView';
+import { RoomView } from '@/components/canvas/collab/RoomView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
+import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
+import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
+import { useTagColours } from '@/components/canvas/TagColoursContext';
+import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import { indicatorBacking } from '@/components/canvas/indicator-items';
@@ -102,10 +114,12 @@ function BoxedElementViewImpl({
   onToggleChecklistItem,
   onSetPageHeading,
   onSetWebRows,
+  onSetPointerTip,
   onSetHeroCaptionLine,
   isoDepth,
   insertShiftX,
   insertShiftAnimates,
+  stackGlide,
   chartPalette,
   onCancelEdit,
   onFollowLink,
@@ -113,6 +127,7 @@ function BoxedElementViewImpl({
   onPressFocusButton,
   onPressSessionButton,
   sessionStartBlocked,
+  sessionRunBy,
   timerState,
   tabTimer,
   timerControls,
@@ -136,7 +151,7 @@ function BoxedElementViewImpl({
   onOpenAction,
   onOpenNote,
   onEditLink,
-  onEditCode,
+  onOpenEditDialog,
   vote,
   selfId,
   voteMax,
@@ -172,7 +187,7 @@ function BoxedElementViewImpl({
   // into the element's own frame and anchors the opposite side, it just
   // skips the axis-aligned snap. `isRotated` drives the wrapper transform and
   // the zone clip below.
-  const rotation = element.rotation ?? 0;
+  const rotation = rotationOf(element);
   const isRotated = rotation % 360 !== 0;
   // In an article's drawing zone: cut off at the zone's edge (a turned element is left whole).
   const zoneClip = useZoneClip(element.id);
@@ -196,6 +211,16 @@ function BoxedElementViewImpl({
   // like the fill and border do (behaviour-skin.ts).
   const own = ownColours(element);
   const textColor = own.text ?? defaultTextColor(element, surface);
+  // The drawing style (docs/specs/008-canvas/finish.md): its own, else the tab's. Under Sketch the body is
+  // the SketchOverlay below, in place of the wrapper's border and background.
+  const finish = useElementFinish((element as { finish?: unknown }).finish);
+  const sketchBackdrop = useIsSketchBackdrop(element.id);
+  const sketch = useSketchPaint(
+    element,
+    finish,
+    own.fill ?? defaultFillColor(element, surface),
+    sketchBackdrop,
+  );
 
   // Annotation marker (docs/specs/009-elements/annotations.md): a fixed-size note circle. Hovering it
   // floats its note above everything; clicking it (handled in the drag
@@ -239,7 +264,7 @@ function BoxedElementViewImpl({
       onBeginDrag,
       onBeginEdit,
       onEditLink,
-      onEditCode,
+      onOpenEditDialog,
       onOpenNote,
       imageContext,
       onContextSelect,
@@ -266,6 +291,8 @@ function BoxedElementViewImpl({
   // border / stroke colour is overridden with the first remote selector's
   // colour so the realtime "X is here" signal is glanceable from anywhere
   // on the canvas — not just from the small initial-badge.
+  // The tab's tag colours, for a card's accent edge (docs/specs/009-elements/tag-colours.md).
+  const tagColours = useTagColours();
   const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
   // Accent for the data-element fills (progress bar / ring, rail line, rating
   // stars): a remote selector colour wins, else the element's own stroke, else
@@ -274,7 +301,14 @@ function BoxedElementViewImpl({
   const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
   // A path in its edit mode shows its nodes, not its box (docs/specs/023-draw-mode/path-tool.md).
   const ringed = isSelected && !(element.type === 'path' && isEditing);
-  const variant = describeVariant(element, ringed, isMultiSelected, remoteBorderColor, surface);
+  const variant = describeVariant(
+    element,
+    ringed,
+    isMultiSelected,
+    remoteBorderColor,
+    surface,
+    finish,
+  );
   // A whiteboard pen stroke and a path are picked by their drawn line, not their box
   // (docs/specs/023-draw-mode/draw-mode.md "Selecting", path-tool.md "Selecting and erasing");
   // once selected, the box drags either as any element, and the line still catches pointers
@@ -297,8 +331,12 @@ function BoxedElementViewImpl({
     element.type === 'shape' ? element.borderRadius : undefined,
     element.width,
     element.height,
-    // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes").
-    shapeKind === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
+    // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes"), sharper under
+    // Professional (docs/specs/008-canvas/finish.md).
+    finishCornerFallbackPx(
+      shapeKind === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
+      finish,
+    ),
   );
 
   // An inline icon sits beside the label on a regular shape (the
@@ -335,6 +373,8 @@ function BoxedElementViewImpl({
 
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
+  // A mind node grows taller with its label's lines while typed (useMindLabelFit).
+  const mindFit = useMindLabelFit(element, isEditing, fontFamily);
 
   const labelPadding = uprightStrip
     ? // A one-line strip has no room for a roomy padding across it.
@@ -375,6 +415,7 @@ function BoxedElementViewImpl({
     labelAnimClass,
     textHug.label,
     textAnim,
+    mindFit.onLiveText,
   );
 
   // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
@@ -396,6 +437,7 @@ function BoxedElementViewImpl({
       // Carries the slot's easing (globals.css) for as long as a slot COULD
       // be open, so the board eases shut as well as open.
       data-insert-shift={insertShiftAnimates ? '' : undefined}
+      data-stack-glide={stackGlide ? '' : undefined}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces.
       role="img"
@@ -449,7 +491,7 @@ function BoxedElementViewImpl({
         left: element.x,
         top: element.y,
         width: textHug.box?.width ?? element.width,
-        height: textHug.box?.height ?? element.height,
+        height: textHug.box?.height ?? mindFit.height ?? element.height,
         color: textColor,
         // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): elements off the votable layer stay
         // VISIBLE — you still need the canvas's context to judge what
@@ -490,8 +532,31 @@ function BoxedElementViewImpl({
         ...(passThrough ? { pointerEvents: 'none' as const } : {}),
       }}
     >
+      {/* The hand-drawn body under the content (docs/specs/008-canvas/finish.md "Sketch"). */}
+      {sketch ? (
+        <SketchOverlay
+          paint={sketch}
+          width={element.width}
+          height={element.height}
+          fill={own.fill ?? defaultFillColor(element, surface)}
+          stroke={remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface)}
+        />
+      ) : null}
+      <AccentEdgeOverlay
+        element={withTagAccent(element, tagColours)}
+        stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+      />
+      {element.type === 'shape' && element.shape === 'pointer-note' ? (
+        <PointerNoteOverlay
+          element={element}
+          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+          editable={isSelected && !readOnly && !isLocked}
+          onSetTip={onSetPointerTip}
+        />
+      ) : null}
       <ShapeContentRouter
         element={element}
+        isEditing={isEditing}
         artAnimClass={artAnimClass}
         accent={accent}
         textColor={textColor}
@@ -511,6 +576,7 @@ function BoxedElementViewImpl({
           outline here instead (element-variant drops the CSS border to
           match). Solid / dashed / dotted stay on the cheaper CSS path. */}
       {element.type === 'shape' &&
+      !sketch &&
       !isSvgRenderedShape(element.shape) &&
       !remoteBorderColor &&
       !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
@@ -519,7 +585,7 @@ function BoxedElementViewImpl({
           width={element.width}
           height={element.height}
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-          strokeWidth={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
+          strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
           dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
           radiusPx={cornerPx}
         />
@@ -528,12 +594,32 @@ function BoxedElementViewImpl({
       {element.type === 'shape' && element.shape === 'entity' ? (
         <EntityView element={element} textColor={textColor} fontFamily={fontFamily} />
       ) : null}
-      {/* A chair (docs/specs/009-elements/chair.md): the furniture itself, plus whoever presence says
-          is sitting in it. */}
-      {element.type === 'shape' && element.shape === 'chair' ? (
-        <ChairView
+      {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
+          drawn for its facing, plus whoever presence says is sitting in it. */}
+      {element.type === 'shape' && isFurnitureViewShape(element.shape) ? (
+        <FurnitureView
           element={element}
+          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+          fill={own.fill ?? defaultFillColor(element, surface)}
           sitters={chairSitters?.(element.id) ?? []}
+          animClass={artAnimClass}
+        />
+      ) : null}
+      {/* A room (docs/specs/009-elements/office.md "Room"): its floor, walls and doorway, its name on the
+          back wall (the ordinary label, which sits there). */}
+      {element.type === 'shape' && element.shape === 'room' ? (
+        <RoomView
+          element={element}
+          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+          floor={own.fill ?? defaultFillColor(element, surface)}
+          animClass={artAnimClass}
+        />
+      ) : null}
+      {/* A fence (docs/specs/009-elements/fence.md): posts and rails. */}
+      {element.type === 'shape' && element.shape === 'fence' ? (
+        <FenceView
+          element={element}
+          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
           animClass={artAnimClass}
         />
       ) : null}
@@ -597,6 +683,7 @@ function BoxedElementViewImpl({
         timerControls={timerControls}
         timerState={timerState}
         sessionStartBlocked={sessionStartBlocked}
+        sessionRunBy={sessionRunBy}
         revealedForMe={revealedForMe}
         onCommitTable={onCommitTable}
         onEnterPortal={onEnterPortal}

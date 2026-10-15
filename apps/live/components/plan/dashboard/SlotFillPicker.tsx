@@ -16,7 +16,7 @@ import {
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { planPalette, type PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
-import { BOARD_WIDGET_INFO } from '../board-widget-catalogue';
+import { BOARD_WIDGET_INFO } from '@livediagram/plan-art';
 import { MetricPreview, NotePreview, VisualisationPreview } from './slot-previews';
 import {
   CardPreview,

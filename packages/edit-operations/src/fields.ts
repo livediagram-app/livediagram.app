@@ -6,14 +6,21 @@
 import type { EditRejection, EditWarning } from '@livediagram/api-schema';
 import {
   BORDER_DASH_ARRAY,
+  isTextSize,
+  TEXT_PX_MAX,
+  TEXT_PX_MIN,
   ELEMENT_FIELD_NAMES,
+  ELEMENT_FIELD_VALUES,
   LIVE_ELEMENT_FIELDS,
   coerceShapeKind,
+  fieldValueIssue,
   isElementFieldName,
   mergeElementUpdate,
   themeColourFields,
   type Element,
   type ThemeDefinition,
+  rederiveColorPresetForTheme,
+  shapeColorPresets,
 } from '@livediagram/document';
 import { fillValue, isHexColour, resolveColourValue } from './colours';
 import { kindOf } from './element-text';
@@ -39,6 +46,8 @@ export const FIELD_ALIASES = [
 type Alias = (typeof FIELD_ALIASES)[number];
 
 export const TEXT_SIZES = ['sm', 'md', 'lg', 'scale'] as const;
+/** What the `text` alias takes, as the format line and a rejection spell it. */
+export const TEXT_SIZE_VALUES = `${TEXT_SIZES.join(' ')} or a px from ${TEXT_PX_MIN} to ${TEXT_PX_MAX}`;
 export const ARROW_STYLES = ['straight', 'angled', 'curved'] as const;
 export const BORDER_STYLES = Object.keys(BORDER_DASH_ARRAY);
 const LIVE_FIELDS: ReadonlySet<string> = new Set(LIVE_ELEMENT_FIELDS);
@@ -123,7 +132,10 @@ export function writeFieldsOnto<T extends Element>(
   const patch: Patch = {};
   const warnings: EditWarning[] = [];
   let label: string | null | undefined;
-  for (const [key, value] of Object.entries(fields)) {
+  for (const [given, value] of Object.entries(fields)) {
+    // `icon`, graph input's name for a node's icon, is read as the stored `iconId` on an element that has one.
+    const key =
+      given === 'icon' && hasField(el, 'iconId') && !hasField(el, 'icon') ? 'iconId' : given;
     if (PROTOTYPE_KEYS.has(key)) return unknownField(operation, kindOf(el), key, stored, aliases);
     if (IDENTITY_FIELDS.has(key)) return invalidValue(operation, key, value, 'cannot be changed');
     if (LIVE_FIELDS.has(key))
@@ -143,6 +155,15 @@ export function writeFieldsOnto<T extends Element>(
     }
     if (!isElementFieldName(el.type, key) && !(FORMER_FIELDS[el.type]?.includes(key) ?? false))
       return unknownField(operation, kindOf(el), key, stored, aliases);
+    // A closed vocabulary's value off its list is refused with the list (element-field-values.ts).
+    if (fieldValueIssue(key, value))
+      return invalidValue(
+        operation,
+        key,
+        value,
+        'is not a value it takes',
+        `${key} takes ${ELEMENT_FIELD_VALUES[key]!.join(', ')}.`,
+      );
     if (RAW_COLOURS.has(key) && el.type !== 'sticky' && isHexColour(value))
       warnings.push(overridesTheme(ref, key, value));
     // An icon id that names no icon draws a question mark: refused, with the icons like it.
@@ -179,9 +200,36 @@ export function writeFieldsOnto<T extends Element>(
   const set = Object.fromEntries(
     Object.entries(patch).filter(([, v]) => v !== null && v !== undefined),
   );
-  const merged = mergeElementUpdate(el, set);
+  let merged = mergeElementUpdate(el, set);
   for (const [key, v] of Object.entries(patch))
     if (v === null || v === undefined) delete merged[key];
+  // A shape's preset is its look in the tab's theme (docs/specs/010-palette/style-presets.md): its colours are the
+  // preset's, as picking it in the editor sets them, then any colour this write names itself. Stored alone, the id
+  // drew nothing of it.
+  if (typeof patch.colorPreset === 'string' && el.type === 'shape') {
+    const derived = rederiveColorPresetForTheme(merged as Element, theme) as Record<
+      string,
+      unknown
+    >;
+    if (derived === merged) {
+      const ids = shapeColorPresets(theme).map((p) => p.id);
+      return invalidValue(
+        operation,
+        'colorPreset',
+        patch.colorPreset,
+        'is not a preset of the theme',
+        `colorPreset takes ${ids.join(', ')}.`,
+      );
+    }
+    // Every field the write names itself wins over the preset: its colours, and a width or style of border too
+    // (the preset brings its own), so nothing the agent asked for is dropped while being reported as written.
+    const own = Object.fromEntries(
+      Object.keys(patch).flatMap((k) =>
+        k !== 'colorPreset' && patch[k] != null ? [[k, merged[k]]] : [],
+      ),
+    );
+    merged = { ...derived, ...own };
+  }
   // Every key was checked against the element's type above, so the element keeps its type; finalise
   // validates the values.
   return { next: merged as T, written: Object.keys(fields), warnings, capped };
@@ -257,11 +305,14 @@ function writeAlias(
         return text(`one of ${BORDER_STYLES.join(' ')}`);
       patch.strokeStyle = value;
       return null;
-    case 'text':
-      if (value !== null && !oneOf(TEXT_SIZES, value))
-        return { ...text(`one of ${TEXT_SIZES.join(' ')}`) };
-      patch.textSize = value;
+    case 'text': {
+      // A preset, or an exact whole px from the Size slider's range (docs/specs/004-interface-design/fonts.md
+      // "Text size"), written as a number or a numeric string ("18").
+      const size = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
+      if (size !== null && !isTextSize(size)) return { ...text(`one of ${TEXT_SIZE_VALUES}`) };
+      patch.textSize = size;
       return null;
+    }
     case 'line':
       if (value !== null && !oneOf(ARROW_STYLES, value))
         return text(`one of ${ARROW_STYLES.join(' ')}`);

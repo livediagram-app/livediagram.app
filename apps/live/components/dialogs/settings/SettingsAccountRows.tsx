@@ -37,51 +37,45 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
       })
     : null;
 
+  // Signed in, the row IS the account: the picture, the name, the email and when it joined.
+  // A guest gets the guest row and the way in.
+  const shown = signedIn
+    ? {
+        ...row,
+        helpArticle: undefined,
+        label: name,
+        description: [user?.email, joined ? `Joined ${joined}` : null].filter(Boolean).join(' · '),
+      }
+    : row;
   return (
     <SettingsRowShell
-      row={row}
-      wrapper={() => (
-        <div className="flex items-center gap-3.5 rounded-xl border border-slate-200 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-800">
-          {signedIn ? (
-            <>
-              <PictureDisc
-                pictureUrl={user?.pictureUrl}
-                size={IDENTITY_AVATAR_PX}
-                aria-hidden
-                className={`bg-brand-700 text-lg font-semibold text-white ${SOLID_BRAND_DARK}`}
-              >
-                {accountInitial(user)}
-              </PictureDisc>
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-medium text-slate-800 dark:text-slate-100">
-                  {name}
-                </span>
-                {user?.email ? (
-                  <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                    {user.email}
-                  </span>
-                ) : null}
-                {joined ? (
-                  <span className="mt-0.5 block text-[11px] text-slate-400">Joined {joined}</span>
-                ) : null}
-              </span>
-            </>
-          ) : (
-            <span className="min-w-0">
-              <span className="block text-sm font-medium text-slate-800 dark:text-slate-100">
-                {row.label}
-              </span>
-              <span className="block text-xs text-slate-500 dark:text-slate-400">
-                You are working as a guest. Sign in to keep your documents across devices.
-                <SettingsSignInLink />
-              </span>
-            </span>
-          )}
-        </div>
-      )}
+      row={shown}
+      leading={
+        signedIn ? (
+          <PictureDisc
+            pictureUrl={user?.pictureUrl}
+            size={IDENTITY_AVATAR_PX}
+            aria-hidden
+            className={`bg-brand-700 text-lg font-semibold text-white ${SOLID_BRAND_DARK}`}
+          >
+            {accountInitial(user)}
+          </PictureDisc>
+        ) : null
+      }
+      descriptionContent={
+        signedIn ? undefined : (
+          <>
+            {GUEST_IDENTITY}
+            <SettingsSignInLink />
+          </>
+        )
+      }
     />
   );
 }
+
+export const GUEST_IDENTITY =
+  'Your documents live in this browser. Sign in to keep them across devices.';
 
 // Delete account. Signed-in only, and not because of the UI: the api's
 // DELETE /api/account is Clerk-only by design (docs/specs/014-identity/profile-and-email-notifications.md), since the whole
@@ -92,14 +86,14 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
 export const DELETE_ACCOUNT_SIGNED_IN =
   'Permanently removes your documents (the Trash included), folders and account, everywhere. There is no undo: you type your email to confirm.';
 export const DELETE_ACCOUNT_GUEST =
-  'Only available once you are signed in: a guest browser has no verified account to delete.';
+  'Available once you sign in: a guest browser has no verified account to delete.';
 
 export function SettingsDeleteAccountRow({ row }: { row: SettingsDeleteAccountRowSpec }) {
   const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
   const signedIn = Boolean(authLoaded && isSignedIn && user);
   const [open, setOpen] = useState(false);
 
-  // One row, the button beside the label; what it does is said below the card.
+  // One row, the button beside the label and what it does under it.
   const described = {
     ...row,
     description: signedIn ? DELETE_ACCOUNT_SIGNED_IN : DELETE_ACCOUNT_GUEST,
@@ -108,39 +102,30 @@ export function SettingsDeleteAccountRow({ row }: { row: SettingsDeleteAccountRo
   return (
     <SettingsRowShell
       row={described}
-      wrapper={() => (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3.5 py-2.5 dark:border-slate-700">
-          <span className="min-w-0 text-sm font-medium text-slate-900 dark:text-slate-100">
-            {row.label}
+      control={
+        signedIn ? (
+          <Button variant="secondary" size="sm" onClick={() => setOpen(true)} className="shrink-0">
+            Delete Account
+          </Button>
+        ) : (
+          // A guest is offered the way in, beside the label.
+          <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+            <SettingsSignInLink />
           </span>
-          {signedIn ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setOpen(true)}
-              className="shrink-0"
-            >
-              Delete Account
-            </Button>
-          ) : (
-            // A guest is offered the way in, beside the label.
-            <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
-              <SettingsSignInLink />
-            </span>
-          )}
-          {open ? (
-            <DeleteAccountDialog
-              open={open}
-              onClose={() => setOpen(false)}
-              onDeleted={async () => {
-                // Backend + Clerk delete already completed inside the dialog;
-                // sign out to clear client state and land on marketing.
-                await signOut({ redirectUrl: '/' });
-              }}
-            />
-          ) : null}
-        </div>
-      )}
-    />
+        )
+      }
+    >
+      {open ? (
+        <DeleteAccountDialog
+          open={open}
+          onClose={() => setOpen(false)}
+          onDeleted={async () => {
+            // Backend + Clerk delete already completed inside the dialog;
+            // sign out to clear client state and land on marketing.
+            await signOut({ redirectUrl: '/' });
+          }}
+        />
+      ) : null}
+    </SettingsRowShell>
   );
 }

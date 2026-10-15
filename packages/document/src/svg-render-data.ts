@@ -24,6 +24,7 @@ import {
 } from './entity-geometry';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { progressLabelInks } from './progress-colours';
 
 type Data = BoxedElement & { type: 'shape' };
 
@@ -36,14 +37,46 @@ const sans = (fontFamily?: string) =>
 /** The percentage label's size, in px; the canvas view draws it at the same size (text-sm). */
 const PROGRESS_LABEL_PX = 14;
 
-/** The centred percentage every progress element carries, on its cap band (optical-alignment.md). */
-function progressLabel(el: Data, pct: number, textColor: string, fontFamily?: string): string {
-  const y = capBandBaselineY(el.y + el.height / 2, PROGRESS_LABEL_PX);
+/** The centred percentage every progress element carries, on its cap band (optical-alignment.md).
+ *  `dx` / `dy` shift it into a nested viewport's own coordinates. */
+function progressLabel(
+  el: Data,
+  pct: number,
+  textColor: string,
+  fontFamily?: string,
+  dx = 0,
+  dy = 0,
+): string {
+  const y = capBandBaselineY(el.y + el.height / 2, PROGRESS_LABEL_PX) - dy;
   return (
-    `<text x="${r2(el.x + el.width / 2)}" y="${r2(y)}" text-anchor="middle"` +
+    `<text x="${r2(el.x + el.width / 2 - dx)}" y="${r2(y)}" text-anchor="middle"` +
     `${sans(fontFamily)} font-size="${PROGRESS_LABEL_PX}" font-weight="600"` +
     ` fill="${xmlEscape(textColor)}">${pct}%</text>`
   );
+}
+
+/** The bar's percentage, inked per part (docs/specs/009-elements/progress.md "The percentage stays
+ *  legible"): one label when the filled portion and the track want the same ink, else one per part,
+ *  each clipped by a nested `<svg>` viewport (no ids, so any number of bars share a document). */
+function progressBarLabel(
+  el: Data,
+  pct: number,
+  fillW: number,
+  accent: string,
+  track: string,
+  textColor: string,
+  fontFamily?: string,
+): string {
+  const ink = progressLabelInks(textColor, accent, track);
+  if (ink.onFill === ink.onTrack || fillW <= 0) {
+    return progressLabel(el, pct, fillW > 0 ? ink.onFill : ink.onTrack, fontFamily);
+  }
+  if (fillW >= el.width) return progressLabel(el, pct, ink.onFill, fontFamily);
+  const part = (x: number, w: number, colour: string) =>
+    `<svg x="${r2(x)}" y="${r2(el.y)}" width="${r2(w)}" height="${r2(el.height)}" overflow="hidden">` +
+    progressLabel(el, pct, colour, fontFamily, x, el.y) +
+    `</svg>`;
+  return part(el.x, fillW, ink.onFill) + part(el.x + fillW, el.width - fillW, ink.onTrack);
 }
 
 /** A progress bar: a pill track with the filled portion in the accent. */
@@ -62,7 +95,7 @@ export function svgProgressBar(
     (fillW > 0
       ? `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(fillW)}" height="${r2(el.height)}" rx="${r2(r)}" fill="${xmlEscape(accent)}"/>`
       : '') +
-    progressLabel(el, pct, textColor, fontFamily)
+    progressBarLabel(el, pct, fillW, accent, track, textColor, fontFamily)
   );
 }
 

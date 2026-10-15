@@ -1,19 +1,21 @@
 import {
   angledElbow,
-  arrowEndpointSpread,
+  arrowDashOffset,
   arrowPathD,
   arrowPathMidpoint,
   arrowStyleOf,
   angledCornerPoints,
   curveAnchorPoints,
   curveControlPoint,
-  endpointPosition,
+  DEFAULT_FINISH,
+  finishArrowEnds,
   queryElementGrid,
   routeBehindHoles,
   routeBehindQueryRect,
   type ArrowElement,
   type ElementGrid,
   type ElementIndex,
+  type Finish,
   type Rect,
 } from '@livediagram/document';
 
@@ -22,16 +24,21 @@ import {
 // resolved endpoints, the path + visual midpoint, the curve / elbow
 // handle points. Labels are laid out for the whole layer at once
 // (useArrowLabelLayouts), since they avoid each other.
-export function deriveArrowViewFrame(arrow: ArrowElement, elementIndex: ElementIndex) {
+export function deriveArrowViewFrame(
+  stored: ArrowElement,
+  elementIndex: ElementIndex,
+  // The finish the arrow is drawn in (docs/specs/008-canvas/finish.md): Professional routes a mind
+  // map's connectors right-angled.
+  finish: Finish = DEFAULT_FINISH,
+) {
   // Resolve the true endpoints, then apply the converging-fan offset: when
   // several arrows pin to the same anchor, each end slides a few px along
   // the target edge so the heads don't pile up (arrow-endpoint-spread.ts).
-  const rawFrom = endpointPosition(arrow.from, elementIndex);
-  const rawTo = endpointPosition(arrow.to, elementIndex);
-  const fromSpread = arrowEndpointSpread(arrow.id, 'from', elementIndex);
-  const toSpread = arrowEndpointSpread(arrow.id, 'to', elementIndex);
-  const from = { x: rawFrom.x + fromSpread.x, y: rawFrom.y + fromSpread.y };
-  const to = { x: rawTo.x + toSpread.x, y: rawTo.y + toSpread.y };
+  // A finish-routed connector comes back as the arrow it draws, ends exact.
+  const { arrow, from, to } = finishArrowEnds(stored, elementIndex, finish);
+  // A route the finish draws belongs to the map, so it offers no bow, elbow or bend handles: dragging
+  // one would edit a shape the stored arrow does not have.
+  const routed = arrow !== stored;
   const style = arrowStyleOf(arrow);
   const pathD = arrowPathD(
     style,
@@ -62,26 +69,32 @@ export function deriveArrowViewFrame(arrow: ArrowElement, elementIndex: ElementI
   // angled (polyline) arrows that carry explicit points. The single bow /
   // elbow handles below are used only when there are no explicit points.
   const curveAnchors =
-    (style === 'curved' || style === 'angled') && arrow.curvePoints && arrow.curvePoints.length > 0
+    !routed &&
+    (style === 'curved' || style === 'angled') &&
+    arrow.curvePoints &&
+    arrow.curvePoints.length > 0
       ? style === 'angled'
         ? angledCornerPoints(from, to, arrow.curvePoints, arrow.from, arrow.to)
         : curveAnchorPoints(from, to, arrow.curvePoints)
       : null;
   const curveControl =
-    style === 'curved' && !curveAnchors
+    !routed && style === 'curved' && !curveAnchors
       ? curveControlPoint(from, to, arrow.curveOffset, arrow.from, arrow.to)
       : null;
   // Single elbow handle for an angled arrow with no explicit points; the
   // per-point handles take over once the user adds a bend.
   const elbowPoint =
-    style === 'angled' && !curveAnchors
+    !routed && style === 'angled' && !curveAnchors
       ? angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset)
       : null;
+  // A shared end's dashes anchored there, in step with every arrow into it (arrow-dash.ts).
+  const dashOffset = arrowDashOffset(arrow, from, to);
   return {
     from,
     to,
     style,
     pathD,
+    dashOffset,
     midpoint,
     curveAnchors,
     curveControl,
@@ -102,6 +115,7 @@ export function sameArrowViewFrame(a: ArrowViewFrame, b: ArrowViewFrame): boolea
   return (
     a.style === b.style &&
     a.pathD === b.pathD &&
+    a.dashOffset === b.dashOffset &&
     samePoint(a.from, b.from) &&
     samePoint(a.to, b.to) &&
     samePoint(a.midpoint, b.midpoint) &&
@@ -128,8 +142,9 @@ export function arrowViewGeometry(
   arrow: ArrowElement,
   elementIndex: ElementIndex,
   grid: ElementGrid,
+  finish: Finish = DEFAULT_FINISH,
 ): { frame: ArrowViewFrame; holes: Rect[] } {
-  const frame = deriveArrowViewFrame(arrow, elementIndex);
+  const frame = deriveArrowViewFrame(arrow, elementIndex, finish);
   const near = queryElementGrid(grid, routeBehindQueryRect(frame.from, frame.to));
   return { frame, holes: routeBehindHoles(arrow, frame.from, frame.to, near) };
 }

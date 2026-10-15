@@ -13,15 +13,52 @@
 // the canvas: a card is composed at its kind's default size and scaled to the
 // box, so a big one has bigger type rather than more padding.
 
-import { DEFAULT_CHAIR_FACING } from './collab-shapes';
-import { CHAIR_FACING_ROTATION, CHAIR_GEOMETRY, chairSeatFill } from './shape-geometry';
+import { fenceParts, FENCE_RAIL_OPACITY } from './fence';
+import {
+  FURNITURE_ART,
+  FURNITURE_FACE_SHADE,
+  FURNITURE_GLINT,
+  FURNITURE_LINE_STROKE,
+  FURNITURE_PANEL_STROKE,
+  FURNITURE_RAIL_OPACITY,
+  FURNITURE_RAIL_STROKE,
+  FURNITURE_SHADOW,
+  furnitureFrame,
+  isSeatingShape,
+  seatingFacing,
+  type FurniturePart,
+} from './seating';
+import {
+  DEFAULT_ROOM_DOOR,
+  isOfficeShape,
+  OFFICE_ART,
+  ROOM_FLOOR,
+  roomParts,
+  RUG_FILL,
+} from './office';
+import { chairSeatFill } from './shape-geometry';
+import type { ResolveEmojiArt } from './svg-render-describe';
 import { REACTION_DEFAULT, REACTION_EMOJI, REACTION_HUES } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { formatTimerClock } from './session';
-import { DEFAULT_BUTTON_MODE, SELECTION_MODE_LABEL } from './selection-mode';
+import {
+  DEFAULT_BUTTON_MODE,
+  SELECTION_MODE_LABEL,
+  sessionButtonPlan,
+  type SessionButtonConfig,
+} from './selection-mode';
+import { sessionButtonText } from './session-button-text';
 import { borderOf } from './svg-render-border';
 import { REVEAL_COVER_BASE, type CanvasSurface } from './colors';
-import { collabAccent, glow, pill, text, type Face } from './svg-render-face-kit';
+import {
+  collabAccent,
+  fitLine,
+  glow,
+  pill,
+  text,
+  wrapLines,
+  type Face,
+} from './svg-render-face-kit';
 import { svgActionPanel, svgCommentPanel } from './svg-render-panel-faces';
 import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@livediagram/icons';
 import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
@@ -59,6 +96,17 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'action-card',
   'portal',
   'chair',
+  'desk',
+  'sofa',
+  'fence',
+  // The virtual office (docs/specs/009-elements/office.md).
+  'room',
+  'meeting-table',
+  'plant',
+  'bookshelf',
+  'water-cooler',
+  'coffee-machine',
+  'rug',
   'focus-button',
 ]);
 
@@ -74,6 +122,8 @@ export function svgBehaviourFace(
   surface: CanvasSurface = 'light',
   // The card's resolved fill, for the Comment and Action panels' accent ink.
   fill?: string,
+  // An emoji's art, for the reaction pad's glyph where no emoji font is.
+  resolveEmojiArt?: ResolveEmojiArt,
 ): string | null {
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
@@ -127,50 +177,42 @@ export function svgBehaviourFace(
           : text(cx, cy + 27, title, { size: 12, weight: 600, color, anchor: 'middle' }))
       );
     }
-    case 'session-button':
+    case 'session-button': {
+      // The tool as the canvas reads it, through its plan: a missing or unknown tool is the timer, and a poll not
+      // set up yet is still a poll.
+      const tool =
+        sessionButtonPlan(el.session)?.tool ?? (el.session?.tool === 'poll' ? 'poll' : 'timer');
       // A timer reads as the canvas's idle dial (SessionTimerFace): ticks
       // along the top edge, the kicker and the configured length. The Start
       // control is editor chrome and stays out of the image.
-      if (el.session?.tool === 'timer') return timerFace(el, cx, cy, color);
-      // The other tools: a stopwatch over the tool's name.
-      return (
-        `<circle cx="${r2(cx)}" cy="${r2(cy - 12)}" r="10" fill="none" stroke="${xmlEscape(color)}" stroke-width="1.5"/>` +
-        `<path d="M ${r2(cx)} ${r2(cy - 18)} L ${r2(cx)} ${r2(cy - 12)} L ${r2(cx + 5)} ${r2(cy - 9)}" fill="none" stroke="${xmlEscape(color)}" stroke-width="1.5" stroke-linecap="round"/>` +
-        text(cx, cy + 16, title || 'Session', { size: 12, weight: 600, color, anchor: 'middle' })
-      );
+      if (tool === 'timer') return timerFace(el, cx, cy, color);
+      // The other tools: the tool's glyph (SessionButtonFace's), over its label or, with none, what pressing it does
+      // ("Start vote" over "3 dots each").
+      return sessionToolGlyph(tool, cx, cy - 12, color) + sessionWords(el, title, cx, cy, color);
+    }
     case 'reveal':
       return el.revealed === true ? '' : revealCover(el, cx, cy, title, color, stroke, surface);
     case 'picker':
       return picker(el, cx, cy, title, color, surface);
     case 'reaction-pad':
-      return reactionPad(el, cx, cy, title, color);
-    case 'chair': {
-      // The chair itself (docs/specs/009-elements/chair.md), from the shared table the canvas's
-      // ChairView draws (shape-geometry.ts): backrest, slat, seat, legs and
-      // stretcher, plus the contact shadow that sits it on the canvas rather
-      // than floating it over. Turned whole for its facing, about the box
-      // centre, exactly as the canvas rotates its svg.
-      const g = CHAIR_GEOMETRY;
-      const seat = xmlEscape(chairSeatFill(el.fillColor, stroke));
-      const line = xmlEscape(stroke);
-      const panel = (p: { x: number; y: number; width: number; height: number; rx: number }) =>
-        `<rect x="${p.x}" y="${p.y}" width="${p.width}" height="${p.height}" rx="${p.rx}" fill="${seat}" stroke="${line}" stroke-width="${g.panelStrokeWidth}"/>`;
-      const rail = (d: string) =>
-        `<path d="${d}" stroke="${line}" stroke-width="${g.railStrokeWidth}" opacity="${g.railOpacity}" fill="none"/>`;
-      const chair =
-        `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" viewBox="${g.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
-        `<ellipse cx="${g.shadow.cx}" cy="${g.shadow.cy}" rx="${g.shadow.rx}" ry="${g.shadow.ry}" fill="${g.shadow.fill}" opacity="${g.shadow.opacity}"/>` +
-        panel(g.back) +
-        rail(g.slat) +
-        panel(g.seat) +
-        `<path d="${g.legs}" stroke="${line}" stroke-width="${g.legStrokeWidth}" stroke-linecap="round" fill="none"/>` +
-        rail(g.stretcher) +
-        `</svg>`;
-      const turn = CHAIR_FACING_ROTATION[el.chairFacing ?? DEFAULT_CHAIR_FACING];
-      return turn
-        ? `<g transform="rotate(${turn} ${r2(el.x + el.width / 2)} ${r2(el.y + el.height / 2)})">${chair}</g>`
-        : chair;
-    }
+      return reactionPad(el, cx, cy, title, color, resolveEmojiArt);
+    case 'chair':
+    case 'desk':
+    case 'sofa':
+    case 'meeting-table':
+    case 'plant':
+    case 'bookshelf':
+    case 'water-cooler':
+    case 'coffee-machine':
+      return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
+    // A rug and a room are floor: their own fill, not the seats' wash (docs/specs/009-elements/office.md), resolved
+    // for the paper as the canvas resolves it (deep on a dark tab).
+    case 'rug':
+      return furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
+    case 'room':
+      return roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
+    case 'fence':
+      return fenceArt(el, stroke);
     case 'comment-pin':
       // docs/specs/012-collaboration/comment-pin.md "The look": the thread as bubbles, the composer.
       return svgCommentPanel(el, title, color, collabAccent(stroke, fill ?? '#ffffff', color));
@@ -252,7 +294,14 @@ function portalArt(el: Face, stroke: string): string {
 // min(34% of the width, 40% of the height) standing on its glowing spot, and
 // the label in a quiet chip. Whether the emoji paints in colour depends on the
 // renderer's emoji font, the bargain every emoji in an export makes.
-function reactionPad(el: Face, cx: number, cy: number, title: string, color: string): string {
+function reactionPad(
+  el: Face,
+  cx: number,
+  cy: number,
+  title: string,
+  color: string,
+  resolveEmojiArt?: ResolveEmojiArt,
+): string {
   const reaction = el.reaction ?? REACTION_DEFAULT;
   const [from, to] = REACTION_HUES[reaction];
   const id = xmlEscape(el.id);
@@ -271,8 +320,7 @@ function reactionPad(el: Face, cx: number, cy: number, title: string, color: str
     `</defs>` +
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(borderOf(el).radius)}" fill="url(#pad-wash-${id})"/>` +
     `<ellipse cx="${r2(cx)}" cy="${r2(spotY + spotH / 2)}" rx="${r2(el.width * 0.23)}" ry="${r2(spotH / 2)}" fill="url(#pad-spot-${id})"/>` +
-    `<text x="${r2(cx)}" y="${r2(top + size / 2)}" text-anchor="middle" dominant-baseline="central"` +
-    ` font-size="${r2(size)}">${xmlEscape(REACTION_EMOJI[reaction])}</text>` +
+    emojiGlyph(REACTION_EMOJI[reaction], cx, top + size / 2, size, resolveEmojiArt) +
     (title
       ? `<rect x="${r2(cx - chipW / 2)}" y="${r2(chipY)}" width="${r2(chipW)}" height="${chipH}" rx="${chipH / 2}" fill="${xmlEscape(color)}" fill-opacity="0.07"/>` +
         text(cx, chipY + 12, title, { size: 10.5, weight: 600, color, anchor: 'middle' })
@@ -405,5 +453,167 @@ function picker(
     text(cx, nameY + 16, result ?? '—', { size: 17, weight: 600, color, anchor: 'middle' }) +
     pill(cx - buttonW / 2, nameY + 27, buttonW, 24.5, color, surface === 'dark' ? 0.1 : 0.06) +
     text(cx, nameY + 43, action, { size: 11, weight: 600, color, anchor: 'middle' })
+  );
+}
+
+// A Session tool's glyph, 20 px, centred at (x, y): a stopwatch, three vote dots, or a poll's bars.
+function sessionToolGlyph(tool: string | undefined, x: number, y: number, color: string): string {
+  const ink = xmlEscape(color);
+  if (tool === 'vote')
+    return [-7, 0, 7]
+      .map((dx) => `<circle cx="${r2(x + dx)}" cy="${r2(y)}" r="3" fill="${ink}"/>`)
+      .join('');
+  if (tool === 'poll')
+    return [
+      [-6, 4],
+      [0, -2],
+      [6, 1],
+    ]
+      .map(
+        ([dx, top]) =>
+          `<rect x="${r2(x + dx! - 2)}" y="${r2(y + top!)}" width="4" height="${r2(8 - top!)}" rx="1" fill="${ink}"/>`,
+      )
+      .join('');
+  return (
+    `<circle cx="${r2(x)}" cy="${r2(y)}" r="10" fill="none" stroke="${ink}" stroke-width="1.5"/>` +
+    `<path d="M ${r2(x)} ${r2(y - 6)} L ${r2(x)} ${r2(y)} L ${r2(x + 5)} ${r2(y + 3)}" fill="none" stroke="${ink}" stroke-width="1.5" stroke-linecap="round"/>`
+  );
+}
+
+// A Session button's words: its own label, or what pressing it does, as the editor's face says it.
+function sessionWords(
+  el: { session?: SessionButtonConfig; width: number },
+  title: string,
+  cx: number,
+  cy: number,
+  color: string,
+): string {
+  // Within the button, as the canvas's face clamps them: the kicker on one line, the action on at most two (a poll's
+  // question can run to a sentence).
+  const room = Math.max(24, el.width - 16);
+  if (title)
+    return text(cx, cy + 16, fitLine(title, room, 12), {
+      size: 12,
+      weight: 600,
+      color,
+      anchor: 'middle',
+    });
+  const { kicker, action } = sessionButtonText(sessionButtonPlan(el.session));
+  const lines = wrapLines(action, room, 12, 2);
+  return (
+    text(cx, cy + 12, fitLine(kicker, room, 9), {
+      size: 9,
+      weight: 500,
+      color,
+      anchor: 'middle',
+      opacity: 0.7,
+      uppercase: true,
+    }) +
+    lines
+      .map((line, i) =>
+        text(cx, cy + 27 + i * 14, line, { size: 12, weight: 600, color, anchor: 'middle' }),
+      )
+      .join('')
+  );
+}
+
+// A fence (docs/specs/009-elements/fence.md): rails then posts, from the table FenceView draws, in the
+// element's own box (its rotation is the generic element rotation, applied by the caller).
+function fenceArt(el: Face, stroke: string): string {
+  const line = xmlEscape(stroke);
+  return fenceParts(el.width, el.height)
+    .map(
+      (p) =>
+        `<rect x="${r2(el.x + p.x)}" y="${r2(el.y + p.y)}" width="${r2(p.width)}" height="${r2(p.height)}" rx="${r2(p.rx)}" fill="${line}"${p.role === 'rail' ? ` opacity="${FENCE_RAIL_OPACITY}"` : ''}/>`,
+    )
+    .join('');
+}
+
+// A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"), from the FURNITURE_ART table
+// FurnitureView draws: the drawing for its facing, mirrored for facing right, exactly as the canvas.
+function furnitureArt(el: Face, seat: string, stroke: string): string {
+  const art = isSeatingShape(el.shape)
+    ? FURNITURE_ART[el.shape]
+    : isOfficeShape(el.shape) && el.shape !== 'room'
+      ? OFFICE_ART[el.shape]
+      : null;
+  if (!art) return '';
+  const facing = isSeatingShape(el.shape)
+    ? seatingFacing({ shape: el.shape, chairFacing: el.chairFacing })
+    : 'n';
+  const frame = furnitureFrame(art, facing);
+  const parts = frame.view.parts
+    .map((p) => furniturePart(p, xmlEscape(seat), xmlEscape(stroke)))
+    .join('');
+  return (
+    `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" viewBox="${frame.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
+    (frame.transform ? `<g transform="${frame.transform}">${parts}</g>` : parts) +
+    `</svg>`
+  );
+}
+
+// A room (docs/specs/009-elements/office.md "Room"), drawn to its own size so its walls keep their thickness.
+function roomSvg(el: Face, floor: string, stroke: string): string {
+  const parts = roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR)
+    .map((p) => furniturePart(p, xmlEscape(floor), xmlEscape(stroke)))
+    .join('');
+  return `<g transform="translate(${r2(el.x)} ${r2(el.y)})">${parts}</g>`;
+}
+
+function furniturePart(p: FurniturePart, seat: string, line: string): string {
+  const paint = (() => {
+    switch (p.role) {
+      case 'shadow':
+        return `fill="${FURNITURE_SHADOW.fill}" opacity="${FURNITURE_SHADOW.opacity}"`;
+      case 'panel':
+      case 'face':
+        return `fill="${p.fill ? xmlEscape(p.fill) : seat}" stroke="${line}" stroke-width="${FURNITURE_PANEL_STROKE}"`;
+      case 'floor':
+        return `fill="${seat}"`;
+      case 'line':
+        return `fill="none" stroke="${line}" stroke-width="${FURNITURE_LINE_STROKE}" stroke-linecap="round"`;
+      case 'rail':
+        return `fill="none" stroke="${line}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_RAIL_OPACITY}" stroke-linecap="round"`;
+      case 'screen':
+        return `fill="${line}"`;
+      case 'glint':
+        return `fill="none" stroke="${FURNITURE_GLINT.stroke}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_GLINT.opacity}" stroke-linecap="round"`;
+    }
+  })();
+  // A face toward the room is the panel, shaded with its stroke colour.
+  const shade = `fill="${line}" opacity="${FURNITURE_FACE_SHADE}"`;
+  switch (p.tag) {
+    case 'rect':
+      return (
+        `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" ${paint}/>` +
+        (p.role === 'face'
+          ? `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" ${shade}/>`
+          : '')
+      );
+    case 'ellipse':
+      return `<ellipse cx="${p.cx}" cy="${p.cy}" rx="${p.rx}" ry="${p.ry}" ${paint}/>`;
+    case 'path':
+      return `<path d="${p.d}" ${paint}/>`;
+  }
+}
+
+// An emoji centred on (cx, cy) at `size`: its art where the caller has it (a preview with no emoji font), else the
+// glyph as text for the viewer's emoji font.
+function emojiGlyph(
+  glyph: string,
+  cx: number,
+  cy: number,
+  size: number,
+  resolveEmojiArt?: ResolveEmojiArt,
+): string {
+  const art = resolveEmojiArt?.(glyph);
+  if (art)
+    return (
+      `<svg x="${r2(cx - size / 2)}" y="${r2(cy - size / 2)}" width="${r2(size)}" height="${r2(size)}"` +
+      ` viewBox="${xmlEscape(art.viewBox)}">${art.markup}</svg>`
+    );
+  return (
+    `<text x="${r2(cx)}" y="${r2(cy)}" text-anchor="middle" dominant-baseline="central"` +
+    ` font-size="${r2(size)}">${xmlEscape(glyph)}</text>`
   );
 }

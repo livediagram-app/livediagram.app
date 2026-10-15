@@ -1,4 +1,4 @@
-// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): twelve,
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): thirteen,
 // grouped by the job a person is getting done rather than the artefact a template is. Every template but the five
 // blanks has exactly one primary category and may be cross-listed in others where people would genuinely look for it.
 // Read by the template step (Quick Start and /new), the marketing gallery and the agents' catalogue. Pure data plus
@@ -17,7 +17,8 @@ export type TemplateCategory =
   | 'hierarchies'
   | 'design'
   | 'presentations'
-  | 'technical';
+  | 'technical'
+  | 'games';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions are kept to a similar length (40 to 50 characters) so the folded
 // category tiles read as an even set. Ids survive where the meaning did (links, tests and the agents' catalogue name
@@ -100,6 +101,12 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     label: 'Technical',
     description: 'Architecture, schema and sequence diagrams.',
   },
+  {
+    id: 'games',
+    label: 'Quizzes & Games',
+    searchWords: 'quiz trivia icebreaker icebreakers warm up energiser fun team building',
+    description: 'Quizzes, icebreakers and games for the room.',
+  },
 ];
 
 // The categories in the order every picker shows them (the Quick Start, /new and the marketing gallery): alphabetical
@@ -111,12 +118,16 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
   .sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }))
   .map(({ id, label, description }) => ({ id, label, description }));
 
-// The blanks: in no category, reached only from Popular (docs/specs/007-editor/templates-by-mode.md "The blanks").
+// The blanks: in no category, reached from Popular or by search (docs/specs/007-editor/templates-by-mode.md "The blanks").
 // Mirrors isBlankTemplate (BLANK_TEMPLATE_FOR_MODE and EXTRA_BLANK_TEMPLATES); the categories test pins them together.
 type BlankKind =
   | 'blank'
   | 'whiteboard'
   | 'blank-illustration'
+  | 'blank-slide-deck'
+  | 'blank-article'
+  | 'blank-infographic'
+  | 'blank-logo'
   | 'blank-plan'
   | 'blank-spreadsheet'
   | 'blank-session';
@@ -149,6 +160,8 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   // Meetings and Workshops: agendas, retros, live Q&A and the boards a team runs together.
   'meeting-agenda': 'meetings',
   'lean-coffee': 'meetings',
+  brainstorm: 'meetings',
+  'workshop-board': 'meetings',
   'town-hall': 'meetings',
   retrospective: 'meetings',
   'start-stop-continue': 'meetings',
@@ -158,6 +171,11 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'team-retro': 'meetings',
   'pre-mortem': 'meetings',
   'feedback-board': 'meetings',
+  // The spaces to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
+  'virtual-office': 'meetings',
+  'coworking-space': 'meetings',
+  'team-pod': 'meetings',
+  'all-hands-hall': 'meetings',
   // Brainstorm: getting ideas out of heads.
   mindmap: 'mindmaps',
   'mindmap-tree': 'mindmaps',
@@ -190,6 +208,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   venn: 'strategy',
   flywheel: 'strategy',
   funnel: 'strategy',
+  sankey: 'strategy',
   'comparison-table': 'strategy',
   'stakeholder-map': 'strategy',
   'rich-picture': 'strategy',
@@ -219,6 +238,10 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'year-in-review': 'presentations',
   versus: 'presentations',
   'social-carousel': 'presentations',
+  'launch-keynote': 'presentations',
+  'quarterly-review': 'presentations',
+  'team-welcome': 'presentations',
+  'workshop-kickoff': 'presentations',
   'event-poster': 'presentations',
   'logo-design': 'presentations',
   resume: 'presentations',
@@ -234,6 +257,12 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'state-machine': 'technical',
   'event-storming': 'technical',
   'incident-postmortem': 'technical',
+  // Quizzes and Games: the lighter end of running a room.
+  'pub-quiz': 'games',
+  'icebreaker-questions': 'games',
+  'two-truths-and-a-lie': 'games',
+  'would-you-rather': 'games',
+  'people-bingo': 'games',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -259,6 +288,7 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'sales-pipeline': ['spreadsheets'],
   // About money, though drawn as diagrams.
   funnel: ['finance'],
+  sankey: ['finance'],
   'business-model-canvas': ['finance'],
   // Diagrams a team plans its work with.
   gantt: ['planning'],
@@ -266,7 +296,7 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'prioritization-matrix': ['planning'],
   // Workshop formats.
   'crazy-eights': ['meetings', 'design'],
-  'doodle-warmup': ['meetings'],
+  'doodle-warmup': ['meetings', 'games'],
   'event-storming': ['meetings'],
   'incident-postmortem': ['meetings'],
   // Research synthesis and site structure are design work too.
@@ -278,7 +308,7 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'data-flow': ['technical'],
 };
 
-/** A template's primary category; null for the five blanks, which are in none. */
+/** A template's primary category; null for the blanks, which are in none. */
 export function templateCategory(kind: TemplateKind): TemplateCategory | null {
   return (TEMPLATE_CATEGORY as Partial<Record<TemplateKind, TemplateCategory>>)[kind] ?? null;
 }

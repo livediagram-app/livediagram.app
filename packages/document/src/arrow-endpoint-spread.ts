@@ -95,6 +95,7 @@ function fanFrame(
 function computeSpreadMap(elements: Element[], index: ElementIndex): Map<string, Point> {
   const groups = new Map<string, ConvergingEnd[]>();
   const frames = new Map<string, { span: number; rotation: number; anchor: Anchor }>();
+  const anchorAt = new Map<string, Point>();
   for (const el of elements) {
     if (el.type !== 'arrow') continue;
     const arrow = el as ArrowElement;
@@ -109,6 +110,7 @@ function computeSpreadMap(elements: Element[], index: ElementIndex): Map<string,
         const frame = fanFrame(endpoint, index);
         if (!frame) continue;
         frames.set(key, frame);
+        anchorAt.set(key, endpointPosition(endpoint, index));
       }
       const other = endpointPosition(end === 'from' ? arrow.to : arrow.from, index);
       const list = groups.get(key);
@@ -134,9 +136,19 @@ function computeSpreadMap(elements: Element[], index: ElementIndex): Map<string,
     ).sort((a, b) => a - b);
     // Match ascending slots to ends sorted by where they come FROM along
     // the same axis, so neighbouring arrows don't cross at the fan.
+    // Ends coming from one place along the edge (two steps in one column) tie on that: the nearer takes the slot on
+    // the side they come from, so its run stops short of the farther one's instead of crossing it.
+    const at = anchorAt.get(key)!;
+    const along = (q: Point) => (axis === 'x' ? q.x : q.y);
+    const across = (q: Point) => (axis === 'x' ? q.y : q.x);
+    const nearness = (e: ConvergingEnd) =>
+      Math.abs(across(e.other) - across(at)) * Math.sign(along(at) - along(e.other));
+    // Whole pixels, so "level" is a consistent bucket: ties within a pixel either way (0, 0.8, 1.6) are not transitive,
+    // and a sort given an inconsistent comparator ordered the fan by the arrows' order on the tab.
     const sorted = [...ends].sort(
       (a, b) =>
-        (axis === 'x' ? a.other.x - b.other.x : a.other.y - b.other.y) ||
+        Math.round(along(a.other)) - Math.round(along(b.other)) ||
+        nearness(a) - nearness(b) ||
         (a.arrowId < b.arrowId ? -1 : 1),
     );
     const rad = (frame.rotation * Math.PI) / 180;

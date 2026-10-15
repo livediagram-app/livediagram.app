@@ -332,8 +332,12 @@ A visitor, a locked tab, or a tab with no articles switches straight away.
 
 ## Article style
 
-Set from the page panel's **Style** and **Text** tabs (an article page's panel has **Page**,
-**Background**, **Style** and **Text**; it has no Layouts). **Style** holds Looks, Accent, Headings in the
+Set from **Style** and **Text** in the page's title bar, beside its cog, each opening a popover
+anchored to its button (a bottom sheet on a phone), as an infographic or slide page's Layouts and
+Background do; **Background** sits beside them (`PageArticleButtons`, `PageBackgroundButton`). The
+cog's panel keeps only **Page** (size and orientation) and the page's actions, so the title bar
+carries what is changed often and the cog what is set once. The page toolbar's **Style** command
+opens the Style popover of the page it is on. A locked page shows none of the three. **Style** holds Looks, Accent, Headings in the
 Accent, Margins and Page Numbers; **Text** holds Fonts, then Text Size, Line Spacing, Paragraph
 Spacing and Lines Under Text (under **Size and Spacing**). Every change is one edit, previewed on the page while
 a choice is hovered.

@@ -57,7 +57,7 @@ function prosCons(k: Kit): Element[] {
     ...head.els,
     ...column(0, 'Pros', 'check', TICK_GREEN, PROS),
     ...column(colW + gap, 'Cons', 'x', CROSS_ROSE, CONS),
-    k.shape('callout', 0, H - verdictH, W, verdictH, {
+    k.callout(0, H - verdictH, W, verdictH, {
       pageTitle: 'Weighing it up',
       label: 'Say which side wins, and why, in one sentence.',
       textSize: 'md',

@@ -43,6 +43,7 @@ export function RichTextToolbar({
   onToggle,
   onApplyList,
   onApplyHeading,
+  onApplyTitleCaption,
   listStyle,
   onColor,
   onSetAlign,
@@ -53,6 +54,8 @@ export function RichTextToolbar({
   onToggle: (key: RunBoolKey) => void;
   onApplyList: (style: ListStyle) => void;
   onApplyHeading: (level: RunHeading | null) => void;
+  // The label's Title and Caption preset (docs/specs/009-elements/block-type-picker.md).
+  onApplyTitleCaption?: () => void;
   // What the current lines already are, so the picker can show it.
   listStyle: ListStyle;
   onColor: (color: string) => void;
@@ -88,6 +91,7 @@ export function RichTextToolbar({
         listStyle={listStyle}
         onApplyHeading={onApplyHeading}
         onApplyList={onApplyList}
+        onApplyTitleCaption={onApplyTitleCaption}
       />
       {TOOLBAR_DIVIDER}
       {/* Alignment — the shared 3×3 grid, reused. The trigger is the

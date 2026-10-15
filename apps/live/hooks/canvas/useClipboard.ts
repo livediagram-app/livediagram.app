@@ -34,7 +34,9 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   duplicateElements,
   sheetDrawnChartIds,
+  withMindBranches,
   withSheetCharts,
+  withAttached,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -113,6 +115,9 @@ type ClipboardDeps = {
   // board a paste holding a workshop note lands there
   // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
   canvasPointerRef?: RefObject<{ x: number; y: number } | null>;
+  // The canvas-coord rectangle on screen; a paste whose usual spot is outside
+  // it lands in its middle (docs/specs/008-canvas/canvas-and-palette.md Clipboard).
+  getViewportCanvasRect?: () => { x: number; y: number; width: number; height: number } | null;
   // Lands a board scene pasted from another tool (an Excalidraw copy or file,
   // docs/specs/020-import-export/excalidraw-import-export.md "Paste"): one undo step, selected, for
   // the tab's profile. Absent, such a paste is left alone.
@@ -138,6 +143,7 @@ export function useClipboard(deps: ClipboardDeps) {
     toast,
     onPastePhoto,
     canvasPointerRef,
+    getViewportCanvasRect,
     insertBoardScene,
   } = deps;
 
@@ -161,7 +167,10 @@ export function useClipboard(deps: ClipboardDeps) {
   // this window's own and not another's.
   const copyId = useRef('');
 
-  const copySelection = () => {
+  // A Cut copies what its delete takes: a mind node's branch with it (docs/specs/009-elements/mind-node.md
+  // "Deleting"), so the paste puts the whole branch back. A plain Copy takes only what is selected. `opts` may be a
+  // click event: only a literal `cut: true` counts.
+  const copySelection = (opts?: { cut?: boolean }) => {
     if (isReadOnly) return;
     const { selectedId, multiSelectedIds } = readSelection();
     const idSet =
@@ -173,7 +182,16 @@ export function useClipboard(deps: ClipboardDeps) {
     if (!idSet || idSet.size === 0) return;
     // A Sheet carries the charts it draws (docs/specs/029-sheets/sheet.md "Charts"): they are never selectable on
     // the canvas, so the copy takes them here, and the paste relinks them to the Sheet's copy.
-    const withCharts = withSheetCharts(activeTab.elements, idSet);
+    // A host's badges and step numbers copy with it (docs/specs/009-elements/badge.md).
+    const withCharts = withAttached(
+      activeTab.elements,
+      withSheetCharts(
+        activeTab.elements,
+        opts?.cut === true
+          ? withMindBranches(activeTab.elements, idSet, (el) => el.locked === true)
+          : idSet,
+      ),
+    );
     const snapshot = activeTab.elements
       .filter((el) => withCharts.has(el.id))
       // Deep clone so a later edit to the originals doesn't bleed
@@ -223,7 +241,12 @@ export function useClipboard(deps: ClipboardDeps) {
     if (!pasting || pasting.length === 0) return;
     if (refuseCreate()) return;
     const pointer = at !== undefined ? at : (canvasPointerRef?.current ?? null);
-    const { dx, dy, atPointer } = pasteTranslation(pasting, activeTab, pointer);
+    const { dx, dy, atPointer } = pasteTranslation(
+      pasting,
+      activeTab,
+      pointer,
+      getViewportCanvasRect?.() ?? null,
+    );
     const clipIds = new Set(pasting.map((el) => el.id));
     // Clipboard ids may not exist in the current tab (the source
     // was deleted, the user pasted into a different tab, etc.).

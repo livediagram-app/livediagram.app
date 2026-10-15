@@ -281,7 +281,7 @@ export function MetricPicker({
       {open ? (
         <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900">
           {header ? (
-            <p className="border-b border-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:border-slate-800">
+            <p className="border-b border-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 dark:border-slate-800">
               {header}
             </p>
           ) : (
@@ -327,7 +327,9 @@ export function MetricPicker({
                     {row.title}
                   </span>
                   {row.meta ? (
-                    <span className="shrink-0 text-xs text-slate-400">{row.meta}</span>
+                    <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+                      {row.meta}
+                    </span>
                   ) : null}
                   <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium tabular-nums text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                     {row.count.toLocaleString()}
@@ -337,7 +339,7 @@ export function MetricPicker({
               ))}
             </ul>
           ) : (
-            <p className="px-3 py-6 text-center text-sm text-slate-400">
+            <p className="px-3 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
               No metrics match &ldquo;{query}&rdquo;.
             </p>
           )}

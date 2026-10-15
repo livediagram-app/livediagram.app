@@ -95,4 +95,54 @@ describe('contentSummaryOf (R14)', () => {
     expect(contentSummaryOf(shapeAt('square', 'x', 0, 0))).toBeNull();
     expect(contentSummaryOf(createText(0, 0))).toBeNull();
   });
+
+  it("counts a Sankey's flows and the distinct nodes they join, as the diagram matches names", () => {
+    expect(
+      contentSummaryOf(
+        shape('sankey' as never, {
+          sankeyFlows: [
+            { from: 'Salary', to: 'Budget ', value: 3 },
+            { from: ' Budget', to: 'Rent', value: 1 },
+            { from: 'Rent' },
+            'not a flow',
+          ],
+        }),
+      ),
+    ).toBe('flows=3 nodes=3');
+  });
+
+  it("lists a concept graphic's rows in order, and a pyramid's variant (docs/specs/009-elements/concept-graphics.md)", () => {
+    const rows = [{ label: 'Visited', note: '12,400' }, { label: 'Signed up' }, { label: 'a|b' }];
+    expect(
+      contentSummaryOf(shape('pyramid', { conceptRows: rows, pyramidVariant: 'funnel' })),
+    ).toBe('rows=Visited|Signed up|a\\|b variant=funnel');
+    expect(contentSummaryOf(shape('cycle', { conceptRows: [{ label: 'Plan' }, {}] }))).toBe(
+      'rows=Plan|?',
+    );
+    expect(contentSummaryOf(shape('layer-stack', { conceptRows: undefined }))).toBe('rows=');
+    expect(contentSummaryOf(shape('chevrons', { conceptRows: [{ label: 'Build' }] }))).toBe(
+      'rows=Build',
+    );
+  });
+
+  it("lists a sequence diagram's participants and counts its messages (docs/specs/009-elements/sequence-diagram.md)", () => {
+    expect(
+      contentSummaryOf(
+        shape('sequence', {
+          sequenceParticipants: [
+            { id: 'a', label: 'Browser' },
+            { id: 'b', label: 'API' },
+          ],
+          sequenceMessages: [{ from: 'a', to: 'b', label: 'GET', kind: 'call' }],
+        }),
+      ),
+    ).toBe('participants=Browser|API messages=1');
+    // A participant with no label reads as `?`, as a concept row does.
+    expect(
+      contentSummaryOf(
+        shape('sequence', { sequenceParticipants: [{ id: 'a' }], sequenceMessages: [] }),
+      ),
+    ).toBe('participants=? messages=0');
+    expect(contentSummaryOf(shape('stack', {}))).toBe('direction=row');
+  });
 });

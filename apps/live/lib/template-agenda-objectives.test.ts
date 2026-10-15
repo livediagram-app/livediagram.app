@@ -42,7 +42,7 @@ describe('meeting agenda template', () => {
   });
 
   it('opens on the purpose and the outcomes the meeting leaves with', () => {
-    const [purpose] = shapesOf(els, 'callout').filter((c) => c.pageTitle === 'Purpose');
+    const [purpose] = shapesOf(els, 'card').filter((c) => c.pageTitle === 'Purpose');
     expect(purpose?.label).toMatch(/reorder/);
     const outcomes = shapesOf(els, 'checklist')[0]!;
     expect(outcomes.checklistItems).toHaveLength(3);
@@ -87,7 +87,7 @@ describe('meeting agenda template', () => {
 
   it('keeps the working elements apart and valid', () => {
     const blocks = [
-      ...shapesOf(els, 'callout'),
+      ...shapesOf(els, 'card'),
       ...shapesOf(els, 'checklist'),
       ...shapesOf(els, 'agenda'),
       ...shapesOf(els, 'decision'),
@@ -121,7 +121,7 @@ describe('objectives planner template', () => {
   });
 
   it('starts with why: a focus, strengths to build on and areas to grow', () => {
-    const [focus] = shapesOf(els, 'callout');
+    const [focus] = shapesOf(els, 'card');
     expect(focus!.pageTitle).toBe('My focus for the half');
     for (const l of ['Strengths to build on', 'Areas to grow'])
       expect(labels(scaffold)).toContain(l);

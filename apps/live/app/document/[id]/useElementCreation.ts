@@ -9,6 +9,8 @@ import {
   acceptsInlineIcon,
   createAnnotation,
   type EmbedProvider,
+  applyShapeVariant,
+  withInlineIcon,
   createShape,
   defaultIconAnimation,
   createText,
@@ -23,6 +25,7 @@ import {
   type SessionTool,
   type ShapeKind,
   type Tab,
+  withVariantColours,
 } from '@livediagram/document';
 import { takeInsertionSlot } from '@/lib/insertion-preview';
 import type { InsertionSlot } from '@/lib/insert-between';
@@ -124,6 +127,7 @@ export function useElementCreation(opts: {
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
       plan?: string;
+      variant?: string;
     },
   ) => {
     if (editsBlocked) return;
@@ -137,6 +141,7 @@ export function useElementCreation(opts: {
       ...(opts?.reaction ? { reaction: opts.reaction } : {}),
       ...(opts?.mode ? { mode: opts.mode } : {}),
       ...(opts?.estimateScale ? { estimateScale: opts.estimateScale } : {}),
+      ...(opts?.variant ? { variant: opts.variant } : {}),
     });
   };
 
@@ -165,7 +170,7 @@ export function useElementCreation(opts: {
                 // closure — writing `sel` back would clobber any change
                 // that landed on this element since the render.
                 elements: t.elements.map((e) =>
-                  e.id === sel.id ? { ...e, iconId, iconPosition: sel.iconPosition ?? 'left' } : e,
+                  e.id === sel.id ? withInlineIcon(e, iconId, sel.iconPosition ?? 'left') : e,
                 ),
               },
         ),
@@ -290,6 +295,11 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     beginDraw({ type: 'component', kind: 'avatar' });
   };
+  // A flowchart's first step (docs/specs/009-elements/flowchart.md).
+  const addFlowchart = () => {
+    if (editsBlocked) return;
+    beginDraw({ type: 'component', kind: 'flowchart' });
+  };
 
   const addText = () => {
     if (editsBlocked) return;
@@ -406,7 +416,8 @@ export function useElementCreation(opts: {
                 : {}),
             }
           : {
-              ...createShape(kind, x, y),
+              // A creation-time variant (the Callout card, a Funnel) applies to its own kind only.
+              ...applyShapeVariant(createShape(kind, x, y), art?.choice),
               // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
               // /135). Applied by the kind that owns the field, so one payload
               // serves all four without the drop path knowing which is which.
@@ -447,8 +458,18 @@ export function useElementCreation(opts: {
                 : {}),
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
-      // kinds whose face isn't text (stickers, session buttons, ...).
-      { edit: true, insertion, style: styleNewElement },
+      // kinds whose face isn't text (stickers, session buttons, ...). A preset's own colour (the Warning badge's
+      // rose) is put back after the theme and the remembered style.
+      {
+        edit: true,
+        insertion,
+        style: (el) => {
+          const styled = styleNewElement(el);
+          return (
+            styled.type === 'shape' ? withVariantColours(styled, art?.choice) : styled
+          ) as typeof el;
+        },
+      },
     );
     // A tech-icon id maps to its own telemetry type (see addTechIcon);
     // line-art icons + shapes use the kind.
@@ -514,6 +535,7 @@ export function useElementCreation(opts: {
     addCallout,
     addStatRow,
     addProcess,
+    addFlowchart,
     addAvatar,
     dropPaletteItem,
     addText,

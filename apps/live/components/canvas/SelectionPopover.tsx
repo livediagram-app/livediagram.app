@@ -12,7 +12,11 @@ import {
 } from '@/components/canvas/selection-popover-icons';
 import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
 import { EditPointsIcon } from '@/components/palette/palette-icons';
-import { TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
+import {
+  FlowchartStepButtons,
+  type FlowchartStepToolbar,
+} from '@/components/flowchart/FlowchartStepButtons';
+import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -43,6 +47,9 @@ type SelectionPopoverProps = {
   // on the toolbar. Passed only for an editable, unlocked mind node.
   onAddMindChild?: () => void;
   onAddMindSibling?: () => void;
+  // A flowchart step's group (docs/specs/009-elements/flowchart.md): Add Step, Add Branch, and an
+  // Editor's Step Type and Lane menus. Passed only for an unlocked step someone may grow.
+  flowchartStep?: FlowchartStepToolbar;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
@@ -57,6 +64,8 @@ type SelectionPopoverProps = {
   // is how view-role visitors get the comments-only toolbar (no
   // edit affordances next to it).
   onOpenComments?: () => void;
+  // Someone who may comment adds one; a Viewer only reads the thread there is (docs/specs/013-workspace/share-roles.md).
+  commentsReadOnly?: boolean;
   // Open the same context menu that a right-click on the element
   // would open, anchored under the ellipsis button. Surfaces the
   // full action list on touch devices that can't right-click.
@@ -90,11 +99,13 @@ export function SelectionPopover({
   hasText = true,
   onEditPoints,
   onAddMindChild,
+  flowchartStep,
   onAddMindSibling,
   onDuplicate,
   onBringToFront,
   onSendToBack,
   onOpenComments,
+  commentsReadOnly = false,
   onOpenContextMenu,
   compact = false,
   suspended = false,
@@ -211,6 +222,8 @@ export function SelectionPopover({
         </>
       ) : null}
 
+      {flowchartStep ? <FlowchartStepButtons {...flowchartStep} /> : null}
+
       {onDuplicate ? (
         <>
           <PopoverButton
@@ -252,8 +265,12 @@ export function SelectionPopover({
           beats a two-click context menu open + click. */}
       {onOpenComments ? (
         <PopoverButton
-          label="Add Comment"
-          description="Open the comment thread for this element."
+          label={commentsReadOnly ? 'Show Comments' : 'Add Comment'}
+          description={
+            commentsReadOnly
+              ? 'Read the comments on this element.'
+              : 'Open the comment thread for this element.'
+          }
           onClick={onOpenComments}
         >
           <CommentIcon />
@@ -309,41 +326,5 @@ export function SelectionPopover({
         </>
       ) : null}
     </div>
-  );
-}
-
-function Divider() {
-  return <div aria-hidden className={TOOLBAR_DIVIDER} />;
-}
-
-function PopoverButton({
-  label,
-  description,
-  onClick,
-  children,
-  active,
-}: {
-  label: string;
-  description: string;
-  onClick: () => void;
-  children: React.ReactNode;
-  active?: boolean;
-}) {
-  return (
-    <HoverCard title={label} description={description}>
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={label}
-        aria-pressed={active ? true : undefined}
-        className={
-          active
-            ? 'flex h-8 w-8 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-            : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-        }
-      >
-        {children}
-      </button>
-    </HoverCard>
   );
 }

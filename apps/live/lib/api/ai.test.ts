@@ -25,6 +25,15 @@ describe('extractElementsFromBuffer textSize normalisation', () => {
     expect((out[0] as { textSize?: string }).textSize).toBe('md');
   });
 
+  // docs/specs/008-canvas/canvas-and-palette.md text size: a slider px is a fixed size, and Clean echoes an
+  // element's own size back; flattening it to 'md' lost the size the user set.
+  it('keeps a slider px, and pins one out of range', () => {
+    const kept = extractElementsFromBuffer(`{"elements":[${shape(',"textSize":18')}]}`);
+    expect((kept[0] as { textSize?: unknown }).textSize).toBe(18);
+    const wild = extractElementsFromBuffer(`{"elements":[${shape(',"textSize":400')}]}`);
+    expect((wild[0] as { textSize?: unknown }).textSize).toBe('md');
+  });
+
   it('preserves an explicit hierarchy size', () => {
     const out = extractElementsFromBuffer(`{"elements":[${shape(',"textSize":"lg"')}]}`);
     expect((out[0] as { textSize?: string }).textSize).toBe('lg');

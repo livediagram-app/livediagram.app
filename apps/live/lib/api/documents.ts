@@ -5,6 +5,7 @@ import {
   DOCUMENT_CONVERSION_HEADER,
   scalableSnapshotSvg,
   svgBackgroundColor,
+  TEAM_RECENT_INCLUDE,
   type CreationIntent,
   type DocumentConversion,
   type SharedTabsSummary,
@@ -16,6 +17,7 @@ import type {
   DocumentResponse,
   DocumentSummary,
   SharedWithItem,
+  TeamRecentDocument,
 } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
 import { dedupeInFlight } from '../dedupe';
@@ -36,6 +38,7 @@ import {
   expectOkVoid,
   tabForWire,
   apiFetch,
+  saveTimeoutSignal,
 } from './core';
 import type { RoomTicketResponse } from '@livediagram/api-schema';
 
@@ -135,15 +138,17 @@ export async function apiSaveDocumentMeta(
     );
     return;
   }
+  const body = JSON.stringify({
+    name: d.name,
+    tabs: d.tabs,
+    tabIds: d.tabIds,
+    presentation: d.presentation,
+  });
   const res = await apiFetch(`${API_BASE}/documents/${d.id}`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
-    body: JSON.stringify({
-      name: d.name,
-      tabs: d.tabs,
-      tabIds: d.tabIds,
-      presentation: d.presentation,
-    }),
+    body,
+    signal: saveTimeoutSignal(body),
   });
   await expectOkVoid(res, 'save document meta');
 }
@@ -231,7 +236,14 @@ export async function apiDeleteDocument(ownerId: string, id: string): Promise<vo
   });
 }
 
-async function _apiListDocuments(ownerId: string): Promise<DocumentSummary[]> {
+// The personal library and, beside it, the newest documents of the teams the caller has joined: the
+// team ones feed only the recent lists (Welcome back, Jump back in), never the personal library views.
+export type DocumentListing = {
+  documents: DocumentSummary[];
+  teamRecent: TeamRecentDocument[];
+};
+
+async function _apiListDocumentsWithTeamRecent(ownerId: string): Promise<DocumentListing> {
   // Offline documents (docs/specs/006-document/offline-mode.md) are browser-local; list them alongside the
   // cloud ones. If the cloud fetch fails but offline documents exist (e.g. no
   // network), still return those rather than failing the whole Explorer.
@@ -240,8 +252,13 @@ async function _apiListDocuments(ownerId: string): Promise<DocumentSummary[]> {
   await offlinePurgeExpiredTrash(Date.now()).catch(() => 0);
   const offline = await offlineListDocuments().catch(() => [] as DocumentSummary[]);
   try {
-    const res = await apiFetch(`${API_BASE}/documents`, { headers: await apiHeaders(ownerId) });
-    const { documents: liveDocs } = await expectOk<DocumentListResponse>(res, 'list');
+    const res = await apiFetch(`${API_BASE}/documents?include=${TEAM_RECENT_INCLUDE}`, {
+      headers: await apiHeaders(ownerId),
+    });
+    const { documents: liveDocs, teamRecent = [] } = await expectOk<DocumentListResponse>(
+      res,
+      'list',
+    );
     // Dedupe by id: legacy data (pre ghost-row fix) can hold BOTH an offline
     // record and a same-id server row. The offline copy wins — it is what the
     // dispatch loads for that id — and dropping the twin keeps React keys
@@ -251,18 +268,26 @@ async function _apiListDocuments(ownerId: string): Promise<DocumentSummary[]> {
     // The landing page's Welcome back reads this (docs/specs/019-marketing/returning-visitor.md). A Local
     // only document has no server snapshot: its placeholder, never a request that can only 404 (once per
     // save, since the version is in the key), which matters now a guest's documents start local.
-    rememberRecentDiagrams(documents, (id, savedAt) =>
+    rememberRecentDiagrams([...documents, ...teamRecent], (id, savedAt) =>
       offlineIds.has(id)
         ? Promise.resolve(null)
         : apiFetchDocumentThumbnailSvg(ownerId, id, { version: savedAt }),
     );
-    return documents;
+    return { documents, teamRecent };
   } catch (e) {
-    if (offline.length > 0) return offline;
+    if (offline.length > 0) return { documents: offline, teamRecent: [] };
     throw e;
   }
 }
-export const apiListDocuments = dedupeInFlight(_apiListDocuments, (ownerId) => ownerId);
+export const apiListDocumentsWithTeamRecent = dedupeInFlight(
+  _apiListDocumentsWithTeamRecent,
+  (ownerId) => ownerId,
+);
+
+// The personal library (and this browser's Offline Mode documents).
+export async function apiListDocuments(ownerId: string): Promise<DocumentSummary[]> {
+  return (await apiListDocumentsWithTeamRecent(ownerId)).documents;
+}
 
 // Fetch a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md) and return a blob URL
 // for an `<img src>` plus the document's background colour. Native `<img>`

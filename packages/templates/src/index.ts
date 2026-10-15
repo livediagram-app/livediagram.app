@@ -3,6 +3,7 @@
 // per-template element builders. Shared by the editor's picker and the
 // MCP worker so the two can't drift.
 export * from './templates';
+export * from './template-canvas-overrides';
 export * from './template-modes';
 export * from './template-categories';
 export { templateKeywords } from './template-keywords';
@@ -14,7 +15,7 @@ export {
   popularKindsFor,
   type PopularChoice,
 } from './popular';
-export { isUntitledDocumentName } from './legacy-untitled';
+export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitled';
 export * from './template-layers';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
 export { templateFamilyOf } from './template-families';
@@ -28,9 +29,12 @@ export * from './page-layouts';
 export * from './slide-layouts';
 export * from './logo-layouts';
 export * from './layout-catalogue';
-export { buildPageLayout } from './page-layout-build';
+export { buildPageLayout, buildPageLayoutOver } from './page-layout-build';
+export { carryPageContent, warmLayoutPlaceholders } from './page-layout-carry';
 export * from './template-tab';
+export * from './dashboard-builder';
 export { templateCatalogue, type TemplateCatalogue } from './template-catalogue';
 // The engine-free check; materialiseTemplateSheets (which carries the sheets engine) is the
 // '@livediagram/templates/template-sheets' subpath, so only a caller making sheets bundles it.
 export { hasTemplateSheets } from './template-sheet-marks';
+export { withBlankPageThemed } from './blank-page-templates';

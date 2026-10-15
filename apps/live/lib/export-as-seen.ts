@@ -5,18 +5,23 @@
 import {
   canvasSurface,
   resolveStockColours,
+  viewElementInTheme,
   type Appearance,
   type Tab,
 } from '@livediagram/document';
 import { getResolvedAppearance } from '@livediagram/ui';
-import { resolveTabBackdrop } from './themes';
+import { resolveTabBackdrop, themeViewMap } from './themes';
 
 export function tabAsSeen(tab: Tab, appearance: Appearance = getResolvedAppearance()): Tab {
   const backdrop = resolveTabBackdrop(tab, appearance);
   const surface = canvasSurface(backdrop.backgroundColor);
+  // Theme colours in the export's half (docs/specs/011-theme/light-and-dark.md), then the stock colours.
+  const themeMap = themeViewMap(tab.theme, appearance);
   return {
     ...tab,
     ...backdrop,
-    elements: tab.elements.map((el) => resolveStockColours(el, surface)),
+    elements: tab.elements.map((el) =>
+      resolveStockColours(viewElementInTheme(el, themeMap), surface),
+    ),
   };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { IllustratePage } from '@livediagram/document';
+import { pageIsDark, type IllustratePage } from '@livediagram/document';
 import {
   fillCss,
   gradientFill,
@@ -47,7 +47,7 @@ describe('page paint', () => {
   });
 
   it('compares fills by value', () => {
-    const g = gradientFill(PAGE_GRADIENT_PRESETS[1]!);
+    const g = gradientFill(PAGE_GRADIENT_PRESETS.find((p) => p.id === 'ocean')!);
     expect(sameFill(g, { ...g })).toBe(true);
     expect(sameFill({ kind: 'solid', color: '#ABCDEF' }, { kind: 'solid', color: '#abcdef' })).toBe(
       true,
@@ -57,23 +57,22 @@ describe('page paint', () => {
     expect(fillCss(g)).toBe('linear-gradient(160deg, #bae6fd, #c7d2fe)');
   });
 
-  it('draws backgrounds from the theme: pale tints first, a deep shade, two gradients', () => {
-    const presets = themeBackgroundPresets({
-      elementStroke: '#7c3aed',
-      elementFill: '#ede9fe',
-      palette: undefined,
-    });
-    expect(presets.map((p) => p.id)).toEqual([
-      'theme-wash',
-      'theme-tint',
-      'theme-fill',
-      'theme-deep',
-      'theme-glow',
-      'theme-dusk',
-    ]);
-    expect(presets[3]!.fill).toEqual({ kind: 'solid', color: expect.stringMatching(/^#/) });
-    // No colours of its own: the brand accent, and no fill swatch.
-    const plain = themeBackgroundPresets({ elementStroke: null, elementFill: null });
-    expect(plain.some((p) => p.id === 'theme-fill')).toBe(false);
+  it('draws fourteen gradients from the theme: seven light, then bold and deep', () => {
+    const presets = themeBackgroundPresets({ elementStroke: '#7c3aed', palette: undefined });
+    expect(presets).toHaveLength(14);
+    expect(new Set(presets.map((p) => p.id)).size).toBe(14);
+    expect(presets.every((p) => p.fill.kind === 'gradient')).toBe(true);
+    // The first row is light paper for dark ink; the row ends in the deep ones.
+    for (const p of presets.slice(0, 7))
+      expect(pageIsDark({ background: { fill: p.fill } })).toBe(false);
+    for (const p of presets.slice(-3))
+      expect(pageIsDark({ background: { fill: p.fill } })).toBe(true);
+    // No colours of its own: the brand accent still draws them.
+    expect(themeBackgroundPresets({ elementStroke: null })).toHaveLength(14);
+  });
+
+  it('offers thirteen preset gradients, so they and Custom fill two rows of seven', () => {
+    expect(PAGE_GRADIENT_PRESETS).toHaveLength(13);
+    expect(new Set(PAGE_GRADIENT_PRESETS.map((p) => p.id)).size).toBe(13);
   });
 });

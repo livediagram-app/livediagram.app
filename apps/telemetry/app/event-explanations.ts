@@ -120,6 +120,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
   'Canvas|Used|AddNextNote':
     'Someone clicked a next-note button beside a note on an event-storming board and got the note type that notation places there next.',
+  'Canvas|Used|WaterCooler':
+    'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
+  'Canvas|Used|CoffeeMachine':
+    'Someone walked their Avatar-mode character up to a coffee machine and took a coffee.',
+  'Canvas|Used|AvatarMessage':
+    'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
+  'Canvas|Used|AvatarMessagePanel':
+    "Someone said something in Avatar mode from the Avatar panel's Send a Message. Never the words.",
   'Canvas|Used|AvatarMode':
     'Someone switched to Avatar mode, steering a small walking character around the canvas instead of the usual pointer.',
   'Canvas|Used|ChangeNoteKind':
@@ -228,12 +236,71 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|ArrowheadSize': "Someone changed a selected arrow's arrowhead size.",
   'Element|Changed|AspectRatioReset':
     'Someone reset a selected shape back to its default proportions.',
+  'Element|Changed|AccentEdge':
+    'Someone set, moved, recoloured or removed the coloured accent edge along one side of a selected shape.',
+  'Element|Changed|CardSlots':
+    "Someone switched a card's header band, title, meta line or icon on or off, or changed how its icon is shown.",
+  'Element|Changed|Card':
+    'Someone added, removed or reordered the tags along the bottom of a card.',
+  'Element|Changed|ChipLook':
+    'Someone changed how a badge or step number looks (solid, ink, outline, tinted or quiet).',
+  'Element|Changed|ChipDetach':
+    'Someone let a badge or step number go from the element it was attached to.',
+  'Element|Changed|BoundaryStyle':
+    "Someone changed where a boundary shows its title: in a tab on its edge, inside its corner, or C4's bottom-left.",
+  'Element|Changed|TabWindowTab':
+    'Someone chose which tab a Tab Window shows, so a slide or page shows that tab live.',
+  'UI|Used|TabWindowOpen':
+    'Someone opened the tab a Tab Window shows, from the window or its menu.',
+  'Element|Changed|BoundaryMeta':
+    "Someone added or removed the second line under a boundary's title, such as a network range.",
+  'Element|Changed|ConceptRows':
+    'Someone added, removed, reordered or renamed the layers, tiers or steps of a layer stack, pyramid or cycle.',
+  'Element|Changed|PointerTip':
+    'Someone moved the tip of a pointer note to a free spot on the board.',
+  'Element|Changed|PointerAttach':
+    'Someone pinned the tip of a pointer note to a corner or edge of a shape.',
+  'Element|Changed|PointerDetach':
+    'Someone let a pointer note go from the shape its tip was pinned to.',
+  'Element|Changed|TagColour':
+    'Someone gave a card tag a colour for the whole tab, so every card with that tag shows it.',
+  'Element|Changed|TagColourCleared': 'Someone removed the colour a card tag had across the tab.',
+  'Element|Changed|StackDirection':
+    'Someone switched a stack between laying things out in a row, a column and a grid.',
+  'Element|Changed|StackColumns': 'Someone changed how many columns a grid stack has.',
+  'Element|Changed|StackGap': 'Someone changed the gap between the things in a stack.',
+  'Element|Changed|StackPadding': 'Someone changed the space inside the edge of a stack.',
+  'Element|Changed|StackAlign':
+    'Someone changed whether the things in a stack line up at the start, the centre or the end.',
+  'Element|Changed|SequenceParticipants':
+    'Someone added, renamed, reordered or removed a participant in a sequence diagram.',
+  'Element|Changed|SequenceMessages':
+    'Someone added, edited, reordered or removed a message in a sequence diagram.',
+  'Element|Changed|SequenceText':
+    'Someone rewrote a sequence diagram as text in its dialog, one message per line.',
+  'Element|Changed|SequenceNumbered':
+    'Someone switched the message numbers of a sequence diagram on or off.',
+  'Element|Changed|SequenceAnim':
+    'Someone changed how a sequence diagram plays in, or its speed or repeat.',
+  'Element|Changed|HubSpokes': 'Someone switched the spokes of a hub and spoke graphic on or off.',
+  'Element|Changed|PyramidVariant':
+    'Someone switched a pyramid between pointing up, pointing down and a funnel.',
+  'Element|Changed|ConceptAnim':
+    "Someone set or cleared a layer stack's, pyramid's or cycle's animation (Build, Pulse or Flow), or its speed or repeat.",
+  'Element|Changed|RenumberSteps':
+    'Someone renumbered every step number on a tab in reading order.',
+  'Element|Changed|StepSequence':
+    "Someone turned on or off playing the step numbers' animations one after another.",
   'Element|Changed|BorderRadius': "Someone changed a selected element's corner rounding.",
   'Element|Changed|BorderStroke': "Someone changed a selected element's border weight.",
   'Element|Changed|BorderStyle':
     "Someone changed a selected element's border pattern: solid, dashed, or dotted.",
   'Element|Changed|Chair':
     'Someone changed which way a Chair element faces, on a meeting-room layout board.',
+  'Element|Changed|Room': "Someone moved a Room element's doorway to another wall, or closed it.",
+  'Element|Changed|Desk':
+    'Someone changed which way a Desk element faces, so whoever sits at it looks another way.',
+  'Element|Changed|Sofa': 'Someone changed which way a Sofa element faces.',
   'Element|Changed|ChartAnim':
     'Someone gave a selected chart a looping reveal animation, changed its speed, or turned it off.',
   'Element|Changed|ChartData': "Someone edited a chart element's underlying data.",
@@ -292,6 +359,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|MindFlow': "Someone changed a mind map's flow direction.",
   'Element|Changed|MindOutline':
     'Someone saved an edited outline onto a mind map, re-shaping the map from its text.',
+  'Element|Changed|MindSpacing':
+    "Someone changed how far apart a mind map's nodes sit (Tight, Compact, Comfortable or Wide).",
   'Element|Changed|ModeButton':
     "Someone changed which selection mode a Mode Button element switches everyone into when it's pressed.",
   'Element|Changed|Nudge':
@@ -342,6 +411,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Rotation': 'Someone rotated a selected element to a fixed angle.',
   'Element|Changed|SessionButton':
     'Someone configured what a Session Button element starts when pressed, such as a timer, a poll, or a vote.',
+  'Element|Changed|Finish':
+    "Someone set a selected element's own finish (Flexible, Professional or Sketch), or set it back to follow its tab.",
+  'Element|Changed|SankeyAnim':
+    'Someone set or cleared the animation on a selected Sankey diagram (Grow, Flow, Cascade, Pulse or Rise), or its speed or repeat.',
+  'Element|Changed|SankeyFlows':
+    "Someone edited a Sankey diagram's flows (what moves from where to where, and how much) or a node's leftover switch.",
+  'Element|Changed|SankeyStyle':
+    "Someone changed how a Sankey diagram draws: a node's colour, the band colouring, the column layout, the labels, the leftovers or the unit.",
   'Element|Changed|Shadow': 'Someone applied a drop shadow to a selected element, or removed it.',
   'Element|Changed|ShapeMorph':
     'Someone changed a selected shape into a different kind of shape, keeping its size, label, and colours.',
@@ -450,6 +527,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone narrowed a multi-selection down to just one kind of element, from the right-click menu's Filter Selection.",
   'Element|Selected|Keyboard':
     'Someone moved the selection to the next element using the keyboard.',
+  'Element|Selected|MindBranch':
+    'Someone selected a mind map branch, or a whole map, from its menu.',
   'Element|Toggled|AspectLock':
     'Someone toggled a formatting option on an element or table: a text style (bold, italic, underline, or strikethrough), the aspect-ratio lock, or a table option (header row, header column, or zebra striping).',
   'Element|Toggled|Strikethrough':
@@ -470,6 +549,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed a Reaction Pad element and played its burst for everyone.',
   'Element|Searched|Image':
     "Someone searched for openly licensed pictures in the image picker's Search tab.",
+  'Element|Used|ImagePlaceholder':
+    "Someone pressed Select Image on an empty image's placeholder to open the image picker.",
   'Element|Used|ImageSearch': 'Someone attached a picture found with image search to an image.',
   'Element|Used|Video': 'Someone pressed play on a video element.',
   'Element|Voted|': 'Someone cast a dot in a dot vote.',
@@ -715,6 +796,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Aligned|FlowchartDown': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|FlowchartRight': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|Mindmap': 'Someone tapped "Auto align" to snap a tab to the grid.',
+  'Tab|Aligned|PageTidyUp':
+    'Someone pressed Tidy on an infographic or slide page, lining up and spacing what is on it.',
   'Tab|Aligned|Tree': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Changed|OpensInDiagram':
     "Someone set a tab to open in Diagram mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
@@ -777,7 +860,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageLandscape': 'Someone turned an Illustrate page to landscape.',
   'Tab|Changed|PageSize': 'Someone changed an Illustrate page to another size.',
   'Tab|Changed|PageBackground': "Someone changed an Illustrate page's background colour.",
+  'Tab|Changed|PageBackgroundAnimated':
+    'Someone gave a slide an animated background (aurora, starfield, waves and the like).',
+  'Tab|Changed|PageBackgroundAnimatedSpeed':
+    "Someone changed how fast a slide's animated background moves.",
+  'Tab|Changed|PageBackgroundImage':
+    'Someone put a picture behind an Illustrate page, searched or uploaded, under an overlay.',
   'Tab|Changed|PagePattern': "Someone changed an Illustrate page's background pattern.",
+  'Tab|Changed|PageBackgroundAppliedToAll':
+    "Someone gave every other page of a kind (every slide, say) one page's background at once.",
+  'Tab|Changed|PageBackgroundPainted':
+    "Someone painted one Illustrate page's background onto another with the Format tool.",
   'Tab|Changed|PageLocked':
     'Someone locked an Illustrate page, so it and what is on it stay as they are.',
   'Tab|Changed|PageUnlocked': 'Someone unlocked an Illustrate page.',
@@ -793,6 +886,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone set a tab to open in Illustrate mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInPlan':
     "Someone set a tab to open in Plan mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
+  'Tab|Changed|Look':
+    "Someone picked a look in Tab Look & Feel, setting the tab's theme, finish, font and canvas pattern at once.",
+  'Tab|Changed|SeasonalLook':
+    "Someone picked a seasonal look (New Year, Easter, Halloween or Christmas) behind the Seasonal toggle in Tab Style, setting the tab's theme, finish, font and canvas pattern at once.",
+  'Tab|Changed|Finish':
+    "Someone changed a tab's finish (Flexible, Professional or Sketch) from Tab Look & Feel.",
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
@@ -925,6 +1024,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|AvatarGender':
     "Someone changed the Avatar-mode character's gender, in the Avatar panel.",
   'UI|Changed|AvatarHair': "Someone changed the Avatar-mode character's hair, in the Avatar panel.",
+  'UI|Changed|AvatarStatus':
+    'Someone set or cleared their status in Avatar mode (Available, Focusing, In a Meeting or Away). Never which.',
   'UI|Changed|AvatarRandomised':
     'Someone clicked the dice button in the Avatar panel to roll a new random character, keeping their chosen size.',
   'UI|Changed|AvatarSize': "Someone changed the Avatar-mode character's size, in the Avatar panel.",
@@ -980,6 +1081,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone replaced one of the quick style panel's theme colours with a colour of their own, by right-clicking the swatch.",
   'UI|Changed|QuickSwatchReset':
     'Someone put a quick style panel swatch back to its theme colour, with Clear override.',
+  'UI|Changed|LooksFinishFilter':
+    "Someone narrowed the Tab Style popover's Looks to one finish with its Finish filter.",
+  'UI|Changed|LooksSeasonal':
+    "Someone switched the Tab Style popover's Looks to the seasonal looks, with the Seasonal toggle beside the Finish filter.",
   'UI|Changed|SlideNotes':
     'Someone typed presenter notes for a slide, in the Slide Deck panel. Counted once per slide edited, not per keystroke.',
   'UI|Changed|SpotlightDim':
@@ -989,7 +1094,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|SpotlightShape': "Someone changed the Spotlight's shape, in the Spotlight panel.",
   'UI|Changed|SpotlightSize': "Someone changed the Spotlight's size, in the Spotlight panel.",
   'UI|Changed|ToolbarCategory':
-    "Someone switched category in the Toolbar layout's palette strip across the top of the canvas.",
+    "Someone opened a category in the palette strip across the top of the canvas: a category on the category bar (Diagram, Facilitate, Illustrate), or a switch in Plan's category picker.",
   'UI|Changed|WhiteboardDockPositionBottom':
     'Someone put their whiteboard dock at the bottom of the canvas, in Settings > Editor.',
   'UI|Changed|WhiteboardDockPositionTop':
@@ -1010,6 +1115,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone dismissed the Diagram tour's offer card (the welcome tour's, until October 2026) without starting it.",
   'UI|Closed|IllustrateTourOffer':
     'Someone turned the Illustrate tour down with No on its own card.',
+  'UI|Closed|AvatarTourOffer': 'Someone turned the Avatar tour down with No on its own card.',
   'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
   'UI|Closed|FacilitateTourOffer':
     'Someone turned the Facilitate tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Facilitate).',
@@ -1045,6 +1151,22 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
   'UI|Ended|LogoTourCompleted': "Someone reached the end of a logo page's Show Me tour.",
   'UI|Ended|LogoTourSkipped': "Someone left a logo page's Show Me tour before its end.",
+  'UI|Ended|SlideTourCompleted': "Someone reached the end of a slide page's Show Me tour.",
+  'UI|Ended|SlideTourSkipped': "Someone left a slide page's Show Me tour before its end.",
+  'UI|Ended|InfographicTourCompleted':
+    "Someone reached the end of an infographic page's Show Me tour.",
+  'UI|Ended|InfographicTourSkipped':
+    "Someone left an infographic page's Show Me tour before its end.",
+  'UI|Ended|ArticleTourCompleted': "Someone reached the end of an article page's Show Me tour.",
+  'UI|Ended|ArticleTourSkipped': "Someone left an article page's Show Me tour before its end.",
+  'UI|Ended|TabStyleTourCompleted':
+    "Someone reached the end of the Tab Style dialog's Show Me tour.",
+  'UI|Ended|TabStyleTourSkipped':
+    "Someone left the Tab Style dialog's Show Me tour before its end.",
+  'UI|Ended|SankeyFlowsTourCompleted':
+    "Someone reached the end of a Sankey Flows dialog's Show Me tour.",
+  'UI|Ended|SankeyFlowsTourSkipped':
+    "Someone left a Sankey Flows dialog's Show Me tour before its end.",
   'UI|Ended|PhotoReviewTourCompleted':
     "Someone reached the end of the photo import review's Show Me tour.",
   'UI|Ended|PhotoReviewTourSkipped':
@@ -1052,6 +1174,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|IllustrateTourCompleted':
     "Someone reached the end of the Illustrate tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|IllustrateTourSkipped': 'Someone closed the Illustrate tour before its end.',
+  'UI|Ended|AvatarTourCompleted':
+    "Someone reached the end of the Avatar tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|AvatarTourSkipped': 'Someone closed the Avatar tour before its end.',
   'UI|Ended|DrawTourCompleted':
     "Someone reached the end of the Draw tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|DrawTourSkipped': 'Someone closed the Draw tour before its end.',
@@ -1079,7 +1204,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|TidyUp':
     "Someone opened Diagram mode's Tidy Up button in the bottom bar, the panel of layout styles and Auto-align. What they then picked counts as a tab being auto-arranged.",
   'UI|Opened|BehaviourGroup':
-    "Someone opened a category inside the palette's Collaborate tab (formerly Behaviours; session tools like polls, votes, and record-keeping elements). No longer recorded: Facilitate mode offers each of those categories directly in the palette.",
+    "Someone opened one of Session's groups (Tools, Record, React, Selection Mode or Navigate) on Facilitate mode's palette strip. Earlier, a category inside the palette's Collaborate tab (formerly Behaviours), before Facilitate offered those categories one by one and then gathered them into Session.",
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
   'UI|Opened|CollabGroup':
@@ -1106,6 +1231,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the Notifications category in the Settings dialog.',
   'UI|Opened|SettingsPanels': 'Someone opened the Panels category in the Settings dialog.',
   'UI|Opened|SettingsPrivacy': 'Someone opened the Privacy category in the Settings dialog.',
+  'UI|Opened|SettingsTours': 'Someone opened the Tours category in the Settings dialog.',
   'UI|Opened|SettingsTokens': 'Someone opened the API Tokens category in the Settings dialog.',
   'UI|Opened|Share': 'Someone opened the Share dialog.',
   'UI|Opened|Shortcuts': 'Someone opened the keyboard-shortcuts dialog.',
@@ -1115,6 +1241,13 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone clicked "Learn more" on the guest sign-in banner shown in the editor, opening the reasons-to-sign-in card.',
   'UI|Opened|SignInReasonsExplorer':
     'Someone clicked "Learn more" on the guest sign-in banner shown in the Explorer, opening the reasons-to-sign-in card.',
+  'UI|Opened|PageContents':
+    "Someone opened Illustrate's Contents: every page of the tab in a list.",
+  'UI|Used|PageContentsJump': "Someone went to a page from Illustrate's Contents list.",
+  'UI|Used|PageContentsReorder':
+    "Someone dragged a page to a new place in Illustrate's Contents list.",
+  'UI|Added|AllPageSlides':
+    "Someone added every slide page of a tab to the deck at once, from the Slide Deck's Add All Slide Pages.",
   'UI|Opened|SlideDeck':
     "Someone opened the deck-building panel: the Slide Deck tool, or an Illustrate tab's Slides button.",
   'UI|Opened|SlideElementDetail':
@@ -1141,15 +1274,19 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
-    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Onboarding Tutorials › "Diagram" ("Welcome", when it was the welcome tour, until October 2026).',
+    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
   'UI|Opened|IllustrateTourOffer':
-    'The Illustrate tour was offered: as its own card the first time someone worked in Illustrate mode, or replayed from Settings\' Onboarding Tutorials › "Illustrate".',
+    'The Illustrate tour was offered: as its own card the first time someone worked in Illustrate mode, or replayed from Settings\' Tours › "Illustrate Tour".',
+  'UI|Opened|AvatarTourOffer':
+    'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour".',
+  'UI|Opened|AvatarPanel':
+    'Someone opened the Avatar panel from its button beside Undo and Redo, in Avatar mode.',
   'UI|Opened|DrawTourOffer':
-    'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Onboarding Tutorials › "Draw".',
+    'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour".',
   'UI|Opened|FacilitateTourOffer':
-    'The Facilitate tour was offered: as its own card the first time someone worked in Facilitate mode, or replayed from Settings\' Onboarding Tutorials › "Facilitate". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Facilitate").',
+    'The Facilitate tour was offered: as its own card the first time someone worked in Facilitate mode, or replayed from Settings\' Tours › "Facilitate Tour". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Facilitate").',
   'UI|Opened|PlanTourOffer':
-    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Onboarding Tutorials › "Plan".',
+    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Tours › "Plan Tour".',
   'UI|Opened|activity':
     "Someone opened the help article about the Explorer's Inbox, from a help link or a search result.",
   'UI|Opened|api-tokens':
@@ -1178,7 +1315,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
   'UI|Searched|BehaviourSearch':
-    "Someone searched within the palette's Collaborate tab (formerly Behaviours). No longer recorded: the Collaborate tab became six palette categories, and the palette's own search finds their tiles.",
+    "Someone searched within Session on Facilitate mode's palette strip, across its groups of session tools. Earlier, a search within the palette's Collaborate tab (formerly Behaviours).",
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
@@ -1208,14 +1345,26 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
   'UI|Started|DashboardTour':
     'Someone pressed Show Me in Dashboard Settings, starting its tour of arranging and filling a dashboard.',
+  'UI|Started|SlideTour':
+    "Someone pressed Show Me in a slide page's panel, starting its tour of layouts, backgrounds, the deck and presenting.",
+  'UI|Started|InfographicTour':
+    "Someone pressed Show Me in an infographic page's panel, starting its tour of layouts, backgrounds and page size.",
+  'UI|Started|ArticleTour':
+    "Someone pressed Show Me in an article page's panel, starting its tour of writing and article style.",
   'UI|Started|LogoTour':
     "Someone pressed Show Me in a logo page's panel, starting its tour of the logo tools.",
   'UI|Started|PhotoReviewTour':
     'Someone pressed Show Me in the photo import review, starting its tour of checking the notes found on the wall.',
+  'UI|Started|TabStyleTour':
+    'Someone pressed Show Me in the Tab Style dialog, starting its tour of looks and fine-tuning.',
+  'UI|Started|SankeyFlowsTour':
+    "Someone pressed Show Me in a Sankey's Flows dialog, starting its tour of writing flows.",
   'UI|Started|ShareTour':
     'Someone pressed Show Me in the Share dialog, starting its tour of issuing and managing passes.',
   'UI|Started|IllustrateTour':
     "Someone pressed Yes on the Illustrate tour's first card, beginning its walkthrough of the pages.",
+  'UI|Started|AvatarTour':
+    "Someone pressed Yes on the Avatar tour's first card, beginning its walkthrough of Avatar mode.",
   'UI|Started|DrawTour':
     "Someone pressed Yes on the Draw tour's first card, beginning its walkthrough of the dock.",
   'UI|Started|FacilitateTour':
@@ -1269,6 +1418,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|MinimalPanelsOn':
     'Someone switched the panel layout to Minimal, from the quick toggle rather than the Settings dialog. No longer recorded: the Minimal layout was removed.',
   'UI|Toggled|MinimapOff': 'Someone turned off the minimap, in Settings > Editor.',
+  'UI|Toggled|DockButtonNamesOff':
+    'Someone turned off Button Labels in Settings > Appearance, so the bottom-right buttons show icons alone on a wide desktop.',
+  'UI|Toggled|DockButtonNamesOn':
+    'Someone turned Button Labels back on in Settings > Appearance, naming the bottom-right buttons beside their icons on a wide desktop.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
   'UI|Toggled|NotificationsOff':
     'Someone turned off in-editor toast notifications, in Settings > Notifications.',
@@ -1356,25 +1509,29 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|TelemetryOn':
     'Someone opted in to sending anonymous usage events, in Settings > Privacy.',
   'UI|Toggled|TourSeenOff':
-    'Someone switched on Onboarding Tutorials › "Diagram" ("Welcome" until October 2026) in Settings, marking the Diagram tour as not yet seen and relaunching it on a Diagram tab.',
+    'Someone switched on Tours › "Diagram Tour" ("Welcome" until October 2026) in Settings, marking the Diagram tour as not yet seen and relaunching it on a Diagram tab.',
   'UI|Toggled|TourSeenOn':
-    'Someone switched off Onboarding Tutorials › "Diagram" ("Welcome" until October 2026) in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
+    'Someone switched off Tours › "Diagram Tour" ("Welcome" until October 2026) in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
   'UI|Toggled|IllustrateTourSeenOff':
-    'Someone switched on Onboarding Tutorials › "Illustrate" in Settings, marking the Illustrate tour as not yet seen.',
+    'Someone switched on Tours › "Illustrate Tour" in Settings, marking the Illustrate tour as not yet seen.',
   'UI|Toggled|IllustrateTourSeenOn':
-    'Someone switched off Onboarding Tutorials › "Illustrate" in Settings, marking the Illustrate tour as seen.',
+    'Someone switched off Tours › "Illustrate Tour" in Settings, marking the Illustrate tour as seen.',
+  'UI|Toggled|AvatarTourSeenOff':
+    'Someone switched on Tours › "Avatar Tour" in Settings, marking the Avatar tour as not yet seen.',
+  'UI|Toggled|AvatarTourSeenOn':
+    'Someone switched off Tours › "Avatar Tour" in Settings, marking the Avatar tour as seen.',
   'UI|Toggled|DrawTourSeenOff':
-    'Someone switched on Onboarding Tutorials › "Draw" in Settings, marking the Draw tour as not yet seen.',
+    'Someone switched on Tours › "Draw Tour" in Settings, marking the Draw tour as not yet seen.',
   'UI|Toggled|DrawTourSeenOn':
-    'Someone switched off Onboarding Tutorials › "Draw" in Settings, marking the Draw tour as seen.',
+    'Someone switched off Tours › "Draw Tour" in Settings, marking the Draw tour as seen.',
   'UI|Toggled|FacilitateTourSeenOff':
-    'Someone switched on Onboarding Tutorials › "Facilitate" in Settings, marking the Facilitate tour as not yet seen.',
+    'Someone switched on Tours › "Facilitate Tour" in Settings, marking the Facilitate tour as not yet seen.',
   'UI|Toggled|FacilitateTourSeenOn':
-    'Someone switched off Onboarding Tutorials › "Facilitate" in Settings, marking the Facilitate tour as seen.',
+    'Someone switched off Tours › "Facilitate Tour" in Settings, marking the Facilitate tour as seen.',
   'UI|Toggled|PlanTourSeenOff':
-    'Someone switched on Onboarding Tutorials › "Plan" in Settings, marking the Plan tour as not yet seen.',
+    'Someone switched on Tours › "Plan Tour" in Settings, marking the Plan tour as not yet seen.',
   'UI|Toggled|PlanTourSeenOn':
-    'Someone switched off Onboarding Tutorials › "Plan" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
+    'Someone switched off Tours › "Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
   'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
@@ -1392,6 +1549,63 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Illustrate tour reached its "Slides" step, on the Slides button in the bottom-right cluster.',
   'UI|View|IllustrateTourStepOutro':
     'The Illustrate tour reached its closing "You\'re ready to illustrate" card.',
+  'UI|View|IllustrateTourStepSlideLayouts':
+    'The Illustrate tour\'s slides track reached its "Choose a Layout" step, with the slide\'s Layout popover open.',
+  'UI|View|IllustrateTourStepSlideBackground':
+    'The Illustrate tour\'s slides track reached its "Change the Background" step, with the slide\'s Background popover open.',
+  'UI|View|IllustrateTourStepSlideDeck':
+    'The Illustrate tour\'s slides track reached its "Add It to the Deck" step, on the slide\'s deck button.',
+  'UI|View|IllustrateTourStepSlideAddPage':
+    'The Illustrate tour\'s slides track reached its "Add Another Slide" step, on the + after the last page.',
+  'UI|View|IllustrateTourStepSlidePresent':
+    'The Illustrate tour\'s slides track reached its "Present" step, with the Slide Deck open.',
+  'UI|View|IllustrateTourStepSlideOutro':
+    'The Illustrate tour\'s slides track reached its closing "You\'re ready to present" card.',
+  'UI|View|IllustrateTourStepInfographicPageName':
+    'The Illustrate tour\'s infographic track reached its "Your Page" step, on the page\'s name.',
+  'UI|View|IllustrateTourStepInfographicLayouts':
+    'The Illustrate tour\'s infographic track reached its "Start From a Layout" step, with the page\'s Layout popover open.',
+  'UI|View|IllustrateTourStepInfographicBackground':
+    'The Illustrate tour\'s infographic track reached its "Change the Background" step, with the page\'s Background popover open.',
+  'UI|View|IllustrateTourStepInfographicPageSize':
+    'The Illustrate tour\'s infographic track reached its "Page Size" step, with the page\'s settings open.',
+  'UI|View|IllustrateTourStepInfographicAddPage':
+    'The Illustrate tour\'s infographic track reached its "Add a Page" step, on the + after the last page.',
+  'UI|View|IllustrateTourStepInfographicPresent':
+    'The Illustrate tour\'s infographic track reached its "Present It" step, with the Slide Deck open.',
+  'UI|View|IllustrateTourStepInfographicOutro':
+    'The Illustrate tour\'s infographic track reached its closing "You\'re ready to illustrate" card.',
+  'UI|View|IllustrateTourStepArticleWrite':
+    'The Illustrate tour\'s article track reached its "Write on the Page" step, on the article page.',
+  'UI|View|IllustrateTourStepArticleToolbar':
+    'The Illustrate tour\'s article track reached its "The Page Toolbar" step.',
+  'UI|View|IllustrateTourStepArticleStyle':
+    'The Illustrate tour\'s article track reached its "Article Style" step, with the page\'s Style settings open.',
+  'UI|View|IllustrateTourStepArticleText':
+    'The Illustrate tour\'s article track reached its "Fonts and Spacing" step, with the page\'s Text settings open.',
+  'UI|View|IllustrateTourStepArticleOutro':
+    'The Illustrate tour\'s article track reached its closing "You\'re ready to write" card.',
+  'UI|View|IllustrateTourStepLogoLayouts':
+    'The Illustrate tour\'s logo track reached its "Start From a Logo Layout" step, with the page\'s Layouts open.',
+  'UI|View|IllustrateTourStepLogoGuides':
+    'The Illustrate tour\'s logo track reached its "Draw on Guides" step, on the Guides button.',
+  'UI|View|IllustrateTourStepLogoMirror':
+    'The Illustrate tour\'s logo track reached its "Mirror As You Draw" step, on the Mirror button.',
+  'UI|View|IllustrateTourStepLogoCombine':
+    'The Illustrate tour\'s logo track reached its "Combine Shapes" step.',
+  'UI|View|IllustrateTourStepLogoOutro':
+    'The Illustrate tour\'s logo track reached its closing "That Is a Logo Page" card.',
+  'UI|View|AvatarTourStepAvatarButton':
+    'The Avatar tour reached its "Your Avatar" step, on the Avatar button.',
+  'UI|View|AvatarTourStepCharacter':
+    'The Avatar tour reached its "Make It Yours" step, on the character sheet.',
+  'UI|View|AvatarTourStepActions': 'The Avatar tour reached its "Behaviour and Reactions" step.',
+  'UI|View|AvatarTourStepMessage':
+    'The Avatar tour reached its "Say Something" step, on Send a Message.',
+  'UI|View|AvatarTourStepPush':
+    'The Avatar tour reached its "Give Someone a Push" step, on the person\'s own character.',
+  'UI|View|AvatarTourStepOutro':
+    'The Avatar tour reached its closing "You\'re Ready to Roam" card.',
   'UI|View|DrawTourStepDrawingTools':
     'The Draw tour reached its "Pens and Tools" step, on the dock\'s Drawing tools group.',
   'UI|View|DrawTourStepQuickStyle':
@@ -1811,6 +2025,7 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   SaveDocumentMeta: "saving a document's name or other details",
   SaveSelf: "saving a visitor's own profile details",
   SaveTab: "saving a tab's contents",
+  SearchIcons: 'searching the icon catalogue by name, from an AI tool connected over MCP',
   SendEmail: 'sending a transactional or lifecycle email',
   SetFolder: 'moving a document into, or out of, a folder',
   SetSharePassword: 'setting a password on a share link',

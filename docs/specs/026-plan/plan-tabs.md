@@ -457,10 +457,11 @@ Each change is one undo step. A Participant and a Viewer have no cog (the dashbo
 
 **Show Me** ([Show Me](../007-editor/show-me.md)) runs a guided tour of arranging and filling the dashboard, on the
 page itself; it is never offered or started on its own. Pressing it closes the settings popover, then each step rings
-a real part of the page, which stays usable (the Editor can fill a slot or drag a divider while the step is up). The
-steps: **Rows of Slots** (the first row: dividers and the bottom edge), **Fill a Slot** (the first empty slot: Add to
-Slot or a palette tile; only when a slot is empty), **Change or Move a Slot** (the first filled slot, its grip and cog
-shown as on hover while the step is up; only when a slot holds something), **Dashboard Settings** (the cog), then a
+a real control of the page, never a whole row or slot (a ring that size would light most of the page), and the page
+stays usable (the Editor can fill a slot or drag a divider while the step is up). The steps: **Rows of Slots** (a
+centred card, no ring: dividers and the bottom edge), **Fill a Slot** (the first empty slot's Add to Slot; only when
+a slot is empty), **Change or Move a Slot** (the first filled slot's own cog, else its Move grip, both shown as on
+hover while the step is up; only when a slot holds something), **Dashboard Settings** (the cog), then a
 closing card, **That Is a Dashboard**, with a link to the Dashboards article. Which steps it has is fixed when it
 starts, so filling the empty slot mid-tour keeps the count. Only an Editor has the cog, so only an Editor sees Show
 Me; a locked tab has no cog, so none. Telemetry: `UI` · `Started` · `DashboardTour`, and `UI` · `Ended` ·

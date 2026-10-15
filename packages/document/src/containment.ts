@@ -43,8 +43,15 @@ function hasGeometry(el: Element): el is Boxed {
   });
 }
 
-const isContainerShape = (el: Boxed) =>
-  el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
+// The containers (docs/specs/009-elements/boundary.md "A container"): a box that holds the elements whose centre is
+// inside it and carries them when it moves. One list, read wherever a frame, a lane or a boundary is special.
+export const CONTAINER_KINDS: ReadonlySet<string> = new Set(['frame', 'lane', 'boundary', 'stack']);
+
+export function isContainerKind(kind: string): boolean {
+  return CONTAINER_KINDS.has(kind);
+}
+
+const isContainerShape = (el: Boxed) => el.type === 'shape' && isContainerKind(el.shape);
 
 // Each mind node's parent link, with links to anything but a mind node in `elements` dropped and every
 // loop broken at its node with the lowest array index.
@@ -117,9 +124,9 @@ export function contentOrigin(elements: readonly Element[]): Point {
   return { x: Math.round(minOf('x')), y: Math.round(minOf('y')) };
 }
 
-// A frame or lane: a shape whose box holds members.
+// A frame, lane or boundary: a shape whose box holds members.
 export function isContainer(el: Element): boolean {
-  return el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
+  return el.type === 'shape' && isContainerKind(el.shape);
 }
 
 // What travels with moved containers (docs/specs/024-agents/blueprints/edit-operations.md "Carry"): `ids`

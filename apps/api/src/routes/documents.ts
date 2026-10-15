@@ -28,6 +28,8 @@ import {
   readCreationIntent,
   readDocumentConversion,
   readMarkUsed,
+  TEAM_RECENT_INCLUDE,
+  TEAM_RECENT_LIMIT,
   type CreationIntent,
 } from '@livediagram/api-schema';
 import {} from '../comments';
@@ -39,6 +41,7 @@ import {
   countDocumentsByOwner,
   getParticipant,
   listDocumentsByOwner,
+  listRecentTeamDocuments,
   listSharedWith,
   reorderTabs,
   seedTabs,
@@ -115,6 +118,18 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     if (request.method === 'GET') {
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
+      // `?include=team-recent` (docs/specs/019-marketing/returning-visitor.md): the newest documents of
+      // the teams the caller has joined, for their recent diagrams. Membership is read from the
+      // verified account only, never the guest header, which anyone can set to any id.
+      if (ctx.url.searchParams.get('include') === TEAM_RECENT_INCLUDE) {
+        const [liveDocs, teamRecent] = await Promise.all([
+          listDocumentsByOwner(env, owner),
+          ctx.verifiedUserId
+            ? listRecentTeamDocuments(env, ctx.verifiedUserId, TEAM_RECENT_LIMIT)
+            : [],
+        ]);
+        return json({ documents: liveDocs, teamRecent });
+      }
       const liveDocs = await listDocumentsByOwner(env, owner);
       return json({ documents: liveDocs });
     }

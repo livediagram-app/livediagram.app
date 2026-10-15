@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { encodeStrokePoints, type Element, type Tab } from '@livediagram/document';
 import { applyEditOperations } from '../apply';
+import { parseEditOperations } from '../parse';
 import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
 import type { EditOperation } from '../types';
@@ -27,6 +28,16 @@ describe('set', () => {
     expect(lines(outcome)).toEqual([
       '~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160',
     ]);
+  });
+
+  it('refuses a value off a closed vocabulary, naming the values the field takes', () => {
+    const rejection = refused(run([set('n3', { textSize: 'xl' })]));
+    expect(rejection).toMatchObject({ code: 'invalid_value' });
+    expect(JSON.stringify(rejection)).toContain('sm, md, lg, scale');
+    expect(refused(run([set('n3', { textAlignX: 'middle' })]))).toMatchObject({
+      code: 'invalid_value',
+    });
+    expect(lines(run([set('n3', { textAlignX: 'left' })]))).toEqual(['~ n3  textAlignX →left']);
   });
 
   it('unsets a field given null', () => {
@@ -270,3 +281,57 @@ function withTall(el: Element): Tab {
   const tab = checkoutFlow();
   return { ...tab, elements: [...tab.elements, el] };
 }
+
+describe('set: an arrow given new ends', () => {
+  it('drops its route, unless the same set writes one', () => {
+    const tab = checkoutFlow();
+    const bent: Tab = {
+      ...tab,
+      elements: tab.elements.map((el) =>
+        el.id === 'a1' ? ({ ...el, curvePoints: [{ dx: 40, dy: 0 }] } as Element) : el,
+      ),
+    };
+    const from = { kind: 'pinned', elementId: 'n1', anchor: 'e' };
+    const after = (fields: Record<string, unknown>) =>
+      applied(run([set('a1', fields)], bent)).tab.elements.find((e) => e.id === 'a1') as Element & {
+        curvePoints?: unknown;
+      };
+    expect(after({ from }).curvePoints).toBeUndefined();
+    expect(after({ from, curvePoints: [{ dx: 10, dy: 10 }] }).curvePoints).toEqual([
+      { dx: 10, dy: 10 },
+    ]);
+    expect(after({ label: 'Go' }).curvePoints).toEqual([{ dx: 40, dy: 0 }]);
+  });
+
+  it('bends an angled arrow twice between its new ends, so it meets both square', () => {
+    const tab = checkoutFlow();
+    const a1 = tab.elements.find((e) => e.id === 'a1') as Element & { to: { elementId: string } };
+    const angled: Tab = {
+      ...tab,
+      elements: tab.elements.map((el) =>
+        el.id === 'a1'
+          ? ({ ...el, arrowStyle: 'angled', curvePoints: [{ dx: 40, dy: 0 }] } as Element)
+          : el.id === a1.to.elementId
+            ? ({ ...el, x: (el as { x: number }).x + 300 } as Element)
+            : el,
+      ),
+    };
+    const moved = applied(
+      run([set('a1', { from: { kind: 'pinned', elementId: 'n1', anchor: 's' } })], angled),
+    ).tab.elements.find((e) => e.id === 'a1') as Element & { curvePoints?: unknown[] };
+    expect(moved.curvePoints).toHaveLength(2);
+  });
+});
+
+describe('set: a label over lines', () => {
+  it('keeps the line break written with \\n', () => {
+    const parsed = parseEditOperations('set n3 label="App tasks\\nECS Fargate"');
+    if ('errors' in parsed) throw new Error('parse');
+    const n3 = applied(run(parsed.operations)).tab.elements.find(
+      (e) => e.id === 'n3',
+    ) as Element & {
+      label?: string;
+    };
+    expect(n3.label).toBe('App tasks\nECS Fargate');
+  });
+});

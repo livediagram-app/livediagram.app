@@ -18,9 +18,13 @@
 export function DocumentRowShell({
   exiting,
   indent,
+  enter = true,
   children,
 }: {
   exiting: boolean;
+  // Slide in as it mounts (a row just added). The editor Explorer's Current Document card is there as the panel
+  // opens, so it does not: replayed on each opening, its growing height shook everything under it.
+  enter?: boolean;
   // Left padding in px, for the trees that indent by depth. Omitted where the
   // list is flat.
   indent?: number;
@@ -30,7 +34,11 @@ export function DocumentRowShell({
     <li
       style={indent === undefined ? undefined : { paddingLeft: indent }}
       className={
-        exiting ? 'animate-slide-row-out overflow-hidden' : 'animate-slide-row-in overflow-hidden'
+        exiting
+          ? 'animate-slide-row-out overflow-hidden'
+          : enter
+            ? 'animate-slide-row-in overflow-hidden'
+            : 'overflow-hidden'
       }
     >
       {children}

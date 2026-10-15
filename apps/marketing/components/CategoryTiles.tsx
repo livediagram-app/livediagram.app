@@ -22,7 +22,7 @@ export function CategoryTiles({
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className={BAND_LABEL}>Explore More Categories</h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           {groups.length} more {groups.length === 1 ? 'category' : 'categories'}, {total} more{' '}
           {total === 1 ? 'template' : 'templates'}
         </p>
@@ -33,12 +33,14 @@ export function CategoryTiles({
             <button
               type="button"
               onClick={() => onOpen(group.id)}
-              aria-label={`Show ${group.label} templates`}
               className={`group flex h-full w-full cursor-pointer flex-col p-3 text-left ${BAND_CARD} ${BAND_CONTROL_HOVER}`}
             >
               <PreviewFan kinds={group.templates.map((t) => t.kind)} />
               <span className="mt-3 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {/* The tile's name is its own text, "Show Brainstorm 5 templates", so what it shows is
+                      part of what a screen reader announces (WCAG 2.5.3). */}
+                  <span className="sr-only">Show </span>
                   {group.label}
                 </span>
                 <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">

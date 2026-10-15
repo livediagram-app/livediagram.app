@@ -67,10 +67,12 @@ export function TableOfContents() {
 
   return (
     <div>
-      <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
+      <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Contents
       </h3>
-      <p className="mb-3 text-[11px] text-slate-400">Sections in this article</p>
+      <p className="mb-3 text-[11px] text-slate-500 dark:text-slate-400">
+        Sections in this article
+      </p>
       <ul className="space-y-1.5 pointer-coarse:space-y-0">
         {items.map((item, idx) => {
           const h2Index = items.slice(0, idx + 1).filter((i) => i.level === 2).length;
@@ -80,7 +82,7 @@ export function TableOfContents() {
                 href={`#${item.id}`}
                 className={`flex items-center gap-2.5 py-1 text-sm transition-colors pointer-coarse:min-h-11 hover:text-brand-700 dark:hover:text-brand-200 ${
                   item.level === 3
-                    ? 'pl-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                    ? 'pl-7 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                     : 'text-slate-600 dark:text-slate-300'
                 }`}
               >

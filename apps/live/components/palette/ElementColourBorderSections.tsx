@@ -24,6 +24,7 @@ import {
   supportsBorderRadius,
   supportsColours,
   supportsShadow,
+  supportsFinish,
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
@@ -34,7 +35,9 @@ import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/
 import { isTechIconId } from '@/lib/tech-icons';
 import { ColourRow } from '@/components/palette/context-menu-rows';
 import { BorderControls } from '@/components/palette/BorderControls';
+import { AccentEdgeRow } from '@/components/palette/AccentEdgeRow';
 import { ShadowSection } from '@/components/palette/ShadowSection';
+import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
@@ -81,6 +84,7 @@ export function ElementColourBorderSections({
   // (docs/specs/007-editor/live-app.md) — otherwise the menu offers a light-canvas blue beside a grey
   // shape.
   const surface = useCanvasSurface();
+  const finishSrc = supportsFinish(target) ? target : undefined;
   const borderStrokeVal: BorderStroke =
     (target as { strokeWidth?: BorderStroke }).strokeWidth ??
     (target.type === 'table' ? 'thin' : 'medium');
@@ -231,6 +235,19 @@ export function ElementColourBorderSections({
               onPreviewBorderRadius={props.onPreviewBorderRadius}
               onPreviewStyleEnd={props.onPreviewStyleEnd}
             />
+            <AccentEdgeRow
+              target={target}
+              ops={props.elementStyle}
+              borderColour={shownColour(
+                target,
+                'line',
+                surface,
+                defaultStrokeColor(target as BoxedElement, surface),
+              )}
+              colourOpen={colorProps('accent-edge').open}
+              onToggleColour={colorProps('accent-edge').onToggle}
+              colourPalette={props.colourPalette}
+            />
           </MenuAccordionSection>
         </>
       ) : null}
@@ -243,6 +260,16 @@ export function ElementColourBorderSections({
           onSetShadow={props.onSetShadow}
           onCommitPreset={props.onCommitShadow}
           onPreviewPreset={props.onPreviewShadow}
+          onPreviewEnd={props.onPreviewStyleEnd}
+        />
+      ) : null}
+      {/* Finish (docs/specs/008-canvas/finish.md): how the element is drawn, last in the style band. */}
+      {finishSrc ? (
+        <FinishSection
+          finish={resolveOwnFinish(finishSrc)}
+          section={sectionProps('finish')}
+          onCommit={props.onCommitFinish}
+          onPreview={props.onPreviewFinish}
           onPreviewEnd={props.onPreviewStyleEnd}
         />
       ) : null}

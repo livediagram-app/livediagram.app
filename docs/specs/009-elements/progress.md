@@ -24,13 +24,21 @@ They are `ShapeElement`s with the `ShapeKind`s `'progress-bar'` and `'progress-r
 - **Ring** — an SVG track circle plus a progress arc (`pathLength={100}`, `stroke-dasharray="<pct> 100"`, round cap, starting at 12 o'clock).
 - Both render a centred **percentage label** and therefore **suppress the standard editable element label**.
 
-Colours map to the existing controls: the **fill colour** is the track, the **stroke colour** is the filled portion. The `lvd-prog-*` classes (`apps/live/app/canvas-motion.css`) are pure CSS — **deterministic**, **reduced-motion-safe** (the resting frame is the static fill), and they **freeze on export** like every other element animation.
+Colours map to the existing controls: the **fill colour** is the track, the **stroke colour** is the filled portion. A track with no fill of its own follows the paper the element is drawn on: a pale slate (`#e2e8f0`) on light paper, the dark-ink shape fill on dark paper (a dark canvas, or an Illustrate page with a dark fill), on the canvas and in every export alike.
+
+### The percentage stays legible
+
+The bar's percentage sits across the filled portion and the track, so one ink cannot be trusted to read on both. The label's ink is chosen **per part**: over the filled portion it is the element's text colour lifted or deepened until it meets **4.5:1** (WCAG AA) against the stroke colour, and over the track the same against the track (`progressLabelInks`). When both parts want the same ink the bar draws one label; otherwise it draws two, each clipped to its part, so a label that straddles the edge changes ink exactly where the fill ends. The canvas clips with `clip-path` (the **Fill** animation grows the filled-part clip in step with the fill, so the split follows the edge as it moves); the export clips with a nested `<svg>` viewport per part, which every SVG / PNG / PDF consumer honours. The ring's label sits in the hole, over the paper, so it keeps the element's text colour. The `lvd-prog-*` classes (`apps/live/app/canvas-motion.css`) are pure CSS — **deterministic**, **reduced-motion-safe** (the resting frame is the static fill), and they **freeze on export** like every other element animation.
 
 ## Context menu
 
 A **Progress** section inside the menu's **Tools** flyout (only for progress shapes; they are excluded from the **Shape** morph grid, which would drop the `progress` field) offers:
 
-- a **Percentage** slider (0–100, mirrors the Opacity row), and
+- a **Percentage** slider (0–100, mirrors the Opacity row).
+
+The fill's animation is the **Progress** section of the menu's **Animation** row
+([Element animations](../028-animation/element-animations.md#the-menu)):
+
 - **Fill animation** tiles: None / Fill / Pulse / Stripes (live miniatures of a progress bar, `ProgressAnimPreview`); once an animation is picked, a **Speed** row (Slowest / Slow / Normal / Fast) and a **Repeat** toggle appear beneath it.
 
 Setters `setProgressSelected` / `setProgressAnimSelected` / `setProgressAnimSpeedSelected` / `setProgressAnimRepeatSelected` (`useDataShapeSetters`, exposed through `useElementStyle`) apply to every selected progress shape; changes emit `track('Element', 'Changed', 'Progress' | 'ProgressAnim')`.

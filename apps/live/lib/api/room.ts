@@ -9,6 +9,8 @@ import {
   ACCESS_CHANGED_CLOSE,
   DOCUMENT_TRASHED_CLOSE,
   isMutationOpKind,
+  ROOM_PING,
+  ROOM_PONG,
   WORKBENCH_ENDED_CLOSE,
   type AgentPresence,
   type ParticipantPresence,
@@ -23,6 +25,7 @@ import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { getGuestSelfSig } from '../local-identity';
 import { startEditorTiming } from '../timing';
 import { getSessionSharePassword, wsUrl } from './core';
+import { debugLog } from '../debug-log';
 
 export type RoomHandlers = {
   // The room's agents arrive apart from the sessions (docs/specs/024-agents/agent-presence.md "In the editor").
@@ -40,6 +43,9 @@ export type RoomHandlers = {
   // to this socket alone, so being called IS the addressing — there is no id to
   // check against our own, which we do not know (docs/specs/015-api/public-api-and-tokens.md §6).
   onSelectionReleased?: (msg: { elementId: string; by: string }) => void;
+  // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id. Sent to
+  // this socket alone, on every change; emptied when a new socket opens, since nobody follows its new id yet.
+  onFollowers?: (ids: string[]) => void;
   onClose?: () => void;
   // The document went to the Trash (docs/specs/013-workspace/trash.md): the room
   // closed this socket with DOCUMENT_TRASHED_CLOSE and will refuse every
@@ -82,6 +88,8 @@ type RoomConnectOptions = RoomAuthOptions & {
   // the first one again was refused, and a team member or signed-in owner lost the room for the rest
   // of the session. Called before each reconnect of a session that used a ticket.
   mintTicket?: () => Promise<string | null>;
+  // Who we follow, read at every (re)connect: the room keeps a follow on the socket, so a new socket says it again.
+  readFollowing?: () => string | null;
 };
 
 // Build the room WebSocket auth query string. Browsers can't set custom
@@ -117,7 +125,11 @@ export function roomQueryString(options: RoomAuthOptions, sharePassword: string 
 // Reconnect backoff: a dropped socket auto-reopens so a brief network blip
 // doesn't silently end a collaborative session. Capped attempts + capped
 // delay so a hard-rejected upgrade (revoked share, lost membership) stops
-// retrying rather than hammering the worker forever.
+// retrying rather than hammering the worker forever. Out of attempts, the
+// connector waits for a sign the cause may have passed (the browser back
+// online, the tab shown again: a laptop waking, wifi returning after the
+// ~30 s the attempts span) and starts a fresh round then, so a longer outage
+// no longer ends live collaboration for the rest of the session.
 const MAX_RECONNECT_ATTEMPTS = 6;
 
 // Ops held while the socket is down (docs/specs/012-collaboration/collab-race-hardening.md). A change made in that window
@@ -138,6 +150,16 @@ export function isOutboxOp(msg: RoomOutgoing): boolean {
 // goes ahead unconfirmed rather than hold the person's work back. Safe range: 500 ms to 10 s.
 export const ROOM_SEQUENCE_ACK_TIMEOUT_MS = 2_000;
 const RECONNECT_BASE_MS = 500;
+// The keepalive (docs/specs/012-collaboration/realtime-conflict-resolution.md "Keepalive"). A socket can die
+// without a close event (a laptop asleep, a NAT or proxy that dropped an idle connection): it reads OPEN while
+// nothing arrives, so collaborators' changes silently stop until a reload. After ROOM_KEEPALIVE_IDLE_MS with
+// nothing heard the client sends ROOM_PING, which the room's runtime answers without waking; a ping with no
+// answer at all within ROOM_KEEPALIVE_TIMEOUT_MS ends the socket as a drop, and the reconnect takes over. Only an
+// unanswered ping counts, never silence alone, so a background tab whose timers the browser slows to once a minute
+// is never dropped for being quiet. Safe ranges: idle 10 s to 60 s, timeout 5 s to 30 s.
+export const ROOM_KEEPALIVE_IDLE_MS = 20_000;
+export const ROOM_KEEPALIVE_TIMEOUT_MS = 10_000;
+const ROOM_KEEPALIVE_TICK_MS = 5_000;
 const RECONNECT_MAX_MS = 15_000;
 
 /** Who this client says it is to the room: the room overrides `id` (see connectRoom). */
@@ -187,6 +209,8 @@ export function connectRoom(
   let opened = false; // we've had at least one successful session (→ reconnects sync)
   let attempts = 0;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  // Out of attempts and waiting for the network or the tab to come back (see MAX_RECONNECT_ATTEMPTS).
+  let parked = false;
 
   // Ordering cursor for reconnect catch-up (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): the last
   // epoch + seq we applied off an ordered op. On reopen we hand these to the
@@ -226,12 +250,49 @@ export function connectRoom(
     handlers.onOp(from, op);
   };
 
+  // The current socket's keepalive, stopped when the caller closes the connector (a dead socket may never fire close).
+  let stopSocketKeepalive = () => {};
   const open = () => {
     ws = new WebSocket(urlNow());
     // This socket, as opposed to `opened` (any session so far).
     let socketOpened = false;
+    // The close of this socket is handled once: by its close event, or first by the keepalive finding it dead.
+    let closeHandled = false;
+    // The keepalive's view of this socket: when anything last arrived, and the ping awaiting an answer.
+    let lastHeard = Date.now();
+    let pingSentAt: number | null = null;
+    let keepalive: ReturnType<typeof setInterval> | null = null;
+    const stopKeepalive = () => {
+      if (keepalive !== null) clearInterval(keepalive);
+      keepalive = null;
+    };
+    stopSocketKeepalive = stopKeepalive;
+    const checkAlive = () => {
+      if (ws.readyState !== WebSocket.OPEN) return;
+      const now = Date.now();
+      if (pingSentAt !== null) {
+        if (lastHeard >= pingSentAt) pingSentAt = null;
+        else if (now - pingSentAt >= ROOM_KEEPALIVE_TIMEOUT_MS) {
+          debugLog('[room] keepalive unanswered; treating the socket as dropped');
+          stopKeepalive();
+          try {
+            ws.close();
+          } catch {
+            // Already closing.
+          }
+          onClose({ code: 1006 } as CloseEvent);
+          return;
+        }
+      }
+      if (pingSentAt === null && now - lastHeard >= ROOM_KEEPALIVE_IDLE_MS) {
+        pingSentAt = now;
+        ws.send(ROOM_PING);
+      }
+    };
     ws.addEventListener('open', () => {
       socketOpened = true;
+      lastHeard = Date.now();
+      keepalive = setInterval(checkAlive, ROOM_KEEPALIVE_TICK_MS);
       attempts = 0;
       // The baton coming home (docs/specs/012-collaboration/facilitator.md): on a reconnect this is what tells
       // the room we are the same facilitator it granted before the refresh.
@@ -249,11 +310,25 @@ export function connectRoom(
         ws.send(JSON.stringify({ kind: 'sync', epoch: lastEpoch, lastSeq } satisfies RoomOutgoing));
       }
       opened = true;
+      // A new socket is a new presence id: nobody follows it yet, and our own follow is said again.
+      handlers.onFollowers?.([]);
+      const following = options.readFollowing?.();
+      if (following) {
+        ws.send(
+          JSON.stringify({
+            kind: 'op',
+            op: { kind: 'follow', target: following },
+          } satisfies RoomOutgoing),
+        );
+      }
       const held = outbox;
       outbox = [];
       for (const msg of held) ws.send(JSON.stringify(msg));
     });
     ws.addEventListener('message', (e) => {
+      lastHeard = Date.now();
+      // The keepalive's answer: proof of life, nothing to apply.
+      if (e.data === ROOM_PONG) return;
       try {
         const msg = JSON.parse(e.data) as RoomIncoming;
         if (msg.kind === 'presence') {
@@ -262,6 +337,7 @@ export function connectRoom(
           handlers.onPresence(frame.participants, frame.agents);
         } else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
         else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
+        else if (msg.kind === 'followers') handlers.onFollowers?.(msg.ids);
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
         else if (msg.kind === 'format') {
           noteServerDocumentFormat(msg.format);
@@ -293,7 +369,10 @@ export function connectRoom(
         // Malformed frame — ignore. Production would log here.
       }
     });
-    ws.addEventListener('close', (event: CloseEvent) => {
+    const onClose = (event: CloseEvent) => {
+      if (closeHandled) return;
+      closeHandled = true;
+      stopKeepalive();
       settleAll(false);
       handlers.onClose?.();
       if (closed) {
@@ -324,12 +403,15 @@ export function connectRoom(
         reconnectTiming ??= startEditorTiming('RoomReconnect');
       if (attempts >= MAX_RECONNECT_ATTEMPTS) {
         settleTimings(false);
+        parked = true;
+        debugLog('[room] reconnect attempts used up; waiting for the network or the tab');
         return;
       }
       const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
       attempts++;
       reconnectTimer = setTimeout(() => void reopen(), delay);
-    });
+    };
+    ws.addEventListener('close', onClose);
   };
   // A reconnect: with a fresh ticket when the session rode one (a spent ticket is refused).
   const reopen = async () => {
@@ -341,6 +423,22 @@ export function connectRoom(
     open();
   };
   open();
+
+  // A fresh round of attempts once the browser is back online or the tab is shown again, only while parked.
+  const resume = () => {
+    if (closed || !parked) return;
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    parked = false;
+    attempts = 0;
+    debugLog('[room] reconnecting after a wait');
+    void reopen();
+  };
+  if (typeof window !== 'undefined') window.addEventListener('online', resume);
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', resume);
+  const stopResuming = () => {
+    if (typeof window !== 'undefined') window.removeEventListener('online', resume);
+    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', resume);
+  };
 
   const send = (raw: RoomOutgoing) => {
     // No comment author id leaves this browser: it is its author's owner
@@ -399,10 +497,12 @@ export function connectRoom(
     },
     close: () => {
       closed = true;
+      stopResuming();
       settleTimings(false);
       outbox = [];
       settleAll(false);
       if (reconnectTimer !== null) clearTimeout(reconnectTimer);
+      stopSocketKeepalive();
       ws.close();
     },
   };

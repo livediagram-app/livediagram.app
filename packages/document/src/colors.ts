@@ -15,12 +15,18 @@ import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
+import { isConceptShape } from './concept';
+import { FENCE_WOOD } from './fence';
+import { isOfficeShape, ROOM_FLOOR, RUG_FILL } from './office';
+import { isSeatingShape } from './seating';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
   switch (element.type) {
     case 'shape':
-      return 'sm';
+      // A room's name sits in its back wall's face (docs/specs/009-elements/office.md "Room"): the roomier
+      // padding clears the wall's top.
+      return element.shape === 'room' ? 'md' : 'sm';
     case 'text':
       return 'none';
     case 'sticky':
@@ -217,7 +223,26 @@ function behaviourSkin(
   if (kind === 'mode-button' || kind === 'session-button' || kind === 'picker') {
     return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
   }
-  if (kind === 'reveal' || kind === 'chair') {
+  // A fence (docs/specs/009-elements/fence.md) is timber: a wood brown on each paper, no box.
+  if (kind === 'fence') {
+    return { fill: 'transparent', stroke: FENCE_WOOD[surface], text: OUTLINE_SKIN_LIGHT.text };
+  }
+  // A room's floor and a rug are the element's fill (docs/specs/009-elements/office.md): warm on light paper,
+  // deep on dark. Their outlines are the furniture's.
+  if (kind === 'room' || kind === 'rug') {
+    const fill =
+      kind === 'room'
+        ? surface === 'dark'
+          ? '#292524'
+          : ROOM_FLOOR
+        : surface === 'dark'
+          ? '#713f12'
+          : RUG_FILL;
+    return surface === 'dark'
+      ? { fill, stroke: DARK_INK.stroke, text: DARK_INK.text }
+      : { fill, ...OUTLINE_SKIN_LIGHT };
+  }
+  if (kind === 'reveal' || isSeatingShape(kind) || isOfficeShape(kind)) {
     if (surface === 'dark') {
       return { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text };
     }
@@ -319,7 +344,13 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
   // did nothing, and the headless renderer (exports, the minimap) never got
   // the memo and filled every frame with the shape default, so a frame that
   // was transparent on the canvas exported pale blue.
-  if (element.type === 'shape' && element.shape === 'frame') return 'transparent';
+  // A boundary's face paints its tint, deeper as it nests (docs/specs/009-elements/boundary.md).
+  // A stack is a target to drop into, drawn as an outline (docs/specs/009-elements/stack.md).
+  if (
+    element.type === 'shape' &&
+    (element.shape === 'frame' || element.shape === 'boundary' || element.shape === 'stack')
+  )
+    return 'transparent';
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.fill;
   if (surface === 'dark') {
@@ -431,6 +462,8 @@ export function supportsFillColor(element: Element): boolean {
   // The control was inert on both, and picking a colour still wrote to the
   // element, autosaved, logged a change and broadcast an op for nothing.
   if (element.type === 'shape' && element.shape === 'icon') return false;
+  // A tab window's ground is the paper of the tab it shows (docs/specs/009-elements/tab-window.md).
+  if (element.type === 'shape' && element.shape === 'tab-window') return false;
   return element.type !== 'text' && element.type !== 'image';
 }
 
@@ -506,6 +539,18 @@ export function supportsBorder(
 // second condition.
 export const SELF_PAINTING_SHAPES = new Set<string>([
   'actor',
+  // A UML final state draws its ring and dot itself (shape-geometry.ts): no box to border.
+  'final-state',
+  // Badge and Step number (docs/specs/009-elements/badge.md): the face paints the pill / disc in its look.
+  'badge',
+  'step',
+  // Concept graphics (docs/specs/009-elements/concept-graphics.md): rows, tiers and discs, no box.
+  'layer-stack',
+  'pyramid',
+  'cycle',
+  'hub',
+  'onion',
+  'chevrons',
   'icon',
   // A sticker paints its own plate, shadow and content (docs/specs/010-palette/stickers.md).
   'sticker',
@@ -532,12 +577,28 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'plan-sheet',
   // Legend (docs/specs/009-elements/pie-chart.md): LegendView paints its own card and rows.
   'legend',
+  // Sankey (docs/specs/009-elements/sankey.md): nodes and bands, coloured per node; no box to stroke.
+  'sankey',
   // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
   'portal',
+  // A tab window (docs/specs/009-elements/tab-window.md) draws its own rounded frame round the tab it shows.
+  'tab-window',
   'reveal',
   // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
   // which is what the canvas does too (isSvgRenderedShape excludes it).
   'chair',
+  // A fence, a desk and a sofa (docs/specs/009-elements/fence.md, chair.md) draw themselves too.
+  'fence',
+  'desk',
+  'sofa',
+  // The office pieces (docs/specs/009-elements/office.md) draw themselves, the room its own floor.
+  'room',
+  'meeting-table',
+  'plant',
+  'bookshelf',
+  'water-cooler',
+  'coffee-machine',
+  'rug',
   // A quiz (docs/specs/012-collaboration/quiz.md) paints its own disc and ring of answers; a box behind
   // them would frame a circle in a square.
   'quiz',
@@ -573,13 +634,46 @@ export function supportsBorderControls(element: Element): boolean {
 // (hasOwnFace: the collaboration cards, the buttons, the picker, the reveal
 // cover, the chair...): their face never renders an inline icon, so one folded
 // in would be invisible. Dropped on them, it stands alone too.
+// Kinds that take an inline icon but place it themselves, so its position (`iconPosition`) is not the user's to set:
+// a card's media slot and a callout's badge (docs/specs/009-elements/card.md), a header's logo, a boundary's tab
+// (docs/specs/009-elements/boundary.md). Their Icon position controls would write a field nothing reads.
+export const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set([
+  'card',
+  'callout',
+  'site-header',
+  'boundary',
+]);
+
+/** Whether a shape's inline icon goes where `iconPosition` says, so offering that choice does something. */
+export function positionsInlineIcon(element: Element): boolean {
+  return acceptsInlineIcon(element) && !SELF_PLACED_ICON_SHAPES.has(element.shape);
+}
+
+// The kinds whose own face never draws an inline icon: a badge or step number (chip.ts, its number or text), a concept
+// graphic (its rows), a sequence diagram, a Diagram key, a tab window, and a mind node drawn as a person (its initials).
+// The chip kinds are named here rather than read from chip.ts, which imports this file.
+function drawsNoInlineIcon(element: ShapeElement): boolean {
+  return (
+    element.shape === 'badge' ||
+    element.shape === 'step' ||
+    isConceptShape(element.shape) ||
+    element.shape === 'sequence' ||
+    element.shape === 'diagram-key' ||
+    element.shape === 'tab-window' ||
+    (element.shape === 'mind-node' && element.mindLook === 'person')
+  );
+}
+
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
   return (
     element.type === 'shape' &&
     !hasOwnFace(element.shape) &&
+    // Faces drawn whole, with no place for an icon: a dropped one would vanish (docs/specs/009-elements).
+    !drawsNoInlineIcon(element) &&
     element.shape !== 'icon' &&
     element.shape !== 'sticker' &&
     element.shape !== 'frame' &&
+    element.shape !== 'stack' &&
     element.shape !== 'banner' &&
     element.shape !== 'stat-row' &&
     element.shape !== 'process'
@@ -608,6 +702,7 @@ const RADIUS_SHAPES = new Set<string>([
   'browser',
   'banner',
   'callout',
+  'card',
   'site-header',
   'stat-row',
   'mind-node',

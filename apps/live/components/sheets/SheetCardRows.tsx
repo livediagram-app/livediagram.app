@@ -5,11 +5,18 @@
 // column whose field has set values (Type, State, Priority, Assignee, a choice field) or a date, a dropdown arrow in
 // the active cell that picks one. Nothing is drawn over the frozen rows or columns a row has scrolled under.
 import { useRef, useState } from 'react';
-import { DateInput, Tooltip, lucideGlyph, openDatePicker } from '@livediagram/ui';
+import {
+  CompactEmptyState,
+  DateInput,
+  Tooltip,
+  lucideGlyph,
+  openDatePicker,
+} from '@livediagram/ui';
 import {
   lucideCheck,
   lucideChevronDown,
   lucideExternalLink,
+  lucideList,
   lucideX,
 } from '@livediagram/icons/lucide';
 import {
@@ -32,6 +39,7 @@ const OpenGlyph = lucideGlyph(lucideExternalLink, 13);
 const SaveGlyph = lucideGlyph(lucideCheck, 14);
 const CancelGlyph = lucideGlyph(lucideX, 14);
 const ChevronGlyph = lucideGlyph(lucideChevronDown, 13);
+const ChoicesGlyph = lucideGlyph(lucideList, 14);
 
 // The first year a picked date is taken from (the serial dates' epoch, 1899, aside).
 const DATE_YEAR_MIN = 1900;
@@ -271,9 +279,12 @@ function ActiveCellChoice({ c, plan }: { c: SheetController; plan: PlanContextVa
                 onPick={(o) => write({ i: { s: o } })}
               />
             ) : (
-              <p className="px-2 py-1.5 text-[12px] text-slate-500 dark:text-slate-400">
-                No choices yet.
-              </p>
+              <CompactEmptyState
+                size="small"
+                icon={<ChoicesGlyph />}
+                title="No choices yet"
+                description="Give this field some values and they show up here."
+              />
             )}
           </div>
         </AnchoredPopover>

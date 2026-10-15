@@ -183,3 +183,25 @@ describe('the card types a view shows', () => {
     expect(viewChosenTypes('gantt', undefined, dated)).toEqual(['task']);
   });
 });
+
+describe('breakdownModel by a Card field', () => {
+  it('names a linked card of a type the chart does not count', () => {
+    const epic = item({ title: 'Launch' }, { type: 'project' });
+    const task = item({ title: 'Copy', parent: epic.id });
+    const without = breakdownModel([task], new Map(), { by: 'field', field: 'parent' });
+    const withAll = breakdownModel(
+      [task],
+      new Map(),
+      { by: 'field', field: 'parent' },
+      ITEM_TYPES,
+      undefined,
+      new Map([
+        [epic.id, epic],
+        [task.id, task],
+      ]),
+    );
+    expect(JSON.stringify(without.rows)).toContain('Missing card');
+    expect(JSON.stringify(withAll.rows)).toContain('Launch');
+    expect(JSON.stringify(withAll.rows)).not.toContain('Missing card');
+  });
+});

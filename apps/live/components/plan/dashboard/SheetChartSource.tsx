@@ -10,6 +10,8 @@ import {
   type ChartType,
   type ShapeElement,
 } from '@livediagram/document';
+import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
+import { lucideChartColumn } from '@livediagram/icons/lucide';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import {
   DONE,
@@ -29,6 +31,8 @@ import {
   sheetChartsOf,
   slotChartFrom,
 } from './sheet-chart-choice';
+
+const ChartGlyph = lucideGlyph(lucideChartColumn, 14);
 
 export function SheetChartSource({
   anchor,
@@ -59,7 +63,12 @@ export function SheetChartSource({
             <section aria-label="Its Charts" className="flex flex-col gap-1">
               <h3 className={SECTION}>Its Charts</h3>
               {charts.length === 0 ? (
-                <p className={MUTED_LINE}>No charts from this sheet yet.</p>
+                <CompactEmptyState
+                  size="small"
+                  icon={<ChartGlyph />}
+                  title="No charts yet"
+                  description="Charts on this sheet show up here; New Chart below makes one."
+                />
               ) : (
                 charts.map((el) => (
                   <button
