@@ -25,8 +25,13 @@ export function countWords(text: string): number {
  * AVATAR_SAY_MAX_WORDS words and AVATAR_SAY_MAX_CHARS characters. Spacing inside the kept text is left as typed,
  * so a draft clamped while typing keeps its trailing space.
  */
+/** A message on one line: a bubble is one thought, so newlines and tabs become a space. */
+export function sayOneLine(text: string): string {
+  return text.replace(/[\r\n\t]+/g, ' ');
+}
+
 export function clampSayText(text: string): string {
-  let out = text.replace(/[\r\n\t]+/g, ' ');
+  let out = sayOneLine(text);
   if (countWords(out) > AVATAR_SAY_MAX_WORDS) {
     let seen = 0;
     let end = out.length;
@@ -39,7 +44,10 @@ export function clampSayText(text: string): string {
     }
     out = out.slice(0, end);
   }
-  return out.length > AVATAR_SAY_MAX_CHARS ? out.slice(0, AVATAR_SAY_MAX_CHARS) : out;
+  if (out.length <= AVATAR_SAY_MAX_CHARS) return out;
+  // Cut by UTF-16 unit, never between the halves of an emoji: a lone high surrogate draws as a box.
+  const cut = out.slice(0, AVATAR_SAY_MAX_CHARS);
+  return /[\uD800-\uDBFF]$/.test(cut) ? cut.slice(0, -1) : cut;
 }
 
 /** Whether a draft is within both limits as it stands. */

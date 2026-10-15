@@ -188,6 +188,20 @@ describe('elementUnderFeet', () => {
   };
   const frame: Element = { ...createShape('frame', 0, 0), id: 'f', width: 900, height: 900 };
 
+  // docs/specs/009-elements/office.md: a room or a rug is where you stand, and a plant or a bookshelf is walked
+  // round; none is a destination. A water cooler is.
+  it('never rings the office’s floor or scenery, but does ring a machine', () => {
+    const at = (shape: 'room' | 'rug' | 'plant' | 'bookshelf' | 'water-cooler') => ({
+      ...createShape(shape, 0, 0),
+      id: shape,
+      width: 300,
+      height: 300,
+    });
+    for (const shape of ['room', 'rug', 'plant', 'bookshelf'] as const)
+      expect(elementUnderFeet([at(shape)], { x: 150, y: 150 })).toBeNull();
+    expect(elementUnderFeet([at('water-cooler')], { x: 150, y: 150 })).toBe('water-cooler');
+  });
+
   it('finds the element the feet are inside', () => {
     expect(elementUnderFeet([box], { x: 150, y: 150 })).toBe('a');
   });

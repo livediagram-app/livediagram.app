@@ -129,8 +129,10 @@ export function SpeechDraftField({
       maxLength={AVATAR_SAY_MAX_CHARS + 50}
       value={value}
       onChange={(e) => {
-        const pasted = (e.nativeEvent as InputEvent).inputType === 'insertFromPaste';
-        onChange(nextDraft(value, e.target.value, pasted));
+        // Only a key typed is refused at the limit; anything put in at once (a paste, a drop, an autocorrection, an
+        // input method's composed text) is trimmed to it, as a refusal would snap the field back under the person.
+        const typed = (e.nativeEvent as InputEvent).inputType === 'insertText';
+        onChange(nextDraft(value, e.target.value, !typed));
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {

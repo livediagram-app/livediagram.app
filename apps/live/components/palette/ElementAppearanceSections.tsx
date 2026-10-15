@@ -150,7 +150,9 @@ export function ElementAppearanceSections({
   const isAgenda = target.type === 'shape' && target.shape === 'agenda';
   const isDecision = target.type === 'shape' && target.shape === 'decision';
   // A desk and a sofa share the chair's facing section (docs/specs/009-elements/chair.md "Desk and sofa").
-  const isChair = target.type === 'shape' && isSeatingShape(target.shape);
+  // The meeting table does not turn (docs/specs/009-elements/office.md), so it has no facing section.
+  const isChair =
+    target.type === 'shape' && isSeatingShape(target.shape) && target.shape !== 'meeting-table';
   // The Text band (docs/specs/008-canvas/canvas-and-palette.md): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.

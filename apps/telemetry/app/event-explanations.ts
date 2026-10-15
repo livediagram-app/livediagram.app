@@ -120,6 +120,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
   'Canvas|Used|AddNextNote':
     'Someone clicked a next-note button beside a note on an event-storming board and got the note type that notation places there next.',
+  'Canvas|Used|WaterCooler':
+    'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
+  'Canvas|Used|CoffeeMachine':
+    'Someone walked their Avatar-mode character up to a coffee machine and took a coffee.',
   'Canvas|Used|AvatarMessage':
     'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
   'Canvas|Used|AvatarMessagePanel':
@@ -293,6 +297,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone changed a selected element's border pattern: solid, dashed, or dotted.",
   'Element|Changed|Chair':
     'Someone changed which way a Chair element faces, on a meeting-room layout board.',
+  'Element|Changed|Room': "Someone moved a Room element's doorway to another wall, or closed it.",
   'Element|Changed|Desk':
     'Someone changed which way a Desk element faces, so whoever sits at it looks another way.',
   'Element|Changed|Sofa': 'Someone changed which way a Sofa element faces.',
@@ -1017,6 +1022,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|AvatarGender':
     "Someone changed the Avatar-mode character's gender, in the Avatar panel.",
   'UI|Changed|AvatarHair': "Someone changed the Avatar-mode character's hair, in the Avatar panel.",
+  'UI|Changed|AvatarStatus':
+    'Someone set or cleared their status in Avatar mode (Available, Focusing, In a Meeting or Away). Never which.',
   'UI|Changed|AvatarRandomised':
     'Someone clicked the dice button in the Avatar panel to roll a new random character, keeping their chosen size.',
   'UI|Changed|AvatarSize': "Someone changed the Avatar-mode character's size, in the Avatar panel.",

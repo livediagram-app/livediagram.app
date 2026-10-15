@@ -15,8 +15,17 @@ import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { arrowLabelFontSize } from './arrow-label';
 import { longestWordWidth, wrapBalanced, type TextMeasure } from './arrow-label-wrap';
 import { arrowLabelAnchor, arrowPathPolyline } from './arrow-path';
-import { ARROWHEAD_SIZE_PX, arrowheadShapeOf, arrowheadSizeOf, arrowStyleOf } from './arrow-style';
-import { endpointPosition } from './geometry';
+import {
+  ARROWHEAD_SIZE_PX,
+  arrowheadShapeOf,
+  arrowheadSizeOf,
+  arrowheadStartShapeOf,
+  arrowStyleOf,
+  type ArrowheadShape,
+} from './arrow-style';
+import { isErShape } from './er-heads';
+import { arrowPolyline } from './arrow-path-hits';
+import { elementIndexFor, endpointPosition, type ElementIndex } from './geometry';
 import { rectsIntersect, type Rect } from './geometry-primitives';
 import {
   isBoxed,
@@ -172,18 +181,24 @@ export function arrowRoutePoints(arrow: ArrowElement, elements: Element[]): Pt[]
   return arrowRoute(arrow, elements).route.pts;
 }
 
-function headLength(arrow: ArrowElement): number {
-  const shape = arrowheadShapeOf(arrow);
+function headLength(arrow: ArrowElement, shape: ArrowheadShape = arrowheadShapeOf(arrow)): number {
   const base = (8 / ARROWHEAD_SIZE_PX.medium) * ARROWHEAD_SIZE_PX[arrowheadSizeOf(arrow)];
-  return shape === 'diamond' || shape === 'diamond-hollow' ? base * 1.5 : base;
+  // An ER end (er-heads.ts) runs 1.5 heads back from the table.
+  return shape === 'diamond' || shape === 'diamond-hollow'
+    ? base * 1.5
+    : isErShape(shape)
+      ? base * 1.5
+      : base;
 }
 
 function endClearances(arrow: ArrowElement): { start: number; end: number } {
   const ends = arrow.arrowEnds ?? 'to';
-  const head = headLength(arrow) + END_STUB_PX;
   return {
-    start: ends === 'from' || ends === 'both' ? head : END_STUB_PX,
-    end: ends === 'to' || ends === 'both' ? head : END_STUB_PX,
+    start:
+      ends === 'from' || ends === 'both'
+        ? headLength(arrow, arrowheadStartShapeOf(arrow)) + END_STUB_PX
+        : END_STUB_PX,
+    end: ends === 'to' || ends === 'both' ? headLength(arrow) + END_STUB_PX : END_STUB_PX,
   };
 }
 
@@ -521,12 +536,58 @@ export function arrowLabelPass(
   options: Partial<ArrowLabelLayoutOptions> = {},
 ): ArrowLabelPass {
   const layouts = layoutArrowLabels(elements, options);
+  // Each labelled arrow's path, and the axis of the run its label sits on, worked out once and only when a line
+  // runs under another's label (the editor asks this on every render).
+  let index: ElementIndex | null = null;
+  const paths = new Map<ElementId, Pt[]>();
+  const pathOf = (id: ElementId): Pt[] => {
+    let pts = paths.get(id);
+    if (!pts) {
+      index ??= elementIndexFor(elements);
+      const el = index.get(id);
+      pts = el?.type === 'arrow' ? arrowPolyline(el, index) : [];
+      paths.set(id, pts);
+    }
+    return pts;
+  };
+  // The run of `pts` a point lies on, as its axis: level, upright, or neither.
+  const runAt = (pts: Pt[], c: Pt): 'level' | 'upright' | null => {
+    for (let k = 1; k < pts.length; k++) {
+      const [a, b] = [pts[k - 1]!, pts[k]!];
+      const level = Math.abs(a.y - b.y) < 1;
+      const upright = Math.abs(a.x - b.x) < 1;
+      if (
+        level &&
+        Math.abs(c.y - a.y) < 1 &&
+        c.x >= Math.min(a.x, b.x) &&
+        c.x <= Math.max(a.x, b.x)
+      )
+        return 'level';
+      if (
+        upright &&
+        Math.abs(c.x - a.x) < 1 &&
+        c.y >= Math.min(a.y, b.y) &&
+        c.y <= Math.max(a.y, b.y)
+      )
+        return 'upright';
+    }
+    return null;
+  };
+  const labelled = [...layouts].filter(([, l]) => l.knockout);
   return {
     layouts,
-    // A label cuts only its own line (docs/specs/008-canvas/arrow-labels.md).
+    // A label cuts its own line, and any other line run along it on the same track (a bus several arrows share),
+    // which is the same line to a reader: drawn over the plate, it struck the label through. A line that only
+    // crosses a label is drawn as it is (docs/specs/008-canvas/arrow-labels.md).
     knockoutsOf: (id) => {
       const own = layouts.get(id)?.knockout;
-      return own ? [own] : [];
+      const out = own ? [own] : [];
+      for (const [other, l] of labelled) {
+        if (other === id) continue;
+        const mine = runAt(pathOf(id), l.center);
+        if (mine && mine === runAt(pathOf(other), l.center)) out.push(l.knockout!);
+      }
+      return out;
     },
   };
 }

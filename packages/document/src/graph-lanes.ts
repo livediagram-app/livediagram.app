@@ -6,6 +6,7 @@
 
 import { edgeToArrow, graphToElements, type DiagramGraph, type GraphLook } from './graph-authoring';
 import { reanchorArrow, type Pt } from './auto-layout-shared';
+import { BRANCH_CLEAR } from './graph-branches';
 import { isBoxed, type BoxedElement, type Element } from './index';
 
 // The swimlane template's grid: header strip, padding inside a lane, gaps between columns and lanes.
@@ -96,8 +97,28 @@ export function layoutLanes(
       const c = col.get(id)!;
       (stacks.get(c) ?? stacks.set(c, []).get(c)!).push(b);
     }
+    // A stack every member of which one step of this lane feeds (a decision's yes and no, side by side in the next
+    // column) spreads until its first and last clear that step's points by BRANCH_CLEAR, so its exits can leave by
+    // the top and the bottom rather than as stubs from one point.
+    const gapOf = (stack: BoxedElement[]) => {
+      if (stack.length < 2) return STACK_GAP;
+      const sources = new Set(
+        stack.map((b) => {
+          const feeds = graph.edges.filter((e) => e.to === b.id).map((e) => e.from);
+          return feeds.length === 1 ? feeds[0]! : '';
+        }),
+      );
+      const [only] = [...sources];
+      const source = sources.size === 1 && only ? byId.get(only) : undefined;
+      if (!source || laneOf.get(only!) !== i) return STACK_GAP;
+      // A few px past the threshold, which branchExits reads strictly.
+      const span = source.height + 2 * BRANCH_CLEAR + 4;
+      const inner =
+        stack.reduce((h, b) => h + b.height, 0) - stack[0]!.height / 2 - stack.at(-1)!.height / 2;
+      return Math.max(STACK_GAP, Math.ceil((span - inner) / (stack.length - 1)));
+    };
     const stackH = (s: BoxedElement[]) =>
-      s.reduce((h, b) => h + b.height, 0) + STACK_GAP * (s.length - 1);
+      s.reduce((h, b) => h + b.height, 0) + gapOf(s) * (s.length - 1);
     const height = Math.max(
       LANE_MIN_H,
       LANE_PAD * 2 + Math.max(0, ...[...stacks.values()].map(stackH)),
@@ -106,7 +127,7 @@ export function layoutLanes(
       let sy = y + (height - stackH(stack)) / 2;
       for (const b of stack) {
         placed.push({ ...b, x: colX[c]! + (colW[c]! - b.width) / 2, y: sy });
-        sy += b.height + STACK_GAP;
+        sy += b.height + gapOf(stack);
       }
     }
     laneEls.push({

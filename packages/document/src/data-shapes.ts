@@ -222,6 +222,13 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'sticker' ||
     // A fence (docs/specs/009-elements/fence.md) is posts and rails, with nothing to write on.
     kind === 'fence' ||
+    // The office's scenery and machines (docs/specs/009-elements/office.md) have nothing to write on; a room
+    // keeps its label (its name plate) and a meeting table and the furniture theirs (under them).
+    kind === 'plant' ||
+    kind === 'bookshelf' ||
+    kind === 'water-cooler' ||
+    kind === 'coffee-machine' ||
+    kind === 'rug' ||
     // A layer stack, a pyramid, an onion and a chevron process draw all their own text
     // (docs/specs/009-elements/concept-graphics.md); a cycle and a hub keep their label, the words at the centre.
     kind === 'layer-stack' ||

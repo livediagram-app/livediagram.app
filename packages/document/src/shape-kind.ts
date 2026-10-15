@@ -116,6 +116,16 @@ export type ShapeKind =
   // the chair's `chairFacing`. A desk seats one at a computer; a sofa seats two side by side.
   | 'desk'
   | 'sofa'
+  // The virtual office (docs/specs/009-elements/office.md): a room (walls, a doorway, `roomDoor`), a meeting table
+  // with six seats, scenery that blocks (plant, bookshelf), machines that give a character a drink (water
+  // cooler, coffee machine), and a rug on the floor.
+  | 'room'
+  | 'meeting-table'
+  | 'plant'
+  | 'bookshelf'
+  | 'water-cooler'
+  | 'coffee-machine'
+  | 'rug'
   // The collaboration family — elements that record what the ROOM thinks
   // rather than what one author drew.
   //

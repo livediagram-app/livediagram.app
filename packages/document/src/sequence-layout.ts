@@ -5,6 +5,9 @@
 
 import { createArrow, createShape, createSticky, createText } from './factories';
 import { glyphWidth } from './graph-authoring';
+import { arrowLabelFontSize } from './arrow-label';
+import { wrapBalanced } from './arrow-label-wrap';
+import { LABEL_LINE_HEIGHT, labelMeasure } from './svg-render-primitives';
 import { GRAPH_MUTED, withHeaderAndKey } from './graph-header';
 import type { SequenceDiagram, SequenceItem, SequenceMessageKind } from './mermaid-sequence';
 import type { ArrowheadShape, Element } from './index';
@@ -22,10 +25,18 @@ const FRAGMENT_BAND = 40;
 const GUARD_GAP = 10;
 // How far a fragment nested in another, on the same first lifeline, sits inside it on each side.
 const FRAGMENT_INSET = 12;
+// The room a fragment keeps round a note inside it.
+const NOTE_PAD = 12;
 const DIVIDER_BAND = 36;
 const FRAGMENT_END = 24;
 const NOTE_LINE = 18;
 const LABEL_PX = 14;
+// The widest a lifeline gap grows for its labels, the room a message label leaves either end of its gap, and how far
+// a label keeps off its line.
+const PITCH_MAX = 520;
+const MESSAGE_LABEL_MARGIN = 40;
+const MESSAGE_LABEL_GAP = 4.5;
+const MESSAGE_LABEL_LINES = 1;
 const HEAD_PX = 22;
 const ACTOR_W = 44;
 const ACTOR_H = 60;
@@ -50,15 +61,33 @@ export function layoutSequence(
   const index = new Map(participants.map((p, i) => [p.id, i]));
   const longestHead = Math.max(0, ...participants.map((p) => glyphWidth(p.label, HEAD_PX)));
   const headW = Math.round(Math.max(HEAD_MIN_W, longestHead + 48));
-  // The pitch: the head box, or the longest message between two lifelines spread over the gap it spans.
+  // The pitch: the head box, or the longest message label on one line in one gap, as a message keeps its label in its
+  // first gap (spread over the whole span, a long label wrapped narrow there and cut its own line; two lines each
+  // crowded the message above, rows being one height). Up to PITCH_MAX, past which a label wraps and lifts.
   let pitch = Math.max(PITCH_MIN, headW + 40);
   for (const it of items) {
     if (it.kind !== 'message' || it.from === it.to) continue;
-    const span = Math.abs(index.get(it.to)! - index.get(it.from)!);
-    pitch = Math.max(pitch, Math.ceil((glyphWidth(it.label, LABEL_PX) + 60) / span));
+    pitch = Math.max(
+      pitch,
+      Math.ceil(glyphWidth(it.label, LABEL_PX) / MESSAGE_LABEL_LINES + MESSAGE_LABEL_MARGIN + 20),
+    );
   }
-  pitch = Math.round(Math.min(pitch, 520));
+  pitch = Math.round(Math.min(pitch, PITCH_MAX));
+  // A message label wraps to its gap, and sits clear above (or below) its line however many lines it takes.
+  const labelWidth = pitch - MESSAGE_LABEL_MARGIN;
+  const measure = labelMeasure(arrowLabelFontSize(undefined), false, false);
+  const lift = (label: string) => {
+    const lines = wrapBalanced(label, labelWidth, measure).lines.length;
+    const fontPx = arrowLabelFontSize(undefined);
+    return (lines * fontPx * LABEL_LINE_HEIGHT + 4) / 2 + MESSAGE_LABEL_GAP;
+  };
   const px = (id: string) => index.get(id)! * pitch + headW / 2;
+  // A note's left edge: centred over its participants, or beside the first.
+  const noteX = (note: Extract<SequenceItem, { kind: 'note' }>, width: number) => {
+    const xs = note.who.map(px);
+    if (note.placement === 'over') return (Math.min(...xs) + Math.max(...xs)) / 2 - width / 2;
+    return note.placement === 'right' ? xs[0]! + 24 : xs[0]! - 24 - width;
+  };
   const out: Element[] = [];
   const headTop = 0;
   const lifeTop = headTop + HEAD_H;
@@ -110,6 +139,8 @@ export function layoutSequence(
     y: number;
     fromX: number;
     toX: number;
+    // Whether it runs to the right, for re-placing its end on a bar an `activate` line starts.
+    right: boolean;
   }[] = [];
   // Each fragment's participants: those its messages and notes touch, so its frame spans their lifelines alone.
   const fragments: {
@@ -118,6 +149,8 @@ export function layoutSequence(
     top: number;
     dividers: { y: number; label: string }[];
     who: Set<string>;
+    // How far its notes reach left and right, so the frame holds them whole.
+    reach?: [number, number];
   }[] = [];
   const closed: {
     op: string;
@@ -126,6 +159,7 @@ export function layoutSequence(
     bottom: number;
     dividers: { y: number; label: string }[];
     who: Set<string>;
+    reach?: [number, number];
   }[] = [];
   const involve = (...who: string[]) => {
     for (const f of fragments) for (const w of who) f.who.add(w);
@@ -166,8 +200,10 @@ export function layoutSequence(
       const toX = self ? fromX : edge(it.to, right);
       if (it.deactivate) deactivate(it.from, y);
       if (!self && it.style === 'call')
-        waiting.push({ caller: it.from, callee: it.to, auto: auto || !!it.activate });
-      messages.push({ item: { ...it, label }, y, fromX, toX });
+        // Only an activation the layout opened itself closes at the reply; one the author opened (`+`) stays open
+        // until its `-`, as Mermaid draws it.
+        waiting.push({ caller: it.from, callee: it.to, auto });
+      messages.push({ item: { ...it, label }, y, fromX, toX, right });
       if (self) {
         activate(it.from, y + SELF_DROP);
         deactivate(it.from, y + SELF_DROP + 20);
@@ -176,14 +212,23 @@ export function layoutSequence(
       messageY = y;
       involve(it.from, it.to);
       y += self ? SELF_DROP + 36 : STEP;
-    } else if (it.kind === 'activate') activate(it.who, messageY ?? y - STEP / 2);
-    else if (it.kind === 'deactivate') deactivate(it.who, messageY ?? y - STEP / 2);
+    } else if (it.kind === 'activate') {
+      activate(it.who, messageY ?? y - STEP / 2);
+      // The message this line follows, into the participant it activates, ends on the bar it starts: its end was
+      // worked out before the bar existed, on the lifeline inside it.
+      const last = messages.at(-1);
+      if (last && last.y === messageY && last.item.to === it.who && last.item.from !== it.who)
+        last.toX = edge(it.who, last.right);
+    } else if (it.kind === 'deactivate') deactivate(it.who, messageY ?? y - STEP / 2);
     else if (it.kind === 'note') {
       const width = noteWidth(it, pitch, headW);
       const lines = Math.max(1, Math.ceil(glyphWidth(it.text, 13) / Math.max(40, width - 28)));
-      const h = Math.max(56, lines * NOTE_LINE + 30);
+      const h = lines * NOTE_LINE + 30;
       notes.push({ item: it, y: y - 14, h });
       involve(...it.who);
+      const x = noteX(it, width);
+      for (const f of fragments)
+        f.reach = [Math.min(f.reach?.[0] ?? x, x), Math.max(f.reach?.[1] ?? x + width, x + width)];
       y += h + 16;
     } else if (it.kind === 'fragment') {
       fragments.push({ op: it.op, label: it.label, top: y - 22, dividers: [], who: new Set() });
@@ -253,13 +298,41 @@ export function layoutSequence(
     const cols = [...f.who].flatMap((w) => (index.has(w) ? [index.get(w)!] : []));
     return cols.length ? [Math.min(...cols), Math.max(...cols)] : [0, participants.length - 1];
   };
+  // Each frame's edges: its lifelines' (a step in per enclosing fragment on the same lifeline), widened to hold its
+  // notes, then, innermost first, each widened to hold the fragments inside it a step in, whatever their lifelines.
+  const edges = new Map(
+    closed.map((f) => {
+      const [first, last] = columns(f);
+      const depth = (side: 0 | 1) =>
+        closed.filter(
+          (o) =>
+            o !== f &&
+            o.top < f.top &&
+            o.bottom > f.bottom &&
+            columns(o)[side] === columns(f)[side],
+        ).length;
+      let left = first * pitch - 40 + depth(0) * FRAGMENT_INSET;
+      let right = last * pitch + headW + 40 - depth(1) * FRAGMENT_INSET;
+      if (f.reach) {
+        left = Math.min(left, f.reach[0] - NOTE_PAD);
+        right = Math.max(right, f.reach[1] + NOTE_PAD);
+      }
+      return [f, { left, right }];
+    }),
+  );
+  for (const f of [...closed].sort((a, b) => a.bottom - a.top - (b.bottom - b.top))) {
+    const e = edges.get(f)!;
+    for (const o of closed) {
+      if (o === f || o.top > f.top || o.bottom < f.bottom || o.bottom - o.top <= f.bottom - f.top)
+        continue;
+      const oe = edges.get(o)!;
+      oe.left = Math.min(oe.left, e.left - FRAGMENT_INSET);
+      oe.right = Math.max(oe.right, e.right + FRAGMENT_INSET);
+    }
+  }
   for (const f of closed) {
-    const [first, last] = columns(f);
-    const depth = closed.filter(
-      (o) => o !== f && o.top < f.top && o.bottom > f.bottom && columns(o)[0] === first,
-    ).length;
-    const left = first * pitch - 40 + depth * FRAGMENT_INSET;
-    const rightEdge = last * pitch + headW + 40 - depth * FRAGMENT_INSET;
+    const [first] = columns(f);
+    const { left, right: rightEdge } = edges.get(f)!;
     out.push({
       ...createShape('frame', left, f.top),
       id: freshId('fragment', opts.makeId),
@@ -326,7 +399,11 @@ export function layoutSequence(
       // A message is drawn over the bars and lifelines it passes, as UML draws it.
       routeBehind: false,
       ...(m.item.label
-        ? { label: m.item.label, labelOffset: { t, offset: right ? -14 : 14 } }
+        ? {
+            label: m.item.label,
+            labelOffset: { t, offset: (right ? -1 : 1) * lift(m.item.label) },
+            labelMaxWidth: labelWidth,
+          }
         : {}),
       arrowheadShape: HEAD[style],
       ...(style === 'reply' ? { strokeStyle: 'dashed' as const } : {}),
@@ -336,13 +413,7 @@ export function layoutSequence(
   // Notes as stickies, over or beside their participants.
   for (const n of notes) {
     const width = noteWidth(n.item, pitch, headW);
-    const xs = n.item.who.map(px);
-    const x =
-      n.item.placement === 'over'
-        ? (Math.min(...xs) + Math.max(...xs)) / 2 - width / 2
-        : n.item.placement === 'right'
-          ? xs[0]! + 24
-          : xs[0]! - 24 - width;
+    const x = noteX(n.item, width);
     out.push({
       ...createSticky(x, n.y),
       id: freshId('note', opts.makeId),
@@ -350,6 +421,9 @@ export function layoutSequence(
       height: n.h,
       label: n.item.text,
       textSize: 'sm',
+      // Centred in a note sized to its text: top-left in a taller box it read as unfinished.
+      textAlignX: 'center',
+      textAlignY: 'middle',
     });
   }
 

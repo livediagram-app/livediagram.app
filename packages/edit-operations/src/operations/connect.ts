@@ -5,6 +5,7 @@
 
 import type { EditRejection } from '@livediagram/api-schema';
 import {
+  anchorPrimarySide,
   bestAnchorTowards,
   createPinnedArrow,
   recolourElementForTheme,
@@ -41,9 +42,28 @@ export function facing(a: BoxedElement, b: BoxedElement) {
 }
 
 // The route fields an arrow drops when its ends move (EO31).
+export const ROUTE_KEYS = [
+  'curveOffset',
+  'curvePoints',
+  'elbowOffset',
+] as const satisfies readonly (keyof ArrowElement)[];
+
 export function withoutRoute(arrow: ArrowElement): ArrowElement {
-  const { curveOffset: _c, curvePoints: _p, elbowOffset: _e, ...rest } = arrow;
+  const rest = { ...arrow };
+  for (const key of ROUTE_KEYS) delete rest[key];
   return rest;
+}
+
+// An arrow whose ends moved drawn afresh between them: its old route dropped, and an angled one bent twice along
+// the axis its start anchor faces, so it meets both ends square rather than drawing one L (EO31). `elements` holds
+// the tab as it now stands.
+export function rerouted(arrow: ArrowElement, elements: readonly Element[]): ArrowElement {
+  const bare = withoutRoute(arrow);
+  if (bare.arrowStyle !== 'angled' || bare.from.kind !== 'pinned') return bare;
+  const side = anchorPrimarySide(bare.from.anchor);
+  const all = elements.map((el) => (el.id === bare.id ? bare : el));
+  const bends = orthogonalBends(bare, all, side === 'n' || side === 's' ? 'TB' : 'LR');
+  return bends ? { ...bare, curvePoints: bends } : bare;
 }
 
 export const pinnedFromTo = (arrow: Element, a: string, b: string) =>
@@ -144,6 +164,8 @@ function prevailingLine(
   const [style] = [...counts.entries()].sort((p, q) => q[1] - p[1])[0] ?? ['straight'];
   if (style === 'curved') return { ...arrow, arrowStyle: 'curved' };
   if (style !== 'angled') return null;
+  const joined = joinTrunk(state, arrow, a, b);
+  if (joined) return joined;
   const [ca, cb] = [centreOf(a), centreOf(b)];
   const down = Math.abs(cb.y - ca.y) >= Math.abs(cb.x - ca.x);
   const turned: ArrowElement = {
@@ -162,6 +184,89 @@ function prevailingLine(
   };
   const bends = orthogonalBends(turned, [...currentElements(state), turned], down ? 'TB' : 'LR');
   return bends ? { ...turned, curvePoints: bends } : { ...turned, arrowStyle: 'straight' };
+}
+
+// Each side's way out, and its opposite.
+const OUT = {
+  n: { x: 0, y: -1 },
+  s: { x: 0, y: 1 },
+  e: { x: 1, y: 0 },
+  w: { x: -1, y: 0 },
+} as const;
+const OPPOSITE = { n: 's', s: 'n', e: 'w', w: 'e' } as const;
+type Side = keyof typeof OUT;
+const isSide = (anchor: string): anchor is Side => anchor in OUT;
+
+// Whether `b` lies wholly past `a`'s `side` (a box below a gateway faces its south side): along the side's way out,
+// the gap between their centres is at least their two half-extents.
+function facesAll(side: Side, a: BoxedElement, b: BoxedElement): boolean {
+  const d = OUT[side];
+  const along =
+    d.x * (b.x + b.width / 2 - (a.x + a.width / 2)) +
+    d.y * (b.y + b.height / 2 - (a.y + a.height / 2));
+  const reach =
+    (Math.abs(d.x) * (a.width + b.width)) / 2 + (Math.abs(d.y) * (a.height + b.height)) / 2;
+  return along >= reach;
+}
+
+// An angled arrow from a box that already sends a trunk (an exact-started angled arrow, its two bends on one cross
+// line) out of the side facing `b` leaves from that point too and bends in the trunk's channel, into `b`'s facing side
+// (docs/specs/024-agents/edit-operations.md "Layout on edit"); null when there is no such trunk or its channel does
+// not lie between the two boxes.
+function joinTrunk(
+  state: EditState,
+  arrow: ArrowElement,
+  a: BoxedElement,
+  b: BoxedElement,
+): ArrowElement | null {
+  const sideOf = (el: Element): Side | null =>
+    el.type === 'arrow' &&
+    el.arrowStyle === 'angled' &&
+    el.exactStart === true &&
+    el.curvePoints?.length === 2 &&
+    el.from.kind === 'pinned' &&
+    el.from.elementId === a.id &&
+    isSide(el.from.anchor) &&
+    facesAll(el.from.anchor, a, b)
+      ? el.from.anchor
+      : null;
+  const trunk = currentElements(state).find((el) => sideOf(el) !== null) as
+    ArrowElement | undefined;
+  if (!trunk) return null;
+  const side = sideOf(trunk)!;
+  const down = side === 'n' || side === 's';
+  // The trunk's channel: its bends' position along the flow, from the midpoint its curvePoints are measured from.
+  const [p0, p1] = [
+    endpointPosition(trunk.from, state.byId),
+    endpointPosition(trunk.to, state.byId),
+  ];
+  const bend = trunk.curvePoints![0]!;
+  const channel = down ? (p0.y + p1.y) / 2 + bend.dy : (p0.x + p1.x) / 2 + bend.dx;
+  const joined: ArrowElement = {
+    ...arrow,
+    arrowStyle: 'angled',
+    exactStart: true,
+    exactEnd: true,
+    from: { kind: 'pinned', elementId: a.id, anchor: side },
+    to: { kind: 'pinned', elementId: b.id, anchor: OPPOSITE[side] },
+  };
+  const [from, to] = [
+    endpointPosition(joined.from, state.byId),
+    endpointPosition(joined.to, state.byId),
+  ];
+  const [lo, hi] = down ? [from.y, to.y] : [from.x, to.x];
+  if (!(Math.min(lo, hi) < channel && channel < Math.max(lo, hi))) return null;
+  const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+  const points = down
+    ? [
+        { x: from.x, y: channel },
+        { x: to.x, y: channel },
+      ]
+    : [
+        { x: channel, y: from.y },
+        { x: channel, y: to.y },
+      ];
+  return { ...joined, curvePoints: points.map((p) => ({ dx: p.x - mid.x, dy: p.y - mid.y })) };
 }
 
 export function applyRewire(

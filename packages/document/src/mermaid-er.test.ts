@@ -2,51 +2,78 @@ import { describe, it, expect } from 'vitest';
 import { parseMermaid } from './mermaid';
 import { layoutClusteredGraph } from './auto-layout-clusters';
 import { isValidTab } from './validate';
-import { graphToElements } from './graph-authoring';
+import { edgeToArrow, graphToElements } from './graph-authoring';
 import { entityHeight } from './entity-geometry';
 
 // Tested through parseMermaid so the dispatch is covered too.
 describe('parseMermaid: ER diagrams', () => {
-  it('parses relationships with cardinality onto ends/head, plus labels', () => {
+  it('parses relationships with each cardinality as an ER end at its table, labelled by their verb', () => {
     const r = parseMermaid(`erDiagram
   CUSTOMER ||--o{ ORDER : places
   ORDER ||--|| INVOICE : "billed as"
-  CUSTOMER }o--o{ PRODUCT : browses`);
+  CUSTOMER }o--o{ PRODUCT : browses
+  PERSON |o--|{ ADDRESS : has`);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.graph.nodes.map((n) => n.id)).toEqual(['CUSTOMER', 'ORDER', 'INVOICE', 'PRODUCT']);
+    expect(r.graph.nodes.map((n) => n.id)).toEqual([
+      'CUSTOMER',
+      'ORDER',
+      'INVOICE',
+      'PRODUCT',
+      'PERSON',
+      'ADDRESS',
+    ]);
     expect(r.graph.edges).toEqual([
-      // one-to-many: crow's foot at the ORDER end.
-      { from: 'CUSTOMER', to: 'ORDER', label: 'places · 1 : 0..*', ends: 'to', head: 'cross' },
-      // one-to-one: headless.
-      { from: 'ORDER', to: 'INVOICE', label: 'billed as · 1 : 1', ends: 'none' },
-      // many-to-many: both ends.
+      {
+        from: 'CUSTOMER',
+        to: 'ORDER',
+        label: 'places',
+        ends: 'both',
+        er: { from: 'one', to: 'zero-or-many' },
+      },
+      {
+        from: 'ORDER',
+        to: 'INVOICE',
+        label: 'billed as',
+        ends: 'both',
+        er: { from: 'one', to: 'one' },
+      },
       {
         from: 'CUSTOMER',
         to: 'PRODUCT',
-        label: 'browses · 0..* : 0..*',
+        label: 'browses',
         ends: 'both',
-        head: 'cross',
+        er: { from: 'zero-or-many', to: 'zero-or-many' },
+      },
+      {
+        from: 'PERSON',
+        to: 'ADDRESS',
+        label: 'has',
+        ends: 'both',
+        er: { from: 'zero-or-one', to: 'one-or-many' },
       },
     ]);
   });
 
-  it('marks the many side when it is on the left', () => {
+  it('puts the many side at the start when it is on the left, and the arrow carries both ends', () => {
     const r = parseMermaid('erDiagram\n  ORDER }|--|| CUSTOMER : belongs_to');
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.graph.edges[0]).toMatchObject({
-      ends: 'from',
-      head: 'cross',
-      label: 'belongs_to · 1..* : 1',
+    const edge = r.graph.edges[0]!;
+    expect(edge).toMatchObject({ er: { from: 'one-or-many', to: 'one' } });
+    expect(edgeToArrow(edge, 'a')).toMatchObject({
+      arrowEnds: 'both',
+      arrowheadStartShape: 'one-or-many',
+      arrowheadShape: 'one',
     });
   });
 
-  it('writes the multiplicity alone when the relationship has no verb, optional sides as 0..1', () => {
+  it('leaves a relationship with no verb unlabelled: its ends say the multiplicity', () => {
     const r = parseMermaid('erDiagram\n  PERSON |o--o| PASSPORT : ""');
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.graph.edges[0]!.label).toBe('0..1 : 0..1');
+    expect(r.graph.edges[0]!.label).toBeUndefined();
+    expect(r.graph.edges[0]!.er).toEqual({ from: 'zero-or-one', to: 'zero-or-one' });
   });
 
   it('renders non-identifying (dotted) relationships dashed', () => {
@@ -122,5 +149,64 @@ describe('parseMermaid: ER diagrams', () => {
       ['erDiagram', ...(dir ? [dir] : []), 'A ||--o{ B : has'].join('\n');
     expect(parseMermaid(text('direction LR'))).toMatchObject({ ok: true, direction: 'LR' });
     expect(parseMermaid(text(''))).toMatchObject({ ok: true, direction: 'TB' });
+  });
+});
+
+describe('ER entity aliases', () => {
+  it('titles an entity with its alias, quoted or not, wherever it is named, its id kept', () => {
+    const result = parseMermaid(
+      [
+        'erDiagram',
+        '  BOOK_AUTHOR[Book author] {',
+        '    uuid book_id PK',
+        '  }',
+        '  a["Customer account"] ||--o{ ORDER_LINE[Order line] : places',
+        '  BOOK_AUTHOR }|--|| BOOK : credits',
+        '  BOOK',
+        '  REVIEW[Review]',
+      ].join('\n'),
+    );
+    if (!result.ok) throw new Error(result.error);
+    const label = (id: string) => result.graph.nodes.find((n) => n.id === id)?.label;
+    expect(label('BOOK_AUTHOR')).toBe('Book author');
+    expect(label('a')).toBe('Customer account');
+    expect(label('ORDER_LINE')).toBe('Order line');
+    expect(label('BOOK')).toBe('BOOK');
+    expect(label('REVIEW')).toBe('Review');
+    expect(result.graph.edges.map((e) => [e.from, e.to, e.label])).toEqual([
+      ['a', 'ORDER_LINE', 'places'],
+      ['BOOK_AUTHOR', 'BOOK', 'credits'],
+    ]);
+    expect(result.graph.nodes.find((n) => n.id === 'BOOK_AUTHOR')?.fields).toHaveLength(1);
+  });
+});
+
+describe('ER hub first', () => {
+  it('turns each relationship away from the best-connected entity, its ends swapped with it', () => {
+    const result = parseMermaid(
+      [
+        'erDiagram',
+        '  AUTHOR ||--o{ BOOK_AUTHOR : writes',
+        '  BOOK_AUTHOR }|--|| BOOK : credits',
+        '  PUBLISHER ||--o{ BOOK : publishes',
+        '  ORDER_LINE }o--|| BOOK : "is for"',
+        '  BOOK ||--o{ REVIEW : receives',
+      ].join('\n'),
+    );
+    if (!result.ok) throw new Error(result.error);
+    const edge = (label: string) => result.graph.edges.find((e) => e.label === label)!;
+    for (const label of ['credits', 'publishes', 'is for', 'receives'])
+      expect(edge(label).from).toBe('BOOK');
+    expect(edge('credits')).toMatchObject({
+      from: 'BOOK',
+      to: 'BOOK_AUTHOR',
+      er: { from: 'one', to: 'one-or-many' },
+    });
+    // One step further out: from the hub's neighbour on.
+    expect(edge('writes')).toMatchObject({
+      from: 'BOOK_AUTHOR',
+      to: 'AUTHOR',
+      er: { from: 'zero-or-many', to: 'one' },
+    });
   });
 });

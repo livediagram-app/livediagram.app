@@ -67,3 +67,50 @@ describe('inline icons in an export', () => {
     );
   });
 });
+
+describe('a rich label beside its icon', () => {
+  it("keeps a person card's role on one line when it is the longest line", async () => {
+    const { renderElementsToSvg, personCardText } = await import('./index');
+    const card = (id: string, name: string, role: string, x: number) => ({
+      id,
+      type: 'shape',
+      shape: 'square',
+      x,
+      y: 0,
+      width: 223,
+      height: 86,
+      textSize: 'sm',
+      iconId: 'user',
+      ...personCardText(name, role),
+    });
+    const svg = renderElementsToSvg(
+      {
+        id: 't',
+        name: 'T',
+        elements: [
+          card('g', 'Grace', 'People Lead', 0),
+          card('j', 'Jonas', 'Software Engineer', 300),
+        ],
+      } as never,
+      { resolveIconArt: () => '<path d="M0 0h1"/>' } as never,
+    );
+    // Each <text>'s content, its inner tags as one "|" each: a linear scan (a backtracking regex was flagged).
+    const lines = svg
+      .split('<text')
+      .slice(1)
+      .map((chunk) => {
+        const body = chunk.slice(chunk.indexOf('>') + 1, chunk.indexOf('</text>'));
+        let out = '';
+        let inTag = false;
+        for (const ch of body) {
+          if (ch === '<') {
+            inTag = true;
+            if (!out.endsWith('|')) out += '|';
+          } else if (ch === '>') inTag = false;
+          else if (!inTag) out += ch;
+        }
+        return out;
+      });
+    expect(lines).toEqual(['|Grace|People Lead|', '|Jonas|Software Engineer|']);
+  });
+});

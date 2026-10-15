@@ -13,6 +13,8 @@
 // referencing an unknown node id is dropped rather than producing an arrow
 // to nowhere.
 
+import { personCardText } from './person-card';
+import type { ErShape } from './er-heads';
 import { SHAPE_DEFAULT_SIZE } from './factories';
 import { ARROW_THICKNESS_PX } from './arrow-style';
 import { coerceShapeKind } from './validate';
@@ -42,6 +44,9 @@ export type GraphNode = {
   // `label` as its title. What an ER import makes of each table
   // (docs/specs/020-import-export/mermaid.md).
   fields?: EntityField[];
+  // A person's role: the node draws as the org-chart template's person card, the label (the name) in bold over it,
+  // with a person glyph unless the node names its own icon.
+  role?: string;
 };
 
 export type GraphEdge = {
@@ -59,6 +64,12 @@ export type GraphEdge = {
   // Head marker: 'circle' → hollow circle, 'cross' → the open-V head (the
   // closest marker to Mermaid's x terminal). Omitted = the filled triangle.
   head?: 'triangle' | 'circle' | 'cross';
+  // The ER ends (docs/specs/020-import-export/mermaid.md "ER diagram coverage"): each table's cardinality where the
+  // line meets it, its start's and its end's. Set, they take over from `head`.
+  er?: { from: ErShape; to: ErShape };
+  // Turned round for the layout only (er-hub-first.ts): the arrow it lays out is turned back after, so the stored
+  // relationship reads as written.
+  turned?: true;
 };
 
 // A named cluster of nodes (docs/specs/020-import-export/mermaid.md: a Mermaid subgraph). Rendered as a
@@ -98,6 +109,7 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
     ...(e.ends && e.ends !== 'to' ? { arrowEnds: e.ends } : {}),
     ...(e.head === 'circle' ? { arrowheadShape: 'circle-hollow' as const } : {}),
     ...(e.head === 'cross' ? { arrowheadShape: 'line' as const } : {}),
+    ...(e.er ? { arrowheadShape: e.er.to, arrowheadStartShape: e.er.from } : {}),
   };
 }
 
@@ -128,7 +140,8 @@ const MAX_BOX_W = 240;
 // The template look graph input wears (docs/specs/015-api/mcp-server.md §4.7 "The graph look"): boxes at the
 // flowchart template's proportions, never the palette's 120×120 square, and one text size for every node, picked by
 // the caller from how many nodes there are. The editor's own Mermaid import keeps the plain sizing.
-export type GraphLook = { textSize: 'sm' | 'md' };
+// `fontPx` measures at a box's own label size in place of the look's (a box an edit adds at its own text size).
+export type GraphLook = { textSize: 'sm' | 'md'; fontPx?: number };
 
 // The smallest box per kind in the template look: wide and short like the template's steps. A kind not listed keeps
 // its palette size (an actor is a figure with its name under it, a device a device).
@@ -165,10 +178,12 @@ export function labelBoxSize(
   const text = (label ?? '').trim();
   if (!text) return { width: base.width, height: base.height };
   const roomy = shape === 'diamond' ? 1.45 : 1;
-  const units = glyphUnits(text);
-  const oneLine = units * CHAR_PX * roomy + PAD_PX;
-  const width = Math.round(Math.min(MAX_BOX_W * roomy, Math.max(base.width, oneLine)));
-  const lines = Math.max(1, Math.ceil((units * CHAR_PX * roomy) / (width - PAD_PX)));
+  // Line by line, as the look measures: the widest line sets the width, and each wraps on its own.
+  const lineW = text.split('\n').map((l) => glyphUnits(l) * CHAR_PX * roomy);
+  const width = Math.round(
+    Math.min(MAX_BOX_W * roomy, Math.max(base.width, Math.max(...lineW) + PAD_PX)),
+  );
+  const lines = lineW.reduce((n, w) => n + Math.max(1, Math.ceil(w / (width - PAD_PX))), 0);
   const height = Math.round(Math.max(base.height, lines * LINE_PX + 28) * (lines > 1 ? roomy : 1));
   return { width, height };
 }
@@ -186,7 +201,9 @@ function lookBoxSize(
   const floor = given ?? LOOK_FLOOR[kind] ?? base;
   const text = (label ?? '').trim();
   if (!text) return { ...floor };
-  const px = LOOK_FONT_PX[look.textSize];
+  const px = look.fontPx ?? LOOK_FONT_PX[look.textSize];
+  // The wrap width grows with a larger font, so a line holds as many words.
+  const maxW = LOOK_MAX_W[look.textSize] * Math.max(1, px / LOOK_FONT_PX[look.textSize]);
   // An inline icon beside the label takes its glyph and gap (inlineIconMetrics: about 1.6 × the font, a third
   // of that again between).
   const iconRoom = hasIcon ? Math.round(px * 1.6 * 1.32) : 0;
@@ -196,15 +213,17 @@ function lookBoxSize(
   const lineW = text.split('\n').map((l) => glyphUnits(l) * px * GLYPH_EM * roomy);
   const textW = Math.max(...lineW) + iconRoom;
   const pad = 48;
-  const width = Math.round(
-    Math.min(LOOK_MAX_W[look.textSize] * roomy, Math.max(floor.width, textW + pad)),
-  );
+  const width = Math.round(Math.min(maxW * roomy, Math.max(floor.width, textW + pad)));
   const lines = lineW.reduce(
     (n, w, i) => n + Math.max(1, Math.ceil((w + (i === 0 ? iconRoom : 0)) / (width - pad))),
     0,
   );
   const textH = lines * px * LINE_EM + 28;
-  const height = Math.round(Math.max(floor.height, kind === 'diamond' ? textH * 1.6 : textH));
+  // A box joining siblings keeps their height while it holds the one line with room above and below.
+  const siblingHolds = !!given && lines === 1 && given.height >= px * LINE_EM + 16;
+  const height = siblingHolds
+    ? given.height
+    : Math.round(Math.max(floor.height, kind === 'diamond' ? textH * 1.6 : textH));
   if (kind === 'circle') {
     const side = Math.max(width, height);
     return { width: side, height: side };
@@ -268,7 +287,15 @@ export function graphToElements(
         ...(n.note ? { note: n.note } : {}),
       };
     }
-    const { width, height } = labelBoxSize(n.label, shape, look, !!(n as { icon?: string }).icon);
+    const role = n.role?.trim();
+    const hasIcon = !!(n as { icon?: string }).icon || !!role;
+    // A person card is as wide as its longer line and a line taller than one.
+    const longer = role && role.length > (n.label ?? '').length ? role : (n.label ?? '');
+    const sized = labelBoxSize(role ? longer : n.label, shape, look, hasIcon);
+    const width = sized.width;
+    const height = role
+      ? sized.height + Math.round(LOOK_FONT_PX[look?.textSize ?? 'sm'] * 1.4)
+      : sized.height;
     return {
       id: n.id,
       type: 'shape' as const,
@@ -281,7 +308,14 @@ export function graphToElements(
       // against. The default 'scale' fills each box, so a short heading came
       // out huge beside a long one set small.
       textSize: look?.textSize ?? ('sm' as const),
-      ...(n.label !== undefined ? { label: n.label } : {}),
+      ...(role
+        ? {
+            ...personCardText(n.label ?? '', role),
+            ...((n as { icon?: string }).icon ? {} : { iconId: 'user' }),
+          }
+        : n.label !== undefined
+          ? { label: n.label }
+          : {}),
       ...(n.link !== undefined ? { link: { kind: 'url' as const, url: n.link } } : {}),
       ...(n.note ? { note: n.note } : {}),
     };

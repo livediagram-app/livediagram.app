@@ -65,6 +65,7 @@ import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import {
   AgendaMenuSection,
   ChairMenuSection,
+  RoomMenuSection,
   DecisionMenuSection,
   EstimateMenuSection,
 } from '@/components/palette/CollabMenuSections';
@@ -76,6 +77,8 @@ import {
 } from '@/components/palette/BehaviourMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
+import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
+
 import { ChartTypeTiles } from '@/components/palette/ChartTypeTiles';
 import {
   hasWebRowsSection,
@@ -254,6 +257,7 @@ export function ElementDataSections({
     isAgenda ||
     isDecision ||
     isChair ||
+    shapeTarget?.shape === 'room' ||
     !!props.flowchart;
   return (
     <>
@@ -406,6 +410,13 @@ export function ElementDataSections({
               onSetStatus={props.onSetDecisionStatus}
               onSetDate={props.onSetDecisionDate}
               onSetDrivers={props.onSetDecisionDrivers}
+            />
+          ) : null}
+          {shapeTarget?.shape === 'room' ? (
+            <RoomMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onSetDoor={props.onSetRoomDoor}
             />
           ) : null}
           {isChair ? (
@@ -699,6 +710,12 @@ export function ElementDataSections({
                   onPreviewEnd={props.onPreviewStyleEnd}
                 />
               ) : null}
+              <MenuToggleRow
+                label="Show Values"
+                description="Each mark's number on the chart"
+                checked={shapeTarget?.chartValues === true}
+                onToggle={() => props.onSetChartValues(shapeTarget?.chartValues !== true)}
+              />
             </MenuAccordionSection>
           ) : null}
         </MenuFlyoutSection>

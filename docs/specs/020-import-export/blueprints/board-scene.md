@@ -229,9 +229,9 @@ borderStrokeOf`, `strokeStyle` from `dash`. A duplicated closing point is droppe
   `{ kind: 'pinned', elementId, anchor: nearestAnchor(target, point) }`, else free (a key that names
   nothing is free, silently: Excalidraw leaves stale bindings). Heads: `arrowEnds` from which ends
   have one (`'none'` with neither); `arrowheadShape` from the end head, else the start head:
-  arrow `line`, bar `line` (degraded "Bar arrowheads drawn as open arrowheads"), the rest by name;
-  `triangle` omitted (the default). Different start and end heads → degraded "Arrows with two
-  different heads use one". Intermediate points → `arrowStyle: 'curved'`, `curvePoints` as deltas
+  arrow `line`, bar `line` (degraded "Bar arrowheads drawn as open arrowheads"), the ER ends `one`,
+  `many`, `one-or-many` by name, the rest by name; `triangle` omitted (the default). A start head
+  that lands as a different shape → `arrowheadStartShape`. Intermediate points → `arrowStyle: 'curved'`, `curvePoints` as deltas
   from the chord midpoint; if `curved` is false and there are intermediate points → degraded "Bent
   arrows drawn as curves". `rotationDeg` turns every point about the points' bounds centre first.
   `strokeWidth: arrowWidthPx`, `strokeStyle`, line colour; `label` text and, for a non-ink label

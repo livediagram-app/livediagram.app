@@ -32,7 +32,7 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 
 ## The Avatar Panel
 
-While the mode is active, an **Avatar** button sits in the bottom-right cluster, **immediately right of Undo / Redo** (first in the cluster for a Viewer, who has no Undo), and opens the **Avatar** panel, the character sheet, as a popover over it, the way Layers, Contents and the Session strip's buttons open theirs. The panel is **closed when the mode starts**: the canvas is the point of the mode, and a panel that always covered a corner of it was in the way. Pressing the button again, pressing outside the popover, or Escape closes it. The button exists only while the mode does, so leaving the mode takes the button and any open panel with it. It shows on a desktop and a phone alike, named **Avatar** beside a small head-and-shoulders glyph on a desktop and the glyph alone on a phone, like its neighbours. View-role visitors get it too: the mode is theirs as well. The panel is never a corner panel: it does not dock, drag or join a corner stack.
+While the mode is active, an **Avatar** button sits in the bottom-right cluster, **immediately right of Undo / Redo** (first in the cluster for a Viewer, who has no Undo), and opens the **Avatar** panel, the character sheet, as a popover over it, the way Layers, Contents and the Session strip's buttons open theirs. The panel is **closed when the mode starts**: the canvas is the point of the mode, and a panel that always covered a corner of it was in the way. Pressing the button again, pressing outside the popover, or Escape closes it. The button exists only while the mode does, so leaving the mode takes the button and any open panel with it. It shows on a desktop and a phone alike, named **Avatar** beside a small head-and-shoulders glyph on a desktop and the glyph alone on a phone, like its neighbours. View-role visitors get it too: the mode is theirs as well. Zen keeps the button, the mode's one piece of chrome there, and the panel opens from it as anywhere else; only the welcome flow hides it. The panel is never a corner panel: it does not dock, drag or join a corner stack.
 
 Contents, top to bottom:
 
@@ -71,7 +71,7 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 
 - **Click / tap anywhere** on the canvas: the avatar walks there in a straight line at a constant **260 canvas px/s**, facing its direction of travel. A click mid-walk retargets immediately. It arrives and stops; there is no easing, deliberately — a constant-speed walk reads as a character, an eased glide reads as a camera.
 - **Arrow keys**: while held, the avatar walks that way, mirroring the direction pressed. Two held keys compose a diagonal (normalised, so diagonal walking isn't faster). Any arrow press cancels a click-walk in progress; releasing every arrow stops the avatar where it stands.
-- **No collision with ordinary elements**: they are scenery, so the avatar walks over anything except a [Fence](../009-elements/fence.md), which it cannot cross (it stops at the fence, or slides along it). The element it is standing on gets a soft brand-tinted "you are here" ring, which is what makes the mode useful for narration — the audience can see what the character has arrived at.
+- **No collision with ordinary elements**: they are scenery, so the avatar walks over anything except a [Fence](../009-elements/fence.md), a [Room](../009-elements/office.md#room)'s walls (it enters by the doorway) and the footprint of a plant or bookshelf ([Office](../009-elements/office.md)), none of which it can cross (it stops, or slides along them). Walking onto a water cooler or coffee machine gives it a drink, carried in its presence as `holding`. The element it is standing on gets a soft brand-tinted "you are here" ring, which is what makes the mode useful for narration — the audience can see what the character has arrived at.
 - **Space hops**, and the character waves a small flag through the hop plus a short tail so it reads as a celebration rather than stopping dead on landing. The hop peaks around 70 canvas px and lands in a bit over half a second; the contact shadow shrinks as it rises, which is what sells leaving the floor. Autorepeat is ignored (one press, one hop) and a second press mid-flight does nothing. Space is the hold-to-pan modifier everywhere else, which this mode can afford to reclaim: it is read-only, so there is no selection to tap-edit, and panning stays on middle-mouse drag, the trackpad, and the zoom controls.
 - **The camera follows**: when the avatar comes within ~120 screen px of a viewport edge, the viewport pans just enough to keep it in view. Zoom is never touched (a mode that zoomed for you would fight the presenter).
 - Right-click never walks, and the canvas / element context menus stay suppressed while the mode is active (a menu opening mid-walk would interrupt the tour).
@@ -99,6 +99,29 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 - **You can push each other.** Clicking a peer's character (in Avatar mode) walks yours over to them and, on arrival, sends an `avatar-push` op naming them plus a unit direction. Only that participant acts on it, by sliding their own character a short way (70 canvas px) along the direction — so a push is a **request to the owner**, never a remote write, and someone who has already left the mode simply ignores it. Same presence trust level as `avatar`: unordered, any role, never logged, never replayed. It is not throttled, because it is an event rather than a sample.
 - A **hide-cursors vote ([Session tools (timer + voting)](../012-collaboration/session-tools.md)) hides avatars too**, on both the outbound and render halves. A walking character is a position on the canvas, so showing it while cursors are hidden would leak exactly what the vote exists to hide.
 
+## Status
+
+Your character can say **how you are** without a word: a status set from the Avatar panel, shown to everyone on
+the tab while you are in the mode. It is what makes a virtual office read at a glance:
+who is free to talk, who is heads-down, who has stepped away.
+
+| Status           | Token       | How it shows                                                   |
+| ---------------- | ----------- | -------------------------------------------------------------- |
+| **Available**    | `available` | A green dot above the head                                     |
+| **Focusing**     | `focus`     | Headphones on the character (violet ear cups) and a violet dot |
+| **In a Meeting** | `meeting`   | A red dot above the head                                       |
+| **Away**         | `away`      | The character fades to half and a slow "Zz" rises above it     |
+
+- **Set from the panel**: a **Status** row, closed until opened like the rest, with the five choices (**None** and
+  the four), its current value in the collapsed header. Every role may set it: it is presence, like the character.
+- **Peers see it**: the status rides the avatar presence (`status`), parsed field by field; anything else is no
+  status. A peer's dot sits at the start of their name chip; yours sits above your head, where your chip would be.
+- **For the session only**: it is never stored, so an "In a Meeting" set yesterday does not greet anyone today.
+  Leaving the mode clears it, like the character itself.
+- A screen reader hears a peer's status with their name ("Sam, Focusing"), and your own on its own.
+- Under reduced motion the "Zz" holds still.
+- Telemetry: `UI · Changed · AvatarStatus` on a change, never which.
+
 ## Speech bubbles
 
 A character can **say something**: a short message appears in a speech bubble above its head, then floats up and away for everyone on the tab to see. It is the lightest possible way to talk on the canvas: a "hello!", a "follow me", a "nice one" while somebody presents, without a chat panel or anything left behind.
@@ -111,9 +134,9 @@ A character can **say something**: a short message appears in a speech bubble ab
 
 ### Typing a message (the composer)
 
-- **Enter**, in Avatar mode and with nothing else holding the keyboard, opens the **composer**: a speech bubble above your own character's head with a text box in it, focused, its tail pointing at the head. It pops open with a small bounce.
+- **Enter**, in Avatar mode and with nothing else holding the keyboard, opens the **composer**. A focused control Enter acts on itself keeps it: a button or link, a menu row, a tab, a switch, anything in a popover or the tour's card. The composer is a speech bubble above your own character's head with a text box in it, focused, its tail pointing at the head. It pops open with a small bounce. Its code is fetched when someone who may speak enters the mode, so the words typed straight after the first Enter land in it rather than on the editor's shortcuts.
 - The composer **follows your character**: walking by click keeps it above the head. While you type, the keyboard is the composer's: arrow keys move the caret and Space types a space, so neither walks nor hops.
-- **Up to 50 words**, and at most 300 characters. A word counter appears once you pass 40 words (`43 / 50`) and turns amber at 50; typing past either limit is refused rather than cut, so nothing you wrote vanishes. A pasted message is trimmed to the limit. Newlines become spaces: a bubble is one thought.
+- **Up to 50 words**, and at most 300 characters. A word counter appears once you pass 40 words (`43 / 50`) and turns amber at 50; typing past either limit is refused rather than cut, so nothing you wrote vanishes. Text put in at once (a paste, a drop, an autocorrection, an input method's composed text) is trimmed to the limit instead, never between the halves of an emoji. Newlines become spaces: a bubble is one thought.
 - **Enter sends.** So does the small send button (a paper plane) at the bubble's right edge. Sending an empty or all-space message just closes the composer.
 - **Escape cancels**: the composer closes and the text is dropped. Pressing outside it on the canvas walks as usual and leaves the composer open with your text; the composer only closes on its own when it loses focus while empty.
 - The composer is drawn at **reading size whatever the zoom**: it sits at a canvas point (above the head) but does not shrink as you zoom out, so it is always typeable.
@@ -171,7 +194,7 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 ## Out of scope (v1)
 
-- Collision with ordinary elements, or pathfinding around them (walk-around-the-box, walkable frames). Only a [Fence](../009-elements/fence.md) blocks.
+- Collision with ordinary elements, or pathfinding around them (walk-around-the-box, walkable frames). Only a [Fence](../009-elements/fence.md), a room's walls and the office's scenery block ([Office](../009-elements/office.md)).
 - Avatar customisation beyond the four choices and the presence-coloured shirt (hats, accessories, skin tones, a picked photo, a colour picker — the shirt colour is load-bearing).
 - Emotes beyond the five Behaviour performances, the flag wave and [speech bubbles](#speech-bubbles): a reaction someone else can trigger on your character. (Sitting is the [Chair](../009-elements/chair.md)'s.)
 - A message history, replies, mentions, private messages, or anything typed reaching the document or the server's storage: speech is ephemeral.

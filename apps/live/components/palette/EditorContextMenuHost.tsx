@@ -129,6 +129,7 @@ export function EditorContextMenuHost() {
     setPieAnimSpeedSelected,
     setPieAnimRepeatSelected,
     setChartLegendSelected,
+    setChartValuesSelected,
     setChartLegendPositionSelected,
     setChartTypeSelected,
     unlinkChartSelected,
@@ -157,6 +158,7 @@ export function EditorContextMenuHost() {
     setDecisionDateSelected,
     setDecisionDriversSelected,
     setChairFacingSelected,
+    setRoomDoorSelected,
     setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,
@@ -425,6 +427,7 @@ export function EditorContextMenuHost() {
       onSetPieAnimSpeed={setPieAnimSpeedSelected}
       onSetPieAnimRepeat={setPieAnimRepeatSelected}
       onSetChartLegend={setChartLegendSelected}
+      onSetChartValues={setChartValuesSelected}
       onSetChartLegendPosition={setChartLegendPositionSelected}
       onSetChartType={setChartTypeSelected}
       onUnlinkChart={unlinkChartSelected}
@@ -465,6 +468,7 @@ export function EditorContextMenuHost() {
       onSetDecisionDate={setDecisionDateSelected}
       onSetDecisionDrivers={setDecisionDriversSelected}
       onSetChairFacing={setChairFacingSelected}
+      onSetRoomDoor={setRoomDoorSelected}
       onSetButtonMode={setButtonModeSelected}
       onSetPortalTarget={setPortalTargetSelected}
       onSetPortalName={setPortalNameSelected}

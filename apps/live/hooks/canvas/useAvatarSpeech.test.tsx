@@ -68,6 +68,26 @@ describe('useAvatarSpeech (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"
     expect(result.current.s.composerOpen).toBe(false);
   });
 
+  it('leaves Enter to a focused button, menu row or the tour card, which act on it themselves', () => {
+    const { result } = setup();
+    const button = document.createElement('button');
+    const row = document.createElement('div');
+    row.setAttribute('role', 'menuitem');
+    const tour = document.createElement('div');
+    tour.setAttribute('data-tour-popover', '');
+    const inTour = document.createElement('span');
+    tour.append(inTour);
+    for (const target of [button, row, inTour]) {
+      document.body.append(target.parentElement === tour ? tour : target);
+      const e = enter({}, target);
+      expect(e.defaultPrevented).toBe(false);
+    }
+    button.remove();
+    row.remove();
+    tour.remove();
+    expect(result.current.s.composerOpen).toBe(false);
+  });
+
   it('a Viewer cannot speak: Enter does nothing and nothing sends', () => {
     const { result, onSay } = setup({ canSpeak: false });
     enter();

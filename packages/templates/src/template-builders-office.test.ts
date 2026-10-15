@@ -1,0 +1,108 @@
+import { describe, expect, it } from 'vitest';
+import { roomWalls, type Element } from '@livediagram/document';
+import { buildTemplate } from './build-template';
+
+// docs/specs/012-collaboration/virtual-office-template.md
+describe('the Virtual Office template', () => {
+  const els = buildTemplate('virtual-office', 0, 0) as Element[];
+  const shapes = (kind: string) =>
+    els.filter(
+      (e): e is Extract<Element, { type: 'shape' }> => e.type === 'shape' && e.shape === kind,
+    );
+
+  it('has six named rooms either side of a corridor, every doorway onto it', () => {
+    const rooms = shapes('room');
+    expect(rooms.map((r) => r.label)).toEqual([
+      'Reception',
+      'Desks',
+      'Meeting Room',
+      'Kitchen',
+      'Lounge',
+      'Focus Room',
+    ]);
+    const top = Math.min(...rooms.map((r) => r.y));
+    for (const r of rooms) expect(r.roomDoor).toBe(r.y === top ? 's' : 'n');
+  });
+
+  it('lays the rooms and rugs under everything else', () => {
+    const firstOther = els.findIndex(
+      (e) => !(e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug')),
+    );
+    const lastFloor = els.reduce(
+      (at, e, i) => (e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug') ? i : at),
+      -1,
+    );
+    expect(lastFloor).toBeLessThan(firstOther);
+  });
+
+  it('furnishes them: seven desks, a meeting table, a cooler and a coffee machine, and a way in', () => {
+    expect(shapes('desk')).toHaveLength(7);
+    expect(shapes('meeting-table')).toHaveLength(1);
+    expect(shapes('water-cooler')).toHaveLength(1);
+    expect(shapes('coffee-machine')).toHaveLength(1);
+    expect(shapes('mode-button')).toEqual([
+      expect.objectContaining({ label: 'Walk In', mode: 'avatar' }),
+    ]);
+  });
+
+  it('puts every piece inside a room, clear of its walls', () => {
+    const rooms = shapes('room');
+    for (const e of els) {
+      if (e.type !== 'shape' || ['room', 'mode-button', 'sticker'].includes(e.shape)) continue;
+      const room = rooms.find(
+        (r) =>
+          e.x >= r.x &&
+          e.y >= r.y &&
+          e.x + e.width <= r.x + r.width &&
+          e.y + e.height <= r.y + r.height,
+      );
+      expect(room, `${e.shape} at ${e.x},${e.y}`).toBeDefined();
+      // Nothing straddles a wall line a character could not then reach past.
+      for (const w of roomWalls(room!)) {
+        const vertical = w.a.x === w.b.x;
+        if (vertical) expect(w.a.x <= e.x || w.a.x >= e.x + e.width).toBe(true);
+      }
+    }
+  });
+});
+
+// docs/specs/012-collaboration/virtual-office-template.md "Spaces"
+describe('the space templates', () => {
+  const build = (kind: 'coworking-space' | 'team-pod' | 'all-hands-hall') =>
+    buildTemplate(kind, 0, 0) as Element[];
+  const count = (els: Element[], shape: string) =>
+    els.filter((e) => e.type === 'shape' && e.shape === shape).length;
+
+  it('each lays its floors first and gives a way in', () => {
+    for (const kind of ['coworking-space', 'team-pod', 'all-hands-hall'] as const) {
+      const els = build(kind);
+      const isFloor = (e: Element) =>
+        e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug');
+      const firstOther = els.findIndex((e) => !isFloor(e));
+      expect(els.slice(firstOther).some(isFloor), kind).toBe(false);
+      expect(count(els, 'mode-button'), kind).toBe(1);
+    }
+  });
+
+  it('gives the coworking space eight desks and two single-seat booths', () => {
+    const els = build('coworking-space');
+    expect(count(els, 'desk')).toBe(8);
+    const rooms = els.filter((e) => e.type === 'shape' && e.shape === 'room').map((e) => e.label);
+    expect(rooms).toEqual(['Coworking', 'Booth 1', 'Booth 2']);
+  });
+
+  it('gives the team pod four desks, a table and a board of four stickies', () => {
+    const els = build('team-pod');
+    expect(count(els, 'desk')).toBe(4);
+    expect(count(els, 'meeting-table')).toBe(1);
+    expect(els.filter((e) => e.type === 'sticky')).toHaveLength(4);
+  });
+
+  it('seats thirty-two facing the stage in the all-hands hall, with Bring Focus', () => {
+    const els = build('all-hands-hall');
+    const chairs = els.filter((e) => e.type === 'shape' && e.shape === 'chair');
+    expect(chairs).toHaveLength(32);
+    expect(chairs.every((c) => c.type === 'shape' && c.chairFacing === 's')).toBe(true);
+    expect(count(els, 'focus-button')).toBe(1);
+  });
+});

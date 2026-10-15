@@ -8,6 +8,7 @@
 // SHAPE_DEFAULT_SIZE reads RAIL_* at module-init time, and a runtime read
 // through the index cycle TDZ-crashes plain-Node ESM consumers. Only TYPES
 // come from './index', and those are erased at build.
+import { DEFAULT_ROOM_DOOR, isOfficeShape } from './office';
 import { presetSetup } from '@livediagram/items';
 import {
   DEFAULT_BUTTON_MODE,
@@ -194,6 +195,15 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // chair's scale, so a character fits the seat.
   desk: { width: 120, height: 112 },
   sofa: { width: 152, height: 85 },
+  // The virtual office (docs/specs/009-elements/office.md): each at its drawing's grid, at the chair's scale; a
+  // room is a floor big enough to furnish.
+  room: { width: 480, height: 320 },
+  'meeting-table': { width: 232, height: 168 },
+  plant: { width: 56, height: 88 },
+  bookshelf: { width: 120, height: 132 },
+  'water-cooler': { width: 56, height: 112 },
+  'coffee-machine': { width: 72, height: 96 },
+  rug: { width: 200, height: 120 },
   // Estimate card (docs/specs/012-collaboration/estimate-card.md): the eight fibonacci chips wrap to two rows, and
   // the card has to hold them PLUS the answered avatars PLUS the two footer
   // buttons without clipping — a card that arrives already cut off is the
@@ -377,6 +387,27 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       chairFacing: DEFAULT_SEATING_FACING[kind],
       textSize: 'sm',
       textAlignY: 'bottom',
+      aspectLocked: true,
+    };
+  }
+  // The virtual office (docs/specs/009-elements/office.md). A room is any rectangle, its name on a plate at the
+  // top left of its back wall; everything else keeps its drawing's proportions, a table's label under it.
+  if (kind === 'room') {
+    return {
+      ...base,
+      label: 'Room',
+      roomDoor: DEFAULT_ROOM_DOOR,
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+    };
+  }
+  if (isOfficeShape(kind)) {
+    return {
+      ...base,
+      ...(kind === 'meeting-table'
+        ? { textSize: 'sm' as const, textAlignY: 'bottom' as const }
+        : {}),
       aspectLocked: true,
     };
   }

@@ -10,7 +10,6 @@ const bubble = (over: Partial<SpeechBubble> = {}): SpeechBubble => ({
   id: 'b1',
   from: 'peer',
   own: false,
-  colour: '',
   text: 'hello <b>there</b>',
   tabId: 't1',
   x: 10,
@@ -65,6 +64,35 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
     expect(screen.queryByText('psst')).toBeNull();
   });
 
+  it('draws a bubble whose speaker shows up after their words, while it still flies', () => {
+    const props = {
+      bubbles: [bubble()],
+      activeTabId: 't1',
+      zoom: 0.5,
+      composer: null,
+      self: { name: 'Tom', colour: '#14b8a6' },
+    };
+    // Their words land a frame before their character does.
+    const { rerender } = render(<AvatarSpeechLayer {...props} peers={[]} />);
+    expect(screen.queryByText('hello <b>there</b>')).toBeNull();
+    rerender(<AvatarSpeechLayer {...props} peers={PEERS} />);
+    expect(screen.getByText('hello <b>there</b>')).toBeTruthy();
+    expect(screen.getByText('Sam says: hello <b>there</b>')).toBeTruthy();
+  });
+
+  it('keeps the words of a speaker who walks off once drawn', () => {
+    const props = {
+      bubbles: [bubble()],
+      activeTabId: 't1',
+      zoom: 0.5,
+      composer: null,
+      self: { name: 'Tom', colour: '#14b8a6' },
+    };
+    const { rerender } = render(<AvatarSpeechLayer {...props} peers={PEERS} />);
+    rerender(<AvatarSpeechLayer {...props} peers={[]} />);
+    expect(screen.getByText('hello <b>there</b>')).toBeTruthy();
+  });
+
   it('keeps reading size whatever the zoom', () => {
     const { container } = layer([bubble()]);
     expect(container.innerHTML).toContain('scale(2)');
@@ -81,6 +109,26 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
     expect(onSend).toHaveBeenCalledWith('hi there');
     fireEvent.keyDown(box, { key: 'Escape' });
     expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('refuses a key typed past the limit, but trims text dropped in at once', () => {
+    layer([], { head: { x: 0, y: 0 }, coolingDown: false, onSend: () => true, onCancel: () => {} });
+    const box = screen.getByRole('textbox', { name: 'Message' }) as HTMLTextAreaElement;
+    const put = (value: string, inputType: string) => {
+      // Through the native setter, as a browser writes it, so React sees the change.
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(
+        box,
+        value,
+      );
+      box.dispatchEvent(new InputEvent('input', { bubbles: true, inputType }));
+    };
+    const fifty = Array.from({ length: 50 }, (_, i) => `w${i}`).join(' ');
+    put(fifty, 'insertText');
+    put(`${fifty} x`, 'insertText');
+    expect(box.value).toBe(fifty);
+    put('', 'deleteContentBackward');
+    put(`${fifty} and more besides`, 'insertFromDrop');
+    expect(box.value).toBe(fifty);
   });
 
   it('holds Send while cooling down, and says so', () => {

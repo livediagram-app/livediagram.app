@@ -239,7 +239,9 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
 
 ### Placement
 
-`Placement` in line form is one word, plus an optional `gap:<n>`:
+`Placement` in line form is one word, plus an optional `gap:<n>`; a side or `after` word may take one `inside:<frame>`
+(`within`) and one `align:<x>` (`alignTo`), in any order, and `inside:` with `align:` reads as `{ rel: 'align', ref,
+within }` (`combinePlacements`):
 
 | Word             | Puts the element                                                                                                                                                       |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -252,6 +254,14 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
 | `align:<x>`      | Shares x's centre on the axis where the element's centre is already nearer x's; a tie aligns the column (EO50)                                                         |
 | `at:x,y`         | Top-left at `origin + (x, y)`, exact, never nudged (EO25)                                                                                                              |
 
+- **`alignTo`.** The paired `align:<x>`: resolved by `resolveOne`; the box beside the reference is centred on x's
+  centre across the side (x for `above` / `below`, y for `left-of` / `right-of`) before the nudge; an arrow →
+  `invalid_value`. `alignTo` with `rel: 'inside'` or `'align'` in the JSON form is refused.
+- **`within`.** The paired `inside:<frame>`: resolved by `resolveOne`; not a container → `invalid_value` ("is placed
+  inside <frame>, which is not a frame or lane"); the reference not inside it at any depth (`holdersOf`) →
+  `invalid_value` ("is not inside <frame>"). Otherwise the side placement as given: beside a member, the box joins
+  the container. Two placements that are not such a pair, or `inside:` with `at:`, are a `parse_error` ("one
+  placement (or inside: and align: with a side)"); `within` with `rel: 'inside'` in the JSON form is refused.
 - `gap` defaults to `PLACEMENT_GAP` and is an integer in `[0, PLACEMENT_GAP_MAX]` (EO23); it applies to the four
   sides and `after`. `gap:` with no number, or one that is not a number, is a `parse_error` ("a number after
   gap:"), never 0.
@@ -260,15 +270,17 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
   origin (EO26). `align:` on `add` aligns that default spot.
 - **Nudge.** For the four sides, `after` and the default, while the box overlaps an occupying element, it moves
   along the placement axis (outward; the default moves right) to the occupier's far edge plus the gap. Occupying
-  elements are boxed, not containers, not the moving set itself, on any layer. For the four sides against an
-  element in an unlocked container, the occupiers are only what that container holds at any depth
-  (`frameOccupiers`): what lies outside is moved on by the container's growth. The loop ends: each step passes one
-  occupier.
+  elements are boxed, not containers, not the moving set itself, on any layer. For an `add` on the four sides
+  against an element in an unlocked container, the occupiers are only what that container holds at any depth
+  (`frameOccupiers`): what lies outside is moved on by the container's growth. A `move` grows nothing, so it keeps
+  clear of every occupier on the tab. The loop ends: each step passes one occupier.
 - **Growing to hold.** A box placed beside a container's member, or `inside:` it, grows the container to hold it with
   `HOLD_PAD` (`growContainer`, `grow-container.ts`). On each side it grows, the units of the container's own scope
   that lay past its old edge (within `PAST_EDGE_TOLERANCE`, 2 px) and within its span on the other axis move on by
   the growth, carrying what they hold; a locked one stays. The new box itself never moves, and nothing inside the
-  container moves (EO27).
+  container moves (EO27). When the grown container, or a unit it moved on, now reaches within `HOLD_PAD` of its own
+  holder's edge or past it, that holder (an unlocked frame or lane) grows the same way to hold them, up the nesting;
+  what one level moved on is never moved again by the next (`growScope`).
 - **Move.** `move <selector> <placement>` places the moving set's bounding box as one box and translates every
   member by the same delta; `by=dx,dy` translates by exactly that. A placement relative to an element in the
   moving set is `invalid_value`. A container in the moving set carries `containerContents` ([Carry](#carry)). Carried
@@ -284,7 +296,8 @@ means `newElementId` ([Ids](#ids)).
   square). An unknown kind is coerced as a shape kind with `shape_coerced` (EO17). `arrow` is `invalid_value`
   ("use connect"); `image`, `video`, `freehand` and `path` are `invalid_value` (EO15). The element is the
   factory's (`createShape`, `createText`, `createSticky`, `createTable`, `createAnnotation`, `createLinkCard`) with
-  a new id; shapes and text take `textSize: 'sm'` and `labelBoxSize(label, kind)` (EO28); fields apply as `set`
+  a new id; shapes and text take `textSize: 'sm'` and `labelBoxSize(label, kind)` (EO28), a shape measured at
+  `labelFontPx` of its text size (`GraphLook.fontPx`); fields apply as `set`
   does; it is painted, placed, given the layer of the placement reference when that layer is not locked, else
   `resolveActiveLayerId(layers, null)` (EO29, EO47), and appended to the element order. The JSON form may carry
   `element` (a whole raw element, as the MCP's `ops` mode sends) instead of `kind` and `fields`: it is taken as
@@ -296,7 +309,13 @@ means `newElementId` ([Ids](#ids)).
   those ends become `free` at their current `endpointPosition` instead, warning `arrows_freed`. A locked arrow in
   that cascade is `element_locked` (EO47). A `mindParentId` naming a removed element is removed (EO30).
 - **`move <selector> <placement> | by=dx,dy [all]`.** As [Placement](#placement). Pinned arrows follow by
-  construction; `rebindArrowAnchorsAfterMove` runs in finalise.
+  construction; `rebindArrowAnchorsAfterMove` runs in finalise, and an arrow it re-anchors with exactly one end's
+  box moved is `rerouted` (EO31: route fields dropped, `orthogonalBends` for an angled one). A target whose container (`holdersOf`, the
+  container itself not moving) no longer holds it after the move gives the room back (`giveBackRoom`): on the left,
+  right and bottom, where the target's old box reached past the bounds of what the container still holds, that edge
+  comes in to those bounds plus `HOLD_PAD` (32, shared with growing to hold), never past where it was, through
+  `growContainer`, so what lay past the edge moves back; reported as `narrower` / `shorter`. A container left
+  empty, or a locked one, is left as it is.
 - **`connect <a> -> <b> [id=] [label=…] [line=…] [again]`.** `a` and `b` are words resolving to boxed elements.
   An existing arrow from a to b (pinned `from` a, pinned `to` b) without `again` is `arrow_exists`, naming it; an
   arrow from b to a does not count; `a` equal to `b` is `invalid_value`. Otherwise a new arrow
@@ -307,7 +326,9 @@ means `newElementId` ([Ids](#ids)).
   arrow's `curveOffset`, `curvePoints` and `elbowOffset` are removed (EO31). Ends that would land on one box (a named end onto the box
   the other end is pinned to, or both named alike) are `invalid_value` ("an arrow joins two different boxes"), as `connect a -> a` is.
 - **`set` on an arrow's `from` or `to`** drops its route the same way (EO31), unless that `set` writes a route field
-  itself: a route kept from the old ends was drawn from the new anchor through boxes and along their edges.
+  itself: a route kept from the old ends was drawn from the new anchor through boxes and along their edges. An
+  angled arrow then takes `orthogonalBends` between its new ends, along the axis its start anchor faces, so it
+  meets both ends square rather than drawing one L.
 - **`insert <kind> [id=] key=value… between <a> <b>`.** The arrows pinned from a to b: none is `not_connected`,
   several is `target_ambiguous` naming them, with the hint "rewire one of them by its ref instead". The node is
   built as `add` builds it, then:

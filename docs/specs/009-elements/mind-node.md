@@ -561,7 +561,8 @@ is read forgivingly, so a list pasted from elsewhere works:
   map is laid out again** in its flow, in the outline's order (the order is the outline's,
   never the old drawing's), with the root where it was, its connectors re-anchored and other trees
   in the way moved aside, exactly as Tidy Map does. A balanced map deals its branches to the side
-  with less, in order.
+  with less, in order, weighing each branch by the room its whole subtree takes (by the branch boxes alone,
+  every branch counted the same, and a big branch beside a small one left the map lopsided).
 - A save that only changes text or formatting leaves every node where it is: no layout runs, so
   a hand-arranged map keeps its arrangement.
 - Nothing changes and nothing is committed when the outline matches the map.

@@ -3,6 +3,7 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livediagram/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
+import type { RoomDoor } from './office';
 import type { Finish } from './finish';
 import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@livediagram/items';
 import type { EventStormingNoteKind } from './event-storming';
@@ -283,6 +284,9 @@ export type ShapeElement = {
   // deliberately NOT here — occupancy rides the avatar presence op, so a chair
   // can't be left stuck by someone who disconnected.
   chairFacing?: ChairFacing;
+  // Room (docs/specs/009-elements/office.md "Room"): the wall its doorway is in, or 'none' for a closed room.
+  // Absent = DEFAULT_ROOM_DOOR ('s', the front wall).
+  roomDoor?: RoomDoor;
   // --- The collaboration family (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md) ---------------------
   // One value per participant (docs/specs/012-collaboration/participant-responses.md), shared by the estimate card and the
   // temperature check. At most one entry per participant: re-casting REPLACES,
@@ -364,6 +368,8 @@ export type ShapeElement = {
   pieAnimSpeed?: AnimationSpeed;
   pieAnimRepeat?: boolean;
   chartLegend?: boolean;
+  // Show Values (docs/specs/009-elements/pie-chart.md): each mark's number printed on the chart. Absent = off.
+  chartValues?: boolean;
   // Legend placement (docs/specs/009-elements/pie-chart.md); ignored when `chartLegend` is false. Missing /
   // undefined === 'right', the historical default.
   chartLegendPosition?: ChartLegendPosition;

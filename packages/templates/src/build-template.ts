@@ -5,6 +5,8 @@
 // top (apps/live/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
+import { buildVirtualOffice } from './template-builders-office';
+import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
 import type { Element, Tab } from '@livediagram/document';
 import type { TemplateKind } from './templates';
 import {
@@ -237,6 +239,14 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildPubQuiz(cx, cy);
     case 'icebreaker-questions':
       return buildIcebreakerQuestions(cx, cy);
+    case 'virtual-office':
+      return buildVirtualOffice(cx, cy);
+    case 'coworking-space':
+      return buildCoworkingSpace(cx, cy);
+    case 'team-pod':
+      return buildTeamPod(cx, cy);
+    case 'all-hands-hall':
+      return buildAllHandsHall(cx, cy);
     case 'two-truths-and-a-lie':
       return buildTwoTruthsAndALie(cx, cy);
     case 'would-you-rather':

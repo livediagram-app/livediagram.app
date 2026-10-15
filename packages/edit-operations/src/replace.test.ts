@@ -202,6 +202,16 @@ describe('applyReplace refusals', () => {
     expect(refusal({ graph: { nodes: 'a', edges: [] } }).details[0]).toMatch(/^graph.nodes/);
   });
 
+  it('refuses a graph it cannot draw as asked, as the MCP does', () => {
+    const graph = {
+      style: 'lanes',
+      nodes: [{ id: 'a' }, { id: 'b' }],
+      edges: [],
+      groups: [{ id: 'g', label: 'Lane', members: ['a'] }],
+    };
+    expect(refusal({ graph }).details[0]).toMatch(/every node in a lane: "b"/);
+  });
+
   it('refuses Mermaid it cannot read as parse_error, and Mermaid that is not text', () => {
     expect(refusal({ mermaid: 'not a diagram' }).code).toBe('parse_error');
     expect(refusal({ mermaid: 42 }).details).toEqual(['mermaid: expected a string']);

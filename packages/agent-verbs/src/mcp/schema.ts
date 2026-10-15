@@ -80,7 +80,9 @@ const CONTENT_KINDS =
   '[{ "name", "values" }] with one value per category. "chartVariant" picks the chart type: ' +
   'on "bar-chart" "horizontal" draws a Bar chart (absent: upright columns); on "line-chart" "area" ' +
   'fills each series down to zero and "scatter" draws points only, at x = each category read as a ' +
-  'number; on "pie-chart" "doughnut" opens the middle. A chart draws no title (a caption is a ' +
+  'number; on "pie-chart" "doughnut" opens the middle. "chartValues": true prints each mark\'s ' +
+  "number on the chart (a pie's as percentages when its values add up to 100; a column chart also " +
+  'names each column under it, so "chartLegend": false can drop the key). A chart draws no title (a caption is a ' +
   'separate "text" element) and draws sample data when its data is empty. ' +
   'shape "sankey": a Sankey diagram, bands as wide as the amount they carry, laid out in columns ' +
   'by itself. "sankeyFlows" is [{ "from", "to", "value" }] with node NAMES (the nodes are the ' +
@@ -121,8 +123,7 @@ const CONTENT_KINDS =
   'shape "stack": a container that lines up the elements whose centre is inside it; "stackDirection", ' +
   '"stackColumns" (2 to 6, grid), "stackGap" and "stackPadding" (0 to 64), "stackAlign"; place children ' +
   'anywhere inside and the editor lays them out. ' +
-  'An org chart is mind nodes with "mindLook" person: "label" the name, "pageSubtitle" the role, ' +
-  '"mindParentId" the manager, "mindFlow" downward on the root. ' +
+  'An org chart is quickest as a graph with style "tree" and a "role" on each node (see the graph tool). ' +
   'shape "sequence": a UML sequence diagram in one element; "sequenceParticipants" is [{ "id", "label", ' +
   '"actor"? }] (2 to 12, left to right), "sequenceMessages" [{ "from", "to", "label", "kind": call | async | ' +
   'reply }] (up to 60, top to bottom, from === to a self-call), "sequenceNumbered" true numbers them. It lays ' +
@@ -143,7 +144,9 @@ const STYLE_FIELDS =
   'shown on the element); on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
   '"fontWeight" (400, 500, 700), "textCase" (upper, lower), "textArc" (bends one line along a circle, -360 to ' +
   '360 degrees, positive bowing up: a badge\u2019s top line 180, its bottom -180); on an arrow "label", ' +
-  '"strokeStyle", "arrowEnds", "arrowheadShape". A field a type ' +
+  '"strokeStyle", "arrowEnds", "arrowheadShape" (an ER line\u2019s ends: one, zero-or-one, many, zero-or-many, ' +
+  'one-or-many), "arrowheadStartShape" (the start\u2019s, when it differs: a one at one table, a many at the ' +
+  'other). A Mermaid erDiagram draws these ends itself. A field a type ' +
   'does not have, or a value off its list, is refused naming what it takes. ' +
   'Facilitation kinds and what they hold: "session-button" a "session" ({"tool": "timer" with "minutes", ' +
   '"stopwatch", "vote" with "dots", or "poll" with "question" and "options"}), drawn as what pressing it does ' +
@@ -444,7 +447,8 @@ const graphField = z
             .optional()
             .describe(
               `Shape kind (${shapeKinds}); default "square". Use "diamond" for a ` +
-                'decision, "cylinder" for a datastore, "stadium" for start/end.',
+                'decision, "cylinder" for a datastore, "stadium" for start/end. A "circle" with no label is a ' +
+                "small solid dot, a state machine's start or end.",
             ),
           note: z
             .string()
@@ -452,6 +456,13 @@ const graphField = z
             .describe(
               'Detail behind the heading: longer explanation, context or a description. ' +
                 "Stored as the element's note, which the editor shows on the element.",
+            ),
+          role: z
+            .string()
+            .optional()
+            .describe(
+              "A person's role: the node draws as the org-chart template's person card, the label (their name) " +
+                'in bold over the role, with a person icon unless "icon" names another.',
             ),
           group: z
             .string()
@@ -509,6 +520,13 @@ const graphField = z
             .optional()
             .describe(
               'The stroke: solid (default), dashed (an event, a reply, an optional path) or thick.',
+            ),
+          ends: z
+            .enum(['to', 'none', 'both', 'from'])
+            .optional()
+            .describe(
+              'Which ends carry an arrowhead. Default: "to", except in a tree, whose lines show belonging and ' +
+                'carry none.',
             ),
         }),
       )
@@ -593,7 +611,8 @@ const mermaidField = z
   .optional()
   .describe(
     'The diagram as Mermaid text: a flowchart (graph / flowchart, with subgraphs), a state ' +
-      'diagram (stateDiagram), an ER diagram (erDiagram) or a sequence diagram (sequenceDiagram: ' +
+      "diagram (stateDiagram), an ER diagram (erDiagram: crow's-foot ends from the cardinality tokens, " +
+      'an entity alias in brackets is its title, BOOK_AUTHOR[Book author]) or a sequence diagram (sequenceDiagram: ' +
       'participant / actor, ->> calls, -) async, -->> replies, +/- activations, Note over, alt/else, loop, ' +
       'opt, par, autonumber, title). Parsed into the same graph as the "graph" input: subgraphs become ' +
       'groups, the direction is kept, and the same label limit applies; a sequence diagram is drawn with ' +
@@ -825,7 +844,10 @@ export const updateDocumentShape = {
         '<frame>; order <sel> front|back; layout <sel> [style=flow|tree|mindmap] [direction=down|right]. ' +
         'Selectors: a ref or id, "Label text", type:sticky, shape:diamond, in:<frame>, a->b, from:<x>, to:<x>, ' +
         'downstream:<x>. Placement: right-of:<x> left-of:<x> above:<x> below:<x> [gap:<n>], after:<x>, ' +
-        'inside:<frame>, align:<x>, at:x,y. Keys: label= note= shape= fill=theme|red|orange|yellow|green|blue|' +
+        'inside:<frame>, align:<x>, at:x,y; inside:<frame> right-of:<x> places beside x in that frame. A box placed ' +
+        'beside one inside a frame or lane joins it (the container grows); to stay outside, place it against the ' +
+        'frame itself (below:<frame>), with align:<x> to line it up with a member (below:<frame> align:<x>). ' +
+        'Keys: label= note= shape= fill=theme|red|orange|yellow|green|blue|' +
         'violet (a sticky: classic|lemon|peach|rose|lilac|sky|mint|teal|slate) text=sm|md|lg border=solid|dashed|' +
         'dotted line=…, or any stored field by name. Values with spaces are quoted: label="Sign in". ' +
         'Coordinates are relative to the content origin, as the layout view prints them.',

@@ -14,10 +14,19 @@
 import { chartFrame, type ChartLegendRect } from './chart-frame';
 import { chartTextInk } from './chart-ink';
 import { AREA_FILL_OPACITY, barMarks, lineMarks, pieMarks } from './chart-marks';
+import {
+  barValueLabels,
+  chartValueFontPx,
+  lineValueLabels,
+  pieValueLabels,
+  type ChartValueLabel,
+} from './chart-values';
+import { labelOn } from './readable-colour';
 import { chartTypeOf, lineVariantOf } from './chart-types';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
 import type { BoxedElement, ShapeElement } from './index';
 import { legendFontPx } from './label-font';
+import { EXPORT_DEFAULT_FONT } from './svg-render-labels';
 import { r2, xmlEscape } from './svg-render-primitives';
 
 type Chart = BoxedElement & { type: 'shape' };
@@ -38,7 +47,7 @@ function svgChartLegend(
 ): string {
   const vertical = legend.pos === 'left' || legend.pos === 'right';
   if (!legend.show || (vertical ? legend.w < 48 : legend.h < 18)) return '';
-  const font = fontFamily ? ` font-family="${xmlEscape(fontFamily)}"` : '';
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   // Text Size (docs/specs/009-elements/pie-chart.md), on the canvas's scale; the swatch and row pitch keep
   // their proportion to it, as ChartLegend's do.
   const fontPx = legendFontPx(el.textSize);
@@ -91,6 +100,24 @@ function svgChartLegend(
   return parts.join('');
 }
 
+// Show Values (docs/specs/009-elements/pie-chart.md): each number as text, a wedge's in the ink that reads on it.
+function svgValueLabels(
+  labels: readonly ChartValueLabel[],
+  textColor: string,
+  fillOf: (i: number) => string,
+  fontPx: number,
+  fontFamily?: string,
+): string {
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
+  return labels
+    .map((l) => {
+      const ink = l.onMark !== undefined ? labelOn(fillOf(l.onMark)) : textColor;
+      const weight = l.category ? '' : ' font-weight="600"';
+      return `<text x="${r2(l.x)}" y="${r2(l.y)}" text-anchor="${l.anchor}"${font} font-size="${fontPx}"${weight} fill="${xmlEscape(ink)}">${xmlEscape(l.text)}</text>`;
+    })
+    .join('');
+}
+
 /** A pie chart (or doughnut): wedges clockwise from twelve o'clock, plus the key. */
 export function svgPieChart(
   el: Chart,
@@ -103,7 +130,8 @@ export function svgPieChart(
   const textColor = chartTextInk(labelColor, ground);
   const { data, colorAt, area, legend } = chartFrame(el as ShapeElement, palette, ground);
   const doughnut = chartTypeOf(el) === 'doughnut';
-  const { cx, cy, rad, wedges } = pieMarks(area, data, doughnut, el.x, el.y);
+  const pie = pieMarks(area, data, doughnut, el.x, el.y);
+  const { cx, cy, rad, wedges } = pie;
   const marks = wedges
     .map((wedge, i) => {
       const fill = xmlEscape(colorAt(i, data[i]!));
@@ -113,7 +141,17 @@ export function svgPieChart(
       return `<path d="${wedge.d}"${doughnut ? ' fill-rule="evenodd"' : ''} fill="${fill}"/>`;
     })
     .join('');
-  return marks + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily);
+  const px = chartValueFontPx(el.textSize);
+  const values = el.chartValues
+    ? svgValueLabels(
+        pieValueLabels(pie, data, px),
+        textColor,
+        (i) => colorAt(i, data[i]!),
+        px,
+        fontFamily,
+      )
+    : '';
+  return marks + values + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily);
 }
 
 /** A column chart (or, horizontal, a bar chart): a baseline and one bar per value, plus the key. */
@@ -127,7 +165,9 @@ export function svgBarChart(
 ): string {
   const textColor = chartTextInk(labelColor, ground);
   const { data, colorAt, area, legend } = chartFrame(el as ShapeElement, palette, ground);
-  const { baseline: b, bars } = barMarks(area, data, chartTypeOf(el) === 'bar', el.x, el.y);
+  const horizontal = chartTypeOf(el) === 'bar';
+  const barM = barMarks(area, data, horizontal, el.x, el.y);
+  const { baseline: b, bars } = barM;
   const baseline = `<path d="M ${r2(b.x1)} ${r2(b.y1)} L ${r2(b.x2)} ${r2(b.y2)}" stroke="${AXIS}" stroke-width="1"/>`;
   const rects = bars
     .map(
@@ -135,7 +175,19 @@ export function svgBarChart(
         `<rect x="${r2(bar.x)}" y="${r2(bar.y)}" width="${r2(bar.w)}" height="${r2(bar.h)}" rx="${r2(bar.rx)}" fill="${xmlEscape(colorAt(i, data[i]!))}"/>`,
     )
     .join('');
-  return baseline + rects + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily);
+  const px = chartValueFontPx(el.textSize);
+  const values = el.chartValues
+    ? svgValueLabels(
+        barValueLabels(barM, data, horizontal, px),
+        textColor,
+        (i) => colorAt(i, data[i]!),
+        px,
+        fontFamily,
+      )
+    : '';
+  return (
+    baseline + rects + values + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily)
+  );
 }
 
 /** A line, area or scatter chart: axes, its marks per series, the x labels, the key. */
@@ -172,7 +224,7 @@ export function svgLineChart(
       return fill + line + dots;
     })
     .join('');
-  const font = fontFamily ? ` font-family="${xmlEscape(fontFamily)}"` : '';
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   const labels = m.labels
     .map(
       (l) =>
@@ -180,7 +232,15 @@ export function svgLineChart(
     )
     .join('');
   const legendItems = series.map((s) => ({ label: s.name, value: 0, color: s.color }));
+  const px = chartValueFontPx(el.textSize);
+  const values = el.chartValues
+    ? svgValueLabels(lineValueLabels(m, series), textColor, () => textColor, px, fontFamily)
+    : '';
   return (
-    axes + marks + labels + svgChartLegend(el, legendItems, colorAt, legend, textColor, fontFamily)
+    axes +
+    marks +
+    values +
+    labels +
+    svgChartLegend(el, legendItems, colorAt, legend, textColor, fontFamily)
   );
 }

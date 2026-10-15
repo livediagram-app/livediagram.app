@@ -38,6 +38,10 @@ import {
   isSeatingShape,
   seatingFacing,
   type SeatingKind,
+  DEFAULT_ROOM_DOOR,
+  ROOM_DOOR_LABELS,
+  ROOM_DOORS,
+  type RoomDoor,
 } from '@livediagram/document';
 import { DateInput } from '@livediagram/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
@@ -328,7 +332,12 @@ export function DecisionMenuSection({
 const FACING_ARROW: Record<ChairFacing, string> = { n: '↓', e: '←', s: '↑', w: '→' };
 
 // The section's title and hint name the furniture it is on (docs/specs/009-elements/chair.md).
-const SEATING_NOUN: Record<SeatingKind, string> = { chair: 'Chair', desk: 'Desk', sofa: 'Sofa' };
+const SEATING_NOUN: Record<SeatingKind, string> = {
+  chair: 'Chair',
+  desk: 'Desk',
+  sofa: 'Sofa',
+  'meeting-table': 'Meeting Table',
+};
 
 export function ChairMenuSection({
   target,
@@ -364,6 +373,45 @@ export function ChairMenuSection({
       <p className="px-2 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
         Which way somebody sitting here faces. Walk an Avatar-mode character into the{' '}
         {noun.toLowerCase()} to sit down.
+      </p>
+    </MenuAccordionSection>
+  );
+}
+
+// --- Room (docs/specs/009-elements/office.md "Room") -------------------------------------------------
+
+const DOOR_GLYPH: Record<RoomDoor, string> = { n: '↑', e: '→', s: '↓', w: '←', none: '✕' };
+
+export function RoomMenuSection({
+  target,
+  sectionProps,
+  onSetDoor,
+}: {
+  target: ShapeElement | undefined;
+  sectionProps: (id: string) => { open: boolean; onToggle: () => void };
+  onSetDoor: (door: RoomDoor) => void;
+}) {
+  const door = target?.roomDoor ?? DEFAULT_ROOM_DOOR;
+  return (
+    <MenuAccordionSection title="Room" icon={<ToolsMenuGlyph />} {...sectionProps('room')}>
+      <MenuTileGrid cols={3}>
+        {ROOM_DOORS.map((d) => (
+          <MenuTile
+            key={d}
+            icon={
+              <span aria-hidden className="text-[13px] leading-none">
+                {DOOR_GLYPH[d]}
+              </span>
+            }
+            label={ROOM_DOOR_LABELS[d]}
+            active={door === d}
+            onClick={() => onSetDoor(d)}
+          />
+        ))}
+      </MenuTileGrid>
+      <p className="px-2 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+        Which wall the doorway is in. Avatar-mode characters walk through the doorway and nowhere
+        else; with None, only a portal gets you in.
       </p>
     </MenuAccordionSection>
   );

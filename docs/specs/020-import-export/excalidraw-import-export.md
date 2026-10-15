@@ -205,8 +205,9 @@ Properties, applied wherever present:
 - **Arrowheads**: `arrow` to `arrow`, `bar` to `bar`, `triangle` to
   `triangle`, `triangle_outline` to `triangle-hollow`, `dot` and `circle` to
   `circle`, `circle_outline` to `circle-hollow`, `diamond` to `diamond`,
-  `diamond_outline` to `diamond-hollow`; `crowfoot_one`, `crowfoot_many` and
-  `crowfoot_one_or_many` (and any unknown head) to `arrow` with a note. On an `arrow`, a missing
+  `diamond_outline` to `diamond-hollow`, `crowfoot_one` to `one`, `crowfoot_many` to `many`,
+  `crowfoot_one_or_many` to `one-or-many`; any unknown head to `arrow` with a note. Each end reads its own
+  head (`startArrowhead` to `arrowheadStartShape`). On an `arrow`, a missing
   `endArrowhead` field reads as Excalidraw's default `arrow`; `null` is no head.
 - **Bindings**: only the bound element's id is read. Excalidraw's `fixedPoint`
   and `mode` (`orbit`, `inside`) are not: the landing pins each bound end to the

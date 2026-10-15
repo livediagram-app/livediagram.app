@@ -2,7 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, DRINK_HOLD_MS, type Element } from '@livediagram/document';
 import { DEFAULT_AVATAR_CONFIG } from '@/lib/avatar-config';
 import { FENCE_REACH } from '@/lib/avatar-fence';
 import { useAvatarWalk } from './useAvatarWalk';
@@ -73,5 +73,96 @@ describe('useAvatarWalk with a fence', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+// docs/specs/009-elements/office.md "Using it": a drink is presence, held for a minute, put down on leaving.
+describe('useAvatarWalk with a drink', () => {
+  it('holds a drink, tells peers at once, and puts it down after a minute', () => {
+    vi.useFakeTimers();
+    try {
+      const { result, onPresence } = setup();
+      act(() => result.current.teleportTo({ x: 50, y: 50 }));
+      onPresence.mockClear();
+      act(() => result.current.giveDrink('coffee'));
+      expect(result.current.holding).toBe('coffee');
+      expect(onPresence).toHaveBeenLastCalledWith(expect.objectContaining({ holding: 'coffee' }));
+      // Another drink swaps the cup and restarts the minute.
+      act(() => vi.advanceTimersByTime(DRINK_HOLD_MS - 1000));
+      act(() => result.current.giveDrink('water'));
+      act(() => vi.advanceTimersByTime(DRINK_HOLD_MS - 1000));
+      expect(result.current.holding).toBe('water');
+      act(() => vi.advanceTimersByTime(1000));
+      expect(result.current.holding).toBeNull();
+      expect(onPresence).toHaveBeenLastCalledWith(expect.objectContaining({ holding: null }));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('puts the drink down on leaving the mode', () => {
+    const { result, rerender } = setup();
+    act(() => result.current.teleportTo({ x: 50, y: 50 }));
+    act(() => result.current.giveDrink('water'));
+    rerender({ active: false });
+    rerender({ active: true });
+    expect(result.current.holding).toBeNull();
+  });
+
+  it('gives a drink on arriving at a machine, once', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+    try {
+      const cooler = { ...createShape('water-cooler', 100, 100), id: 'cooler' };
+      const onWalkIntoDrink = vi.fn();
+      const hook = renderHook(() =>
+        useAvatarWalk({
+          active: true,
+          config: DEFAULT_AVATAR_CONFIG,
+          onToggleGender: vi.fn(),
+          elements: [cooler],
+          mainRef: { current: null },
+          wrapperRef: { current: null },
+          viewportOffset: { x: 0, y: 0 },
+          viewportZoom: 1,
+          setViewportOffset: vi.fn(),
+          onWalkIntoDrink,
+        }),
+      );
+      act(() => hook.result.current.teleportTo({ x: 128, y: 400 }));
+      act(() => hook.result.current.walkTo({ x: 128, y: 190 }));
+      act(() => vi.advanceTimersByTime(3000));
+      expect(onWalkIntoDrink).toHaveBeenCalledTimes(1);
+      expect(onWalkIntoDrink).toHaveBeenCalledWith(expect.objectContaining({ id: 'cooler' }));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+// docs/specs/008-canvas/avatar-mode.md "Status": a status rides the presence, and a change is told at once.
+describe('useAvatarWalk with a status', () => {
+  it('publishes a status change straight away', () => {
+    const onPresence = vi.fn();
+    const hook = renderHook(
+      ({ status }: { status: 'focus' | 'away' | null }) =>
+        useAvatarWalk({
+          active: true,
+          config: DEFAULT_AVATAR_CONFIG,
+          status,
+          onToggleGender: vi.fn(),
+          elements: [],
+          mainRef: { current: null },
+          wrapperRef: { current: null },
+          viewportOffset: { x: 0, y: 0 },
+          viewportZoom: 1,
+          setViewportOffset: vi.fn(),
+          onPresence,
+        }),
+      { initialProps: { status: null as 'focus' | 'away' | null } },
+    );
+    act(() => hook.result.current.teleportTo({ x: 50, y: 50 }));
+    onPresence.mockClear();
+    hook.rerender({ status: 'focus' });
+    expect(onPresence).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'focus' }));
   });
 });

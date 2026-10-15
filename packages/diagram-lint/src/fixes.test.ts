@@ -41,6 +41,8 @@ const DRAWINGS: Element[][] = [
     arrow('1', 'a', 'x'),
     arrow('2', 'b', 'y'),
     arrow('3', 'a', 'z'),
+    // One arrow inside: a frame none of whose arrows run inside is a role group, split by design.
+    arrow('4', 'a', 'b'),
   ],
   [box('a', 0, 0, { label: 'Same' }), box('b', 300, 0, { label: 'same' })],
   [

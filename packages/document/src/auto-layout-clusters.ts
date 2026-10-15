@@ -20,6 +20,8 @@ import {
 import { unionRects, type Rect } from './geometry-primitives';
 import { bowReciprocalEdges } from './arrow-reciprocal';
 import { faceGroupEdges, headingLead, seatByMembers } from './auto-layout-cluster-seats';
+import { lineUpStackedFrames } from './auto-layout-cluster-stack';
+import { seatMembersByNeighbours } from './auto-layout-cluster-members';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // Space between a frame's border and its members: the top band is deeper so
@@ -229,10 +231,20 @@ export function layoutClusteredGraph(
   const placedNodes: BoxedElement[] = freeNodes.map((n) => placedById.get(n.id) ?? n);
   const placedFrames: BoxedElement[] = [];
   for (const c of clusters) {
-    const frame = placedById.get(c.id)!;
-    placedFrames.push(frame);
+    const placed = placedById.get(c.id)!;
     const members = memberEls.get(c.id)!;
     const b = bbox(members);
+    // The lead was laid out both sides, so the contracted layout lined the members up on the frame's middle; the
+    // heading needs it on its own side only. Given back on the far side, a long heading no longer framed two boxes
+    // in twice the room they need.
+    // An edge to or from the group itself leaves its frame's middle, which must stay on the members' line: kept
+    // centred there.
+    const framed = graph.edges.some((e) => e.from === c.id || e.to === c.id);
+    const frame =
+      (direction ?? 'TB') === 'TB' && !framed
+        ? { ...placed, width: placed.width - lead.get(c.id)! }
+        : placed;
+    placedFrames.push(frame);
     const dx = frame.x + FRAME_PAD + lead.get(c.id)! - b.x;
     const dy = frame.y + FRAME_TOP - b.y;
     for (const m of members) placedNodes.push({ ...m, x: m.x + dx, y: m.y + dy });
@@ -241,7 +253,19 @@ export function layoutClusteredGraph(
   // 3b. Within each group, order members that share a rank by where their
   // outside neighbours ended up, so edges into the group don't cross it.
   orderMembersByNeighbours(clusters, placedNodes, placedFrames, graph, direction ?? 'TB');
-  // 3c. Each node outside the groups that members link to sits by those members, not by the group's middle.
+  // 3c. A row of members with no lines among them sits by the outside nodes they link to.
+  seatMembersByNeighbours(
+    placedNodes,
+    placedFrames,
+    clusterOf,
+    graph,
+    direction ?? 'TB',
+    FRAME_PAD,
+  );
+  // 3d. Groups stacked down the flow keep the spine straight: a stage's one entry lines up with what feeds it. Before
+  // 3e: it moves a stage's members, and a node seated by them first was left behind.
+  lineUpStackedFrames(placedFrames, placedNodes, clusterOf, graph, direction ?? 'TB');
+  // 3e. Each node outside the groups that members link to sits by those members, not by the group's middle.
   seatByMembers(placedNodes, placedFrames, clusterOf, graph, direction ?? 'TB');
 
   // 4. Real arrows over the final geometry: every edge whose endpoints name

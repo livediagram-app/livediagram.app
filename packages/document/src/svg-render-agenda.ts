@@ -59,10 +59,11 @@ export function agendaFitHeight(el: {
   const items = el.agendaItems ?? [];
   if (items.length === 0) return el.height;
   const design = SHAPE_DEFAULT_SIZE.agenda!;
-  const steps = items.reduce(
-    (sum, item, i) => sum + stepOf(item, i, el.agendaCurrent, design.width).rowH,
-    0,
-  );
+  // Room for whichever segment becomes the current one (its taller row), not only the one that is now: the card is
+  // fitted when its segments are written, and a session that starts later must not push the last one off again.
+  const steps =
+    items.reduce((sum, item, i) => sum + stepOf(item, i, undefined, design.width).rowH, 0) +
+    CURRENT_EXTRA;
   const needed = Math.ceil(((FIRST_STEP_Y + steps + LAST_ROW_SLACK) * el.width) / design.width);
   return Math.max(el.height, needed);
 }

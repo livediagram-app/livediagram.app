@@ -2,6 +2,7 @@
 // snapshot", step 4): an SVG drawn as an image loads nothing, so every picture in the clone becomes a `data:` URL
 // of the bitmap the canvas already shows. What cannot be sampled shows still, as in a PNG export: a video its
 // poster, a drawn <canvas> its current bitmap, a web embed nothing.
+import { blobToDataUrl } from '@/lib/blob-data-url';
 
 // A see-through 1 x 1 PNG: a picture that cannot be read leaves its place empty rather than stopping the export.
 export const TRANSPARENT_PIXEL =
@@ -29,15 +30,6 @@ export function createImageInliner(fetchImpl: typeof fetch = fetch): ImageInline
       return hit;
     },
   };
-}
-
-function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
 }
 
 const URL_IN_CSS = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;

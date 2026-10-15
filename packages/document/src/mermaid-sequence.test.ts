@@ -5,6 +5,7 @@ import {
   SEQUENCE_MAX_PARTICIPANTS,
 } from './mermaid-sequence';
 import { layoutGraph, graphFromMermaid } from './graph-input';
+import { arrowLabelPass } from './arrow-label-layout';
 import type { ArrowElement, Element } from './index';
 
 // docs/specs/020-import-export/mermaid.md "Sequence diagrams (agents)".
@@ -107,6 +108,23 @@ describe('layoutSequence', () => {
     expect(messages.every((m) => m.routeBehind === false)).toBe(true);
   });
 
+  it("fits a long message's label in its first gap on one line, its plate clear of its own line", () => {
+    const long = 'GET /authorize (code_challenge, S256, state)';
+    const g = graphFromMermaid(
+      ['sequenceDiagram', 'participant A', 'participant B', 'participant C', `A->>C: ${long}`].join(
+        '\n',
+      ),
+    );
+    if (!g.ok) throw new Error(g.error);
+    const els = layoutGraph(g.graph, { makeEdgeId: () => 'x' });
+    const message = arrows(els).find((a) => a.label === long)!;
+    const pass = arrowLabelPass(els);
+    const layout = pass.layouts.get(message.id)!;
+    expect(layout.lines).toHaveLength(1);
+    // Above its line, never over it: no knockout cuts the message.
+    expect(layout.knockout).toBeNull();
+  });
+
   it('draws the fragment as a frame with its operator, the actor as a stick figure, the note as a sticky', () => {
     const els = draw();
     expect(els.some((e) => e.type === 'shape' && e.shape === 'frame' && e.label === 'alt')).toBe(
@@ -188,6 +206,50 @@ describe('layoutSequence', () => {
     expect(inner.x + inner.width).toBeLessThan(outer.x + outer.width);
   });
 
+  const framesOf = (lines: string[]) => {
+    const g = graphFromMermaid(['sequenceDiagram', ...lines].join('\n'));
+    if (!g.ok) throw new Error(g.error);
+    const els = layoutGraph(g.graph) as (Element & { x: number; width: number })[];
+    return {
+      els,
+      frame: (op: string) =>
+        els.find((e) => e.type === 'shape' && e.shape === 'frame' && e.label === op)!,
+    };
+  };
+
+  it('holds a note beside its last lifeline whole', () => {
+    const { els, frame } = framesOf([
+      'participant A',
+      'participant B',
+      'participant C',
+      'loop retry',
+      'A->>B: try',
+      'Note right of B: Backs off for longer each time it fails',
+      'end',
+    ]);
+    const note = els.find((e) => e.type === 'sticky')!;
+    const f = frame('loop');
+    expect(note.x).toBeGreaterThan(f.x);
+    expect(note.x + note.width).toBeLessThan(f.x + f.width);
+  });
+
+  it('keeps a nested fragment a step inside its outer one when their lifelines differ', () => {
+    const { frame } = framesOf([
+      'participant A',
+      'participant B',
+      'participant C',
+      'alt ok',
+      'A->>C: check',
+      'opt cached',
+      'B->>C: reuse',
+      'end',
+      'end',
+    ]);
+    const [outer, inner] = [frame('alt'), frame('opt')];
+    expect(inner.x).toBeGreaterThan(outer.x);
+    expect(inner.x + inner.width).toBeLessThan(outer.x + outer.width);
+  });
+
   it("sets a guard right of its fragment's first lifeline, never across it", () => {
     const g = graphFromMermaid(
       [
@@ -224,5 +286,71 @@ describe('layoutSequence', () => {
     const msgs = arrows(els).filter((a) => a.label);
     expect(msgs.map((m) => m.label)).toEqual(['GET /', '200']);
     expect(msgs[1]!.strokeStyle).toBe('dashed');
+  });
+});
+
+describe('late activations and notes', () => {
+  const lay = (src: string) => {
+    const g = graphFromMermaid(src);
+    if (!g.ok) throw new Error(g.error);
+    let n = 0;
+    return layoutGraph(g.graph, { makeEdgeId: () => `y${n++}` });
+  };
+
+  it('ends a message on the bar an activate line after it starts, not on the lifeline inside it', () => {
+    const els = lay(`sequenceDiagram
+  participant A
+  participant B
+  A->>B: Open
+  activate B
+  B-->>A: Done
+  deactivate B`);
+    const open = els.find((e): e is ArrowElement => e.type === 'arrow' && e.label === 'Open')!;
+    // B's activation bar: the 14px box on B's lifeline.
+    const bar = els.find((e) => e.type === 'shape' && (e as { width: number }).width === 14) as
+      { x: number } | undefined;
+    expect(bar).toBeDefined();
+    expect(open.to.kind === 'free' && open.to.x).toBe(bar!.x);
+  });
+
+  it('sizes a one-line note to its text and centres it', () => {
+    const els = lay(`sequenceDiagram
+  participant A
+  participant B
+  A->>B: Hi
+  Note right of B: Short`);
+    const note = els.find((e) => e.type === 'sticky') as Element & {
+      height: number;
+      textAlignX?: string;
+      textAlignY?: string;
+    };
+    expect(note.height).toBe(48);
+    expect(note).toMatchObject({ textAlignX: 'center', textAlignY: 'middle' });
+  });
+});
+
+describe('author activations', () => {
+  it('keeps a + activation open past a reply, until its -', () => {
+    const g = graphFromMermaid(`sequenceDiagram
+  participant B
+  participant A
+  B->>+A: Authorise
+  A-->>B: Redirect
+  B->>A: Exchange code
+  A-->>-B: Tokens`);
+    if (!g.ok) throw new Error(g.error);
+    let n = 0;
+    const els = layoutGraph(g.graph, { makeEdgeId: () => `z${n++}` });
+    const bars = els.filter((e) => e.type === 'shape' && (e as { width: number }).width === 14) as {
+      y: number;
+      height: number;
+    }[];
+    expect(bars).toHaveLength(1);
+    const message = (label: string) =>
+      els.find((e): e is ArrowElement => e.type === 'arrow' && e.label === label)!;
+    const yOf = (a: ArrowElement) => (a.from.kind === 'free' ? a.from.y : 0);
+    // One bar from the authorise call to the tokens reply, the exchange on it.
+    expect(bars[0]!.y).toBeLessThanOrEqual(yOf(message('Authorise')));
+    expect(bars[0]!.y + bars[0]!.height).toBeGreaterThanOrEqual(yOf(message('Tokens')));
   });
 });

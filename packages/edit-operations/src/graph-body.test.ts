@@ -64,6 +64,7 @@ describe('graphBodyIssue, the graph look', () => {
         style: 'lanes',
         nodes: [{ id: 'a', tone: 'muted', icon: 'database' }, { id: 'b' }],
         edges,
+        groups: [{ id: 'g', label: 'Lane', members: ['a', 'b'] }],
       }),
     ).toBeNull();
     expect(graphBodyIssue({ style: 'cycle', nodes, edges })).toBeNull();

@@ -456,15 +456,23 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - **Flow lines are elbows.** `lines` defaults to `angled` for flow, lanes and tree; every edge to a later rank bends
   twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus, as long as
   they are drawn alike (an unset line is solid): where solid and dashed lines meet at one end of a node, the lines of
-  the style most of the ones that could merge have share it (a labelled arrow saying something of its own does not count) and the rest keep their own ends, leaving from that side's quarter toward their other end, beside the
-  trunk rather than on it, so a dashed event line never rides a solid call's trunk; a labelled
+  the style most of the ones that could merge have share it (a labelled arrow saying something of its own does not
+  count) and the rest keep their own ends, leaving from that side's quarter toward their other end, beside the
+  trunk rather than on it, so a dashed event line never rides a solid call's trunk, nor its run across the gap
+  between ranks (each line's runs take their own channel there); a labelled
   arrow keeps its own ends, unless arrows into one node (or out of one) say the same thing in the same line: those
-  join one bus too, each label on its own leg (several services that each "publish" to one event bus), and its label
+  join one bus too, each label on its own leg (several services that each "publish" to one event bus), never a
+  decision's exits, whose label names that decision's branch (two decisions' "no" on one bus could not say which was
+  which), and its label
   sits on a run no other labelled arrow shares (the drop into its target,
   else the leg out of its source, else its longest run), one line wide. Runs are read as drawn, those on one line
   as one, and a run takes the label only when its plate there touches no box: long enough along it, clear beside it,
-  and off every frame's and lane's border and heading; where the middle of a run is not clear, a point a quarter or a
-  third of the way along it is tried before the next run.
+  and off every frame's and lane's border and heading, and, where any run allows, off every other line too (a
+  neighbour's drop struck a label through); where the middle of a run is not clear, a point a quarter or a
+  third of the way along it is tried before the next run. Where no run holds the label on its line, it sits beside
+  one, just off the line on either side, where it touches no box, border, heading or line (a wide label on a drop
+  beside a neighbour's drop), before it is ever laid over another line. Each label keeps off the labels placed
+  before it (two "publish" labels off one bus stood over each other).
   The gap between two ranks fits the widest label crossing it, as Tidy Up's does (its width left to right, its line
   height either side of the jog top to bottom), so a caption is never longer than its edge; between a group and a
   node outside it too.
@@ -483,18 +491,38 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   the frame, else from the frame's near side, so it never sweeps along the frame past its members' own drops (the
   D2 "publish events" bus). An edge between two nodes outside a group is routed round the frame, never through the
   gaps between its members. A line into a group's first members lands clear of its heading: down the page, a frame
-  whose first member would take a line through the heading's text is widened on the left until it does not.
+  whose first member would take a line through the heading's text is widened on the left until it does not, on the
+  heading's side only: the far side hugs the members (a long heading framed two boxes in twice their room), unless
+  an edge meets the group itself, whose frame then stays centred on its members so that edge stays on their line.
+  A label's plate keeps 6 px off every frame's and lane's border, inside or out, never sitting on the edge. The
+  reverse holds too: a group in one row whose members have no lines among them (a row of data stores) seats each
+  member by the outside nodes it links to, a database under its service, its order and gaps kept, and its frame
+  refits round them; skipped when the refitted frame would cover another node or frame. A member left within a
+  notch (6 px) of its spot sits on it, its gap shrinking by no more than that, so its line drops straight rather
+  than as a slant.
+- **Stacked groups line up.** Groups that follow one another down the flow, no two side by side (a pipeline's
+  stages), keep the spine straight: a group with one entry (the one member a line from outside reaches) moves,
+  frame and members together, until that entry sits on the line of what feeds it, so the spine runs straight
+  through every stage rather than jogging where a stage's own branch pulled its members aside. Each frame keeps
+  its own width, hugging what it holds: stretched to one width, frames of two boxes stood mostly empty. Skipped
+  for a group whose moved frame would cover another node or frame.
 - **Lanes stay compact and their decisions branch.** In a `lanes` graph a hand-off to the next lane up or down that is
   its step's only way out and its next step's only way in drops straight into that lane, in the same column, rather
   than taking a column of its own, so a chain of hand-offs climbs or descends a staircase instead of stretching across
-  the page. A step with two or more exits (a decision, or any step that branches) keeps the one whose next step sits
+  the page. Next steps one step of the same lane feeds, stacked in one column, spread until each clears that step's
+  points, so its exits can branch. A step with two or more exits (a decision, or any step that branches) keeps the one whose next step sits
   most nearly level with it on its point toward the flow; each other exit leaves from its top or bottom, toward its
   next step's lane, and bends once into that step's side, so no two exits leave as parallel stubs. A flow down the
   page does the same across: of a step's exits leaving its bottom on their own ends (labelled, or drawn unlike the
-  trunk), one whose next step lies clearly to its left or right leaves that side instead.
+  trunk), one whose next step lies clearly to its left or right leaves that side instead. A step with exactly two
+  exits whose next steps lie clearly either side of it, neither ahead, sends both out of their sides (accept up,
+  decline down; yes left, no right): kept on the point, one left by a corner and the other by the tip, lopsided.
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
-  aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
-  what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted. `true` names them by default: in a flowchart by ISO 5807
+  aligned, as every template has. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
+  an edit, as one: one miniature per shape kind the graph uses, with
+  what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted;
+  those exceptions then get a row of their own, "Exception or optional" (`{"muted": "Error path"}` renames it), so a
+  dashed step never goes unexplained. `true` names them by default: in a flowchart by ISO 5807
   (stadium "Start or end", square "Step", diamond "Decision", parallelogram "Input or output", document "Document",
   hexagon "Preparation"), otherwise as a diagram of systems reads them (stadium "Entry point", square "Component",
   hexagon "Hub or bus", circle "Node"; cylinder "Data store", cloud "External system", actor "Person" in both). An
@@ -507,14 +535,19 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   both ways and keeps the one whose aspect is nearer a landscape page (3:2).
 - `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
   chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column
-  under it, indented, joined by a bus down its lower-left quarter, the compact org chart), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab
+  under it, indented, joined by a bus down its lower-left quarter, the compact org chart; its lines carry no
+  arrowheads, as the org-chart template's do, since a tree shows belonging, unless an edge asks with `ends`; a node
+  with a `role` draws as the template's person card, its name in bold over the role with a person icon unless it
+  names another, in any style), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab
   and Enter, laid out balanced: the root is the first node nothing enters, a bold round centre; each first-level
-  branch tinted in its own hue with its icon; leaves white and edged in their branch's hue; curved connectors in
+  branch tinted in its own hue with its icon; leaves white and edged in their branch's hue, one height for every leaf of the map (the tallest any label needs); a root
+  whose label would grow the circle past 260 px takes the next text size down, so the centre stays near the template's; curved connectors in
   the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group
   a lane, one under another, its label in the lane's header strip; the flow runs left to right across the lanes and
   a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a
   node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
-  edge a curved arrow following the ring's arc, a node with no edge at all at the ring's centre, a node given no
+  edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows
+  out alike, a node with no edge at all at the ring's centre, a node given no
   shape a circle).
 - `groups`: named clusters drawn as frames around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
@@ -523,17 +556,19 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   group's members, and a group id nothing declares is created with the id as its
   label. `members` is then optional. Groups do not nest: a group listed as another's member is refused, naming
   both, rather than dropped; and a `lanes` graph refuses a node in no group, which would otherwise land in an
-  unlabelled lane of its own (`graphShapeError`).
+  unlabelled lane of its own (`graphShapeError`). The api's `replace` with a `graph` refuses the same, so every
+  caller of graph input is held to it (`graphBodyIssue`).
 - `lines` (`angled` for flow, lanes and tree, `curved` for mindmap and cycle): the
   arrows' routing, from the editor's own arrow styles. Angled lines **bend
   twice** along the flow (down, across at half height, down into the child's
   top), the org-chart shape; one whose ends already line up runs straight
   ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice"). **No notch in a straight line:** an
   elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
-  is drawn straight: a few pixels' slant over the length of an edge cannot be seen, and a step that short reads as a
-  notch (two boxes of different widths centred a pixel or two apart). An elbow whose straight line would cross a box
-  it was routed round keeps its bends, and lines are straightened before their labels are placed, so a label sits
-  on the line as it is drawn.
+  is drawn straight, as a step that short reads as a notch (two boxes of different widths centred a pixel or two
+  apart). Where one end's box meets no other line, that box moves across by the step so the line runs true; only
+  when both ends meet other lines is it drawn as a slight slant (a store's 5 px slant over 250 was seen). An elbow
+  whose straight line would cross a box it was routed round keeps its bends, and lines are straightened before their
+  labels are placed, so a label sits on the line as it is drawn.
 
 The flow layout reduces crossings: after ranking, a few up-and-down barycentre
 passes reorder each rank, and a new order is kept only when it crosses fewer
@@ -619,7 +654,12 @@ wrongly:
   fill its box, so a lane or entity title came out as one giant word across
   its contents and a sticky's note filled it edge to edge; a box drawn in the
   editor never arrives that way. This applies to every element on these paths,
-  not only the six.
+  not only the six. As graph input sizes its text by count, so do raw boxes: on a list of more than 12 labelled
+  boxes, a box that gives no `textSize` takes `sm` rather than `md`, so a hand-placed architecture of twenty boxes
+  does not wrap its names mid-word ("ElastiCa / che"). A raw arrow pinned at both ends that gives no `arrowStyle` is
+  angled, as graph input draws its lines, and an angled one that gives no bends takes graph input's two (out of its
+  start, across, into its end), so it meets both ends square rather than as the editor's lone L, sideways into a top;
+  one whose ends line up runs straight. `"arrowStyle": "straight"` keeps a diagonal.
 - A **table**'s ragged rows are padded to the widest (`normalizeTable`, the same
   pass the editor runs on load), so every row renders.
 - An unknown **codeLanguage** becomes `plain` and an unknown **codeTheme** is

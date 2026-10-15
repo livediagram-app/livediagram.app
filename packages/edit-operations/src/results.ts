@@ -125,8 +125,19 @@ function aliasChanges(
       !(c.key === 'height' && fit.taller) &&
       !(c.key === 'at' && !named),
   );
-  if (fit.widened) out.push({ key: 'widened', from: fit.widened[0], to: fit.widened[1] });
-  if (fit.taller) out.push({ key: 'taller', from: fit.taller[0], to: fit.taller[1] });
+  // A container given back room reads as such: narrower or shorter, never "widened" to a smaller size.
+  if (fit.widened)
+    out.push({
+      key: fit.widened[1] < fit.widened[0] ? 'narrower' : 'widened',
+      from: fit.widened[0],
+      to: fit.widened[1],
+    });
+  if (fit.taller)
+    out.push({
+      key: fit.taller[1] < fit.taller[0] ? 'shorter' : 'taller',
+      from: fit.taller[0],
+      to: fit.taller[1],
+    });
   return out;
 }
 

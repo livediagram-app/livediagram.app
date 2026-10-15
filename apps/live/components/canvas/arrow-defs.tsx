@@ -1,8 +1,10 @@
 import {
   ARROWHEAD_SHAPES,
   ARROWHEAD_SIZE_PX,
+  ER_GLYPHS,
   type ArrowheadShape,
   type ArrowheadSize,
+  type ErShape,
 } from '@livediagram/document';
 
 // The arrowhead marker system (docs/specs/008-canvas/canvas-and-palette.md arrow styles), lifted out of
@@ -71,7 +73,35 @@ function arrowheadMarkerShape(shape: ArrowheadShape, paint = 'context-stroke') {
           strokeWidth={1}
         />
       );
+    default:
+      return <ErGlyphMarks shape={shape} paint={paint} ringFill={HOLLOW_FILL} />;
   }
+}
+
+// An ER end's strokes (er-heads.ts, docs/specs/008-canvas/canvas-and-palette.md), in the marker's 0..10 box: the one
+// geometry the export draws too. Its ring is hollow on the paper.
+export function ErGlyphMarks({
+  shape,
+  paint,
+  ringFill,
+  strokeWidth = 1.1,
+}: {
+  shape: ErShape;
+  paint: string;
+  ringFill: { fill: string };
+  strokeWidth?: number;
+}) {
+  const glyph = ER_GLYPHS[shape];
+  return (
+    <g stroke={paint} strokeWidth={strokeWidth} strokeLinecap="round" fill="none">
+      {glyph.lines.map(([x1, y1, x2, y2], i) => (
+        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
+      ))}
+      {glyph.rings.map(([cx, cy, r], i) => (
+        <circle key={`r${i}`} cx={cx} cy={cy} r={r} style={ringFill} />
+      ))}
+    </g>
+  );
 }
 
 // One arrow's own arrowhead marker, for when its heads are a different colour

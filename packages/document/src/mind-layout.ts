@@ -265,7 +265,13 @@ export function layoutMindTree(
   else if (flow === 'tree') stackLayout(tree, out, root, kids, 'x', 1, gaps);
   else if (flow === 'leftward') stackLayout(tree, out, root, kids, 'x', -1, gaps);
   else {
-    const { left, right } = balancedSides(tree, root, hint, !!order || orderFlow !== 'balanced');
+    const { left, right } = balancedSides(
+      tree,
+      root,
+      hint,
+      !!order || orderFlow !== 'balanced',
+      gaps,
+    );
     stackLayout(tree, out, root, right, 'x', 1, gaps);
     stackLayout(tree, out, root, left, 'x', -1, gaps);
   }
@@ -281,12 +287,19 @@ function balancedSides(
   root: ShapeElement,
   hint: MindOrderHint | undefined,
   fresh: boolean,
+  gaps: MindGaps,
 ): { left: ShapeElement[]; right: ShapeElement[] } {
   const kids = kidsOf(tree, root.id);
   const rootX = centre(root).x;
-  // Less on the left, by total height, sends a branch left; a tie goes right,
-  // which is where the very first branch always goes.
-  const height = (side: ShapeElement[]) => side.reduce((s, n) => s + n.height, 0);
+  // Less on the left, by the height each branch's whole subtree takes, sends a branch left; a tie goes right,
+  // which is where the very first branch always goes. Weighed by the branch boxes alone, every branch counted the
+  // same, and a map of 10 leaves against 7 stood lopsided.
+  const span = (n: ShapeElement): number => {
+    const k = kidsOf(tree, n.id);
+    const block = k.reduce((s, c) => s + span(c), 0) + gaps.sibling * Math.max(0, k.length - 1);
+    return Math.max(n.height, block);
+  };
+  const height = (side: ShapeElement[]) => side.reduce((s, n) => s + span(n), 0);
   const hinted = hint ? kids.find((k) => k.id === hint.id) : undefined;
   const left: ShapeElement[] = [];
   const right: ShapeElement[] = [];

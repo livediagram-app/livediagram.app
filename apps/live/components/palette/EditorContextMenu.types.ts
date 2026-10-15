@@ -187,6 +187,8 @@ export type EditorContextMenuProps = {
   onSetPieAnimSpeed: (value: AnimationSpeed) => void;
   onSetPieAnimRepeat: (value: boolean) => void;
   onSetChartLegend: (value: boolean) => void;
+  // Show Values (docs/specs/009-elements/pie-chart.md).
+  onSetChartValues: (value: boolean) => void;
   onSetChartLegendPosition: (position: ChartLegendPosition) => void;
   // Chart type (docs/specs/009-elements/pie-chart.md "Chart types"): Column, Bar, Line, Area, Scatter, Pie, Doughnut.
   onSetChartType: (type: ChartType) => void;
@@ -270,6 +272,8 @@ export type EditorContextMenuProps = {
   onSetDecisionDate: (date: string | undefined) => void;
   onSetDecisionDrivers: (drivers: string[]) => void;
   onSetChairFacing: (facing: ChairFacing) => void;
+  // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
+  onSetRoomDoor: (door: import('@livediagram/document').RoomDoor) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
   tabs: import('@livediagram/document').Tab[];

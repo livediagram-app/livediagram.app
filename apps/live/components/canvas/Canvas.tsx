@@ -74,6 +74,8 @@ import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { spotlightRadius } from '@/lib/spotlight-config';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
+import { track } from '@/lib/telemetry';
+import { parseAvatarStatus, type AvatarStatus } from '@/lib/avatar-status';
 import { useAvatarSpeech } from '@/hooks/canvas/useAvatarSpeech';
 import { useSpeechBubbles } from '@/lib/avatar-speech-store';
 import { headPoint } from '@/lib/avatar-speech';
@@ -90,6 +92,7 @@ import {
   CHAIR_SITTER_FACING,
   isSeatingShape,
   nearestSeat,
+  drinkFrom,
   seatingFacing,
 } from '@livediagram/document';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
@@ -114,7 +117,11 @@ import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers'
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { loadArticleFlows, loadIllustratePages } from '@/lib/editor-deferred-code';
+import {
+  loadArticleFlows,
+  loadAvatarSpeechLayer,
+  loadIllustratePages,
+} from '@/lib/editor-deferred-code';
 import { pageIdAtPress, pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
 import { GifOmit } from './GifOmit';
 
@@ -124,10 +131,7 @@ const IllustratePages = dynamic(loadIllustratePages, { ssr: false });
 const ArticleFlows = dynamic(loadArticleFlows, { ssr: false });
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
 // nothing on the canvas needs them before then.
-const AvatarSpeechLayer = dynamic(
-  () => import('@/components/canvas/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer),
-  { ssr: false },
-);
+const AvatarSpeechLayer = dynamic(loadAvatarSpeechLayer, { ssr: false });
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
@@ -385,6 +389,10 @@ function CanvasView(props: CanvasProps) {
   // a pad's (docs/specs/009-elements/reaction-pad.md): nothing is stored and nothing is replayed.
   const [avatarBurst, setAvatarBurst] = useState<{ reaction: Reaction; seed: number } | null>(null);
   const avatarBurstSeq = useRef(0);
+  // Your status in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"): for the session, cleared on leaving
+  // the mode (adjusted during render so it never publishes a stale one).
+  const [avatarStatus, setAvatarStatus] = useState<AvatarStatus | null>(null);
+  if (canvasTool !== 'avatar' && avatarStatus !== null) setAvatarStatus(null);
   // A character walks among what is drawn: a hidden layer's fences, portals and seats are not there.
   const walkElements = useMemo(
     () => visibleLayerElements(elements, tabLayers),
@@ -393,6 +401,7 @@ function CanvasView(props: CanvasProps) {
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
     config: avatarLook.config,
+    status: avatarStatus,
     onToggleGender: avatarLook.toggleGender,
     elements: walkElements,
     mainRef,
@@ -412,11 +421,22 @@ function CanvasView(props: CanvasProps) {
     onWalkIntoChair: (element, feet) => {
       if (!isSeatingShape(element.shape)) return;
       const seating = { ...element, shape: element.shape };
+      // A meeting table's seats each face the table (docs/specs/009-elements/office.md "Meeting Table").
+      const seat = nearestSeat(seating, feet);
       avatarRef.current?.sitOn(
         element.id,
-        nearestSeat(seating, feet),
-        CHAIR_SITTER_FACING[seatingFacing(seating)],
+        seat,
+        seat.facing ?? CHAIR_SITTER_FACING[seatingFacing(seating)],
       );
+    },
+    // A water cooler or a coffee machine (docs/specs/009-elements/office.md "Using it"): a drink in the hand,
+    // and the machine answers on your screen.
+    onWalkIntoDrink: (element) => {
+      const drink = drinkFrom(element.shape);
+      if (!drink) return;
+      avatarRef.current?.giveDrink(drink);
+      setMachineAnswer((prev) => ({ id: element.id, seq: (prev?.seq ?? 0) + 1 }));
+      track('Canvas', 'Used', drink === 'water' ? 'WaterCooler' : 'CoffeeMachine');
     },
     // Reaction pad (docs/specs/009-elements/reaction-pad.md): walking onto one is the same act as pressing
     // it, so it runs the same handler.
@@ -426,17 +446,30 @@ function CanvasView(props: CanvasProps) {
   // goes through a ref — declared above, repointed here, read at arrival time.
   // Same shape as `enterPortalRef` below, for the same reason.
   const avatarRef = useLatest<ReturnType<typeof useAvatarWalk> | null>(avatar);
+  // The machine that last gave you a drink, bumped each time, so it answers (FurnitureView's MachineAnswer).
+  const [machineAnswer, setMachineAnswer] = useState<{ id: string; seq: number } | null>(null);
+  const machineAnsweredOf = useCallback(
+    (elementId: string) => (machineAnswer?.id === elementId ? machineAnswer.seq : 0),
+    [machineAnswer],
+  );
   // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): an Editor or a Participant says
   // something above their character's head; everyone on the tab sees it float away.
   const speech = useAvatarSpeech({
     active: canvasTool === 'avatar',
-    canSpeak: !props.readOnly || !!props.takePart,
+    // The session's own say (docs/specs/013-workspace/share-roles.md): an Editor or a Participant, never by
+    // whether the canvas is read-only.
+    canSpeak: !!props.takePart,
     feet: avatar.pos,
     scale: avatarScale(avatarLook.config.size),
     tabId: props.activeTabId ?? '',
     onSay: props.onAvatarSay,
   });
   const speechBubbles = useSpeechBubbles();
+  // The composer's code fetched as soon as someone who may speak is in the mode, so the first Enter finds it in and
+  // the words typed straight after it land in its box, not on the editor's shortcuts.
+  useEffect(() => {
+    if (speech.speaking) void loadAvatarSpeechLayer();
+  }, [speech.speaking]);
 
   // Who is sitting in each chair, from PRESENCE — never from the document. Our
   // own character plus every peer's, keyed by chair id, so a chair empties by
@@ -899,6 +932,7 @@ function CanvasView(props: CanvasProps) {
                           // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
                           // lives, rather than threaded from the page.
                           chairSitters={sittersOf}
+                          machineAnswered={machineAnsweredOf}
                           // Pressing a Selection Mode button that hands out Avatar mode drops
                           // the character at THAT button (see avatarSpawn), not the viewport
                           // centre: you pressed a thing on the canvas, so the character should
@@ -970,6 +1004,13 @@ function CanvasView(props: CanvasProps) {
                   lift={peer.avatar.lift}
                   wave={peer.avatar.wave}
                   seated={!!peer.avatar.seatedOn}
+                  // Parsed, not trusted: anything but the two drinks draws an empty hand.
+                  holding={
+                    peer.avatar.holding === 'water' || peer.avatar.holding === 'coffee'
+                      ? peer.avatar.holding
+                      : null
+                  }
+                  status={parseAvatarStatus(peer.avatar.status)}
                   // Replayed locally from the kind + elapsed time in their packet, by
                   // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
                   pose={
@@ -1014,6 +1055,8 @@ function CanvasView(props: CanvasProps) {
                   wave={avatar.wave}
                   pose={avatar.pose}
                   seated={avatar.seatedOn !== null}
+                  holding={avatar.holding}
+                  status={avatarStatus}
                   shirt={props.selfParticipant.color}
                   standingOn={avatarStandingOn}
                   onStand={avatar.standUp}
@@ -1127,6 +1170,11 @@ function CanvasView(props: CanvasProps) {
             onMoveLaserPanel={props.onMoveLaserPanel}
             onResetLaserPanel={props.onResetLaserPanel}
             onRandomiseAvatar={avatarLook.randomise}
+            avatarStatus={avatarStatus}
+            onSetAvatarStatus={(next: AvatarStatus | null) => {
+              track('UI', 'Changed', 'AvatarStatus');
+              setAvatarStatus(next);
+            }}
             onSendAvatarMessage={
               speech.speaking ? (text: string) => speech.send(text, 'panel') : undefined
             }

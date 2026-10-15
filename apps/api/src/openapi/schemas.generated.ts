@@ -797,6 +797,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "arrowheadSize": {
         "$ref": "#/components/schemas/ArrowheadSize"
       },
+      "arrowheadStartShape": {
+        "$ref": "#/components/schemas/ArrowheadShape"
+      },
       "curveOffset": {
         "additionalProperties": false,
         "properties": {
@@ -1012,7 +1015,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "circle",
       "circle-hollow",
       "diamond",
-      "diamond-hollow"
+      "diamond-hollow",
+      "one",
+      "zero-or-one",
+      "many",
+      "zero-or-many",
+      "one-or-many"
     ],
     "type": "string"
   },
@@ -3536,6 +3544,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "bookshelf": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "boundary": {
             "additionalProperties": false,
             "properties": {
@@ -3672,6 +3695,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "code-block": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "coffee-machine": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -4046,6 +4084,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "meeting-table": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "mind-node": {
             "additionalProperties": false,
             "properties": {
@@ -4241,6 +4294,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "plant": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "pointer-note": {
             "additionalProperties": false,
             "properties": {
@@ -4407,6 +4475,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "roll-call": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "room": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "rug": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -4707,6 +4805,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "triangle": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "water-cooler": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -11873,6 +11986,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "RoomDoor": {
+    "enum": [
+      "n",
+      "e",
+      "s",
+      "w",
+      "none"
+    ],
+    "type": "string"
+  },
   "RowAt": {
     "additionalProperties": false,
     "properties": {
@@ -12218,6 +12341,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "chartSource": {
         "$ref": "#/components/schemas/ChartSource"
+      },
+      "chartValues": {
+        "type": "boolean"
       },
       "chartVariant": {
         "$ref": "#/components/schemas/ChartVariant"
@@ -12616,6 +12742,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "roomDoor": {
+        "$ref": "#/components/schemas/RoomDoor"
+      },
       "rotation": {
         "type": "number"
       },
@@ -12854,6 +12983,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fence",
       "desk",
       "sofa",
+      "room",
+      "meeting-table",
+      "plant",
+      "bookshelf",
+      "water-cooler",
+      "coffee-machine",
+      "rug",
       "estimate",
       "temperature",
       "idea-box",

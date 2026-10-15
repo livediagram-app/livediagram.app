@@ -102,7 +102,9 @@ ends out along that anchor's edge:
 - a middle's fan is centred on it and has the whole edge as its room;
 - a quarter's fan is centred on it and has half the edge as its room;
 - a corner's fan marches inward along its horizontal edge;
-- slots are ordered by where each arrow comes from, so neighbouring lines do not cross at the fan;
+- slots are ordered by where each arrow comes from, so neighbouring lines do not cross at the fan; arrows coming
+  from one place along the edge (two steps in one column) are ordered by how near they come from, the nearer on
+  the side they arrive from, so its run stops short of the farther one's;
 - the offsets rotate with a rotated element.
 
 The fan is purely visual: stored anchors, snapping and the auto-rebind use the true anchor point.

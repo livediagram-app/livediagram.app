@@ -46,6 +46,7 @@ import { layoutCycle } from './graph-cycle';
 import { layoutMindmapGraph } from './graph-mindmap';
 import { layoutStormGraph } from './graph-storm';
 import { parseMermaid } from './mermaid';
+import { turnBack } from './er-hub-first';
 import {
   afterWord,
   isSequenceDiagram,
@@ -81,7 +82,8 @@ export type GraphInput = {
 };
 
 // Up to this many nodes a graph's text is `md`, the template's size; past it `sm`, so a large system still fits.
-export const LOOK_MD_MAX_NODES = 12;
+export { LOOK_MD_MAX_NODES } from './look-size';
+import { LOOK_MD_MAX_NODES } from './look-size';
 // Auto direction lays a graph out both ways up to this size (two layouts' cost) and keeps the one whose aspect is
 // nearer LANDSCAPE; past it, down.
 export const AUTO_DIRECTION_MAX_NODES = 150;
@@ -307,6 +309,18 @@ export function layoutGraph(
   if (style === 'flow' && !g.groups?.length)
     laid = straightenSpine(laid, g.nodes, g.edges, flat, flowDir);
   laid = withTones(laid, g.nodes, g.edges);
+  // A tree shows belonging, not flow: its lines carry no heads, as the org-chart template's do, unless an edge asks.
+  if (style === 'tree') {
+    const asked = new Set(g.edges.filter((e) => e.ends).map((e) => `${e.from}->${e.to}`));
+    laid = laid.map((el) =>
+      el.type === 'arrow' &&
+      el.from.kind === 'pinned' &&
+      el.to.kind === 'pinned' &&
+      !asked.has(`${el.from.elementId}->${el.to.elementId}`)
+        ? { ...el, arrowEnds: 'none' as const }
+        : el,
+    );
+  }
   const lines = g.lines ?? DEFAULT_LINES[style];
   // A mind map and a cycle draw their own connectors.
   if (lines !== 'straight' && style !== 'cycle' && style !== 'mindmap')
@@ -331,7 +345,7 @@ export function layoutGraph(
     // Straightened first, so each label is placed on the line as it is drawn.
     laid = placeElbowLabels(withoutNotches(applyRoutes(laid, routes)));
   }
-  return withHeaderAndKey(laid, {
+  return withHeaderAndKey(turnBack(laid, g.edges), {
     ...(g.title ? { title: g.title } : {}),
     ...(g.subtitle ? { subtitle: g.subtitle } : {}),
     ...(g.key ? { key: g.key, flowchart: isFlowchart(g.nodes) } : {}),
@@ -343,7 +357,7 @@ export function layoutGraph(
 // and subgraphs become `direction` and `groups`.
 export function graphFromMermaid(
   text: string,
-): { ok: true; graph: GraphInput } | { ok: false; error: string } {
+): { ok: true; graph: GraphInput; notes?: string[] } | { ok: false; error: string } {
   if (isSequenceDiagram(text)) {
     const read = parseSequenceDiagram(text);
     return read.ok
@@ -370,6 +384,14 @@ export function graphFromMermaid(
       groups: parsed.graph.clusters,
       direction: parsed.direction === 'LR' ? 'right' : 'down',
     },
+    // Said, not dropped: what the drawing cannot keep of what the Mermaid asked.
+    ...(parsed.folded
+      ? {
+          notes: [
+            `${parsed.folded} nested subgraph${parsed.folded === 1 ? '' : 's'} folded into their outer group: groups draw one level deep`,
+          ],
+        }
+      : {}),
   };
 }
 
@@ -417,6 +439,8 @@ export function graphShapeError(graph: GraphInput): string | undefined {
 export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }): {
   graph?: GraphInput;
   error?: string;
+  // What the drawing could not keep, to say back (a Mermaid subgraph nested in another).
+  notes?: string[];
 } {
   if (args.graph) {
     // The MCP schema caps these too; this holds for every caller (graph-limits.ts).
@@ -427,6 +451,6 @@ export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }
   if (args.mermaid === undefined) return {};
   const parsed = graphFromMermaid(args.mermaid);
   return parsed.ok
-    ? { graph: parsed.graph }
+    ? { graph: parsed.graph, ...(parsed.notes ? { notes: parsed.notes } : {}) }
     : { error: `Could not read the Mermaid: ${parsed.error}` };
 }

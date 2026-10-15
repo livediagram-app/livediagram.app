@@ -16,7 +16,8 @@ const saying = (a: ArrowElement) => `${a.label?.trim().toLowerCase() ?? ''}|${li
 // rest keep their own ends, so a dashed event line never rides a solid call's trunk. A labelled arrow keeps its own
 // ends, as a label on a shared line could not say which line it names, unless the arrows meeting there all say the
 // same thing in the same line (services that each "publish" to one bus): those merge, and each label sits on its own
-// leg. A labelled arrow that can never merge does not count toward the style that shares.
+// leg. A decision's labelled exits never merge so: each names its own decision's branch. A labelled arrow that
+// can never merge does not count toward the style that shares.
 export function withExactEnds(elements: Element[]): Element[] {
   const arrows = elements.filter((el): el is ArrowElement => el.type === 'arrow');
   const said = new Map<string, number>();
@@ -26,8 +27,17 @@ export function withExactEnds(elements: Element[]): Element[] {
   for (const a of arrows)
     for (const side of ['from', 'to'] as const)
       if (a.label?.trim()) said.set(sayingAt(side, a), (said.get(sayingAt(side, a)) ?? 0) + 1);
+  // A decision's exit label names its own decision's branch: two decisions' "no" merged into one bus could not say
+  // which was which (lanes' two rejections, one trunk), so a labelled exit out of a decision keeps its own ends.
+  const shapeOf = new Map(
+    elements.filter(isBoxed).map((b) => [b.id, (b as { shape?: string }).shape]),
+  );
+  const fromDecision = (a: ArrowElement) => {
+    const id = pinned(a.from);
+    return id !== null && shapeOf.get(id) === 'diamond';
+  };
   const mergeable = (side: 'from' | 'to', a: ArrowElement) =>
-    !a.label?.trim() || (said.get(sayingAt(side, a)) ?? 0) > 1;
+    !a.label?.trim() || (!fromDecision(a) && (said.get(sayingAt(side, a)) ?? 0) > 1);
   for (const a of arrows)
     for (const side of ['from', 'to'] as const) {
       if (!mergeable(side, a)) continue;
@@ -148,9 +158,16 @@ export function branchExits(elements: Element[], opts: BranchOptions): Element[]
       const t = boxes.get(pinned(a.to)!)!;
       return (tb ? t.x + t.width / 2 : t.y + t.height / 2) - centre;
     };
+    // Two exits whose next steps lie clearly either side, neither ahead, both leave by their sides: kept, one left by
+    // the point and the other by a corner, lopsided (a decision's accept up, decline straight on).
+    const clearly = (a: ArrowElement) => Math.abs(off(a)) > half + BRANCH_CLEAR;
+    const split =
+      exits.length === 2 &&
+      exits.every(clearly) &&
+      Math.sign(off(exits[0]!)) !== Math.sign(off(exits[1]!));
     let onPoint = exits.length;
     for (const a of [...exits].sort((p, q) => Math.abs(off(q)) - Math.abs(off(p)))) {
-      if (onPoint < 2) break;
+      if (onPoint < 2 && !split) break;
       if (opts.eligible && !opts.eligible(a)) continue;
       const anchor = off(a) < 0 ? before : after;
       if (Math.abs(off(a)) <= half + BRANCH_CLEAR || used.has(`${id}:${anchor}`)) continue;

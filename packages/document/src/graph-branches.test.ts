@@ -47,6 +47,24 @@ describe('withExactEnds', () => {
     expect(byId(els, 'x')).toBe(els[4]);
   });
 
+  it('keeps a decision\'s labelled exits on their own ends: two decisions\' "no" never share one bus', () => {
+    const diamond = (id: string, x: number) =>
+      ({ ...box(id, x, 0), shape: 'diamond' }) as BoxedElement;
+    const els = withExactEnds([
+      diamond('fit', 0),
+      diamond('hire', 300),
+      box('reject', 150, 200),
+      arrow('n1', 'fit', 'reject', { label: 'no' }),
+      arrow('n2', 'hire', 'reject', { label: 'no' }),
+      arrow('p1', 'a', 'bus', { label: 'publish' }),
+      arrow('p2', 'b', 'bus', { label: 'publish' }),
+    ]);
+    expect(byId(els, 'n1').exactEnd).toBeUndefined();
+    expect(byId(els, 'n2').exactEnd).toBeUndefined();
+    // Steps saying the same thing into one node still merge.
+    expect(byId(els, 'p1')).toMatchObject({ exactEnd: true });
+  });
+
   it('merges a fan out of one node that says the same thing', () => {
     const els = withExactEnds([
       arrow('a', 'src', 'x', { label: 'reads' }),
@@ -164,6 +182,21 @@ describe('branchExits', () => {
     expect(fromAnchor(out, 'd')).toBe('s');
     expect(fromAnchor(out, 'r')).toBe('e');
     expect(fromAnchor(out, 'l')).toBe('w');
+  });
+
+  it('sends two exits clearly either side out of their two sides, none left on the point', () => {
+    // A decision whose accept lies above and decline below, the flow running right: up and down, not tip and corner.
+    const out = branchExits(
+      [
+        box('s', 0, 0),
+        box('up', 300, -200),
+        box('down', 300, 200),
+        arrow('a', 's', 'up', { label: 'Accept' }, ['e', 'w']),
+        arrow('d', 's', 'down', { label: 'Decline' }, ['e', 'w']),
+      ],
+      { axis: 'LR' },
+    );
+    expect([fromAnchor(out, 'a'), fromAnchor(out, 'd')]).toEqual(['n', 's']);
   });
 
   it('keeps one exit on the point, an exit too near, an ineligible one and one whose side is taken', () => {
@@ -380,5 +413,42 @@ describe('labels slide along their run', () => {
       );
       expect(straddles, `${a.label} sits across a lane border`).toBe(false);
     }
+  });
+});
+
+describe('labels off other lines', () => {
+  it('moves a label off a run another, unlabelled line crosses', async () => {
+    const { placeElbowLabels } = await import('./graph-look');
+    const { withOrthogonalBends } = await import('./arrow-orthogonal');
+    // s's right side to t's top: one bend, then a drop that an unlabelled line crosses at its middle.
+    const els = withOrthogonalBends(
+      [
+        box('s', 0, 0),
+        box('t', 400, 300),
+        arrow('a', 's', 't', { label: 'deploys to staging', arrowStyle: 'angled' }, ['e', 'n']),
+        {
+          id: 'b',
+          type: 'arrow',
+          from: { kind: 'free', x: 300, y: 165 },
+          to: { kind: 'free', x: 600, y: 165 },
+        } as ArrowElement,
+      ],
+      'TB',
+    );
+    const placed = placeElbowLabels(els);
+    const a = placed.find((e) => e.id === 'a') as ArrowElement;
+    const pts = arrowRoutePoints(a, placed);
+    const lens = pts.slice(1).map((p, i) => Math.hypot(p.x - pts[i]!.x, p.y - pts[i]!.y));
+    let left = a.labelOffset!.t * lens.reduce((s, l) => s + l, 0);
+    let y = pts[0]!.y;
+    for (let i = 0; i < lens.length; i++) {
+      if (left <= lens[i]!) {
+        y = pts[i]!.y + ((pts[i + 1]!.y - pts[i]!.y) * left) / lens[i]!;
+        break;
+      }
+      left -= lens[i]!;
+    }
+    // The plate (22px tall) is clear of the crossing line at y = 165.
+    expect(Math.abs(y - 165)).toBeGreaterThan(11);
   });
 });
