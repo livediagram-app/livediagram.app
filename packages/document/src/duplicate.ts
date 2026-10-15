@@ -312,7 +312,9 @@ export function remapElementRefs<E extends Element>(
 
 // Re-point tab and element links after a whole document is copied with fresh
 // tab ids (old → new in `tabIdMap`), so the copy's internal navigation lands
-// on its own tabs instead of the source document's. Document and url links
+// on its own tabs instead of the source document's. A Tab Window's tab
+// (`windowTabId`, docs/specs/009-elements/tab-window.md) is re-pointed the same way, so the copy's windows show the
+// copy's tabs rather than "This tab isn't available". Document and url links
 // leave the document, so they survive unchanged. Shared by the editor's
 // Explorer duplicate and the api's copy route, which drifted apart when each
 // owned a copy of this walk: the api's copies kept pointing at the source.
@@ -322,8 +324,17 @@ export function remapTabLinks<E extends Element>(
 ): E[] {
   return elements.map((el) => {
     const link = el.link;
-    if (!link || (link.kind !== 'tab' && link.kind !== 'element')) return el;
-    const next = tabIdMap.get(link.tabId);
-    return next ? { ...el, link: { ...link, tabId: next } } : el;
+    const linked =
+      link && (link.kind === 'tab' || link.kind === 'element')
+        ? tabIdMap.get(link.tabId)
+        : undefined;
+    const windowTabId = (el as { windowTabId?: string }).windowTabId;
+    const shown = windowTabId ? tabIdMap.get(windowTabId) : undefined;
+    if (!linked && !shown) return el;
+    return {
+      ...el,
+      ...(linked ? { link: { ...link!, tabId: linked } } : {}),
+      ...(shown ? { windowTabId: shown } : {}),
+    };
   });
 }

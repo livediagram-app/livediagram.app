@@ -56,6 +56,12 @@ renamed or deleted).
 **Open <name>** goes to the shown tab: a button in the window's top-right corner while it is hovered or selected,
 and the menu's Tab Window section. Opening is navigation, so it is everyone's who can see the tab.
 
+## Copying the document
+
+A copy of the whole document (Make a Copy, the Explorer's Duplicate, a copy from the Community, a Drive import) gives
+its tabs fresh ids and re-points each window at the copy's own tab, as tab links are (`remapTabLinks`), so the copy's
+windows show the copy rather than "This tab isn't available".
+
 ## Exports
 
 A PDF, PNG or SVG export draws each window's tab inside it, fitted, as on screen: the export fetches each shown tab's
