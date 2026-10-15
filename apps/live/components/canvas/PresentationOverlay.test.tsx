@@ -207,3 +207,46 @@ describe('PresentationOverlay', () => {
     expect(onSetCanvasTool).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/012-collaboration/presentation-mode.md "Full screen": a refused request leaves the deck in the window
+// and says why, never silently.
+describe('fullscreen', () => {
+  const root = document.documentElement as HTMLElement & {
+    requestFullscreen?: () => Promise<void>;
+  };
+  const doc = document as Document & { exitFullscreen?: () => Promise<void> };
+  const had = { request: root.requestFullscreen, exit: doc.exitFullscreen };
+  const setFullscreenElement = (el: Element | null) =>
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => el });
+
+  afterEach(() => {
+    root.requestFullscreen = had.request;
+    doc.exitFullscreen = had.exit;
+    setFullscreenElement(null);
+    vi.restoreAllMocks();
+  });
+
+  it('logs a refused request, and the deck runs in the window', async () => {
+    vi.useRealTimers();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const refusal = new Error('Permissions check failed');
+    root.requestFullscreen = vi.fn(() => Promise.reject(refusal));
+    render(<Deck />);
+    await act(async () => {});
+    expect(warn).toHaveBeenCalledWith('[presentation] fullscreen-refused', refusal);
+    expect(screen.getByText(/1 \/ 2/)).toBeTruthy();
+  });
+
+  it('logs a refused exit on the way out', async () => {
+    vi.useRealTimers();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    root.requestFullscreen = vi.fn(() => Promise.resolve());
+    const refusal = new Error('Not in fullscreen');
+    doc.exitFullscreen = vi.fn(() => Promise.reject(refusal));
+    const view = render(<Deck />);
+    setFullscreenElement(root);
+    view.unmount();
+    await act(async () => {});
+    expect(warn).toHaveBeenCalledWith('[presentation] fullscreen-exit-failed', refusal);
+  });
+});

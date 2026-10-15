@@ -174,14 +174,20 @@ export function PresentationOverlay({
     return () => window.clearTimeout(id);
   }, [at, atEnd, config.autoAdvanceSeconds, detail, jumpOpen, notesOpen, settingsOpen]);
 
-  // Browser fullscreen where available. Best-effort: it needs a user gesture
-  // and can be refused, and the overlay is already full-viewport either way,
-  // so a refusal costs nothing.
+  // Browser fullscreen where available, on the whole document (docs/specs/012-collaboration/presentation-mode.md
+  // "Full screen"). It needs a user gesture and can be refused; the overlay is already full-viewport either way, so
+  // the deck runs in the window and the refusal is logged with its reason, never swallowed.
   useEffect(() => {
     const el = document.documentElement;
-    if (!document.fullscreenElement) void el.requestFullscreen?.().catch(() => {});
+    if (!document.fullscreenElement)
+      void el.requestFullscreen?.().catch((reason: unknown) => {
+        console.warn('[presentation] fullscreen-refused', reason);
+      });
     return () => {
-      if (document.fullscreenElement) void document.exitFullscreen?.().catch(() => {});
+      if (document.fullscreenElement)
+        void document.exitFullscreen?.().catch((reason: unknown) => {
+          console.warn('[presentation] fullscreen-exit-failed', reason);
+        });
     };
   }, []);
 
