@@ -3719,6 +3719,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onSendToBack: sendSelectedToBack,
     onFitToScreen: fitToScreen,
     onCycleEditorMode: editorModeShortcut(editorMode, announce),
+    facilitateMode: editorMode.mode === 'facilitate',
     onDeselect: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
