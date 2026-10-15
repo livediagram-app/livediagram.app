@@ -123,10 +123,10 @@ const SKETCHED_BODY = /<g [^>]*data-finish="sketch">[\s\S]*?<\/g>/;
 /** Every ink tag in `markup` hidden, leaving its words and photos; definitions untouched. */
 function hideInk(markup: string): string {
   const kept: string[] = [];
-  const held = markup.replace(DEFINITIONS, (d) => `\u0000${kept.push(d) - 1}\u0000`);
+  const held = markup.replace(DEFINITIONS, (d) => `<!--lvd-def-${kept.push(d) - 1}-->`);
   return held
     .replace(INK_TAGS, '<$1 visibility="hidden"')
-    .replace(/\u0000(\d+)\u0000/g, (_, i: string) => kept[Number(i)]!);
+    .replace(/<!--lvd-def-(\d+)-->/g, (_, i: string) => kept[Number(i)]!);
 }
 
 /** A face's markup as two layers: the ink copy (words and photos taken out) through the wobble, then the words
