@@ -32,6 +32,7 @@ is the whole of what the repo enforces.
   - `no-array-delete`
   - `no-duplicate-type-constituents`
   - `no-for-in-array`
+  - `no-implied-eval`
   - `no-unsafe-enum-comparison`
   - `no-unsafe-unary-minus`
   - `restrict-plus-operands`

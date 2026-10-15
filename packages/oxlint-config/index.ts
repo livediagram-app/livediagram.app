@@ -140,6 +140,7 @@ export default defineConfig({
     'typescript/no-array-delete': 'error',
     'typescript/no-duplicate-type-constituents': 'error',
     'typescript/no-for-in-array': 'error',
+    'typescript/no-implied-eval': 'error',
     'typescript/no-unsafe-enum-comparison': 'error',
     'typescript/no-unsafe-unary-minus': 'error',
     'typescript/restrict-plus-operands': 'error',
