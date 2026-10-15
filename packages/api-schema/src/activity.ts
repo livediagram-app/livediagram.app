@@ -97,6 +97,8 @@ export type ActivityFormResponses = {
   heading: string;
   boardTabId: string | null;
   unseen: number;
+  // When the latest response arrived.
+  latestAt: number;
 };
 
 export type ActivityReadResult = {

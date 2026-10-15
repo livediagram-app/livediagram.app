@@ -395,6 +395,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "heading": {
         "type": "string"
       },
+      "latestAt": {
+        "type": "number"
+      },
       "tabId": {
         "type": "string"
       },
@@ -423,7 +426,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "tabId",
       "heading",
       "boardTabId",
-      "unseen"
+      "unseen",
+      "latestAt"
     ],
     "type": "object"
   },
@@ -3332,6 +3336,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "between",
       "eq",
       "neq"
+    ],
+    "type": "string"
+  },
+  "CoverStyle": {
+    "enum": [
+      "solid",
+      "gradient",
+      "dots"
     ],
     "type": "string"
   },
@@ -6706,8 +6718,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color": {
         "type": "string"
       },
-      "imageId": {
-        "type": "string"
+      "style": {
+        "$ref": "#/components/schemas/CoverStyle"
       }
     },
     "type": "object"
@@ -15743,6 +15755,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Agent",
       "Plan",
       "Sheet",
+      "Form",
       "Community",
       "Timing"
     ],

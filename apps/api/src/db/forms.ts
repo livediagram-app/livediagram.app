@@ -148,12 +148,13 @@ export async function claimResponseNumber(
   const row = await env.DB.prepare(
     `UPDATE form_links
         SET responses = responses + 1,
+            last_response_at = ?,
             hour_count = CASE WHEN hour_start <= ? THEN 1 ELSE hour_count + 1 END,
             hour_start = CASE WHEN hour_start <= ? THEN ? ELSE hour_start END
       WHERE code = ? AND suspended_at IS NULL AND (hour_start <= ? OR hour_count < ?)
       RETURNING responses`,
   )
-    .bind(windowStart, windowStart, now, code, windowStart, hourlyCap)
+    .bind(now, windowStart, windowStart, now, code, windowStart, hourlyCap)
     .first<{ responses: number }>();
   return row ? row.responses : null;
 }

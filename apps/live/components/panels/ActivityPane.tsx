@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer's Inbox (docs/specs/013-workspace/inbox.md): three card-lists of what
+// The Explorer's Inbox (docs/specs/013-workspace/inbox.md): card-lists of what
 // is outstanding for the reader — actions and Plan cards assigned to them, actions
 // they assigned, and the comment threads they are in — each hidden
 // when empty, one empty state when all three are.
@@ -18,6 +18,7 @@ import {
   ActivityCardRow,
   ActivityEmptyState,
   ActivityFailedState,
+  ActivityFormResponsesRow,
   ActivitySection,
   ActivityCardThreadRow,
   ActivityThreadRow,
@@ -33,7 +34,11 @@ export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; co
 
   if (feed.loading) return <SkeletonRows />;
   if (feed.error) return <ActivityFailedState onRetry={feed.retry} />;
-  const total = feed.assignedToMe.length + feed.youAssigned.length + feed.threads.length;
+  const total =
+    feed.assignedToMe.length +
+    feed.youAssigned.length +
+    feed.threads.length +
+    feed.formResponses.length;
   if (total === 0) return <ActivityEmptyState compact={compact} />;
 
   return (
@@ -55,6 +60,17 @@ export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; co
               />
             ),
           )}
+        </ActivitySection>
+      ) : null}
+      {feed.formResponses.length > 0 ? (
+        <ActivitySection title="Form Responses" count={feed.formResponses.length}>
+          {feed.formResponses.map((f) => (
+            <ActivityFormResponsesRow
+              key={`form:${f.documentId}:${f.tabId}`}
+              form={f}
+              onOpen={() => track('Activity', 'Selected', 'FormResponses')}
+            />
+          ))}
         </ActivitySection>
       ) : null}
       {feed.youAssigned.length > 0 ? (

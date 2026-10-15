@@ -82,6 +82,7 @@ export function QuestionTypeMenu({
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-label={value ? `${label}: ${QUESTION_TYPE_NAMES[value]}` : label}
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
         className={className}

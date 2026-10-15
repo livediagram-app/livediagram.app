@@ -98,12 +98,12 @@ describe('Start Planning', () => {
 
   it('searches every kind, grouped, says when nothing matches, and Escape clears it', () => {
     show();
-    const field = screen.getByRole('textbox', { name: 'Find a board, sheet or layout' });
+    const field = screen.getByRole('textbox', { name: 'Find a board, sheet, form or layout' });
     fireEvent.change(field, { target: { value: 'votes' } });
     expect(screen.getByRole('region', { name: 'Boards' })).toBeTruthy();
     expect(card(/^Retro:/)).toBeTruthy();
     fireEvent.change(field, { target: { value: 'zzz' } });
-    expect(screen.getByText('No boards, sheets or layouts match “zzz”')).toBeTruthy();
+    expect(screen.getByText('No boards, sheets, forms or layouts match “zzz”')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Browse More Templates' })).toBeTruthy();
     fireEvent.keyDown(field, { key: 'Escape' });
     expect(screen.getByRole('region', { name: 'Recommended' })).toBeTruthy();
@@ -119,6 +119,44 @@ describe('Start Planning', () => {
     expect(document.querySelector('.lvd-cascade')).not.toBeNull();
     fireEvent.keyDown(rail(/^Boards/), { key: 'ArrowUp' });
     expect(rail(/^Recommended/).getAttribute('aria-current')).toBe('true');
+  });
+});
+
+// docs/specs/030-forms/forms.md "Starting a form": Forms lists every starter, and a choice starts that form.
+describe('Start Planning Forms', () => {
+  it('lists the starters and starts the one chosen', () => {
+    const onForm = vi.fn();
+    show({ onForm });
+    fireEvent.click(rail(/^Forms/));
+    const grid = screen.getByRole('region', { name: 'Forms' });
+    expect(
+      within(grid)
+        .getAllByRole('button')
+        .map((b) => b.getAttribute('data-start-card')),
+    ).toEqual([
+      'form:blank',
+      'form:bug-report',
+      'form:feedback',
+      'form:feature-request',
+      'form:rsvp',
+      'form:job-application',
+      'form:contact',
+    ]);
+    fireEvent.click(within(grid).getAllByRole('button')[1]!);
+    expect(onForm).toHaveBeenCalledWith('bug-report');
+  });
+
+  it('finds a form by what people call one, and leaves Forms out where none can be made', () => {
+    show({ onForm: vi.fn() });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Find a board, sheet, form or layout' }), {
+      target: { value: 'survey' },
+    });
+    expect(screen.getByRole('region', { name: 'Forms' })).toBeTruthy();
+  });
+
+  it('has no Forms without onForm', () => {
+    show();
+    expect(screen.queryByRole('button', { name: /^Forms/ })).toBeNull();
   });
 });
 

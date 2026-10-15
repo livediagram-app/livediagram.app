@@ -10,7 +10,8 @@ export const FORM_RESPONSES_SQL = `WITH ${VISIBLE_DOCUMENTS_CTES}
          l.tab_id, t.name AS tab_name,
          json_extract(t.data, '$.form.heading') AS heading,
          json_extract(t.data, '$.form.destination.tabId') AS board_tab_id,
-         l.responses - COALESCE(r.seen_number, 0) AS unseen
+         l.responses - COALESCE(r.seen_number, 0) AS unseen,
+         COALESCE(l.last_response_at, l.created_at) AS latest_at
     FROM visible v
     CROSS JOIN form_links l ON l.document_id = v.id
     JOIN tabs t ON t.id = l.tab_id
@@ -18,7 +19,7 @@ export const FORM_RESPONSES_SQL = `WITH ${VISIBLE_DOCUMENTS_CTES}
    WHERE v.via <> 'shared'
      AND l.suspended_at IS NULL
      AND l.responses > COALESCE(r.seen_number, 0)
-   ORDER BY unseen DESC, l.created_at DESC
+   ORDER BY latest_at DESC
    LIMIT ?3`;
 
 export type FormResponsesRow = {
@@ -32,6 +33,7 @@ export type FormResponsesRow = {
   heading: string | null;
   board_tab_id: string | null;
   unseen: number;
+  latest_at: number;
 };
 
 export function formResponsesFromRows(rows: FormResponsesRow[]): ActivityFormResponses[] {
@@ -44,5 +46,6 @@ export function formResponsesFromRows(rows: FormResponsesRow[]): ActivityFormRes
     heading: typeof r.heading === 'string' && r.heading ? r.heading : r.tab_name,
     boardTabId: typeof r.board_tab_id === 'string' ? r.board_tab_id : null,
     unseen: r.unseen,
+    latestAt: r.latest_at,
   }));
 }

@@ -1,0 +1,135 @@
+import { describe, expect, it } from 'vitest';
+import { createShape, type Element, type Tab } from '@livediagram/document';
+import { formStarter } from '@livediagram/forms';
+import { ITEM_TYPES, presetSetup, type ItemTypeDef } from '@livediagram/items';
+import {
+  boardsOf,
+  planFormStart,
+  responsesBoardSetup,
+  responsesBoardTab,
+  uniqueTypeLabel,
+  withBoardTaking,
+} from './form-start';
+
+// docs/specs/030-forms/forms.md "Starting a form": where a starter's responses go, and what it adds.
+
+let n = 0;
+const random = () => ((n += 7) % 100) / 100;
+
+const boardTab = (id: string, setup = presetSetup('kanban'), kind: Tab['kind'] = 'board'): Tab => ({
+  id,
+  name: id,
+  kind,
+  elements: [{ ...createShape('plan-board', 0, 0), planBoard: setup } as Element],
+});
+const formTab: Tab = { id: 'form', name: 'Tab 2', elements: [], theme: 'ocean' };
+
+describe('boardsOf', () => {
+  it('reads a Board tab’s live boards only', () => {
+    expect(boardsOf(boardTab('b'))).toHaveLength(1);
+    expect(boardsOf(boardTab('b', presetSetup('archive')))).toEqual([]);
+    expect(boardsOf(boardTab('b', { ...presetSetup('kanban'), columns: [] }))).toEqual([]);
+    expect(boardsOf(boardTab('b', presetSetup('kanban'), 'diagram'))).toEqual([]);
+    expect(
+      boardsOf({ ...boardTab('b'), elements: [createShape('plan-sheet', 0, 0) as Element] }),
+    ).toEqual([]);
+  });
+});
+
+describe('planFormStart', () => {
+  it('sends a Bug Report to the first board that takes Bugs, adding its fields to Bug', () => {
+    const triage = boardTab('triage', presetSetup('bug-triage'));
+    const plan = planFormStart({
+      starter: formStarter('bug-report'),
+      formTab,
+      tabs: [formTab, boardTab('ideas', { ...presetSetup('kanban'), addTypes: ['idea'] }), triage],
+      types: [...ITEM_TYPES],
+      statusNames: [],
+      random,
+    });
+    expect(plan.newBoardTab).toBeNull();
+    expect(plan.form.destination).toEqual({ tabId: 'triage', typeId: 'bug', status: 'new' });
+    expect(plan.type.id).toBe('bug');
+    expect(plan.type.custom?.map((f) => f.label)).toEqual(
+      expect.arrayContaining(['Severity', 'Email']),
+    );
+    expect(plan.saveType).toBe(true);
+  });
+
+  it('makes a Responses board after the form when no board fits, in the form’s theme', () => {
+    const plan = planFormStart({
+      starter: formStarter('feedback'),
+      formTab,
+      tabs: [formTab],
+      types: [],
+      statusNames: [['todo~1', 'To Do']],
+      random,
+    });
+    expect(plan.newBoardTab).toMatchObject({
+      name: 'Feedback Responses',
+      kind: 'board',
+      theme: 'ocean',
+    });
+    const setup = boardsOf(plan.newBoardTab!)[0]!.setup;
+    expect(setup.columns.map((c) => c.name)).toEqual(['New', 'In Progress', 'Done']);
+    expect(plan.form.destination).toMatchObject({
+      tabId: plan.newBoardTab!.id,
+      typeId: plan.type.id,
+      status: setup.columns[0]!.status,
+    });
+    expect(plan.type).toMatchObject({ label: 'Feedback', glyph: 'checklist' });
+  });
+
+  it('gives a blank form the first board’s first type, written as it is', () => {
+    const plan = planFormStart({
+      starter: formStarter('blank'),
+      formTab,
+      tabs: [formTab, boardTab('b')],
+      types: [...ITEM_TYPES],
+      statusNames: [],
+      random,
+    });
+    expect(plan.form.destination?.tabId).toBe('b');
+    // Kanban takes Tasks: the form's cards are Tasks, the catalogue's own.
+    expect(plan.type).toBe(ITEM_TYPES.find((t) => t.id === 'task'));
+    expect(plan.saveType).toBe(false);
+  });
+});
+
+describe('the pieces', () => {
+  it('reuses a document’s own New status by name', () => {
+    const setup = responsesBoardSetup(
+      formStarter('contact'),
+      'Contact Responses',
+      [['new~ab12', 'new']],
+      random,
+    );
+    expect(setup.columns[0]!.status).toBe('new~ab12');
+    expect(setup.doneColumnId).toBe(setup.columns[2]!.id);
+    expect(responsesBoardSetup(formStarter('bug-report'), 'X', [], random).columns[0]!.name).toBe(
+      'New',
+    );
+  });
+
+  it('names a Responses tab, without a theme when the form has none', () => {
+    const tab = responsesBoardTab('Survey', { theme: undefined }, []);
+    expect(tab.name).toBe('Survey Responses');
+    expect(tab).not.toHaveProperty('theme');
+  });
+
+  it('keeps a new type’s name unique', () => {
+    const types = [{ label: 'Feedback' }, { label: 'feedback 2' }] as ItemTypeDef[];
+    expect(uniqueTypeLabel('Feedback', types)).toBe('Feedback 3');
+    expect(uniqueTypeLabel('  ', [])).toBe('Response');
+    expect(uniqueTypeLabel('Survey', types)).toBe('Survey');
+  });
+
+  it('lets a board that confines its types take one more', () => {
+    const confined = boardTab('b', { ...presetSetup('kanban'), addTypes: ['task'] });
+    const taking = withBoardTaking(confined, 'feedback');
+    expect(boardsOf(taking)[0]!.setup.addTypes).toEqual(['task', 'feedback']);
+    expect(withBoardTaking(taking, 'feedback')).toBe(taking);
+    const open = boardTab('o', { ...presetSetup('kanban'), addTypes: undefined });
+    expect(withBoardTaking(open, 'feedback')).toBe(open);
+  });
+});

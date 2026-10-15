@@ -12,6 +12,8 @@ CREATE TABLE form_links (
   created_at INTEGER NOT NULL,
   -- The response number last given (blueprint §11: never reused).
   responses INTEGER NOT NULL DEFAULT 0,
+  -- When the last response arrived (the Inbox's row time).
+  last_response_at INTEGER,
   -- The per-form hourly cap's window and count.
   hour_start INTEGER NOT NULL DEFAULT 0,
   hour_count INTEGER NOT NULL DEFAULT 0,
