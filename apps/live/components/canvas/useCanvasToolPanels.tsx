@@ -143,7 +143,7 @@ export function useCanvasToolPanels({
         }
         speechCooling={!!avatarSpeechCooling}
         status={avatarStatus ?? null}
-        onSetStatus={(next) => onSetAvatarStatus?.(next)}
+        onSetStatus={onSetAvatarStatus}
         position={null}
         onMoveTo={() => {}}
         asPopover
