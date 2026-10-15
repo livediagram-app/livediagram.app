@@ -797,6 +797,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "arrowheadSize": {
         "$ref": "#/components/schemas/ArrowheadSize"
       },
+      "arrowheadStartShape": {
+        "$ref": "#/components/schemas/ArrowheadShape"
+      },
       "curveOffset": {
         "additionalProperties": false,
         "properties": {
@@ -1012,7 +1015,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "circle",
       "circle-hollow",
       "diamond",
-      "diamond-hollow"
+      "diamond-hollow",
+      "one",
+      "zero-or-one",
+      "many",
+      "zero-or-many",
+      "one-or-many"
     ],
     "type": "string"
   },
@@ -12333,6 +12341,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "chartSource": {
         "$ref": "#/components/schemas/ChartSource"
+      },
+      "chartValues": {
+        "type": "boolean"
       },
       "chartVariant": {
         "$ref": "#/components/schemas/ChartVariant"

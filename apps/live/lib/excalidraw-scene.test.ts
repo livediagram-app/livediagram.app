@@ -601,11 +601,26 @@ describe('arrows', () => {
           [0, 0],
           [5, 0],
         ],
-        { endArrowhead: 'crowfoot_many' },
+        { endArrowhead: 'spiral' },
       ),
     ]);
     expect((scene.items[0] as SceneConnector).heads).toEqual({ end: 'arrow' });
     expect(scene.notes).toEqual([{ rule: EXCALIDRAW_NOTE.unmatchedHeads, count: 1 }]);
+  });
+
+  it("reads an ER relationship's crow's feet at both ends", () => {
+    const b = excalidrawBuilder();
+    const scene = sceneOf([
+      b.arrow(
+        [
+          [0, 0],
+          [5, 0],
+        ],
+        { startArrowhead: 'crowfoot_one', endArrowhead: 'crowfoot_many' },
+      ),
+    ]);
+    expect((scene.items[0] as SceneConnector).heads).toEqual({ start: 'one', end: 'many' });
+    expect(scene.notes).toEqual([]);
   });
 });
 

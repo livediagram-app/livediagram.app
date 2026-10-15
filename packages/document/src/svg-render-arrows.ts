@@ -14,11 +14,13 @@ import {
   ARROWHEAD_SIZE_PX,
   ARROW_THICKNESS_PX,
   arrowheadShapeOf,
+  arrowheadStartShapeOf,
   arrowheadSizeOf,
   arrowStyleOf,
   type ArrowheadShape,
 } from './arrow-style';
 import { BORDER_DASH_ARRAY } from './border-style';
+import { ER_GLYPHS } from './er-heads';
 import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
 import { defaultArrowLabelColor, defaultArrowStrokeColor, type CanvasSurface } from './colors';
 import { ROUTE_BEHIND_MARGIN, routeBehindHoles, routeBehindQueryRect } from './arrow-behind';
@@ -123,6 +125,32 @@ export function svgArrowhead(
         ? `<polygon points="${points}" fill="${fill}"/>`
         : `<polygon points="${points}"${hollow}/>`;
     }
+    default: {
+      // An ER end (er-heads.ts): its strokes mapped from the marker's box onto the line, x along it back from the
+      // tip (10 at the table), y across it.
+      const glyph = ER_GLYPHS[shape];
+      // 1.5 heads long, as the canvas marker draws it on a 2px line.
+      const k = (size * 1.5) / 10;
+      const at = (x: number, y: number) =>
+        pt(
+          to.x + (x - 10) * k * ux - (y - 5) * k * uy,
+          to.y + (x - 10) * k * uy + (y - 5) * k * ux,
+        );
+      const stroke = ` stroke="${fill}" stroke-width="1.5" stroke-linecap="round"`;
+      const lines = glyph.lines
+        .map(([x1, y1, x2, y2]) => {
+          const [a, b] = [at(x1, y1), at(x2, y2)];
+          return `<polyline points="${a} ${b}" fill="none"${stroke}/>`;
+        })
+        .join('');
+      const rings = glyph.rings
+        .map(([cx, cy, rr]) => {
+          const [x, y] = at(cx, cy).split(',');
+          return `<circle cx="${x}" cy="${y}" r="${r2(rr * k)}" fill="${xmlEscape(paper)}"${stroke}/>`;
+        })
+        .join('');
+      return lines + rings;
+    }
   }
 }
 
@@ -193,6 +221,10 @@ export function svgArrow(
   const maskAttr = maskId ? ` mask="url(#${xmlEscape(maskId)})"` : '';
   const ends = arrow.arrowEnds ?? 'to';
   const headShape = arrowheadShapeOf(arrow);
+  const startShape = arrowheadStartShapeOf(arrow);
+  // Two different heads (an ER relationship): the sketch draws one shape for both, so it draws only the line and the
+  // heads are drawn exactly.
+  const mixed = startShape !== headShape;
   const headPreset = arrowheadSizeOf(arrow);
   const sketched =
     finish === 'sketch'
@@ -200,8 +232,8 @@ export function svgArrow(
           strokePx: lw,
           headSize: headPreset,
           headShape,
-          startHead: ends === 'from' || ends === 'both',
-          endHead: ends === 'to' || ends === 'both',
+          startHead: !mixed && (ends === 'from' || ends === 'both'),
+          endHead: !mixed && (ends === 'to' || ends === 'both'),
           // The export is a still: no flow runs, so both passes.
           passes: 2,
         })
@@ -209,13 +241,13 @@ export function svgArrow(
   const lineAttrs = ` fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"`;
   parts.push(`<path d="${sketched?.line ?? d}"${lineAttrs}${dashAttr}${maskAttr}/>`);
   if (sketched?.heads) parts.push(`<path d="${sketched.heads}"${lineAttrs}/>`);
-  if (!sketched?.sketchedHeads) {
+  if (!sketched?.sketchedHeads || mixed) {
     const { toRef, fromRef } = arrowHeadRefs(arrow, from, to);
     const headSize = ARROWHEAD_SIZE_PX[headPreset];
     if (ends === 'to' || ends === 'both')
       parts.push(svgArrowhead(toRef, to, stroke, headShape, headSize, paper));
     if (ends === 'from' || ends === 'both')
-      parts.push(svgArrowhead(fromRef, from, stroke, headShape, headSize, paper));
+      parts.push(svgArrowhead(fromRef, from, stroke, startShape, headSize, paper));
   }
   const layout = labels.layouts.get(arrow.id);
   if (layout) {

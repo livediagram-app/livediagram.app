@@ -290,6 +290,19 @@ export function resolvePlacement(
   });
   if (!refBox) return refusal('is an arrow; place against a box');
   if (moving.has(ref.id)) return refusal('moves with it');
+  // `inside:<frame> right-of:<x>`: x must be inside that frame or lane, at any depth.
+  if (placement.within !== undefined) {
+    const holder = resolveOne(state, placement.within, operation);
+    if ('rejection' in holder) return holder;
+    if (!isContainer(holder.el))
+      return refusal(`is placed inside ${placement.within}, which is not a frame or lane`);
+    const holders = holdersOf(state);
+    const inside = (id: ElementId): boolean => {
+      const h = holders.get(id);
+      return h === holder.el.id || (!!h && inside(h));
+    };
+    if (!inside(ref.id)) return refusal(`is not inside ${placement.within}`);
+  }
   const gap = placement.gap ?? PLACEMENT_GAP;
   const taken = occupiers(state, moving);
   switch (placement.rel) {
@@ -313,7 +326,20 @@ export function resolvePlacement(
       const side = placement.rel === 'after' ? sideAfter(state, ref, refBox) : placement.rel;
       const among =
         placement.rel === 'after' || !growsFrame ? null : frameOccupiers(state, ref, moving);
-      const box = nudgeUntilFree(beside(refBox, side, size, gap), side, gap, among ?? taken);
+      let start = beside(refBox, side, size, gap);
+      // `below:<frame> align:<x>`: beside the reference, centred on x across the side.
+      if (placement.alignTo !== undefined) {
+        const to = resolveOne(state, placement.alignTo, operation);
+        if ('rejection' in to) return to;
+        const toBox = boxOf(to.el);
+        if (!toBox) return refusal(`aligns to ${placement.alignTo}, an arrow; align to a box`);
+        const c = centre(toBox);
+        start =
+          side === 'above' || side === 'below'
+            ? { ...start, x: c.x - start.width / 2 }
+            : { ...start, y: c.y - start.height / 2 };
+      }
+      const box = nudgeUntilFree(start, side, gap, among ?? taken);
       return { x: Math.round(box.x), y: Math.round(box.y), ref };
     }
   }

@@ -1,0 +1,103 @@
+// Show Values (docs/specs/009-elements/pie-chart.md): where each mark's number sits and what it reads, laid out once
+// for both renderers, as chart-marks.ts lays out the marks. Pure.
+
+import type { BarMarks, LineMarks, PieMarks } from './chart-marks';
+import type { LineSeries, PieSlice } from './data-shapes';
+import type { ShapeElement } from './element-types';
+import { legendFontPx } from './label-font';
+
+export type ChartValueLabel = {
+  x: number;
+  y: number;
+  text: string;
+  anchor: 'start' | 'middle' | 'end';
+  // On a wedge: drawn in the ink that reads on that wedge's colour; otherwise in the chart's text colour.
+  onMark?: number;
+  // A column's name under its baseline, rather than a number.
+  category?: boolean;
+};
+
+// A value's size: a step under the key's, never under 9px.
+export const chartValueFontPx = (textSize: ShapeElement['textSize']) =>
+  Math.max(9, Math.round(legendFontPx(textSize) * 0.85));
+
+// How far a number stands off its mark.
+const GAP = 6;
+
+// A number read short: 120000 as 120k, 1500000 as 1.5M, at most one decimal. Under 10,000 it reads in full (1,080),
+// since "1.1k" twice told 1,080 from 1,150 not at all.
+export function shortNumber(v: number): string {
+  const a = Math.abs(v);
+  if (a < 1e4) return Number(v.toFixed(1)).toLocaleString('en-US');
+  const [n, unit] = a >= 1e9 ? [v / 1e9, 'B'] : a >= 1e6 ? [v / 1e6, 'M'] : [v / 1e3, 'k'];
+  return `${Number(n.toFixed(1))}${unit}`;
+}
+
+export function barValueLabels(
+  marks: BarMarks,
+  data: readonly PieSlice[],
+  horizontal: boolean,
+  fontPx: number,
+): ChartValueLabel[] {
+  const out: ChartValueLabel[] = [];
+  marks.bars.forEach((bar, i) => {
+    const d = data[i];
+    if (!d) return;
+    out.push(
+      horizontal
+        ? {
+            x: bar.tip.x + GAP,
+            y: bar.tip.y + fontPx * 0.35,
+            text: shortNumber(d.value),
+            anchor: 'start',
+          }
+        : { x: bar.tip.x, y: bar.tip.y - GAP, text: shortNumber(d.value), anchor: 'middle' },
+    );
+    // A column names itself under the baseline, so the legend can go.
+    if (!horizontal)
+      out.push({
+        x: bar.tip.x,
+        y: marks.baseline.y1 + GAP + fontPx,
+        text: d.label,
+        anchor: 'middle',
+        category: true,
+      });
+  });
+  return out;
+}
+
+export function pieValueLabels(
+  marks: PieMarks,
+  data: readonly PieSlice[],
+  fontPx: number,
+): ChartValueLabel[] {
+  const total = data.reduce((s, d) => s + Math.max(0, d.value), 0);
+  const percent = Math.abs(total - 100) < 0.5;
+  return marks.wedges.flatMap((w, i) => {
+    const d = data[i];
+    if (!d || d.value <= 0) return [];
+    return [
+      {
+        x: w.tip.x,
+        y: w.tip.y + fontPx * 0.35,
+        text: percent ? `${Number(d.value.toFixed(1))}%` : shortNumber(d.value),
+        anchor: 'middle' as const,
+        onMark: i,
+      },
+    ];
+  });
+}
+
+export function lineValueLabels(
+  marks: LineMarks,
+  series: readonly LineSeries[],
+): ChartValueLabel[] {
+  return marks.points.flatMap((pts, s) =>
+    pts.flatMap((p, i) => {
+      const v = series[s]?.values[i];
+      return typeof v === 'number' && Number.isFinite(v)
+        ? [{ x: p.x, y: p.y - marks.dot - GAP, text: shortNumber(v), anchor: 'middle' as const }]
+        : [];
+    }),
+  );
+}

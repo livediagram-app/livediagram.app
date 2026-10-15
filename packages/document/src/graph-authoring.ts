@@ -13,6 +13,8 @@
 // referencing an unknown node id is dropped rather than producing an arrow
 // to nowhere.
 
+import { personCardText } from './person-card';
+import type { ErShape } from './er-heads';
 import { SHAPE_DEFAULT_SIZE } from './factories';
 import { ARROW_THICKNESS_PX } from './arrow-style';
 import { coerceShapeKind } from './validate';
@@ -42,6 +44,9 @@ export type GraphNode = {
   // `label` as its title. What an ER import makes of each table
   // (docs/specs/020-import-export/mermaid.md).
   fields?: EntityField[];
+  // A person's role: the node draws as the org-chart template's person card, the label (the name) in bold over it,
+  // with a person glyph unless the node names its own icon.
+  role?: string;
 };
 
 export type GraphEdge = {
@@ -59,6 +64,12 @@ export type GraphEdge = {
   // Head marker: 'circle' → hollow circle, 'cross' → the open-V head (the
   // closest marker to Mermaid's x terminal). Omitted = the filled triangle.
   head?: 'triangle' | 'circle' | 'cross';
+  // The ER ends (docs/specs/020-import-export/mermaid.md "ER diagram coverage"): each table's cardinality where the
+  // line meets it, its start's and its end's. Set, they take over from `head`.
+  er?: { from: ErShape; to: ErShape };
+  // Turned round for the layout only (er-hub-first.ts): the arrow it lays out is turned back after, so the stored
+  // relationship reads as written.
+  turned?: true;
 };
 
 // A named cluster of nodes (docs/specs/020-import-export/mermaid.md: a Mermaid subgraph). Rendered as a
@@ -98,6 +109,7 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
     ...(e.ends && e.ends !== 'to' ? { arrowEnds: e.ends } : {}),
     ...(e.head === 'circle' ? { arrowheadShape: 'circle-hollow' as const } : {}),
     ...(e.head === 'cross' ? { arrowheadShape: 'line' as const } : {}),
+    ...(e.er ? { arrowheadShape: e.er.to, arrowheadStartShape: e.er.from } : {}),
   };
 }
 
@@ -275,7 +287,15 @@ export function graphToElements(
         ...(n.note ? { note: n.note } : {}),
       };
     }
-    const { width, height } = labelBoxSize(n.label, shape, look, !!(n as { icon?: string }).icon);
+    const role = n.role?.trim();
+    const hasIcon = !!(n as { icon?: string }).icon || !!role;
+    // A person card is as wide as its longer line and a line taller than one.
+    const longer = role && role.length > (n.label ?? '').length ? role : (n.label ?? '');
+    const sized = labelBoxSize(role ? longer : n.label, shape, look, hasIcon);
+    const width = sized.width;
+    const height = role
+      ? sized.height + Math.round(LOOK_FONT_PX[look?.textSize ?? 'sm'] * 1.4)
+      : sized.height;
     return {
       id: n.id,
       type: 'shape' as const,
@@ -288,7 +308,14 @@ export function graphToElements(
       // against. The default 'scale' fills each box, so a short heading came
       // out huge beside a long one set small.
       textSize: look?.textSize ?? ('sm' as const),
-      ...(n.label !== undefined ? { label: n.label } : {}),
+      ...(role
+        ? {
+            ...personCardText(n.label ?? '', role),
+            ...((n as { icon?: string }).icon ? {} : { iconId: 'user' }),
+          }
+        : n.label !== undefined
+          ? { label: n.label }
+          : {}),
       ...(n.link !== undefined ? { link: { kind: 'url' as const, url: n.link } } : {}),
       ...(n.note ? { note: n.note } : {}),
     };

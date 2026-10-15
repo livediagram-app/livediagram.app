@@ -10,9 +10,16 @@ import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';
 import { layerLockOf } from '../locks';
 import { resolveSome } from '../selectors';
-import { type EditState, refsOf, refuseLocked, touch, writeFields } from '../state';
+import {
+  currentElements,
+  type EditState,
+  refsOf,
+  refuseLocked,
+  touch,
+  writeFields,
+} from '../state';
 import type { SetOperation } from '../types';
-import { ROUTE_KEYS, withoutRoute } from './connect';
+import { ROUTE_KEYS, rerouted } from './connect';
 
 // The fields that are an arrow's route, which new ends drop.
 const ROUTE_KEY_SET: ReadonlySet<string> = new Set(ROUTE_KEYS);
@@ -53,7 +60,7 @@ function setOne(
     fitted.el.type === 'arrow' &&
     written.written.some((key) => key === 'from' || key === 'to') &&
     !written.written.some((key) => ROUTE_KEY_SET.has(key));
-  const next = reEnded ? withoutRoute(fitted.el as ArrowElement) : fitted.el;
+  const next = reEnded ? rerouted(fitted.el as ArrowElement, currentElements(state)) : fitted.el;
   if (sameValue(next, el)) return null;
   const layerLock = layerLockOf(state.tab.layers, next.layerId);
   if (layerLock) return refuseLocked(state, 'set', operation, next, layerLock);

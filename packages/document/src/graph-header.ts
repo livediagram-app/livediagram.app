@@ -112,7 +112,7 @@ export function withHeaderAndKey(
   return [...added, ...elements];
 }
 
-// The key: a quiet card level with the drawing's top, one row per shape kind the drawing uses, each a miniature
+// The key: a frame level with the drawing's top, one row per shape kind the drawing uses, each a miniature
 // in the tone the drawing gives that kind most.
 function keyCard(
   boxes: BoxedElement[],
@@ -124,33 +124,41 @@ function keyCard(
     (b): b is ShapeElement => b.type === 'shape' && b.shape !== 'frame' && b.shape !== 'lane',
   );
   const rows = KEY_MEANING.filter(([kind]) => shapes.some((s) => s.shape === kind));
-  if (rows.length < 2) return [];
+  // The muted tone is a meaning of its own where it marks some boxes and not others: a row for it, in the shape most
+  // of the muted wear (a dashed error step had no row saying what dashed meant).
+  // Only where a kind's row shows its ordinary look: a kind all muted already shows the muted look in its own row.
+  const muted = shapes.filter(
+    (s) =>
+      s.colorPreset === TONE_PRESET.muted &&
+      shapes.some((o) => o.shape === s.shape && o.colorPreset !== TONE_PRESET.muted),
+  );
+  const mutedKind =
+    muted.length > 0
+      ? ([...KEY_MEANING]
+          .map((row) => ({ row, n: muted.filter((s) => s.shape === row[0]).length }))
+          .filter(({ n }) => n > 0)
+          .sort((a, b) => b.n - a.n)[0]?.row ?? null)
+      : null;
+  if (rows.length + (mutedKind ? 1 : 0) < 2) return [];
   const x = block.x + block.width + KEY_GAP;
   const top = block.y;
-  const height = KEY_PAD + 40 + rows.length * KEY_ROW_H + KEY_PAD - 12;
+  const height = KEY_PAD + 40 + (rows.length + (mutedKind ? 1 : 0)) * KEY_ROW_H + KEY_PAD - 12;
+  // A frame titled "Key", so the key moves as one (a frame carries its members), in the editor or by an edit.
   const out: Element[] = [
     {
       id: idOf(makeId, 'key'),
       type: 'shape',
-      shape: 'square',
+      shape: 'frame',
       x,
       y: top,
       width: KEY_W,
       height,
-      label: '',
-      colorPreset: 'paper',
-    },
-    {
-      id: idOf(makeId, 'key-title'),
-      type: 'text',
-      x: x + KEY_PAD,
-      y: top + KEY_PAD,
-      width: KEY_W - KEY_PAD * 2,
-      height: 28,
       label: 'Key',
       textSize: 'md',
       textBold: true,
       textAlignX: 'left',
+      textAlignY: 'top',
+      padding: 'lg',
     },
   ];
   rows.forEach(([kind, fallback, iconH], i) => {
@@ -182,8 +190,40 @@ function keyCard(
       },
     );
   });
+  if (mutedKind) {
+    const [kind, , iconH] = mutedKind;
+    const y = top + KEY_PAD + 40 + rows.length * KEY_ROW_H;
+    out.push(
+      {
+        id: idOf(makeId, 'key-muted'),
+        type: 'shape',
+        shape: kind as ShapeElement['shape'],
+        x: x + KEY_PAD,
+        y: y + (36 - iconH) / 2,
+        width: KEY_ICON_W,
+        height: iconH,
+        label: '',
+        colorPreset: TONE_PRESET.muted,
+      },
+      {
+        id: idOf(makeId, 'key-muted-label'),
+        type: 'text',
+        x: x + KEY_PAD + KEY_ICON_W + 14,
+        y: y + 4,
+        width: KEY_W - KEY_PAD * 2 - KEY_ICON_W - 14,
+        height: 28,
+        label: meaning('muted', KEY_MUTED_MEANING),
+        textSize: 'sm',
+        textColor: GRAPH_MUTED,
+        textAlignX: 'left',
+      },
+    );
+  }
   return out;
 }
+
+// What the muted tone means by default (its tone description: an exception or an optional step).
+const KEY_MUTED_MEANING = 'Exception or optional';
 
 // The preset most of these shapes wear, or undefined when most wear none.
 function mostCommonPreset(shapes: ShapeElement[]): string | undefined {

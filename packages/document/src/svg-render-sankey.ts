@@ -10,6 +10,7 @@ import {
   sankeyLabelHalo,
   type SankeyLabel,
 } from './sankey-frame';
+import { EXPORT_DEFAULT_FONT } from './svg-render-labels';
 import { r2, xmlEscape } from './svg-render-primitives';
 
 type Sankey = BoxedElement & { type: 'shape' };
@@ -52,7 +53,7 @@ export function svgSankey(
 ): string {
   const textColor = chartTextInk(labelColor, ground);
   const f = sankeyFrame(el as ShapeElement, palette, ground);
-  const font = fontFamily ? ` font-family="${xmlEscape(fontFamily)}"` : '';
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
   if (f.layout.links.length === 0) {
     // The empty state, as the canvas draws it for someone who cannot edit: an outline and a line of text.
     return (

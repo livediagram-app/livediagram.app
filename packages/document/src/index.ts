@@ -533,6 +533,8 @@ export * from './label-font';
 export * from './table-cell-font';
 export * from './lane-gutter';
 export * from './arrow-style';
+export * from './er-heads';
+export * from './er-hub-first';
 export * from './border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
@@ -580,6 +582,7 @@ export * from './chart-frame';
 export * from './chart-ink';
 export * from './chart-types';
 export * from './chart-marks';
+export * from './chart-values';
 export * from './chart-source';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
@@ -615,6 +618,7 @@ export * from './icon-weight';
 // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure
 // helpers shared by the canvas renderer and the contentEditable editor.
 export * from './rich-text';
+export * from './person-card';
 
 export * from './factories';
 export * from './event-storming';

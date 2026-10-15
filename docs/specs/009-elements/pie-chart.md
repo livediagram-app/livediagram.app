@@ -46,6 +46,13 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   flyout never offers it) and reads through `legendFontPx` (`label-font.ts`): a px is itself, and
   the presets earlier charts carry read 11 / 14 / 18px, with Medium the default. A key is not a name, so it has its own scale rather than
   the label one. An absent `textSize` reads as Medium.
+- Under the legend, **Show Values** (`chartValues`, off by default, so a chart made before it draws as it did) prints
+  each mark's number on the chart: above a column, after a bar, above each point of a line, area or scatter series, and
+  inside a pie's or doughnut's wedge (as a percentage when the values add up to 100). A column chart with values also
+  names each column under its baseline, so its legend can be turned off. Numbers read short from 10,000 up: 120000 as 120k,
+  1500000 as 1.5M, at most one decimal; under that in full (1,080). A wedge's number takes the ink that reads on its colour; the rest take the chart's text
+  colour, at the key's size. The editor's toggle fires `Element·Changed·ChartValues`. It is a display option of the
+  chart, so it follows the Chart category's gating: an Editor changes it; a Participant or Viewer sees the numbers.
 - The **Animation** category carries the chart-specific animations
   (None / Grow / Pop / Spin / Pulse, with a **Speed** row + **Repeat** toggle)
   in place of the boxed-element animation set — a chart animates its marks, not
@@ -98,6 +105,7 @@ not a new top-level type — so they inherit boxed-element behaviour. `isChartSh
 groups all three (they're all in `isSelfDrawingShape` too).
 
 - Pie + bar: `ShapeElement.pieSlices?: PieSlice[]` (`{ label, value, color? }`).
+- `ShapeElement.chartValues?: boolean`: the numbers on the marks (Show Values); absent means off.
 - Line: `ShapeElement.lineCategories?: string[]` + `lineSeries?: LineSeries[]`
   (`{ name, color?, values: number[] }`), aligned to the categories — a 2-D
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.
@@ -106,7 +114,8 @@ groups all three (they're all in `isSelfDrawingShape` too).
   `chartShapeOf(type)` map between a chart and its type, `chartTypeChange(el, type)` gives the patch that changes it
   (`packages/document/src/chart-types.ts`), and `pieMarks` / `barMarks` / `lineMarks`
   (`packages/document/src/chart-marks.ts`) lay out every type's marks for both the canvas views and the exporter, so
-  the two never draw a chart differently.
+  the two never draw a chart differently. An exported chart's (and Sankey's) text names the theme's font, else the
+  export's sans default, never bare: a standalone viewer drew bare text in its serif default.
   The types + constants + `isPieShape` / `isBarShape` / `isLineShape` /
   `isChartShape` live in `@livediagram/document` (`src/data-shapes.ts`).
 - Rendered by `PieChartView` / `BarChartView` / `LineChartView`: SVG marks in the

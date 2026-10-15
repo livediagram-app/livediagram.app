@@ -16,12 +16,15 @@ import {
   lanesToFront,
   normaliseElement,
   rebindArrowAnchorsAfterMove,
+  type ArrowElement,
   type BoxedElement,
   type Element,
   type ElementId,
+  type Endpoint,
   type Tab,
 } from '@livediagram/document';
 import { kindOf } from './element-text';
+import { ROUTE_KEYS, rerouted } from './operations/connect';
 import { sameValue } from './equality';
 import { invalidResult } from './rejections';
 import { currentElements, replaceElement, type EditState } from './state';
@@ -120,6 +123,27 @@ function movedBoxes(before: ReadonlyMap<ElementId, Element>, next: Element[]): S
   return moved;
 }
 
+// An arrow the rebind re-anchored with one end's box moved and the other still is drawn afresh (EO31): kept, its
+// route ran from the new anchor through the moved box. Both ends moved, the arrow moved whole and its route holds.
+function rerouteRebound(
+  landed: Element[],
+  rebound: Element[],
+  moved: ReadonlySet<ElementId>,
+): Element[] {
+  if (rebound === landed) return rebound;
+  const anchorOf = (end: Endpoint) => (end as { anchor?: string }).anchor;
+  const endsMoved = (a: ArrowElement) =>
+    [a.from, a.to].filter((end) => end.kind === 'pinned' && moved.has(end.elementId)).length;
+  return rebound.map((el, i) => {
+    const was = landed[i];
+    if (el.type !== 'arrow' || !was || was === el || was.type !== 'arrow') return el;
+    const ends = (a: ArrowElement) => `${anchorOf(a.from)}>${anchorOf(a.to)}`;
+    const reanchored = ends(el) !== ends(was);
+    const routed = ROUTE_KEYS.some((k) => el[k] !== undefined);
+    return reanchored && routed && endsMoved(el) === 1 ? rerouted(el, rebound) : el;
+  });
+}
+
 // Why a whole tab fails validation: the first invalid element, the element cap, a repeated id, or
 // the tab's own id and name.
 export function tabRejection(tab: Tab): EditRejection {
@@ -187,7 +211,8 @@ export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
   if (issue) return issue;
   const landed = landWorkshopArrivals(state.tab, [...currentElements(state)], 'ops');
   noteLandings(state, landed);
-  const rebound = rebindArrowAnchorsAfterMove(landed, movedBoxes(state.before, landed));
+  const moved = movedBoxes(state.before, landed);
+  const rebound = rerouteRebound(landed, rebindArrowAnchorsAfterMove(landed, moved), moved);
   // An element that ends as it began is the element it began as (E1, I2).
   const elements = containersBehindMembers(lanesToFront(rebound)).map((el) => {
     const was = state.before.get(el.id);

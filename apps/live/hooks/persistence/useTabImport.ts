@@ -258,7 +258,7 @@ export function useTabImport({
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
 
     if (format === 'mermaid') {
-      const { parseMermaid, layoutClusteredGraph, rederiveColorPresetForTheme } =
+      const { parseMermaid, layoutClusteredGraph, rederiveColorPresetForTheme, turnBack } =
         await import('@livediagram/document');
       const parsed = parseMermaid(text);
       if (!parsed.ok) return { status: 'error', error: parsed.error };
@@ -268,9 +268,12 @@ export function useTabImport({
       // now. The cluster-aware layout honours the flowchart direction
       // (TB / LR) and draws subgraphs as frames.
       const theme = getTheme(active?.theme);
-      const elements = layoutClusteredGraph(parsed.graph, { direction: parsed.direction }).map(
-        (el) =>
-          el.type === 'shape' && el.colorPreset ? rederiveColorPresetForTheme(el, theme) : el,
+      // An ER relationship laid out hub first is turned back to the way it was written (er-hub-first.ts).
+      const elements = turnBack(
+        layoutClusteredGraph(parsed.graph, { direction: parsed.direction }),
+        parsed.graph.edges,
+      ).map((el) =>
+        el.type === 'shape' && el.colorPreset ? rederiveColorPresetForTheme(el, theme) : el,
       );
       replaceActiveTabContent({
         id: activeId,

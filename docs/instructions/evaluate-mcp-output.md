@@ -32,7 +32,7 @@ follows) and `scenarios.md` (the scenario bank, ids stable across runs). `token.
 
    > Read the brief at `<kit>/brief.md` and follow it exactly, except: return your report as your final message (do
    > not try to write the report file). EVAL=`<kit>`. Use EVAL_LOG=$EVAL/runs/`<run>`/calls.jsonl
-   > EVAL_IMG_DIR=$EVAL/runs/`<run>`/shots. If the server at 127.0.0.1:8798 refuses connections, wait a minute and
+   > EVAL_IMG_DIR=$EVAL/runs/`<run>`/shots. Write any scratch files only inside $EVAL/runs/`<run>`/. If the server at 127.0.0.1:8798 refuses connections, wait a minute and
    > retry; say so in the report. Fulfil scenarios `<ids>` from $EVAL/scenarios.md, each as its own new document,
    > as the user typed it. Score each result 1-5 against template quality, as the brief describes, and list
    > concrete defects with the element ids and what you saw in the preview.
@@ -84,6 +84,12 @@ random bytes>`, `created_at` and `expires_at` in ms, `read_only` 0) with `wrangl
   (the graph is in `calls.jsonl`), not by one score; re-lay out that input against the old and new code to compare.
 
 - Subagents cannot write files in this harness; they return the report as their final message.
+- Evaluators running side by side share a scratchpad: one picked up another session's stale `d14.json` and created
+  the wrong document. Keep each evaluator's scratch files in its own run folder (the prompt above says so).
+- Two evaluators can disagree on taste (stage frames stretched to one width were "empty"; left their own width,
+  "ragged"). Change the product only where two runs agree, or the scores swing between the two.
+- Grade the scenarios a round of fixes touched, then run all fourteen now and then: a layout fix for one scenario
+  shifts others (R7 caught D9 dropping from 4 to 3).
 - The preview is the server's own render (`renderElementsToSvg` through resvg), not the editor. A defect only the
   preview shows is still a defect: it is what the assistant sees and what it judges its work by.
 - A template's sample people and numbers read as real to an evaluator; an agent leaves them in unless told what is

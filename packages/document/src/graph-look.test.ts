@@ -187,8 +187,18 @@ describe('title, subtitle and key', () => {
   it('adds a key of the shape kinds used beside the drawing, one row each', () => {
     const els = lay({ ...checkout, key: true });
     const labels = els.filter((e) => e.type === 'text').map((e) => (e as { label?: string }).label);
-    expect(labels).toEqual(expect.arrayContaining(['Key', 'Start or end', 'Step', 'Decision']));
+    expect(labels).toEqual(expect.arrayContaining(['Start or end', 'Step', 'Decision']));
     expect(labels).not.toContain('Data store');
+    // A frame titled Key holding its rows, so it moves as one.
+    const key = els.find(
+      (e) => e.type === 'shape' && e.shape === 'frame' && (e as { label?: string }).label === 'Key',
+    ) as BoxedElement;
+    expect(key).toBeDefined();
+    const step = els.find(
+      (e) => e.type === 'text' && (e as { label?: string }).label === 'Step',
+    ) as BoxedElement;
+    expect(step.x).toBeGreaterThanOrEqual(key.x);
+    expect(step.y + step.height).toBeLessThanOrEqual(key.y + key.height);
   });
 });
 
@@ -231,12 +241,19 @@ describe('key samples', () => {
     edges: tones.map((_, i) => ({ from: `s${i}`, to: 'step' })),
     key: true,
   });
-  it('shows a kind in its ordinary look, not the muted exception among it', () => {
+  it('shows a kind in its ordinary look, and the muted exception in a row of its own', () => {
     const els = lay(kinds(['soft', 'soft', 'muted']));
     const keyed = els.filter(
       (e) => e.type === 'shape' && e.shape === 'stadium' && e.width < 100,
     ) as { colorPreset?: string }[];
-    expect(keyed.map((k) => k.colorPreset)).toEqual(['soft']);
+    expect(keyed.map((k) => k.colorPreset)).toEqual(['soft', 'outline']);
+    const labels = els.filter((e) => e.type === 'text').map((e) => (e as { label?: string }).label);
+    expect(labels).toContain('Exception or optional');
+    // Named like a shape, through the key object.
+    const named = lay({ ...kinds(['soft', 'muted']), key: { muted: 'Error path' } });
+    expect(
+      named.some((e) => e.type === 'text' && (e as { label?: string }).label === 'Error path'),
+    ).toBe(true);
   });
 
   it('shows the muted look when every one of the kind is muted', () => {
@@ -423,6 +440,36 @@ describe('lanes', () => {
     expect(anchor('o')).not.toBe('s');
   });
 
+  it("spreads a decision's stacked next steps so its exits branch from the top and the point", () => {
+    const els = lay({
+      style: 'lanes',
+      nodes: [
+        { id: 'offer', label: 'Make offer', group: 'rec' },
+        { id: 'd', label: 'Accept offer?', shape: 'diamond', group: 'cand' },
+        { id: 'yes', label: 'Accept', group: 'cand' },
+        { id: 'no', label: 'Decline', group: 'cand' },
+      ],
+      groups: [
+        { id: 'cand', label: 'Candidate' },
+        { id: 'rec', label: 'Recruiter' },
+      ],
+      edges: [
+        { from: 'offer', to: 'd' },
+        { from: 'd', to: 'yes', label: 'yes' },
+        { from: 'd', to: 'no', label: 'no' },
+      ],
+    });
+    const [d, a, b] = ['d', 'yes', 'no'].map((id) => box(els, id));
+    // Each next step clears the decision's points by more than the branch threshold.
+    expect(midY(d!) - midY(a!)).toBeGreaterThan(d!.height / 2 + 24);
+    expect(midY(b!) - midY(d!)).toBeGreaterThan(d!.height / 2 + 24);
+    const anchors = ['yes', 'no'].map((to) => {
+      const arr = arrowTo(els, 'd', to);
+      return arr.from.kind === 'pinned' ? arr.from.anchor : null;
+    });
+    expect(new Set(anchors).size).toBe(2);
+  });
+
   it('gives nodes outside every group an unnamed lane of their own', () => {
     const els = lay({
       style: 'lanes',
@@ -486,6 +533,82 @@ describe('mindmap', () => {
   });
 });
 
+describe('cycle tangents', () => {
+  it('leaves and enters each stop along the ring, so every arc bows out alike', () => {
+    const els = lay({
+      style: 'cycle',
+      nodes: ['n', 'e', 's', 'w'].map((id) => ({ id, label: id })),
+      edges: [
+        { from: 'n', to: 'e' },
+        { from: 'e', to: 's' },
+        { from: 's', to: 'w' },
+        { from: 'w', to: 'n' },
+      ],
+    });
+    const ends = (from: string, to: string) => {
+      const a = arrowTo(els, from, to);
+      return [a.from, a.to].map((p) => (p.kind === 'pinned' ? p.anchor : null));
+    };
+    // Clockwise from the top: out of the top stop's right, into the right stop's top, and so on round.
+    expect(ends('n', 'e')).toEqual(['e', 'n']);
+    expect(ends('e', 's')).toEqual(['s', 'e']);
+    expect(ends('s', 'w')).toEqual(['w', 's']);
+    expect(ends('w', 'n')).toEqual(['n', 'w']);
+  });
+});
+
+describe('mindmap sizes', () => {
+  const map = (rootLabel: string) =>
+    lay({
+      style: 'mindmap',
+      nodes: [
+        { id: 'r', label: rootLabel },
+        { id: 'b', label: 'Marketing' },
+        { id: 'l1', label: 'Instagram brewing reels' },
+        { id: 'l2', label: 'Founding-member waitlist for early subscribers who join' },
+        { id: 'l3', label: 'PR' },
+      ],
+      edges: [
+        { from: 'r', to: 'b' },
+        { from: 'b', to: 'l1' },
+        { from: 'b', to: 'l2' },
+        { from: 'b', to: 'l3' },
+      ],
+    });
+
+  it('gives every leaf of the map one height, across branches', () => {
+    const els = lay({
+      style: 'mindmap',
+      nodes: [
+        { id: 'r', label: 'Launch' },
+        { id: 'b', label: 'Marketing' },
+        { id: 'c', label: 'Pricing' },
+        { id: 'l1', label: 'Founding-member waitlist for early subscribers who join' },
+        { id: 'l2', label: 'PR' },
+        { id: 'l3', label: 'Tiers' },
+      ],
+      edges: [
+        { from: 'r', to: 'b' },
+        { from: 'r', to: 'c' },
+        { from: 'b', to: 'l1' },
+        { from: 'b', to: 'l2' },
+        { from: 'c', to: 'l3' },
+      ],
+    });
+    const heights = new Set(['l1', 'l2', 'l3'].map((id) => box(els, id).height));
+    expect(heights.size).toBe(1);
+  });
+
+  it('keeps a long root near the template size by stepping its text down', () => {
+    const short = box(map('Launch'), 'r');
+    expect(short.width).toBe(200);
+    expect(short).toMatchObject({ textSize: 'lg' });
+    const long = box(map('Coffee subscription product launch plan for the autumn'), 'r');
+    expect(long).toMatchObject({ textSize: 'md' });
+    expect(long.width).toBeLessThanOrEqual(320);
+  });
+});
+
 describe('tree', () => {
   it("stacks a manager's leaf reports in a column under them, joined by a bus", () => {
     const els = lay({
@@ -507,6 +630,54 @@ describe('tree', () => {
     const bus = arrowTo(els, 'cto', 'b');
     expect(bus.from.kind === 'pinned' && bus.from.anchor).toBe('ssw');
     expect(bus.to.kind === 'pinned' && bus.to.anchor).toBe('w');
+  });
+
+  it('draws its lines without heads, as the org-chart template does, unless an edge asks', () => {
+    const els = lay({
+      style: 'tree',
+      nodes: [{ id: 'ceo' }, { id: 'cto' }, { id: 'coo' }],
+      edges: [
+        { from: 'ceo', to: 'cto' },
+        { from: 'ceo', to: 'coo', ends: 'to' },
+      ],
+    });
+    expect(arrowTo(els, 'ceo', 'cto').arrowEnds).toBe('none');
+    expect(arrowTo(els, 'ceo', 'coo').arrowEnds).not.toBe('none');
+  });
+
+  it('keeps the heads of a flow', () => {
+    const els = lay({ nodes: [{ id: 'a' }, { id: 'b' }], edges: [{ from: 'a', to: 'b' }] });
+    expect(arrowTo(els, 'a', 'b').arrowEnds).not.toBe('none');
+  });
+});
+
+describe('person cards', () => {
+  it('draws a node with a role as the template person card: name bold over role, a person icon', () => {
+    const els = lay({
+      style: 'tree',
+      nodes: [
+        { id: 'ceo', label: 'Maya Chen', role: 'Chief Executive' },
+        { id: 'cto', label: 'Ben Ortiz', role: 'CTO', icon: 'laptop' },
+        { id: 'plain', label: 'Board' },
+      ],
+      edges: [
+        { from: 'ceo', to: 'cto' },
+        { from: 'ceo', to: 'plain' },
+      ],
+    });
+    const ceo = box(els, 'ceo') as BoxedElement & {
+      richText?: unknown;
+      iconId?: string;
+      label?: string;
+    };
+    expect(ceo.label).toBe('Maya Chen\nChief Executive');
+    expect(ceo.richText).toEqual([
+      { text: 'Maya Chen', bold: true, size: 'md' },
+      { text: '\nChief Executive' },
+    ]);
+    expect(ceo.iconId).toBe('user');
+    expect((box(els, 'cto') as { iconId?: string }).iconId).toBe('laptop');
+    expect(box(els, 'plain')).not.toHaveProperty('richText');
   });
 });
 

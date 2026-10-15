@@ -5,7 +5,7 @@
 
 import { edgeToArrow, graphToElements, type DiagramGraph, type GraphLook } from './graph-authoring';
 import { reanchorArrow, type Pt } from './auto-layout-shared';
-import { isBoxed, type BoxedElement, type Element } from './index';
+import { ALL_ANCHORS, isBoxed, type Anchor, type BoxedElement, type Element } from './index';
 
 // Room between two stops along the ring, and the smallest ring.
 const RING_GAP = 72;
@@ -67,11 +67,24 @@ export function layoutCycle(
       const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
       const len = Math.hypot(mid.x, mid.y);
       const onArc = len > 1 ? { x: (mid.x / len) * r, y: (mid.y / len) * r } : mid;
+      // Each end along the ring's tangent, toward the other: anchored by the chord, neighbours on the ring's side met
+      // their circles side to side while those at its top met them top to bottom, and the arcs hooked and sagged.
+      const sense = Math.sign(a.x * b.y - a.y * b.x) || 1;
+      const tangent = (p: Pt, s: number) => ({ x: -p.y * s, y: p.x * s });
       return {
         ...arrow,
+        from: { kind: 'pinned' as const, elementId: e.from, anchor: towards(tangent(a, sense)) },
+        to: { kind: 'pinned' as const, elementId: e.to, anchor: towards(tangent(b, -sense)) },
         arrowStyle: 'curved' as const,
         curveOffset: { dx: onArc.x - mid.x, dy: onArc.y - mid.y },
       };
     });
   return [...placed, ...arrows];
+}
+
+// The anchor nearest a direction: the sixteen run clockwise from north, 22.5 degrees apart, and on a round stop they
+// sit on its outline in those directions.
+function towards(d: Pt): Anchor {
+  const deg = (Math.atan2(d.y, d.x) * 180) / Math.PI + 90;
+  return ALL_ANCHORS[((Math.round(deg / 22.5) % 16) + 16) % 16]!;
 }

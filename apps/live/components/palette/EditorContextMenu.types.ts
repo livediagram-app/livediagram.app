@@ -187,6 +187,8 @@ export type EditorContextMenuProps = {
   onSetPieAnimSpeed: (value: AnimationSpeed) => void;
   onSetPieAnimRepeat: (value: boolean) => void;
   onSetChartLegend: (value: boolean) => void;
+  // Show Values (docs/specs/009-elements/pie-chart.md).
+  onSetChartValues: (value: boolean) => void;
   onSetChartLegendPosition: (position: ChartLegendPosition) => void;
   // Chart type (docs/specs/009-elements/pie-chart.md "Chart types"): Column, Bar, Line, Area, Scatter, Pie, Doughnut.
   onSetChartType: (type: ChartType) => void;

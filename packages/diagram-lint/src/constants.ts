@@ -34,3 +34,9 @@ export const LINT_MESSAGE_COLUMN_MAX = 48;
 export const LINT_BUDGET_CPU_MS = 50;
 // A hub's ring (node-isolated): how far any connected box may stray from their mean distance to it, as a share.
 export const LINT_RING_SPREAD = 0.35;
+
+// Room a label keeps either end of its run (graph input's LABEL_RUN_MARGIN), for the characters a run holds.
+export const LINT_LABEL_RUN_PAD = 16;
+
+// How far clear of a line arrow-behind-box's move puts the box (a label plate's height and some).
+export const LINT_MOVE_CLEAR = 16;

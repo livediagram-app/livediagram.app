@@ -43,9 +43,20 @@ export function placementIssue(value: unknown): string | null {
   }
   if (!isOneOf(PLACEMENT_RELATIONS, value.rel))
     return expected('place', `"rel" one of ${[...PLACEMENT_RELATIONS, 'at'].join(', ')}`);
-  const extra = Object.keys(value).find((key) => !['rel', 'ref', 'gap'].includes(key));
+  const extra = Object.keys(value).find(
+    (key) => !['rel', 'ref', 'gap', 'within', 'alignTo'].includes(key),
+  );
   if (extra !== undefined) return expected('place', `no "${extra}" with "${value.rel}"`);
   if (!isText(value.ref)) return expected('place', '"ref" a non-empty selector');
+  if (value.within !== undefined) {
+    if (value.rel === 'inside') return expected('place', 'no "within" with "inside"');
+    if (!isText(value.within)) return expected('place', '"within" a non-empty selector');
+  }
+  if (value.alignTo !== undefined) {
+    if (value.rel === 'inside' || value.rel === 'align')
+      return expected('place', `no "alignTo" with "${value.rel}"`);
+    if (!isText(value.alignTo)) return expected('place', '"alignTo" a non-empty selector');
+  }
   const gap = value.gap;
   if (
     gap !== undefined &&

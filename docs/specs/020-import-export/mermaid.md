@@ -85,7 +85,8 @@ only the sweep direction differs).
   A node belongs to the subgraph where it was **first defined** (matching
   Mermaid). Edges may reference a subgraph id — the arrow pins to the frame.
   Nested subgraphs fold into their top-level ancestor (frames import one
-  level deep). On export, each frame becomes a `subgraph` block containing
+  level deep); through the MCP the reply says so (`notes`: "2 nested subgraphs folded into their outer group:
+  groups draw one level deep"), rather than dropping the nesting silently. On export, each frame becomes a `subgraph` block containing
   the boxed nodes whose centre sits inside it (a node inside several frames
   belongs to the smallest).
 - **Click links**: `click A "https://…"` (and the `click A href "https://…"`
@@ -127,14 +128,23 @@ LR` line sets the layout direction (TB default).
   each). This replaced square boxes whose label held the name and every
   attribute on its own line, which read as a paragraph and did not survive a
   label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened
-  it to "SHARE_LINK text code text document_id…").
-- **Relationships**: `A ||--o{ B : label` becomes an edge labelled with the verb and the multiplicity in words,
-  as the ER template writes it: `label · 1 : 0..*` (`|o` zero or one `0..1`, `||` exactly one `1`, `}o` zero or
-  more `0..*`, `}|` one or more `1..*`; with no verb, the multiplicity alone).
-  Cardinality maps onto arrow ends: a "many" side (crow's foot, `{` / `}`)
-  gets an open-V arrowhead on that end (`ends`: the many side(s), `head:
-'cross'`); one-to-one relationships render headless. Non-identifying
-  (dotted `..`) relationships render dashed.
+  it to "SHARE_LINK text code text document_id…"). An alias in square brackets after the name (`BOOK_AUTHOR[Book
+author]`, `a["Customer account"]`), wherever the entity is named (its block, a relationship, a bare line), is
+  the title shown; the name stays its id. Without one the title is the name.
+- **Relationships**: `A ||--o{ B : label` becomes an edge labelled with its verb alone (none with no verb): the
+  ER ends say the multiplicity, which the label spelled out in words (`places · 1 : 0..*`) while the heads could
+  only say "many".
+  Cardinality maps onto the ER arrow ends at both tables (`ends: 'both'`): `||` One, `|o` Zero or One, `}o` / `o{`
+  Zero or Many, `}|` / `|{` One or Many, the line's start taking its left token and its end its right
+  (`arrowheadStartShape` and `arrowheadShape`). Non-identifying (dotted `..`) relationships render dashed.
+  **Hub first**: each relationship is oriented away from the best-connected entity (most relationships, the first
+  declared on a tie), by its distance from it, each separate cluster from its own best-connected entity, so the
+  layered layout puts the hub at the top with its neighbours round it rather than last with every line reaching
+  back to it. A relationship draws an end at each table, so turning it round (its two ends swapped with it) draws
+  the same thing; on the bookstore fixtures it took crossings from one to none and shared runs from 280 px to 30.
+  Only the layout sees the turn: each laid-out arrow is turned back after (its ends, heads, bends and label place
+  swapped, the line unchanged), so the stored relationship reads as written (`AUTHOR -> BOOK_AUTHOR "writes"`), never
+  "Book publishes Publisher".
 
 ## Sequence diagrams (agents)
 
@@ -145,7 +155,9 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
   participants appear in the order declared, then first mentioned. Messages `A->>B: text` (a call: solid, filled
   head), `A-)B: text` (async: solid, open head), `A-->>B: text` and `A-->B: text` (a reply: dashed, open head),
   `A->B` and `A-xB` (calls); `A->>A` is a self-call. `+` and `-` after the arrow (`A->>+B`, `B-->>-A`) and
-  `activate B` / `deactivate B` start and end activations at the message the line follows. `Note over A,B: text`, `Note right of A: text`,
+  `activate B` / `deactivate B` start and end activations at the message the line follows; a message into B that
+  `activate B` follows ends on the bar it starts, not on B's lifeline inside it. An activation the author opened (`+`,
+  `activate`) stays open until its `-` or `deactivate`; a reply on the way does not close it. `Note over A,B: text`, `Note right of A: text`,
   `Note left of A: text`. Fragments `loop`, `alt` (with `else`), `opt`, `par` (with `and`), `critical`, `break`,
   each closed by `end`. `autonumber` numbers the messages; `title Text` (or front matter `title:`) heads the
   diagram. `rect` blocks, `box` groupings, links and styling are read and skipped, never an error.
@@ -154,10 +166,13 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
   stepped right. Nested activations step right by half a bar. A diagram that activates anything itself (`activate`, `deactivate`, `+`, `-`) draws
   only those bars: answered calls add none, so an author's bars are never doubled.
 - **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, the
-  pitch wide enough for the longest message between neighbours; messages a row each, edge to edge of the activation
-  bars, labels above their line; a self-call loops out of the bar and back into its nested one; a note is a sticky
-  over or beside its participants; a fragment is a frame across the lifelines its messages and notes involve (every lifeline when they
-  involve none), wide enough to hold its notes whole and every fragment nested in it a step inside, with its operator as its label and
+  pitch wide enough for the longest message label in one gap (up to 520 px), as a message keeps its label in its
+  first gap; messages a row each, edge to edge of the activation bars, labels above their line, wrapped to the gap
+  and lifted by however many lines they take so no plate cuts its own line; a self-call loops out of the bar and back
+  into its nested one; a note is a sticky over or beside its participants, as tall as its text needs (one line, 48
+  px) with the text centred; a fragment is a frame across the lifelines its messages and notes involve (every
+  lifeline when they involve none), wide enough to hold its notes whole and every fragment nested in it a step
+  inside, with its operator as its label and
   each guard in muted text, operands split by a dashed divider.
 - **Limits**: at most 30 participants and 300 messages, notes and fragment lines; past them the parser refuses
   naming the limit.

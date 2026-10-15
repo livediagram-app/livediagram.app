@@ -146,6 +146,8 @@ export function registerTools(server: McpServer, env: Env): void {
       return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
     }
     const tabs: Tab[] = [];
+    // What a graph tab could not keep of what it asked (a Mermaid subgraph nested in another), said back.
+    const graphNotes: string[] = [];
     const dashboards: {
       at: number;
       tabId: string;
@@ -205,6 +207,7 @@ export function registerTools(server: McpServer, env: Env): void {
       // and arrows from a node/edge graph, or the same graph as Mermaid.
       const input = resolveGraphInput(t);
       if (input.error) return errorResult(`Tab "${t.name}": ${input.error}`);
+      for (const note of input.notes ?? []) graphNotes.push(`Tab "${t.name}": ${note}`);
       const iconIssue = input.graph ? graphIconIssue(input.graph.nodes) : null;
       if (iconIssue) return errorResult(`Tab "${t.name}": ${iconIssue}`);
       if (input.graph) {
@@ -279,6 +282,7 @@ export function registerTools(server: McpServer, env: Env): void {
         folder: await createdFolderLabel(env, token, created),
         url: deepLink(env, id),
         lint,
+        ...(graphNotes.length ? { notes: graphNotes } : {}),
       },
       tabs[0]!,
       { env, token },
@@ -368,6 +372,7 @@ export function registerTools(server: McpServer, env: Env): void {
         text: mcpResultText(answer.text),
         lint: lintLineOf(answer.lint),
         ...templateNote(args.template),
+        ...(input.notes ? { notes: input.notes } : {}),
       },
       tab,
       { env, token },
@@ -385,9 +390,11 @@ export function registerTools(server: McpServer, env: Env): void {
     // relayed by the api, kept through anyone's next save. ops mode is based on what the model
     // read, so nothing a person saved in between is overwritten.
     let body: ChangesetRequest;
+    let graphNotes: string[] | undefined;
     if (args.mode === 'replace') {
       const input = resolveGraphInput(args);
       if (input.error) return errorResult(input.error);
+      graphNotes = input.notes;
       // A Dashboard tab rebuilt whole (docs/specs/026-plan/plan-agents.md "Making a dashboard").
       if (args.dashboard) {
         const resolved = await documentDashboard(env, token, args.documentId, args.dashboard);
@@ -446,6 +453,7 @@ export function registerTools(server: McpServer, env: Env): void {
         rev: next.rev,
         text: mcpResultText(answer.text, contentOrigin(tab.elements)),
         lint: lintLineOf(answer.lint),
+        ...(graphNotes ? { notes: graphNotes } : {}),
       },
       next,
       { env, token },

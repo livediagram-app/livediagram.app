@@ -6,7 +6,7 @@
     "kinks": 0,
     "crossings": 0,
     "behind": 0,
-    "collisions": 1,
+    "collisions": 0,
     "extent": "747×836"
   },
   "graph-cycle-8": {
@@ -18,6 +18,16 @@
     "behind": 0,
     "collisions": 0,
     "extent": "1032×1115"
+  },
+  "graph-flow-13-bus": {
+    "shared": 3897,
+    "crossed": 0,
+    "strikes": 1,
+    "kinks": 0,
+    "crossings": 3,
+    "behind": 0,
+    "collisions": 0,
+    "extent": "1876×1084"
   },
   "graph-flow-13": {
     "shared": 1440,
@@ -40,14 +50,14 @@
     "extent": "1992×1018"
   },
   "graph-flow-17": {
-    "shared": 314,
+    "shared": 312,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1278×2326"
+    "extent": "1218×2326"
   },
   "graph-flow-9": {
     "shared": 280,
@@ -57,47 +67,47 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "2761×280"
+    "extent": "2761×328"
   },
   "graph-lanes-12": {
-    "shared": 12,
+    "shared": 0,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 2,
     "behind": 0,
     "collisions": 0,
-    "extent": "3188×1059"
+    "extent": "3188×1140"
   },
   "graph-lanes-13": {
-    "shared": 24,
+    "shared": 12,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 9,
     "behind": 0,
-    "collisions": 2,
-    "extent": "2755×901"
+    "collisions": 0,
+    "extent": "2755×974"
   },
   "graph-lanes-14": {
-    "shared": 186,
+    "shared": 174,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 1,
     "behind": 0,
     "collisions": 0,
-    "extent": "3518×919"
+    "extent": "3518×986"
   },
   "graph-lanes-15": {
-    "shared": 12,
+    "shared": 0,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 4,
     "behind": 0,
     "collisions": 0,
-    "extent": "2965×901"
+    "extent": "2965×974"
   },
   "graph-mindmap-24": {
     "shared": 0,
@@ -107,7 +117,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1433×866"
+    "extent": "1344×768"
   },
   "graph-storm-23": {
     "shared": 0,
@@ -150,44 +160,44 @@
     "extent": "1330×753"
   },
   "mermaid-erdiagram-1": {
-    "shared": 280,
+    "shared": 30,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "861×838"
+    "extent": "972×855"
   },
   "mermaid-erdiagram-2": {
-    "shared": 458,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 1,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "987×602"
-  },
-  "mermaid-erdiagram-3": {
-    "shared": 458,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 1,
-    "behind": 0,
-    "collisions": 1,
-    "extent": "987×602"
-  },
-  "mermaid-erdiagram-4": {
     "shared": 291,
     "crossed": 0,
     "strikes": 0,
     "kinks": 0,
-    "crossings": 1,
+    "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "794×642"
+    "extent": "1144×670"
+  },
+  "mermaid-erdiagram-3": {
+    "shared": 293,
+    "crossed": 0,
+    "strikes": 0,
+    "kinks": 0,
+    "crossings": 0,
+    "behind": 0,
+    "collisions": 0,
+    "extent": "1144×670"
+  },
+  "mermaid-erdiagram-4": {
+    "shared": 25,
+    "crossed": 0,
+    "strikes": 0,
+    "kinks": 0,
+    "crossings": 0,
+    "behind": 0,
+    "collisions": 0,
+    "extent": "972×855"
   },
   "mermaid-sequencediagram-1": {
     "shared": 0,
@@ -197,7 +207,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1933×1528"
+    "extent": "2309×1502"
   },
   "mermaid-sequencediagram-2": {
     "shared": 0,
@@ -207,7 +217,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1648×1398"
+    "extent": "1864×1380"
   },
   "mermaid-sequencediagram-3": {
     "shared": 0,
@@ -217,7 +227,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1443×1396"
+    "extent": "1500×1380"
   },
   "mermaid-sequencediagram-4": {
     "shared": 0,
@@ -227,7 +237,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1697×1382"
+    "extent": "1697×1374"
   },
   "mermaid-sequencediagram-5": {
     "shared": 0,
@@ -237,7 +247,7 @@
     "crossings": 0,
     "behind": 0,
     "collisions": 0,
-    "extent": "1933×1528"
+    "extent": "2309×1502"
   },
   "mermaid-statediagram-1": {
     "shared": 228,

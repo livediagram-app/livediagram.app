@@ -3,6 +3,7 @@
 // they keep their own strokes rather than the house icon weight
 // (docs/specs/004-interface-design/iconography.md, "Art").
 
+import { ErGlyphMarks } from '@/components/canvas/arrow-defs';
 import { BORDER_STROKE_PX } from '@livediagram/document';
 import type {
   ArrowEnds,
@@ -204,6 +205,18 @@ export function ArrowheadShapeIcon({ shape }: { shape: ArrowheadShape }) {
             stroke="currentColor"
             strokeWidth="1.4"
           />
+        );
+      default:
+        // An ER end: the marker's glyph, its 0..10 box set on the head's 8px at the right.
+        return (
+          <g transform="translate(13 3) scale(0.8)">
+            <ErGlyphMarks
+              shape={shape}
+              paint="currentColor"
+              ringFill={{ fill: 'none' }}
+              strokeWidth={1.7}
+            />
+          </g>
         );
     }
   };

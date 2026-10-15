@@ -368,6 +368,8 @@ export type ShapeElement = {
   pieAnimSpeed?: AnimationSpeed;
   pieAnimRepeat?: boolean;
   chartLegend?: boolean;
+  // Show Values (docs/specs/009-elements/pie-chart.md): each mark's number printed on the chart. Absent = off.
+  chartValues?: boolean;
   // Legend placement (docs/specs/009-elements/pie-chart.md); ignored when `chartLegend` is false. Missing /
   // undefined === 'right', the historical default.
   chartLegendPosition?: ChartLegendPosition;

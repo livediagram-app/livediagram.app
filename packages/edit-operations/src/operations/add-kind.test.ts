@@ -116,6 +116,56 @@ describe('add <kind>', () => {
     expect(added('add sticky')).not.toHaveProperty('layerId');
   });
 
+  it('takes inside:<frame> with a side, either order: beside the reference, in that frame', () => {
+    for (const text of [
+      'add square label="Gift wrap" inside:f2 right-of:n4',
+      'add square label="Gift wrap" right-of:n4 inside:f2',
+    ]) {
+      const outcome = run(text);
+      expect(lines(outcome)).toContain('f2  +gift-wrap');
+    }
+    const parsed = parseEditOperations('add square inside:f2 below:n4 gap:12');
+    expect('operations' in parsed ? parsed.operations[0] : null).toMatchObject({
+      place: { rel: 'below', ref: 'n4', within: 'f2', gap: 12 },
+    });
+  });
+
+  it('refuses inside:<frame> with a side whose reference is not in that frame, or a non-frame', () => {
+    expect(refused(run('add square inside:f2 right-of:n3')).details?.[0]).toMatch(
+      /is not inside f2/,
+    );
+    expect(refused(run('add square inside:n1 right-of:n4')).details?.[0]).toMatch(
+      /not a frame or lane/,
+    );
+    const parseError = (text: string) => {
+      const out = parseEditOperations(text);
+      return 'errors' in out ? out.errors[0]!.details[0] : '';
+    };
+    expect(parseError('add square inside:f2 at:1,2')).toMatch(/one placement/);
+    expect(parseError('add square inside:f2 inside:f2')).toMatch(/one placement/);
+  });
+
+  it('places beside a frame, centred on a member with align:, outside the frame', () => {
+    const { tab } = applied(run('add square label=Store below:f2 align:n4'));
+    const store = tab.elements.find((e) => e.id === 'store') as Element & {
+      x: number;
+      y: number;
+      width: number;
+    };
+    const [n4, f2] = ['n4', 'f2'].map((id) => tab.elements.find((e) => e.id === id)) as (Element & {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    })[];
+    expect(store.x + store.width / 2).toBe(n4!.x + n4!.width / 2);
+    expect(store.y).toBeGreaterThanOrEqual(f2!.y + f2!.height);
+    const parsed = parseEditOperations('add square align:n4 below:f2');
+    expect('operations' in parsed ? parsed.operations[0] : null).toMatchObject({
+      place: { rel: 'below', ref: 'f2', alignTo: 'n4' },
+    });
+  });
+
   it('grows a full container it goes inside, moving what sat under it on (EO27)', () => {
     const outcome = run('add square label=Retry inside:f2');
     const f2 = applied(outcome).tab.elements.find((e) => e.id === 'f2') as Element & {
@@ -403,5 +453,22 @@ describe('add <kind> with icon=', () => {
     );
     expect(el).toMatchObject({ iconId: 'search' });
     expect(el).not.toHaveProperty('icon');
+  });
+});
+
+describe('within in the JSON form', () => {
+  it('reads "within" with a side and refuses it with inside or as a non-selector', async () => {
+    const { placementIssue } = await import('../parse-json');
+    expect(placementIssue({ rel: 'right-of', ref: 'n4', within: 'f2' })).toBeNull();
+    expect(placementIssue({ rel: 'inside', ref: 'f2', within: 'f2' })).toMatch(
+      /no "within" with "inside"/,
+    );
+    expect(placementIssue({ rel: 'below', ref: 'f2', alignTo: 'n4' })).toBeNull();
+    expect(placementIssue({ rel: 'align', ref: 'n4', alignTo: 'n4' })).toMatch(
+      /no "alignTo" with "align"/,
+    );
+    expect(placementIssue({ rel: 'right-of', ref: 'n4', within: '' })).toMatch(
+      /"within" a non-empty selector/,
+    );
   });
 });

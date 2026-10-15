@@ -76,6 +76,12 @@ const ARROWHEAD_OUT: Record<ArrowheadShape, string> = {
   'circle-hollow': 'circle_outline',
   diamond: 'diamond',
   'diamond-hollow': 'diamond_outline',
+  // Excalidraw's crow's feet; its two zero-or variants have no match, so they take the nearest.
+  one: 'crowfoot_one',
+  'zero-or-one': 'crowfoot_one',
+  many: 'crowfoot_many',
+  'zero-or-many': 'crowfoot_many',
+  'one-or-many': 'crowfoot_one_or_many',
 };
 const rad = (deg: number | undefined): number => (deg ? (deg * Math.PI) / 180 : 0);
 
@@ -318,6 +324,9 @@ export function tabToExcalidrawText(tab: Tab, plan?: TabPlanData): string {
 
     const ends = el.arrowEnds ?? 'to';
     const head = ARROWHEAD_OUT[el.arrowheadShape ?? 'triangle'] ?? 'arrow';
+    // The start's own head when it differs (an ER relationship's other cardinality).
+    const startHead =
+      ARROWHEAD_OUT[el.arrowheadStartShape ?? el.arrowheadShape ?? 'triangle'] ?? 'arrow';
     const arrowOut = chassis(el, seq++, {
       type: 'arrow',
       x: from.x,
@@ -332,7 +341,7 @@ export function tabToExcalidrawText(tab: Tab, plan?: TabPlanData): string {
       lastCommittedPoint: null,
       startBinding,
       endBinding,
-      startArrowhead: ends === 'from' || ends === 'both' ? head : null,
+      startArrowhead: ends === 'from' || ends === 'both' ? startHead : null,
       endArrowhead: ends === 'to' || ends === 'both' ? head : null,
       elbowed: el.arrowStyle === 'angled',
     });

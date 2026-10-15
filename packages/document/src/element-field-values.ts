@@ -23,6 +23,7 @@ export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> =
   arrowStyle: ['straight', 'angled', 'curved'],
   arrowEnds: ['to', 'from', 'both', 'none'],
   arrowheadShape: ARROWHEAD_SHAPES,
+  arrowheadStartShape: ARROWHEAD_SHAPES,
   strokeStyle: Object.keys(BORDER_DASH_ARRAY),
   borderRadius: ['none', 'sm', 'md', 'lg', 'full'],
   // The diagram-building kinds (docs/specs/009-elements/): accent edge, card, badge / step, boundary, pyramid.

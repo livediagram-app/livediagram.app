@@ -1,3 +1,4 @@
+import { fixes } from '../fixes';
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { LINT_MAX_ARROWS } from '../constants';
@@ -64,6 +65,44 @@ describe('edge-crossings', () => {
   it('on a framed tab, reroutes the most-crossed arrow rather than laying out shapes alone', () => {
     const framed = [frame('f', -20, -20, 260, 440), ...crossed(4)];
     const [finding] = of(lint(tabOf(...framed)), 'edge-crossings');
-    expect(finding!.fix).toMatch(/^set \S+ line=(angled|curved)$/);
+    expect(finding!.fix).toMatch(/^set \S+ line=(angled|curved|straight)$/);
+  });
+
+  it('suggests only a style that lowers the arrow crossings, else advice, so the fix never oscillates', () => {
+    const framed = [frame('f', -20, -20, 260, 440), ...crossed(4)];
+    const tab = tabOf(...framed);
+    const [finding] = of(lint(tab), 'edge-crossings');
+    const [, selector, style] = /^set (\S+) line=(\S+)$/.exec(finding!.fix)!;
+    const id = selector!.includes('->') ? null : selector;
+    const before = lint(tab).measures.crossings as number;
+    const restyled = {
+      ...tab,
+      elements: tab.elements.map((el) =>
+        el.type === 'arrow' &&
+        (el.id === id ||
+          `${(el.from as { elementId?: string }).elementId}->${(el.to as { elementId?: string }).elementId}` ===
+            selector)
+          ? { ...el, arrowStyle: style as 'angled', curvePoints: undefined }
+          : el,
+      ),
+    };
+    expect(lint(restyled).measures.crossings as number).toBeLessThan(before);
+    // And re-linted, it does not suggest the style back for that arrow.
+    const [next] = of(lint(restyled), 'edge-crossings');
+    if (next) expect(next.fix).not.toBe(`set ${selector} line=${arrowStyleBefore(tab, selector!)}`);
+    // With no style that helps, the fix is advice rather than a style that changes nothing.
+    expect(fixes.edgeCrossings('tab', { arrow: 'a->b', style: null })).toBe(
+      'move a box so a->b crosses fewer lines',
+    );
   });
 });
+
+function arrowStyleBefore(tab: { elements: Element[] }, selector: string): string {
+  const el = tab.elements.find(
+    (e) =>
+      e.type === 'arrow' &&
+      `${(e.from as { elementId?: string }).elementId}->${(e.to as { elementId?: string }).elementId}` ===
+        selector,
+  ) as { arrowStyle?: string } | undefined;
+  return el?.arrowStyle ?? 'straight';
+}

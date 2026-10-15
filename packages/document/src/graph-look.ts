@@ -646,8 +646,8 @@ const CHANNEL_BIN = 24;
 
 // Elbows given channels of their own (docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"): every elbow
 // between the same two ranks bent at the gap's middle, so arrows from different nodes ran down one line and read as
-// joined. Within each gap the arrows of one source share a slot (its trunk) and so do the arrows into one target
-// (its bus); every other arrow gets a slot of its own, CHANNEL_GAP apart around the middle, ordered so runs going the
+// joined. Within each gap the arrows of one source drawn alike share a slot (its trunk) and so do the arrows into one
+// target (its bus); every other arrow gets a slot of its own, CHANNEL_GAP apart around the middle, ordered so runs going the
 // same way never cross: of those heading down (TB) or right (LR) the one starting nearest the far side bends first.
 export function spreadChannels(elements: Element[], axis: 'TB' | 'LR'): Element[] {
   type Bent = { el: ArrowElement; from: Pt; to: Pt; at: number };
@@ -672,20 +672,23 @@ export function spreadChannels(elements: Element[], axis: 'TB' | 'LR'): Element[
   const placed = new Map<string, number>();
   for (const group of gaps.values()) {
     // Slots: one per source trunk, a lone arrow into a shared target joining that target's bus.
+    // Keyed by line too: only lines drawn alike share a trunk or bus (withExactEnds), so a dashed event line never
+    // rides a solid call's run across the gap.
+    const line = (b: Bent) => b.el.strokeStyle ?? 'solid';
     const slotOf = new Map<string, string>();
     const bySource = new Map<string, Bent[]>();
     for (const b of group) {
-      const src = pinnedId(b.el.from) ?? b.el.id;
+      const src = `${pinnedId(b.el.from) ?? b.el.id}|${line(b)}`;
       (bySource.get(src) ?? bySource.set(src, []).get(src)!).push(b);
     }
     const intoTarget = new Map<string, Bent[]>();
     for (const b of group) {
-      const dst = pinnedId(b.el.to) ?? b.el.id;
+      const dst = `${pinnedId(b.el.to) ?? b.el.id}|${line(b)}`;
       (intoTarget.get(dst) ?? intoTarget.set(dst, []).get(dst)!).push(b);
     }
     for (const b of group) {
-      const src = pinnedId(b.el.from) ?? b.el.id;
-      const dst = pinnedId(b.el.to) ?? b.el.id;
+      const src = `${pinnedId(b.el.from) ?? b.el.id}|${line(b)}`;
+      const dst = `${pinnedId(b.el.to) ?? b.el.id}|${line(b)}`;
       slotOf.set(
         b.el.id,
         bySource.get(src)!.length > 1 || intoTarget.get(dst)!.length < 2 ? `s:${src}` : `t:${dst}`,
@@ -791,6 +794,10 @@ export function placeElbowLabels(elements: Element[]): Element[] {
   // The route as it is drawn (the renderer's own points, bends squared onto the line), which the label's `t` measures.
   const pathOf = (a: ArrowElement): Pt[] => arrowRoutePoints(a, elements);
   const paths = new Map(labelled.map((a) => [a.id, pathOf(a)]));
+  // Every line as drawn, the ones a label must keep off.
+  const lines = elements
+    .filter((el): el is ArrowElement => el.type === 'arrow')
+    .map((el) => ({ id: el.id, pts: paths.get(el.id) ?? pathOf(el) }));
   // The boxes a label must clear: every boxed element but the frames and lanes that hold them.
   const isHolder = (el: Element) =>
     el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
@@ -828,6 +835,9 @@ export function placeElbowLabels(elements: Element[]): Element[] {
       });
     });
   const placed = new Map<string, ArrowElement>();
+  // The plates of the labels placed so far: a later label keeps off them (two "publish" labels off one bus stood
+  // over each other).
+  const plates: Rect[] = [];
   for (const a of labelled) {
     // Runs on one line are one run: an elbow whose bends fall on its line draws straight, and a label needs the
     // whole of it, not either half.
@@ -849,7 +859,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
     // its middle first, then a quarter or a third of the way from either end (a short drop between two lanes is
     // clear inside one of them, not across the gap). On a level run that also means the run is long enough; on an
     // upright one, that nothing stands beside it. Null when no point of the run holds it.
-    const spot = (i: number): number | null => {
+    const spot = (i: number, strict = true): number | null => {
       const level = Math.abs(pts[i]!.y - pts[i + 1]!.y) < 1;
       if (lens[i]! < (level ? width + LABEL_RUN_MARGIN : LABEL_CLEAR + LABEL_RUN_MARGIN))
         return null;
@@ -882,24 +892,87 @@ export function placeElbowLabels(elements: Element[]): Element[] {
           ) &&
           !holders.some(
             ({ rect, heading }) =>
-              (rectsMeet(plate, rect) && !rectWithin(plate, rect)) ||
-              (heading !== null && rectsMeet(plate, heading)),
-          );
-        if (clear) return f;
+              straddles(plate, rect) || (heading !== null && rectsMeet(plate, heading)),
+          ) &&
+          // Strict, off every other line too, not only labelled ones: a neighbour's drop struck a label through.
+          (!strict ||
+            !lines.some(
+              (l) =>
+                l.id !== a.id &&
+                l.pts.some((p, k) => k > 0 && segmentHitsRect(l.pts[k - 1]!, p, plate)),
+            ));
+        if (clear && !plates.some((r) => rectsMeet(plate, r))) return f;
       }
       return null;
     };
+    // Beside run i rather than on it: the plate just off the line, either side, where it touches no box, frame border
+    // or heading, and no line at all. A wide label on a drop beside a neighbour's drop was struck through by it.
+    // The offset is along the run's left-hand normal, as the renderer reads labelOffset.
+    const besideSpot = (i: number): { f: number; offset: number } | null => {
+      const [p, q] = [pts[i]!, pts[i + 1]!];
+      if (lens[i]! < LABEL_CLEAR + LABEL_RUN_MARGIN) return null;
+      const u = { x: (q.x - p.x) / lens[i]!, y: (q.y - p.y) / lens[i]! };
+      const n = { x: -u.y, y: u.x };
+      const reach =
+        Math.abs(n.x) * (width / 2) + Math.abs(n.y) * (LABEL_CLEAR / 2) + LABEL_BESIDE_GAP;
+      for (const f of LABEL_SPOTS)
+        for (const sign of [1, -1]) {
+          const cx = p.x + (q.x - p.x) * f + n.x * reach * sign;
+          const cy = p.y + (q.y - p.y) * f + n.y * reach * sign;
+          const plate = { x: cx - width / 2, y: cy - LABEL_CLEAR / 2, width, height: LABEL_CLEAR };
+          const clear =
+            !boxes.some((b) => rectsMeet(plate, b)) &&
+            !holders.some(
+              ({ rect, heading }) =>
+                straddles(plate, rect) || (heading !== null && rectsMeet(plate, heading)),
+            ) &&
+            !lines.some((l) =>
+              l.pts.some((pt, k) => k > 0 && segmentHitsRect(l.pts[k - 1]!, pt, plate)),
+            );
+          if (clear && !plates.some((r) => rectsMeet(plate, r)))
+            return { f, offset: Number((reach * sign).toFixed(2)) };
+        }
+      return null;
+    };
     const holds = (i: number) => spot(i) !== null;
-    const seg =
+    const centred =
       [last, 0, ...byLength].find((i) => holds(i) && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
       // Beside another labelled line is better than over a box.
-      byLength.find(holds) ??
-      byLength[0]!;
+      byLength.find(holds);
+    // No run holds it on the line: beside one, clear of every line, before over another line or a box.
+    const beside =
+      centred === undefined
+        ? byLength.map((i) => ({ i, at: besideSpot(i) })).find(({ at }) => at !== null)
+        : undefined;
+    const seg =
+      centred ?? beside?.i ?? byLength.find((i) => spot(i, false) !== null) ?? byLength[0]!;
     const before = lens.slice(0, seg).reduce((s, l) => s + l, 0);
-    const along = (spot(seg) ?? 0.5) * lens[seg]!;
+    const f = beside?.at?.f ?? spot(seg) ?? spot(seg, false) ?? 0.5;
+    const along = f * lens[seg]!;
+    {
+      const [p, q] = [pts[seg]!, pts[seg + 1]!];
+      const u =
+        lens[seg]! > 0
+          ? { x: (q.x - p.x) / lens[seg]!, y: (q.y - p.y) / lens[seg]! }
+          : { x: 1, y: 0 };
+      const off = beside?.at?.offset ?? 0;
+      const cx = p.x + (q.x - p.x) * f - u.y * off;
+      const cy = p.y + (q.y - p.y) * f + u.x * off;
+      // Stored at the text's own width, its clearing margin off: a later plate with its margin then keeps one margin
+      // from it, not two (two "items picked"-wide margins pushed a label off the only spot it had).
+      plates.push({
+        x: cx - width / 2 + LABEL_WIDTH_MARGIN / 2,
+        y: cy - LABEL_CLEAR / 2,
+        width: Math.max(1, width - LABEL_WIDTH_MARGIN),
+        height: LABEL_CLEAR,
+      });
+    }
     placed.set(a.id, {
       ...a,
-      labelOffset: { t: Number(((before + along) / total).toFixed(4)), offset: 0 },
+      labelOffset: {
+        t: Number(((before + along) / total).toFixed(4)),
+        offset: beside?.at?.offset ?? 0,
+      },
       labelMaxWidth: Math.ceil(width),
     });
   }
@@ -907,6 +980,42 @@ export function placeElbowLabels(elements: Element[]): Element[] {
 }
 
 type Rect = { x: number; y: number; width: number; height: number };
+// How far a label's plate keeps off a frame's or lane's border, in px: inside by a pixel, "HTTPS" read as sitting
+// on the Clients frame's edge.
+const LABEL_BORDER_CLEAR = 6;
+// Whether a plate, grown by LABEL_BORDER_CLEAR, crosses a frame's or lane's border: neither wholly inside it nor clear.
+const straddles = (plate: Rect, rect: Rect) => {
+  const near = {
+    x: plate.x - LABEL_BORDER_CLEAR,
+    y: plate.y - LABEL_BORDER_CLEAR,
+    width: plate.width + 2 * LABEL_BORDER_CLEAR,
+    height: plate.height + 2 * LABEL_BORDER_CLEAR,
+  };
+  return rectsMeet(near, rect) && !rectWithin(near, rect);
+};
+// Whether a segment passes through a rectangle (its interior; touching an edge does not count).
+function segmentHitsRect(a: Pt, b: Pt, r: Rect): boolean {
+  const [x0, x1, y0, y1] = [r.x, r.x + r.width, r.y, r.y + r.height];
+  let [t0, t1] = [0, 1];
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  for (const [p, q] of [
+    [-dx, a.x - x0],
+    [dx, x1 - a.x],
+    [-dy, a.y - y0],
+    [dy, y1 - a.y],
+  ] as const) {
+    if (p === 0) {
+      if (q <= 0) return false;
+      continue;
+    }
+    const t = q / p;
+    if (p < 0) t0 = Math.max(t0, t);
+    else t1 = Math.min(t1, t);
+    if (t0 >= t1) return false;
+  }
+  return true;
+}
 const rectsMeet = (a: Rect, b: Rect) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 const rectWithin = (a: Rect, b: Rect) =>
@@ -919,6 +1028,8 @@ const LABEL_CLEAR = 22;
 const LABEL_SPOTS = [0.5, 0.25, 0.75, 1 / 3, 2 / 3] as const;
 // The gap a tucked label keeps from the box at its run's end.
 const LABEL_TUCK = 4;
+// How far a label set beside its line keeps off it, in px.
+const LABEL_BESIDE_GAP = 6;
 // Room a run keeps beyond its label, so the label clears the boxes at the run's ends.
 const LABEL_RUN_MARGIN = 16;
 
@@ -928,4 +1039,6 @@ const collinear = (a: Pt, b: Pt, c: Pt) =>
   (Math.abs(a.x - b.x) < 1 && Math.abs(b.x - c.x) < 1);
 
 // A caption's one-line width at the arrow label's default size, with room for its plate.
-const labelWidth = (label: string) => Math.min(260, label.length * 12 * 0.56 + 18);
+// The room a label's plate takes beyond its text, keeping it clear of what it sits beside, in px.
+const LABEL_WIDTH_MARGIN = 18;
+const labelWidth = (label: string) => Math.min(260, label.length * 12 * 0.56 + LABEL_WIDTH_MARGIN);

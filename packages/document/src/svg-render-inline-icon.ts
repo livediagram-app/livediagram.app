@@ -6,7 +6,7 @@
 import { labelFontPx } from './label-font';
 import { labelMeasure, wrapLabel } from './svg-render-primitives';
 import type { ExportIconArt } from './svg-render-describe';
-import type { ExportLabel } from './svg-render-labels';
+import { wrapExportRuns, type ExportLabel } from './svg-render-labels';
 import { svgIconShape } from './svg-render-image-icon';
 import type { IconPosition, ShapeElement, TextSize } from './index';
 
@@ -73,8 +73,18 @@ export function inlineIconLayout(
     label.anchor === 'start' ? label.x : label.anchor === 'end' ? label.x - w : label.x - w / 2;
   if (row) {
     const room = Math.max(8, label.maxWidth - iconSize - gap);
-    const lines = wrapLabel(label.text, room, measure, true);
-    const textW = Math.min(room, Math.max(...lines.map(measure)));
+    // A rich label measured as it is drawn, each run in its own size and weight, and a pixel spare: measured as
+    // plain text at the base size, a person card's role, its longest line, came out a hair over and broke in two.
+    const widths = label.runs
+      ? wrapExportRuns(label.runs, room, label.fontFamily).map((line) =>
+          line.reduce(
+            (w, run) =>
+              w + labelMeasure(run.size, run.bold, run.italic, label.fontFamily)(run.text),
+            0,
+          ),
+        )
+      : wrapLabel(label.text, room, measure, true).map(measure);
+    const textW = Math.min(room, Math.max(...widths) + 1);
     const x0 = startX(iconSize + gap + textW);
     const iconX = iconFirst ? x0 : x0 + textW + gap;
     const textX = iconFirst ? x0 + iconSize + gap : x0;

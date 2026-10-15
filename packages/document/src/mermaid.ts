@@ -312,6 +312,8 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   const clusters: GraphCluster[] = [];
   let currentCluster: GraphCluster | null = null;
   let subgraphDepth = 0;
+  // Subgraphs inside another, folded into it: said back to an agent rather than dropped silently.
+  let folded = 0;
 
   const touch = (id: string) => {
     if (!nodes.has(id)) {
@@ -396,6 +398,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     const sub = /^subgraph\s+(\S.*)$/i.exec(line);
     if (sub) {
       subgraphDepth += 1;
+      if (subgraphDepth > 1) folded += 1;
       // Only top-level subgraphs become frames; nested ones fold into
       // their ancestor (frames import one level deep).
       if (subgraphDepth === 1) {
@@ -484,6 +487,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
       ...(realClusters.length ? { clusters: realClusters } : {}),
     },
     direction,
+    ...(folded ? { folded } : {}),
   };
 }
 

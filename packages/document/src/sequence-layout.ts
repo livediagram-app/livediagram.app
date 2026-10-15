@@ -5,6 +5,9 @@
 
 import { createArrow, createShape, createSticky, createText } from './factories';
 import { glyphWidth } from './graph-authoring';
+import { arrowLabelFontSize } from './arrow-label';
+import { wrapBalanced } from './arrow-label-wrap';
+import { LABEL_LINE_HEIGHT, labelMeasure } from './svg-render-primitives';
 import { GRAPH_MUTED, withHeaderAndKey } from './graph-header';
 import type { SequenceDiagram, SequenceItem, SequenceMessageKind } from './mermaid-sequence';
 import type { ArrowheadShape, Element } from './index';
@@ -28,6 +31,12 @@ const DIVIDER_BAND = 36;
 const FRAGMENT_END = 24;
 const NOTE_LINE = 18;
 const LABEL_PX = 14;
+// The widest a lifeline gap grows for its labels, the room a message label leaves either end of its gap, and how far
+// a label keeps off its line.
+const PITCH_MAX = 520;
+const MESSAGE_LABEL_MARGIN = 40;
+const MESSAGE_LABEL_GAP = 4.5;
+const MESSAGE_LABEL_LINES = 1;
 const HEAD_PX = 22;
 const ACTOR_W = 44;
 const ACTOR_H = 60;
@@ -52,14 +61,26 @@ export function layoutSequence(
   const index = new Map(participants.map((p, i) => [p.id, i]));
   const longestHead = Math.max(0, ...participants.map((p) => glyphWidth(p.label, HEAD_PX)));
   const headW = Math.round(Math.max(HEAD_MIN_W, longestHead + 48));
-  // The pitch: the head box, or the longest message between two lifelines spread over the gap it spans.
+  // The pitch: the head box, or the longest message label on one line in one gap, as a message keeps its label in its
+  // first gap (spread over the whole span, a long label wrapped narrow there and cut its own line; two lines each
+  // crowded the message above, rows being one height). Up to PITCH_MAX, past which a label wraps and lifts.
   let pitch = Math.max(PITCH_MIN, headW + 40);
   for (const it of items) {
     if (it.kind !== 'message' || it.from === it.to) continue;
-    const span = Math.abs(index.get(it.to)! - index.get(it.from)!);
-    pitch = Math.max(pitch, Math.ceil((glyphWidth(it.label, LABEL_PX) + 60) / span));
+    pitch = Math.max(
+      pitch,
+      Math.ceil(glyphWidth(it.label, LABEL_PX) / MESSAGE_LABEL_LINES + MESSAGE_LABEL_MARGIN + 20),
+    );
   }
-  pitch = Math.round(Math.min(pitch, 520));
+  pitch = Math.round(Math.min(pitch, PITCH_MAX));
+  // A message label wraps to its gap, and sits clear above (or below) its line however many lines it takes.
+  const labelWidth = pitch - MESSAGE_LABEL_MARGIN;
+  const measure = labelMeasure(arrowLabelFontSize(undefined), false, false);
+  const lift = (label: string) => {
+    const lines = wrapBalanced(label, labelWidth, measure).lines.length;
+    const fontPx = arrowLabelFontSize(undefined);
+    return (lines * fontPx * LABEL_LINE_HEIGHT + 4) / 2 + MESSAGE_LABEL_GAP;
+  };
   const px = (id: string) => index.get(id)! * pitch + headW / 2;
   // A note's left edge: centred over its participants, or beside the first.
   const noteX = (note: Extract<SequenceItem, { kind: 'note' }>, width: number) => {
@@ -118,6 +139,8 @@ export function layoutSequence(
     y: number;
     fromX: number;
     toX: number;
+    // Whether it runs to the right, for re-placing its end on a bar an `activate` line starts.
+    right: boolean;
   }[] = [];
   // Each fragment's participants: those its messages and notes touch, so its frame spans their lifelines alone.
   const fragments: {
@@ -177,8 +200,10 @@ export function layoutSequence(
       const toX = self ? fromX : edge(it.to, right);
       if (it.deactivate) deactivate(it.from, y);
       if (!self && it.style === 'call')
-        waiting.push({ caller: it.from, callee: it.to, auto: auto || !!it.activate });
-      messages.push({ item: { ...it, label }, y, fromX, toX });
+        // Only an activation the layout opened itself closes at the reply; one the author opened (`+`) stays open
+        // until its `-`, as Mermaid draws it.
+        waiting.push({ caller: it.from, callee: it.to, auto });
+      messages.push({ item: { ...it, label }, y, fromX, toX, right });
       if (self) {
         activate(it.from, y + SELF_DROP);
         deactivate(it.from, y + SELF_DROP + 20);
@@ -187,12 +212,18 @@ export function layoutSequence(
       messageY = y;
       involve(it.from, it.to);
       y += self ? SELF_DROP + 36 : STEP;
-    } else if (it.kind === 'activate') activate(it.who, messageY ?? y - STEP / 2);
-    else if (it.kind === 'deactivate') deactivate(it.who, messageY ?? y - STEP / 2);
+    } else if (it.kind === 'activate') {
+      activate(it.who, messageY ?? y - STEP / 2);
+      // The message this line follows, into the participant it activates, ends on the bar it starts: its end was
+      // worked out before the bar existed, on the lifeline inside it.
+      const last = messages.at(-1);
+      if (last && last.y === messageY && last.item.to === it.who && last.item.from !== it.who)
+        last.toX = edge(it.who, last.right);
+    } else if (it.kind === 'deactivate') deactivate(it.who, messageY ?? y - STEP / 2);
     else if (it.kind === 'note') {
       const width = noteWidth(it, pitch, headW);
       const lines = Math.max(1, Math.ceil(glyphWidth(it.text, 13) / Math.max(40, width - 28)));
-      const h = Math.max(56, lines * NOTE_LINE + 30);
+      const h = lines * NOTE_LINE + 30;
       notes.push({ item: it, y: y - 14, h });
       involve(...it.who);
       const x = noteX(it, width);
@@ -368,7 +399,11 @@ export function layoutSequence(
       // A message is drawn over the bars and lifelines it passes, as UML draws it.
       routeBehind: false,
       ...(m.item.label
-        ? { label: m.item.label, labelOffset: { t, offset: right ? -14 : 14 } }
+        ? {
+            label: m.item.label,
+            labelOffset: { t, offset: (right ? -1 : 1) * lift(m.item.label) },
+            labelMaxWidth: labelWidth,
+          }
         : {}),
       arrowheadShape: HEAD[style],
       ...(style === 'reply' ? { strokeStyle: 'dashed' as const } : {}),
@@ -386,6 +421,9 @@ export function layoutSequence(
       height: n.h,
       label: n.item.text,
       textSize: 'sm',
+      // Centred in a note sized to its text: top-left in a taller box it read as unfinished.
+      textAlignX: 'center',
+      textAlignY: 'middle',
     });
   }
 

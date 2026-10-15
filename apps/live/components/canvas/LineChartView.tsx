@@ -9,7 +9,9 @@
 
 import {
   AREA_FILL_OPACITY,
+  chartValueFontPx,
   lineMarks,
+  lineValueLabels,
   lineVariantOf,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
@@ -20,6 +22,7 @@ import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';
 import { ChartSurface } from '@/components/primitives/ChartSurface';
+import { ChartValues } from '@/components/primitives/ChartValues';
 
 export function LineChartView({
   element,
@@ -139,6 +142,15 @@ export function LineChartView({
           {l.text}
         </text>
       ))}
+      {element.chartValues ? (
+        <ChartValues
+          labels={lineValueLabels(m, series)}
+          textColor={textColor}
+          fillOf={() => textColor}
+          fontPx={chartValueFontPx(element.textSize)}
+          fontFamily={fontFamily}
+        />
+      ) : null}
     </ChartSurface>
   );
 }

@@ -77,6 +77,8 @@ import {
 } from '@/components/palette/BehaviourMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
+import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
+
 import { ChartTypeTiles } from '@/components/palette/ChartTypeTiles';
 import {
   hasWebRowsSection,
@@ -708,6 +710,12 @@ export function ElementDataSections({
                   onPreviewEnd={props.onPreviewStyleEnd}
                 />
               ) : null}
+              <MenuToggleRow
+                label="Show Values"
+                description="Each mark's number on the chart"
+                checked={shapeTarget?.chartValues === true}
+                onToggle={() => props.onSetChartValues(shapeTarget?.chartValues !== true)}
+              />
             </MenuAccordionSection>
           ) : null}
         </MenuFlyoutSection>

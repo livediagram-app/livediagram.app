@@ -29,6 +29,24 @@ describe('withoutNotches', () => {
     expect(arrowOf(els, 'x').curvePoints).toBeUndefined();
   });
 
+  it('moves a box no other line meets across by the step, so the line runs true', () => {
+    // b is a leaf 2 px left of a: it moves 2 px right, under a, and the straight line is plumb.
+    const els = withoutNotches([box('a', 0, 0), box('b', 0, 200, 196), elbow('x', 'a', 'b', -2)]);
+    const b = els.find((e) => e.id === 'b') as Element & { x: number; width: number };
+    expect(b.x + b.width / 2).toBe(100);
+    // Both ends meet other lines: neither moves, and the line keeps its slant.
+    const busy = withoutNotches([
+      box('a', 0, 0),
+      box('b', 0, 200, 196),
+      box('c', 400, 0),
+      box('d', 400, 200),
+      elbow('x', 'a', 'b', -2),
+      elbow('y', 'a', 'd', 400),
+      elbow('z', 'c', 'b', -400),
+    ]);
+    expect((busy.find((e) => e.id === 'b') as Element & { x: number }).x).toBe(0);
+  });
+
   it('keeps an elbow whose ends are further apart, a curve, and one joining a bus', () => {
     const far = withoutNotches([box('a', 0, 0), box('b', 40, 200), elbow('x', 'a', 'b', 40)]);
     expect(arrowOf(far, 'x').arrowStyle).toBe('angled');

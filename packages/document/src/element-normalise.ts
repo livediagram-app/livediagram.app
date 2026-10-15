@@ -7,6 +7,9 @@
 // tidied. Input is untrusted JSON: anything not shaped like the field it claims
 // to be is left for isValidTab to judge.
 
+import { anchorPrimarySide } from './anchors';
+import { orthogonalBends } from './arrow-orthogonal';
+import { LOOK_MD_MAX_NODES } from './look-size';
 import { CODE_LANGUAGES } from './data-shapes';
 import { isCodeThemeId } from './code-themes';
 import { variantFitsKind } from './chart-types';
@@ -266,17 +269,63 @@ export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
   return { ...unpacked, ...patch };
 }
 
+// Raw boxes take the graph look's text size by count (look-size.ts): past LOOK_MD_MAX_NODES labelled boxes, one that
+// gives no `textSize` takes `sm` before the factory's `md` fills in, so twenty hand-placed boxes do not wrap their
+// names mid-word.
+const PLAIN_BOX_EXCLUDED = new Set([
+  'frame',
+  'lane',
+  'boundary',
+  'entity',
+  'code-block',
+  'bar-chart',
+  'pie-chart',
+  'line-chart',
+  'sankey',
+  'legend',
+]);
+const isPlainBox = (el: unknown): el is Raw =>
+  isRecord(el) &&
+  el.type === 'shape' &&
+  typeof el.label === 'string' &&
+  el.label.trim() !== '' &&
+  !PLAIN_BOX_EXCLUDED.has(String(el.shape));
+function withLookTextSize(elements: unknown[]): unknown[] {
+  if (elements.filter(isPlainBox).length <= LOOK_MD_MAX_NODES) return elements;
+  return elements.map((el) =>
+    isPlainBox(el) && el.textSize === undefined ? { ...el, textSize: 'sm' } : el,
+  );
+}
+
+// A raw arrow pinned at both ends draws as graph input's lines do (docs/specs/015-api/mcp-server.md): angled when it
+// names no style, and an angled one with no bends given its two, along the axis its start leaves by, so it meets
+// both ends square; ends that line up run straight.
+function withRawElbows(elements: DocElement[]): DocElement[] {
+  return elements.map((el) => {
+    if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.to.kind !== 'pinned') return el;
+    const styled = el.arrowStyle ?? 'angled';
+    if (styled !== 'angled' || (el.curvePoints?.length ?? 0) > 0)
+      return el.arrowStyle ? el : { ...el, arrowStyle: styled };
+    const side = anchorPrimarySide(el.from.anchor);
+    const bends = orthogonalBends(el, elements, side === 'n' || side === 's' ? 'TB' : 'LR');
+    return bends
+      ? { ...el, arrowStyle: 'angled' as const, curvePoints: bends }
+      : { ...el, arrowStyle: 'straight' as const };
+  });
+}
+
 export function normaliseElements<T>(elements: T): T {
   if (!Array.isArray(elements)) return elements;
+  const sized = withLookTextSize(elements);
   // An agent's badges and step numbers land fitted, numbered and on their hosts' points, as the editor's commits
   // keep them (docs/specs/009-elements/badge.md "Agents").
-  const normalised = lanesToFront(elements.map(normaliseElement));
+  const normalised = lanesToFront(sized.map(normaliseElement));
   // Only a list of element records is settled; anything else is left for validation to refuse. The records are not
-  // validated yet (an agent's step with a label of 5), so one that settling cannot read is left as it came, for
-  // validation to refuse by name rather than the request failing whole.
+  // validated yet (an agent's step with a label of 5), so one that settling (or bending) cannot read is left as it
+  // came, for validation to refuse by name rather than the request failing whole.
   if (!normalised.every(isRecord)) return normalised as T;
   try {
-    return settleChips([], normalised as DocElement[]) as T;
+    return withRawElbows(settleChips([], normalised as DocElement[])) as T;
   } catch {
     return normalised as T;
   }

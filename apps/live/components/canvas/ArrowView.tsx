@@ -2,6 +2,7 @@ import { memo, useRef, useState, type PointerEvent as ReactPointerEvent } from '
 import { useZoneClip } from '@/lib/article/zone-clip-store';
 import {
   arrowheadShapeOf,
+  arrowheadStartShapeOf,
   arrowheadSizeOf,
   BORDER_DASH_ARRAY,
   DEFAULT_BORDER_STYLE,
@@ -216,12 +217,22 @@ function ArrowViewImpl({
   const ownHeadColor = arrow.arrowheadColor ?? (markersTakeLineColour() ? undefined : baseStroke);
   const ownMarkerId = ownHeadColor ? `arrowhead-${arrow.id}` : null;
   const markerUrl = `url(#${ownMarkerId ?? arrowheadMarkerId(headShape, headSize)})`;
+  // A start with its own head (an ER relationship's other cardinality) takes its own marker; the sketch, which draws
+  // one shape for both ends, then leaves the heads to the markers.
+  const startShape = arrowheadStartShapeOf(arrow);
+  const mixedHeads = startShape !== headShape;
+  const ownStartMarkerId = ownHeadColor && mixedHeads ? `arrowhead-${arrow.id}-start` : null;
+  const startMarkerUrl = mixedHeads
+    ? `url(#${ownStartMarkerId ?? arrowheadMarkerId(startShape, headSize)})`
+    : markerUrl;
   // Per-arrow thickness with a small selected-state bump so the user
   // can tell the difference between "selected" and "thicker stroke". The finish thins an unset width
   // under Professional and draws the line by hand under Sketch (docs/specs/008-canvas/finish.md).
   const { baseStrokeWidth, sketch } = useArrowFinish(arrow, pathD);
   // Sketched heads replace the markers; circles and diamonds keep theirs.
-  const headMarker = sketch?.sketchedHeads ? undefined : markerUrl;
+  const sketchedHeads = !!sketch?.sketchedHeads && !mixedHeads;
+  const headMarker = sketchedHeads ? undefined : markerUrl;
+  const startMarker = sketchedHeads ? undefined : startMarkerUrl;
   const strokeWidth = isSelected ? baseStrokeWidth + 0.5 : baseStrokeWidth;
   const hitCursor = isPaintMode ? 'copy' : 'pointer';
   // The line bends where it is grabbed, so an editable line says so.
@@ -287,6 +298,14 @@ function ArrowViewImpl({
       ) : null}
       {ownMarkerId && ownHeadColor ? (
         <ArrowHeadMarker id={ownMarkerId} shape={headShape} size={headSize} color={ownHeadColor} />
+      ) : null}
+      {ownStartMarkerId && ownHeadColor ? (
+        <ArrowHeadMarker
+          id={ownStartMarkerId}
+          shape={startShape}
+          size={headSize}
+          color={ownHeadColor}
+        />
       ) : null}
       {behindMaskId ? (
         // White paints, black cuts. The backdrop is deliberately vast
@@ -367,7 +386,7 @@ function ArrowViewImpl({
           flowPathDash ?? BORDER_DASH_ARRAY[arrow.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
         }
         markerStart={
-          arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? headMarker : undefined
+          arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? startMarker : undefined
         }
         markerEnd={
           arrow.arrowEnds === 'to' || arrow.arrowEnds === 'both' || arrow.arrowEnds === undefined
@@ -395,7 +414,7 @@ function ArrowViewImpl({
           } as React.CSSProperties
         }
       />
-      {sketch?.heads ? (
+      {sketch?.heads && sketchedHeads ? (
         <path
           d={sketch.heads}
           mask={behindMask}
