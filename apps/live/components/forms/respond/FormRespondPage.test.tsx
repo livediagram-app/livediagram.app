@@ -59,7 +59,8 @@ describe('the form page', () => {
     replies.push({ status: 200, body: OPEN }, { status: 201, body: { number: 4 } });
     render(<FormRespondPage />);
     await screen.findByRole('heading', { name: 'Feedback' });
-    expect(document.title).toBe('Feedback | livediagram');
+    // The title is set in an effect, which can flush after the heading paints when the machine is busy.
+    await waitFor(() => expect(document.title).toBe('Feedback | livediagram'));
     answer();
     await submit();
     expect(await screen.findByText('Thank you!')).toBeTruthy();
