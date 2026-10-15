@@ -8,7 +8,14 @@ describe('built-in multi-colour themes', () => {
   const paletteThemes = THEMES.filter((t) => t.palette);
 
   it('are all found (guard against the check going blind)', () => {
-    expect(paletteThemes.map((t) => t.id)).toEqual(['rainbow', 'pastel', 'tropical']);
+    expect(paletteThemes.map((t) => t.id)).toEqual([
+      'rainbow',
+      'pastel',
+      'tropical',
+      'spring',
+      'pumpkin',
+      'yuletide',
+    ]);
   });
 
   for (const theme of paletteThemes) {

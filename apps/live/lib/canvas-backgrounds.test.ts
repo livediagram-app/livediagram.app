@@ -43,6 +43,11 @@ const STATIC_PATTERNS: Record<Exclude<BackgroundPattern, AnimatedBackgroundPatte
   hexagonal: true,
   engineering: true,
   checkerboard: true,
+  sparkles: true,
+  eggs: true,
+  cobwebs: true,
+  snowflakes: true,
+  'candy-stripes': true,
 };
 
 // The animated half comes straight from the tuple the source already exports

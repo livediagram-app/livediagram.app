@@ -888,6 +888,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone set a tab to open in Plan mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|Look':
     "Someone picked a look in Tab Look & Feel, setting the tab's theme, finish, font and canvas pattern at once.",
+  'Tab|Changed|SeasonalLook':
+    "Someone picked a seasonal look (New Year, Easter, Halloween or Christmas) behind the Seasonal toggle in Tab Style, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|Finish':
     "Someone changed a tab's finish (Flexible, Professional or Sketch) from Tab Look & Feel.",
   'Tab|Changed|DefaultTextSize':
@@ -1081,6 +1083,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone put a quick style panel swatch back to its theme colour, with Clear override.',
   'UI|Changed|LooksFinishFilter':
     "Someone narrowed the Tab Style popover's Looks to one finish with its Finish filter.",
+  'UI|Changed|LooksSeasonal':
+    "Someone switched the Tab Style popover's Looks to the seasonal looks, with the Seasonal toggle beside the Finish filter.",
   'UI|Changed|SlideNotes':
     'Someone typed presenter notes for a slide, in the Slide Deck panel. Counted once per slide edited, not per keystroke.',
   'UI|Changed|SpotlightDim':

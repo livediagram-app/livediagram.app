@@ -16,8 +16,10 @@ export const MASHUP_REROLLS = 8;
 
 type PatternIngredient = Pick<TabLook, 'pattern' | 'patternOpacity'>;
 
-// The ingredients, derived from the catalogues so a new theme or look widens the mix with no edit here.
-const MASHUP_THEMES: readonly string[] = THEMES.map((t) => t.id);
+// The ingredients, derived from the catalogues so a new theme or look widens the mix with no edit here. The seasonal
+// themes stay out (they are the seasonal looks' own), as do the seasonal looks' fonts and patterns (TAB_LOOKS holds
+// only the year-round looks).
+const MASHUP_THEMES: readonly string[] = THEMES.filter((t) => !t.seasonal).map((t) => t.id);
 const MASHUP_FONTS: readonly (string | undefined)[] = [...new Set(TAB_LOOKS.map((l) => l.font))];
 const MASHUP_PATTERNS: readonly PatternIngredient[] = [
   ...new Map(

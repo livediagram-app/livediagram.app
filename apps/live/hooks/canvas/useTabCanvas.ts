@@ -143,7 +143,11 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     if (editsBlocked) return;
     const look = typeof lookOrId === 'string' ? tabLookById(lookOrId) : lookOrId;
     if (!look) return;
-    track('Tab', 'Changed', look.id === 'mashup' ? 'Mashup' : 'Look');
+    track(
+      'Tab',
+      'Changed',
+      look.id === 'mashup' ? 'Mashup' : look.season ? 'SeasonalLook' : 'Look',
+    );
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? withLookApplied(t, look) : t)));
   };
 

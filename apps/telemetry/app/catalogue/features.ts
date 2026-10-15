@@ -1161,9 +1161,9 @@ export const HIGHLIGHTER_SETTINGS = chart(
 export const LOOKS_FILTERED = chart(
   'UI',
   'Changed',
-  'Looks Filtered by Finish',
-  "The Tab Style popover's Looks narrowed to one finish with its Finish filter.",
-  { types: ['LooksFinishFilter'], rising: 'neutral' },
+  'Looks Filtered',
+  "The Tab Style popover's Looks narrowed to one finish with its Finish filter, or switched to the seasonal looks with its Seasonal toggle.",
+  { types: ['LooksFinishFilter', 'LooksSeasonal'], rising: 'neutral' },
 );
 
 export const LOOK_AND_FEEL: MetricStack = {
