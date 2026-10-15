@@ -114,11 +114,13 @@ export function SnapCarousel({
           </div>
         </div>
       </div>
-      {/* The scrollbar is hidden: the arrows and swipe are the controls. */}
+      {/* The scrollbar is hidden: the arrows and swipe are the controls. Positioned, so a card's
+          absolutely placed parts (its sr-only text) are clipped by the track, not placed against
+          the page: a card scrolled off the right would otherwise widen the whole page. */}
       <ul
         ref={track}
         onScroll={measure}
-        className={`flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>li]:shrink-0 [&>li]:grow [&>li]:snap-start ${itemClassName} ${trackClassName}`}
+        className={`relative flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>li]:shrink-0 [&>li]:grow [&>li]:snap-start ${itemClassName} ${trackClassName}`}
       >
         {children}
       </ul>
