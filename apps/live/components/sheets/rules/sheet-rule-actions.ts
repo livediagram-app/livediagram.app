@@ -129,5 +129,3 @@ export function sheetRuleActions(c: SheetController) {
     },
   };
 }
-
-export type SheetRuleActions = ReturnType<typeof sheetRuleActions>;

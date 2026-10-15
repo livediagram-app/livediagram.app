@@ -19,5 +19,4 @@ const store = createElementKeyedStore<ConceptTourPreview>(
 );
 
 export const setConceptTourPreview = store.set;
-export const conceptTourPreview = store.get;
 export const useConceptTourPreview = store.use;

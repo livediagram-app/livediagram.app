@@ -59,6 +59,14 @@ export function explorerPathFor(node: SelectedNode): string {
   }
 }
 
+// A team's page opened at one of its folders (docs/specs/013-workspace/team-shared-documents.md),
+// or at its root when `folderId` is null. The team page reads `folder` at mount, so callers
+// navigate here with a full load rather than a client-side route change.
+export function teamFolderPath(teamId: string, folderId: string | null): string {
+  const team = explorerPathFor({ kind: 'team', id: teamId });
+  return folderId ? `${team}&folder=${encodeURIComponent(folderId)}` : team;
+}
+
 // Inverse: which section a URL shows. `pathname` arrives without the
 // /live basePath (usePathname strips it); trailing slashes from the
 // static export are tolerated. Unknown paths and id-less folder/team

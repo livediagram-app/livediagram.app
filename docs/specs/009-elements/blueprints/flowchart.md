@@ -19,6 +19,7 @@ Scope, by file:
 | `packages/document/src/duplicate.ts`                        | Copies remap the three ids                                                                                                     |
 | `packages/document/src/participant-content.ts`              | A Participant's growth may move the chart's steps, connectors and lanes                                                        |
 | `apps/live/app/document/[id]/useFlowchartGrowth.ts`         | Tab / Enter / toolbar / ring growth, Escape removal, one commit each                                                           |
+| `apps/live/app/document/[id]/useGrowthLanding.ts`           | Shared with mind growth: reveal, typed-ahead landing, Escape on an empty grown node                                            |
 | `apps/live/hooks/canvas/useFlowchartSetters.ts`             | Step type, direction, Add Lane, lane move, Tidy Flowchart from the menu and toolbar                                            |
 | `apps/live/lib/flowchart-dress.ts`                          | `dressFlowchartStep`, `dressFlowchartConnector`: the look a new step and connector take                                        |
 | `apps/live/components/palette/palette-tile-defs.tsx`        | `tools:flowchart` tile (component action `flowchart`)                                                                          |

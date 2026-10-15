@@ -13,6 +13,7 @@ import { useDocumentDropTarget } from '../useDocumentDropTarget';
 import { usePanelTree } from './PanelTreeContext';
 import { useDefaultFolderDescription } from '@/components/placement/DefaultFolderMarker';
 import { FolderLabel } from '@/app/explorer/sidebar/SidebarFolderSubtree';
+import { explorerPathFor, teamFolderPath } from '@/app/explorer/routes';
 
 // A folder as the panel's tree needs it; `teamId` set on a team folder.
 export type PanelFolder = {
@@ -129,8 +130,8 @@ export function PanelFolderItem({
                 onShowInExplorer={() =>
                   window.location.assign(
                     team
-                      ? `/explorer/team?id=${encodeURIComponent(team.id)}&folder=${encodeURIComponent(folder.id)}`
-                      : `/explorer/folder?id=${encodeURIComponent(folder.id)}`,
+                      ? teamFolderPath(team.id, folder.id)
+                      : explorerPathFor({ kind: 'folder', id: folder.id }),
                   )
                 }
                 onRename={rename ? () => setEditing(true) : undefined}

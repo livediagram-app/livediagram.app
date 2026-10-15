@@ -27,6 +27,7 @@ import { SourceTypeIcon } from '@livediagram/ui';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { EVENT_ICONS } from './icons';
 import { requestOpenSettings } from '@/lib/open-settings';
+import { explorerPathFor } from '../routes';
 
 function str(snapshot: Record<string, unknown>, key: string): string | null {
   const value = snapshot[key];
@@ -159,7 +160,7 @@ const teamRenderer: TimelineRenderer = (event, ctx) => {
   const team = str(event.snapshot, 'teamName') ?? 'A team';
   const member = str(event.snapshot, 'memberName');
   const open = teamId
-    ? () => window.location.assign(`/explorer/team?id=${encodeURIComponent(teamId)}`)
+    ? () => window.location.assign(explorerPathFor({ kind: 'team', id: teamId }))
     : undefined;
   const base = { icon: icon(event), subject: team, onClick: open, description: null };
   const who = isMine(event, ctx) ? 'You' : (member ?? 'Someone');
@@ -227,7 +228,7 @@ const accountRenderer: TimelineRenderer = (event) => {
         ...base,
         subject: folder,
         onClick: folderId
-          ? () => window.location.assign(`/explorer/folder?id=${encodeURIComponent(folderId)}`)
+          ? () => window.location.assign(explorerPathFor({ kind: 'folder', id: folderId }))
           : undefined,
       };
     }
