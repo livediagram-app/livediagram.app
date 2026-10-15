@@ -10,7 +10,7 @@ Derived from [Forms](../forms.md). Implementation contracts: files, types, const
 | The `form` tab kind, `Tab.form`                                                                  | `packages/document` (`tab-kind.ts`, `index.ts`)                                                                                                                                                                                                                                                     |
 | Multiple Choice and Rating field kinds                                                           | `packages/items` (`item-types.ts`, `type-catalogue.ts`, `card-text.ts`, `board-csv.ts`, `type-changes.ts`, `plan-names.ts`); agents in `packages/agent-verbs/src/plan/plan-listing.ts` and `packages/agent-verbs/src/mcp/plan-schema.ts`                                                            |
 | Wire DTOs (`FormLinkResponse`, `PublicFormResponse`, `FormResponseBody`, report reasons)         | `packages/api-schema` (`forms.ts`); the Inbox's `ActivityFormResponses` in `activity.ts`; `/form` in `page-views.ts`; `forms` in `error-telemetry.ts`; `Form` in `telemetry-schema.ts`                                                                                                              |
-| `form_links`, `form_reports`, `form_reads`                                                       | `apps/api/migrations/0092_forms.sql`, `apps/api/src/db/forms.ts`, the Inbox read `apps/api/src/db/activity-forms.ts`                                                                                                                                                                                |
+| `form_links`, `form_reports`, `form_reads`                                                       | `apps/api/migrations/0092_forms.sql`, `0093_form_links_deleted.sql`, `apps/api/src/db/forms.ts`, the Inbox read `apps/api/src/db/activity-forms.ts`                                                                                                                                                 |
 | Owner routes, public routes, the response write                                                  | `apps/api/src/routes/form-link-routes.ts`, `apps/api/src/routes/forms.ts`, `apps/api/src/forms/respond.ts`, `apps/api/src/forms/form-tab.ts`                                                                                                                                                        |
 | Emails                                                                                           | `apps/api/src/email/templates.ts` (`formResponseEmail`, `formSuspendedEmail`), `notifications.ts` (`notifyFormResponse`, `notifyFormSuspended`)                                                                                                                                                     |
 | The Form tab                                                                                     | `apps/live/components/forms/FormPage.tsx` and `components/forms/builder/*`; actions in `apps/live/hooks/forms/*`                                                                                                                                                                                    |
@@ -240,12 +240,12 @@ for rating. No item store change: a list of strings and a number are already val
 
 ## 11. Api
 
-### Tables (migration `0092_forms.sql`)
+### Tables (migrations `0092_forms.sql`, `0093_form_links_deleted.sql`)
 
 ```sql
 form_links (code PK, document_id → documents ON DELETE CASCADE, tab_id, open, created_at, responses,
-            last_response_at, hour_start, hour_count, suspended_at, last_email_at, held_emails)
-  UNIQUE (document_id, tab_id) WHERE suspended_at IS NULL; INDEX (document_id)
+            last_response_at, hour_start, hour_count, suspended_at, deleted_at, last_email_at, held_emails)
+  UNIQUE (document_id, tab_id) WHERE suspended_at IS NULL AND deleted_at IS NULL; INDEX (document_id)
 form_reports (code → form_links ON DELETE CASCADE, browser, network, reason, note, created_at, PK (code, browser))
 form_reads (code → form_links ON DELETE CASCADE, owner_id, seen_number, PK (code, owner_id)); INDEX (owner_id)
 ```
@@ -255,11 +255,12 @@ moved by the guest migration. Unseen = `responses - seen_number`.
 
 ### `db/forms.ts`
 
-`generateFormCode` (base 62 without bias), `getLiveFormLink`, `getFormLink`, `getSuspendedFormLink`,
-`countSuspendedFormLinks`, `createFormLink` (carries the tab's highest response number on; null on a second live
-link), `setFormLinkOpen`, `deleteFormLink` (live only), `deleteFormLinksForTab`, `claimResponseNumber` (one guarded
-`UPDATE … RETURNING`: number, `last_response_at` and the hourly window together, and `responses < limit` when given;
-null at either cap),
+`generateFormCode` (base 62 without bias), `getLiveFormLink` (not suspended, not deleted), `getFormLink`,
+`getSuspendedFormLink`, `countSuspendedFormLinks`, `createFormLink` (carries the tab's highest response number on,
+from every earlier link, suspended or deleted; null on a second live link), `setFormLinkOpen`, `deleteFormLink` (a
+live link marked `deleted_at` and closed, never removed, so its number carries on and its code answers nothing),
+`deleteFormLinksForTab` (removes them all: the tab is gone), `claimResponseNumber` (one guarded `UPDATE … RETURNING`:
+number, `last_response_at` and the hourly window together, and `responses < limit` when given; null at either cap),
 `addFormReport` (distinct networks), `suspendFormLink`, `markFormSeen`, `unseenResponses`, `claimFormEmail`
 (compare-and-swap on `last_email_at`, returning how many were held).
 

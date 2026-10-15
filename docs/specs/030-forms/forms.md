@@ -377,7 +377,8 @@ Tour** stack beside the Draw tour's.
     from documents saved to livediagram.
 - The form link is `/form/<code>`: a code of 22 random characters (base 62, about 131 bits), separate from every
   share link. It grants **nothing** on the document: no read, no room, no images.
-- One live link per Form tab. Its response number carries on across a deleted or suspended link and a new one. Two
+- One live link per Form tab. Its response number carries on across a deleted or suspended link and a new one: a
+  deleted link is kept, closed and marked, so its number is remembered and its code never answers again. Two
   responses at once never pass the Response Limit between them.
 - **Open**: the form accepts responses while it is open, its Close On time has not passed, its Response Limit is not
   reached, and its document is not in the Trash. Otherwise it is **closed**, and the form link shows the closed page.
