@@ -12,7 +12,6 @@ import {
 import { TextInput } from '@livediagram/ui';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
-import { ColourSelect } from '@/components/plan/ColourSwatches';
 import { patchForm } from '@/hooks/forms/form-edits';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { DraftText } from './DraftText';
@@ -126,19 +125,6 @@ export function FormSettingsTab({ link }: { link: FormLinkState }) {
           />
         </div>
       </SettingsField>
-      <div>
-        <p className="mb-1.5 px-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
-          Form Colour
-        </p>
-        <ColourSelect
-          label="Form Colour"
-          value={form.accent}
-          onChange={(accent) => set({ accent })}
-        />
-        <p className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">
-          Its buttons, focus and choices. None follows the tab’s theme.
-        </p>
-      </div>
     </div>
   );
 }

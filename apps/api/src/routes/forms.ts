@@ -43,7 +43,7 @@ async function read(ctx: RouteContext, code: string): Promise<Response> {
   const opened = await openFormLink(ctx, code);
   if (!opened) return formNotFound();
   const { link, doc, form, tab } = opened;
-  const look = formLook(tab, form);
+  const look = formLook(tab);
   let closed = closedReason(form, {
     open: link.open === 1,
     responses: link.responses,

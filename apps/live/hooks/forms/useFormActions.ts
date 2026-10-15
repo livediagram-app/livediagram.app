@@ -232,7 +232,6 @@ export function useFormActions({
       ...starterBaseType(formStarter('blank'), slice.types, newItemTypeId(label, slice.types)),
       label,
       newTitle: `New ${label.toLowerCase()}`,
-      ...(form.accent ? { color: form.accent } : {}),
     };
     slice.saveType(type);
     const dest = form.destination;

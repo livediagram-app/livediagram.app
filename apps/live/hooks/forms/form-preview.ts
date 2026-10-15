@@ -4,6 +4,7 @@
 import type { ItemCreate, ItemTypeDef } from '@livediagram/items';
 import { checkResponse, responseCard, type FormDefinition } from '@livediagram/forms';
 import type { FillState, SubmitOutcome } from '@/components/forms/respond/useFormFill';
+import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
 export const PREVIEW_NO_DESTINATION =
@@ -29,7 +30,7 @@ export async function sendPreview({
   const checked = checkResponse(form, state);
   if (!checked.ok) return { kind: 'invalid', errors: checked.errors };
   if (problem || !type || !form.destination || !addItems) {
-    console.info('[forms] form.preview.no_destination', { problem });
+    debugLog('[forms] form.preview.no_destination', { problem });
     return { kind: 'failed', message: PREVIEW_NO_DESTINATION };
   }
   const card = responseCard(form, tabId, checked.answers, type, 'preview');

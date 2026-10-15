@@ -6726,9 +6726,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "FormDefinition": {
     "additionalProperties": false,
     "properties": {
-      "accent": {
-        "type": "string"
-      },
       "closedMessage": {
         "type": "string"
       },

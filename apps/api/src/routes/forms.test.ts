@@ -18,7 +18,6 @@ let relayed: { op: { kind: string; upserts: Item[] } }[];
 const form = (extra: Partial<FormDefinition> = {}): FormDefinition => ({
   v: 1,
   heading: 'Bug Report',
-  accent: '#dc2626',
   sections: [
     {
       id: 's-1',
@@ -108,7 +107,7 @@ beforeEach(() => {
         label: 'Bug',
         newTitle: 'New bug',
         glyph: 'bug',
-        color: '#dc2626',
+        color: '#0284c7',
         fields: ['title', 'status', 'description', 'f-severity'],
         custom: [{ id: 'f-severity', label: 'Severity', kind: 'choice', options: ['Low', 'High'] }],
       },
@@ -249,8 +248,7 @@ describe('the public form (docs/specs/030-forms/forms.md "Filling in a form")', 
       state: 'closed',
       heading: 'Bug Report',
       message: 'See you next year.',
-      // A chosen form colour wins over the theme's, in both halves.
-      look: { accent: { light: '#dc2626', dark: '#dc2626' } },
+      look: { finish: 'flexible' },
     });
     writeForm(form({ limit: 1 }));
     await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'One' } });
@@ -299,7 +297,7 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
         'f-severity': 'High',
         [FROM_FORM_FIELD]: 'ftab:1',
       },
-      createdBy: { name: 'Bug Report form', color: '#dc2626' },
+      createdBy: { name: 'Bug Report form', color: '#0284c7' },
     });
     expect(relayed.map((r) => r.op.kind)).toEqual(['items']);
     expect(

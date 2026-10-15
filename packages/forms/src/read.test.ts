@@ -74,7 +74,8 @@ describe('readForm', () => {
     };
     const read = readForm(raw)!;
     expect(read.heading).toBe('Bug Report');
-    expect(read.accent).toBe('#dc2626');
+    // A colour an earlier build stored is dropped: the form wears its tab theme's.
+    expect(read).not.toHaveProperty('accent');
     expect(read.cover).toEqual({ color: '#abcdef', style: 'gradient' });
     expect(readForm({ cover: { style: 'dots' } })!.cover).toEqual({ style: 'dots' });
     expect(readForm({ cover: { style: 'solid' } })!.cover).toBeUndefined();
@@ -234,7 +235,6 @@ describe('readForm', () => {
 
   it('drops settings out of range', () => {
     const read = readForm({
-      accent: 'red',
       cover: { color: 'blue', style: 'zigzag' },
       destination: { tabId: 'tab 1', typeId: 'bug', status: 'x' },
       closesAt: -1,

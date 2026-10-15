@@ -1,6 +1,6 @@
 // A form's look (docs/specs/030-forms/forms.md "Look"): its tab's theme, finish and font, as the builder and the form
-// link's page both draw it. The accent is the theme's own colour unless the form chose one; each half (light, dark)
-// is worked out so the page can follow the respondent's system.
+// link's page both draw it. Its colour is always the theme's own; each half (light, dark) is worked out so the page
+// can follow the respondent's system.
 import { deriveTextColorForBg } from './colors';
 import { resolveFinish, type Finish } from './finish';
 import { resolveFontStack } from './fonts';
@@ -32,16 +32,11 @@ const accentOf = (theme: ThemeDefinition, appearance: Appearance) =>
 
 /** The look of a form on a tab with this theme, finish and font. A custom theme draws as Default (as the public
  *  page cannot read its owner's themes, the builder draws it the same way). */
-export function formLook(
-  tab: { theme?: string; finish?: unknown; font?: string },
-  form: { accent?: string },
-): FormLook {
+export function formLook(tab: { theme?: string; finish?: unknown; font?: string }): FormLook {
   const half = (appearance: Appearance) => getBuiltInTheme(tab.theme, appearance);
   const light = half('light');
   const dark = half('dark');
-  const accent: FormHalves = form.accent
-    ? { light: form.accent, dark: form.accent }
-    : { light: accentOf(light, 'light'), dark: accentOf(dark, 'dark') };
+  const accent: FormHalves = { light: accentOf(light, 'light'), dark: accentOf(dark, 'dark') };
   return {
     backdrop: { light: light.backgroundColor, dark: dark.backgroundColor },
     accent,

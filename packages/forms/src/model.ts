@@ -112,7 +112,7 @@ export interface FormDefinition {
   v: 1;
   heading: string;
   description?: string;
-  accent?: string;
+  // No colour of its own: a form wears its tab theme's (docs/specs/030-forms/forms.md "Look").
   cover?: FormCover;
   sections: FormSection[];
   destination?: FormDestination;

@@ -27,15 +27,15 @@ export const FORM_RESPONSES_PER_HOUR = 500;
 
 const refuse = (body: FormResponseRefusal, status: number) => json(body, { status });
 
+// The brand blue a form's person is drawn in.
+const FORM_PERSON_COLOR = '#0284c7';
+
 // The person a response's card names as its maker: the form itself, never a respondent.
-export function formPerson(
-  code: string,
-  form: Pick<FormDefinition, 'heading' | 'accent'>,
-): ItemPerson {
+export function formPerson(code: string, form: Pick<FormDefinition, 'heading'>): ItemPerson {
   return {
     id: `form:${code.slice(0, 8)}`,
     name: `${form.heading} form`.slice(0, 80),
-    color: form.accent ?? '#0284c7',
+    color: FORM_PERSON_COLOR,
   };
 }
 

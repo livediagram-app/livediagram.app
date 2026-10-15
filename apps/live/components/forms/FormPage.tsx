@@ -84,10 +84,11 @@ export function FormPage({
       },
     [tab.form, tab.name],
   );
-  // The look respondents see: the tab's theme, finish and font, and the form's colour (or the theme's).
+  // The look respondents see: the tab's theme (its colour too), finish and font.
+  const { theme, finish, font } = tab;
   const look = useMemo(
-    () => formLookProps(formLook(tab, form)),
-    [tab.theme, tab.finish, tab.font, form.accent],
+    () => formLookProps(formLook({ theme, finish, font })),
+    [theme, finish, font],
   );
   const [preview, setPreview] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);

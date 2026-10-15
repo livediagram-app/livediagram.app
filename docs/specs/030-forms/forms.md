@@ -125,8 +125,8 @@ A panel 340 px wide at the right on a screen 1,100 px wide or more; narrower, a 
 - **Settings**: **Accepting Responses** (the link's switch; dimmed until published), **Close On** (a date and time,
   with Clear; a time already past says the form is closed), **Response Limit** (1 to 2,000), **Confirmation Message**
   (up to 500 characters, default "Thanks, your response has been recorded."), **Closed Message** (up to 500
-  characters, default "This form is no longer accepting responses.") and the **Form Colour** (None, the default,
-  follows the tab theme; see [Look](#look)). The rest of the look is the tab's, changed from **Style** as ever.
+  characters, default "This form is no longer accepting responses."). A form has no colour setting of its own: it
+  wears its tab's [look](#look), changed from **Style** as ever.
 
 ### Look
 
@@ -134,10 +134,10 @@ A form wears its tab's look, in the builder and on the form link's page alike, s
 reads hand-drawn and one on a Boardroom tab reads crisp. The form card stays white (light) or the dark card colour,
 so text contrast never depends on the theme.
 
-- **Colour**: the form colour (`accent`) when one is chosen, else the tab theme's own colour for each half (the
-  theme's line colour; on Default, the brand blue of each half). It paints the cover, the accent bars, focus rings,
-  selected choices, the progress bar, links and the filled buttons, whose labels take whichever of light or dark
-  text reads on it. Starters choose no form colour, so a new form follows its tab.
+- **Colour**: always the tab theme's own colour for each half (the theme's line colour; on Default, the brand blue
+  of each half), never the card type's or the starter's. It paints the cover's default band, the accent bars, focus
+  rings, selected choices, the progress bar, links and the filled buttons, whose labels take whichever of light or
+  dark text reads on it. A colour an earlier build stored on a form (`accent`) is dropped when the form is read.
 - **Font**: the tab font, on everything in the form (a tab with none keeps the app font).
 - **Finish**: **Flexible** draws boxes as they are; **Professional** squares their corners (2 px); **Sketch** draws
   every box (cards, fields, choices, ratings, buttons) by hand: a wandering outline at a marker's 2 px in ink

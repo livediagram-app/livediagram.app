@@ -14,7 +14,6 @@ const form: FormDefinition = {
   v: 1,
   heading: 'Bugs',
   description: 'Tell us',
-  accent: '#dc2626',
   cover: { color: '#000000' },
   sections: [
     {

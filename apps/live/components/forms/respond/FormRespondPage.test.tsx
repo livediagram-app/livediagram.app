@@ -11,7 +11,7 @@ import { FormRespondPage } from './FormRespondPage';
 const CODE = 'AbCdEfGhIjKlMnOpQrStU1';
 const OPEN: PublicFormResponse = {
   state: 'open',
-  look: formLook({ theme: 'forest', finish: 'sketch', font: 'caveat' }, {}),
+  look: formLook({ theme: 'forest', finish: 'sketch', font: 'caveat' }),
   form: {
     heading: 'Feedback',
     confirmation: 'Thank you!',

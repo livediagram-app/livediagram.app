@@ -162,8 +162,7 @@ export function readForm(raw: unknown): FormDefinition | null {
   };
   const description = text(raw['description'], FORM_DESCRIPTION_MAX);
   if (description) form.description = description;
-  if (typeof raw['accent'] === 'string' && HEX.test(raw['accent']))
-    form.accent = raw['accent'].toLowerCase();
+  // An `accent` an earlier build stored is dropped: the form follows its tab theme's colour.
   const cover = readCover(raw['cover']);
   if (cover) form.cover = cover;
   const sectionIds = new Set<string>();
