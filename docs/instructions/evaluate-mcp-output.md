@@ -24,7 +24,7 @@ follows) and `scenarios.md` (the scenario bank, ids stable across runs). `token.
 ## Run a round
 
 7. Pick the scenarios for the mode under work from `scenarios.md`. A mode with none gets new ids (`D`, `P`, `S`, `I`,
-   `F`, `W` so far): one easy, one or two medium, one hard, and one edit of an earlier result. Each prompt is what a
+   `F`, `W`, `Q` (forms) so far): one easy, one or two medium, one hard, and one edit of an earlier result. Each prompt is what a
    user would type, never a hint at the tools.
 8. Give each evaluator two to four scenarios, so a round of a dozen runs as four agents in parallel. An edit
    scenario goes to the agent that built the document it edits.
@@ -118,3 +118,10 @@ random bytes>`, `created_at` and `expires_at` in ms, `read_only` 0) with `wrangl
   `templates.test.ts` stays clean after a lint change, and lint a fresh template of each kind the round touched.
 - When a fix moves where a row's members sit (stores under services), replay every past input of that shape from
   `runs/*/calls.jsonl` and compare box geometry before and after: only the inputs the fix was for should move.
+- The per-token limits count api requests, not tool calls (reads 120 a minute): a tool that reads every tab trips them
+  after a dozen calls on a large document. When evaluators hit them, count the requests one call makes before
+  blaming the evaluator's pace, and read only what the call needs (the plan's `tabs` name every tab's kind).
+- Tell an evaluator a known rate-limit refusal is not the tools' fault, and that links point at livediagram.app
+  when the local server has no public host set; otherwise both are reported as defects every round.
+- A form's responses cannot be submitted through the tools: the evaluator can only check where they would land
+  (`read_form`'s `goesTo` and `column`), so a response's landing is proven by the api's own tests, not the eval.
