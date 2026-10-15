@@ -62,27 +62,27 @@ describe('FormConnectCard', () => {
 
   it('New Board connects the form to a new board', () => {
     const { actions } = setup();
-    fireEvent.click(screen.getByRole('button', { name: 'New Board' }));
+    fireEvent.click(screen.getByRole('button', { name: /Cards on a Board/ }));
     expect(actions.newResponsesBoard).toHaveBeenCalledOnce();
     expect(track).toHaveBeenCalledWith('Form', 'Linked', 'ConnectNewBoard');
   });
 
   it('New Sheet connects the form to a new sheet', () => {
     const { actions } = setup();
-    fireEvent.click(screen.getByRole('button', { name: 'New Sheet' }));
+    fireEvent.click(screen.getByRole('button', { name: /Rows in a Sheet/ }));
     expect(actions.newResponsesSheet).toHaveBeenCalledOnce();
     expect(track).toHaveBeenCalledWith('Form', 'Linked', 'ConnectNewSheet');
   });
 
   it('Choose Existing opens Responses Go To', () => {
     const { openSettings } = setup();
-    fireEvent.click(screen.getByRole('button', { name: 'Choose Existing' }));
+    fireEvent.click(screen.getByRole('button', { name: /already have/ }));
     expect(openSettings).toHaveBeenCalledWith('destination');
     expect(track).toHaveBeenCalledWith('Form', 'Linked', 'ConnectChoose');
   });
 
   it('offers no Choose Existing when the document has no board or sheet', () => {
     setup({}, { hasExisting: false });
-    expect(screen.queryByRole('button', { name: 'Choose Existing' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /already have/ })).toBeNull();
   });
 });

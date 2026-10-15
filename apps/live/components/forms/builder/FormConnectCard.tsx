@@ -1,18 +1,21 @@
 'use client';
 
-// The connect box (docs/specs/030-forms/forms.md "Responses Go To and Settings"): above the form's title while it
-// sends its responses nowhere (no board, no sheet), so an Editor connects it before anything else. New Board and New
-// Sheet each connect it in one press; Choose Existing (when the document has a board or sheet) opens Responses Go To.
+// The connect box (docs/specs/030-forms/forms.md "Responses Go To and Settings"): a card under the form's title while
+// it sends its responses nowhere (no board, no sheet), drawn as the form's own cards are, so an Editor connects it
+// before anything else. Two choices side by side, each making its tab in one press: Cards on a Board (New Board) and
+// Rows in a Sheet (New Sheet); Choose Existing (when the document has a board or sheet) opens Responses Go To.
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideSquareKanban, lucideTable } from '@livediagram/icons/lucide';
 import { track } from '@/lib/telemetry';
 import { useFormBuilder } from './form-builder-context';
 
-const BoardIcon = lucideGlyph(lucideSquareKanban, 16);
-const SheetIcon = lucideGlyph(lucideTable, 16);
+const BoardIcon = lucideGlyph(lucideSquareKanban, 18);
+const SheetIcon = lucideGlyph(lucideTable, 18);
 
-const BUTTON =
-  'flex h-9 cursor-pointer items-center gap-2 rounded-lg border px-3 text-[13px] font-medium transition';
+const CHOICE =
+  'group/choice flex min-w-0 flex-1 cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-[var(--form-accent)] hover:bg-[color-mix(in_srgb,var(--form-accent)_5%,white)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800';
+const CHOICE_ICON =
+  'flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-600 transition group-hover/choice:bg-[var(--form-accent)] group-hover/choice:text-white dark:bg-slate-800 dark:text-slate-300';
 
 export function FormConnectCard({ hasExisting }: { hasExisting: boolean }) {
   const b = useFormBuilder();
@@ -21,8 +24,9 @@ export function FormConnectCard({ hasExisting }: { hasExisting: boolean }) {
     <section
       aria-labelledby="form-connect-title"
       data-form-connect=""
-      className="rounded-xl border border-dashed border-brand-300 bg-brand-50/70 px-5 py-4 dark:border-brand-500/40 dark:bg-brand-500/10"
+      className="form-box form-ink relative overflow-hidden rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-sm:px-4 dark:border-slate-700/80 dark:bg-slate-900"
     >
+      <span aria-hidden className="absolute inset-y-0 left-0 w-1.5 bg-[var(--form-accent)]" />
       <h2
         id="form-connect-title"
         className="text-[15px] font-semibold text-slate-900 dark:text-slate-50"
@@ -30,20 +34,28 @@ export function FormConnectCard({ hasExisting }: { hasExisting: boolean }) {
         Where Should Responses Go?
       </h2>
       <p className="mt-1 text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
-        Connect this form to a board, a card for each response, or to a sheet, a row for each. It
-        can be published once it is connected.
+        Choose before you publish: the form can’t take responses until it has somewhere to put them.
       </p>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="mt-4 flex gap-3 max-sm:flex-col">
         <button
           type="button"
           onClick={() => {
             track('Form', 'Linked', 'ConnectNewBoard');
             b.actions.newResponsesBoard();
           }}
-          className={`${BUTTON} border-brand-700 bg-brand-700 text-white hover:bg-brand-800 dark:border-brand-600 dark:bg-brand-600 dark:hover:bg-brand-700`}
+          className={CHOICE}
         >
-          <BoardIcon aria-hidden />
-          New Board
+          <span className={CHOICE_ICON}>
+            <BoardIcon aria-hidden />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[14px] font-semibold text-slate-900 dark:text-slate-50">
+              Cards on a Board
+            </span>
+            <span className="mt-0.5 block text-[12px] leading-snug text-slate-500 dark:text-slate-400">
+              A card for each response, to work through. Makes a new board.
+            </span>
+          </span>
         </button>
         <button
           type="button"
@@ -51,24 +63,33 @@ export function FormConnectCard({ hasExisting }: { hasExisting: boolean }) {
             track('Form', 'Linked', 'ConnectNewSheet');
             b.actions.newResponsesSheet();
           }}
-          className={`${BUTTON} border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800`}
+          className={CHOICE}
         >
-          <SheetIcon aria-hidden />
-          New Sheet
+          <span className={CHOICE_ICON}>
+            <SheetIcon aria-hidden />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[14px] font-semibold text-slate-900 dark:text-slate-50">
+              Rows in a Sheet
+            </span>
+            <span className="mt-0.5 block text-[12px] leading-snug text-slate-500 dark:text-slate-400">
+              A row for each response, to count and compare. Makes a new sheet.
+            </span>
+          </span>
         </button>
-        {hasExisting ? (
-          <button
-            type="button"
-            onClick={() => {
-              track('Form', 'Linked', 'ConnectChoose');
-              b.openSettings('destination');
-            }}
-            className="h-9 cursor-pointer rounded-lg px-2 text-[13px] font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-300"
-          >
-            Choose Existing
-          </button>
-        ) : null}
       </div>
+      {hasExisting ? (
+        <button
+          type="button"
+          onClick={() => {
+            track('Form', 'Linked', 'ConnectChoose');
+            b.openSettings('destination');
+          }}
+          className="mt-3 cursor-pointer text-[13px] font-medium text-slate-600 underline-offset-2 hover:text-slate-900 hover:underline dark:text-slate-300 dark:hover:text-slate-50"
+        >
+          Or use a board or sheet you already have
+        </button>
+      ) : null}
     </section>
   );
 }

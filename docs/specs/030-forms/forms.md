@@ -178,11 +178,14 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
 **Responses Go To** (first) and **Settings**; a paused form's fix opens it on Responses Go To.
 
 - **The connect box**: while a form sends its responses nowhere (no board and no sheet), an Editor's builder shows a
-  box above the form's title, "Where Should Responses Go?", with **New Board** (Responses Go To's New Board),
-  **New Sheet** (its New Sheet) and, when the document already has a Board or Sheet tab, **Choose Existing**, which
-  opens the cog on Responses Go To. It goes as soon as the form names a board or a sheet; a broken destination is
-  the status bar's to report, not the box's. A Participant or Viewer never sees it.
-
+  card under the form's title card, drawn as the form's cards are (the accent bar at its left): "Where Should
+  Responses Go?", "Choose before you publish: the form can’t take responses until it has somewhere to put them.",
+  then two choices side by side (stacked on a phone), each an icon, a name and a line: **Cards on a Board** ("A card
+  for each response, to work through. Makes a new board.", Responses Go To's New Board) and **Rows in a Sheet** ("A
+  row for each response, to count and compare. Makes a new sheet.", its New Sheet); and, when the document already
+  has a Board or Sheet tab, **Or use a board or sheet you already have**, which opens the cog on Responses Go To. It
+  goes as soon as the form names a board or a sheet; a broken destination is the status bar's to report, not the
+  box's. A Participant or Viewer never sees it.
 - **Responses Go To** (the destination): **Board** (the document's Board tabs, its last choice **+ New Board**: a
   Board tab after this one, "<Form> Responses", New, In Progress, Done), **Card Type** (the types that board takes,
   its last choice **+ New Card Type**: a type named after the form, which a board confining its types also takes),

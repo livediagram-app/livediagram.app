@@ -1,6 +1,6 @@
 'use client';
 
-// The form as built (docs/specs/030-forms/forms.md "Building a form"): the connect box while responses go nowhere, its header, each section's questions (a later
+// The form as built (docs/specs/030-forms/forms.md "Building a form"): its header, the connect box under it while responses go nowhere, each section's questions (a later
 // section headed by its own card), and the add bar (under the selected question, else at the end), in a 640 px column.
 // A press on the column's background deselects. Questions slide when moved and grow in when added (question-motion).
 import { Fragment, useCallback, useRef } from 'react';
@@ -59,8 +59,8 @@ export function FormBuilderColumn({
           style={{ top: drag.mark.top }}
         />
       ) : null}
-      <FormConnectCard hasExisting={hasDestinations} />
       <FormHeaderCard sections={b.form.sections.length} />
+      <FormConnectCard hasExisting={hasDestinations} />
       {b.form.sections.map((section, s) => (
         <div
           key={section.id}
