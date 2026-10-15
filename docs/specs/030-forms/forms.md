@@ -392,6 +392,13 @@ On submit the api, in one write:
 
 ## Hearing about responses
 
+- **The board's Form strip**: a board on a Board tab that a form sends its responses to shows, leading its widgets
+  (in the header, or in the band's controls card when the board fills its tab), one pill per such form, with no one
+  adding it: the clipboard glyph, the form's name, a dot (green while accepting, grey closed or unpublished, its state
+  read out), "3 responses · 1 new", **Copy Form Link** (an Editor's, once published; it reads "Copied") and **Open
+  Form** (opens the Form tab). It reads the count without marking anything seen (only opening the Form tab does), and
+  refreshes as the Form tab's status bar does. It is not a stored widget: it comes and goes with the form's
+  destination.
 - **On the board**: a card made by a response shows a **New** dot (the brand colour, beside its flag, named "New
   response") until it is opened in this browser, or until a week has passed. What has been opened is kept per browser.
 - **On the Form tab**: the **status bar** over the form: its state (**Not Published**, **Accepting Responses**,
@@ -454,6 +461,7 @@ an agent, are later steps.
 | Form     | Created  | `FromBoard`                                        | New Form on a board's cog                             |
 | Form     | Added    | the question type (`ShortAnswer`, `Rating`, ...)   | Add Question                                          |
 | Form     | Shared   | `Link`                                             | Publish Form                                          |
+| Form     | Shared   | `BoardCopy`                                        | Copy Form Link on a board's Form strip                |
 | Form     | Toggled  | `Open` / `Closed`                                  | Accepting Responses flipped (before the change lands) |
 | Form     | Sent     | `Response` / `Dropped` (hidden field)              | The api accepts or drops a response (server-side)     |
 | Form     | Sent     | `Preview`                                          | An Editor's Preview makes its card                    |

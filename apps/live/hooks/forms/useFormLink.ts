@@ -44,8 +44,10 @@ export function useFormLink(input: {
   share: string | null;
   // Offline documents and guests with no server: nothing to publish.
   enabled: boolean;
+  // Opening the Form tab marks its responses seen; a board's Form strip only reads (false).
+  markSeen?: boolean;
 }): FormLinkState {
-  const { documentId, tabId, ownerId, share, enabled } = input;
+  const { documentId, tabId, ownerId, share, enabled, markSeen = true } = input;
   const [link, setLink] = useState<FormLinkResponse | null>(null);
   const [loadStatus, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading');
   // A document with no server has no link to read (the page is remounted per tab, so a tab's state starts fresh).
@@ -67,8 +69,11 @@ export function useFormLink(input: {
 
   useEffect(() => {
     if (!enabled || !documentId) return;
-    // Opening the tab marks what is here seen.
-    apiMarkFormSeen(ownerId, documentId, tabId, share).then(
+    // Opening the tab marks what is here seen; a reader elsewhere only reads.
+    (markSeen
+      ? apiMarkFormSeen(ownerId, documentId, tabId, share)
+      : apiFormLink(ownerId, documentId, tabId, share)
+    ).then(
       (next) => {
         setLink(next);
         setStatus('ready');
@@ -79,7 +84,7 @@ export function useFormLink(input: {
       if (document.visibilityState === 'visible') void read();
     }, FORM_LINK_POLL_MS);
     return () => window.clearInterval(timer);
-  }, [enabled, documentId, tabId, ownerId, share, read]);
+  }, [enabled, documentId, tabId, ownerId, share, read, markSeen]);
 
   const run = useCallback(
     async (call: () => Promise<FormLinkResponse>, errors: Record<string, string> = {}) => {

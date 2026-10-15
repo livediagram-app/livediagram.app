@@ -1060,8 +1060,8 @@ export const FORMS_PUBLISHED = chart(
   'Form',
   'Shared',
   'Forms Published',
-  'A form published: its public link made from Share Form.',
-  { types: ['Link'] },
+  "A form published: its public link made from Share Form (Link), or copied from a board's Form strip (BoardCopy).",
+  { types: ['Link', 'BoardCopy'] },
 );
 
 export const FORMS_OPENED_CLOSED = chart(
