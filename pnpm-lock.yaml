@@ -1395,6 +1395,9 @@ importers:
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.63.0
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.4
       oxlint:
         specifier: ^1.88.0
         version: 1.88.0(oxlint-tsgolint@7.0.2004)
