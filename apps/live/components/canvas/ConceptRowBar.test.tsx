@@ -17,6 +17,9 @@ import {
 import { ConceptFace } from './ConceptFace';
 import { BAR_MIN_SCALE, barScale, barWidthPx } from './ConceptRowBar';
 import { HOVER_GRACE_MS } from '@/hooks/ui/useGraceHover';
+import { track } from '@/lib/telemetry';
+
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 afterEach(() => {
   cleanup();
@@ -126,6 +129,14 @@ describe('chevron stage controls', () => {
     fireEvent.pointerEnter(zone(0));
     fireEvent.click(screen.getByRole('button', { name: 'Delete stage' }));
     expect(rows()).toEqual(element.conceptRows!.slice(1));
+  });
+
+  it('records a stage edit as the menu row editor did', () => {
+    vi.mocked(track).mockClear();
+    const { zone } = show();
+    fireEvent.pointerEnter(zone(1));
+    fireEvent.click(screen.getByRole('button', { name: 'Move stage left' }));
+    expect(track).toHaveBeenCalledWith('Element', 'Changed', 'ConceptRows');
   });
 
   it('offers Add Note only while no stage has a note', () => {

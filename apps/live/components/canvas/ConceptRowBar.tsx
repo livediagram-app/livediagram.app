@@ -11,6 +11,7 @@ import { FLOATING_CONTROL_CLASS } from '@/components/chrome/floating-controls';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useGraceHover } from '@/hooks/ui/useGraceHover';
+import { track } from '@/lib/telemetry';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { moveRow } from '@/lib/move-row';
 
@@ -203,6 +204,11 @@ export function ChevronStageControls({
   const coarse = useCoarsePointer();
   const all = coarse || isMobileViewportSync();
   const zones = useRef<(HTMLDivElement | null)[]>([]);
+  // A stage moved, deleted or given a note: the same event the menu's row editor sends (useWebComponentSetters).
+  const setRows = (next: WebRows) => {
+    onSetRows(next);
+    track('Element', 'Changed', 'ConceptRows');
+  };
   const overName = (e: ReactPointerEvent) => {
     const at = zones.current.findIndex((z) => {
       const r = z?.getBoundingClientRect();
@@ -262,17 +268,17 @@ export function ChevronStageControls({
             onPointerLeave={hover.leave}
             onMove={(to) => {
               hover.set(all ? null : to);
-              onSetRows({ conceptRows: moveRow(rows, i, to) });
+              setRows({ conceptRows: moveRow(rows, i, to) });
             }}
             onRemove={() => {
               hover.set(null);
-              onSetRows({ conceptRows: rows.filter((_, j) => j !== i) });
+              setRows({ conceptRows: rows.filter((_, j) => j !== i) });
             }}
             onAddNote={
               notes
                 ? undefined
                 : () =>
-                    onSetRows({
+                    setRows({
                       conceptRows: rows.map((r, j) => (j === i ? { ...r, note: 'Note' } : r)),
                     })
             }
