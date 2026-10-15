@@ -15,6 +15,7 @@ const WarningIcon = lucideGlyph(lucideTriangleAlert, 14);
 export function FormStatusBar({
   link,
   problem,
+  overdue = false,
   full = false,
   canEdit,
   onFix,
@@ -26,6 +27,8 @@ export function FormStatusBar({
 }: {
   link: FormLinkState;
   problem: DestinationProblem | null;
+  // Switched on but past its Close On or at its Response Limit (formClosedBySettings): it reads Closed.
+  overdue?: boolean;
   // The document holds as many cards as it can: responses are refused until some go.
   full?: boolean;
   canEdit: boolean;
@@ -70,7 +73,7 @@ export function FormStatusBar({
           ? pill('slate', 'Not Published')
           : problem
             ? pill('amber', 'Paused')
-            : live.open
+            : live.open && !overdue
               ? pill('green', 'Accepting Responses')
               : pill('slate', 'Closed');
   const count = (

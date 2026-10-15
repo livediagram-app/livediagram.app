@@ -377,7 +377,8 @@ Tour** stack beside the Draw tour's.
     from documents saved to livediagram.
 - The form link is `/form/<code>`: a code of 22 random characters (base 62, about 131 bits), separate from every
   share link. It grants **nothing** on the document: no read, no room, no images.
-- One live link per Form tab. Its response number carries on across a deleted or suspended link and a new one.
+- One live link per Form tab. Its response number carries on across a deleted or suspended link and a new one. Two
+  responses at once never pass the Response Limit between them.
 - **Open**: the form accepts responses while it is open, its Close On time has not passed, its Response Limit is not
   reached, and its document is not in the Trash. Otherwise it is **closed**, and the form link shows the closed page.
   Closing and reopening keep the link and the response number.
@@ -517,7 +518,8 @@ board settings, for switching back.
 - **On the board**: a card made by a response shows a **New** dot (the brand colour, beside its flag, named "New
   response") until it is opened in this browser, or until a week has passed. What has been opened is kept per browser.
 - **On the Form tab**: the **status bar** over the form: its state (**Not Published**, **Accepting Responses**,
-  **Paused**, **Closed**, **Suspended**, or **Draft** for an offline document), the count ("14 responses · 3 new",
+  **Paused**, **Closed**, **Suspended**, or **Draft** for an offline document; a form switched on but past its Close
+  On or at its Response Limit reads **Closed**, as its link is, and is not locked), the count ("14 responses · 3 new",
   new to this reader), which opens the destination's tab (its tooltip names it), and, for an Editor while the form has
   any problem, **Problems with this Form** with a warning triangle to the right of the count, which opens Share Form
   where they are listed. The count is read when the tab opens and every 30 seconds while it is shown.

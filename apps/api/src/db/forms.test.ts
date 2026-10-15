@@ -5,6 +5,7 @@ import {
   claimResponseNumber,
   createFormLink,
   generateFormCode,
+  getFormLink,
   markFormSeen,
 } from './forms';
 import { readActivity } from './collab-index';
@@ -84,5 +85,27 @@ describe('the Inbox read (docs/specs/030-forms/forms.md "Hearing about responses
     await markFormSeen(env, mine.code, 'me');
     read = await readActivity(env, 'me', { limit: 10 });
     expect(read.formResponses).toEqual([]);
+  });
+});
+
+describe('claimResponseNumber (docs/specs/030-forms/forms.md "Publishing and the form link")', () => {
+  const setup = () => {
+    const { env, sql } = sqliteD1();
+    sql.exec(
+      `INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d', 'o', 'D', 0, 1, 1)`,
+    );
+    return env;
+  };
+
+  it('never passes the Response Limit, however many arrive at once', async () => {
+    const env = setup();
+    const { code } = (await createFormLink(env, 'd', 't', 1))!;
+    const got = await Promise.all(
+      Array.from({ length: 5 }, () => claimResponseNumber(env, code, 5000, 500, 3)),
+    );
+    expect(got.filter((n) => n !== null).sort()).toEqual([1, 2, 3]);
+    expect((await getFormLink(env, code))!.responses).toBe(3);
+    // A preview passes the limit.
+    expect(await claimResponseNumber(env, code, 5000, 500, null)).toBe(4);
   });
 });

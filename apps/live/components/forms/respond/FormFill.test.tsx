@@ -125,6 +125,23 @@ describe('a form of two sections', () => {
 });
 
 describe('what Submit can be told', () => {
+  it('sends once for a double press', async () => {
+    let finish: (o: SubmitOutcome) => void = () => {};
+    const submit = fill(vi.fn(() => new Promise<SubmitOutcome>((r) => (finish = r))));
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Ada' } });
+    next();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Vegan' }));
+    fireEvent.click(screen.getByRole('radio', { name: '4 stars of 5' }));
+    const button = screen.getByRole('button', { name: 'Submit' });
+    // Both presses land before React renders the disabled button.
+    act(() => {
+      button.click();
+      button.click();
+    });
+    await act(async () => finish({ kind: 'sent' }));
+    expect(submit).toHaveBeenCalledTimes(1);
+  });
+
   const answerAll = async () => {
     fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Ada' } });
     next();

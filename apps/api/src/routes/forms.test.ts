@@ -455,6 +455,16 @@ describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sh
       .filter((c) => c.row_id === row)
       .map((c) => JSON.parse(c.input) as Record<string, unknown>);
 
+  it('takes responses into a sheet when the form names no board', async () => {
+    seedSheet();
+    writeForm(form({ destination: undefined, sheet: { tabId: 'stab', sheetId: SHEET } }));
+    const code = await publish();
+    expect((await pub<PublicFormResponse>('GET', code)).body.state).toBe('open');
+    const res = await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'Only a sheet' } });
+    expect(res).toEqual({ status: 201, body: { number: 1 } });
+    expect(textAt('ra02')).toContainEqual({ s: 'Only a sheet' });
+  });
+
   it('adds a row under the headers it writes, a column per question, no card', async () => {
     seedSheet();
     writeForm(form({ sheet: { tabId: 'stab', sheetId: SHEET } }));

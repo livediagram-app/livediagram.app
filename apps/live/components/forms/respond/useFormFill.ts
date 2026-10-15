@@ -64,6 +64,8 @@ export function useFormFill(
   const [summary, setSummary] = useState<string[]>([]);
   const [status, setStatus] = useState<'filling' | 'sending' | 'sent' | 'closed'>('filling');
   const [failure, setFailure] = useState<string | null>(null);
+  // Set the moment Submit is pressed: a second press before the button disables sends nothing more.
+  const sendingRef = useRef(false);
   // The sections these answers show, by index; the first always does.
   const order = useMemo(() => {
     const shown = sectionsShown(form, state.answers);
@@ -158,10 +160,13 @@ export function useFormFill(
   };
 
   const send = async () => {
-    if (!checkSection()) return;
+    if (sendingRef.current || !checkSection()) return;
+    sendingRef.current = true;
     setStatus('sending');
     setFailure(null);
-    const outcome = await submit(stateRef.current);
+    const outcome = await submit(stateRef.current).finally(() => {
+      sendingRef.current = false;
+    });
     if (outcome.kind === 'sent') {
       writeDraft(draftKey, null);
       setStatus('sent');

@@ -120,21 +120,29 @@ export function checkAnswer(q: FormQuestion, raw: unknown, other?: unknown): Ans
         return { error: 'not_an_option' };
       const picks = [...new Set(raw as string[])];
       const options = q.options ?? [];
-      const out: string[] = [];
-      // Kept in option order, so a card reads the same whoever ticked first.
-      for (const o of options) if (picks.includes(o)) out.push(o);
+      let typed: string | null = null;
       for (const p of picks) {
         if (options.includes(p)) continue;
         if (!(q.other && p === OTHER_ANSWER)) return { error: 'not_an_option' };
         if (!typedOther) return { error: 'required' };
-        if (!options.includes(typedOther)) out.push(typedOther);
+        typed = typedOther;
       }
+      // Kept in option order, so a card reads the same whoever ticked first; an Other typed as one of the options
+      // counts as that option.
+      const out = options.filter((o) => picks.includes(o) || o === typed);
+      if (typed !== null && !options.includes(typed)) out.push(typed);
       if (q.min !== undefined && picks.length < q.min) return { error: 'too_few' };
       if (q.max !== undefined && picks.length > q.max) return { error: 'too_many' };
       return { value: out };
     }
     case 'rating': {
-      const n = typeof raw === 'number' ? raw : Number(raw);
+      // A number, or one written as digits; never a tick or a list that happens to convert.
+      const n =
+        typeof raw === 'number'
+          ? raw
+          : typeof raw === 'string' && /^\d+$/.test(raw.trim())
+            ? +raw
+            : NaN;
       return Number.isInteger(n) && n >= 1 && n <= (q.scale ?? 5)
         ? { value: n }
         : { error: 'out_of_scale' };
