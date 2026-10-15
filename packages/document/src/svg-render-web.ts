@@ -34,6 +34,12 @@ const family = (fontFamily?: string) =>
 // `align`. Clipped by character count, since a headless render cannot measure.
 // `onCapBand`: a glyph in a disc sits on the alphabetic baseline that centres its cap band
 // (docs/specs/004-interface-design/optical-alignment.md); other lines centre their em box.
+// How many characters a one-line slot `width` wide holds at `px`: past it, a line is cut with an ellipsis. The diagram
+// lint reads the same count, so it warns of exactly the lines a render cuts.
+export function lineChars(width: number, px: number): number {
+  return Math.max(1, Math.floor(width / (px * 0.56)));
+}
+
 export function line(
   el: BoxedElement,
   text: string,
@@ -51,7 +57,7 @@ export function line(
   if (!text) return '';
   const align = o.align ?? 'middle';
   const x = el.x + (align === 'start' ? r.x : align === 'end' ? r.x + r.width : r.x + r.width / 2);
-  const maxChars = Math.max(1, Math.floor(r.width / (px * 0.56)));
+  const maxChars = lineChars(r.width, px);
   const shown = text.length > maxChars ? `${text.slice(0, Math.max(1, maxChars - 1))}…` : text;
   return (
     (o.onCapBand

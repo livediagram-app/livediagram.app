@@ -418,11 +418,18 @@ export function sequenceFromGraph(input: GraphInput): SequenceDiagram {
 // A tool's graph-shaped input, from whichever of `graph` / `mermaid` it gave:
 // the graph, nothing (the call used elements or a template), or an error that
 // names what Mermaid supports.
-// What a graph asks that it cannot be drawn as, said rather than dropped: a group listed as another's member (groups
+// What a graph asks that it cannot be drawn as, said rather than dropped: an id naming both a node and a group, a group listed as another's member (groups
 // do not nest, and the member was silently left out), and a node in no lane on a lanes graph (it went to an
 // unlabelled lane of its own).
 export function graphShapeError(graph: GraphInput): string | undefined {
   const groupIds = new Set((graph.groups ?? []).map((g) => g.id));
+  // Each node and each group becomes an element of its id, so one id cannot name both.
+  const nodeIds = new Set(graph.nodes.map((n) => n.id));
+  const shared = [...groupIds, ...graph.nodes.flatMap((n) => (n.group ? [n.group] : []))].find(
+    (id) => nodeIds.has(id),
+  );
+  if (shared !== undefined)
+    return `id "${shared}" names both a node and a group: nodes and groups share one set of ids; give each its own`;
   for (const g of graph.groups ?? []) {
     const nested = (g.members ?? []).find((m) => groupIds.has(m));
     if (nested)

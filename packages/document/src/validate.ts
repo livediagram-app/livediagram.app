@@ -176,6 +176,7 @@ export const SHAPE_KINDS = new Set<string>([
   'quiz',
   'stadium',
   'actor',
+  'final-state',
   'cloud',
   'triangle',
   'trapezoid',

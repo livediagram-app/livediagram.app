@@ -165,6 +165,15 @@ const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
     rect(22, 14, 56, 72, 14),
     rect(29, 21, 42, 58, 9, 'detail'),
   ),
+  // UML final state: a ring (the line colour, unfilled) round a solid dot (the fill), kept round in any box.
+  'final-state': {
+    viewBox: '0 0 100 100',
+    preserveAspectRatio: 'xMidYMid meet',
+    parts: [
+      { tag: 'circle', role: 'limb', cx: 50, cy: 50, r: 46 },
+      { tag: 'circle', role: 'head', cx: 50, cy: 50, r: 27 },
+    ],
+  },
   // UML actor: an open head over a line body. The viewBox leaves a small
   // clear band under the legs (y 112..130) for the label.
   actor: {

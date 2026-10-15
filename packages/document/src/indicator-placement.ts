@@ -39,6 +39,7 @@ const CENTRED_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
   'trapezoid',
   'star',
   'actor',
+  'final-state',
 ]);
 
 /** Whether the element's indicators centre on it rather than sit in a corner. */

@@ -16,7 +16,8 @@ const saying = (a: ArrowElement) => `${a.label?.trim().toLowerCase() ?? ''}|${li
 // rest keep their own ends, so a dashed event line never rides a solid call's trunk. A labelled arrow keeps its own
 // ends, as a label on a shared line could not say which line it names, unless the arrows meeting there all say the
 // same thing in the same line (services that each "publish" to one bus): those merge, and each label sits on its own
-// leg. A decision's labelled exits never merge so: each names its own decision's branch. A labelled arrow that
+// leg; so does the one labelled arrow among unlabelled ones into one node in its line, which names the bus. A decision's
+// labelled exits never merge so: each names its own decision's branch. A labelled arrow that
 // can never merge does not count toward the style that shares.
 export function withExactEnds(elements: Element[]): Element[] {
   const arrows = elements.filter((el): el is ArrowElement => el.type === 'arrow');
@@ -36,8 +37,23 @@ export function withExactEnds(elements: Element[]): Element[] {
     const id = pinned(a.from);
     return id !== null && shapeOf.get(id) === 'diamond';
   };
+  // Into one node in one line: how many arrows, and how many of them labelled. The one labelled among unlabelled
+  // ones names the bus (an agent saying "publish" once), so it merges too.
+  const into = new Map<string, { all: number; labelled: number }>();
+  for (const a of arrows) {
+    const key = `${at('to', a)}|${line(a)}`;
+    const n = into.get(key) ?? { all: 0, labelled: 0 };
+    n.all += 1;
+    if (a.label?.trim()) n.labelled += 1;
+    into.set(key, n);
+  }
+  const namesBus = (side: 'from' | 'to', a: ArrowElement) => {
+    const n = into.get(`${at('to', a)}|${line(a)}`)!;
+    return side === 'to' && n.labelled === 1 && n.all > 1;
+  };
   const mergeable = (side: 'from' | 'to', a: ArrowElement) =>
-    !a.label?.trim() || (!fromDecision(a) && (said.get(sayingAt(side, a)) ?? 0) > 1);
+    !a.label?.trim() ||
+    (!fromDecision(a) && ((said.get(sayingAt(side, a)) ?? 0) > 1 || namesBus(side, a)));
   for (const a of arrows)
     for (const side of ['from', 'to'] as const) {
       if (!mergeable(side, a)) continue;

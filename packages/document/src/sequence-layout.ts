@@ -82,11 +82,17 @@ export function layoutSequence(
     return (lines * fontPx * LABEL_LINE_HEIGHT + 4) / 2 + MESSAGE_LABEL_GAP;
   };
   const px = (id: string) => index.get(id)! * pitch + headW / 2;
-  // A note's left edge: centred over its participants, or beside the first.
-  const noteX = (note: Extract<SequenceItem, { kind: 'note' }>, width: number) => {
+  // A note's left edge: centred over its participants, or beside the first. Over one participant with a bar open
+  // (`depth` deep), it sits beside the bars as a right-of note does (left of the last participant, the side with room):
+  // centred, it hid the bar it was about.
+  const noteX = (note: Extract<SequenceItem, { kind: 'note' }>, width: number, depth = 0) => {
     const xs = note.who.map(px);
-    if (note.placement === 'over') return (Math.min(...xs) + Math.max(...xs)) / 2 - width / 2;
-    return note.placement === 'right' ? xs[0]! + 24 : xs[0]! - 24 - width;
+    if (note.placement === 'over' && (note.who.length > 1 || depth === 0))
+      return (Math.min(...xs) + Math.max(...xs)) / 2 - width / 2;
+    const bars = (depth * BAR) / 2;
+    const last = index.get(note.who[0]!) === participants.length - 1;
+    const left = note.placement === 'left' || (note.placement === 'over' && last);
+    return left ? xs[0]! - bars - 24 - width : xs[0]! + bars + 24;
   };
   const out: Element[] = [];
   const headTop = 0;
@@ -164,7 +170,12 @@ export function layoutSequence(
   const involve = (...who: string[]) => {
     for (const f of fragments) for (const w of who) f.who.add(w);
   };
-  const notes: { item: Extract<SequenceItem, { kind: 'note' }>; y: number; h: number }[] = [];
+  const notes: {
+    item: Extract<SequenceItem, { kind: 'note' }>;
+    y: number;
+    h: number;
+    x: number;
+  }[] = [];
   // Where a message meets a lifeline: the near edge of its outermost open bar, or the lifeline itself.
   const edge = (who: string, towardRight: boolean) => {
     const d = depthOf(who);
@@ -224,9 +235,9 @@ export function layoutSequence(
       const width = noteWidth(it, pitch, headW);
       const lines = Math.max(1, Math.ceil(glyphWidth(it.text, 13) / Math.max(40, width - 28)));
       const h = lines * NOTE_LINE + 30;
-      notes.push({ item: it, y: y - 14, h });
+      const x = noteX(it, width, depthOf(it.who[0]!));
+      notes.push({ item: it, y: y - 14, h, x });
       involve(...it.who);
-      const x = noteX(it, width);
       for (const f of fragments)
         f.reach = [Math.min(f.reach?.[0] ?? x, x), Math.max(f.reach?.[1] ?? x + width, x + width)];
       y += h + 16;
@@ -413,9 +424,8 @@ export function layoutSequence(
   // Notes as stickies, over or beside their participants.
   for (const n of notes) {
     const width = noteWidth(n.item, pitch, headW);
-    const x = noteX(n.item, width);
     out.push({
-      ...createSticky(x, n.y),
+      ...createSticky(n.x, n.y),
       id: freshId('note', opts.makeId),
       width,
       height: n.h,

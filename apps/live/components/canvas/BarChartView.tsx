@@ -16,6 +16,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { ChartValues } from '@/components/primitives/ChartValues';
+import { BarChartAxis } from './ChartAxis';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';
@@ -39,7 +40,7 @@ export function BarChartView({
   const { hover, markProps } = useChartHover<number>();
   // Upright columns, or (the Bar chart type) bars to the right; laid out by the marks the export draws too.
   const horizontal = chartTypeOf(element) === 'bar';
-  const marks = barMarks(area, data, horizontal);
+  const marks = barMarks(area, data, horizontal, 0, 0, element.chartAxis === true);
   const { baseline, bars, origin } = marks;
   const valuePx = chartValueFontPx(element.textSize);
   const group = chartAnim(element, `${origin.x}px ${origin.y}px`);
@@ -66,6 +67,12 @@ export function BarChartView({
       }
     >
       {/* Baseline. */}
+      <BarChartAxis
+        marks={marks}
+        horizontal={horizontal}
+        textColor={textColor}
+        fontFamily={fontFamily}
+      />
       <line
         x1={baseline.x1}
         y1={baseline.y1}

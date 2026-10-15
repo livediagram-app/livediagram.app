@@ -539,6 +539,8 @@ export function supportsBorder(
 // second condition.
 export const SELF_PAINTING_SHAPES = new Set<string>([
   'actor',
+  // A UML final state draws its ring and dot itself (shape-geometry.ts): no box to border.
+  'final-state',
   // Badge and Step number (docs/specs/009-elements/badge.md): the face paints the pill / disc in its look.
   'badge',
   'step',

@@ -79,7 +79,8 @@ export const PIE_DEFAULT_SLICES: readonly PieSlice[] = [
 // `lineSeries`, each a named line with a value per category (+ an optional
 // colour override). Editable as a grid and importable from CSV. Reuses the
 // shared `pieAnim` / `chartLegend` fields. The legend lists series names.
-export type LineSeries = { name: string; color?: string; values: number[] };
+// `axis: 'right'` draws the series against a scale of its own, the chart's second axis (pie-chart.md "A second axis").
+export type LineSeries = { name: string; color?: string; values: number[]; axis?: 'right' };
 export const LINE_DEFAULT_CATEGORIES: readonly string[] = ['Jan', 'Feb', 'Mar', 'Apr'];
 export const LINE_DEFAULT_SERIES: readonly LineSeries[] = [
   { name: 'Series 1', values: [10, 25, 18, 32] },

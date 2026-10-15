@@ -18,7 +18,13 @@ export function layoutCycle(
   const makeEdgeId = opts.makeEdgeId ?? (() => crypto.randomUUID());
   const wired = new Set(graph.edges.flatMap((e) => [e.from, e.to]));
   const nodes = graph.nodes.map((n) => (n.shape ? n : { ...n, shape: 'circle' }));
-  const boxes = graphToElements({ nodes, edges: [] }, makeEdgeId, opts.look).filter(isBoxed);
+  // Stops and hubs sized apart: the look sizes boxes of one kind alike, and a round hub's longer label grew every stop.
+  const sizedOf = (ns: typeof nodes) =>
+    graphToElements({ nodes: ns, edges: [] }, makeEdgeId, opts.look).filter(isBoxed);
+  const boxes = [
+    ...sizedOf(nodes.filter((n) => wired.has(n.id))),
+    ...sizedOf(nodes.filter((n) => !wired.has(n.id))),
+  ];
   // Every stop one size, the largest any needs: a ring of uneven stops reads as a ranking.
   const sized = boxes.filter((b) => wired.has(b.id));
   const w = Math.max(0, ...sized.map((b) => b.width));

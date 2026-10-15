@@ -291,7 +291,34 @@ describe('key meanings', () => {
 });
 
 describe('lanes', () => {
-  it('draws each group as a lane, one under another, a lone hand-off dropping straight down', () => {
+  it('titles each lane a size up from its steps, the header strip as wide as the longest title needs', () => {
+    const lanes = (label: string) =>
+      lay({
+        style: 'lanes',
+        nodes: [
+          { id: 'a', group: 'x' },
+          { id: 'b', group: 'y' },
+        ],
+        edges: [{ from: 'a', to: 'b' }],
+        groups: [
+          { id: 'x', label: 'Ops' },
+          { id: 'y', label },
+        ],
+      }).filter((e) => e.type === 'shape' && e.shape === 'lane') as (Element & {
+        headerSize: number;
+        textSize: string;
+      })[];
+    const short = lanes('QA');
+    const long = lanes('Finance');
+    const huge = lanes('A very long lane title that wraps');
+    expect(short[0]!.textSize).toBe('md');
+    expect(short[0]!.headerSize).toBe(120);
+    expect(long[0]!.headerSize).toBeGreaterThan(120);
+    expect(long[0]!.headerSize).toBeLessThan(176);
+    expect(huge[0]!.headerSize).toBe(176);
+  });
+
+  it('draws each group as a lane, one under another, a lone hand-off dropping straight down, never two in a row', () => {
     const els = lay({
       style: 'lanes',
       nodes: [
@@ -316,9 +343,10 @@ describe('lanes', () => {
       'Hiring manager',
     ]);
     expect(lanes[1]!.y).toBeGreaterThan(lanes[0]!.y + lanes[0]!.height);
-    // Each hand-off is its step's only way out and the next step's only way in: a staircase, one column.
+    // Each hand-off is its step's only way out and the next step's only way in: a staircase. The first drops in its
+    // column; never two drops in a row, so the next steps right and the flow still reads left to right.
     expect(midX(box(els, 'b'))).toBe(midX(box(els, 'a')));
-    expect(midX(box(els, 'c'))).toBe(midX(box(els, 'b')));
+    expect(midX(box(els, 'c'))).toBeGreaterThan(midX(box(els, 'b')));
     for (const [id, lane] of [
       ['a', 0],
       ['b', 1],
@@ -499,6 +527,29 @@ describe('cycle', () => {
     expect(midX(hub)).toBeCloseTo((midX(a) + midX(box(els, 'c'))) / 2, 0);
     expect((a as { shape?: string }).shape).toBe('circle');
     expect(arrowTo(els, 'a', 'b').arrowStyle).toBe('curved');
+  });
+
+  it('sizes a hub on its own: a longer centre label never grows the stops', () => {
+    const ring = {
+      style: 'cycle' as const,
+      nodes: [
+        { id: 'a', label: 'Plan' },
+        { id: 'b', label: 'Do' },
+        { id: 'c', label: 'Check' },
+      ],
+      edges: [
+        { from: 'a', to: 'b' },
+        { from: 'b', to: 'c' },
+        { from: 'c', to: 'a' },
+      ],
+    };
+    const bare = box(lay(ring), 'a');
+    const hubbed = lay({
+      ...ring,
+      nodes: [...ring.nodes, { id: 'hub', label: 'Continuous improvement' }],
+    });
+    expect(box(hubbed, 'a').width).toBe(bare.width);
+    expect(box(hubbed, 'hub').width).toBeGreaterThan(bare.width);
   });
 });
 

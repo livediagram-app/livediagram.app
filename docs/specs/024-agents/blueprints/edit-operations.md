@@ -34,7 +34,7 @@ Scope, by file:
 | `packages/edit-operations/src/locks.ts`                                           | `lockedIds(tab)`, `layerLockOf`: locked elements and elements on locked layers                                                                                      |
 | `packages/edit-operations/src/ids.ts`                                             | `newElementId` (`id=` checks), `mintId` (`slugIdFor` over `state.taken`)                                                                                            |
 | `packages/edit-operations/src/operations/*.ts`                                    | One file per operation: `add` (an element), `add-kind`, `set`, `rm`, `move`, `connect` (and `rewire`), `insert`, `wrap`, `unwrap`, `order`, `layout`, `test-fields` |
-| `packages/edit-operations/src/finalise.ts`                                        | Normalise touched, landing, arrow rebind, lanes first, `containersBehindMembers`, validation with reasons                                                           |
+| `packages/edit-operations/src/finalise.ts`                                        | Normalise touched, landing, arrow rebind, lanes first, `containersBehindMembers`, diagram keys settled, validation with reasons                                     |
 | `packages/edit-operations/src/apply.ts`                                           | `applyEditOperations`                                                                                                                                               |
 | `packages/edit-operations/src/replace.ts`                                         | `applyReplace`: the `replace` body through the same outcome shape                                                                                                   |
 | `packages/edit-operations/src/results.ts`, `format-results.ts`                    | `buildResultLines` (membership by `deriveContainers` before and after), `formatResultLines`, `formatResultFooter`                                                   |
@@ -440,7 +440,9 @@ On the working state, in order:
    lanes; a landed note joins `state.moved` with annotation `landed on a lane`.
 4. `rebindArrowAnchorsAfterMove(elements, geometryChanged)` for every boxed element whose box changed.
 5. `lanesToFront`, then each container moved to directly before its earliest member when it is after it (I6).
-6. Membership before and after (`deriveContainers`) is read by the result lines' container lines.
+6. `settleDiagramKeys(elements, tagColoursOf(tab))`: a diagram key's rows follow the lines and tags the edit leaves,
+   as the editor settles them on commit ([Diagram key](../../009-elements/diagram-key.md) "Stored rows").
+7. Membership before and after (`deriveContainers`) is read by the result lines' container lines.
 
 ### Replace
 
@@ -449,7 +451,9 @@ On the working state, in order:
 `tab === null`, and a changeset with a `replace` body on a tab id the document lacks creates that tab.
 
 - `graph` / `mermaid`: `resolveGraphInput` then `layoutGraph` (the label cap included).
-- `elements`: `normaliseElements`, shape kinds coerced, `applyLayout(body.layout, elements)`.
+- `elements`: `normaliseElements`, shape kinds coerced, `applyLayout(body.layout, elements)`, then `buildTab`'s
+  facing bends (`withFacingBends`, [Layout cleanup](../../008-canvas/layout-cleanup.md) "Angled lines bend twice")
+  and diagram keys settled.
 - `template`: `buildTemplateTab(...).elements`; on a new tab the whole `buildTemplateTab` result.
 - Existing tab: every tab field kept, `elements` replaced, then `landWorkshopArrivals(tab, elements, 'replace')`.
   A locked tab is `element_locked`. New tab (`tab === null`): `buildTab` / `buildGraphTab` / `buildTemplateTab`

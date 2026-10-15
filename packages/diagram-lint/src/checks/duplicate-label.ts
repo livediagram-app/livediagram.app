@@ -1,5 +1,7 @@
 // `duplicate-label` (info): boxes sharing a label once trimmed, whitespace collapsed and lower-cased;
-// blank never matches; one finding a label (LN14).
+// blank never matches; one finding a label (LN14). A card's title and subtitle are part of what it says, so two
+// mirrored cards (an AZ A and an AZ B service with one body) differ; and an event-storming note other than a domain
+// event repeats by design (an actor at every command it issues), so it never counts.
 
 import type { BoxedElement } from '@livediagram/document';
 import { refOf } from '../context';
@@ -14,9 +16,13 @@ export const duplicateLabel: Check = (ctx) => {
   for (const box of ctx.boxes) {
     const label: unknown = Reflect.get(box, 'label');
     if (typeof label !== 'string' || label.trim() === '') continue;
-    const group = groups.get(keyOf(label)) ?? { label, boxes: [] };
+    const esKind: unknown = Reflect.get(box, 'esKind');
+    if (esKind !== undefined && esKind !== 'domain-event') continue;
+    const heads = ['pageTitle', 'pageSubtitle'].map((k) => Reflect.get(box, k) ?? '');
+    const key = [...heads, label].map((t) => keyOf(String(t))).join('\n');
+    const group = groups.get(key) ?? { label, boxes: [] };
     group.boxes.push(box);
-    groups.set(keyOf(label), group);
+    groups.set(key, group);
   }
   return [...groups.values()]
     .filter(({ boxes }) => boxes.length > 1)

@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { parseMermaid } from './mermaid';
 import { layoutClusteredGraph } from './auto-layout-clusters';
 import { isValidTab } from './validate';
+import { layoutGraph } from './graph-input';
+import { shapeGeometry } from './shape-geometry';
 
 // Tested through parseMermaid so the dispatch is covered too.
 describe('parseMermaid: state diagrams', () => {
@@ -15,7 +17,8 @@ describe('parseMermaid: state diagrams', () => {
     const byId = Object.fromEntries(r.graph.nodes.map((n) => [n.id, n]));
     expect(byId.Idle).toMatchObject({ label: 'Idle', shape: 'stadium' });
     expect(byId.__start__).toMatchObject({ label: '', shape: 'circle' });
-    expect(byId.__end__).toMatchObject({ label: '', shape: 'circle' });
+    // The end a bullseye, as UML draws it.
+    expect(byId.__end__).toMatchObject({ label: '', shape: 'final-state' });
     expect(r.graph.edges).toEqual([
       { from: '__start__', to: 'Idle' },
       { from: 'Idle', to: 'Running', label: 'start' },
@@ -136,5 +139,29 @@ describe('parseMermaid: state diagrams', () => {
     expect(r.ok).toBe(false);
     if (r.ok) return;
     expect(r.error).toMatch(/states/i);
+  });
+});
+
+describe('the end as a bullseye', () => {
+  it('draws an unlabelled final-state node as one 34 px bullseye in the accent, a geometry of ring and dot', () => {
+    const els = layoutGraph({
+      nodes: [
+        { id: 's', shape: 'circle' },
+        { id: 'a', label: 'Open' },
+        { id: 'e', shape: 'final-state' },
+      ],
+      edges: [
+        { from: 's', to: 'a' },
+        { from: 'a', to: 'e' },
+      ],
+    });
+    expect(els.find((el) => el.id === 'e')).toMatchObject({
+      shape: 'final-state',
+      width: 34,
+      height: 34,
+      colorPreset: 'solid',
+    });
+    expect(els.find((el) => el.id === 's')).toMatchObject({ width: 28 });
+    expect(shapeGeometry('final-state')!.parts.map((p) => p.role)).toEqual(['limb', 'head']);
   });
 });

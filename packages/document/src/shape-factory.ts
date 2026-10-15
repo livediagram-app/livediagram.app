@@ -93,6 +93,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // (unlabelled) stickmen. 90×130 keeps room for a short label
   // (y 112..130) without dominating the box.
   actor: { width: 90, height: 130 },
+  'final-state': { width: 32, height: 32 },
   // Cloud: a container shape (networking / architecture). Stretches to
   // fit its label like the other flowchart shapes.
   cloud: { width: 180, height: 140 },

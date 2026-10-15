@@ -23,6 +23,7 @@ const AREA_BOX_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>(['square', 'ci
 // several pieces (devices, the actor) rather than one outline.
 const NOT_A_SILHOUETTE: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
   'actor',
+  'final-state',
   'monitor',
   'laptop',
   'phone',

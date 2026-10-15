@@ -12,6 +12,42 @@ const el = (kind: 'pie-chart' | 'bar-chart' | 'line-chart', extra: Partial<Shape
   ({ ...createShape(kind, 0, 0), width: 260, height: 220, ...extra }) as ShapeElement;
 
 describe('chart views', () => {
+  it('draws Show Axis as the export does: ticks up a column or line chart, along a bar chart, right in colour', () => {
+    const series = [
+      { name: 'Signups', values: [800, 1200] },
+      { name: 'Paid', values: [90, 170], axis: 'right' as const, color: '#ff0000' },
+    ];
+    const line = render(
+      <LineChartView
+        element={el('line-chart', {
+          chartAxis: true,
+          lineCategories: ['W1', 'W2'],
+          lineSeries: series,
+        })}
+        textColor="#000"
+      />,
+    ).container;
+    const ticks = [...line.querySelectorAll('text')].map((t) => t.textContent);
+    expect(ticks).toContain('1,500');
+    const right = [...line.querySelectorAll('text[text-anchor="start"]')];
+    expect(right.map((t) => t.textContent)).toContain('200');
+    expect(right[0]!.getAttribute('fill')).toBe('#000');
+    expect(line.querySelector('line[stroke="#ff0000"]')).not.toBeNull();
+    for (const variant of [undefined, 'horizontal' as const]) {
+      const bars = render(
+        <BarChartView
+          element={el('bar-chart', {
+            chartAxis: true,
+            pieSlices: [{ label: 'Jul', value: 160 }],
+            ...(variant ? { chartVariant: variant } : {}),
+          })}
+          textColor="#000"
+        />,
+      ).container;
+      expect([...bars.querySelectorAll('text')].map((t) => t.textContent)).toContain('200');
+    }
+  });
+
   it('draws a doughnut as even-odd ring segments, and reads a hovered slice', () => {
     const { container } = render(
       <PieChartView element={el('pie-chart', { chartVariant: 'doughnut' })} textColor="#000" />,
