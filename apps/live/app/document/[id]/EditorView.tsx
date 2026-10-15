@@ -206,6 +206,7 @@ export function EditorView() {
     formatSourceId,
     hydrated,
     setImportOpen,
+    canShareDocument,
     isOwner,
     isReadOnly,
     isStructureReadOnly,
@@ -368,7 +369,7 @@ export function EditorView() {
     !!documentTeamId,
     isOffline,
     headerCommunity,
-    isOwner && hydrated
+    canShareDocument && hydrated
       ? () => {
           setShareDialogOpen(true);
           track('UI', 'Opened', 'Share');
@@ -385,18 +386,19 @@ export function EditorView() {
         <EditorHeader
           documentName={documentName}
           hideTitle={anyWelcomeOpen}
-          showShare={isOwner && hydrated && !anyWelcomeOpen}
+          showShare={canShareDocument && hydrated && !anyWelcomeOpen}
           shareable={documentShareable}
           community={headerCommunity}
           teamDocument={!!documentTeamId}
           offline={isOffline}
-          // Visitors see "Make a copy" instead of "Share": same slot,
+          // Visitors see "Make a copy" instead of "Share": same slot (a joined
+          // team member is no visitor: the team's documents are theirs to share),
           // different action. Hidden during the welcome flow so the
           // first-paint chrome stays minimal, and during hydration so
           // we don't render the button before we know whether the user
           // is the owner. A Community visitor gets it from the Community bar instead.
           onMakeCopy={
-            !isOwner && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
+            !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
               ? makeCopy
               : undefined
           }

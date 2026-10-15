@@ -441,3 +441,21 @@ describe('layerBands — event-storming stacking', () => {
     expect(layerBands(board, undefined)[0]!.elements).toBe(board);
   });
 });
+
+// An office's floors (docs/specs/009-elements/office.md): rooms and rugs lie under everything, the larger first.
+describe('layerBands — office floors', () => {
+  const shape = (id: string, kind: string, w: number) =>
+    ({ id, type: 'shape', shape: kind, x: 0, y: 0, width: w, height: w }) as Element;
+  const order = (els: Element[]) =>
+    layerBands(els, undefined).flatMap((band) => band.elements.map((el) => el.id));
+
+  it('lays a rug on its room and both under the furniture, however they were added', () => {
+    // Added last, as drawing to size, a paste or an agent adds them.
+    const office = [
+      shape('table', 'meeting-table', 120),
+      shape('rug', 'rug', 300),
+      shape('room', 'room', 800),
+    ];
+    expect(order(office)).toEqual(['room', 'rug', 'table']);
+  });
+});

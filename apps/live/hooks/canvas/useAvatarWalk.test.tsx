@@ -116,6 +116,21 @@ describe('useAvatarWalk with a drink', () => {
     }
   });
 
+  it('leaves telling the room about a drink taken mid-walk to the walk itself, never a standing snapshot', () => {
+    vi.useFakeTimers();
+    try {
+      const { result, onPresence } = setup();
+      act(() => result.current.teleportTo({ x: 50, y: 50 }));
+      act(() => result.current.walkTo({ x: 400, y: 50 }));
+      onPresence.mockClear();
+      act(() => result.current.giveDrink('water'));
+      expect(result.current.holding).toBe('water');
+      expect(onPresence).not.toHaveBeenCalledWith(expect.objectContaining({ walking: false }));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('puts the drink down on leaving the mode', () => {
     const { result, rerender } = setup();
     act(() => result.current.teleportTo({ x: 50, y: 50 }));

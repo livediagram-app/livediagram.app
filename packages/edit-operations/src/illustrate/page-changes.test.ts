@@ -343,6 +343,23 @@ describe('laying out, moving, duplicating, deleting', () => {
     ]);
   });
 
+  it('takes a delete naming a page an earlier delete took, by its name, as done', () => {
+    const pages = [
+      page('s1'),
+      page('a1', { kind: 'article', flow: 'f' }),
+      page('a2', { kind: 'article', flow: 'f', name: 'Chapter 2' }),
+    ];
+    const tab = tabOf({ pages, articles: { f: { blocks: [] } } });
+    const out = run(tab, [
+      { op: 'delete', page: 'a1' },
+      { op: 'delete', page: 'Chapter 2' },
+    ]);
+    expect(illustratePagesOf(out.tab).map((p) => p.id)).toEqual(['s1']);
+    expect(out.lines[1]).toBe(
+      'Page Chapter 2 went with what an earlier delete in this change took.',
+    );
+  });
+
   it('stops at the first refusal and writes nothing, naming the change', () => {
     const tab = tabOf({ pages: [page('p1')] });
     const r = refusal(tab, [
