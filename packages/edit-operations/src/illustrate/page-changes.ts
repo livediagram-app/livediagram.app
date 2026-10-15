@@ -202,6 +202,15 @@ export function applyPageChanges(
             // The fresh tab's empty, unchosen first page becomes the page asked for.
             current = withPageKindChosen(current, first.id, change.kind as PageKind, newFlowId())!;
             page = pages()[0]!;
+          } else if (
+            ps.length === 1 &&
+            first.kind === change.kind &&
+            !first.name?.trim() &&
+            onPage(first.id) === 0
+          ) {
+            // A blank of that kind (the Blank Slide Deck's one empty slide) becomes the page asked for, so a deck made
+            // from it does not open on an empty slide.
+            page = first;
           } else {
             const id = newPageId();
             current = take(pageAdded(current, change.kind as PageKind, id, newFlowId()));
