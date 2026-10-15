@@ -410,6 +410,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Trapezoid',
     'Star',
     'Speech-bubble',
+    // The UML final state (a state machine's end), made by graph input and Mermaid.
+    'Final-state',
   ],
   tools: [
     'Text',

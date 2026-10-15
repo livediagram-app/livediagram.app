@@ -125,6 +125,7 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
 // needs. A diamond's text only fits its inner half, so it gets more room.
 // The side of an unlabelled circle node (see graphToElements).
 export const DOT_SIZE = 28;
+export const FINAL_STATE_SIZE = 34;
 const CHAR_PX = 7.4;
 // Capitals set about 30% wider than the average glyph CHAR_PX assumes, so an
 // all-caps name ("TEAM_MEMBER", an ER table) was sized short and wrapped
@@ -275,15 +276,17 @@ export function graphToElements(
     // waiting for text. Solid in the theme's accent via the preset binding,
     // which a theme walk resolves (docs/specs/020-import-export/mermaid.md).
     if (n.fields) return entityNode(n, n.fields);
-    if (shape === 'circle' && !(n.label ?? '').trim()) {
+    // A final state is its bullseye, a little larger than the start's dot so the ring reads.
+    if ((shape === 'circle' || shape === 'final-state') && !(n.label ?? '').trim()) {
+      const size = shape === 'final-state' ? FINAL_STATE_SIZE : DOT_SIZE;
       return {
         id: n.id,
         type: 'shape' as const,
         shape,
         x: 0,
         y: 0,
-        width: DOT_SIZE,
-        height: DOT_SIZE,
+        width: size,
+        height: size,
         colorPreset: 'solid',
         ...(n.note ? { note: n.note } : {}),
       };

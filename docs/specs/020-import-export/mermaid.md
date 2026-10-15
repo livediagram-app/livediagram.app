@@ -106,10 +106,9 @@ LR` line sets the layout direction (TB default).
   `state "Long description" as s1`, or `s1 : description` (the description
   becomes the label). `<<choice>>` states render as diamonds; `<<fork>>` /
   `<<join>>` as squares.
-- **Start / end**: each `[*]` becomes an empty-label circle, drawn as a small
-  solid dot ("Node boxes and text" below): a start node when it's a
-  transition source, an end node when it's a target (one of each per
-  diagram, matching Mermaid's semantics).
+- **Start / end**: each `[*]` becomes an empty-label node ("Node boxes and text" below): a start node when it's a
+  transition source, a small solid dot (a circle); an end node when it's a target, a bullseye (`final-state`, a ring
+  round the dot, one element), as UML draws them (one of each per diagram, matching Mermaid's semantics).
 - **Transitions**: `A --> B` with an optional `: label`.
 - **Composite states**: `state Name { … }` becomes a cluster → frame, same
   as a flowchart subgraph; nested composites fold into their top-level
@@ -294,8 +293,9 @@ its widest peer, so one long label no longer inflates every box.
 
 An **unlabelled circle is a dot**: 28 px, solid in the theme's accent through
 the `solid` colour preset (resolved when the import applies the tab's theme).
-That is what a state diagram's `[*]` start and end become; drawn at the default
-circle size they read as large empty boxes waiting for text.
+That is what a state diagram's `[*]` start becomes; drawn at the default
+circle size it read as a large empty box waiting for text. An unlabelled `final-state` is the end's bullseye, 34 px,
+in the same accent.
 
 Inside a subgraph, members that no arrow **inside** the subgraph touches (a
 "Core services" group of peers wired only to things outside it) are **lined up
