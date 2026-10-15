@@ -152,13 +152,13 @@ describe('markup over the paper', () => {
         },
       },
     ]);
-    // Over the pattern too, as the slide on screen and the PNG and PDF draw it.
-    const svg = pageExportFrame(page!, { overBackground: '<image id="frame"/>' }).backgroundSvg;
+    // Under the pattern: the SVG's frame is an opaque picture, so over the pattern it would hide it.
+    const svg = pageExportFrame(page!, { overFill: '<image id="frame"/>' }).backgroundSvg;
     const fill = svg.indexOf('-fill)"');
     const frame = svg.indexOf('<image id="frame"/>');
     expect(fill).toBeGreaterThan(-1);
-    expect(svg.indexOf('-pattern)"')).toBeGreaterThan(fill);
-    expect(frame).toBeGreaterThan(svg.indexOf('-pattern)"'));
+    expect(frame).toBeGreaterThan(fill);
+    expect(svg.indexOf('-pattern)"')).toBeGreaterThan(frame);
   });
 });
 

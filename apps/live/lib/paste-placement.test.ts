@@ -156,6 +156,30 @@ describe('pasteTranslation into the view', () => {
     });
   });
 
+  it('leaves out an end resting on a copied arrow whose own end was left behind', () => {
+    // Arrow A runs from the box to one left behind; arrow B ends on A. A is copied, but where B's end sits on it
+    // resolves through the element left behind, so it must not stretch the box to the origin either.
+    const box = shape('s', 6000, 0);
+    const a = {
+      id: 'a',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 's', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'left-behind', anchor: 'w' },
+    } as unknown as Element;
+    const b = {
+      id: 'b',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 's', anchor: 's' },
+      to: { kind: 'on-arrow', arrowId: 'a', t: 0.5 },
+    } as unknown as Element;
+    const inView = { x: 5800, y: -200, width: 1200, height: 800 };
+    expect(pasteTranslation([box, a, b], plainBoard, null, inView)).toEqual({
+      dx: 24,
+      dy: 24,
+      atPointer: false,
+    });
+  });
+
   it('keeps the offset with no view to measure', () => {
     expect(pasteTranslation([shape('s', 0, 0)], plainBoard, null, null).dx).toBe(24);
   });

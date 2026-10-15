@@ -147,9 +147,9 @@ export function PageContentsPanel({
     },
   });
 
-  const go = (row: ContentsRow) => {
+  const go = (row: ContentsRow, clickedAt?: number) => {
     // The release of a drag is not a press of the row.
-    if (reorder.consumeDragClick()) return;
+    if (reorder.consumeDragClick(clickedAt)) return;
     track('UI', 'Used', 'PageContentsJump');
     setCurrent(row.id);
     view.focusPage(row.id);
@@ -243,7 +243,7 @@ export function PageContentsPanel({
                 aria-selected={isHere}
                 data-page-row={row.id}
                 data-contents-slot={i}
-                onClick={() => go(row)}
+                onClick={(e) => go(row, e.timeStamp)}
                 // A mouse or pen drags the whole row; a finger drags its grip, so the list still scrolls.
                 onPointerDown={(e) => {
                   if (e.pointerType !== 'touch') reorder.beginDrag(e, row.id);
