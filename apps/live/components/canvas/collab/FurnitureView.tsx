@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { useMachineAnswered } from '@/lib/machine-answer';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import {
   chairSeatFill,
@@ -67,7 +68,6 @@ export function FurnitureView({
   stroke,
   fill,
   sitters,
-  answered,
   animClass,
 }: {
   element: ShapeElement;
@@ -75,9 +75,6 @@ export function FurnitureView({
   // The element's fill: a rug's colour (seating and the rest take their seat wash from it).
   fill?: string;
   sitters: ChairSitter[];
-  // Bumped each time your own character gets a drink here, so the machine answers
-  // (docs/specs/009-elements/office.md "Using it").
-  answered?: number;
   animClass?: string;
 }) {
   const kind = element.shape;
@@ -111,7 +108,7 @@ export function FurnitureView({
           ))}
         </g>
         {kind === 'water-cooler' || kind === 'coffee-machine' ? (
-          <MachineAnswer kind={kind} answered={answered ?? 0} />
+          <MachineAnswer kind={kind} id={element.id} />
         ) : null}
         {occupied && kind !== 'meeting-table' ? (
           // A soft ring in the first sitter's colour, under the seats. A meeting table names its sitters
@@ -133,18 +130,16 @@ export function FurnitureView({
 
 // The machine answering a drink (docs/specs/009-elements/office.md "Using it"): bubbles rising in the cooler's
 // bottle, or coffee dripping into the carafe, for a moment. Played with the Web Animations API on each bump of
-// `answered`, so it costs nothing until somebody gets a drink, and not at all under reduced motion.
-function MachineAnswer({
-  kind,
-  answered,
-}: {
-  kind: 'water-cooler' | 'coffee-machine';
-  answered: number;
-}) {
+// its count (lib/machine-answer.ts), so it costs nothing until somebody gets a drink, and not at all under reduced
+// motion. A count it already had when it mounted (a tab switched back to) does not play again.
+function MachineAnswer({ kind, id }: { kind: 'water-cooler' | 'coffee-machine'; id: string }) {
+  const answered = useMachineAnswered(id);
   const ref = useRef<SVGGElement>(null);
+  const seen = useRef(answered);
   useEffect(() => {
     const g = ref.current;
-    if (!g || answered === 0 || prefersReducedMotion()) return;
+    if (!g || answered === seen.current || prefersReducedMotion()) return;
+    seen.current = answered;
     const anims = [...g.children].map((child, i) =>
       (child as SVGElement).animate(
         kind === 'water-cooler'
