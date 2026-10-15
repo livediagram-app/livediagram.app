@@ -26,6 +26,10 @@ is the whole of what the repo enforces.
 - **typescript-eslint's recommended rules**, as oxlint's native `typescript/*` rules (and `eslint/*`
   for `no-unused-vars`, `no-unused-expressions` and `no-array-constructor`, which oxlint runs on
   TypeScript). Unused variables and arguments are allowed only when named with a leading `_`.
+- **typescript-eslint's recommended type-checked rules**, as oxlint's type-aware `typescript/*`
+  rules (see [Type-aware rules](#type-aware-rules)): `no-array-delete`, `no-for-in-array`,
+  `no-unsafe-enum-comparison` and `no-unsafe-unary-minus`. The rest of the set turns on one rule at
+  a time, each at zero findings ([#711](https://github.com/livediagram-app/livediagram.app/issues/711)).
 - **Known gap**: `no-useless-assignment` in the oxlint release the repo uses does not report a value
   written to a function parameter and overwritten before it is read. oxc reports it from
   [oxc-project/oxc#27735](https://github.com/oxc-project/oxc/pull/27735) on; the gap closes when the repo
@@ -48,9 +52,18 @@ is the whole of what the repo enforces.
   - `livediagram/no-raw-icon-svg`: no icon-sized raw `<svg>` outside the art allow-list
     ([Iconography](../004-interface-design/iconography.md)).
 - **No formatting rules.** Prettier owns formatting.
-- **No type-aware rules.** Every rule reads one file's syntax; none needs a type checker. Turning on
-  `oxlint-tsgolint`'s type-aware rules is tracked in
-  [#711](https://github.com/livediagram-app/livediagram.app/issues/711).
+
+## Type-aware rules
+
+- A type-aware rule needs the type of an expression, not only its syntax. oxlint hands those rules
+  to `oxlint-tsgolint` (`options.typeAware` in the shared config), which is built on typescript-go:
+  the same TypeScript 7 the repo type-checks with, so no second compiler is involved.
+- A file is typed through the `tsconfig.json` that includes it; a file no tsconfig includes is typed
+  on its own, as an inferred project.
+- `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,
+  and a dependency of `@livediagram/oxlint-config`, whose tests run it.
+- A finding is fixed where it arises (a truer signature, a handled promise), never cast or
+  suppressed away.
 
 ## Disable directives
 
@@ -68,5 +81,5 @@ is the whole of what the repo enforces.
 ## Guarantees
 
 `packages/oxlint-config` lints scratch files with the real config in its tests: one deliberate
-violation per rule family (hooks, React Compiler, `any`, the repo's own rules), an unused directive,
-an ignored `eslint-disable`, and the JavaScript-only and TypeScript-only splits.
+violation per rule family (hooks, React Compiler, `any`, a type-aware rule, the repo's own rules), an
+unused directive, an ignored `eslint-disable`, and the JavaScript-only and TypeScript-only splits.
