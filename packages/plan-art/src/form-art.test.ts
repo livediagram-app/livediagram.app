@@ -83,7 +83,9 @@ describe('formArt', () => {
     expect(art.width).toBe(FORM_ART_WIDTH * 2);
     expect(art.height).toBeLessThanOrEqual(FORM_ART_HEIGHT_MAX);
     const drawn = (art.svg.match(/>P\d+</g) ?? []).length;
-    const left = Number(/(\d+) more questions not drawn/.exec(art.svg)?.[1]);
+    // A plain lookup, not an unanchored \d+ regex, which backtracks on long runs of digits (CodeQL js/polynomial-redos).
+    const note = art.svg.indexOf(' more questions not drawn');
+    const left = Number(art.svg.slice(art.svg.lastIndexOf('>', note) + 1, note));
     expect(drawn + left).toBe(100);
   });
 
