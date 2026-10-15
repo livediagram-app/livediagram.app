@@ -1264,6 +1264,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a mind map node.',
         helpArticle: 'mindMaps',
       }),
+      elementTourSwitch('flowchart', {
+        label: 'Flowchart Tour',
+        event: { category: 'UI', on: 'FlowchartTourSeenOff', off: 'FlowchartTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial flowchart step tab enter branch decision step type lane swimlane direction replay',
+        description: 'The first time you select a flowchart step.',
+        helpArticle: 'flowcharts',
+      }),
     ],
   },
   {

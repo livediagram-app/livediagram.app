@@ -1195,6 +1195,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Mind Map tour, offered beside a selected mind map node.',
   'UI|Ended|MindMapTourSkipped':
     'Someone left the Mind Map tour before its end, or the mind map node it was on went away.',
+  'UI|Ended|FlowchartTourCompleted':
+    'Someone reached the end of the Flowchart tour, offered beside a selected flowchart step.',
+  'UI|Ended|FlowchartTourSkipped':
+    'Someone left the Flowchart tour before its end, or the flowchart step it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1333,6 +1337,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit).',
   'UI|Opened|MindMapTourOffer':
     'The Mind Map tour was offered, as a small Tour toolbar beside a selected mind map node (counted once per visit).',
+  'UI|Opened|FlowchartTourOffer':
+    'The Flowchart tour was offered, as a small Tour toolbar beside a selected flowchart step (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
@@ -1427,6 +1433,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected chevron process, starting its tour.',
   'UI|Started|MindMapTour':
     'Someone pressed Play on the Tour toolbar beside a selected mind map node, starting its tour.',
+  'UI|Started|FlowchartTour':
+    'Someone pressed Play on the Tour toolbar beside a selected flowchart step, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1628,6 +1636,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Mind Map Tour" in Settings, so it is offered again.',
   'UI|Toggled|MindMapTourSeenOn':
     'Someone switched off Tours › Element Tours › "Mind Map Tour" in Settings, so it is not offered.',
+  'UI|Toggled|FlowchartTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Flowchart Tour" in Settings, so it is offered again.',
+  'UI|Toggled|FlowchartTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Flowchart Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -1827,6 +1839,20 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Mind Map tour reached its "The Mind Map Menu" step, on the selection toolbar\'s More button.',
   'UI|View|MindMapTourStepOutro':
     'The Mind Map tour reached its closing "That Is a Mind Map" card.',
+  'UI|View|FlowchartTourStepStep':
+    'The Flowchart tour reached its "A Step in a Flowchart" step, on the selected step.',
+  'UI|View|FlowchartTourStepNext':
+    'The Flowchart tour reached its "The Next Step" step, on the toolbar\'s Add Step.',
+  'UI|View|FlowchartTourStepBranch':
+    'The Flowchart tour reached its "Add a Branch" step, on the toolbar\'s Add Branch.',
+  'UI|View|FlowchartTourStepType':
+    'The Flowchart tour reached its "Change Its Type" step, on the toolbar\'s Step Type.',
+  'UI|View|FlowchartTourStepLane':
+    'The Flowchart tour reached its "Its Lane" step, on the toolbar\'s Lane.',
+  'UI|View|FlowchartTourStepMenu':
+    'The Flowchart tour reached its "The Flowchart Menu" step, on the selection toolbar\'s More button.',
+  'UI|View|FlowchartTourStepOutro':
+    'The Flowchart tour reached its closing "That Is a Flowchart" card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':

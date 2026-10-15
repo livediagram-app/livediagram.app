@@ -222,6 +222,12 @@ flowchart steps) and is unchanged.
 on a type change; `Element` · `Added` · `FlowchartLane` on Add Lane; `Element` · `Changed` ·
 `FlowchartDirection` on a direction change. The palette tile records its placement as every tile does.
 
+## Element tour
+
+The first time an Editor selects a flowchart step, a small **Tour** toolbar beside its selection toolbar offers the
+[Flowchart tour](../007-editor/element-tours.md#the-flowchart-tour): Add Step and Add Branch (with Tab and Enter),
+Step Type, Lane on a laned chart, and the Flowchart menu.
+
 ## What it is not
 
 - Not UML activity diagram notation (fork / join bars, initial and final nodes). The classic set is

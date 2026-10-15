@@ -256,6 +256,7 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('OnionTour', 'onion-tour-steps.ts'),
   ...conceptTourSteps('ChevronsTour', 'chevrons-tour-steps.ts'),
   ...conceptTourSteps('MindMapTour', 'mind-node-tour-steps.ts'),
+  ...conceptTourSteps('FlowchartTour', 'flowchart-tour-steps.ts'),
 ];
 
 export const DRAW_TOUR_STEP_SOURCE: string[] = [

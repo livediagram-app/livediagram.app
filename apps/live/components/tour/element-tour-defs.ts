@@ -13,6 +13,7 @@ import { hubTourSteps } from './hub-tour-steps';
 import { onionTourSteps } from './onion-tour-steps';
 import { chevronsTourSteps } from './chevrons-tour-steps';
 import { mindNodeTourSteps } from './mind-node-tour-steps';
+import { flowchartTourSteps } from './flowchart-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -126,6 +127,24 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
       mindNodeTourSteps({
         elementId: el.id,
         hasChildren: env.elements.some((e) => (e as ShapeElement).mindParentId === el.id),
+        hasMore: env.hasMore,
+        touch: env.touch,
+      }),
+  },
+  flowchart: {
+    token: 'FlowchartTour',
+    eyebrow: 'Flowchart tour',
+    helpArticle: 'flowcharts',
+    helpLabel: 'Flowcharts Help',
+    steps: (el, env) =>
+      flowchartTourSteps({
+        elementId: el.id,
+        hasLanes: env.elements.some(
+          (e) =>
+            e.type === 'shape' &&
+            e.shape === 'lane' &&
+            e.flowchartId === (el as ShapeElement).flowchartId,
+        ),
         hasMore: env.hasMore,
         touch: env.touch,
       }),

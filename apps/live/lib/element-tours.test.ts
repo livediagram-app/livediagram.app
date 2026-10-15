@@ -120,3 +120,14 @@ describe('the Mind Map element tour kind', () => {
     expect(canTourElement({ level: 'edit' }, { ...node, locked: true }, 'mind-node')).toBe(false);
   });
 });
+
+describe('the Flowchart element tour kind', () => {
+  it('tours a flowchart step, never a plain shape of the same kind', () => {
+    const square = createShape('square', 0, 0) as Element;
+    const step = { ...square, flowchartId: 'f1' } as Element;
+    expect(elementTourKindOf(step)).toBe('flowchart');
+    expect(elementTourKindOf(square)).toBeNull();
+    expect(canTourElement({ level: 'edit' }, step, 'flowchart')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, step, 'flowchart')).toBe(false);
+  });
+});
