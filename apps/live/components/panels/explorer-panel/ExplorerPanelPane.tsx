@@ -48,6 +48,7 @@ export function ExplorerPanelPane({
   tree,
   onPick,
   onNewFolder,
+  inFolder = false,
   onLibraryChanged,
   footer,
 }: {
@@ -63,6 +64,8 @@ export function ExplorerPanelPane({
   onPick: (s: PanelSection) => void;
   // My documents' or a team's New Folder; absent where the session may not make one.
   onNewFolder?: () => void;
+  // A folder is open in the pane, so New Folder makes one inside it and says so.
+  inFolder?: boolean;
   // The Trash restored or deleted a document.
   onLibraryChanged: () => void;
   // Pinned under the content, outside its scroll (the sign-in bar).
@@ -110,7 +113,9 @@ export function ExplorerPanelPane({
           <button type="button" onClick={onNewFolder} className={HEADER_BUTTON}>
             <PlusIcon size={12} />
             {/* On a phone the glyph alone (the name stays for assistive technology), so the title keeps its room. */}
-            <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>New Folder</span>
+            <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>
+              {inFolder ? 'New Subfolder' : 'New Folder'}
+            </span>
           </button>
         ) : null}
         <a
