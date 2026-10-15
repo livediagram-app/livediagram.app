@@ -547,8 +547,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a
   node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
   edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows
-  out alike, a node with no edge at all at the ring's centre, a node given no
-  shape a circle).
+  out alike, a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows
+  the stops, a node given no shape a circle).
 - `groups`: named clusters drawn as frames around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
   may point at a group id. With groups, `style` is flow. A node may name its

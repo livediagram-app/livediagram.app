@@ -500,6 +500,29 @@ describe('cycle', () => {
     expect((a as { shape?: string }).shape).toBe('circle');
     expect(arrowTo(els, 'a', 'b').arrowStyle).toBe('curved');
   });
+
+  it('sizes a hub on its own: a longer centre label never grows the stops', () => {
+    const ring = {
+      style: 'cycle' as const,
+      nodes: [
+        { id: 'a', label: 'Plan' },
+        { id: 'b', label: 'Do' },
+        { id: 'c', label: 'Check' },
+      ],
+      edges: [
+        { from: 'a', to: 'b' },
+        { from: 'b', to: 'c' },
+        { from: 'c', to: 'a' },
+      ],
+    };
+    const bare = box(lay(ring), 'a');
+    const hubbed = lay({
+      ...ring,
+      nodes: [...ring.nodes, { id: 'hub', label: 'Continuous improvement' }],
+    });
+    expect(box(hubbed, 'a').width).toBe(bare.width);
+    expect(box(hubbed, 'hub').width).toBeGreaterThan(bare.width);
+  });
 });
 
 describe('mindmap', () => {
