@@ -23,12 +23,10 @@ export const browserHugText: HugText = async (elements, tabFont) => {
   if (!elements.some((el) => el.type === 'text')) return elements;
   const fonts = typeof document === 'undefined' ? undefined : document.fonts;
   if (fonts) {
-    await Promise.all(
-      landedTextFonts(elements, tabFont).map((id) => {
-        const stack = resolveFontStack(id);
-        return stack ? fonts.load(`16px ${stack}`).catch(() => []) : [];
-      }),
-    );
+    const stacks = landedTextFonts(elements, tabFont)
+      .map((id) => resolveFontStack(id))
+      .filter((stack) => stack !== undefined);
+    await Promise.all(stacks.map((stack) => fonts.load(`16px ${stack}`).catch(() => [])));
   }
   const { measureDrawnText } = await import('@/components/canvas/text-hug-measure');
   const measure: (el: TextElement) => MeasureTextBlock = measureDrawnText(tabFont);
