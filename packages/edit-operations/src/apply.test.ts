@@ -333,4 +333,16 @@ describe('targets that match nothing', () => {
     ]);
     expect(last.hint).toContain('fix operation 2');
   });
+
+  // A later miss on some other id is its own mistake, and keeps its own answer.
+  it('leaves a later miss on an unrelated id as it is', () => {
+    const parsed = parseEditOperations(
+      'set nope label=A\nadd square id=fresh right-of:nope\nset other label=B',
+    );
+    if ('errors' in parsed) throw new Error('parse');
+    const out = applyEditOperations(checkoutFlow(), parsed.operations);
+    if (!('errors' in out)) throw new Error('applied');
+    const last = out.errors.find((e) => e.operation === 3)!;
+    expect(last.details?.[0]).toBe('"other" matches nothing');
+  });
 });

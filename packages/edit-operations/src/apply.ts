@@ -78,12 +78,10 @@ function rejected(
   return { errors: [rejection] };
 }
 
-// The id an operation names for what it makes (`add … id=`, `connect … id=`, a raw element's own id), if any.
+// The id an operation names for what it makes (`add … id=`, `connect … id=`), if any. A raw-element `add` is never
+// skipped (it misses no target), so its own id needs no entry.
 function madeId(operation: EditOperation): string | undefined {
-  if ('id' in operation && typeof operation.id === 'string') return operation.id;
-  if (operation.op === 'add' && 'element' in operation && typeof operation.element.id === 'string')
-    return operation.element.id;
-  return undefined;
+  return 'id' in operation && typeof operation.id === 'string' ? operation.id : undefined;
 }
 
 // A miss on an id an earlier skipped operation would have made: that operation is the one to fix.
