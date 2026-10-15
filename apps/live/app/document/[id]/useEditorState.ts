@@ -2337,7 +2337,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     statusTypes: planStatusTypes,
     statusBoards: planStatusBoards,
     notify: toast.info,
-    newFormFor: forms.newFormFor,
+    // A form is an Editor's to make (docs/specs/030-forms/forms.md "Who may do what").
+    newFormFor: participant.can.level === 'edit' ? forms.newFormFor : undefined,
   });
   // The Plan tour's example board and cards, or sheet (docs/specs/026-plan/plan-tour.md "Tour content").
   const tourSquare = useTourSquare({ activeId, tickTabs });

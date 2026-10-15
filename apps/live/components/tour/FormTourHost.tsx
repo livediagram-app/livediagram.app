@@ -90,6 +90,7 @@ export function FormTourHost() {
     ctx.prefsSettled &&
     !ctx.anyWelcomeOpen &&
     !startPanelOpen &&
+    ctx.can.level === 'edit' &&
     !ctx.isReadOnly &&
     !ctx.embedMode &&
     tab.locked !== true;

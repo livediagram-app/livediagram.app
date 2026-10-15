@@ -385,11 +385,23 @@ Tour** stack beside the Draw tour's.
   takes effect for the next person to open the link; a respondent already filling it in submits against what they
   saw, and an answer to a question since removed is dropped, never refused.
 - A Board or Sheet tab a form sends its responses to warns before it is deleted: Delete's confirmation ("Delete this
-  tab?") carries an amber line, "“<Form>” sends its responses here: it stops taking them, and is unpublished if it
-  was published." ("<n> forms send their responses here: they stop taking them, and any published are unpublished."
-  for several), above "Unless another document also holds it, its content can't be recovered." Deleting it
-  unpublishes each such form in the same request (its link deleted on the api, whoever deletes the tab); an undo
-  brings the tab back but not the link, and publishing again makes a new one. The form's connect box then asks again.
+  tab?") carries an amber line, "“<Form>” sends its responses here: it stops taking them, keeping its link, until it has somewhere to send them." ("<n> forms
+  send their responses here: they stop taking them, keeping their links, until they have somewhere to send them." for several), above "Unless another
+  document also holds it, its content can't be recovered." Deleting it **pauses** each such form in the same request
+  (its link stops taking responses on the api, whoever deletes the tab, and keeps its code and count); the form's
+  connect box then asks again, and once it has somewhere to send them Accepting Responses opens the same link again.
+  An undo brings the tab back; the form stays paused until an Editor reopens it.
+- **A live form is locked**: while a form takes responses, its content cannot change, so nobody fills in a form that
+  shifts under them and every answer keeps its meaning. Its questions, sections, heading, cover and Responses Go To
+  are read-only in the builder, and a strip under the status bar says so: "Taking responses, so
+  it can't be changed. Edit Form stops it taking responses while you edit; its link stays the same.", with **Edit
+  Form**, which closes the form (as Accepting Responses off does). Its Settings (Close On, the response limit, its
+  messages) stay an Editor's, as they never change what a response means. Responses Go To says "Locked while the form
+  takes responses: Edit Form unlocks it."
+- Accepting Responses cannot be turned on while the form has problems (Problems with this Form): the switch is
+  disabled with "Fix this form's problems first: Share Form lists them." (Settings) or "Closed until the problems
+  below are fixed." (Share Form), and the api refuses it as it refuses a publish (409 `form_destination_missing` /
+  `form_not_ready`). Closing always works.
 - A Form tab deleted deletes its form link in the same request. A document copied, a tab duplicated or a document
   restored from a file copies the form **unpublished**: a copy never answers the original's link.
 - A copy keeps its destination: a duplicated tab's still names the document's board; a copied document's names a tab
@@ -527,14 +539,17 @@ board settings, for switching back.
 | See the Form tab (as a Preview, no editing chrome)       | ✓                                      | ✓           | ✓      |
 | Build: questions, sections, mappings, destination, look  | ✓                                      |             |        |
 | Publish, open, close, delete the link, see the form link | ✓                                      |             |        |
+| Start a form: New Form, a form template, the Forms tour  | ✓                                      |             |        |
+| Edit Form on a live form (stops it taking responses)     | ✓                                      |             |        |
 | See the response count, which opens the destination      | ✓                                      | ✓           | ✓      |
 | Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no
 card: only an Editor's Preview makes one), with a
-line over it: "This is a form. Its responses become cards on **Bugs**." A tab-scoped share link to a Form tab shows the
+line over it: "This is a form. Its responses become cards on **Bugs**." ("rows in" for a sheet). A tab-scoped share link to a Form tab shows the
 same. The form link's code is never sent to a Participant or a Viewer; they see the status and the count. A locked
-Form tab reads as a Viewer's does.
+Form tab reads as a Viewer's does. Each is gated on the session's `can.level === 'edit'`, never on `isReadOnly` alone: a Participant's
+session can add content elsewhere, never to a form.
 
 ## Abuse and limits
 

@@ -78,3 +78,51 @@ describe('Share Form, unpublished', () => {
     expect(fix).toHaveBeenCalled();
   });
 });
+
+describe('Share Form, published and closed (forms.md "A live form is locked")', () => {
+  const closed = (): FormLinkState =>
+    link({
+      link: {
+        link: { code: 'abc', open: false, createdAt: 1 },
+        responses: 3,
+        unseen: 0,
+        suspendedAt: null,
+        canPublish: true,
+      },
+    });
+  const accepting = () =>
+    screen.getByRole('switch', { name: /Accepting Responses/ }) as HTMLButtonElement;
+
+  it('holds Accepting Responses off while the form has problems', () => {
+    const l = closed();
+    render(
+      <ShareFormDialog
+        open
+        onClose={() => {}}
+        link={l}
+        problem={null}
+        onFixDestination={() => {}}
+        notReady={[{ kind: 'unworded', questionId: 'q-1' }]}
+      />,
+    );
+    expect(accepting().disabled).toBe(true);
+    expect(screen.getByText('Closed until the problems below are fixed.')).toBeTruthy();
+    fireEvent.click(accepting());
+    expect(l.setOpen).not.toHaveBeenCalled();
+  });
+
+  it('opens it again once nothing stops it', () => {
+    const l = closed();
+    render(
+      <ShareFormDialog
+        open
+        onClose={() => {}}
+        link={l}
+        problem={null}
+        onFixDestination={() => {}}
+      />,
+    );
+    fireEvent.click(accepting());
+    expect(l.setOpen).toHaveBeenCalledWith(true);
+  });
+});

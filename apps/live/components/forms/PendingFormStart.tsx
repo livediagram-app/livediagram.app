@@ -10,7 +10,8 @@ import { hasPendingFormStart, takePendingFormStart } from '@/lib/pending-form-st
 export function PendingFormStart() {
   const ctx = useEditorContext();
   const tabId = ctx.activeTab.id;
-  const ready = ctx.hydrated && !ctx.isReadOnly && ctx.activeTab.locked !== true;
+  const ready =
+    ctx.hydrated && ctx.can.level === 'edit' && !ctx.isReadOnly && ctx.activeTab.locked !== true;
   useEffect(() => {
     if (!ready || !hasPendingFormStart(tabId)) return;
     const starter = takePendingFormStart(tabId);

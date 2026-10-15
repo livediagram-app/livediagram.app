@@ -34,6 +34,7 @@ import { apiSendFormPreview } from '@/lib/api/forms';
 import { FormBuilderContext, type FormBuilderValue } from './builder/form-builder-context';
 import { FormBuilderColumn } from './builder/FormBuilderColumn';
 import { formProblemCount } from './FormProblems';
+import { FormLockedStrip } from './FormLockedStrip';
 import { FormSettingsButton, type FormSettingsSection } from './builder/FormSettingsButton';
 import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
@@ -95,7 +96,6 @@ export function FormPage({
   const [settings, setSettings] = useState<FormSettingsSection | null | false>(false);
   const [shareOpen, setShareOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const building = canEdit && !preview;
 
   // The board tabs' content, so Responses Go To can read their columns.
   const boardTabIds = tabs
@@ -113,6 +113,9 @@ export function FormPage({
     share,
     enabled: online && !!documentId,
   });
+  // A form taking responses is locked (docs/specs/030-forms/forms.md "A live form is locked"): Edit Form stops it first.
+  const locked = canEdit && !!link.link?.link?.open;
+  const building = canEdit && !preview && !locked;
   // Where responses go: a Sheet (a row each) when the form names one, else its board.
   const destTab = tabs.find((t) => t.id === (form.sheet?.tabId ?? form.destination?.tabId));
   const problem = form.sheet
@@ -164,8 +167,23 @@ export function FormPage({
       type,
       types,
       openSettings,
+      locked,
+      problemCount: formProblemCount(problem, notReady),
     }),
-    [form, building, actions, selectedId, select, focusId, type, types, openSettings],
+    [
+      form,
+      building,
+      actions,
+      selectedId,
+      select,
+      focusId,
+      type,
+      types,
+      openSettings,
+      locked,
+      problem,
+      notReady,
+    ],
   );
   // The header's Share is this form's while an Editor has it open (lib/form-share-store.ts).
   const published = !!link.link?.link;
@@ -199,7 +217,7 @@ export function FormPage({
       <DashboardMenuName
         tab={tab}
         kindLabel="Form"
-        onRename={canEdit ? (name) => actions.renameForm(name) : undefined}
+        onRename={canEdit && !locked ? (name) => actions.renameForm(name) : undefined}
       />
       {canvas
         ? createPortal(
@@ -231,7 +249,9 @@ export function FormPage({
                               {previewButton}
                               {/* Learn about forms, beside the cog (as a board's help sits by its cog). */}
                               <HelpArticleLink article="planForms" />
-                              {building ? (
+                              {/* The cog stays an Editor's while the form is locked: its Settings (closing it, its
+                                  messages) still apply; Responses Go To is locked with the form. */}
+                              {canEdit && !preview ? (
                                 <FormSettingsButton
                                   tabs={tabs}
                                   link={link}
@@ -244,16 +264,20 @@ export function FormPage({
                           ) : null
                         }
                       />
+                      {locked && !preview ? (
+                        <FormLockedStrip onEdit={() => void link.setOpen(false)} busy={link.busy} />
+                      ) : null}
                       {!canEdit ? (
                         <p className="rounded-xl bg-white/80 px-4 py-2.5 text-[13px] text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
-                          This is a form. Its responses become cards on{' '}
-                          <strong>{destTab?.name ?? 'a board'}</strong>.
+                          This is a form. Its responses become {form.sheet ? 'rows in' : 'cards on'}{' '}
+                          <strong>{destTab?.name ?? (form.sheet ? 'a sheet' : 'a board')}</strong>.
                         </p>
                       ) : null}
                     </div>
                     {/* The look dresses the form alone: the status bar and the panel are the editor's. */}
                     <div className="mt-3" {...look}>
-                      {building ? (
+                      {/* An Editor's form is the builder, read-only while it is locked. */}
+                      {canEdit && !preview ? (
                         <FormBuilderColumn
                           scrollRef={scrollRef}
                           hasDestinations={tabs.some(

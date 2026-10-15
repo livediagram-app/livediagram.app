@@ -8,7 +8,7 @@ import {
   type FormDefinition,
 } from '@livediagram/forms';
 import { normaliseBoardSetup, type ItemTypeDef, type PlanBoardSetup } from '@livediagram/items';
-import { deleteFormLink, documentLinksTab, getTab, liveFormLinksOf, readSheetHead } from '../db';
+import { documentLinksTab, getTab, liveFormLinksOf, readSheetHead, setFormLinkOpen } from '../db';
 import type { FormSheetDestination } from '@livediagram/forms';
 import type { Env, TabDTO } from '../types';
 
@@ -72,21 +72,22 @@ export async function responsesProblem(
 }
 
 // A board or sheet tab deleted (docs/specs/030-forms/forms.md "Publishing and the form link"): each live form whose
-// responses went there is unpublished, its link deleted, as its responses would have nowhere to go. Answers how many.
-export async function unpublishFormsFeeding(
+// responses went there stops taking responses (its link closed, never deleted), as they would have nowhere to go. It
+// opens again only once it has somewhere to send them. Answers how many.
+export async function pauseFormsFeeding(
   env: Env,
   documentId: string,
   tabId: string,
 ): Promise<number> {
-  let unpublished = 0;
+  let paused = 0;
   for (const link of await liveFormLinksOf(env, documentId)) {
     if (link.tab_id === tabId) continue;
     const found = await readFormTab(env, documentId, link.tab_id);
     const to = found?.form.sheet?.tabId ?? found?.form.destination?.tabId;
     if (to !== tabId) continue;
-    await deleteFormLink(env, link.code);
-    console.info('[forms] form.unpublished.destination_deleted', { documentId });
-    unpublished += 1;
+    await setFormLinkOpen(env, link.code, false);
+    console.info('[forms] form.paused.destination_deleted', { documentId });
+    paused += 1;
   }
-  return unpublished;
+  return paused;
 }

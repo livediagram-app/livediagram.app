@@ -52,6 +52,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     hydrated: true,
     anyWelcomeOpen: false,
     isReadOnly: false,
+    can: { level: 'edit' },
     embedMode: false,
     activeTab: formTab(),
     userPreferences: { tourSeen: true },
@@ -104,6 +105,8 @@ describe('FormTourHost offer', () => {
   it.each([
     ['seen', { userPreferences: { tourSeen: true, formTourSeen: true } }],
     ['read-only', { isReadOnly: true }],
+    ['a Participant', { can: { level: 'participate' } }],
+    ['a Viewer', { can: { level: 'view' } }],
     ['locked', { activeTab: { ...formTab(), locked: true } }],
     ['not hydrated', { hydrated: false }],
     ['embedded', { embedMode: true }],

@@ -18,6 +18,7 @@ const editor = (startForm: () => void, over: Record<string, unknown> = {}) => {
   ctx.current = {
     hydrated: true,
     isReadOnly: false,
+    can: { level: 'edit' },
     activeTab: { id: 'tab1', locked: false },
     forms: { startForm },
     ...over,
@@ -41,6 +42,10 @@ describe('PendingFormStart', () => {
     editor(startForm, { hydrated: false });
     const { rerender } = render(<PendingFormStart />);
     editor(startForm, { isReadOnly: true });
+    rerender(<PendingFormStart />);
+    editor(startForm, { can: { level: 'participate' } });
+    rerender(<PendingFormStart />);
+    editor(startForm, { can: { level: 'view' } });
     rerender(<PendingFormStart />);
     expect(startForm).not.toHaveBeenCalled();
     editor(startForm);

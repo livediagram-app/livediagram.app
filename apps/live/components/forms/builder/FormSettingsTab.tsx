@@ -34,6 +34,9 @@ export function FormSettingsTab({ link }: { link: FormLinkState }) {
   const set = (patch: Parameters<typeof patchForm>[1]) =>
     b.actions.changeForm((f) => patchForm(f, patch));
   const published = !!link.link?.link;
+  const open = published && !!link.link?.link?.open;
+  // A form with problems can't start taking responses again (forms.md "A live form is locked"); closing always works.
+  const blocked = published && !open && !!b.problemCount;
   // The clock as the tab opened: whether Close On has passed, read once.
   const [now] = useState(() => Date.now());
   const past = form.closesAt !== undefined && form.closesAt <= now;
@@ -41,16 +44,21 @@ export function FormSettingsTab({ link }: { link: FormLinkState }) {
     <div className="flex flex-col gap-4">
       <div>
         <SwitchRow
-          checked={published && !!link.link?.link?.open}
+          checked={open}
           onChange={(on) => void link.setOpen(on)}
-          className={`py-1 text-[13px] font-medium ${published ? '' : 'pointer-events-none opacity-50'}`}
+          disabled={!published || blocked}
+          className="py-1 text-[13px] font-medium"
         >
           Accepting Responses
         </SwitchRow>
         <p className="mt-0.5 text-[12px] text-slate-500 dark:text-slate-400">
-          {published
-            ? 'Closing keeps the link. People who open it see your closed message.'
-            : 'Publish the form from Share Form to start taking responses.'}
+          {blocked
+            ? 'Fix this form’s problems first: Share Form lists them.'
+            : published
+              ? open
+                ? 'Closing keeps the link. People who open it see your closed message.'
+                : 'Taking responses again locks the form, so it can’t change under anyone.'
+              : 'Publish the form from Share Form to start taking responses.'}
         </p>
       </div>
       <div className="grid grid-cols-[1fr_8.5rem] gap-2 [&>*]:min-w-0">

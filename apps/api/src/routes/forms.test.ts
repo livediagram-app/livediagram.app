@@ -226,8 +226,8 @@ describe('publishing (docs/specs/030-forms/forms.md "Publishing and the form lin
     expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM form_links').get()).toEqual({ n: 0 });
   });
 
-  // The user's call (2026-10-15): deleting the board a form sends to unpublishes the form.
-  it('unpublishes a form whose board is deleted', async () => {
+  // The user's call (2026-10-15): deleting the board a form sends to pauses the form, its link kept.
+  it('pauses a form whose board is deleted, keeping its link', async () => {
     const code = await publish();
     const del = async (tab: string) => {
       const pending: Promise<unknown>[] = [];
@@ -243,8 +243,25 @@ describe('publishing (docs/specs/030-forms/forms.md "Publishing and the form lin
     };
     expect((await pub('GET', code)).status).toBe(200);
     expect(await del('board')).toBe(204);
-    expect((await pub('GET', code)).status).toBe(404);
-    expect((await owner('GET', 'form-link')).body).toMatchObject({ link: null });
+    expect((await pub<PublicFormResponse>('GET', code)).body.state).toBe('closed');
+    expect((await owner('GET', 'form-link')).body).toMatchObject({ link: { open: false } });
+    // It cannot open again while its responses have nowhere to go.
+    expect((await owner('PUT', 'form-link', { body: { open: true } })).status).toBe(409);
+  });
+
+  it('refuses to open a closed form again until it is ready, and always lets it close', async () => {
+    await publish();
+    expect((await owner('PUT', 'form-link', { body: { open: false } })).status).toBe(200);
+    const f = form();
+    writeForm({
+      ...f,
+      sections: [{ ...f.sections[0]!, questions: [{ id: 'q-x', type: 'short', prompt: '' }] }],
+    });
+    const res = await owner<{ error: string }>('PUT', 'form-link', { body: { open: true } });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('form_not_ready');
+    writeForm(form());
+    expect((await owner('PUT', 'form-link', { body: { open: true } })).status).toBe(200);
   });
 });
 

@@ -49,7 +49,7 @@ import {
   type RouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './document-views-route';
-import { unpublishFormsFeeding } from '../forms/form-tab';
+import { pauseFormsFeeding } from '../forms/form-tab';
 
 // Tab-content sub-resource routes for /api/documents/<id>/...,
 // split out of documents.ts. Returns a Response when it handles the path, or
@@ -210,10 +210,10 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       for (const code of revoked) {
         ctx.waitUntil?.(broadcastShareOp(env, id, { kind: 'share-revoked', code }));
       }
-      // A Form tab's link goes with it, and a form whose board or sheet it was is unpublished
+      // A Form tab's link goes with it, and a form whose board or sheet it was stops taking responses (its link kept)
       // (docs/specs/030-forms/forms.md "Publishing and the form link").
       await deleteFormLinksForTab(env, id, tabId);
-      await unpublishFormsFeeding(env, id, tabId);
+      await pauseFormsFeeding(env, id, tabId);
       return noContent();
     }
   }

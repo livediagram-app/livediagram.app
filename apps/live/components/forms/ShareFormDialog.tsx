@@ -89,6 +89,8 @@ export function ShareFormDialog({
               <SwitchRow
                 checked={live.open}
                 onChange={(on) => void link.setOpen(on)}
+                // Reopening waits on the problems listed below (forms.md "A live form is locked").
+                disabled={!live.open && formProblemCount(problem, notReady) > 0}
                 className="py-1 text-[14px] font-medium"
               >
                 Accepting Responses
@@ -96,7 +98,9 @@ export function ShareFormDialog({
               <p className="text-[12px] text-slate-500 dark:text-slate-400">
                 {live.open
                   ? `${link.link?.responses ?? 0} ${link.link?.responses === 1 ? 'response' : 'responses'} so far.`
-                  : 'Closed: people who open the link see your closed message.'}
+                  : formProblemCount(problem, notReady)
+                    ? 'Closed until the problems below are fixed.'
+                    : 'Closed: people who open the link see your closed message. Taking responses locks the form.'}
               </p>
             </div>
             {/* Still listed once published: a problem since then is the Editor's to fix. */}

@@ -55,6 +55,26 @@ async function answer(
   return json(body);
 }
 
+// Why a form may not take responses (publishing it, or opening it again): its tab gone (404), nowhere for responses
+// to go (409 form_destination_missing), or not ready to fill in (409 form_not_ready, with the problems). Null: it may.
+async function notReadyToOpen(
+  ctx: RouteContext,
+  documentId: string,
+  tabId: string,
+  types: ReturnType<typeof typesOf>,
+): Promise<Response | null> {
+  const formTab = await readFormTab(ctx.env, documentId, tabId);
+  if (!formTab) return notFound();
+  const { form } = formTab;
+  if (await responsesProblem(ctx.env, documentId, form, types))
+    return conflict('form_destination_missing');
+  const problems = publishProblems(
+    form,
+    form.sheet ? undefined : destinationType(form.destination, types),
+  );
+  return problems.length ? json({ error: 'form_not_ready', problems }, { status: 409 }) : null;
+}
+
 export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
   if (!(
@@ -105,18 +125,8 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
 
   if (request.method === 'POST') {
     if (live) return conflict('form_already_published');
-    const formTab = await readFormTab(env, documentId, tabId);
-    if (!formTab) return notFound();
-    const { form } = formTab;
-    const types = typesOf(doc.itemTypes);
-    const problem = await responsesProblem(env, documentId, form, types);
-    if (problem) return conflict('form_destination_missing');
-    // A form not ready to fill in (no questions, an unworded one, a broken mapping or rule) is not published.
-    const problems = publishProblems(
-      form,
-      form.sheet ? undefined : destinationType(form.destination, types),
-    );
-    if (problems.length) return json({ error: 'form_not_ready', problems }, { status: 409 });
+    const refused = await notReadyToOpen(ctx, documentId, tabId, typesOf(doc.itemTypes));
+    if (refused) return refused;
     if ((await countSuspendedFormLinks(env, documentId)) >= FORM_SUSPENSIONS_MAX)
       return forbidden('form_suspensions');
     const made = await createFormLink(env, documentId, tabId, Date.now());
@@ -131,6 +141,12 @@ export async function handleFormLinkRoutes(ctx: RouteContext): Promise<Response 
     const body = await readBody(ctx);
     if (body instanceof Response) return body;
     if (typeof body['open'] !== 'boolean') return json({ error: 'invalid open' }, { status: 400 });
+    // Opening is publishing again (docs/specs/030-forms/forms.md "Publishing and the form link"): a form with nowhere
+    // for responses to go, or not ready to fill in, stays closed, its link kept.
+    if (body['open']) {
+      const refused = await notReadyToOpen(ctx, documentId, tabId, typesOf(doc.itemTypes));
+      if (refused) return refused;
+    }
     await setFormLinkOpen(env, live.code, body['open']);
     console.info(body['open'] ? '[forms] form.reopened' : '[forms] form.closed', { documentId });
     return answer(ctx, documentId, tabId, owner, editor);

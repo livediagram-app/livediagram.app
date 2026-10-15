@@ -50,6 +50,11 @@ export function DestinationPicker({
   );
   return (
     <div className="flex flex-col gap-3">
+      {b.locked ? (
+        <p className="text-[12px] text-slate-500 dark:text-slate-400">
+          Locked while the form takes responses: Edit Form unlocks it.
+        </p>
+      ) : null}
       {/* A board makes a card per response, its answers mapped to fields; a Sheet a row, a column per question. */}
       <div
         role="radiogroup"

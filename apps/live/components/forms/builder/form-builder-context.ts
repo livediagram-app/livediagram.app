@@ -11,6 +11,11 @@ import type { FormSettingsSection } from './FormSettingsButton';
 export type FormBuilderValue = {
   form: FormDefinition;
   canEdit: boolean;
+  // Taking responses: its content is locked until Edit Form stops it (docs/specs/030-forms/forms.md "A live form is
+  // locked"); `canEdit` is false meanwhile, and the cog's Settings stay open.
+  locked?: boolean;
+  // How many problems stop it taking responses (FormProblems): Accepting Responses stays off while any remain.
+  problemCount?: number;
   actions: FormActions;
   selectedId: string | null;
   // `focus`: the question takes focus once drawn (one just added).
