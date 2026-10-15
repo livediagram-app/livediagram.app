@@ -10348,7 +10348,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "snowfall",
       "lava",
       "dot-wave",
-      "clouds"
+      "clouds",
+      "warp",
+      "orbits",
+      "radar",
+      "equaliser",
+      "confetti",
+      "threads"
     ],
     "type": "string"
   },

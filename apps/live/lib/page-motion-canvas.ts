@@ -4,9 +4,10 @@
 // and under everything on it. Browser-only (canvas 2D); the parts and poses are tested pure.
 import { hexToRgb, pageGradientLine, type PageMotion } from '@livediagram/document';
 import { motionPaint } from './page-motion';
-import { openingPose } from './page-motion-frame';
+import { animOrigin, openingPose } from './page-motion-frame';
 import {
   motionParts,
+  waveLine,
   wavePath,
   type MotionBox,
   type MotionFill,
@@ -84,13 +85,18 @@ const TURN = Math.PI / 180;
 
 function paintBox(ctx: Ctx, part: MotionBox): void {
   const pose = openingPose(part.anim);
-  if (pose.opacity <= 0 || pose.scale <= 0) return;
+  if (pose.opacity <= 0 || pose.scale <= 0 || pose.sx <= 0 || pose.sy <= 0) return;
   const { width: w, height: h } = part;
+  const [ox, oy] = animOrigin(part.anim);
   ctx.save();
-  // Moved, then turned and scaled about the part's centre, as its CSS transform does.
-  ctx.translate(part.left + w / 2 + pose.tx, part.top + h / 2 + pose.ty);
+  // Moved, then turned and scaled about the part's transform origin, as its CSS transform does,
+  // then drawn about its centre.
+  ctx.translate(part.left + w * ox + pose.tx, part.top + h * oy + pose.ty);
   if (pose.rotate) ctx.rotate(pose.rotate * TURN);
-  if (pose.scale !== 1) ctx.scale(pose.scale, pose.scale);
+  if (pose.scale !== 1 || pose.sx !== 1 || pose.sy !== 1) {
+    ctx.scale(pose.scale * pose.sx, pose.scale * pose.sy);
+  }
+  ctx.translate(w * (0.5 - ox), h * (0.5 - oy));
   ctx.globalAlpha *= pose.opacity;
   if (part.halo) paintHalo(ctx, part, part.halo);
   if (part.round) {
@@ -227,6 +233,33 @@ function paintFill(ctx: Ctx, fill: MotionFill, w: number, h: number): void {
       ctx.ellipse(0, 0, w / 2 - fill.width / 2, h / 2 - fill.width / 2, 0, 0, Math.PI * 2);
       ctx.stroke();
       return;
+    case 'streak': {
+      const g = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
+      g.addColorStop(0, rgba(fill.color, 0));
+      g.addColorStop(1, rgba(fill.color, fill.a));
+      ctx.fillStyle = g;
+      ctx.fillRect(-w / 2, -h / 2, w, h);
+      return;
+    }
+    case 'sweep': {
+      // The conic gradient as CSS draws it: from straight up, clockwise, clear for three quarters
+      // of the turn and rising to full at the leading edge.
+      const g = ctx.createConicGradient(-90 * TURN, 0, 0);
+      g.addColorStop(0, rgba(fill.color, 0));
+      g.addColorStop(0.75, rgba(fill.color, 0));
+      g.addColorStop(1, rgba(fill.color, fill.a));
+      ctx.fillStyle = g;
+      ctx.fillRect(-w / 2, -h / 2, w, h);
+      return;
+    }
+    case 'bar': {
+      const g = ctx.createLinearGradient(0, h / 2, 0, -h / 2);
+      g.addColorStop(0, rgba(fill.from, fill.a * 0.15));
+      g.addColorStop(1, rgba(fill.to, fill.a));
+      ctx.fillStyle = g;
+      ctx.fillRect(-w / 2, -h / 2, w, h);
+      return;
+    }
   }
 }
 
@@ -250,8 +283,15 @@ function paintWave(ctx: Ctx, part: MotionWave): void {
   const pose = openingPose(part.anim);
   ctx.save();
   ctx.translate(pose.tx, pose.ty);
-  ctx.fillStyle = rgba(part.color, part.a);
-  ctx.fill(new Path2D(wavePath(part.w, part.h, part.amp, part.base, part.periods)));
+  if (part.stroke) {
+    ctx.strokeStyle = rgba(part.color, part.a);
+    ctx.lineWidth = part.stroke;
+    ctx.lineCap = 'round';
+    ctx.stroke(new Path2D(waveLine(part.w, part.amp, part.base, part.periods)));
+  } else {
+    ctx.fillStyle = rgba(part.color, part.a);
+    ctx.fill(new Path2D(wavePath(part.w, part.h, part.amp, part.base, part.periods)));
+  }
   ctx.restore();
 }
 
@@ -260,6 +300,12 @@ function paintGroup(ctx: Ctx, group: MotionGroup, size: Size): void {
   if (!group.mask) {
     ctx.save();
     ctx.translate(pose.tx, pose.ty);
+    // A planet's orbit turns its group about the slide's centre.
+    if (pose.rotate) {
+      ctx.translate(size.w / 2, size.h / 2);
+      ctx.rotate(pose.rotate * TURN);
+      ctx.translate(-size.w / 2, -size.h / 2);
+    }
     ctx.globalAlpha *= pose.opacity;
     paintNodes(ctx, group.children, size);
     ctx.restore();

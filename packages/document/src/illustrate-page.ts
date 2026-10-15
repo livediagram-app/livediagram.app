@@ -189,6 +189,12 @@ export const PAGE_MOTIONS = [
   'lava',
   'dot-wave',
   'clouds',
+  'warp',
+  'orbits',
+  'radar',
+  'equaliser',
+  'confetti',
+  'threads',
 ] as const;
 // A motion's speed: a rate on its own pace, as the canvas's animated styles take one.
 export const PAGE_MOTION_SPEED_MIN = 0.25;

@@ -119,6 +119,42 @@ export const PAGE_MOTION_CATALOGUE: readonly PageMotionEntry[] = [
     description: 'Soft clouds drifting across',
     colouring: 'bright',
   },
+  {
+    id: 'warp',
+    label: 'Warp',
+    description: 'Stars streaking out from the centre',
+    colouring: 'night',
+  },
+  {
+    id: 'orbits',
+    label: 'Orbits',
+    description: 'Planets circling a glowing sun',
+    colouring: 'deep',
+  },
+  {
+    id: 'radar',
+    label: 'Radar',
+    description: 'A sweep turning, lighting blips as it passes',
+    colouring: 'night',
+  },
+  {
+    id: 'equaliser',
+    label: 'Equaliser',
+    description: 'Bars rising and falling to a beat',
+    colouring: 'vivid',
+  },
+  {
+    id: 'confetti',
+    label: 'Confetti',
+    description: 'Confetti fluttering down',
+    colouring: 'bright',
+  },
+  {
+    id: 'threads',
+    label: 'Threads',
+    description: 'Fine threads of light weaving past',
+    colouring: 'deep',
+  },
 ];
 
 export type PageMotionColouringId = 'deep' | 'night' | 'bright' | 'vivid' | 'soft' | 'mist';
