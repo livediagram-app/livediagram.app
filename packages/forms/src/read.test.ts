@@ -79,6 +79,14 @@ describe('readForm', () => {
     expect(read.cover).toEqual({ color: '#abcdef', style: 'gradient' });
     expect(readForm({ cover: { style: 'dots' } })!.cover).toEqual({ style: 'dots' });
     expect(readForm({ cover: { style: 'solid' } })!.cover).toBeUndefined();
+    // A slide gradient is kept when both its colours are; a broken one is dropped.
+    expect(readForm({ cover: { gradient: { from: '#FDE68A', to: '#fca5a5' } } })!.cover).toEqual({
+      gradient: { from: '#fde68a', to: '#fca5a5' },
+    });
+    expect(
+      readForm({ cover: { gradient: { from: 'red', to: '#fca5a5' } } })!.cover,
+    ).toBeUndefined();
+    expect(readForm({ cover: { gradient: 'sunrise' } })!.cover).toBeUndefined();
     expect(read.sections[0]!.description).toBe('First');
     expect(read.sections[0]!.questions).toEqual([
       {

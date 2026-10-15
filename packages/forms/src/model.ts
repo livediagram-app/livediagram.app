@@ -95,6 +95,8 @@ export type CoverStyle = (typeof COVER_STYLES)[number];
 export interface FormCover {
   color?: string;
   style?: CoverStyle;
+  // One of the slide backgrounds' gradients, drawn in place of the colour and style.
+  gradient?: { from: string; to: string };
 }
 
 export const STARTER_IDS = [

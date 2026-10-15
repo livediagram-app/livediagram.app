@@ -16,6 +16,7 @@ import { TrashIcon, Tooltip } from '@livediagram/ui';
 import { patchForm, deleteSection, updateSection } from '@/hooks/forms/form-edits';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { ColourSelect } from '@/components/plan/ColourSwatches';
+import { PAGE_GRADIENT_PRESETS } from '@/lib/illustrate-page-paint';
 import { FormCoverBand } from '../FormCoverBand';
 import { LinkedText } from '../LinkedText';
 import { FORM_ACCENT } from '../respond/FormFill';
@@ -72,13 +73,17 @@ export function FormHeaderCard({ sections }: { sections: number }) {
                 onChange={(color) =>
                   b.actions.changeForm((f) =>
                     patchForm(f, {
-                      cover: { ...f.cover, ...(color ? { color } : { color: undefined }) },
+                      cover: {
+                        ...f.cover,
+                        ...(color ? { color } : { color: undefined }),
+                        gradient: undefined,
+                      },
                     }),
                   )
                 }
               />
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                None takes the form colour.
+                None takes the theme’s colour.
               </p>
             </div>
             <div>
@@ -87,7 +92,7 @@ export function FormHeaderCard({ sections }: { sections: number }) {
               </p>
               <div role="radiogroup" aria-label="Cover style" className="grid grid-cols-3 gap-1.5">
                 {COVER_STYLES.map((s) => {
-                  const on = (form.cover?.style ?? 'solid') === s;
+                  const on = !form.cover?.gradient && (form.cover?.style ?? 'solid') === s;
                   return (
                     <button
                       key={s}
@@ -100,6 +105,7 @@ export function FormHeaderCard({ sections }: { sections: number }) {
                             cover: {
                               ...f.cover,
                               ...(s === 'solid' ? { style: undefined } : { style: s }),
+                              gradient: undefined,
                             },
                           }),
                         )
@@ -119,6 +125,41 @@ export function FormHeaderCard({ sections }: { sections: number }) {
                       </span>
                       {STYLE_NAMES[s]}
                     </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <p className="mb-1.5 text-[12px] font-semibold text-slate-600 dark:text-slate-300">
+                Gradients
+              </p>
+              {/* The slide backgrounds' gradients (docs/specs/007-editor/illustrate-pages.md "Backgrounds"). */}
+              <div
+                role="radiogroup"
+                aria-label="Cover gradient"
+                className="grid grid-cols-7 gap-1.5"
+              >
+                {PAGE_GRADIENT_PRESETS.map((g) => {
+                  const on =
+                    form.cover?.gradient?.from === g.from && form.cover.gradient.to === g.to;
+                  return (
+                    <Tooltip key={g.id} label={g.label}>
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        aria-label={g.label}
+                        onClick={() =>
+                          b.actions.changeForm((f) =>
+                            patchForm(f, { cover: { gradient: { from: g.from, to: g.to } } }),
+                          )
+                        }
+                        className={`h-7 cursor-pointer rounded-md ring-offset-1 transition hover:scale-105 dark:ring-offset-slate-900 ${
+                          on ? 'ring-2 ring-brand-500' : 'ring-1 ring-black/10 dark:ring-white/15'
+                        }`}
+                        style={{ background: `linear-gradient(120deg, ${g.from}, ${g.to})` }}
+                      />
+                    </Tooltip>
                   );
                 })}
               </div>

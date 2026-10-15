@@ -141,7 +141,11 @@ function readCover(v: unknown): FormCover | undefined {
   if (typeof v['color'] === 'string' && HEX.test(v['color']))
     cover.color = v['color'].toLowerCase();
   if (v['style'] === 'gradient' || v['style'] === 'dots') cover.style = v['style'];
-  return cover.color || cover.style ? cover : undefined;
+  const g = v['gradient'];
+  if (isObj(g) && typeof g['from'] === 'string' && typeof g['to'] === 'string')
+    if (HEX.test(g['from']) && HEX.test(g['to']))
+      cover.gradient = { from: g['from'].toLowerCase(), to: g['to'].toLowerCase() };
+  return cover.color || cover.style || cover.gradient ? cover : undefined;
 }
 
 function readDestination(v: unknown): FormDestination | undefined {
