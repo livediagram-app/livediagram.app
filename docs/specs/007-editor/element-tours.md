@@ -8,7 +8,8 @@ It sits between the mode tours (the [Diagram tour](editor-tour.md) and its sibli
 with a centred card) and [Show Me](show-me.md) (never offered, started from a button on one surface). An element
 tour offers itself, but quietly: a small toolbar that waits beside the selection, never a card over the canvas.
 
-The first element tour is the [Sankey diagram](../009-elements/sankey.md)'s.
+The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
+[concept graphics](../009-elements/concept-graphics.md) layer stack and pyramid.
 
 ## Domain language
 
@@ -101,6 +102,47 @@ The steps, in order, each a line or two. The exact strings live in
 
 The lift and the readout in steps 1 and 2 are the tour's: they win over a pointer left resting on another part (after pressing Next, say), since the step is about its part, and they go when the step does, when hovering works as ever.
 
+## The Layer Stack tour
+
+On the selected [layer stack](../009-elements/concept-graphics.md), each step a line or two. The strings live in
+`apps/live/components/tour/layer-stack-tour-steps.ts`; the steps it is built from (a step on the graphic or a row, the
+"+" ring, the More button, the closing card) in `concept-element-tour-steps.ts`, shared by every concept graphic's
+tour.
+
+1. **One Element, Many Layers**: rings the stack. Each band is a layer, top to bottom; a resize shares the height
+   again and re-wraps the words, never stretching them.
+2. **Type Over a Layer**: rings the top layer's name. Click (tap on a touch screen) to type over it; Enter keeps,
+   Escape puts back.
+3. **Side Notes** (only while a layer has a note): rings the first note. A note sits beside its layer, joined by a
+   rule; with no notes the bands take the full width.
+4. **Add a Layer**: opens the first "+" on screen (below, else right, above, left) and rings its **Add Layer**; up to
+   eight. The ring closes again on leaving the step.
+5. **Reorder in the Menu** (only while More shows): rings More. The Rows section (Tools) renames, notes, moves and
+   removes layers, two at least.
+6. **One Colour, a Whole Ramp**: rings the bottom layer. The top takes the accent and each below steps toward the
+   fill; a colour change carries every band, their words kept readable.
+7. **Build It Up**: rings the stack and plays its **Build** animation on it once, as a preview: never stored, so the
+   document does not change, and gone with the step. Animation, then Concept: Build, or Pulse.
+8. **That Is a Layer Stack** (closing card): it exports as drawn, every change one undo step; **Done** and the
+   **Concept Graphics Help** link.
+
+## The Pyramid tour
+
+On the selected Pyramid or Inverted pyramid (a Funnel has its own tour), from `pyramid-tour-steps.ts`. The words follow
+the variant: an Inverted pyramid's first tier is the widest, along the top, and it builds from the top down.
+
+1. **Tiers Cut From One Triangle**: rings the pyramid. The first tier is the apex (Inverted: the widest, along the
+   top); every tier is cut from one triangle, so the edges line up as one silhouette.
+2. **Type Over a Tier**: rings the first tier's name. A name too long for its tier is shortened, never spilling out.
+3. **Add a Tier**: the "+" ring open on **Add Tier**; a new tier at the base (Inverted: the point), up to six.
+4. **Pyramid, Inverted or Funnel** (only while More shows): rings More. Shape switches between the three, keeping every
+   tier; Rows reorders them.
+5. **From the Accent Down**: rings the last tier. The apex (Inverted: the top) takes the accent, each tier after it
+   steps toward the fill.
+6. **Build It Up** (Inverted: **Build It Down**): plays Build on it as a preview, from the base up (Inverted: from the
+   top down).
+7. **That Is a Pyramid** (Inverted: **That Is an Inverted Pyramid**): the closing card.
+
 ## Share roles
 
 | Role        | Element tours                                                                                  |
@@ -109,33 +151,48 @@ The lift and the readout in steps 1 and 2 are the tour's: they win over a pointe
 | Participant | Never offered: an element tour teaches editing the element, which is not a Participant's to do |
 | Viewer      | Never offered                                                                                  |
 
-The gate is the toured kind's own edit check on the session's `can` (for a Sankey, `canEditSankey`), never
-`isReadOnly` alone.
+The gate is the toured kind's own edit check on the session's `can` (for a Sankey, `canEditSankey`; for a concept
+graphic, an Editor on an unlocked element, since its rows are structure), never `isReadOnly` alone.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own literal tokens, `<Kind>Tour` (the Sankey's: `SankeyTour`):
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`), named in its registry entry:
 
-- **Offer**: `UI` · `Opened` · `SankeyTourOffer` the first time the offer shows in a page load;
-  `UI` · `Closed` · `SankeyTourOffer` on Cancel.
-- **Start**: `UI` · `Started` · `SankeyTour` on Play.
-- **Stage views**: `UI` · `View` · `SankeyTourStep<Id>` once per step entry (`SankeyTourStepBands`,
-  `SankeyTourStepLeftover`, `SankeyTourStepStyle`, `SankeyTourStepFlows`, the dialog's
-  `SankeyTourStepFlowsNodes`, `...FlowsRows`, `...FlowsAdd`, `...FlowsBalance`, `...FlowsText`, `...FlowsImport`,
-  `...FlowsPreview`, and `SankeyTourStepOutro`).
-- **End**: `UI` · `Ended` · `SankeyTourCompleted` | `SankeyTourSkipped`.
-- **Settings row**: `UI` · `Toggled` · `SankeyTourSeenOn` | `SankeyTourSeenOff`.
+- **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
+  `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
+- **Start**: `UI` · `Started` · `<Kind>Tour` on Play.
+- **Stage views**: `UI` · `View` · `<Kind>TourStep<Id>` once per step entry: the Sankey's `SankeyTourStepBands`,
+  `...Leftover`, `...Style`, `...Flows`, the dialog's `...FlowsNodes`, `...FlowsRows`, `...FlowsAdd`,
+  `...FlowsBalance`, `...FlowsText`, `...FlowsImport`, `...FlowsPreview` and `...Outro`; the Layer Stack's
+  `LayerStackTourStepLayers`, `...Edit`, `...Notes`, `...Add`, `...Rows`, `...Colours`, `...Animate` and `...Outro`;
+  the Pyramid's `PyramidTourStepTiers`, `...Edit`, `...Add`, `...Shape`, `...Colours`, `...Animate` and `...Outro`.
+- **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
+- **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
+  `ElementToursSeenOn` | `ElementToursSeenOff`.
+
+The dashboard charts them as one **Element Tours** stack on the Visitors tab (offered, declined, started and started
+per element, steps, completed, skipped), as Show Me's is one stack.
 
 ## Adding an element tour
 
-A new toured kind adds: its kind to `ELEMENT_TOUR_KINDS` (`apps/live/lib/element-tours.ts`) with its edit gate, its
-steps file, its Settings row in Element Tours, its tokens on the telemetry dashboard, and a section here.
+A new toured kind adds, in one change: its kind and name to `ELEMENT_TOUR_KINDS` / `ELEMENT_TOUR_NAMES` with its
+edit gate (`apps/live/lib/element-tours.ts`); its entry in `ELEMENT_TOUR_DEFS` (token, eyebrow, help article, steps,
+what Done puts away; `apps/live/components/tour/element-tour-defs.ts`); its steps file; its switch under Element
+Tours in Settings; its token on the dashboard (`apps/telemetry/app/element-tour-kinds.ts`, its steps in
+`computed-emitters.ts`, its sentences in `event-explanations.ts`); its kind in the e2e fixture's answered list; its
+help article's tour section; and a section here.
 
 ## Code
 
-- `apps/live/lib/element-tours.ts`: the toured kinds, their edit gates, and the answered list.
+- `apps/live/lib/element-tours.ts`: the toured kinds, their names, their edit gates, and the answered list.
 - `apps/live/lib/element-tour-offer.ts`: the offer the host publishes and the selection toolbar reads.
+- `apps/live/lib/element-keyed-store.ts`: the per-element module store behind the offer and what a step shows.
 - `apps/live/components/tour/ElementTourHost.tsx`: decides the offer, runs the tour, ends it.
+- `apps/live/components/tour/element-tour-defs.ts`: one definition per toured kind.
+- `apps/live/components/tour/element-tour-api.ts`: what a step may do on its element.
 - `apps/live/components/tour/ElementTourOffer.tsx`: the offer toolbar.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
-- `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on the canvas.
+- `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
+  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`: each kind's own.
+- `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
+- `apps/live/lib/concept-tour-preview.ts`: the animation a step previews on a concept graphic.

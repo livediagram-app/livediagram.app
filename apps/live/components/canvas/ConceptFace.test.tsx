@@ -3,7 +3,7 @@
 // The concept graphics' face (docs/specs/009-elements/concept-graphics.md): every row in place, edited in place once
 // selected, and the animation class and per-row order the CSS reads.
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   applyShapeVariant,
@@ -13,6 +13,7 @@ import {
   type WebRows,
 } from '@livediagram/document';
 import { ConceptFace } from './ConceptFace';
+import { setConceptTourPreview } from '@/lib/concept-tour-preview';
 
 afterEach(cleanup);
 
@@ -120,5 +121,34 @@ describe('ConceptFace', () => {
     expect(onSetRows).toHaveBeenCalledWith({
       conceptRows: expect.arrayContaining([{ label: 'Commit', note: 'merge' }]),
     });
+  });
+});
+
+// Element tours (docs/specs/007-editor/element-tours.md): the rows a step points at, and an animation previewed on the
+// graphic without being stored.
+describe('ConceptFace under an element tour', () => {
+  afterEach(() => act(() => setConceptTourPreview(null)));
+
+  it('marks each row and note for a step to point at', () => {
+    const { container } = show(make('layer-stack'));
+    expect(container.querySelectorAll('[data-concept-row]')).toHaveLength(4);
+    expect(container.querySelectorAll('[data-concept-note]')).toHaveLength(4);
+    expect(container.querySelector('[data-concept-row="0"]')?.textContent).toContain(
+      'Presentation',
+    );
+  });
+
+  it('plays a previewed animation once on its own graphic, and drops it after', () => {
+    const el = { ...make('layer-stack'), id: 'stack' } as ShapeElement & { shape: ConceptShape };
+    const { container } = show(el);
+    const root = () => container.firstElementChild as HTMLElement;
+    expect(root().className).not.toContain('lvd-concept-build');
+    act(() => setConceptTourPreview({ elementId: 'other', anim: 'build', run: 1 }));
+    expect(root().className).not.toContain('lvd-concept-build');
+    act(() => setConceptTourPreview({ elementId: 'stack', anim: 'build', run: 2 }));
+    expect(root().className).toContain('lvd-concept-build');
+    expect(root().className).not.toContain('lvd-concept-build-loop');
+    act(() => setConceptTourPreview(null));
+    expect(root().className).not.toContain('lvd-concept-build');
   });
 });

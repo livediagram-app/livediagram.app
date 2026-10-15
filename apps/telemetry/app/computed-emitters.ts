@@ -230,6 +230,28 @@ export const SANKEY_TOUR_STEP_SOURCE: string[] = [
   'outro',
 ].map((id) => `SankeyTourStep${pascal(id)}`);
 
+// A concept graphic's tour (docs/specs/007-editor/element-tours.md): its steps file's builders, then its closing card.
+const conceptTourSteps = (token: string, file: string): string[] =>
+  [
+    ...[
+      ...read(`live/components/tour/${file}`).matchAll(
+        /(?:onGraphic|addRowStep|inTheMenu)\(\s*'([a-z-]+)'/g,
+      ),
+    ].map((m) => m[1]!),
+    'outro',
+  ].map((id) => `${token}Step${pascal(id)}`);
+
+// Every element tour (ElementTourHost runs them all): its token, from the registry, and its steps.
+export const ELEMENT_TOUR_TOKENS: string[] = [
+  ...read('live/components/tour/element-tour-defs.ts').matchAll(/token: '(\w+)'/g),
+].map((m) => m[1]!);
+
+export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
+  ...SANKEY_TOUR_STEP_SOURCE,
+  ...conceptTourSteps('LayerStackTour', 'layer-stack-tour-steps.ts'),
+  ...conceptTourSteps('PyramidTour', 'pyramid-tour-steps.ts'),
+];
+
 export const DRAW_TOUR_STEP_SOURCE: string[] = [
   ...read('live/components/tour/draw-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
@@ -623,7 +645,17 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
   'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: SANKEY_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Ended': {
+    values: ELEMENT_TOUR_TOKENS.flatMap((t) => [`${t}Completed`, `${t}Skipped`]),
+  },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Opened': {
+    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
+  },
+  'apps/live/components/tour/ElementTourHost.tsx UI·Closed': {
+    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
+  },
   'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
   'apps/live/components/tour/IllustrateTourHost.tsx UI·View': {
     values: ILLUSTRATE_TOUR_STEP_SOURCE,

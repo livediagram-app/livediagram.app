@@ -159,6 +159,8 @@ describe('settings catalogue', () => {
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Element Tours', undefined],
       ['elementTour-sankey', 'toggle', 'Sankey Diagram Tour', 'sankeyDiagram'],
+      ['elementTour-layer-stack', 'toggle', 'Layer Stack Tour', 'conceptGraphics'],
+      ['elementTour-pyramid', 'toggle', 'Pyramid Tour', 'conceptGraphics'],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
@@ -179,6 +181,8 @@ describe('settings catalogue', () => {
         ['IllustrateTourSeenOff', 'IllustrateTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
+        ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
+        ['PyramidTourSeenOff', 'PyramidTourSeenOn'],
       ],
     );
   });
@@ -229,6 +233,8 @@ describe('settings catalogue', () => {
       elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
       // One element's tour writes the answered list alone (lib/element-tours.ts).
       'elementTour-sankey': ['elementTourKinds'],
+      'elementTour-layer-stack': ['elementTourKinds'],
+      'elementTour-pyramid': ['elementTourKinds'],
     };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.

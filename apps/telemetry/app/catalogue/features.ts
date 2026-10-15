@@ -6,6 +6,7 @@ import { SELECTION_MODES } from '../palette-types';
 import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '../look-feel-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
+import { elementTourTokens } from '../element-tour-kinds';
 import { LOGO_TOOL_TYPES } from '../logo-types';
 
 export const LAYERS_RENAMED = chart(
@@ -1000,11 +1001,12 @@ export const ILLUSTRATE_TOUR_OFFERED = opened(
   (t) => t === 'IllustrateTourOffer',
 );
 
-// The Sankey tour's offer (docs/specs/007-editor/element-tours.md); charted in its funnel on the Visitors tab.
-export const SANKEY_TOUR_OFFERED = opened(
-  'Sankey Tour Offered',
-  'The Sankey tour offered beside a selected Sankey diagram, once per visit.',
-  (t) => t === 'SankeyTourOffer',
+// The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on
+// the Visitors tab, which names the kinds.
+export const ELEMENT_TOURS_OFFERED = opened(
+  'Element Tours Offered',
+  'An element tour offered beside a selected element, once per kind per visit.',
+  (t) => elementTourTokens('Offer').includes(t ?? ''),
 );
 
 // The power user mode offer (docs/specs/007-editor/power-user-mode.md); charted in its funnel on

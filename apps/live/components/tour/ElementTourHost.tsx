@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ShapeElement } from '@livediagram/document';
+import type { Element } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
@@ -16,6 +16,7 @@ import {
   type ElementTourKind,
 } from '@/lib/element-tours';
 import { helpArticleHref } from '@/lib/help-articles';
+import { setConceptTourPreview } from '@/lib/concept-tour-preview';
 import { sankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
 import { setSankeyTourFocus } from '@/lib/sankey-tour-focus';
 import type { Selection } from '@/lib/selection-store';
@@ -23,13 +24,8 @@ import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
-import {
-  sankeyElementTourSteps,
-  sankeyFlowsContextOf,
-  sankeyTourParts,
-  sankeyTourStepTelemetryType,
-  type SankeyElementTourApi,
-} from './sankey-element-tour-steps';
+import type { ElementTourApi } from './element-tour-api';
+import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
 import { TourStage } from './TourStage';
 import type { TourStepOf } from './tour-step';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
@@ -37,16 +33,9 @@ import { useTourEngine, type TourOutcome } from './useTourEngine';
 // The one selected element, or null for none or a multi-selection.
 const singleOf = (s: Selection) => (s.multiSelectedIds.size > 0 ? null : s.selectedId);
 
-const COPY = {
-  outroEyebrow: 'Sankey tour',
-  helpHref: helpArticleHref('sankeyDiagram'),
-  helpLabel: 'Sankey Diagram Help',
-  finish: 'Done',
-};
-
 // Element tours (docs/specs/007-editor/element-tours.md): decides whether the selected element is offered its tour,
 // publishes the offer for the selection toolbar to draw, and runs the tour when Play is pressed. Mounted once in
-// EditorView beside the other tour hosts. Today the one toured kind is the Sankey diagram.
+// EditorView beside the other tour hosts. Each toured kind's steps, copy and token are its ELEMENT_TOUR_DEFS entry.
 export function ElementTourHost() {
   const ctx = useEditorContext();
   const selectedId = useSelectionOf(singleOf);
@@ -58,11 +47,11 @@ export function ElementTourHost() {
   const kind = elementTourKindOf(element);
 
   // The tour's steps, fixed when Play is pressed; the element it runs on.
-  const [steps, setSteps] = useState<TourStepOf<SankeyElementTourApi>[]>([]);
+  const [steps, setSteps] = useState<TourStepOf<ElementTourApi>[]>([]);
   const [touring, setTouring] = useState<{ id: string; kind: ElementTourKind } | null>(null);
   const touringRef = useLatest(touring);
 
-  const api: SankeyElementTourApi = {
+  const api: ElementTourApi = {
     showTable: sankeyFlowsDialog.showTable,
     showText: sankeyFlowsDialog.showText,
     focus: (part, index) => {
@@ -76,13 +65,21 @@ export function ElementTourHost() {
     },
     // As the dialog's own Done: what is being typed is stored first.
     closeFlows: () => sankeyFlowsDialog.close(),
+    previewConcept: (anim) => {
+      const id = touringRef.current?.id;
+      if (id) setConceptTourPreview({ elementId: id, anim, run: Date.now() });
+    },
+    clearPreview: () => setConceptTourPreview(null),
   };
   const apiRef = useLatest(api);
 
-  const engine = useTourEngine<SankeyElementTourApi>({
+  const def = touring ? ELEMENT_TOUR_DEFS[touring.kind] : null;
+  const engine = useTourEngine<ElementTourApi>({
     steps,
     apiRef,
-    onStepView: (step) => track('UI', 'View', sankeyTourStepTelemetryType(step.id)),
+    onStepView: (step) => {
+      if (def) track('UI', 'View', elementTourStepTelemetryType(def, step.id));
+    },
     onFinish: (outcome) => endTour(outcome),
   });
   const { active } = engine;
@@ -90,11 +87,14 @@ export function ElementTourHost() {
 
   const endTour = (outcome: TourOutcome) => {
     setSankeyTourFocus(null);
-    // Done on the closing card puts the Flows dialog away with the tour; a Skip leaves the person where they are.
-    if (outcome === 'completed') sankeyFlowsDialog.close();
+    setConceptTourPreview(null);
+    // Done on the closing card puts away what the tour opened (the Sankey's Flows dialog); a Skip leaves the person
+    // where they are.
+    if (def && outcome === 'completed') def.onDone?.(apiRef.current);
     setTouring(null);
-    debugLog('[element-tour] end', { outcome });
-    track('UI', 'Ended', outcome === 'completed' ? 'SankeyTourCompleted' : 'SankeyTourSkipped');
+    debugLog('[element-tour] end', { outcome, kind: touring?.kind });
+    if (def)
+      track('UI', 'Ended', `${def.token}${outcome === 'completed' ? 'Completed' : 'Skipped'}`);
   };
   const endTourRef = useLatest(endTour);
 
@@ -114,17 +114,15 @@ export function ElementTourHost() {
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
   };
 
-  const play = (el: ShapeElement, k: ElementTourKind) => {
+  const play = (el: Element, k: ElementTourKind) => {
+    const d = ELEMENT_TOUR_DEFS[k];
     answer(k);
-    track('UI', 'Started', 'SankeyTour');
+    track('UI', 'Started', d.token);
     debugLog('[element-tour] play', { kind: k });
     setSteps(
-      sankeyElementTourSteps({
-        elementId: el.id,
-        ...sankeyTourParts(el),
+      d.steps(el, {
         hasMore: document.getElementById('selection-more-actions') !== null,
         touch,
-        flows: sankeyFlowsContextOf(el),
       }),
     );
     setTouring({ id: el.id, kind: k });
@@ -133,7 +131,7 @@ export function ElementTourHost() {
   const dismiss = (k: ElementTourKind) => {
     answer(k);
     debugLog('[element-tour] cancel', { kind: k });
-    track('UI', 'Closed', 'SankeyTourOffer');
+    track('UI', 'Closed', `${ELEMENT_TOUR_DEFS[k].token}Offer`);
   };
   const playRef = useLatest(play);
   const dismissRef = useLatest(dismiss);
@@ -166,7 +164,7 @@ export function ElementTourHost() {
             kind,
             play: () => {
               const el = activeTabRef.current.elements.find((e) => e.id === offerId);
-              if (el?.type === 'shape') playRef.current(el, kind);
+              if (el) playRef.current(el, kind);
             },
             dismiss: () => dismissRef.current(kind),
           }
@@ -183,7 +181,7 @@ export function ElementTourHost() {
   useEffect(() => {
     if (!offer || offeredKinds.current.has(offer.kind)) return;
     offeredKinds.current.add(offer.kind);
-    track('UI', 'Opened', 'SankeyTourOffer');
+    track('UI', 'Opened', `${ELEMENT_TOUR_DEFS[offer.kind].token}Offer`);
   }, [offer]);
 
   // Ends as skipped when the tour can no longer run on its element: deleted, no longer editable, or another tab.
@@ -210,9 +208,25 @@ export function ElementTourHost() {
     () => () => {
       setActiveTour('element', false);
       setSankeyTourFocus(null);
+      setConceptTourPreview(null);
     },
     [],
   );
 
-  return <TourStage engine={engine} ariaPrefix="Sankey tour" copy={COPY} />;
+  return (
+    <TourStage
+      engine={engine}
+      ariaPrefix={def?.eyebrow ?? 'Element tour'}
+      copy={
+        def
+          ? {
+              outroEyebrow: def.eyebrow,
+              helpHref: helpArticleHref(def.helpArticle),
+              helpLabel: def.helpLabel,
+              finish: 'Done',
+            }
+          : undefined
+      }
+    />
+  );
 }

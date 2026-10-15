@@ -151,6 +151,14 @@ carries explains an idea the way a funnel or a cycle does.
 The **Pyramid** and **Funnel** templates are one Pyramid element each (Pyramid and Funnel variants) with their copy as
 rows, and the **Flywheel** template's ring is one Cycle. Templates that sit beside them keep their own elements.
 
+## Element tours
+
+The first time an Editor selects a concept graphic of a toured kind, a small **Tour** toolbar beside its selection
+toolbar offers its [element tour](../007-editor/element-tours.md): on the graphic itself, its rows, typing in place,
+the "+" ring's add, the Rows section, the colour ramp and its animation previewed on it. Toured: the
+[layer stack](../007-editor/element-tours.md#the-layer-stack-tour) and the
+[pyramid](../007-editor/element-tours.md#the-pyramid-tour).
+
 ## Share roles
 
 | Role        | May                                                                                                    |
