@@ -24,21 +24,21 @@ effect events, `useLatest`, the clocks) are enforced by the hooks lint and need 
 Every render-time read of a browser global is converted; reads in effects, handlers and module code that render does
 not consume stay as they are.
 
-| Site                                                                    | Reads                         | Becomes                                                              |
-| ----------------------------------------------------------------------- | ----------------------------- | -------------------------------------------------------------------- |
-| `apps/live/app/explorer/useExplorerState.ts` (`useHydrated`)            | device preferences            | `use(browser())`; `hooks/ui/useHydrated.ts` is removed               |
-| `apps/live/app/oauth/consent/page.tsx`, `oauth/device/page.tsx`         | `location` (the return path)  | `use(browser())` in the signed-out branch, under the page's Suspense |
-| `apps/live/app/new/page.tsx` (`initialPlacement` initialiser)           | `location.search`             | `use(browser())` before the state                                    |
-| `apps/live/components/panels/TeamSharedDocuments.tsx` (`spot`)          | `location.search`             | `use(browser())` before the state                                    |
-| `ShareDialog`, `TeamInviteLinkDialog`, `CommunityPublishedConfirmation` | `location.origin`             | `use(browser())`, then `window.location.origin`                      |
-| `CanvasThemeDialog` (`useBrushAnchor`)                                  | `innerWidth`, the brush's box | `use(browser())` before the state (read once as it opens)            |
-| `CardFinderPanel` (`finePointer`)                                       | `(pointer: fine)`             | `useMediaQuery('(pointer: fine)')`                                   |
-| `arrow-handles.tsx` (`COARSE_POINTER`, module constant)                 | `(pointer: coarse)`           | `useMediaQuery('(pointer: coarse)')` in the component                |
-| `EditorContextMenu`, `EditorCanvasHost` (`openUp`)                      | `innerHeight`                 | `useViewportHeight()`                                                |
-| `StartAgainTray` (`pillPlace` default argument)                         | `innerHeight`                 | a required argument; the caller passes `useViewportHeight()`         |
-| `packages/ui/src/SiteFooter.tsx`                                        | the clock (`new Date()`)      | `BUILD_YEAR`                                                         |
+| Site                                                                          | Reads                         | Becomes                                                              |
+| ----------------------------------------------------------------------------- | ----------------------------- | -------------------------------------------------------------------- |
+| `apps/live/app/explorer/useExplorerState.ts` (`useHydrated`)                  | device preferences            | `use(browser())`; `hooks/ui/useHydrated.ts` is removed               |
+| `apps/live/app/oauth/consent/page.tsx`, `apps/live/app/oauth/device/page.tsx` | `location` (the return path)  | `use(browser())` in the signed-out branch, under the page's Suspense |
+| `apps/live/app/new/page.tsx` (`initialPlacement` initialiser)                 | `location.search`             | `use(browser())` before the state                                    |
+| `apps/live/components/panels/TeamSharedDocuments.tsx` (`spot`)                | `location.search`             | `use(browser())` before the state                                    |
+| `ShareDialog`, `TeamInviteLinkDialog`, `CommunityPublishedConfirmation`       | `location.origin`             | `use(browser())`, then `window.location.origin`                      |
+| `CanvasThemeDialog` (`useBrushAnchor`)                                        | `innerWidth`, the brush's box | `use(browser())` before the state (read once as it opens)            |
+| `CardFinderPanel` (`finePointer`)                                             | `(pointer: fine)`             | `useMediaQuery('(pointer: fine)')`                                   |
+| `arrow-handles.tsx` (`COARSE_POINTER`, module constant)                       | `(pointer: coarse)`           | `useMediaQuery('(pointer: coarse)')` in the component                |
+| `EditorContextMenu`, `EditorCanvasHost` (`openUp`)                            | `innerHeight`                 | `useViewportHeight()`                                                |
+| `StartAgainTray` (`pillPlace` default argument)                               | `innerHeight`                 | a required argument; the caller passes `useViewportHeight()`         |
+| `packages/ui/src/SiteFooter.tsx`                                              | the clock (`new Date()`)      | `BUILD_YEAR`                                                         |
 
-Stay as they are (outside render): `telemetry/app/page.tsx` `prefetchViews` (from an effect), `MovablePanel`
+Stay as they are (outside render): `apps/telemetry/app/page.tsx` `prefetchViews` (from an effect), `MovablePanel`
 `clampFree`, `DriveMirrorProvider` `connectOutcomeOnce`, `PagedCarousel` `prefersReducedMotion` (a handler),
 `ReactionBurst` and `arrow-flow` (effects). A site found in Phase 7 that this table misses is added here first.
 

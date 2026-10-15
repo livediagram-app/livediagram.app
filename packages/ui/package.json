@@ -20,9 +20,9 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "next": "^16.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "next": "^16.4.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
@@ -33,7 +33,7 @@
     "@typescript/native": "npm:typescript@^7.0.2",
     "eslint": "^10.12.0",
     "jsdom": "^30.1.2",
-    "next": "^16.4.0",
+    "next": "^16.4.1",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^5.0.3"
   },
