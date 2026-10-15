@@ -6,6 +6,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createShape, type ShapeElement } from '@livediagram/document';
 import { SequenceFace } from './SequenceFace';
+import { CanvasFinishProvider } from './CanvasFinishContext';
 
 afterEach(cleanup);
 
@@ -50,5 +51,27 @@ describe('SequenceFace', () => {
   it('is still without Play', () => {
     render(<SequenceFace element={seq()} paper="#fff" />);
     expect(screen.getByRole('img').className).not.toContain('lvd-seq');
+  });
+
+  it("wears the element's look: its accent, ink and face, and the tab's finish", () => {
+    const look = { paper: '#dcfce7', stroke: '#15803d', ink: '#14532d', fontFamily: 'Lora, serif' };
+    const { container } = render(
+      <CanvasFinishProvider finish="sketch">
+        <SequenceFace element={seq()} {...look} />
+      </CanvasFinishProvider>,
+    );
+    const markup = container.innerHTML;
+    expect(markup).toContain('stroke="#15803d"');
+    expect(markup).toContain('fill="#14532d"');
+    // No sky-blue default and no other face left on the picture.
+    expect(markup).not.toMatch(/#0ea5e9|#075985|#f0f9ff/i);
+    const faces = [...container.querySelectorAll('[font-family]')].map((n) =>
+      n.getAttribute('font-family'),
+    );
+    expect(faces.length).toBeGreaterThan(0);
+    expect(new Set(faces)).toEqual(new Set(['Lora, serif']));
+    // Sketch draws the participants' boxes by hand: stroked paths, not crisp rects.
+    const flexible = render(<SequenceFace element={seq()} {...look} />).container.innerHTML;
+    expect(markup).not.toBe(flexible);
   });
 });

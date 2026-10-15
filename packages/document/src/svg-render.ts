@@ -338,6 +338,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       resolveIconArt: opts.resolveIconArt,
       resolveEmojiArt: opts.resolveEmojiArt,
       tagColours: opts.tagColours,
+      finish,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the

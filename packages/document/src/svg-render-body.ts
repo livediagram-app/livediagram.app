@@ -40,6 +40,7 @@ import { svgChip } from './svg-render-chip';
 import { svgBoundary } from './svg-render-boundary';
 import { svgConcept } from './svg-render-concept';
 import type { TagColour } from './tag-colours';
+import type { Finish } from './finish';
 import { svgPointerNote } from './svg-render-pointer-note';
 import { svgPersonNode } from './svg-render-person-node';
 import { isPersonNode } from './person-node';
@@ -101,6 +102,8 @@ export function svgElementBody(
     resolveEmojiArt?: ResolveEmojiArt;
     // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
     tagColours?: readonly TagColour[];
+    /** The finish the element is drawn in (docs/specs/008-canvas/finish.md), for the faces that draw their own lines. */
+    finish?: Finish;
   },
 ): string {
   if (el.type !== 'shape') return '';
@@ -130,10 +133,18 @@ export function svgElementBody(
   // A person node's disc, name and role (docs/specs/009-elements/org-chart.md); its box is the mind node's.
   if (isPersonNode(el)) return svgPersonNode(el, { stroke, labelColor, label, fontFamily });
   // A sequence diagram's picture, fitted (docs/specs/009-elements/sequence-diagram.md).
-  if (el.shape === 'sequence') return svgSequencePicture(el, fill);
+  // It is drawn in the element's own colours, face and finish (its participants in the accent, its words in the ink).
+  if (el.shape === 'sequence')
+    return svgSequencePicture(el, {
+      paper: fill,
+      stroke,
+      ink: el.textColor ?? labelColor,
+      fontFamily,
+      finish: o.finish,
+    });
   // A diagram key's title and rows (docs/specs/009-elements/diagram-key.md); its box is the usual.
   if (el.shape === 'diagram-key')
-    return svgDiagramKey(el, { stroke, labelColor, label, fontFamily });
+    return svgDiagramKey(el, { stroke, fill, labelColor, label, fontFamily });
   // A boundary's tint and title (docs/specs/009-elements/boundary.md).
   if (el.shape === 'boundary')
     return svgBoundary(el, {

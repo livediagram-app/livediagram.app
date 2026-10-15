@@ -150,7 +150,7 @@ export function SequenceDialog({
     } as ShapeElement;
     // The drawing's own width and height: the last two numbers of its viewBox (a linear match, as svgSequencePicture
     // reads it).
-    const drawing = sequenceDrawing(el, PREVIEW_PAPER);
+    const drawing = sequenceDrawing(el, { paper: PREVIEW_PAPER });
     const box = /viewBox="([^"]+)"/.exec(drawing.slice(0, drawing.indexOf('>')))?.[1]?.split(' ');
     const [w, h] = box && box.length === 4 ? box.slice(2) : [];
     return { el, ratio: w && h ? `${w} / ${h}` : '16 / 10' };

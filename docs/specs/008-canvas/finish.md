@@ -75,6 +75,8 @@ element leaves unset, plus how a line is drawn (Sketch).
 - **Icons and stickers** (line-art icons, technology icons and stickers) keep their own art, drawn through the same
   hand-drawn wobble as the palette's Sketch tiles, so their lines tremble like pencil. The canvas and browser exports
   both draw it (an SVG displacement filter, defined once per export and only when something needs it).
+- **Sequence diagrams** draw their participants' boxes and their message lines by hand too, since they are the
+  same boxes and arrows the canvas draws ([The sequence diagram](../009-elements/sequence-diagram.md) "Look").
 - **Not affected:** freehand strokes (already hand-drawn), images, and the faces of self-painting elements
   (charts, checklists, progress, code) other than their lettering.
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, never the wobble, so a
