@@ -234,6 +234,7 @@ export function EditorCanvasHost() {
     identityOnlyScreenOpen,
     imageContext,
     isOwner,
+    canShareDocument,
     setSearchOpen,
     setShareDialogOpen,
     setSettingsOpen,
@@ -1033,9 +1034,10 @@ export function EditorCanvasHost() {
               onOpenDocument={openDocument}
               onNewDocument={newDocument}
               explorerMenuActions={{
-                // The header's Share gate: owners only (docs/specs/013-workspace/folders.md, docs/specs/015-api/api.md).
+                // The header's Share gate: the owner, or a joined member of the document's team
+                // (docs/specs/013-workspace/folders.md, docs/specs/013-workspace/team-shared-documents.md).
                 onShare:
-                  isOwner && hydrated
+                  canShareDocument && hydrated
                     ? () => {
                         setShareDialogOpen(true);
                         track('UI', 'Opened', 'Share');

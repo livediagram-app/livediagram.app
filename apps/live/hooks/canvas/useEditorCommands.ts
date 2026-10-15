@@ -84,7 +84,7 @@ export function useEditorCommands(open: boolean): {
   const facilitateMode = ctx.editorMode.mode === 'facilitate';
   const {
     isReadOnly,
-    isOwner,
+    canShareDocument,
     documentId,
     activeTab,
     deleteSelected,
@@ -182,7 +182,7 @@ export function useEditorCommands(open: boolean): {
       hasAnimation,
       tabHasSteps,
       marker,
-      isOwner,
+      canShare: canShareDocument,
       isOffline,
       workbench: workbenchMode,
       canvasTool,
@@ -213,7 +213,7 @@ export function useEditorCommands(open: boolean): {
       hasAnimation,
       tabHasSteps,
       marker,
-      isOwner,
+      canShareDocument,
       isOffline,
       workbenchMode,
       canvasTool,

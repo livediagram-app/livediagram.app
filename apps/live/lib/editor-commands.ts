@@ -59,9 +59,9 @@ export type CommandContext = {
   // The single shape's current marker, or null — gates "Clear marker" and
   // hides the redundant "add <current marker>" entry.
   marker: ShapeMarker | null;
-  // Owner-only: the Share command is hidden for non-owners (a visitor with
-  // an edit link gets "Make a copy" instead, which isn't a palette command).
-  isOwner: boolean;
+  // The owner, or a joined member of a team document: the Share command is hidden for
+  // visitors (one with an edit link gets "Make a copy" instead, which isn't a palette command).
+  canShare: boolean;
   // Offline document (docs/specs/006-document/offline-mode.md): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
@@ -364,7 +364,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: 'canvas background pattern grid options style backdrop',
     run: h.openCanvasOptions,
   });
-  if (ctx.isOwner && !ctx.isOffline && !ctx.workbench) {
+  if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
       name: 'Share Document',
