@@ -1,5 +1,5 @@
 // `applyReplace` (docs/specs/024-agents/blueprints/edit-operations.md "Replace"): the other changeset
-// body, a whole tab from a graph, Mermaid, a template or raw elements, built exactly as the MCP's
+// body, a whole tab from a graph, Mermaid, a template, a dashboard, a form or raw elements, built exactly as the MCP's
 // `update_document` replace and `add_tab` build it, and answered with the same outcome as operations.
 // An existing tab keeps every tab field and swaps its elements (no theme repaint, EO41); a new tab is
 // built whole.
@@ -29,6 +29,7 @@ import {
   resolveTemplate,
   validTemplateKinds,
 } from '@livediagram/templates';
+import { readForm, type FormDefinition } from '@livediagram/forms';
 import { dashboardSpecIssue } from './dashboard-body';
 import { tabRejection } from './finalise';
 import { graphBodyIssue } from './graph-body';
@@ -37,14 +38,41 @@ import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
 import type { DashboardSpec } from '@livediagram/templates';
 
-type Source = 'graph' | 'mermaid' | 'template' | 'dashboard' | 'elements';
-const SOURCES: readonly Source[] = ['graph', 'mermaid', 'template', 'dashboard', 'elements'];
+type Source = 'graph' | 'mermaid' | 'template' | 'dashboard' | 'form' | 'elements';
+const SOURCES: readonly Source[] = [
+  'graph',
+  'mermaid',
+  'template',
+  'dashboard',
+  'form',
+  'elements',
+];
 
 // What one source builds: the new elements, and for a tab that does not exist yet, the whole tab.
 // `newOnly`: the source makes a tab of its own kind (a Dashboard): a new tab, or that kind's own tab rebuilt.
+// `formOnly`: a new Form tab (blueprint forms.md §15); an existing one's form changes through its form route.
 type Built =
-  | { elements: Element[]; tab: (tabId: string, name: string) => Tab; newOnly?: true }
+  | {
+      elements: Element[];
+      tab: (tabId: string, name: string) => Tab;
+      newOnly?: true;
+      formOnly?: true;
+    }
   | EditRejection;
+
+// A new Form tab holding `form`, named by its heading (the tab and its form share one name), always in Plan.
+function formTab(tabId: string, form: FormDefinition, themeId: string | undefined): Tab {
+  return {
+    id: tabId,
+    name: form.heading,
+    elements: [],
+    defaultTextSize: 'sm',
+    kind: 'form',
+    opensIn: 'plan',
+    form,
+    ...(themeId ? { theme: themeId } : {}),
+  };
+}
 
 const invalidBody = (detail: string, hint?: string): EditRejection => ({
   code: 'invalid_value',
@@ -127,6 +155,11 @@ function build(
         buildDashboardTab(tabId, name, dashboard as DashboardSpec, themeId).tab;
       return { elements: [], tab: tabOf, newOnly: true };
     }
+    case 'form': {
+      const form = readForm((body as { form: unknown }).form);
+      if (!form) return invalidBody('form: not a form (a heading and sections of questions)');
+      return { elements: [], tab: (tabId) => formTab(tabId, form, themeId), formOnly: true };
+    }
     case 'elements': {
       const { elements, layout } = body as { elements: unknown; layout?: 'auto' | 'preserve' };
       return fromElements(elements, layout, themeId, kept);
@@ -186,6 +219,14 @@ export function applyReplace(
       invalidBody(
         'dashboard: only a Dashboard tab is rebuilt as one',
         'add a new Dashboard with add_tab, or in create_document',
+      ),
+    );
+  // A changeset writes and relays elements, so a form lands as a new tab; a Form tab's form changes through its route.
+  if (tab && built.formOnly)
+    return refuse(
+      invalidBody(
+        'form: a changeset makes a new Form tab; an existing form changes through its form route',
+        'change it with change_form',
       ),
     );
   const next = nextTab(tab, built, options);

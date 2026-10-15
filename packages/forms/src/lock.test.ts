@@ -23,9 +23,17 @@ describe('changesBeyondSettings', () => {
   it('catches a heading, a question or a destination', () => {
     expect(changesBeyondSettings(form, { ...form, heading: 'Party' })).toBe(true);
     const q = { ...form.sections[0]!.questions[0]!, required: true as const };
-    expect(changesBeyondSettings(form, { ...form, sections: [{ ...form.sections[0]!, questions: [q] }] })).toBe(true);
     expect(
-      changesBeyondSettings(form, { ...form, destination: { tabId: 't', typeId: 'x', status: 'new' } }),
+      changesBeyondSettings(form, {
+        ...form,
+        sections: [{ ...form.sections[0]!, questions: [q] }],
+      }),
+    ).toBe(true);
+    expect(
+      changesBeyondSettings(form, {
+        ...form,
+        destination: { tabId: 't', typeId: 'x', status: 'new' },
+      }),
     ).toBe(true);
   });
 });

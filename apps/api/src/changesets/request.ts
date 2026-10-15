@@ -40,7 +40,7 @@ export type Refusal = { status: number; body: Record<string, unknown> };
 
 export type ParseResult = { ok: true; value: ParsedChangeset } | { ok: false; refusal: Refusal };
 
-const REPLACE_SOURCES = ['graph', 'mermaid', 'template', 'dashboard', 'elements'] as const;
+const REPLACE_SOURCES = ['graph', 'mermaid', 'template', 'dashboard', 'form', 'elements'] as const;
 const FINGERPRINT = new RegExp(`^[0-9a-f]{${ELEMENT_FINGERPRINT_LENGTH}}$`);
 
 const refuse = (status: number, body: Record<string, unknown>): ParseResult => ({
@@ -148,7 +148,9 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
   if (!isRecord(raw)) return bad('"replace" must be an object');
   const sources = REPLACE_SOURCES.filter((s) => raw[s] !== undefined);
   if (sources.length !== 1)
-    return bad('"replace" takes exactly one of graph, mermaid, template, dashboard or elements');
+    return bad(
+      '"replace" takes exactly one of graph, mermaid, template, dashboard, form or elements',
+    );
   if (raw.layout !== undefined && raw.layout !== 'auto' && raw.layout !== 'preserve') {
     return bad('"replace.layout" is "auto" or "preserve"');
   }
@@ -186,6 +188,9 @@ function replaceBodyOf(
     // Checked whole by the engine (dashboard-body.ts), which names each problem.
     case 'dashboard':
       return isRecord(raw.dashboard) ? { dashboard: raw.dashboard as DashboardSpec } : null;
+    // Read whole by the engine (readForm), as the editor reads a stored form.
+    case 'form':
+      return isRecord(raw.form) ? { form: raw.form } : null;
     case 'elements':
       return Array.isArray(raw.elements)
         ? { elements: raw.elements, ...(layout ? { layout } : {}) }

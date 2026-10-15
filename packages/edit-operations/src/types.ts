@@ -146,6 +146,8 @@ export type ReplaceBody =
   | { template: string }
   // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard"); never onto an existing tab.
   | { dashboard: DashboardSpec }
+  // A Form tab's form whole (docs/specs/030-forms/forms.md "Agents"): a new Form tab, or a Form tab's form swapped.
+  | { form: unknown }
   | { elements: unknown[]; layout?: 'auto' | 'preserve' };
 
 export type ApplySuccess = {

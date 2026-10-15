@@ -990,6 +990,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   // ---- Form links (docs/specs/030-forms/forms.md) ----
   {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/form',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "Replace a Form tab's form whole (an agent's form write): `{ form, rev? }`. The tab takes the form's heading as its name, and the change reaches everyone with the document open. 409 form_changed (with `rev`) when the tab moved past the revision given, 409 form_locked while the form takes responses and the change is more than its settings, 400 not_a_form_tab. Edit access.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: { form: { type: 'object' }, rev: { type: 'integer', minimum: 0 } },
+      required: ['form'],
+    },
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
     method: 'GET',
     path: '/documents/{id}/tabs/{tabId}/form-link',
     segment: 'documents',
@@ -997,6 +1013,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary:
       "A Form tab's link: whether it is published and open, how many responses it has, and how many the caller has not seen. Anyone who may read the tab; the code itself only to someone who may edit it.",
     auth: 'guest-or-clerk',
+    tokenUsable: true,
     responseSchema: ref('FormLinkResponse'),
     statuses: [200, 400, 403, 404],
   },
@@ -1008,6 +1025,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary:
       'Publish the Form tab: make its public link. 409 form_already_published, 409 form_destination_missing (its board, column or card type is gone), 409 form_not_ready with its problems (no questions, an unworded question, a choice without options, a broken mapping or section rule), 403 form_suspensions (this document has had too many links suspended).',
     auth: 'guest-or-clerk',
+    tokenUsable: true,
     responseSchema: ref('FormLinkResponse'),
     statuses: [200, 400, 403, 404, 409],
   },
@@ -1018,6 +1036,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Documents',
     summary: 'Open or close the published form, keeping its link. Edit access.',
     auth: 'guest-or-clerk',
+    tokenUsable: true,
     requestSchema: {
       type: 'object',
       properties: { open: { type: 'boolean' } },
@@ -1033,6 +1052,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Documents',
     summary: 'Delete the form link; publishing again makes a new one. Edit access.',
     auth: 'guest-or-clerk',
+    tokenUsable: true,
     responseSchema: ref('FormLinkResponse'),
     statuses: [200, 400, 403, 404],
   },

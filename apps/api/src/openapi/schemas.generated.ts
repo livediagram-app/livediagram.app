@@ -2276,6 +2276,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "finish": {
         "$ref": "#/components/schemas/Finish"
       },
+      "form": {
+        "additionalProperties": {},
+        "type": "object"
+      },
       "graph": {},
       "layout": {
         "enum": [
