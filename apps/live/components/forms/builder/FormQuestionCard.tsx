@@ -36,6 +36,7 @@ import { AnswerGoesTo } from './AnswerGoesTo';
 import { FormSheet } from './FormSheet';
 import { QuestionSettings, hasQuestionSettings } from './QuestionSettings';
 import { useFormBuilder } from './form-builder-context';
+import { leaveThen } from './question-motion';
 import { targetLabel } from './target-label';
 
 const GripIcon = lucideGlyph(lucideGripVertical, 16);
@@ -287,8 +288,11 @@ export function FormQuestionCard({
             aria-label="Delete question"
             onClick={() => {
               const next = neighbourOf(b.form, q.id);
-              change((f) => deleteQuestion(f, q.id));
-              b.select(next);
+              // It fades away first; the questions under it then slide up (question-motion.ts).
+              leaveThen(cardRef.current, () => {
+                change((f) => deleteQuestion(f, q.id));
+                b.select(next);
+              });
             }}
             className={ICON_BUTTON}
           >

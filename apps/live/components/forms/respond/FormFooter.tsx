@@ -4,6 +4,7 @@
 // This Form, which opens a short report in place: a reason, an optional note, Send. One report per browser per form,
 // the browser named by a random id kept in local storage (never the editor's identity).
 import { useId, useState } from 'react';
+import { MadeWithLivediagram } from './MadeWithLivediagram';
 import {
   FORM_REPORT_NOTE_MAX,
   FORM_REPORT_REASONS,
@@ -35,9 +36,7 @@ export function FormFooter({ code }: { code: string }) {
   return (
     <footer className="flex flex-col items-center gap-3 pt-4 text-[13px] text-slate-500 dark:text-slate-400">
       <div className="flex items-center gap-3">
-        <a href="/" className="underline-offset-2 hover:underline">
-          Made with <span className="font-semibold">livediagram</span>
-        </a>
+        <MadeWithLivediagram />
         <span aria-hidden>·</span>
         <button
           type="button"

@@ -2,7 +2,13 @@
 // is committed. The destination is the document's first Board tab whose board takes the starter's card type, else a
 // new Board tab after the Form tab; the card type is the starter's ready-made one or a new one named after the form,
 // with the fields its questions map to. Pure: useFormActions commits it.
-import { SHAPE_DEFAULT_SIZE, createShape, type Element, type Tab } from '@livediagram/document';
+import {
+  SHAPE_DEFAULT_SIZE,
+  createShape,
+  isDefaultTabName,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
 import {
   FORM_VERSION,
   buildStarter,
@@ -178,5 +184,30 @@ export function planFormStart(input: {
     type,
     saveType,
     newBoardTab,
+  };
+}
+
+// A responses board still on its automatic name takes the card type's (docs/specs/030-forms/forms.md "Responses Go To
+// and Settings"): a default tab name, "<Form> Responses", or the previous type's "<Type> Responses" becomes
+// "<Type> Responses", on the tab and on its board's title where that matched. A name someone gave it is kept.
+export function withAutoBoardName(
+  tab: Tab,
+  names: { heading: string; from?: string | undefined; to: string },
+): Tab {
+  const was = tab.name;
+  const auto =
+    isDefaultTabName(was) ||
+    was === `${names.heading} Responses` ||
+    (!!names.from && was === `${names.from} Responses`);
+  const name = `${names.to} Responses`.slice(0, 80);
+  if (!auto || name === was) return tab;
+  return {
+    ...tab,
+    name,
+    elements: tab.elements.map((el) =>
+      el.type === 'shape' && el.shape === 'plan-board' && el.planBoard?.title === was
+        ? ({ ...el, planBoard: { ...el.planBoard, title: name } } as Element)
+        : el,
+    ),
   };
 }

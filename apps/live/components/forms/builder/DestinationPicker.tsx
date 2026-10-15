@@ -77,7 +77,7 @@ export function DestinationPicker({ tabs }: { tabs: readonly Tab[] }) {
             disabled={!b.canEdit || !board}
             onChange={(e) => {
               if (e.target.value === NEW) return b.actions.newCardType();
-              if (dest) set({ ...dest, typeId: e.target.value });
+              b.actions.setDestinationType(e.target.value);
             }}
           >
             <option value="" disabled>

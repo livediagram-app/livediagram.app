@@ -12,6 +12,7 @@ import { formLookProps } from '../form-look';
 import { FORM_ACCENT, FormFill } from './FormFill';
 import type { SubmitOutcome } from './useFormFill';
 import { FormFooter } from './FormFooter';
+import { MadeWithLivediagram } from './MadeWithLivediagram';
 
 type PageState =
   | { kind: 'loading' }
@@ -179,10 +180,8 @@ function Notice({
           {action.label}
         </button>
       ) : null}
-      <p className="mt-8 text-[13px] text-slate-500 dark:text-slate-400">
-        <a href="/" className="underline underline-offset-2">
-          Made with livediagram
-        </a>
+      <p className="mt-8">
+        <MadeWithLivediagram />
       </p>
     </div>
   );

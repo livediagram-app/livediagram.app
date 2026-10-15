@@ -25,6 +25,7 @@ import {
   planFormStart,
   responsesBoardTab,
   uniqueTypeLabel,
+  withAutoBoardName,
   withBoardTaking,
 } from './form-start';
 
@@ -46,6 +47,9 @@ export type FormActions = {
   newResponsesBoard: () => void;
   // Responses Go To's New Card Type: a type named after the form, taken by the destination's board, now the type.
   newCardType: () => void;
+  // Responses Go To's Card Type: the destination's type, its board renamed "<Type> Responses" while on its automatic
+  // name (withAutoBoardName), one step.
+  setDestinationType: (typeId: string) => void;
 };
 
 const blankForm = (name: string): FormDefinition => ({
@@ -282,16 +286,45 @@ export function useFormActions({
     };
     slice.saveType(type);
     const dest = form.destination;
+    const from = slice.types.find((t) => t.id === dest?.typeId)?.label;
     commitTabs((ts) =>
       ts.map((t) => {
         if (t.id === activeId)
           return dest ? { ...t, form: { ...form, destination: { ...dest, typeId: type.id } } } : t;
-        // The board a type list confines takes the new type too.
-        if (dest && t.id === dest.tabId) return withBoardTaking(t, type.id);
+        // The board a type list confines takes the new type too, and follows its name while on an automatic one.
+        if (dest && t.id === dest.tabId)
+          return withAutoBoardName(withBoardTaking(t, type.id), {
+            heading: form.heading,
+            from,
+            to: type.label,
+          });
         return t;
       }),
     );
   }, [activeId, commitTabs, live]);
+
+  const setDestinationType = useCallback<FormActions['setDestinationType']>(
+    (typeId) => {
+      const { tabs: now, itemTypes: slice } = live.current;
+      const formTab = now.find((t) => t.id === activeId);
+      if (!formTab) return;
+      const form = readForm(formTab.form) ?? blankForm(formTab.name);
+      const dest = form.destination;
+      const to = slice.types.find((t) => t.id === typeId);
+      if (!dest || !to || dest.typeId === typeId) return;
+      const from = slice.types.find((t) => t.id === dest.typeId)?.label;
+      commitTabs((ts) =>
+        ts.map((t) => {
+          if (t.id === activeId)
+            return { ...t, form: { ...form, destination: { ...dest, typeId } } };
+          if (t.id === dest.tabId)
+            return withAutoBoardName(t, { heading: form.heading, from, to: to.label });
+          return t;
+        }),
+      );
+    },
+    [activeId, commitTabs, live],
+  );
 
   return useMemo(
     () => ({
@@ -303,6 +336,7 @@ export function useFormActions({
       syncFieldOptions,
       newResponsesBoard,
       newCardType,
+      setDestinationType,
     }),
     [
       startForm,
@@ -313,6 +347,7 @@ export function useFormActions({
       syncFieldOptions,
       newResponsesBoard,
       newCardType,
+      setDestinationType,
     ],
   );
 }

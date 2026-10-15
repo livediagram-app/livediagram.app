@@ -42,10 +42,11 @@ export const FORM_STARTERS: readonly FormStarter[] = [
   {
     id: 'blank',
     name: 'Blank Form',
-    line: 'Start from one question',
+    line: 'Start from nothing',
     telemetry: 'Blank',
     accent: '#2563eb',
-    sections: [{ title: '', questions: [{ type: 'short', prompt: '' }] }],
+    // A blank form starts with no questions: the add bar offers the first.
+    sections: [{ title: '', questions: [] }],
   },
   {
     id: 'bug-report',

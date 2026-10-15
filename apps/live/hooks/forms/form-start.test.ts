@@ -8,6 +8,7 @@ import {
   responsesBoardSetup,
   responsesBoardTab,
   uniqueTypeLabel,
+  withAutoBoardName,
   withBoardTaking,
 } from './form-start';
 
@@ -131,5 +132,35 @@ describe('the pieces', () => {
     expect(withBoardTaking(taking, 'feedback')).toBe(taking);
     const open = boardTab('o', { ...presetSetup('kanban'), addTypes: undefined });
     expect(withBoardTaking(open, 'feedback')).toBe(open);
+  });
+});
+
+describe('withAutoBoardName', () => {
+  const named = (name: string, title = name): Tab => {
+    const t = boardTab('b', { ...presetSetup('kanban'), title });
+    return { ...t, name, elements: [...t.elements, createShape('square', 0, 0)] };
+  };
+  const titleOf = (t: Tab) =>
+    (t.elements[0] as Element & { planBoard: { title: string } }).planBoard.title;
+
+  it('names a board still on an automatic name after the card type, its title too', () => {
+    for (const was of ['Tab 3', 'Survey Responses', 'Bug Responses']) {
+      const t = withAutoBoardName(named(was), { heading: 'Survey', from: 'Bug', to: 'Contact' });
+      expect([t.name, titleOf(t)]).toEqual(['Contact Responses', 'Contact Responses']);
+    }
+  });
+
+  it('keeps a name someone gave, a board title of its own, and an unchanged name', () => {
+    const own = named('Leads');
+    expect(withAutoBoardName(own, { heading: 'Survey', to: 'Contact' })).toBe(own);
+    const titled = withAutoBoardName(named('Survey Responses', 'Pipeline'), {
+      heading: 'Survey',
+      to: 'Contact',
+    });
+    expect([titled.name, titleOf(titled)]).toEqual(['Contact Responses', 'Pipeline']);
+    const same = named('Contact Responses');
+    expect(withAutoBoardName(same, { heading: 'Survey', from: 'Contact', to: 'Contact' })).toBe(
+      same,
+    );
   });
 });

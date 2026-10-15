@@ -179,6 +179,14 @@ describe('readForm', () => {
     expect(num).toEqual({ id: 'q-1', type: 'number', prompt: 'N' });
   });
 
+  it('keeps a question with no prompt yet, its prompt empty', () => {
+    expect(readForm(form([{ id: 'q-1', type: 'short' }]))!.sections[0]!.questions[0]).toEqual({
+      id: 'q-1',
+      type: 'short',
+      prompt: '',
+    });
+  });
+
   it('counts an Other option as a pick, and keeps a numbers scale without labels', () => {
     const read = readForm(
       form([

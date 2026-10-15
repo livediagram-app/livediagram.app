@@ -8,6 +8,9 @@ import type { FormActions } from '@/hooks/forms/useFormActions';
 import { FormBuilderContext, type FormBuilderValue } from './form-builder-context';
 import { FormBuilderColumn } from './FormBuilderColumn';
 
+// Motion off: a deleted question goes at once rather than after its leave (question-motion.ts).
+vi.mock('@/lib/motion-preference', () => ({ prefersReducedMotion: () => true }));
+
 // The builder (docs/specs/030-forms/forms.md "Building a form", "Who may do what"): an Editor edits in place; anyone
 // else sees the form as respondents do, with no editing chrome at all.
 
@@ -50,6 +53,7 @@ function Harness({ canEdit }: { canEdit: boolean }) {
   const actions: FormActions = {
     startForm: vi.fn(),
     newFormFor: vi.fn(),
+    setDestinationType: vi.fn(),
     changeForm: (fn) => setForm((f) => fn(f)),
     renameForm: (name) => setForm((f) => ({ ...f, heading: name })),
     addFieldFor: vi.fn(() => null),

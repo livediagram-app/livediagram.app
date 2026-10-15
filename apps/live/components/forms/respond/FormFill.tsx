@@ -210,7 +210,8 @@ export function FormFill({
         </p>
       ) : null}
 
-      <div className="flex items-center gap-3 pt-1">
+      {/* Back and Next / Submit at the bottom right; the note sits to their left (first on a phone, its own line). */}
+      <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
         {!first ? (
           <button
             type="button"
@@ -244,7 +245,7 @@ export function FormFill({
             Next
           </button>
         )}
-        <span className="ml-auto text-[12px] text-slate-500 dark:text-slate-400">
+        <span className="order-first mr-auto basis-full text-[12px] text-slate-500 sm:basis-auto dark:text-slate-400">
           Never submit passwords through livediagram forms.
         </span>
       </div>

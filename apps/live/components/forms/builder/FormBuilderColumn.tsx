@@ -1,7 +1,8 @@
 'use client';
 
 // The form as built (docs/specs/030-forms/forms.md "Building a form"): its header, each section's questions (a later
-// section headed by its own card), and the add bar (under the selected question, else at the end), in a 640 px column. A press on the column's background deselects.
+// section headed by its own card), and the add bar (under the selected question, else at the end), in a 640 px column.
+// A press on the column's background deselects. Questions slide when moved and grow in when added (question-motion).
 import { Fragment, useCallback, useRef } from 'react';
 import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
 import { lucideClipboardList } from '@livediagram/icons/lucide';
@@ -11,6 +12,8 @@ import { FormHeaderCard, SectionHeader } from './FormHeaderCard';
 import { FormQuestionCard } from './FormQuestionCard';
 import { useFormBuilder } from './form-builder-context';
 import { useQuestionDrag } from './useQuestionDrag';
+import { useFlipList } from '@/hooks/ui/useFlipList';
+import { QUESTION_FLIP } from './question-motion';
 
 const QuestionIcon = lucideGlyph(lucideClipboardList, 20);
 
@@ -31,9 +34,15 @@ export function FormBuilderColumn({
   const firstId = all[0]?.id;
   const lastId = all[all.length - 1]?.id;
   const selectedShown = all.some((q) => q.id === b.selectedId);
+  // Questions slide to a new place, and a new one grows in (question-motion.ts).
+  const rowRef = useFlipList(
+    all.map((q) => q.id),
+    QUESTION_FLIP,
+  );
   return (
     <div
       ref={columnRef}
+      data-flip-root=""
       className="relative mx-auto flex w-full max-w-[640px] flex-col gap-3"
       onPointerDown={(e) => {
         if (e.target === e.currentTarget) b.select(null);
@@ -54,13 +63,15 @@ export function FormBuilderColumn({
           ) : null}
           {section.questions.map((q) => (
             <Fragment key={q.id}>
-              <FormQuestionCard
-                question={q}
-                first={q.id === firstId}
-                last={q.id === lastId}
-                onGrab={drag.grab}
-                dragging={drag.dragging === q.id}
-              />
+              <div ref={rowRef(q.id)}>
+                <FormQuestionCard
+                  question={q}
+                  first={q.id === firstId}
+                  last={q.id === lastId}
+                  onGrab={drag.grab}
+                  dragging={drag.dragging === q.id}
+                />
+              </div>
               {/* The add bar follows the selected question: what it adds goes there. */}
               {q.id === b.selectedId ? <FormAddBar /> : null}
             </Fragment>
