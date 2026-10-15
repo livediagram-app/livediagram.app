@@ -171,6 +171,11 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'team-retro': 'meetings',
   'pre-mortem': 'meetings',
   'feedback-board': 'meetings',
+  // The spaces to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
+  'virtual-office': 'meetings',
+  'coworking-space': 'meetings',
+  'team-pod': 'meetings',
+  'all-hands-hall': 'meetings',
   // Brainstorm: getting ideas out of heads.
   mindmap: 'mindmaps',
   'mindmap-tree': 'mindmaps',
@@ -255,10 +260,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   // Quizzes and Games: the lighter end of running a room.
   'pub-quiz': 'games',
   'icebreaker-questions': 'games',
-  'virtual-office': 'meetings',
-  'coworking-space': 'meetings',
-  'team-pod': 'meetings',
-  'all-hands-hall': 'meetings',
   'two-truths-and-a-lie': 'games',
   'would-you-rather': 'games',
   'people-bingo': 'games',

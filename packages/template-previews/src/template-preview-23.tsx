@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 import { pv } from './motion';
+import { FILL_BOX } from './story-parts';
 
 // Group 23: the Virtual Office and its sibling spaces (docs/specs/012-collaboration/virtual-office-template.md): floor plans of rooms
 // either side of a corridor, a meeting table, desks, plants and a coffee machine. Its hover story: a character
@@ -62,8 +63,9 @@ export function templatePreviewGroup23(kind: TemplateKind): ReactElement | null 
           <Room x={3} y={28} w={24} h={18} door="top" />
           <Room x={30} y={28} w={24} h={18} door="top" />
           <Room x={57} y={28} w={20} h={18} door="top" />
-          {/* Reception: a sofa and a plant. */}
-          <rect x={8} y={8} width="10" height="3" rx="1" fill={FURNITURE} />
+          {/* Reception: a sofa on its rug at the back, and a plant. */}
+          <ellipse cx={13} cy={10} rx="7" ry="3" fill="rgb(253 230 138)" />
+          <rect x={8} y={8.5} width="10" height="3" rx="1" fill={FURNITURE} />
           <Plant x={21} y={8} />
           {/* Desks. */}
           {[31, 39, 47].map((x) => (
@@ -84,16 +86,16 @@ export function templatePreviewGroup23(kind: TemplateKind): ReactElement | null 
           <rect x={6} y={33} width="3" height="5" rx="0.6" fill="rgb(186 230 253)" />
           <rect x={11} y={34} width="4" height="4" rx="0.6" fill={FURNITURE} />
           <Plant x={23} y={34} />
-          {/* Lounge: a rug and a sofa. */}
+          {/* Lounge: a sofa on its rug, well inside the door. */}
           <ellipse cx={42} cy={41} rx="7" ry="3" fill="rgb(253 230 138)" />
-          <rect x={36} y={32} width="12" height="3" rx="1" fill={FURNITURE} />
+          <rect x={36} y={39.5} width="12" height="3" rx="1" fill={FURNITURE} />
           {/* Focus room. */}
           <rect x={64} y={35} width="5" height="3" rx="0.6" fill={FURNITURE} />
           <Plant x={73} y={41} />
           {/* Someone walks in from the corridor. */}
           <g
             className="pv-arrive"
-            style={pv({ '--pv-at': '400ms', '--pv-from-x': '-16px' })}
+            style={{ ...pv({ '--pv-at': '400ms', '--pv-from-x': '-16px' }), ...FILL_BOX }}
             opacity="0"
           >
             <circle cx="40" cy="23.5" r="1.3" fill="rgb(251 191 146)" />
@@ -153,7 +155,7 @@ export function templatePreviewGroup23(kind: TemplateKind): ReactElement | null 
           ))}
           <g
             className="pv-arrive"
-            style={pv({ '--pv-at': '400ms', '--pv-from-y': '10px' })}
+            style={{ ...pv({ '--pv-at': '400ms', '--pv-from-y': '10px' }), ...FILL_BOX }}
             opacity="0"
           >
             <circle cx="28" cy="40" r="1.3" fill="rgb(251 191 146)" />
