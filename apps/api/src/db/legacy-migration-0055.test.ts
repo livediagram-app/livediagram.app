@@ -10,7 +10,7 @@ function run(sql: DatabaseSync, statement: string, ...args: (string | number | n
 }
 const one = (sql: DatabaseSync, q: string, ...args: (string | number)[]) =>
   sql.prepare(q).get(...args) as Record<string, unknown> | undefined;
-const all = (sql: DatabaseSync, q: string) => sql.prepare(q).all() as Record<string, unknown>[];
+const all = (sql: DatabaseSync, q: string) => sql.prepare(q).all();
 
 function seed(sql: DatabaseSync) {
   run(
@@ -180,9 +180,12 @@ describe('migration 0055 (the container is a document)', () => {
 
   it('renames the telemetry history and nothing that names a drawing or the tab kind', () => {
     const { sql } = migrated();
-    const rows = all(sql, 'SELECT category, action, type FROM events ORDER BY id').map(
-      (r) => `${r.category}|${r.action}|${r.type ?? ''}`,
-    );
+    const events = all(sql, 'SELECT category, action, type FROM events ORDER BY id') as {
+      category: string;
+      action: string;
+      type: string | null;
+    }[];
+    const rows = events.map((r) => `${r.category}|${r.action}|${r.type ?? ''}`);
     expect(rows).toEqual([
       'Document|Created|Cloud',
       'Team|Added|Document',

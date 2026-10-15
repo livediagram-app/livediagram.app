@@ -36,10 +36,10 @@ function image(sql: DatabaseSync, id: string, ownerId: string, sha256 = id) {
 }
 
 function grants(sql: DatabaseSync): string[] {
-  return sql
+  const rows = sql
     .prepare('SELECT document_id, image_id FROM image_grants ORDER BY document_id, image_id')
-    .all()
-    .map((r) => `${r.document_id}:${r.image_id}`);
+    .all() as { document_id: string; image_id: string }[];
+  return rows.map((r) => `${r.document_id}:${r.image_id}`);
 }
 
 describe('documentServesImage', () => {
@@ -282,7 +282,10 @@ describe('an owner change', () => {
     await upsertTab(db.env, 'D', tabWith('t1', 'guest-img'), 0);
     await upsertTab(db.env, 'D', tabWith('t2', 'guest-only'), 1);
     await migrateOwnerId(db.env, 'guest-1', 'user_ada');
-    const owners = db.sql.prepare('SELECT id, owner_id FROM images ORDER BY id').all();
+    const owners = db.sql.prepare('SELECT id, owner_id FROM images ORDER BY id').all() as {
+      id: string;
+      owner_id: string;
+    }[];
     expect(owners.map((r) => `${r.id}:${r.owner_id}`)).toEqual([
       'account-img:user_ada',
       'guest-img:guest-1',
