@@ -187,8 +187,11 @@ export function BackgroundSection({
   themePresets,
   onBackground,
   onPreview,
+  only,
 }: {
   page: IllustratePage;
+  // The categories offered, narrowing the page kind's own (a form's cover takes no picture).
+  only?: readonly BackgroundCategory[];
   // The tab theme's own gradients (themeBackgroundPresets), offered first among the gradients.
   themePresets: readonly ThemeBackgroundPreset[];
   onBackground: (patch: Partial<PageBackground>) => void;
@@ -199,12 +202,13 @@ export function BackgroundSection({
   // A logo page takes no picture (docs/specs/007-editor/logo-pages.md "A logo page").
   // A slide page alone moves (docs/specs/007-editor/illustrate-pages.md "Animated backgrounds").
   const kind = pageKindOf(page);
-  const categories: BackgroundCategory[] =
+  const offered: BackgroundCategory[] =
     kind === 'logo'
       ? ['solid', 'gradient']
       : kind === 'slide'
         ? ['solid', 'gradient', 'image', 'animated']
         : ['solid', 'gradient', 'image'];
+  const categories = only ? offered.filter((c) => only.includes(c)) : offered;
   // Opens on the current fill's category; choosing another changes nothing on the page.
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
   const opened = backgroundCategoryOf(fill);

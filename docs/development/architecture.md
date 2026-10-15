@@ -24,6 +24,7 @@ packages/
   api-client/     the api client the MCP and the CLI share (fetch, timeouts, ApiError)
   agent-verbs/    the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides, the skill
   explorer-lens/  the Explorer's filter lens: token grammar, matching, autocomplete, chip view models
+  page-background/ a page background's colours, patterns and motions, and their parser (slide pages and form covers)
   forms/          Form tabs: the form model, answer checks, mapping answers to card fields, starters (pure)
   plan-art/       Plan tab images: Board, Sheet and Dashboard tabs as laid out, plan view and card pictures (pure)
   items/          items and the Plan board: item types, field validation, ranks, writes, board projection

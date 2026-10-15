@@ -2,6 +2,7 @@
 // never refuses a form for one bad part: the part is dropped or capped, so a form from an older or newer editor, an
 // agent or a hand-edited file still opens.
 import { CUSTOM_FIELD_ID_PATTERN, ITEM_TYPE_PATTERN } from '@livediagram/items';
+import { parseColourBackground } from '@livediagram/page-background';
 import { SHEET_ID_PATTERN } from '@livediagram/sheets';
 import {
   FORM_DESCRIPTION_MAX,
@@ -36,7 +37,6 @@ import {
 } from './model';
 
 export const FORM_ID_PATTERN = /^[a-z0-9-]{1,24}$/;
-const HEX = /^#[0-9a-f]{6}$/i;
 const STATUS_ID = /^[^\s].{0,63}$/s;
 const TAB_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
@@ -136,18 +136,8 @@ function readQuestion(v: unknown): FormQuestion | null {
   return q;
 }
 
-function readCover(v: unknown): FormCover | undefined {
-  if (!isObj(v)) return undefined;
-  const cover: FormCover = {};
-  if (typeof v['color'] === 'string' && HEX.test(v['color']))
-    cover.color = v['color'].toLowerCase();
-  if (v['style'] === 'gradient' || v['style'] === 'dots') cover.style = v['style'];
-  const g = v['gradient'];
-  if (isObj(g) && typeof g['from'] === 'string' && typeof g['to'] === 'string')
-    if (HEX.test(g['from']) && HEX.test(g['to']))
-      cover.gradient = { from: g['from'].toLowerCase(), to: g['to'].toLowerCase() };
-  return cover.color || cover.style || cover.gradient ? cover : undefined;
-}
+// The cover: a colour background as a slide's (@livediagram/page-background), nothing kept when it is not one.
+const readCover = (v: unknown): FormCover | undefined => parseColourBackground(v);
 
 function readDestination(v: unknown): FormDestination | undefined {
   if (!isObj(v)) return undefined;

@@ -14,7 +14,7 @@ const form: FormDefinition = {
   v: 1,
   heading: 'Bugs',
   description: 'Tell us',
-  cover: { color: '#000000' },
+  cover: { fill: { kind: 'solid', color: '#000000' } },
   sections: [
     {
       id: 's-1',
@@ -35,7 +35,7 @@ describe('publicForm', () => {
     expect(p).toEqual({
       heading: 'Bugs',
       description: 'Tell us',
-      cover: { color: '#000000' },
+      cover: { fill: { kind: 'solid', color: '#000000' } },
       sections: [
         {
           id: 's-1',

@@ -1,4 +1,5 @@
 // A form (docs/specs/030-forms/forms.md): what a Form tab holds, stored on the tab as `tab.form`.
+import type { ColourBackground } from '@livediagram/page-background';
 
 export const QUESTION_TYPES = [
   'short',
@@ -105,16 +106,9 @@ export interface FormDestination {
   status: string;
 }
 
-// The band across the form's top: a colour drawn plain, as a gradient into the form colour, or dotted.
-export const COVER_STYLES = ['solid', 'gradient', 'dots'] as const;
-export type CoverStyle = (typeof COVER_STYLES)[number];
-
-export interface FormCover {
-  color?: string;
-  style?: CoverStyle;
-  // One of the slide backgrounds' gradients, drawn in place of the colour and style.
-  gradient?: { from: string; to: string };
-}
+// The band across the form's top (docs/specs/030-forms/forms.md "The form card"): a slide background in colour, a
+// solid colour, a gradient (a moving one included) and a pattern, picked and painted as a slide's are. No pictures.
+export type FormCover = ColourBackground;
 
 export const STARTER_IDS = [
   'blank',

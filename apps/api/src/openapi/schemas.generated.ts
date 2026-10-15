@@ -2584,6 +2584,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ColourBackground": {
+    "additionalProperties": false,
+    "properties": {
+      "fill": {
+        "$ref": "#/components/schemas/PageColourFill"
+      },
+      "pattern": {
+        "$ref": "#/components/schemas/PagePattern"
+      }
+    },
+    "type": "object"
+  },
   "ColumnWidth": {
     "enum": [
       1,
@@ -3336,14 +3348,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "between",
       "eq",
       "neq"
-    ],
-    "type": "string"
-  },
-  "CoverStyle": {
-    "enum": [
-      "solid",
-      "gradient",
-      "dots"
     ],
     "type": "string"
   },
@@ -6712,32 +6716,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "number"
   },
   "FormCover": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "gradient": {
-        "additionalProperties": false,
-        "properties": {
-          "from": {
-            "type": "string"
-          },
-          "to": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "from",
-          "to"
-        ],
-        "type": "object"
-      },
-      "style": {
-        "$ref": "#/components/schemas/CoverStyle"
-      }
-    },
-    "type": "object"
+    "$ref": "#/components/schemas/ColourBackground"
   },
   "FormDefinition": {
     "additionalProperties": false,
@@ -10706,7 +10685,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "PageFill": {
+  "PageColourFill": {
     "anyOf": [
       {
         "additionalProperties": false,
@@ -10755,6 +10734,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "angle"
         ],
         "type": "object"
+      }
+    ]
+  },
+  "PageFill": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/PageColourFill"
       },
       {
         "$ref": "#/components/schemas/PageImageFill"

@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@livediagram/items": "workspace:*",
+    "@livediagram/page-background": "workspace:*",
     "@livediagram/sheets": "workspace:*"
   },
   "devDependencies": {

@@ -13,6 +13,7 @@
     "@livediagram/forms": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/items": "workspace:*",
+    "@livediagram/page-background": "workspace:*",
     "perfect-freehand": "^1.2.3"
   },
   "scripts": {

@@ -3,20 +3,22 @@
 // The top of the form in the builder (docs/specs/030-forms/forms.md "The form card, top to bottom"): the cover (its
 // colour and style changed from Change Cover), then the heading (the tab's name too) and description, edited in
 // place. A later section's header is SectionHeader.
-import { useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
+import type { IllustratePage, PageBackground } from '@livediagram/document';
 import {
-  COVER_STYLES,
   FORM_DESCRIPTION_MAX,
   FORM_HEADING_MAX,
   SECTION_TITLE_MAX,
-  type CoverStyle,
+  type FormCover,
   type FormSection,
 } from '@livediagram/forms';
 import { TrashIcon, Tooltip } from '@livediagram/ui';
 import { patchForm, deleteSection, updateSection } from '@/hooks/forms/form-edits';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
-import { ColourSelect } from '@/components/plan/ColourSwatches';
-import { PAGE_GRADIENT_PRESETS } from '@/lib/illustrate-page-paint';
+import { BackgroundSection } from '@/components/canvas/page-background-section';
+import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { themeBackgroundPresets } from '@/lib/illustrate-page-paint';
+import { getTheme } from '@/lib/themes';
 import { FormCoverBand } from '../FormCoverBand';
 import { LinkedText } from '../LinkedText';
 import { FORM_ACCENT } from '../respond/FormFill';
@@ -24,11 +26,22 @@ import { DraftText } from './DraftText';
 import { SectionRule } from './SectionRule';
 import { useFormBuilder } from './form-builder-context';
 
-const STYLE_NAMES: Record<CoverStyle, string> = {
-  solid: 'Solid',
-  gradient: 'Gradient',
-  dots: 'Dots',
-};
+// The cover's choices: a slide's Background categories but the picture (docs/specs/030-forms/forms.md "The form card").
+const COVER_CATEGORIES = ['solid', 'gradient', 'animated'] as const;
+
+// A slide's background patched, kept in colour: the cover takes no picture.
+function patchedCover(
+  cover: FormCover | undefined,
+  patch: Partial<PageBackground>,
+): FormCover | undefined {
+  const merged = { ...cover, ...patch } as PageBackground;
+  const fill = merged.fill && merged.fill.kind !== 'image' ? merged.fill : undefined;
+  const next: FormCover = {
+    ...(fill ? { fill } : {}),
+    ...(merged.pattern ? { pattern: merged.pattern } : {}),
+  };
+  return next.fill || next.pattern ? next : undefined;
+}
 
 export function FormHeaderCard({ sections }: { sections: number }) {
   const b = useFormBuilder();
@@ -36,10 +49,24 @@ export function FormHeaderCard({ sections }: { sections: number }) {
   const accent = FORM_ACCENT;
   const [coverAnchor, setCoverAnchor] = useState<HTMLButtonElement | null>(null);
   const [coverOpen, setCoverOpen] = useState(false);
+  // A hovered choice, shown on the band until it is picked or left (as on a slide).
+  const [preview, setPreview] = useState<Partial<PageBackground> | null>(null);
+  const shownCover = preview ? patchedCover(form.cover, preview) : form.cover;
+  // The tab theme's own gradients lead the Gradient choices, as on a slide.
+  // Read as the colour picker reads it (useThemeColours): no editor around it (a test) is the default theme.
+  const themeId = useContext(EditorContext)?.activeTab?.theme;
+  const themePresets = useMemo(() => themeBackgroundPresets(getTheme(themeId)), [themeId]);
+  // The cover as the slide's Background section reads a page: a wide slide wearing it.
+  const coverPage: IllustratePage = {
+    id: 'form-cover',
+    orientation: 'landscape',
+    kind: 'slide',
+    ...(form.cover ? { background: form.cover } : {}),
+  };
   return (
     <div className="form-box form-ink group/head overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
       <div className="relative">
-        <FormCoverBand cover={form.cover} accent={accent} className={form.cover ? '' : 'h-2.5'} />
+        <FormCoverBand cover={shownCover} accent={accent} className={shownCover ? '' : 'h-2.5'} />
         {b.canEdit ? (
           <button
             ref={setCoverAnchor}
@@ -60,111 +87,24 @@ export function FormHeaderCard({ sections }: { sections: number }) {
         <AnchoredPopover
           anchor={coverAnchor}
           name="Cover"
-          width={280}
-          onClose={() => setCoverOpen(false)}
+          width={304}
+          onClose={() => {
+            setPreview(null);
+            setCoverOpen(false);
+          }}
         >
           <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-            <div>
-              <p className="mb-1.5 text-[12px] font-semibold text-slate-600 dark:text-slate-300">
-                Cover Colour
-              </p>
-              <ColourSelect
-                label="Cover Colour"
-                value={form.cover?.color}
-                onChange={(color) =>
-                  b.actions.changeForm((f) =>
-                    patchForm(f, {
-                      cover: {
-                        ...f.cover,
-                        ...(color ? { color } : { color: undefined }),
-                        gradient: undefined,
-                      },
-                    }),
-                  )
-                }
-              />
-              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                None takes the theme’s colour.
-              </p>
-            </div>
-            <div>
-              <p className="mb-1.5 text-[12px] font-semibold text-slate-600 dark:text-slate-300">
-                Style
-              </p>
-              <div role="radiogroup" aria-label="Cover style" className="grid grid-cols-3 gap-1.5">
-                {COVER_STYLES.map((s) => {
-                  const on = !form.cover?.gradient && (form.cover?.style ?? 'solid') === s;
-                  return (
-                    <button
-                      key={s}
-                      type="button"
-                      role="radio"
-                      aria-checked={on}
-                      onClick={() =>
-                        b.actions.changeForm((f) =>
-                          patchForm(f, {
-                            cover: {
-                              ...f.cover,
-                              ...(s === 'solid' ? { style: undefined } : { style: s }),
-                              gradient: undefined,
-                            },
-                          }),
-                        )
-                      }
-                      className={`flex cursor-pointer flex-col items-center gap-1 rounded-lg border p-1.5 text-[11px] font-medium ${
-                        on
-                          ? 'border-brand-400 bg-brand-50 text-brand-800 dark:border-brand-500/60 dark:bg-brand-500/10 dark:text-brand-100'
-                          : 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      <span className="h-6 w-full overflow-hidden rounded">
-                        <FormCoverBand
-                          cover={{ color: form.cover?.color ?? accent, style: s }}
-                          accent={accent}
-                          className="!h-6"
-                        />
-                      </span>
-                      {STYLE_NAMES[s]}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <div>
-              <p className="mb-1.5 text-[12px] font-semibold text-slate-600 dark:text-slate-300">
-                Gradients
-              </p>
-              {/* The slide backgrounds' gradients (docs/specs/007-editor/illustrate-pages.md "Backgrounds"). */}
-              <div
-                role="radiogroup"
-                aria-label="Cover gradient"
-                className="grid grid-cols-7 gap-1.5"
-              >
-                {PAGE_GRADIENT_PRESETS.map((g) => {
-                  const on =
-                    form.cover?.gradient?.from === g.from && form.cover.gradient.to === g.to;
-                  return (
-                    <Tooltip key={g.id} label={g.label}>
-                      <button
-                        type="button"
-                        role="radio"
-                        aria-checked={on}
-                        aria-label={g.label}
-                        onClick={() =>
-                          b.actions.changeForm((f) =>
-                            patchForm(f, { cover: { gradient: { from: g.from, to: g.to } } }),
-                          )
-                        }
-                        className={`h-7 cursor-pointer rounded-md ring-offset-1 transition hover:scale-105 dark:ring-offset-slate-900 ${
-                          on ? 'ring-2 ring-brand-500' : 'ring-1 ring-black/10 dark:ring-white/15'
-                        }`}
-                        style={{ background: `linear-gradient(120deg, ${g.from}, ${g.to})` }}
-                      />
-                    </Tooltip>
-                  );
-                })}
-              </div>
-            </div>
+            {/* A slide's Background and Pattern (docs/specs/007-editor/illustrate-pages.md "Backgrounds"), no picture. */}
+            <BackgroundSection
+              page={coverPage}
+              only={COVER_CATEGORIES}
+              themePresets={themePresets}
+              onBackground={(patch) => {
+                setPreview(null);
+                b.actions.changeForm((f) => patchForm(f, { cover: patchedCover(f.cover, patch) }));
+              }}
+              onPreview={setPreview}
+            />
             {form.cover ? (
               <button
                 type="button"

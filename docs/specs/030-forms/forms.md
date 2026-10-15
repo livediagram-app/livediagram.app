@@ -98,12 +98,14 @@ previewing), the help link and the form's **cog**.
 
 ### The form card, top to bottom
 
-- **Cover**: a band 160 px tall (96 on a phone) across the top of the column, in the cover colour (from the
-  [colour picker](../004-interface-design/colour-picker.md); none takes the form colour) and a style: **Solid**,
-  **Gradient** (into a light tint of the form colour) or **Dots**; or one of the slide backgrounds' **Gradients**
-  ([Illustrate pages](../007-editor/illustrate-pages.md) "Backgrounds"), drawn in their place (a colour or style
-  picked after clears it). Without a cover, a 10 px band of the form colour. **Add Cover** / **Change Cover** on
-  hover (always shown on a touch screen, which has no hover) opens the cover popover, with **Remove Cover**.
+- **Cover**: a band 160 px tall (96 on a phone) across the top of the column, painted with a slide background in
+  colour, picked and drawn exactly as a slide's ([Illustrate pages](../007-editor/illustrate-pages.md)
+  "Backgrounds", "Animated backgrounds"): the slide's **Background** section with **Solid**, **Gradient** (the tab
+  theme's gradients first) and **Animated** (the slide motions, moving on screen; still under reduced motion), then
+  **Pattern**. No **Image**: a cover takes no picture. Stored as `form.cover` (`{ fill?, pattern? }`, the
+  `@livediagram/page-background` shape a slide's colours share). A hover previews on the band; a press sets it.
+  Without a cover, a 10 px band of the form colour. **Add Cover** / **Change Cover** on hover (always shown on a
+  touch screen, which has no hover) opens the cover popover, with **Remove Cover**.
 - **Heading**: the form's name (1 to 80 characters), edited in place; **Description** under it (up to 1,000
   characters, plain text with line breaks and links made clickable), placeholder "Add a description".
 - **Questions**, each a card. The selected one (click, or Tab onto it and Enter) shows its editing chrome: a
@@ -518,5 +520,5 @@ Every chart is on the public dashboard's **Forms** stack.
 - A responses summary of charts per question (a Dashboard over the board covers it for now).
 - Building or publishing forms through the MCP server or the CLI.
 - A QR code of the form link, and importing questions from another form.
-- A cover image (a cover is a colour and a style): an image would join the image store's reference index.
+- A cover image (a cover is a slide background in colour): an image would join the image store's reference index.
 - Dragging a choice's options (Alt+Up and Alt+Down move them).

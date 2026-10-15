@@ -34,7 +34,9 @@ describe('readForm', () => {
       heading: '  Bug Report ',
       description: 'Tell us',
       accent: '#DC2626',
-      cover: { color: '#ABCDEF', style: 'gradient' },
+      cover: {
+        fill: { kind: 'gradient', from: '#ABCDEF', to: '#000000', angle: 120, motion: 'aurora' },
+      },
       sections: [
         {
           id: 's-1',
@@ -76,17 +78,14 @@ describe('readForm', () => {
     expect(read.heading).toBe('Bug Report');
     // A colour an earlier build stored is dropped: the form wears its tab theme's.
     expect(read).not.toHaveProperty('accent');
-    expect(read.cover).toEqual({ color: '#abcdef', style: 'gradient' });
-    expect(readForm({ cover: { style: 'dots' } })!.cover).toEqual({ style: 'dots' });
-    expect(readForm({ cover: { style: 'solid' } })!.cover).toBeUndefined();
-    // A slide gradient is kept when both its colours are; a broken one is dropped.
-    expect(readForm({ cover: { gradient: { from: '#FDE68A', to: '#fca5a5' } } })!.cover).toEqual({
-      gradient: { from: '#fde68a', to: '#fca5a5' },
+    // The cover is a slide background in colour (@livediagram/page-background), a moving one included.
+    expect(read.cover).toEqual({
+      fill: { kind: 'gradient', from: '#ABCDEF', to: '#000000', angle: 120, motion: 'aurora' },
     });
-    expect(
-      readForm({ cover: { gradient: { from: 'red', to: '#fca5a5' } } })!.cover,
-    ).toBeUndefined();
-    expect(readForm({ cover: { gradient: 'sunrise' } })!.cover).toBeUndefined();
+    expect(readForm({ cover: { pattern: 'dots' } })!.cover).toEqual({ pattern: 'dots' });
+    // No pictures on a cover, and the shapes an earlier build stored are dropped.
+    expect(readForm({ cover: { fill: { kind: 'image', imageId: 'x' } } })!.cover).toBeUndefined();
+    expect(readForm({ cover: { color: '#abcdef', style: 'dots' } })!.cover).toBeUndefined();
     expect(read.sections[0]!.description).toBe('First');
     expect(read.sections[0]!.questions).toEqual([
       {
@@ -261,7 +260,7 @@ describe('readForm', () => {
 
   it('drops settings out of range', () => {
     const read = readForm({
-      cover: { color: 'blue', style: 'zigzag' },
+      cover: { fill: { kind: 'solid', color: 'blue' }, pattern: 'zigzag' },
       destination: { tabId: 'tab 1', typeId: 'bug', status: 'x' },
       closesAt: -1,
       limit: 0,
