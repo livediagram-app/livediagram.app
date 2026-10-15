@@ -138,6 +138,7 @@ export default defineConfig({
 
     // Type-aware rules (typescript-eslint's recommended type-checked set), through oxlint-tsgolint.
     'typescript/no-array-delete': 'error',
+    'typescript/no-duplicate-type-constituents': 'error',
     'typescript/no-for-in-array': 'error',
     'typescript/no-unsafe-enum-comparison': 'error',
     'typescript/no-unsafe-unary-minus': 'error',
