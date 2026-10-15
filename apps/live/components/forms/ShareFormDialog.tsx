@@ -6,16 +6,12 @@
 // Responses, and Delete Link, which asks first.
 import { useId, useState } from 'react';
 import { Button, Dialog, DialogCloseButton, DialogHeader } from '@livediagram/ui';
-import {
-  DESTINATION_PROBLEM_TEXT,
-  PUBLISH_PROBLEM_TEXT,
-  type DestinationProblem,
-  type PublishProblem,
-} from '@livediagram/forms';
+import type { DestinationProblem, PublishProblem } from '@livediagram/forms';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { formUrlFor } from '@/lib/form-path';
+import { FormProblems, formProblemCount } from './FormProblems';
 
 export function ShareFormDialog({
   open,
@@ -25,6 +21,7 @@ export function ShareFormDialog({
   onFixDestination,
   notReady = [],
   onShow,
+  toSheet = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -34,6 +31,8 @@ export function ShareFormDialog({
   // What else stops publishing (publishProblems), and Show for a question's or section's.
   notReady?: readonly PublishProblem[];
   onShow?: (problem: PublishProblem) => void;
+  // Responses go to a sheet (a row each) rather than a board.
+  toSheet?: boolean;
 }) {
   const titleId = useId();
   const [copied, setCopied] = useState(false);
@@ -100,6 +99,14 @@ export function ShareFormDialog({
                   : 'Closed: people who open the link see your closed message.'}
               </p>
             </div>
+            {/* Still listed once published: a problem since then is the Editor's to fix. */}
+            <FormProblems
+              title="Problems with this Form"
+              problem={problem}
+              notReady={notReady}
+              onFixDestination={onFixDestination}
+              onShow={onShow}
+            />
             <div className="flex justify-end">
               <button
                 type="button"
@@ -122,41 +129,19 @@ export function ShareFormDialog({
               <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-900 dark:bg-red-500/10 dark:text-red-100">
                 This document can’t publish more forms: its form links were suspended after reports.
               </p>
-            ) : problem ? (
-              <div className="rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
-                <p>Responses have nowhere to go yet. {DESTINATION_PROBLEM_TEXT[problem]}</p>
-                <button
-                  type="button"
-                  onClick={onFixDestination}
-                  className="mt-1 cursor-pointer font-semibold underline underline-offset-2"
-                >
-                  Choose Where Responses Go
-                </button>
-              </div>
-            ) : notReady.length ? (
-              <div className="rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
-                <p className="font-semibold">Before publishing:</p>
-                <ul className="mt-1 flex flex-col gap-1">
-                  {notReady.map((p, i) => (
-                    <li key={i} className="flex items-baseline justify-between gap-3">
-                      <span>{PUBLISH_PROBLEM_TEXT[p.kind]}</span>
-                      {onShow && p.kind !== 'no_questions' ? (
-                        <button
-                          type="button"
-                          onClick={() => onShow(p)}
-                          className="shrink-0 cursor-pointer font-semibold underline underline-offset-2"
-                        >
-                          Show
-                        </button>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            ) : formProblemCount(problem, notReady) ? (
+              <FormProblems
+                title="Before publishing:"
+                problem={problem}
+                notReady={notReady}
+                onFixDestination={onFixDestination}
+                onShow={onShow}
+              />
             ) : (
               <p className="text-[14px] leading-relaxed text-slate-600 dark:text-slate-300">
-                Publishing makes a link you can send to anyone. Each response becomes a card on your
-                board, and you can close the form at any time.
+                Publishing makes a link you can send to anyone. Each response becomes{' '}
+                {toSheet ? 'a row in your sheet' : 'a card on your board'}, and you can close the
+                form at any time.
               </p>
             )}
             <div className="flex justify-end">

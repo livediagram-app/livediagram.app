@@ -33,6 +33,7 @@ import { sendPreview } from '@/hooks/forms/form-preview';
 import { apiSendFormPreview } from '@/lib/api/forms';
 import { FormBuilderContext, type FormBuilderValue } from './builder/form-builder-context';
 import { FormBuilderColumn } from './builder/FormBuilderColumn';
+import { formProblemCount } from './FormProblems';
 import { FormSettingsButton, type FormSettingsSection } from './builder/FormSettingsButton';
 import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
@@ -222,6 +223,8 @@ export function FormPage({
                         onFix={() => openSettings('destination')}
                         onOpenResponses={destTab ? () => openTab(destTab.id) : null}
                         destinationName={destTab?.name ?? null}
+                        problems={formProblemCount(problem, notReady)}
+                        onProblems={() => setShareOpen(true)}
                         controls={
                           canEdit ? (
                             <>
@@ -315,6 +318,7 @@ export function FormPage({
           openSettings('destination');
         }}
         notReady={notReady}
+        toSheet={!!form.sheet}
         onShow={(p) => {
           setShareOpen(false);
           setPreview(false);

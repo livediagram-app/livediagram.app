@@ -320,17 +320,21 @@ number).
 - **Share Form** (the header's Share on a Form tab, an Editor's) opens the **Share Form** dialog, separate from the
   document's Share dialog:
   - Its subtitle: "Anyone with the link can fill in this form. They won’t see your document."
-  - Not yet published: a line on what publishing does and **Publish Form**, which makes the form link. While
-    responses have nowhere to go, it is held back with the reason and **Choose Where Responses Go**. While the form
-    is **not ready** it is held back under "Before publishing:", each problem a line, a question's or section's with
-    **Show** (closing the dialog and selecting the question, or scrolling to the section):
+  - Not yet published: a line on what publishing does ("Each response becomes a card on your board", or "a row in
+    your sheet" for a sheet form) and **Publish Form**, which makes the form link. A form must be connected to a
+    working board (its column and card type) or sheet to publish. While it has any problem, Publish Form is held
+    back under "Before publishing:", every problem a line together (`FormProblems`): responses with nowhere to go
+    ("Responses have nowhere to go." and the reason) with **Choose Where Responses Go**, then each failing check, a
+    question's or section's with **Show** (closing the dialog and selecting the question, or scrolling to the
+    section):
     - "Add a question: a form needs at least one." (no questions);
     - "A question has no wording yet.";
     - "A choice question has no options." (a Single or Multiple Choice with none);
     - "An answer goes to a card field that was removed or no longer fits." (a broken mapping);
     - "A section shows only on an answer that is no longer there." (a broken section rule).
       The api checks the same (`publishProblems`) and refuses with 409 `form_not_ready` and the problems.
-  - Published: the link in a read-only field with **Copy Link** (it reads "Copied" for a moment), **Open** (a new
+  - Published: any problem since publishing listed the same way under "Problems with this Form"; the link in a
+    read-only field with **Copy Link** (it reads "Copied" for a moment), **Open** (a new
     browser tab), **Accepting Responses** with the count so far, and **Delete Link**, which asks first ("Delete this
     link? People with it will see this form isn’t available. Publishing again makes a new link.").
   - A document kept on this device only (an offline document) cannot publish: the dialog says forms are published
@@ -460,8 +464,9 @@ board settings, for switching back.
   response") until it is opened in this browser, or until a week has passed. What has been opened is kept per browser.
 - **On the Form tab**: the **status bar** over the form: its state (**Not Published**, **Accepting Responses**,
   **Paused**, **Closed**, **Suspended**, or **Draft** for an offline document), the count ("14 responses · 3 new",
-  new to this reader), which opens the destination's tab (its tooltip names it). The count is read when the tab opens
-  and every 30 seconds while it is shown.
+  new to this reader), which opens the destination's tab (its tooltip names it), and, for an Editor while the form has
+  any problem, **Problems with this Form** with a warning triangle to the right of the count, which opens Share Form
+  where they are listed. The count is read when the tab opens and every 30 seconds while it is shown.
 - **Inbox**: a **Form Responses** section in the Explorer's [Inbox](../013-workspace/inbox.md) lists each live
   form, in a document the reader owns or reaches through a team, that has responses the reader has not seen: "3 new
   responses to **Bug Report**", its document's chip, newest response first; a row opens the destination board (the

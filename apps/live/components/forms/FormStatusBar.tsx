@@ -2,11 +2,15 @@
 
 // Under the form's heading in the builder (docs/specs/030-forms/forms.md "Hearing about responses"): the response
 // count with how many are new to this reader (opening the tab responses go to), and the notices that say the form takes no responses
-// (paused: its destination broke; suspended after reports; closed).
+// (paused: its destination broke; suspended after reports; closed), and an Editor's Problems with this Form, which opens
+// Share Form where they are listed.
 import type { ReactNode } from 'react';
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip, lucideGlyph } from '@livediagram/ui';
+import { lucideTriangleAlert } from '@livediagram/icons/lucide';
 import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@livediagram/forms';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
+
+const WarningIcon = lucideGlyph(lucideTriangleAlert, 14);
 
 export function FormStatusBar({
   link,
@@ -17,6 +21,8 @@ export function FormStatusBar({
   controls,
   onOpenResponses,
   destinationName,
+  problems = 0,
+  onProblems,
 }: {
   link: FormLinkState;
   problem: DestinationProblem | null;
@@ -29,6 +35,9 @@ export function FormStatusBar({
   // Opens the tab the responses go to (absent without one), named for its tooltip.
   onOpenResponses?: (() => void) | null;
   destinationName?: string | null;
+  // How many problems the form has (FormProblems), and opening Share Form where they are listed: an Editor's.
+  problems?: number;
+  onProblems?: () => void;
 }) {
   const data = link.link;
   const live = data?.link ?? null;
@@ -96,6 +105,18 @@ export function FormStatusBar({
         ) : (
           <span className="shrink-0 text-slate-600 dark:text-slate-300">{count}</span>
         )}
+        {canEdit && problems > 0 && onProblems ? (
+          <Tooltip label="See what to fix in Share Form">
+            <button
+              type="button"
+              onClick={onProblems}
+              className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 font-medium text-amber-800 hover:bg-amber-50 dark:text-amber-200 dark:hover:bg-amber-500/10"
+            >
+              <WarningIcon aria-hidden />
+              Problems with this Form
+            </button>
+          </Tooltip>
+        ) : null}
         <span className="ml-auto flex min-w-0 items-center gap-1">{controls}</span>
       </div>
       {live && problem ? (
