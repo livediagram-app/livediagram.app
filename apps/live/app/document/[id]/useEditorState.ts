@@ -22,6 +22,7 @@ import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
 import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
+import { useFormActions } from '@/hooks/forms/useFormActions';
 import { usePlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { usePlanTabConversion } from '@/hooks/plan/usePlanTabConversion';
 import { usePlanCoverWiring } from '@/hooks/plan/usePlanCoverWiring';
@@ -2291,6 +2292,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     bringCardTypes: presetCardTypes.bring,
     markTabLoaded,
   });
+  // Form tabs (docs/specs/030-forms/forms.md): starting one and every builder edit.
+  const forms = useFormActions({
+    activeId,
+    tabs,
+    commitTabs,
+    itemTypes,
+    statusNames: planStatusNames,
+    markTabLoaded,
+  });
   // Old Plan tabs become the Plan kinds when an Editor opens them (docs/specs/026-plan/plan-tabs.md).
   usePlanTabConversion({
     activeTab,
@@ -3785,6 +3795,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useAssignRef(sheetsPlaceRef, (at, make, opts) => addBoxedAt(at.x, at.y, make, opts));
   return {
     planTabs,
+    forms,
     surface,
     tourSquare,
     addCustomColour,

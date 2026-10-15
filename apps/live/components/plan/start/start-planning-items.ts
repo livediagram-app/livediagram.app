@@ -23,9 +23,10 @@ import { PLAN_BOARD_TILES } from '@/components/palette/palette-plan-tiles';
 import { VISUALISATION_INFO } from '@/components/palette/palette-plan-view-tiles';
 import type { SuggestedDashboard } from '@/lib/suggested-dashboards';
 import { SHEET_TEMPLATES } from '@livediagram/sheets';
+import { FORM_STARTERS, type StarterId } from '@livediagram/forms';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 
-export type StartKind = 'board' | 'sheet' | 'visualisation' | 'dashboard' | 'template';
+export type StartKind = 'board' | 'sheet' | 'form' | 'visualisation' | 'dashboard' | 'template';
 
 export type StartItem = {
   id: string;
@@ -42,6 +43,8 @@ export type StartItem = {
 } & (
   | { kind: 'board'; preset: PlanBoardPresetId }
   | { kind: 'sheet'; start: PlacedSheetStart | null }
+  // A form, from one of its starters (docs/specs/030-forms/forms.md "Starting a form").
+  | { kind: 'form'; starter: StarterId }
   | { kind: 'dashboard'; layout: DashboardPresetId; suggestion?: undefined }
   // A Dashboard built around the document's own boards and sheets (suggested-dashboards.ts).
   | { kind: 'dashboard'; suggestion: SuggestedDashboard; layout?: undefined }
@@ -52,7 +55,7 @@ export type StartItem = {
 );
 
 export type StartCategory =
-  'recommended' | 'boards' | 'sheets' | 'visualisations' | 'dashboards' | 'inspiration';
+  'recommended' | 'boards' | 'sheets' | 'forms' | 'visualisations' | 'dashboards' | 'inspiration';
 
 export const START_CATEGORIES: readonly { id: StartCategory; name: string; line: string }[] = [
   {
@@ -62,6 +65,11 @@ export const START_CATEGORIES: readonly { id: StartCategory; name: string; line:
   },
   { id: 'boards', name: 'Boards', line: 'Columns of cards for the work to move through.' },
   { id: 'sheets', name: 'Spreadsheets', line: 'Cells, formulas and charts, beside your boards.' },
+  {
+    id: 'forms',
+    name: 'Forms',
+    line: 'A form anyone can fill in from a link. Every response becomes a card on your board.',
+  },
   {
     id: 'visualisations',
     name: 'Visualisations',
@@ -262,6 +270,22 @@ export function startItems({
       ...(s.keywords ? { keywords: s.keywords } : {}),
     }),
   );
+  const forms: StartItem[] = FORM_STARTERS.map((f) => ({
+    id: `form:${f.id}`,
+    kind: 'form',
+    starter: f.id,
+    name: f.name,
+    line: f.line,
+    keywords: [
+      'form',
+      'survey',
+      'questionnaire',
+      'responses',
+      'submissions',
+      'intake',
+      'google forms',
+    ],
+  }));
   // Status Breakdown is retired: Start Planning never makes one (plan-views.md "Visualisations").
   const visualisations: StartItem[] = PLAN_PALETTE_VISUALISATIONS.map((v) => ({
     id: `visualisation:${v}`,
@@ -303,14 +327,21 @@ export function startItems({
         ]
       : [];
   });
-  return [...boards, ...sheets, ...visualisations, ...suggested, ...dashboards, ...templates].map(
-    (i) => (START_KEYWORDS[i.id] ? { ...i, keywords: START_KEYWORDS[i.id] } : i),
-  );
+  return [
+    ...boards,
+    ...sheets,
+    ...forms,
+    ...visualisations,
+    ...suggested,
+    ...dashboards,
+    ...templates,
+  ].map((i) => (START_KEYWORDS[i.id] ? { ...i, keywords: START_KEYWORDS[i.id] } : i));
 }
 
 const KIND_OF: Record<Exclude<StartCategory, 'recommended'>, StartKind> = {
   boards: 'board',
   sheets: 'sheet',
+  forms: 'form',
   visualisations: 'visualisation',
   dashboards: 'dashboard',
   inspiration: 'template',
@@ -319,6 +350,7 @@ const KIND_OF: Record<Exclude<StartCategory, 'recommended'>, StartKind> = {
 export const KIND_NAMES: Record<StartKind, string> = {
   board: 'Board',
   sheet: 'Sheet',
+  form: 'Form',
   visualisation: 'Chart',
   dashboard: 'Dashboard',
   template: 'Template',
@@ -356,7 +388,7 @@ export function searchStartItems(
       .join(' ')
       .toLowerCase();
   const found = items.filter((i) => words.every((w) => hay(i).includes(w)));
-  return (['boards', 'sheets', 'visualisations', 'dashboards', 'inspiration'] as const)
+  return (['boards', 'sheets', 'forms', 'visualisations', 'dashboards', 'inspiration'] as const)
     .map((category) => ({ category, items: found.filter((i) => i.kind === KIND_OF[category]) }))
     .filter((g) => g.items.length > 0);
 }

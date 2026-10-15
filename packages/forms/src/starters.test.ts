@@ -11,7 +11,7 @@ import { FORM_STARTERS, buildStarter, formStarter, starterBaseType } from './sta
 import { newFormPartId } from './ids';
 
 let n = 0;
-const newId = () => `x-${(n += 1)}`;
+const newId = (p: 'q' | 's') => `${p}-${(n += 1)}`;
 
 describe('the starters', () => {
   it('offers one of each starter, in the spec’s order', () => {

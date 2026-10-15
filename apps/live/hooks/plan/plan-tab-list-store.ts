@@ -18,7 +18,8 @@ const listeners = new Set<() => void>();
 export function planTabEntries(tabs: readonly Tab[]): PlanTabEntry[] {
   return tabs.flatMap((t): PlanTabEntry[] => {
     const kind = tabKindOf(t);
-    if (kind === 'dashboard') return [];
+    // A Form tab is a page of its own, never a slot's (docs/specs/030-forms/forms.md).
+    if (kind === 'dashboard' || kind === 'form') return [];
     return [
       { id: t.id, name: t.name, of: kind === 'board' || kind === 'sheet' ? kind : 'diagram' },
     ];

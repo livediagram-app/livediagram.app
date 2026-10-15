@@ -172,6 +172,10 @@ export const TELEMETRY_CATEGORIES = [
   // Sheets (docs/specs/029-sheets/sheet.md "Telemetry"): a change by kind, CSV in and out, Find opened, and a
   // function's first use by name (names from the closed function list only, never content).
   'Sheet',
+  // Forms (docs/specs/030-forms/forms.md "Telemetry"): a form started (its starter), a question added (its type),
+  // published ('Link'), opened or closed, and a response sent ('Response', or 'Dropped' for the hidden field, written
+  // server-side) or reported (its reason). Never a form's words.
+  'Form',
   // Community (docs/specs/025-community/community.md): publishing, Edit Listing and removal from the editor
   // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters in
   // the Community app. Never a title, tag or id.

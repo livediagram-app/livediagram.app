@@ -36,8 +36,6 @@ import {
 
 export const FORM_ID_PATTERN = /^[a-z0-9-]{1,24}$/;
 const HEX = /^#[0-9a-f]{6}$/i;
-// An image id as the image store mints it.
-const IMAGE_ID = /^[A-Za-z0-9_-]{1,64}$/;
 const STATUS_ID = /^[^\s].{0,63}$/s;
 const TAB_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
@@ -142,8 +140,8 @@ function readCover(v: unknown): FormCover | undefined {
   const cover: FormCover = {};
   if (typeof v['color'] === 'string' && HEX.test(v['color']))
     cover.color = v['color'].toLowerCase();
-  if (typeof v['imageId'] === 'string' && IMAGE_ID.test(v['imageId'])) cover.imageId = v['imageId'];
-  return cover.color || cover.imageId ? cover : undefined;
+  if (v['style'] === 'gradient' || v['style'] === 'dots') cover.style = v['style'];
+  return cover.color || cover.style ? cover : undefined;
 }
 
 function readDestination(v: unknown): FormDestination | undefined {

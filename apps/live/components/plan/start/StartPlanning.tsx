@@ -9,6 +9,7 @@ import { DASHBOARD_PRESETS } from '@livediagram/document';
 import { lucideGlyph } from '@livediagram/ui';
 import {
   lucideChartPie,
+  lucideClipboardList,
   lucideGrid3x3,
   lucideLayoutGrid,
   lucideLightbulb,
@@ -26,6 +27,8 @@ import type { PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { DashboardLayoutPicture } from '../DashboardLayoutPicture';
 import { VisualisationPreview } from '../dashboard/slot-previews';
+import { FormStarterPicture } from '@/components/forms/FormStarterPicture';
+import type { StarterId } from '@livediagram/forms';
 import type { PlanVisualisation } from '@livediagram/items';
 import {
   KIND_NAMES,
@@ -43,6 +46,7 @@ const RAIL_ICONS: Record<StartCategory, ReturnType<typeof lucideGlyph>> = {
   recommended: lucideGlyph(lucideStar, 16),
   boards: lucideGlyph(lucideSquareKanban, 16),
   sheets: lucideGlyph(lucideGrid3x3, 16),
+  forms: lucideGlyph(lucideClipboardList, 16),
   visualisations: lucideGlyph(lucideChartPie, 16),
   dashboards: lucideGlyph(lucideLayoutGrid, 16),
   inspiration: lucideGlyph(lucideLightbulb, 16),
@@ -61,6 +65,7 @@ function Picture({ item, palette }: { item: StartItem; palette: PlanPalette }) {
     );
   if (item.kind === 'visualisation')
     return <VisualisationPreview view={item.view} palette={palette} />;
+  if (item.kind === 'form') return <FormStarterPicture starter={item.starter} palette={palette} />;
   if (item.kind === 'sheet') {
     const tile = SHEET_TILES.find((t) => t.start === item.start) ?? SHEET_TILES[0]!;
     return <SheetPreview palette={palette} tile={tile} />;
@@ -145,6 +150,7 @@ export function StartPlanning({
   loadTabs,
   onSuggestedDashboard,
   onVisualisation,
+  onForm,
 }: {
   onPickBoard: (preset: string) => void;
   // Absent where sheets cannot be placed: Spreadsheets is left out.
@@ -162,6 +168,8 @@ export function StartPlanning({
   onSuggestedDashboard?: ((s: SuggestedDashboard) => void) | undefined;
   // Makes the tab one chart filling the page (Visualisations); absent, Visualisations is left out.
   onVisualisation?: ((view: PlanVisualisation, name: string) => void) | undefined;
+  // Makes the tab a Form tab from a starter (Forms); absent, Forms is left out.
+  onForm?: ((starter: StarterId) => void) | undefined;
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
@@ -183,9 +191,10 @@ export function StartPlanning({
           (i.kind !== 'sheet' || !!onPickSheet) &&
           (i.kind !== 'dashboard' || !!onDashboard) &&
           (i.kind !== 'template' || !!onTemplate) &&
-          (i.kind !== 'visualisation' || !!onVisualisation),
+          (i.kind !== 'visualisation' || !!onVisualisation) &&
+          (i.kind !== 'form' || !!onForm),
       ),
-    [hasCards, suggestions, onPickSheet, onDashboard, onTemplate, onVisualisation],
+    [hasCards, suggestions, onPickSheet, onDashboard, onTemplate, onVisualisation, onForm],
   );
   const categories = START_CATEGORIES.filter((c) => itemsIn(items, c.id).length > 0).map((c) => ({
     ...c,
@@ -199,6 +208,7 @@ export function StartPlanning({
     else if (item.kind === 'sheet') onPickSheet?.(item.start ?? undefined);
     else if (item.kind === 'template') onTemplate?.(item.template);
     else if (item.kind === 'visualisation') onVisualisation?.(item.view, item.name);
+    else if (item.kind === 'form') onForm?.(item.starter);
     else if (item.suggestion) onSuggestedDashboard?.(item.suggestion);
     else if (item.layout) onDashboard?.(item.layout);
   };
@@ -206,9 +216,9 @@ export function StartPlanning({
     <StartPanel
       titleId="start-planning-title"
       title="Start Planning"
-      line="Pick how to run the work. You can add more boards, sheets and dashboards later."
-      searchLabel="Find a board, sheet or layout"
-      noMatchNoun="boards, sheets or layouts"
+      line="Pick how to run the work. You can add more boards, sheets, forms and dashboards later."
+      searchLabel="Find a board, sheet, form or layout"
+      noMatchNoun="boards, sheets, forms or layouts"
       helpArticle="planBoards"
       palette={palette}
       categories={categories}

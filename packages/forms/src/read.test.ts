@@ -34,7 +34,7 @@ describe('readForm', () => {
       heading: '  Bug Report ',
       description: 'Tell us',
       accent: '#DC2626',
-      cover: { color: '#ABCDEF', imageId: 'img_1' },
+      cover: { color: '#ABCDEF', style: 'gradient' },
       sections: [
         {
           id: 's-1',
@@ -75,7 +75,9 @@ describe('readForm', () => {
     const read = readForm(raw)!;
     expect(read.heading).toBe('Bug Report');
     expect(read.accent).toBe('#dc2626');
-    expect(read.cover).toEqual({ color: '#abcdef', imageId: 'img_1' });
+    expect(read.cover).toEqual({ color: '#abcdef', style: 'gradient' });
+    expect(readForm({ cover: { style: 'dots' } })!.cover).toEqual({ style: 'dots' });
+    expect(readForm({ cover: { style: 'solid' } })!.cover).toBeUndefined();
     expect(read.sections[0]!.description).toBe('First');
     expect(read.sections[0]!.questions).toEqual([
       {
@@ -233,7 +235,7 @@ describe('readForm', () => {
   it('drops settings out of range', () => {
     const read = readForm({
       accent: 'red',
-      cover: { color: 'blue', imageId: '../x' },
+      cover: { color: 'blue', style: 'zigzag' },
       destination: { tabId: 'tab 1', typeId: 'bug', status: 'x' },
       closesAt: -1,
       limit: 0,

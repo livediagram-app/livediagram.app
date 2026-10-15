@@ -88,9 +88,13 @@ export interface FormDestination {
   status: string;
 }
 
+// The band across the form's top: a colour drawn plain, as a gradient into the form colour, or dotted.
+export const COVER_STYLES = ['solid', 'gradient', 'dots'] as const;
+export type CoverStyle = (typeof COVER_STYLES)[number];
+
 export interface FormCover {
   color?: string;
-  imageId?: string;
+  style?: CoverStyle;
 }
 
 export const STARTER_IDS = [

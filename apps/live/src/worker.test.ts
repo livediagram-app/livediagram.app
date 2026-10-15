@@ -20,6 +20,17 @@ describe('live worker editor route', () => {
     expect(seen).toEqual(['/document/placeholder']);
   });
 
+  it('serves the form page for /form/<code>, not framed (docs/specs/030-forms/forms.md)', async () => {
+    const { env: e, seen } = env();
+    const res = await worker.fetch(
+      new Request('https://livediagram.app/form/AbCdEfGhIjKlMnOpQrStU1'),
+      e,
+    );
+    await worker.fetch(new Request('https://livediagram.app/form/placeholder'), e);
+    expect(seen).toEqual(['/form/placeholder', '/form/placeholder']);
+    expect(res.headers.get('X-Frame-Options')).toBe('DENY');
+  });
+
   it('leaves other paths to the static assets', async () => {
     const { env: e, seen } = env();
     await worker.fetch(new Request('https://livediagram.app/explorer/recent'), e);

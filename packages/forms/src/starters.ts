@@ -270,7 +270,7 @@ const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().t
 export function buildStarter(
   starter: FormStarter,
   type: ItemTypeDef,
-  newId: () => string,
+  newId: (prefix: 'q' | 's') => string,
 ): { form: FormDefinition; type: ItemTypeDef } {
   const custom: CustomFieldDef[] = [...(type.custom ?? [])];
   const fields = [...type.fields];
@@ -296,10 +296,10 @@ export function buildStarter(
     return id;
   };
   const sections = starter.sections.map((s) => ({
-    id: newId(),
+    id: newId('s'),
     title: s.title,
     questions: s.questions.map(({ to, ...q }): FormQuestion => {
-      const question: FormQuestion = { ...q, id: newId() };
+      const question: FormQuestion = { ...q, id: newId('q') };
       if (q.options) question.options = [...q.options];
       if (to === 'title') question.goesTo = { to: 'title' };
       else if (to && to !== 'description') question.goesTo = { to: 'field', fieldId: fieldFor(to) };

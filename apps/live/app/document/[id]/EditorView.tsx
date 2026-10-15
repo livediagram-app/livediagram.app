@@ -105,6 +105,10 @@ const PlanBoardPicker = dynamic(
   () => import('@/components/plan/PlanBoardPicker').then((m) => m.PlanBoardPicker),
   { ssr: false },
 );
+// A Form tab's page (docs/specs/030-forms/forms.md), fetched only when one is opened.
+const FormPage = dynamic(() => import('@/components/forms/FormPage').then((m) => m.FormPage), {
+  ssr: false,
+});
 // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): only a Dashboard tab draws it.
 const DashboardPage = dynamic(
   () => import('@/components/plan/dashboard/DashboardPage').then((m) => m.DashboardPage),
@@ -342,10 +346,16 @@ export function EditorView() {
     !isReadOnly &&
     !templateGridOpen &&
     ctx.editorMode.mode === 'plan' &&
-    (activeTab.kind === 'dashboard' ? !dashboardHasRows : activeTab.elements.length === 0);
+    (activeTab.kind === 'dashboard'
+      ? !dashboardHasRows
+      : activeTab.kind === 'form'
+        ? !activeTab.form
+        : activeTab.elements.length === 0);
   // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md), for everyone who opens it; one with no rows left shows
   // Start Planning again, a new choice replacing it.
   const showDashboard = hydrated && activeTab.kind === 'dashboard' && dashboardHasRows;
+  // A Form tab's page (docs/specs/030-forms/forms.md), for everyone who opens it.
+  const showForm = hydrated && activeTab.kind === 'form' && !!activeTab.form;
   // The photo draft awaiting a decision, and the session-local view state
   // that goes with it (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftNotes = draftNotesOf(activeTab.elements);
@@ -761,6 +771,22 @@ export function EditorView() {
                                     renameTab={renameTab}
                                   />
                                 ) : null}
+                                {showForm ? (
+                                  <FormPage
+                                    key={activeTab.id}
+                                    tab={activeTab}
+                                    tabs={tabs}
+                                    // A locked tab's form reads as a Viewer's does.
+                                    canEdit={ctx.can.level === 'edit' && !ctx.activeTabLocked}
+                                    actions={ctx.forms}
+                                    openTab={selectTab}
+                                    loadTabs={loadAllTabs}
+                                    documentId={ctx.documentId}
+                                    ownerId={ctx.selfParticipant.id}
+                                    share={ctx.sessionShareCode}
+                                    online={!isOffline}
+                                  />
+                                ) : null}
                                 {showPlanBoardPicker ? (
                                   <PlanBoardPicker
                                     // Each choice makes the tab its kind (docs/specs/026-plan/plan-tabs.md).
@@ -795,6 +821,7 @@ export function EditorView() {
                                     loadTabs={loadAllTabs}
                                     onSuggestedDashboard={ctx.planTabs.startSuggestedDashboard}
                                     onVisualisation={ctx.planTabs.startVisualisationTab}
+                                    onForm={ctx.forms.startForm}
                                   />
                                 ) : null}
                                 {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a calm card in the
