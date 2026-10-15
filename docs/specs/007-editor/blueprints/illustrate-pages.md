@@ -74,7 +74,7 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | Page export                 | `pageExportFrame`, `PageExportFrame`, `EXPORT_PAPER` (`apps/live/lib/export-page.ts`); `ImageExportOpts.page`; `exportPagesAsPdf`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Export pages                | `PageScope`, `PageExportFormat`, `DEFAULT_PAGE_SCOPE`, `exportPages`, `exportPageLabel`, `zipEntryName`, `sanitizeFilename` (`apps/live/lib/export-pages.ts`); `writeZip`, `crc32` (`apps/live/lib/zip-writer.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Export page row             | `ExportPagePicker` (scope + page); `ImageExportPanel` `pagePicker`; `ILLUSTRATE_FORMATS`, `ILLUSTRATE_CARD_COPY` (`ExportTabDialog.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| Animated background export  | `motionParts`, `MotionNode`, `MotionBox`, `MotionWave`, `MotionGroup`, `MotionGrid`, `MotionFill`, `MotionAnim`, `wavePath` (`apps/live/lib/page-motion-parts.ts`); `openingPhase`, `openingPose`, `poseAt`, `cubicBezier` (`page-motion-frame.ts`); `paintMotionFrame`, `MotionFrameCache`, `motionFrameHref`, `blurredDisc`, `rgba` (`page-motion-canvas.ts`); `pageGradientLine`, `pageExportFrame`'s `overFill`                                                                                                                                                                                                                                                           |
+| Animated background export  | `motionParts`, `MotionNode`, `MotionBox`, `MotionWave`, `MotionGroup`, `MotionGrid`, `MotionFill`, `MotionAnim`, `wavePath`, `waveLine` (`apps/live/lib/page-motion-parts.ts`; the fourth carousel page's motions in `page-motion-parts-page-four.ts`); `openingPhase`, `openingPose`, `poseAt`, `cubicBezier`, `ANIM_ORIGIN`, `animOrigin` (`page-motion-frame.ts`); `paintMotionFrame`, `MotionFrameCache`, `motionFrameHref`, `blurredDisc`, `rgba` (`page-motion-canvas.ts`); `pageGradientLine`, `pageExportFrame`'s `overFill`                                                                                                                                          |
 | Import formats              | `ImportTabDialog` `formats` (`['json']` in Illustrate mode, from `EditorTabDialogs`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Page slide                  | `Slide.pageId`, `slideFrame(slide, tab)` (`packages/document/src/slide-deck.ts`); `newPageSlide`; `PageSlidePicker`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Slides button               | `SlidesClusterButton`; dock panel `'slides'` (`useDockPopovers`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -674,21 +674,31 @@ A slide whose fill is a gradient with a `motion` exports its opening frame:
 
 - `motionParts(motion, { w, h }, motionPaint(fill))` (`apps/live/lib/page-motion-parts.ts`) lists
   every part as data: `MotionBox` (`left`, `top`, `width`, `height`, `round?`, `fill: MotionFill`,
-  `halo?`, `anim?`), `MotionWave`, `MotionGroup` (`anim?`, `mask?: 'from-below'`) and `MotionGrid`;
-  `MotionAnim` is `{ name: MotionAnimName, d, dl?, x?, y?, rest? }`, one name per `pm-<name>`
-  keyframes in `app/motion-page.css`. `PageMotionLayer` renders the parts as the moving DOM;
+  `halo?`, `anim?`), `MotionWave` (`stroke?`: a thread, its `waveLine` stroked rather than filled;
+  `periods` even so the line meets itself at the loop), `MotionGroup` (`anim?`, `mask?:
+'from-below'`; an `orbit` group turns about the slide's centre) and `MotionGrid`; `MotionAnim` is
+  `{ name: MotionAnimName, d, dl?, x?, y?, r?, rest? }` (`r` in degrees, `--pm-r`), one name per
+  `pm-<name>` keyframes in `app/motion-page.css`. The fourth page's loops (`warp`, `orbit`, `blip`,
+  `bars`, `tumble`) carry their resting transform in their class, so `animation: none` under
+  reduced motion leaves each part posed. Warp, Orbits, Radar, Equaliser, Confetti and Threads live
+  in `page-motion-parts-page-four.ts`; a Radar blip's `dl` is `-RADAR_TURN x (1 - angle / 360)`, so
+  it is lit as the sweep's edge reaches its angle at any speed. `PageMotionLayer` renders the parts as the moving DOM;
   nothing else defines a part.
 - `openingPose(anim)` (`page-motion-frame.ts`): `openingPhase` = `(-dl / d)` modulo 1 (the speed
   divides both, so it cancels), `reversed` on an odd loop (`sweep` alternates); `poseAt(anim, p)`
   restates each keyframes as tracks eased per step (`ease-in-out` = `cubicBezier(0.42, 0, 0.58, 1)`,
-  `spread` = `cubicBezier(0.2, 0.6, 0.4, 1)`, the rest linear) into `MotionPose { tx, ty, scale,
-rotate, opacity }`.
+  `spread` = `cubicBezier(0.2, 0.6, 0.4, 1)`, the rest linear) into `MotionPose { tx, ty, scale, sx,
+sy, rotate, opacity }` (`warp` eased `cubicBezier(0.42, 0, 1, 1)`, `blip` `cubicBezier(0, 0, 0.58, 1)`), turned
+  and scaled about `animOrigin(anim)`: the centre, or `ANIM_ORIGIN`'s `warp` `[0, 0.5]` and `bars`
+  `[0.5, 1]`, which a test holds to the stylesheet's `transform-origin`.
 - `paintMotionFrame(ctx, motion, fill, rect, cache?)` (`page-motion-canvas.ts`): clipped to
   `rect`, alpha x `paint.strength`; a box is translated to its centre plus the pose, turned, scaled
   and faded, then its fill drawn (`glow` / `fade`: an elliptical radial gradient reaching its sides;
   `bokeh`: reaching its farthest corner; `lines`: 2px bands every `gap` at 45 degrees; `beam`; `mesh`:
   its spots painted bottom layer first; `rays`: 5 of every 12 degrees from straight up; `ring`: a
-  stroke inside the box). A `halo` is the disc of radius plus spread under a Gaussian of half the
+  stroke inside the box; `streak`: clear tail to full head; `sweep`: `createConicGradient` from
+  straight up, clear to three quarters, full at the edge; `bar`: `from` at 15% at its foot to `to`
+  at its top). A `halo` is the disc of radius plus spread under a Gaussian of half the
   blur, `blurredDisc` sampled into 12 stops. A masked group and the grid paint into a layer at the
   context's scale and keep it `destination-in` their mask. The grid projects its lines through
   `rotateX(62deg)` and a perspective of 0.6 x the slide's height from the middle of its band.

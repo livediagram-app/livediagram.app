@@ -9,6 +9,7 @@
 // 4 to 90 seconds. Positions come from fixed seeds, so a slide looks the same wherever it is opened.
 import type { PageMotion } from '@livediagram/document';
 import { motionSeed, type MotionPaint } from './page-motion';
+import { Confetti, Equaliser, Orbits, Radar, Threads, Warp } from './page-motion-parts-page-four';
 
 /** The loops a part runs, one per keyframes in app/motion-page.css (`pm-<name>`). */
 export type MotionAnimName =
@@ -25,17 +26,25 @@ export type MotionAnimName =
   | 'sweep'
   | 'glide'
   | 'fall'
-  | 'pulse';
+  | 'pulse'
+  | 'warp'
+  | 'orbit'
+  | 'blip'
+  | 'bars'
+  | 'tumble';
 
 /** How a part moves: its loop, the loop's length and where it starts (seconds, a start at or below
- *  zero so a slide opens mid-motion), how far it travels (px), and, for a ring or a bubble, its
- *  scale at rest under reduced motion. */
+ *  zero so a slide opens mid-motion), how far it travels (px), how far it turns (degrees: a
+ *  streak's heading, an orbit's starting angle, a piece of confetti's spin), and where it rests
+ *  under reduced motion (a ring's, a bubble's or a bar's scale; how far down its fall a piece of
+ *  confetti hangs). */
 export type MotionAnim = {
   name: MotionAnimName;
   d: number;
   dl?: number;
   x?: number;
   y?: number;
+  r?: number;
   rest?: number;
 };
 
@@ -61,7 +70,14 @@ export type MotionFill =
   // Rays turning about the centre: 5 degrees lit, 7 dark.
   | { kind: 'rays'; color: string; a: number }
   // A ring: a border, nothing inside.
-  | { kind: 'ring'; color: string; a: number; width: number };
+  | { kind: 'ring'; color: string; a: number; width: number }
+  // A streak: clear at its tail (left), full at its head (right).
+  | { kind: 'streak'; color: string; a: number }
+  // A radar's sweep: a wedge of the last quarter turn, clear behind, full at its leading edge
+  // (straight up, before it turns).
+  | { kind: 'sweep'; color: string; a: number }
+  // A bar lit from below: `from` at its foot (faint), `to` at its top.
+  | { kind: 'bar'; from: string; to: string; a: number };
 
 export type MotionBox = {
   type: 'box';
@@ -87,11 +103,13 @@ export type MotionWave = {
   periods: number;
   color: string;
   a: number;
+  // A thread: the outline alone, a line this wide, rather than the water under it.
+  stroke?: number;
   anim: MotionAnim;
 };
 
-/** Parts that move together (the sky of stars) or are masked together (the rays from below), in a
- *  box the size of the slide. */
+/** Parts that move together (the sky of stars, a planet on its orbit, turning about the slide's
+ *  centre) or are masked together (the rays from below), in a box the size of the slide. */
 export type MotionGroup = {
   type: 'group';
   anim?: MotionAnim;
@@ -140,6 +158,12 @@ const MOTIONS: Record<PageMotion, (s: MotionSize, p: MotionPaint) => MotionNode[
   lava: Lava,
   'dot-wave': DotWave,
   clouds: Clouds,
+  warp: Warp,
+  orbits: Orbits,
+  radar: Radar,
+  equaliser: Equaliser,
+  confetti: Confetti,
+  threads: Threads,
 };
 
 const box = (b: Omit<MotionBox, 'type'>): MotionBox => ({ type: 'box', ...b });
@@ -578,6 +602,11 @@ function Clouds({ w, h }: MotionSize, p: MotionPaint): MotionNode[] {
 
 /** One wave's outline across two periods of `w`, so sliding it by `w` loops without a seam. */
 export function wavePath(w: number, h: number, amp: number, base: number, periods: number): string {
+  return `${waveLine(w, amp, base, periods)} V${h} H0 Z`;
+}
+
+/** A wave's crest line alone (a thread), across two periods of `w`. */
+export function waveLine(w: number, amp: number, base: number, periods: number): string {
   const seg = w / periods;
   let d = `M0 ${base}`;
   for (let i = 0; i < periods * 2; i += 1) {
@@ -585,5 +614,5 @@ export function wavePath(w: number, h: number, amp: number, base: number, period
     const up = i % 2 === 0 ? -amp : amp;
     d += ` Q${x + seg / 2} ${base + up} ${x + seg} ${base}`;
   }
-  return `${d} V${h} H0 Z`;
+  return d;
 }

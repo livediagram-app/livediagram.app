@@ -2,17 +2,39 @@
 // illustrate-pages.md "Animated backgrounds"): each part's loop in app/motion-page.css, evaluated
 // at its start. The export draws this still, the first frame anyone sees, rather than the bare
 // gradient. Pure: the keyframes are restated here as numbers, and a test keeps the two in step.
-import type { MotionAnim } from './page-motion-parts';
+import type { MotionAnim, MotionAnimName } from './page-motion-parts';
 
-/** A part's pose: moved by (tx, ty), scaled and turned (degrees) about its centre, at an opacity. */
-export type MotionPose = { tx: number; ty: number; scale: number; rotate: number; opacity: number };
+/** A part's pose: moved by (tx, ty), then turned (degrees) and scaled (`scale` both ways, `sx` and
+ *  `sy` along one) about its transform origin, at an opacity. */
+export type MotionPose = {
+  tx: number;
+  ty: number;
+  scale: number;
+  sx: number;
+  sy: number;
+  rotate: number;
+  opacity: number;
+};
 
-const REST: MotionPose = { tx: 0, ty: 0, scale: 1, rotate: 0, opacity: 1 };
+const REST: MotionPose = { tx: 0, ty: 0, scale: 1, sx: 1, sy: 1, rotate: 0, opacity: 1 };
+
+/** Where a loop turns and scales its part from, as fractions of the part's box: its centre unless
+ *  the stylesheet's `transform-origin` says otherwise (a streak from its tail, a bar from its
+ *  foot). */
+export const ANIM_ORIGIN: Partial<Record<MotionAnimName, readonly [number, number]>> = {
+  warp: [0, 0.5],
+  bars: [0.5, 1],
+};
+export function animOrigin(anim: MotionAnim | undefined): readonly [number, number] {
+  return (anim && ANIM_ORIGIN[anim.name]) ?? [0.5, 0.5];
+}
 
 type Easing = (t: number) => number;
 const linear: Easing = (t) => t;
 const easeInOut = cubicBezier(0.42, 0, 0.58, 1);
 const spreadOut = cubicBezier(0.2, 0.6, 0.4, 1);
+const easeIn = cubicBezier(0.42, 0, 1, 1);
+const easeOut = cubicBezier(0, 0, 0.58, 1);
 
 /** How far into its loop a part is as the slide opens: its start is at or below zero, so the slide
  *  opens that far in. The slide's speed divides both the length and the start, so it cancels.
@@ -92,6 +114,52 @@ export function poseAt(anim: MotionAnim, p: number): MotionPose {
         scale: through([0, 0.55], [0.5, 1.15], [1, 0.55])(p, easeInOut),
         opacity: through([0, 0.35], [0.5, 1], [1, 0.35])(p, easeInOut),
       };
+    case 'warp': {
+      // rotate(r) translateX(d) is translate(d along r) rotate(r).
+      const r = anim.r ?? 0;
+      const e = easeIn(p);
+      const dist = x * (0.06 + 0.94 * e);
+      const t = (r * Math.PI) / 180;
+      return {
+        ...REST,
+        tx: dist * Math.cos(t),
+        ty: dist * Math.sin(t),
+        rotate: r,
+        sx: 0.2 + 0.8 * e,
+        opacity: through([0, 0], [0.25, 1], [1, 1])(p, easeIn),
+      };
+    }
+    case 'orbit':
+      return { ...REST, rotate: (anim.r ?? 0) + 360 * p };
+    case 'blip':
+      return {
+        ...REST,
+        scale: through([0, 1.5], [0.35, 1], [1, 1])(p, easeOut),
+        opacity: through([0, 1], [0.35, 0.4], [1, 0.08])(p, easeOut),
+      };
+    case 'bars':
+      return {
+        ...REST,
+        sy: through(
+          [0, 0.25],
+          [0.2, 0.9],
+          [0.4, 0.5],
+          [0.6, 1],
+          [0.8, 0.4],
+          [1, 0.25],
+        )(p, easeInOut),
+      };
+    case 'tumble': {
+      const at = (vals: readonly number[]) =>
+        through(...vals.map((v, i) => [i / 4, v] as const))(p, easeInOut);
+      const r = anim.r ?? 0;
+      return {
+        ...REST,
+        tx: at([0, x, 0, -x, 0]),
+        ty: at([0, y * 0.25, y * 0.5, y * 0.75, y]),
+        rotate: at([0, r * 0.25, r * 0.5, r * 0.75, r]),
+      };
+    }
   }
 }
 
