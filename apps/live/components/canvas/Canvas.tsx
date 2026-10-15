@@ -117,7 +117,11 @@ import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers'
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { loadArticleFlows, loadIllustratePages } from '@/lib/editor-deferred-code';
+import {
+  loadArticleFlows,
+  loadAvatarSpeechLayer,
+  loadIllustratePages,
+} from '@/lib/editor-deferred-code';
 import { pageIdAtPress, pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
 import { GifOmit } from './GifOmit';
 
@@ -127,10 +131,7 @@ const IllustratePages = dynamic(loadIllustratePages, { ssr: false });
 const ArticleFlows = dynamic(loadArticleFlows, { ssr: false });
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
 // nothing on the canvas needs them before then.
-const AvatarSpeechLayer = dynamic(
-  () => import('@/components/canvas/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer),
-  { ssr: false },
-);
+const AvatarSpeechLayer = dynamic(loadAvatarSpeechLayer, { ssr: false });
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
@@ -455,13 +456,20 @@ function CanvasView(props: CanvasProps) {
   // something above their character's head; everyone on the tab sees it float away.
   const speech = useAvatarSpeech({
     active: canvasTool === 'avatar',
-    canSpeak: !props.readOnly || !!props.takePart,
+    // The session's own say (docs/specs/013-workspace/share-roles.md): an Editor or a Participant, never by
+    // whether the canvas is read-only.
+    canSpeak: !!props.takePart,
     feet: avatar.pos,
     scale: avatarScale(avatarLook.config.size),
     tabId: props.activeTabId ?? '',
     onSay: props.onAvatarSay,
   });
   const speechBubbles = useSpeechBubbles();
+  // The composer's code fetched as soon as someone who may speak is in the mode, so the first Enter finds it in and
+  // the words typed straight after it land in its box, not on the editor's shortcuts.
+  useEffect(() => {
+    if (speech.speaking) void loadAvatarSpeechLayer();
+  }, [speech.speaking]);
 
   // Who is sitting in each chair, from PRESENCE — never from the document. Our
   // own character plus every peer's, keyed by chair id, so a chair empties by

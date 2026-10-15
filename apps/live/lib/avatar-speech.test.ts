@@ -23,7 +23,6 @@ const bubble = (over: Partial<SpeechBubble> = {}): SpeechBubble => ({
   id: 'b',
   from: 'p1',
   own: false,
-  colour: '#0ea5e9',
   text: 'hi',
   tabId: 't',
   x: 0,

@@ -31,7 +31,8 @@ tour's rules hold.
 
 ## Tour content
 
-None. The tour opens the Avatar panel to show it and closes it again; it changes no costume, plays no reaction,
+None. The tour opens the Avatar panel to show it and, at the end or on a Skip, leaves it as it found it: closed if
+the tour opened it, open again if the person had it open (the push step closes it to show the canvas); it changes no costume, plays no reaction,
 sends no message and pushes nobody. There is nothing to take away and nothing in the document's history.
 
 ## The steps

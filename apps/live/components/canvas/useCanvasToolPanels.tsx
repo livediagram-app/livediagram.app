@@ -120,9 +120,10 @@ export function useCanvasToolPanels({
 
   // Avatar Panel (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): the character sheet, a popover over the
   // Avatar button, mounted only while Avatar mode is active and the popover open. Available to view-role too
-  // (the mode is); only someone who may speak gets Send a Message.
+  // (the mode is); only someone who may speak gets Send a Message. Shown in Zen, as its button is (the mode's one
+  // piece of chrome there); only the welcome flow hides it.
   const avatarEl =
-    !chromeHidden && canvasTool === 'avatar' && avatarConfig && avatarPopover ? (
+    !props.welcomeOpen && canvasTool === 'avatar' && avatarConfig && avatarPopover ? (
       <AvatarPanel
         config={avatarConfig}
         onChange={(field, value) => onChangeAvatarField?.(field, value)}

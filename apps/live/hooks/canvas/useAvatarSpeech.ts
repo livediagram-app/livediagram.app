@@ -11,7 +11,7 @@ import type { AvatarPoint } from '@/lib/avatar-walk';
 import { debugLog } from '@/lib/debug-log';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { track } from '@/lib/telemetry';
-import { isTypingTarget } from '@/lib/typing-target';
+import { isEnterActivatedTarget, isTypingTarget } from '@/lib/typing-target';
 
 export type SpeechSource = 'composer' | 'panel';
 
@@ -93,11 +93,12 @@ export function useAvatarSpeech({
   };
 
   // Enter opens the composer (docs/specs/008-canvas/avatar-mode.md "Typing a message"): a plain press, with
-  // nothing else holding the keyboard. Claimed so no other Enter handler sees it.
+  // nothing else holding the keyboard, and no focused control (a button, a menu row, the tour's card) Enter acts on
+  // itself. Claimed so no other Enter handler sees it.
   const onKeyDown = useEffectEvent((e: KeyboardEvent) => {
     if (e.key !== 'Enter' || e.repeat || e.shiftKey || e.altKey || e.metaKey || e.ctrlKey) return;
     if (!speaking || composerOpen) return;
-    if (isTypingTarget(e.target) || anyModalOpen()) return;
+    if (isTypingTarget(e.target) || isEnterActivatedTarget(e.target) || anyModalOpen()) return;
     e.preventDefault();
     e.stopPropagation();
     openComposer();
