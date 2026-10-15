@@ -8,7 +8,8 @@ import {
   type FormDefinition,
 } from '@livediagram/forms';
 import { normaliseBoardSetup, type ItemTypeDef, type PlanBoardSetup } from '@livediagram/items';
-import { getTab, readSheetHead } from '../db';
+import { documentLinksTab, getTab, readSheetHead } from '../db';
+import type { FormSheetDestination } from '@livediagram/forms';
 import type { Env, TabDTO } from '../types';
 
 export type FormTab = { tab: TabDTO; form: FormDefinition };
@@ -42,6 +43,19 @@ export async function boardsOnTab(
   return boards;
 }
 
+// Whether a Sheet destination still holds: its sheet on its tab, and that tab still in the document (a deleted Sheet
+// tab can leave its sheet behind until it is swept, and a row written there is never seen).
+export async function sheetOnItsTab(
+  env: Env,
+  documentId: string,
+  sheet: FormSheetDestination,
+): Promise<boolean> {
+  const head = await readSheetHead(env, documentId, sheet.sheetId);
+  return (
+    !!head && head.tabId === sheet.tabId && (await documentLinksTab(env, documentId, sheet.tabId))
+  );
+}
+
 // Why responses could not land now, or null when they can (docs/specs/030-forms/forms.md "Responses to a Sheet",
 // "Publishing and the form link"): the sheet gone from its tab, or the board destination's problem.
 export async function responsesProblem(
@@ -51,8 +65,7 @@ export async function responsesProblem(
   types: readonly ItemTypeDef[],
 ): Promise<DestinationProblem | 'sheet_missing' | null> {
   if (form.sheet) {
-    const head = await readSheetHead(env, documentId, form.sheet.sheetId);
-    return head && head.tabId === form.sheet.tabId ? null : 'sheet_missing';
+    return (await sheetOnItsTab(env, documentId, form.sheet)) ? null : 'sheet_missing';
   }
   const boards = form.destination ? await boardsOnTab(env, documentId, form.destination.tabId) : [];
   return destinationProblem(form.destination, boards, types);

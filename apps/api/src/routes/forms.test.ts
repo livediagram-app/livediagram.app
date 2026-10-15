@@ -387,13 +387,25 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
 
 describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sheet")', () => {
   const SHEET = 'shtAAAAAA001';
-  const seedSheet = () =>
+  // The sheet on its Sheet tab, that tab in the document.
+  const seedSheet = () => {
+    sql.sql
+      .prepare(
+        `INSERT OR IGNORE INTO tabs (id, name, data, updated_at, element_count, rev) VALUES ('stab', 'Responses', '{}', 1, 0, 0)`,
+      )
+      .run();
+    sql.sql
+      .prepare(
+        `INSERT OR IGNORE INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 'stab', 1, 1)`,
+      )
+      .run();
     sql.sql
       .prepare(
         `INSERT INTO sheets (document_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
          VALUES ('d1', ?, 'stab', 'Responses', '{"rows":["ra01","ra02","ra03"],"cols":["ca01","ca02"]}', 0, 1, 1, '{}')`,
       )
       .run(SHEET);
+  };
   const cells = () =>
     sql.sql
       .prepare(
@@ -439,6 +451,22 @@ describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sh
     expect((await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'x' } })).status).toBe(
       409,
     );
+  });
+
+  // A deleted Sheet tab can leave its sheet behind: a row there would never be seen.
+  it("takes no row, Preview or response, once the sheet's tab has left the document", async () => {
+    seedSheet();
+    writeForm(form({ sheet: { tabId: 'stab', sheetId: SHEET } }));
+    const code = await publish();
+    sql.sql.prepare(`DELETE FROM document_tabs WHERE tab_id = 'stab'`).run();
+    expect(
+      (await owner('POST', 'form-preview', { body: { answers: { 'q-sum': 'Try' } } })).status,
+    ).toBe(409);
+    expect((await pub<PublicFormResponse>('GET', code)).body.state).toBe('closed');
+    expect((await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'x' } })).status).toBe(
+      409,
+    );
+    expect(cells()).toEqual([]);
   });
 });
 

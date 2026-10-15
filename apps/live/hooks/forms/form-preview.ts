@@ -12,6 +12,8 @@ import { track } from '@/lib/telemetry';
 export const PREVIEW_NO_DESTINATION =
   'Preview can’t add its card until Responses Go To names a board and column.';
 export const PREVIEW_FAILED = 'Preview couldn’t be sent. Try again.';
+export const PREVIEW_NO_SHEET =
+  'Preview can’t add its row: its sheet was removed. Choose where responses go.';
 
 export async function sendPreview({
   form,
@@ -34,6 +36,11 @@ export async function sendPreview({
 }): Promise<SubmitOutcome> {
   const checked = checkResponse(form, state);
   if (!checked.ok) return { kind: 'invalid', errors: checked.errors };
+  // A Sheet no longer in the document takes no row: say so rather than send it nowhere.
+  if (form.sheet && problem) {
+    debugLog('[forms] form.preview.no_sheet', { problem });
+    return { kind: 'failed', message: PREVIEW_NO_SHEET };
+  }
   if (sendToLink) {
     const sent = await sendToLink(state);
     // The api counts it (Form·Sent·Preview, server-side).

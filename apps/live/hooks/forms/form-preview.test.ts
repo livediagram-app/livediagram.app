@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ItemCreate, ItemTypeDef } from '@livediagram/items';
 import { FROM_FORM_FIELD, type FormDefinition } from '@livediagram/forms';
-import { PREVIEW_FAILED, PREVIEW_NO_DESTINATION, sendPreview } from './form-preview';
+import {
+  PREVIEW_FAILED,
+  PREVIEW_NO_DESTINATION,
+  PREVIEW_NO_SHEET,
+  sendPreview,
+} from './form-preview';
 
 const track = vi.fn();
 vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
@@ -115,5 +120,16 @@ describe('sendPreview', () => {
     const { made, result } = send({ form: toSheet });
     expect(await result).toEqual({ kind: 'failed', message: PREVIEW_FAILED });
     expect(made).toEqual([]);
+  });
+
+  // A Sheet tab deleted under the form: the row would land nowhere anyone sees.
+  it('refuses a Sheet form’s preview when its sheet is gone, sending nothing', async () => {
+    const toSheet = { ...form, sheet: { tabId: 'st', sheetId: 'AAAAAAAAAAA1' } };
+    const sendToLink = vi.fn(async () => ({ kind: 'sent' as const }));
+    expect(await send({ form: toSheet, problem: 'sheet_missing', sendToLink }).result).toEqual({
+      kind: 'failed',
+      message: PREVIEW_NO_SHEET,
+    });
+    expect(sendToLink).not.toHaveBeenCalled();
   });
 });

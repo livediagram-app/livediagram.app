@@ -60,7 +60,7 @@
  * motion: useFlipList moves nothing and the leave is skipped; globals.css collapses the animations to their end.
  */
 .form-q-move {
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes form-q-enter {
   from {

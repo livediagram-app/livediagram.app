@@ -247,12 +247,13 @@ function accepted(
   },
 ): Response {
   const { doc, form, code, number, preview } = r;
+  const { env } = ctx;
   console.info('[forms] form.response.accepted', { documentId: doc.id, number, preview });
   ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', preview ? 'Preview' : 'Response'));
   if (!preview)
     ctx.waitUntil?.(
       notifyFormResponse(
-        ctx.env,
+        env,
         { id: doc.id, ownerId: doc.ownerId, name: doc.name },
         { code, heading: form.heading },
         r.title,

@@ -4,20 +4,20 @@
 import type { AnswerValue, FormSheetDestination } from '@livediagram/forms';
 import { responseRowWrite, type FormDefinition } from '@livediagram/forms';
 import { cellKey, type SheetPerson } from '@livediagram/sheets';
-import { readCells, readSheetHead, usedSheetRows } from '../db';
+import { documentLinksTab, readCells, readSheetHead, usedSheetRows } from '../db';
 import type { RouteContext } from '../routes/context';
 import { storeSheetWrite } from '../routes/sheet-write-route';
+import { sheetOnItsTab } from './form-tab';
 
 export type SheetRowOutcome = 'written' | 'missing' | 'full' | 'busy';
 
-// Whether the sheet a form sends its responses to is still there, on its tab.
+// Whether the sheet a form sends its responses to is still there, on its tab in the document (form-tab.ts).
 export async function sheetThere(
   ctx: RouteContext,
   documentId: string,
   sheet: FormSheetDestination,
 ): Promise<boolean> {
-  const head = await readSheetHead(ctx.env, documentId, sheet.sheetId);
-  return !!head && head.tabId === sheet.tabId;
+  return sheetOnItsTab(ctx.env, documentId, sheet);
 }
 
 export async function writeResponseRow(
@@ -36,6 +36,7 @@ export async function writeResponseRow(
   const { documentId, sheet } = input;
   const head = await readSheetHead(env, documentId, sheet.sheetId);
   if (!head || head.tabId !== sheet.tabId) return 'missing';
+  if (!(await documentLinksTab(env, documentId, sheet.tabId))) return 'missing';
   const headerRow = head.layout.rows[0];
   const headerCells = headerRow
     ? await readCells(
