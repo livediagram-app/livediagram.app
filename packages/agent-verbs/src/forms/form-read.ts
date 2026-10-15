@@ -111,7 +111,7 @@ export function readFormOf(input: {
   const type = destinationType(form.destination, types);
   // Where responses go, and what stops them landing.
   let respondsTo: FormReading['respondsTo'] = { to: 'nowhere' };
-  let problem: DestinationProblem | null = null;
+  let problem: DestinationProblem | null;
   if (form.sheet) {
     problem = sheetDestinationProblem(form.sheet, sheets);
     const named = sheets.find((s) => s.sheetId === form.sheet!.sheetId);

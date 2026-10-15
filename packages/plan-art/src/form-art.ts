@@ -304,7 +304,7 @@ function coverMarkup(form: FormDefinition, accent: string): { markup: string; he
       height: BAND_H,
     };
   const pattern = patternDefs(form.cover?.pattern);
-  let paint = fill.kind === 'solid' ? xmlEscape(fill.color) : 'url(#form-cover)';
+  const paint = fill.kind === 'solid' ? xmlEscape(fill.color) : 'url(#form-cover)';
   let gradient = '';
   if (fill.kind === 'gradient') {
     const rad = ((fill.angle - 90) * Math.PI) / 180;

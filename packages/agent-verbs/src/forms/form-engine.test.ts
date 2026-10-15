@@ -105,9 +105,13 @@ describe('addForm', () => {
       'POST /documents/doc/tabs/:id/changesets',
       'POST /documents/doc/tabs/:id/changesets',
     ]);
-    const [types, formTab, board] = writes.map((w) => w.body as Record<string, any>);
+    type Body = {
+      expectedRev?: number;
+      replace?: { form?: { heading: string }; kind?: string; name?: string };
+    };
+    const [types, formTab, board] = writes.map((w) => w.body as Body);
     expect(types!.expectedRev).toBe(3);
-    expect(formTab!.replace.form.heading).toBe('Lunch Order');
+    expect(formTab!.replace!.form!.heading).toBe('Lunch Order');
     expect(board!.replace).toMatchObject({ kind: 'board', name: 'Lunch Order Responses' });
     expect(r.ok && r.reading.respondsTo).toEqual({
       to: 'board',
