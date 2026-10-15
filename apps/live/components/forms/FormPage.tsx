@@ -251,7 +251,7 @@ export function FormPage({
                               <HelpArticleLink article="planForms" />
                               {/* The cog stays an Editor's while the form is locked: its Settings (closing it, its
                                   messages) still apply; Responses Go To is locked with the form. */}
-                              {canEdit && !preview ? (
+                              {!preview ? (
                                 <FormSettingsButton
                                   tabs={tabs}
                                   link={link}
