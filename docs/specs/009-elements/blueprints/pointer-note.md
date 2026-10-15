@@ -89,14 +89,14 @@ Validation: `pointerTip` an object of two finite numbers, each within ±4000 (`P
 
 ## Errors and edge cases
 
-| #   | Case                                             | Handling                                                                                   |
-| --- | ------------------------------------------------ | ------------------------------------------------------------------------------------------ |
-| E1  | Tip inside the note's box                        | No leader; the tip dot still shows                                                         |
-| E2  | Host rotated                                     | `attachPointXY` turns the point with it                                                    |
-| E3  | Host and note moved in the same commit           | Treated as the host moving (both carried); the tip holds                                   |
-| E4  | `pointerTip` missing or invalid                  | The default tip (D190); validation refuses an invalid write                                |
-| E5  | A stored `rotation`                              | `supportsRotation` is false and `rotationOf` 0: drawn upright on the canvas and in exports |
-| E6  | Tip drag cancelled (pointercancel, lost capture) | The tip returns to where it was; nothing is stored                                         |
+| #   | Case                                             | Handling                                                                                                                                                                                        |
+| --- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E1  | Tip inside the note's box                        | No leader; the tip dot still shows                                                                                                                                                              |
+| E2  | Host rotated                                     | `attachPointXY` turns the point with it                                                                                                                                                         |
+| E3  | Host and note moved in the same commit           | Treated as the host moving (both carried); the tip holds                                                                                                                                        |
+| E4  | `pointerTip` missing or invalid                  | The default tip (D190); validation refuses an invalid write                                                                                                                                     |
+| E5  | A stored `rotation`                              | Dropped where elements enter (`dropUnturnableRotation` in `migrateStoredElements`: storage, peers, paste, agents), so no reader sees it; `supportsRotation` is false and `rotationOf` 0 besides |
+| E6  | Tip drag cancelled (pointercancel, lost capture) | The tip returns to where it was; nothing is stored                                                                                                                                              |
 
 ## Security and trust
 
@@ -127,12 +127,13 @@ on key-up.
 
 ## Testing
 
-| Rule                                | Test file                                                      |
-| ----------------------------------- | -------------------------------------------------------------- |
-| Settling (I1, I2, deletes, carries) | `packages/document/src/pointer-note.test.ts`                   |
-| Leader, snapping, export (I3)       | same                                                           |
-| Face, tip handle drag and keys      | `apps/live/components/canvas/PointerNoteOverlay.test.tsx`      |
-| Menu section                        | `apps/live/components/palette/PointerNoteMenuSection.test.tsx` |
+| Rule                                | Test file                                                                                                                    |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Settling (I1, I2, deletes, carries) | `packages/document/src/pointer-note.test.ts`                                                                                 |
+| Leader, snapping, export (I3)       | same                                                                                                                         |
+| Face, tip handle drag and keys      | `apps/live/components/canvas/PointerNoteOverlay.test.tsx`                                                                    |
+| Menu section                        | `apps/live/components/palette/PointerNoteMenuSection.test.tsx`                                                               |
+| E5, no turn kept or offered         | `packages/document/src/unturnable-rotation.test.ts`; `apps/live/components/palette/MultiPlacementSections.rotation.test.tsx` |
 
 ## Constants and configuration
 
