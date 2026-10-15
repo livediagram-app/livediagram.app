@@ -77,25 +77,42 @@ it brings are a card-type change of their own and stay after an undo, as a templ
 Blank Form takes the document's first board and the first card type it takes; with no board, it makes the Responses
 board and a "Response" card type.
 
+**From a board**: a Board tab's board (not an All Cards or Archive one) offers **New Form** as its own row at the end of
+its cog's menu, for an Editor. It makes a Blank form named "<Board> Form" on a new Form tab right after the board's
+tab (in the board tab's theme), its responses going to that board's first column as the board's first card type, and
+opens it, in one undo step.
+
 ## Building a form
 
-An **Editor** builds the form **in place**: the Form tab shows the form as respondents will see it, centred in a
-column 640 px wide (full width less 16 px gutters on a phone), on the tab theme's background. Above it sits the
-**status bar** (see [Hearing about responses](#hearing-about-responses)).
+An **Editor** builds the form **in place**, and everything about it is edited there, on a phone as on a desktop: no
+side panel. The Form tab shows the form as respondents will see it, centred in a column 640 px wide (full width less
+16 px gutters on a phone), on the tab theme's background. Above it sits the **status bar** (see
+[Hearing about responses](#hearing-about-responses)), which ends with the help link and the form's **cog**.
+
+- **The menu box** (top left, with the menu and the tab's name) holds **Preview**; a phone, which has no menu box,
+  shows Preview at the end of the status bar instead.
+- **Share Form** is the header's Share button: on a Form tab, for someone who may edit it, the header's **Share** is
+  **Share Form** (filled once the form is published), so the page never shows two share buttons. Everyone else keeps
+  the document's Share.
 
 ### The form card, top to bottom
 
 - **Cover**: a band 160 px tall (96 on a phone) across the top of the column, in the cover colour (from the
   [colour picker](../004-interface-design/colour-picker.md); none takes the form colour) and a style: **Solid**,
-  **Gradient** (into a light tint of the form colour) or **Dots**. Without a cover, a 10 px band of the form colour.
-  **Add Cover** / **Change Cover** on hover opens the cover popover, with **Remove Cover**.
+  **Gradient** (into a light tint of the form colour) or **Dots**; or one of the slide backgrounds' **Gradients**
+  ([Illustrate pages](../007-editor/illustrate-pages.md) "Backgrounds"), drawn in their place (a colour or style
+  picked after clears it). Without a cover, a 10 px band of the form colour. **Add Cover** / **Change Cover** on
+  hover opens the cover popover, with **Remove Cover**.
 - **Heading**: the form's name (1 to 80 characters), edited in place; **Description** under it (up to 1,000
   characters, plain text with line breaks and links made clickable), placeholder "Add a description".
 - **Questions**, each a card. The selected one (click, or Tab onto it and Enter) shows its editing chrome: a
   **left accent bar** in the form colour, the prompt as an editable field beside its **type button**, the help text
   under it ("Description (optional)"), a choice question's options (or the answer control as respondents see it,
-  disabled), and a **footer**: **Answer goes to** (a chip naming the mapping; it opens the Question tab), **Move Up**,
-  **Move Down**, **Duplicate**, **Delete** and **Required**. Escape lets go of it. Unselected questions show exactly
+  disabled), its own **settings** in a tinted block (placeholder, bounds and Whole Numbers Only, fewest and most
+  picks, Show as Dropdown, scale, style and end labels: whichever its type has), and a **footer**: **Answer goes to**
+  (a badge naming the mapping, opening [Answer Goes To](#mapping-where-an-answer-goes) under itself, a sheet on a
+  phone, which closes once a choice is made), **Move Up**, **Move Down**, **Duplicate**, **Delete** and
+  **Required**. Escape lets go of it. Unselected questions show exactly
   what respondents see. Text is saved as typing pauses (half a second) and when a field is left, so typing is one
   undo step a pause, not one a key.
 - **Sections**: a form with more than one section draws each as a block with its own title and description,
@@ -109,23 +126,20 @@ column 640 px wide (full width less 16 px gutters on a phone), on the tab theme'
   reorder it, between sections too: a line in the form colour marks where it will land, the page scrolls near its
   edges and Escape cancels. Alt+Up and Alt+Down move the selected question from the keyboard.
 
-### The Form panel
+### Responses Go To and Settings
 
-A panel 340 px wide at the right on a screen 1,100 px wide or more; narrower, a sheet over the form opened by the
-**Form Panel** button in the top row. Its header holds the help link. Three tabs:
+The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a sheet on a phone), switching between
+**Responses Go To** (first) and **Settings**; a paused form's fix opens it on Responses Go To.
 
-- **Question** (when a question is selected; else a line saying to select one): **Type** (a button opening the
-  question types as a list of icon rows), **Answer Goes To** (the mapping, below) and its **Settings** (placeholder,
-  bounds, picks, dropdown, scale, labels, **Required**).
-- **Responses Go To** (the destination): **Board** (the document's Board tabs, plus **New Board**: a Board tab after
-  this one, "<Form> Responses", New, In Progress, Done), **Card Type** (the types that board takes, plus **New Card
-  Type**: a type named after the form, which a board confining its types also takes), **Column** (the board's columns,
-  as chips). A sentence under it reads the result back: "Each response becomes a **Bug** card in **New** on **Bugs**."
-  A destination that no longer holds says why instead.
+- **Responses Go To** (the destination): **Board** (the document's Board tabs, its last choice **+ New Board**: a
+  Board tab after this one, "<Form> Responses", New, In Progress, Done), **Card Type** (the types that board takes,
+  its last choice **+ New Card Type**: a type named after the form, which a board confining its types also takes),
+  **Column** (the board's columns, as chips). A sentence under it reads the result back: "Each response becomes a
+  **Bug** card in **New** on **Bugs**." A destination that no longer holds says why instead.
 - **Settings**: **Accepting Responses** (the link's switch; dimmed until published), **Close On** (a date and time,
-  with Clear; a time already past says the form is closed), **Response Limit** (1 to 2,000), **Confirmation Message**
-  (up to 500 characters, default "Thanks, your response has been recorded."), **Closed Message** (up to 500
-  characters, default "This form is no longer accepting responses."). A form has no colour setting of its own: it
+  with Clear; a time already past says the form is closed) beside **Response Limit** (1 to 2,000), **Confirmation
+  Message** (up to 500 characters, default "Thanks, your response has been recorded."), **Closed Message** (up to
+  500 characters, default "This form is no longer accepting responses."). A form has no colour setting of its own: it
   wears its tab's [look](#look), changed from **Style** as ever.
 
 ### Look
@@ -146,11 +160,11 @@ so text contrast never depends on the theme.
 - **Backdrop**: the theme's canvas colour, its light or dark half following the viewer.
 - A custom theme draws as Default, on the page and in the builder alike: the form link's page cannot read its
   owner's themes, and the builder shows what respondents will see.
-- The look dresses the form alone: the builder's status bar and Form panel are the editor's and keep its look.
+- The look dresses the form alone: the builder's status bar and the cog's panel are the editor's and keep its look.
 
 ### Preview
 
-**Preview** in the top row (right, beside **Share Form**) hides every piece of editing chrome and draws the form
+**Preview** (in the menu box) hides every piece of editing chrome and draws the form
 exactly as the form link does, working: sections, validation and the confirmation. Escape or **Back to Editing**
 returns; both start at the form's top.
 
@@ -159,12 +173,14 @@ the answers are checked as the api checks them, and the card a response would ma
 column, with every answer mapped, except that
 
 - its title starts **"Preview: "** (then the Title answer, or the form's heading when no question goes to Title);
-- it is not a response: it takes no response number, counts towards no total, shows no **New** dot and sends no
-  email; it is an ordinary card the Editor made (their name in Created By, one undo step).
+- on a **published** form it is a counted **response** (`POST .../tabs/:tabId/form-preview`, an Editor's): it takes
+  the next response number and counts toward the total and the limit, is taken while the form is closed too, and
+  sends no email; a previewer who had seen every response has seen it too (one with others unseen keeps them new);
+- on a form with **no link yet** there is no count to add it to: the editor makes the card itself (no number, no
+  **New** dot, the Editor in Created By, one undo step).
 
 The confirmation adds "This was a preview: its card, marked Preview, is on <board>." A destination that cannot take
-a card refuses with "Preview can't add its card until Responses Go To names a board and column." Preview works with
-or without a published link.
+a card refuses with "Preview can't add its card until Responses Go To names a board and column."
 
 ### Question types
 
