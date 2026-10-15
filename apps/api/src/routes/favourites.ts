@@ -31,7 +31,7 @@ export async function handleFavourites(ctx: RouteContext): Promise<Response> {
   const documentId = segments[2];
   if (segments.length === 3 && documentId) {
     if (request.method === 'PUT') {
-      await addFavourite(env, ownerId, documentId);
+      if (!(await addFavourite(env, ownerId, documentId))) return notFound();
       return noContent();
     }
     if (request.method === 'DELETE') {
