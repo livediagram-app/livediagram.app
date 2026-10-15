@@ -19,7 +19,8 @@ describe('canvas-motion.css', () => {
   it('stops every animation under reduced motion without hiding the elements', () => {
     const css = read('./canvas-motion.css');
     const shared = /\.lvd-arrow-flow,[^{]*\{([^}]*)\}/.exec(css);
-    if (!shared) throw new Error('the shared reduced-motion rule is missing from canvas-motion.css');
+    if (!shared)
+      throw new Error('the shared reduced-motion rule is missing from canvas-motion.css');
     expect(shared[1]).toContain('animation: none');
     expect(shared[1]).not.toMatch(/opacity|display|visibility/);
   });
