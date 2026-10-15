@@ -104,16 +104,16 @@ correction: ElementOp | null, reason }`:
 
 Permitted fields on another's element:
 
-| Element                   | Fields                                                                                                            |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`); never on a Behaviour (`participantWritesOn`, `BEHAVIOUR_SHAPES`) |
-| `table`                   | also `cells`, only when every row keeps its length and the row count is unchanged                                 |
-| `sticky`, `image`         | also `x`, `y` (finite), `width`, `height` (positive) (`PARTICIPANT_PLACE_FIELDS`, `isParticipantPlaceable`)       |
-| `sticky`                  | also `fillColor`, `strokeColor`, `textColor`, `penTextColour` (`PARTICIPANT_STICKY_FIELDS`)                       |
-| `text` with `sizing` set  | also `width` and `height`: a text box that hugs its words follows them (SR10)                                     |
-| mind node                 | also `x`, `y` (`PARTICIPANT_MIND_FIELDS`): growing a map re-lays it                                               |
-| mind connector            | the `anchor` of `from` and `to`, each end still pinned to the same node                                           |
-| `image`                   | also `imageId`, `naturalWidth`, `naturalHeight`, `alt`, `credit` (`PARTICIPANT_IMAGE_FIELDS`): its picture        |
+| Element                   | Fields                                                                                                                                                                                                    |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`); never on a Behaviour (`participantWritesOn`, `BEHAVIOUR_SHAPES`)                                                                                         |
+| `table`                   | also `cells`, only when every row keeps its length and the row count is unchanged                                                                                                                         |
+| `sticky`, `image`         | also `x`, `y` (finite), `width`, `height` (positive) (`PARTICIPANT_PLACE_FIELDS`, `isParticipantPlaceable`)                                                                                               |
+| `sticky`                  | also `fillColor`, `strokeColor`, `textColor`, `penTextColour` (`PARTICIPANT_STICKY_FIELDS`)                                                                                                               |
+| `text` with `sizing` set  | also `width` and `height`: a text box that hugs its words follows them (SR10)                                                                                                                             |
+| mind node                 | also `x`, `y` (`PARTICIPANT_MIND_FIELDS`): growing a map re-lays it; a taller `height` with a changed label, up to the stored height plus `MIND_GROW_PX_PER_CHAR` (`TEXT_PX_MAX` × 2) per label character |
+| mind connector            | the `anchor` of `from` and `to`, each end still pinned to the same node                                                                                                                                   |
+| `image`                   | also `imageId`, `naturalWidth`, `naturalHeight`, `alt`, `credit` (`PARTICIPANT_IMAGE_FIELDS`): its picture                                                                                                |
 
 `addableOn(tab, el)`: `sticky`, `text` and `image` anywhere; a `shape` only as a mind node whose `mindParentId` names
 a mind node on the tab; an `arrow` only pinned at both ends to mind nodes on the tab (a mind connector). An own
@@ -224,6 +224,7 @@ export const LEVEL_TELEMETRY_TYPE: Record<AccessLevel, 'View' | 'Participate' | 
 ```ts
 export const PARTICIPANT_ADDABLE_TYPES: readonly ['sticky', 'text', 'image', 'shape', 'arrow'];
 export const PARTICIPANT_MIND_FIELDS: readonly ['x', 'y'];
+export const MIND_GROW_PX_PER_CHAR: number; // TEXT_PX_MAX * 2
 export const PARTICIPANT_IMAGE_FIELDS: readonly [
   'imageId',
   'naturalWidth',

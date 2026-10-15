@@ -30,7 +30,6 @@ import {
   boardAddTypes,
   newItemId,
   isTrashed,
-  ITEM_TYPES_MAX,
 } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
@@ -425,7 +424,7 @@ export function PlanBoardView({
                   onCancel: () => plan?.openBoardSetup(null),
                 }
               : {})}
-            {...(plan && plan.types.length < ITEM_TYPES_MAX
+            {...(plan && mayCreateCardType(plan)
               ? { onCreateType: () => plan.editType('new') }
               : {})}
             layout={setupLayoutOf(setup)}
@@ -580,7 +579,7 @@ export function PlanBoardView({
                                 onKey={onCardKey}
                                 onMenu={(it, at) => setMenu({ itemId: it.id, at })}
                                 cardVote={cardVote}
-                                {...(interactive && canEdit
+                                {...(interactive && canEditCards
                                   ? {
                                       onLongPress: (it: Item, at: { x: number; y: number }) => {
                                         // The held press opens the menu instead of becoming a drag or a click.
