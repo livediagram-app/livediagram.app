@@ -13,7 +13,12 @@ import {
   type WebRows,
 } from '@livediagram/document';
 
-import { hasWebRowsSection, WebRowsMenuSection } from './context-menu-web-editors';
+import {
+  ConceptRowsEditor,
+  hasWebRowsSection,
+  TextRowsEditor,
+  WebRowsMenuSection,
+} from './context-menu-web-editors';
 
 afterEach(cleanup);
 
@@ -91,5 +96,76 @@ describe('WebRowsMenuSection (docs/specs/009-elements/web-components-and-no-grou
         { value: '4.7', caption: 'Rating' },
       ],
     });
+  });
+});
+
+// docs/specs/009-elements/concept-graphics.md: a concept graphic's rows, a label each and a note where its kind
+// draws one.
+describe('ConceptRowsEditor', () => {
+  const rows = [{ label: 'Plan', note: 'Q1' }, { label: 'Build' }];
+
+  it('edits a label and a note, committing on blur, and adds a numbered row', () => {
+    const onChange = vi.fn();
+    render(
+      <ConceptRowsEditor rows={rows} min={1} max={3} noun="Layer" notes onChange={onChange} />,
+    );
+    const note = screen.getByRole('textbox', { name: 'Layer 2 note' });
+    fireEvent.change(note, { target: { value: '9' } });
+    fireEvent.blur(note);
+    expect(onChange).toHaveBeenLastCalledWith([
+      { label: 'Plan', note: 'Q1' },
+      { label: 'Build', note: '9' },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: 'Add Layer' }));
+    // The draft keeps the edit, so the add and the move carry it.
+    const edited = [rows[0], { label: 'Build', note: '9' }];
+    expect(onChange).toHaveBeenLastCalledWith([...edited, { label: 'Layer 3' }]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Move layer down' })[0]!);
+    expect(onChange).toHaveBeenLastCalledWith([edited[1], edited[0]]);
+  });
+
+  it('shows no note where the kind draws none, and stops at its bounds', () => {
+    render(
+      <ConceptRowsEditor
+        rows={rows}
+        min={2}
+        max={2}
+        noun="Tier"
+        notes={false}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole('textbox', { name: 'Tier 1 note' })).toBeNull();
+    expect((screen.getByRole('button', { name: 'Add Tier' }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+    expect(
+      (screen.getAllByRole('button', { name: 'Remove tier' })[0] as HTMLButtonElement).disabled,
+    ).toBe(true);
+  });
+});
+
+describe('TextRowsEditor', () => {
+  it('commits a retyped row on blur and names a new one from its count', () => {
+    const onChange = vi.fn();
+    render(
+      <TextRowsEditor
+        rows={['Home', 'Docs']}
+        min={1}
+        max={5}
+        noun="Link"
+        addLabel="Add Link"
+        nextRow={(n) => `Link ${n + 1}`}
+        onChange={onChange}
+      />,
+    );
+    const first = screen.getByRole('textbox', { name: 'Link 1' });
+    fireEvent.change(first, { target: { value: 'Start' } });
+    fireEvent.blur(first);
+    expect(onChange).toHaveBeenLastCalledWith(['Start', 'Docs']);
+    fireEvent.click(screen.getByRole('button', { name: 'Add Link' }));
+    expect(onChange).toHaveBeenLastCalledWith(['Start', 'Docs', 'Link 3']);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Remove link' })[0]!);
+    expect(onChange).toHaveBeenLastCalledWith(['Docs']);
   });
 });
