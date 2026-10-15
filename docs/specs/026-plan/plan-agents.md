@@ -190,6 +190,8 @@ its Default State, its display per size and its tabs, so a change can build on w
 - A refusal says what was wrong, what is there, and the next call to make. It never answers with a raw api
   status.
 - A tool error is a tool result marked as an error, never a thrown protocol error, for anything the caller can fix.
+- A call past the per-token rate limit says so and how long to wait (about a minute, the limit's window), so an
+  agent makes the same call again rather than giving up or guessing at a back-off.
 
 ## Cost
 
