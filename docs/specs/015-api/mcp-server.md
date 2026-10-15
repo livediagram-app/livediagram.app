@@ -543,7 +543,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   branch tinted in its own hue with its icon; leaves white and edged in their branch's hue, one height for every leaf of the map (the tallest any label needs); a root
   whose label would grow the circle past 260 px takes the next text size down, so the centre stays near the template's; curved connectors in
   the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group
-  a lane, one under another, its label in the lane's header strip; the flow runs left to right across the lanes and
+  a lane, one under another, its label in the lane's header strip (a heading, a size up from the steps, the strip as
+  wide as the longest title needs up to the swimlane template's, the columns 48 px apart); the flow runs left to right across the lanes and
   a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a
   node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
   edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows

@@ -4,15 +4,26 @@
 // longest path from a start (edges back to an earlier column are left to the loop routing), so a hand-off between
 // lanes drops or climbs in the gap between two columns, as the swimlane template's do.
 
-import { edgeToArrow, graphToElements, type DiagramGraph, type GraphLook } from './graph-authoring';
+import { BOLD_EM } from './article-layout-estimate';
+import {
+  edgeToArrow,
+  glyphWidth,
+  graphToElements,
+  type DiagramGraph,
+  type GraphLook,
+} from './graph-authoring';
+import { LABEL_FONT_PX } from './label-font';
 import { reanchorArrow, type Pt } from './auto-layout-shared';
 import { BRANCH_CLEAR } from './graph-branches';
 import { isBoxed, type BoxedElement, type Element } from './index';
 
-// The swimlane template's grid: header strip, padding inside a lane, gaps between columns and lanes.
+// The swimlane template's grid: header strip (as wide as the longest lane title needs, between the bounds), padding
+// inside a lane, gaps between columns and lanes.
 export const LANES_GUTTER = 176;
+const LANES_GUTTER_MIN = 120;
+const GUTTER_TEXT_PAD = 40;
 const LANE_PAD = 28;
-const COLUMN_GAP = 72;
+const COLUMN_GAP = 48;
 const LANE_GAP = 36;
 const STACK_GAP = 24;
 const LANE_MIN_H = 120;
@@ -74,16 +85,27 @@ export function layoutLanes(
     isBoxed,
   );
   const byId = new Map(boxes.map((b) => [b.id, b]));
+  // The header strip as wide as its longest title, set bold at md, needs; never past the template's.
+  const titlePx = LABEL_FONT_PX.md * BOLD_EM;
+  const gutter = Math.round(
+    Math.min(
+      LANES_GUTTER,
+      Math.max(
+        LANES_GUTTER_MIN,
+        ...lanes.map((l) => glyphWidth(l.label, titlePx) + GUTTER_TEXT_PAD),
+      ),
+    ),
+  );
   const col = stairColumns(graph, laneOf);
   const columns = Math.max(0, ...col.values()) + 1;
   const colW = Array.from({ length: columns }, (_, c) =>
     Math.max(0, ...boxes.filter((b) => col.get(b.id) === c).map((b) => b.width)),
   );
   const colX = colW.map(
-    (_, c) => LANES_GUTTER + LANE_PAD + colW.slice(0, c).reduce((s, w) => s + w + COLUMN_GAP, 0),
+    (_, c) => gutter + LANE_PAD + colW.slice(0, c).reduce((s, w) => s + w + COLUMN_GAP, 0),
   );
   const laneW =
-    LANES_GUTTER + LANE_PAD * 2 + colW.reduce((s, w) => s + w, 0) + COLUMN_GAP * (columns - 1);
+    gutter + LANE_PAD * 2 + colW.reduce((s, w) => s + w, 0) + COLUMN_GAP * (columns - 1);
 
   // Each lane as tall as its tallest stack of nodes sharing a column.
   const placed: BoxedElement[] = [];
@@ -139,11 +161,12 @@ export function layoutLanes(
       width: laneW,
       height,
       label: lane.label,
-      textSize: opts.look.textSize,
+      // The swimlane template's lane title: a size up from the steps, so a role reads as a heading.
+      textSize: 'md',
       textBold: true,
       textAlignX: 'left',
       textAlignY: 'top',
-      headerSize: LANES_GUTTER,
+      headerSize: gutter,
       ...(i % 2 === 1 ? { colorPreset: 'soft' } : {}),
     });
     y += height + LANE_GAP;

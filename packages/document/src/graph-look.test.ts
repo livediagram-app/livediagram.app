@@ -291,6 +291,33 @@ describe('key meanings', () => {
 });
 
 describe('lanes', () => {
+  it('titles each lane a size up from its steps, the header strip as wide as the longest title needs', () => {
+    const lanes = (label: string) =>
+      lay({
+        style: 'lanes',
+        nodes: [
+          { id: 'a', group: 'x' },
+          { id: 'b', group: 'y' },
+        ],
+        edges: [{ from: 'a', to: 'b' }],
+        groups: [
+          { id: 'x', label: 'Ops' },
+          { id: 'y', label },
+        ],
+      }).filter((e) => e.type === 'shape' && e.shape === 'lane') as (Element & {
+        headerSize: number;
+        textSize: string;
+      })[];
+    const short = lanes('QA');
+    const long = lanes('Finance');
+    const huge = lanes('A very long lane title that wraps');
+    expect(short[0]!.textSize).toBe('md');
+    expect(short[0]!.headerSize).toBe(120);
+    expect(long[0]!.headerSize).toBeGreaterThan(120);
+    expect(long[0]!.headerSize).toBeLessThan(176);
+    expect(huge[0]!.headerSize).toBe(176);
+  });
+
   it('draws each group as a lane, one under another, a lone hand-off dropping straight down', () => {
     const els = lay({
       style: 'lanes',
