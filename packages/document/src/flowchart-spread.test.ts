@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createPinnedArrow } from './factories';
 import { createFlowchartStep, type FlowchartStepType } from './flowchart';
 import { addFlowchartLane, moveStepToLane } from './flowchart-grow';
@@ -150,6 +150,6 @@ describe('cost', () => {
       els.push(link(parent, `p${i}`));
     }
     const ms = cpuMsOf(() => relayoutFlowchart(els, CHART));
-    expect(ms).toBeLessThan(250);
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createShape, settleStacks, type Element, type ShapeElement } from './index';
 
 // docs/specs/009-elements/blueprints/stack.md "Performance and limits": settling runs at every commit, so a large
@@ -54,7 +54,7 @@ describe('settleStacks budget', () => {
         best,
         cpuMsOf(() => settleStacks(moved)),
       );
-    expect(best).toBeLessThan(60);
+    expect(best).toBeLessThan(cpuBudgetMs(60));
   });
 
   it('settles the same board within 60 ms when a child is added, the stack growing (two passes)', () => {
@@ -77,7 +77,7 @@ describe('settleStacks budget', () => {
         best,
         cpuMsOf(() => settleStacks(added)),
       );
-    expect(best).toBeLessThan(60);
+    expect(best).toBeLessThan(cpuBudgetMs(60));
   });
 
   it('returns at once for a board with no stack', () => {

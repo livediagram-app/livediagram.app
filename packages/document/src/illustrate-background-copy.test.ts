@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import {
   backgroundPatchFor,
   pageBackgroundCopied,
@@ -225,6 +225,6 @@ describe('pageBackgroundSpread at the page cap', () => {
       out = pageBackgroundSpread(tab, 'p0');
     });
     expect(out).toMatchObject({ applied: 99 });
-    expect(ms).toBeLessThan(1500);
+    expect(ms).toBeLessThan(cpuBudgetMs(1500));
   });
 });

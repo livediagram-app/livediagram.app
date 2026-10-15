@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { deflateRawSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { readDrawioSource, sniffDrawio } from './envelope';
 import { ByteBudget } from './inflate';
 
@@ -208,7 +208,7 @@ describe('sniffDrawio on hostile heads', () => {
       sniffed = sniffDrawio(t(head));
     });
     expect(sniffed).toBeNull();
-    expect(spent).toBeLessThan(20);
+    expect(spent).toBeLessThan(cpuBudgetMs(20));
   });
 
   it('skips a doctype and closed comments before the root', () => {

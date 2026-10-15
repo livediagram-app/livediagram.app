@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createPinnedArrow, createShape } from './factories';
 import { buildElementIndex } from './geometry';
 import { MIND_CONNECTOR_LOOK } from './mind-flow';
@@ -59,7 +59,7 @@ describe('mind connector routing cost', () => {
       }
     }
     expect(els.filter((e) => e.type === 'shape')).toHaveLength(1 + 40 * 50);
-    expect(routeAll(els)).toBeLessThan(100);
+    expect(routeAll(els)).toBeLessThan(cpuBudgetMs(100));
   });
 
   it('routes a 1,000-deep chain in under 100 ms of CPU', () => {
@@ -67,6 +67,6 @@ describe('mind connector routing cost', () => {
     for (let i = 1; i < 1000; i++) {
       els.push(node(`n${i}`, i * 314, i * 10, `n${i - 1}`), link(`n${i - 1}`, `n${i}`));
     }
-    expect(routeAll(els)).toBeLessThan(100);
+    expect(routeAll(els)).toBeLessThan(cpuBudgetMs(100));
   });
 });

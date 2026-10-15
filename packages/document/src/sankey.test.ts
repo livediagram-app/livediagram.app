@@ -208,7 +208,7 @@ describe('sankeyLayout', () => {
       cpuMsOf(() => {
         for (let k = 0; k < 20; k++) sankeyLayout(worst, { x: 0, y: 0, w: 1200, h: 800 });
       }) / 20;
-    expect(per).toBeLessThan(16);
+    expect(per).toBeLessThan(cpuBudgetMs(16));
   });
 });
 

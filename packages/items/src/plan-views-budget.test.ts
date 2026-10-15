@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import {
   calendarModel,
   priorityMatrixModel,
@@ -38,6 +38,6 @@ describe('plan view budgets', () => {
       priorityMatrixModel(many, phases);
     });
     // 13ms locally for all five; the budget leaves room for a slow CI runner.
-    expect(ms).toBeLessThan(250);
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
   });
 });

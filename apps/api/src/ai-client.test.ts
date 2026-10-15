@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import {
   AI_PROVIDER_TIMEOUT_MS,
   chatCompletions,
@@ -184,6 +184,6 @@ describe('the base URL is trimmed without a regex', () => {
       url = chatCompletionsUrl('https://x'.padEnd(50_000, '/'));
     });
     expect(url).toBe('https://x/chat/completions');
-    expect(spent).toBeLessThan(50);
+    expect(spent).toBeLessThan(cpuBudgetMs(50));
   });
 });

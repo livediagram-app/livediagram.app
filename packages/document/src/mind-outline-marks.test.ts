@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createShape } from './factories';
 import {
   mindMarkdownToMarks,
@@ -145,6 +145,6 @@ describe('reading stays linear (CodeQL js/polynomial-redos)', () => {
       mindMarkdownToMarks('*_'.repeat(25_000));
     });
     expect(read).toEqual([{ text: '['.repeat(50_000) }]);
-    expect(spent).toBeLessThan(200);
+    expect(spent).toBeLessThan(cpuBudgetMs(200));
   });
 });
