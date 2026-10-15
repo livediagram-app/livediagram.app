@@ -182,6 +182,36 @@ describe('facing bends', () => {
     );
   });
 
+  it('loops an arrow between two ends on the same side out past them, never along the edges', () => {
+    const els = [box('p', 0, 0), box('c', 300, 40), pinned('a', 'p', 's', 'c', 's')];
+    const a = withFacingBends(els)[2] as ArrowElement;
+    // p's bottom (50, 60), c's bottom (350, 100): out to 124, below the lower one.
+    expect(curveAnchorPoints({ x: 50, y: 60 }, { x: 350, y: 100 }, a.curvePoints!)).toEqual([
+      { x: 50, y: 124 },
+      { x: 350, y: 124 },
+    ]);
+    const up = withFacingBends([
+      box('p', 0, 0),
+      box('c', 300, 40),
+      pinned('u', 'p', 'n', 'c', 'n'),
+    ])[2] as ArrowElement;
+    expect(curveAnchorPoints({ x: 50, y: 0 }, { x: 350, y: 40 }, up.curvePoints!)[0]!.y).toBe(-24);
+    const right = withFacingBends([
+      box('p', 0, 0),
+      box('c', 0, 200),
+      pinned('r', 'p', 'e', 'c', 'e'),
+    ])[2] as ArrowElement;
+    expect(curveAnchorPoints({ x: 100, y: 30 }, { x: 100, y: 230 }, right.curvePoints!)[0]!.x).toBe(
+      124,
+    );
+    const left = withFacingBends([
+      box('p', 0, 0),
+      box('c', 0, 200),
+      pinned('l', 'p', 'w', 'c', 'w'),
+    ])[2] as ArrowElement;
+    expect(curveAnchorPoints({ x: 0, y: 30 }, { x: 0, y: 230 }, left.curvePoints!)[0]!.x).toBe(-24);
+  });
+
   it('leaves a free end alone', () => {
     const free: ArrowElement = {
       ...pinned('f', 'p', 's', 'c', 'n'),

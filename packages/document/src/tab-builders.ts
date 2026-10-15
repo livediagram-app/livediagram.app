@@ -4,6 +4,7 @@
 // all build tabs the same way. Template tabs are `buildTemplateTab` in @livediagram/templates.
 
 import { withFacingBends } from './arrow-orthogonal';
+import { settleDiagramKeys } from './diagram-key';
 import { autoLayoutElements, isLayoutCandidate, nodesLookUnplaced } from './auto-layout';
 import { eventStormingLayers, isEventStormingNote, isEventStormingTab } from './event-storming';
 import { landArrivals } from './event-storming-lane-landing';
@@ -49,7 +50,8 @@ export function buildTab(
     return shape === 'agenda' ? { ...el, shape, height: agendaFitHeight(el) } : { ...el, shape };
   });
   // An angled arrow left as an L between ends that face each other bends twice instead (layout-cleanup.md).
-  const laidOut = withFacingBends(applyLayout(layout, coerced));
+  // A diagram key's rows follow the tab's lines (diagram-key.md), settled as the editor settles them on commit.
+  const laidOut = settleDiagramKeys(withFacingBends(applyLayout(layout, coerced)));
   return {
     id: tabId,
     name,

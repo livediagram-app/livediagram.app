@@ -27,7 +27,9 @@ the author's to write.
   at most 60 characters). A row with no meaning shows a starting one: "Solid line", "Dashed line" and so on, or the tag
   itself. Click a meaning once the key is selected to write it in place; Enter commits, Escape restores.
 - **Stored rows**: the rows are worked out at the editor's commit point, when anything on the tab changes, and stored on
-  the key (`keyRows`), so an export, a thumbnail or an API reader draws the same rows without re-deriving them.
+  the key (`keyRows`), so an export, a thumbnail or an API reader draws the same rows without re-deriving them. An
+  agent's write settles them the same way: a tab built from elements (`buildTab`) and an edit (the edit operations'
+  finalise), so the MCP's preview of a key an agent drew lists its lines rather than the empty hint.
 - A meaning whose row has gone is kept, so a style switched off and on again keeps its meaning; a key keeps at most 24
   meanings, the oldest unused ones dropped first.
 

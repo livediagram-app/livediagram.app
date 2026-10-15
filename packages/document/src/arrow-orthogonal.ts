@@ -72,6 +72,8 @@ export function withOrthogonalBends(elements: Element[], axis: 'TB' | 'LR'): Ele
   });
 }
 
+type Pt = { x: number; y: number };
+
 // The flow an angled arrow's ends face each other along, or null: a bottom to a lower top, a top to a higher bottom
 // (TB), a right side to a box further right, a left side to one further left (LR).
 function facingAxis(arrow: ArrowElement, elements: Element[]): 'TB' | 'LR' | null {
@@ -91,6 +93,37 @@ function facingAxis(arrow: ArrowElement, elements: Element[]): 'TB' | 'LR' | nul
 const FACING_END_CLEAR = 12;
 const FACING_BOX_CLEAR = 8;
 const FACING_HEADING_BAND = 32;
+// How far a same-side arrow's loop runs out past the farther of its ends.
+const SAME_SIDE_REACH = 24;
+
+// An angled arrow whose ends sit on the same side of their boxes (a bottom to a bottom): its two bends, out past the
+// farther end by SAME_SIDE_REACH and back, a U, or null. Its plain L ran along the boxes' own edges.
+function sameSideBends(arrow: ArrowElement, elements: Element[]): Pt[] | null {
+  if (arrow.from.kind !== 'pinned' || arrow.to.kind !== 'pinned') return null;
+  const side = anchorPrimarySide(arrow.from.anchor);
+  if (side !== anchorPrimarySide(arrow.to.anchor)) return null;
+  const from = spreadEnd(arrow, 'from', elements);
+  const to = spreadEnd(arrow, 'to', elements);
+  if (side === 's' || side === 'n') {
+    const y =
+      side === 's'
+        ? Math.max(from.y, to.y) + SAME_SIDE_REACH
+        : Math.min(from.y, to.y) - SAME_SIDE_REACH;
+    return [
+      { x: from.x, y },
+      { x: to.x, y },
+    ];
+  }
+  const x =
+    side === 'e'
+      ? Math.max(from.x, to.x) + SAME_SIDE_REACH
+      : Math.min(from.x, to.x) - SAME_SIDE_REACH;
+  return [
+    { x, y: from.y },
+    { x, y: to.y },
+  ];
+}
+
 // How far apart two facing arrows' cross runs keep, where their spans overlap: closer, they read as one line.
 const FACING_RUN_GAP = 16;
 
@@ -153,6 +186,12 @@ export function withFacingBends(elements: Element[]): Element[] {
   const runs: CrossRun[] = [];
   return elements.map((el) => {
     if (el.type !== 'arrow' || el.arrowStyle !== 'angled' || el.curvePoints?.length) return el;
+    const loop = sameSideBends(el, elements);
+    if (loop) {
+      const [f, t] = [spreadEnd(el, 'from', elements), spreadEnd(el, 'to', elements)];
+      const mid = { x: (f.x + t.x) / 2, y: (f.y + t.y) / 2 };
+      return { ...el, curvePoints: loop.map((p) => ({ dx: p.x - mid.x, dy: p.y - mid.y })) };
+    }
     const axis = facingAxis(el, elements);
     if (!axis) return el;
     const from = spreadEnd(el, 'from', elements);
