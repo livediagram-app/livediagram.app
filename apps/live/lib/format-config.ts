@@ -64,6 +64,7 @@ const FIELD_GROUP: Record<string, FormatGroup> = {
   arrowheadColor: 'border',
   arrowheadSize: 'border',
   arrowheadShape: 'border',
+  arrowheadStartShape: 'border',
   arrowStyle: 'border',
   routeBehind: 'border',
   // Text.
