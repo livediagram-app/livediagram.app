@@ -29,6 +29,7 @@ function show(element: ShapeElement, editable = true) {
       element={element}
       labelNode={<span>Key</span>}
       accent="#0284c7"
+      paper="#1e293b"
       ink="#0f172a"
       fontFamily={undefined}
       editable={editable}
@@ -56,6 +57,12 @@ describe('DiagramKeyFace', () => {
         .querySelector('[data-key-row="tag:payments"] rect:last-child')!
         .getAttribute('fill'),
     ).toBe('#d97706');
+    // The card swatch is drawn on the key's own paper, never a fixed white.
+    expect(
+      container
+        .querySelector('[data-key-row="tag:payments"] rect:first-child')!
+        .getAttribute('fill'),
+    ).toBe('#1e293b');
   });
 
   it('commits an edited meaning for its row', () => {

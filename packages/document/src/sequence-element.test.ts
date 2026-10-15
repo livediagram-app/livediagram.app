@@ -90,6 +90,44 @@ describe('sequence diagram element', () => {
     expect(svg).toContain('Database');
   });
 
+  it("exports in the element's own colours and face, drawn in the tab's finish", () => {
+    const el = {
+      ...seq(),
+      fillColor: '#dcfce7',
+      strokeColor: '#15803d',
+      textColor: '#14532d',
+      strokeWidth: undefined,
+    };
+    const tab = (finish?: 'sketch') =>
+      ({
+        id: 't',
+        name: 't',
+        font: 'lora',
+        elements: [el],
+        ...(finish ? { finish } : {}),
+      }) as never;
+    const svg = renderElementsToSvg(tab());
+    expect(svg).toContain('stroke="#15803d"');
+    expect(svg).toContain('fill="#14532d"');
+    expect(svg).not.toMatch(/#0ea5e9|#075985|#f0f9ff/i);
+    // Every word in the tab's face, Lora.
+    const faces = new Set(svg.match(/font-family="[^"]*"/g));
+    expect([...faces].every((f) => f.includes('Lora'))).toBe(true);
+    // Sketch redraws its boxes by hand.
+    expect(renderElementsToSvg(tab('sketch'))).not.toBe(svg);
+  });
+
+  it('draws the default look when given none, and a new look as a new picture', () => {
+    const el = seq();
+    expect(sequenceDrawing(el)).toContain('#0ea5e9');
+    const themed = sequenceDrawing(el, { stroke: '#15803d', ink: '#14532d', fontFamily: 'Lora' });
+    expect(themed).not.toBe(sequenceDrawing(el));
+    expect(themed).toContain('font-family="Lora"');
+    expect(sequenceDrawing(el, { stroke: '#15803d', ink: '#14532d', fontFamily: 'Lora' })).toBe(
+      themed,
+    );
+  });
+
   it('opens no label editor (its words are its rows) but keeps its border controls', () => {
     expect(opensInlineLabelEditor('sequence')).toBe(false);
     expect(supportsBorderControls(seq())).toBe(true);

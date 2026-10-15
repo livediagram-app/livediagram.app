@@ -30,11 +30,18 @@ Banned: "lifeline" for the element (it is one participant's line), "Mermaid" in 
 
 - `sequenceDiagramOf(el)`: `{ autonumber: sequenceNumbered, participants, items }` with one message item per message
   whose `from` and `to` name participants (others dropped), `style` = `kind`.
-- `sequenceDrawing(el, paper)`: `layoutSequence(sequenceDiagramOf(el), { makeId })` with ids `seq-<n>` (deterministic,
-  so the picture is stable), drawn with `renderElementsToSvg` on `paper` (the element's resolved fill, so its ink reads
-  on it in either theme) and then stripped of the paper rect, since the element's own box is the paper. Cached by the
-  rows, Numbered and the paper, at most 64 entries (the oldest dropped first).
-- `svgSequencePicture(el, paper)`: that drawing nested as an `<svg>` at the element's box with
+- `sequenceDrawing(el, look)`: `layoutSequence(sequenceDiagramOf(el), { makeId })` with ids `seq-<n>` (deterministic,
+  so the picture is stable). Each laid-out part takes the look's colours on the slots `themeColourFields` gives it,
+  only where the layout left them unset (fill = `look.paper`, stroke = `look.stroke`, text = `look.ink`), as a new
+  element on a themed tab does; with neither stroke nor ink given the parts are left as laid out. Drawn with
+  `renderElementsToSvg` on `look.paper` (default `#ffffff`) in a tab carrying `look.finish`, then stripped of the paper
+  rect, since the element's own box is the paper; with `look.fontFamily` every `font-family` in the markup is
+  replaced by it. Cached by the rows, Numbered and the whole look, at most 64 entries (the oldest dropped first).
+- The look (spec "Look"): on the canvas `SequenceFace` passes the element's resolved fill (`cardFill`), stroke
+  (`strokeColor ?? defaultStrokeColor`), label colour and font stack, and reads the finish with `useElementFinish`; in
+  an export `svgElementBody` passes `fill`, `stroke`, `el.textColor ?? labelColor`, `fontFamily` and the element's
+  resolved finish. The Sequence dialog's preview passes only its white paper.
+- `svgSequencePicture(el, look)`: that drawing nested as an `<svg>` at the element's box with
   `preserveAspectRatio="xMidYMid meet"`, for exports; the canvas face shows the same markup at 100% of the box.
 - `withSequenceRows(el, { participants?, messages? })`: participants bounded to 12 (labels 40), ids kept unique
   (`p<n>`); messages bounded to 60 (labels 80) and filtered to known participants; a participant list under 2 is
@@ -111,8 +118,18 @@ export function withSequenceAnim<T extends Element>(
   el: T,
   patch: { anim?: 'play' | null; speed?: AnimationSpeed; repeat?: boolean },
 ): T;
-export function sequenceDrawing(el: ShapeElement, paper?: string): string; // natural size, no paper
-export function svgSequencePicture(el: BoxedElement & { type: 'shape' }, paper?: string): string; // fitted
+export type SequenceLook = {
+  paper?: string;
+  stroke?: string;
+  ink?: string;
+  fontFamily?: string;
+  finish?: Finish;
+};
+export function sequenceDrawing(el: ShapeElement, look?: SequenceLook): string; // natural size, no paper
+export function svgSequencePicture(
+  el: BoxedElement & { type: 'shape' },
+  look?: SequenceLook,
+): string; // fitted
 ```
 
 Validation: participants 2 to 12 (`id` ≤ 24, label ≤ 40, `actor` boolean); messages ≤ 60 (`from`/`to` ≤ 24, label ≤ 80,
@@ -187,17 +204,18 @@ dialog, `useSequenceSetters`), `SequenceNumbered`, `SequenceAnim`.
 
 ## Testing
 
-| Rule                      | Test file                                                      |
-| ------------------------- | -------------------------------------------------------------- |
-| Writes, bounds (I1), next | `packages/document/src/sequence-element.test.ts`               |
-| Picture and export (I2)   | same                                                           |
-| Menu: summary, Edit       | `apps/live/components/palette/SequenceMenuSection.test.tsx`    |
-| Dialog: rows, text, close | `apps/live/components/dialogs/SequenceDialog.test.tsx`         |
-| Text read and written     | `packages/document/src/sequence-text.test.ts`                  |
-| Dialog writes             | `apps/live/hooks/canvas/useSequenceSetters.test.ts`            |
-| Who may edit              | `apps/live/lib/sequence-edit.test.ts`                          |
-| Face label, Play class    | `apps/live/components/canvas/SequenceFace.test.tsx`            |
-| Dialog closes (E4)        | `apps/live/components/dialogs/useCloseVanishedDialogs.test.ts` |
+| Rule                        | Test file                                                                                             |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Writes, bounds (I1), next   | `packages/document/src/sequence-element.test.ts`                                                      |
+| Picture and export (I2)     | same                                                                                                  |
+| Look: colours, face, finish | `packages/document/src/sequence-element.test.ts`, `apps/live/components/canvas/SequenceFace.test.tsx` |
+| Menu: summary, Edit         | `apps/live/components/palette/SequenceMenuSection.test.tsx`                                           |
+| Dialog: rows, text, close   | `apps/live/components/dialogs/SequenceDialog.test.tsx`                                                |
+| Text read and written       | `packages/document/src/sequence-text.test.ts`                                                         |
+| Dialog writes               | `apps/live/hooks/canvas/useSequenceSetters.test.ts`                                                   |
+| Who may edit                | `apps/live/lib/sequence-edit.test.ts`                                                                 |
+| Face label, Play class      | `apps/live/components/canvas/SequenceFace.test.tsx`                                                   |
+| Dialog closes (E4)          | `apps/live/components/dialogs/useCloseVanishedDialogs.test.ts`                                        |
 
 ## Constants and configuration
 

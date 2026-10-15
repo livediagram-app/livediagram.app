@@ -516,13 +516,20 @@ export function ElementFaceRouter({
         />
       ) : element.type === 'shape' && element.shape === 'sequence' ? (
         // A sequence diagram (docs/specs/009-elements/sequence-diagram.md): the export's picture, fitted.
-        <SequenceFace element={element} paper={cardFill} />
+        <SequenceFace
+          element={element}
+          paper={cardFill}
+          stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          ink={textColor}
+          fontFamily={fontFamily}
+        />
       ) : element.type === 'shape' && element.shape === 'diagram-key' ? (
         // A diagram key (docs/specs/009-elements/diagram-key.md): its title, swatches and meanings.
         <DiagramKeyFace
           element={element}
           labelNode={labelNode}
           accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          paper={cardFill}
           ink={textColor}
           fontFamily={fontFamily}
           editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
