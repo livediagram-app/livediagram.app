@@ -11,9 +11,10 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
 const DIRS = ['app', 'components', 'hooks', 'lib'];
-// A call whose first argument is an updater: commit(), commitTabs(), drawCommit(), tickTabs(), setHistory(), ...
+// A call whose first argument is an updater: commit(), commitTabs(), drawCommit(), rawCommitTabs(), tickTabs(), and
+// every setState-shaped setter (setHistory(), setPos(), ...); never a timer's callback (setTimeout, setInterval).
 const CALL =
-  /\b(commit\w*|\w*Commit|tick\w*|\w*Tick\w*|setHistory|setTabs|setElements)\(\s*(?:\([^()]*\)|\w+)\s*=>/g;
+  /\b(\w*[cC]ommit\w*|tick\w*|\w*Tick\w*|set(?!Timeout|Interval|Immediate)[A-Z]\w*)\(\s*(?:\([^()]*\)|\w+)\s*=>/g;
 const LOOK_BEHIND = 1500;
 const LOOK_AHEAD = 800;
 
@@ -42,7 +43,9 @@ export function updaterFlags(source: string): { line: number; name: string }[] {
     const end = closing(source, source.indexOf('(', start));
     const body = source.slice(start + m[0].length, end);
     const lets = new Set(
-      [...source.slice(Math.max(0, start - LOOK_BEHIND), start).matchAll(/\blet (\w+)/g)].map(
+      // Indented: a `let` inside a function. A module's counter (`let nextId = 1` at the margin) is state the
+      // updater owns, never a flag a handler reads back.
+      [...source.slice(Math.max(0, start - LOOK_BEHIND), start).matchAll(/\n[ \t]+let (\w+)/g)].map(
         (l) => l[1]!,
       ),
     );
@@ -66,6 +69,10 @@ describe('a handler decides before it commits', () => {
     expect(updaterFlags(bad)).toEqual([{ line: 3, name: 'done' }]);
     const good = `const f = () => {\n  const done = check(els);\n  commit((els) => els);\n  if (done) track('x');\n};\n`;
     expect(updaterFlags(good)).toEqual([]);
+    // Any setState-shaped setter, and a commit named in the middle.
+    const setter = `const m = () => {\n  let settled = true;\n  setPos((prev) => {\n    settled = false;\n    return prev;\n  });\n  return settled;\n};\n`;
+    expect(updaterFlags(setter)).toEqual([{ line: 3, name: 'settled' }]);
+    expect(updaterFlags(setter.replace('setPos', 'rawCommitTabs'))).toHaveLength(1);
   });
 
   it('reads no updater-written variable after a commit, anywhere in the editor', () => {

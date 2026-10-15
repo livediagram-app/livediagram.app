@@ -523,6 +523,39 @@ describe('Fit to Content page edits', () => {
     expect(onGoTo).toHaveBeenLastCalledWith(illustratePagesOf(after!)[0]!.id);
   });
 
+  // docs/specs/003-system-architecture/react-state-and-effects.md "A handler decides before it commits": an edit that
+  // cannot land (no longer editing, or the tab locked) says nothing and goes nowhere.
+  it('neither tells nor glides for a split or duplicate that cannot land', () => {
+    for (const blocked of [
+      { tab: fitTab([box('a', -1200), box('b', 1200)]), mayEdit: () => false },
+      {
+        tab: { ...fitTab([box('a', -1200), box('b', 1200)]), locked: true } as Tab,
+        mayEdit: () => true,
+      },
+    ]) {
+      const toastInfo = vi.fn();
+      const onGoTo = vi.fn();
+      const commitTabs = vi.fn();
+      const edits = illustratePageEdits({
+        tabId: blocked.tab.id,
+        tab: blocked.tab,
+        current: illustratePagesOf(blocked.tab),
+        elements: blocked.tab.elements,
+        commitTabs,
+        onGoTo,
+        onLayoutPlaced: vi.fn(),
+        toastInfo,
+        mayEdit: blocked.mayEdit,
+      });
+      edits.splitPage('f');
+      edits.duplicatePage?.('f');
+      edits.addPage?.('infographic');
+      expect(toastInfo).not.toHaveBeenCalled();
+      expect(onGoTo).not.toHaveBeenCalled();
+      expect(commitTabs).not.toHaveBeenCalled();
+    }
+  });
+
   it('says there is nothing to split on a page that is one group', () => {
     const h = harness(fitTab([box('a', 0), box('b', 40)]));
     h.edits().splitPage('f');
