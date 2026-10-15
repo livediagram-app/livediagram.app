@@ -127,6 +127,7 @@ export function ElementTourHost() {
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
   };
 
+  const activeTabRef = useLatest(ctx.activeTab);
   const play = (el: Element, k: ElementTourKind) => {
     const d = ELEMENT_TOUR_DEFS[k];
     answer(k);
@@ -169,7 +170,6 @@ export function ElementTourHost() {
 
   // The offer, one object per element offered, so the toolbar re-renders only when it comes or goes.
   const offerId = offered ? element.id : null;
-  const activeTabRef = useLatest(ctx.activeTab);
   const offer = useMemo<ElementTourOffer | null>(
     () =>
       offerId && kind
