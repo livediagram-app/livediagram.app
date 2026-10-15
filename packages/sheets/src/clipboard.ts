@@ -194,7 +194,8 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
   let row: PastedCell[] | null = null;
   let cell: {
     text: string;
-    style: string;
+    /** The cell's own style, then each inline span's, in document order. */
+    styles: string[];
     tags: Set<string>;
     colspan: number;
     rowspan: number;
@@ -209,7 +210,7 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
       .split('\u0001')
       .join('\n')
       .trim();
-    const format = formatFromStyle(cell.style, cell.tags);
+    const format = formatFromStyle(cell.styles.join(';'), cell.tags);
     const ri = rows.length;
     while (pendingRowSpans[ri]?.has(row.length)) row.push({ text: '' });
     row.push(format ? { text, format } : { text });
@@ -247,7 +248,7 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
       };
       cell = {
         text: '',
-        style: a?.[2] ?? a?.[3] ?? a?.[4] ?? '',
+        styles: [a?.[2] ?? a?.[3] ?? a?.[4] ?? ''],
         tags: new Set(),
         colspan: span('colspan'),
         rowspan: span('rowspan'),
@@ -266,8 +267,8 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
     ) {
       cell.tags.add(name);
     } else if (cell && !closing && (name === 'span' || name === 'font')) {
-      const st = /style\s*=\s*"([^"]*)"/i.exec(attrs);
-      if (st) cell.style += `;${st[1]}`;
+      const style = /style\s*=\s*"([^"]*)"/i.exec(attrs)?.[1];
+      if (style !== undefined) cell.styles.push(style);
     }
   }
   finishCell();
