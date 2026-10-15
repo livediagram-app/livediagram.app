@@ -43,6 +43,38 @@ export function sessionStripTools(
   return null;
 }
 
+// Whether this strip offers its idle tools, to start one: an editor's, outside a running-only strip. The one
+// rule both the strip's buttons and its popovers' closing read, so they never disagree about what is there.
+export function stripCanStart(tools: SessionStripTools, readOnly: boolean): boolean {
+  return !readOnly && !tools.runningOnly;
+}
+
+// Has the button under an open strip popover gone? Then the popover closes rather than float with nothing
+// under it: the mode offers no strip or not that tool (a mode switch), or the strip shows only running tools
+// (a view-role visitor's, or Illustrate's for everyone) and that tool's activity has ended. `running.poll`
+// is a poll whose results are ours to see, which is when its button shows.
+export function stripSegmentGone({
+  segment,
+  tools,
+  readOnly,
+  running,
+}: {
+  segment: SessionSegment | null;
+  /** The strip's tools, or null when it has none (or no session to run them). */
+  tools: SessionStripTools | null;
+  readOnly: boolean;
+  running: { timer: boolean; vote: boolean; poll: boolean };
+}): boolean {
+  if (segment === null) return false;
+  if (!tools) return true;
+  if (segment === 'session-poll' && !tools.poll) return true;
+  if (segment === 'session-timer' && !tools.timer) return true;
+  if (stripCanStart(tools, readOnly)) return false;
+  if (segment === 'session-timer') return !running.timer;
+  if (segment === 'session-vote') return !running.vote;
+  return !running.poll;
+}
+
 type Toggle = (button: HTMLElement) => void;
 
 const ICON_SIZE = 18;
