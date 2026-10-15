@@ -77,7 +77,7 @@ export function useArticleLinkHover(
       stay();
     };
     // The view is made once, before this runs.
-    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, []);
 
   if (!hover) return null;

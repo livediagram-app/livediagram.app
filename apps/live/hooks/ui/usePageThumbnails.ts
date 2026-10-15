@@ -31,6 +31,6 @@ export function usePageThumbnails(
     }
     return out;
     // Redrawn on the inputs a picture shows, not on the tab object's identity.
-    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [tab.elements, tab.pages, tab.layers, tab.font, tab.finish, tab.articles, key, iconsLoaded]);
 }

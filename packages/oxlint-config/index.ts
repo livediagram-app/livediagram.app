@@ -1,5 +1,4 @@
 import { fileURLToPath } from 'node:url';
-import reactHooks from 'eslint-plugin-react-hooks';
 import { defineConfig } from 'oxlint';
 import { ICON_ART_ALLOWLIST } from '@livediagram/oxlint-config/raw-svg';
 
@@ -14,23 +13,9 @@ const TS_FILES = ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'];
 // absolute paths: every workspace's config, and the tests' scratch configs, load the same files.
 const pathOf = (specifier: string) => fileURLToPath(import.meta.resolve(specifier));
 
-// `react` is oxlint's native plugin name, so eslint-plugin-react-hooks loads under this alias.
-const REACT_HOOKS = 'react-hooks-js';
-
-// Every rule eslint-plugin-react-hooks recommends, the React Compiler's included, as an error.
-const reactHooksRules = Object.fromEntries(
-  Object.keys(reactHooks.configs.recommended.rules).map((rule) => [
-    rule.replace(/^react-hooks\//, `${REACT_HOOKS}/`),
-    'error' as const,
-  ]),
-);
-
 export default defineConfig({
-  plugins: ['eslint', 'typescript'],
-  jsPlugins: [
-    { name: REACT_HOOKS, specifier: pathOf('eslint-plugin-react-hooks') },
-    pathOf('./plugin.ts'),
-  ],
+  plugins: ['eslint', 'typescript', 'react'],
+  jsPlugins: [pathOf('./plugin.ts')],
   categories: {
     correctness: 'off',
     suspicious: 'off',
@@ -151,8 +136,22 @@ export default defineConfig({
     // Every React hooks rule, the React Compiler's included, is an error with no per-line
     // suppressions (docs/specs/003-system-architecture/react-state-and-effects.md): render is
     // pure, effects only synchronise with the outside world, and dependencies are complete.
-    // The plugin ESLint ran, not oxlint's native port: the same analysis gives the same findings.
-    ...reactHooksRules,
+    // oxlint's native port of eslint-plugin-react-hooks: every rule it recommends except `config`
+    // and `gating`, which check React Compiler options the repo never sets.
+    'react/rules-of-hooks': 'error',
+    'react/exhaustive-deps': 'error',
+    'react/static-components': 'error',
+    'react/use-memo': 'error',
+    'react/preserve-manual-memoization': 'error',
+    'react/incompatible-library': 'error',
+    'react/immutability': 'error',
+    'react/globals': 'error',
+    'react/refs': 'error',
+    'react/set-state-in-effect': 'error',
+    'react/error-boundaries': 'error',
+    'react/purity': 'error',
+    'react/set-state-in-render': 'error',
+    'react/unsupported-syntax': 'error',
 
     // The repo's own rules (./plugin.ts).
     'livediagram/no-native-title': 'error',

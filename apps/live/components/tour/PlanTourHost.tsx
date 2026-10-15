@@ -201,7 +201,7 @@ export function PlanTourHost() {
     }, OFFER_DELAY_MS);
     return () => clearTimeout(t);
     // workKey stands for boardIds and sheetIds.
-    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [armed, active, seen, inPlan, canWork, otherTour, hasPlanWork, workKey, engineRef]);
 
   // Settings rerun (the Tours › "Plan Tour" row, turned on from off + closed): offers again in Plan once a

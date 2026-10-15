@@ -290,7 +290,7 @@ export function useIllustratePages(deps: {
   return {
     ...shared,
     // mayEdit reads a ref, but only when an edit commits (in a handler), never during render.
-    // oxlint-disable-next-line react-hooks-js/refs
+    // oxlint-disable-next-line react/refs
     edit: illustratePageEdits({
       tabId,
       tab: activeTab,

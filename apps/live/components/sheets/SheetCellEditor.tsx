@@ -165,7 +165,7 @@ export function SheetCellEditor({
     el.setSelectionRange(end, end);
     input.setCaret(end);
     // Only when an edit starts (its cell), not as the draft changes.
-  }, [e?.r, e?.c, e?.origin]); // oxlint-disable-line react-hooks-js/exhaustive-deps
+  }, [e?.r, e?.c, e?.origin]); // oxlint-disable-line react/exhaustive-deps
   if (!e || e.origin === 'bar') return null;
   const m = mergeAt(c.geometry, e.r, e.c);
   const box = cellBox(c.geometry, e.r, e.c, c.scroll, m);

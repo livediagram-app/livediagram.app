@@ -32,6 +32,13 @@ read.
 - A guard that filters files by their text first (the optical guard, the light palette) parses only
   the files that can hold a finding.
 
+## The one other TypeScript
+
+`ts-json-schema-generator` (the api's OpenAPI schema generator, `apps/api/scripts/gen-openapi-schemas.mjs`)
+bundles its own TypeScript 5.9 to read the api-schema types. It runs only in
+`pnpm --filter @livediagram/api gen:openapi` and the drift test that checks its output; nothing else
+imports a classic TypeScript.
+
 ## Out of scope
 
 - Type information. The guards read syntax only; none asks the checker.

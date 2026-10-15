@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@oxlint/plugins": "^1.88.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
     "oxlint": "^1.88.0"
   },
   "scripts": {

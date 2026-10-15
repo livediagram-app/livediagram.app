@@ -30,7 +30,7 @@ export function useAutoHeight(
     const field = ref.current;
     if (field) fitHeight(field, max);
     // `max` is read through its key: a new object with the same limit must not refit.
-    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [ref, value, maxKey]);
   useEffect(() => {
     const field = ref.current;
@@ -43,7 +43,7 @@ export function useAutoHeight(
     });
     observer.observe(field);
     return () => observer.disconnect();
-    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [ref, maxKey]);
 }
 

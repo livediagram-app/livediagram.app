@@ -52,6 +52,9 @@ const PHONE_ROW_INSET_PX = 14;
 
 // The category last picked, for this session: every Sheet opens on it.
 let lastCategory: ToolbarCategoryId = 'text';
+const rememberCategory = (id: ToolbarCategoryId) => {
+  lastCategory = id;
+};
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 const widthOf = (b: ToolbarButton, labelled = false, phone = false) =>
@@ -82,8 +85,8 @@ export function SheetToolbar({
   const [switched, setSwitched] = useState(false);
   const pick = (id: string) => {
     if (id !== categoryId) setSwitched(true);
-    lastCategory = id as ToolbarCategoryId;
-    setCategoryId(lastCategory);
+    rememberCategory(id as ToolbarCategoryId);
+    setCategoryId(id as ToolbarCategoryId);
     setMenu(null);
   };
 
@@ -138,27 +141,30 @@ export function SheetToolbar({
     anchor: HTMLElement;
     highlight?: string;
   } | null>(null);
-  // Search (docs/specs/029-sheets/sheet.md "Toolbar"): its popover's anchor while open, and a function it found,
-  // waiting for the Functions category to draw so its family's menu opens on it.
+  // Search (docs/specs/029-sheets/sheet.md "Toolbar"): its popover's anchor while open, and the latest function it
+  // found, waiting for the Functions category to draw so its family's menu opens on it. Each find is a fresh
+  // request; the one whose menu already opened is remembered, so it opens once.
   const [searchAt, setSearchAt] = useState<HTMLElement | null>(null);
-  const [found, setFound] = useState<FunctionMatch | null>(null);
+  const [found, setFound] = useState<{ match: FunctionMatch } | null>(null);
+  const opened = useRef<{ match: FunctionMatch } | null>(null);
   const searchButton = useRef<HTMLButtonElement | null>(null);
   const goTo = (match: FunctionMatch) => {
     track('Sheet', 'Searched', 'Function');
     setSearchAt(null);
     pick('functions');
-    setFound(match);
+    setFound({ match });
   };
   useLayoutEffect(() => {
-    if (!found || category.id !== 'functions') return;
-    const label = `${FUNCTION_FAMILY_LABELS[found.family]} Functions`;
+    if (!found || found === opened.current || category.id !== 'functions') return;
+    opened.current = found;
+    const { match } = found;
+    const label = `${FUNCTION_FAMILY_LABELS[match.family]} Functions`;
     // The family's own button, else More when it folded there, else Search itself.
     const anchor =
       ref.current?.querySelector<HTMLElement>(`[aria-label="${label}"]`) ??
       ref.current?.querySelector<HTMLElement>('[aria-label="More"]') ??
       searchButton.current;
-    if (anchor) setMenu({ kind: `fn:${found.family}`, anchor, highlight: found.name });
-    setFound(null);
+    if (anchor) setMenu({ kind: `fn:${match.family}`, anchor, highlight: match.name });
   }, [found, category.id]);
 
   const button = (b: ToolbarButton) =>

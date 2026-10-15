@@ -110,7 +110,7 @@ export function useImageSources(ids: readonly string[]): (imageId: string) => st
         .catch(() => console.warn('[illustrate-page] picture failed', { imageId: id }));
     }
     // The access is read through its key: a fresh object with the same values refetches nothing.
-    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [key, accessKey]);
   return useMemo(() => (id: string) => sources.get(id), [sources]);
 }

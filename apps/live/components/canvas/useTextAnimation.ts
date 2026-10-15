@@ -78,7 +78,7 @@ export function useTextAnimation(
   return useMemo(
     () => textAnimationView(element, texts, textColor, isEditing),
     // The element object changes on every edit; only these fields shape the view.
-    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     [
       key,
       words.id,

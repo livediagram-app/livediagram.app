@@ -5,10 +5,11 @@ Status: shipped
 ## What
 
 Every React component and hook in the repo keeps render pure and uses effects only to synchronise with
-something outside React. Every `eslint-plugin-react-hooks` rule, including the React Compiler rules
-(`refs`, `set-state-in-effect`, `purity`, `immutability` and the rest) and `exhaustive-deps`, is an
-**error** in every workspace (`packages/oxlint-config`, run by oxlint: [Linting](linting.md)), with no
-per-line suppressions and no exemptions. Tests drive hooks through a component (`renderHook`), like the app does.
+something outside React. Every React hooks rule (oxlint's native port of `eslint-plugin-react-hooks`),
+including the React Compiler rules (`refs`, `set-state-in-effect`, `purity`, `immutability` and the
+rest) and `exhaustive-deps`, is an **error** in every workspace (`packages/oxlint-config`, run by
+oxlint: [Linting](linting.md)), with no per-line suppressions and no exemptions. Tests drive hooks
+through a component (`renderHook`), like the app does.
 
 ## Why
 
@@ -45,7 +46,10 @@ editor carried 247 findings and 73 suppressions; at zero they are errors, so no 
 - **Clocks.** Relative time comes from the shared tick store: `useRelativeNow()` returns the instant of
   the latest 30-second tick, one timer for the whole page. A running timer's readout uses `useNow`.
   Presence statuses read a snapshot the presence tick republishes, and a returning peer republishes at
-  once. Nothing reads `Date.now()` while rendering.
+  once. A reading by the day (due and overdue counts, the calendar's month, the Gantt's today line) uses
+  `useToday()`, a store that moves on at local midnight and when the page is shown again. Nothing reads
+  the clock (`Date.now()`, `new Date()`) while rendering; a static page's copyright year is read once,
+  as its module loads.
 - **Effect dependencies are complete.** A dependency that must not retrigger the effect is read through
   an effect event, not omitted.
 - **A handler decides before it commits.** A state updater (the function a commit or a `setX` takes) may

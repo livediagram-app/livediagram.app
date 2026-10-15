@@ -4,6 +4,7 @@
 // widgets, then Reveal and Retry when they apply, Maximise Board, and the list of items not on the board. The header's
 // own background is the board's handle: a press there moves the board, its controls do not.
 import { useRef, useState } from 'react';
+import { useToday } from '@/hooks/ui/useToday';
 import { useKeepOnScreen } from '@/hooks/plan/useKeepOnScreen';
 import {
   itemTitle,
@@ -85,6 +86,8 @@ export function PlanBoardHeader({
   end?: React.ReactNode;
 }) {
   const [trayOpen, setTrayOpen] = useState(false);
+  // The widgets count by the day (due, overdue, stale): today, moving on at midnight (useToday).
+  const today = useToday();
   const widgets = widgetsOf(setup);
   const ctx: WidgetContext = {
     setup,
@@ -97,7 +100,7 @@ export function PlanBoardHeader({
     canFilterMine,
     trayOpen,
     onToggleTray: () => setTrayOpen((o) => !o),
-    now: new Date(),
+    now: today,
     canEdit,
     onSetup,
     onOpenItem,

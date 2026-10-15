@@ -10,7 +10,7 @@ export default defineConfig({
       // React: Playwright's fixture API takes a param literally named `use`, which the hooks rule
       // misreads as a hook call. Scope that rule off for the suite (the specs never touch React).
       files: ['e2e/**/*.ts'],
-      rules: { 'react-hooks-js/rules-of-hooks': 'off' },
+      rules: { 'react/rules-of-hooks': 'off' },
     },
   ],
 });

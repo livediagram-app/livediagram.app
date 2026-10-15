@@ -34,7 +34,7 @@ export const SequenceFace = memo(function SequenceFace({
         '<svg$1 width="100%" height="100%" preserveAspectRatio="xMidYMid meet"',
       ),
     // The drawing depends on the rows and the paper only.
-    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     [element.sequenceParticipants, element.sequenceMessages, element.sequenceNumbered, paper],
   );
   const play = element.sequenceAnim === 'play';

@@ -123,7 +123,7 @@ export function NewDocumentModeStep({
     const at = Math.max(0, NEW_DOCUMENT_MODES.indexOf(selected ?? 'diagram'));
     cards.current[at]?.focus({ preventScroll: true });
     // Once, as the step appears.
-    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, []);
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const digit = Number(e.key);

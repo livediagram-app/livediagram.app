@@ -1,4 +1,3 @@
-import reactHooks from 'eslint-plugin-react-hooks';
 import { beforeAll, describe, expect, it } from 'vitest';
 import config from './index';
 import { lintFixtures, type Finding } from './lint-fixtures';
@@ -59,28 +58,37 @@ describe('shared oxlint config', () => {
     expect(new Set(Object.values(config.categories ?? {}))).toEqual(new Set(['off']));
   });
 
-  it('enables every rule eslint-plugin-react-hooks recommends', () => {
-    const expected = Object.keys(reactHooks.configs.recommended.rules).map((r) =>
-      r.replace(/^react-hooks\//, 'react-hooks-js/'),
-    );
-    expect(Object.keys(config.rules ?? {})).toEqual(expect.arrayContaining(expected));
+  it("enables every React hooks rule, the React Compiler's included", () => {
+    const hooks = [
+      'rules-of-hooks',
+      'exhaustive-deps',
+      'static-components',
+      'use-memo',
+      'preserve-manual-memoization',
+      'incompatible-library',
+      'immutability',
+      'globals',
+      'refs',
+      'set-state-in-effect',
+      'error-boundaries',
+      'purity',
+      'set-state-in-render',
+      'unsupported-syntax',
+    ].map((rule) => `react/${rule}`);
+    expect(Object.keys(config.rules ?? {})).toEqual(expect.arrayContaining(hooks));
   });
 });
 
 describe('rule families', () => {
   it('rejects a conditional hook and an incomplete dependency list', () => {
     expect(rulesIn('hooks.tsx')).toEqual(
-      expect.arrayContaining(['react-hooks-js(rules-of-hooks)', 'react-hooks-js(exhaustive-deps)']),
+      expect.arrayContaining(['react-hooks(rules-of-hooks)', 'react-hooks(exhaustive-deps)']),
     );
   });
 
   it('rejects the React Compiler violations: impurity, effect-mirrored state, refs in render', () => {
     expect(rulesIn('hooks.tsx')).toEqual(
-      expect.arrayContaining([
-        'react-hooks-js(purity)',
-        'react-hooks-js(set-state-in-effect)',
-        'react-hooks-js(refs)',
-      ]),
+      expect.arrayContaining(['react(purity)', 'react(set-state-in-effect)', 'react(refs)']),
     );
   });
 

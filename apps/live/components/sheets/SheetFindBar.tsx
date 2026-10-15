@@ -31,7 +31,7 @@ export function SheetFindBar() {
   const matches = useMemo(
     () => findMatches(c.workbook, c.sheet.id, query, opts),
     // Found again whenever a value may have changed (`version`), not only when the query does.
-    [c.workbook, c.sheet.id, query, opts, c.version], // oxlint-disable-line react-hooks-js/exhaustive-deps
+    [c.workbook, c.sheet.id, query, opts, c.version], // oxlint-disable-line react/exhaustive-deps
   );
   // Every match is highlighted while Find is open (the first FIND_HIGHLIGHTS_MAX of them).
   const { setFindHits } = c;

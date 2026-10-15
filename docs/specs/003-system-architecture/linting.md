@@ -26,20 +26,29 @@ is the whole of what the repo enforces.
 - **typescript-eslint's recommended rules**, as oxlint's native `typescript/*` rules (and `eslint/*`
   for `no-unused-vars`, `no-unused-expressions` and `no-array-constructor`, which oxlint runs on
   TypeScript). Unused variables and arguments are allowed only when named with a leading `_`.
+- **One known gap**: oxlint's `no-useless-assignment` does not report a value written to a function
+  parameter and overwritten before it is read, which ESLint's does
+  ([oxc-project/oxc#27720](https://github.com/oxc-project/oxc/issues/27720)).
 - **By language**: the rules TypeScript's compiler already enforces (`no-undef`, `no-dupe-keys`,
   `constructor-super` and the rest) run on JavaScript files only; `no-var`, `prefer-const`,
   `prefer-rest-params` and `prefer-spread` run on TypeScript files only. JavaScript files know the
   browser, Node and ES2022 globals.
-- **Every `eslint-plugin-react-hooks` rule**, the React Compiler's included, loaded as an oxlint JS
-  plugin under the name `react-hooks-js` (`react` is oxlint's own). It is the same plugin, so the same
-  analysis; [React state and effects](react-state-and-effects.md) says why they are errors.
+- **The React hooks rules**, as oxlint's native port of `eslint-plugin-react-hooks` (`react/*`): every
+  rule the plugin recommends, the React Compiler's included (`rules-of-hooks`, `exhaustive-deps`,
+  `purity`, `refs`, `immutability`, `globals`, `set-state-in-effect`, `set-state-in-render`,
+  `static-components`, `use-memo`, `preserve-manual-memoization`, `incompatible-library`,
+  `error-boundaries`, `unsupported-syntax`). The plugin's `config` and `gating` rules are not part of
+  the port: they check React Compiler options, and the repo sets none.
+  [React state and effects](react-state-and-effects.md) says why they are errors.
 - **The repo's own rules**, in the `livediagram` JS plugin (`packages/oxlint-config/plugin.ts`):
   - `livediagram/no-native-title`: no native `title` outside `iframe` and `abbr`
     ([Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md));
   - `livediagram/no-raw-icon-svg`: no icon-sized raw `<svg>` outside the art allow-list
     ([Iconography](../004-interface-design/iconography.md)).
 - **No formatting rules.** Prettier owns formatting.
-- **No type-aware rules.** Every rule reads one file's syntax; none needs a type checker.
+- **No type-aware rules.** Every rule reads one file's syntax; none needs a type checker. Turning on
+  `oxlint-tsgolint`'s type-aware rules is tracked in
+  [#711](https://github.com/livediagram-app/livediagram.app/issues/711).
 
 ## Disable directives
 

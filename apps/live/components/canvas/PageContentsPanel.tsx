@@ -107,7 +107,7 @@ export function PageContentsPanel({
   useLayoutEffect(() => {
     if (here) buttons.current.get(here)?.scrollIntoView({ block: 'center' });
     // On opening only.
-    // oxlint-disable-next-line react-hooks-js/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, []);
   // The page just added, once it is in the list, is here (set while rendering, as React derives
   // state from a change in its inputs).
