@@ -69,7 +69,10 @@ export default function TelemetryDashboard() {
   useEffect(() => {
     let cancelled = false;
     fetch(`${API_BASE}/telemetry/summary`)
-      .then((r) => (r.ok ? (r.json() as Promise<TelemetrySummary>) : Promise.reject(r.status)))
+      .then((r) => {
+        if (!r.ok) throw new Error(`telemetry summary: HTTP ${r.status}`);
+        return r.json() as Promise<TelemetrySummary>;
+      })
       .then((data) => {
         if (cancelled) return;
         // Retired features never render (see retired-events.ts).
