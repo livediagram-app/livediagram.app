@@ -18,6 +18,14 @@ export function isSeatingShape(kind: ShapeKind | string): kind is SeatingKind {
   return kind === 'chair' || kind === 'desk' || kind === 'sofa' || kind === 'meeting-table';
 }
 
+/** Whether a seating kind takes a facing: a chair, desk or sofa; a meeting table seats six all round and never
+ *  turns (docs/specs/009-elements/office.md). */
+export function turnsWithFacing(
+  kind: ShapeKind | string,
+): kind is Exclude<SeatingKind, 'meeting-table'> {
+  return isSeatingShape(kind) && kind !== 'meeting-table';
+}
+
 export function isFurnitureShape(kind: ShapeKind | string): kind is FurnitureKind {
   return kind === 'desk' || kind === 'sofa';
 }
