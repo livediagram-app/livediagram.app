@@ -822,3 +822,4 @@ export * from './article-draw-ops';
 export * from './article-layout-estimate';
 export { agendaFitHeight } from './svg-render-agenda';
 export * from './session-button-text';
+export { lineChars } from './svg-render-web';
