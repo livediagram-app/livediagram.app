@@ -69,6 +69,10 @@ export function ElementTourHost() {
       const id = touringRef.current?.id;
       if (id) setConceptTourPreview({ elementId: id, anim, run: Date.now() });
     },
+    showStageBar: (index) => {
+      const id = touringRef.current?.id;
+      if (id) setConceptTourPreview({ elementId: id, bar: index, run: Date.now() });
+    },
     clearPreview: () => setConceptTourPreview(null),
   };
   const apiRef = useLatest(api);

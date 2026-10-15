@@ -160,8 +160,10 @@ the "+" ring's add, the Rows section, the colour ramp and its animation previewe
 [pyramid](../007-editor/element-tours.md#the-pyramid-tour), the
 [funnel](../007-editor/element-tours.md#the-funnel-tour), the
 [cycle](../007-editor/element-tours.md#the-cycle-tour), the
-[hub and spoke](../007-editor/element-tours.md#the-hub-and-spoke-tour) and the
-[onion](../007-editor/element-tours.md#the-onion-tour).
+[hub and spoke](../007-editor/element-tours.md#the-hub-and-spoke-tour), the
+[onion](../007-editor/element-tours.md#the-onion-tour) and the
+[chevron process](../007-editor/element-tours.md#the-chevrons-tour), whose tour holds a stage's bar open as if pointed
+at.
 
 ## Share roles
 

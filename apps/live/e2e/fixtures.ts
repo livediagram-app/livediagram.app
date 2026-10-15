@@ -91,6 +91,7 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
               'cycle',
               'hub',
               'onion',
+              'chevrons',
             ],
           }),
         );

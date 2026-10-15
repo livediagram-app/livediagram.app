@@ -100,3 +100,12 @@ describe('the Onion element tour kind', () => {
     expect(canTourElement({ level: 'participate' }, onion, 'onion')).toBe(false);
   });
 });
+
+describe('the Chevrons element tour kind', () => {
+  it('tours a chevron process, for an Editor only', () => {
+    const chevrons = createShape('chevrons', 0, 0) as Element;
+    expect(elementTourKindOf(chevrons)).toBe('chevrons');
+    expect(canTourElement({ level: 'edit' }, chevrons, 'chevrons')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, chevrons, 'chevrons')).toBe(false);
+  });
+});

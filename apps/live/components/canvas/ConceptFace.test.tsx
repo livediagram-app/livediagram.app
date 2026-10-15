@@ -170,4 +170,18 @@ describe('ConceptFace under an element tour', () => {
     expect(root.className).toContain('lvd-concept-flow');
     expect(root.style.getPropertyValue('--lvd-concept-iter')).toBe('');
   });
+
+  it("holds a chevron stage's bar open for a tour step, without changing its animation", () => {
+    const el = { ...make('chevrons'), id: 'chev' } as ShapeElement & { shape: ConceptShape };
+    const { container } = show(el);
+    const bars = () => container.querySelectorAll('[data-concept-row-bar]');
+    const before = bars().length;
+    act(() => setConceptTourPreview({ elementId: 'chev', bar: 1, run: 1 }));
+    expect(container.querySelector('[data-concept-row-bar][aria-label="Stage 2"]')).not.toBeNull();
+    expect((container.firstElementChild as HTMLElement).className).not.toContain(
+      'lvd-concept-pulse',
+    );
+    act(() => setConceptTourPreview(null));
+    expect(bars().length).toBe(before);
+  });
 });

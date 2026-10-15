@@ -1187,6 +1187,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Onion tour, offered beside a selected onion.',
   'UI|Ended|OnionTourSkipped':
     'Someone left the Onion tour before its end, or the onion it was on went away.',
+  'UI|Ended|ChevronsTourCompleted':
+    'Someone reached the end of the Chevrons tour, offered beside a selected chevron process.',
+  'UI|Ended|ChevronsTourSkipped':
+    'Someone left the Chevrons tour before its end, or the chevron process it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1321,6 +1325,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Hub and Spoke tour was offered, as a small Tour toolbar beside a selected hub and spoke (counted once per visit).',
   'UI|Opened|OnionTourOffer':
     'The Onion tour was offered, as a small Tour toolbar beside a selected onion (counted once per visit).',
+  'UI|Opened|ChevronsTourOffer':
+    'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
@@ -1411,6 +1417,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected hub and spoke, starting its tour.',
   'UI|Started|OnionTour':
     'Someone pressed Play on the Tour toolbar beside a selected onion, starting its tour.',
+  'UI|Started|ChevronsTour':
+    'Someone pressed Play on the Tour toolbar beside a selected chevron process, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1604,6 +1612,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Onion Tour" in Settings, so it is offered again.',
   'UI|Toggled|OnionTourSeenOn':
     'Someone switched off Tours › Element Tours › "Onion Tour" in Settings, so it is not offered.',
+  'UI|Toggled|ChevronsTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Chevrons Tour" in Settings, so it is offered again.',
+  'UI|Toggled|ChevronsTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Chevrons Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -1777,6 +1789,20 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|OnionTourStepAnimate':
     'The Onion tour reached its "Ripple Outward" step, playing the Pulse animation on the onion.',
   'UI|View|OnionTourStepOutro': 'The Onion tour reached its closing "That Is an Onion" card.',
+  'UI|View|ChevronsTourStepStages':
+    'The Chevrons tour reached its "Stages, Left to Right" step, on the whole process.',
+  'UI|View|ChevronsTourStepEdit':
+    'The Chevrons tour reached its "Type Over a Stage" step, on the first stage\'s name.',
+  'UI|View|ChevronsTourStepBar':
+    'The Chevrons tour reached its "Each Stage\'s Own Bar" step, with a stage\'s bar held open.',
+  'UI|View|ChevronsTourStepNotes':
+    'The Chevrons tour reached its "A Note Under Each" step, on a stage\'s note.',
+  'UI|View|ChevronsTourStepAdd':
+    'The Chevrons tour reached its "Add a Stage" step, with the "+" ring open on Add Stage.',
+  'UI|View|ChevronsTourStepAnimate':
+    'The Chevrons tour reached its "Run the Pipeline" step, playing the Pulse animation on the process.',
+  'UI|View|ChevronsTourStepOutro':
+    'The Chevrons tour reached its closing "That Is a Chevron Process" card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':

@@ -11,6 +11,7 @@ import { funnelTourSteps } from './funnel-tour-steps';
 import { cycleTourSteps } from './cycle-tour-steps';
 import { hubTourSteps } from './hub-tour-steps';
 import { onionTourSteps } from './onion-tour-steps';
+import { chevronsTourSteps } from './chevrons-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -105,6 +106,13 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     helpArticle: 'conceptGraphics',
     helpLabel: 'Concept Graphics Help',
     steps: (el, env) => onionTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
+  },
+  chevrons: {
+    token: 'ChevronsTour',
+    eyebrow: 'Chevrons tour',
+    helpArticle: 'conceptGraphics',
+    helpLabel: 'Concept Graphics Help',
+    steps: (el, env) => chevronsTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
 };
 

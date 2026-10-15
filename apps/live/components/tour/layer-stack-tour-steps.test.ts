@@ -34,6 +34,7 @@ const api = (): ElementTourApi => ({
   showTable: vi.fn(),
   showText: vi.fn(),
   previewConcept: vi.fn(),
+  showStageBar: vi.fn(),
   clearPreview: vi.fn(),
 });
 

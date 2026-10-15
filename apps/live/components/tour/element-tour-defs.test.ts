@@ -20,6 +20,7 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   cycle: createShape('cycle', 0, 0) as Element,
   hub: createShape('hub', 0, 0) as Element,
   onion: createShape('onion', 0, 0) as Element,
+  chevrons: createShape('chevrons', 0, 0) as Element,
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {

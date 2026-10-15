@@ -12,5 +12,7 @@ export type ElementTourApi = SankeyFlowsTourApi & {
   closeFlows: () => void;
   // A concept graphic: play an animation on it once, never stored, or stop it.
   previewConcept: (anim: 'build' | 'pulse' | 'flow') => void;
+  // A chevron process: hold one stage's bar open, as if pointed at.
+  showStageBar: (index: number) => void;
   clearPreview: () => void;
 };

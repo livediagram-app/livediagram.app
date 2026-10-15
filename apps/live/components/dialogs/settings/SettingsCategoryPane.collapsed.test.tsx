@@ -20,7 +20,7 @@ describe('Element Tours section', () => {
   it('starts closed, saying how many tours are on', () => {
     render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
     expect(header().getAttribute('aria-expanded')).toBe('false');
-    expect(header().textContent).toContain('7 of 7 On');
+    expect(header().textContent).toContain('8 of 8 On');
     // The mode tours stay open above it.
     expect(screen.getByRole('switch', { name: 'Draw Tour' })).toBeTruthy();
   });
@@ -41,7 +41,7 @@ describe('Element Tours section', () => {
         onChange={vi.fn()}
       />,
     );
-    expect(header().textContent).toContain('6 of 7 On');
+    expect(header().textContent).toContain('7 of 8 On');
   });
 
   it('opens on its own when Settings lands on one of its rows', () => {

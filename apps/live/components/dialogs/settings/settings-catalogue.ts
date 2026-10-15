@@ -1248,6 +1248,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select an onion.',
         helpArticle: 'conceptGraphics',
       }),
+      elementTourSwitch('chevrons', {
+        label: 'Chevrons Tour',
+        event: { category: 'UI', on: 'ChevronsTourSeenOff', off: 'ChevronsTourSeenOn' },
+        keywords:
+          'tour walkthrough tutorial chevrons chevron process stages pipeline value chain stage bar concept replay',
+        description: 'The first time you select a chevron process.',
+        helpArticle: 'conceptGraphics',
+      }),
     ],
   },
   {

@@ -9,7 +9,7 @@ with a centred card) and [Show Me](show-me.md) (never offered, started from a bu
 tour offers itself, but quietly: a small toolbar that waits beside the selection, never a card over the canvas.
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
-[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, and onion.
+[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion and chevron process.
 
 ## Domain language
 
@@ -202,6 +202,23 @@ On the selected Onion, from `onion-tour-steps.ts`.
 6. **Ripple Outward**: plays **Pulse** from the core outward as a preview while the step is up.
 7. **That Is an Onion**: the closing card.
 
+## The Chevrons tour
+
+On the selected Chevron process, from `chevrons-tour-steps.ts`. It has no menu step: a chevron process is edited on
+the canvas, not in a Rows section.
+
+1. **Stages, Left to Right**: rings the process, counting its stages, each pointing into the next.
+2. **Type Over a Stage**: rings the first stage's name.
+3. **Each Stage's Own Bar**: holds the middle stage's bar open (the first's on a two-stage process), as if the stage
+   were pointed at, and rings it: move left or right, delete, and Add Note while no stage has a note. On a touch
+   screen the words say every stage shows its bar (zoom in if the stages are small). A stage too small for its bar
+   (zoomed out, a narrow phone) draws none, so the step rings the stage instead of waiting for it. The bar closes
+   again on leaving the step.
+4. **A Note Under Each** (only while a stage has a note): rings the first note.
+5. **Add a Stage**: the "+" ring open on **Add Stage**; up to eight.
+6. **Run the Pipeline**: plays **Pulse** along the stages as a preview while the step is up.
+7. **That Is a Chevron Process**: the closing card.
+
 ## Share roles
 
 | Role        | Element tours                                                                                  |
@@ -215,7 +232,7 @@ graphic, an Editor on an unlocked element, since its rows are structure), never 
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -229,6 +246,7 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   `...Outro`; the Cycle's `CycleTourStepLoop`, `...First`, `...Centre`, `...Add`, `...Rows`, `...Animate` and
   `...Outro`; the Hub's `HubTourStepHub`, `...Satellites`, `...Edit`, `...Add`, `...Spokes`, `...Animate` and
   `...Outro`; the Onion's `OnionTourStepRings`, `...Core`, `...Outer`, `...Add`, `...Rows`, `...Animate` and
+  `...Outro`; the Chevrons' `ChevronsTourStepStages`, `...Edit`, `...Bar`, `...Notes`, `...Add`, `...Animate` and
   `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
@@ -257,6 +275,7 @@ help article's tour section; and a section here.
 - `apps/live/components/tour/ElementTourOffer.tsx`: the offer toolbar.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
-  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`: each kind's own.
+  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`, `chevrons-tour-steps.ts`: each kind's own.
 - `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
-- `apps/live/lib/concept-tour-preview.ts`: the animation a step previews on a concept graphic.
+- `apps/live/lib/concept-tour-preview.ts`: what a step shows on a concept graphic: an animation previewed, or a
+  chevron stage's bar held open.
