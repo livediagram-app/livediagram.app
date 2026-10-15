@@ -289,8 +289,9 @@ export function parsePastedText(text: string): ParsedCsv {
   if (trimmed === '') return { rows: [['']], truncated: false };
   if (trimmed.includes('\t')) return parseCsv(trimmed, '\t');
   const csv = parseCsv(trimmed, ',');
+  // Two LINES, not two records: one quoted record running over lines ("Line one\nline two",B) is CSV too.
   if (
-    csv.rows.length > 1 &&
+    /\r?\n/.test(trimmed) &&
     csv.rows[0]!.length > 1 &&
     csv.rows.every((r) => r.length === csv.rows[0]!.length)
   )

@@ -179,6 +179,10 @@ describe('copy and paste', () => {
     expect(readPastedText('Thanks, Sam\n')).toEqual([['Thanks, Sam']]);
     expect(readPastedText('a\tb, c')).toEqual([['a', 'b, c']]);
   });
+  // Two lines, not two records: one quoted record running over lines is still CSV, its quotes taken off.
+  it('reads one quoted record over two lines as its cells', () => {
+    expect(readPastedText('"Line one\nline two",B')).toEqual([['Line one\nline two', 'B']]);
+  });
   it('pastes external rows read as typed, with formats', () => {
     const b = book({});
     const id = b.sheets[0]!.id;

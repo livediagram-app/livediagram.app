@@ -3,18 +3,43 @@ import { SHEET_COLS_MAX, SHEET_ROWS_MAX } from './limits';
 
 export type ParsedCsv = { rows: string[][]; truncated: boolean };
 
-// Rows of fields. `sep` defaults to a tab when the first line holds one, a semicolon when it holds semicolons and
-// no comma (Excel's CSV in locales whose decimal mark is a comma), else a comma.
-export function parseCsv(text: string, sep?: string): ParsedCsv {
-  const body = text.startsWith('﻿') ? text.slice(1) : text;
+// How many lines `separatorOf` reads to choose.
+const SEPARATOR_SAMPLE_LINES = 20;
+
+// The separator a file was written with: a tab when the first line holds one; a semicolon (Excel's CSV in locales
+// whose decimal mark is a comma) when the first lines, read as RFC 4180 with semicolons, split into the same number
+// of fields (more than one) on every line, and read with commas they do not, or into no more (a tie is a
+// semicolon file: a comma file holding a semicolon on every line, the same number on each, is the rarer); else a comma. Reading
+// the fields rather than counting characters keeps a quoted comma or semicolon out of it, and lets a comma-decimal
+// value ("Tea;3,50") or header ("Amount, EUR") stand on a semicolon line.
+function separatorOf(body: string): string {
   const firstLine = body.slice(0, body.search(/\r?\n|$/));
-  const d =
-    sep ??
-    (firstLine.includes('\t')
-      ? '\t'
-      : firstLine.includes(';') && !firstLine.includes(',')
-        ? ';'
-        : ',');
+  if (firstLine.includes('\t')) return '\t';
+  let end = -1;
+  for (let n = 0; n < SEPARATOR_SAMPLE_LINES; n++) {
+    const next = body.indexOf('\n', end + 1);
+    if (next < 0) {
+      end = body.length;
+      break;
+    }
+    end = next;
+  }
+  const sample = body.slice(0, end).replace(/\r$/, '');
+  if (!sample.includes(';')) return ',';
+  const width = (d: string) => {
+    // A blank line splits no way at all, so it takes no part.
+    const rows = parseCsv(sample, d).rows.filter((r) => r.length > 1 || r[0] !== '');
+    const n = rows[0]?.length ?? 0;
+    return n > 1 && rows.every((r) => r.length === n) ? n : 0;
+  };
+  const semicolons = width(';');
+  return semicolons > 0 && semicolons >= width(',') ? ';' : ',';
+}
+
+// Rows of fields, split by `sep`, else by the separator the text was written with (separatorOf).
+export function parseCsv(text: string, sep?: string): ParsedCsv {
+  const body = text.startsWith('\ufeff') ? text.slice(1) : text;
+  const d = sep ?? separatorOf(body);
   const rows: string[][] = [];
   let row: string[] = [];
   let field = '';
@@ -76,8 +101,10 @@ export function parseCsv(text: string, sep?: string): ParsedCsv {
   return { rows, truncated };
 }
 
+// A semicolon is quoted too, though the file is comma-separated: a one-column sheet whose cells hold one would
+// otherwise read back as semicolon-separated (separatorOf).
 function quote(field: string): string {
-  return /[",\r\n]/.test(field) ? `"${field.replace(/"/g, '""')}"` : field;
+  return /[",;\r\n]/.test(field) ? `"${field.replace(/"/g, '""')}"` : field;
 }
 
 // A field a spreadsheet would run as a formula when the file is opened (CSV injection): one starting with = + - @, a
