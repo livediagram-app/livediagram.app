@@ -8,7 +8,7 @@
 
 import type { Element } from '@livediagram/document';
 import { heading } from './template-session-parts';
-import { furnishRooms, walkIn, type OfficeRoom } from './template-office-parts';
+import { officePlan, walkIn, type OfficeRoom } from './template-office-parts';
 
 // The office's footprint: two rows of rooms either side of a corridor.
 const ROW_H = 340;
@@ -111,18 +111,12 @@ export function buildVirtualOffice(cx: number, cy: number): Element[] {
   const x0 = cx - WIDTH / 2;
   const y0 = cy - HEIGHT / 2;
   const top = y0 + HEAD;
-  const placed = furnishRooms(
+  return officePlan(
     ROOMS.map((r) => ({ ...r, h: ROW_H })),
     x0,
-    top,
-  );
-  const floors = placed.filter(
-    (e) => e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug'),
-  );
-  const furniture = placed.slice(floors.length);
-  return [
-    ...floors,
-    ...heading(
+    y0,
+    HEAD,
+    heading(
       x0,
       y0,
       WIDTH,
@@ -131,12 +125,13 @@ export function buildVirtualOffice(cx: number, cy: number): Element[] {
       'emoji-wave',
       'Walk in, find a desk, meet round the table and grab a coffee together. Rename the rooms to fit your team.',
     ),
-    ...furniture,
-    // At the corridor's end: the way in, and what to do once you are.
-    ...walkIn(
-      x0 + WIDTH - 20,
-      top + ROW_H + CORRIDOR / 2,
-      'Press Walk In (or W) to walk round. Enter says something, a chair or sofa seats you, and the coffee machine makes a coffee.',
-    ),
-  ];
+    [
+      // At the corridor's end: the way in, and what to do once you are.
+      ...walkIn(
+        x0 + WIDTH - 20,
+        top + ROW_H + CORRIDOR / 2,
+        'Press Walk In (or W) to walk round. Enter says something, a chair or sofa seats you, and the coffee machine makes a coffee.',
+      ),
+    ],
+  );
 }
