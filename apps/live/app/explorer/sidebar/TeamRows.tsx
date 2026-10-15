@@ -51,7 +51,8 @@ function TeamRow({
   );
   // A team folder opens the team page AT that folder: a full load, since
   // the team page reads the &folder param at mount.
-  const openTeamFolder = (folderId: string) => window.location.assign(teamFolderPath(t.id, folderId));
+  const openTeamFolder = (folderId: string) =>
+    window.location.assign(teamFolderPath(t.id, folderId));
   return (
     <SidebarRow
       icon={<TeamIcon />}
