@@ -333,15 +333,23 @@ describe('usePerTabLoad never counts an in-flight tab as loaded', () => {
     await flush();
     expect(apiLoadTab).toHaveBeenCalledTimes(1);
     expect(loadedTabIdsRef.current.has('t2')).toBe(false);
-    // A second sweep while the first is in flight does not fetch it again.
-    await act(async () => {
-      await hook.result.current.loadAllTabs();
+    // A second sweep while the first is in flight does not fetch it again: it waits for that fetch.
+    let second: Promise<string[]> = Promise.resolve([]);
+    let secondDone = false;
+    act(() => {
+      second = hook.result.current.loadAllTabs().then((f) => {
+        secondDone = true;
+        return f;
+      });
     });
+    await flush();
     expect(apiLoadTab).toHaveBeenCalledTimes(1);
+    expect(secondDone).toBe(false);
     await act(async () => {
       resolveT2({ id: 't2', name: 't2', elements: [] } as unknown as Tab);
       await sweep;
     });
+    expect(await second).toEqual([]);
     expect(loadedTabIdsRef.current.has('t2')).toBe(true);
   });
 
@@ -358,14 +366,39 @@ describe('usePerTabLoad never counts an in-flight tab as loaded', () => {
     hook.rerender({ activeId: 't2' });
     await flush();
     expect(loadedTabIdsRef.current.has('t2')).toBe(false);
-    await act(async () => {
-      await hook.result.current.loadAllTabs();
+    // A sweep meanwhile waits for the visit's fetch rather than answering at once without the tab.
+    let sweep: Promise<string[]> = Promise.resolve([]);
+    act(() => {
+      sweep = hook.result.current.loadAllTabs();
     });
+    await flush();
     expect(apiLoadTab).toHaveBeenCalledTimes(1);
     await act(async () => {
       resolveT2({ id: 't2', name: 't2', elements: [] } as unknown as Tab);
     });
+    expect(await sweep).toEqual([]);
     expect(loadedTabIdsRef.current.has('t2')).toBe(true);
+  });
+
+  // docs/specs/009-elements/tab-window.md "States": a window asking for a tab the visit is fetching hears how that
+  // fetch ended, a failure included, rather than nothing.
+  it('reports a visit fetch that fails to a sweep waiting on it', async () => {
+    let failT2: (e: Error) => void = () => {};
+    apiLoadTab.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          failT2 = reject;
+        }),
+    );
+    const hook = sweepHook({ current: new Set<string>(['t1']) });
+    hook.rerender({ activeId: 't2' });
+    await flush();
+    let sweep: Promise<string[]> = Promise.resolve([]);
+    act(() => {
+      sweep = hook.result.current.loadAllTabs(['t2']);
+    });
+    await act(async () => failT2(new Error('500')));
+    expect(await sweep).toEqual(['t2']);
   });
 });
 

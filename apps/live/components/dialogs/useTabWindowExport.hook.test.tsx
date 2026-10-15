@@ -12,7 +12,6 @@ vi.mock('@/lib/export-tab', async (real) => ({
 }));
 
 import { useTabWindowExport } from './useTabWindowExport';
-import { TAB_WINDOW_REASK_MS } from '@/components/canvas/tab-window/tab-window-context';
 
 const win = (windowTabId: string): Element =>
   ({
@@ -73,37 +72,36 @@ describe('useTabWindowExport', () => {
     expect(loadTabImages).toHaveBeenCalledTimes(1);
   });
 
+  // loadTabs settles once each tab has, another caller's fetch included, so the export draws the tab, never its
+  // empty placeholder, and never polls.
   it('waits for a shown tab still being fetched elsewhere, never drawing its empty placeholder', async () => {
-    vi.useFakeTimers();
-    try {
-      const slide = { id: 's', name: 'S', elements: [win('f')] } as Tab;
-      // The placeholder: content not arrived, so no elements yet.
-      let flow = { id: 'f', name: 'Flow', elements: [] } as Tab;
-      let loadedTabIds = new Set<string>(['s']);
-      const { result, rerender } = renderHook(() =>
-        useTabWindowExport({
-          tab: slide,
-          tabs: [slide, flow],
-          // Another caller is fetching it: answered at once, without it.
-          loadTabs: async () => [],
-          loadedTabIds,
-          active: true,
-        }),
-      );
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-      expect(result.current.ready).toBe(false);
-      // That fetch lands.
-      flow = { ...flow, elements: [box] };
-      loadedTabIds = new Set(['s', 'f']);
-      rerender();
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(TAB_WINDOW_REASK_MS);
-      });
-      expect(result.current.ready).toBe(true);
-    } finally {
-      vi.useRealTimers();
-    }
+    const slide = { id: 's', name: 'S', elements: [win('f')] } as Tab;
+    let flow = { id: 'f', name: 'Flow', elements: [] } as Tab;
+    let settle: (failures: string[]) => void = () => {};
+    const loadTabs = vi.fn(() => new Promise<string[]>((r) => (settle = r)));
+    const { result, rerender } = renderHook(() =>
+      useTabWindowExport({ tab: slide, tabs: [slide, flow], loadTabs, active: true }),
+    );
+    await act(async () => {});
+    expect(result.current.ready).toBe(false);
+    // That fetch lands.
+    flow = { ...flow, elements: [box] };
+    rerender();
+    await act(async () => settle([]));
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(loadTabs).toHaveBeenCalledTimes(1);
+  });
+
+  // "Exports": a Plan tab draws as unavailable, so its content is never fetched for the export.
+  it('fetches only the tabs a window may show', async () => {
+    const slide = { id: 's', name: 'S', elements: [win('f'), win('b')] } as Tab;
+    const flow = { id: 'f', name: 'Flow', elements: [box] } as Tab;
+    const board = { id: 'b', name: 'Board', kind: 'board', elements: [] } as unknown as Tab;
+    const loadTabs = vi.fn(async (_: readonly string[]) => [] as string[]);
+    const { result } = renderHook(() =>
+      useTabWindowExport({ tab: slide, tabs: [slide, flow, board], loadTabs, active: true }),
+    );
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(loadTabs).toHaveBeenCalledWith(['f']);
   });
 });

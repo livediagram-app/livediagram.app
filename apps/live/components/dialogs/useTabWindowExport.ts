@@ -5,7 +5,6 @@
 // A window inside a shown tab draws as its frame named for its tab, so nothing recurses.
 import { useEffect, useMemo, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { TAB_WINDOW_REASK_MS } from '@/components/canvas/tab-window/tab-window-context';
 import {
   exportFontIds,
   tabWindowMayShow,
@@ -77,54 +76,45 @@ export function useTabWindowExport({
   tab,
   tabs,
   loadTabs,
-  loadedTabIds,
   imageContext,
   active,
   items,
 }: {
   tab: Pick<Tab, 'id' | 'elements'>;
   tabs: readonly Tab[];
+  // The editor's fetch of the named tabs; it resolves once each has loaded or failed, a fetch already under way
+  // elsewhere included, so what is drawn is never a tab's empty placeholder.
   loadTabs?: (only: readonly string[]) => Promise<string[]>;
-  // The tabs whose content has arrived. A fetch already under way elsewhere answers at once without the tab, so the
-  // export waits for it here (asking again shortly) rather than drawing the tab's empty placeholder.
-  loadedTabIds?: ReadonlySet<string>;
   imageContext?: ImageContext;
   active: boolean;
   items?: Pick<Parameters<typeof renderTabToSvg>[1] & object, 'items' | 'itemTypes'>;
 }): { resolveTabWindow?: ResolveTabWindow; tabWindowFontIds?: string[]; ready: boolean } {
   const targets = useMemo(() => tabWindowTargets(tab), [tab]);
+  const ownId = useLatest(tab.id);
   const key = targets.join(',');
   const [fetched, setFetched] = useState<string | null>(null);
   // The shown tabs' photos, and which fetch they are for.
   const [images, setImages] = useState<{ key: string; map: ReadonlyMap<string, ExportImageMap> }>(
     () => ({ key: '', map: new Map() }),
   );
-  // Fetch the shown tabs' content once an image format is picked; done once each has arrived or failed.
-  const loaded = useLatest(loadedTabIds);
+  // Fetch the shown tabs' content once an image format is picked; done once each has arrived or failed. Only the
+  // tabs a window may show are fetched (never a Plan tab, which draws as unavailable), so an export never waits on,
+  // nor downloads, content it will not draw.
   const known = useLatest(tabs);
-  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     if (!active || key === '') return;
     let live = true;
-    let again: ReturnType<typeof setTimeout> | undefined;
-    const ids = key.split(',');
-    void (loadTabs ? loadTabs(ids) : Promise.resolve([] as string[])).then((failures) => {
-      if (!live) return;
-      const waiting = ids.filter(
-        (id) =>
-          loaded.current &&
-          !loaded.current.has(id) &&
-          !failures.includes(id) &&
-          known.current.some((t) => t.id === id),
-      );
-      if (waiting.length === 0) setFetched(key);
-      else again = setTimeout(() => setAttempt((n) => n + 1), TAB_WINDOW_REASK_MS);
+    const ids = key.split(',').filter((id) => {
+      const t = known.current.find((x) => x.id === id);
+      return !!t && tabWindowMayShow(t, ownId.current);
+    });
+    void (loadTabs && ids.length ? loadTabs(ids) : Promise.resolve([] as string[])).then(() => {
+      if (live) setFetched(key);
     });
     return () => {
       live = false;
-      if (again) clearTimeout(again);
     };
-  }, [active, key, loadTabs, loaded, known, attempt]);
+  }, [active, key, loadTabs, known, ownId]);
   // Then their photos, each tab's once.
   const shown = useMemo(
     () => (fetched === key ? targets.flatMap((id) => tabs.filter((t) => t.id === id)) : []),
