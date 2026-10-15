@@ -1,7 +1,7 @@
 // What a figure from a form shows (docs/specs/026-plan/plan-tabs.md "Form Metrics"), worked out from the form and its
 // link as the Form tab's status bar reads them. Pure: DashboardFormMetric draws it.
 import type { FormMetricKind } from '@livediagram/document';
-import type { FormDefinition } from '@livediagram/forms';
+import { closedBySettings, type FormDefinition } from '@livediagram/forms';
 import type { FormLinkResponse } from '@livediagram/api-schema';
 
 export type FormMetricTone = 'green' | 'amber' | 'red' | 'slate';
@@ -51,7 +51,7 @@ export function formMetricShown(
         return { hero: 'Suspended', line: 'After reports from respondents', tone: 'red' };
       if (!live)
         return { hero: 'Not Published', line: 'Publish it from Share Form', tone: 'slate' };
-      return live.open
+      return live.open && !closedBySettings(form, { responses, now })
         ? { hero: 'Accepting', line: plural(responses, 'response', 'responses'), tone: 'green' }
         : { hero: 'Closed', line: 'Not taking responses', tone: 'amber' };
     case 'limit':

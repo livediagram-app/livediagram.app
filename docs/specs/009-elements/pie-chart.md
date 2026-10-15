@@ -216,3 +216,8 @@ match it. The dot and row pitch scale with it.
 Self-drawing (`isSelfDrawingShape`), so no centred label editing, and its wrapper
 paints no box; `LegendView` draws the card from the element's fill + stroke, and
 `svgLegendShape` draws the same thing for exports and thumbnails.
+
+## Element tour
+
+The **Chart tour** is offered beside the first data chart (any of the seven chart types) a person selects, as an Editor on an unlocked element, and walks through it on the element
+itself ([Element tours](../007-editor/element-tours.md) "The Chart tour").

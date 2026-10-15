@@ -1246,6 +1246,38 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Sequence tour, offered beside a selected sequence diagram.',
   'UI|Ended|SequenceTourSkipped':
     'Someone left the Sequence tour before its end, or the sequence diagram it was on went away.',
+  'UI|Ended|ChartTourCompleted':
+    'Someone reached the end of the Chart tour, offered beside a selected chart.',
+  'UI|Ended|ChartTourSkipped':
+    'Someone left the Chart tour before its end, or the chart it was on went away.',
+  'UI|Ended|StackTourCompleted':
+    'Someone reached the end of the Stack tour, offered beside a selected stack.',
+  'UI|Ended|StackTourSkipped':
+    'Someone left the Stack tour before its end, or the stack it was on went away.',
+  'UI|Ended|EntityTourCompleted':
+    'Someone reached the end of the Entity tour, offered beside a selected entity.',
+  'UI|Ended|EntityTourSkipped':
+    'Someone left the Entity tour before its end, or the entity it was on went away.',
+  'UI|Ended|TabWindowTourCompleted':
+    'Someone reached the end of the Tab Window tour, offered beside a selected tab window.',
+  'UI|Ended|TabWindowTourSkipped':
+    'Someone left the Tab Window tour before its end, or the tab window it was on went away.',
+  'UI|Ended|LaneTourCompleted':
+    'Someone reached the end of the Lane tour, offered beside a selected lane.',
+  'UI|Ended|LaneTourSkipped':
+    'Someone left the Lane tour before its end, or the lane it was on went away.',
+  'UI|Ended|BoundaryTourCompleted':
+    'Someone reached the end of the Boundary tour, offered beside a selected boundary.',
+  'UI|Ended|BoundaryTourSkipped':
+    'Someone left the Boundary tour before its end, or the boundary it was on went away.',
+  'UI|Ended|DiagramKeyTourCompleted':
+    'Someone reached the end of the Diagram Key tour, offered beside a selected diagram key.',
+  'UI|Ended|DiagramKeyTourSkipped':
+    'Someone left the Diagram Key tour before its end, or the diagram key it was on went away.',
+  'UI|Ended|PortalTourCompleted':
+    'Someone reached the end of the Portal tour, offered beside a selected portal.',
+  'UI|Ended|PortalTourSkipped':
+    'Someone left the Portal tour before its end, or the portal it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1394,6 +1426,22 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Org Chart tour was offered, as a small Tour toolbar beside a selected person in an org chart (counted once per visit).',
   'UI|Opened|SequenceTourOffer':
     'The Sequence tour was offered, as a small Tour toolbar beside a selected sequence diagram (counted once per visit).',
+  'UI|Opened|ChartTourOffer':
+    'The Chart tour was offered, as a small Tour toolbar beside a selected chart (counted once per visit).',
+  'UI|Opened|StackTourOffer':
+    'The Stack tour was offered, as a small Tour toolbar beside a selected stack (counted once per visit).',
+  'UI|Opened|EntityTourOffer':
+    'The Entity tour was offered, as a small Tour toolbar beside a selected entity (counted once per visit).',
+  'UI|Opened|TabWindowTourOffer':
+    'The Tab Window tour was offered, as a small Tour toolbar beside a selected tab window (counted once per visit).',
+  'UI|Opened|LaneTourOffer':
+    'The Lane tour was offered, as a small Tour toolbar beside a selected lane (counted once per visit).',
+  'UI|Opened|BoundaryTourOffer':
+    'The Boundary tour was offered, as a small Tour toolbar beside a selected boundary (counted once per visit).',
+  'UI|Opened|DiagramKeyTourOffer':
+    'The Diagram Key tour was offered, as a small Tour toolbar beside a selected diagram key (counted once per visit).',
+  'UI|Opened|PortalTourOffer':
+    'The Portal tour was offered, as a small Tour toolbar beside a selected portal (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
@@ -1496,6 +1544,22 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected person in an org chart, starting its tour.',
   'UI|Started|SequenceTour':
     'Someone pressed Play on the Tour toolbar beside a selected sequence diagram, starting its tour.',
+  'UI|Started|ChartTour':
+    'Someone pressed Play on the Tour toolbar beside a selected chart, starting its tour.',
+  'UI|Started|StackTour':
+    'Someone pressed Play on the Tour toolbar beside a selected stack, starting its tour.',
+  'UI|Started|EntityTour':
+    'Someone pressed Play on the Tour toolbar beside a selected entity, starting its tour.',
+  'UI|Started|TabWindowTour':
+    'Someone pressed Play on the Tour toolbar beside a selected tab window, starting its tour.',
+  'UI|Started|LaneTour':
+    'Someone pressed Play on the Tour toolbar beside a selected lane, starting its tour.',
+  'UI|Started|BoundaryTour':
+    'Someone pressed Play on the Tour toolbar beside a selected boundary, starting its tour.',
+  'UI|Started|DiagramKeyTour':
+    'Someone pressed Play on the Tour toolbar beside a selected diagram key, starting its tour.',
+  'UI|Started|PortalTour':
+    'Someone pressed Play on the Tour toolbar beside a selected portal, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1715,6 +1779,38 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Sequence Tour" in Settings, so it is offered again.',
   'UI|Toggled|SequenceTourSeenOn':
     'Someone switched off Tours › Element Tours › "Sequence Tour" in Settings, so it is not offered.',
+  'UI|Toggled|ChartTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Chart Tour" in Settings, so it is offered again.',
+  'UI|Toggled|ChartTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Chart Tour" in Settings, so it is not offered.',
+  'UI|Toggled|StackTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Stack Tour" in Settings, so it is offered again.',
+  'UI|Toggled|StackTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Stack Tour" in Settings, so it is not offered.',
+  'UI|Toggled|EntityTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Entity Tour" in Settings, so it is offered again.',
+  'UI|Toggled|EntityTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Entity Tour" in Settings, so it is not offered.',
+  'UI|Toggled|TabWindowTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Tab Window Tour" in Settings, so it is offered again.',
+  'UI|Toggled|TabWindowTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Tab Window Tour" in Settings, so it is not offered.',
+  'UI|Toggled|LaneTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Lane Tour" in Settings, so it is offered again.',
+  'UI|Toggled|LaneTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Lane Tour" in Settings, so it is not offered.',
+  'UI|Toggled|BoundaryTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Boundary Tour" in Settings, so it is offered again.',
+  'UI|Toggled|BoundaryTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Boundary Tour" in Settings, so it is not offered.',
+  'UI|Toggled|DiagramKeyTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Diagram Key Tour" in Settings, so it is offered again.',
+  'UI|Toggled|DiagramKeyTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Diagram Key Tour" in Settings, so it is not offered.',
+  'UI|Toggled|PortalTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Portal Tour" in Settings, so it is offered again.',
+  'UI|Toggled|PortalTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Portal Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -1970,6 +2066,72 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Sequence tour reached its "Number Them" step, on Numbered.',
   'UI|View|SequenceTourStepOutro':
     'The Sequence tour reached its closing "That Is a Sequence Diagram" card.',
+  'UI|View|ChartTourStepChart':
+    'The Chart tour reached its first step, how a chart is sized by value.',
+  'UI|View|ChartTourStepReadout':
+    "The Chart tour reached its step on reading a mark's label and value.",
+  'UI|View|ChartTourStepAnimate': 'The Chart tour reached its step previewing Grow on the chart.',
+  'UI|View|ChartTourStepMenu':
+    "The Chart tour reached its step on the chart's menu (Chart Type, Data, Chart).",
+  'UI|View|ChartTourStepData': 'The Chart tour reached its step on the Chart data grid.',
+  'UI|View|ChartTourStepSeries':
+    'The Chart tour reached its step on the series across the top of Chart data.',
+  'UI|View|ChartTourStepAddRow': 'The Chart tour reached its step on Add Row in Chart data.',
+  'UI|View|ChartTourStepImport': 'The Chart tour reached its step on Import CSV in Chart data.',
+  'UI|View|ChartTourStepOutro': 'The Chart tour reached its closing card.',
+  'UI|View|StackTourStepStack':
+    'The Stack tour reached its first step, how a stack lays itself out.',
+  'UI|View|StackTourStepChild':
+    'The Stack tour reached its step on dragging a child to a new slot.',
+  'UI|View|StackTourStepDrop':
+    'The Stack tour reached its step on dropping things into an empty stack.',
+  'UI|View|StackTourStepCarry':
+    'The Stack tour reached its step on a stack carrying what it holds.',
+  'UI|View|StackTourStepMenu': 'The Stack tour reached its step on the Stack menu.',
+  'UI|View|StackTourStepOutro': 'The Stack tour reached its closing card.',
+  'UI|View|EntityTourStepEntity':
+    'The Entity tour reached its first step, a title over its fields.',
+  'UI|View|EntityTourStepTitle': 'The Entity tour reached its step on renaming it.',
+  'UI|View|EntityTourStepRows': 'The Entity tour reached its step on its name and type rows.',
+  'UI|View|EntityTourStepMenu': 'The Entity tour reached its step on the Fields menu.',
+  'UI|View|EntityTourStepRelate':
+    'The Entity tour reached its step on joining entities with ER ends.',
+  'UI|View|EntityTourStepOutro': 'The Entity tour reached its closing card.',
+  'UI|View|TabWindowTourStepWindow':
+    'The Tab Window tour reached its first step, another tab drawn live.',
+  'UI|View|TabWindowTourStepOpen': 'The Tab Window tour reached its step on its Open button.',
+  'UI|View|TabWindowTourStepChoose':
+    'The Tab Window tour reached its step on its Choose a Tab button.',
+  'UI|View|TabWindowTourStepMenu': 'The Tab Window tour reached its step on the Tab Window menu.',
+  'UI|View|TabWindowTourStepSize': 'The Tab Window tour reached its step on resizing it.',
+  'UI|View|TabWindowTourStepOutro': 'The Tab Window tour reached its closing card.',
+  'UI|View|LaneTourStepLane': 'The Lane tour reached its first step, a band for each role.',
+  'UI|View|LaneTourStepGutter': 'The Lane tour reached its step on its title gutter.',
+  'UI|View|LaneTourStepSeam': 'The Lane tour reached its step on dragging its seam.',
+  'UI|View|LaneTourStepCarry': 'The Lane tour reached its step on a lane carrying its steps.',
+  'UI|View|LaneTourStepMenu': 'The Lane tour reached its step on turning it into a column.',
+  'UI|View|LaneTourStepOutro': 'The Lane tour reached its closing card.',
+  'UI|View|BoundaryTourStepZone':
+    'The Boundary tour reached its first step, a zone that holds things.',
+  'UI|View|BoundaryTourStepTitle': 'The Boundary tour reached its step on its title and icon.',
+  'UI|View|BoundaryTourStepMeta': 'The Boundary tour reached its step on its meta line.',
+  'UI|View|BoundaryTourStepMenu': 'The Boundary tour reached its step on its three styles.',
+  'UI|View|BoundaryTourStepOutro': 'The Boundary tour reached its closing card.',
+  'UI|View|DiagramKeyTourStepKey':
+    'The Diagram Key tour reached its first step, a key that builds itself.',
+  'UI|View|DiagramKeyTourStepMeaning':
+    "The Diagram Key tour reached its step on writing a row's meaning.",
+  'UI|View|DiagramKeyTourStepEmpty':
+    'The Diagram Key tour reached its step on a key with nothing to list yet.',
+  'UI|View|DiagramKeyTourStepTitle': 'The Diagram Key tour reached its step on its title.',
+  'UI|View|DiagramKeyTourStepOutro': 'The Diagram Key tour reached its closing card.',
+  'UI|View|PortalTourStepPortal': 'The Portal tour reached its first step, a way through.',
+  'UI|View|PortalTourStepTravel': 'The Portal tour reached its step on stepping through it.',
+  'UI|View|PortalTourStepUnlinked': 'The Portal tour reached its step on an unlinked portal.',
+  'UI|View|PortalTourStepMenu': 'The Portal tour reached its step on linking it from its menu.',
+  'UI|View|PortalTourStepWalk':
+    'The Portal tour reached its step on walking an Avatar-mode character in.',
+  'UI|View|PortalTourStepOutro': 'The Portal tour reached its closing card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':

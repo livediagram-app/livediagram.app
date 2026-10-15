@@ -5,11 +5,13 @@
 // Go To and Settings under the status bar's cog. Preview (and everyone who may not edit) sees it exactly as the form
 // link draws it. The status bar holds Preview, the help link and the cog; the menu box, its name; the header's Share is
 // Share Form (lib/form-share-store.ts).
+import { useNow } from '@/hooks/ui/useNow';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { formLook, type Tab } from '@livediagram/document';
 import { ITEMS_MAX } from '@livediagram/items';
 import {
+  closedBySettings,
   destinationProblem,
   destinationType,
   publicForm,
@@ -42,6 +44,9 @@ import { FormFill } from './respond/FormFill';
 import { formLookProps } from './form-look';
 
 const EyeIcon = lucideGlyph(lucideEye, 16);
+
+// How often an open form with a Close On reads the clock, to turn Closed when it passes.
+const NOW_TICK_MS = 60_000;
 
 export function FormPage({
   tab,
@@ -113,8 +118,13 @@ export function FormPage({
     share,
     enabled: online && !!documentId,
   });
+  // Switched on, but past its Close On or at its Response Limit: closed to respondents, so it reads Closed and is
+  // not locked (docs/specs/030-forms/forms.md "Hearing about responses").
+  // The clock, read once a minute while an open form has a Close On to pass.
+  const now = useNow(!!form.closesAt && !!link.link?.link?.open, NOW_TICK_MS);
+  const overdue = !!closedBySettings(form, { responses: link.link?.responses ?? 0, now });
   // A form taking responses is locked (docs/specs/030-forms/forms.md "A live form is locked"): Edit Form stops it first.
-  const locked = canEdit && !!link.link?.link?.open;
+  const locked = canEdit && !!link.link?.link?.open && !overdue;
   const building = canEdit && !preview && !locked;
   // Where responses go: a Sheet (a row each) when the form names one, else its board.
   const destTab = tabs.find((t) => t.id === (form.sheet?.tabId ?? form.destination?.tabId));
@@ -236,6 +246,7 @@ export function FormPage({
                       <FormStatusBar
                         link={link}
                         problem={problem}
+                        overdue={overdue}
                         full={(plan?.items.size ?? 0) >= ITEMS_MAX}
                         canEdit={canEdit}
                         onFix={() => openSettings('destination')}

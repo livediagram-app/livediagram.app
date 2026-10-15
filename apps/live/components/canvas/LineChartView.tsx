@@ -19,7 +19,7 @@ import {
   legendFontPx,
   type ShapeElement,
 } from '@livediagram/document';
-import { chartAnim, chartFrame } from '@/lib/chart';
+import { useChartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';
 import { ChartSurface } from '@/components/primitives/ChartSurface';
@@ -68,7 +68,7 @@ export function LineChartView({
   const pointAt = (s: number, i: number) => m.points[s]?.[i] ?? { x: 0, y: 0 };
   const valAt = (s: number, i: number) => series[s]?.values[i] ?? 0;
 
-  const group = chartAnim(element, `${plotX0 + plotW / 2}px ${plotY0 + plotH / 2}px`);
+  const group = useChartAnim(element, `${plotX0 + plotW / 2}px ${plotY0 + plotH / 2}px`);
   const legendItems = series.map((s) => ({ label: s.name, value: 0, color: s.color }));
 
   return (

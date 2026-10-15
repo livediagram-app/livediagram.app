@@ -1,4 +1,9 @@
-import { isFlowchartStep, type Element, type ShapeElement } from '@livediagram/document';
+import {
+  isChartShape,
+  isFlowchartStep,
+  type Element,
+  type ShapeElement,
+} from '@livediagram/document';
 import type { EditorCapabilities } from './editor-capabilities';
 import { canEditSankey } from './sankey-edit';
 import { canEditSequence } from './sequence-edit';
@@ -23,6 +28,14 @@ export const ELEMENT_TOUR_KINDS = [
   'flowchart',
   'org-chart',
   'sequence',
+  'chart',
+  'stack',
+  'entity',
+  'tab-window',
+  'lane',
+  'boundary',
+  'diagram-key',
+  'portal',
 ] as const;
 
 export type ElementTourKind = (typeof ELEMENT_TOUR_KINDS)[number];
@@ -41,6 +54,14 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   flowchart: 'flowchart step',
   'org-chart': 'person in an org chart',
   sequence: 'sequence diagram',
+  chart: 'chart',
+  stack: 'stack',
+  entity: 'entity',
+  'tab-window': 'tab window',
+  lane: 'lane',
+  boundary: 'boundary',
+  'diagram-key': 'diagram key',
+  portal: 'portal',
 };
 
 // The toured kind an element is, or null when its type has no tour.
@@ -57,6 +78,14 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el.shape === 'mind-node' && (el as ShapeElement).mindLook !== 'person') return 'mind-node';
   if (el.shape === 'mind-node' && (el as ShapeElement).mindLook === 'person') return 'org-chart';
   if (el.shape === 'sequence') return 'sequence';
+  if (isChartShape(el.shape)) return 'chart';
+  if (el.shape === 'stack') return 'stack';
+  if (el.shape === 'entity') return 'entity';
+  if (el.shape === 'tab-window') return 'tab-window';
+  if (el.shape === 'lane') return 'lane';
+  if (el.shape === 'boundary') return 'boundary';
+  if (el.shape === 'diagram-key') return 'diagram-key';
+  if (el.shape === 'portal') return 'portal';
   // Last: a step guard that fails narrows the element to nothing for any check after it.
   if (isFlowchartStep(el)) return 'flowchart';
   return null;
@@ -73,8 +102,17 @@ export function canTourElement(
     case 'sankey':
       return canEditSankey(can, el);
     // A concept graphic's rows are structure, an Editor's on an unlocked element
-    // (docs/specs/009-elements/concept-graphics.md "Share roles").
+    // (docs/specs/009-elements/concept-graphics.md "Share roles"); so are a chart's data, a stack's arrangement, an
+    // entity's fields, the tab a window shows, a lane's gutter, a boundary's style, a key's meanings and a portal's link.
     case 'layer-stack':
+    case 'portal':
+    case 'diagram-key':
+    case 'boundary':
+    case 'lane':
+    case 'tab-window':
+    case 'entity':
+    case 'stack':
+    case 'chart':
     case 'chevrons':
     case 'onion':
     case 'hub':
