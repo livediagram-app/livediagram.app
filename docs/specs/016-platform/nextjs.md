@@ -1,6 +1,6 @@
 # Next.js
 
-Status: specified
+Status: shipped
 
 How the five Next.js apps (live, marketing, help, community, telemetry) are built: which Next.js they run, the one
 shared configuration, and which Next.js features they use or decline, with the reason.

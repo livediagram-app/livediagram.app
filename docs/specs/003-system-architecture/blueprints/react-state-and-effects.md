@@ -27,7 +27,7 @@ page) never suspends whole: its URL reads use an external store whose server sna
 
 | Site                                                                          | Reads                               | Becomes                                                                           |
 | ----------------------------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
-| `apps/live/app/explorer/useExplorerState.ts` (was `useHydrated`)              | the URL, preferences                | `use(browser())`; `useHydrated` is removed                                        |
+| `apps/live/app/explorer/useExplorerState.ts`                                  | the URL, preferences                | `use(browser())`; no hydration flag                                               |
 | `apps/live/app/oauth/consent/page.tsx`, `apps/live/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense              |
 | `apps/live/app/new/page.tsx` (`initialPlacement`)                             | `location.search`                   | `useSyncExternalStore` (`placementContextFromSearch`), like the bypass            |
 | `apps/live/components/panels/TeamSharedDocuments.tsx` (`spot`)                | `location.search`                   | `use(browser())` before the state                                                 |
@@ -36,7 +36,7 @@ page) never suspends whole: its URL reads use an external store whose server sna
 | `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`     | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers)  |
 | `apps/live/app/document/[id]/page.tsx`, `apps/live/app/embed/page.tsx`        | (the editor suspends)               | `<Suspense fallback={<OpeningScreen />}>`: the screen the prerender always showed |
 | `CardFinderPanel` (`finePointer`)                                             | `(pointer: fine)`                   | `useMediaQuery('(pointer: fine)')`                                                |
-| `arrow-handles.tsx` (`COARSE_POINTER`, was a module constant)                 | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                               |
+| `arrow-handles.tsx` (`COARSE_POINTER`)                                        | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                               |
 | `EditorContextMenu` (`anchorBottom`)                                          | `innerHeight`                       | `useViewportHeight()`                                                             |
 | `StartAgainTray` (`pillPlace` default argument)                               | `innerHeight`                       | a required argument; the caller passes `useViewportHeight()`                      |
 | `useViewportWidth`, `useViewportHeight`                                       | `innerWidth`, `innerHeight`         | `useSyncExternalStore` on `resize`, 0 in the prerender                            |

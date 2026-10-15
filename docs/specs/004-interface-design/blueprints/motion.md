@@ -82,8 +82,7 @@ drifting.
   `.tl-fan-out` / `.tl-fan-out-up` through their inline delays. The `nth-child` ladders in
   `.lvd-menu-stagger` and `.lvd-cascade` are rewritten with step 10ms and cap 100ms: the first
   child at 0ms, the eleventh child and every later one at 100ms.
-- **JS cascades** call `cascadeDelayMs`. That's `Timeline` (`STAGGER_MS` / `MAX_STAGGER_MS`
-  removed) and `ExpandedStack` (`EXPAND_STAGGER_MS` removed).
+- **JS cascades** call `cascadeDelayMs`. That's `Timeline` and `ExpandedStack`.
 - **Cascade items run at `micro`**: `menu-drop`, `lvd-row-in`, `tl-fan-out(-up)`, and `pop-in` /
   `slide-row-in` / `fade-in` when used with `.stagger-enter`.
 - `ToolbarStripRail` drops its `--stagger-step: 22ms` override and takes the shared step.
@@ -204,11 +203,11 @@ the sticky peel, isometric depth, cursors and note ink.
 - **The canvas surface** (slide moves) keeps its classes in `canvas-motion.css`: `slide-in`, `slide-forward`,
   `slide-back` and `slide-fade`, on `::view-transition-old(.<class>)` and `::view-transition-new(.<class>)`, with
   `::view-transition-group(.<class>)` held still (`animation: none`). They reuse the `lvd-slide-*` keyframes and
-  `--lvd-slide-ms`; the ghost (`[data-slide-ghost]`) and the `[data-slide-move]` move rules are removed.
+  `--lvd-slide-ms`; the only other slide rule is the `[data-slide-move='pending']` hold.
 - **Chrome surfaces** (the start's mode switch) keep theirs in `globals.css`: `start-mode` cross-fades old and new
   over `--transition-duration-short` (200ms) on the ease-out curve.
 - **Reduced motion** adds no CSS: the handlers start no View Transition (`prefersReducedMotion()`), so the
-  pseudo-elements never exist. The old `@media (prefers-reduced-motion)` slide-fade block goes with the ghost.
+  pseudo-elements never exist.
 
 ## Interfaces and contracts
 

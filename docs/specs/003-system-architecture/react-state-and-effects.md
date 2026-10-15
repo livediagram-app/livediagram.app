@@ -1,6 +1,6 @@
 # React state and effects
 
-Status: shipped; the React 19.3 sections (browser-only rendering, View Transitions, Fragment refs) are specified
+Status: shipped
 
 ## What
 

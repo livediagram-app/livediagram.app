@@ -1,6 +1,6 @@
 # Trusted Types
 
-Status: specified
+Status: shipped
 
 Every page on livediagram.app enforces Trusted Types, so a string can never reach a DOM injection sink
 (`innerHTML`, `DOMParser`, a script's or a worker's URL, `eval`) unless a named policy made it. A DOM-based script
