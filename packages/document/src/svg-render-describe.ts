@@ -98,6 +98,10 @@ export type ResolveIconArt = (iconId: string) => ExportIconArt | undefined;
 export type ExportStickerArt = { viewBox: string; markup: string };
 export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefined;
 
+// An emoji's own drawing, by its glyph, for a render with no emoji font (a Worker's preview): a face that writes an
+// emoji (a reaction pad's) draws it from this instead of as text. Absent, or answering nothing, the glyph is text.
+export type ResolveEmojiArt = (glyph: string) => { viewBox: string; markup: string } | undefined;
+
 export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
 
 // What an export needs from its caller beyond the element itself: the three
@@ -110,6 +114,7 @@ export type BoxedExportOptions = {
   tagColours?: readonly TagColour[];
   resolveIconArt?: ResolveIconArt;
   resolveStickerArt?: ResolveStickerArt;
+  resolveEmojiArt?: ResolveEmojiArt;
   tabFont?: string;
   // The tab's finish (docs/specs/008-canvas/finish.md), for elements without their own.
   tabFinish?: Finish;

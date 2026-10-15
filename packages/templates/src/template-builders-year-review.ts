@@ -210,18 +210,19 @@ function thanks(k: Kit): Element[] {
   return [
     ...chrome(k, 4, 'THANK YOU', 'Thank you, all of you'),
     panel(k, 0, quoteTop, W, quoteH, PAPER, { shadow: CARD_SHADOW }),
-    k.text(u * 5, quoteTop + u * 1, u * 14, u * 14, '“', {
+    k.text(u * 5, quoteTop + u * 1, u * 14, u * 12, '“', {
       textSize: 'lg',
-      textScale: 3.4,
+      textScale: 2.8,
       textBold: true,
+      textAlignY: 'top',
       textColor: TEAL,
     }),
     k.text(
       u * 6,
-      quoteTop + u * 13,
+      quoteTop + u * 16,
       W - u * 12,
-      u * 14,
-      'The best work we did this year started with someone saying: what if we tried?',
+      u * 12,
+      'Our best work this year began with someone asking: what if we tried?',
       { textSize: 'lg', textItalic: true, textColor: INK },
     ),
     {

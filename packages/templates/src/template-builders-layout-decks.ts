@@ -182,7 +182,7 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
         labels: [
           'Against our goals for the year',
           '72%',
-          'First reply under 1 hour',
+          'Reply in an hour',
           '7,200 of 10,000 tickets',
           '45%',
           'Self-serve answers',
@@ -324,7 +324,7 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
         labels: [
           'DESIGN WORKSHOP',
           'Rethinking checkout',
-          'One morning to turn twelve complaints into three ideas we can test',
+          'Twelve complaints, three ideas to test',
           'Facilitated by Lee Park · Studio B · 9:30 to 13:00',
         ],
       },

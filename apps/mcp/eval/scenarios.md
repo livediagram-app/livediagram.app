@@ -18,6 +18,8 @@ Each prompt is what a user would type to Claude with the livediagram connector. 
 - D12 (medium) "Run an event storming session board for an online food delivery business: domain events from order placed to delivered, with commands, actors, policies and a couple of hotspots."
 - D13 (medium) "A dashboard tab for Q3 sales: revenue by month (Jul 120k, Aug 135k, Sep 160k), revenue by region (UK 40%, EU 35%, US 25%), and a funnel trend of signups vs paid over 6 weeks."
 - D14 (hard) "AWS architecture: Route 53 and CloudFront in front of an ALB in a VPC with public and private subnets across 2 AZs, ECS Fargate services in the private subnets, RDS Postgres multi-AZ, ElastiCache, S3 for assets, SQS feeding a Lambda worker."
+- D15 (hard) "Diagram our whole platform: 3 client apps (web, iOS, Android), a CDN, an API gateway, 12 microservices (users, auth, catalogue, search, cart, checkout, payments, orders, inventory, shipping, notifications, analytics), each with its own datastore, a Kafka bus most of them publish to, a data warehouse fed by analytics, and 4 third parties (Stripe, SendGrid, Twilio, Algolia). Group it into edge, services, data and external."
+- D16 (edit) After D1: "Split payment into 'enter card' and 'authorise payment', add a fraud check between them that can reject the order, and move the receipt email into its own 'Notifications' group."
 
 ## Plan + card types
 

@@ -28,6 +28,8 @@ const BY_STATUS: Readonly<Record<number, string>> = {
   404: 'no such document or item, or it is not shared with you. find_documents lists them.',
   410: 'that document is in the Trash: restore it with restore_document first.',
   413: 'that is more than the document can hold.',
+  // A burst past the per-token limit (docs/specs/015-api/public-api-and-tokens.md §3.5): the window is a minute.
+  429: 'too many calls in the last minute (the limit is per token). Wait about a minute, then make the same call again.',
 };
 
 export interface ApiRefusal {
@@ -38,7 +40,7 @@ export interface ApiRefusal {
 export function apiRefusalOf(err: unknown): ApiRefusal | null {
   if (!(err instanceof ApiError) || err.status >= 500) return null;
   const code = err.code ?? `http_${err.status}`;
-  const known = (err.code && BY_CODE[err.code]) ?? BY_STATUS[err.status];
+  const known = (err.code && BY_CODE[err.code]) || BY_STATUS[err.status];
   if (known) return { code, message: `The api refused it: ${known}` };
   if (err.code && /field|value|label|checklist|estimate|priority|date|colou?r/.test(err.code))
     return { code, message: `The api refused a field value (${err.code}). ${FIELD_HINT}` };

@@ -118,17 +118,35 @@ export function layerComponent(
   const work = new Map(indeg);
   const queue = ids.filter((id) => work.get(id) === 0);
   const topo: ElementId[] = [];
-  while (queue.length) {
+  const inTopo = new Set<ElementId>();
+  while (topo.length < ids.length) {
+    // A cycle stalls the order: it goes on from a loop's entry, the waiting node some placed node already feeds,
+    // with the fewest predecessors still to come (its one unmet edge the loop back), earliest in input order on a
+    // tie. Appended wholesale in input order, a group laid out before the nodes that feed it took rank 0, and its
+    // line ran back up the page.
+    if (queue.length === 0) {
+      const rank = (id: ElementId) =>
+        [work.get(id)! < indeg.get(id)! ? 0 : 1, work.get(id)!] as const;
+      let pick: ElementId | null = null;
+      for (const id of ids) {
+        if (inTopo.has(id)) continue;
+        if (pick === null) {
+          pick = id;
+          continue;
+        }
+        const [a, b] = [rank(id), rank(pick)];
+        if (a[0] < b[0] || (a[0] === b[0] && a[1] < b[1])) pick = id;
+      }
+      queue.push(pick!);
+    }
     const u = queue.shift()!;
+    if (inTopo.has(u)) continue;
     topo.push(u);
+    inTopo.add(u);
     for (const v of out.get(u)!) {
       work.set(v, work.get(v)! - 1);
-      if (work.get(v) === 0) queue.push(v);
+      if (work.get(v) === 0 && !inTopo.has(v)) queue.push(v);
     }
-  }
-  if (topo.length < ids.length) {
-    const inTopo = new Set(topo);
-    for (const id of ids) if (!inTopo.has(id)) topo.push(id);
   }
   const topoIndex = new Map(topo.map((id, i) => [id, i]));
   const layer = new Map<ElementId, number>(ids.map((id) => [id, 0]));

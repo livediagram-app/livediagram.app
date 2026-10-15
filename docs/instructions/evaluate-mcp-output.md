@@ -106,3 +106,15 @@ random bytes>`, `created_at` and `expires_at` in ms, `read_only` 0) with `wrangl
   both read it better.
 - Measure a new layout pass at 2,000 boxes and 2,000 arrows before the PR: a per-arrow scan of the tab looked free on
   a fourteen-box diagram and took 1.8 s there (the facing bends, fixed with the element grid).
+- Every so often run the whole bank, not only the mode under work: four rounds of diagrams left Plan, Illustrate,
+  Facilitate and Draw unseen, and the first whole-bank round (0033) found template text overflowing as made, stickers
+  drawn as placeholders and boards cut short in the preview.
+- Five evaluators on one token share its rate limit (120 reads a minute): calls are refused in a burst. The refusal
+  says to wait a minute and retry; tell evaluators to, and do not count a refusal of that kind as a tool error.
+- An evaluator that cuts the helper's output short (`| head`) misses the lint's findings and the created ids, then
+  reports "lint gave counts but never said what", or looks the document up again. Read its `calls.jsonl` and replay
+  one call before acting on a report that something was not said.
+- A lint finding that names a template's own design (its colours, its shape) invites the agent to undo it. Check
+  `templates.test.ts` stays clean after a lint change, and lint a fresh template of each kind the round touched.
+- When a fix moves where a row's members sit (stores under services), replay every past input of that shape from
+  `runs/*/calls.jsonl` and compare box geometry before and after: only the inputs the fix was for should move.

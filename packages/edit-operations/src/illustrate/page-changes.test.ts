@@ -94,6 +94,33 @@ describe('adding', () => {
     expect(out.lines).toEqual(['Added page 1 (slide, Slide (16:9)).']);
   });
 
+  it('turns a blank of the kind asked for (a blank deck’s one empty slide) into the page asked for', () => {
+    const blank = tabOf({ pages: [page('p1', { kind: 'slide' })] });
+    const slide = layoutCatalogueFor('slide').layouts[0]!;
+    const out = run(blank, [
+      { op: 'add', kind: 'slide', name: 'Cover', layout: slide.id },
+      { op: 'add', kind: 'slide', name: 'Problem' },
+    ]);
+    expect(illustratePagesOf(out.tab).map((p) => [p.id, p.name])).toEqual([
+      ['p1', 'Cover'],
+      ['pg-1', 'Problem'],
+    ]);
+    // Of another kind, named or holding anything, the one page stays and the new one follows it.
+    for (const kept of [
+      tabOf({ pages: [page('p1', { kind: 'infographic' })] }),
+      tabOf({ pages: [page('p1', { kind: 'slide', name: 'Title' })] }),
+    ])
+      expect(illustratePagesOf(run(kept, [{ op: 'add', kind: 'slide' }]).tab)).toHaveLength(2);
+  });
+
+  it('never takes a page the same call added as a blank', () => {
+    const out = run(tabOf(), [
+      { op: 'add', kind: 'slide' },
+      { op: 'add', kind: 'slide', name: 'Two' },
+    ]);
+    expect(illustratePagesOf(out.tab).map((p) => p.name ?? null)).toEqual([null, 'Two']);
+  });
+
   it('adds after the last page, with its fields, a layout and a place', () => {
     const tab = tabOf({ pages: [page('p1'), page('p2')] });
     const slide = layoutCatalogueFor('slide').layouts[0]!;

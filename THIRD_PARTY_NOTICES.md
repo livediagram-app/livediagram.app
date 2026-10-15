@@ -121,6 +121,20 @@ Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 ```
 
+## Twemoji
+
+- Source: <https://github.com/jdecked/twemoji>, release 15.1.0, served by jsDelivr.
+- Used for: the emoji in the MCP server's PNG previews (`apps/mcp/src/preview-emoji.ts`). A Worker has no colour-emoji
+  font, so each emoji sticker, emoji icon and reaction pad a previewed tab draws is fetched as its Twemoji SVG when the
+  preview is made. Nothing is vendored into the repo; the editor itself draws emoji with the viewer's own font.
+- Licence: the graphics are CC-BY 4.0, full text at <https://creativecommons.org/licenses/by/4.0/>.
+
+```text
+Copyright 2019 Twitter, Inc and other contributors
+Copyright 2024 jdecked and other contributors
+Graphics licensed under CC-BY 4.0: https://creativecommons.org/licenses/by/4.0/
+```
+
 ## svg-path-bbox
 
 - Source: <https://github.com/mondeja/svg-path-bbox>

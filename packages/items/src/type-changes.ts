@@ -30,6 +30,8 @@ import {
   type ItemTypeCatalogue,
 } from './type-catalogue';
 import { defaultTypesToAdd } from './brought-types';
+import type { CardField } from './board';
+import type { CardLayout } from './card-display';
 import {
   detailsLabelFrom,
   displayFrom,
@@ -182,7 +184,36 @@ function editedCustom(type: ItemTypeDef, edit: CustomFieldEdit): ItemTypeDef {
   }
   if (edit.onCard === true) next.onCard = true;
   if (edit.onCard === false) delete next.onCard;
-  return { ...type, custom: (type.custom ?? []).map((f) => (f.id === key ? next : f)) };
+  const edited = { ...type, custom: (type.custom ?? []).map((f) => (f.id === key ? next : f)) };
+  // Unticked, it leaves a Detailed Display of the type's own too.
+  return edit.onCard === false ? withoutOnDetailed(edited, key) : edited;
+}
+
+// A custom field ticked Show on Card shows on a Detailed card. Without a Display of its own the type's default layout
+// already puts it Under the Title (typeCardLayout); with one, the tick must place it there too, at the end of the body,
+// or it would not show at all.
+function withOnCardShown(type: ItemTypeDef, ids: readonly string[]): ItemTypeDef {
+  const own = type.display?.detailed;
+  if (!own || ids.length === 0) return type;
+  const placed = new Set(Object.values(own).flat());
+  // Still the type's (one removed later in the same change is not placed) and not placed already.
+  const added = ids.filter(
+    (id) => (type.custom ?? []).some((f) => f.id === id) && !placed.has(id as CardField),
+  ) as CardField[];
+  if (added.length === 0) return type;
+  return {
+    ...type,
+    display: { ...type.display, detailed: { ...own, body: [...(own.body ?? []), ...added] } },
+  };
+}
+
+function withoutOnDetailed(type: ItemTypeDef, id: string): ItemTypeDef {
+  const own = type.display?.detailed;
+  if (!own) return type;
+  const detailed = Object.fromEntries(
+    Object.entries(own).map(([slot, fields]) => [slot, fields.filter((f) => f !== id)]),
+  ) as CardLayout;
+  return { ...type, display: { ...type.display, detailed } };
 }
 
 function must<T extends object>(named: ({ ok: true } & T) | ({ ok: false } & NameRefusal)): T {
@@ -308,6 +339,10 @@ export function applyCardTypeChanges(
         if (c.defaultStatus)
           type = { ...type, defaultStatus: must(resolveStatus(c.defaultStatus, statuses)).status };
         type = withFace(type, c);
+        type = withOnCardShown(
+          type,
+          (type.custom ?? []).filter((f) => f.onCard).map((f) => f.id),
+        );
         types = [...types, type];
         const made = (type.custom ?? []).map((f) => `${f.label} (${f.id})`);
         applied.push(`+ ${type.label} (${type.id})${made.length ? `: ${made.join(', ')}` : ''}`);
@@ -333,15 +368,21 @@ export function applyCardTypeChanges(
             throw invalid(`${type.label} cards always have ${key}: it cannot be removed.`);
           type = { ...type, fields: type.fields.filter((x) => x !== key) };
         }
+        // The fields this change ticks Show on Card, by id, so a rename in the same edit still finds them.
+        const ticked: string[] = [];
         for (const input of c.addCustom ?? []) {
           const field = customOf(input, type, types);
+          if (input.onCard) ticked.push(field.id);
           type = {
             ...type,
             custom: [...(type.custom ?? []), field],
             fields: [...type.fields, field.id],
           };
         }
-        for (const edit of c.editCustom ?? []) type = editedCustom(type, edit);
+        for (const edit of c.editCustom ?? []) {
+          if (edit.onCard === true) ticked.push(must(fieldKeyOf(edit.field, type)).key);
+          type = editedCustom(type, edit);
+        }
         for (const name of c.removeCustom ?? []) {
           const key = must(fieldKeyOf(name, type)).key;
           if (isBuiltInFieldId(key))
@@ -366,6 +407,8 @@ export function applyCardTypeChanges(
           type = { ...type, defaultStatus: must(resolveStatus(c.defaultStatus, statuses)).status };
         }
         type = withFace(type, c);
+        // The fields this change ticked Show on Card: placed on a type whose Display is its own.
+        type = withOnCardShown(type, ticked);
         replace(type);
         applied.push(`~ ${type.label} (${type.id})`);
       } else if (c.op === 'delete') {

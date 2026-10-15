@@ -3,7 +3,7 @@
 // write: it logs `[lint] failed` and answers null, which the footer prints as `lint unavailable`.
 
 import type { LintReport } from '@livediagram/api-schema';
-import { lintTab, type LintLogger } from '@livediagram/diagram-lint';
+import { coloursSet, lintTab, type LintLogger } from '@livediagram/diagram-lint';
 import type { Tab } from '@livediagram/document';
 
 type Where = { documentId: string; tabId: string };
@@ -18,12 +18,17 @@ export function lintLog(where: Where): LintLogger {
   };
 }
 
+// `before`, the tab as it was (null for a tab the write makes), names the colours the write set: colour-on-themed judges
+// those alone (LN17). A replace that lands a template sets none of its own: the template's colours are its design.
 export function lintResult(
   tab: Pick<Tab, 'elements' | 'layers' | 'theme'>,
   where: Where,
+  before: { elements: readonly Tab['elements'][number][] } | null | 'template' = null,
 ): LintReport | null {
   try {
-    return lintTab(tab, { log: lintLog(where) });
+    const coloured =
+      before === 'template' ? new Set<string>() : coloursSet(before?.elements ?? [], tab.elements);
+    return lintTab(tab, { log: lintLog(where), coloured });
   } catch (err) {
     console.error('[lint] failed', { where: 'changeset', ...where, error: String(err) });
     return null;

@@ -530,6 +530,11 @@ describe('addBoard', () => {
 describe('apiRefusalOf', () => {
   it('names codes and statuses, and leaves a 5xx or another error alone', () => {
     expect(apiRefusalOf(new ApiError(410, '{"error":"gone"}'))!.message).toContain('in the Trash');
+    // A rate limit says how long to wait, so an agent retries instead of giving up.
+    expect(apiRefusalOf(new ApiError(429, '{"error":"rate_limited"}'))).toEqual({
+      code: 'rate_limited',
+      message: expect.stringContaining('Wait about a minute, then make the same call again'),
+    });
     expect(apiRefusalOf(new ApiError(400, '{"error":"field_value_invalid"}'))!.message).toContain(
       'Fields:',
     );

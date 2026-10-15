@@ -82,7 +82,9 @@ const pageChange = z
         layout: layout.optional(),
         at: z.number().int().min(1).optional().describe('The place it goes to (default: the end).'),
       })
-      .describe('A new page; on a fresh tab its empty first page becomes it.'),
+      .describe(
+        'A new page; on a fresh tab its empty first page (or a blank deck’s one empty slide) becomes it.',
+      ),
     z
       .object({
         op: z.literal('set').describe('Change a page.'),
