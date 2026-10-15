@@ -29,8 +29,11 @@ const GAP = 6;
 export function shortNumber(v: number): string {
   const a = Math.abs(v);
   if (a < 1e4) return Number(v.toFixed(1)).toLocaleString('en-US');
-  const [n, unit] = a >= 1e9 ? [v / 1e9, 'B'] : a >= 1e6 ? [v / 1e6, 'M'] : [v / 1e3, 'k'];
-  return `${Number(n.toFixed(1))}${unit}`;
+  // The unit after rounding, so 999,960 reads 1M, not 1000k.
+  const short = (div: number) => Number((v / div).toFixed(1));
+  if (a >= 1e9 || Math.abs(short(1e6)) >= 1000) return `${short(1e9)}B`;
+  if (a >= 1e6 || Math.abs(short(1e3)) >= 1000) return `${short(1e6)}M`;
+  return `${short(1e3)}k`;
 }
 
 export function barValueLabels(
