@@ -64,7 +64,8 @@ export function RatingInput({
   const starPx = size === 'lg' ? 32 : size === 'sm' ? 16 : 22;
   const items = Array.from({ length: scale }, (_, i) => i + 1);
   return (
-    <div className="flex flex-col gap-1.5">
+    // As wide as its buttons, so the end labels sit under the first and the last.
+    <div className="inline-flex max-w-full flex-col gap-1.5">
       <div
         role="radiogroup"
         aria-label={label}
@@ -136,9 +137,9 @@ export function RatingInput({
         })}
       </div>
       {style === 'numbers' && (lowLabel || highLabel) ? (
-        <div className="flex justify-between gap-4 text-[12px] text-slate-500 dark:text-slate-400">
-          <span>{lowLabel ? `1: ${lowLabel}` : ''}</span>
-          <span>{highLabel ? `${scale}: ${highLabel}` : ''}</span>
+        <div className="flex justify-between gap-4 text-[12px] leading-snug text-slate-500 dark:text-slate-400">
+          <span className="min-w-0">{lowLabel ?? ''}</span>
+          <span className="min-w-0 text-right">{highLabel ?? ''}</span>
         </div>
       ) : null}
     </div>

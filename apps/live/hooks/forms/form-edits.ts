@@ -310,7 +310,7 @@ export function addSection(
 export function updateSection(
   form: FormDefinition,
   id: string,
-  patch: Partial<Pick<FormSection, 'title' | 'description'>>,
+  patch: Partial<Pick<FormSection, 'title' | 'description' | 'showIf'>>,
 ): FormDefinition {
   return withSections(
     form,
@@ -318,6 +318,8 @@ export function updateSection(
       if (s.id !== id) return s;
       const next = { ...s, ...patch };
       if (!next.description) delete next.description;
+      // An empty rule is none: the section always shows.
+      if (!next.showIf?.anyOf.length) delete next.showIf;
       return next;
     }),
   );

@@ -184,6 +184,12 @@ export function readForm(raw: unknown): FormDefinition | null {
     };
     const sd = text(s['description'], FORM_DESCRIPTION_MAX);
     if (sd) section.description = sd;
+    const rule = s['showIf'];
+    if (form.sections.length > 0 && isObj(rule) && typeof rule['questionId'] === 'string') {
+      const anyOf = readOptions(rule['anyOf']);
+      if (FORM_ID_PATTERN.test(rule['questionId']) && anyOf.length)
+        section.showIf = { questionId: rule['questionId'], anyOf };
+    }
     for (const qv of Array.isArray(s['questions']) ? s['questions'] : []) {
       if (questions === QUESTIONS_MAX) break;
       const q = readQuestion(qv);

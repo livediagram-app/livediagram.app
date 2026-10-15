@@ -2,8 +2,8 @@
 
 // Responses Go To (docs/specs/030-forms/forms.md "Responses Go To and Settings"): the Board tab, the card type and the
 // status every response is made in (New Board and New Card Type the last choice of each), and a sentence reading the
-// choice back. A choice that no
-// longer holds (its board, column or type gone) says so, and the form takes no responses until it is fixed.
+// choice back; a pencil beside Card Type opens that type's editor. A choice that no longer holds (its board, column or
+// type gone) says so, and the form takes no responses until it is fixed.
 import type { Tab } from '@livediagram/document';
 import {
   DESTINATION_PROBLEM_TEXT,
@@ -11,7 +11,8 @@ import {
   type FormDestination,
 } from '@livediagram/forms';
 import { boardAddTypes } from '@livediagram/items';
-import { Select } from '@livediagram/ui';
+import { PencilIcon, Select, Tooltip } from '@livediagram/ui';
+import { usePlan } from '@/components/plan/PlanContext';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
 import { boardsOf } from '@/hooks/forms/form-start';
 import { patchForm } from '@/hooks/forms/form-edits';
@@ -22,6 +23,7 @@ const NEW = '__new';
 
 export function DestinationPicker({ tabs }: { tabs: readonly Tab[] }) {
   const b = useFormBuilder();
+  const plan = usePlan();
   const dest = b.form.destination;
   const boardTabs = tabs.filter((t) => t.kind === 'board');
   const destTab = boardTabs.find((t) => t.id === dest?.tabId);
@@ -67,26 +69,41 @@ export function DestinationPicker({ tabs }: { tabs: readonly Tab[] }) {
         </Select>
       </SettingsField>
       <SettingsField label="Card Type">
-        <Select
-          className="w-full"
-          selectClassName="text-[13px]"
-          value={dest && takes.some((t) => t.id === dest.typeId) ? dest.typeId : ''}
-          disabled={!b.canEdit || !board}
-          onChange={(e) => {
-            if (e.target.value === NEW) return b.actions.newCardType();
-            if (dest) set({ ...dest, typeId: e.target.value });
-          }}
-        >
-          <option value="" disabled>
-            Choose a card type…
-          </option>
-          {takes.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.label}
+        <div className="flex items-center gap-1">
+          <Select
+            className="min-w-0 flex-1"
+            selectClassName="text-[13px]"
+            value={dest && takes.some((t) => t.id === dest.typeId) ? dest.typeId : ''}
+            disabled={!b.canEdit || !board}
+            onChange={(e) => {
+              if (e.target.value === NEW) return b.actions.newCardType();
+              if (dest) set({ ...dest, typeId: e.target.value });
+            }}
+          >
+            <option value="" disabled>
+              Choose a card type…
             </option>
-          ))}
-          {b.canEdit ? <option value={NEW}>+ New Card Type</option> : null}
-        </Select>
+            {takes.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+            {b.canEdit ? <option value={NEW}>+ New Card Type</option> : null}
+          </Select>
+          {/* The card type's own editor (its fields, display and tabs), to shape it before mapping answers. */}
+          {b.canEdit && plan && b.type ? (
+            <Tooltip label={`Edit ${b.type.label}`}>
+              <button
+                type="button"
+                aria-label={`Edit card type ${b.type.label}`}
+                onClick={() => plan.editType(b.type!.id)}
+                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              >
+                <PencilIcon />
+              </button>
+            </Tooltip>
+          ) : null}
+        </div>
       </SettingsField>
       <div>
         <p className="mb-1.5 px-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">

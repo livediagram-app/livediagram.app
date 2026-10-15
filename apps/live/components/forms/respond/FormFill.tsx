@@ -77,7 +77,7 @@ export function FormFill({
     );
   }
 
-  const sections = form.sections.length;
+  const sections = fill.count;
   const first = fill.section === 0;
   const lastSection = fill.section === fill.last;
   const questions = fill.current.questions;
@@ -94,7 +94,7 @@ export function FormFill({
             <div className="mb-4">
               <div className="mb-1.5 flex justify-between text-[13px] font-medium text-slate-500 dark:text-slate-400">
                 <span>
-                  Section {fill.section + 1} of {sections}
+                  Section {fill.position + 1} of {sections}
                 </span>
               </div>
               <div
@@ -102,12 +102,12 @@ export function FormFill({
                 aria-label="Progress"
                 aria-valuemin={1}
                 aria-valuemax={sections}
-                aria-valuenow={fill.section + 1}
+                aria-valuenow={fill.position + 1}
                 className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"
               >
                 <div
                   className="h-full rounded-full bg-[var(--form-accent)] transition-[width] duration-200 motion-reduce:transition-none"
-                  style={{ width: `${((fill.section + 1) / sections) * 100}%` }}
+                  style={{ width: `${((fill.position + 1) / sections) * 100}%` }}
                 />
               </div>
             </div>

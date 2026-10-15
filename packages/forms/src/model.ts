@@ -73,11 +73,21 @@ export interface FormQuestion {
   goesTo?: AnswerTarget;
 }
 
+// When a section shows (docs/specs/030-forms/forms.md "Showing a section only sometimes"): an earlier Single Choice,
+// Multiple Choice or Checkbox question's answer is one of `anyOf` (a choice's options; a Checkbox's Ticked or Not
+// Ticked). A rule whose question is gone or no longer fits is broken, and the section shows.
+export interface SectionRule {
+  questionId: string;
+  anyOf: string[];
+}
+
 export interface FormSection {
   id: string;
   // The first section's title and description are the form's heading and description.
   title: string;
   description?: string;
+  // Absent: the section always shows. Never on the first section.
+  showIf?: SectionRule;
   questions: FormQuestion[];
 }
 

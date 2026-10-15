@@ -23,6 +23,10 @@ export function publicForm(form: FormDefinition): PublicForm {
       id: s.id,
       title: s.title,
       ...(s.description ? { description: s.description } : {}),
+      // The page needs a section's rule to know when to show it.
+      ...(s.showIf
+        ? { showIf: { questionId: s.showIf.questionId, anyOf: [...s.showIf.anyOf] } }
+        : {}),
       questions: s.questions.map(({ goesTo: _goesTo, ...q }) => q),
     })),
     confirmation: form.confirmation ?? DEFAULT_CONFIRMATION,

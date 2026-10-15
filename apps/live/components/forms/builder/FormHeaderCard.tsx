@@ -21,6 +21,7 @@ import { FormCoverBand } from '../FormCoverBand';
 import { LinkedText } from '../LinkedText';
 import { FORM_ACCENT } from '../respond/FormFill';
 import { DraftText } from './DraftText';
+import { SectionRule } from './SectionRule';
 import { useFormBuilder } from './form-builder-context';
 
 const STYLE_NAMES: Record<CoverStyle, string> = {
@@ -284,6 +285,7 @@ export function SectionHeader({
                 )
               }
             />
+            <SectionRule section={section} index={index} />
           </>
         ) : (
           <>

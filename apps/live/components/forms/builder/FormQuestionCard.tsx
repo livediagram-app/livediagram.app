@@ -108,7 +108,7 @@ export function FormQuestionCard({
             <GripIcon className="rotate-90" />
           </button>
         ) : null}
-        <div className="pointer-events-none">
+        <div>
           <QuestionView
             question={q}
             value={undefined}
@@ -201,7 +201,7 @@ export function FormQuestionCard({
             />
           ) : (
             // The control alone, as respondents will see it: the prompt and help are edited just above.
-            <div className="pointer-events-none opacity-80" aria-hidden>
+            <div className="cursor-not-allowed opacity-80 [&>*]:pointer-events-none" aria-hidden>
               <QuestionControl
                 question={q}
                 value={undefined}

@@ -3,8 +3,8 @@
 // A Form tab's page (docs/specs/030-forms/forms.md "Building a form"): drawn over the canvas area, as a Dashboard
 // is (CanvasCover). An Editor builds the form in place, every setting inside it: a question's in its card, Responses
 // Go To and Settings under the status bar's cog. Preview (and everyone who may not edit) sees it exactly as the form
-// link draws it. The menu box holds its name and Preview (the status bar does on a phone, which has no menu box); the
-// header's Share is Share Form (lib/form-share-store.ts).
+// link draws it. The status bar holds Preview, the help link and the cog; the menu box, its name; the header's Share is
+// Share Form (lib/form-share-store.ts).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { formLook, type Tab } from '@livediagram/document';
@@ -20,7 +20,6 @@ import { lucideGlyph, Tooltip } from '@livediagram/ui';
 import { lucideEye } from '@livediagram/icons/lucide';
 import { CanvasCover } from '@/components/plan/MaximisedPlanLayer';
 import { DashboardMenuName } from '@/components/plan/dashboard/DashboardMenuName';
-import { useMenuNameSlot } from '@/components/plan/menu-name-slot';
 import { setFormShareHost } from '@/lib/form-share-store';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { usePlan } from '@/components/plan/PlanContext';
@@ -92,7 +91,6 @@ export function FormPage({
   // The cog's panel: the section it opened on (null, both closed), or false while shut.
   const [settings, setSettings] = useState<FormSettingsSection | null | false>(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const nameSlot = useMenuNameSlot();
   const scrollRef = useRef<HTMLDivElement>(null);
   const building = canEdit && !preview;
 
@@ -158,7 +156,6 @@ export function FormPage({
     }),
     [form, building, actions, selectedId, select, focusId, type, types, openSettings],
   );
-  const viewBoard = destTab ? () => openTab(destTab.id) : null;
   // The header's Share is this form's while an Editor has it open (lib/form-share-store.ts).
   const published = !!link.link?.link;
   useEffect(() => {
@@ -172,7 +169,7 @@ export function FormPage({
         type="button"
         aria-pressed={preview}
         onClick={() => setPreview((p) => !p)}
-        className={`ml-1 flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium transition ${
+        className={`flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium transition ${
           preview
             ? 'bg-brand-700 text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700'
             : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
@@ -193,7 +190,6 @@ export function FormPage({
         kindLabel="Form"
         onRename={canEdit ? (name) => actions.renameForm(name) : undefined}
       />
-      {canEdit && nameSlot ? createPortal(previewButton, nameSlot) : null}
       {canvas
         ? createPortal(
             <CanvasCover layout={layout} marker={{ 'data-form-page': '' }}>
@@ -213,14 +209,13 @@ export function FormPage({
                         problem={problem}
                         full={(plan?.items.size ?? 0) >= ITEMS_MAX}
                         canEdit={canEdit}
-                        boardName={destTab?.name ?? null}
-                        onViewBoard={viewBoard}
                         onFix={() => openSettings('destination')}
+                        onOpenResponses={destTab ? () => openTab(destTab.id) : null}
+                        destinationName={destTab?.name ?? null}
                         controls={
                           canEdit ? (
                             <>
-                              {/* A phone has no menu box: Preview rides here instead. */}
-                              {nameSlot ? null : previewButton}
+                              {previewButton}
                               {/* Learn about forms, beside the cog (as a board's help sits by its cog). */}
                               <HelpArticleLink article="planForms" />
                               {building ? (

@@ -1,7 +1,7 @@
 'use client';
 
 // Under the form's heading in the builder (docs/specs/030-forms/forms.md "Hearing about responses"): the response
-// count with how many are new to this reader, View on Board, and the notices that say the form takes no responses
+// count with how many are new to this reader (opening the tab responses go to), and the notices that say the form takes no responses
 // (paused: its destination broke; suspended after reports; closed).
 import type { ReactNode } from 'react';
 import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@livediagram/forms';
@@ -12,21 +12,22 @@ export function FormStatusBar({
   problem,
   full = false,
   canEdit,
-  boardName,
-  onViewBoard,
   onFix,
   controls,
+  onOpenResponses,
+  destinationName,
 }: {
   link: FormLinkState;
   problem: DestinationProblem | null;
   // The document holds as many cards as it can: responses are refused until some go.
   full?: boolean;
   canEdit: boolean;
-  boardName: string | null;
-  onViewBoard: (() => void) | null;
   onFix: () => void;
-  // At its end, an Editor's: the form's cog (and Preview on a phone, which has no menu box).
+  // At its end, an Editor's: Preview (or Back to Editing), the help link and the form's cog.
   controls?: ReactNode;
+  // Opens the tab the responses go to (absent without one), named for its tooltip.
+  onOpenResponses?: (() => void) | null;
+  destinationName?: string | null;
 }) {
   const data = link.link;
   const live = data?.link ?? null;
@@ -62,31 +63,35 @@ export function FormStatusBar({
             : live.open
               ? pill('green', 'Accepting Responses')
               : pill('slate', 'Closed');
+  const count = (
+    <>
+      <strong className="font-semibold text-slate-900 dark:text-slate-50">{responses}</strong>{' '}
+      {responses === 1 ? 'response' : 'responses'}
+      {data?.unseen ? (
+        <span className="ml-1 font-semibold text-brand-700 dark:text-brand-300">
+          · {data.unseen} new
+        </span>
+      ) : null}
+    </>
+  );
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] dark:border-slate-700/80 dark:bg-slate-900">
+      <div className="flex items-center gap-x-3 gap-y-2 rounded-xl border max-sm:flex-wrap border-slate-200 bg-white px-4 py-2.5 text-[13px] dark:border-slate-700/80 dark:bg-slate-900">
         {state}
-        <span className="text-slate-600 dark:text-slate-300">
-          <strong className="font-semibold text-slate-900 dark:text-slate-50">{responses}</strong>{' '}
-          {responses === 1 ? 'response' : 'responses'}
-          {data?.unseen ? (
-            <span className="ml-1 font-semibold text-brand-700 dark:text-brand-300">
-              · {data.unseen} new
-            </span>
-          ) : null}
-        </span>
-        <span className="ml-auto flex items-center gap-1">
-          {onViewBoard && boardName ? (
-            <button
-              type="button"
-              onClick={onViewBoard}
-              className="mr-1 cursor-pointer font-semibold text-brand-700 hover:underline dark:text-brand-300"
-            >
-              View on {boardName} →
-            </button>
-          ) : null}
-          {controls}
-        </span>
+        {/* The count opens the board (or sheet) the responses go to. */}
+        {onOpenResponses ? (
+          <button
+            type="button"
+            onClick={onOpenResponses}
+            title={destinationName ? `Open ${destinationName}` : undefined}
+            className="shrink-0 cursor-pointer rounded text-slate-600 underline-offset-2 hover:underline dark:text-slate-300"
+          >
+            {count}
+          </button>
+        ) : (
+          <span className="shrink-0 text-slate-600 dark:text-slate-300">{count}</span>
+        )}
+        <span className="ml-auto flex min-w-0 items-center gap-1">{controls}</span>
       </div>
       {live && problem ? (
         <div

@@ -83,7 +83,9 @@ export function QuestionView({
           {question.help}
         </p>
       ) : null}
-      <div className="mt-3.5">
+      {/* Drawn disabled (the builder's picture of a question), the control shows it can't be filled in here: a press
+          on it passes to what holds it (selecting the question). */}
+      <div className={`mt-3.5 ${disabled ? 'cursor-not-allowed [&>*]:pointer-events-none' : ''}`}>
         <QuestionControl
           question={question}
           value={value}

@@ -2,7 +2,8 @@
 // respondent page, the builder's Preview and the api, so a response the page lets through is one the api keeps.
 import { isEmailAddress } from '@livediagram/items';
 import { OTHER_MAX, PARAGRAPH_MAX, SHORT_ANSWER_MAX } from './limits';
-import { questionsOf, type FormDefinition, type FormQuestion } from './model';
+import { shownQuestions } from './branching';
+import type { FormDefinition, FormQuestion } from './model';
 
 export type AnswerValue = string | number | boolean | string[];
 
@@ -150,12 +151,13 @@ export type ResponseCheck =
   | { ok: true; answers: Map<string, AnswerValue> }
   | { ok: false; errors: Record<string, AnswerError> };
 
-// Every question of `form` (or only `questions`, a section's, for Next) checked against the body. Answers to ids the
-// form no longer has are dropped, never refused: the form may have changed while someone filled it in.
+// Every question of the sections `form` shows for these answers (or only `questions`, a section's, for Next) checked
+// against the body. Answers to ids the form no longer has, or of a section that does not show, are dropped, never
+// refused: the form may have changed while someone filled it in, and a hidden section was never asked.
 export function checkResponse(
   form: Pick<FormDefinition, 'sections'>,
   body: Pick<ResponseBody, 'answers' | 'other'>,
-  questions: readonly FormQuestion[] = questionsOf(form),
+  questions: readonly FormQuestion[] = shownQuestions(form, body.answers),
 ): ResponseCheck {
   const answers = new Map<string, AnswerValue>();
   const errors: Record<string, AnswerError> = {};

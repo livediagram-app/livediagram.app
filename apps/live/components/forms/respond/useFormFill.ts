@@ -2,9 +2,17 @@
 
 // Filling in a form (docs/specs/030-forms/forms.md "Filling in a form"): the answers, one section at a time, each
 // field checked when it loses focus and again on Next or Submit, answers kept in session storage while filling in.
+// Next and Back step over a section the answers so far do not show ("Showing a section only sometimes"), and the
+// progress counts only the sections that show.
 // Shared by the form link's page and the builder's Preview, which differ only in what Submit does.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { checkAnswer, checkResponse, type AnswerError, type PublicForm } from '@livediagram/forms';
+import {
+  checkAnswer,
+  checkResponse,
+  sectionsShown,
+  type AnswerError,
+  type PublicForm,
+} from '@livediagram/forms';
 
 export type FillState = { answers: Record<string, unknown>; other: Record<string, string> };
 
@@ -56,8 +64,14 @@ export function useFormFill(
   const [summary, setSummary] = useState<string[]>([]);
   const [status, setStatus] = useState<'filling' | 'sending' | 'sent' | 'closed'>('filling');
   const [failure, setFailure] = useState<string | null>(null);
-  const last = form.sections.length - 1;
-  const current = form.sections[Math.min(section, last)]!;
+  // The sections these answers show, by index; the first always does.
+  const order = useMemo(() => {
+    const shown = sectionsShown(form, state.answers);
+    return form.sections.flatMap((_, i) => (shown[i] ? [i] : []));
+  }, [form, state.answers]);
+  const last = order[order.length - 1]!;
+  const at = Math.min(section, form.sections.length - 1);
+  const current = form.sections[at]!;
   const byId = useMemo(
     () => new Map(form.sections.flatMap((s) => s.questions.map((q) => [q.id, q] as const))),
     [form],
@@ -135,12 +149,12 @@ export function useFormFill(
   const next = () => {
     if (!checkSection()) return false;
     setSummary([]);
-    setSection((s) => Math.min(s + 1, last));
+    setSection((s) => order.find((i) => i > s) ?? s);
     return true;
   };
   const back = () => {
     setSummary([]);
-    setSection((s) => Math.max(0, s - 1));
+    setSection((s) => [...order].reverse().find((i) => i < s) ?? 0);
   };
 
   const send = async () => {
@@ -161,9 +175,9 @@ export function useFormFill(
     if (outcome.kind === 'invalid') {
       setErrors(outcome.errors);
       // Back to the first section holding an error.
-      const at = form.sections.findIndex((s) => s.questions.some((q) => outcome.errors[q.id]));
-      if (at >= 0) setSection(at);
-      const ids = (at >= 0 ? form.sections[at]!.questions : [])
+      const bad = order.find((i) => form.sections[i]!.questions.some((q) => outcome.errors[q.id]));
+      if (bad !== undefined) setSection(bad);
+      const ids = (bad !== undefined ? form.sections[bad]!.questions : [])
         .filter((q) => outcome.errors[q.id])
         .map((q) => q.id);
       setSummary(ids);
@@ -185,9 +199,12 @@ export function useFormFill(
 
   return {
     state,
-    section: Math.min(section, last),
+    section: at,
     current,
     last,
+    // Where this section sits among those that show, and how many show.
+    position: Math.max(0, order.indexOf(at)),
+    count: order.length,
     errors,
     summary: summary.filter((id) => errors[id]),
     status,
