@@ -152,11 +152,7 @@ export class FakeLivediagram {
   port(): LivediagramPort {
     const write = <T>(fn: () => T): Promise<T> => {
       this.writes += 1;
-      try {
-        return Promise.resolve(fn());
-      } catch (err) {
-        return Promise.reject(err);
-      }
+      return new Promise<T>((resolve) => resolve(fn()));
     };
     return {
       listPersonalDocuments: async () =>

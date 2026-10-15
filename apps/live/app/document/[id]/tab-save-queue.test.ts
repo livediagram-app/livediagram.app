@@ -31,6 +31,26 @@ describe('createTabSaveQueue', () => {
     expect(order).toEqual(['old start', 'new']);
   });
 
+  it('starts a write on an idle tab in the same tick', () => {
+    const q = createTabSaveQueue();
+    let started = false;
+    void q.run('t', async () => {
+      started = true;
+    });
+    expect(started).toBe(true);
+  });
+
+  it('settles a write that throws before its first await as its rejection, and the next still goes', async () => {
+    const q = createTabSaveQueue();
+    const boom = new Error('thrown at once');
+    await expect(
+      q.run('t', () => {
+        throw boom;
+      }),
+    ).rejects.toBe(boom);
+    await expect(q.run('t', async () => 'next')).resolves.toBe('next');
+  });
+
   it('never makes another tab wait', async () => {
     const q = createTabSaveQueue();
     const slow = deferred();
