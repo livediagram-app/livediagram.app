@@ -12,8 +12,8 @@ import {
 } from './colors';
 import { elementIndexFor, endpointPosition, type ElementIndex } from './geometry';
 import {
-  illustratePageAt,
   illustratePagesOf,
+  rowPageAt,
   layOutIllustratePages,
   type IllustratePage,
   type PageRect,
@@ -94,7 +94,8 @@ export function pageInkFor<T extends TabLike>(
 /**
  * pageInkFor for several pages in one walk (Apply to All on a full deck): the pages laid out, the
  * elements indexed and sorted onto their pages once, not once a page, so a deck at the page cap
- * costs O(elements + pages) rather than O(pages x elements x pages). Only colours change, never a
+ * costs O(elements x log pages + pages) rather than O(pages x elements x pages): each element finds its page by
+ * halving along the row (rowPageAt). Only colours change, never a
  * box, so the one index stays true for every page's pass. Each page is inked as pageInkFor would,
  * in `inks` order, one memory carried through.
  */
@@ -110,7 +111,8 @@ export function pagesInkFor<T extends TabLike>(
   // Each wanted page's elements, in the tab's order: one walk over the tab.
   const onPage = new Map<string, Element[]>();
   for (const el of tab.elements) {
-    const page = illustratePageAt(pages, elementAnchorPoint(el, index));
+    // Halved along the row, not a scan of every page: one lookup per element is O(log pages).
+    const page = rowPageAt(pages, elementAnchorPoint(el, index));
     if (!page || !wanted.has(page.id)) continue;
     const list = onPage.get(page.id);
     if (list) list.push(el);
@@ -121,8 +123,9 @@ export function pagesInkFor<T extends TabLike>(
   );
   const replaced = new Map<string, Element>();
   let touched = false;
+  const pageById = new Map(pages.map((p) => [p.id, p]));
   for (const { pageId, background } of inks) {
-    const page = pages.find((p) => p.id === pageId);
+    const page = pageById.get(pageId);
     const on = onPage.get(pageId);
     if (!page || !on) continue;
     touched = true;

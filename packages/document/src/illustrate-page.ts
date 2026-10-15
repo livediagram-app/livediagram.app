@@ -594,7 +594,7 @@ export function illustratePageAt(
 
 /** The page of a laid-out row (as layOutIllustratePages answers it: left to right, never
  *  overlapping) a point lies on, found by halving: the walk over a tab's elements asks once each. */
-function rowPageAt(
+export function rowPageAt(
   row: readonly LaidOutPage[],
   point: { x: number; y: number },
 ): LaidOutPage | undefined {
