@@ -81,7 +81,7 @@ describe('formArt', () => {
     const art = formArt(many, formLook({}));
     expect(performance.now() - started).toBeLessThan(200);
     expect(art.width).toBe(FORM_ART_WIDTH * 2);
-    expect(art.height).toBeLessThanOrEqual(FORM_ART_HEIGHT_MAX + 64);
+    expect(art.height).toBeLessThanOrEqual(FORM_ART_HEIGHT_MAX);
     const drawn = (art.svg.match(/>P\d+</g) ?? []).length;
     const left = Number(/(\d+) more questions not drawn/.exec(art.svg)?.[1]);
     expect(drawn + left).toBe(100);

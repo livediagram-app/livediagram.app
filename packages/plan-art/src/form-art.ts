@@ -398,13 +398,15 @@ export function formArt(form: FormDefinition, look: FormLook, fontStack?: string
   );
 
   const TOP = 24;
+  const BOTTOM = 32 + 28;
   const columns: { y: number; markup: string[] }[] = [{ y: TOP, markup: [] }];
   let cut = 0;
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]!;
     const need = b.height + (b.keepWithNext ? (blocks[i + 1]?.height ?? 0) : 0);
     let col = columns[columns.length - 1]!;
-    if (col.y + need > FORM_ART_HEIGHT_MAX && col.y > TOP) {
+    // Room under the column for the count line and the margin, so the whole picture stays within the height.
+    if (col.y + need > FORM_ART_HEIGHT_MAX - BOTTOM && col.y > TOP) {
       if (columns.length < FORM_ART_COLUMNS_MAX) {
         col = { y: TOP, markup: [] };
         columns.push(col);
