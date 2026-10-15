@@ -17,6 +17,11 @@ const FACE_BYTES_MAX = 1_500_000;
 export const PREVIEW_FONTS_PENDING_MAX_MS = 15_000;
 
 const CSS_URL = 'https://fonts.googleapis.com/css2';
+
+// Inter's italics, asked for as a font id when a drawing sets text in italic: the embedded Inter is upright only, and
+// resvg draws an italic it has no face for upright, so a preview could not show it.
+export const INTER_ITALIC = 'inter-italic';
+const INTER_ITALIC_SPEC = 'Inter:ital,wght@1,400;1,700';
 // Each family's faces as they are being fetched or were fetched, with when that started and whether it has settled.
 const memory = new Map<string, { faces: Promise<Uint8Array[]>; since: number; settled: boolean }>();
 
@@ -52,7 +57,7 @@ async function facesOf(google: string, fetcher: Fetcher): Promise<Uint8Array[]> 
   return faces.flatMap((f) => (f ? [f] : []));
 }
 
-// The faces of `fontIds` (the editor's font ids) other than Inter, as font files: at most PREVIEW_FONTS_MAX families,
+// The faces of `fontIds` (the editor's font ids, and INTER_ITALIC) other than Inter, as font files: at most PREVIEW_FONTS_MAX families,
 // whatever arrives within PREVIEW_FONTS_TIMEOUT_MS; nothing for an unknown id.
 export async function previewFonts(
   fontIds: readonly string[],
@@ -61,6 +66,7 @@ export async function previewFonts(
   const specs = [...new Set(fontIds)]
     .filter((id) => id !== 'inter')
     .flatMap((id) => {
+      if (id === INTER_ITALIC) return [INTER_ITALIC_SPEC];
       const font = FONTS.find((f) => f.id === id);
       return font ? [font.google] : [];
     })

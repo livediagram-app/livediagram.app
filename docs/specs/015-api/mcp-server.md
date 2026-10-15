@@ -1139,7 +1139,8 @@ Worker (no DOM, no React).
   to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`):
   at most `PREVIEW_FONTS_MAX` (4) families, whatever arrives within `PREVIEW_FONTS_TIMEOUT_MS` (2.5 s), each kept in
   the isolate and the Cache API. A face that cannot be fetched draws in Inter, as before; nothing is sent but the
-  family names.
+  family names. The embedded Inter is upright only, so a tab with any text in italic (an element's, a run's, a
+  cell's) fetches Inter's italics the same way (`INTER_ITALIC`); resvg drew italic it had no face for upright.
 - **No scaled strokes.** resvg ignores `vector-effect="non-scaling-stroke"`, so
   the renderer never relies on it: stretched silhouettes (frames, cylinders,
   device frames) are mapped into the element box point by point

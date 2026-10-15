@@ -9,7 +9,7 @@ vi.mock('./render', () => ({
   },
 }));
 
-const { imageResult, tabPreview } = await import('./image-result');
+const { imageResult, tabFontIds, tabPreview } = await import('./image-result');
 
 describe('imageResult', () => {
   it('puts the structured result first, then the notes, then the preview', async () => {
@@ -27,6 +27,18 @@ describe('imageResult', () => {
   it('adds no note when given none', async () => {
     const result = await imageResult({ id: 'd' }, { id: 't', name: 'T', elements: [] });
     expect(result.content.map((block) => block.type)).toEqual(['text', 'image']);
+  });
+});
+
+describe('tabFontIds', () => {
+  it("asks for Inter's italics only when some text is italic, its own or a run's", () => {
+    const tab = (elements: unknown[]) => ({ id: 't', name: 'T', elements }) as never;
+    const text = { id: 'a', type: 'text', x: 0, y: 0, width: 10, height: 10, label: 'x' };
+    expect(tabFontIds(tab([text]))).not.toContain('inter-italic');
+    expect(tabFontIds(tab([{ ...text, textItalic: true }]))).toContain('inter-italic');
+    expect(tabFontIds(tab([{ ...text, runs: [{ text: 'x', italic: true }] }]))).toContain(
+      'inter-italic',
+    );
   });
 });
 
