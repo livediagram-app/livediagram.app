@@ -77,6 +77,7 @@ import {
 } from '@/components/palette/BehaviourMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
+import { ChartAxisRows } from '@/components/palette/ChartAxisRows';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 
 import { ChartTypeTiles } from '@/components/palette/ChartTypeTiles';
@@ -716,6 +717,16 @@ export function ElementDataSections({
                 checked={shapeTarget?.chartValues === true}
                 onToggle={() => props.onSetChartValues(shapeTarget?.chartValues !== true)}
               />
+              {/* A pie has no value axis. */}
+              {shapeTarget?.shape !== 'pie-chart' ? (
+                <ChartAxisRows
+                  axis={shapeTarget?.chartAxis === true}
+                  series={isLine ? (shapeTarget?.lineSeries ?? LINE_DEFAULT_SERIES) : null}
+                  palette={chartFallbackPalette}
+                  onSetAxis={props.onSetChartAxis}
+                  onSetRightAxis={props.onSetChartRightAxis}
+                />
+              ) : null}
             </MenuAccordionSection>
           ) : null}
         </MenuFlyoutSection>

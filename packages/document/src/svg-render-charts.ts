@@ -11,6 +11,7 @@
 // differ. Hover, readouts and the looping animations are the canvas's alone
 // and have no meaning in a still image.
 
+import { AXIS_TICK_FONT_PX, AXIS_TICK_GAP } from './chart-axis';
 import { chartFrame, type ChartLegendRect } from './chart-frame';
 import { chartTextInk } from './chart-ink';
 import { AREA_FILL_OPACITY, barMarks, lineMarks, pieMarks } from './chart-marks';
@@ -166,8 +167,20 @@ export function svgBarChart(
   const textColor = chartTextInk(labelColor, ground);
   const { data, colorAt, area, legend } = chartFrame(el as ShapeElement, palette, ground);
   const horizontal = chartTypeOf(el) === 'bar';
-  const barM = barMarks(area, data, horizontal, el.x, el.y);
+  const barM = barMarks(area, data, horizontal, el.x, el.y, el.chartAxis === true);
   const { baseline: b, bars } = barM;
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
+  // Show Axis: a faint gridline at each tick and its label, under a column chart's left side or a bar chart's bottom.
+  const [s0, s1] = barM.axis.span;
+  const axis = barM.axis.ticks
+    .map((t) =>
+      horizontal
+        ? `<path d="M ${r2(t.at)} ${r2(s0)} L ${r2(t.at)} ${r2(s1)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
+          `<text x="${r2(t.at)}" y="${r2(s1 + AXIS_TICK_GAP + AXIS_TICK_FONT_PX)}" text-anchor="middle"${font} font-size="${AXIS_TICK_FONT_PX}" fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`
+        : `<path d="M ${r2(s0)} ${r2(t.at)} L ${r2(s1)} ${r2(t.at)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
+          `<text x="${r2(s0 - AXIS_TICK_GAP)}" y="${r2(t.at + AXIS_TICK_FONT_PX / 3)}" text-anchor="end"${font} font-size="${AXIS_TICK_FONT_PX}" fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`,
+    )
+    .join('');
   const baseline = `<path d="M ${r2(b.x1)} ${r2(b.y1)} L ${r2(b.x2)} ${r2(b.y2)}" stroke="${AXIS}" stroke-width="1"/>`;
   const rects = bars
     .map(
@@ -186,7 +199,11 @@ export function svgBarChart(
       )
     : '';
   return (
-    baseline + rects + values + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily)
+    axis +
+    baseline +
+    rects +
+    values +
+    svgChartLegend(el, data, colorAt, legend, textColor, fontFamily)
   );
 }
 
@@ -204,9 +221,43 @@ export function svgLineChart(
   const categories =
     el.lineCategories && el.lineCategories.length > 0 ? el.lineCategories : LINE_DEFAULT_CATEGORIES;
   const series = el.lineSeries && el.lineSeries.length > 0 ? el.lineSeries : LINE_DEFAULT_SERIES;
-  const m = lineMarks(area, categories, series, lineVariantOf(el), el.x, el.y);
+  const m = lineMarks(
+    area,
+    categories,
+    series,
+    lineVariantOf(el),
+    el.x,
+    el.y,
+    el.chartAxis === true,
+  );
   const { x, y, w, h } = m.plot;
+  const tickFont = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}" font-size="${AXIS_TICK_FONT_PX}"`;
+  // Show Axis: a faint gridline and a label at each left tick, the right axis's labels in its first series' colour.
+  const rightInk = xmlEscape(
+    colorAt(
+      Math.max(
+        0,
+        series.findIndex((s) => s.axis === 'right'),
+      ),
+      series.find((s) => s.axis === 'right') ?? {},
+    ),
+  );
+  const ticks =
+    m.axis.left
+      .map(
+        (t) =>
+          `<path d="M ${r2(x)} ${r2(t.y)} L ${r2(x + w)} ${r2(t.y)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
+          `<text x="${r2(x - AXIS_TICK_GAP)}" y="${r2(t.y + AXIS_TICK_FONT_PX / 3)}" text-anchor="end"${tickFont} fill="${xmlEscape(textColor)}">${xmlEscape(t.text)}</text>`,
+      )
+      .join('') +
+    m.axis.right
+      .map(
+        (t) =>
+          `<text x="${r2(x + w + AXIS_TICK_GAP)}" y="${r2(t.y + AXIS_TICK_FONT_PX / 3)}" text-anchor="start"${tickFont} fill="${rightInk}">${xmlEscape(t.text)}</text>`,
+      )
+      .join('');
   const axes =
+    ticks +
     `<path d="M ${r2(x)} ${r2(y)} L ${r2(x)} ${r2(y + h)}" stroke="${AXIS_FAINT}" stroke-width="1"/>` +
     `<path d="M ${r2(x)} ${r2(y + h)} L ${r2(x + w)} ${r2(y + h)}" stroke="${AXIS}" stroke-width="1"/>`;
   const marks = series

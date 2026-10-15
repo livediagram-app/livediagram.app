@@ -55,6 +55,19 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   1M, not 1000k); under that in full (1,080). A wedge's number takes the ink that reads on its colour; the rest take the chart's text
   colour, at the key's size. The editor's toggle fires `Element·Changed·ChartValues`. It is a display option of the
   chart, so it follows the Chart category's gating: an Editor changes it; a Participant or Viewer sees the numbers.
+- Under Show Values, **Show Axis** (`chartAxis`, off by default, so a chart made before it draws as it did) draws the
+  value axis on a column, bar, line, area or scatter chart (a pie has none): tick labels at round values (1, 2 or 5
+  times a power of ten, four or five of them, the range widened to the next round value past the largest and
+  smallest, zero always in it) and a faint gridline across the plot at each, the plot drawn in from the side the
+  labels take. A column or line chart labels its left side; a bar chart its bottom. Numbers read as Show Values'
+  do (120k, 1.5M). The toggle fires `Element·Changed·ChartAxis`; the gating is Show Values'.
+- **A second axis**: a line, area or scatter series marked `axis: "right"` is drawn against a scale of its own,
+  worked out from the right-hand series alone, so a series in the thousands and one in the tens both read (signups
+  against paid). With Show Axis on, the right side carries that scale's tick labels in the first right-hand series'
+  colour; the gridlines follow the left scale. A chart whose series are all on the right draws them on the left
+  scale, as if none were. In the editor, the Chart category of a line chart with two or more series has **Right
+  Axis**, a choice of None or one series, which moves that series to the right (one commit, `Element·Changed·
+ChartAxis`); a series on the right shows "(right)" after its name in the Data summary. An Editor changes it.
 - The **Animation** category carries the chart-specific animations
   (None / Grow / Pop / Spin / Pulse, with a **Speed** row + **Repeat** toggle)
   in place of the boxed-element animation set — a chart animates its marks, not
@@ -108,6 +121,9 @@ groups all three (they're all in `isSelfDrawingShape` too).
 
 - Pie + bar: `ShapeElement.pieSlices?: PieSlice[]` (`{ label, value, color? }`).
 - `ShapeElement.chartValues?: boolean`: the numbers on the marks (Show Values); absent means off.
+- `ShapeElement.chartAxis?: boolean`: the value axis, its tick labels and gridlines (Show Axis); absent means off.
+  A `LineSeries` may carry `axis?: 'right'`, its own scale (a second axis); any other value reads as absent. The
+  axes are laid out with the marks, in `chartValueAxis` (`packages/document/src/chart-axis.ts`) for both renderers.
 - Line: `ShapeElement.lineCategories?: string[]` + `lineSeries?: LineSeries[]`
   (`{ name, color?, values: number[] }`), aligned to the categories — a 2-D
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.

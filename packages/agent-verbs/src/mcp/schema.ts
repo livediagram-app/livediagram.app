@@ -84,7 +84,10 @@ const CONTENT_KINDS =
   'fills each series down to zero and "scatter" draws points only, at x = each category read as a ' +
   'number; on "pie-chart" "doughnut" opens the middle. "chartValues": true prints each mark\'s ' +
   "number on the chart (a pie's as percentages when its values add up to 100; a column chart also " +
-  'names each column under it, so "chartLegend": false can drop the key). A chart draws no title (a caption is a ' +
+  'names each column under it, so "chartLegend": false can drop the key). "chartAxis": true draws the value axis, ' +
+  'round tick values and gridlines (not on a pie). A "lineSeries" entry with "axis": "right" is drawn against a ' +
+  'scale of its own, labelled on the right, so a series in the thousands and one in the tens both read. ' +
+  'A chart draws no title (a caption is a ' +
   'separate "text" element) and draws sample data when its data is empty. ' +
   'shape "sankey": a Sankey diagram, bands as wide as the amount they carry, laid out in columns ' +
   'by itself. "sankeyFlows" is [{ "from", "to", "value" }] with node NAMES (the nodes are the ' +

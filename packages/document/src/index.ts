@@ -583,6 +583,7 @@ export * from './chart-frame';
 export * from './chart-ink';
 export * from './chart-types';
 export * from './chart-marks';
+export * from './chart-axis';
 export * from './chart-values';
 export * from './chart-source';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
