@@ -163,7 +163,7 @@ export async function seedLocalDocuments(page: Page, docs: LocalSeed[]): Promise
     const day = (ago: number) => new Date(now - ago * 86_400_000).toISOString().slice(0, 10);
     await new Promise<void>((resolve, reject) => {
       const open = indexedDB.open('livediagram-offline', 2);
-      open.onerror = () => reject(open.error);
+      open.onerror = () => reject(open.error ?? new Error('IndexedDB open failed'));
       open.onsuccess = () => {
         const tx = open.result.transaction('documents', 'readwrite');
         for (const seed of seeds) {
@@ -178,7 +178,7 @@ export async function seedLocalDocuments(page: Page, docs: LocalSeed[]): Promise
           });
         }
         tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
+        tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'));
       };
     });
   }, docs);
