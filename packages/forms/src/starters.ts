@@ -14,6 +14,8 @@ export interface StarterField {
   label: string;
   kind: CustomFieldKind;
   options?: readonly string[];
+  // Drawn on the card face when added (a choice or a rating reads at a glance on a board).
+  onCard?: true;
 }
 
 type StarterQuestion = Omit<FormQuestion, 'id' | 'goesTo'> & {
@@ -68,7 +70,7 @@ export const FORM_STARTERS: readonly FormStarter[] = [
             type: 'single',
             prompt: 'Severity',
             options: SEVERITY,
-            to: { label: 'Severity', kind: 'choice', options: SEVERITY },
+            to: { label: 'Severity', kind: 'choice', options: SEVERITY, onCard: true },
           },
           {
             type: 'email',
@@ -97,7 +99,7 @@ export const FORM_STARTERS: readonly FormStarter[] = [
             required: true,
             scale: 5,
             style: 'stars',
-            to: { label: 'Rating', kind: 'rating' },
+            to: { label: 'Rating', kind: 'rating', onCard: true },
           },
           { type: 'paragraph', prompt: 'What did you like?' },
           { type: 'paragraph', prompt: 'What could be better?' },
@@ -126,7 +128,7 @@ export const FORM_STARTERS: readonly FormStarter[] = [
             style: 'numbers',
             lowLabel: 'Nice to have',
             highLabel: 'Essential',
-            to: { label: 'Importance', kind: 'rating' },
+            to: { label: 'Importance', kind: 'rating', onCard: true },
           },
         ],
       },
@@ -149,7 +151,12 @@ export const FORM_STARTERS: readonly FormStarter[] = [
             prompt: 'Attending?',
             required: true,
             options: ['Yes', 'No', 'Maybe'],
-            to: { label: 'Attending', kind: 'choice', options: ['Yes', 'No', 'Maybe'] },
+            to: {
+              label: 'Attending',
+              kind: 'choice',
+              options: ['Yes', 'No', 'Maybe'],
+              onCard: true,
+            },
           },
           {
             type: 'multi',
@@ -291,6 +298,7 @@ export function buildStarter(
     const id = newCustomFieldId(want.label, [...fields, ...custom.map((f) => f.id)]);
     const field: CustomFieldDef = { id, label: want.label, kind: want.kind };
     if (want.options) Object.assign(field, { options: [...want.options] });
+    if (want.onCard) Object.assign(field, { onCard: true });
     custom.push(field);
     fields.push(id);
     return id;

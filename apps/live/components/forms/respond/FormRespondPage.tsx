@@ -169,7 +169,7 @@ function Notice({
         <button
           type="button"
           onClick={action.run}
-          className="mt-5 h-10 cursor-pointer rounded-lg bg-brand-600 px-5 text-[14px] font-semibold text-white hover:bg-brand-700"
+          className="mt-5 h-10 cursor-pointer rounded-lg bg-brand-700 px-5 text-[14px] font-semibold text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700"
         >
           {action.label}
         </button>

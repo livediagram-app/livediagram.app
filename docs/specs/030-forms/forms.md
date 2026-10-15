@@ -71,7 +71,8 @@ it brings are a card-type change of their own and stay after an undo, as a templ
    for Feature Request, Candidate for Job Application, Request for Contact), else a new type named after the form
    ("Feedback", "Event RSVP") in the starter's colour with the checklist glyph;
 4. adds the custom fields the starter's mappings name to that type (a field of that name and kind already on it is
-   reused, never doubled).
+   reused, never doubled, and a choice field gains any option it lacks); a new choice or rating field (Severity,
+   Rating, Importance, Attending) is drawn on the card face, so it reads at a glance on the board.
 
 Blank Form takes the document's first board and the first card type it takes; with no board, it makes the Responses
 board and a "Response" card type.

@@ -26,6 +26,8 @@ export async function apiListActivity(ownerId: string): Promise<ActivityReadResu
       threads: Array.isArray(body.threads) ? body.threads : [],
       cards: Array.isArray(body.cards) ? body.cards : [],
       cardThreads: Array.isArray(body.cardThreads) ? body.cardThreads : [],
+      // Forms with responses the reader has not seen (docs/specs/030-forms/forms.md).
+      formResponses: Array.isArray(body.formResponses) ? body.formResponses : [],
     };
   } catch {
     return null;

@@ -93,6 +93,16 @@ describe('the starters', () => {
     expect(starterBaseType(odd, [], 'odd').id).toBe('odd');
   });
 
+  it('puts a new choice or rating field on the card face', () => {
+    const { type } = buildStarter(
+      formStarter('feedback'),
+      starterBaseType(formStarter('feedback'), [], 'f'),
+      newId,
+    );
+    expect(type.custom?.find((f) => f.label === 'Rating')?.onCard).toBe(true);
+    expect(type.custom?.find((f) => f.label === 'Email')?.onCard).toBeUndefined();
+  });
+
   it('returns the same type when nothing is added', () => {
     const base = starterBaseType(formStarter('blank'), [], 'response');
     expect(buildStarter(formStarter('blank'), base, newId).type).toBe(base);

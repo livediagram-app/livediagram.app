@@ -220,8 +220,8 @@ export function FormQuestionCard({
               : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300'
           }`}
         >
-          <span className="text-slate-400">Answer goes to</span>
-          <span className="truncate">{targetLabel(target)}</span>
+          <span className="text-optical-centre text-slate-400">Answer goes to</span>
+          <span className="text-optical-centre truncate">{targetLabel(target)}</span>
         </button>
         <Tooltip label="Move Up">
           <button

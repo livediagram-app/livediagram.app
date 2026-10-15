@@ -124,7 +124,7 @@ export function RatingInput({
                   stroke={on ? colour : 'currentColor'}
                   strokeWidth={1.6}
                   strokeLinejoin="round"
-                  className={on ? '' : 'text-slate-400 dark:text-slate-500'}
+                  className={on ? '' : 'text-slate-400'}
                 >
                   <path d={STAR_PATH} />
                 </svg>

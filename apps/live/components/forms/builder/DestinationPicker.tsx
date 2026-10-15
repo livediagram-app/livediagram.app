@@ -129,7 +129,7 @@ export function DestinationPicker({ tabs }: { tabs: readonly Tab[] }) {
                     style={{ background: c.color }}
                   />
                 ) : null}
-                {c.name || 'Untitled'}
+                <span className="text-optical-centre">{c.name || 'Untitled'}</span>
               </button>
             );
           })}

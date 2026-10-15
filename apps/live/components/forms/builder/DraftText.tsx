@@ -91,7 +91,7 @@ export const DraftText = forwardRef<
     disabled,
     autoFocus,
     'aria-label': label,
-    className: `w-full bg-transparent outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 ${className}`,
+    className: `w-full bg-transparent outline-none placeholder:text-slate-400 dark:placeholder:text-slate-400 ${className}`,
     onChange: (e: { target: { value: string } }) => {
       setDraft(e.target.value);
       if (timer.current) clearTimeout(timer.current);

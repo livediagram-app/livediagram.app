@@ -186,7 +186,7 @@ export function FormPage({
                     onClick={() => setPreview((p) => !p)}
                     className={`flex h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition ${
                       preview
-                        ? 'bg-brand-600 text-white hover:bg-brand-700'
+                        ? 'bg-brand-700 text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700'
                         : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
                     }`}
                   >

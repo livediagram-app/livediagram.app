@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { questionsOf, type FormDefinition } from '@livediagram/forms';
 import type { ItemTypeDef } from '@livediagram/items';
 import type { FormActions } from '@/hooks/forms/useFormActions';
@@ -44,7 +44,9 @@ function Harness({ canEdit }: { canEdit: boolean }) {
   const [selectedId, setSelected] = useState<string | null>(null);
   const [focusId, setFocus] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  latest = form;
+  useEffect(() => {
+    latest = form;
+  });
   const actions: FormActions = {
     startForm: vi.fn(),
     changeForm: (fn) => setForm((f) => fn(f)),
