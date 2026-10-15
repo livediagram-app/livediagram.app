@@ -29,7 +29,7 @@ import {
   uniqueTypeLabel,
   withAutoBoardName,
   withBoardTaking,
-} from './form-start';
+} from '@livediagram/templates';
 
 export type FormActions = {
   // A starter chosen on Start Planning: the tab becomes a Form tab holding it.

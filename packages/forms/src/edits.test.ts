@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { QUESTIONS_MAX, SECTIONS_MAX, questionsOf, type FormDefinition } from '@livediagram/forms';
+import { QUESTIONS_MAX, SECTIONS_MAX, questionsOf, type FormDefinition } from './index';
 import {
   addQuestion,
   addSection,
@@ -20,7 +20,7 @@ import {
   setTarget,
   updateQuestion,
   updateSection,
-} from './form-edits';
+} from './edits';
 
 // docs/specs/030-forms/forms.md "Building a form": each edit pure, one form in, the next out.
 

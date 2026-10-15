@@ -14,7 +14,7 @@ import {
 } from '@livediagram/forms';
 import { Select, lucideGlyph } from '@livediagram/ui';
 import { lucideGitFork } from '@livediagram/icons/lucide';
-import { updateSection } from '@/hooks/forms/form-edits';
+import { updateSection } from '@livediagram/forms';
 import { FormSheet } from './FormSheet';
 import { useFormBuilder } from './form-builder-context';
 

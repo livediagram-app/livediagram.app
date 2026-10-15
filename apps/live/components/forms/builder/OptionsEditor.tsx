@@ -7,7 +7,7 @@
 import { useEffect, useRef } from 'react';
 import { OPTIONS_MAX, OPTION_MAX, type FormQuestion } from '@livediagram/forms';
 import { CloseIcon } from '@livediagram/ui';
-import { nextOptionName, pastedOptions } from '@/hooks/forms/form-edits';
+import { nextOptionName, pastedOptions } from '@livediagram/forms';
 import { DraftText, type DraftTextHandle } from './DraftText';
 
 export function OptionsEditor({
