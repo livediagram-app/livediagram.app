@@ -426,7 +426,7 @@ export function ElementDataSections({
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
             steps, a header's links: add / remove / reorder. */}
-          {/* A concept graphic's variant and animation (docs/specs/009-elements/concept-graphics.md). */}
+          {/* A concept graphic's variant; its animation is in the Animation row (docs/specs/009-elements/concept-graphics.md). */}
           {shapeTarget && isConceptShape(shapeTarget.shape) ? (
             <ConceptMenuSection
               target={shapeTarget as ShapeElement & { shape: ConceptShape }}
@@ -469,8 +469,8 @@ export function ElementDataSections({
               sectionProps={sectionProps}
             />
           ) : null}
-          {/* A sequence diagram's summary, Edit Sequence, Numbered and Play (docs/specs/009-elements/sequence-diagram.md
-              "The menu"). */}
+          {/* A sequence diagram's summary, Edit Sequence and Numbered; Play is in the Animation row
+              (docs/specs/009-elements/sequence-diagram.md "The menu"). */}
           {shapeTarget?.shape === 'sequence' ? (
             <SequenceMenuSection
               target={shapeTarget}
