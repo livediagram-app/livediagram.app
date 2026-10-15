@@ -310,6 +310,7 @@ export function usePaletteCatalogue({
     isMobile,
     includeZen: !!onToggleZen,
     planMode: editorMode === 'plan',
+    facilitateMode: editorMode === 'facilitate',
   });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))

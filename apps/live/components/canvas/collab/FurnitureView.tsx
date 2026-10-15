@@ -15,8 +15,6 @@ import {
   FURNITURE_RAIL_STROKE,
   FURNITURE_SHADOW,
   furnitureFrame,
-  furnitureParts,
-  furnitureRing,
   isSeatingShape,
   OFFICE_ART,
   OFFICE_TONES,
@@ -87,7 +85,13 @@ export function FurnitureView({
   const occupied = seating && sitters.length > 0;
   const ringColor = sitters[0]?.color ?? stroke;
   const noun = NOUN[kind];
-  const ring = furnitureRing(art, facing);
+  const { parts, ring, ringUnder = parts.length } = frame.view;
+  // A soft ring in the first sitter's colour, on the seat and under what stands nearer the camera (ringUnder). A
+  // meeting table names its sitters without a ring: which seat a peer took is not in their presence.
+  const ringView =
+    occupied && kind !== 'meeting-table' ? (
+      <ellipse key="ring" {...ring} fill="none" stroke={ringColor} strokeWidth="3" opacity="0.85" />
+    ) : null;
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
       <svg
@@ -102,18 +106,16 @@ export function FurnitureView({
               : `Empty ${noun.toLowerCase()}`
         }
       >
+        {/* The ring rides inside the drawing's own frame, so a mirrored side mirrors it too. */}
         <g transform={frame.transform || undefined}>
-          {furnitureParts(art, facing).map((p, i) => (
-            <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />
-          ))}
+          {parts.map((p, i) => [
+            i === ringUnder ? ringView : null,
+            <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />,
+          ])}
+          {ringUnder >= parts.length ? ringView : null}
         </g>
         {kind === 'water-cooler' || kind === 'coffee-machine' ? (
           <MachineAnswer kind={kind} id={element.id} />
-        ) : null}
-        {occupied && kind !== 'meeting-table' ? (
-          // A soft ring in the first sitter's colour, under the seats. A meeting table names its sitters
-          // without a ring: which seat a peer took is not in their presence.
-          <ellipse {...ring} fill="none" stroke={ringColor} strokeWidth="3" opacity="0.85" />
         ) : null}
       </svg>
       {occupied ? (

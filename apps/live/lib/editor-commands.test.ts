@@ -260,7 +260,8 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     // the canvas. Nothing here writes to the document, which is the property
     // this test exists to hold: the eraser and the format painter are
     // withheld, and so is every command below the read-only return.
-    expect(ids({ ...base, isReadOnly: true })).toEqual([
+    // In Facilitate, so Avatar is among them (docs/specs/008-canvas/avatar-mode.md "Where it is offered").
+    expect(ids({ ...base, isReadOnly: true, facilitateMode: true })).toEqual([
       'zen',
       'fit-to-screen',
       'export',
@@ -338,7 +339,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 // Isometric; the search panel offered none of them.
 describe('canvas tool commands', () => {
   it('offers every tool but the one already in force', () => {
-    const got = ids(base).filter((id) => id.startsWith('tool:'));
+    const got = ids({ ...base, facilitateMode: true }).filter((id) => id.startsWith('tool:'));
     expect(got).toEqual([
       'tool:pan',
       'tool:eraser',
@@ -357,7 +358,7 @@ describe('canvas tool commands', () => {
 
   it('runs the tool setter with the tool id', () => {
     const h = handlers();
-    buildEditorCommands(base, h)
+    buildEditorCommands({ ...base, facilitateMode: true }, h)
       .find((c) => c.id === 'tool:avatar')!
       .run();
     expect(h.setTool).toHaveBeenCalledWith('avatar');
@@ -495,5 +496,10 @@ describe('buildEditorCommands — locked tab and Plan mode', () => {
     expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
     expect(got).toContain('tool:laser');
+  });
+
+  it('offers Avatar Mode in Facilitate only', () => {
+    expect(ids(base)).not.toContain('tool:avatar');
+    expect(ids({ ...base, facilitateMode: true })).toContain('tool:avatar');
   });
 });

@@ -7,10 +7,8 @@ import {
   facingSwapsBox,
   facingView,
   FURNITURE_ART,
-  furnitureRing,
   facingTurn,
   furnitureFrame,
-  furnitureParts,
   isSeatingShape,
   nearestSeat,
   seatingFacing,
@@ -144,7 +142,7 @@ describe('turning', () => {
     for (const art of Object.values(FURNITURE_ART))
       for (const facing of ['n', 'e', 's', 'w'] as const) {
         const { view } = furnitureFrame(art, facing);
-        const shadows = furnitureParts(art, facing).flatMap((p) =>
+        const shadows = view.parts.flatMap((p) =>
           p.role === 'shadow' && p.tag === 'ellipse' ? [p.cy] : [],
         );
         // The lowest shadow is in the lowest fifth of the drawing: the piece stands on it.
@@ -170,8 +168,37 @@ describe('turning', () => {
           expect(v).toBeGreaterThan(0);
           expect(v).toBeLessThan(1);
         }
-    expect(furnitureRing(SOFA_ART, 'w').cx).toBe(76 - SOFA_ART.side.ring.cx);
-    expect(furnitureRing(SOFA_ART, 'e')).toEqual(SOFA_ART.side.ring);
+  });
+
+  // chair.md "Occupied": the ring lies on the seat, so it is painted after the seat and before whatever stands
+  // nearer the camera; painted over the whole drawing it crossed a backrest's back and a desk's monitor.
+  it('paints the occupied ring after its seat and before what stands in front of it', () => {
+    for (const [kind, art] of Object.entries(FURNITURE_ART)) {
+      if (kind === 'meeting-table') continue;
+      for (const [name, view] of Object.entries({
+        front: art.front,
+        back: art.back,
+        side: art.side,
+      })) {
+        const at = `${kind} ${name}`;
+        const under = view.ringUnder!;
+        expect(under, at).toBeGreaterThan(0);
+        expect(under, at).toBeLessThan(view.parts.length);
+        const { cx, cy } = view.ring;
+        const seat = view.parts
+          .slice(0, under)
+          .some(
+            (p) =>
+              p.tag === 'rect' &&
+              p.role === 'panel' &&
+              cx >= p.x &&
+              cx <= p.x + p.w &&
+              cy >= p.y &&
+              cy <= p.y + p.h,
+          );
+        expect(seat, at).toBe(true);
+      }
+    }
   });
 
   it('reads the facing a desk was made with when none is stored', () => {

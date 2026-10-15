@@ -44,6 +44,7 @@ function Harness({
   teamDocs?: DocumentListItem[];
 }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [folderId, setFolderId] = useState<string | null>(null);
   const tree: PanelTree = {
     ownerId: 'me',
     currentDocumentId: 'd1',
@@ -73,6 +74,8 @@ function Harness({
       teams={teams}
       foldersByTeam={new Map()}
       documentsByTeam={new Map(teams.map((t) => [t.id, teamDocs]))}
+      folderId={folderId}
+      onOpenFolder={setFolderId}
     />
   );
 }

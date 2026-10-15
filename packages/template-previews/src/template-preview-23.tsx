@@ -126,7 +126,7 @@ export function templatePreviewGroup23(kind: TemplateKind): ReactElement | null 
           <Plant x={52} y={39} />
           <g
             className="pv-arrive"
-            style={pv({ '--pv-at': '400ms', '--pv-from-y': '10px' })}
+            style={{ ...pv({ '--pv-at': '400ms', '--pv-from-y': '10px' }), ...FILL_BOX }}
             opacity="0"
           >
             <circle cx="40" cy="43" r="1.3" fill="rgb(251 191 146)" />
@@ -187,7 +187,7 @@ export function templatePreviewGroup23(kind: TemplateKind): ReactElement | null 
           {/* In through the doorway at the back of the hall, up the aisle. */}
           <g
             className="pv-arrive"
-            style={pv({ '--pv-at': '400ms', '--pv-from-y': '8px' })}
+            style={{ ...pv({ '--pv-at': '400ms', '--pv-from-y': '8px' }), ...FILL_BOX }}
             opacity="0"
           >
             <circle cx="40" cy="41" r="1.3" fill="rgb(251 191 146)" />
