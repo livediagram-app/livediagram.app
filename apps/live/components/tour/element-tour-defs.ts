@@ -9,6 +9,7 @@ import { layerStackTourSteps } from './layer-stack-tour-steps';
 import { pyramidTourSteps } from './pyramid-tour-steps';
 import { funnelTourSteps } from './funnel-tour-steps';
 import { cycleTourSteps } from './cycle-tour-steps';
+import { hubTourSteps } from './hub-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -89,6 +90,13 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
     helpArticle: 'conceptGraphics',
     helpLabel: 'Concept Graphics Help',
     steps: (el, env) => cycleTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
+  },
+  hub: {
+    token: 'HubTour',
+    eyebrow: 'Hub and spoke tour',
+    helpArticle: 'conceptGraphics',
+    helpLabel: 'Concept Graphics Help',
+    steps: (el, env) => hubTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
   },
 };
 

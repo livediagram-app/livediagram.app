@@ -82,3 +82,12 @@ describe('the Cycle element tour kind', () => {
     expect(canTourElement({ level: 'participate' }, cycle, 'cycle')).toBe(false);
   });
 });
+
+describe('the Hub and Spoke element tour kind', () => {
+  it('tours a hub, for an Editor only', () => {
+    const hub = createShape('hub', 0, 0) as Element;
+    expect(elementTourKindOf(hub)).toBe('hub');
+    expect(canTourElement({ level: 'edit' }, hub, 'hub')).toBe(true);
+    expect(canTourElement({ level: 'view' }, hub, 'hub')).toBe(false);
+  });
+});

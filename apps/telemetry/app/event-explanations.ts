@@ -1179,6 +1179,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone reached the end of the Cycle tour, offered beside a selected cycle.',
   'UI|Ended|CycleTourSkipped':
     'Someone left the Cycle tour before its end, or the cycle it was on went away.',
+  'UI|Ended|HubTourCompleted':
+    'Someone reached the end of the Hub and Spoke tour, offered beside a selected hub and spoke.',
+  'UI|Ended|HubTourSkipped':
+    'Someone left the Hub and Spoke tour before its end, or the hub and spoke it was on went away.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1309,6 +1313,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Funnel tour was offered, as a small Tour toolbar beside a selected funnel (counted once per visit).',
   'UI|Opened|CycleTourOffer':
     'The Cycle tour was offered, as a small Tour toolbar beside a selected cycle (counted once per visit).',
+  'UI|Opened|HubTourOffer':
+    'The Hub and Spoke tour was offered, as a small Tour toolbar beside a selected hub and spoke (counted once per visit).',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
   'UI|Opened|DrawTourOffer':
@@ -1395,6 +1401,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected funnel, starting its tour.',
   'UI|Started|CycleTour':
     'Someone pressed Play on the Tour toolbar beside a selected cycle, starting its tour.',
+  'UI|Started|HubTour':
+    'Someone pressed Play on the Tour toolbar beside a selected hub and spoke, starting its tour.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1580,6 +1588,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › Element Tours › "Cycle Tour" in Settings, so it is offered again.',
   'UI|Toggled|CycleTourSeenOn':
     'Someone switched off Tours › Element Tours › "Cycle Tour" in Settings, so it is not offered.',
+  'UI|Toggled|HubTourSeenOff':
+    'Someone switched on Tours › Element Tours › "Hub and Spoke Tour" in Settings, so it is offered again.',
+  'UI|Toggled|HubTourSeenOn':
+    'Someone switched off Tours › Element Tours › "Hub and Spoke Tour" in Settings, so it is not offered.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -1727,6 +1739,20 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|CycleTourStepAnimate':
     'The Cycle tour reached its "Set It Turning" step, playing the Flow animation on the cycle.',
   'UI|View|CycleTourStepOutro': 'The Cycle tour reached its closing "That Is a Cycle" card.',
+  'UI|View|HubTourStepHub':
+    'The Hub and Spoke tour reached its "One Thing in the Middle" step, on the hub.',
+  'UI|View|HubTourStepSatellites':
+    'The Hub and Spoke tour reached its "Round It, Clockwise" step, on the whole hub and spoke.',
+  'UI|View|HubTourStepEdit':
+    'The Hub and Spoke tour reached its "Type Over a Satellite" step, on the first satellite.',
+  'UI|View|HubTourStepAdd':
+    'The Hub and Spoke tour reached its "Add a Satellite" step, with the "+" ring open on Add Satellite.',
+  'UI|View|HubTourStepSpokes':
+    'The Hub and Spoke tour reached its "Spokes or None" step, on the selection toolbar\'s More button.',
+  'UI|View|HubTourStepAnimate':
+    'The Hub and Spoke tour reached its "Light Them Up" step, playing the Pulse animation on the hub.',
+  'UI|View|HubTourStepOutro':
+    'The Hub and Spoke tour reached its closing "That Is a Hub and Spoke" card.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':

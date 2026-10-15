@@ -158,8 +158,9 @@ toolbar offers its [element tour](../007-editor/element-tours.md): on the graphi
 the "+" ring's add, the Rows section, the colour ramp and its animation previewed on it. Toured: the
 [layer stack](../007-editor/element-tours.md#the-layer-stack-tour), the
 [pyramid](../007-editor/element-tours.md#the-pyramid-tour), the
-[funnel](../007-editor/element-tours.md#the-funnel-tour) and the
-[cycle](../007-editor/element-tours.md#the-cycle-tour).
+[funnel](../007-editor/element-tours.md#the-funnel-tour), the
+[cycle](../007-editor/element-tours.md#the-cycle-tour) and the
+[hub and spoke](../007-editor/element-tours.md#the-hub-and-spoke-tour).
 
 ## Share roles
 

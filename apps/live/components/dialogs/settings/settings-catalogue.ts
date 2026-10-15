@@ -1233,6 +1233,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you select a cycle.',
         helpArticle: 'conceptGraphics',
       }),
+      elementTourSwitch('hub', {
+        label: 'Hub and Spoke Tour',
+        event: { category: 'UI', on: 'HubTourSeenOff', off: 'HubTourSeenOn' },
+        keywords: 'tour walkthrough tutorial hub spoke satellites ecosystem centre concept replay',
+        description: 'The first time you select a hub and spoke.',
+        helpArticle: 'conceptGraphics',
+      }),
     ],
   },
   {

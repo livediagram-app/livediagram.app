@@ -9,7 +9,7 @@ with a centred card) and [Show Me](show-me.md) (never offered, started from a bu
 tour offers itself, but quietly: a small toolbar that waits beside the selection, never a card over the canvas.
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
-[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel and cycle.
+[concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle and hub and spoke.
 
 ## Domain language
 
@@ -174,6 +174,20 @@ On the selected Cycle, from `cycle-tour-steps.ts`.
    previewed loop keeps going; a previewed Build plays once).
 7. **That Is a Cycle**: the closing card.
 
+## The Hub and Spoke tour
+
+On the selected Hub and spoke, from `hub-tour-steps.ts`.
+
+1. **One Thing in the Middle**: rings the hub (`data-tour-part="concept-centre"`); what everything touches.
+   Double-click (double-tap) to name it.
+2. **Round It, Clockwise**: rings the graphic, counting its satellites, evenly round the hub from twelve o'clock.
+3. **Type Over a Satellite**: rings the first satellite's name.
+4. **Add a Satellite**: the "+" ring open on **Add Satellite**; up to eight, spread evenly again.
+5. **Spokes or None** (only while More shows): rings More. Spokes turns the lines off, leaving the satellites
+   floating; Rows reorders them.
+6. **Light Them Up**: plays **Pulse** round the satellites as a preview while the step is up.
+7. **That Is a Hub and Spoke**: the closing card.
+
 ## Share roles
 
 | Role        | Element tours                                                                                  |
@@ -187,7 +201,7 @@ graphic, an Editor on an unlocked element, since its rows are structure), never 
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
   `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
@@ -199,6 +213,7 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   the Pyramid's `PyramidTourStepTiers`, `...Edit`, `...Add`, `...Shape`, `...Colours`, `...Animate` and `...Outro`;
   the Funnel's `FunnelTourStepStages`, `...Edit`, `...Values`, `...Add`, `...Shape`, `...Colours`, `...Animate` and
   `...Outro`; the Cycle's `CycleTourStepLoop`, `...First`, `...Centre`, `...Add`, `...Rows`, `...Animate` and
+  `...Outro`; the Hub's `HubTourStepHub`, `...Satellites`, `...Edit`, `...Add`, `...Spokes`, `...Animate` and
   `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
@@ -227,6 +242,6 @@ help article's tour section; and a section here.
 - `apps/live/components/tour/ElementTourOffer.tsx`: the offer toolbar.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
-  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`: each kind's own.
+  `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`: each kind's own.
 - `apps/live/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
 - `apps/live/lib/concept-tour-preview.ts`: the animation a step previews on a concept graphic.
