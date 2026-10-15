@@ -40,12 +40,26 @@ export function migrateStoredTab<
  */
 export function migrateIncomingTab(tab: unknown): unknown {
   if (!isRecord(tab) || !Array.isArray(tab.elements) || !tab.elements.every(isRecord)) return tab;
-  return migrateStoredTab(
-    tab as Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
+  const elements = tab.elements.length;
+  return readableOr(tab, elements, () =>
+    migrateStoredTab(tab as Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>),
   );
 }
 
 /** Untrusted elements (a paste, a file) through the stored-element migrations; non-objects dropped. */
 export function migrateIncomingElements(elements: readonly unknown[]): Element[] {
-  return migrateStoredElements(elements.filter(isRecord) as unknown as Element[]);
+  const records = elements.filter(isRecord) as unknown as Element[];
+  return readableOr(records, records.length, () => migrateStoredElements(records));
+}
+
+// The migrations run before validation and read an element's fields as their types (a chip's label as text): a
+// malformed element can make one throw. Untrusted input that does is handed back as it came, for validation to refuse
+// as it refuses any malformed input, never thrown out of an api route, a peer's op or an import.
+function readableOr<T>(received: T, elements: number, migrate: () => T): T {
+  try {
+    return migrate();
+  } catch {
+    console.warn('[migrate] incoming-unreadable', { elements });
+    return received;
+  }
 }

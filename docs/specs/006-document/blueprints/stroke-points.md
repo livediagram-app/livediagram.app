@@ -184,7 +184,9 @@ t)[i]`), tries `STROKE_FIT_START_TOLERANCE_PX` doubling up to `STROKE_FIT_MAX_PA
   dropped). Callers: the api's create and tab save (`migrateIncomingTab` before `isValidTab`),
   `migrateRoomOp` on every received room op (`tab`, `el` add and update),
   `parseElementsPayload` (clipboard) and `parseImportedTab` (tab file) via
-  `migrateIncomingElements` before `isValidElement`.
+  `migrateIncomingElements` before `isValidElement`. Neither guard throws: the migrations read an
+  element's fields as their types (a chip's label as text), so input that makes one throw is handed
+  back as it came, for validation to refuse.
 - **Versions:** `TAB_SCHEMA_VERSION` and `CLIPBOARD_SCHEMA_VERSION` become 2;
   `DOCUMENT_SCHEMA_VERSION` stays 1 (read only into the api's create).
 
@@ -291,10 +293,11 @@ fields from the type and compiling every workspace, plus the untyped entry point
 
 ## Observability
 
-| Fingerprint                   | Where                       | When                                                                          |
-| ----------------------------- | --------------------------- | ----------------------------------------------------------------------------- |
-| `[stroke-points] undecodable` | `decodeStrokePoints`        | A block failed to decode at draw time                                         |
-| `[stroke-points] migrated`    | `migrateLegacyStrokePoints` | Count of strokes converted, once per call that converted any (`console.info`) |
+| Fingerprint                     | Where                                           | When                                                                                          |
+| ------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `[stroke-points] undecodable`   | `decodeStrokePoints`                            | A block failed to decode at draw time                                                         |
+| `[stroke-points] migrated`      | `migrateLegacyStrokePoints`                     | Count of strokes converted, once per call that converted any (`console.info`)                 |
+| `[migrate] incoming-unreadable` | `migrateIncomingTab`, `migrateIncomingElements` | Untrusted input a migration threw on, handed back unmigrated (`console.warn`, `{ elements }`) |
 
 The api's existing `invalid tab` 400 covers a block that fails validation.
 
