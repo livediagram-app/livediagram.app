@@ -25,10 +25,12 @@ Switching the mode **on** writes these values, once:
 | Draw tour            | `drawTourSeen`       | seen  |
 | Avatar tour          | `avatarTourSeen`     | seen  |
 | Illustrate tour      | `illustrateTourSeen` | seen  |
+| Element tours        | `elementToursSeen`   | seen  |
 | AI suggested prompts | `aiSuggestedPrompts` | off   |
 | Minimal chrome       | `minimalChrome`      | on    |
 
-The Plan and Illustrate tours offer each of their tracks once (`planTourTracks`, `illustrateTourKinds`); their seen
+The Plan and Illustrate tours offer each of their tracks once (`planTourTracks`, `illustrateTourKinds`), and the
+[element tours](element-tours.md) each toured kind (`elementTourKinds`); their seen
 flag counts every track only while the mode is on, so switching it off gives back every track not yet answered.
 
 Panel opacity is not part of the preset. Motion is not part of the mode: every transition is snappy for everyone

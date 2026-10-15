@@ -1,0 +1,182 @@
+// The Sankey tour (docs/specs/007-editor/element-tours.md "The Sankey tour"): an element tour of the selected diagram.
+// It reads the diagram on the canvas first, lifting its widest band, its busiest node and a leftover as a hover
+// would, then opens the Flows dialog and carries on with the dialog's own Show Me steps, so the two never drift.
+import { sankeyFrame, type ShapeElement } from '@livediagram/document';
+import { balanceNotes, rowsFromFlows } from '@/lib/sankey-flow-rows';
+import type { SankeyTourFocus } from '@/lib/sankey-tour-focus';
+import {
+  sankeyFlowsTourSteps,
+  type SankeyFlowsTourApi,
+  type SankeyFlowsTourContext,
+} from './sankey-flows-tour-steps';
+import { waitForSelector } from './tour-dom';
+import { stepTelemetryType, type TourStepOf } from './tour-step';
+import { TARGET_WAIT_MS } from './useTourEngine';
+
+export type SankeyElementTourApi = SankeyFlowsTourApi & {
+  // Lifts one band or node of the toured diagram, or lets it go.
+  focus: (part: SankeyTourFocus['part'], index: number) => void;
+  clearFocus: () => void;
+  // Opens the diagram's Flows dialog, or closes it (a step back onto the canvas).
+  openFlows: () => void;
+  closeFlows: () => void;
+};
+
+type Step = TourStepOf<SankeyElementTourApi>;
+
+// What the diagram holds when Play is pressed, which fixes the steps for the whole tour.
+export type SankeyElementTourContext = {
+  elementId: string;
+  // The parts each canvas step lifts, as indices into the drawn layout; null leaves the step out.
+  band: number | null;
+  node: number | null;
+  leftover: number | null;
+  // The selection toolbar's More button is showing (not for a power user on a desktop, who right-clicks).
+  hasMore: boolean;
+  // A touch screen, which double-taps where a mouse double-clicks.
+  touch: boolean;
+  flows: SankeyFlowsTourContext;
+};
+
+// The selector of the toured diagram, or of one of its parts.
+function inElement(elementId: string, part = ''): string {
+  const id = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(elementId) : elementId;
+  return `[data-element-id="${id}"]${part ? ` ${part}` : ''}`;
+}
+
+// A step on the canvas: the dialog put away (a Back from it), the part lifted while the step is up.
+function canvasStep(
+  id: string,
+  title: string,
+  body: string,
+  selector: string,
+  lift?: { part: SankeyTourFocus['part']; index: number },
+): Step {
+  return {
+    id,
+    title,
+    body,
+    selector: () => selector,
+    prepare: (api) => {
+      api.closeFlows();
+      if (lift) api.focus(lift.part, lift.index);
+    },
+    cleanup: (api) => api.clearFocus(),
+  };
+}
+
+export function sankeyElementTourSteps(ctx: SankeyElementTourContext): Step[] {
+  const { elementId: id } = ctx;
+  const steps: Step[] = [];
+  if (ctx.band !== null)
+    steps.push(
+      canvasStep(
+        'bands',
+        'Bands Carry Amounts',
+        'Each band is as wide as the amount it carries, so the widest is where most of it goes. The readout gives its amount and its share.',
+        inElement(id, `[data-sankey-band="${ctx.band}"]`),
+        { part: 'band', index: ctx.band },
+      ),
+    );
+  if (ctx.node !== null)
+    steps.push(
+      canvasStep(
+        'nodes',
+        'Nodes Stand in Columns',
+        'A node is as tall as what passes through it. Columns step left to right from where the flows start.',
+        inElement(id, `[data-sankey-node="${ctx.node}"]`),
+        { part: 'node', index: ctx.node },
+      ),
+    );
+  if (ctx.leftover !== null)
+    steps.push(
+      canvasStep(
+        'leftover',
+        'What Is Left Over',
+        'What a node keeps back runs on to Leftover, in grey. It is worked out, never typed, so it follows the amounts.',
+        inElement(id, `[data-sankey-band="${ctx.leftover}"]`),
+        { part: 'band', index: ctx.leftover },
+      ),
+    );
+  if (ctx.hasMore)
+    steps.push(
+      canvasStep(
+        'style',
+        'Style It',
+        'Under Sankey in the menu: band colours, columns, labels, the unit, and an animation.',
+        '#selection-more-actions',
+      ),
+    );
+  steps.push(
+    canvasStep(
+      'flows',
+      'Write the Flows',
+      `${ctx.touch ? 'Double-tap' : 'Double-click'} a Sankey to open its flows. Next opens them for you.`,
+      inElement(id),
+    ),
+  );
+  // The Flows dialog's own steps, run inside it: each opens it (again, if it was closed) and waits for it.
+  for (const step of sankeyFlowsTourSteps(ctx.flows)) {
+    if (step.card) continue;
+    steps.push({
+      ...step,
+      id: `flows-${step.id}`,
+      layer: 'modal',
+      prepare: async (api) => {
+        api.openFlows();
+        await waitForSelector('[data-tour-id="sankey-preview"]', TARGET_WAIT_MS);
+        await step.prepare?.(api);
+      },
+    });
+  }
+  steps.push({
+    id: 'outro',
+    card: 'outro',
+    title: 'That Is a Sankey',
+    body: 'Every change is one undo step. Show Me in the Flows dialog runs its part again.',
+  });
+  return steps;
+}
+
+// The parts the canvas steps lift, read from the diagram as it is drawn: the widest stored band, the node with the
+// most flows in and out (a middle one first, since it shows both), and the widest leftover band.
+export function sankeyTourParts(
+  element: ShapeElement,
+): Pick<SankeyElementTourContext, 'band' | 'node' | 'leftover'> {
+  const frame = sankeyFrame(element);
+  const { links, nodes } = frame.layout;
+  let band: number | null = null;
+  let leftover: number | null = null;
+  links.forEach((b, i) => {
+    if (frame.leftover(b)) {
+      if (leftover === null || b.value > links[leftover]!.value) leftover = i;
+    } else if (band === null || b.value > links[band]!.value) band = i;
+  });
+  let node: number | null = null;
+  let best = -1;
+  for (const n of nodes) {
+    const degree = links.filter((b) => b.source === n.index || b.target === n.index).length;
+    const middle = n.inflow > 0 && n.outflow > 0 ? 1000 : 0;
+    const score = middle + degree * 10 + Math.min(9, n.value / Math.max(1, frame.layout.total));
+    if (score > best) {
+      best = score;
+      node = n.index;
+    }
+  }
+  return { band, node, leftover };
+}
+
+// What the Flows dialog will show, worked out as it does, so its steps are fixed with the rest.
+export function sankeyFlowsContextOf(element: ShapeElement): SankeyFlowsTourContext {
+  const rows = rowsFromFlows(element.sankeyFlows ?? []);
+  return {
+    hasNodes: (element.sankeyFlows ?? []).length > 0,
+    hasBalanceNotes:
+      balanceNotes(rows, element.sankeyUnit, element.sankeyLeftover !== 'hide').length > 0,
+  };
+}
+
+// Telemetry `type` for a step view: 'flows-add' → 'SankeyTourStepFlowsAdd'.
+export function sankeyTourStepTelemetryType(stepId: string): string {
+  return stepTelemetryType('SankeyTourStep', stepId);
+}

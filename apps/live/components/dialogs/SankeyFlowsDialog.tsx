@@ -9,7 +9,10 @@
 // cell's blur or at once for a structural change, one undo step each. A store that would change nothing is
 // skipped, so tabbing through cells leaves no empty undo steps.
 
-import { useMemo, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
+import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
+import { useActiveTour } from '@/lib/tour-active';
 import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import {
   parseSankeyText,
@@ -159,12 +162,25 @@ export function SankeyFlowsDialog({
     { showTable: () => switchTab('table'), showText: () => switchTab('text') },
   );
 
+  // The Sankey element tour runs these same steps from outside (docs/specs/007-editor/element-tours.md): it switches
+  // the tabs through this handle, and while it runs Escape is its own, as Show Me's is.
+  const switchTabRef = useLatest(switchTab);
+  useLayoutEffect(
+    () =>
+      registerSankeyFlowsDialog({
+        showTable: () => switchTabRef.current('table'),
+        showText: () => switchTabRef.current('text'),
+      }),
+    [switchTabRef],
+  );
+  const elementTourRunning = useActiveTour() === 'element';
+
   return (
     <Dialog
       open
       onClose={close}
-      // While Show Me runs, Escape is the tour's, never the dialog's.
-      closeOnEscape={!tour.active}
+      // While Show Me (or the element tour) runs, Escape is the tour's, never the dialog's.
+      closeOnEscape={!tour.active && !elementTourRunning}
       ariaLabel="Edit Sankey flows"
       size="3xl"
       className="max-h-[90vh]"

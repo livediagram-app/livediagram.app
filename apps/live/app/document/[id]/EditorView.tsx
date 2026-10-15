@@ -132,6 +132,12 @@ const DrawTourHost = dynamic(
   () => import('@/components/tour/DrawTourHost').then((m) => m.DrawTourHost),
   { ssr: false },
 );
+// Element tours (docs/specs/007-editor/element-tours.md): offered beside the selection toolbar of a toured element
+// kind, so mounted with the editor; its chunk stays out of the first load.
+const ElementTourHost = dynamic(
+  () => import('@/components/tour/ElementTourHost').then((m) => m.ElementTourHost),
+  { ssr: false },
+);
 // The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the same, the first time the person walks as an avatar.
 const AvatarTourHost = dynamic(
   () => import('@/components/tour/AvatarTourHost').then((m) => m.AvatarTourHost),
@@ -731,6 +737,7 @@ export function EditorView() {
                                   {/* The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the first time a person walks as an avatar. */}
                                   {mountAvatarTour ? <AvatarTourHost /> : null}
                                   {mountIllustrateTour ? <IllustrateTourHost /> : null}
+                                  <ElementTourHost />
                                 </AreaErrorBoundary>
 
                                 {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above

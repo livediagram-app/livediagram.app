@@ -5,7 +5,8 @@ the **Show Me** button. It is the on-demand cousin of the mode tours (the [Diagr
 [Plan tour](../026-plan/plan-tour.md) and the [Facilitate tour](../012-collaboration/facilitate-tour.md)), which
 offer themselves once; Show Me never offers itself. It exists for surfaces where people make something real in
 several steps whose ideas are not visible at a glance, and where a tour that offered itself would come at the
-wrong moment.
+wrong moment. An [element tour](element-tours.md) sits between the two: it offers itself, but quietly, from a small
+toolbar beside a selected element.
 
 ## Domain language
 

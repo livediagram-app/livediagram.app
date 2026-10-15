@@ -1,0 +1,51 @@
+// Element tours' kinds, gate and answers (docs/specs/007-editor/element-tours.md "Remembering answers", "Share roles").
+
+import { describe, expect, it } from 'vitest';
+import { createShape, type Element } from '@livediagram/document';
+import {
+  canTourElement,
+  elementTourKindOf,
+  elementTourSeen,
+  markElementTourSeen,
+  offerElementTourAgain,
+} from './element-tours';
+
+const sankey = createShape('sankey', 0, 0) as Element;
+
+describe('element tours', () => {
+  it('tours a Sankey and nothing else yet', () => {
+    expect(elementTourKindOf(sankey)).toBe('sankey');
+    expect(elementTourKindOf(createShape('square', 0, 0) as Element)).toBeNull();
+    expect(elementTourKindOf(null)).toBeNull();
+  });
+
+  it('offers it only to whoever may edit the element', () => {
+    expect(canTourElement({ level: 'edit' }, sankey, 'sankey')).toBe(true);
+    expect(canTourElement({ level: 'participate' }, sankey, 'sankey')).toBe(false);
+    expect(canTourElement({ level: 'view' }, sankey, 'sankey')).toBe(false);
+    expect(canTourElement({ level: 'edit' }, { ...sankey, locked: true }, 'sankey')).toBe(false);
+  });
+
+  it('remembers an answer, and counts every kind seen for a power user only', () => {
+    expect(elementTourSeen({}, 'sankey')).toBe(false);
+    expect(elementTourSeen(markElementTourSeen({}, 'sankey'), 'sankey')).toBe(true);
+    expect(elementTourSeen({ elementToursSeen: true }, 'sankey')).toBe(false);
+    expect(elementTourSeen({ elementToursSeen: true, powerUserMode: true }, 'sankey')).toBe(true);
+  });
+
+  it('marks an answer once', () => {
+    const once = markElementTourSeen({}, 'sankey');
+    expect(markElementTourSeen(once, 'sankey')).toEqual({ elementTourKinds: ['sankey'] });
+  });
+
+  it('offers a kind again, even to a power user', () => {
+    const power = {
+      powerUserMode: true,
+      elementToursSeen: true,
+      elementTourKinds: ['sankey' as const],
+    };
+    const again = offerElementTourAgain(power, 'sankey');
+    expect(elementTourSeen(again, 'sankey')).toBe(false);
+    expect(again.elementToursSeen).toBe(false);
+  });
+});
