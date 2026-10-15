@@ -30,7 +30,7 @@ import { usePlan } from '@/components/plan/PlanContext';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { FormActions } from '@/hooks/forms/useFormActions';
 import { useFormLink } from '@/hooks/forms/useFormLink';
-import { boardsOf, sheetsOf } from '@/hooks/forms/form-start';
+import { boardsOf, sheetsOf } from '@livediagram/templates';
 import { sendPreview } from '@/hooks/forms/form-preview';
 import { apiSendFormPreview } from '@/lib/api/forms';
 import { FormBuilderContext, type FormBuilderValue } from './builder/form-builder-context';

@@ -14,8 +14,8 @@ import { boardAddTypes } from '@livediagram/items';
 import { PencilIcon, Select, Tooltip } from '@livediagram/ui';
 import { usePlan } from '@/components/plan/PlanContext';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
-import { boardsOf, sheetsOf } from '@/hooks/forms/form-start';
-import { patchForm } from '@/hooks/forms/form-edits';
+import { boardsOf, sheetsOf } from '@livediagram/templates';
+import { patchForm } from '@livediagram/forms';
 import { useFormBuilder } from './form-builder-context';
 
 // The value of each select's last choice, New Board or New Card Type.

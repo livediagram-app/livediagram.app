@@ -40,6 +40,7 @@ import { chartsReadLive } from '@livediagram/agent-verbs';
 import { svgToPngBase64 } from './render';
 import { INTER_ITALIC, previewFonts } from './preview-fonts';
 import { planPreviewFor } from './plan-preview';
+import { formPreview } from './form-preview';
 import { coversAnother } from './board-growth';
 import { apiFetch, apiJson } from './api';
 import type { Env } from './env';
@@ -157,6 +158,9 @@ export async function tabPreview(
   // One page of an Illustrate tab to draw alone (read_document's `page`); every page when absent.
   page?: LaidOutPage,
 ): Promise<ImageBlock> {
+  // A Form tab draws as its form, as respondents see it.
+  const form = await formPreview(tab);
+  if (form) return form;
   // An Illustrate tab draws as its pages (svg-render-pages.ts), as the editor exports them.
   if (laidOutPagesOf(tab).length > 0) {
     // Its pictures, its Plan cards and sheets (a sheet or a sheet-linked chart on a page draws what it holds, as on any

@@ -611,3 +611,86 @@ describe('reports (docs/specs/030-forms/forms.md "Report This Form")', () => {
     expect((await owner('POST', 'form-link')).body).toMatchObject({ error: 'form_suspensions' });
   });
 });
+
+describe('an agent’s form write (docs/specs/030-forms/forms.md "Agents")', () => {
+  const write = (f: unknown, opts: { owner?: string; code?: string; rev?: number } = {}) =>
+    owner<{ error?: string; rev?: number; name?: string }>('POST', 'form', {
+      ...(opts.owner ? { owner: opts.owner } : {}),
+      ...(opts.code ? { code: opts.code } : {}),
+      body: { form: f, ...(opts.rev === undefined ? {} : { rev: opts.rev }) },
+    });
+  const stored = () => {
+    const row = sql.sql.prepare(`SELECT name, rev, data FROM tabs WHERE id = 'ftab'`).get() as {
+      name: string;
+      rev: number;
+      data: string;
+    };
+    return { name: row.name, rev: row.rev, form: JSON.parse(row.data).form as FormDefinition };
+  };
+
+  it('replaces the form at the revision read, the tab taking its heading, and tells open editors', async () => {
+    const res = await write(form({ heading: 'Crash Report' }), { rev: stored().rev });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ name: 'Crash Report', rev: stored().rev });
+    expect(stored()).toMatchObject({ name: 'Crash Report', form: { heading: 'Crash Report' } });
+    expect(relayed.at(-1)?.op).toMatchObject({
+      kind: 'tab-meta',
+      tabId: 'ftab',
+      patch: { name: 'Crash Report', form: { heading: 'Crash Report' } },
+    });
+  });
+
+  it('gives the tab a theme sent with the form, and tells open editors', async () => {
+    expect((await owner('POST', 'form', { body: { form: form(), theme: 'forest' } })).status).toBe(
+      200,
+    );
+    const row = sql.sql.prepare(`SELECT data FROM tabs WHERE id = 'ftab'`).get() as {
+      data: string;
+    };
+    expect(JSON.parse(row.data).theme).toBe('forest');
+    expect(relayed.at(-1)?.op).toMatchObject({ kind: 'tab-meta', patch: { theme: 'forest' } });
+    expect((await owner('POST', 'form', { body: { form: form(), theme: 7 } })).status).toBe(400);
+  });
+
+  it('refuses a form changed since it was read, naming the revision', async () => {
+    const res = await write(form({ heading: 'X' }), { rev: stored().rev - 1 });
+    expect(res.status).toBe(409);
+    expect(res.body).toMatchObject({ error: 'form_changed', rev: stored().rev });
+    expect(stored().name).toBe('Bug Report');
+  });
+
+  it('is an Editor’s: a Participant or a Viewer is refused', async () => {
+    expect((await write(form({ heading: 'X' }), { owner: 'guest', code: 'PART' })).status).toBe(
+      403,
+    );
+    expect((await write(form({ heading: 'X' }), { owner: 'guest', code: 'VIEW' })).status).toBe(
+      403,
+    );
+    expect((await write(form({ heading: 'X' }), { owner: 'guest', code: 'EDIT' })).status).toBe(
+      200,
+    );
+  });
+
+  it('locks a form taking responses but its settings, and frees it once closed', async () => {
+    await publish();
+    const locked = await write(form({ heading: 'Crash Report' }));
+    expect(locked).toMatchObject({ status: 409, body: { error: 'form_locked' } });
+    expect(stored().name).toBe('Bug Report');
+    expect((await write(form({ limit: 50, confirmation: 'Thanks!' }))).status).toBe(200);
+    expect(stored().form).toMatchObject({ limit: 50, confirmation: 'Thanks!' });
+    expect((await owner('PUT', 'form-link', { body: { open: false } })).status).toBe(200);
+    expect((await write(form({ heading: 'Crash Report' }))).status).toBe(200);
+  });
+
+  it('refuses a tab that holds no form, and a body that is no form', async () => {
+    const other = makeTestRouteContext('POST', '/api/documents/d1/tabs/board/form', {
+      env: sql.env,
+      owner: 'owner',
+      body: { form: form() },
+    });
+    const res = await handleDocuments(other);
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { error: string }).error).toBe('not_a_form_tab');
+    expect((await write('nope')).body.error).toBe('invalid_body');
+  });
+});

@@ -14,7 +14,7 @@ import {
 import { Select, TextInput } from '@livediagram/ui';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
-import { updateQuestion } from '@/hooks/forms/form-edits';
+import { updateQuestion } from '@livediagram/forms';
 import { DraftText } from './DraftText';
 import { useFormBuilder } from './form-builder-context';
 

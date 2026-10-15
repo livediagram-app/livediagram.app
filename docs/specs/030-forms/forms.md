@@ -571,9 +571,83 @@ session can add content elsewhere, never to a form.
 
 ## Agents
 
-The MCP server's `list_items` and `change_items` see a form's cards as any cards (`fromForm` among their fields).
-`read_document` shows a Form tab as `kind=form`. Reading a form's questions, and building or publishing forms through
-an agent, are later steps.
+An agent builds, reads and publishes a form as an Editor does, through four MCP tools
+([MCP server](../015-api/mcp-server.md) §4.9e) and the CLI's `form` commands, one engine for both
+(`packages/agent-verbs/src/forms/`). A form's responses stay what they are everywhere: cards (`list_items`,
+`change_items`, `fromForm` among their fields) or rows (`read_sheet`). `read_document` shows a Form tab as `kind=form`
+and names `read_form` for it.
+
+The bar: an agent asked for "an RSVP form for the party, send me the link" makes a form someone would publish as it
+stands, its answers landing where a person would have sent them, and hands back a link that works, in a few calls.
+
+**Named as the builder names them.** Questions by id or prompt (case aside), sections by id, title or place (`1` the
+first), a destination's board by its tab's name or the board's title, its card type and column by name, a sheet by
+its name in Responses Go To ("Budget", "Budget 2"), and a mapping by the card field's name. An unknown name is refused
+with the ones there are. Question types go by their ids (`short`, `paragraph`, `number`, `email`, `link`, `date`,
+`single`, `multi`, `rating`, `checkbox`), each described with the builder's name for it.
+
+- **`read_form`** (read): the Form tab named (or the document's first): its heading and description, its sections
+  in order (each with its rule as the question's prompt and the answers), each question with every setting it has
+  and where its answer goes (**Title**, **Description**, or the field's name; a broken mapping says it fell back),
+  where responses go (the board, card type and column, or the sheet, by name; or nowhere, and why), its settings
+  (Close On as an ISO time, the limit, the two messages), its **state** (`draft` for a document kept on a device,
+  `not_published`, `accepting`, `closed` with why, `paused`, `suspended`), the response count, the **form link**
+  (an Editor's only, as the api hands out the code) and its **problems** in Share Form's words. With `image`, a
+  picture of the form as respondents see it on its tab's look.
+- **`add_form`** (write): a new Form tab after the document's last tab, from a **starter** (`bug-report`, `feedback`,
+  `feature-request`, `rsvp`, `job-application`, `contact`; everything Start Planning makes with it) or from
+  **questions** (or **sections** of them), named by `name` (the form's heading and the tab's), in the document's
+  theme unless given one. With no `documentId` it makes a new document named after the form first, its one tab the
+  Form tab (and a responses tab after it). **Responses go** (`respondsTo`):
+  - `{ to: "board" }`: to a new Board tab "<Form> Responses" (New, In Progress, Done) taking the form's card type
+    alone, so it shows only responses; with
+    `board`, an existing one, its first column unless `column` names one, its card type `cardType` (by name) or the
+    board's first;
+  - `{ to: "sheet" }`: to a new Sheet tab "<Form> Responses", as + New Sheet does, its sheet named after the tab and
+    given its header row at once (`#`, `Submitted`, each question; bold, frozen), as the first response would write
+    it, so it reads as the form's before anyone answers; with `sheet`, an existing one;
+  - left out: a starter's own way; for questions, a new board.
+    A board form's card type is the one named (one the document lacks is the ready-made type of that name, brought in,
+    else a new type of that name), or a new type named after the form (as + New Card Type), which a board confining
+    its types also takes. A question's `goesTo` (`title`, `description`, or a field's name) maps its answer: a name
+    the card type lacks makes that field, of the kind the question's type makes (New Field), options included; a
+    choice with **Other** gets a text field (Long Text for Multiple Choice), as its Other answer is no option of a
+    choice field; a new choice or rating field is drawn on the card face, as a starter's are. A first section's
+    description given to `add_form` is the form's description, and a title given it is said not to show. A Close On
+    time with no offset is UTC. Each problem `read_form` lists names its question or section.
+    `read_form`'s picture flows a long form into a second column, a section heading never ending a column without its
+    first question, and says how many questions it could not fit.
+- **`change_form`** (destructive, as it deletes): up to 50 changes in order, applied as one write and one undo step
+  for people: `add_question` `{ question, section?, after?, before? }`, `set_question` `{ question, set }` (a type change
+  keeps what the new type can use, as the type button does), `delete_question`, `move_question`
+  `{ question, section?, after?, before? }` (`before` the first question puts it first), `add_section` `{ title?, description?, after? }` (after a question splits there,
+  as Add Section does; else an empty section at the end), `set_section` `{ section, title?, description?,
+showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the section before), `set_form`
+  `{ heading?, description?, cover?, theme? }` (the theme is the Form tab's, which the form's look follows), `settings` `{ closesAt?, limit?, confirmation?, closedMessage? }` (null
+  clears one) and `responds_to` (as `add_form`'s). Each is checked as the builder checks it (limits, unique options,
+  a mapping that fits, a rule on an earlier choice), and a refusal writes nothing and names the change. A sheet
+  form's sheet gains a header for each question it lacks one for, after its last header (bold, its width fitted), as a response would
+  write it; it is read for this only when the form now asks for a header it did not. `read_form` names each
+  question's sheet column (`column`) on a sheet form.
+- **`share_form`** (write): `publish` (makes the form link; on a closed form, opens it again), `close`, or
+  `delete_link`. A form with problems is refused with every problem, as Share Form lists them. The answer is the
+  state, the link and the count.
+- **A live form is locked for agents too**: while it takes responses, `change_form` refuses every change but
+  `settings`, saying to close it with `share_form` first (its link stays); the api refuses a changeset that changes
+  anything else about it (`form_locked`), whoever sends it.
+- **Share roles**: reading needs read access to the tab; the link's code only ever reaches an Editor; building and
+  publishing are an Editor's, as the api gates them (a Participant's or Viewer's token is refused).
+- **How it is written**: a new Form tab is a changeset whose `replace` names its `form` (the form whole, read by the
+  same sanitiser the editor reads with), so it lists in the document's changes as the agent's. An existing form is
+  replaced through its own route, `POST /api/documents/:id/tabs/:tabId/form` `{ form, rev }`, at the revision the
+  agent read (409 `form_changed` when someone changed it since), relayed to open editors as an editor's own edit;
+  a changeset never replaces an existing form (it writes and relays elements, and a form is none). Card types are
+  saved as `change_card_types` saves them, at their revision; a new responses board or sheet is a changeset that
+  makes a Board or Sheet tab (`replace` of elements with `kind`), its sheet made under the id the form names. Every
+  check is made before anything is written, so a refusal leaves the document as it was.
+- **The CLI**: `form get`, `form add` (`--starter`, or `--from` a JSON file of `add_form` input), `form change` (a
+  JSON file of changes, or stdin) and `form share` (`publish`, `close`, `delete_link`).
+- An empty list of changes is a read: nothing is written.
 
 ## Telemetry
 
@@ -600,7 +674,6 @@ Every chart is on the public dashboard's **Forms** stack.
 - Signing in to respond, one response per person, editing a response after submitting.
 - File uploads, logic that skips sections by an answer, quizzes and scores.
 - A responses summary of charts per question (a Dashboard over the board covers it for now).
-- Building or publishing forms through the MCP server or the CLI.
 - A QR code of the form link, and importing questions from another form.
 - A cover image (a cover is a slide background in colour): an image would join the image store's reference index.
 - Dragging a choice's options (Alt+Up and Alt+Down move them).

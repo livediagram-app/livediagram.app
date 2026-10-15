@@ -324,7 +324,14 @@ adds the rest, each change an object such as {"op": "add", "kind": "slide",
 change_pages on it); the Illustrate templates (article, slide-deck, logo-design, ...) start
 from ready-made pages. A layout's elements hold sample text: read_document with
 view "pages" lists each page's elements with their refs and text, to replace
-with update_document. It also shows each article as Markdown.`;
+with update_document. It also shows each article as Markdown.
+Form tabs hold forms (like Google Forms): questions anyone fills in from a link,
+without an account, each response a card on a Board tab or a row in a sheet.
+add_form makes one (from a starter or questions, in a document of its own when
+no documentId is given), change_form changes it, read_form reads it with its
+link, state and anything stopping it being published, and share_form publishes,
+closes or deletes its link. Asked for a form, survey, sign-up or RSVP, make a
+form; its responses are read with list_items (cards) or read_sheet (rows).`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---

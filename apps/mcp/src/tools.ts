@@ -81,6 +81,7 @@ import { registerTool } from './tool-annotations';
 import { registerPlanTools } from './plan-tools';
 import { registerSheetTools } from './sheet-tools';
 import { registerIllustrateTools } from './illustrate-tools';
+import { registerFormTools } from './form-tools';
 import {
   createDocumentTab,
   mcpAddTab,
@@ -103,6 +104,7 @@ export function registerTools(server: McpServer, env: Env): void {
   // Sheets, by title and A1 (docs/specs/029-sheets/sheet-store.md "Agents").
   registerSheetTools(server, env);
   registerIllustrateTools(server, env);
+  registerFormTools(server, env);
   registerTool(server, env, mcpFindDocuments, async (args, extra) => {
     const token = requireToken(extra as Extra);
     // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a document filed into a

@@ -21,6 +21,7 @@
     "@livediagram/diagram-lint": "workspace:*",
     "@livediagram/document": "workspace:*",
     "@livediagram/edit-operations": "workspace:*",
+    "@livediagram/forms": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/items": "workspace:*",
     "@livediagram/plan-art": "workspace:*",

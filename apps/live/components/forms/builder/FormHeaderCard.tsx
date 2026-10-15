@@ -13,7 +13,7 @@ import {
   type FormSection,
 } from '@livediagram/forms';
 import { TrashIcon, Tooltip } from '@livediagram/ui';
-import { patchForm, deleteSection, updateSection } from '@/hooks/forms/form-edits';
+import { patchForm, deleteSection, updateSection } from '@livediagram/forms';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { BackgroundSection } from '@/components/canvas/page-background-section';
 import { EditorContext } from '@/app/document/[id]/EditorContext';

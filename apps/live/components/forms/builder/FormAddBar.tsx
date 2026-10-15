@@ -18,7 +18,7 @@ import {
   canAddQuestion,
   canAddSection,
   questionById,
-} from '@/hooks/forms/form-edits';
+} from '@livediagram/forms';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { track } from '@/lib/telemetry';
 import { QuestionTypeList } from './QuestionTypeMenu';

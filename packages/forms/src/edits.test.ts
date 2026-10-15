@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { QUESTIONS_MAX, SECTIONS_MAX, questionsOf, type FormDefinition } from '@livediagram/forms';
+import { QUESTIONS_MAX, SECTIONS_MAX, questionsOf, type FormDefinition } from './index';
 import {
   addQuestion,
   addSection,
@@ -20,7 +20,7 @@ import {
   setTarget,
   updateQuestion,
   updateSection,
-} from './form-edits';
+} from './edits';
 
 // docs/specs/030-forms/forms.md "Building a form": each edit pure, one form in, the next out.
 
@@ -189,6 +189,23 @@ describe('changing a question', () => {
   });
 });
 
+describe('changing type between the choices', () => {
+  it('carries the options there are and Other only when set', () => {
+    const bare = {
+      ...form(),
+      sections: [
+        { id: 's', title: '', questions: [{ id: 'q', type: 'single' as const, prompt: 'P' }] },
+      ],
+    };
+    expect(questionById(setQuestionType(bare, 'q', 'multi'), 'q')).toEqual({
+      id: 'q',
+      type: 'multi',
+      prompt: 'P',
+      options: [],
+    });
+  });
+});
+
 describe('options', () => {
   it('sets, names and pastes options', () => {
     expect(questionById(setOptions(form(), 'q-b', ['P']), 'q-b')?.options).toEqual(['P']);
@@ -231,6 +248,18 @@ describe('sections', () => {
     const g = form();
     expect(deleteSection(g, 's-1')).toBe(g);
     expect(deleteSection(g, 'nope')).toBe(g);
+  });
+});
+
+describe('a section rule', () => {
+  it('keeps a rule with answers and drops one without', () => {
+    const rule = { questionId: 'q-b', anyOf: ['X'] };
+    expect(updateSection(form(), 's-2', { showIf: rule }).sections[1]!.showIf).toEqual(rule);
+    const kept = updateSection(form(), 's-2', { showIf: rule });
+    expect(updateSection(kept, 's-2', { title: 'Later' }).sections[1]!.showIf).toEqual(rule);
+    expect(
+      updateSection(kept, 's-2', { showIf: { questionId: 'q-b', anyOf: [] } }).sections[1],
+    ).not.toHaveProperty('showIf');
   });
 });
 

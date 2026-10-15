@@ -33,10 +33,13 @@ export function sheetDestinationProblem(
     : 'sheet_missing';
 }
 
-// `boards`: the board set-ups on the destination's tab (none when the tab is gone or is no Board tab).
+// `boards`: the board set-ups on the destination's tab (none when the tab is gone or is no Board tab); only their
+// columns, the types they take and whether they are an Archive are read, so an agent's board outline serves too.
 export function destinationProblem(
   destination: FormDestination | undefined,
-  boards: readonly PlanBoardSetup[],
+  boards: readonly (Pick<PlanBoardSetup, 'addTypes' | 'archive'> & {
+    columns: readonly { status: string }[];
+  })[],
   types: readonly ItemTypeDef[],
 ): DestinationProblem | null {
   if (!destination) return 'no_destination';

@@ -97,3 +97,39 @@ describe('GET /documents/:id/plan', () => {
     expect((await get()).body.boards).toHaveLength(PLAN_TAB_BATCH + 5);
   });
 });
+
+describe('the plan’s tabs (docs/specs/026-plan/plan-agents.md "Reading the plan": tabs)', () => {
+  const sheet = (id: string, sheetId: string) => ({
+    id,
+    type: 'shape',
+    shape: 'plan-sheet',
+    planSheet: { sheetId },
+  });
+  function kinded(id: string, order: number, kind: string, elements: unknown[], theme?: string) {
+    sql.sql
+      .prepare(`INSERT INTO tabs (id, name, data, updated_at) VALUES (?, ?, ?, 1)`)
+      .run(id, `Tab ${id}`, JSON.stringify({ kind, elements, ...(theme ? { theme } : {}) }));
+    sql.sql
+      .prepare(
+        `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
+      )
+      .run(id, order);
+  }
+
+  it('lists every tab in order with its kind, and a Sheet tab’s sheets in canvas order', async () => {
+    kinded('s1', 2, 'sheet', [sheet('e2', 'sheet_b'), sheet('e1', 'sheet_a')]);
+    kinded('f1', 3, 'form', [], 'ocean');
+    const res = await get();
+    expect(res.body.tabs).toEqual([
+      { id: 't1', name: 'Tab t1', kind: 'diagram' },
+      { id: 't2', name: 'Tab t2', kind: 'diagram' },
+      { id: 's1', name: 'Tab s1', kind: 'sheet', sheetIds: ['sheet_b', 'sheet_a'] },
+      { id: 'f1', name: 'Tab f1', kind: 'form', theme: 'ocean' },
+    ]);
+  });
+
+  it('names only its own tab to a tab-scoped link', async () => {
+    const scoped = await get('/plan?tabId=t2', { owner: 'visitor', code: 'TAB2' });
+    expect(scoped.body.tabs?.map((t) => t.id)).toEqual(['t2']);
+  });
+});

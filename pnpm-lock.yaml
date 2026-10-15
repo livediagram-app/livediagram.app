@@ -608,6 +608,9 @@ importers:
       '@livediagram/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../../packages/forms
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
@@ -784,9 +787,15 @@ importers:
       '@livediagram/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../forms
       '@livediagram/items':
         specifier: workspace:*
         version: link:../items
+      '@livediagram/page-background':
+        specifier: workspace:*
+        version: link:../page-background
       '@livediagram/sheets':
         specifier: workspace:*
         version: link:../sheets
@@ -987,6 +996,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../forms
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons
@@ -1244,6 +1256,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/forms':
+        specifier: workspace:*
+        version: link:../forms
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons
