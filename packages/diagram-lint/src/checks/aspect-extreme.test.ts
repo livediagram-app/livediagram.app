@@ -40,7 +40,7 @@ describe('aspect-extreme', () => {
       box('b', 300, 0, { height: 0 }),
       box('c', 600, 0, { height: 0 }),
     ];
-    expect(of(lint(tabOf(...flat)), 'aspect-extreme')).toEqual([]);
+    expect(of(lint(tabOf(...flat), { source: 'graph' }), 'aspect-extreme')).toEqual([]);
   });
 
   it('stays quiet on an Illustrate tab, whose pages fix its shape (a row of slides)', () => {

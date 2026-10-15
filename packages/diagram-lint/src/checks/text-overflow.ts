@@ -59,17 +59,20 @@ function inkOf(t: BoxedElement & { label: string }): {
       : ay === 'bottom'
         ? t.y + t.height - pad - block
         : t.y + t.height / 2 - block / 2;
-  const slack = px * INK_SLACK_EM;
+  const [above, below] = [px * INK_SLACK_EM, px * INK_SLACK_BELOW_EM];
   return {
-    ink: { x, y: top + slack, width, height: Math.max(0, block - 2 * slack) },
+    ink: { x, y: top + above, width, height: Math.max(0, block - above - below) },
     lines: wrapped.length,
     px,
     measure,
   };
 }
 
-// The share of the font size each line's top and bottom leading takes, where no glyph is drawn.
+// The share of the font size a block's top and bottom take where no glyph is drawn: above a capital there is leading
+// and the ascender's room, but a descender ("g", "p") reaches almost to a line's foot, so a heading wrapped onto the
+// subtitle under it was let off by the room a descender fills.
 const INK_SLACK_EM = 0.2;
+const INK_SLACK_BELOW_EM = 0.05;
 
 const inkOverlap = (a: Ink, b: Ink) =>
   Math.min(

@@ -84,6 +84,29 @@ describe('text-overflow', () => {
     expect(found.map((f) => f.message)).toEqual([expect.stringMatching(/prints over/)]);
   });
 
+  it('counts a wrapped heading’s descenders, which reach the foot of its last line', () => {
+    // A brainstorm column's heading wrapped in its box: "onboarding" hangs onto the subtitle under it.
+    const heading = text('h', 764, 130, 'Smoother onboarding', {
+      width: 280,
+      height: 48,
+      textSize: 'lg',
+      textAlignX: 'left',
+    });
+    const subtitle = text('s', 764, 178, 'Get people to their first win fast', {
+      width: 320,
+      height: 28,
+      textSize: 'sm',
+      textAlignX: 'left',
+    });
+    expect(of(lint(tabOf(heading, subtitle)), 'text-overflow').map((f) => f.message)).toEqual([
+      expect.stringMatching(/prints over/),
+    ]);
+    // On one line it clears the subtitle.
+    expect(
+      of(lint(tabOf({ ...heading, label: 'Onboarding' } as Element, subtitle)), 'text-overflow'),
+    ).toEqual([]);
+  });
+
   it('leaves turned text out, drawn across its box', () => {
     const axis = text('a', 0, 0, 'Likelihood', { width: 300, height: 30, rotation: -90 });
     const label = text('l', 0, 10, 'Possible');
