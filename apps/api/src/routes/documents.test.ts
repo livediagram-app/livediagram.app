@@ -69,6 +69,7 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     listSharedWith: vi.fn(),
     deleteTabRow: vi.fn(),
     deleteShareLinksForTab: vi.fn(async (): Promise<string[]> => []),
+    deleteFormLinksForTab: vi.fn(async (): Promise<number> => 0),
     rescopeShareLink: vi.fn(),
   },
   // gateRead / gateEdit (context.ts) forward to these; mocking the auth

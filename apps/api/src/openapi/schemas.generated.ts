@@ -377,6 +377,56 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ActivityFormResponses": {
+    "additionalProperties": false,
+    "properties": {
+      "boardTabId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "documentId": {
+        "type": "string"
+      },
+      "documentName": {
+        "type": "string"
+      },
+      "heading": {
+        "type": "string"
+      },
+      "tabId": {
+        "type": "string"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "unseen": {
+        "type": "number"
+      },
+      "via": {
+        "enum": [
+          "own",
+          "team"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "documentId",
+      "documentName",
+      "teamId",
+      "via",
+      "tabId",
+      "heading",
+      "boardTabId",
+      "unseen"
+    ],
+    "type": "object"
+  },
   "ActivityThread": {
     "additionalProperties": false,
     "properties": {
@@ -740,6 +790,53 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "height"
     ],
     "type": "object"
+  },
+  "AnswerTarget": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "to": {
+            "const": "description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "to": {
+            "const": "title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "fieldId": {
+            "type": "string"
+          },
+          "to": {
+            "const": "field",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "fieldId"
+        ],
+        "type": "object"
+      }
+    ]
   },
   "ApiToken": {
     "additionalProperties": false,
@@ -3319,6 +3416,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "scale": {
+        "type": "number"
       }
     },
     "required": [
@@ -3339,6 +3439,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "link",
       "email",
       "choice",
+      "multichoice",
+      "rating",
       "card"
     ],
     "type": "string"
@@ -6581,6 +6683,318 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "FontSize": {
     "type": "number"
+  },
+  "FormBackdrop": {
+    "additionalProperties": false,
+    "properties": {
+      "dark": {
+        "type": "string"
+      },
+      "light": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "light",
+      "dark"
+    ],
+    "type": "object"
+  },
+  "FormCover": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "imageId": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "FormDefinition": {
+    "additionalProperties": false,
+    "properties": {
+      "accent": {
+        "type": "string"
+      },
+      "closedMessage": {
+        "type": "string"
+      },
+      "closesAt": {
+        "type": "number"
+      },
+      "confirmation": {
+        "type": "string"
+      },
+      "cover": {
+        "$ref": "#/components/schemas/FormCover"
+      },
+      "description": {
+        "type": "string"
+      },
+      "destination": {
+        "$ref": "#/components/schemas/FormDestination"
+      },
+      "heading": {
+        "type": "string"
+      },
+      "limit": {
+        "type": "number"
+      },
+      "sections": {
+        "items": {
+          "$ref": "#/components/schemas/FormSection"
+        },
+        "type": "array"
+      },
+      "starter": {
+        "$ref": "#/components/schemas/StarterId"
+      },
+      "v": {
+        "const": 1,
+        "type": "number"
+      }
+    },
+    "required": [
+      "v",
+      "heading",
+      "sections"
+    ],
+    "type": "object"
+  },
+  "FormDestination": {
+    "additionalProperties": false,
+    "properties": {
+      "status": {
+        "type": "string"
+      },
+      "tabId": {
+        "type": "string"
+      },
+      "typeId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tabId",
+      "typeId",
+      "status"
+    ],
+    "type": "object"
+  },
+  "FormLink": {
+    "additionalProperties": false,
+    "properties": {
+      "code": {
+        "type": "string"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "open": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "code",
+      "open",
+      "createdAt"
+    ],
+    "type": "object"
+  },
+  "FormLinkResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "canPublish": {
+        "type": "boolean"
+      },
+      "link": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/FormLink"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "responses": {
+        "type": "number"
+      },
+      "suspendedAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "unseen": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "link",
+      "responses",
+      "unseen",
+      "suspendedAt",
+      "canPublish"
+    ],
+    "type": "object"
+  },
+  "FormQuestion": {
+    "additionalProperties": false,
+    "properties": {
+      "dropdown": {
+        "const": true,
+        "type": "boolean"
+      },
+      "goesTo": {
+        "$ref": "#/components/schemas/AnswerTarget"
+      },
+      "help": {
+        "type": "string"
+      },
+      "highLabel": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "lowLabel": {
+        "type": "string"
+      },
+      "max": {
+        "type": "number"
+      },
+      "min": {
+        "type": "number"
+      },
+      "options": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "other": {
+        "const": true,
+        "type": "boolean"
+      },
+      "placeholder": {
+        "type": "string"
+      },
+      "prompt": {
+        "type": "string"
+      },
+      "required": {
+        "const": true,
+        "type": "boolean"
+      },
+      "scale": {
+        "type": "number"
+      },
+      "style": {
+        "enum": [
+          "stars",
+          "numbers"
+        ],
+        "type": "string"
+      },
+      "type": {
+        "$ref": "#/components/schemas/QuestionType"
+      },
+      "whole": {
+        "const": true,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "prompt"
+    ],
+    "type": "object"
+  },
+  "FormReportBody": {
+    "additionalProperties": false,
+    "properties": {
+      "note": {
+        "type": "string"
+      },
+      "reason": {
+        "$ref": "#/components/schemas/FormReportReason"
+      }
+    },
+    "required": [
+      "reason"
+    ],
+    "type": "object"
+  },
+  "FormReportReason": {
+    "enum": [
+      "spam",
+      "phishing",
+      "offensive",
+      "other"
+    ],
+    "type": "string"
+  },
+  "FormResponseAccepted": {
+    "additionalProperties": false,
+    "properties": {
+      "number": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "number"
+    ],
+    "type": "object"
+  },
+  "FormResponseBody": {
+    "additionalProperties": false,
+    "properties": {
+      "answers": {
+        "additionalProperties": {},
+        "type": "object"
+      },
+      "other": {
+        "additionalProperties": {},
+        "type": "object"
+      },
+      "website": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "answers"
+    ],
+    "type": "object"
+  },
+  "FormSection": {
+    "additionalProperties": false,
+    "properties": {
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "questions": {
+        "items": {
+          "$ref": "#/components/schemas/FormQuestion"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "questions"
+    ],
+    "type": "object"
   },
   "FormatPatch": {
     "additionalProperties": false,
@@ -11462,6 +11876,187 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "PublicForm": {
+    "additionalProperties": false,
+    "properties": {
+      "accent": {
+        "type": "string"
+      },
+      "confirmation": {
+        "type": "string"
+      },
+      "cover": {
+        "$ref": "#/components/schemas/FormCover"
+      },
+      "description": {
+        "type": "string"
+      },
+      "heading": {
+        "type": "string"
+      },
+      "sections": {
+        "items": {
+          "$ref": "#/components/schemas/PublicSection"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "heading",
+      "sections",
+      "confirmation"
+    ],
+    "type": "object"
+  },
+  "PublicFormResponse": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "backdrop": {
+            "$ref": "#/components/schemas/FormBackdrop"
+          },
+          "form": {
+            "$ref": "#/components/schemas/PublicForm"
+          },
+          "state": {
+            "const": "open",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "form",
+          "backdrop"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "accent": {
+            "type": "string"
+          },
+          "backdrop": {
+            "$ref": "#/components/schemas/FormBackdrop"
+          },
+          "heading": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "state": {
+            "const": "closed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "heading",
+          "message",
+          "backdrop"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "PublicQuestion": {
+    "additionalProperties": false,
+    "properties": {
+      "dropdown": {
+        "const": true,
+        "type": "boolean"
+      },
+      "help": {
+        "type": "string"
+      },
+      "highLabel": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "lowLabel": {
+        "type": "string"
+      },
+      "max": {
+        "type": "number"
+      },
+      "min": {
+        "type": "number"
+      },
+      "options": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "other": {
+        "const": true,
+        "type": "boolean"
+      },
+      "placeholder": {
+        "type": "string"
+      },
+      "prompt": {
+        "type": "string"
+      },
+      "required": {
+        "const": true,
+        "type": "boolean"
+      },
+      "scale": {
+        "type": "number"
+      },
+      "style": {
+        "enum": [
+          "stars",
+          "numbers"
+        ],
+        "type": "string"
+      },
+      "type": {
+        "$ref": "#/components/schemas/QuestionType"
+      },
+      "whole": {
+        "const": true,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "prompt"
+    ],
+    "type": "object"
+  },
+  "PublicSection": {
+    "additionalProperties": false,
+    "properties": {
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "questions": {
+        "items": {
+          "$ref": "#/components/schemas/PublicQuestion"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "questions",
+      "title"
+    ],
+    "type": "object"
+  },
   "PyramidVariant": {
     "enum": [
       "pyramid",
@@ -11523,6 +12118,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "discussing",
       "done"
+    ],
+    "type": "string"
+  },
+  "QuestionType": {
+    "enum": [
+      "short",
+      "paragraph",
+      "number",
+      "email",
+      "link",
+      "date",
+      "single",
+      "multi",
+      "rating",
+      "checkbox"
     ],
     "type": "string"
   },
@@ -13921,6 +14531,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "StarterId": {
+    "enum": [
+      "blank",
+      "bug-report",
+      "feedback",
+      "feature-request",
+      "rsvp",
+      "job-application",
+      "contact"
+    ],
+    "type": "string"
+  },
   "StatItem": {
     "additionalProperties": false,
     "properties": {
@@ -14236,6 +14858,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
+      "form": {
+        "$ref": "#/components/schemas/FormDefinition"
+      },
       "id": {
         "$ref": "#/components/schemas/TabId"
       },
@@ -14304,7 +14929,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "event-storming",
       "board",
       "sheet",
-      "dashboard"
+      "dashboard",
+      "form"
     ],
     "type": "string"
   },
@@ -14364,6 +14990,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "font": {
         "type": "string"
+      },
+      "form": {
+        "$ref": "#/components/schemas/FormDefinition"
       },
       "id": {
         "$ref": "#/components/schemas/TabId"

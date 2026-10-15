@@ -190,6 +190,8 @@ export type UserPreferences = {
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
+  // "Someone fills in one of my forms" (docs/specs/030-forms/forms.md "Hearing about responses").
+  notifyFormResponses?: boolean;
   // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
   // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
   // always sees their own picture whatever this says.

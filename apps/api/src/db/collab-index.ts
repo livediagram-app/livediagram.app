@@ -9,6 +9,7 @@
 // keeps the index in the same transaction as the blob it mirrors. The
 // read is the Inbox's one query per kind.
 
+import { FORM_RESPONSES_SQL, formResponsesFromRows, type FormResponsesRow } from './activity-forms';
 import type { Element } from '@livediagram/document';
 import type { ActivityAction, ActivityReadResult, ActivityThread } from '@livediagram/api-schema';
 import { collabIndexRowsFromElements } from '../collab-index/rows';
@@ -302,11 +303,12 @@ export async function readActivity(
   const now = Date.now();
   // Cards are matched on hashed ids (§2.4), which SQL cannot compute: the reader's aliases are read first.
   const personIds = await readerPersonIds(env, ownerId);
-  const [actionsRes, threadsRes, cardsRes, cardThreadsRes] = await env.DB.batch([
+  const [actionsRes, threadsRes, cardsRes, cardThreadsRes, formsRes] = await env.DB.batch([
     env.DB.prepare(ACTIONS_SQL).bind(ownerId, now, opts.limit),
     env.DB.prepare(THREADS_SQL).bind(ownerId, now, opts.limit),
     env.DB.prepare(CARDS_SQL).bind(ownerId, now, opts.limit, JSON.stringify(personIds)),
     env.DB.prepare(CARD_THREADS_SQL).bind(ownerId, now, opts.limit),
+    env.DB.prepare(FORM_RESPONSES_SQL).bind(ownerId, now, opts.limit),
   ]);
   const actions: ActivityAction[] = dedupePlaces((actionsRes?.results ?? []) as ActionRow[]).map(
     (r) => ({
@@ -340,7 +342,8 @@ export async function readActivity(
   );
   const cards = cardsFromRows((cardsRes?.results ?? []) as CardRow[]);
   const cardThreads = cardThreadsFromRows((cardThreadsRes?.results ?? []) as CardThreadRow[]);
-  return { actions, threads, cards, cardThreads };
+  const formResponses = formResponsesFromRows((formsRes?.results ?? []) as FormResponsesRow[]);
+  return { actions, threads, cards, cardThreads, formResponses };
 }
 
 // ---------- Backfill state + aliases ----------------------------------

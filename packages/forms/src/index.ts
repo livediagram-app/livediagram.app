@@ -9,3 +9,4 @@ export * from './card';
 export * from './starters';
 export * from './public';
 export * from './ids';
+export * from './destination';

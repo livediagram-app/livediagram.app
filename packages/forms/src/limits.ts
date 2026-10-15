@@ -36,6 +36,9 @@ export const RESPONSE_BODY_MAX = 65_536;
 // A link's code: ~131 bits over base 62, and at least 16 characters so page-view telemetry treats it as an id.
 export const FORM_CODE_LENGTH = 22;
 export const FORM_CODE_PATTERN = /^[A-Za-z0-9]{22}$/;
+// A document whose form links have been suspended this often cannot publish another (docs/specs/030-forms/forms.md
+// "Report This Form"). Safe range 1..5.
+export const FORM_SUSPENSIONS_MAX = 2;
 // Past this many options a Single Choice draws as a dropdown, unless set to always.
 export const DROPDOWN_AFTER = 7;
 

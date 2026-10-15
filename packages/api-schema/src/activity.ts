@@ -86,11 +86,26 @@ export type ActivityCardThread = Omit<ActivityCard, 'status' | 'updatedAt'> & {
   mentionsYou: boolean;
 };
 
+// A form with responses the reader has not seen (docs/specs/030-forms/forms.md "Hearing about responses"): in a
+// document they own or reach through a team. The row opens the form's board (`boardTabId`), else its Form tab.
+export type ActivityFormResponses = {
+  documentId: string;
+  documentName: string;
+  teamId: string | null;
+  via: 'own' | 'team';
+  tabId: string;
+  heading: string;
+  boardTabId: string | null;
+  unseen: number;
+};
+
 export type ActivityReadResult = {
   actions: ActivityAction[];
   threads: ActivityThread[];
   cards: ActivityCard[];
   cardThreads: ActivityCardThread[];
+  // Absent from an api that predates forms.
+  formResponses?: ActivityFormResponses[];
 };
 
 // Ceiling per kind (actions, threads, cards) on one read. The page is an inbox, not a history: a
