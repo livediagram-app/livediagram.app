@@ -87,6 +87,16 @@ describe('useEditorMode', () => {
     expect(h.tab()).toMatchObject({ opensIn: 'diagram', name: 'Converted' });
   });
 
+  // docs/specs/003-system-architecture/react-state-and-effects.md "A handler decides before it commits": the switch
+  // worked out to decide the toast is the one committed, so a board's conversion runs once, not twice.
+  it('works the switch out once and commits that one', () => {
+    const h = setup({ id: 't', name: 'T', opensIn: 'illustrate', elements: [] });
+    const convert = vi.fn((t: Tab) => ({ ...t, name: 'Converted' }));
+    act(() => h.hook.result.current.setMode('diagram', convert));
+    expect(convert).toHaveBeenCalledTimes(1);
+    expect(h.tab()).toMatchObject({ opensIn: 'diagram', name: 'Converted' });
+  });
+
   // "Plan stands apart", unless the tab is empty (docs/specs/007-editor/start-diagramming.md "Changing mode").
   it('crosses into and out of Plan while the tab is empty, and only then', () => {
     const empty = setup({ id: 't', name: 'T', elements: [] });

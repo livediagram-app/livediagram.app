@@ -184,7 +184,9 @@ export function illustratePageEdits({
   // A new infographic page (by id) on the theme's default background, unless it carried one over.
   const themed = (t: Tab | null, id: string): Tab | null =>
     t && theme ? withDefaultPageBackgrounds(t, theme, new Set([id])) : t;
-  // A locked tab, or a person no longer editing, takes no page edit.
+  // A locked tab, or a person no longer editing, takes no page edit. A handler that tells or moves the view after
+  // its edit asks first, so nothing is said of an edit that never landed.
+  const takesEdits = () => mayEdit() && tab.locked !== true;
   const commitTab = (change: TabChange) => {
     if (!mayEdit()) return;
     commitTabs((ts) => ts.map((t) => (t.id === tabId && t.locked !== true ? (change(t) ?? t) : t)));
@@ -349,6 +351,7 @@ export function illustratePageEdits({
     debugLog('[illustrate-page] first page kind chosen', { tabId, pageId, kind });
   };
   const addPage = (kind: PageKind) => {
+    if (!takesEdits()) return;
     track('Tab', 'Changed', KIND_ADDED_EVENT[kind]);
     const id = nextIllustratePageId(current);
     const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
@@ -366,6 +369,7 @@ export function illustratePageEdits({
     debugLog('[illustrate-page] page added', { tabId, count: current.length + 1 });
   };
   const duplicatePage = (pageId: string) => {
+    if (!takesEdits()) return;
     const target = page(pageId);
     if (!target) return;
     track('Tab', 'Changed', 'PageDuplicated');
@@ -418,7 +422,7 @@ export function illustratePageEdits({
   // One page per cluster of the page's content, each cluster at its own size; the view goes to the
   // first. One tab edit.
   const splitPage = (pageId: string) => {
-    if (refusedLocked(pageId, 'split')) return;
+    if (!takesEdits() || refusedLocked(pageId, 'split')) return;
     // At the page limit a split has no room for a second page.
     if (current.length >= MAX_ILLUSTRATE_PAGES) {
       toastInfo(
