@@ -1188,6 +1188,10 @@
   .lvd-concept-flow .lvd-cg-arc,
   .lvd-pointer-tip-pulse {
     animation: none;
+  }
+  /* The tip's pulse ring alone has no rest frame: it is hidden, never the elements above, which rest still and
+     visible. */
+  .lvd-pointer-tip-pulse {
     opacity: 0;
   }
   /* A still Flow is the rest frame: solid arcs. */
