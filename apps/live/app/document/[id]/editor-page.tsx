@@ -16,6 +16,7 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
+import { DocumentTagsProvider } from '@/components/tags/DocumentTagsProvider';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
@@ -234,7 +235,11 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
           {/* The owner's shape libraries, for the palette's My shapes
               (docs/specs/013-workspace/shape-libraries.md). */}
           <ShapeLibraryProvider ownerId={ownerId}>
-            <EditorView />
+            {/* The reader's tags for the Explorer panel's rows and menus (docs/specs/013-workspace/tags.md), loaded
+                the first time one of them shows, so opening a document costs no extra request. */}
+            <DocumentTagsProvider ownerId={ownerId} lazy>
+              <EditorView />
+            </DocumentTagsProvider>
           </ShapeLibraryProvider>
         </MentionContext.Provider>
       </CustomThemeProvider>

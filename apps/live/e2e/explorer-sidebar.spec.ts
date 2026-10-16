@@ -50,7 +50,7 @@ test.describe('explorer sidebar', () => {
     expect((await rowNames(page, 'Spaces'))[0]).toBe('My documents');
     await expect(row(page, 'New team')).toHaveCount(0);
     // This browser holds nothing yet, so it is hidden.
-    expect(await rowNames(page, 'More')).toEqual(['Library', 'Trash']);
+    expect(await rowNames(page, 'More')).toEqual(['Tags', 'Library', 'Trash']);
     // My documents starts open on its root folders: no Unsorted or Generated bucket.
     const myDocuments = row(page, 'My documents');
     await expect(row(page, 'Projects')).toBeVisible();
@@ -150,7 +150,7 @@ test.describe('explorer sidebar', () => {
     );
     await openExplorer(page);
     await expect(row(page, 'This browser (1)')).toBeVisible();
-    expect(await rowNames(page, 'More')).toEqual(['This browser', 'Library', 'Trash']);
+    expect(await rowNames(page, 'More')).toEqual(['This browser', 'Tags', 'Library', 'Trash']);
     expectNoPageErrors(pageErrors);
   });
 

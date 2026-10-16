@@ -62,6 +62,7 @@ import { handleMigrate } from './routes/migrate';
 import { handleGuestId } from './routes/guest-id';
 import { handleParticipants } from './routes/participants';
 import { handleFavourites } from './routes/favourites';
+import { handleTags } from './routes/tags';
 import { handlePlacementDefaults } from './routes/placement-defaults';
 import { handleTimeline } from './routes/timeline';
 import { handleActivity } from './routes/activity';
@@ -458,6 +459,9 @@ async function routeApiRequest(
         return await handleAccount(ctx);
       case 'favourites':
         return await handleFavourites(ctx);
+      // Per-person document tags (docs/specs/013-workspace/tags.md).
+      case 'tags':
+        return await handleTags(ctx);
       case 'placement-defaults':
         return await handlePlacementDefaults(ctx);
       case 'trash':

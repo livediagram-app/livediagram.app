@@ -64,6 +64,7 @@ export const HELP_ARTICLES = {
   microsoftWhiteboardImport: 'explorer/microsoft-whiteboard-import',
   drawioImport: 'explorer/drawio-import',
   shapeLibraries: 'explorer/shape-libraries',
+  tags: 'explorer/tags',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
   teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
@@ -411,6 +412,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   recentDocuments: {
     title: 'Learn about Recent',
     description: 'Your most recently opened documents, personal and team, in one list.',
+  },
+  tags: {
+    title: 'Learn about tags',
+    description: 'Coloured labels that group related documents across folders and teams.',
   },
   sharedWithYou: {
     title: 'Learn about Shared with me',

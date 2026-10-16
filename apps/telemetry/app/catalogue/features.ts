@@ -706,6 +706,31 @@ export const EXPLORER_FILTERS_PICKED = chart(
   { rising: 'good' },
 );
 
+// Tags (docs/specs/013-workspace/tags.md "Telemetry"): coloured labels people put on their documents. Never a name.
+export const TAGS_CREATED = chart(
+  'Explorer',
+  'Created',
+  'Tags Made',
+  'A tag made, from the tag picker on a document or New Tag on the Tags page.',
+  { types: ['Tag'], rising: 'good' },
+);
+
+export const TAGS_APPLIED = chart(
+  'Explorer',
+  'Added',
+  'Tags Put On or Taken Off',
+  'A tag ticked on or off a document in the tag picker.',
+  { actionIn: ['Added', 'Removed'], types: ['Tag'], rising: 'good' },
+);
+
+export const TAGS_EDITED = chart(
+  'Explorer',
+  'Renamed',
+  'Tags Renamed, Recoloured or Deleted',
+  'A tag renamed or recoloured, or deleted (which takes it off every document).',
+  { actionIn: ['Renamed', 'Changed', 'Deleted'], types: ['Tag', 'TagColour'], rising: 'neutral' },
+);
+
 // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one type per key.
 export const DEFAULT_FOLDERS_SET = chart(
   'Folder',
@@ -727,7 +752,7 @@ export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
   blurb:
-    'Folders made and nested, tab folders, tabs and documents filed, default folders, the Explorer sidebar and its filters.',
+    'Folders made and nested, tab folders, tabs and documents filed, tags, default folders, the Explorer sidebar and its filters.',
   members: [
     FOLDERS_CREATED,
     FOLDERS_RE_PARENTED,
@@ -739,6 +764,9 @@ export const ORGANISATION: MetricStack = {
     TABS_UNFILED,
     EXPLORER_SIDEBAR_PICKS,
     EXPLORER_FILTERS_PICKED,
+    TAGS_CREATED,
+    TAGS_APPLIED,
+    TAGS_EDITED,
     DEFAULT_FOLDERS_SET,
     DEFAULT_FOLDERS_CLEARED,
   ],

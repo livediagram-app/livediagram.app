@@ -9,6 +9,7 @@ import {
   SIDEBAR_GROUP_TITLES,
   sidebarDivider,
   sidebarGroups,
+  TAGS_EXPAND_KEY,
   type SidebarLayoutInput,
 } from './sidebar-structure';
 
@@ -68,15 +69,22 @@ describe('sidebarGroups', () => {
   });
 
   it('hides This browser while it holds no documents', () => {
-    expect(rowsOf(GUEST, 'more')).toEqual(['library', 'trash']);
+    expect(rowsOf(GUEST, 'more')).toEqual(['tags', 'library', 'trash']);
   });
 
   it('shows This browser first in More while it holds documents', () => {
     expect(rowsOf({ ...GUEST, offlineDocuments: 1 }, 'more')).toEqual([
       'thisBrowser',
+      'tags',
       'library',
       'trash',
     ]);
+  });
+
+  // docs/specs/013-workspace/tags.md "The sidebar": always shown, so it can be found before the first tag.
+  it('always shows Tags, before Library', () => {
+    expect(rowsOf(GUEST, 'more')).toContain('tags');
+    expect(rowsOf(SIGNED_IN, 'more')).toContain('tags');
   });
 
   it('keeps This browser while its view is current, even when empty', () => {
@@ -103,6 +111,7 @@ describe('sidebarGroups in the floating Explorer panel', () => {
   it('shows This browser while it holds documents', () => {
     expect(rowsOf({ ...PANEL, offlineDocuments: 1 }, 'more')).toEqual([
       'thisBrowser',
+      'tags',
       'library',
       'trash',
     ]);
@@ -139,6 +148,11 @@ describe('initialExpanded', () => {
 
   it('also opens Library when a Library page is the current view', () => {
     expect(initialExpanded({ kind: 'themes' }).has(LIBRARY_EXPAND_KEY)).toBe(true);
+  });
+
+  it('opens Tags when a Tags page is the current view, and only then', () => {
+    expect(initialExpanded({ kind: 'tags', id: 't1' }).has(TAGS_EXPAND_KEY)).toBe(true);
+    expect(initialExpanded({ kind: 'all' }).has(TAGS_EXPAND_KEY)).toBe(false);
   });
 
   it('keeps the expand keys apart from folder and team ids', () => {

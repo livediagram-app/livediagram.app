@@ -19,6 +19,7 @@ import {
   ShareIcon,
   StarIcon,
   SyncIcon,
+  TagIcon,
   TakeOfflineIcon,
   TeamIcon,
   TrashIcon,
@@ -32,6 +33,7 @@ import {
 } from '@/components/primitives/PortalMenu';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
+import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
 import type { PaneDocument } from './views';
 import { documentSpace, isLocalOnly } from '@/lib/document-space';
 import { startDocumentDrag } from '@/components/panels/explorer-drag-mime';
@@ -148,6 +150,9 @@ export function DocumentActionsMenu({
   const offline = liveDoc.ownerId === OFFLINE_OWNER_ID;
   // Offline Mode conversions (docs/specs/006-document/offline-mode.md), shared with the panel row via the hook.
   const { syncToCloud, takeOffline } = useOfflineConversion(liveDoc, ownerId, onClose);
+  // Tags (docs/specs/013-workspace/tags.md "Putting tags on a document"): the reader's own labels, on any document in
+  // their library or their teams'; the picker opens where the menu was, once it has closed.
+  const tags = useDocumentTags();
   // Run a verb, then close: every row does this, so it's one wrapper.
   const then = (fn: () => void) => () => {
     fn();
@@ -228,7 +233,7 @@ export function DocumentActionsMenu({
         />
       ) : null}
       {/* Two groups: what changes the document itself (rename, copy, file),
-          then what changes how YOU see it (star, history, Recent,
+          then what changes how YOU see it (star, tags, history, Recent,
           where it's stored). */}
       {onStartRename || onDuplicate || onMove ? <MenuGroupSeparator /> : null}
       {onToggleFavourite ? (
@@ -237,6 +242,16 @@ export function DocumentActionsMenu({
           icon={<StarIcon filled={favourite} />}
           label={favourite ? 'Unfavourite' : 'Favourite'}
           onClick={then(onToggleFavourite)}
+        />
+      ) : null}
+      {tags.available && ownerId && anchor ? (
+        <MenuActionRow
+          plain
+          icon={<TagIcon />}
+          label="Tags"
+          onClick={then(() =>
+            tags.openPicker({ documentId: liveDoc.id, documentName: liveDoc.name, anchor }),
+          )}
         />
       ) : null}
       {onShowHistory ? (

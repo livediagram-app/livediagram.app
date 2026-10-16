@@ -19,6 +19,8 @@ export type SidebarTelemetryRow =
   | 'ImageGallery'
   | 'Themes'
   | 'ShapeLibraries'
+  | 'Tags'
+  | 'Tag'
   | 'Trash';
 
 export const SIDEBAR_TELEMETRY_PREFIX = { page: 'Sidebar', panel: 'ExplorerPanel' } as const;

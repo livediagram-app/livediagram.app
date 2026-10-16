@@ -12,9 +12,10 @@ import { trackSidebar } from './sidebar-telemetry';
 import { LIBRARY_PAGES } from './library-pages';
 import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
+import { TagsSidebarRow } from './TagRows';
 
 // More (docs/specs/013-workspace/explorer-structure.md): This browser (offline documents,
-// docs/specs/006-document/offline-mode.md), Library, and Trash
+// docs/specs/006-document/offline-mode.md), Tags (docs/specs/013-workspace/tags.md), Library, and Trash
 // (docs/specs/013-workspace/trash.md). `rows` decides whether This browser shows.
 export function MoreGroup({
   rows,
@@ -43,6 +44,7 @@ export function MoreGroup({
           badge={offlineDocuments.length || undefined}
         />
       ) : null}
+      {rows.includes('tags') ? <TagsSidebarRow /> : null}
       {/* Library has no page of its own: activating it opens or closes it. */}
       <SidebarRow
         icon={<LibraryIcon />}

@@ -10,6 +10,7 @@ import { snapshotKeys } from './documents';
 import { documentRemovalStatements } from './document-removal';
 import { purgeRooms } from '../room-purge-client';
 import { detachUserFromTeams } from './teams';
+import { migrateTagStatements } from './tags';
 import { imageGrantOwnerChangeStatement } from './image-grants';
 import { disconnectDrive } from '../drive/disconnect';
 import { uniqueLibraryName } from '@livediagram/api-schema';
@@ -141,6 +142,8 @@ export async function deleteAccount(
   // shared_with. Stars on this owner's documents cascade; the stars they put on
   // teammates' and other people's documents are theirs and go here.
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
+  // tags (docs/specs/013-workspace/tags.md): every tag they made; the links, on anyone's documents, cascade.
+  await env.DB.prepare('DELETE FROM tags WHERE owner_id = ?').bind(ownerId).run();
   // form_reads (docs/specs/030-forms/forms.md "Hearing about responses"): what they had seen of other people's forms;
   // reads of forms on their own documents cascade with the documents.
   await env.DB.prepare('DELETE FROM form_reads WHERE owner_id = ?').bind(ownerId).run();
@@ -290,6 +293,9 @@ export async function migrateOwnerId(
       fromOwnerId,
     ),
     favouritesDrop: move('DELETE FROM favourites WHERE owner_id = ?', fromOwnerId),
+    // tags (docs/specs/013-workspace/tags.md "Tags follow the owner"): a guest tag whose name the account uses
+    // merges into the account's, the rest move over.
+    ...migrateTagStatements(env, fromOwnerId, toOwnerId),
     // form_reads (docs/specs/030-forms/forms.md): the primary key is (code, owner_id); where both identities read
     // one form, the account's row stays.
     formReads: move(

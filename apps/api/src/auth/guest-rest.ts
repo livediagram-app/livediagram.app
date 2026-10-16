@@ -61,6 +61,8 @@ export const OWNER_SCOPED_SEGMENTS = new Set([
   // keyed on the resolved owner, and the owner's starred documents.
   'activity',
   'favourites',
+  // A person's tags and what they put them on (docs/specs/013-workspace/tags.md).
+  'tags',
   // Explorer Home: the person's opens, own history and others' actions, keyed on the owner.
   'home',
   // The Trash lists deleted documents' names and restores / purges them.
