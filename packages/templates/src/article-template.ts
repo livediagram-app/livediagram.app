@@ -2,7 +2,13 @@
 // Illustrate mode on one article page, written as a short project brief so the page shows what
 // the writing does (a title and subtitle, headings, lists, a quote) rather than an empty sheet.
 // Pure data: the tab's pages and writing, merged in by templateCanvasOverrides.
-import type { ArticleBlock, ArticleFlow, IllustratePage, Tab } from '@livediagram/document';
+import type {
+  ArticleBlock,
+  ArticleFlow,
+  ArticleStyle,
+  IllustratePage,
+  Tab,
+} from '@livediagram/document';
 
 const PAGE_ID = 'page-1';
 const FLOW_ID = 'art-brief';
@@ -44,11 +50,20 @@ function briefBlocks(): ArticleBlock[] {
   ];
 }
 
+// An article tab's overrides: one A4 portrait article page holding the flow, which the editor flows onto as many pages
+// as the writing fills (docs/specs/007-editor/article-pages.md "An article"). The Article and Working Backwards
+// templates are each one of these.
+export function articleTabOverrides(
+  flow: string,
+  blocks: ArticleBlock[],
+  style?: ArticleStyle,
+): Partial<Tab> {
+  const pages: IllustratePage[] = [{ id: PAGE_ID, orientation: 'portrait', kind: 'article', flow }];
+  const doc: ArticleFlow = { blocks, ...(style ? { style } : {}) };
+  return { opensIn: 'illustrate', pages, articles: { [flow]: doc } };
+}
+
 /** The Article template's pages and writing (opens in Illustrate). */
 export function articleTemplateOverrides(): Partial<Tab> {
-  const pages: IllustratePage[] = [
-    { id: PAGE_ID, orientation: 'portrait', kind: 'article', flow: FLOW_ID },
-  ];
-  const doc: ArticleFlow = { blocks: briefBlocks() };
-  return { opensIn: 'illustrate', pages, articles: { [FLOW_ID]: doc } };
+  return articleTabOverrides(FLOW_ID, briefBlocks());
 }

@@ -87,6 +87,7 @@ describe('Start Facilitating', () => {
     ]);
     expect(group('strategy')).toEqual([
       'business-model-canvas',
+      'value-proposition-canvas',
       'stakeholder-map',
       'opportunity-solution-tree',
     ]);

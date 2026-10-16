@@ -144,6 +144,10 @@ already infographic pages, built with the page layouts' kit.
   matched rows of pros and cons, and a verdict at the foot.
 - **Social Carousel** _(Presentations)_: five Square slides for a LinkedIn or Instagram carousel: a hook,
   three tips and a call to action, with slide numbers and swipe cues.
+- **Working Backwards** _(Strategy)_: Amazon's PR/FAQ on article pages (Report look): the press release for a launch
+  that is not built yet, then the Customer FAQ and, after a page break, the Internal FAQ, closing on a to-do list
+  for the review ([Templates](../008-canvas/canvas-and-palette.md#templates)). It is an article, not infographic
+  pages, as the Article template is.
 
 ### Design templates
 
@@ -185,8 +189,9 @@ unchanged; only the mode they open in moved from Diagram.
   postmortem** (`incident-postmortem`, a look back, under Retrospectives), **User persona** (`user-persona`, under
   Workshops), the **Planning** group's **Objectives planner** (`objectives-planner`), **Roadmap** (`roadmap`),
   **RACI matrix** (`raci-matrix`) and **User story map** (`user-story-map`), and the **Strategy** group's **Business
-  Model Canvas** (`business-model-canvas`), **Stakeholder map** (`stakeholder-map`) and **Opportunity solution
-  tree** (`opportunity-solution-tree`). Their catalogue categories are unchanged.
+  Model Canvas** (`business-model-canvas`), **Value Proposition Canvas** (`value-proposition-canvas`), **Stakeholder
+  map** (`stakeholder-map`) and **Opportunity solution tree** (`opportunity-solution-tree`). Their catalogue
+  categories are unchanged.
 - The **Spaces** group, after Meetings: **Virtual Office** (`virtual-office`), **Coworking Space**
   (`coworking-space`), **Team Pod** (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), "Offices and halls to walk
   round together in Avatar mode." ([Virtual Office template](../012-collaboration/virtual-office-template.md)).

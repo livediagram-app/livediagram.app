@@ -274,12 +274,59 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'comparison-table': ['compare', 'comparison', 'features', 'options', 'table', 'vs'],
   'stakeholder-map': ['stakeholders', 'power interest', 'influence', 'engagement'],
   'rich-picture': ['systems thinking', 'soft systems', 'problem', 'stakeholders', 'drawing'],
+  'wardley-map': [
+    'wardley',
+    'value chain',
+    'evolution',
+    'situational awareness',
+    'build vs buy',
+    'landscape',
+    'doctrine',
+  ],
+  'value-proposition-canvas': [
+    'vpc',
+    'value proposition',
+    'customer profile',
+    'jobs to be done',
+    'jtbd',
+    'pains and gains',
+    'product market fit',
+    'strategyzer',
+  ],
+  'working-backwards': [
+    'pr faq',
+    'prfaq',
+    'press release',
+    'amazon',
+    'six pager',
+    'product proposal',
+    'faq',
+    'launch',
+  ],
   // Org Charts.
   orgchart: ['org', 'organisation', 'organization', 'team', 'hierarchy', 'reporting lines'],
   pyramid: ['hierarchy', 'levels', 'layers', 'maslow', 'tiers'],
   'okr-tree': ['okr', 'goals', 'objectives', 'key results', 'alignment', 'tree'],
   sitemap: ['site map', 'ia', 'information architecture', 'website', 'pages', 'navigation'],
   'opportunity-solution-tree': ['ost', 'product discovery', 'outcomes', 'opportunities'],
+  'metric-tree': [
+    'north star',
+    'kpi tree',
+    'driver tree',
+    'metrics',
+    'input metrics',
+    'growth model',
+    'what if',
+  ],
+  'family-tree': [
+    'genealogy',
+    'ancestry',
+    'ancestors',
+    'family history',
+    'relatives',
+    'generations',
+    'pedigree',
+  ],
   // Design.
   'mobile-wireframe': ['wireframe', 'mockup', 'app', 'phone', 'ui', 'ux', 'screens'],
   'laptop-wireframe': ['wireframe', 'mockup', 'dashboard', 'desktop', 'ui', 'ux'],
@@ -292,6 +339,15 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'empathy-map': ['empathy', 'says thinks does feels', 'user', 'research', 'ux'],
   'user-story-map': ['story map', 'user stories', 'backlog', 'mvp', 'releases', 'agile'],
   'floor-plan': ['floorplan', 'layout', 'room', 'office', 'house', 'architecture'],
+  'service-blueprint': [
+    'blueprint',
+    'service design',
+    'frontstage',
+    'backstage',
+    'line of visibility',
+    'cx',
+    'touchpoints',
+  ],
   // Presentations.
   'slide-deck': ['presentation', 'slides', 'deck', 'pitch', 'powerpoint', 'keynote'],
   article: ['document', 'doc', 'brief', 'report', 'writing', 'memo', 'blog'],
@@ -351,12 +407,34 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'state-machine': ['states', 'transitions', 'fsm', 'lifecycle', 'statechart'],
   'event-storming': ['ddd', 'domain driven design', 'events', 'workshop', 'bounded context'],
   'incident-postmortem': ['postmortem', 'incident', 'outage', 'rca', 'blameless', 'review'],
+  'threat-model': [
+    'stride',
+    'threat modelling',
+    'threat modeling',
+    'security',
+    'trust boundary',
+    'dfd',
+    'appsec',
+    'attack',
+  ],
+  'value-stream-map': [
+    'vsm',
+    'value stream',
+    'lean',
+    'lead time',
+    'flow efficiency',
+    'kaizen',
+    'devops',
+    'waste',
+  ],
 };
 
-// The Plan templates made of one sheet template, by kind (their start's sheet).
+// The templates made with a sheet template, by kind (their start's sheet): the spreadsheet templates and the three
+// companion Sheets (template-companions.ts).
 const SHEET_STARTS_BY_KIND = TEMPLATE_START_SHEETS as Readonly<Record<string, unknown>>;
 
-/** The words a template is searched by: its own, and for a spreadsheet template its sheet's too. */
+/** The words a template is searched by: its own, and for a template made with a sheet template (a spreadsheet
+ *  template, or a Diagram template's companion Sheet) its sheet's too. */
 export function templateKeywords(kind: TemplateKind): readonly string[] {
   const own = OWN_KEYWORDS[kind];
   if (!(kind in SHEET_STARTS_BY_KIND)) return own;

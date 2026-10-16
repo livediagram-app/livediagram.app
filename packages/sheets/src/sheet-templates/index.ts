@@ -4,3 +4,4 @@ export * from './design';
 export * from './compile';
 export * from './catalogue';
 export * from './template-design';
+export * from './analysis-data';

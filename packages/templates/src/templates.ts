@@ -164,6 +164,18 @@ export type TemplateKind =
   | 'crazy-eights'
   // Power / interest stakeholder grid with stances and an engagement plan.
   | 'stakeholder-map'
+  // The strategy and systems batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): a Wardley map, a
+  // STRIDE threat model, a service blueprint, a north-star metric tree, the Value Proposition Canvas, Amazon's
+  // Working Backwards PR/FAQ (an article), a family tree and a value stream map. The threat model, metric tree and
+  // value stream map make a companion Sheet tab after the drawing (template-companions.ts).
+  | 'wardley-map'
+  | 'threat-model'
+  | 'service-blueprint'
+  | 'metric-tree'
+  | 'value-proposition-canvas'
+  | 'working-backwards'
+  | 'family-tree'
+  | 'value-stream-map'
   // 5x5 likelihood x impact heatmap beside a risk register.
   | 'risk-matrix'
   // A research-backed user persona laid out as a profile sheet.
@@ -948,6 +960,63 @@ export const TEMPLATES: TemplateDescriptor[] = [
       'A 5x5 likelihood and impact heatmap with numbered risks, a residual move, and a register with owners and trends.',
     extra: true,
   },
+  {
+    kind: 'wardley-map',
+    title: 'Wardley map',
+    description:
+      'A value chain mapped on evolution: what to build, buy or rent, where it is all heading and the plays to make.',
+    extra: true,
+  },
+  {
+    kind: 'threat-model',
+    title: 'Threat model',
+    description:
+      'Two tabs: a data-flow diagram with its trust boundaries and STRIDE threats marked, then a live Threat Register.',
+    extra: true,
+  },
+  {
+    kind: 'service-blueprint',
+    title: 'Service blueprint',
+    description:
+      'An order end to end: what the customer does, what staff and systems do behind the line, and where it fails.',
+    extra: true,
+  },
+  {
+    kind: 'metric-tree',
+    title: 'Metric tree',
+    description:
+      'Two tabs: a north-star metric broken into the inputs teams own, then a Driver Model sheet to try what-ifs on.',
+    extra: true,
+  },
+  {
+    kind: 'value-proposition-canvas',
+    title: 'Value Proposition Canvas',
+    description:
+      'What you offer against what one customer needs: their jobs, pains and gains, with the fit drawn in.',
+    extra: true,
+  },
+  {
+    kind: 'working-backwards',
+    title: 'Working Backwards',
+    description:
+      'Amazon’s PR/FAQ: the launch press release written before anything is built, then the customer and internal FAQs.',
+    extra: true,
+  },
+  {
+    kind: 'family-tree',
+    title: 'Family tree',
+    description:
+      'Three generations on one page: couples, children and an adoption, with years, birthplaces and family stories.',
+    extra: true,
+  },
+  {
+    kind: 'value-stream-map',
+    title: 'Value stream map',
+    description:
+      'Two tabs: idea to production with its waits, process times and kaizen bursts, then the Flow Data sheet.',
+    extra: true,
+  },
+
   {
     kind: 'user-persona',
     title: 'User persona',

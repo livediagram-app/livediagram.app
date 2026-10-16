@@ -54,6 +54,20 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Grid', 'Stakeholders');
     case 'risk-matrix':
       return layered('Matrix', 'Risks');
+    case 'wardley-map':
+      return layered('Map', 'Components');
+    case 'threat-model':
+      return layered('Model', 'Threats');
+    case 'service-blueprint':
+      return layered('Blueprint', 'Service');
+    case 'metric-tree':
+      return layered('Levels', 'Tree');
+    case 'value-proposition-canvas':
+      return layered('Canvas', 'Notes');
+    case 'family-tree':
+      return layered('Generations', 'People');
+    case 'value-stream-map':
+      return layered('Map', 'Stream');
     case 'user-persona':
       return layered('Card', 'Details');
     case 'meeting-agenda':

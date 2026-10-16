@@ -3,6 +3,7 @@
 import { localMs, serialFromMs } from '../dates';
 import type { SheetTemplateId } from './catalogue';
 import type { SheetDesign } from './design';
+import { driversDesign, threatsDesign, valueStreamDesign } from './analysis';
 import { budgetDesign, expensesDesign, invoiceDesign, loanDesign } from './money';
 import { contactsDesign, gradesDesign, guestsDesign, habitsDesign } from './people';
 import { inventoryDesign, pipelineDesign, timesheetDesign, trackerDesign } from './work';
@@ -38,5 +39,11 @@ export function sheetTemplate(id: SheetTemplateId, nowMs: number): SheetDesign {
       return habitsDesign();
     case 'loan':
       return loanDesign();
+    case 'threats':
+      return threatsDesign();
+    case 'drivers':
+      return driversDesign();
+    case 'value-stream':
+      return valueStreamDesign();
   }
 }
