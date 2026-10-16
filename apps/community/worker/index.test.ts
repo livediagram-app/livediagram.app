@@ -129,7 +129,7 @@ describe('community worker: a post page', () => {
     const api = vi.fn(() => Response.json({}));
     const { env } = makeEnv(api);
     expect(await (await get('/post/', env)).text()).toBe(SHELL);
-    expect(await (await get('/post/?id=p1', env, 'HEAD')).status).toBe(200);
+    expect((await get('/post/?id=p1', env, 'HEAD')).status).toBe(200);
     expect(api).not.toHaveBeenCalled();
   });
 });

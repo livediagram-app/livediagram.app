@@ -137,6 +137,7 @@ export default defineConfig({
     'typescript/triple-slash-reference': 'error',
 
     // Type-aware rules (typescript-eslint's recommended type-checked set), through oxlint-tsgolint.
+    'typescript/await-thenable': 'error',
     'typescript/no-array-delete': 'error',
     'typescript/no-duplicate-type-constituents': 'error',
     'typescript/no-for-in-array': 'error',

@@ -36,7 +36,7 @@ function setup(loadMeta: () => Promise<{ name: string } | null>) {
 
 const settle = async () => {
   vi.advanceTimersByTime(AFTER_WRITE_DELAY_MS);
-  await vi.runAllTicks();
+  vi.runAllTicks();
   await Promise.resolve();
   await Promise.resolve();
 };
