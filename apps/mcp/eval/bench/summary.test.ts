@@ -1,8 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { compareRounds, modelRows, normaliseError, recurringCheckFailures, recurringToolErrors, summarise } from './summary.mjs';
+import {
+  compareRounds,
+  modelRows,
+  normaliseError,
+  recurringCheckFailures,
+  recurringToolErrors,
+  summarise,
+} from './summary.mjs';
 
-const metrics = { calls: 3, errors: 1, retries: 0, deprecatedCalls: 0, finished: true, durationMs: 2000, costUsd: 0.1 };
-const run = (task: string, model: string, n: number, pass: boolean[], errors: { tool: string; error: string }[] = []) => ({
+const metrics = {
+  calls: 3,
+  errors: 1,
+  retries: 0,
+  deprecatedCalls: 0,
+  finished: true,
+  durationMs: 2000,
+  costUsd: 0.1,
+};
+const run = (
+  task: string,
+  model: string,
+  n: number,
+  pass: boolean[],
+  errors: { tool: string; error: string }[] = [],
+) => ({
   name: `${task}-${model}-${n}`,
   task,
   model,
@@ -13,7 +34,10 @@ const run = (task: string, model: string, n: number, pass: boolean[], errors: { 
   tools: ['add_form'],
 });
 
-const err = (id: string) => ({ tool: 'add_form', error: `Question "Name ${id}" (q-${id}) needs 2 options, has 1` });
+const err = (id: string) => ({
+  tool: 'add_form',
+  error: `Question "Name ${id}" (q-${id}) needs 2 options, has 1`,
+});
 
 const results = {
   round: 'r2',
@@ -30,7 +54,9 @@ const results = {
 describe('normaliseError', () => {
   it('takes out what differs between runs', () => {
     expect(normaliseError(err('a').error)).toBe(normaliseError(err('zz').error));
-    expect(normaliseError('doc 981c336f-c993-4206-a00c-8d1cc03822ff missing')).toBe('doc <id> missing');
+    expect(normaliseError('doc 981c336f-c993-4206-a00c-8d1cc03822ff missing')).toBe(
+      'doc <id> missing',
+    );
   });
 });
 
@@ -51,14 +77,25 @@ describe('recurring findings', () => {
 describe('modelRows', () => {
   it('totals each model', () => {
     const haiku = modelRows(results.runs).find((m) => m.model === 'haiku')!;
-    expect(haiku).toMatchObject({ runs: 2, checksPassed: 2, checks: 4, allPass: 0, errorsPerRun: 1.5 });
+    expect(haiku).toMatchObject({
+      runs: 2,
+      checksPassed: 2,
+      checks: 4,
+      allPass: 0,
+      errorsPerRun: 1.5,
+    });
   });
 });
 
 describe('summarise', () => {
   it('writes every section', () => {
     const md = summarise(results);
-    for (const heading of ['## By model', '## By task', '## Checks failing in 2+ runs', '## Tool errors in 2+ runs'])
+    for (const heading of [
+      '## By model',
+      '## By task',
+      '## Checks failing in 2+ runs',
+      '## Tool errors in 2+ runs',
+    ])
       expect(md).toContain(heading);
     expect(md).toContain('| Q1 · c1 | 2/3 | haiku | why 1 |');
   });
@@ -66,7 +103,14 @@ describe('summarise', () => {
 
 describe('compareRounds', () => {
   it('lists only what moved', () => {
-    const before = { ...results, round: 'r1', runs: results.runs.map((r) => ({ ...r, checks: r.checks.map((c) => ({ ...c, pass: true })) })) };
+    const before = {
+      ...results,
+      round: 'r1',
+      runs: results.runs.map((r) => ({
+        ...r,
+        checks: r.checks.map((c) => ({ ...c, pass: true })),
+      })),
+    };
     const md = compareRounds(before, results);
     expect(md).toContain('## Compared with r1');
     expect(md).toContain('| Q1 | haiku | 100% → 50% |');

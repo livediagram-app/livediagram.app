@@ -24,9 +24,13 @@ export function taskById(id) {
 // `all`, an area name, or ids, comma-separated and mixed ("forms,D1,D2").
 export function selectTasks(spec = 'all') {
   const picked = new Map();
-  for (const part of spec.split(',').map((s) => s.trim()).filter(Boolean)) {
+  for (const part of spec
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)) {
     if (part === 'all') TASKS.forEach((t) => picked.set(t.id, t));
-    else if (part in AREAS) TASKS.filter((t) => t.area === part).forEach((t) => picked.set(t.id, t));
+    else if (part in AREAS)
+      TASKS.filter((t) => t.area === part).forEach((t) => picked.set(t.id, t));
     else picked.set(part, taskById(part));
   }
   return [...picked.values()];

@@ -14,14 +14,25 @@ export function parseTabHeader(line) {
 }
 
 async function readTab(client, documentId, tab) {
-  const json = resultJson(await client.call('read_document', { documentId, tabId: tab.id, format: 'json' }));
+  const json = resultJson(
+    await client.call('read_document', { documentId, tabId: tab.id, format: 'json' }),
+  );
   const outline = resultText(await client.call('read_document', { documentId, tabId: tab.id }));
   const header = parseTabHeader(outline?.split('\n')[0] ?? '');
   const { kind, mode } = header;
-  const out = { id: tab.id, name: tab.name, ...header, elements: json?.tab?.elements ?? [], outline };
-  if (kind === 'form') out.form = resultJson(await client.call('read_form', { documentId, tab: tab.id }));
+  const out = {
+    id: tab.id,
+    name: tab.name,
+    ...header,
+    elements: json?.tab?.elements ?? [],
+    outline,
+  };
+  if (kind === 'form')
+    out.form = resultJson(await client.call('read_form', { documentId, tab: tab.id }));
   if (mode === 'illustrate')
-    out.pages = resultText(await client.call('read_document', { documentId, tabId: tab.id, view: 'pages' }));
+    out.pages = resultText(
+      await client.call('read_document', { documentId, tabId: tab.id, view: 'pages' }),
+    );
   return out;
 }
 
@@ -34,7 +45,9 @@ export async function snapshotDocument(client, documentId) {
   const listed = resultJson(await client.call('list_sheets', { documentId }));
   const sheets = [];
   for (const s of listed?.sheets ?? []) {
-    const read = resultJson(await client.call('read_sheet', { documentId, sheet: s.id ?? s.title }));
+    const read = resultJson(
+      await client.call('read_sheet', { documentId, sheet: s.id ?? s.title }),
+    );
     sheets.push({ ...s, read });
   }
   return { id: documentId, name: first.name, tabs, items, sheets };

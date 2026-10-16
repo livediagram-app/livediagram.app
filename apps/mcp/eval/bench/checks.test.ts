@@ -15,8 +15,22 @@ import {
 } from './checks.mjs';
 import { parseTabHeader } from './snapshot.mjs';
 
-const box = (id: string, label: string, x = 0, y = 0) => ({ id, type: 'shape', shape: 'square', label, x, y, width: 100, height: 40 });
-const arrow = (from: string, to: string) => ({ id: `${from}-${to}`, type: 'arrow', from: { kind: 'pinned', elementId: from }, to: { kind: 'pinned', elementId: to } });
+const box = (id: string, label: string, x = 0, y = 0) => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  label,
+  x,
+  y,
+  width: 100,
+  height: 40,
+});
+const arrow = (from: string, to: string) => ({
+  id: `${from}-${to}`,
+  type: 'arrow',
+  from: { kind: 'pinned', elementId: from },
+  to: { kind: 'pinned', elementId: to },
+});
 
 const diagram = {
   documents: [
@@ -29,7 +43,16 @@ const diagram = {
           name: 'Tab',
           outline: 'tab t1 "Tab" · 4 elements · finish=sketch · rev 1',
           elements: [
-            { id: 'g', type: 'shape', shape: 'frame', label: 'Notifications', x: 0, y: 200, width: 400, height: 200 },
+            {
+              id: 'g',
+              type: 'shape',
+              shape: 'frame',
+              label: 'Notifications',
+              x: 0,
+              y: 200,
+              width: 400,
+              height: 200,
+            },
             box('a', 'Cart'),
             box('b', 'Pay'),
             box('c', 'Email receipt', 20, 220),
@@ -64,8 +87,13 @@ describe('diagram readers', () => {
   });
 
   it('names what is missing', () => {
-    expect(elementsFor(diagram, [/cart/i, /refund/i])).toEqual({ pass: false, detail: 'no element for: refund' });
-    expect(allLinked(diagram, [[/cart/i, /receipt/i]], { directed: true }).detail).toBe('not joined: cart → receipt');
+    expect(elementsFor(diagram, [/cart/i, /refund/i])).toEqual({
+      pass: false,
+      detail: 'no element for: refund',
+    });
+    expect(allLinked(diagram, [[/cart/i, /receipt/i]], { directed: true }).detail).toBe(
+      'not joined: cart → receipt',
+    );
     expect(mentionsAll(diagram, [/flow/i, /ana/i]).pass).toBe(true);
   });
 
@@ -75,13 +103,16 @@ describe('diagram readers', () => {
   });
 
   it('reads a sketch finish from the tab header', () => {
-    expect(sketched(diagram.documents[0]!.tabs[0]!)).toBe(true);
+    expect(sketched(diagram.documents[0].tabs[0])).toBe(true);
   });
 });
 
 describe('sheet readers', () => {
   it('reads a column under its header and the cells that show errors', () => {
-    expect(below(header(diagram, /^rep$/i)).map((c: { input: string }) => c.input)).toEqual(['Ana', 'Raj']);
+    expect(below(header(diagram, /^rep$/i)).map((c: { input: string }) => c.input)).toEqual([
+      'Ana',
+      'Raj',
+    ]);
     expect(errorCells(diagram).map((c: { at: string }) => c.at)).toEqual(['B1']);
     expect(below(null)).toEqual([]);
   });
@@ -107,8 +138,14 @@ describe('pagesOf', () => {
 
 describe('parseTabHeader', () => {
   it('reads a kind and mode, or an Illustrate tab’s pages', () => {
-    expect(parseTabHeader('tab 6cb1 "RSVP" · 0 elements · kind=form (read_form) · mode=plan · rev 1')).toEqual({ kind: 'form', mode: 'plan' });
-    expect(parseTabHeader('tab 3be5 "Deck" · 53 elements: 53 boxes · illustrate 6 pages: 5 slide, 1 infographic (view pages) · rev 5')).toEqual({
+    expect(
+      parseTabHeader('tab 6cb1 "RSVP" · 0 elements · kind=form (read_form) · mode=plan · rev 1'),
+    ).toEqual({ kind: 'form', mode: 'plan' });
+    expect(
+      parseTabHeader(
+        'tab 3be5 "Deck" · 53 elements: 53 boxes · illustrate 6 pages: 5 slide, 1 infographic (view pages) · rev 5',
+      ),
+    ).toEqual({
       kind: null,
       mode: 'illustrate',
       pageCount: 6,
@@ -122,7 +159,12 @@ describe('runChecks', () => {
     const task = {
       checks: [
         ['has cart', ({ snap }: { snap: typeof diagram }) => elementsFor(snap, [/cart/i])],
-        ['throws', () => { throw new Error('boom'); }],
+        [
+          'throws',
+          () => {
+            throw new Error('boom');
+          },
+        ],
       ],
     };
     expect(runChecks(task, { snap: diagram, run: { finalText: 'Done' } })).toEqual([
@@ -131,6 +173,10 @@ describe('runChecks', () => {
       { name: 'has cart', pass: true, detail: null },
       { name: 'throws', pass: false, detail: 'check threw: boom' },
     ]);
-    expect(runChecks({ checks: [] }, { snap: { documents: [] }, run: { finalText: ' ' } }).map((c: { pass: boolean }) => c.pass)).toEqual([false, false]);
+    expect(
+      runChecks({ checks: [] }, { snap: { documents: [] }, run: { finalText: ' ' } }).map(
+        (c: { pass: boolean }) => c.pass,
+      ),
+    ).toEqual([false, false]);
   });
 });

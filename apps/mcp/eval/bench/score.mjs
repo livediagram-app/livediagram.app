@@ -31,7 +31,9 @@ export function scoreRound(round) {
     const task = taskById(taskId);
     const run = parseTranscript(readFileSync(join(dir, file), 'utf8'));
     const snapFile = join(dir, `${name}.snapshot.json`);
-    const snap = existsSync(snapFile) ? JSON.parse(readFileSync(snapFile, 'utf8')) : { documents: [] };
+    const snap = existsSync(snapFile)
+      ? JSON.parse(readFileSync(snapFile, 'utf8'))
+      : { documents: [] };
     runs.push({
       name,
       task: taskId,
@@ -46,19 +48,28 @@ export function scoreRound(round) {
     });
   }
   const toolChars = meta.tools.reduce(
-    (n, t) => n + t.name.length + (t.description ?? '').length + JSON.stringify(t.inputSchema ?? {}).length,
+    (n, t) =>
+      n + t.name.length + (t.description ?? '').length + JSON.stringify(t.inputSchema ?? {}).length,
     0,
   );
   return {
     round,
-    meta: { ...meta, tools: undefined, instructions: undefined, toolCount: meta.tools.length, toolChars },
+    meta: {
+      ...meta,
+      tools: undefined,
+      instructions: undefined,
+      toolCount: meta.tools.length,
+      toolChars,
+    },
     deprecated: [...deprecated],
     runs,
   };
 }
 
 function main() {
-  const { values } = parseArgs({ options: { round: { type: 'string' }, compare: { type: 'string' } } });
+  const { values } = parseArgs({
+    options: { round: { type: 'string' }, compare: { type: 'string' } },
+  });
   if (!values.round) throw new Error('--round is required');
   const results = scoreRound(values.round);
   const dir = join(RUNS, values.round);

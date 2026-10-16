@@ -8,13 +8,17 @@ const DECOR_SHAPES = new Set(['frame', 'plan-board', 'plan-sheet', 'lane', 'pool
 export const lc = (s) => (s ?? '').toString().toLowerCase();
 
 function asRegex(word) {
-  return word instanceof RegExp ? word : new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  return word instanceof RegExp
+    ? word
+    : new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
 }
 
 // ---- diagrams -----------------------------------------------------------------------------------------------
 
 export function tabsOf(snap) {
-  return (snap.documents ?? []).flatMap((d) => (d.tabs ?? []).map((t) => ({ ...t, documentId: d.id })));
+  return (snap.documents ?? []).flatMap((d) =>
+    (d.tabs ?? []).map((t) => ({ ...t, documentId: d.id })),
+  );
 }
 
 export function elementsOf(snap) {
@@ -25,10 +29,13 @@ export function elementsOf(snap) {
 export function wordsOf(el) {
   const parts = [el.label, el.text, el.title, el.note, el.name, el.subtitle];
   if (Array.isArray(el.rows)) parts.push(...el.rows.flat(2));
-  if (Array.isArray(el.columns)) parts.push(...el.columns.map((c) => (typeof c === 'string' ? c : c?.name)));
-  if (Array.isArray(el.attributes)) parts.push(...el.attributes.map((a) => (typeof a === 'string' ? a : a?.name)));
+  if (Array.isArray(el.columns))
+    parts.push(...el.columns.map((c) => (typeof c === 'string' ? c : c?.name)));
+  if (Array.isArray(el.attributes))
+    parts.push(...el.attributes.map((a) => (typeof a === 'string' ? a : a?.name)));
   if (Array.isArray(el.data)) parts.push(...el.data.map((d) => d?.label ?? d?.name));
-  if (Array.isArray(el.entityFields)) parts.push(...el.entityFields.flatMap((f) => [f?.name, f?.type]));
+  if (Array.isArray(el.entityFields))
+    parts.push(...el.entityFields.flatMap((f) => [f?.name, f?.type]));
   if (Array.isArray(el.pieSlices)) parts.push(...el.pieSlices.map((d) => d?.label));
   if (Array.isArray(el.lineCategories)) parts.push(...el.lineCategories);
   if (Array.isArray(el.lineSeries)) parts.push(...el.lineSeries.map((d) => d?.name));
@@ -37,11 +44,15 @@ export function wordsOf(el) {
 
 // The labelled boxes on the tabs: shapes that are not containers, with words.
 export function boxes(snap) {
-  return elementsOf(snap).filter((e) => e.type === 'shape' && !DECOR_SHAPES.has(e.shape) && wordsOf(e));
+  return elementsOf(snap).filter(
+    (e) => e.type === 'shape' && !DECOR_SHAPES.has(e.shape) && wordsOf(e),
+  );
 }
 
 export function arrows(snap) {
-  return elementsOf(snap).filter((e) => e.type === 'arrow' || e.type === 'line' || e.type === 'connector');
+  return elementsOf(snap).filter(
+    (e) => e.type === 'arrow' || e.type === 'line' || e.type === 'connector',
+  );
 }
 
 const endId = (end) => end?.elementId ?? end?.id ?? null;
@@ -75,14 +86,19 @@ export function shapes(snap, kind) {
 
 // Something matching `word` sits inside a frame or lane whose words match `group`: by bounds, or by its parent.
 export function inside(snap, word, group) {
-  const groups = find(snap, group).filter((g) => g.type === 'shape' && (DECOR_SHAPES.has(g.shape) || g.width));
+  const groups = find(snap, group).filter(
+    (g) => g.type === 'shape' && (DECOR_SHAPES.has(g.shape) || g.width),
+  );
   return find(snap, word).some((e) =>
     groups.some(
       (g) =>
         g.id !== e.id &&
         (e.parentId === g.id ||
           e.frameId === g.id ||
-          (e.x >= g.x && e.y >= g.y && e.x + (e.width ?? 0) <= g.x + g.width && e.y + (e.height ?? 0) <= g.y + g.height)),
+          (e.x >= g.x &&
+            e.y >= g.y &&
+            e.x + (e.width ?? 0) <= g.x + g.width &&
+            e.y + (e.height ?? 0) <= g.y + g.height)),
     ),
   );
 }
@@ -93,8 +109,19 @@ export function pagesOf(snap) {
   const out = [];
   for (const t of tabsOf(snap)) {
     for (const line of (t.pages ?? '').split('\n')) {
-      const m = /^page (\d+)(?: "([^"]*)")? \S+ · ([\w-]+) ([^·]+?) · at .*?(?:· (\d+) elements?|· article .*)$/.exec(line);
-      if (m) out.push({ tabId: t.id, n: Number(m[1]), name: m[2] ?? null, kind: m[3], format: m[4].trim(), elements: m[5] === undefined ? null : Number(m[5]) });
+      const m =
+        /^page (\d+)(?: "([^"]*)")? \S+ · ([\w-]+) ([^·]+?) · at .*?(?:· (\d+) elements?|· article .*)$/.exec(
+          line,
+        );
+      if (m)
+        out.push({
+          tabId: t.id,
+          n: Number(m[1]),
+          name: m[2] ?? null,
+          kind: m[3],
+          format: m[4].trim(),
+          elements: m[5] === undefined ? null : Number(m[5]),
+        });
     }
   }
   return out;
@@ -122,7 +149,8 @@ export function allText(snap) {
       if (t.pages) out.push(t.pages);
     }
     for (const it of d.items?.items ?? []) out.push(it.title, JSON.stringify(it.fields ?? {}));
-    for (const b of d.items?.boards ?? []) out.push(b.title, ...(b.columns ?? []).map((c) => c.name));
+    for (const b of d.items?.boards ?? [])
+      out.push(b.title, ...(b.columns ?? []).map((c) => c.name));
     for (const s of d.sheets ?? []) out.push(s.title, sheetText(s));
   }
   return lc(out.filter(Boolean).join('\n'));
@@ -221,7 +249,12 @@ export function header(snap, word) {
   const re = asRegex(word);
   for (const sheet of sheetsOf(snap))
     for (const c of cellsOf(sheet))
-      if (typeof c.input === 'string' && !c.input.startsWith('=') && re.test(c.input) && c.input.length <= 40)
+      if (
+        typeof c.input === 'string' &&
+        !c.input.startsWith('=') &&
+        re.test(c.input) &&
+        c.input.length <= 40
+      )
         return { sheet, at: c.at, col: colOf(c.at), row: rowOf(c.at) };
   return null;
 }
@@ -231,7 +264,8 @@ export function below(found) {
   if (!found) return [];
   const byAt = new Map(cellsOf(found.sheet).map((c) => [c.at, c]));
   const out = [];
-  for (let r = found.row + 1; byAt.has(`${found.col}${r}`); r++) out.push(byAt.get(`${found.col}${r}`));
+  for (let r = found.row + 1; byAt.has(`${found.col}${r}`); r++)
+    out.push(byAt.get(`${found.col}${r}`));
   return out;
 }
 
@@ -260,13 +294,19 @@ const show = (w) => (w instanceof RegExp ? w.source : w);
 export function mentionsAll(snap, words) {
   const text = allText(snap);
   const missing = words.filter((w) => !asRegex(w).test(text));
-  return { pass: missing.length === 0, detail: missing.length ? `missing: ${missing.map(show).join(', ')}` : null };
+  return {
+    pass: missing.length === 0,
+    detail: missing.length ? `missing: ${missing.map(show).join(', ')}` : null,
+  };
 }
 
 // Every word has an element of its own (a box, a sticky, an entity, a lane) holding it.
 export function elementsFor(snap, words) {
   const missing = words.filter((w) => find(snap, w).length === 0);
-  return { pass: missing.length === 0, detail: missing.length ? `no element for: ${missing.map(show).join(', ')}` : null };
+  return {
+    pass: missing.length === 0,
+    detail: missing.length ? `no element for: ${missing.map(show).join(', ')}` : null,
+  };
 }
 
 // Every pair is joined by an arrow ([a, b] directed a to b when `directed`).
@@ -274,7 +314,9 @@ export function allLinked(snap, pairs, { directed = false } = {}) {
   const missing = pairs.filter(([a, b]) => !linked(snap, a, b, { directed }));
   return {
     pass: missing.length === 0,
-    detail: missing.length ? `not joined: ${missing.map(([a, b]) => `${show(a)} ${directed ? '→' : '–'} ${show(b)}`).join(', ')}` : null,
+    detail: missing.length
+      ? `not joined: ${missing.map(([a, b]) => `${show(a)} ${directed ? '→' : '–'} ${show(b)}`).join(', ')}`
+      : null,
   };
 }
 
@@ -301,7 +343,8 @@ export function runChecks(task, ctx) {
   return all.map(([name, fn]) => {
     try {
       const got = fn(ctx);
-      if (typeof got === 'object' && got !== null) return { name, pass: !!got.pass, detail: got.detail ?? null };
+      if (typeof got === 'object' && got !== null)
+        return { name, pass: !!got.pass, detail: got.detail ?? null };
       return { name, pass: !!got, detail: null };
     } catch (err) {
       return { name, pass: false, detail: `check threw: ${err?.message ?? err}` };

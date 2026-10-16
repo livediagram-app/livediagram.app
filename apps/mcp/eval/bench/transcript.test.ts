@@ -8,19 +8,32 @@ const transcript = [
   line({ type: 'system', subtype: 'init', model: 'claude-haiku-5-5', session_id: 's-1' }),
   line({
     type: 'assistant',
-    message: { content: [{ type: 'tool_use', id: 't1', name: 'mcp__livediagram__add_form', input: { name: 'RSVP' } }] },
+    message: {
+      content: [
+        { type: 'tool_use', id: 't1', name: 'mcp__livediagram__add_form', input: { name: 'RSVP' } },
+      ],
+    },
   }),
   line({
     type: 'user',
     message: {
       content: [
-        { type: 'tool_result', tool_use_id: 't1', is_error: true, content: [{ type: 'text', text: 'Give a starter or questions, not both.\nmore' }] },
+        {
+          type: 'tool_result',
+          tool_use_id: 't1',
+          is_error: true,
+          content: [{ type: 'text', text: 'Give a starter or questions, not both.\nmore' }],
+        },
       ],
     },
   }),
   line({
     type: 'assistant',
-    message: { content: [{ type: 'tool_use', id: 't2', name: 'mcp__livediagram__add_form', input: { name: 'RSVP' } }] },
+    message: {
+      content: [
+        { type: 'tool_use', id: 't2', name: 'mcp__livediagram__add_form', input: { name: 'RSVP' } },
+      ],
+    },
   }),
   line({
     type: 'user',
@@ -39,9 +52,14 @@ const transcript = [
   }),
   line({
     type: 'assistant',
-    message: { content: [{ type: 'tool_use', id: 't3', name: 'mcp__livediagram__find_diagrams', input: {} }] },
+    message: {
+      content: [{ type: 'tool_use', id: 't3', name: 'mcp__livediagram__find_diagrams', input: {} }],
+    },
   }),
-  line({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 't3', content: '[]' }] } }),
+  line({
+    type: 'user',
+    message: { content: [{ type: 'tool_result', tool_use_id: 't3', content: '[]' }] },
+  }),
   line({ type: 'assistant', message: { content: [{ type: 'text', text: 'Here is your form.' }] } }),
   'not json',
   line({
@@ -51,7 +69,12 @@ const transcript = [
     duration_ms: 1200,
     total_cost_usd: 0.1,
     result: 'Here is your form.',
-    usage: { input_tokens: 5, cache_creation_input_tokens: 100, cache_read_input_tokens: 50, output_tokens: 40 },
+    usage: {
+      input_tokens: 5,
+      cache_creation_input_tokens: 100,
+      cache_read_input_tokens: 50,
+      output_tokens: 40,
+    },
   }),
 ].join('\n');
 
@@ -64,8 +87,8 @@ describe('parseTranscript', () => {
       ['add_form', false],
       ['find_diagrams', false],
     ]);
-    expect(run.calls[0]!.error).toBe('Give a starter or questions, not both.');
-    expect(run.calls[1]!.images).toBe(1);
+    expect(run.calls[0].error).toBe('Give a starter or questions, not both.');
+    expect(run.calls[1].images).toBe(1);
   });
 
   it('finds the documents a successful result names', () => {
@@ -76,7 +99,12 @@ describe('parseTranscript', () => {
     expect(run.model).toBe('claude-haiku-5-5');
     expect(run.sessionId).toBe('s-1');
     expect(run.finalText).toBe('Here is your form.');
-    expect(run.result).toMatchObject({ turns: 4, inputTokens: 155, outputTokens: 40, isError: false });
+    expect(run.result).toMatchObject({
+      turns: 4,
+      inputTokens: 155,
+      outputTokens: 40,
+      isError: false,
+    });
   });
 
   it('falls back to the last text when there is no result line', () => {
@@ -89,14 +117,23 @@ describe('parseTranscript', () => {
 describe('metricsOf', () => {
   it('counts errors, retries of the failed tool and deprecated calls', () => {
     const m = metricsOf(parseTranscript(transcript), new Set(['find_diagrams']));
-    expect(m).toMatchObject({ calls: 3, errors: 1, retries: 1, deprecatedCalls: 1, firstTool: 'add_form', finished: true });
+    expect(m).toMatchObject({
+      calls: 3,
+      errors: 1,
+      retries: 1,
+      deprecatedCalls: 1,
+      firstTool: 'add_form',
+      finished: true,
+    });
   });
 });
 
 describe('documentIdsIn', () => {
   it('reads ids from documentId fields and document links', () => {
     const other = '11111111-2222-3333-4444-555555555555';
-    expect(documentIdsIn(`"documentId": "${DOC}" https://livediagram.app/document/${other}`)).toEqual([DOC, other]);
+    expect(
+      documentIdsIn(`"documentId": "${DOC}" https://livediagram.app/document/${other}`),
+    ).toEqual([DOC, other]);
     expect(documentIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
   });
 });

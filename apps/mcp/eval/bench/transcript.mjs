@@ -22,7 +22,15 @@ export function parseTranscript(jsonl) {
   const calls = [];
   const byId = new Map();
   const docs = new Set();
-  const run = { model: null, sessionId: null, calls, texts: [], finalText: '', documentIds: [], result: null };
+  const run = {
+    model: null,
+    sessionId: null,
+    calls,
+    texts: [],
+    finalText: '',
+    documentIds: [],
+    result: null,
+  };
   for (const line of jsonl.split('\n')) {
     if (!line.trim()) continue;
     let m;
@@ -57,9 +65,13 @@ export function parseTranscript(jsonl) {
         if (!call) continue;
         const text = textOf(c.content);
         call.isError = c.is_error === true;
-        call.error = call.isError ? (text.split('\n').find((l) => l.trim()) ?? '').slice(0, 300) : null;
+        call.error = call.isError
+          ? (text.split('\n').find((l) => l.trim()) ?? '').slice(0, 300)
+          : null;
         call.resultChars = text.length;
-        call.images = Array.isArray(c.content) ? c.content.filter((x) => x.type === 'image').length : 0;
+        call.images = Array.isArray(c.content)
+          ? c.content.filter((x) => x.type === 'image').length
+          : 0;
         if (!call.isError) for (const id of documentIdsIn(text)) docs.add(id);
       }
     } else if (m.type === 'result') {

@@ -63,7 +63,19 @@ function mintTokens(count) {
   writeFileSync(file, rows.join('\n'));
   const res = spawnSync(
     'corepack',
-    ['pnpm', 'exec', 'wrangler', 'd1', 'execute', 'DB', '--local', '--persist-to', '.wrangler/state', '--file', file],
+    [
+      'pnpm',
+      'exec',
+      'wrangler',
+      'd1',
+      'execute',
+      'DB',
+      '--local',
+      '--persist-to',
+      '.wrangler/state',
+      '--file',
+      file,
+    ],
     { cwd: opts['api-dir'], encoding: 'utf8' },
   );
   if (res.status !== 0) throw new Error(`Minting tokens failed:\n${res.stderr || res.stdout}`);
@@ -144,7 +156,9 @@ async function runJob(job) {
     parseTranscript(turn.transcript).documentIds.forEach((id) => touched.add(id));
     const snap = await snapshot(client, [...touched]);
     writeFileSync(join(OUT, `${name}.snapshot.json`), JSON.stringify(snap));
-    console.log(`done ${name} in ${Math.round((Date.now() - started) / 1000)}s (exit ${turn.code})`);
+    console.log(
+      `done ${name} in ${Math.round((Date.now() - started) / 1000)}s (exit ${turn.code})`,
+    );
   } catch (err) {
     writeFileSync(join(OUT, `${name}.error.txt`), String(err?.stack ?? err));
     console.log(`FAILED ${name}: ${err?.message ?? err}`);
@@ -163,7 +177,9 @@ async function main() {
   const tokens = mintTokens(jobs.length);
   jobs.forEach((j, i) => (j.token = tokens[i]));
   // Each run's token (local D1 only; runs/ is gitignored), so its library can be read again after the round.
-  const prior = existsSync(join(OUT, 'tokens.json')) ? JSON.parse(readFileSync(join(OUT, 'tokens.json'), 'utf8')) : {};
+  const prior = existsSync(join(OUT, 'tokens.json'))
+    ? JSON.parse(readFileSync(join(OUT, 'tokens.json'), 'utf8'))
+    : {};
   for (const j of jobs) {
     const name = `${j.task.id}-${j.model}-${j.n}`;
     if (prior[name] && existsSync(join(OUT, `${name}.snapshot.json`))) j.token = prior[name];

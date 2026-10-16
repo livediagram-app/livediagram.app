@@ -31,14 +31,23 @@ export async function connect({ url = DEFAULT_MCP_URL, token }) {
     jsonrpc: '2.0',
     id: 1,
     method: 'initialize',
-    params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'eval', version: '1' } },
+    params: {
+      protocolVersion: '2025-06-18',
+      capabilities: {},
+      clientInfo: { name: 'eval', version: '1' },
+    },
   });
   await post(url, token, { jsonrpc: '2.0', method: 'notifications/initialized' }, sid);
   let id = 2;
   return {
     instructions: init?.result?.instructions ?? '',
     async tools() {
-      const { message } = await post(url, token, { jsonrpc: '2.0', id: id++, method: 'tools/list' }, sid);
+      const { message } = await post(
+        url,
+        token,
+        { jsonrpc: '2.0', id: id++, method: 'tools/list' },
+        sid,
+      );
       return message.result.tools;
     },
     async call(name, args = {}) {

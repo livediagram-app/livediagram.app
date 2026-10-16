@@ -15,13 +15,21 @@ describe('the task bank', () => {
   });
 
   it('builds every edit task on a task that exists and is no edit itself', () => {
-    for (const t of TASKS.filter((x) => x.after)) expect(taskById(t.after).after, t.id).toBeUndefined();
+    for (const t of TASKS.filter((x) => x.after))
+      expect(taskById(t.after).after, t.id).toBeUndefined();
   });
 
   it('selects all, an area or ids', () => {
     expect(selectTasks('all')).toHaveLength(TASKS.length);
     expect(selectTasks('forms').map((t) => t.id)).toEqual(['Q1', 'Q2', 'Q3', 'Q4', 'Q5']);
-    expect(selectTasks('forms,D1,Q1').map((t) => t.id)).toEqual(['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'D1']);
+    expect(selectTasks('forms,D1,Q1').map((t) => t.id)).toEqual([
+      'Q1',
+      'Q2',
+      'Q3',
+      'Q4',
+      'Q5',
+      'D1',
+    ]);
     expect(() => selectTasks('Z9')).toThrow('No task Z9');
   });
 });

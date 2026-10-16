@@ -1,12 +1,22 @@
 # Evaluate MCP output
 
 How to measure, and raise, the quality of what an AI assistant makes through the livediagram MCP server
-([MCP server](../specs/015-api/mcp-server.md)). Subagents stand in for Claude with the connector installed, build what
-a user asked for through the tools alone, look at the server's own preview, and score it against template quality.
-Each finding becomes a fix in the product, the tools or their descriptions, and the round runs again.
+([MCP server](../specs/015-api/mcp-server.md)). A **benchmark** runs real headless Claude sessions with the connector
+mounted and nothing else, on several models, several times each, then scores every run mechanically: what the
+transcript shows (calls, refusals, retries) and yes/no **checks** on what was made, read back through the tools. A
+finding earns a fix only when it recurs; the same benchmark then shows whether the fix worked and broke nothing else.
 
-The kit lives in `apps/mcp/eval/`: `mcp-call.mjs` (the JSON-RPC helper), `brief.md` (the rules every evaluator
-follows) and `scenarios.md` (the scenario bank, ids stable across runs). `token.env` and `runs/` are gitignored.
+The kit lives in `apps/mcp/eval/`:
+
+- `bench/tasks/*.mjs`: the task bank, one file per area (`D` diagrams, `P` plan, `S` sheets, `I` illustrate, `F`
+  facilitate, `W` draw, `Q` forms). Each task is a prompt as a user would type it, its checks, an optional `after`
+  (an edit, run as a second turn of the same session) and an optional `setup` (what the prompt takes for granted,
+  made in the run's empty library). Ids are stable: rounds compare on the ids they share.
+- `bench/checks.mjs`: the readers checks are written with (boxes, arrows, cards, card types, sheet cells, forms,
+  pages, the reply), each answering yes or no, with a reason on a no.
+- `bench/run.mjs`: runs a round. `bench/score.mjs`: scores one, offline. `bench/summary.mjs`: the report.
+- `mcp-call.mjs`: calls one tool by hand, to replay a call from a transcript.
+- `token.env`, `tokens.env` and `runs/` are gitignored.
 
 ## Set up
 
@@ -16,112 +26,103 @@ follows) and `scenarios.md` (the scenario bank, ids stable across runs). `token.
 3. Start the MCP and the api in ONE wrangler session, so the MCP's service binding reaches this branch's api, from
    `apps/mcp`:
    `nohup corepack pnpm exec wrangler dev -c wrangler.toml -c ../api/wrangler.toml --port 8798 --inspector-port 9398 --persist-to ../api/.wrangler/state > <scratchpad>/mcp.log 2>&1 &`
-4. Wait for `Ready on http://localhost:8798` in the log before any call.
-5. Make an API token: sign in to the local editor, open **Settings**, **Account**, **API Tokens**, create one with
-   write access, and save it as `TOKEN=lvd_…` in `apps/mcp/eval/token.env`. Evaluation documents land in that account's library.
-6. Check the helper reaches the server: `node apps/mcp/eval/mcp-call.mjs tools` prints one line per tool.
+4. Wait for `Ready on http://localhost:8798` in the log before any run.
+5. Check `claude --version` answers and the CLI is signed in: the benchmark runs on the signed-in account's usage.
 
 ## Run a round
 
-7. Pick the scenarios for the mode under work from `scenarios.md`. A mode with none gets new ids (`D`, `P`, `S`, `I`,
-   `F`, `W`, `Q` (forms) so far): one easy, one or two medium, one hard, and one edit of an earlier result. Each prompt is what a
-   user would type, never a hint at the tools.
-8. Give each evaluator two to four scenarios, so a round of a dozen runs as four agents in parallel. An edit
-   scenario goes to the agent that built the document it edits.
-9. Launch each as a background `general-purpose` subagent with this prompt, a fresh `runs/<round>-<letter>` per agent:
+6. Run from `apps/mcp/eval`: `node bench/run.mjs --round <name> --tasks all --models haiku,sonnet,opus --repeat 2
+--concurrency 6`. `--tasks` takes `all`, an area (`forms`) or ids (`Q1,Q4`), mixed. A whole-bank round of 258 runs
+   takes about an hour.
+7. Each run gets a token minted into local D1 for a throwaway owner, so it starts in an empty library and never sees
+   another run's documents ("our Bugs board" finds its own). The tokens are kept in `runs/<round>/tokens.json` so a
+   run's library can be read again.
+8. Each run is `claude -p` from an empty temp directory outside the repo, with `--strict-mcp-config`, `--tools ""`,
+   `--setting-sources ""`, a short chat-app system prompt (with a fixed date) and `ENABLE_TOOL_SEARCH=false`, so the
+   assistant sees every tool schema up front, as a connector in a chat app does, and nothing of the repo.
+9. A run that stops halfway is resumed by running the same command again: finished runs (with a snapshot) are skipped.
+10. Do not edit code under the running server while a round runs: wrangler reloads mid-call and skews the result.
+11. Score it: `node bench/score.mjs --round <name> [--compare <earlier round>]` writes `results.json` and
+    `summary.md`: each model's pass rate, calls, errors, retries, deprecated calls, time and cost; each task's pass
+    rate per model; the checks failing in two or more runs; the tool errors in two or more runs; deprecated tools
+    called; and, with `--compare`, what moved.
 
-   > Read the brief at `<kit>/brief.md` and follow it exactly, except: return your report as your final message (do
-   > not try to write the report file). EVAL=`<kit>`. Use EVAL_LOG=$EVAL/runs/`<run>`/calls.jsonl
-   > EVAL_IMG_DIR=$EVAL/runs/`<run>`/shots. Write any scratch files only inside $EVAL/runs/`<run>`/. If the server at 127.0.0.1:8798 refuses connections, wait a minute and
-   > retry; say so in the report. Fulfil scenarios `<ids>` from $EVAL/scenarios.md, each as its own new document,
-   > as the user typed it. Score each result 1-5 against template quality, as the brief describes, and list
-   > concrete defects with the element ids and what you saw in the preview.
+## Write a task
 
-10. When a known fix sits on another unmerged branch (a preview font, an emoji glyph), add to the prompt that the
-    agent notes those defects separately and gives a second score as if they were fixed. The first score stays the
-    one recorded.
-11. Do not edit code under the running server while a round runs: wrangler reloads mid-call and skews the result.
-    Draft docs or tests elsewhere in the meantime.
-12. Record every score in the plan's scores table as reports arrive, one column per round.
+12. A new task's prompt is what a user would type, never a hint at the tools.
+13. Each check states one requirement the prompt makes, as a yes or no on what was made (the snapshot), or on what was
+    said (the reply). Never score taste: a check that needs an opinion is not a check.
+14. Ground new checks in a real run: run the task once (`--tasks <id> --models sonnet --repeat 1`), read its
+    `.snapshot.json`, then write the checks against the shapes it holds.
+15. When a check fails, read the run before believing it: in the first pilot 7 of 7 failures were the check's own bug
+    (a field name, a page line it could not parse, a miscount in the prompt's own arithmetic).
+16. Cross-test the bank after changing checks: run each task's checks on every other task's snapshot. A check that
+    passes on unrelated output (or on none) is vacuous: make it require the thing it is about.
+17. A task that needs something to exist first (a board to fill, a document to edit) makes it in `setup`, and answers
+    the ids of what it made so the snapshot reads them too.
 
 ## Act on the findings
 
-13. Open the final images yourself; a score without a look at the picture is not trusted.
-14. Sort each defect into one of four:
-    - a product bug (the face, the render, the engine): fix it in the shared package, with a test;
-    - a gap in what the tools say (an undocumented field, a default nobody could guess): fix the tool description or
-      the element format, as facts, never as a recipe for one scenario;
-    - a missing starting point that every agent rebuilds by hand (a board kind no template covers): add a template;
-    - the agent's own choice (a label it made too long): leave it, unless every run repeats it.
-15. Write the spec delta before the code, as for any change; specs name what the MCP now does.
-16. A lint finding agents call noise is a finding: either the lint is wrong, or the template that trips it is.
-17. Commit and push each batch of fixes as it turns green; run the full gate only before the PR.
-18. Restart the server after every change that a round should see: kill the wrangler PID
-    (`pgrep -f "wrangler dev -c wrangler.toml"`) and relaunch step 3. Wrangler does not reliably reload config,
-    templates or package changes on its own.
-19. Run the next round with the same prompts and new run folders. The phase is done when every scenario scores 4 or
-    more on two runs, or what holds one back is named in the PR as a product feature still to build.
+18. Start from the two recurring tables. A tool error in two or more runs is a finding; one run is noise until it
+    happens again.
+19. Read the run's transcript (`runs/<round>/<task>-<model>-<n>.jsonl`) around the error, and replay the call with
+    `mcp-call.mjs` before changing anything.
+20. Sort each finding into one of four:
+    - a misleading or missing tool description (an undocumented field, a default nobody could guess): fix the
+      description, as facts, never as a recipe for one task;
+    - a schema that invites the mistake (a name agents keep guessing, two ways to say one thing): fix the schema;
+    - an error that does not say how to recover: make it name the fix (what is valid, which tool does it);
+    - a product bug or a missing capability: fix it in the shared package, with a test, or name it in the PR.
+21. A weaker model shows a description gap first: a Haiku-only failure is still a finding.
+22. Write the spec delta before the code, as for any change; specs name what the MCP now does.
+23. Commit and push each batch of fixes as it turns green; run the full gate only before the PR.
+24. Restart the server after every change a round should see: kill the wrangler PID
+    (`pgrep -f "wrangler dev -c wrangler.toml"`) and relaunch step 3.
+25. Rerun the tasks the fix touched, then the whole bank, and compare with `--compare`: keep a fix only when its
+    numbers improve and no other task drops.
+
+## Look at the pictures
+
+26. Checks judge content and structure, not looks. For layout and polish, open the renders: a run's `read_document`
+    with `image: true` in its transcript, or render a snapshot's tab again with `mcp-call.mjs`.
+27. When judging looks, a subagent may stand in for the user with `brief.md`; record what it saw as defects with
+    element ids, never as a score, and change the product only where two runs agree.
 
 ## Ship
 
-20. Render the PR images through the tools, so they show what an assistant now gets: for a before and after pair,
-    take the first round's preview as the before and replay that same call (its args are in the run's `calls.jsonl`)
-    on the branch's server as the after, so the pair differs only by the change; `read_document` with
-    `image:true`, or `create_document` from a template.
-21. Push the images to an orphan `pr-assets/<PR number>` branch (`git hash-object -w`, `git mktree`,
+28. Render the PR images through the tools, so they show what an assistant now gets: for a before and after pair,
+    replay the first round's call (its args are in the transcript) on the branch's server as the after.
+29. Push the images to an orphan `pr-assets/<PR number>` branch (`git hash-object -w`, `git mktree`,
     `git commit-tree`, push with `--no-verify`) and link the raw URLs pinned to that commit. Do not fetch a raw URL
     before the push lands: GitHub caches the 404 for a few minutes.
-22. In the PR's Notes, list what still holds a scenario below 4 and why.
-23. Fold what this round taught back into this file: a new gotcha, a step that was missed, a scenario worth keeping.
+30. Put the round's model table and the `--compare` table in the PR, and in its Notes what still fails and why.
+31. Fold what this round taught back into this file: a new gotcha, a step that was missed, a task worth keeping.
 
 ## Gotchas
 
-- A token saved in an earlier session's scratchpad belongs to that session's D1 copy: after copying main's state, the
-  api refuses it ("the token is not accepted"). Mint one into the copy instead: insert an `api_tokens` row (id,
-  `owner_id` of the account that holds the other local tokens, `token_hash` the sha256 hex of `lvd_<base64url of 32
-random bytes>`, `created_at` and `expires_at` in ms, `read_only` 0) with `wrangler d1 execute DB --local
---persist-to .wrangler/state`, and save the plain token in `token.env`.
-- Scores swing a point between runs of one scenario, mostly on whether the evaluator hand-fixes the first render
-  (re-anchoring, a replace) or keeps it. Judge a fix by the pictures and by measures on the evaluator's own input
-  (the graph is in `calls.jsonl`), not by one score; re-lay out that input against the old and new code to compare.
-
-- Subagents cannot write files in this harness; they return the report as their final message.
-- Evaluators running side by side share a scratchpad: one picked up another session's stale `d14.json` and created
-  the wrong document. Keep each evaluator's scratch files in its own run folder (the prompt above says so).
-- Two evaluators can disagree on taste (stage frames stretched to one width were "empty"; left their own width,
-  "ragged"). Change the product only where two runs agree, or the scores swing between the two.
-- Grade the scenarios a round of fixes touched, then run all fourteen now and then: a layout fix for one scenario
-  shifts others (R7 caught D9 dropping from 4 to 3).
-- The preview is the server's own render (`renderElementsToSvg` through resvg), not the editor. A defect only the
-  preview shows is still a defect: it is what the assistant sees and what it judges its work by.
-- A template's sample people and numbers read as real to an evaluator; an agent leaves them in unless told what is
-  sample content.
-- Timing tests fail under load while a round and the coverage gate share the machine; rerun them alone before
-  treating them as real.
-- An evaluator works around a defect and the next round's picture hides it: D2's evaluators labelled one of four bus
-  arrows to dodge the repeated label, which then split the bus. Read the run's `calls.jsonl` for what was asked, not
-  only the final image, and replay the first call to see the defect the agent met.
-- A scenario's hardest critique flips with the fix (swimlanes "too wide" became "reads top to bottom" once hand-offs
-  stacked): run the scenario twice on independent evaluators after a layout change, and keep the change only when
-  both read it better.
-- Measure a new layout pass at 2,000 boxes and 2,000 arrows before the PR: a per-arrow scan of the tab looked free on
-  a fourteen-box diagram and took 1.8 s there (the facing bends, fixed with the element grid).
-- Every so often run the whole bank, not only the mode under work: four rounds of diagrams left Plan, Illustrate,
-  Facilitate and Draw unseen, and the first whole-bank round (0033) found template text overflowing as made, stickers
-  drawn as placeholders and boards cut short in the preview.
-- Five evaluators on one token share its rate limit (120 reads a minute): calls are refused in a burst. The refusal
-  says to wait a minute and retry; tell evaluators to, and do not count a refusal of that kind as a tool error.
-- An evaluator that cuts the helper's output short (`| head`) misses the lint's findings and the created ids, then
-  reports "lint gave counts but never said what", or looks the document up again. Read its `calls.jsonl` and replay
-  one call before acting on a report that something was not said.
+- A run started inside the repo loads the project's auto-memory and CLAUDE.md into the assistant under test (the
+  init line's `memory_paths` names it). Runs start in a temp directory outside the repo for that reason; keep it so.
+- `--bare` would strip that context too, but it needs an API key and never reads the CLI's sign-in: use the flags in
+  step 8 instead.
+- A tool result can carry its JSON and then a lint as separate text parts; read the first part that parses, not the
+  joined text (`resultJson` in `bench/mcp-client.mjs`).
+- `read_document` with `format: "json"` puts the elements under `tab.elements`, not at the top.
+- A token minted into an earlier session's D1 copy is refused after copying main's state again ("the token is not
+  accepted"); `run.mjs` mints its own into the copy each round.
+- A check written from one model's output can quietly fit that model: the cross-test (step 16) and a second model's
+  runs are what show a check is about the prompt.
+- The per-token limits count api requests (reads 120 a minute), and every run has its own token, so runs do not
+  share a limit; a run that still hits one has made a tool read too much. Count the requests one call makes before
+  blaming the assistant's pace.
+- Links point at livediagram.app when the local server has no public host set; a check on a link compares its code,
+  never its host.
+- A form's responses cannot be submitted through the tools, so a check can only see where a response would land
+  (`read_form`'s `goesTo` and `column`); a response's landing is proven by the api's own tests.
 - A lint finding that names a template's own design (its colours, its shape) invites the agent to undo it. Check
   `templates.test.ts` stays clean after a lint change, and lint a fresh template of each kind the round touched.
-- When a fix moves where a row's members sit (stores under services), replay every past input of that shape from
-  `runs/*/calls.jsonl` and compare box geometry before and after: only the inputs the fix was for should move.
-- The per-token limits count api requests, not tool calls (reads 120 a minute): a tool that reads every tab trips them
-  after a dozen calls on a large document. When evaluators hit them, count the requests one call makes before
-  blaming the evaluator's pace, and read only what the call needs (the plan's `tabs` name every tab's kind).
-- Tell an evaluator a known rate-limit refusal is not the tools' fault, and that links point at livediagram.app
-  when the local server has no public host set; otherwise both are reported as defects every round.
-- A form's responses cannot be submitted through the tools: the evaluator can only check where they would land
-  (`read_form`'s `goesTo` and `column`), so a response's landing is proven by the api's own tests, not the eval.
+- Measure a new layout pass at 2,000 boxes and 2,000 arrows before the PR: a per-arrow scan of the tab looked free on
+  a fourteen-box diagram and took 1.8 s there.
+- When a fix moves where a row's members sit (stores under services), replay every past input of that shape from the
+  rounds' transcripts and compare box geometry before and after: only the inputs the fix was for should move.
+- Timing tests fail under load while a round and the coverage gate share the machine; rerun them alone before
+  treating them as real.
