@@ -12,6 +12,11 @@ function recorder(answer: (request: Request) => Response | Promise<Response>) {
 
 const base = 'https://livediagram-api/api';
 
+// The requests a never-answering test fetch holds, as a real fetch holds its request while in flight. A
+// Request's signal hears its caller's abort only through a weak reference, so a request nothing holds can
+// be collected first, and its abort never arrives (the test hung, now and then, under coverage).
+const inFlight = new Set<Request>();
+
 describe('createApiClient', () => {
   it('sends the caller headers, JSON content type for a body, and parses JSON', async () => {
     const { seen, fetch } = recorder(() => Response.json({ ok: 1 }));
@@ -108,13 +113,15 @@ describe('createApiClient', () => {
     const api = createApiClient({
       baseUrl: base,
       fetch: (request) =>
-        new Promise((_, reject) =>
+        new Promise((_, reject) => {
+          inFlight.add(request);
           // As fetch does, it rejects with the signal's reason: whatever the abort was given.
           request.signal.addEventListener('abort', () => {
+            inFlight.delete(request);
             const reason: unknown = request.signal.reason;
             reject(reason);
-          }),
-        ),
+          });
+        }),
       headers: () => ({}),
       timeoutMs: 5,
     });
