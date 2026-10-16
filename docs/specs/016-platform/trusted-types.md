@@ -68,6 +68,12 @@ it runs (transformers.js, TensorFlow.js, jsquash) are outside this boundary.
 
 A third party that needs anything else is a bug to fix with it, never a wider `default`.
 
+**Asked by hand, `default` makes nothing.** The browser always calls the default policy with the sink's name; a call
+without one is code asking `trustedTypes.defaultPolicy.createHTML(...)` directly, and the policy throws. ProseMirror
+tries the default policy that way before making its own `ProseMirrorClipboard` policy, and only falls back when it
+throws: when the policy answered `null` instead, ProseMirror kept it and parsed every pasted HTML as empty, so a rich
+paste into an article pasted nothing (`article-paste.spec.ts` locks it).
+
 **One third party is refused by design.** Cloudflare's JavaScript Detections (bot management) is injected by the edge
 into every page: it writes a script into a hidden iframe with `innerHTML`, in the iframe's own realm, where no policy
 of ours can reach. Trusted Types refuses it, so each page load logs one error from Cloudflare's snippet

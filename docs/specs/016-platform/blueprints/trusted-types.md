@@ -48,8 +48,10 @@ page runs, minified or not:
         return null; // the browser blocks the sink
       },
       // React DOM's scratch <script> (inert); written <\/script> so the HTML parser never ends this script early.
-      createHTML: function (html) {
+      createHTML: function (html, type, sink) {
         if (html === '<script><\/script>') return html;
+        // Called by hand (no sink): make nothing, so ProseMirror falls back to its own policy.
+        if (sink === undefined) throw new TypeError('[trusted-types] the default policy makes no HTML on request');
         console.error('[trusted-types] html-refused ' + html);
         return null;
       },
@@ -71,7 +73,9 @@ page runs, minified or not:
 5. Otherwise allowed only when its origin is in `origins`.
 
 No `createScript`, and `createHTML` passes one string alone: an HTML or script string from code without a policy is
-refused. The boot script contains no `</script` anywhere (a test holds it), since it is written into one.
+refused. Called directly (`trustedTypes.defaultPolicy.createHTML(html)`, no sink argument), `createHTML` throws and
+logs nothing: it is not a violation, and a library that probes the default policy first (ProseMirror) then makes its
+own named policy. The boot script contains no `</script` anywhere (a test holds it), since it is written into one.
 
 ### `trustedHtml` and `parseInert`
 
