@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { apiFetchImageBlobUrl } from '@/lib/api-client';
+import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
 
 // Resolve an image's authenticated bytes to a blob URL the caller can
 // hang on an `<img src>`. Encapsulates the lifecycle dance that both
@@ -37,11 +37,13 @@ type Fetched = { key: string; state: State };
 export function useImageBlobUrl(
   ownerId: string,
   imageId: string | null,
-  opts: { documentId: string; shareCode?: string | null } = { documentId: '' },
+  // `maxEdge`: the longest side to show it at (image-display.ts); this device's display size when
+  // absent, a gallery tile's for the picker.
+  opts: { documentId: string; shareCode?: string | null; maxEdge?: number } = { documentId: '' },
 ): State {
-  const { documentId } = opts;
+  const { documentId, maxEdge } = opts;
   const shareCode = opts.shareCode ?? null;
-  const key = [ownerId, imageId, documentId, shareCode].join('\0');
+  const key = [ownerId, imageId, documentId, shareCode, maxEdge].join('\0');
   const [fetched, setFetched] = useState<Fetched | null>(null);
 
   useEffect(() => {
@@ -49,10 +51,10 @@ export function useImageBlobUrl(
     if (!imageId || imageId.startsWith('data:')) return;
     let cancelled = false;
     let activeUrl: string | null = null;
-    apiFetchImageBlobUrl(ownerId, imageId, { documentId, shareCode })
+    apiFetchImageBlobUrl(ownerId, imageId, { documentId, shareCode, maxEdge })
       .then((url) => {
         if (cancelled) {
-          if (url) URL.revokeObjectURL(url);
+          if (url) releaseImageBlobUrl(url);
           return;
         }
         if (!url) {
@@ -67,9 +69,9 @@ export function useImageBlobUrl(
       });
     return () => {
       cancelled = true;
-      if (activeUrl) URL.revokeObjectURL(activeUrl);
+      if (activeUrl) releaseImageBlobUrl(activeUrl);
     };
-  }, [key, ownerId, imageId, documentId, shareCode]);
+  }, [key, ownerId, imageId, documentId, shareCode, maxEdge]);
 
   if (!imageId) return IDLE;
   // Offline Mode (docs/specs/006-document/offline-mode.md): an embedded image IS its bytes — a base64

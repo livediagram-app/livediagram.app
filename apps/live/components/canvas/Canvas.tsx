@@ -85,6 +85,7 @@ import {
 } from '@/lib/editor-deferred-code';
 import { GifOmit } from './GifOmit';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
+import { useStickyPeelVars } from '@/lib/sticky-peel-image';
 
 // Illustrate's pages and their writing draw only on a tab that has pages, so their code loads on demand
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
@@ -393,6 +394,7 @@ function CanvasView(props: CanvasProps) {
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX
   // below mounts its handlers verbatim.
+  const stickyPeel = useStickyPeelVars();
   const surface = useCanvasSurfaceGestures({
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
@@ -498,6 +500,8 @@ function CanvasView(props: CanvasProps) {
             style={{
               // The paper hollow arrowheads fill with (arrow-defs.tsx).
               ['--lvd-canvas-paper' as string]: tabBackgroundColor,
+              // The sticky notes' paper peel, as a picture (sticky-peel-image.ts).
+              ...stickyPeel,
               // In world space: the pattern pans and zooms with the elements, so
               // they stay on the same dots at any zoom (worldPatternOrigin).
               ...tabBackgroundStyle(

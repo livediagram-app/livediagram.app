@@ -10,6 +10,7 @@ import {
   apiDeleteTab,
   apiDismissSharedWith,
   apiFetchImageBlobUrl,
+  releaseImageBlobUrl,
   apiListImages,
   apiLoadDocument,
   apiLoadShared,
@@ -22,6 +23,7 @@ import {
   setTokenProvider,
 } from './api-client';
 import { apiHeaders, setWorkbenchConfinement } from './api/core';
+import { resetDisplayCacheForTests } from './image-display';
 
 // Reset the module-level token provider between tests so the order of
 // the cases below doesn't leak. The Bearer-path tests register a
@@ -809,6 +811,28 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
     const [url, init] = spy.mock.calls[0] as [string, RequestInit];
     expect(String(url)).toMatch(/\/images\/img%201\?d=d1$/); // imageId encoded
     expect((init.headers as Headers).get('X-Share-Code')).toBe('CODE2345');
+  });
+
+  it('hands every view of the same picture one shared URL, fetched once', async () => {
+    resetDisplayCacheForTests();
+    const spy = vi.fn().mockImplementation(async () => new Response('png', { status: 200 }));
+    vi.stubGlobal('fetch', spy);
+    const made = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:shared');
+    const revoke = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    try {
+      const a = await apiFetchImageBlobUrl('owner', 'img-shared', { documentId: 'd1' });
+      const b = await apiFetchImageBlobUrl('owner', 'img-shared', { documentId: 'd1' });
+      expect([a, b]).toEqual(['blob:shared', 'blob:shared']);
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(made).toHaveBeenCalledTimes(1);
+      releaseImageBlobUrl(a!);
+      expect(revoke).not.toHaveBeenCalled();
+      releaseImageBlobUrl(b!);
+      expect(revoke).toHaveBeenCalledWith('blob:shared');
+    } finally {
+      made.mockRestore();
+      revoke.mockRestore();
+    }
   });
 
   it('omits the query string when no document id is given', async () => {
