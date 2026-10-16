@@ -1,0 +1,117 @@
+'use client';
+
+// Illustrate's Contents in the chrome (docs/specs/007-editor/illustrate-pages.md "Contents"): docked
+// as a sidebar down the canvas's left on a desktop until the person minimises it, else the popover
+// over its cluster button (a bottom sheet on a phone, which never has the sidebar). Where it sits is
+// the person's own choice, in their synced preferences (lib/contents-placement.ts).
+import dynamic from 'next/dynamic';
+import { useCallback, useEffect, type ReactNode } from 'react';
+import { useUiScale } from '@/components/providers/ui-scale';
+import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
+import {
+  readContentsPlacement,
+  withContentsPlacement,
+  type ContentsPlacement,
+} from '@/lib/contents-placement';
+import { track } from '@/lib/telemetry';
+import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
+import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
+import type { CanvasChromeProps } from './CanvasChrome';
+
+// Both load with Illustrate mode, not with the editor: a document without pages pays nothing.
+const PageContentsPanel = dynamic(
+  () => import('./PageContentsPanel').then((m) => m.PageContentsPanel),
+  { ssr: false },
+);
+const PageContentsSidebar = dynamic(
+  () => import('./PageContentsSidebar').then((m) => m.PageContentsSidebar),
+  { ssr: false },
+);
+
+// The telemetry type per placement (the Settings row's, settings-catalogue choiceTelemetryType).
+const PLACEMENT_EVENT: Record<ContentsPlacement, string> = {
+  sidebar: 'ContentsPlacementSidebar',
+  button: 'ContentsPlacementButton',
+};
+
+export function useContentsChrome({
+  props,
+  chromeHidden,
+  isMobile,
+  closeDockPanel,
+}: {
+  props: CanvasChromeProps;
+  chromeHidden: boolean;
+  isMobile: boolean;
+  closeDockPanel: () => void;
+}): {
+  // The sidebar is on screen, so the cluster has no Contents button and the left corners make room.
+  contentsDocked: boolean;
+  contentsSidebarEl: ReactNode;
+  contentsPopoverEl: ReactNode;
+} {
+  const { activeDockPanel, activeDockAnchor, illustratePages, userPreferences, selfParticipant } =
+    props;
+  const toolbarScale = useUiScale('toolbar');
+  const placement = readContentsPlacement(userPreferences);
+  const shown = !!illustratePages && !chromeHidden && !props.zenMode;
+  const contentsDocked = shown && !isMobile && placement === 'sidebar';
+  // The popover belongs to Illustrate mode's button: leaving the mode (Shift+D, a tab switch) or
+  // docking the sidebar closes it rather than leaving it floating with no button under it.
+  const popoverOpen = activeDockPanel === 'contents' && shown && !contentsDocked;
+  useEffect(() => {
+    if (activeDockPanel === 'contents' && (!illustratePages || contentsDocked)) closeDockPanel();
+  }, [activeDockPanel, illustratePages, contentsDocked, closeDockPanel]);
+
+  const ownerId = selfParticipant?.id ?? null;
+  const place = useCallback(
+    (next: ContentsPlacement) => {
+      // Sent before the change is kept, as every settings flip is.
+      track('UI', 'Changed', PLACEMENT_EVENT[next]);
+      // Built on the freshest stored preferences: the write sends the whole blob.
+      writeUserPreferences(withContentsPlacement(readUserPreferences(), next), ownerId);
+    },
+    [ownerId],
+  );
+  const onMinimise = useCallback(() => place('button'), [place]);
+  const onDock = useCallback(() => {
+    closeDockPanel();
+    place('sidebar');
+  }, [closeDockPanel, place]);
+
+  if (!illustratePages) {
+    return { contentsDocked: false, contentsSidebarEl: null, contentsPopoverEl: null };
+  }
+  const tab: PageThumbTab = {
+    id: props.activeTabId ?? '',
+    name: '',
+    elements: props.elements,
+    pages: illustratePages.pages,
+    layers: props.layers,
+    font: props.tabFont,
+    finish: props.tabFinish,
+    articles: illustratePages.articles?.flows,
+  };
+  return {
+    contentsDocked,
+    contentsSidebarEl: contentsDocked ? (
+      <PageContentsSidebar
+        // A tab switch starts the list afresh, on the new tab's page in view.
+        key={props.activeTabId ?? ''}
+        view={illustratePages}
+        tab={tab}
+        top={toolbarTopClearancePx(toolbarScale)}
+        onMinimise={onMinimise}
+      />
+    ) : null,
+    contentsPopoverEl: popoverOpen ? (
+      <PageContentsPanel
+        view={illustratePages}
+        tab={tab}
+        anchor={activeDockAnchor ?? undefined}
+        onClose={closeDockPanel}
+        {...(isMobile ? {} : { onDock })}
+      />
+    ) : null,
+  };
+}

@@ -51,6 +51,11 @@ import {
   withWhiteboardDockPosition,
   type WhiteboardDockPosition,
 } from '@/lib/whiteboard-dock-prefs';
+import {
+  readContentsPlacement,
+  withContentsPlacement,
+  type ContentsPlacement,
+} from '@/lib/contents-placement';
 import type { SettingsIllustrationId } from './settings-illustrations';
 import {
   LOGO_GUIDE_PARTS,
@@ -672,6 +677,25 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Illustrate',
     parent: 'editor',
     rows: [
+      {
+        // docs/specs/007-editor/illustrate-pages.md "Contents": the sidebar's minimise and the
+        // popover's dock button write the same choice.
+        kind: 'choice',
+        key: 'contentsPlacement',
+        keywords:
+          'contents pages page list sidebar side bar left panel filmstrip slides navigator thumbnails minimise minimize maximise maximize dock button',
+        section: 'Pages',
+        label: 'Contents',
+        description:
+          'Where the list of pages sits on a computer: docked down the left, or tucked into its button. A phone always has the button.',
+        options: [
+          { id: 'sidebar', label: 'Sidebar' },
+          { id: 'button', label: 'Button' },
+        ],
+        read: readContentsPlacement,
+        write: (p, v) => withContentsPlacement(p, v as ContentsPlacement),
+        event: { category: 'UI', changed: 'ContentsPlacement' },
+      },
       {
         kind: 'toggle',
         key: 'logoGuides',

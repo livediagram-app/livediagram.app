@@ -28,7 +28,7 @@ const pages = (n: number) =>
     })),
   );
 
-function show(n: number, canEdit = true) {
+function show(n: number, canEdit = true, onDock?: () => void) {
   const focusPage = vi.fn();
   const addPage = vi.fn();
   const movePageTo = vi.fn();
@@ -44,6 +44,7 @@ function show(n: number, canEdit = true) {
       view={view}
       tab={{ id: 't', name: 'T', elements: [], pages: laid, layers: [] }}
       onClose={onClose}
+      {...(onDock ? { onDock } : {})}
     />,
   );
   return { focusPage, addPage, movePageTo, onClose };
@@ -80,6 +81,17 @@ describe('PageContentsPanel', () => {
       target: { value: 'slide' },
     });
     expect(screen.getAllByRole('option')).toHaveLength(4);
+  });
+
+  it('docks back as the sidebar from its header, where a sidebar is offered', () => {
+    // docs/specs/007-editor/illustrate-pages.md "Contents": the popover's Dock as Sidebar.
+    const onDock = vi.fn();
+    show(3, true, onDock);
+    fireEvent.click(screen.getByRole('button', { name: 'Dock Contents as a sidebar' }));
+    expect(onDock).toHaveBeenCalledOnce();
+    cleanup();
+    show(3);
+    expect(screen.queryByRole('button', { name: 'Dock Contents as a sidebar' })).toBeNull();
   });
 
   it('moves between rows with the arrow keys', () => {

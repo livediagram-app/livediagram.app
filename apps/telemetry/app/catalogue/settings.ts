@@ -75,6 +75,11 @@ export const EDITOR_SETTINGS = settingsStack(
       'Whiteboard Dock Position',
       'A whiteboard dock moved to the top or the bottom.',
     ),
+    changed(
+      'ContentsPlacement',
+      'Contents Placement',
+      "Illustrate's Contents docked as a sidebar or minimised to its button.",
+    ),
     toggle(
       'UI',
       'LogoGuidesOn',

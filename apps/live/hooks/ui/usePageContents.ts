@@ -1,0 +1,194 @@
+'use client';
+
+// Illustrate's Contents as state (docs/specs/007-editor/illustrate-pages.md "Contents"), shared by
+// its two homes: the popover (a bottom sheet on a phone) and the sidebar docked down the canvas's
+// left. The rows, Find a Page, the thumbnails, the page marked as here, going to a page, the
+// keyboard, reordering by drag and adding a page live here once; each home lays them out.
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { MAX_ILLUSTRATE_PAGES, pageKindOf, type PageKind } from '@livediagram/document';
+import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
+import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import {
+  contentsDropUnit,
+  contentsRows,
+  filterContents,
+  type ContentsRow,
+} from '@/lib/page-contents';
+import { track } from '@/lib/telemetry';
+import { useRowReorderDrag } from '@/hooks/ui/useRowReorderDrag';
+
+// How far beyond the list's visible part a row's picture is drawn ahead of a scroll, in px.
+export const CONTENTS_DRAW_AHEAD_PX = 400;
+
+export function usePageContents({
+  view,
+  tab,
+  here,
+  settleMs = 0,
+  onWent,
+}: {
+  view: IllustratePagesView;
+  tab: PageThumbTab;
+  // The page in view as the list opens, scrolled to and marked.
+  here: string | undefined;
+  // How long the tab rests before the thumbnails redraw (usePageThumbnails); 0 redraws at once.
+  settleMs?: number;
+  // After a press went to a page (the phone's sheet closes then).
+  onWent?: () => void;
+}) {
+  const { pages } = view;
+  const [current, setCurrent] = useState(here);
+  const [query, setQuery] = useState('');
+  const rows = useMemo(
+    () =>
+      contentsRows(pages, {
+        ...(view.deck ? { inDeck: (id: string) => !!view.deck!.slideOf(id) } : {}),
+        ...(view.articles ? { articles: view.articles.flows } : {}),
+      }),
+    [pages, view.deck, view.articles],
+  );
+  const shown = useMemo(() => filterContents(rows, query), [rows, query]);
+  const list = useRef<HTMLDivElement>(null);
+  const buttons = useRef(new Map<string, HTMLButtonElement>());
+  // The rows scrolled near view: only their pictures are drawn (a 100-page tab draws the handful on
+  // screen, not all of them, as the list opens), each kept once drawn. null draws every row's (no
+  // IntersectionObserver).
+  const [seen, setSeen] = useState<ReadonlySet<string> | null>(() =>
+    typeof IntersectionObserver === 'undefined' ? null : new Set(),
+  );
+  const observer = useRef<IntersectionObserver | null>(null);
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(
+      (entries) =>
+        setSeen((prev) => {
+          let next: Set<string> | null = null;
+          for (const entry of entries) {
+            const id = (entry.target as HTMLElement).dataset.pageRow;
+            if (!entry.isIntersecting || !id || prev?.has(id) !== false) continue;
+            next ??= new Set(prev);
+            next.add(id);
+          }
+          return next ?? prev;
+        }),
+      { root: list.current, rootMargin: `${CONTENTS_DRAW_AHEAD_PX}px 0px` },
+    );
+    for (const el of buttons.current.values()) io.observe(el);
+    observer.current = io;
+    return () => {
+      io.disconnect();
+      observer.current = null;
+    };
+  }, []);
+  const registerRow = (id: string, el: HTMLButtonElement | null) => {
+    const was = buttons.current.get(id);
+    if (was && was !== el) observer.current?.unobserve(was);
+    if (el) {
+      buttons.current.set(id, el);
+      observer.current?.observe(el);
+    } else buttons.current.delete(id);
+  };
+  const thumbs = usePageThumbnails(
+    tab,
+    pages.filter((p) => !seen || seen.has(p.id)).map((p) => p.id),
+    settleMs,
+  );
+  // A page just added: once it is in the list, it is here, and in view.
+  const [added, setAdded] = useState<number | null>(null);
+
+  // Open on the page in view, scrolled to it.
+  useLayoutEffect(() => {
+    if (here) buttons.current.get(here)?.scrollIntoView({ block: 'center' });
+    // On opening only: `here` is the page in view as the list opened, and never changes.
+  }, [here]);
+  // The page just added, once it is in the list, is here (set while rendering, as React derives
+  // state from a change in its inputs).
+  if (added !== null && pages.length > added) {
+    setAdded(null);
+    setCurrent(pages[pages.length - 1]!.id);
+  }
+  // The marked row kept in view as it moves (a page added, a row pressed, the view moved on).
+  useEffect(() => {
+    if (current) buttons.current.get(current)?.scrollIntoView({ block: 'nearest' });
+  }, [current]);
+
+  // Dragging a row reorders the pages (an Editor's, with the whole list shown): a caret shows where
+  // it lands and the move commits on release, as the pages row's own drag does.
+  const movePageTo = view.edit?.movePageTo;
+  const reorderable = !!movePageTo && query === '';
+  const reorder = useRowReorderDrag({
+    slot: 'contents-slot',
+    count: shown.length,
+    disabled: !reorderable,
+    onDrop: (id, drop) => {
+      const to = contentsDropUnit(pages, id, drop);
+      if (to === null || !movePageTo) return;
+      track('UI', 'Used', 'PageContentsReorder');
+      movePageTo(id, to);
+      setCurrent(id);
+    },
+  });
+
+  const go = (row: ContentsRow, clickedAt?: number) => {
+    // The release of a drag is not a press of the row.
+    if (reorder.consumeDragClick(clickedAt)) return;
+    track('UI', 'Used', 'PageContentsJump');
+    setCurrent(row.id);
+    view.focusPage(row.id);
+    onWent?.();
+  };
+  const onListKey = (e: KeyboardEvent) => {
+    const order = shown.map((r) => r.id);
+    const at = order.indexOf((document.activeElement as HTMLElement | null)?.dataset.pageRow ?? '');
+    const to =
+      e.key === 'ArrowDown'
+        ? Math.min(order.length - 1, at + 1)
+        : e.key === 'ArrowUp'
+          ? Math.max(0, at - 1)
+          : e.key === 'Home'
+            ? 0
+            : e.key === 'End'
+              ? order.length - 1
+              : null;
+    if (to === null || order.length === 0) return;
+    e.preventDefault();
+    buttons.current.get(order[to]!)?.focus();
+  };
+  const full = pages.length >= MAX_ILLUSTRATE_PAGES;
+  // The last page's kind leads the footer, highlighted: the next page is most often the same.
+  const lastKind = pages.length ? pageKindOf(pages[pages.length - 1]!) : undefined;
+  const add =
+    view.edit?.addPage && !full
+      ? (kind: PageKind) => {
+          setAdded(pages.length);
+          view.edit!.addPage!(kind);
+        }
+      : undefined;
+  const focusFirst = () => {
+    if (shown[0]) buttons.current.get(shown[0].id)?.focus();
+  };
+
+  return {
+    pages,
+    shown,
+    query,
+    setQuery,
+    thumbs,
+    current,
+    setCurrent,
+    list,
+    registerRow,
+    reorder,
+    reorderable,
+    go,
+    onListKey,
+    focusFirst,
+    // Absent for a Participant and a Viewer, who see no footer.
+    canAdd: !!view.edit?.addPage,
+    add,
+    full,
+    lastKind,
+  };
+}
+
+export type PageContents = ReturnType<typeof usePageContents>;

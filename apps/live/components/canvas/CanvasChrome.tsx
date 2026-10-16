@@ -39,6 +39,8 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 // little more in, and past the element's bottom scrollbar up.
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
+import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
+import { contentsSidebarClearancePx } from '@/lib/contents-placement';
 import { ContentsClusterSegment } from './ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
@@ -196,11 +198,8 @@ export type CanvasChromeProps = CanvasProps & ChromeExtras;
 // "On a phone"; on a desktop window too narrow for a centred strip to clear a
 // docked panel, stripCrowdsTopCorners) the TOP corner stacks start below it
 // rather than at the 16px inset, or a panel docked there (the Collaborate
-// banner) renders underneath the strip where it can't be reached. The strip
-// sits 12px down (top-3) and is 46px tall; 68px leaves a 10px gap. The strip
-// is drawn at the UI scale (docs/specs/007-editor/ui-scale.md), so only its
-// height scales.
-const toolbarTopClearancePx = (scale: number) => 12 + 46 * scale + 10;
+// banner) renders underneath the strip where it can't be reached
+// (toolbarTopClearancePx, lib/canvas-chrome.ts).
 
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'top-left': 'left-4 top-4 flex-col items-start',
@@ -397,6 +396,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     sessionPopoverEl,
     tidyUpPopoverEl,
     contentsPopoverEl,
+    contentsSidebarEl,
+    contentsDocked,
     avatarPopoverEl,
     paletteTint,
   } = useCanvasChromePanels({
@@ -465,14 +466,18 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ref={(el) => {
               cornerRefs.current[corner] = el;
             }}
-            style={
-              corner === 'bottom-right'
+            style={{
+              ...(corner === 'bottom-right'
                 ? { bottom: cornerBottomInset(corner, cornerScale) }
                 : // The Draw dock is the strip's twin (its height, its scale), so the same clearance.
                   (stripSpansTop || dockSpansTop) && corner.startsWith('top')
                   ? { top: toolbarTopClearancePx(toolbarScale) }
-                  : undefined
-            }
+                  : undefined),
+              // Beside Illustrate's Contents sidebar, never under it.
+              ...(contentsDocked && corner.endsWith('left')
+                ? { left: contentsSidebarClearancePx(panelScale) }
+                : undefined),
+            }}
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >
             {children.map((id) => (
@@ -568,6 +573,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
       {tidyUpPopoverEl}
+      {contentsSidebarEl}
       {contentsPopoverEl}
       {avatarPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
@@ -724,10 +730,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {!zenMode && props.illustratePages ? (
               <PagesClusterStrip
                 contents={
-                  <ContentsClusterSegment
-                    popoverOpen={activeDockPanel === 'contents'}
-                    onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
-                  />
+                  // Docked as the sidebar, Contents has no button (useContentsChrome).
+                  contentsDocked ? null : (
+                    <ContentsClusterSegment
+                      popoverOpen={activeDockPanel === 'contents'}
+                      onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
+                    />
+                  )
                 }
                 slides={
                   !isMobile &&

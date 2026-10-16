@@ -279,6 +279,10 @@ export type UserPreferences = {
   // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
   // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
   drawPattern?: 'blank' | 'grid' | 'graph';
+  // How Illustrate's Contents shows on a desktop (docs/specs/007-editor/illustrate-pages.md
+  // "Contents"): docked as a sidebar down the canvas's left, or minimised to its cluster button. Read
+  // through lib/contents-placement. Missing (or anything but 'button') === the sidebar.
+  contentsPlacement?: 'sidebar' | 'button';
   // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): transition, speed,
   // playback and display, as one object. Read through lib/presentation-config, which trusts it only once parsed.
   // Missing === what this browser kept before they followed the account, else the defaults.

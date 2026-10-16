@@ -4,6 +4,7 @@ import {
   FIT_TO_SCREEN_MAX_AT_FIT,
   FIT_TO_SCREEN_MIN,
   FIT_TO_SCREEN_PADDING,
+  besideLeftInset,
   computeFitBelow,
   computeFitToScreen,
   computeReadingFrame,
@@ -155,6 +156,31 @@ describe('isContentOffScreen', () => {
 
 // Illustrate mode centres its page below the Toolbar layout's strip
 // (docs/specs/007-editor/editor-modes.md "The pages").
+describe('besideLeftInset', () => {
+  // A canvas x on screen, with the centred transform (lib/viewport.ts).
+  const screenX = (x: number, w: number, f: { zoom: number; offset: { x: number } }) =>
+    w / 2 + f.zoom * (x + f.offset.x - w / 2);
+
+  it('centres the box in the band beside a docked sidebar, not under it', () => {
+    const w = 1200;
+    const inset = 260;
+    const box = { x: 3000, y: -400, width: 1123, height: 794 };
+    const fitted = besideLeftInset(
+      computeFitBelow({ width: w - inset, height: 800 }, box, 64),
+      inset,
+    );
+    const left = screenX(box.x, w, fitted);
+    const right = screenX(box.x + box.width, w, fitted);
+    expect((left + right) / 2).toBeCloseTo(inset + (w - inset) / 2, 6);
+    expect(left).toBeGreaterThan(inset);
+  });
+
+  it('leaves a frame alone with no sidebar', () => {
+    const frame = { zoom: 0.5, offset: { x: 10, y: 20 } };
+    expect(besideLeftInset(frame, 0)).toBe(frame);
+  });
+});
+
 describe('computeFitBelow', () => {
   const rect = { width: 1200, height: 800 };
   const box = { x: -500, y: -500, width: 1000, height: 1000 };
