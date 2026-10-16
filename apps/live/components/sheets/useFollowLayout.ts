@@ -8,7 +8,7 @@ import type { GridRange, Selection, SheetLayout } from '@livediagram/sheets';
 import type { Editing } from './sheet-controller';
 
 export const EDIT_LOST = 'Someone deleted the row you were editing';
-export const EDIT_LOST_COLUMN = 'Someone deleted the column you were editing';
+const EDIT_LOST_COLUMN = 'Someone deleted the column you were editing';
 
 // A position in `from`, found in `to` by its id (null when the line is gone).
 function follow(from: readonly string[], to: readonly string[], at: number): number | null {

@@ -35,7 +35,7 @@ export const SPLIT_HOVER_FOCUS_MS = 120;
 
 // The drop zone a dragged tab arms on the right edge: this share of the viewport, never under the
 // floor (a narrow window still gets a target worth aiming for).
-export const SPLIT_DROP_ZONE_FRACTION = 0.28;
+const SPLIT_DROP_ZONE_FRACTION = 0.28;
 export const SPLIT_DROP_ZONE_MIN_PX = 160;
 
 // The bottom band the tab bar owns. A drag there is a reorder, never a split, so the zone stops

@@ -16,7 +16,7 @@ export const BAND_CONTROLS_CLASS =
 // band matches: the controls card and the Sheet's toolbar (a board's widgets ride in the menu box itself).
 export const BAND_CARD_PX = 46;
 
-export function bandCardStyle(palette: PlanPalette): CSSProperties {
+function bandCardStyle(palette: PlanPalette): CSSProperties {
   return {
     '--band-card-bg': palette.surface,
     '--band-card-line': palette.border,

@@ -12,7 +12,7 @@ export const PAPER_TONE = '#ffffff';
 // How many points a gradient is sampled at across an element's span (its two ends and evenly
 // between): a two-stop gradient's colours lie on one line, so its worst contrast is near an end,
 // and five points find it to within a quarter of the span.
-export const GRADIENT_SAMPLES = 5;
+const GRADIENT_SAMPLES = 5;
 
 export type PageGround = {
   // Every tone the element may sit on: text and lines must read on the worst of them.

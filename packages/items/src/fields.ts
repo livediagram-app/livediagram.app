@@ -27,7 +27,7 @@ import {
 import { HEX_COLOUR, isObj } from './validate';
 import { itemColourValue } from './item-colour';
 
-export type ItemFieldKind =
+type ItemFieldKind =
   | 'text'
   | 'long-text'
   | 'status'
@@ -42,7 +42,7 @@ export type ItemFieldKind =
   | 'flag'
   | 'colour';
 
-export const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
+const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
   title: 'text',
   description: 'long-text',
   status: 'status',
@@ -94,7 +94,7 @@ export type ItemRejection =
   // A status the item's card type leaves out (docs/specs/026-plan/item-types.md "An item type").
   | 'status_excluded';
 
-export type FieldsResult =
+type FieldsResult =
   { ok: true; fields: ItemFields } | { ok: false; error: ItemRejection; field?: string };
 
 export function knownFieldKind(key: string): ItemFieldKind | undefined {
@@ -111,7 +111,7 @@ export function isValidItemType(type: unknown): type is string {
   return typeof type === 'string' && ITEM_TYPE_PATTERN.test(type);
 }
 
-export function isValidFieldKey(key: string): boolean {
+function isValidFieldKey(key: string): boolean {
   return ITEM_FIELD_KEY_PATTERN.test(key);
 }
 

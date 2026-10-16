@@ -4,7 +4,7 @@
 // editor and the formula bar share it.
 import { FUNCTION_NAMES, FUNCTION_DOCS, parseA1, tokenize, type Token } from '@livediagram/sheets';
 
-export const REF_COLOURS = [
+const REF_COLOURS = [
   '#2563eb',
   '#dc2626',
   '#7c3aed',
@@ -15,7 +15,7 @@ export const REF_COLOURS = [
   '#65a30d',
 ];
 
-export type RefSpan = { start: number; end: number; text: string; sheet?: string; colour: string };
+type RefSpan = { start: number; end: number; text: string; sheet?: string; colour: string };
 
 const CELL = /^\$?[A-Za-z]{1,4}\$?[0-9]{1,7}$/;
 const COL = /^\$?[A-Za-z]{1,4}$/;

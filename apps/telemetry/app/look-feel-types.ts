@@ -11,7 +11,7 @@ export const CUSTOM_THEME_TYPES: ReadonlySet<string> = new Set(['Custom', 'Custo
 // Theme·Changed types nothing sends any more but stored rows still carry: the one-shot "Reset elements to theme"
 // recolour (`ResetElements`), removed with its button from Tab Style. Still kept out of the theme ranking, where
 // it would otherwise compete as if it were a theme.
-export const RETIRED_THEME_TYPES: ReadonlySet<string> = new Set(['ResetElements']);
+const RETIRED_THEME_TYPES: ReadonlySet<string> = new Set(['ResetElements']);
 
 /** Whether a Theme·Changed type is not a built-in theme pick. */
 export const isNonThemePick = (t: string | undefined | null): boolean =>

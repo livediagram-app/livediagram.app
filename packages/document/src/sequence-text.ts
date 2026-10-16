@@ -14,7 +14,7 @@ import {
 
 const WRITE: Record<SequenceMessageKindName, string> = { call: '->', async: '~>', reply: '-->' };
 // A line longer than this is not read (named, not lost), so a pasted wall of text costs nothing.
-export const SEQ_TEXT_LINE_MAX = 400;
+const SEQ_TEXT_LINE_MAX = 400;
 
 const tidy = (s: string, max: number) => s.replace(/\s+/g, ' ').trim().slice(0, max);
 const keyOf = (name: string) => name.toLowerCase();
@@ -79,7 +79,7 @@ function findArrow(
   return null;
 }
 
-export type ParsedSequenceText = {
+type ParsedSequenceText = {
   participants: SequenceElementParticipant[];
   messages: SequenceElementMessage[];
   // 1-based numbers of the lines that were not read.

@@ -15,9 +15,9 @@ import type { Workbook } from './engine/workbook';
 export const AGENT_READ_CELLS_MAX = 5_000;
 export const AGENT_LOCALE = 'en-GB';
 
-export type AgentCell = { input: string; value: Scalar; display: string };
+type AgentCell = { input: string; value: Scalar; display: string };
 
-export type RangeRead =
+type RangeRead =
   | { ok: true; range: string; rows: AgentCell[][]; truncated: boolean }
   | { ok: false; error: 'range_invalid' | 'sheet_not_found' };
 
@@ -66,7 +66,7 @@ export function readRange(wb: Workbook, sheetId: string, rangeText?: string): Ra
 
 export type AgentValue = string | number | boolean | null;
 
-export type RowsWrite =
+type RowsWrite =
   | { ok: true; write: SheetWrite; range: string; truncated: boolean }
   | {
       ok: false;

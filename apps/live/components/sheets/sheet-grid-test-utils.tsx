@@ -95,7 +95,7 @@ export function installGridDom(): () => void {
 
 export let gridScrolls: [string, unknown][] = [];
 
-export type ActionCall = [keyof SheetActions, unknown[]];
+type ActionCall = [keyof SheetActions, unknown[]];
 
 export type MountOptions = {
   rows?: number;
@@ -147,7 +147,7 @@ function initialSheet(id: string, o: MountOptions): Sheet {
   return sheet;
 }
 
-export type MountedGrid = ReturnType<typeof render> & {
+type MountedGrid = ReturnType<typeof render> & {
   store: SheetStore;
   sheetId: string;
   writes: SheetWrite[];

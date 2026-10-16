@@ -23,7 +23,7 @@ import { useSyncExternalStore } from 'react';
 //
 // `attach` receives that setter and wires whatever events its key needs. It is
 // called at most once, and only where `window` exists.
-export type HeldKeyStore = {
+type HeldKeyStore = {
   subscribe: (cb: () => void) => () => void;
   getSnapshot: () => boolean;
   getServerSnapshot: () => boolean;

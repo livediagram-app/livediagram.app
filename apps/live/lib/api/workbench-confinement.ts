@@ -10,7 +10,7 @@ import {
   workbenchRouteVerdict,
 } from '@livediagram/api-schema';
 
-export type WorkbenchConfinement = { documentId: string; ownerId: string };
+type WorkbenchConfinement = { documentId: string; ownerId: string };
 
 export class WorkbenchConfinedError extends Error {
   readonly route: string;

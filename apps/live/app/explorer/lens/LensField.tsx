@@ -25,7 +25,7 @@ import { composeField, removePill, settleField, splitField, writeDraft } from '.
 // "The field"): the lens string's tokens as removable pills, then the draft in a WAI-ARIA combobox
 // with a listbox of suggestions. One line high; pills and text scroll sideways inside it.
 
-export const FIELD_PLACEHOLDER = 'Search or filter documents';
+const FIELD_PLACEHOLDER = 'Search or filter documents';
 
 export function LensField({
   lens,

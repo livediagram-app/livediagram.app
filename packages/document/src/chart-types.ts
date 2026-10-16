@@ -9,7 +9,7 @@ export type ChartType = (typeof CHART_TYPES)[number];
 export const CHART_VARIANTS = ['horizontal', 'area', 'scatter', 'doughnut'] as const;
 export type ChartVariant = (typeof CHART_VARIANTS)[number];
 
-export type ChartKind = 'bar-chart' | 'line-chart' | 'pie-chart';
+type ChartKind = 'bar-chart' | 'line-chart' | 'pie-chart';
 
 // Each type's kind and variant, in CHART_TYPES order.
 const SHAPES: Record<ChartType, { shape: ChartKind; chartVariant?: ChartVariant }> = {
@@ -73,7 +73,7 @@ type ChartData = {
   lineSeries?: LineSeries[];
 };
 
-export type ChartTypePatch = {
+type ChartTypePatch = {
   shape: ChartKind;
   chartVariant: ChartVariant | undefined;
   pieSlices?: PieSlice[] | undefined;

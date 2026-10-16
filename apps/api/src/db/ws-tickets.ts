@@ -21,7 +21,7 @@ const WS_TICKET_TTL_MS = 60_000;
 //
 // `account` records that a verified Clerk session minted it, so the room knows which sessions may
 // publish a profile picture and which may receive one (docs/specs/014-identity/profile-picture.md §6).
-export type WsAdmission = {
+type WsAdmission = {
   role: ShareRole;
   tabScope: string | null;
   shareCode: string | null;

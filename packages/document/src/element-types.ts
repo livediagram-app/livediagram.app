@@ -1543,7 +1543,7 @@ export type PlanCardRef = { itemId: string; size?: 'minimal' | 'compact' | 'deta
 export type PlanSheetRef = { sheetId: string; copyOf?: string; fillTab?: true; start?: string };
 
 // A template start's id (@livediagram/sheets TEMPLATE_STARTS): kebab-case words.
-export const PLAN_SHEET_START_PATTERN = /^[a-z][a-z-]{0,39}$/;
+const PLAN_SHEET_START_PATTERN = /^[a-z][a-z-]{0,39}$/;
 
 // A fresh sheet id for a copy (the sheets engine's makeSheetId, without importing it).
 export function newPlanSheetId(): string {

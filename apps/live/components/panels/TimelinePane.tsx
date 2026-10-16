@@ -51,7 +51,7 @@ export function TimelinePane({
 
 // The feed itself, without the card menus: the editor's Explorer shows it outside the Explorer page's context, which
 // those menus need (docs/specs/013-workspace/explorer-structure.md "The pane"); its Open Page has them.
-export function TimelineFeedView({
+function TimelineFeedView({
   feed,
   ownerId,
   cardSlots,

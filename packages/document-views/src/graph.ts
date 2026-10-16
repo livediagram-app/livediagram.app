@@ -11,7 +11,7 @@ import { jsonString } from './text';
 import { depthFirst, type ViewNode } from './tree';
 import { pinnedIds } from './visibility';
 
-export type GraphOptions = { budget?: number; door?: ViewDoor };
+type GraphOptions = { budget?: number; door?: ViewDoor };
 
 const NODE = { one: 'node', many: 'nodes' };
 const ARROW = { one: 'arrow', many: 'arrows' };

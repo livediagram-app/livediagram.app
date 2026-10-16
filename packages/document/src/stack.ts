@@ -10,9 +10,9 @@ export type StackAlign = 'start' | 'center' | 'end';
 
 export const STACK_DIRECTIONS: readonly StackDirection[] = ['row', 'column', 'grid'];
 export const STACK_ALIGNS: readonly StackAlign[] = ['start', 'center', 'end'];
-export const STACK_GAP_DEFAULT = 16;
-export const STACK_PADDING_DEFAULT = 16;
-export const STACK_COLUMNS_DEFAULT = 2;
+const STACK_GAP_DEFAULT = 16;
+const STACK_PADDING_DEFAULT = 16;
+const STACK_COLUMNS_DEFAULT = 2;
 export const STACK_SPACING_MAX = 64;
 export const STACK_COLUMNS_MIN = 2;
 export const STACK_COLUMNS_MAX = 6;
@@ -23,9 +23,9 @@ export function isStack(el: Element): el is ShapeElement & { shape: 'stack' } {
   return el.type === 'shape' && el.shape === 'stack';
 }
 
-export const isStackDirection = (v: unknown): v is StackDirection =>
+const isStackDirection = (v: unknown): v is StackDirection =>
   v === 'row' || v === 'column' || v === 'grid';
-export const isStackAlign = (v: unknown): v is StackAlign =>
+const isStackAlign = (v: unknown): v is StackAlign =>
   v === 'start' || v === 'center' || v === 'end';
 
 const intIn = (v: unknown, lo: number, hi: number, fallback: number): number =>
@@ -85,7 +85,7 @@ export function stackChildren(
 }
 
 /** The band a titled stack keeps above its children for its title (D192). */
-export const STACK_TITLE_H = 22;
+const STACK_TITLE_H = 22;
 
 /** Where each child goes, and the stack's hugged size: a titled stack keeps a title band above its children. */
 export function layoutStack(
@@ -148,7 +148,7 @@ function layoutBody(
 /** How many settling passes one settle may take. A stack that grows can cover a neighbour's centre, which it then
  *  holds, so the settle runs again; each pass that repeats takes one more element in, and chains this long do not
  *  occur on a real board. */
-export const STACK_SETTLE_PASSES_MAX = 8;
+const STACK_SETTLE_PASSES_MAX = 8;
 
 /** Every stack laid out, innermost first: each child moved to its slot (with whatever it holds), each stack hugging
  *  its children. Passes repeat while a stack grew, so what a grown stack now covers is laid out in the same settle and

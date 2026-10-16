@@ -15,7 +15,7 @@ import { LONG_PRESS_MS } from '@/hooks/ui/useLongPress';
 export const TOUCH_PAN_SLOP = 8;
 
 /** Moves the view by a screen-px drag from where it stood when the pan began. */
-export type PanFrom = () => (dx: number, dy: number) => void;
+type PanFrom = () => (dx: number, dy: number) => void;
 
 /**
  * Returns a press handler: for a primary touch it arms a pan-or-tap and answers true (the caller

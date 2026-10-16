@@ -25,7 +25,7 @@ import { registerTool } from './tool-annotations';
 import { appBase, deepLink, errorResult, requireToken, textResult } from './tool-helpers';
 
 // The form link anyone fills the form in at.
-export const formLinkUrl = (env: Pick<Env, 'CONSENT_BASE_URL'>, code: string) =>
+const formLinkUrl = (env: Pick<Env, 'CONSENT_BASE_URL'>, code: string) =>
   `${appBase(env)}/form/${code}`;
 
 async function answer(env: Env, token: string, result: FormCallResult, image: boolean) {

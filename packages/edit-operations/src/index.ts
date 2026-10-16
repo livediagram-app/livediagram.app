@@ -49,7 +49,6 @@ export type {
 } from './types';
 export {
   EDIT_REJECTION_CODES,
-  EDIT_WARNING_CODES,
   type EditRejection,
   type EditRejectionCode,
   type EditWarning,

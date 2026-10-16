@@ -19,7 +19,7 @@ import {
 } from './workbench-machine';
 
 // The origin's host only (WB37): no scheme, no port.
-export const originHostOf = (origin: string): string => new URL(origin).hostname;
+const originHostOf = (origin: string): string => new URL(origin).hostname;
 
 function waitForAck(port: WorkbenchPort): Promise<HelloAckMessage | null> {
   return new Promise((resolve) => {

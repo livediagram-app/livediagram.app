@@ -4,7 +4,7 @@
 import { useState, useSyncExternalStore } from 'react';
 import type { PagePanelTab } from '@/components/canvas/IllustratePagePanel';
 
-export type PagePanelRequest = {
+type PagePanelRequest = {
   seq: number;
   // The page whose panel opens; null closes whichever panel is open.
   pageId: string | null;
@@ -24,7 +24,7 @@ export function requestPagePanel(pageId: string | null, tab: PagePanelTab = 'pag
   listeners.forEach((l) => l());
 }
 
-export function usePagePanelRequest(): PagePanelRequest {
+function usePagePanelRequest(): PagePanelRequest {
   return useSyncExternalStore(
     subscribe,
     () => request,

@@ -41,7 +41,7 @@ import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 import type { ItemUndoStep } from './item-undo-journal';
 
 // A burst of revision gaps refetches once (blueprint item-store.md "Constants").
-export const ITEM_REFETCH_DEBOUNCE_MS = 400;
+const ITEM_REFETCH_DEBOUNCE_MS = 400;
 
 export type PlanItemsStatus = 'loading' | 'ready' | 'error';
 

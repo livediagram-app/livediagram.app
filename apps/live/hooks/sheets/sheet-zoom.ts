@@ -8,7 +8,7 @@ import { useSyncExternalStore } from 'react';
 export const SHEET_ZOOM_MIN = 0.5;
 export const SHEET_ZOOM_MAX = 2;
 // A step of the zoom controls' + and -, as the canvas's.
-export const SHEET_ZOOM_STEP = 0.1;
+const SHEET_ZOOM_STEP = 0.1;
 
 let zoom = 1;
 const listeners = new Set<() => void>();

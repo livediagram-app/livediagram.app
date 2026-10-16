@@ -207,12 +207,7 @@ export function layerFor(state: EditState, ref: Element | undefined): string | u
 
 // Grows the container `inside:` filled, so the element sits in it (EO27): what sat under it moves on rather than
 // being taken in (grow-container.ts).
-export function growInto(
-  state: EditState,
-  placed: Placed,
-  held: ElementId,
-  operation: number,
-): void {
+function growInto(state: EditState, placed: Placed, held: ElementId, operation: number): void {
   if (!placed.grow) return;
   const { container, height } = placed.grow;
   if (container.type === 'arrow' || state.locked.has(container.id)) return;

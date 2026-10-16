@@ -80,7 +80,7 @@ export type SheetChange =
 
 // What one change sends, the line that says what it did, and the charts it puts over the cells (for the caller to add
 // to the tab).
-export type BuiltChange =
+type BuiltChange =
   | {
       ok: true;
       writes: SheetWrite[];

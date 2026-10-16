@@ -333,7 +333,7 @@ export function SheetToolbarMenu({
 }
 
 // Σ: SUM (and the others) of the selection into the cell below it, or a formula started in the active cell.
-export function insertFunction(
+function insertFunction(
   c: ReturnType<typeof useSheetController>,
   actions: SheetActions,
   name: string,

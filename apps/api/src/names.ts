@@ -4,7 +4,7 @@
 
 import { NAME_MAX_LENGTH, truncateName } from '@livediagram/document';
 
-export type CappedNameKind = 'document' | 'tab';
+type CappedNameKind = 'document' | 'tab';
 
 // Shortens a new or changed name with the shared truncateName. A name sent back
 // identical to the stored one is left alone, so an autosave or reorder echoing

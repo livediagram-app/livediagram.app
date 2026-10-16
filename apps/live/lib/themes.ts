@@ -62,7 +62,7 @@ export function resolveTheme(
 
 /** The scheme as written (its native half, before tuning): what its light / dark halves and its colour map are built
  *  from. Undefined for an id that names nothing known. */
-export function themeSource(id: string | undefined): ThemeDefinition | undefined {
+function themeSource(id: string | undefined): ThemeDefinition | undefined {
   if (!id) return undefined;
   const custom = lookupCustomTheme(id);
   if (custom) return custom;

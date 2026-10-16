@@ -32,7 +32,7 @@ import { useFlipList } from '@/hooks/ui/useFlipList';
 // What the board can do for this viewer. Participant verbs are present for
 // anyone in a live session (view links too); the facilitator verbs only for
 // whoever is running the board (docs/specs/012-collaboration/facilitator.md). Everything absent = inert.
-export type QaFaceActions = {
+type QaFaceActions = {
   // Whether the note went in (false when the board is full), or a promise of the server's word.
   add?: (text: string, anonymous: boolean) => boolean | Promise<boolean>;
   vote?: (noteId: string, on: boolean) => void;

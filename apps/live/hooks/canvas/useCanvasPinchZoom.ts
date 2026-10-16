@@ -291,7 +291,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
  * point (s - wC) / z - t; holding that point fixed across the change gives
  * t2 = (to - wC) / z2 - (mid - wC) / z1 + t1.
  */
-export function pinchOffset(
+function pinchOffset(
   pinch: {
     startZoom: number;
     startOffset: { x: number; y: number };

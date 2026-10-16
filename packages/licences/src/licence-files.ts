@@ -19,7 +19,7 @@ export function normaliseText(raw: string): string {
 }
 
 // A text's file name on the page (blueprint D3): 64 bits of its sha256.
-export const TEXT_HASH_LENGTH = 16;
+const TEXT_HASH_LENGTH = 16;
 
 export const textHash = (normalised: string): string =>
   createHash('sha256').update(normalised).digest('hex').slice(0, TEXT_HASH_LENGTH);

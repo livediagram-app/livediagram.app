@@ -11,7 +11,7 @@ import { debugLog } from './debug-log';
 export type CanvasGesture =
   'pan' | 'zoom' | 'move' | 'resize' | 'reshape' | 'marquee' | 'stroke' | 'erase';
 
-export type CanvasGestureState = CanvasGesture | 'idle';
+type CanvasGestureState = CanvasGesture | 'idle';
 
 // The gestures that change elements on every frame.
 export const ELEMENT_GESTURES: ReadonlySet<CanvasGesture> = new Set([

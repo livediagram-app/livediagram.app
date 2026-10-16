@@ -199,7 +199,7 @@ export function getBuiltInTheme(
 // every theme (same rule `addBoxed` applies to ad-hoc sticky creation),
 // and an image renders its bytes so its colour fields are inert (see
 // ImageElement in @livediagram/document).
-export type ThemeColourField = {
+type ThemeColourField = {
   element: 'fillColor' | 'strokeColor' | 'textColor';
   theme: 'elementFill' | 'elementStroke' | 'elementText';
 };
@@ -375,7 +375,7 @@ export function switchThemeElement(
 // chosen canvas pattern — e.g. reset Graph back to the theme's Grid, or
 // blank it entirely for Mono — which reads as "changing the theme loses
 // the canvas grid".
-export type TabBackdrop = {
+type TabBackdrop = {
   backgroundColor?: string;
   backgroundPattern?: BackgroundPattern;
   patternColor?: string;

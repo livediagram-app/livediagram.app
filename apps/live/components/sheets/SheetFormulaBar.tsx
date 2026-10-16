@@ -31,7 +31,7 @@ function nameOfRange(layout: SheetLayout, range: GridRange): string | null {
 
 // The name box's Enter (sheet.md "Formula bar"): a reference or range selects it; a name this sheet has selects its
 // range; a new name names the selection, or says why it cannot.
-export function enterNameBox(
+function enterNameBox(
   c: ReturnType<typeof useSheetController>,
   actions: SheetActions,
   text: string,

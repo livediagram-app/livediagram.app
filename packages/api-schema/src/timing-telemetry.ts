@@ -9,7 +9,7 @@
 import type { PageViewApp } from './page-views';
 
 /** A scale: ascending upper bounds, the last bucket being everything past the final bound. */
-export type TimingScale = {
+type TimingScale = {
   bounds: readonly number[];
   // The unit a bucket token spells its bound in: 'ms' for durations, '' for the unitless CLS.
   unit: 'ms' | '';

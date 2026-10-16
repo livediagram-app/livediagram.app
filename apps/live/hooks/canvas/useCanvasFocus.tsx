@@ -5,7 +5,7 @@
 // is none and the button is not drawn.
 import { createContext, useContext } from 'react';
 
-export type CanvasFocus = (bounds: { x: number; y: number; w: number; h: number }) => void;
+type CanvasFocus = (bounds: { x: number; y: number; w: number; h: number }) => void;
 
 const CanvasFocusContext = createContext<CanvasFocus | null>(null);
 

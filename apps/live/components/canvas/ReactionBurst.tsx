@@ -21,7 +21,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // is the surface, the clock and the cleanup.
 
 /** Hard stop, in ms. Every reaction's particles die well inside this. */
-export const BURST_MS = 2600;
+const BURST_MS = 2600;
 
 /**
  * How much bigger than the pad the canvas is, per side.

@@ -11,7 +11,7 @@ import { Button, Select, TrashIcon } from '@livediagram/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { PlanTypeGlyph } from './plan-type-glyph';
 
-export type RemoveColumnChoice = { kind: 'move'; to: string } | { kind: 'trash' };
+type RemoveColumnChoice = { kind: 'move'; to: string } | { kind: 'trash' };
 
 const POPOVER_PX = 320;
 

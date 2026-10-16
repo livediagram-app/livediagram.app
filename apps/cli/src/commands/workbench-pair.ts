@@ -17,7 +17,7 @@ import { EXIT } from '../output/exit-codes';
 import { isNetworkFailure } from '../output/failure-of';
 
 // A network failure is retried at the next interval; this many in a row end the wait.
-export const PAIR_NETWORK_ATTEMPTS = 3;
+const PAIR_NETWORK_ATTEMPTS = 3;
 
 export type PairInput = { origin: string; name?: string };
 export type Paired = { status: 'paired'; origin: string; name: string | null };

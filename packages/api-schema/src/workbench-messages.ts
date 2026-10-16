@@ -11,7 +11,7 @@ import {
 } from './workbench';
 
 export type WorkbenchEndReason = 'expired' | 'revoked' | 'trashed' | 'refused';
-export type WorkbenchColourScheme = 'light' | 'dark';
+type WorkbenchColourScheme = 'light' | 'dark';
 
 export type HelloMessage = { type: 'livediagram:hello'; v: 1 };
 export type HelloAckMessage = { type: 'livediagram:hello-ack'; v: 1; name: string };
@@ -50,7 +50,7 @@ export type EndedMessage = { type: 'livediagram:ended'; v: 1; reason: WorkbenchE
 export type PageToWorkbenchMessage =
   HelloMessage | ReadyMessage | TabMessage | SelectionMessage | RenewMessage | EndedMessage;
 export type WorkbenchToPageMessage = HelloAckMessage | TicketMessage | RevealMessage | ThemeMessage;
-export type WorkbenchMessage = PageToWorkbenchMessage | WorkbenchToPageMessage;
+type WorkbenchMessage = PageToWorkbenchMessage | WorkbenchToPageMessage;
 
 export const WORKBENCH_MESSAGE_TYPES = [
   'livediagram:hello',
@@ -74,7 +74,7 @@ const REF_MAX_LENGTH = 64;
 // How much of an ignored message's type reaches a log line.
 const IGNORED_TYPE_MAX_LENGTH = 64;
 
-export type ParsedWorkbenchMessage<M> = M | { ignored: string } | { invalid: string };
+type ParsedWorkbenchMessage<M> = M | { ignored: string } | { invalid: string };
 
 type Fields = Record<string, unknown>;
 type Parser = (m: Fields) => WorkbenchMessage | null;

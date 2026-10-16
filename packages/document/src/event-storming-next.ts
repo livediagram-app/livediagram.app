@@ -9,7 +9,7 @@ import { ES_NOTE_GAP } from './event-storming-lanes';
 // Which side of a note, along the board's own left-to-right time axis.
 export type EsSide = 'before' | 'after';
 
-export type EsNextNote = {
+type EsNextNote = {
   kind: EventStormingNoteKind;
   side: EsSide;
   next: EventStormingNoteKind;

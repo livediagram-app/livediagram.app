@@ -19,7 +19,7 @@ type FlowchartGrowthApi = {
   escapeGrownFlowchartStep: (id: string) => boolean;
 };
 
-export const flowchartGrowthOf = (kind: 'child' | 'sibling'): FlowchartGrowth =>
+const flowchartGrowthOf = (kind: 'child' | 'sibling'): FlowchartGrowth =>
   kind === 'child' ? 'next' : 'parallel';
 
 export function routeGrowth(mind: MindGrowthApi, flow: FlowchartGrowthApi): MindGrowthApi {

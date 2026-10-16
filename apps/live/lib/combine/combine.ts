@@ -16,12 +16,12 @@ import { simplifyRing } from './simplify';
 
 export type CombineOp = 'unite' | 'subtract' | 'intersect' | 'exclude';
 
-export type CombineResult =
+type CombineResult =
   | { ok: true; path: PathElement; removedIds: string[] }
   | { ok: false; reason: 'empty' | 'too-detailed' | 'not-combinable' | 'failed' };
 
 // The most traced points the engine is handed: past it the result could never be kept anyway.
-export const COMBINE_MAX_INPUT_POINTS = 50_000;
+const COMBINE_MAX_INPUT_POINTS = 50_000;
 
 type Polygon = Ring[];
 type MultiPolygon = Polygon[];

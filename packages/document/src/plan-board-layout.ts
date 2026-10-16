@@ -13,20 +13,20 @@ import {
   type PlanColumn,
 } from '@livediagram/items';
 
-export const PLAN_BOARD_HEADER_H = 52;
+const PLAN_BOARD_HEADER_H = 52;
 export const PLAN_BOARD_PAD = 12;
-export const PLAN_BOARD_GAP = 12;
-export const PLAN_COLUMN_HEAD_H = 34;
+const PLAN_BOARD_GAP = 12;
+const PLAN_COLUMN_HEAD_H = 34;
 export const PLAN_CARD_H = 64;
-export const PLAN_CARD_GAP = 8;
+const PLAN_CARD_GAP = 8;
 
 type Box = { x: number; y: number; width: number; height: number };
 
-export interface PlanCardSlot extends Box {
+interface PlanCardSlot extends Box {
   item: Item;
 }
 
-export interface PlanColumnSlot extends Box {
+interface PlanColumnSlot extends Box {
   column: PlanColumn;
   count: number;
   overLimit: boolean;
@@ -38,9 +38,9 @@ export interface PlanColumnSlot extends Box {
 }
 
 // The room kept at a column's foot for its "+n more" line when its cards do not all fit.
-export const PLAN_MORE_H = 20;
+const PLAN_MORE_H = 20;
 
-export interface PlanLaneSlot {
+interface PlanLaneSlot {
   key: string;
   label: string;
   // The lane's band: its header row at `y`, its cards below, `height` in all.
@@ -49,7 +49,7 @@ export interface PlanLaneSlot {
   colour?: string;
 }
 
-export interface PlanBoardLayout {
+interface PlanBoardLayout {
   setup: PlanBoardSetup;
   projection: BoardProjection;
   columns: PlanColumnSlot[];

@@ -18,7 +18,7 @@ import {
   relTime,
 } from './qa-parts';
 
-export type QaRowActions = {
+type QaRowActions = {
   onDiscuss: () => void;
   onDone: () => void;
   onRemove: () => void;

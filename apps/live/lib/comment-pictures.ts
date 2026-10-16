@@ -32,7 +32,7 @@ export function resetCommentPictures(): void {
 }
 
 /** Every comment id in a tab's elements. */
-export function commentIdsOf(elements: readonly Element[] | undefined): string[] {
+function commentIdsOf(elements: readonly Element[] | undefined): string[] {
   const ids: string[] = [];
   // Every thread: each element's own and a Sheet's cells' (docs/specs/029-sheets/sheet.md "Cell comments").
   for (const { thread } of (elements ?? []).flatMap(elementThreads)) {

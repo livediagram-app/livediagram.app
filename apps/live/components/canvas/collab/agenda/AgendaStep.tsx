@@ -47,7 +47,7 @@ export function agendaStepLabel({
 }
 
 // "4:12": the time left on the current segment.
-export function formatRemaining(ms: number): string {
+function formatRemaining(ms: number): string {
   const total = Math.max(0, Math.round(ms / 1000));
   const mins = Math.floor(total / 60);
   const secs = total % 60;

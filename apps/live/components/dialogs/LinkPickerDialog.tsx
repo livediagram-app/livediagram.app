@@ -49,7 +49,7 @@ type LinkPickerDialogProps = {
   onClose: () => void;
 };
 
-export type UrlOnlyConfig = {
+type UrlOnlyConfig = {
   // Replaces the header's "Jump to a tab, open another document, ..." line.
   subtitle: string;
   fieldLabel: string;

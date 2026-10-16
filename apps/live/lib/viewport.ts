@@ -18,7 +18,7 @@ export const FIT_TO_SCREEN_MAX = 5;
 export const FIT_TO_SCREEN_MAX_AT_FIT = 1;
 
 export type Rect = { width: number; height: number };
-export type BBox = { x: number; y: number; width: number; height: number };
+type BBox = { x: number; y: number; width: number; height: number };
 export type Offset = { x: number; y: number };
 
 // Given the viewport's bounding rect and the elements' bounding box

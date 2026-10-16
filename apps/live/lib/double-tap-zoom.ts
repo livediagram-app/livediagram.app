@@ -6,7 +6,7 @@ import { ZOOM_MAX } from './canvas';
 import type { ViewPose } from './viewport-glide';
 
 // Each double-tap doubles the zoom: a phone's 60% view lands at 120%, a 200% view at 400%.
-export const DOUBLE_TAP_ZOOM_STEP = 2;
+const DOUBLE_TAP_ZOOM_STEP = 2;
 // Never less than 100% after a double-tap, so one tap on a zoomed-out overview lands at a readable size rather than
 // at 20% or 40%. Safe range: 0.5 to 2.
 export const DOUBLE_TAP_MIN_ZOOM = 1;

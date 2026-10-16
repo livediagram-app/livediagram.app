@@ -9,7 +9,7 @@ import { SparkleIcon } from '@/components/primitives/explorer-icons';
 // sparkle and the words, never colour alone; built like the Local only pill, in violet.
 
 export const MADE_BY_AI_LABEL = 'Made by AI';
-export const MADE_BY_AI_DESCRIPTION =
+const MADE_BY_AI_DESCRIPTION =
   'Made by an AI tool, through the AI assistant or the MCP server. Filter with Made by AI.';
 
 // The words meet 4.5:1 on the fill, the ring 3:1 against the row.

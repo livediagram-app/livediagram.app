@@ -9,7 +9,7 @@ import { useSyncExternalStore } from 'react';
 import type { PlanTabKind } from '@livediagram/document';
 import { getMaximisedPlanId, getMaximisedPlanKind, subscribeMaximisedPlan } from './maximised-plan';
 
-export type PlanCover = {
+type PlanCover = {
   // The board or Sheet filling the open tab, or null, and which it is.
   fillTabId: string | null;
   fillTabKind: 'Board' | 'Sheet' | 'View' | null;
@@ -67,7 +67,7 @@ export function isSheetCovering(): boolean {
 
 // The board covering the canvas (maximised, or filling its tab), or null: the palette gives way to that board's cards
 // (docs/specs/026-plan/plan-board.md "The palette follows what fills the screen").
-export function getCoveringBoardId(): string | null {
+function getCoveringBoardId(): string | null {
   if (getMaximisedPlanKind() === 'Board') return getMaximisedPlanId();
   return cover.fillTabKind === 'Board' ? cover.fillTabId : null;
 }

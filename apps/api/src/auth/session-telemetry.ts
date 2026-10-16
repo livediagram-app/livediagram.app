@@ -27,7 +27,7 @@ import type { ClerkIdentity } from './clerk';
 
 export const FRESH_SIGN_IN_MINUTES = 60;
 
-export type AuthSighting = 'SignedUp' | 'SignedIn' | null;
+type AuthSighting = 'SignedUp' | 'SignedIn' | null;
 
 // Records the sighting and reports the event it amounts to. Returns what was
 // counted, for tests. Never throws.

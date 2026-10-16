@@ -10,7 +10,7 @@
 import { createContext, useContext, useLayoutEffect, useMemo, useRef } from 'react';
 import { isMindNode, mindRootOf, type Element } from '@livediagram/document';
 
-export type MindOutlineBadges = {
+type MindOutlineBadges = {
   roots: ReadonlySet<string>;
   open: (id: string) => void;
   tidy: (id: string) => void;

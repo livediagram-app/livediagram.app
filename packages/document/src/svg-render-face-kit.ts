@@ -15,7 +15,7 @@ export type Face = BoxedElement & { type: 'shape' };
 export const PAD_X = 16;
 export const PAD_Y = 14;
 export const TITLE_PX = 13;
-export const BODY_PX = 11;
+const BODY_PX = 11;
 // Advance estimates for the header's two marks: the semibold title, and the
 // uppercase aside (caps run wider), plus the gap kept between them.
 const TITLE_EM = 0.56;

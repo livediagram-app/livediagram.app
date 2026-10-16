@@ -7,7 +7,7 @@
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 
-export type DocumentVisibility = {
+type DocumentVisibility = {
   shareable: boolean;
   team: boolean;
   offline: boolean;

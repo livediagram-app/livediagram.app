@@ -5,7 +5,7 @@ import type { RecognitionChipState } from '@/hooks/canvas/useRecognitionPreview'
 
 // The chip's corner sits this far above and before the pen's tip, in screen px, so the hand
 // holding the pen never covers it (docs/specs/023-draw-mode/draw-mode.md "Shape recognition").
-export const RECOGNITION_CHIP_GAP_PX = 12;
+const RECOGNITION_CHIP_GAP_PX = 12;
 
 const LABEL: Record<RecognitionChipState['action'], string> = {
   make: 'Make shape',

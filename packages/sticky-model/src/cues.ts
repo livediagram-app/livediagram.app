@@ -8,7 +8,7 @@ import { CLASS } from './mask';
 // background probability everywhere. No size prior here: which notes to
 // believe is the hybrid's question, asked against the classical boxes.
 
-export type CueOptions = {
+type CueOptions = {
   // A pixel is core when its core probability reaches this.
   coreThreshold: number;
   // Smaller core blobs are specks, not notes.
@@ -20,7 +20,7 @@ export type CueOptions = {
 // argmax.
 export const CUE_OPTIONS: CueOptions = { coreThreshold: 0.5, minCorePixels: 12 };
 
-export function coreClassesOf(probs: Float32Array, coreThreshold: number): Uint8Array {
+function coreClassesOf(probs: Float32Array, coreThreshold: number): Uint8Array {
   const n = probs.length / 3;
   const classes = new Uint8Array(n);
   for (let p = 0; p < n; p += 1) {

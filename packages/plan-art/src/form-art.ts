@@ -25,7 +25,7 @@ const GAP = 12;
 // most 2,048 px on its longest side (render.ts PREVIEW_MAX_SIDE_PX), so a taller picture would shrink past reading.
 export const FORM_ART_HEIGHT_MAX = 2048;
 // A long form flows on into a second column (1,440 px wide in all) before anything is left out.
-export const FORM_ART_COLUMNS_MAX = 2;
+const FORM_ART_COLUMNS_MAX = 2;
 
 const INK = '#0f172a';
 const MUTED = '#64748b';
@@ -334,7 +334,7 @@ function ruleLine(form: FormDefinition, index: number): string | undefined {
     : 'Always shown: its question was removed or changed';
 }
 
-export interface FormArt {
+interface FormArt {
   svg: string;
   width: number;
   height: number;

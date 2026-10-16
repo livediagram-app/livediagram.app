@@ -104,7 +104,7 @@ export function chip(
   };
 }
 
-export type ChipSpec = { w: number; label: string; fill: string; stroke: string; ink: string };
+type ChipSpec = { w: number; label: string; fill: string; stroke: string; ink: string };
 
 // A row of chips that ends at `right`, for the status line beside a title.
 export function chipRow(right: number, y: number, items: ChipSpec[]): Element[] {

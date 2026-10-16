@@ -45,7 +45,7 @@ import type { RouteContext } from './context';
 
 export type ParsedView = { request: ViewRequest; json: boolean };
 // `view=lint` (docs/specs/024-agents/diagram-lint.md): answered by the lint, not by `renderView`.
-export type ParsedLintView = { lint: true; json: boolean };
+type ParsedLintView = { lint: true; json: boolean };
 
 type Scope = 'tab' | 'document';
 

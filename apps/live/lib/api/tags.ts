@@ -91,7 +91,7 @@ export async function apiSetDocumentTag(
   await expectOkVoid(res, on ? 'tag document' : 'untag document');
 }
 
-export const TAG_SAVE_FAILED = "Couldn't save that tag change. Try again.";
+const TAG_SAVE_FAILED = "Couldn't save that tag change. Try again.";
 
 /** What a failed tag write tells the person. */
 export function tagErrorCopy(error: unknown): string {

@@ -8,7 +8,7 @@ import { CollabButton } from '../collab-chrome';
 // The question itself stays hidden until the round opens, so nobody reads
 // ahead while the facilitator is still talking.
 
-export type QuizCentreActions = {
+type QuizCentreActions = {
   start?: () => void;
   lock?: () => void;
   reveal?: () => void;

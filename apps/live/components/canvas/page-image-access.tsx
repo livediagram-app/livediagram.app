@@ -15,7 +15,7 @@ import {
 import type { LaidOutPage } from '@livediagram/document';
 import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
 
-export type PageImageAccess = { ownerId: string; documentId: string; shareCode: string | null };
+type PageImageAccess = { ownerId: string; documentId: string; shareCode: string | null };
 
 const PageImageAccessContext = createContext<PageImageAccess | null>(null);
 

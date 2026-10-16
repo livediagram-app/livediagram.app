@@ -93,7 +93,7 @@ export function flowchartStepTypeOf(kind: ShapeKind): FlowchartStepType | undefi
 }
 
 /** What a label reads on the first step the palette places. */
-export const FLOWCHART_START_LABEL = 'Start';
+const FLOWCHART_START_LABEL = 'Start';
 
 export function isFlowchartStep(el: Element): el is ShapeElement {
   return (

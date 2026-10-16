@@ -36,8 +36,8 @@ export const hexOf = (value: string | undefined): string | undefined => {
 // as if they were the defaults. Both follow the theme, as draw.io's own dark mode turns them (spec
 // "Paper colours follow the theme too"). Near-black is the board scene's ink rule; near-white is
 // paper (D39): `#f5f5f5` and `#eeeeee` are paper, `#e0e0e0` is a grey someone chose.
-export const PAPER_MIN_LIGHTNESS = 0.93;
-export const PAPER_MAX_CHROMA = 0.02;
+const PAPER_MIN_LIGHTNESS = 0.93;
+const PAPER_MAX_CHROMA = 0.02;
 
 const isInk = (hex: string) => {
   const ok = sceneOklch(hex.slice(0, 7));

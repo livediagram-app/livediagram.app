@@ -454,7 +454,7 @@ export async function offlineDeleteDocument(id: string): Promise<void> {
 // record only if it still matches what was uploaded, judged and done in one transaction so no write
 // (from this tab or another) can land between the check and the delete. Answers what it found:
 // `deleted` (with the record as it was), `changed` (with the record as it is now) or `missing`.
-export type OfflineDeleteOutcome =
+type OfflineDeleteOutcome =
   { outcome: 'deleted' | 'changed'; rec: OfflineDocumentRecord } | { outcome: 'missing' };
 
 export async function offlineDeleteIfUnchanged(

@@ -14,7 +14,7 @@ import {
 
 type NewId = (prefix: 'q' | 's') => string;
 
-export type QuestionAt = { section: number; index: number };
+type QuestionAt = { section: number; index: number };
 
 export function findQuestion(form: FormDefinition, id: string): QuestionAt | null {
   for (let s = 0; s < form.sections.length; s += 1) {

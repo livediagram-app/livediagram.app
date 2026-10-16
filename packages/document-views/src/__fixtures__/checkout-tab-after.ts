@@ -5,7 +5,7 @@ import { createPinnedArrow, createShape, type Element, type Tab } from '@livedia
 import { CHECKOUT_IDS, checkoutTab, pinnedId } from './checkout-tab';
 
 export const CHECKOUT_AFTER_REV = 47;
-export const REDIS_ID = pinnedId('7180', 31);
+const REDIS_ID = pinnedId('7180', 31);
 
 function changed(el: Element): Element[] {
   switch (el.id) {

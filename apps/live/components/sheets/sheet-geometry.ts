@@ -14,7 +14,7 @@ import {
 
 export const ROW_HEADER_PX = 46;
 export const COL_HEADER_PX = 22;
-export const GRID_OVERSCAN = 4;
+const GRID_OVERSCAN = 4;
 
 export type Geometry = {
   rows: Float64Array; // rows[i] is row i's top; rows[n] the total height
@@ -134,7 +134,7 @@ export type Hit =
   | { kind: 'corner' }
   | { kind: 'none' };
 
-export const RESIZE_HIT_PX = 4;
+const RESIZE_HIT_PX = 4;
 
 function axisAt(
   offsets: Float64Array,

@@ -5,7 +5,7 @@ import type { PathElement, PathNode, PathPoint } from './element-types';
 import type { Point } from './geometry-primitives';
 import { pathBounds, pathD, type PathAnchor } from './path-geometry';
 
-export type PathGeometry = Pick<PathElement, 'x' | 'y' | 'width' | 'height' | 'nodes'>;
+type PathGeometry = Pick<PathElement, 'x' | 'y' | 'width' | 'height' | 'nodes'>;
 
 // A straight horizontal or vertical path still needs a dimension to normalise against.
 const MIN_PATH_BOX = 1;

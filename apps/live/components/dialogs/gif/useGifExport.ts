@@ -30,13 +30,13 @@ import { createImageInliner } from '@/lib/gif-export/snapshot-media';
 import { loadPresentationConfig, SLIDE_SPEEDS } from '@/lib/presentation-config';
 import { track } from '@/lib/telemetry';
 
-export type GifPhase =
+type GifPhase =
   | { kind: 'idle' }
   | { kind: 'making'; progress: number }
   // `from`: the estimate's error clears once an estimate succeeds; a Download's stays until the next one.
   | { kind: 'error'; code: GifExportErrorCode; from: 'estimate' | 'make' };
 
-export type GifEstimate = { bytes: number; previewUrl: string };
+type GifEstimate = { bytes: number; previewUrl: string };
 
 // Everything a frame needs from the page and its tab, gathered once per export (or per estimate).
 type Capture = { css: string; fontCss: string; images: ReturnType<typeof createImageInliner> };

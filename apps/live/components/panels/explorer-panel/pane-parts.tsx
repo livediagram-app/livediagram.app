@@ -45,7 +45,7 @@ export function PaneSection({
 }
 
 // Up and Down move between a list's rows (the [data-pane-row] buttons), as the rail's keys do.
-export function paneListKeys(e: KeyboardEvent<HTMLElement>): void {
+function paneListKeys(e: KeyboardEvent<HTMLElement>): void {
   if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
   const rows = [...e.currentTarget.querySelectorAll<HTMLElement>('[data-pane-row]')];
   const at = rows.indexOf(document.activeElement as HTMLElement);

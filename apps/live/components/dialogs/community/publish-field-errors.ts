@@ -15,7 +15,7 @@ import { communityCodeMessage } from '@/lib/community-errors';
 
 export type PublishFieldErrors = Partial<Record<CommunityInputField, string>>;
 
-export type PublishDraft = {
+type PublishDraft = {
   title: string;
   description: string;
   category: string | null;

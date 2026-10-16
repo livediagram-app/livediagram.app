@@ -46,7 +46,7 @@ type CanvasSelection = {
 };
 
 // The modes that decide whether a selected element shows its grips.
-export type GripContext = {
+type GripContext = {
   editingId: string | null;
   isPaintMode: boolean;
   tabLocked: boolean;

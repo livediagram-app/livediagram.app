@@ -30,11 +30,11 @@ import { fileURLToPath } from 'node:url';
 import worker from '../index';
 import type { Env } from '../types';
 
-export const PROBE_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const;
+const PROBE_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const;
 export type ProbeMethod = (typeof PROBE_METHODS)[number];
 
 /** Stands in for every path parameter. Matches no literal the dispatch compares against. */
-export const PARAM = 'probe-param';
+const PARAM = 'probe-param';
 
 // The `error` a JSON answer names; null for any other body.
 async function errorOf(res: Response): Promise<string | null> {
@@ -61,7 +61,7 @@ export interface ProbeResult {
 /** Literals compared per path position, keyed by top-level segment. Positions
  *  index `url.pathname.split('/')` minus the leading empty part, so `api` is 0
  *  and the resource segment is 1. */
-export type RouteVocabulary = Map<string, Map<number, Set<string>>>;
+type RouteVocabulary = Map<string, Map<number, Set<string>>>;
 
 const SRC = fileURLToPath(new URL('..', import.meta.url).href);
 
@@ -83,7 +83,7 @@ export function routeSourceFiles(): string[] {
 /** The `case '<segment>':` blocks of index.ts's dispatch switch, with the source
  *  of every route module each block reaches (transitively through sibling
  *  `./<module>` imports, since the document routes are split across files). */
-export function dispatchSources(): Map<string, string[]> {
+function dispatchSources(): Map<string, string[]> {
   const index = readSource('index.ts')!;
   const handlerFile = new Map<string, string>();
   for (const m of index.matchAll(/import \{([^}]*)\} from '\.\/routes\/([\w-]+)'/g)) {

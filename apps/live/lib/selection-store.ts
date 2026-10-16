@@ -81,7 +81,7 @@ export function createSelectionStore(): SelectionStore {
   };
 }
 
-export type ElementSelectionFlags = { selected: boolean; multi: boolean; single: boolean };
+type ElementSelectionFlags = { selected: boolean; multi: boolean; single: boolean };
 
 export function elementSelectionFlags(s: Selection, id: string): ElementSelectionFlags {
   const multi = s.multiSelectedIds.has(id);

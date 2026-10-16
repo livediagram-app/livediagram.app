@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react';
 // element id and re-renders only when the value for that element comes, changes or goes. Element tours use it for
 // what a step shows on the element it is on (docs/specs/007-editor/element-tours.md): a Sankey band lifted, a concept
 // graphic's animation previewed. One editor per page, at most one tour running.
-export type ElementKeyedStore<T extends { elementId: string }> = {
+type ElementKeyedStore<T extends { elementId: string }> = {
   set: (next: T | null) => void;
   get: () => T | null;
   use: (elementId: string | null) => T | null;

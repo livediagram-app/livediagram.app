@@ -84,7 +84,7 @@ export const MIND_SPACING_LABEL: Record<MindSpacing, string> = {
 };
 
 /** The factor each spacing scales both gaps by. */
-export const MIND_SPACING_SCALE: Record<MindSpacing, number> = {
+const MIND_SPACING_SCALE: Record<MindSpacing, number> = {
   tight: 0.5,
   compact: 0.75,
   comfortable: 1,
@@ -110,7 +110,7 @@ export function mindGaps(spacing: MindSpacing = DEFAULT_MIND_SPACING): MindGaps 
 
 type Size = { width: number; height: number };
 
-export type MindPlacement = {
+type MindPlacement = {
   x: number;
   y: number;
   // Which way a node in the way gets pushed. A tree stacks its siblings down a

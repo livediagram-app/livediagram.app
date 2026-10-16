@@ -9,7 +9,7 @@ import type { RouteContext } from '../routes/context';
 import { storeSheetWrite } from '../routes/sheet-write-route';
 import { sheetOnItsTab } from './form-tab';
 
-export type SheetRowOutcome = 'written' | 'missing' | 'full' | 'busy';
+type SheetRowOutcome = 'written' | 'missing' | 'full' | 'busy';
 
 // Whether the sheet a form sends its responses to is still there, on its tab in the document (form-tab.ts).
 export async function sheetThere(

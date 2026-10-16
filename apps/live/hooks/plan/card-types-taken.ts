@@ -27,7 +27,7 @@ export function setCardTypesTaken(next: CardTypesTaken): void {
   for (const l of listeners) l();
 }
 
-export function getCardTypesTaken(): CardTypesTaken {
+function getCardTypesTaken(): CardTypesTaken {
   return taken;
 }
 

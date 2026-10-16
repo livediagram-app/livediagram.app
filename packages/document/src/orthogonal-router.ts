@@ -12,14 +12,14 @@ export type Rect = { x: number; y: number; width: number; height: number };
 export type Side = 'n' | 'e' | 's' | 'w';
 
 // How far a route keeps off a box, the cost of a bend and of sharing a channel, and the largest grid searched.
-export const ROUTER_MARGIN = 18;
-export const ROUTER_BEND_COST = 80;
+const ROUTER_MARGIN = 18;
+const ROUTER_BEND_COST = 80;
 export const ROUTER_SHARE_COST = 400;
 // How near an earlier run a step counts as sharing it: a line a few px beside another, or on its line a few px short
 // of its end (a "no" running up to the very point a "yes" turns into the step it passes), reads as riding it as surely
 // as one on it does.
-export const ROUTER_SHARE_NEAR = 8;
-export const ROUTER_MAX_GRID = 40_000;
+const ROUTER_SHARE_NEAR = 8;
+const ROUTER_MAX_GRID = 40_000;
 // The most work the router does for one layout, every route together, in grid crossings laid out plus search steps
 // taken: past it a route gives up (null) and the caller keeps its own (an outside track), so a dense graph never
 // searches for seconds. A small flow's few loops use a fraction of it.

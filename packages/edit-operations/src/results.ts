@@ -22,7 +22,7 @@ import { fillValue } from './colours';
 import type { LaidOut, MoveReason, Removal, Touch } from './state';
 
 // How a result names elements and places points: by ref, relative to the content origin.
-export type LineNaming = { refOf: (id: ElementId) => string; origin: { x: number; y: number } };
+type LineNaming = { refOf: (id: ElementId) => string; origin: { x: number; y: number } };
 
 const pointIn = (naming: LineNaming, x: number, y: number): [number, number] => [
   Math.round(x - naming.origin.x),
@@ -178,7 +178,7 @@ function fieldChanges(
     .map(({ change }) => change);
 }
 
-export type ResultSource = {
+type ResultSource = {
   before: ReadonlyMap<ElementId, Element>;
   // The input tab's elements, in order.
   beforeElements: readonly Element[];

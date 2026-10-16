@@ -6,7 +6,7 @@
 import type { Tab } from '@livediagram/document';
 import { newTabSeed } from '@/lib/new-tab-seed';
 
-export type TemplateTabContent = {
+type TemplateTabContent = {
   id: string;
   name: string;
   elements: Tab['elements'];

@@ -14,8 +14,8 @@ import { stateAttributeOf } from './state-attribute';
 import { attrValue, jsonString, plural } from './text';
 import type { ViewAttribute } from './view-attribute';
 
-export type DiffContext = { since: number; rev: number; tabIds?: readonly string[] };
-export type DiffOptions = { budget?: number; door?: ViewDoor };
+type DiffContext = { since: number; rev: number; tabIds?: readonly string[] };
+type DiffOptions = { budget?: number; door?: ViewDoor };
 
 type Change = {
   text: string;

@@ -19,7 +19,7 @@ import { track } from '@/lib/telemetry';
 import { useRowReorderDrag } from '@/hooks/ui/useRowReorderDrag';
 
 // How far beyond the list's visible part a row's picture is drawn ahead of a scroll, in px.
-export const CONTENTS_DRAW_AHEAD_PX = 400;
+const CONTENTS_DRAW_AHEAD_PX = 400;
 
 export function usePageContents({
   view,

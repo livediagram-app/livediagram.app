@@ -7,7 +7,7 @@ export type ExportFileSet = Map<string, () => Promise<Uint8Array>>;
 
 export type BoardRef = { dir: string };
 
-export type BoardRejection = 'board-unreadable';
+type BoardRejection = 'board-unreadable';
 
 export type BoardFiles = {
   dir: string;
@@ -24,7 +24,7 @@ export type BoardFiles = {
 
 // A single board file larger than this is refused unread (the largest real changes.json is
 // about 2 MB; its sync frames, never read, are larger).
-export const MAX_BOARD_JSON_BYTES = 64 * 1024 * 1024;
+const MAX_BOARD_JSON_BYTES = 64 * 1024 * 1024;
 
 const REQUIRED = ['manifest.json', 'session.json', 'changes.json'] as const;
 

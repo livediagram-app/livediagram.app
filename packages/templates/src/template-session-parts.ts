@@ -23,7 +23,7 @@ export const BUTTON_H = 96;
 export const PAD_W = 150;
 export const UNDER_SECTION = SECTION_H + 12;
 export const BUTTON_W = 152;
-export const CHECK_ROW_H = 40;
+const CHECK_ROW_H = 40;
 // A bold large title's average glyph advance (a share of its size) and its box's inner room.
 const TITLE_CHAR_EM = 0.6;
 const TITLE_PAD_PX = 24;

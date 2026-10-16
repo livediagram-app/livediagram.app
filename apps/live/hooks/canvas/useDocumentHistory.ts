@@ -61,7 +61,7 @@ export function historyMarkCheckpoint(h: History): History {
 }
 
 // A new step that is not a snapshot (an item change, useItemUndo): the redo side is gone.
-export function historyClearRedo(h: History): History {
+function historyClearRedo(h: History): History {
   return { ...h, future: [], branch: branchOf(h) + 1 };
 }
 

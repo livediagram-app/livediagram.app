@@ -11,7 +11,7 @@ import { API_BASE } from './base';
 const formUrl = (code: string, door = '') =>
   `${API_BASE}/forms/${encodeURIComponent(code)}${door ? `/${door}` : ''}`;
 
-export type FormLoad =
+type FormLoad =
   { kind: 'ok'; data: PublicFormResponse } | { kind: 'not_found' } | { kind: 'error' };
 
 export async function loadPublicForm(
@@ -28,7 +28,7 @@ export async function loadPublicForm(
   }
 }
 
-export type SendResult =
+type SendResult =
   | { kind: 'sent'; number: number }
   | { kind: 'refused'; refusal: FormResponseRefusal }
   | { kind: 'offline' };

@@ -21,7 +21,7 @@ import { getLoadedStickerCatalog, getStickerLoaded } from '@/lib/icon-registry';
 // wherever you let go.
 export const STICKER_DND_MIME = 'application/x-livediagram-sticker';
 
-export type StickerCategory = {
+type StickerCategory = {
   id: string;
   label: string;
   stickerIds: string[];

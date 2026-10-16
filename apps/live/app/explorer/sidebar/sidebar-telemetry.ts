@@ -23,7 +23,7 @@ export type SidebarTelemetryRow =
   | 'Tag'
   | 'Trash';
 
-export const SIDEBAR_TELEMETRY_PREFIX = { page: 'Sidebar', panel: 'ExplorerPanel' } as const;
+const SIDEBAR_TELEMETRY_PREFIX = { page: 'Sidebar', panel: 'ExplorerPanel' } as const;
 
 export function trackSidebar(row: SidebarTelemetryRow, surface: 'page' | 'panel' = 'page'): void {
   track('UI', 'Selected', `${SIDEBAR_TELEMETRY_PREFIX[surface]}.${row}`);

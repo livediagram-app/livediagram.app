@@ -86,7 +86,7 @@ type CellsProps = {
 };
 
 // The room a dropdown column keeps at its cells' right, so its arrow never covers the value.
-export const DROPDOWN_PAD_PX = 22;
+const DROPDOWN_PAD_PX = 22;
 
 type Region = { r1: number; r2: number; c1: number; c2: number; clip: CSSProperties };
 

@@ -40,7 +40,7 @@ export function isSharePagePath(pathname: string): boolean {
   return /^\/(?:document|diagram)\/shared\/?$/.test(pathname);
 }
 
-export type ShareHead = { title: string; description: string; image: string; imageAlt: string };
+type ShareHead = { title: string; description: string; image: string; imageAlt: string };
 
 export function shareHead(name: string, code: string, origin: string): ShareHead {
   const title = name.replace(/\s+/g, ' ').trim().slice(0, NAME_MAX) || 'Untitled document';
@@ -82,7 +82,7 @@ async function sharePreviewName(
 }
 
 // The shell's head, rewritten to name the document. The selectors match what app/layout.tsx's metadata emits.
-export function withShareHead(shell: Response, head: ShareHead): Response {
+function withShareHead(shell: Response, head: ShareHead): Response {
   const set = (value: string) => ({
     element(el: RewriterElement) {
       el.setAttribute('content', value);

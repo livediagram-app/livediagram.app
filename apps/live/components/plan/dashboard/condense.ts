@@ -14,17 +14,17 @@ export const isCondensed = (width: number | undefined) =>
 
 // What a stacked slot is sized as: a Title (its text), a written card (its content, at least CARD_MIN_PX), a figure
 // (a short tile), something worked in (most of the screen), or an empty slot (its Add to Slot).
-export type PhoneSlotSize = 'title' | 'card' | 'figure' | 'work' | 'empty';
+type PhoneSlotSize = 'title' | 'card' | 'figure' | 'work' | 'empty';
 
 // A small card's least height: a heading and two or three lines (Note, Status, Key Date, a short Checklist or Links).
 export const PHONE_CARD_MIN_PX = 168;
 // A figure's tile: a metric's number, label and bar.
 export const PHONE_FIGURE_PX = 176;
 // An empty slot: its badge, title and Add to Slot.
-export const PHONE_EMPTY_PX = 176;
+const PHONE_EMPTY_PX = 176;
 // A board, Sheet, chart or shown tab: two thirds of the screen, so a row of cards or cells is workable and the next
 // slot still peeks in below; never under 360 px (a short landscape screen).
-export const PHONE_WORK_VH = 66;
+const PHONE_WORK_VH = 66;
 export const PHONE_WORK_MIN_PX = 360;
 
 // A plan view whose id names a metric tile (plan-views: `metric:<kind>`).

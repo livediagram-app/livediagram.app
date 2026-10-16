@@ -140,7 +140,7 @@ const MAX_RECONNECT_ATTEMPTS = 6;
 // outage can't grow it without end; past the bound, newer ops are dropped
 // and the next save still carries the state to D1.
 const OUTBOX_MAX = 500;
-export function isOutboxOp(msg: RoomOutgoing): boolean {
+function isOutboxOp(msg: RoomOutgoing): boolean {
   if (msg.kind !== 'op') return false;
   const kind = (msg.op as { kind?: unknown }).kind;
   return kind === 'poll-answer' || isMutationOpKind(kind);
@@ -163,7 +163,7 @@ const ROOM_KEEPALIVE_TICK_MS = 5_000;
 const RECONNECT_MAX_MS = 15_000;
 
 /** Who this client says it is to the room: the room overrides `id` (see connectRoom). */
-export type RoomSelf = { id: string; key?: string; name: string; color: string; picture?: string };
+type RoomSelf = { id: string; key?: string; name: string; color: string; picture?: string };
 
 export function connectRoom(
   documentId: string,

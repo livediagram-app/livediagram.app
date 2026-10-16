@@ -9,7 +9,7 @@ export const STROKE_DECODE_CACHE_POINTS = 500_000;
 // Distinct undecodable blocks remembered, so each is logged once.
 const LOGGED_LIMIT = 64;
 
-export type StrokePointsDecoder = {
+type StrokePointsDecoder = {
   decode(packed: string): StrokePoints;
   has(packed: string): boolean;
   size(): { entries: number; points: number };

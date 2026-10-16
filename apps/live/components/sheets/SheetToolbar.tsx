@@ -22,7 +22,7 @@ import {
   type ToolbarCategoryId,
 } from './sheet-toolbar-categories';
 
-export const TOOLBAR_PX = 44;
+const TOOLBAR_PX = 44;
 // A button's square, and its glyph and letters (the shared 16 px glyphs and 13 px letters, drawn larger here).
 const BUTTON_PX = 36;
 // A word button's rough width per character (a function's name), and its glyph beside the word.

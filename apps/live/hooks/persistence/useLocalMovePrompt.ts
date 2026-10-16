@@ -14,7 +14,7 @@ import type { ImportChecklistRow } from '@/components/dialogs/ImportChecklist';
 // documents into the account. Move runs Sync Document on each ticked one in turn; a failure stays
 // Local only and is named; Not Now is remembered until the count grows.
 
-export type LocalMovePhase =
+type LocalMovePhase =
   | { kind: 'idle' }
   | { kind: 'offer' }
   | { kind: 'moving'; done: number; total: number }

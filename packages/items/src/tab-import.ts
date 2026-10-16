@@ -7,7 +7,7 @@ import type { ItemTypeDef } from './item-types';
 import { storeAsCreates } from './store';
 import { typesOf, type ItemTypeCatalogue } from './type-catalogue';
 
-export interface TabItemsImport {
+interface TabItemsImport {
   types: ItemTypeDef[];
   creates: ItemCreate[];
   // Items the document already holds, left as they are.

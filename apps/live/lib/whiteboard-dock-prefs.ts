@@ -91,7 +91,7 @@ export const DRAW_PATTERNS = [
   'graph',
 ] as const satisfies readonly BackgroundPattern[];
 export type DrawPattern = (typeof DRAW_PATTERNS)[number];
-export const DEFAULT_DRAW_PATTERN: DrawPattern = 'graph';
+const DEFAULT_DRAW_PATTERN: DrawPattern = 'graph';
 
 export function readDrawPattern(prefs: UserPreferences): DrawPattern {
   const stored = prefs.drawPattern;

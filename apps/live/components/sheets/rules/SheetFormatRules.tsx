@@ -33,8 +33,8 @@ const WIDTH_PX = 384;
 const NO_RULES: readonly FormatRule[] = [];
 
 // conditional-formatting.md "Rules": a new rule's style, the preset styles and the preset scales.
-export const NEW_RULE_STYLE: FormatStyle = { bg: '#b7e1cd', fc: '#137333' };
-export const PRESET_STYLES: { label: string; style: FormatStyle }[] = [
+const NEW_RULE_STYLE: FormatStyle = { bg: '#b7e1cd', fc: '#137333' };
+const PRESET_STYLES: { label: string; style: FormatStyle }[] = [
   { label: 'Green Fill', style: { bg: '#b7e1cd', fc: '#137333' } },
   { label: 'Red Fill', style: { bg: '#f4c7c3', fc: '#a50e0e' } },
   { label: 'Yellow Fill', style: { bg: '#fce8b2', fc: '#7a5c00' } },
@@ -49,7 +49,7 @@ const SCALE_ENDS = {
   yellow: '#ffd666',
   blue: '#4285f4',
 };
-export const PRESET_SCALES: { label: string; min: string; mid?: string; max: string }[] = [
+const PRESET_SCALES: { label: string; min: string; mid?: string; max: string }[] = [
   { label: 'White to Green', min: SCALE_ENDS.white, max: SCALE_ENDS.green },
   { label: 'Green to White', min: SCALE_ENDS.green, max: SCALE_ENDS.white },
   { label: 'White to Red', min: SCALE_ENDS.white, max: SCALE_ENDS.red },

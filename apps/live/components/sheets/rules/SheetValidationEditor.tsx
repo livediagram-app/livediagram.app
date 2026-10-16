@@ -34,7 +34,7 @@ const EDITOR_WIDTH_PX = 352;
 // Options take the soft Standard Colours in turn, so each reads apart as a chip (data-validation.md).
 // Ink and grey aside: a white or grey chip barely reads as one.
 const NEUTRALS = new Set<string>([INK_PEN_COLOUR, GREY_PEN_COLOUR]);
-export const OPTION_COLOURS = standardColours('soft', 'light')
+const OPTION_COLOURS = standardColours('soft', 'light')
   .filter((c) => !NEUTRALS.has(c.name))
   .map((c) => c.hex.toLowerCase());
 const OPTION_GROUPS = [

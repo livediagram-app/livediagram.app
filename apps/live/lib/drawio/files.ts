@@ -12,7 +12,7 @@ import type { ImportImageRequest } from '@/lib/import-images';
 import { debugLog } from '@/lib/debug-log';
 
 /** The names draw.io files carry, longest first so `.drawio.png` is not read as `.png`. */
-export const DRAWIO_EXTENSIONS = [
+const DRAWIO_EXTENSIONS = [
   '.drawio.svg',
   '.drawio.png',
   '.drawio',
@@ -23,15 +23,14 @@ export const DRAWIO_EXTENSIONS = [
 ] as const;
 
 /** draw.io's default diagram names, with an optional copy number (` (2)`, `-2`). */
-export const DRAWIO_GENERIC_NAME =
-  /^(?:untitled(?: diagram)?|diagram|drawing)?(?: \(\d+\)|-\d+)?$/i;
+const DRAWIO_GENERIC_NAME = /^(?:untitled(?: diagram)?|diagram|drawing)?(?: \(\d+\)|-\d+)?$/i;
 
 /** draw.io's default library name, with an optional copy number. */
-export const DRAWIO_GENERIC_LIBRARY_NAME = /^(?:untitled library)?(?: \(\d+\)|-\d+)?$/i;
+const DRAWIO_GENERIC_LIBRARY_NAME = /^(?:untitled library)?(?: \(\d+\)|-\d+)?$/i;
 
-export const DRAWIO_DIAGRAM_NAME = 'draw.io diagram';
-export const DRAWIO_LIBRARY_NAME = 'draw.io library';
-export const DRAWIO_NOT_DRAWIO = "This file isn't a draw.io diagram or library.";
+const DRAWIO_DIAGRAM_NAME = 'draw.io diagram';
+const DRAWIO_LIBRARY_NAME = 'draw.io library';
+const DRAWIO_NOT_DRAWIO = "This file isn't a draw.io diagram or library.";
 const UNREADABLE_FILE = "This file couldn't be read.";
 
 const DATE_FORMAT = new Intl.DateTimeFormat('en-GB', {
@@ -41,7 +40,7 @@ const DATE_FORMAT = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'UTC',
 });
 
-export function stripDrawioExtension(name: string): string {
+function stripDrawioExtension(name: string): string {
   const lower = name.toLowerCase();
   const ext = DRAWIO_EXTENSIONS.find((e) => lower.endsWith(e));
   return (ext ? name.slice(0, -ext.length) : name).trim();

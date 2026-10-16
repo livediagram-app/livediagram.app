@@ -6,7 +6,7 @@
 // Longer ids than any the editor mints are refused rather than drawn.
 export const ARTICLE_CARET_MAX_ID_LEN = 256;
 // A caret further into one block than this is not one the editor could have sent.
-export const ARTICLE_CARET_MAX_OFFSET = 1_000_000;
+const ARTICLE_CARET_MAX_OFFSET = 1_000_000;
 
 export type ArticleCaret =
   { tabId: string; flow: string; blockId: string; offset: number } | { tabId: string; flow: null };

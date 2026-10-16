@@ -14,8 +14,8 @@ import {
   type FlagWord,
 } from './vocabulary';
 
-export type LineError = { column: number; expected: string };
-export type LineResult = { raw: Record<string, unknown> } | { error: LineError };
+type LineError = { column: number; expected: string };
+type LineResult = { raw: Record<string, unknown> } | { error: LineError };
 
 // Keys an operation reads itself rather than as a field (blueprint "Word classes").
 const SPECIAL_KEYS: Readonly<Partial<Record<EditOperationName, readonly string[]>>> = {

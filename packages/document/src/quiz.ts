@@ -9,13 +9,13 @@
 import type { ShapeKind } from './index';
 import type { ParticipantResponse } from './responses';
 
-export const QUIZ_MIN_OPTIONS = 2;
+const QUIZ_MIN_OPTIONS = 2;
 export const QUIZ_MAX_OPTIONS = 6;
 export const QUIZ_OPTION_MAX_TEXT = 80;
 // How long a round stays open, in seconds. Clamped where read rather than
 // rejected on load, the same rule the agenda's minutes take.
-export const QUIZ_MIN_SECONDS = 5;
-export const QUIZ_MAX_SECONDS = 300;
+const QUIZ_MIN_SECONDS = 5;
+const QUIZ_MAX_SECONDS = 300;
 export const QUIZ_DEFAULT_SECONDS = 20;
 // The lengths the Edit Quiz dialog offers. Any clamped value is legal in the
 // document; these are just the sensible ones to pick from.
@@ -192,7 +192,7 @@ export const QUIZ_OPTION_LONG_TEXT = 36;
 // (docs/specs/012-collaboration/quiz.md "Answers"): away from the disc, so it never
 // runs into it. Above the disc it grows up, below it down, level with it both ways
 // (the disc is beside it, not above or below). The canvas and the export share it.
-export type QuizOptionGrowth = 'up' | 'down' | 'both';
+type QuizOptionGrowth = 'up' | 'down' | 'both';
 
 export function quizOptionGrowth(at: { y: number }): QuizOptionGrowth {
   const c = QUIZ_DESIGN_SIZE / 2;

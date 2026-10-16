@@ -28,7 +28,7 @@ const DIRECTIONS: Record<string, GridDirection> = {
   ArrowDown: 'down',
 };
 
-export type ShapeGridGroup = { id: string; label: string; entries: WhiteboardShapeEntry[] };
+type ShapeGridGroup = { id: string; label: string; entries: WhiteboardShapeEntry[] };
 
 const entriesOf = (keys: readonly WhiteboardShapeKey[]) =>
   keys.map(whiteboardShapeEntry).filter((e): e is WhiteboardShapeEntry => e !== undefined);

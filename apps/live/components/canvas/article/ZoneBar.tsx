@@ -35,7 +35,7 @@ const Grip = I(lucideGripVertical);
 const Float = I(lucideBringToFront);
 
 // How a zone (or a floating object) sits: in the writing (in line, or wrapped), or in front of it.
-export type ZoneFit = ArticleZoneWrap | 'float';
+type ZoneFit = ArticleZoneWrap | 'float';
 
 export function ZoneBar({
   fit,

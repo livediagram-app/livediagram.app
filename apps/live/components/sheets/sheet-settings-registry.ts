@@ -7,7 +7,7 @@ import { useLayoutEffect, useSyncExternalStore } from 'react';
 import type { SheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
 
-export type SheetSettingsEntry = {
+type SheetSettingsEntry = {
   controller: SheetController;
   actions: SheetActions;
   onImportCsv: () => void;

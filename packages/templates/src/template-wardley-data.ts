@@ -27,7 +27,7 @@ export const WARDLEY_STAGES: readonly { name: string; to: number; trait: string;
 // The anchor: who the map is for, and what they need.
 export const WARDLEY_USER = 'Office manager';
 
-export type WardleyComponent = {
+type WardleyComponent = {
   id: string;
   label: string;
   // Evolution, 0 (Genesis) to 1 (Commodity), and visibility, 0 (invisible) to 1 (visible to the user).

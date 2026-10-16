@@ -23,7 +23,7 @@ export const IMPORT_IMAGE_FAILURES = [
 ] as const;
 export type ImportImageFailure = (typeof IMPORT_IMAGE_FAILURES)[number];
 
-export type StoredImportImageKind = 'uploaded' | 'deduped' | 'embedded';
+type StoredImportImageKind = 'uploaded' | 'deduped' | 'embedded';
 
 export type StoredImportImage = {
   ok: true;

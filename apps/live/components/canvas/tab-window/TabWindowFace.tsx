@@ -31,7 +31,7 @@ const TabWindowDrawing = dynamic(
 );
 
 /** What a window shows, from its tab and that tab's content (the spec's States table). */
-export type TabWindowState =
+type TabWindowState =
   | { kind: 'unchosen' }
   | { kind: 'unavailable' }
   | { kind: 'loading'; name: string }

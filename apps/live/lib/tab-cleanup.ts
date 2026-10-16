@@ -58,10 +58,10 @@ export function cleanupElements(
 }
 
 // Passes a layout gets to settle. Most settle on the first; a few hand-drawn trees take one more.
-export const MAX_LAYOUT_PASSES = 3;
+const MAX_LAYOUT_PASSES = 3;
 // Up to this many elements (shapes and arrows) a layout settles; beyond it one pass is the press.
 // A 300-shape tab's pass is ~20 ms here and several times that on CI, so three would break the hover budget.
-export const SETTLE_ELEMENT_LIMIT = 300;
+const SETTLE_ELEMENT_LIMIT = 300;
 
 // Whether every box sits exactly where it did: the arrows follow the boxes, so this is the layout.
 function sameBoxes(a: Element[], b: Element[]): boolean {

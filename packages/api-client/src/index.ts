@@ -5,5 +5,4 @@ export {
   createApiClient,
   postEvents,
   type ApiClient,
-  type ApiClientOptions,
 } from './client';

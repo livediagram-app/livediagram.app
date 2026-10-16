@@ -15,9 +15,9 @@ import { MUTED } from './template-session-parts';
 
 export { MUTED };
 
-export const HEAD_ICON = 28;
-export const HEAD_TITLE_H = 34;
-export const HEAD_HINT_H = 24;
+const HEAD_ICON = 28;
+const HEAD_TITLE_H = 34;
+const HEAD_HINT_H = 24;
 // A column head's full height: glyph + title row, then the prompt.
 export const HEAD_H = HEAD_TITLE_H + HEAD_HINT_H;
 

@@ -14,7 +14,7 @@ export function serialFromParts(y: number, m: number, d: number, h = 0, min = 0,
   return serialFromDate(y, m, d) + (h * 3600 + min * 60 + s) / 86_400;
 }
 
-export type DateParts = {
+type DateParts = {
   y: number;
   m: number;
   d: number;
@@ -131,7 +131,7 @@ export function parseTimeText(text: string): number | null {
   return (h * 3600 + min * 60 + s) / 86_400;
 }
 
-export type ParsedDate = { serial: number; hasTime: boolean };
+type ParsedDate = { serial: number; hasTime: boolean };
 
 // A time after a date starts at its first non-space, so the space before it and the time never compete (linear).
 const ISO_RE = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T]\s*(\S.*))?$/;

@@ -42,7 +42,7 @@ export function rowStatus(
   return { name: statusLabel(s, statusNames), phase: phaseOf(row.item, phases) };
 }
 
-export function GanttStatusPill({
+function GanttStatusPill({
   status,
   narrow,
 }: {
@@ -75,7 +75,7 @@ export function GanttStatusPill({
 
 // What reordering a row needs: the grip's press (given the row's element, to read its on-screen height) and a
 // keyboard move one place.
-export type GanttRowReorderProps = {
+type GanttRowReorderProps = {
   onGripDown: (row: HTMLElement | null) => (e: React.PointerEvent) => void;
   onMove: (by: -1 | 1) => void;
 };
@@ -151,7 +151,7 @@ export function GanttNameRow({
 
 // A row's grip: six dots at its left edge, shown while the row is hovered or focused; pressed, it drags the row.
 // A plain click on it does nothing.
-export function GanttRowGrip({
+function GanttRowGrip({
   palette,
   onGripDown,
 }: {

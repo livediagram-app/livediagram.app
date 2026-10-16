@@ -17,10 +17,10 @@ export const FENCE_POST_SPACING = 40;
 
 // Post and rail sizes as fractions of the fence's thickness (its shorter side), so a fence drawn
 // thicker draws chunkier timber rather than the same thin lines in a wider box.
-export const FENCE_POST_WIDTH = 0.5;
-export const FENCE_RAIL_HEIGHT = 0.16;
+const FENCE_POST_WIDTH = 0.5;
+const FENCE_RAIL_HEIGHT = 0.16;
 // Where each rail's top edge sits, across the thickness.
-export const FENCE_RAIL_TOPS = [0.26, 0.58] as const;
+const FENCE_RAIL_TOPS = [0.26, 0.58] as const;
 // The rails sit behind the posts, a shade lighter, so the posts read as the uprights.
 export const FENCE_RAIL_OPACITY = 0.78;
 
@@ -56,7 +56,7 @@ export function fencePostCentres(length: number, thickness: number): number[] {
   return Array.from({ length: gaps + 1 }, (_, i) => inset + (span * i) / gaps);
 }
 
-export type FencePart = {
+type FencePart = {
   role: 'post' | 'rail';
   x: number;
   y: number;

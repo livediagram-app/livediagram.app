@@ -34,7 +34,7 @@ const onToolbar = (e: React.PointerEvent) =>
   !!(e.target as HTMLElement | null)?.closest?.('[data-canvas-toolbar]');
 
 // The id the path being drawn renders under: it has no element yet.
-export const PATH_DRAFT_ID = 'path-draft';
+const PATH_DRAFT_ID = 'path-draft';
 
 const identity = <T>(el: T): T => el;
 

@@ -11,7 +11,7 @@ import { useSyncExternalStore } from 'react';
 export type VisualViewportBand = { top: number; left: number; width: number; height: number };
 
 // Below this (px) a difference between the visible area and the window is rounding, not a keyboard.
-export const VISUAL_VIEWPORT_SLACK_PX = 1;
+const VISUAL_VIEWPORT_SLACK_PX = 1;
 
 // The visible band now, or null when it is the whole window (or there is no visualViewport to read).
 export function readVisualViewportBand(): VisualViewportBand | null {

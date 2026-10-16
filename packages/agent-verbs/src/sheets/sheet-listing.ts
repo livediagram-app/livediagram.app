@@ -6,7 +6,7 @@ import { AGENT_LOCALE, formatRange, sheetFromJson, Workbook } from '@livediagram
 import { tabPath } from '../verbs/shared';
 import { readSheets } from './sheet-state';
 
-export interface ListedSheet {
+interface ListedSheet {
   id: string;
   title: string;
   tabId: string;

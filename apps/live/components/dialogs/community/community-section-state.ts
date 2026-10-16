@@ -12,7 +12,7 @@ import type { CommunityOwnPost } from '@livediagram/api-schema';
 //   5. hidden:      published, but taken out of the Community by reports, for good.
 //   6. published:   published and listed.
 //   7. unpublished: the invitation to share.
-export type CommunitySectionState =
+type CommunitySectionState =
   'guest' | 'team' | 'loading' | 'error' | 'hidden' | 'published' | 'unpublished';
 
 export function communitySectionState(input: {

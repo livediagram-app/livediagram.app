@@ -13,16 +13,11 @@ export type AccentEdge = 'left' | 'top' | 'bottom';
 export const ACCENT_EDGES: readonly AccentEdge[] = ['left', 'top', 'bottom'];
 
 // The box shapes whose outline has a straight edge to lay a bar along.
-export const ACCENT_EDGE_SHAPES: ReadonlySet<string> = new Set([
-  'square',
-  'stadium',
-  'card',
-  'mind-node',
-]);
+const ACCENT_EDGE_SHAPES: ReadonlySet<string> = new Set(['square', 'stadium', 'card', 'mind-node']);
 
-export const ACCENT_EDGE_MIN_PX = 3;
-export const ACCENT_EDGE_MAX_PX = 6;
-export const ACCENT_EDGE_SHARE = 0.06;
+const ACCENT_EDGE_MIN_PX = 3;
+const ACCENT_EDGE_MAX_PX = 6;
+const ACCENT_EDGE_SHARE = 0.06;
 
 export function isAccentEdge(v: unknown): v is AccentEdge {
   return v === 'left' || v === 'top' || v === 'bottom';

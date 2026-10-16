@@ -13,7 +13,7 @@ import {
 
 const HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
-export type ColourWrite =
+type ColourWrite =
   | { patch: Record<string, string | number | undefined>; overridesTheme: boolean }
   | { rule: string; allowed: string[] };
 

@@ -11,8 +11,8 @@ import { TECH_ICON_CATALOG } from './tech-icon-catalog';
 export const ICON_SEARCH_MAX_LIMIT = 50;
 export const ICON_QUERY_MAX = 60;
 
-export type IconSet = 'line' | 'technology';
-export type IconHit = { id: string; label: string; set: IconSet };
+type IconSet = 'line' | 'technology';
+type IconHit = { id: string; label: string; set: IconSet };
 
 // An icon is found by its id's words and, for a Technology icon, its provider too ("aws lambda" finds aws-lambda,
 // whose label is only "Lambda"), as well as its label and keywords.

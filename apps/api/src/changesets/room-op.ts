@@ -11,7 +11,7 @@ import type { ElementOp, Tab } from '@livediagram/document';
 // does"). Its element ops ride along when their UTF-8 JSON fits CHANGESET_RELAY_MAX_BYTES; past
 // that, editors re-fetch the tab in place, and `touched` still names every element for the outline.
 
-export type RoomOpInput = {
+type RoomOpInput = {
   id: string;
   tabId: string;
   rev: number;

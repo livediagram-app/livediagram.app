@@ -8,7 +8,7 @@ export const TAG_LIMIT = 100;
 /** A tag's name, after trimming and collapsing whitespace, in characters. */
 export const TAG_NAME_MAX = 32;
 /** A tag id; the client mints UUIDs (36). */
-export const TAG_ID_MAX = 64;
+const TAG_ID_MAX = 64;
 
 /** A standard colour by name (a StandardColourName, drawn per appearance), or a custom `#rrggbb`. */
 export type TagColour = string;
@@ -34,7 +34,7 @@ export const TAG_ERRORS = {
 } as const;
 
 /** The hued standard colours, in the order a new tag takes them (spec "A tag"). */
-export const TAG_COLOUR_ORDER: readonly StandardColourName[] = [
+const TAG_COLOUR_ORDER: readonly StandardColourName[] = [
   'blue',
   'green',
   'orange',

@@ -122,7 +122,7 @@ export async function finishLanding(
   return { elements, images };
 }
 
-export type BoardDocumentsImport = {
+type BoardDocumentsImport = {
   ownerId: string;
   // Offline Mode documents (in this browser), or cloud ones.
   offline: boolean;

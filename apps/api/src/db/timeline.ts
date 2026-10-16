@@ -173,7 +173,7 @@ function rowToEvent(row: TimelineRow): TimelineEvent {
   };
 }
 
-export type ReadTimelineOptions = {
+type ReadTimelineOptions = {
   scope: TimelineScopeRef;
   // Who is reading, for the current-name override: only a document the reader can still open
   // shows its live name. Defaults to the scope's owner for a user scope; a team scope without
@@ -187,7 +187,7 @@ export type ReadTimelineOptions = {
   sourceTypes?: string[];
 };
 
-export type ReadTimelineResult = {
+type ReadTimelineResult = {
   items: TimelineEvent[];
   nextCursor?: string;
 };
@@ -311,7 +311,7 @@ function parseCursor(raw: string): { occurredAt: number; id: string } | null {
 // Scope state
 // ---------------------------------------------------------------------
 
-export type TimelineScopeState = {
+type TimelineScopeState = {
   backfilledAt: number | null;
   /** When this scope was last READ by its owner — the unread watermark. */
   lastSeenAt: number | null;

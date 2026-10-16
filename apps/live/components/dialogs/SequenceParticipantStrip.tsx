@@ -26,7 +26,7 @@ const PlusIcon = lucideGlyph(lucidePlus, 14);
 const RemoveIcon = lucideGlyph(lucideTrash2, 14);
 
 /** A participant's look: a headed box, or a stick figure for an actor. */
-export function ParticipantGlyph({ actor }: { actor?: boolean }) {
+function ParticipantGlyph({ actor }: { actor?: boolean }) {
   return (
     <svg
       aria-hidden

@@ -2,7 +2,7 @@
 // selection, so nothing has to be guessed ("Insert 3 Rows Above", "Delete Columns B to C"). Pure.
 import { columnLetters, formatA1, formatRange, type GridRange } from '@livediagram/sheets';
 
-export type CellMenuLabels = {
+type CellMenuLabels = {
   // The header: the selection, and how many cells it covers.
   title: string;
   count: string;

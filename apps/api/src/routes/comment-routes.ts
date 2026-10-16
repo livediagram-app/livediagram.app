@@ -60,7 +60,7 @@ import {
 type ThreadVerb = 'reply' | 'resolve' | 'reopen';
 
 type Doc = NonNullable<Awaited<ReturnType<typeof getDocument>>>;
-export type CommentCaller = { doc: Doc; owner: string };
+type CommentCaller = { doc: Doc; owner: string };
 type Caller = CommentCaller;
 
 // A thread's timeline key: the element's id, or `<elementId>#<cell>` for a Sheet cell's (timeline/tab-diff.ts).

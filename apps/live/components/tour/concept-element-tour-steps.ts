@@ -18,16 +18,6 @@ export type ConceptTourContext = {
   touch: boolean;
 };
 
-// The selector of the toured graphic, or of one of its parts.
-export function inElement(elementId: string, part = ''): string {
-  return `[data-element-id="${escapeId(elementId)}"]${part ? ` ${part}` : ''}`;
-}
-
-// An id made safe for an attribute selector.
-export function escapeId(id: string): string {
-  return typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(id) : id;
-}
-
 // The "+" sides, nearest the reader's eye first: the ring under a graphic is where a new row lands.
 const PLUS_SIDES = ['below', 'right', 'above', 'left'] as const;
 

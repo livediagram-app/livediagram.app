@@ -15,7 +15,7 @@ import {
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // How long typing pauses before it is saved. Safe range 250..1000 ms.
-export const DRAFT_SAVE_MS = 500;
+const DRAFT_SAVE_MS = 500;
 
 export type DraftTextHandle = { focus: () => void; flush: () => void };
 

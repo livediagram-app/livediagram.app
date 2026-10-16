@@ -5,7 +5,7 @@
 import type { ArrowheadShape } from './arrow-style';
 
 export type ErShape = 'one' | 'zero-or-one' | 'many' | 'zero-or-many' | 'one-or-many';
-export type ErGlyph = {
+type ErGlyph = {
   lines: readonly (readonly [number, number, number, number])[];
   // A ring, hollow on the paper: [cx, cy, r].
   rings: readonly (readonly [number, number, number])[];

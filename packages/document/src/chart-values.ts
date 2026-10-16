@@ -41,7 +41,7 @@ export function shortNumber(v: number): string {
 
 // A column's name cut to its slot, with an ellipsis, so neighbours never overprint; null when the slot holds not even
 // one letter and the ellipsis.
-export function fitCategory(text: string, room: number, fontPx: number): string | null {
+function fitCategory(text: string, room: number, fontPx: number): string | null {
   if (glyphWidth(text, fontPx) <= room) return text;
   const chars = [...text];
   for (let n = chars.length - 1; n >= 1; n--) {

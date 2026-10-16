@@ -63,7 +63,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
 // The Draw, Avatar, Forms, Illustrate and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
 // docs/specs/030-forms/forms.md, docs/specs/007-editor/illustrate-tour.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
-export async function markModeToursSeen(context: BrowserContext): Promise<void> {
+async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     const key = 'livediagram:user-preferences:v1';
     try {
@@ -171,7 +171,7 @@ export async function createInMode(page: Page, mode: string, url = '/new'): Prom
 }
 
 // The start screen over a new tab, by its mode's title (Start Diagramming, ...).
-export const startScreen = (page: Page, title: RegExp = /^Start /) =>
+const startScreen = (page: Page, title: RegExp = /^Start /) =>
   page.getByRole('region', { name: title });
 
 // Start a document from a named TEMPLATE in a named group of Start Diagramming: a Diagram document from the

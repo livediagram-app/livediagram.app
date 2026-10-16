@@ -94,14 +94,14 @@ async function broadcastOp(
 //
 // Also returns who posted each comment the room has seen, so the save can
 // credit a comment that is new to D1 to its author rather than to the saver.
-export type RoomMerge = {
+type RoomMerge = {
   tab: Tab;
   commentAuthors: Map<string, { authorName: string; authorColor: string }>;
 };
 
 // The ledger fetch needs only the tab's id and the cursor, so a save asks for it alongside its own
 // reads instead of after them (applyRoomLedger merges it once the tab is ready).
-export type FetchedRoomLedger = { ledger: TabLedger; seq: number } | null;
+type FetchedRoomLedger = { ledger: TabLedger; seq: number } | null;
 
 export async function fetchRoomLedger(
   env: Env,
@@ -381,7 +381,7 @@ export async function broadcastDocumentTrashed(env: Env, documentId: string): Pr
 
 // Agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room"). The room is its only store,
 // so a set or clear that cannot reach it throws `RoomUnavailableError` (the route answers 503, PR11).
-export const ROOM_AGENT_PRESENCE_TIMEOUT_MS = 3_000;
+const ROOM_AGENT_PRESENCE_TIMEOUT_MS = 3_000;
 
 export class RoomUnavailableError extends Error {
   constructor(cause: unknown) {
@@ -390,7 +390,7 @@ export class RoomUnavailableError extends Error {
   }
 }
 
-export type AgentPresenceRoomWrite = AgentPresenceWrite & { documentId: string };
+type AgentPresenceRoomWrite = AgentPresenceWrite & { documentId: string };
 
 export async function putAgentPresence(
   env: Env,

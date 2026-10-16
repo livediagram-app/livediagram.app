@@ -100,7 +100,7 @@ export async function requestBrowserAccessToken(
   });
 }
 
-export type FolderPicker = (input: {
+type FolderPicker = (input: {
   accessToken: string;
   parentId: string | null;
 }) => Promise<string | null>;

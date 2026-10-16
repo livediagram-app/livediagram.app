@@ -3,7 +3,7 @@
 import type { SceneItem } from './scene';
 
 export type BoardScenePlacement = { kind: 'at'; x: number; y: number } | { kind: 'origin' };
-export type SceneBounds = { x: number; y: number; width: number; height: number };
+type SceneBounds = { x: number; y: number; width: number; height: number };
 
 type Point = { x: number; y: number };
 

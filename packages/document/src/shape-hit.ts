@@ -29,7 +29,7 @@ import { boxFit } from './svg-shape-fit';
 import { PATH_ARC_SEGMENTS, PATH_CURVE_SEGMENTS, svgPathSubpaths } from './svg-path-outline';
 import { insidePolygon, segmentDistance } from './whiteboard-stroke';
 
-export type HitLine = { readonly points: readonly Point[]; readonly closed: boolean };
+type HitLine = { readonly points: readonly Point[]; readonly closed: boolean };
 
 export type ShapeHitOutline = {
   // Every drawn line, as the shape draws it.

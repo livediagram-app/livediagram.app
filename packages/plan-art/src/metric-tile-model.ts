@@ -26,17 +26,17 @@ import {
   unassignedCount,
 } from './widget-stats';
 
-export const DUE_SOON_AMBER = '#d97706';
+const DUE_SOON_AMBER = '#d97706';
 
 // How much a tile has room for. `pill`: a metric at its small canvas size, drawn as a header widget. `compact`: the
 // figure and its line side by side. `regular`: a header, the figure, its line and a strip of the picture. `large`: the
 // picture in full, beside the figure when the tile is wide, else under it.
 export type MetricTier = 'pill' | 'compact' | 'regular' | 'large';
 
-export const METRIC_PILL_MAX_H = 90;
-export const METRIC_COMPACT_MAX_H = 150;
-export const METRIC_LARGE_MIN_H = 230;
-export const METRIC_LARGE_MIN_W = 300;
+const METRIC_PILL_MAX_H = 90;
+const METRIC_COMPACT_MAX_H = 150;
+const METRIC_LARGE_MIN_H = 230;
+const METRIC_LARGE_MIN_W = 300;
 // Wide enough for the picture beside the figure.
 export const METRIC_SIDE_BY_SIDE_MIN_W = 520;
 

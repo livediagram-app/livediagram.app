@@ -146,7 +146,7 @@ function sheetText(sheet) {
 }
 
 // One lowercase string of every word the run made, wherever it sits (elements, cards, sheets, forms, pages).
-export function allText(snap) {
+function allText(snap) {
   const out = [];
   for (const d of snap.documents ?? []) {
     out.push(d.name);
@@ -221,7 +221,7 @@ export function cellsOf(sheet) {
   return sheet.read?.cells ?? [];
 }
 
-export function formulasOf(sheet) {
+function formulasOf(sheet) {
   return cellsOf(sheet).filter((c) => typeof c.input === 'string' && c.input.startsWith('='));
 }
 

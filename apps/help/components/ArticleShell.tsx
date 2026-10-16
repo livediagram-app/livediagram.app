@@ -73,7 +73,7 @@ export interface ArticleLayoutProps {
 }
 
 /** What the server half (ArticleLayout) works out from the registry for the page. */
-export interface ArticleShellProps extends ArticleLayoutProps {
+interface ArticleShellProps extends ArticleLayoutProps {
   /** The article's top-level category, the header's eyebrow link. */
   category?: ArticleLink;
   prev?: ArticleLink;

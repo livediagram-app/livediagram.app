@@ -8,7 +8,7 @@ import { STICKY_PRESETS } from '@livediagram/document';
 import { sceneOklch } from '@/lib/board-scene/colour';
 
 /** Chroma (OKLCH) from which a note reads as tinted rather than grey (D45); 0.015 to 0.03. */
-export const STICKY_TINT_MIN_CHROMA = 0.02;
+const STICKY_TINT_MIN_CHROMA = 0.02;
 /** The sticky presets that are structure rather than colour. */
 const NEUTRAL_PRESETS = new Set(['sticky-slate', 'sticky-paper', 'sticky-charcoal', 'sticky-ink']);
 

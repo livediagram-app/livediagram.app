@@ -14,7 +14,7 @@ export const ARTICLE_PEER_FRESH_MS = 1500;
 
 // --- Ours ----------------------------------------------------------------------------------------
 
-export type LocalArticleCaret = ({ flow: string } & ArticleCaretPlace) | null;
+type LocalArticleCaret = ({ flow: string } & ArticleCaretPlace) | null;
 
 let local: LocalArticleCaret = null;
 const localListeners = new Set<() => void>();

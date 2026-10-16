@@ -27,7 +27,7 @@ export function subtractRect(a: GridRange, b: GridRange): GridRange[] {
 
 // The changes that take `ranges` out of every validation rule: each rule touched is removed, and its leftover cells
 // come back as new rules (same settings, new ids).
-export function subtractRange(
+function subtractRange(
   layout: SheetLayout,
   ranges: readonly GridRange[],
   rand: Rand = Math.random,

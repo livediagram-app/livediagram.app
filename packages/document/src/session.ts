@@ -200,7 +200,7 @@ const NON_VOTABLE_SHAPES = new Set([
 ]);
 
 // The key a Plan card's dots go under in `votes`: one per card, however many boards or card elements show it.
-export const ITEM_VOTE_PREFIX = 'item:';
+const ITEM_VOTE_PREFIX = 'item:';
 export function itemVoteKey(itemId: string): string {
   return `${ITEM_VOTE_PREFIX}${itemId}`;
 }

@@ -20,9 +20,9 @@ import { track } from '@/lib/telemetry';
 // Painted from the tone (inked for the paper, dressed in the tab's theme), never from Tailwind's
 // chrome-following tokens, as the rest of the placeholder is.
 
-export const IMAGE_EMPTY_TITLE = 'No image yet';
-export const IMAGE_EMPTY_LINE = 'Upload one, or pick from your gallery.';
-export const IMAGE_EMPTY_ACTION = 'Select Image';
+const IMAGE_EMPTY_TITLE = 'No image yet';
+const IMAGE_EMPTY_LINE = 'Upload one, or pick from your gallery.';
+const IMAGE_EMPTY_ACTION = 'Select Image';
 
 // Hex alpha suffixes for the accent's glow, rings and badge shadow over the opaque body.
 const GLOW_ALPHA = '14';

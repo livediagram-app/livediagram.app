@@ -9,7 +9,7 @@ import { useSyncExternalStore } from 'react';
 import type { LaidOutPage, PageBackground } from '@livediagram/document';
 import { withBackgroundPatch } from './illustrate-page-paint';
 
-export type PageBackgroundPreview = { pageId: string; patch: Partial<PageBackground> } | null;
+type PageBackgroundPreview = { pageId: string; patch: Partial<PageBackground> } | null;
 
 let current: PageBackgroundPreview = null;
 const listeners = new Set<() => void>();

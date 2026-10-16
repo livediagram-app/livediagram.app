@@ -29,7 +29,7 @@ const MinimiseRightIcon = lucideGlyph(lucidePanelRightClose, 14);
 
 // The pictures redraw once the tab rests this long (usePageThumbnails): never on every frame of a
 // drag or every key typed, while the sidebar stays on screen beside the work.
-export const CONTENTS_SIDEBAR_SETTLE_MS = 250;
+const CONTENTS_SIDEBAR_SETTLE_MS = 250;
 // The page in view is read once the view rests this long, not on every frame of a pan or a glide.
 export const CONTENTS_FOLLOW_SETTLE_MS = 150;
 

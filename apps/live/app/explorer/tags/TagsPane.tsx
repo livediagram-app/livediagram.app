@@ -15,8 +15,8 @@ import { documentCountLabel } from '@/components/tags/tag-copy';
 import { LoadFailed } from '../lens/LensStates';
 import { SkeletonRows, type PaneDocument } from '../views';
 
-export const TAGS_EMPTY_TITLE = 'Group related documents with tags';
-export const TAGS_EMPTY_DESCRIPTION =
+const TAGS_EMPTY_TITLE = 'Group related documents with tags';
+const TAGS_EMPTY_DESCRIPTION =
   "Make a tag here, or choose Tags in any document's menu. Your tags are yours alone: nobody else sees them.";
 
 type Props = {

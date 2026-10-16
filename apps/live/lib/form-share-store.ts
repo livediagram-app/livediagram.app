@@ -3,7 +3,7 @@
 // Form page says it is there (and whether its link is published); the header asks it to open its dialog.
 import { useSyncExternalStore } from 'react';
 
-export type FormShareHost = { published: boolean; open: () => void };
+type FormShareHost = { published: boolean; open: () => void };
 
 let host: FormShareHost | null = null;
 const listeners = new Set<() => void>();

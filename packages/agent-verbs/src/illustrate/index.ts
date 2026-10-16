@@ -6,6 +6,5 @@ export {
   readArticle,
   writeArticle,
   type IllustrateDone,
-  type IllustrateDoor,
   type IllustrateRefused,
 } from './illustrate-calls';

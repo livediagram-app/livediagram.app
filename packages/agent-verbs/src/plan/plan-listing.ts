@@ -31,14 +31,14 @@ export const NO_BOARD_HINT =
   'This document has no Plan board yet. Add one with add_board (a preset such as kanban, or columns by name), ' +
   'or start a document from a Plan template (kanban, project-planner, bug-triage...).';
 
-export interface ListedColumn {
+interface ListedColumn {
   name: string;
   status: string;
   wipLimit?: number;
   cards: string[];
 }
 
-export interface ListedBoard {
+interface ListedBoard {
   title: string;
   tab: string;
   tabId: string;
@@ -47,7 +47,7 @@ export interface ListedBoard {
   columns: ListedColumn[];
 }
 
-export interface ListedItem {
+interface ListedItem {
   ref: string;
   id: string;
   type: string;
@@ -82,7 +82,7 @@ export interface ListedType {
   detailsLabel: string;
 }
 
-export interface PlanListing {
+interface PlanListing {
   boards: ListedBoard[];
   notOnBoard: string[];
   count: number;
@@ -92,19 +92,19 @@ export interface PlanListing {
 }
 
 // What list_items and `item ls` narrow by, as given: a card type and a column, each by name or id.
-export interface ListingFilter {
+interface ListingFilter {
   type?: string;
   status?: string;
 }
 
 // The same narrowing resolved to ids, by the names change_items takes (resolveType, resolveStatus), so a filter
 // reads a column or type exactly as a write does.
-export interface ResolvedListingFilter {
+interface ResolvedListingFilter {
   type?: string;
   status?: string;
 }
 
-export type ListingFilterRefusal = { ok: false; code: string; message: string };
+type ListingFilterRefusal = { ok: false; code: string; message: string };
 
 // Resolves a listing's filter, or refuses a name the document does not have with the names it does. Trashed cards
 // are listed too, so "Trash" (the Trash's own status) is a column a filter may name.

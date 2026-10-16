@@ -8,7 +8,7 @@ import { useMenuKind } from '@livediagram/ui';
 // `aria-disabled` so it stays focusable (D50). In a control menu, or outside any menu, it is the
 // plain control it always was, and this adds nothing.
 
-export type MenuItemProps = {
+type MenuItemProps = {
   role?: 'menuitem' | 'menuitemcheckbox' | 'menuitemradio';
   tabIndex?: -1;
   'aria-checked'?: boolean;

@@ -13,7 +13,7 @@ export const COLUMN_MOVE_EASING = 'cubic-bezier(0.2, 0, 0, 1)';
 // The attribute a column's head and each of its cells carry, set to the column's id.
 export const COLUMN_ATTR = 'data-plan-column';
 
-export type ColumnPositions = Map<HTMLElement, number>;
+type ColumnPositions = Map<HTMLElement, number>;
 
 // The column moved rides above its neighbour, lifted on a soft shadow that settles as it lands.
 const LIFT_SHADOW = '0 12px 28px -10px rgb(15 23 42 / 0.35)';

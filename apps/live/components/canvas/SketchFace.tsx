@@ -19,7 +19,7 @@ import { useLayoutEffect, useRef, type ReactNode } from 'react';
 // re-take lands on the same frame instead of restarting.
 
 /** What the ink copy leaves out: photos and embeds are not drawings, and a skipped part keeps its own look. */
-export const SKETCH_INK_PRUNE = 'img, video, iframe, canvas, [data-sketch-skip]';
+const SKETCH_INK_PRUNE = 'img, video, iframe, canvas, [data-sketch-skip]';
 
 /** How long a face is still before its ink is copied again, ms: past a zoom or a burst of typing, short enough
  *  that an edit's ink follows at once to the eye (blueprint: 80 to 200). */
@@ -36,7 +36,7 @@ export function sketchInkCopy(live: Element): Element {
 }
 
 /** A running animation on the live face, and the copy's element that carries the same one. */
-export type InkAnimationPair = { live: Animation; copy: Element };
+type InkAnimationPair = { live: Animation; copy: Element };
 
 /** The ink copy plus each live animation paired with its element in the copy (see syncInkAnimations). */
 export function inkCopyOf(live: Element): { copy: Element; animated: InkAnimationPair[] } {
@@ -71,7 +71,7 @@ function pairAnimatedElements(live: Element, copy: Element): InkAnimationPair[] 
 }
 
 /** Sets each copied animation to the live one's time, so the ink shows the frame the live face is on. */
-export function syncInkAnimations(pairs: readonly InkAnimationPair[]): void {
+function syncInkAnimations(pairs: readonly InkAnimationPair[]): void {
   for (const { live, copy } of pairs) {
     const name = animationName(live);
     const twin = copy.getAnimations().find((a) => animationName(a) === name);

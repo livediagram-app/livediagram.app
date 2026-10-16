@@ -33,7 +33,7 @@ import {
   type SourceFile,
 } from 'typescript/unstable/ast';
 
-export type OpticalViolation = { file: string; line: number; snippet: string };
+type OpticalViolation = { file: string; line: number; snippet: string };
 
 // The primitives own the rule, so their call sites are compliant by construction.
 const PRIMITIVES = new Set(['GlyphDisc', 'Chip', 'IconSlot']);

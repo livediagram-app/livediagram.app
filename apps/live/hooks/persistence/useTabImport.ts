@@ -81,7 +81,7 @@ export const NOT_A_DASHBOARD =
   "This file isn't a Dashboard. Export a Dashboard tab as JSON, then import that.";
 
 export type ImportFormat = 'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio';
-export type ImportProgressListener = (progress: ImportImageProgress) => void;
+type ImportProgressListener = (progress: ImportImageProgress) => void;
 
 const EXCALIDRAW_TELEMETRY_TYPE = {
   json: 'Excalidraw',

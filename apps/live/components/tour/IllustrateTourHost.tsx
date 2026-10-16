@@ -29,7 +29,7 @@ import { helpArticleHref } from '@/lib/help-articles';
 export const OFFER_DELAY_MS = 800;
 // How many times the offer looks for a tour page, one settle delay apart, before it waits for the next arming:
 // about ten seconds for a tab's pages to draw.
-export const OFFER_LOOKS = 12;
+const OFFER_LOOKS = 12;
 
 // The telemetry `type` of a step view, naming its track: ('slide', 'add-page') → 'IllustrateTourStepSlideAddPage'.
 export function illustrateTourStepTelemetryType(kind: PageKind, stepId: string): string {

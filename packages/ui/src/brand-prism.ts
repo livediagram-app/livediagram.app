@@ -32,18 +32,18 @@ export const PRISM_PALETTES: Record<PrismScheme, PrismPalette> = {
 // than the brand. Small enough that a near-black (#0f172a) or pale (#86efac)
 // theme stroke still gives a cube that reads on both header surfaces; 0 would
 // ignore the accent's lightness entirely. Safe range 0..0.15.
-export const PRISM_LIGHTNESS_PULL = 0.08;
+const PRISM_LIGHTNESS_PULL = 0.08;
 
 // The most an accent may raise every stop's chroma over the brand's, so a
 // saturated accent cannot push the ramp out of gamut into flat clipped colour.
 // Safe range 1..2.
-export const PRISM_CHROMA_RATIO_MAX = 1.4;
+const PRISM_CHROMA_RATIO_MAX = 1.4;
 
 // How much of the brand ramp's hue travel (sky at `light` round to indigo at
 // `dark`, about 40 degrees) an accent keeps. The full travel suits blue, but
 // turns a pink theme red at its dark end; 0.4 keeps each ramp in its own hue
 // family while still deepening. Safe range 0..1.
-export const PRISM_HUE_SPREAD = 0.4;
+const PRISM_HUE_SPREAD = 0.4;
 
 type Oklch = { l: number; c: number; h: number };
 

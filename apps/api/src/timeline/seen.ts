@@ -6,7 +6,7 @@
 // at them: a client can easily fetch twice on mount (React's development double-effect does exactly
 // that), and tabbing away and straight back would wipe them too. A window makes the semantics what a
 // person would expect: "since I was last here", not "since my last HTTP request".
-export const SEEN_WINDOW_MS = 60_000;
+const SEEN_WINDOW_MS = 60_000;
 
 /** Whether this read starts a new visit, so the mark moves: no mark yet, or one older than the
  *  window. */

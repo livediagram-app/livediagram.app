@@ -51,7 +51,7 @@ export type MindGrowthPlan = {
   connectorStyleFrom: ArrowElement | null;
 };
 
-export type MindRelayout = { rootId: ElementId; moves: MindMove[]; reanchored: ArrowElement[] };
+type MindRelayout = { rootId: ElementId; moves: MindMove[]; reanchored: ArrowElement[] };
 
 const parentOf = (elements: Element[], node: ShapeElement): ShapeElement | undefined => {
   const p = node.mindParentId

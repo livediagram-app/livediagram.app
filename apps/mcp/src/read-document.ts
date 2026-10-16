@@ -15,7 +15,7 @@ import { resolvePage } from '@livediagram/edit-operations';
 import { READ_DOCUMENT_DEFAULT_BUDGET } from '@livediagram/agent-verbs/mcp';
 import { deepLink, errorResult, textResult, viewResult, type ToolResult } from './tool-helpers';
 
-export type ReadDocumentArgs = {
+type ReadDocumentArgs = {
   documentId: string;
   tabId?: string;
   view?: TabViewName;

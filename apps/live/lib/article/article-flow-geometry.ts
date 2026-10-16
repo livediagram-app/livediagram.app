@@ -11,7 +11,7 @@ import {
   type LaidOutPage,
 } from '@livediagram/document';
 
-export type FlowFrame = {
+type FlowFrame = {
   // The box's top-left on the canvas, and its size, in canvas px.
   x: number;
   y: number;
@@ -71,7 +71,7 @@ export function pagePlaceOf(
 
 /** The text width before an article is laid out (no pages of its own yet), canvas px: about an A4
  *  page's column at Normal margins. */
-export const ARTICLE_FALLBACK_TEXT_WIDTH = 600;
+const ARTICLE_FALLBACK_TEXT_WIDTH = 600;
 
 /** An article's text width (one column), from its pages laid out among `pages`. */
 export function articleTextWidth(

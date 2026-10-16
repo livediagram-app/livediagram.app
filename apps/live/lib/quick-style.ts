@@ -36,7 +36,7 @@ export type BoardColourSection = {
 };
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathElement;
-export type QuickSectionId =
+type QuickSectionId =
   'stroke' | 'background' | 'textColour' | 'width' | 'style' | 'textAlign' | 'iconAlign';
 export type QuickSwatchValue = 0 | QuickSwatchSlot;
 // Ink, the eighth choice of the Stroke and Text colour rows (docs/specs/007-editor/editor-modes.md

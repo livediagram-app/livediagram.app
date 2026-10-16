@@ -40,11 +40,11 @@ export const CUSTOM_FIELD_LABEL_MAX = 32;
 export const CUSTOM_CHOICE_OPTIONS_MAX = 20;
 export const CUSTOM_CHOICE_OPTION_MAX = 100;
 // The stored catalogue's JSON, at most (blueprint DEFAULTS: room for 32 full types).
-export const ITEM_TYPES_BYTES = 32_768;
+const ITEM_TYPES_BYTES = 32_768;
 export const ITEM_TYPE_CATALOGUE_VERSION = 1;
 export const ITEM_TYPE_TABS_MAX = 6;
 export const ITEM_TYPE_TAB_LABEL_MAX = 24;
-export const ITEM_TYPE_TAB_ID_PATTERN = /^t-[a-z0-9-]{1,30}$/;
+const ITEM_TYPE_TAB_ID_PATTERN = /^t-[a-z0-9-]{1,30}$/;
 // The most statuses a type can leave out (a board holds far fewer columns than this).
 export const ITEM_TYPE_EXCLUDED_STATUSES_MAX = 64;
 // The one tab a type without its own shows.
@@ -89,7 +89,7 @@ export const REQUIRED_TYPE_FIELDS: readonly ItemFieldId[] = ['title', 'status'];
 
 // What a particular type always offers besides (docs/specs/026-plan/item-types.md "An item type"): a Project
 // is drawn on the Gantt chart from its Start and Due, so it always has both. They can move, never come off.
-export const TYPE_REQUIRED_FIELDS: Readonly<Record<string, readonly ItemFieldId[]>> = {
+const TYPE_REQUIRED_FIELDS: Readonly<Record<string, readonly ItemFieldId[]>> = {
   project: ['start', 'due'],
 };
 

@@ -36,7 +36,7 @@ import {
   type StarterId,
 } from './model';
 
-export const FORM_ID_PATTERN = /^[a-z0-9-]{1,24}$/;
+const FORM_ID_PATTERN = /^[a-z0-9-]{1,24}$/;
 const STATUS_ID = /^[^\s].{0,63}$/s;
 const TAB_ID = /^[A-Za-z0-9_-]{1,64}$/;
 

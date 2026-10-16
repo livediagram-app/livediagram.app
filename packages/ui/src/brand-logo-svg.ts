@@ -12,7 +12,7 @@ const WORDMARK = {
 } as const;
 
 // Lockup box: the 270-unit mark, a 24-unit gap, then the wordmark.
-export const BRAND_LOGO_SIZE = { width: 1040, height: 270 } as const;
+const BRAND_LOGO_SIZE = { width: 1040, height: 270 } as const;
 const FONT_STACK = "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
 export function brandLogoSvg(scheme: PrismScheme): string {

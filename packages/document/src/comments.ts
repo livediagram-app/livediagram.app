@@ -82,7 +82,7 @@ export function withoutCommentAuthorId(comment: Comment): Comment {
   return rest;
 }
 
-export function withoutCommentAuthorIds<E extends Element>(el: E): E {
+function withoutCommentAuthorIds<E extends Element>(el: E): E {
   return mapElementThreads(el, (thread) =>
     thread.comments.some((c) => c.authorId !== undefined || c.tokenId !== undefined)
       ? { ...thread, comments: thread.comments.map(withoutCommentAuthorId) }

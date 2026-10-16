@@ -37,7 +37,7 @@ function backgroundOf(body: string): string {
   return fill;
 }
 
-export type ShareCardFit = { x: number; y: number; width: number; height: number };
+type ShareCardFit = { x: number; y: number; width: number; height: number };
 
 // Where a drawing of `width` x `height` sits on the card: as large as the margins allow, never past the upscale
 // cap, centred.

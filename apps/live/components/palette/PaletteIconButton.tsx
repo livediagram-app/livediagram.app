@@ -48,7 +48,7 @@ export function usePaletteTint(): PaletteTint | undefined {
   return useContext(PaletteTintContext);
 }
 
-export type TileHint = 'tooltip' | 'hover-card';
+type TileHint = 'tooltip' | 'hover-card';
 
 // The hint a palette tile carries when its caller does not choose one.
 export function tileHint(hint: TileHint | undefined, hideCaption: boolean | undefined): TileHint {

@@ -10,7 +10,7 @@ import { SettingsCog } from '../SettingsCog';
 import { planPalette } from '../plan-palette';
 import { SLOT_KEEP_OPEN, SLOT_SECTION, type SlotSettingsValue } from './slot-menu';
 
-export const SLOT_SETTINGS = 'Slot Settings';
+const SLOT_SETTINGS = 'Slot Settings';
 
 export function SlotCog({
   sections,

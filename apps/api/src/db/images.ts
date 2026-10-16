@@ -40,7 +40,7 @@ export async function getImage(env: Env, id: string): Promise<{ ownerId: string 
 }
 
 // The per-owner caps (docs/specs/009-elements/images.md "Size cap"); null = no cap.
-export type ImageCaps = { maxImages: number | null; maxBytes: number | null };
+type ImageCaps = { maxImages: number | null; maxBytes: number | null };
 
 // Inserts the row only while the owner stays within the caps. The check rides
 // inside the INSERT, so it is atomic: concurrent uploads that each saw room in

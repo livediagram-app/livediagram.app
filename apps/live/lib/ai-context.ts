@@ -6,7 +6,7 @@
 import { AI_MAX_ELEMENTS } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/document';
 
-export type AiContext = { ok: true; elements: Element[] } | { ok: false; message: string };
+type AiContext = { ok: true; elements: Element[] } | { ok: false; message: string };
 
 export function aiContextElements(
   all: readonly Element[],

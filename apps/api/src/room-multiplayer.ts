@@ -18,14 +18,14 @@
 // the last socket, which is exactly when the session ends. No sweep, no stale
 // flag if the room is torn down without a close event.
 
-export type MultiplayerSession = {
+type MultiplayerSession = {
   // Said hello, so it is on the roster peers see (unhello'd sockets are not).
   present: boolean;
   // Already part of a counted multiplayer session.
   multiplayer?: boolean;
 };
 
-export type MultiplayerDecision = {
+type MultiplayerDecision = {
   // True exactly once per session: the roster just reached two and nobody
   // connected was already in a counted session.
   report: boolean;

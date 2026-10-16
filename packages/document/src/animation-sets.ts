@@ -81,7 +81,7 @@ export type StickyAnimation =
   | 'pulse'
   | 'glow'
   | 'highlight';
-export const STICKY_ANIMATIONS: readonly StickyAnimation[] = [
+const STICKY_ANIMATIONS: readonly StickyAnimation[] = [
   'flutter',
   'sway',
   'peel',
@@ -107,7 +107,7 @@ export const DRAWING_ANIMATIONS: readonly DrawingAnimation[] = [
 
 export type MediaAnimation =
   'kenburns' | 'zoom' | 'pan' | 'tilt' | 'develop' | 'focus' | 'wipe' | 'iris' | 'sheen';
-export const MEDIA_ANIMATIONS: readonly MediaAnimation[] = [
+const MEDIA_ANIMATIONS: readonly MediaAnimation[] = [
   'kenburns',
   'zoom',
   'pan',
@@ -121,7 +121,7 @@ export const MEDIA_ANIMATIONS: readonly MediaAnimation[] = [
 
 export type TableAnimation =
   'rows' | 'columns' | 'cells' | 'scan' | 'sweep' | 'header' | 'pulse' | 'glow';
-export const TABLE_ANIMATIONS: readonly TableAnimation[] = [
+const TABLE_ANIMATIONS: readonly TableAnimation[] = [
   'rows',
   'columns',
   'cells',
@@ -147,7 +147,7 @@ export type TextAnimation =
   | 'glow'
   | 'bounce'
   | 'float';
-export const TEXT_ANIMATIONS: readonly TextAnimation[] = [
+const TEXT_ANIMATIONS: readonly TextAnimation[] = [
   'typewriter',
   'words',
   'cascade',

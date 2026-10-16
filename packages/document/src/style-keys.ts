@@ -1,8 +1,8 @@
 // The style keys views print and edit operations write (docs/specs/024-agents/blueprints/document-views.md
 // "Style attributes"): one table, so a printed `key=value` can be written back with `set` unchanged.
-export type StyleKeyTarget = 'boxes' | 'arrows' | 'both';
+type StyleKeyTarget = 'boxes' | 'arrows' | 'both';
 
-export type StyleKey = {
+type StyleKey = {
   readonly key: string;
   readonly field: string;
   readonly on: StyleKeyTarget;

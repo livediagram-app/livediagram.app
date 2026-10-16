@@ -32,7 +32,7 @@ export type ImportedPage = {
   backgroundColor?: string;
 };
 
-export type DrawioImportResult =
+type DrawioImportResult =
   | {
       ok: true;
       pages: ImportedPage[];
@@ -43,7 +43,7 @@ export type DrawioImportResult =
     }
   | { ok: false; error: string };
 
-export type DrawioImportOptions = {
+type DrawioImportOptions = {
   /** The tab id each page becomes, by page index. */
   tabIdForPage: (index: number) => string;
 };

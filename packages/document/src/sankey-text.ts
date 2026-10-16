@@ -15,7 +15,7 @@ import {
   type SankeyFlow,
 } from './sankey-model';
 
-export type SankeyTextResult = {
+type SankeyTextResult = {
   flows: SankeyFlow[];
   /** 1-based line numbers of lines that held something but read as no flow. */
   unread: number[];

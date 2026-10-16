@@ -39,7 +39,7 @@ export const SUBMIT_ATTEMPTS = 2;
 // Longer than any id an editor or agent mints, short enough to keep keys sane (CS31).
 const TAB_ID_MAX = 128;
 
-export type SubmitArgs = {
+type SubmitArgs = {
   env: Env;
   document: DocumentDTO;
   tabId: string;

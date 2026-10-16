@@ -21,7 +21,7 @@ export function columns(rows: readonly (readonly string[])[]): string[] {
   );
 }
 
-export type DocumentWithTabs = ResolvedDocument & {
+type DocumentWithTabs = ResolvedDocument & {
   tabs: TabSummary[];
   presentation: string | null;
 };

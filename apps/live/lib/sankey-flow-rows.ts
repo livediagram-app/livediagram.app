@@ -44,7 +44,7 @@ export function flowsToStore(rows: readonly SankeyDraftRow[]): SankeyFlow[] {
   return draftFlows(rows.filter((r) => !isBlank(r))).slice(0, SANKEY_MAX_FLOWS);
 }
 
-export const SKIP_REASON_COPY: Record<SankeySkipReason, string> = {
+const SKIP_REASON_COPY: Record<SankeySkipReason, string> = {
   'empty-name': 'Needs a From and a To',
   self: 'Flows into itself',
   value: 'Needs an amount above zero',

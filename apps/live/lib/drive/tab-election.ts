@@ -30,7 +30,7 @@ export type DriveTabMessage =
 // a holder that no longer answers (`steal`), whose `onLost` then runs. Without
 // the Web Locks API every tab is elected; the D1 lease still keeps writes to
 // one device (D2).
-export type DriveElection = { resign(): void; takeOver(): void };
+type DriveElection = { resign(): void; takeOver(): void };
 
 export function electDriveTab(onElected: () => void, onLost: () => void = () => {}): DriveElection {
   const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined;

@@ -32,7 +32,7 @@ export function startEditorTiming(
 }
 
 /** At most one Save timing per page per this long: autosaves repeat, timings should not flood. */
-export const SAVE_TIMING_INTERVAL_MS = 60_000;
+const SAVE_TIMING_INTERVAL_MS = 60_000;
 
 export const sampleSaveTiming: () => boolean = createTimingSampler(SAVE_TIMING_INTERVAL_MS);
 

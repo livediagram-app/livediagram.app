@@ -8,7 +8,7 @@ import type { LinkFile } from './link-file';
 import { folderPathSegments } from './mirror-paths';
 
 export const PERSONAL_SPACE = 'My documents';
-export const SHARED_SPACE = 'Shared with me';
+const SHARED_SPACE = 'Shared with me';
 
 export type CoveredDocument = {
   id: string;

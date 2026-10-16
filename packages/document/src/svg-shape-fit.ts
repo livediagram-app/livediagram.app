@@ -15,7 +15,7 @@
 
 import type { ShapeGeometry, ShapePart } from './shape-geometry';
 
-export type BoxFit = { sx: number; sy: number; ox: number; oy: number };
+type BoxFit = { sx: number; sy: number; ox: number; oy: number };
 
 // How a geometry's viewBox lands on a box: stretched (`none`) or scaled
 // uniformly and centred (`xMidYMid meet`), as the nested <svg> did.

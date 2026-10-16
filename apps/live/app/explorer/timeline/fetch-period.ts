@@ -12,7 +12,7 @@ import type { TimelinePage } from '@/lib/api/timeline';
 // Safe range 1 to ~50; past the cap the month shows what was read and the cap is logged.
 export const TIMELINE_PERIOD_PAGES_MAX = 10;
 
-export type PeriodOutcome = 'complete' | 'capped' | 'failed' | 'cancelled';
+type PeriodOutcome = 'complete' | 'capped' | 'failed' | 'cancelled';
 
 export async function fetchPeriod(
   fetchPage: (cursor: string | undefined) => Promise<TimelinePage | null>,

@@ -49,15 +49,13 @@ export * from './formula/parse';
 export * from './formula/stored';
 export * from './formula/registry';
 export * from './formula/function-docs';
-export { Workbook, type WorkbookOptions } from './engine/workbook';
+export { Workbook } from './engine/workbook';
 export {
   renderFrameWindow,
   renderModelsForTab,
   renderWindow,
   sheetContentSize,
   sheetFramesOf,
-  type RenderCell,
-  type SheetFrame,
   type SheetRenderModel,
 } from './engine/render';
 export type { Frame, RangeRef, EvalValue } from './engine/frame';

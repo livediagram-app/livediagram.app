@@ -18,7 +18,7 @@ const TeamGlyph = lucideGlyph(lucideUsers, 14);
 const GlobeGlyph = lucideGlyph(lucideGlobe, 14);
 
 // The audiences from narrowest to widest; Local only is the opt-out beside them.
-export const LADDER: readonly ShareState[] = ['private', 'shared', 'team', 'community'];
+const LADDER: readonly ShareState[] = ['private', 'shared', 'team', 'community'];
 
 // Each state's look: its glyph, its stop on the scale, the hero's wash, and its ink for the rings.
 const LOOK: Record<

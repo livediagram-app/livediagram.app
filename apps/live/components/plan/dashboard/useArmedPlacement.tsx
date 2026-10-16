@@ -34,7 +34,7 @@ import {
 } from '@/components/palette/palette-dashboard-tiles';
 
 // What the banner calls the armed item.
-export function armedName(item: DashboardItem, tabs: readonly Tab[]): string {
+function armedName(item: DashboardItem, tabs: readonly Tab[]): string {
   switch (item.kind) {
     case 'row': {
       const tile = DASHBOARD_ROW_TILES.find((r) => r.slots === item.slots && r.id);
@@ -66,7 +66,7 @@ export function armedName(item: DashboardItem, tabs: readonly Tab[]): string {
 type Hover = { zone: DashboardZone; mark: ZoneMark };
 
 // What is said once Enter places it.
-export function placedLine(item: DashboardItem, tabs: readonly Tab[]): string {
+function placedLine(item: DashboardItem, tabs: readonly Tab[]): string {
   const name = armedName(item, tabs);
   if (item.kind === 'row') return `${name} added at the foot of the dashboard`;
   if (item.kind === 'slot') return 'Slot added to the last row with room';

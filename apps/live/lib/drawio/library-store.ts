@@ -23,7 +23,7 @@ import { drawioSceneReport } from './report';
 import { debugLog } from '@/lib/debug-log';
 
 /** The host's create (the provider's `createLibrary`). */
-export type CreateShapeLibrary = (input: {
+type CreateShapeLibrary = (input: {
   name: string;
   source: ShapeLibrarySource;
   items: ShapeLibraryItem[];

@@ -20,7 +20,7 @@ import type { PlanPalette } from './plan-palette';
 
 // The Spreadsheets tab's sheet types (docs/specs/026-plan/plan-mode.md "Start Planning"): the empty sheet, the card
 // table, then every template; each opens Setup Sheet a step in (sheet-seeds' PlacedSheetStart).
-export type SheetTile = { start: PlacedSheetStart | null; name: string; line: string };
+type SheetTile = { start: PlacedSheetStart | null; name: string; line: string };
 
 // The picture's box (the tile scales it to its width).
 const W = 160;

@@ -17,7 +17,7 @@ export type DragOverlay = {
 
 // A collaborator's preview: the geometry patches they sent, resolved against the elements being drawn
 // at read time, so the rest of each element is ours as it is now.
-export type PeerPatch = { id: string } & Record<string, unknown>;
+type PeerPatch = { id: string } & Record<string, unknown>;
 
 let local: DragOverlay | null = null;
 const peers = new Map<string, { tabId: string; patches: readonly PeerPatch[] }>();

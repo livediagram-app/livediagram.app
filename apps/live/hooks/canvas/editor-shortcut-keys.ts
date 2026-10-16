@@ -412,7 +412,7 @@ export const WHITEBOARD_TOOL_KEYS = {
 // `swallow` is a canvas chord the browser would act on in its place (duplicate, select-all, lock, z-order, zoom), so it
 // is prevented and does nothing; `ignore` is every other key, left to the browser and the board (copy and cut of the
 // board's text included), never reaching the canvas.
-export type CoveredKeyRole = 'run' | 'swallow' | 'ignore';
+type CoveredKeyRole = 'run' | 'swallow' | 'ignore';
 export function coveredKeyRole(
   e: Pick<KeyboardEvent, 'key' | 'code' | 'metaKey' | 'ctrlKey' | 'shiftKey' | 'altKey'>,
 ): CoveredKeyRole {

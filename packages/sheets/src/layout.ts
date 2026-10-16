@@ -3,7 +3,7 @@
 import type { IdRange, SheetLayout } from './sheet';
 import { COLUMN_WIDTH_NEW, ROW_HEIGHT_NEW } from './limits';
 
-export type LayoutIndex = {
+type LayoutIndex = {
   rowPos: ReadonlyMap<string, number>;
   colPos: ReadonlyMap<string, number>;
   hiddenRows: ReadonlySet<string>;

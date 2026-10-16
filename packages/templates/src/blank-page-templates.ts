@@ -21,12 +21,12 @@ export const BLANK_PAGE_TEMPLATE_KINDS = {
   'blank-logo': 'logo',
 } as const satisfies Partial<Record<TemplateKind, PageKind>>;
 
-export type BlankPageTemplateKind = keyof typeof BLANK_PAGE_TEMPLATE_KINDS;
+type BlankPageTemplateKind = keyof typeof BLANK_PAGE_TEMPLATE_KINDS;
 
 // The blank article's flow id: the tab holds no other article, so a fixed id cannot collide.
 const BLANK_ARTICLE_FLOW = 'art-1';
 
-export function isBlankPageTemplate(kind: TemplateKind): kind is BlankPageTemplateKind {
+function isBlankPageTemplate(kind: TemplateKind): kind is BlankPageTemplateKind {
   return Object.hasOwn(BLANK_PAGE_TEMPLATE_KINDS, kind);
 }
 

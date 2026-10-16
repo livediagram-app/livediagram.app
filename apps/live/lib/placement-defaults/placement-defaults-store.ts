@@ -23,7 +23,7 @@ export type PlacementDefaultsState = {
 };
 
 /** Which surface changed a default: for the log line only. */
-export type DefaultSurface = 'menu' | 'settings';
+type DefaultSurface = 'menu' | 'settings';
 
 const IDLE: PlacementDefaultsState = { ownerId: null, status: 'idle', defaults: new Map() };
 

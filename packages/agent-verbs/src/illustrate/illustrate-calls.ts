@@ -23,7 +23,7 @@ import { tabPath } from '../verbs/shared';
 
 export type IllustrateRefused = { ok: false; code: string; message: string; change?: number };
 export type IllustrateDone = { ok: true; documentId: string; tabId: string } & IllustrateAnswer;
-export type IllustrateDoor = 'mcp' | 'cli';
+type IllustrateDoor = 'mcp' | 'cli';
 
 // The most tabs read looking for the first in Illustrate mode.
 const TAB_SEARCH_MAX = 20;

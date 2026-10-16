@@ -65,7 +65,7 @@ import { useSheetController, type SheetController } from './sheet-controller';
 import { fontPx, roughWidth } from './SheetCells';
 import { sheetRuleActions } from './rules/sheet-rule-actions';
 
-export type EditResult = { ok: true } | { ok: false; message: string; at: number };
+type EditResult = { ok: true } | { ok: false; message: string; at: number };
 
 function primary(c: SheetController): GridRange {
   const ranges = c.selectionNow().ranges;

@@ -19,7 +19,7 @@ export type LinkState = {
   documents: Record<string, RecordedDocument>;
 };
 
-export type SyncReport = {
+type SyncReport = {
   startedAt: number;
   finishedAt: number;
   command: string;

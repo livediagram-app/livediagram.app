@@ -6,7 +6,7 @@ const isBoard = (el: Element) => el.type === 'shape' && el.shape === 'plan-board
 
 const isSheet = (el: Element) => el.type === 'shape' && el.shape === 'plan-sheet';
 
-export type FillTabKind = 'Board' | 'Sheet' | 'View';
+type FillTabKind = 'Board' | 'Sheet' | 'View';
 
 // A Visualisation tab (docs/specs/026-plan/plan-tabs.md "A row that fills the page"): a Dashboard of one row that fills
 // the page holding one visualisation. That visualisation fills the tab as a Board tab's board does. The stored layout is

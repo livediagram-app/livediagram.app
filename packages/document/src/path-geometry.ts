@@ -14,7 +14,7 @@ export type PathAnchor = {
 };
 
 /** The cubic between node `from` and node `to`. `straight` when neither facing handle exists. */
-export type PathSegment = {
+type PathSegment = {
   from: number;
   to: number;
   p0: Point;
@@ -24,9 +24,9 @@ export type PathSegment = {
   straight: boolean;
 };
 
-export type PathBox = { x: number; y: number; width: number; height: number };
+type PathBox = { x: number; y: number; width: number; height: number };
 
-export type PathNearest = { segment: number; t: number; point: Point; distance: number };
+type PathNearest = { segment: number; t: number; point: Point; distance: number };
 
 // The nearest-point search: coarse samples per segment, then interval halvings about the best.
 const NEAREST_SAMPLES = 24;

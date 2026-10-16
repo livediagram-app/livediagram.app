@@ -9,7 +9,7 @@ import { getDocumentMeta, getTrashedDocumentMeta } from '../db';
 import { documentTrashed, notFound } from '../responses';
 import type { Env } from '../types';
 
-export type OwnerDocumentAccess = { documentId: string; role: WorkbenchRole };
+type OwnerDocumentAccess = { documentId: string; role: WorkbenchRole };
 
 export async function ownerDocumentAccess(
   env: Env,

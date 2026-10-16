@@ -7,7 +7,7 @@ import type { PageKind } from '@livediagram/document';
 import type { KeyboardEvent, Ref } from 'react';
 import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
-export type PageKindChoice = { kind: PageKind; name: string; line: string };
+type PageKindChoice = { kind: PageKind; name: string; line: string };
 
 // The cards sit two by two.
 const KIND_COLUMNS = 2;

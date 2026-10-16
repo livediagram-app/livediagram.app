@@ -5,7 +5,7 @@
 
 import type { Env } from '../types';
 
-export type DocumentOpen = { lastOpenedAt: number; lastOpenDay: string };
+type DocumentOpen = { lastOpenedAt: number; lastOpenDay: string };
 
 export async function getDocumentOpen(
   env: Env,

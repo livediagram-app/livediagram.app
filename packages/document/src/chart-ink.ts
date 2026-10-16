@@ -36,7 +36,7 @@ export const CHART_TEXT_TARGET = PAGE_INK_TARGET;
 // How many adapted colours are remembered across draws (a hover re-draws a chart every move).
 // A board's charts use a few dozen colours on a few grounds; past this the memory starts over.
 // Safe range 64 to 4096: smaller recomputes on busy boards, larger only holds more strings.
-export const CHART_INK_MEMORY = 512;
+const CHART_INK_MEMORY = 512;
 
 const memory = new Map<string, string>();
 
@@ -70,7 +70,7 @@ export function chartTextInk(color: string, ground: readonly string[] | undefine
 
 /** Whether an element is a chart whose series come from a palette: a pie, doughnut, bar, column,
  *  line, area, scatter or Sankey. */
-export function isPaletteChart(el: Element): boolean {
+function isPaletteChart(el: Element): boolean {
   return el.type === 'shape' && (isChartShape(el.shape) || isSankeyShape(el.shape));
 }
 

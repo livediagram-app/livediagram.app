@@ -26,7 +26,7 @@ export type RecognitionChipAction = 'make' | 'keep';
 /** The chip, where the pen holds still (canvas px). */
 export type RecognitionChipState = { action: RecognitionChipAction; at: Point };
 
-export type RecognitionView = {
+type RecognitionView = {
   /** The shape the stroke shows in place of its ink; null while it shows as ink. */
   shape: RecognisedShape | null;
   /** The chip on a pen or touch stroke held still; null for a mouse, or while the pen moves. */

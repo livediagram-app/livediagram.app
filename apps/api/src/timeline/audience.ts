@@ -16,11 +16,11 @@ export function userScope(ownerId: string): TimelineScopeRef {
   return { scopeType: 'user', scopeId: ownerId };
 }
 
-export function teamScope(teamId: string): TimelineScopeRef {
+function teamScope(teamId: string): TimelineScopeRef {
   return { scopeType: 'team', scopeId: teamId };
 }
 
-export function documentScope(documentId: string): TimelineScopeRef {
+function documentScope(documentId: string): TimelineScopeRef {
   return { scopeType: 'document', scopeId: documentId };
 }
 

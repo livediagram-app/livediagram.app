@@ -14,13 +14,13 @@ import {
 } from './drive-client';
 
 const API = 'https://www.googleapis.com';
-export const DRIVE_FILE_FIELDS =
+const DRIVE_FILE_FIELDS =
   'id,name,mimeType,parents,trashed,appProperties,md5Checksum,headRevisionId,ownedByMe';
-export const DRIVE_CHANGE_FIELDS = `nextPageToken,newStartPageToken,changes(fileId,removed,time,file(${DRIVE_FILE_FIELDS}))`;
+const DRIVE_CHANGE_FIELDS = `nextPageToken,newStartPageToken,changes(fileId,removed,time,file(${DRIVE_FILE_FIELDS}))`;
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
 const LIST_PAGE_SIZE = 1000;
 
-export type TokenGetter = (opts?: { force?: boolean }) => Promise<string>;
+type TokenGetter = (opts?: { force?: boolean }) => Promise<string>;
 
 type RawFile = Partial<Omit<DriveFile, 'md5Checksum' | 'headRevisionId'>> & {
   md5Checksum?: string;

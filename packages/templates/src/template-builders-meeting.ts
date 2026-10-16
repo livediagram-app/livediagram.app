@@ -46,7 +46,7 @@ const PHASES = [
 ];
 
 // Minutes sum to the 45 on the invite, so the agenda's total agrees with it.
-export const MEETING_AGENDA = [
+const MEETING_AGENDA = [
   { label: 'Check-in and wins · Maya', minutes: 5 },
   { label: 'Metrics pulse · Priya', minutes: 5 },
   { label: 'Reorder beta: go or no-go? · Sam', minutes: 15 },

@@ -7,9 +7,9 @@
 // large is ~250 pages of text, far inside a tab's row (MAX_TAB_BYTES, 1.99 MB) only when the
 // text is too: the tab's own cap still has the last word on a save.
 export const MAX_ARTICLE_BLOCKS = 5000;
-export const MAX_ARTICLE_RUNS = 400;
+const MAX_ARTICLE_RUNS = 400;
 export const MAX_ARTICLE_BLOCK_TEXT = 20_000;
-export const MAX_ARTICLE_HREF = 2048;
+const MAX_ARTICLE_HREF = 2048;
 // Zones: no wider or taller than the largest page (A3 landscape is 1587 wide), no smaller than a
 // grip can still be pressed on.
 export const ARTICLE_ZONE_MIN = 24;

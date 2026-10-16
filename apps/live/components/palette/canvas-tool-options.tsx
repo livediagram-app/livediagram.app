@@ -14,7 +14,7 @@ import type { PaletteDropdownOption } from '@/components/palette/PaletteDropdown
 
 // The tools only Facilitate offers (docs/specs/008-canvas/avatar-mode.md "Where it is offered"): the dropdown, the
 // W key and search leave them out elsewhere, while a Selection Mode button still hands them out in any mode.
-export const FACILITATE_ONLY_TOOLS: ReadonlySet<string> = new Set(['avatar']);
+const FACILITATE_ONLY_TOOLS: ReadonlySet<string> = new Set(['avatar']);
 
 // The canvas-tool dropdown's option set (Select / Hand / Eraser / Format /
 // Laser / Spotlight / Avatar / Isometric / Zen), grouped (group index drives

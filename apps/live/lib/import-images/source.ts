@@ -5,7 +5,7 @@ import { sniffImageType } from '@livediagram/api-schema';
 import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from './constants';
 import type { ImportImageFailure, ImportImageSource } from './types';
 
-export type ReadImportImage =
+type ReadImportImage =
   { ok: true; bytes: Uint8Array; mimeType: string } | { ok: false; failure: ImportImageFailure };
 
 const DATA_URL = /^data:([^;,]*)((?:;[^;,]*)*),(.*)$/s;

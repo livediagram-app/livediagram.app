@@ -8,7 +8,7 @@ import { PAGE_LAYOUT_CATEGORIES, PAGE_LAYOUTS, type PageLayoutId } from './page-
 import { LOGO_LAYOUT_CATEGORIES, LOGO_LAYOUTS } from './logo-layouts';
 import { SLIDE_LAYOUT_CATEGORIES, SLIDE_LAYOUTS } from './slide-layouts';
 
-export type CatalogueLayout = {
+type CatalogueLayout = {
   id: PageLayoutId;
   label: string;
   category: string;
@@ -16,7 +16,7 @@ export type CatalogueLayout = {
   build: (box: LayoutBox) => Element[];
 };
 
-export type LayoutCatalogue = {
+type LayoutCatalogue = {
   categories: readonly { id: string; label: string }[];
   layouts: readonly CatalogueLayout[];
 };

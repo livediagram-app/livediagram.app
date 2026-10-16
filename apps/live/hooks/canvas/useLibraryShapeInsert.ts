@@ -25,7 +25,7 @@ type Point = { x: number; y: number };
 type Box = { x: number; y: number; width: number; height: number };
 
 /** The gap between consecutive clicked inserts: the paste offset. */
-export const LIBRARY_INSERT_GAP = PASTE_OFFSET;
+const LIBRARY_INSERT_GAP = PASTE_OFFSET;
 
 export type LibraryShapeInsertDeps = {
   activeTab: Tab;
@@ -37,7 +37,7 @@ export type LibraryShapeInsertDeps = {
 };
 
 /** Places `item` centred on `at` (a drop point), else by the click rule; true when it landed. */
-export type InsertLibraryShape = (item: ShapeLibraryItem, at?: Point) => boolean;
+type InsertLibraryShape = (item: ShapeLibraryItem, at?: Point) => boolean;
 
 // An earlier insert: where its footprint landed, and how to tell it is still there.
 type Placed = {
@@ -70,7 +70,7 @@ function inPlace(p: Placed, tab: Tab): boolean {
  * Where a click lands `item`: centred on `centre`, moved right past every earlier insert it would
  * cover, each move centred on the row of the insert it clears.
  */
-export function clickFootprint(
+function clickFootprint(
   item: Pick<ShapeLibraryItem, 'width' | 'height'>,
   centre: Point,
   earlier: readonly Box[],

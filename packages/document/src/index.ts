@@ -817,7 +817,7 @@ export * from './legacy-docks';
 export * from './legacy-stroke-points';
 export * from './stored-elements';
 export * from './stored-tab';
-export { retiredSchemeOf, migrateRetiredScheme, type RetiredScheme } from './retired-schemes';
+export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.

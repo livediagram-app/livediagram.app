@@ -40,7 +40,7 @@ export const WIDGET_GROUPS: readonly {
 ];
 
 // The widgets a search matches, by name or line (case and spacing ignored).
-export function widgetsMatching(query: string): ReadonlySet<BoardWidgetKind> {
+function widgetsMatching(query: string): ReadonlySet<BoardWidgetKind> {
   const q = query.trim().toLowerCase();
   return new Set(
     BOARD_WIDGET_KINDS.filter((k) => {

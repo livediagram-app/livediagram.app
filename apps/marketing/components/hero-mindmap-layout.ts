@@ -138,7 +138,7 @@ const NODE_GAP = 5;
 const NODE_PAD = 15;
 const LEAF_PAD = 10;
 
-export const leafWidth = (text: string) => Math.round(text.length * LEAF_CHAR + LEAF_PAD * 2);
+const leafWidth = (text: string) => Math.round(text.length * LEAF_CHAR + LEAF_PAD * 2);
 export const nodeWidth = (label: string) =>
   Math.round(NODE_GLYPH + NODE_GAP + label.length * NODE_CHAR + NODE_PAD * 2);
 

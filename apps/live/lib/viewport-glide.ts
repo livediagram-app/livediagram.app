@@ -6,7 +6,7 @@
 import { prefersReducedMotion } from './motion-preference';
 
 // The glide's length (ms): the scroll-into-view's long-standing duration.
-export const VIEW_GLIDE_MS = 280;
+const VIEW_GLIDE_MS = 280;
 
 export type ViewPose = { zoom: number; offset: { x: number; y: number } };
 

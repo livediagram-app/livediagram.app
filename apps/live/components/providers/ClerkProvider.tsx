@@ -44,7 +44,7 @@ const STATIC_CLERK_ROUTES = ['/sign-in', '/get-started', '/sso-callback'];
 // workbench") is signed in by its workbench session, never by Clerk or the e2e bridge: both stand down
 // there and the state holds DEFERRED_AUTH_PENDING, so nothing above the page reads as a settled guest,
 // Clerk configured or not. WorkbenchAuthBridge publishes the session to the editor beneath.
-export const WORKBENCH_ROUTE = '/embed/workbench';
+const WORKBENCH_ROUTE = '/embed/workbench';
 
 export function ClerkProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState(DEFERRED_AUTH_DEFAULT);

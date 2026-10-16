@@ -34,7 +34,7 @@ export type DefaultFolderMenus = {
 const never = () => false;
 
 /** The folders a surface lists: its own folders, its team folders, the teams it has joined. */
-export type DefaultFolderLists = {
+type DefaultFolderLists = {
   personal: readonly { id: string; name: string; parentId: string | null }[];
   team: TeamFolderLists;
   teams: readonly { id: string; name: string }[];

@@ -50,7 +50,7 @@ const JEWEL = {
 } satisfies ThemeDefinition;
 
 /** Each retired theme and the theme that replaced it. */
-export const RETIRED_THEMES: Readonly<Record<string, { from: ThemeDefinition; to: string }>> = {
+const RETIRED_THEMES: Readonly<Record<string, { from: ThemeDefinition; to: string }>> = {
   autumn: { from: AUTUMN, to: 'tropical' },
   jewel: { from: JEWEL, to: 'rainbow' },
 };

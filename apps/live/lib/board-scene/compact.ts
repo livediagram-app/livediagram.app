@@ -6,7 +6,7 @@
 import type { Element } from '@livediagram/document';
 
 // Boxes, free arrow ends and arrow bends: 0.005 px at most.
-export const BOX_DECIMALS = 2;
+const BOX_DECIMALS = 2;
 
 /** `v` to `d` decimals, half away from zero, never -0. */
 export function roundTo(v: number, d: number): number {
@@ -28,7 +28,7 @@ function roundBox<T extends Boxed>(el: T): T {
 }
 
 /** One landed element written compactly; the drawing is unchanged within 0.005 px. */
-export function compactElement(el: Element): Element {
+function compactElement(el: Element): Element {
   if (el.type === 'arrow') {
     const end = (e: typeof el.from) =>
       e.kind === 'free'

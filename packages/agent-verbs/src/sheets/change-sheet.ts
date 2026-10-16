@@ -36,7 +36,7 @@ import { SHEET_REFUSAL_WORDS } from './sheet-refusals';
 import { buildSheetChange, type SheetChange, type SheetChangeContext } from './sheet-change-build';
 import { readSheets, resolveSheet, sheetWritesPath, workbookFor } from './sheet-state';
 
-export interface SheetChangesResult {
+interface SheetChangesResult {
   sheetId: string;
   title: string;
   applied: string[];
@@ -95,7 +95,7 @@ function partlyLine(line: string, parts: readonly SheetWrite[], sent: number): s
 }
 
 // Builds and sends each change in turn against the workbook, which follows every landed write.
-export async function applySheetChanges(
+async function applySheetChanges(
   api: ApiClient,
   documentId: string,
   wb: Workbook,
@@ -157,7 +157,7 @@ export async function applySheetChanges(
 // a resize, insert or delete left over other cells moved back onto their cells (sheet-chart-follow.ts), and the charts
 // changes made added over the Sheet element, each with its first read. The lines it adds to the answer; none when
 // nothing changed. New charts on a tab with no Sheet framing the sheet are not placed, and that is said.
-export async function updateSheetCharts(
+async function updateSheetCharts(
   api: ApiClient,
   documentId: string,
   tab: TabRecord,

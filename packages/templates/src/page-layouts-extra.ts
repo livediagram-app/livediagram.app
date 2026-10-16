@@ -9,7 +9,7 @@ function avatar(k: Kit, x: number, y: number, d: number): Element {
   return { ...k.image(x, y, d, d), borderRadius: 'full', aspectLocked: true };
 }
 
-export function quotePage(k: Kit): Element[] {
+function quotePage(k: Kit): Element[] {
   const { width: W, height: H } = k.box;
   const { u } = k;
   const markH = u * 24;
@@ -48,7 +48,7 @@ const TEAM = [
   ['Jon Ade', 'Support'],
 ] as const;
 
-export function teamPage(k: Kit): Element[] {
+function teamPage(k: Kit): Element[] {
   const { width: W, height: H } = k.box;
   const { u } = k;
   const head = heading(k, 'Meet the team', 'The people behind the work.');
@@ -85,7 +85,7 @@ const FACTS = [
   ['award', '7', 'Awards won'],
 ] as const;
 
-export function factsGridPage(k: Kit): Element[] {
+function factsGridPage(k: Kit): Element[] {
   const { width: W, height: H } = k.box;
   const { u } = k;
   const head = heading(k, 'By the numbers', 'Six facts worth knowing.');
@@ -123,7 +123,7 @@ const CHECKS = [
 ] as const;
 
 // Each item a row at page type size: a ticked circle when done, an empty ring when not.
-export function checklistPage(k: Kit): Element[] {
+function checklistPage(k: Kit): Element[] {
   const { width: W, height: H } = k.box;
   const { u } = k;
   const head = heading(k, 'Launch checklist', 'Everything to tick off before the big day.');
@@ -161,7 +161,7 @@ const DETAILS = [
   ['flag', 'The Old Library, Market Street'],
 ] as const;
 
-export function eventPage(k: Kit): Element[] {
+function eventPage(k: Kit): Element[] {
   const { width: W, height: H } = k.box;
   const { u } = k;
   const ctaH = u * 20;

@@ -17,7 +17,7 @@ import { GRID, GRID_MIN_HEIGHT, GRID_THUMB } from './home-styles';
 import { JumpBackInEmptyIcon } from './home-icons';
 
 /** The grid from the spec's `md:` up: desktop and tablet. */
-export const HOME_WIDE_QUERY = '(min-width: 768px)';
+const HOME_WIDE_QUERY = '(min-width: 768px)';
 
 const HEADING_ID = 'home-jump-back-in';
 

@@ -3,7 +3,7 @@
 // by validation, never resolved silently.
 
 export const SHEET_ID_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;
-export const AXIS_ID_PATTERN = /^[a-z0-9]{4,12}$/;
+const AXIS_ID_PATTERN = /^[a-z0-9]{4,12}$/;
 
 const SHEET_ID_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const AXIS_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';

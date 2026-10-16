@@ -8,15 +8,15 @@ export const GIF_FPS = 15;
 export const GIF_HOLD_MIN_S = 1;
 export const GIF_HOLD_MAX_S = 20;
 export const GIF_HOLD_STEP_S = 0.5;
-export const GIF_HOLD_DEFAULT_S = 3;
+const GIF_HOLD_DEFAULT_S = 3;
 // The longest GIF, every page's hold added up.
-export const GIF_MAX_TOTAL_S = 180;
+const GIF_MAX_TOTAL_S = 180;
 // Past this the panel suggests a smaller GIF.
 export const GIF_LARGE_BYTES = 15_000_000;
 
 export type GifSize = 'small' | 'medium' | 'large';
 // A frame's longer side at each size.
-export const GIF_SIZE_LONG_SIDE: Record<GifSize, number> = {
+const GIF_SIZE_LONG_SIDE: Record<GifSize, number> = {
   small: 480,
   medium: 960,
   large: 1440,
@@ -99,8 +99,7 @@ export function gifTimeline({
 }
 
 /** How long the GIF runs, in seconds. */
-export const gifTotalSeconds = (pageCount: number, holdSeconds: number): number =>
-  pageCount * holdSeconds;
+const gifTotalSeconds = (pageCount: number, holdSeconds: number): number => pageCount * holdSeconds;
 
 /** Past the longest GIF. */
 export const gifTooLong = (pageCount: number, holdSeconds: number): boolean =>

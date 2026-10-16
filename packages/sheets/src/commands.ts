@@ -54,7 +54,7 @@ function cellsIn(
   return out;
 }
 
-export type TypeResult =
+type TypeResult =
   | { ok: true; write: SheetWrite; read: TypedRead }
   | { ok: false; read: Extract<TypedRead, { kind: 'invalid' }> };
 

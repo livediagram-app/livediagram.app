@@ -225,7 +225,7 @@ export const ROOM_OP_KINDS = [
   ...SYSTEM_OP_KINDS,
 ] as const;
 
-export type PresenceOpKind = (typeof PRESENCE_OP_KINDS)[number];
+type PresenceOpKind = (typeof PRESENCE_OP_KINDS)[number];
 
 // Membership test for the room's ordering + role gate. Takes a loose string
 // because it reads `op.kind` off an `unknown` wire payload (see ServerMessage
@@ -241,8 +241,8 @@ export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
 // A participation act (docs/specs/013-workspace/share-roles.md "Integrity"): a person's own dot, response or idea.
 // A Participant's socket may send these beside presence; every other mutation from it is dropped, except an `el`
 // op, which the room applies through the participant content rule instead of relaying.
-export const PARTICIPATION_OP_KINDS = ['vote'] as const;
-export const PARTICIPATION_DELTA_KINDS = ['response', 'idea'] as const;
+const PARTICIPATION_OP_KINDS = ['vote'] as const;
+const PARTICIPATION_DELTA_KINDS = ['response', 'idea'] as const;
 
 export function isParticipationOp(op: unknown): boolean {
   if (typeof op !== 'object' || op === null) return false;

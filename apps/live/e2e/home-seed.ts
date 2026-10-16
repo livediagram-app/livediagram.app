@@ -43,7 +43,7 @@ export async function openDocument(
   expect(res.ok()).toBe(true);
 }
 
-export async function nameParticipant(
+async function nameParticipant(
   request: APIRequestContext,
   id: string,
   name: string,
@@ -148,7 +148,7 @@ export async function seedBusyHome(
 }
 
 /** A document stored only in this browser, written as the editor writes it. */
-export type LocalSeed = {
+type LocalSeed = {
   name: string;
   /** Days before today (UTC) the document was opened on. */
   daysAgo: number[];

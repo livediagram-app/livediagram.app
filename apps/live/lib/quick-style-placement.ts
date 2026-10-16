@@ -3,8 +3,8 @@
 // by trying fixed candidates in order, so the same chrome always gives the same spot.
 
 export type Rect = { left: number; top: number; width: number; height: number };
-export type QuickStyleCandidate = 'centre' | 'below' | 'above' | 'beside' | 'right-edge';
-export type QuickStylePlacement = {
+type QuickStyleCandidate = 'centre' | 'below' | 'above' | 'beside' | 'right-edge';
+type QuickStylePlacement = {
   left: number;
   top: number;
   candidate: QuickStyleCandidate;
@@ -12,7 +12,7 @@ export type QuickStylePlacement = {
   fallback: boolean;
 };
 
-export const QUICK_STYLE_GAP_PX = 12;
+const QUICK_STYLE_GAP_PX = 12;
 
 const right = (r: Rect) => r.left + r.width;
 const bottom = (r: Rect) => r.top + r.height;

@@ -6,7 +6,7 @@ import { svgPathBbox } from 'svg-path-bbox';
 import type { IconPrim } from './types';
 
 export type Bounds = { minX: number; minY: number; maxX: number; maxY: number };
-export type InkInsets = { l: number; r: number; t: number; b: number };
+type InkInsets = { l: number; r: number; t: number; b: number };
 
 const pathCache = new Map<string, Bounds>();
 
@@ -36,7 +36,7 @@ function pointsBounds(points: string): Bounds | null {
   };
 }
 
-export function primBounds(p: IconPrim): Bounds | null {
+function primBounds(p: IconPrim): Bounds | null {
   switch (p.t) {
     case 'path':
       return p.d ? pathBounds(p.d) : null;

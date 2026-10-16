@@ -61,7 +61,7 @@ function subscribeBand(listener: () => void): () => void {
 const getEpoch = () => bandEpoch;
 
 // The selector CanvasCover marks its element's box with while it has a band.
-export const HEADER_BAND_SELECTOR = '[data-header-band]';
+const HEADER_BAND_SELECTOR = '[data-header-band]';
 
 // The slot in the menu box: a hairline before it, the chrome's own ink, hidden while it holds nothing. Its width is
 // left out of the room the band needs (canvas-layer-insets MENU_NAME_SLOT_SELECTOR).

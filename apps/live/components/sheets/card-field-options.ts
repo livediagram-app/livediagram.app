@@ -9,7 +9,7 @@ import {
   type ItemTypeDef,
 } from '@livediagram/items';
 
-export type CardFieldChoice = { kind: 'list'; options: string[] } | { kind: 'date' } | null;
+type CardFieldChoice = { kind: 'list'; options: string[] } | { kind: 'date' } | null;
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const unique = (xs: Iterable<string>) => [...new Set([...xs].filter(Boolean))];

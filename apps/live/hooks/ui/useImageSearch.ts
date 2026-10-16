@@ -20,8 +20,8 @@ import {
 // "Behaviour and state"): the submitted query, the pages loaded so far, the
 // search status, and the one pick in flight.
 
-export type ImageSearchStatus = 'idle' | 'loading' | 'ready' | 'error';
-export type ImageSearchError = OpenverseSearchError['kind'];
+type ImageSearchStatus = 'idle' | 'loading' | 'ready' | 'error';
+type ImageSearchError = OpenverseSearchError['kind'];
 
 export function useImageSearch({
   ownerId,

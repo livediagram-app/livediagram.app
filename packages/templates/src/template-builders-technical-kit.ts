@@ -14,8 +14,8 @@ export const TECH_MUTED = '#64748b';
 // The bold title and its muted how-to caption, left-aligned from (x, y) and
 // `width` wide. Returns the two elements plus the height they take, so the
 // caller can hang the diagram underneath.
-export const TECH_TITLE_H = 48;
-export const TECH_CAPTION_H = 28;
+const TECH_TITLE_H = 48;
+const TECH_CAPTION_H = 28;
 export const TECH_HEADER_H = TECH_TITLE_H + TECH_CAPTION_H;
 
 export function techHeader(

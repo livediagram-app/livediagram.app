@@ -20,7 +20,7 @@ import { pluralGrouped } from '@livediagram/document';
 // ordinary elements, so nothing here touches a document.
 
 /** How many thumbnails a closed card shows (spec: "the first eight"). */
-export const SHAPE_LIBRARY_CARD_PREVIEWS = 8;
+const SHAPE_LIBRARY_CARD_PREVIEWS = 8;
 
 const titleOf = (item: ShapeLibraryItem, index: number) =>
   item.title.trim() || `Shape ${index + 1}`;

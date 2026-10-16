@@ -19,7 +19,7 @@ import { useOnline } from '@/hooks/ui/useOnline';
 // load's watchdog runs its self-healing reload (docs/specs/007-editor/load-recovery.md),
 // the screen says so for the moment before the page reloads.
 
-export type DocumentLoadingStage = 'creating' | 'opening';
+type DocumentLoadingStage = 'creating' | 'opening';
 
 const COPY: Record<DocumentLoadingStage, { title: string; detail: string }> = {
   creating: { title: 'Creating your document', detail: 'Setting up a fresh canvas' },

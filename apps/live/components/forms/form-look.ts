@@ -4,7 +4,7 @@
 import type { CSSProperties } from 'react';
 import { resolveFontStack, type FormLook } from '@livediagram/document';
 
-export type FormLookProps = {
+type FormLookProps = {
   'data-form-look': '';
   'data-form-finish': FormLook['finish'];
   style: CSSProperties;

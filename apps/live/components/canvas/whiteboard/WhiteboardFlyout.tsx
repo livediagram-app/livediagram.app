@@ -62,7 +62,7 @@ export function offDock(
 // The gap between the dock and a flyout off it.
 const OFF_DOCK_GAP_PX = 8;
 
-export type FlyoutPlacement = 'below' | 'above';
+type FlyoutPlacement = 'below' | 'above';
 
 type Place = {
   left: number;

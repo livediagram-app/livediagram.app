@@ -16,7 +16,7 @@ import { DASHBOARD_CONDENSE_PX } from '@/components/plan/dashboard/condense';
 // cards under them (less shows one card and reads as cramped), a sheet its toolbar and eight rows, a chart its axes; a
 // metric or a note fits any slot.
 export type SlotFitKind = 'board' | 'sheet' | 'diagram' | 'chart' | 'metric' | 'note';
-export const SLOT_FIT: Record<SlotFitKind, { width: number; height: number }> = {
+const SLOT_FIT: Record<SlotFitKind, { width: number; height: number }> = {
   board: { width: 480, height: 440 },
   sheet: { width: 320, height: 240 },
   // A Diagram tab's drawing, fitted: big enough to make out its shapes and labels.

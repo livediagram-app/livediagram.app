@@ -534,7 +534,7 @@ function fieldLaneOrder(field: LaneField, a: unknown, b: unknown): number {
 // Items grouped into swimlanes (docs/specs/026-plan/plan-board.md "Swimlanes"), shared by a board and the Gantt
 // chart (plan-views.md "Swimlanes"): the lanes the items fall in, named and ordered as a board orders them, and each
 // item's lane key. A field lane resolves against the document's types; a field no type offers any more is no lanes.
-export interface LaneGroups {
+interface LaneGroups {
   by: SwimlaneBy;
   field: LaneField | undefined;
   lanes: LaneHead[];

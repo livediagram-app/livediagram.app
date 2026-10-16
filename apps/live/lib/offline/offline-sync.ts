@@ -26,7 +26,7 @@ import {
 // How many times a sync uploads a document that keeps changing under it before giving up. Each
 // change during the upload costs one more upload; three covers a person still typing for a few
 // seconds after choosing Sync Document, without retrying forever against a busy other tab.
-export const SYNC_UPLOAD_ATTEMPTS = 3;
+const SYNC_UPLOAD_ATTEMPTS = 3;
 
 // Why a sync stopped with the local copy kept: it changed during every upload, or the cloud copy
 // came up short of its cards or sheets.
@@ -42,7 +42,7 @@ export class OfflineSyncIncompleteError extends Error {
 // What the upload carried, as far as a later write would change it: every edit stamps savedAt
 // (tabs, name, deck, folder, card types), a card write moves itemsRev, a sheet write its rev.
 // A star or an open changes neither, and needs no new upload.
-export function uploadMark(rec: OfflineDocumentRecord): string {
+function uploadMark(rec: OfflineDocumentRecord): string {
   return JSON.stringify([
     rec.savedAt,
     rec.itemsRev ?? 0,

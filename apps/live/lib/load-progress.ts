@@ -67,7 +67,7 @@ export function resetLoadProgressForTests(): void {
   progress = INITIAL;
 }
 
-export type WatchdogDeps = {
+type WatchdogDeps = {
   now?: () => number;
   storage?: Storage | null;
   url?: string;

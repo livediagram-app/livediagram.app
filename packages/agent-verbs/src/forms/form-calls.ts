@@ -277,7 +277,7 @@ async function writeAround(
 
 // --- add_form ---------------------------------------------------------------------------------------------------
 
-export interface AddFormInput {
+interface AddFormInput {
   documentId?: string;
   name?: string;
   theme?: string;
@@ -519,7 +519,7 @@ export async function changeForm(
 
 // --- share_form -------------------------------------------------------------------------------------------------
 
-export type ShareAction = 'publish' | 'close' | 'delete_link';
+type ShareAction = 'publish' | 'close' | 'delete_link';
 
 export async function shareForm(
   api: ApiClient,

@@ -15,9 +15,9 @@ import { laneGroups, type LaneHead, type SwimlaneBy } from './board';
 import type { ItemTypeDef } from './item-types';
 
 // Days of axis either side of the dates, the shortest axis, and the longest that still ticks weeks.
-export const GANTT_PAD_DAYS = 7;
+const GANTT_PAD_DAYS = 7;
 export const GANTT_MIN_DAYS = 28;
-export const GANTT_WEEK_TICKS_MAX_DAYS = 120;
+const GANTT_WEEK_TICKS_MAX_DAYS = 120;
 
 export type GanttMark = 'bar' | 'due' | 'start' | 'none';
 
@@ -193,7 +193,7 @@ export const GANTT_SCALE_LABELS: Record<GanttScale, string> = {
 };
 
 // A window of the axis: inclusive day numbers and its ticks.
-export type GanttWindow = Pick<GanttModel, 'from' | 'to' | 'ticks'>;
+type GanttWindow = Pick<GanttModel, 'from' | 'to' | 'ticks'>;
 
 // The smallest scale that holds every date the model spans, else Year.
 export function ganttFitScale(model: Pick<GanttModel, 'from' | 'to'>): GanttScale {
@@ -241,7 +241,7 @@ export function ganttNamesWidth(width: number, chartPx: number): number {
 
 // The chart's rows grouped into swimlanes (docs/specs/026-plan/plan-views.md "Swimlanes"): the board's lanes
 // (laneGroups), only those with rows, rows in the chart's order. `none` is one lane of every row, unnamed.
-export interface GanttLane {
+interface GanttLane {
   lane: LaneHead | null;
   rows: GanttRow[];
 }
@@ -273,7 +273,7 @@ export function ganttLanes(
 }
 
 // Where each entry sits, top down: a lane's header (when it has a name) then its rows, unless it is collapsed.
-export type GanttLayoutEntry =
+type GanttLayoutEntry =
   | { kind: 'lane'; lane: LaneHead; count: number; collapsed: boolean; top: number }
   | { kind: 'row'; row: GanttRow; top: number };
 
@@ -302,7 +302,7 @@ export function ganttLayout(
 
 // Drawing dates on a project that has none (docs/specs/026-plan/plan-views.md "Drawing dates"): a click gives a
 // bar this many days long from the day pressed; a drag gives the days it spans.
-export const GANTT_NEW_BAR_DAYS = 7;
+const GANTT_NEW_BAR_DAYS = 7;
 
 // The day under a point along the window, from its share of the axis width (0 at the left edge).
 export function ganttDayAt(window: Pick<GanttModel, 'from' | 'to'>, share: number): number {

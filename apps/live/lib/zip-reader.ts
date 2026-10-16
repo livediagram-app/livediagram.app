@@ -2,7 +2,7 @@
 // deflated entries, the latter inflated by `DecompressionStream('deflate-raw')` under a byte
 // budget shared by the whole import. Every offset is bounds-checked: the file is untrusted.
 
-export type ZipEntry = {
+type ZipEntry = {
   name: string;
   method: number;
   encrypted: boolean;

@@ -12,7 +12,7 @@ import { DefaultKeyIcon } from './default-key-icons';
 // shape alone. It takes space the row already holds (after a truncating name), so its arrival once
 // the defaults load moves nothing.
 
-export const MARKER_MAX_ICONS = 2;
+const MARKER_MAX_ICONS = 2;
 
 /** The marker's words for a folder, or '' when it is no default: a tree row's description. */
 export function useDefaultFolderDescription(folderId: string): string {

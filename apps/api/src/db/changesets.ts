@@ -6,7 +6,7 @@ import type { ElementOp } from '@livediagram/document';
 import { CHANGESET_MERGE_PAGE, type ChangesetCounts } from '@livediagram/api-schema';
 import type { Env } from '../types';
 
-export type ChangesetPart = 'ops' | 'inverse' | 'results';
+type ChangesetPart = 'ops' | 'inverse' | 'results';
 
 // Each element a changeset touched, as it found it and as it left it (CS17), and, when it
 // reordered, the order it found the elements it kept in: what the merge on save compares a save's

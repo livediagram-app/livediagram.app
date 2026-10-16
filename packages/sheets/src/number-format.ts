@@ -6,7 +6,7 @@ import type { CellFormat } from './sheet';
 import { DEFAULT_WHY, isArray, isError, numberText, scalarOf, type Value } from './formula/values';
 import { localeSeparators } from './input';
 
-export type DisplayText = {
+type DisplayText = {
   text: string;
   // How the value aligns unless the cell sets its own (numbers right, text left, booleans centre).
   align: 'l' | 'c' | 'r';

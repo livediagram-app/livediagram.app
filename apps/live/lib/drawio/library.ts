@@ -34,7 +34,7 @@ export type ImportedLibraryItem = {
   elements: Element[];
 };
 
-export type DrawioLibraryResult =
+type DrawioLibraryResult =
   | {
       ok: true;
       items: ImportedLibraryItem[];

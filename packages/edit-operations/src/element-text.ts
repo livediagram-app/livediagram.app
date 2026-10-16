@@ -16,7 +16,7 @@ export type Naming = {
 };
 
 // Ids as they are: what a line uses when no tab names its elements.
-export const plainNaming: Naming = { refOf: (id) => id, containerOf: () => null };
+const plainNaming: Naming = { refOf: (id) => id, containerOf: () => null };
 
 export function labelOf(el: Element): string | undefined {
   return 'label' in el && typeof el.label === 'string' && el.label !== '' ? el.label : undefined;

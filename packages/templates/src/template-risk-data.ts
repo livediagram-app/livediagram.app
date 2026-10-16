@@ -25,7 +25,7 @@ export const IMPACT_STEPS = [
   { name: 'Severe', scale: 'over £1m' },
 ];
 
-export type RiskBand = 'Low' | 'Medium' | 'High' | 'Critical';
+type RiskBand = 'Low' | 'Medium' | 'High' | 'Critical';
 
 // Score bands, lowest first, with the paper and ink their legend chip and
 // register cell wear. `max` is the band's highest score.

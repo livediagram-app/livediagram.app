@@ -22,7 +22,7 @@ type Refusal = { status: number; body: Record<string, unknown> };
 
 // `templateElements`: the elements of every tab a template made, whose Plan boards bring their card types
 // (docs/specs/026-plan/plan-templates.md "Card types a template uses").
-export type CompiledSeed =
+type CompiledSeed =
   | { tabs: unknown[]; intent: CreationIntent | null; templateElements: Tab['elements'] }
   | { refusal: Refusal };
 

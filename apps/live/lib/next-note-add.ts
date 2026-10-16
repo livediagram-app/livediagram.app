@@ -20,7 +20,7 @@ import { travellingIdsFrom, type InsertionSlot } from '@/lib/insert-between';
 // something, the shipped insertion ripple makes room in the same commit, so
 // the author sees the board behave exactly as the Alt gesture taught them.
 
-export type NextNotePlan = {
+type NextNotePlan = {
   kind: EventStormingNoteKind;
   // Where the note lands, AFTER any ripple.
   bounds: { x: number; y: number; width: number; height: number };

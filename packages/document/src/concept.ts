@@ -14,7 +14,7 @@ export type PyramidVariant = 'pyramid' | 'inverted' | 'funnel';
 export type ConceptAnim = 'build' | 'pulse' | 'flow';
 
 export const PYRAMID_VARIANTS: readonly PyramidVariant[] = ['pyramid', 'inverted', 'funnel'];
-export const CONCEPT_ANIMS: readonly ConceptAnim[] = ['build', 'pulse', 'flow'];
+const CONCEPT_ANIMS: readonly ConceptAnim[] = ['build', 'pulse', 'flow'];
 export const CONCEPT_LABEL_MAX = 60;
 export const CONCEPT_NOTE_MAX = 40;
 
@@ -37,7 +37,7 @@ export function isPyramidVariant(v: unknown): v is PyramidVariant {
   return v === 'pyramid' || v === 'inverted' || v === 'funnel';
 }
 
-export function isConceptAnim(v: unknown): v is ConceptAnim {
+function isConceptAnim(v: unknown): v is ConceptAnim {
   return v === 'build' || v === 'pulse' || v === 'flow';
 }
 
@@ -71,7 +71,7 @@ export function hubDrawsSpokes(el: ShapeElement): boolean {
 }
 
 /** Trim + bound a row's text the way every write path should. */
-export function clampConceptText(s: string, max: number): string {
+function clampConceptText(s: string, max: number): string {
   return s.replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
@@ -92,7 +92,7 @@ export function boundConceptRows(
 
 // --- Layouts --------------------------------------------------------------------------------------
 
-export type LayerStackLayout = {
+type LayerStackLayout = {
   bands: LayoutRect[];
   notes: LayoutRect[];
   rules: { x1: number; x2: number; y: number }[];
@@ -131,7 +131,7 @@ export function layerStackLayout(
   };
 }
 
-export type PyramidLayout = {
+type PyramidLayout = {
   tiers: { points: { x: number; y: number }[]; label: LayoutRect }[];
   labelPx: number;
 };
@@ -199,7 +199,7 @@ export function pyramidLayout(
   return { tiers, labelPx: Math.round(clamp(tierH * 0.34, 10, 20)) };
 }
 
-export type CycleLayout = {
+type CycleLayout = {
   centre: { x: number; y: number };
   ringR: number;
   discR: number;
@@ -247,7 +247,7 @@ export function cycleLayout(w: number, h: number, n: number): CycleLayout {
   };
 }
 
-export type HubLayout = {
+type HubLayout = {
   centre: { x: number; y: number };
   hubR: number;
   satR: number;
@@ -296,7 +296,7 @@ export function hubLayout(w: number, h: number, n: number): HubLayout {
   };
 }
 
-export type OnionLayout = {
+type OnionLayout = {
   centre: { x: number; y: number };
   // Ring k's outer radius, the core first.
   radii: number[];

@@ -13,7 +13,7 @@ export type EditorModeTab = Pick<Tab, 'id' | 'kind' | 'opensIn' | 'layers' | 'lo
 
 // `lockedReason`: the switch shows but only its own mode can be picked, and this says why (a Board, Sheet or Dashboard
 // tab is always in Plan, docs/specs/026-plan/plan-tabs.md).
-export type ResolvedEditorMode = { mode: EditorMode; canSwitch: boolean; lockedReason?: string };
+type ResolvedEditorMode = { mode: EditorMode; canSwitch: boolean; lockedReason?: string };
 
 const KIND_NAMES: Readonly<Record<string, string>> = {
   board: 'A Board tab',

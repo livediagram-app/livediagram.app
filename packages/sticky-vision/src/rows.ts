@@ -10,7 +10,7 @@ import type { Box } from './boxes';
 
 const ROW_GAP_FRACTION = 0.5;
 
-export type RowedBox = Box & { row: number; order: number };
+type RowedBox = Box & { row: number; order: number };
 
 export function clusterRows(boxes: Box[], noteSize: number): RowedBox[] {
   if (boxes.length === 0) return [];

@@ -44,7 +44,7 @@ const PNG = readFileSync(
 );
 
 /** One board's export files. */
-export function syntheticBoard(dir: string, title: string | null, dark: boolean) {
+function syntheticBoard(dir: string, title: string | null, dark: boolean) {
   const name = dir.split('/').pop()!;
   const image = {
     objectId: `${name}-picture`,

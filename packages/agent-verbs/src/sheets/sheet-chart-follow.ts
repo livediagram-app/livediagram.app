@@ -21,7 +21,7 @@ export type SheetChartEl = {
 };
 
 // The cell under an anchor: its row and column ids, and how far into the cell the anchor sits.
-export type AnchorCell = { row: string; col: string; dx: number; dy: number };
+type AnchorCell = { row: string; col: string; dx: number; dy: number };
 
 // The line (row or column) a px offset falls in along an axis, and the offset into it; past the last, the last.
 function lineAt(

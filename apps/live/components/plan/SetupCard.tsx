@@ -13,7 +13,7 @@ import { ScaleCapped } from '@/components/canvas/ScaleCapped';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
-export type SetupStep = { label: string };
+type SetupStep = { label: string };
 
 export function SetupCard({
   titleId,

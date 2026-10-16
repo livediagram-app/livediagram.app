@@ -26,11 +26,11 @@ import { clampPageSide, FIT_PAGE_MAX_SIDE } from './illustrate-page-fit';
 import { isBoxed, type Element, type Tab } from './index';
 
 // Two things this close (canvas px, edge to edge) belong together.
-export const PAGINATE_CLUSTER_GAP = 120;
+const PAGINATE_CLUSTER_GAP = 120;
 // The most pages Split Into Pages makes (docs/specs/007-editor/illustrate-pages.md "Into pages").
-export const PAGINATE_MAX_PAGES = 20;
+const PAGINATE_MAX_PAGES = 20;
 // Wider than this many times its height, content takes a landscape page.
-export const LANDSCAPE_RATIO = 1.1;
+const LANDSCAPE_RATIO = 1.1;
 
 type Box = { x: number; y: number; r: number; b: number };
 

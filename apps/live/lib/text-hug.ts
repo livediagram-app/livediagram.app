@@ -16,8 +16,8 @@ import {
 import type { DragMode, ShapeBounds } from '@/lib/canvas';
 
 // Canvas px around the text's line box, left and right, then top and bottom.
-export const TEXT_HUG_PAD_X = 4;
-export const TEXT_HUG_PAD_Y = 2;
+const TEXT_HUG_PAD_X = 4;
+const TEXT_HUG_PAD_Y = 2;
 // A click-placed box widens with its text up to this, then wraps.
 export const TEXT_HUG_MAX_WIDTH = 480;
 // The single-line label's leading (`leading-tight`), shared by display, editor and measurer.

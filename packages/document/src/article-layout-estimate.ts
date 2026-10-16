@@ -169,7 +169,7 @@ export function wrapEstimated(text: string, width: number, px: number, bold: boo
   return out;
 }
 
-export type EstimatedArticle = {
+type EstimatedArticle = {
   // Each page's operations, by page id.
   ops: Map<string, ArticleDrawOp[]>;
   // How many pages the writing reaches: its own, and those the editor would add after its last.

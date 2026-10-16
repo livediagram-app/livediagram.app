@@ -19,7 +19,7 @@ export const LANE_WIDTH = 32;
 // The lane for edge `i` (its index in the edges split) in rank `r`.
 export const laneId = (i: number, r: number): ElementId => `\u0000lane-${i}-${r}`;
 
-export type SplitGraph = {
+type SplitGraph = {
   ids: ElementId[];
   edges: Edge[];
   layer: Map<ElementId, number>;

@@ -35,7 +35,7 @@ import type { StoredTab } from './stored-tab';
 
 export type Author = { id: string; name: string; color: string };
 
-export type ChangesetWrite = {
+type ChangesetWrite = {
   documentId: string;
   tabId: string;
   // The tab as read; null when the changeset creates it.
@@ -55,7 +55,7 @@ export type ChangesetWrite = {
   revertOf: string | null;
 };
 
-export type WriteOutcome =
+type WriteOutcome =
   | { kind: 'written'; written: ChangesetWritten; record: ChangesetRecord; text: string }
   | { kind: 'unchanged' }
   | { kind: 'stale' }
@@ -150,7 +150,7 @@ export async function writeChangeset(env: Env, w: ChangesetWrite): Promise<Write
 }
 
 // Each touched element as found and as left; the order found when the changeset reordered (CS17).
-export function fingerprintsOf(
+function fingerprintsOf(
   before: Element[],
   after: Element[],
   ops: readonly ElementOp[],
@@ -172,7 +172,7 @@ export function fingerprintsOf(
   return fps;
 }
 
-export function countsOf(ops: readonly ElementOp[]): ChangesetCounts {
+function countsOf(ops: readonly ElementOp[]): ChangesetCounts {
   const counts = { added: 0, changed: 0, removed: 0 };
   for (const op of ops) {
     if (op.kind === 'add') counts.added += 1;

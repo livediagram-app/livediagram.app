@@ -14,7 +14,7 @@ import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import { openerById } from './palette-openers';
 
-export type PaletteLayoutEntry = {
+type PaletteLayoutEntry = {
   // A PALETTE_CATEGORIES id: the glyph, and the default label, blurb and band.
   id: string;
   label?: string;
@@ -34,7 +34,7 @@ export type PaletteLayoutEntry = {
 // dividers").
 export const DIVIDE = '|';
 
-export type PaletteLayout = {
+type PaletteLayout = {
   // The category the palette opens on (an event-storming board opens on its notation instead).
   landing: string;
   categories: readonly PaletteLayoutEntry[];
@@ -306,7 +306,7 @@ export const PALETTE_LAYOUTS = {
 } as const;
 
 /** The layout a mode's palette shows. Draw mode shows its own tools, so it borrows Diagram's. */
-export function paletteLayoutFor(mode: EditorMode): PaletteLayout {
+function paletteLayoutFor(mode: EditorMode): PaletteLayout {
   return mode === 'draw' ? DIAGRAM : PALETTE_LAYOUTS[mode];
 }
 
@@ -432,7 +432,7 @@ export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
 
 // Plan's landing while its tab has no board (docs/specs/026-plan/plan-mode.md "The palette"): a card lands on a
 // board, so a tab without one opens on Boards.
-export const PLAN_NO_BOARD_LANDING = 'plan-boards';
+const PLAN_NO_BOARD_LANDING = 'plan-boards';
 
 /**
  * The category the palette opens on: an event-storming board's notation, or the mode's own (Plan's Boards while

@@ -37,7 +37,7 @@ export type PageContext = ConvertContext & {
   imageKeys: Map<string, string>;
 };
 
-export type BuiltVertex = Element | null;
+type BuiltVertex = Element | null;
 
 const LABEL = { scale: 'label', rich: true, outsideMovesIn: true } as const;
 

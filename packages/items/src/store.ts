@@ -38,13 +38,13 @@ export type ItemPatchOf = { id: string; patch: ItemPatch };
 // One card's tally: each voter's (pseudonymous person id) dots.
 export type ItemTally = { id: string; votes: Record<string, number> };
 
-export type ItemWriteError = 'item_not_found' | 'item_exists' | 'items_full';
+type ItemWriteError = 'item_not_found' | 'item_exists' | 'items_full';
 
-export type ItemWriteResult =
+type ItemWriteResult =
   | { ok: true; state: ItemStoreState; upserts: Item[]; removed: string[] }
   | { ok: false; error: ItemWriteError };
 
-export type ItemWriteContext = { now: number; by: ItemPerson; newId?: () => string };
+type ItemWriteContext = { now: number; by: ItemPerson; newId?: () => string };
 
 function replaced(items: Item[], next: Item): Item[] {
   return items.map((i) => (i.id === next.id ? next : i));

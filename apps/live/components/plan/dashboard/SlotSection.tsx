@@ -18,7 +18,7 @@ import { SheetMetricSource } from './SheetMetricSource';
 const SlotGlyph = lucideGlyph(lucideLayoutGrid, 14);
 const ChangeGlyph = lucideGlyph(lucidePencil, 18);
 
-export interface SlotAt {
+interface SlotAt {
   // Its index in its row, its row's index, and how many slots the row has.
   slot: number;
   row: number;

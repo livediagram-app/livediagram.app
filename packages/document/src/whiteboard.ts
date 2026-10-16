@@ -16,7 +16,7 @@ export const WHITEBOARD_BOARD: Readonly<Record<Appearance, string>> = {
   dark: DARK_CANVAS_BACKGROUND_COLOR,
 };
 export const WHITEBOARD_INK: Readonly<Record<Appearance, string>> = PEN_INK;
-export type WhiteboardBackground = 'plain' | 'dots' | 'grid';
+type WhiteboardBackground = 'plain' | 'dots' | 'grid';
 
 // Draw mode's Background row: each choice is a canvas pattern, the person's own in Draw mode
 // (docs/specs/007-editor/editor-modes.md "One look").

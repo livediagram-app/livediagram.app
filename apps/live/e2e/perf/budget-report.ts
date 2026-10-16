@@ -3,7 +3,7 @@
 
 export const BUDGET_ISSUE_TITLE = 'Canvas performance budget';
 
-export type BudgetIssueAction = 'open' | 'comment' | 'close' | 'none';
+type BudgetIssueAction = 'open' | 'comment' | 'close' | 'none';
 
 // Only a run on main reports; a branch measured by hand writes its job summary and nothing else.
 export function budgetIssueAction(run: {

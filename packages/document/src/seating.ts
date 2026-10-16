@@ -94,7 +94,7 @@ export type FurnitureArt = {
   side: FurnitureDrawing;
 };
 
-export type FurnitureViewName = keyof FurnitureArt;
+type FurnitureViewName = keyof FurnitureArt;
 
 /** Which drawing a facing shows, and whether it is the mirrored side. */
 export function facingView(facing: ChairFacing): { view: FurnitureViewName; mirrored: boolean } {

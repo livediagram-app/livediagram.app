@@ -41,7 +41,7 @@ export function createNavigationIntents() {
 export type ChunkRecovery =
   'reloading' | 'gave-up' | 'unsaved' | 'not-a-chunk-error' | 'already-recovering' | 'offline';
 
-export type ChunkRecoveryDeps = {
+type ChunkRecoveryDeps = {
   storage: Storage;
   now: () => number;
   /** The URL being navigated to, else the current one. */

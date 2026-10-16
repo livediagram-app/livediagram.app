@@ -34,7 +34,7 @@ export type PosRef = {
 
 const REF_ERROR = '#REF!';
 
-export function sheetNeedsQuotes(title: string): boolean {
+function sheetNeedsQuotes(title: string): boolean {
   return !/^[A-Za-z_][A-Za-z0-9_.]*$/.test(title) || /^[A-Za-z]{1,4}[0-9]+$/.test(title);
 }
 
@@ -70,7 +70,7 @@ function a1ToPos(ref: A1Ref, ctx: SheetsCtx): PosRef {
 }
 
 // Positions to ids in the target's layout; null when a part lies past the grid (it becomes #REF!).
-export function encodeRef(pos: PosRef, ctx: SheetsCtx): StoredRef | null {
+function encodeRef(pos: PosRef, ctx: SheetsCtx): StoredRef | null {
   const out: StoredRef = {};
   if (pos.a) out.a = pos.a;
   if (pos.open) out.open = pos.open;
@@ -159,7 +159,7 @@ export function formatPosRef(pos: PosRef, ctx: SheetsCtx): string {
   return `${prefix}${text}${pos.spill ? '#' : ''}`;
 }
 
-export type CompileResult =
+type CompileResult =
   { ok: true; formula: StoredFormula; ast: Node } | { ok: false; reason: ParseFailure; at: number };
 
 // A typed formula (`=...`) to its stored form, against the tab's sheets.

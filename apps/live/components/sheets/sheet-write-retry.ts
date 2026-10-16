@@ -4,7 +4,7 @@ import { ApiError } from '@/lib/api/core';
 
 // A write the server could not take for now (sheet-store.md "Changing a sheet") is sent again after
 // SHEET_WRITE_RETRY_MS, doubling each time up to SHEET_WRITE_RETRY_MAX_MS, for as long as it stays pending.
-export const SHEET_WRITE_RETRY_MS = 500;
+const SHEET_WRITE_RETRY_MS = 500;
 export const SHEET_WRITE_RETRY_MAX_MS = 30_000;
 
 export function sheetWriteRetryMs(attempt: number): number {
