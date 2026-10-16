@@ -22,8 +22,9 @@ import {
 } from './event-storming-lanes';
 import { isEventStormingNote } from './event-storming';
 import type { Element, ElementId } from './index';
+import type { Rect } from './geometry-primitives';
 
-type LaneBox = { x: number; y: number; width: number; height: number };
+type LaneBox = Rect;
 
 // Where a row ends: a box more than half a lane's height below the row's FIRST
 // box starts the next one. Measured from the first rather than the previous

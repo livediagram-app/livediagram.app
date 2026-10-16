@@ -6,6 +6,7 @@
 import { mixHex } from './page-ink-contrast';
 import type { IllustratePage, PageRect } from './illustrate-page';
 import { pageFillTone } from './illustrate-page-content';
+import type { Rect } from './geometry-primitives';
 
 // The plain paper, measured as printed and exported.
 export const PAPER_TONE = '#ffffff';
@@ -20,8 +21,6 @@ export type PageGround = {
   // Their mean: what an area (a card) is seen against as a whole.
   mean: string;
 };
-
-type Box = { x: number; y: number; width: number; height: number };
 
 /** Where a point falls along a CSS linear gradient drawn over `rect` at `angle` degrees: 0 at the
  *  start line, 1 at the end line (clamped). */
@@ -47,7 +46,7 @@ export function gradientPosition(
 export function pageGroundUnder(
   background: IllustratePage['background'],
   rect: PageRect,
-  box: Box,
+  box: Rect,
 ): PageGround {
   const fill = background?.fill;
   if (!fill) return { tones: [PAPER_TONE], mean: PAPER_TONE };

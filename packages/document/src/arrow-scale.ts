@@ -5,9 +5,9 @@
 // scale by the same factors. Pure: start snapshot + total delta in, patch out.
 
 import type { ArrowElement } from './index';
+import type { Rect } from './geometry-primitives';
 
 type Pt = { x: number; y: number };
-type Box = { x: number; y: number; width: number; height: number };
 export type FrameHandle = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 'e' | 's' | 'w';
 
 // The smallest extent a drag may shrink an axis to, so it never collapses
@@ -22,7 +22,7 @@ type ScalePatch = Partial<
 
 export function scaleFreeArrow(
   arrow: ArrowElement,
-  box: Box,
+  box: Rect,
   handle: FrameHandle,
   delta: Pt,
   keepAspect: boolean,

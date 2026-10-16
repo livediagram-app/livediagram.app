@@ -12,6 +12,7 @@ import {
   type PlanBoardSetup,
   type PlanColumn,
 } from '@livediagram/items';
+import type { Rect } from './geometry-primitives';
 
 const PLAN_BOARD_HEADER_H = 52;
 export const PLAN_BOARD_PAD = 12;
@@ -20,13 +21,11 @@ const PLAN_COLUMN_HEAD_H = 34;
 export const PLAN_CARD_H = 64;
 const PLAN_CARD_GAP = 8;
 
-type Box = { x: number; y: number; width: number; height: number };
-
-interface PlanCardSlot extends Box {
+interface PlanCardSlot extends Rect {
   item: Item;
 }
 
-interface PlanColumnSlot extends Box {
+interface PlanColumnSlot extends Rect {
   column: PlanColumn;
   count: number;
   overLimit: boolean;
@@ -63,7 +62,7 @@ export const PLAN_LANE_HEAD_H = 26;
 // Null for a board with no readable set-up (it draws as its bare frame). `cardHeight` measures a card face at a
 // column's card width (the SVG export draws each as tall as its Display needs); absent, every card is PLAN_CARD_H.
 export function planBoardLayout(
-  el: Box & { planBoard?: unknown },
+  el: Rect & { planBoard?: unknown },
   items: ReadonlyMap<string, Item> | undefined,
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   cardHeight: (item: Item, width: number) => number = () => PLAN_CARD_H,

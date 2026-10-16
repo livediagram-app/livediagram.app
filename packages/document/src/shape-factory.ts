@@ -32,7 +32,6 @@ import {
   DEFAULT_CHAIR_FACING,
   DEFAULT_DECISION_STATUS,
 } from './collab-shapes';
-import { STEP_SIZE_PX } from './chip';
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
 import { DEFAULT_SEATING_FACING } from './seating';
 import { FENCE_DEFAULT_SIZE } from './fence';
@@ -243,7 +242,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Badge (docs/specs/009-elements/badge.md): fitted to its text on every commit (badgeSize); this is "New" (BADGE_NEW_LABEL).
   badge: { width: 40, height: 24 },
   // Step number (docs/specs/009-elements/step-number.md): a small disc.
-  step: { width: STEP_SIZE_PX, height: STEP_SIZE_PX },
+  step: { width: 28, height: 28 },
   // Pointer note (docs/specs/009-elements/pointer-note.md): a short note; its tip hangs below it (D190).
   'pointer-note': { width: 180, height: 64 },
   // Diagram key (docs/specs/009-elements/diagram-key.md): one row's height until it settles (D191).

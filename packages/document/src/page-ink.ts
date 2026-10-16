@@ -35,6 +35,7 @@ import {
   type InkRole,
 } from './page-ink-rules';
 import { isBoxed, type BoxedElement, type Element, type Tab } from './index';
+import { pointInRect, type Rect } from './geometry-primitives';
 
 /** A colour re-inking replaced (`from`, the author's) and what it wrote (`to`). */
 export type InkRecall = { from: string; to: string };
@@ -44,7 +45,6 @@ export type InkMemory = ReadonlyMap<string, Readonly<Partial<Record<InkField, In
 
 export const EMPTY_INK_MEMORY: InkMemory = new Map();
 
-type Box = { x: number; y: number; width: number; height: number };
 // A ground and, when it is a card's, the card's tone.
 type Ground = PageGround & { card: string | null };
 // Fields to write; undefined takes a colour of its own away.
@@ -54,12 +54,9 @@ const UNSET = '';
 const hasPen = (el: Element, key: 'penColour' | 'penTextColour') =>
   (el as Partial<Record<typeof key, string>>)[key] !== undefined;
 // A surface under later elements: its box and tone, or null for a surface of unknown tone.
-type Cover = { box: Box; tone: string | null };
+type Cover = { box: Rect; tone: string | null };
 
-const inBox = (b: Box, p: { x: number; y: number }) =>
-  p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height;
-
-function boxOf(el: Element, elements: ElementIndex): Box {
+function boxOf(el: Element, elements: ElementIndex): Rect {
   if (isBoxed(el)) return { x: el.x, y: el.y, width: el.width, height: el.height };
   const a = endpointPosition(el.from, elements);
   const b = endpointPosition(el.to, elements);
@@ -186,10 +183,10 @@ function inkPass(
 
   // The ground under an element: its topmost cover, else the page; null when a surface of unknown
   // tone covers it.
-  const groundOf = (box: Box, at: { x: number; y: number }): Ground | null => {
+  const groundOf = (box: Rect, at: { x: number; y: number }): Ground | null => {
     for (let i = covers.length - 1; i >= 0; i -= 1) {
       const c = covers[i]!;
-      if (!inBox(c.box, at)) continue;
+      if (!pointInRect(c.box, at)) continue;
       return c.tone === null ? null : { tones: [c.tone], mean: c.tone, card: c.tone };
     }
     return { ...pageGroundUnder(background, rect, box), card: null };
@@ -305,7 +302,7 @@ function inkPass(
   const table = (
     el: Extract<Element, { type: 'table' }>,
     ground: Ground,
-    box: Box,
+    box: Rect,
     patch: Patch,
   ) => {
     field(el, 'strokeColor', 'line', ground.tones, patch);
@@ -320,7 +317,7 @@ function inkPass(
   const boxed = (
     el: BoxedElement,
     ground: Ground,
-    box: Box,
+    box: Rect,
     anchors: { x: number; y: number }[],
     index: number,
     patch: Patch,
@@ -392,9 +389,9 @@ function inkPass(
 }
 
 // Whether anything drawn after the element (on the page) sits on it: its centre inside the box.
-function holdsAny(box: Box, anchors: { x: number; y: number }[], index: number): boolean {
+function holdsAny(box: Rect, anchors: { x: number; y: number }[], index: number): boolean {
   for (let j = index + 1; j < anchors.length; j += 1) {
-    if (inBox(box, anchors[j]!)) return true;
+    if (pointInRect(box, anchors[j]!)) return true;
   }
   return false;
 }

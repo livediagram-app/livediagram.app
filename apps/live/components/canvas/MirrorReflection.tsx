@@ -12,13 +12,12 @@ import {
   symmetryMapsFor,
   type MirroredPage,
   type SymmetryMap,
+  type Rect,
 } from '@livediagram/document';
 import { PathDraftLayer, type PathDraftView } from './path/PathDraftLayer';
 
-type Box = { x: number; y: number; width: number; height: number };
-
 /** The box around some points. */
-export function pointsBox(points: readonly { x: number; y: number }[]): Box | null {
+export function pointsBox(points: readonly { x: number; y: number }[]): Rect | null {
   if (points.length === 0) return null;
   let x0 = Infinity;
   let y0 = Infinity;
@@ -37,7 +36,7 @@ export function pointsBox(points: readonly { x: number; y: number }[]): Box | nu
  *  release uses. Empty off a mirrored page. */
 export function draftMirrorMaps(
   pages: readonly MirroredPage[] | null | undefined,
-  box: Box | null,
+  box: Rect | null,
 ): SymmetryMap[] {
   return pages && box ? symmetryMapsFor(pages, box) : [];
 }
@@ -97,7 +96,7 @@ export function MirroredDraft({
   children,
 }: {
   pages: readonly MirroredPage[];
-  box?: Box | null;
+  box?: Rect | null;
   at?: { x: number; y: number };
   children: ReactNode;
 }) {

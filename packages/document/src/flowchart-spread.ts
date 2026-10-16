@@ -10,11 +10,10 @@
 import { SIBLING_GAP, type Pt } from './auto-layout-shared';
 import type { FlowchartDirection } from './flowchart';
 import type { ArrowElement, ElementId, ShapeElement } from './index';
+import type { Rect } from './geometry-primitives';
 
 /** Between a Decision's corner and its side step's centre, across the flow (blueprint D175). */
 export const FLOWCHART_CORNER_CLEARANCE = 32;
-
-type Box = { x: number; y: number; width: number; height: number };
 
 /**
  * Shift `pos` (top-lefts of the laid-out steps, changed in place) so each Decision's first and last
@@ -29,14 +28,14 @@ export function spreadDecisionExits(
 ): void {
   const down = dir === 'down';
   const byId = new Map(steps.map((s) => [s.id, s]));
-  const boxOf = (id: ElementId): Box | undefined => {
+  const boxOf = (id: ElementId): Rect | undefined => {
     const p = pos.get(id);
     const s = byId.get(id);
     return p && s ? { x: p.x, y: p.y, width: s.width, height: s.height } : undefined;
   };
-  const crossCentre = (b: Box) => (down ? b.x + b.width / 2 : b.y + b.height / 2);
-  const mainCentre = (b: Box) => (down ? b.y + b.height / 2 : b.x + b.width / 2);
-  const crossHalf = (b: Box) => (down ? b.width / 2 : b.height / 2);
+  const crossCentre = (b: Rect) => (down ? b.x + b.width / 2 : b.y + b.height / 2);
+  const mainCentre = (b: Rect) => (down ? b.y + b.height / 2 : b.x + b.width / 2);
+  const crossHalf = (b: Rect) => (down ? b.width / 2 : b.height / 2);
 
   const exits = new Map<ElementId, ElementId[]>();
   for (const a of arrows) {
@@ -91,7 +90,7 @@ export function spreadDecisionExits(
       const moved = [...reach([target])].filter((id) => !shared.has(id) && id !== d);
       if (moved.includes(referenceId)) continue;
       const movedSet = new Set(moved);
-      const shifted = (b: Box): Box =>
+      const shifted = (b: Rect): Rect =>
         down ? { ...b, x: b.x + shortfall } : { ...b, y: b.y + shortfall };
       const clash = moved.some((id) => {
         const b = shifted(boxOf(id)!);
@@ -111,7 +110,7 @@ export function spreadDecisionExits(
 }
 
 // Two boxes closer than `gap` on both axes (touching or overlapping included).
-function near(a: Box, b: Box, gap: number): boolean {
+function near(a: Rect, b: Rect, gap: number): boolean {
   return (
     a.x < b.x + b.width + gap &&
     b.x < a.x + a.width + gap &&

@@ -1,7 +1,5 @@
-import { isBoxed, type Element } from '@livediagram/document';
+import { isBoxed, type Element, type Rect } from '@livediagram/document';
 import type { QuickConnectDirection } from '@/lib/canvas';
-
-type Bounds = { x: number; y: number; width: number; height: number };
 
 // Placement math for quick add (docs/specs/008-canvas/canvas-and-palette.md), lifted out of
 // useElementSelectionActions' spawnConnectSelected: given the source
@@ -18,7 +16,7 @@ export function quickAddPlacement({
   // The source selection (the whole group when the source is grouped) —
   // excluded from both the gap scan and the overlap test.
   ids: Set<string>;
-  baseBounds: Bounds;
+  baseBounds: Rect;
   direction: QuickConnectDirection;
 }): { dx: number; dy: number } {
   // Match the gap to the nearest in-line neighbour so a duplicated chain

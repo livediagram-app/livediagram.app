@@ -9,6 +9,7 @@
 
 import { DEFAULT_CHAIR_FACING, type ChairFacing, type ChairSitterFacing } from './collab-shapes';
 import { MEETING_TABLE_ART, MEETING_TABLE_VIEW } from './office';
+import type { Rect } from './geometry-primitives';
 
 export type SeatingKind = 'chair' | 'desk' | 'sofa' | 'meeting-table';
 
@@ -358,14 +359,12 @@ export function furnitureFrame(
   };
 }
 
-type Box = { x: number; y: number; width: number; height: number };
-
 /**
  * Every seat's feet point, in canvas coordinates, from the drawing its facing shows. A meeting table's seats
  * also say which way their sitter faces (docs/specs/009-elements/office.md "Meeting Table").
  */
 export function seatPoints(
-  el: Box & { shape: SeatingKind; chairFacing?: ChairFacing },
+  el: Rect & { shape: SeatingKind; chairFacing?: ChairFacing },
 ): { x: number; y: number; facing?: ChairSitterFacing }[] {
   if (el.shape === 'meeting-table') {
     const drawn = drawnRect(el, MEETING_TABLE_VIEW);
@@ -387,7 +386,7 @@ export function seatPoints(
 // Where the drawing actually lies in the box: both renderers fit its grid whole and centred (preserveAspectRatio
 // meet), so a box of other proportions (a quarter turn written without swapping the box, an aspect unlocked and
 // stretched) letterboxes it, and a seat measured on the whole box would miss the drawn cushion.
-function drawnRect(box: Box, view: { width: number; height: number }): Box {
+function drawnRect(box: Rect, view: { width: number; height: number }): Rect {
   const scale = Math.min(box.width / view.width, box.height / view.height);
   const width = view.width * scale;
   const height = view.height * scale;
@@ -401,7 +400,7 @@ function drawnRect(box: Box, view: { width: number; height: number }): Box {
 
 /** The seat nearest a point (where the character walked in), so a sofa seats you on your side. */
 export function nearestSeat(
-  el: Box & { shape: SeatingKind; chairFacing?: ChairFacing },
+  el: Rect & { shape: SeatingKind; chairFacing?: ChairFacing },
   from: { x: number; y: number },
 ): { x: number; y: number; facing?: ChairSitterFacing } {
   const seats = seatPoints(el);
@@ -419,10 +418,10 @@ export function nearestSeat(
  * in place.
  */
 export function turnedSeatingBox(
-  el: Box & { shape: SeatingKind },
+  el: Rect & { shape: SeatingKind },
   from: ChairFacing,
   to: ChairFacing,
-): Box {
+): Rect {
   if (el.shape === 'chair' || el.shape === 'meeting-table' || !facingSwapsBox(from, to))
     return { ...el };
   const cx = el.x + el.width / 2;

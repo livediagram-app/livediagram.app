@@ -1,10 +1,14 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { canAppendWebRow, isFlowchartStep, isRailShape, type Element } from '@livediagram/document';
+import {
+  canAppendWebRow,
+  isFlowchartStep,
+  isRailShape,
+  type Element,
+  type Rect,
+} from '@livediagram/document';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';
-
-type Bounds = { x: number; y: number; width: number; height: number };
 
 // The ring action each row-carrying web component offers (docs/specs/009-elements/web-components-and-no-groups.md).
 const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: string }>> = {
@@ -42,7 +46,7 @@ export function QuickConnectPluses({
   onAppendWebRow,
 }: {
   selectedElement: Element | undefined;
-  bounds: Bounds;
+  bounds: Rect;
   zoom: number;
   // Which ring is open (lifted to Canvas so only one opens at a time). null = all closed.
   quickRingOpen: QuickConnectDirection | null;

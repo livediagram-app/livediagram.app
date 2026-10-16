@@ -2,8 +2,7 @@ import { type ReactNode } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@/components/chrome/FloatingTitle';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
-
-type Bounds = { x: number; y: number; width: number; height: number };
+import type { Rect } from '@livediagram/document';
 
 const GAP = 14; // canvas-space gap between the toolbar and the selection
 
@@ -23,7 +22,7 @@ export function FloatingToolbar({
   title,
   children,
 }: {
-  bounds: Bounds;
+  bounds: Rect;
   canvasOffset: { x: number; y: number };
   zoom: number;
   // Hidden while the selection moves: measures nothing until it ends (useEdgeAwarePlacement).

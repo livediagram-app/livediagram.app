@@ -8,6 +8,7 @@
 import type { ChairSitterFacing } from './collab-shapes';
 import type { FurnitureArt, FurniturePart, FurniturePartRole, FurnitureDrawing } from './seating';
 import type { ShapeKind } from './shape-kind';
+import type { Rect } from './geometry-primitives';
 
 export type OfficeKind =
   'room' | 'meeting-table' | 'plant' | 'bookshelf' | 'water-cooler' | 'coffee-machine' | 'rug';
@@ -275,8 +276,6 @@ export const OFFICE_ART: Record<Exclude<OfficeKind, 'room'>, FurnitureArt> = {
 
 // --- Footprints ------------------------------------------------------------
 
-type Box = { x: number; y: number; width: number; height: number };
-
 // The part of a piece that blocks walking, as fractions of its box: the pot, the shelf's base.
 const OFFICE_FOOTPRINT: Partial<
   Record<OfficeKind, { x0: number; x1: number; y0: number; y1: number }>
@@ -286,7 +285,7 @@ const OFFICE_FOOTPRINT: Partial<
 };
 
 /** The footprint of a piece that blocks, in canvas coordinates, or null for one that does not. */
-export function officeFootprint(el: Box & { shape: string }): Box | null {
+export function officeFootprint(el: Rect & { shape: string }): Rect | null {
   const f = OFFICE_FOOTPRINT[el.shape as OfficeKind];
   if (!f) return null;
   return {
@@ -375,7 +374,7 @@ type WallSegment = { a: { x: number; y: number }; b: { x: number; y: number } };
  * A room's walls as lines a character cannot cross, in canvas coordinates, broken at the doorway: along the
  * back wall's foot, down each side wall and along the front wall.
  */
-export function roomWalls(el: Box & { roomDoor?: RoomDoor }): WallSegment[] {
+export function roomWalls(el: Rect & { roomDoor?: RoomDoor }): WallSegment[] {
   const door = el.roomDoor ?? DEFAULT_ROOM_DOOR;
   const { x, y, width: w, height: h } = el;
   const half = ROOM_WALL / 2;
@@ -399,7 +398,7 @@ export function roomWalls(el: Box & { roomDoor?: RoomDoor }): WallSegment[] {
 }
 
 /** The four edges of a box as wall segments (a footprint's outline). */
-export function boxEdges(b: Box): WallSegment[] {
+export function boxEdges(b: Rect): WallSegment[] {
   const tl = { x: b.x, y: b.y };
   const tr = { x: b.x + b.width, y: b.y };
   const br = { x: b.x + b.width, y: b.y + b.height };

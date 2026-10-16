@@ -9,6 +9,7 @@ import {
   type ElementId,
   type Endpoint,
   type Tab,
+  type Rect,
 } from '@livediagram/document';
 
 // Where a paste lands (docs/specs/021-event-storming/event-storming.md "Always on a lane", docs/specs/008-canvas/canvas-and-palette.md
@@ -31,13 +32,11 @@ export const PASTE_OFFSET = 24;
 
 type BoardLike = Pick<Tab, 'elements'> & Partial<Pick<Tab, 'kind' | 'layers'>>;
 
-type ViewRect = { x: number; y: number; width: number; height: number };
-
 export function pasteTranslation(
   source: readonly Element[],
   board: BoardLike,
   pointer: { x: number; y: number } | null,
-  view: ViewRect | null = null,
+  view: Rect | null = null,
 ): { dx: number; dy: number; atPointer: boolean } {
   if (!isEventStormingTab(board) || !source.some(isEventStormingNote)) {
     return intoView(source, PASTE_OFFSET, PASTE_OFFSET, view);
@@ -61,7 +60,7 @@ function intoView(
   source: readonly Element[],
   dx: number,
   dy: number,
-  view: ViewRect | null,
+  view: Rect | null,
 ): { dx: number; dy: number; atPointer: false } {
   const box = sourceBounds(source);
   if (!view || !box) return { dx, dy, atPointer: false };
@@ -80,7 +79,7 @@ function intoView(
 // The box around what the paste moves: the copied boxes, and each copied arrow's ends that are free
 // or held by something in the copy. An end pinned to an element left behind does not move with the
 // paste (and would resolve to the origin against the copy alone), so it is not measured.
-function sourceBounds(source: readonly Element[]): ViewRect | null {
+function sourceBounds(source: readonly Element[]): Rect | null {
   const all = [...source];
   const ids = new Set(all.map((el) => el.id));
   let box: { x0: number; y0: number; x1: number; y1: number } | null = null;

@@ -14,6 +14,7 @@ import {
   wrapLabel,
   type BoxedElement,
   type Element,
+  type Rect,
 } from '@livediagram/document';
 import { LINT_OVERLAP_TOLERANCE_PX } from '../constants';
 import { refOf } from '../context';
@@ -26,7 +27,7 @@ const isText = (el: Element): el is Text =>
   (el as { label: string }).label.trim() !== '' &&
   [el.x, el.y, el.width, el.height].every((v) => Number.isFinite(v));
 
-type Ink = { x: number; y: number; width: number; height: number };
+type Ink = Rect;
 
 // Where a text's lines are drawn: wrapped at its room in its size (a Shift-resized text scaled), set in its box as the
 // renderer sets them (its alignment, its padding), less a little at the top and bottom for the glyphs' own leading,
