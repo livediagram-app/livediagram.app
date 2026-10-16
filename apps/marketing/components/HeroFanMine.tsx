@@ -36,9 +36,11 @@ const PHONE = [
   'max-sm:[transform:translateY(0.5rem)_rotate(4deg)]',
 ];
 
+// Pointing at (or focusing) a card straightens it and lifts it far enough to bring its foot, where a
+// document's save time sits, up over the band's edge; at rest the foot runs off it, out of sight.
 const SLOT =
-  'shrink-0 transition-transform duration-micro ease-out hover:[transform:translateY(-0.5rem)_rotate(0deg)] has-[:focus-visible]:[transform:translateY(-0.5rem)_rotate(0deg)] motion-reduce:transition-none';
-// A card's top row: its title on the left, its detail on the right (stacked, right-aligned, on a phone).
+  'shrink-0 transition-transform duration-micro ease-out hover:[transform:translateY(-4.25rem)_rotate(0deg)] has-[:focus-visible]:[transform:translateY(-4.25rem)_rotate(0deg)] motion-reduce:transition-none';
+// Explorer Home's top row: its title on the left, Open on the right (stacked, right-aligned, on a phone).
 const HEAD =
   'flex flex-col items-stretch gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2 [&>*:last-child]:self-end sm:[&>*:last-child]:self-auto';
 const CARD =
@@ -58,17 +60,15 @@ export function HeroFanMine({ diagrams }: { diagrams: readonly RecentDiagram[] }
       {diagrams.map((d, i) => (
         <div key={d.id} className={slot(i, i < 2 ? PHONE[i]! : null)}>
           <a href={`/document/${encodeURIComponent(d.id)}`} className={CARD} style={dealt(i)}>
-            {/* The name, and how long since it was saved on the right: in the card's top row, which stays
-                on the band while its foot runs off it (stacked on a phone's narrow card). */}
-            <span className={HEAD}>
-              <span className="min-w-0 truncate text-xs font-semibold sm:text-sm">
-                {d.name || 'Untitled diagram'}
-              </span>
-              <span className="shrink-0 text-right text-[11px] text-slate-500 sm:text-xs">
-                {relativeSince(d.savedAt, now)}
-              </span>
+            <span className="truncate text-xs font-semibold sm:text-sm">
+              {d.name || 'Untitled diagram'}
             </span>
             <RecentPreview diagram={d} className="h-20 rounded-lg sm:h-32 sm:rounded-xl" />
+            {/* How long since it was saved, at the card's foot, right-aligned: off the band at rest, and
+                in view once the card is lifted. */}
+            <span className="mt-auto text-right text-[11px] text-slate-500 sm:text-xs">
+              {relativeSince(d.savedAt, now)}
+            </span>
           </a>
         </div>
       ))}

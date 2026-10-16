@@ -22,7 +22,9 @@ import { useRecentDiagrams } from './useRecentDiagrams';
 // order each visit, so a visitor keeps seeing something new: the static HTML is a fixed opening hand,
 // hidden once script runs (<html data-hero-deal>) until the shuffled hand deals in over it. It holds
 // still while the pointer or focus is on it, while the hero is off screen or the tab hidden, and under
-// reduced motion (which still deals a shuffled hand, without the motion).
+// reduced motion (which still deals a shuffled hand, without the motion). The fan clips only its foot
+// (clip-path, and overflow-x for a phone's width), so a card lifted on hover rises over its top
+// without losing its title.
 
 // How long each hand holds before the next card swaps, and how long a card takes to flick out.
 export const HERO_FAN_SWAP_MS = 3200;
@@ -126,7 +128,7 @@ export function HeroFan() {
       onBlur={(e) => {
         if (!rootRef.current?.contains(e.relatedTarget)) setHeld(false);
       }}
-      className="hero-fan mt-12 flex h-36 shrink-0 justify-center gap-2 overflow-hidden px-4 pt-3 sm:mt-28 sm:h-56 sm:gap-5"
+      className="hero-fan mt-12 flex h-36 shrink-0 justify-center gap-2 overflow-x-clip px-4 pt-3 [clip-path:inset(-24rem_0_0_0)] sm:mt-28 sm:h-56 sm:gap-5"
     >
       {mine ? <HeroFanMine diagrams={mine} /> : null}
       {mine
