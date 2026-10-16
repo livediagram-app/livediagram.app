@@ -1,11 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 // The resvg WASM renderer cannot load in plain node (see tools.test.ts).
 vi.mock('./image-result', () => ({
-  tabPreview: async (tab: { id: string }) => ({
-    type: 'image',
-    data: `png:${tab.id}`,
-    mimeType: 'image/png',
-  }),
+  tabPreview: async (tab: { id: string }) => [
+    {
+      type: 'image',
+      data: `png:${tab.id}`,
+      mimeType: 'image/png',
+    },
+  ],
 }));
 
 import type { Env } from './env';

@@ -7,17 +7,13 @@ import { createPngRenderer } from '@livediagram/render-png';
 import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm';
 import interFont from '@livediagram/render-png/fonts/Inter-Regular.ttf';
 import interBold from '@livediagram/render-png/fonts/Inter-Bold.otf';
+import { PREVIEW_MAX_SIDE_PX } from './preview-budget';
 
 const renderer = createPngRenderer({
   wasm: async () => resvgWasm,
   font: async () => new Uint8Array(interFont),
   bold: async () => new Uint8Array(interBold),
 });
-
-// The longest side an inline preview is drawn at: 2048 px holds a large board legibly, while a raw
-// render sized to the board's bounds (8000 px measured 586 MB) would exceed a Worker's 128 MB and fail
-// the tool call after its write was saved. Safe range: 1024 to 4096.
-export const PREVIEW_MAX_SIDE_PX = 2048;
 
 export async function svgToPngBase64(
   svg: string,

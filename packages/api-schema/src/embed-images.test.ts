@@ -116,4 +116,44 @@ describe('embedTabImages', () => {
     expect([...map.keys()]).toEqual(['a', 'b', 'd']);
     expect(reads).toEqual(['a', 'b', 'c', 'd']);
   });
+
+  it('spends a pixel budget in document order, read from each header, and names what it leaves out', async () => {
+    // A PNG header of the given size: the signature, then IHDR's width and height.
+    const sized = (w: number, h: number) => {
+      const b = new Uint8Array(24);
+      b.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52]);
+      new DataView(b.buffer).setUint32(16, w);
+      new DataView(b.buffer).setUint32(20, h);
+      return b;
+    };
+    const { load, reads } = source({
+      a: { bytes: sized(100, 50), type: 'image/png' }, // 5,000
+      b: { bytes: sized(100, 40), type: 'image/png' }, // 4,000: past the 3,000 left
+      c: { bytes: sized(50, 50), type: 'image/png' }, // 2,500: fits
+      d: { bytes: PNG, type: 'image/png' }, // no size to read: not drawn, not counted as over
+    });
+    const over: string[] = [];
+    const map = await embedTabImages(tabOf('a', 'b', 'c', 'd'), load, {
+      totalBudgetPixels: 8_000,
+      onOverLimit: (id) => over.push(id),
+    });
+    expect([...map.keys()]).toEqual(['a', 'c']);
+    expect(over).toEqual(['b']);
+    expect(reads).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('names an image over the per-image cap or past the byte budget', async () => {
+    const { load } = source({
+      big: { bytes: new Uint8Array(100).fill(1), type: 'image/png' },
+      a: { bytes: PNG, type: 'image/png' },
+      b: { bytes: PNG, type: 'image/png' },
+    });
+    const over: string[] = [];
+    await embedTabImages(tabOf('big', 'a', 'b'), load, {
+      maxBytesPerImage: 50,
+      totalBudgetBytes: 20,
+      onOverLimit: (id) => over.push(id),
+    });
+    expect(over).toEqual(['big', 'b']);
+  });
 });
