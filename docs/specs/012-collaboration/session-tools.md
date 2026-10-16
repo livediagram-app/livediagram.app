@@ -240,6 +240,9 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   bottom-right corner (clearance from the edge, and from a neighbour's
   stepper on a packed canvas) and stops its own pointer events so a minus
   can't bubble into the element-body cast and re-add what it just removed.
+  Its fill is **opaque in both modes**, brand-tinted once it holds your dots: it is drawn on the element, and a
+  sticky note stays pale on a dark canvas, so a translucent tint took the note's colour under the dark mode's
+  light count and your own dots disappeared.
   Once casting closes it reverts to a read-only count: a result to read,
   not a control. **Nothing floats over the canvas for a vote.** How many dots
   you have left shows on the [Session strip](#the-session-strip)'s Vote

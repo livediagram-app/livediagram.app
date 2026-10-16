@@ -54,4 +54,15 @@ describe('ElementVoteOverlay', () => {
   it('draws nothing without a vote', () => {
     expect(overlay(null).childElementCount).toBe(0);
   });
+
+  // The stepper sits on the element, not the canvas: a translucent fill took a pale sticky's colour under the
+  // dark mode's light count, so the dots you had spent vanished.
+  it('draws the stepper on an opaque fill in both modes, holding your dots or not', () => {
+    for (const v of [vote(true), { ...vote(true), votes: {} }]) {
+      const pill = overlay(v).querySelector('.lvd-vote-stepper > div')!;
+      const fills = pill.className.split(/\s+/).filter((c) => /^(dark:)?bg-/.test(c));
+      expect(fills.length).toBe(2);
+      for (const fill of fills) expect(fill).not.toMatch(/\/\d+$/);
+    }
+  });
 });

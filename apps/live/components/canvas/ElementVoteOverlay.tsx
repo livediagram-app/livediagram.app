@@ -102,11 +102,13 @@ export function ElementVoteOverlay({
           // bubble into that and immediately re-add what it removed.
           onPointerDown={(e) => e.stopPropagation()}
         >
+          {/* Opaque in both modes: the pill sits on the element, and a sticky note is pale on a dark canvas too, so a
+              translucent wash took the note's colour under light text and hid your own count. */}
           <div
             className={
               'pointer-events-auto flex items-center gap-1 rounded-full border p-1 shadow-sm ' +
               (myVotes > 0
-                ? 'border-brand-300 bg-brand-50 dark:border-brand-500/50 dark:bg-brand-500/20'
+                ? 'border-brand-300 bg-brand-50 dark:border-brand-500 dark:bg-brand-900'
                 : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900')
             }
           >
