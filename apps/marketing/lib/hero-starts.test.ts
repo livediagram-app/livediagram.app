@@ -47,7 +47,11 @@ describe('heroSearch', () => {
 describe('the fan', () => {
   it('deals from every listed template but the blanks, each once, across every mode', () => {
     expect(new Set(HERO_FAN_POOL).size).toBe(HERO_FAN_POOL.length);
-    expect([...HERO_FAN_POOL].sort()).toEqual(galleryTemplates().map((t) => t.kind).sort());
+    expect([...HERO_FAN_POOL].sort()).toEqual(
+      galleryTemplates()
+        .map((t) => t.kind)
+        .sort(),
+    );
     const modes = new Set(HERO_FAN_POOL.map((k) => heroTemplate(k).mode));
     expect([...modes].sort()).toEqual(['diagram', 'draw', 'facilitate', 'illustrate', 'plan']);
     for (const kind of HERO_FAN_OPENING) expect(HERO_FAN_POOL).toContain(kind);
