@@ -12,8 +12,14 @@ const staticImports = (src: string) =>
   [...src.matchAll(/^(?:import|export)\s+(?!type\b)[^;]*?from\s+'([^']+)'/gms)].map((m) => m[1]!);
 
 describe('the editor’s first load', () => {
+  // The editor view, and the start panels it always mounts.
+  const editorImports = () => [
+    ...staticImports(read('app/document/[id]/EditorView.tsx')),
+    ...staticImports(read('components/start/EditorStartPanels.tsx')),
+  ];
+
   it('imports the Dashboard page, the board picker and the Sheets host lazily', () => {
-    const imports = staticImports(read('app/document/[id]/EditorView.tsx'));
+    const imports = editorImports();
     expect(imports).not.toContain('@/components/plan/dashboard/DashboardPage');
     expect(imports).not.toContain('@/components/plan/PlanBoardPicker');
     expect(imports).not.toContain('@/components/plan/PlanSheetsHost');
@@ -21,7 +27,7 @@ describe('the editor’s first load', () => {
 
   // docs/specs/007-editor/start-diagramming.md: the template starts carry every template's preview.
   it('imports the template starts lazily, and nothing that draws a template preview', () => {
-    const imports = staticImports(read('app/document/[id]/EditorView.tsx'));
+    const imports = editorImports();
     expect(imports).not.toContain('@/components/start/StartFromTemplates');
     for (const always of [
       'components/start/StartAgainTray.tsx',

@@ -15,8 +15,10 @@ const importsOf = (path: string) => staticImports(read(path));
 describe('the document page’s first load', () => {
   it.each([
     ['app/document/[id]/EditorView.tsx', '@/components/panels/EditorSearchPanel'],
-    ['app/document/[id]/EditorView.tsx', '@/components/chrome/PhotoReviewOverlay'],
-    ['app/document/[id]/EditorView.tsx', '@/lib/photo-detect'],
+    ['components/chrome/EditorPhotoImport.tsx', '@/components/chrome/PhotoReviewOverlay'],
+    ['components/chrome/EditorPhotoImport.tsx', '@/lib/photo-detect'],
+    ['components/tour/EditorTours.tsx', '@/components/tour/PlanTourHost'],
+    ['components/tour/EditorTours.tsx', '@/components/tour/ElementTourHost'],
     ['app/document/[id]/editor-page.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/LayersPanel'],

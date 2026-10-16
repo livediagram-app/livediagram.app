@@ -1,33 +1,14 @@
 import dynamic from 'next/dynamic';
-import { answerMachine } from '@/lib/machine-answer';
-import { useAvatarStatus } from '@/hooks/canvas/useAvatarStatus';
 import type { View } from '@/lib/viewport-store';
 import { CanvasMenu } from './canvas-menu-context';
 import { CanvasFinishProvider } from './CanvasFinishContext';
 import { LongPressRing } from '@/components/primitives/LongPressRing';
 import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
-import { useByValue } from '@/hooks/ui/useByValue';
-import { sameSitters, sittersByChair } from '@/lib/chair-sitters';
-import {
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useRef,
-  useState,
-  ViewTransition,
-} from 'react';
-import {
-  DEFAULT_BUTTON_MODE,
-  isAnimatedPattern,
-  isBoxed,
-  type ShapeElement,
-  visibleLayerElements,
-} from '@livediagram/document';
+import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
+import { isAnimatedPattern } from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
-import { pointerToCanvas } from '@/lib/canvas';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
@@ -37,8 +18,7 @@ import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
-import { isDrawingElement, isEventStormingTab, zoneAnchorOf } from '@livediagram/document';
-import type { Element } from '@livediagram/document';
+import { isEventStormingTab } from '@livediagram/document';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
@@ -80,45 +60,27 @@ import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
 import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
-import { useSpotlight } from '@/hooks/canvas/useSpotlight';
-import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
-import { spotlightRadius } from '@/lib/spotlight-config';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
-import { track } from '@/lib/telemetry';
 import { parseAvatarStatus } from '@/lib/avatar-status';
-import { useAvatarSpeech } from '@/hooks/canvas/useAvatarSpeech';
-import { useSpeechBubbles } from '@/lib/avatar-speech-store';
 import { headPoint } from '@/lib/avatar-speech';
 import { avatarScale } from '@/lib/avatar-config';
-import { useAvatarActionKeys } from '@/hooks/canvas/useAvatarActionKeys';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 
 // The footprint a burst is scaled against when it comes from the avatar panel
 // rather than a pad: roughly a character, so the particles read as thrown by a
 // person rather than by whatever size of pad last set one off.
+import { useCanvasAvatar } from './useCanvasAvatar';
+import { useCanvasPointer } from './useCanvasPointer';
+import { articlePlusBlocked } from '@/lib/article-plus-blocked';
+import { useCanvasDrawTools } from './useCanvasDrawTools';
+
 const AVATAR_BURST_PX = 120;
-import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
-import { avatarSpawnFromButton, type AvatarPoint } from '@/lib/avatar-walk';
-import {
-  CHAIR_SITTER_FACING,
-  isSeatingShape,
-  nearestSeat,
-  drinkFrom,
-  seatingFacing,
-} from '@livediagram/document';
-import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
-import type { Reaction } from '@livediagram/document';
-import { usePortalTravel } from '@/components/canvas/portal-travel';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
-import { useStampGhost } from '@/components/canvas/useStampGhost';
-import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
-import { usePathTool } from '@/components/canvas/path/usePathTool';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
 import { LogoCanvasOverlays } from '@/components/canvas/LogoCanvasOverlays';
 import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
@@ -127,13 +89,11 @@ import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGesture
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
-import { useLatest } from '@/hooks/ui/useLatest';
 import {
   loadArticleFlows,
   loadAvatarSpeechLayer,
   loadIllustratePages,
 } from '@/lib/editor-deferred-code';
-import { pageIdAtPress, pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
 import { GifOmit } from './GifOmit';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 
@@ -311,21 +271,10 @@ function CanvasView(props: CanvasProps) {
   // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
   // selection derivation applies, so the canvas itself still doesn't read the selection.
   const articlePages = props.illustratePages?.pages;
-  const plusBlocked = useMemo(() => {
-    if (!articlePages?.some((p) => p.flow)) return undefined;
-    return (el: Element) => {
-      if (isDrawingElement(el)) return false;
-      const at = zoneAnchorOf(el, elements);
-      return articlePages.some(
-        (p) =>
-          p.flow &&
-          at.x >= p.rect.x &&
-          at.x <= p.rect.x + p.rect.width &&
-          at.y >= p.rect.y &&
-          at.y <= p.rect.y + p.rect.height,
-      );
-    };
-  }, [articlePages, elements]);
+  const plusBlocked = useMemo(
+    () => articlePlusBlocked(articlePages, elements),
+    [articlePages, elements],
+  );
   const selectionInput = useMemo<CanvasSelectionInput>(
     () => ({
       elements,
@@ -364,192 +313,35 @@ function CanvasView(props: CanvasProps) {
     ),
   );
 
-  // Spotlight presenter tool (docs/specs/008-canvas/canvas-and-palette.md): screen-space light position +
-  // radius. Local to Canvas so the click handlers, the pointer tracker, and
-  // the overlay share one source of truth; survives Pan/Select detours
-  // because Canvas stays mounted.
-  // The spotlight's look (docs/specs/008-canvas/spotlight-panel.md): persisted per browser, read by the
-  // overlay and edited from the Spotlight Panel down in the chrome. The light opens at its saved Size.
-  const spotlightLook = useSpotlightConfig();
-  const spotlight = useSpotlight(spotlightRadius(spotlightLook.config.size));
-  // Where to draw the eraser's brush ring, in <main>-relative px. Null until
-  // the pointer has been over the canvas — an eraser ring parked in the middle
-  // of the screen would claim a brush that isn't there.
-  const [eraserPos, setEraserPos] = useState<{ x: number; y: number } | null>(null);
+  const { spotlightLook, spotlight, eraserPos, handlePointerMoveCanvas, handlePointerLeaveCanvas } =
+    useCanvasPointer({ canvasTool, mainRef, onCanvasPointerMove, wrapperRef, viewportZoom });
 
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking character's position / facing / step
-  // frame, its click-to-walk entry point, and the camera follow. Owns its own
-  // rAF loop, dormant unless the tool is active.
-  // The character's gender / clothing / hair / size (docs/specs/008-canvas/avatar-mode.md), persisted per
-  // browser. Owned here because both the sprite and the Avatar Panel (down in
-  // CanvasChrome) read it, and it outlives any one walk.
-  const avatarLook = useAvatarConfig({ active: canvasTool === 'avatar' });
-  // Where the next entry into Avatar mode should place the character, when it
-  // was entered by pressing a button on the canvas. Cleared once used, so a
-  // later entry from the palette spawns at the viewport centre as before.
-  const avatarSpawnRef = useRef<AvatarPoint | null>(null);
-  const pressModeButton = (element: ShapeElement) => {
-    // Feet just below the button, centred on it, and only for a press that enters the mode.
-    const spawn = avatarSpawnFromButton(element, element.mode ?? DEFAULT_BUTTON_MODE, canvasTool);
-    if (spawn) avatarSpawnRef.current = spawn;
-    props.onPressModeButton?.(element);
-  };
-  // Declared before the hook that fills it: the walk hook's chair callback
-  // needs `sitOn`, which the same hook returns (see enterPortalRef below for
-  // the identical knot).
-  // The burst the avatar panel has asked for, if any. Ephemeral exactly like
-  // a pad's (docs/specs/009-elements/reaction-pad.md): nothing is stored and nothing is replayed.
-  const [avatarBurst, setAvatarBurst] = useState<{ reaction: Reaction; seed: number } | null>(null);
-  const avatarBurstSeq = useRef(0);
-  // Your status in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), cleared on leaving it.
-  const [avatarStatus, setAvatarStatus] = useAvatarStatus(canvasTool === 'avatar');
-  // A character walks among what is drawn: a hidden layer's fences, portals and seats are not there.
-  const walkElements = useMemo(
-    () => visibleLayerElements(elements, tabLayers),
-    [elements, tabLayers],
-  );
-  const avatar = useAvatarWalk({
-    active: canvasTool === 'avatar',
-    config: avatarLook.config,
-    status: avatarStatus,
-    onToggleGender: avatarLook.toggleGender,
-    elements: walkElements,
+  const {
+    avatar,
+    avatarBurst,
+    avatarLook,
+    avatarStandingOn,
+    avatarStatus,
+    playAvatarBurst,
+    pressModeButton,
+    resolvePortal,
+    setAvatarBurst,
+    setAvatarStatus,
+    sittersOf,
+    speech,
+    speechBubbles,
+  } = useCanvasAvatar({
+    props,
+    canvasTool,
+    elements,
+    tabLayers,
     mainRef,
     wrapperRef,
     viewportOffset,
     viewportZoom,
     setViewportOffset,
-    spawnAtRef: avatarSpawnRef,
-    onPresence: props.onAvatarPresence,
-    // Walking the character into a portal travels through it (docs/specs/009-elements/portal-element.md) — the same
-    // action the portal's own click fires.
-    onWalkIntoPortal: (element) => enterPortalRef.current(element),
-    // Chair (docs/specs/009-elements/chair.md): walking onto one sits the character down, snapped to
-    // the seat point so it sits ON the chair rather than wherever it arrived.
-    // A desk or a sofa does the same (docs/specs/009-elements/chair.md "Desk and sofa"): a sofa seats
-    // the character on the cushion nearest where it walked in.
-    onWalkIntoChair: (element, feet) => {
-      if (!isSeatingShape(element.shape)) return;
-      const seating = { ...element, shape: element.shape };
-      // A meeting table's seats each face the table (docs/specs/009-elements/office.md "Meeting Table").
-      const seat = nearestSeat(seating, feet);
-      avatarRef.current?.sitOn(
-        element.id,
-        seat,
-        seat.facing ?? CHAIR_SITTER_FACING[seatingFacing(seating)],
-      );
-    },
-    // A water cooler or a coffee machine (docs/specs/009-elements/office.md "Using it"): a drink in the hand,
-    // and the machine answers on your screen.
-    onWalkIntoDrink: (element) => {
-      const drink = drinkFrom(element.shape);
-      if (!drink) return;
-      avatarRef.current?.giveDrink(drink);
-      answerMachine(element.id);
-      track('Canvas', 'Used', drink === 'water' ? 'WaterCooler' : 'CoffeeMachine');
-    },
-    // Reaction pad (docs/specs/009-elements/reaction-pad.md): walking onto one is the same act as pressing
-    // it, so it runs the same handler.
-    onWalkIntoReactionPad: (element) => props.onFireReaction?.(element),
-  });
-  // A fresh seed each press, so pressing the same reaction twice replays rather than continuing.
-  const playAvatarBurst = (reaction: Reaction) => {
-    avatarBurstSeq.current += 1;
-    setAvatarBurst({ reaction, seed: avatarBurstSeq.current });
-  };
-  // The panel's Behaviour and Reactions on the keyboard (docs/specs/008-canvas/avatar-mode.md "Keyboard actions").
-  useAvatarActionKeys({
-    active: canvasTool === 'avatar',
-    onReaction: avatar.playReaction,
-    onBurst: playAvatarBurst,
-  });
-  // `sitOn` is returned by the very hook whose callback needs it, so the call
-  // goes through a ref — declared above, repointed here, read at arrival time.
-  // Same shape as `enterPortalRef` below, for the same reason.
-  const avatarRef = useLatest<ReturnType<typeof useAvatarWalk> | null>(avatar);
-  // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): an Editor or a Participant says
-  // something above their character's head; everyone on the tab sees it float away.
-  const speech = useAvatarSpeech({
-    active: canvasTool === 'avatar',
-    // The session's own say (docs/specs/013-workspace/share-roles.md): an Editor or a Participant, never by
-    // whether the canvas is read-only.
-    canSpeak: !!props.takePart,
-    feet: avatar.pos,
-    scale: avatarScale(avatarLook.config.size),
-    tabId: props.activeTabId ?? '',
-    onSay: props.onAvatarSay,
-  });
-  const speechBubbles = useSpeechBubbles();
-  // The composer's code fetched as soon as someone who may speak is in the mode, so the first Enter finds it in and
-  // the words typed straight after it land in its box, not on the editor's shortcuts.
-  useEffect(() => {
-    if (speech.speaking) void loadAvatarSpeechLayer();
-  }, [speech.speaking]);
-
-  // Who is sitting in each chair, from PRESENCE — never from the document. Our
-  // own character plus every peer's, keyed by chair id, so a chair empties by
-  // itself the moment its occupant leaves the mode, changes tab or drops off.
-  // Kept by value: presence rebuilds the peers' list often (a join, a colour), and a new map would
-  // render every element view for chairs nobody sits in.
-  const chairSitters = useByValue(
-    useMemo(
-      () =>
-        sittersByChair(
-          avatar.seatedOn,
-          props.selfParticipant.color,
-          props.remoteAvatars.map((peer) => ({
-            name: peer.name,
-            color: peer.color,
-            seatedOn: peer.avatar.seatedOn,
-          })),
-        ),
-      [avatar.seatedOn, props.remoteAvatars, props.selfParticipant.color],
-    ),
-    sameSitters,
-  );
-  // Stable while nobody sits or stands, so the element views' memo holds
-  // (docs/specs/008-canvas/canvas-performance.md); it changes exactly when a chair must re-render.
-  const sittersOf = useCallback(
-    (elementId: string) => chairSitters.get(elementId) ?? [],
-    [chairSitters],
-  );
-  // Somebody pushed us (docs/specs/008-canvas/avatar-mode.md): slide along their direction, once per push.
-  // Keyed on the sequence number, not the vector, so two identical shoves in a
-  // row both land.
-  const lastShoveRef = useRef<number | null>(null);
-  // `avatar` is a fresh object every render; the shove is the trigger, so the
-  // push itself is an effect event.
-  const applyShove = useEffectEvent((dx: number, dy: number) => avatar.shove(dx, dy));
-  useEffect(() => {
-    const shove = props.avatarShove;
-    if (!shove || shove.seq === lastShoveRef.current) return;
-    lastShoveRef.current = shove.seq;
-    applyShove(shove.dx, shove.dy);
-  }, [props.avatarShove]);
-
-  // Bounds of whatever the avatar is standing on, for its "you are here" ring.
-  const avatarStandingOn = useMemo(() => {
-    if (!avatar.standingOnId) return null;
-    const el = elements.find((e) => e.id === avatar.standingOnId);
-    return el && isBoxed(el) ? { x: el.x, y: el.y, width: el.width, height: el.height } : null;
-  }, [avatar.standingOnId, elements]);
-  const { enterPortal, resolvePortal } = usePortalTravel({
-    elements,
-    tabs: props.portalTabs,
-    activeTabId: props.activeTabId,
-    onFollowLink: props.onFollowLink,
-    mainRef,
     readZoom,
-    setViewportOffset,
-    teleportTo: avatar.teleportTo,
   });
-  // Portals (docs/specs/009-elements/portal-element.md): the camera centres on the paired portal and the walking
-  // character steps out of it — see usePortalTravel.
-  //
-  // `enterPortal` needs the avatar hook (to place the character) and the hook
-  // needs `enterPortal` (for the walk-in), so the callback goes through a ref:
-  // declared here, repointed on every render, read at call time.
-  const enterPortalRef = useLatest<(from: ShapeElement) => void>(enterPortal);
 
   // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
   // transform fragment, pivoted on the content centre — see
@@ -566,31 +358,6 @@ function CanvasView(props: CanvasProps) {
     isPaintMode,
   });
 
-  // Broadcast the local pointer position to peers (canvas-coords).
-  // Throttling lives in page.tsx so the Canvas stays prop-driven.
-  const handlePointerMoveCanvas = (e: React.PointerEvent) => {
-    // Spotlight tracks the cursor in SCREEN space (px relative to <main>),
-    // not canvas-coords: its light must stay put on screen as the canvas
-    // pans / zooms under it. <main> is `position: relative` with no border,
-    // so its content origin is its bounding-rect top-left.
-    if (canvasTool === 'spotlight' || canvasTool === 'eraser') {
-      const node = mainRef && 'current' in mainRef ? mainRef.current : null;
-      const mr = node?.getBoundingClientRect();
-      const at = mr ? { x: e.clientX - mr.left, y: e.clientY - mr.top } : null;
-      // The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md) needs the same screen-space point
-      // the spotlight's light does, so they share the measurement.
-      if (at && canvasTool === 'spotlight') spotlight.setPos(at);
-      if (at && canvasTool === 'eraser') setEraserPos(at);
-    }
-    const rect = wrapperRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const { x: sx, y: sy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    onCanvasPointerMove(sx, sy, e.target);
-  };
-  const handlePointerLeaveCanvas = () => {
-    onCanvasPointerMove(null, null);
-  };
-
   // Stable selection-routing wrappers for the memo'd element / arrow
   // views — see useCanvasSelectHandlers.
   const { handleElementContextSelect, handleArrowSelect, handleElementClick } =
@@ -605,79 +372,34 @@ function CanvasView(props: CanvasProps) {
       onMultiContextMenu,
     });
 
-  // An armed workshop-note tile is a STAMP, not a draw-to-size (docs/specs/021-event-storming/event-storming.md
-  // Phase 4): its ghost follows the pointer, and the draw gesture places by the
-  // same rule.
-  const { stamp, stampAt, showStamp } = useStampGhost({
+  const {
+    stamp,
+    drawDrag,
+    penPoints,
+    penStroke,
+    drawHover,
+    polygonVertices,
+    polygonCursor,
+    handlePolygonDoubleClick,
+    pathTool,
+    formatPagePress,
+    offPage,
+    beginPendingDrawOrPolygon,
+  } = useCanvasDrawTools({
+    props,
     pendingDraw,
     elements,
-    tabKind: props.tabKind,
-    tabLayers: props.tabLayers,
-    viewportZoom,
-    wrapperRef,
-  });
-  const { drawDrag, penPoints, penStroke, drawHover, beginPendingDrawGesture } =
-    useCanvasDrawGesture({
-      pendingDraw,
-      elements,
-      wrapperRef,
-      viewportZoom,
-      isPinchingRef,
-      onCommitDraw,
-      onCommitFreehand,
-      stampAt,
-      showStamp,
-      whiteboard: props.editorMode === 'draw',
-    });
-
-  // Polygon click-to-place gesture (docs/specs/008-canvas/polygon-tool.md), composed IN FRONT of the
-  // drag-based draw gesture: while the polygon intent is armed it
-  // claims every draw-intercept press as a vertex placement.
-  const { polygonVertices, polygonCursor, beginPolygonPoint, handlePolygonDoubleClick } =
-    useCanvasPolygonGesture({
-      pendingDraw,
-      elements,
-      wrapperRef,
-      viewportZoom,
-      onCommitPolygon,
-    });
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md), in front of both: see usePathTool.
-  const pathTool = usePathTool({
-    pendingDraw,
     canvasTool,
-    elements,
-    inertIds: props.layerInertIds,
-    wrapperRef,
     viewportZoom,
-    activeTabId: props.activeTabId,
+    wrapperRef,
+    isPinchingRef,
+    onCommitDraw,
+    onCommitFreehand,
+    onCommitPolygon,
     editingId,
     soleSelectedPathId,
-    onCommitPath: props.onCommitPath,
-    onCommitPathEdit: props.onCommitPathEdit,
-    onDressPath: props.onDressPath,
-    onLeaveEdit: props.onCancelEdit,
     onDeselect,
-    onBeginEdit: props.onBeginEdit,
-    onCancelDraw: props.onCancelDraw,
-    // A logo page's shown guides take a click near them (docs/specs/007-editor/logo-pages.md).
-    snapPoint: (p) => props.illustratePages?.logo?.snapPoint?.(p, viewportZoom) ?? null,
   });
-  // The Format tool's press on a page's paper arms or paints its background (docs/specs/007-editor/
-  // illustrate-pages.md "Copying a background"); off every page it stays an empty-canvas press.
-  const formatPagePress = (e: React.PointerEvent): boolean => {
-    if (canvasTool !== 'format' || e.button !== 0 || !props.onFormatPagePress) return false;
-    // On an element, the press is the element's (arming or painting its look): only the paper is the page's.
-    if ((e.target as HTMLElement | null)?.closest?.('[data-element-id]')) return false;
-    const pageId = pageIdAtPress(props.illustratePages, e, wrapperRef, viewportZoom);
-    if (!pageId) return false;
-    props.onFormatPagePress(pageId);
-    return true;
-  };
-  // In Illustrate mode a press off the page is claimed and dropped: nothing is made there.
-  const offPage = (e: { clientX: number; clientY: number }) =>
-    pressIsOffPage(props.illustratePages, e, wrapperRef, viewportZoom);
-  const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
-    offPage(e) || pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
 
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX

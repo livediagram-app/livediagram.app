@@ -19,7 +19,7 @@ Derived from [Office](../office.md).
 | `apps/live/lib/avatar-walk.ts`                         | `elementUnderFeet` skips floor and scenery                                                |
 | `apps/live/hooks/canvas/useAvatarWalk.ts`              | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                        |
 | `apps/live/components/canvas/avatar-sprite.tsx`        | `HeldCup`                                                                                 |
-| `apps/live/components/canvas/Canvas.tsx`               | Drink on arrival, the machine's answer, a table seat's facing                             |
+| `apps/live/components/canvas/useCanvasAvatar.tsx`      | Drink on arrival, the machine's answer, a table seat's facing                             |
 | `apps/live/app/document/[id]/useElementHelpers.ts`     | A room or rug goes in at the back                                                         |
 | `apps/live/components/palette/CollabMenuSections.tsx`  | `RoomMenuSection`                                                                         |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`        | `setRoomDoorSelected`                                                                     |
