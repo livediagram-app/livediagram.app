@@ -1310,7 +1310,7 @@ importers:
         version: 5.0.3(vitest@5.0.3)
       oxlint:
         specifier: ^1.88.0
-        version: 1.88.0
+        version: 1.88.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
