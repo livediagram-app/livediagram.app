@@ -1291,7 +1291,19 @@ An unset run attribute **inherits** the element field (`run.bold ?? el.textBold`
 
 ## Quick text drop
 
-**Double-clicking the empty canvas** (anywhere not on an element, palette, or popover) drops a new **text element** at the click point and **immediately enters edit mode** on it. The text is centred on the cursor position. Press Enter to commit or Escape to cancel — Escape will leave an empty text element in place, which the user can then delete.
+**Double-clicking the empty canvas** (anywhere not on an element, palette, or popover) with a **mouse, trackpad or pen** drops a new **text element** at the click point and **immediately enters edit mode** on it. The text is centred on the cursor position. Press Enter to commit or Escape to cancel — Escape will leave an empty text element in place, which the user can then delete.
+
+## Double-tap to zoom
+
+**A finger's double-tap on the empty canvas zooms in on the tapped spot** instead of dropping text: on a phone or an iPad the canvas is usually shown small, a stray text box was rarely what a double-tap meant, and a finger has no wheel to zoom with.
+
+- **What decides it is the pointer that pressed**, not the device: a finger (`pointerType` `touch`) zooms; a mouse, a trackpad or a pen drops text, so an iPad with a trackpad or a Pencil keeps the quick text drop, and a touch-screen laptop's finger zooms.
+- **Anywhere on the empty canvas**: the content layer is scaled with the zoom, so on a zoomed-out phone most of the empty canvas is the surface around it (`<main>`), and a double-tap there zooms too. Off an Illustrate page, where a double-click makes nothing, a double-tap still zooms. In Spotlight, Isometric and Avatar, which give every press on the surface its own meaning, the surface does not zoom.
+- **The view glides** (`glideViewport`, eased over `VIEW_GLIDE_MS`; at once under reduced motion) so the tapped point lands in the **middle of the canvas** at the new zoom.
+- **The new zoom** is twice the current one, and never less than **100%**, so one double-tap on a phone's zoomed-out view lands at a readable size; capped at `ZOOM_MAX` (500%). At the cap, the double-tap only centres the spot. A double-tap never zooms out.
+- **Everything that already owns a double-tap keeps it**: a double-tap on an element edits it, a polygon or path being drawn finishes, and on a whiteboard a double-tap inside a shape writes in it. Only a double-tap that would have dropped text zooms.
+- **Every share role zooms**: it only moves this person's view, so a Viewer and a Participant (who could never drop text) zoom as an Editor does.
+- Counted as `Canvas` `Zoomed` `DoubleTap` in telemetry, beside the zoom buttons' `In` and `Out`.
 
 ## Auto-select on add
 
