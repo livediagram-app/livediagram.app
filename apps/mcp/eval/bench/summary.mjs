@@ -16,6 +16,9 @@ export function normaliseError(message) {
     .trim();
 }
 
+// A Markdown table cell: backslashes first, so an escaped pipe can't be undone by the text before it.
+const mdCell = (text) => text.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+
 function median(values) {
   const v = values.filter((x) => typeof x === 'number').sort((a, b) => a - b);
   if (v.length === 0) return null;
@@ -193,7 +196,7 @@ export function summarise(results) {
             f.key,
             `${f.count}/${f.of}`,
             f.models.join(', '),
-            (f.detail ?? '').replace(/\|/g, '\\|'),
+            mdCell(f.detail ?? ''),
           ]),
         )
       : 'None.',
@@ -208,7 +211,7 @@ export function summarise(results) {
           ['Tool', 'Error', 'Runs', 'Tasks', 'Models'],
           errors.map((e) => [
             e.tool,
-            e.example.replace(/\|/g, '\\|').slice(0, 220),
+            mdCell(e.example.slice(0, 220)),
             e.runs,
             e.tasks.join(' '),
             e.models.join(', '),

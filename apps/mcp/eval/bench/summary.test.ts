@@ -102,6 +102,16 @@ describe('summarise', () => {
       'Left out, the MCP never connected: S1-sonnet-1.',
     );
   });
+
+  it('escapes backslashes before pipes in a table cell', () => {
+    const odd = (n: number) => ({
+      ...run('P1', 'haiku', n, [false]),
+      checks: [{ name: 'c0', pass: false, detail: 'a \\| b' }],
+    });
+    expect(summarise({ ...results, runs: [odd(1), odd(2)] })).toContain(
+      '| P1 · c0 | 2/2 | haiku | a \\\\\\| b |',
+    );
+  });
 });
 
 describe('compareRounds', () => {
