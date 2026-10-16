@@ -36,6 +36,7 @@ is the whole of what the repo enforces.
   - `no-unsafe-enum-comparison`
   - `no-unsafe-unary-minus`
   - `restrict-plus-operands`
+  - `restrict-template-expressions`
 - **Known gap**: `no-useless-assignment` in the oxlint release the repo uses does not report a value
   written to a function parameter and overwritten before it is read. oxc reports it from
   [oxc-project/oxc#27735](https://github.com/oxc-project/oxc/pull/27735) on; the gap closes when the repo

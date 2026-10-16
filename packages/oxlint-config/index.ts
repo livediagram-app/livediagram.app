@@ -144,6 +144,7 @@ export default defineConfig({
     'typescript/no-unsafe-enum-comparison': 'error',
     'typescript/no-unsafe-unary-minus': 'error',
     'typescript/restrict-plus-operands': 'error',
+    'typescript/restrict-template-expressions': 'error',
 
     // Every React hooks rule, the React Compiler's included, is an error with no per-line
     // suppressions (docs/specs/003-system-architecture/react-state-and-effects.md): render is

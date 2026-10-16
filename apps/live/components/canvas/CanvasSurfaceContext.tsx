@@ -72,7 +72,8 @@ export function ChartGroundsProvider({
   grounds: ReadonlyMap<string, readonly string[]> | null;
   children: ReactNode;
 }) {
-  const key = grounds && grounds.size ? [...grounds].map(([id, g]) => `${id}:${g}`).join(';') : '';
+  const key =
+    grounds && grounds.size ? [...grounds].map(([id, g]) => `${id}:${g.join(',')}`).join(';') : '';
   // oxlint-disable-next-line react/exhaustive-deps -- keyed on the entries, not the map
   const stable = useMemo(() => (key ? grounds : null), [key]);
   return <ChartGroundsContext.Provider value={stable}>{children}</ChartGroundsContext.Provider>;
