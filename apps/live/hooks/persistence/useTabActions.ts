@@ -293,8 +293,8 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Duplicated');
   };
 
-  // Confirmation is handled by the inline ConfirmPopover anchored to the
-  // tab menu's Delete row (TabBar), so this just performs the delete. The
+  // Asks nothing: one commit, so undo brings the tab back (the tab menu asks first only when deleting does what an
+  // undo cannot take back, deleteTabWarning). The
   // menu's Delete item is already gated on `canDelete` (tabs.length > 1);
   // the guards here are belt-and-suspenders.
   const deleteTab = (id: string) => {

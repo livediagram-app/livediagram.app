@@ -48,6 +48,7 @@ function setup(seen = new Map([['t1', 1]])) {
     info: vi.fn(),
     offer: vi.fn(),
     action: vi.fn(),
+    dismissAction: vi.fn(),
   };
   const deps = {
     noteSeen: vi.fn((tabId: string, rev: number) => seen.set(tabId, rev)),

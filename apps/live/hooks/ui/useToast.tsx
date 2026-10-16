@@ -81,6 +81,8 @@ type ToastApi = {
   info: (message: string) => void;
   offer: (offer: ToastOffer) => void;
   action: (spec: ToastActionSpec) => void;
+  // Close the action toast upserted under `key` (an Undo that has run), if it is still up.
+  dismissAction: (key: string) => void;
 };
 
 const noop: ToastApi = {
@@ -89,6 +91,7 @@ const noop: ToastApi = {
   info: () => {},
   offer: () => {},
   action: () => {},
+  dismissAction: () => {},
 };
 
 const ToastContext = createContext<ToastApi>(noop);
@@ -141,6 +144,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       info: (msg) => push(msg, 'info'),
       offer: (offer) => push(offer.message, 'info', offer),
       action: upsertAction,
+      dismissAction: (key) => setToasts((prev) => prev.filter((t) => t.key !== key)),
     }),
     [push, upsertAction],
   );
