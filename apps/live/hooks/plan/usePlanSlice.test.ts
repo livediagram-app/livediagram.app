@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { ITEM_TYPES } from '@livediagram/items';
-import type { Element } from '@livediagram/document';
+import type { Element, Tab } from '@livediagram/document';
 import { usePlanSlice } from './usePlanSlice';
 import { registerPlanBoardTarget, type PlanBoardTarget } from './plan-board-targets';
 
@@ -120,7 +120,7 @@ describe('usePlanSlice', () => {
 
   // docs/specs/026-plan/plan-board.md "Column settings": Delete Status takes the state off every other board.
   it('takes a deleted state’s columns off every other board, in every tab', () => {
-    const commitTabs = vi.fn();
+    const commitTabs = vi.fn<NonNullable<Parameters<typeof usePlanSlice>[0]['commitTabs']>>();
     const { result } = renderHook(() =>
       usePlanSlice({
         planItems,
@@ -143,12 +143,13 @@ describe('usePlanSlice', () => {
       shape: 'plan-board',
       planBoard: { title: id, columns: statuses.map((s) => ({ id: s, status: s, name: s })) },
     });
+    // Tabs as stored, partial: the slice reads their Plan boards only.
     const tabs = [
       { id: 't1', elements: [board('here', ['todo', 'done']), board('other', ['todo', 'done'])] },
       { id: 't2', elements: [board('far', ['done'])] },
-    ];
+    ] as unknown as Tab[];
     result.current.context.removeStatusColumns('todo', 'here');
-    const next = commitTabs.mock.calls[0]![0](tabs) as typeof tabs;
+    const next = commitTabs.mock.calls[0]![0](tabs);
     const cols = (t: number, i: number) =>
       (
         next[t]!.elements[i] as { planBoard: { columns: { status: string }[] } }

@@ -233,9 +233,9 @@ describe('link ls', () => {
       'ffff6666-0000-4000-8000-000000000006: https://livediagram.app is rate limiting this token\nunreadable: gone-0000\n',
     );
     expect(
-      JSON.parse((await cli(io, 'link', 'ls', '--json')).out).documents.map(
-        (d: { name: string }) => d.name,
-      ),
+      (
+        JSON.parse((await cli(io, 'link', 'ls', '--json')).out) as { documents: { name: string }[] }
+      ).documents.map((d) => d.name),
     ).toEqual(['Home screen', 'Shared']);
   });
 });

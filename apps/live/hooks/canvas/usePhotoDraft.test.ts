@@ -19,10 +19,10 @@ vi.mock('@/lib/photo-detect', async () => {
   return { ...actual, detectAndCrop: vi.fn(), cropBoxes: vi.fn() };
 });
 
-import { selectReader } from '@/lib/reading/select';
+import { selectReader, type SelectedReader } from '@/lib/reading/select';
 
 // The hook asks `selectReader` who reads; the tests drive that reader directly.
-const readCrops = vi.fn();
+const readCrops = vi.fn<SelectedReader['read']>();
 import {
   cropBoxes,
   detectAndCrop,
@@ -721,12 +721,12 @@ describe('when the free budget is spent', () => {
 describe('where the in-browser reader runs', () => {
   it('carries the reason it is the processor', async () => {
     vi.mocked(readCrops).mockImplementation(async (_crops, opts) => {
-      opts.onBackend?.('wasm', 'no-f16');
+      opts.onBackend?.('wasm', 'no-webgpu');
       return read([{ id: 0, text: 'Order placed' }]);
     });
     const h = await reviewed();
     expect(h.api().state.readerBackend).toBe('wasm');
-    expect(h.api().state.readerWhy).toBe('no-f16');
+    expect(h.api().state.readerWhy).toBe('no-webgpu');
   });
 });
 

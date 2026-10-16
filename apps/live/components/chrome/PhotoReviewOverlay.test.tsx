@@ -850,7 +850,7 @@ describe('reading a moved box again', () => {
     );
 
   it('hands the moved box over to be read, 8 seconds later', () => {
-    const onReread = vi.fn();
+    const onReread = vi.fn<(boxes: DetectedSticky[]) => void>();
     open(onReread);
     drag(0);
     act(() => vi.advanceTimersByTime(7999));
@@ -861,7 +861,7 @@ describe('reading a moved box again', () => {
   });
 
   it('never re-reads a box whose words the author typed', () => {
-    const onReread = vi.fn();
+    const onReread = vi.fn<(boxes: DetectedSticky[]) => void>();
     open(onReread);
     fireEvent.click(screen.getByTestId('note-words-0'));
     const input = screen.getByRole('textbox', { name: /the words on this note/i });

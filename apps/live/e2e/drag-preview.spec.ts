@@ -49,12 +49,14 @@ async function savedX(page: Page, id: string): Promise<number | undefined> {
   return page.evaluate(
     async ({ base, id, headers }) => {
       const docId = location.pathname.split('/').filter(Boolean).pop()!;
-      const doc = await (await fetch(`${base}/documents/${docId}`, { headers })).json();
+      const doc = (await (await fetch(`${base}/documents/${docId}`, { headers })).json()) as {
+        document?: { tabs?: { id: string }[] };
+      };
       const tabId = doc.document?.tabs?.[0]?.id;
-      const got = await (
+      const got = (await (
         await fetch(`${base}/documents/${docId}/tabs/${tabId}`, { headers })
-      ).json();
-      return (got.tab?.elements ?? []).find((el: { id: string }) => el.id === id)?.x;
+      ).json()) as { tab?: { elements: { id: string; x: number }[] } };
+      return (got.tab?.elements ?? []).find((el) => el.id === id)?.x;
     },
     { base: apiBase, id, headers },
   );

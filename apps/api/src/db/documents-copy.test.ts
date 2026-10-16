@@ -15,9 +15,12 @@ describe('remapTabDataLinks', () => {
       ],
       background: 'dots',
     });
-    const out = JSON.parse(remapTabDataLinks(data, map));
+    const out = JSON.parse(remapTabDataLinks(data, map)) as {
+      background: string;
+      elements: { link: unknown }[];
+    };
     expect(out.background).toBe('dots');
-    expect(out.elements.map((e: { link: unknown }) => e.link)).toEqual([
+    expect(out.elements.map((e) => e.link)).toEqual([
       { kind: 'tab', tabId: 'T1' },
       { kind: 'element', tabId: 'T1', elementId: 'a' },
       { kind: 'document', documentId: 'd', name: 'D' },
