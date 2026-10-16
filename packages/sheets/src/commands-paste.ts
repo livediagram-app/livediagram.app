@@ -96,7 +96,7 @@ export function pasteClip(
             ? { f: shiftForCopy(input.f, dr, dc, from, toCtx) }
             : (input ?? null);
       }
-      if (mode !== 'values') ch.f = (src?.format ?? null) as FormatPatch | null;
+      if (mode !== 'values') ch.f = src?.format ?? null;
       cells.push(ch);
     }
   return {
@@ -169,7 +169,7 @@ export function pasteCut(
       input && 'f' in input
         ? { f: mapFormulaRefs(input.f, (ref) => follow(ref, clip.from.sheetId)) }
         : (input ?? null);
-    push(sheetId, { r: to.r, c: to.c, i, f: (cell?.format ?? null) as FormatPatch | null });
+    push(sheetId, { r: to.r, c: to.c, i, f: cell?.format ?? null });
   }
   // Formulas elsewhere on the tab that read the moved cells.
   for (const sheet of wb.sheetList()) {
@@ -230,9 +230,9 @@ export function pasteExternal(
           read.kind === 'value' ? read.input : read.kind === 'invalid' ? { s: cell.text } : null;
         if (read.kind === 'value' && read.hint && mode === 'all')
           ch.f = hintFormat(cell.format, read.hint);
-        else if (mode === 'all') ch.f = (cell.format ?? null) as FormatPatch | null;
+        else if (mode === 'all') ch.f = cell.format ?? null;
       } else {
-        ch.f = (cell.format ?? null) as FormatPatch | null;
+        ch.f = cell.format ?? null;
       }
       cells.push(ch);
     }
@@ -247,5 +247,5 @@ function hintFormat(
   format: CellFormat | undefined,
   hint: { nf: string; cur?: string },
 ): FormatPatch {
-  return { ...(format ?? {}), nf: hint.nf, ...(hint.cur ? { cur: hint.cur } : {}) } as FormatPatch;
+  return { ...(format ?? {}), nf: hint.nf, ...(hint.cur ? { cur: hint.cur } : {}) };
 }

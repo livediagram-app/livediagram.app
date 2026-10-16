@@ -239,7 +239,7 @@ describe('delete-own', () => {
     // Posted and resolved: two events carrying c1's text.
     const posted = await call({ path: '/tabs/t1/comments/c1/reply', body: { text: 'reply' } });
     expect(posted.status).toBe(201);
-    const reply = ((await posted.json()) as { comment: Comment }).comment.id;
+    const reply = (await posted.json<{ comment: Comment }>()).comment.id;
     const insert = sql.sql.prepare(
       `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
          description, occurred_at, snapshot, created_at)
@@ -358,7 +358,7 @@ describe('the thread listing', () => {
     });
     return {
       status: res.status,
-      body: (await res.json()) as DocumentCommentsResponse & { error?: string },
+      body: await res.json<DocumentCommentsResponse & { error?: string }>(),
     };
   };
 

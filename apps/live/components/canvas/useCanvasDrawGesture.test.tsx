@@ -11,8 +11,8 @@ import { useCanvasDrawGesture } from './useCanvasDrawGesture';
 // The draw-to-size and pen gestures (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/008-canvas/two-pens.md):
 // a press starts one, window pointer moves drive it, and the release commits it.
 
-const BOX: PendingDraw = { type: 'shape', kind: 'square' } as PendingDraw;
-const PEN: PendingDraw = { type: 'freehand' } as PendingDraw;
+const BOX: PendingDraw = { type: 'shape', kind: 'square' };
+const PEN: PendingDraw = { type: 'freehand' };
 
 type Props = {
   pendingDraw: PendingDraw | null;

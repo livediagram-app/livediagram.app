@@ -39,7 +39,7 @@ function closing(s: string, open: number): number {
 export function updaterFlags(source: string): { line: number; name: string }[] {
   const found: { line: number; name: string }[] = [];
   for (const m of source.matchAll(CALL)) {
-    const start = m.index!;
+    const start = m.index;
     const end = closing(source, source.indexOf('(', start));
     const body = source.slice(start + m[0].length, end);
     const lets = new Set(

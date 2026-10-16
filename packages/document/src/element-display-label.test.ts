@@ -42,8 +42,8 @@ describe('an unlabelled Comment or Action panel', () => {
   it('is named by what it is, not "Untitled"', () => {
     expect(elementDisplayLabel(createShape('action-card', 0, 0) as never)).toBe('Action Panel');
     expect(elementDisplayLabel(createShape('comment-pin', 0, 0) as never)).toBe('Comment Panel');
-    expect(
-      elementDisplayLabel({ ...createShape('action-card', 0, 0), label: 'Follow-ups' } as never),
-    ).toBe('Follow-ups');
+    expect(elementDisplayLabel({ ...createShape('action-card', 0, 0), label: 'Follow-ups' })).toBe(
+      'Follow-ups',
+    );
   });
 });

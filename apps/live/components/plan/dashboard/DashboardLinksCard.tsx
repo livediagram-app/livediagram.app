@@ -108,7 +108,7 @@ export function DashboardLinksCard({
                   className="group/link flex items-center rounded-lg transition hover:bg-slate-100/80 dark:hover:bg-slate-800/60"
                 >
                   {link.tabId ? (
-                    <button type="button" onClick={() => openTab(link.tabId!)} className={ROW_HIT}>
+                    <button type="button" onClick={() => openTab(link.tabId)} className={ROW_HIT}>
                       {inner}
                     </button>
                   ) : (

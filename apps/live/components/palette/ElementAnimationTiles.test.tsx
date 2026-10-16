@@ -53,7 +53,7 @@ describe('ConceptAnimTiles', () => {
 describe('SequenceAnimTiles', () => {
   it('Play commits to the sequence', () => {
     const o = ops();
-    const seq = createShape('sequence', 0, 0) as ShapeElement;
+    const seq = createShape('sequence', 0, 0);
     render(<SequenceAnimTiles target={seq} ops={o} />);
     fireEvent.click(screen.getByRole('button', { name: 'Play Animation' }));
     expect(o.commit).toHaveBeenCalledWith(expect.any(Function), 'SequenceAnim');

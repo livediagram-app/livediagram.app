@@ -253,7 +253,7 @@ export function applyFinishToEl(el: Element, finish: Finish | null): Element {
   if (finish) return { ...el, finish } as Element;
   if (!('finish' in el)) return el;
   const { finish: _cleared, ...rest } = el as Element & { finish?: Finish };
-  return rest as Element;
+  return rest;
 }
 
 // Rotation in degrees clockwise about the centre, normalised to 0..359; 0 is

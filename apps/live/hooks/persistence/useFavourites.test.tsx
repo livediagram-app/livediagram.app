@@ -37,8 +37,9 @@ describe('useFavourites', () => {
 
   it('drops every star when the owner goes away', async () => {
     apiListFavourites.mockResolvedValue(['d1']);
+    const initialProps: { owner: string | null } = { owner: 'u1' };
     const { result, rerender } = renderHook(({ owner }) => useFavourites(owner), {
-      initialProps: { owner: 'u1' as string | null },
+      initialProps,
     });
     await waitFor(() => expect(result.current.favouriteIds.size).toBe(1));
     rerender({ owner: null });

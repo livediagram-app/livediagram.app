@@ -36,7 +36,7 @@ function patchedCover(
   cover: FormCover | undefined,
   patch: Partial<PageBackground>,
 ): FormCover | undefined {
-  const merged = { ...cover, ...patch } as PageBackground;
+  const merged = { ...cover, ...patch };
   const fill = merged.fill && merged.fill.kind !== 'image' ? merged.fill : undefined;
   const next: FormCover = {
     ...(fill ? { fill } : {}),

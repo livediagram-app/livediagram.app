@@ -72,11 +72,7 @@ describe('a plan view’s picture', () => {
   });
 
   it('draws a metric as its name and figure', () => {
-    const svg = planViewArt(
-      { ...view('metric:count'), width: 300, height: 200 } as ShapeElement,
-      data,
-      'light',
-    );
+    const svg = planViewArt({ ...view('metric:count'), width: 300, height: 200 }, data, 'light');
     expect(svg).toContain('Item Count');
     expect(svg).toContain('>4<');
   });

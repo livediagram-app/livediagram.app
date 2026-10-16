@@ -35,7 +35,7 @@ export function followedFill(fill: PageFill, prev: Theme, next: Theme): PageFill
     const before = themePresetColors(prev).filter((c) => !isWhite(c));
     const i = before.findIndex((c) => c.toLowerCase() === fill.color.toLowerCase());
     const after = themePresetColors(next).filter((c) => !isWhite(c));
-    return i >= 0 && after[i] ? { kind: 'solid', color: after[i]! } : undefined;
+    return i >= 0 && after[i] ? { kind: 'solid', color: after[i] } : undefined;
   }
   return undefined;
 }

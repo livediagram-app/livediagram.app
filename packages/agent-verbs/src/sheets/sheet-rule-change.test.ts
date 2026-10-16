@@ -1,14 +1,7 @@
 // An agent's validation and format rules (docs/specs/029-sheets/data-validation.md, conditional-formatting.md
 // "Agents"): built by the engine's commands, refused in words, and read back.
 import { describe, expect, it } from 'vitest';
-import {
-  NOBODY,
-  Workbook,
-  applySheetWrite,
-  emptyLayout,
-  type Sheet,
-  type SheetWrite,
-} from '@livediagram/sheets';
+import { NOBODY, Workbook, applySheetWrite, emptyLayout, type Sheet } from '@livediagram/sheets';
 import { buildSheetChange, type SheetChange } from './sheet-change-build';
 import { AGENT_CONDITIONS, rulesRead } from './sheet-rule-change';
 
@@ -34,7 +27,7 @@ function book() {
     const built = buildSheetChange(wb, sheet.id, change, [], rand);
     if (!built.ok) return built;
     for (const w of built.writes) {
-      const next = applySheetWrite(wb.sheet(sheet.id)!, w as SheetWrite, {
+      const next = applySheetWrite(wb.sheet(sheet.id)!, w, {
         now: 1,
         by: NOBODY,
       }).sheet;

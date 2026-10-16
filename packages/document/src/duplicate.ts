@@ -95,9 +95,9 @@ export function duplicateElements(
     const newId = crypto.randomUUID();
     idMap.set(el.id, newId);
     const copy = { ...el, id: newId, x: el.x + dx, y: el.y + dy, ...freshCopyFields(el) };
-    const sheet = copiedSheetId(el, copy as { planSheet?: { sheetId: string } });
+    const sheet = copiedSheetId(el, copy);
     if (sheet) sheetIds.set(sheet[0], sheet[1]);
-    newBoxed.push(copy as BoxedElement);
+    newBoxed.push(copy);
   }
   // A chart copied with its Sheet reads the Sheet's copy (docs/specs/029-sheets/sheet.md "Charts").
   newBoxed = relinkCopiedCharts(newBoxed, sheetIds);

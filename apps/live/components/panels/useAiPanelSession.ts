@@ -88,7 +88,7 @@ export function useAiPanelSession({
         {
           mode,
           prompt: finalPrompt,
-          elements: context.elements as unknown[],
+          elements: context.elements,
           focusIds,
           tabName,
           history,

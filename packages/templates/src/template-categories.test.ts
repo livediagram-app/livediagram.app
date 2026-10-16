@@ -81,9 +81,9 @@ describe('template categories', () => {
     for (const [kind, also] of Object.entries(TEMPLATE_ALSO_IN)) {
       expect(kinds.has(kind as TemplateKind), kind).toBe(true);
       expect(isBlankTemplate(kind as TemplateKind), kind).toBe(false);
-      for (const c of also!) expect(ids, `${kind} ${c}`).toContain(c);
+      for (const c of also) expect(ids, `${kind} ${c}`).toContain(c);
       expect(also, kind).not.toContain(templateCategory(kind as TemplateKind));
-      expect(new Set(also).size, kind).toBe(also!.length);
+      expect(new Set(also).size, kind).toBe(also.length);
     }
     expect(isInTemplateCategory('invoice', 'spreadsheets')).toBe(true);
     expect(isInTemplateCategory('funnel', 'finance')).toBe(true);

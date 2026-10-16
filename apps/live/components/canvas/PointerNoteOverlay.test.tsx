@@ -11,7 +11,7 @@ afterEach(cleanup);
 
 const note = (over: Partial<ShapeElement> = {}) =>
   ({
-    ...(createShape('pointer-note', 0, 0) as ShapeElement),
+    ...createShape('pointer-note', 0, 0),
     id: 'n',
     x: 100,
     y: 50,

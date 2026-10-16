@@ -25,7 +25,7 @@ describe('a tab’s custom colours', () => {
         (_, i) => `#0000${(16 + i).toString(16)}`,
       ),
     };
-    const next = withCustomColour(full, '#ffffff').customColours!;
+    const next = withCustomColour(full, '#ffffff').customColours;
     expect(next).toHaveLength(CUSTOM_COLOURS_MAX);
     expect(next[0]).toBe('#ffffff');
   });

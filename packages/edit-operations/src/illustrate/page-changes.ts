@@ -32,10 +32,9 @@ import {
   type PageBackground,
   type PageEdit,
   type PageEditRefusal,
-  type PageKind,
   type Tab,
 } from '@livediagram/document';
-import { buildPageLayout, layoutCatalogueFor, type PageLayoutId } from '@livediagram/templates';
+import { buildPageLayout, layoutCatalogueFor } from '@livediagram/templates';
 import { enterIllustrate, type IllustrateIds } from './enter';
 import { pageLabel, pageSummaries, resolvePage, sizeLabel } from './summary';
 
@@ -164,7 +163,7 @@ export function applyPageChanges(
           pageLaidOut(
             current,
             page.id,
-            themedForTab(buildPageLayout(found!.id as PageLayoutId, laid), current.theme, {
+            themedForTab(buildPageLayout(found!.id, laid), current.theme, {
               dark: pageIsDark(laid),
             }),
           ),
@@ -202,7 +201,7 @@ export function applyPageChanges(
           let page: IllustratePage;
           if (offersPageKindChoice(ps, first.id, onPage(first.id))) {
             // The fresh tab's empty, unchosen first page becomes the page asked for.
-            current = withPageKindChosen(current, first.id, change.kind as PageKind, newFlowId())!;
+            current = withPageKindChosen(current, first.id, change.kind, newFlowId())!;
             page = pages()[0]!;
           } else if (
             ps.length === 1 &&
@@ -216,7 +215,7 @@ export function applyPageChanges(
             page = first;
           } else {
             const id = newPageId();
-            current = take(pageAdded(current, change.kind as PageKind, id, newFlowId()));
+            current = take(pageAdded(current, change.kind, id, newFlowId()));
             page = pages().find((p) => p.id === id)!;
           }
           madeHere.add(page.id);

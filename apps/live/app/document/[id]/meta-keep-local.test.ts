@@ -3,7 +3,7 @@ import type { Tab } from '@livediagram/document';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 
 // docs/specs/012-collaboration/collab-race-hardening.md "Tab lists".
-const t = (id: string): Tab => ({ id, name: id, elements: [] }) as Tab;
+const t = (id: string): Tab => ({ id, name: id, elements: [] });
 
 describe('keepUnsavedTabChanges', () => {
   it('keeps a tab added here before its save, after the tab it followed', () => {

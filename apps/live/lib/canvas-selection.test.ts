@@ -98,7 +98,7 @@ describe('deriveCanvasSelection', () => {
     });
     const sheet = box('s', {
       shape: 'plan-sheet',
-      planSheet: { sheetId: 's1' } as ShapeElement['planSheet'],
+      planSheet: { sheetId: 's1' },
     });
     const inSheet = derive({ elements: [sheet, chart], selectedId: 'c' });
     expect(inSheet.selected).toBe(chart);
@@ -221,16 +221,15 @@ describe('deriveCanvasSelection', () => {
   });
 
   it('pluses follow the element kind and the mode / lock gates', () => {
-    const table = (id: string): Element =>
-      ({
-        id,
-        type: 'table',
-        x: 200,
-        y: 0,
-        width: 100,
-        height: 60,
-        cells: [['', '']],
-      }) as Element;
+    const table = (id: string): Element => ({
+      id,
+      type: 'table',
+      x: 200,
+      y: 0,
+      width: 100,
+      height: 60,
+      cells: [['', '']],
+    });
     // A lone table shows the pluses (the slimmed table ring, docs/specs/008-canvas/canvas-and-palette.md).
     expect(derive({ elements: [table('t')], selectedId: 't' }).showPlus).toBe(true);
     // A frame shows them as well: it is a container you chain from, the same
@@ -245,7 +244,7 @@ describe('deriveCanvasSelection', () => {
       y: 0,
       width: 24,
       height: 24,
-    } as Element;
+    };
     expect(derive({ elements: [marker], selectedId: 'n' }).showPlus).toBe(false);
     // Locked / read-only suppress them.
     expect(derive({ elements: [box('a', { locked: true })], selectedId: 'a' }).showPlus).toBe(
@@ -392,7 +391,7 @@ describe('deriveCanvasSelection — an arrow label is part of its arrow', () => 
 // same rule the whole-selection derivation uses.
 describe('elementGrips', () => {
   const table = { ...box('t'), type: 'table' } as unknown as Element;
-  const fixed = box('f', { fixedSize: true } as Partial<ShapeElement>);
+  const fixed = box('f', { fixedSize: true });
   const locked = box('l', { locked: true });
   const elements: Element[] = [box('a'), box('b'), table, fixed, locked, arrow('r')];
   const flagsSets: { selectedId: string | null; multi: string[] }[] = [

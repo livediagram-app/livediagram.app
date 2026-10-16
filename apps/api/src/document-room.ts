@@ -447,8 +447,8 @@ export class DocumentRoom implements DurableObject {
     // WebSocketPair is a 2-property record keyed `0`/`1`. The "client"
     // side is returned to the connecting peer; the "server" side is
     // owned by this Durable Object.
-    const client = pair[0]!;
-    const server = pair[1]!;
+    const client = pair[0];
+    const server = pair[1];
     // Server-resolved role (set by the api worker before forwarding the
     // upgrade). The DO trusts this header because only the worker can
     // set it: clients reach the DO via env.DOCUMENT_ROOM.get(...).fetch,
@@ -1440,7 +1440,7 @@ export class DocumentRoom implements DurableObject {
 async function readBody(request: Request): Promise<{ op?: unknown; ordered?: unknown } | null> {
   try {
     const body: unknown = await request.json();
-    return body && typeof body === 'object' ? (body as { op?: unknown; ordered?: unknown }) : null;
+    return body && typeof body === 'object' ? body : null;
   } catch {
     return null;
   }

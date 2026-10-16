@@ -7,7 +7,7 @@ const PNG_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
 function tab(elements: Tab['elements']): Tab {
-  return { id: 't1', name: 'Tab 1', elements } as Tab;
+  return { id: 't1', name: 'Tab 1', elements };
 }
 
 function imageEl(id: string, imageId: string | null) {

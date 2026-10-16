@@ -87,7 +87,7 @@ describe('duplicateItem', () => {
       type: 'task',
       fields: { title: 'Ship', status: 'doing', votes: { a: 1 } },
     } as unknown as Item;
-    duplicateItem(plan as never, item);
+    duplicateItem(plan, item);
     expect(plan.addItem).toHaveBeenCalledWith({
       type: 'task',
       fields: { title: 'Ship', status: 'doing' },

@@ -158,7 +158,7 @@ export function applyElementOps(elements: Element[], ops: ElementOp[]): Element[
       out = out.slice();
       owned = true;
     }
-    for (const i of at) out[i] = preferNewerQa(out[i]!, op.element);
+    for (const i of at) out[i] = preferNewerQa(out[i], op.element);
   }
   return out;
 }

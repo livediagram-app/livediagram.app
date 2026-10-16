@@ -110,7 +110,7 @@ describe('find on odd shapes', () => {
         id: 't',
         name: 'T',
         elements: [
-          shapeAt('sankey' as never, 'sk', 0, 0, 400, 200, {
+          shapeAt('sankey', 'sk', 0, 0, 400, 200, {
             sankeyFlows: [
               { from: 'Salary', to: 'Budget', value: 3 },
               { from: 'Budget', to: 'Savings', value: 1 },
@@ -118,7 +118,7 @@ describe('find on odd shapes', () => {
             ] as never,
           }),
         ] as Element[],
-      } as never,
+      },
       { rev: 1 },
     );
     const { json } = findView(model, 'budget');

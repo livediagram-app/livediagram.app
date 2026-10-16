@@ -2447,9 +2447,11 @@ describe('DocumentRoom and agent changesets', () => {
   const mutation = (op: unknown) =>
     new Request('https://room/mutation', { method: 'POST', body: JSON.stringify({ op }) });
   const selections = async (room: DocumentRoom, query: string) =>
-    (await (await room.fetch(new Request(`https://room/selections?${query}`))).json()) as {
+    await (
+      await room.fetch(new Request(`https://room/selections?${query}`))
+    ).json<{
       selections: unknown[];
-    };
+    }>();
 
   it('sequences a changeset in one slot for everybody, outside the ledger', async () => {
     const { room, state } = newRoom();

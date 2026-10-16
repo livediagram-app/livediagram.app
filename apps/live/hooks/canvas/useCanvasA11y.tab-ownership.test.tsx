@@ -14,8 +14,15 @@ import { useCanvasA11y } from './useCanvasA11y';
 // These pin the hand-off rather than the growth itself, because the growth
 // lives in the shortcuts hub and only ever runs if traversal declines first.
 
-const NODE = (id: string): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 }) as Element;
+const NODE = (id: string): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+});
 
 const ELEMENTS = [NODE('a'), NODE('b'), NODE('c')];
 

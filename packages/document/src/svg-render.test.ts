@@ -815,7 +815,7 @@ describe('a shared end in an export', () => {
       strokeStyle: 'dashed' as const,
       exactEnd: true,
     };
-    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [a, b, bus] } as Tab);
+    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [a, b, bus] });
     expect(svg).toMatch(/stroke-dasharray="6 5" stroke-dashoffset="[\d.]+"/);
   });
 });

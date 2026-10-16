@@ -75,7 +75,7 @@ function asContent(value: unknown): PlanTourContent | null {
     documentId: v['documentId'],
     elementId,
     ...(sheetId ? { sheetId } : {}),
-    itemIds: v['itemIds'] as string[],
+    itemIds: v['itemIds'],
   };
 }
 

@@ -39,19 +39,18 @@ vi.mock('@/hooks/canvas/element-menu-opener', () => ({
 }));
 
 const range = { r1: 'aaaa', c1: 'bbbb', r2: 'cccc', c2: 'dddd' };
-const chart = (id: string, over: Partial<ShapeElement> = {}): ShapeElement =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'bar-chart',
-    x: 0,
-    y: 0,
-    width: 260,
-    height: 220,
-    chartSource: { sheetId: SHEET_ID, range },
-    sheetAnchor: { x: 100, y: 50 },
-    ...over,
-  }) as ShapeElement;
+const chart = (id: string, over: Partial<ShapeElement> = {}): ShapeElement => ({
+  id,
+  type: 'shape',
+  shape: 'bar-chart',
+  x: 0,
+  y: 0,
+  width: 260,
+  height: 220,
+  chartSource: { sheetId: SHEET_ID, range },
+  sheetAnchor: { x: 100, y: 50 },
+  ...over,
+});
 
 let elements: Element[];
 let bridge: SheetsBridge;

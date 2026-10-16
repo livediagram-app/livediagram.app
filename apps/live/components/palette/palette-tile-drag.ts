@@ -1,8 +1,4 @@
-import {
-  eventStormingNoteSize,
-  SHAPE_DEFAULT_SIZE,
-  type EventStormingNoteKind,
-} from '@livediagram/document';
+import { eventStormingNoteSize, SHAPE_DEFAULT_SIZE } from '@livediagram/document';
 import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import { STICKER_DND_MIME } from '@/lib/stickers';
@@ -36,7 +32,7 @@ export function tileDragStart(
       return (e) => {
         copy(e, PALETTE_DND_MIME, action.esKind ? `sticky|${action.esKind}` : 'sticky');
         const size = action.esKind
-          ? eventStormingNoteSize(action.esKind as EventStormingNoteKind)
+          ? eventStormingNoteSize(action.esKind)
           : { width: 200, height: 200 };
         // A note has no shape kind: a square footprint at its real size reads as the note it becomes.
         setPaletteDragPreview({ kind: 'square', ...size, note: true, workshop: !!action.esKind });

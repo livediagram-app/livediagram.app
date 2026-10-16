@@ -2,7 +2,6 @@ import {
   ES_LANES,
   eventStormingNoteSize,
   isEventStormingTab,
-  type Element,
   type Tab,
 } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -49,7 +48,7 @@ export function stampPlacement(
     canvasX,
     canvasY,
     ...size,
-    elements: board.elements as Element[],
+    elements: board.elements,
     timeline: isEventStormingTab(board) ? ES_LANES : null,
     laneHeld: held,
   });

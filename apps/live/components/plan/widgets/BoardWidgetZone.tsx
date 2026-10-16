@@ -190,7 +190,7 @@ export function BoardWidgetZone({
               canEdit ? 'cursor-grab active:cursor-grabbing' : ''
             }`}
             style={{
-              transform: dragged ? `translateX(${reorder!.dx}px)` : undefined,
+              transform: dragged ? `translateX(${reorder.dx}px)` : undefined,
               zIndex: dragged ? 2 : undefined,
               opacity: dragged ? 0.85 : 1,
               ['--tw-ring-color' as string]: palette.focus,

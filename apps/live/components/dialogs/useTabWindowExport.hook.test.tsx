@@ -13,17 +13,16 @@ vi.mock('@/lib/export-tab', async (real) => ({
 
 import { useTabWindowExport } from './useTabWindowExport';
 
-const win = (windowTabId: string): Element =>
-  ({
-    id: 'w',
-    type: 'shape',
-    shape: 'tab-window',
-    x: 0,
-    y: 0,
-    width: 640,
-    height: 360,
-    windowTabId,
-  }) as Element;
+const win = (windowTabId: string): Element => ({
+  id: 'w',
+  type: 'shape',
+  shape: 'tab-window',
+  x: 0,
+  y: 0,
+  width: 640,
+  height: 360,
+  windowTabId,
+});
 const box = {
   id: 'b',
   type: 'shape',
@@ -54,7 +53,7 @@ describe('useTabWindowExport', () => {
     loadTabImages.mockClear();
     const slide = { id: 's', name: 'S', elements: [win('f')] } as Tab;
     const flow = { id: 'f', name: 'Flow', elements: [box] } as Tab;
-    let tabs: Tab[] = [slide, flow, { id: 'x', name: 'X', elements: [] } as Tab];
+    let tabs: Tab[] = [slide, flow, { id: 'x', name: 'X', elements: [] }];
     const { result, rerender } = renderHook(() =>
       useTabWindowExport({
         tab: slide,

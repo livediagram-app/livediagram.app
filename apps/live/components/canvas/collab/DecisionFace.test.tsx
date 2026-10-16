@@ -5,7 +5,6 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { ShapeElement } from '@livediagram/document';
 import { DecisionFace } from './DecisionFace';
 
 afterEach(cleanup);
@@ -15,18 +14,16 @@ describe('DecisionFace', () => {
     const url = 'https://example.com/a/very/long/path/that/has/no/spaces/at/all';
     render(
       <DecisionFace
-        element={
-          {
-            id: 'd',
-            type: 'shape',
-            shape: 'decision',
-            x: 0,
-            y: 0,
-            width: 320,
-            height: 260,
-            decisionDrivers: [url],
-          } as ShapeElement
-        }
+        element={{
+          id: 'd',
+          type: 'shape',
+          shape: 'decision',
+          x: 0,
+          y: 0,
+          width: 320,
+          height: 260,
+          decisionDrivers: [url],
+        }}
         label="Use Postgres"
         textColor="#0f172a"
       />,

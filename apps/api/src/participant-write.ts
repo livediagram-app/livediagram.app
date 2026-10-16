@@ -49,7 +49,7 @@ async function swapTab<T>(
     const raw = await getTabData(env, documentId, tabId);
     if (raw === null) return { ok: false, status: 404 };
     const data = JSON.parse(raw) as StoredTab;
-    const { next, answer } = change({ ...data, id: tabId, name: '' } as Tab);
+    const { next, answer } = change({ ...data, id: tabId, name: '' });
     if (next === null) return { ok: true, answer };
     const { id: _id, name: _name, ...rest } = next;
     const nextData = JSON.stringify(rest);

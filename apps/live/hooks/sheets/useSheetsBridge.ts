@@ -124,7 +124,7 @@ export function useSheetsBridge(opts: {
       pushUndo: (step) => pushUndo.current(step),
       toast: (m) => toast.current(m),
       notify: (m) => notify.current(m),
-      sendPresence: (op) => send.current(op as RoomOp),
+      sendPresence: (op) => send.current(op),
       commitElements: (map) => commitElements.current(map),
       placeElement: (at, make, opts) => placeElement.current(at, make, opts),
       tickElements: (map) => tickElements.current(map),

@@ -166,7 +166,7 @@ export function flyoutKeyTarget(
       if (rowY === null) return null;
       let best: number | null = null;
       points.forEach((p, i) => {
-        if (Math.abs(p.y - rowY!) > 2) return;
+        if (Math.abs(p.y - rowY) > 2) return;
         if (best === null || Math.abs(p.x - here.x) < Math.abs(points[best]!.x - here.x)) best = i;
       });
       return best;

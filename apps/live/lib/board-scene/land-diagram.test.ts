@@ -46,8 +46,8 @@ describe('the diagram profile', () => {
   it('maps rectangle / ellipse / diamond, near-black as the theme’s ink, colours exact', () => {
     const shapes = land([
       rect(),
-      rect({ key: 'e', shape: 'ellipse', rounded: false } as Partial<SceneItem>),
-      rect({ key: 'd', shape: 'diamond', rounded: false } as Partial<SceneItem>),
+      rect({ key: 'e', shape: 'ellipse', rounded: false }),
+      rect({ key: 'd', shape: 'diamond', rounded: false }),
     ]) as ShapeElement[];
     expect(shapes.map((s) => s.shape)).toEqual(['square', 'circle', 'diamond']);
     expect(shapes[0]!.borderRadius).toBe('lg');
@@ -70,7 +70,7 @@ describe('the diagram profile', () => {
       rect({
         fill: undefined,
         label: sceneText('Hello', { fontPx: 28, colour: { hex: '#e03131' }, family: 'sans' }),
-      } as Partial<SceneItem>),
+      }),
     ]) as ShapeElement[];
     expect(s).toMatchObject({
       fillColor: 'transparent',
@@ -117,7 +117,7 @@ describe('the diagram profile', () => {
         locked: true,
         link: 'https://example.com',
         stroke: { colour: { hex: '#1e1e1e', alpha: 0.5 }, widthPx: 4, dash: 'dashed' },
-      } as Partial<SceneItem>),
+      }),
     ]) as ShapeElement[];
     expect(a).toMatchObject({
       opacity: 0.5,
@@ -246,7 +246,7 @@ describe('the diagram profile', () => {
       rect({
         stroke: { colour: { hex: '#1971C2' }, widthPx: 2 },
         label: sceneText('Hi', { colour: { hex: '#868e96' } }),
-      } as Partial<SceneItem>),
+      }),
     ]) as ShapeElement[];
     expect(s).toMatchObject({ strokeColor: '#1971C2', textColor: '#868e96' });
     expect(s!.penColour).toBeUndefined();

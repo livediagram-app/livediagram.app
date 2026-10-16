@@ -8,7 +8,6 @@ import {
   type DashboardRow,
   type DashboardSlot,
   type Element,
-  type ShapeElement,
 } from '@livediagram/document';
 import type { DashboardItem } from './dashboard-drop';
 import { DASHBOARD_CONDENSE_PX } from '@/components/plan/dashboard/condense';
@@ -74,7 +73,7 @@ export function contentFitKind(
   if (content.type !== 'element') return 'note';
   const el = elements.get(content.elementId);
   if (!el || el.type !== 'shape') return null;
-  const shape = el as ShapeElement;
+  const shape = el;
   if (shape.shape === 'plan-board') return 'board';
   if (shape.shape === 'plan-sheet') return 'sheet';
   if (shape.shape === 'plan-view')

@@ -324,7 +324,7 @@ export function MindMapBoard({ portrait = false }: { portrait?: boolean }) {
       </text>
 
       {/* The teammate, filling in Events. */}
-      <g className="mm-jr" style={cursorRide(L.teammate) as CSSProperties} aria-hidden>
+      <g className="mm-jr" style={cursorRide(L.teammate)} aria-hidden>
         <CursorMark colour={TEAMMATE} label="JR" />
       </g>
     </>

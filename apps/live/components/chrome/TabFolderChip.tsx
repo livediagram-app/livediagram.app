@@ -86,7 +86,7 @@ export function TabFolderChip({
     if (!open) return;
     const onDown = (e: PointerEvent) => {
       const t = e.target as HTMLElement | null;
-      if (t?.closest('[data-tab-folder-fan]') || chipRef.current?.contains(t as Node)) return;
+      if (t?.closest('[data-tab-folder-fan]') || chipRef.current?.contains(t)) return;
       setOpen(false);
     };
     document.addEventListener('pointerdown', onDown);

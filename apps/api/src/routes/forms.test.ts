@@ -693,7 +693,7 @@ describe('an agent’s form write (docs/specs/030-forms/forms.md "Agents")', () 
     });
     const res = await handleDocuments(other);
     expect(res.status).toBe(400);
-    expect(((await res.json()) as { error: string }).error).toBe('not_a_form_tab');
+    expect((await res.json<{ error: string }>()).error).toBe('not_a_form_tab');
     expect((await write('nope')).body.error).toBe('invalid_body');
   });
 });

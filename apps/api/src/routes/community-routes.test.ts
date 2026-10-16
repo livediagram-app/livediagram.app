@@ -7,7 +7,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 
 const { thumbnail } = vi.hoisted(() => ({
-  thumbnail: { svg: '<svg/>' as string | null },
+  thumbnail: { svg: '<svg/>' },
 }));
 vi.mock('../thumbnail', () => ({
   getDocumentThumbnailSvg: vi.fn(async () => thumbnail.svg),
@@ -133,7 +133,7 @@ describe('owner routes', () => {
       owner('PUT', '/api/documents/d1/community', { body: { ...body, title: 'Renamed' } }),
     ))!;
     expect(edited.status).toBe(200);
-    expect(((await edited.json()) as { post: { id: string; title: string } }).post).toMatchObject({
+    expect((await edited.json<{ post: { id: string; title: string } }>()).post).toMatchObject({
       id: post.id,
       title: 'Renamed',
     });
@@ -282,7 +282,7 @@ describe('public routes', () => {
     const sitemap = async () => {
       const res = await handleCommunity(publicCtx('GET', '/api/community/sitemap', { key: null }));
       expect(res.headers.get('Cache-Control')).toBe('public, max-age=3600');
-      return ((await res.json()) as { posts: { id: string; updatedAt: number }[] }).posts;
+      return (await res.json<{ posts: { id: string; updatedAt: number }[] }>()).posts;
     };
     const posts = await sitemap();
     expect(posts.map((p) => p.id)).toEqual([newer.id, older.id]);
@@ -538,7 +538,7 @@ describe('what a community link reveals', () => {
       ).toBe(201);
     }
     const read = async (path: string) => {
-      const res = (await handleCommunity(publicCtx('GET', path)))!;
+      const res = await handleCommunity(publicCtx('GET', path));
       expect(res.status).toBe(200);
       return res.text();
     };

@@ -27,8 +27,15 @@ const withElements = (...extra: Element[]): Tab => {
   const tab = checkoutFlow();
   return { ...tab, elements: [...tab.elements, ...extra] };
 };
-const sticky = (id: string, label: string, x = 600, y = 0): Element =>
-  ({ id, type: 'sticky', label, x, y, width: 100, height: 100 }) as Element;
+const sticky = (id: string, label: string, x = 600, y = 0): Element => ({
+  id,
+  type: 'sticky',
+  label,
+  x,
+  y,
+  width: 100,
+  height: 100,
+});
 
 describe('selector rows', () => {
   it('a ref, any unique prefix or the id', () => {

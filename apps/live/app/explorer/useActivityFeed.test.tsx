@@ -173,7 +173,7 @@ describe('useActivityFeed', () => {
         cards: [],
       });
     const { result, rerender } = renderHook(({ owner }) => useActivityFeed(owner), {
-      initialProps: { owner: 'guest' as string | null },
+      initialProps: { owner: 'guest' },
     });
     rerender({ owner: 'user_1' });
     expect(result.current.loading).toBe(true);

@@ -35,7 +35,7 @@ const gateway = (direction: 'down' | 'right' = 'down'): Tab =>
       },
     }).graph!,
     undefined,
-  ) as Tab;
+  );
 
 const arrowTo = (tab: Tab, to: string) =>
   tab.elements.find(

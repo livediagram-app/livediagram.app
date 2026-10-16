@@ -20,7 +20,6 @@ import {
   type DashboardContent,
   type DashboardLayout,
   type Element,
-  type ShapeElement,
   type Tab,
   type ThemeDefinition,
 } from '@livediagram/document';
@@ -94,16 +93,15 @@ function slotCard(
   return box(r, { fill, stroke: edge, rx: 16, strokeWidth: look.borderWidth ?? 1 });
 }
 
-const placeholder = (id: string, r: Rect): Element =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'plan-view',
-    x: r.x,
-    y: r.y,
-    width: r.width,
-    height: r.height,
-  }) as Element;
+const placeholder = (id: string, r: Rect): Element => ({
+  id,
+  type: 'shape',
+  shape: 'plan-view',
+  x: r.x,
+  y: r.y,
+  width: r.width,
+  height: r.height,
+});
 
 // A Diagram tab's SVG nested in the slot: its own viewBox kept, fitted and centred inside the card's padding.
 function nestedDiagram(svg: string, r: Rect): string {
@@ -137,7 +135,7 @@ export function dashboardExportTab(input: DashboardExportInput): DashboardExport
   // keys its pictures by id). Its layer is left behind with the canvas, so it is drawn whatever that layer's
   // visibility.
   const place = (el: Element, r: Rect, id: string) => {
-    const { layerId: _layer, ...rest } = el as Element & { layerId?: string };
+    const { layerId: _layer, ...rest } = el;
     elements.push({ ...rest, id, x: r.x, y: r.y, width: r.width, height: r.height } as Element);
   };
 
@@ -148,7 +146,7 @@ export function dashboardExportTab(input: DashboardExportInput): DashboardExport
     }
     if (content.type === 'element') {
       const el = byId.get(content.elementId);
-      const shape = el?.type === 'shape' ? (el as ShapeElement) : null;
+      const shape = el?.type === 'shape' ? el : null;
       if (!shape) {
         card(slotId, rect, slotMessageArt(rect, p, 'This item was removed.'));
       } else if (

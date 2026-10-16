@@ -26,7 +26,7 @@ function handlers() {
       viewerId: 'user_1',
       teamFolders: [{ id: 'f1', name: 'Specs' } as never],
       refreshTeamLibraries: () => {},
-      confirm: (async () => true) as never,
+      confirm: async () => true,
     }),
   );
   return result.current!;

@@ -37,7 +37,7 @@ function open(onPublish = vi.fn()) {
 }
 
 const description = () =>
-  screen.getByRole('textbox', { name: /description/i }) as HTMLTextAreaElement;
+  screen.getByRole<HTMLTextAreaElement>('textbox', { name: /description/i });
 const submit = () => fireEvent.click(screen.getByRole('button', { name: 'Share to Community' }));
 
 describe('CommunityPublishDialog validation', () => {
@@ -85,7 +85,7 @@ describe('CommunityPublishDialog validation', () => {
     await waitFor(() => expect(description().getAttribute('aria-invalid')).toBe('true'));
     // Focus lands on it once the form is enabled again (it was disabled while saving).
     await waitFor(() => expect(document.activeElement).toBe(description()));
-    expect((description() as HTMLTextAreaElement).disabled).toBe(false);
+    expect(description().disabled).toBe(false);
     submit();
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',

@@ -28,8 +28,15 @@ const by = { id: 'p', name: 'P', color: '#000000' };
 const R = (i: number) => `s0r${i}`;
 const C = (i: number) => `s0c${i}`;
 const apply = (s: Sheet, w: SheetWrite) => applySheetWrite(s, w, { now: 1, by }).sheet;
-const fr = (x: Partial<FormatRule>, r1 = 0, c1 = 0, r2 = 9, c2 = 0): FormatRule =>
-  ({ id: 'frule1', r1: R(r1), c1: C(c1), r2: R(r2), c2: C(c2), is: 'when', ...x }) as FormatRule;
+const fr = (x: Partial<FormatRule>, r1 = 0, c1 = 0, r2 = 9, c2 = 0): FormatRule => ({
+  id: 'frule1',
+  r1: R(r1),
+  c1: C(c1),
+  r2: R(r2),
+  c2: C(c2),
+  is: 'when',
+  ...x,
+});
 const set = (rule: FormatRule, at?: number): SheetWrite => ({
   kind: 'layout',
   changes: [{ k: 'frule', id: rule.id, rule, ...(at === undefined ? {} : { at }) }],
@@ -251,7 +258,7 @@ describe('what a format rule may be', () => {
     expect(
       validateSheetCreate({
         ...base,
-        layout: { ...base.layout, formatRules: [fr({ op: 'gt' as never })] },
+        layout: { ...base.layout, formatRules: [fr({ op: 'gt' })] },
       }).ok,
     ).toBe(false);
   });

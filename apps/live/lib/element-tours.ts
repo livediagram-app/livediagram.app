@@ -1,9 +1,4 @@
-import {
-  isChartShape,
-  isFlowchartStep,
-  type Element,
-  type ShapeElement,
-} from '@livediagram/document';
+import { isChartShape, isFlowchartStep, type Element } from '@livediagram/document';
 import type { EditorCapabilities } from './editor-capabilities';
 import { canEditSankey } from './sankey-edit';
 import { canEditSequence } from './sequence-edit';
@@ -69,14 +64,14 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el?.type !== 'shape') return null;
   if (el.shape === 'sankey') return 'sankey';
   if (el.shape === 'layer-stack') return 'layer-stack';
-  if (el.shape === 'pyramid' && (el as ShapeElement).pyramidVariant !== 'funnel') return 'pyramid';
-  if (el.shape === 'pyramid' && (el as ShapeElement).pyramidVariant === 'funnel') return 'funnel';
+  if (el.shape === 'pyramid' && el.pyramidVariant !== 'funnel') return 'pyramid';
+  if (el.shape === 'pyramid' && el.pyramidVariant === 'funnel') return 'funnel';
   if (el.shape === 'cycle') return 'cycle';
   if (el.shape === 'hub') return 'hub';
   if (el.shape === 'onion') return 'onion';
   if (el.shape === 'chevrons') return 'chevrons';
-  if (el.shape === 'mind-node' && (el as ShapeElement).mindLook !== 'person') return 'mind-node';
-  if (el.shape === 'mind-node' && (el as ShapeElement).mindLook === 'person') return 'org-chart';
+  if (el.shape === 'mind-node' && el.mindLook !== 'person') return 'mind-node';
+  if (el.shape === 'mind-node' && el.mindLook === 'person') return 'org-chart';
   if (el.shape === 'sequence') return 'sequence';
   if (isChartShape(el.shape)) return 'chart';
   if (el.shape === 'stack') return 'stack';

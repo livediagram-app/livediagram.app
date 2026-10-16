@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ShapeElement, Tab } from './index';
+import type { ShapeElement } from './index';
 import { borderOf } from './svg-render-border';
 import { renderElementsToSvg } from './svg-render';
 import { shapeHitOutline } from './shape-hit';
@@ -21,7 +21,7 @@ const square = (size: number, over: Partial<ShapeElement> = {}): ShapeElement =>
 describe('the SVG export’s corners', () => {
   it('rounds a small rounded square by a quarter of its side, not into a circle', () => {
     expect(borderOf(square(14)).radius).toBe(3.5);
-    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [square(14)] } as Tab);
+    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [square(14)] });
     // The border's centre line runs half the 2 px stroke inside the box: 3.5 - 1.
     expect(svg).toMatch(/rx="2\.5"/);
   });

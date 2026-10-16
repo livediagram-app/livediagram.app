@@ -196,7 +196,7 @@ describe('validation bounds', () => {
       true,
     );
     expect(isValidElement(withFields({ ideaCardIds: ['x'.repeat(65)] }))).toBe(false);
-    expect(isValidElement(withFields({ ideaCardIds: [7] as unknown as string[] }))).toBe(false);
+    expect(isValidElement(withFields({ ideaCardIds: [7] as unknown }))).toBe(false);
   });
 
   it('rejects a bad decision date but keeps an absent one', () => {

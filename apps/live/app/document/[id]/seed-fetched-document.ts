@@ -132,7 +132,7 @@ export function makeSeedFetchedDocument(deps: {
         hashedId &&
         placeholderTabs.some((t) => t.id === hashedId) &&
         !isTabOutOfScope(hashedId, tabScope);
-      setActiveId(pickFromHash ? hashedId! : (firstId ?? activeId));
+      setActiveId(pickFromHash ? hashedId : (firstId ?? activeId));
     }
     setLoadedExistingDocument(true);
     setDocumentShareable(fetched.shareable);

@@ -229,7 +229,7 @@ async function writeAround(
         tab.id,
         {
           replace: {
-            elements: tab.elements as unknown[],
+            elements: tab.elements,
             kind: tab.kind === 'sheet' ? 'sheet' : 'board',
             name: tab.name,
             ...(tab.theme ? { theme: tab.theme } : {}),

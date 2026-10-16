@@ -15,7 +15,7 @@ import {
 
 const stack = (over: Partial<ShapeElement> = {}) =>
   ({
-    ...(createShape('stack', 0, 0) as ShapeElement),
+    ...createShape('stack', 0, 0),
     id: 's',
     x: 0,
     y: 0,
@@ -25,7 +25,7 @@ const stack = (over: Partial<ShapeElement> = {}) =>
   }) as ShapeElement;
 const box = (id: string, x: number, y: number, w = 80, h = 60) =>
   ({
-    ...(createShape('square', 0, 0) as ShapeElement),
+    ...createShape('square', 0, 0),
     id,
     x,
     y,
@@ -39,7 +39,7 @@ const at = (els: Element[], id: string) => {
 
 describe('a stack', () => {
   it('starts as a valid empty row', () => {
-    const s = createShape('stack', 0, 0) as ShapeElement;
+    const s = createShape('stack', 0, 0);
     expect(isValidElement(s)).toBe(true);
     expect(isValidElement({ ...s, stackGap: 99 })).toBe(false);
     expect(isValidElement({ ...s, stackDirection: 'diagonal' as never })).toBe(false);
@@ -57,7 +57,7 @@ describe('a stack', () => {
   // A badge riding on a child, or a comment pin, is a mark on the board, never a slot of its own.
   it('leaves attached marks and comment pins out of its children', () => {
     const badge = {
-      ...(createShape('badge', 0, 0) as ShapeElement),
+      ...createShape('badge', 0, 0),
       id: 'k',
       x: 90,
       y: 30,
@@ -65,7 +65,7 @@ describe('a stack', () => {
       attachAt: 'top-right',
     } as ShapeElement;
     const pin = {
-      ...(createShape('comment-pin', 0, 0) as ShapeElement),
+      ...createShape('comment-pin', 0, 0),
       id: 'p',
       x: 300,
       y: 80,
@@ -148,7 +148,7 @@ describe('a stack', () => {
   });
 
   it('lays out a key it holds at the height its rows give it, on read', () => {
-    const key = { ...(createShape('diagram-key', 0, 0) as ShapeElement), id: 'k', x: 40, y: 40 };
+    const key = { ...createShape('diagram-key', 0, 0), id: 'k', x: 40, y: 40 };
     const solid = { ...createArrow(500, 500, 600, 600), id: 'x' };
     const tab = migrateStoredTab({
       theme: 'default',

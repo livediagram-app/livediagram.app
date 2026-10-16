@@ -90,7 +90,7 @@ function Sheet() {
   const gridW = colX(COLS.length) - X0;
   const rows = GRID_ROWS;
   const eX = colX(4);
-  const eW = COLS[4]!.w;
+  const eW = COLS[4].w;
   const chart = { x: 330, y: 150, w: 250, h: 136 };
   const max = Math.max(...LINES.map((_, i) => totalOf(i)));
   return (

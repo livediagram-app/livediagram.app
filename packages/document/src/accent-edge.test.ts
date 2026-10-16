@@ -9,7 +9,7 @@ import {
 import { boxedNeedsSvgRaster, createShape, svgBoxed, type ShapeElement } from './index';
 
 const square = (over: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...(createShape('square', 0, 0) as ShapeElement),
+  ...createShape('square', 0, 0),
   id: 'sq1',
   x: 10,
   y: 20,

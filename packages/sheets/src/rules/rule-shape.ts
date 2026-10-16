@@ -190,12 +190,7 @@ export function isFormatRule(
     if (v.min !== undefined || v.mid !== undefined || v.max !== undefined) return false;
     if (!styleOk(v.style)) return false;
     if (v.op === 'formula')
-      return (
-        v.a === undefined &&
-        v.b === undefined &&
-        storedFormulaOk(v.fx) &&
-        refsOk((v.fx as StoredFormula).r)
-      );
+      return v.a === undefined && v.b === undefined && storedFormulaOk(v.fx) && refsOk(v.fx.r);
     return (
       (CONDITION_OPS as readonly unknown[]).includes(v.op) &&
       v.fx === undefined &&

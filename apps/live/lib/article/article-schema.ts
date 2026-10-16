@@ -56,12 +56,12 @@ export const articleSchema = new Schema({
         {
           tag: '[data-article-style]',
           getAttrs: (el) => {
-            const style = (el as HTMLElement).getAttribute('data-article-style');
+            const style = el.getAttribute('data-article-style');
             return {
               style: ARTICLE_PARAGRAPH_STYLES.includes(style as ArticleParagraphStyle)
                 ? style
                 : 'body',
-              align: readAlign(el as HTMLElement),
+              align: readAlign(el),
             };
           },
         },
@@ -69,7 +69,7 @@ export const articleSchema = new Schema({
           tag,
           getAttrs: (el: HTMLElement) => ({ style: tagStyle(tag), align: readAlign(el) }),
         })),
-        { tag: 'p', getAttrs: (el) => ({ align: readAlign(el as HTMLElement) }) },
+        { tag: 'p', getAttrs: (el) => ({ align: readAlign(el) }) },
       ],
       toDOM(node): DOMOutputSpec {
         const style = node.attrs.style as ArticleParagraphStyle;
@@ -99,7 +99,7 @@ export const articleSchema = new Schema({
         {
           tag: 'li[data-article-list]',
           getAttrs: (el) => {
-            const e = el as HTMLElement;
+            const e = el;
             const list = e.getAttribute('data-article-list');
             return {
               list: ARTICLE_LIST_KINDS.includes(list as ArticleListKind) ? list : 'bullet',
@@ -113,7 +113,7 @@ export const articleSchema = new Schema({
           tag: 'li',
           getAttrs: (el) => {
             // A pasted list item: its kind from its list, its level from how deep it is nested.
-            const e = el as HTMLElement;
+            const e = el;
             let level = 0;
             for (let p = e.parentElement?.parentElement; p; p = p.parentElement) {
               if (p.tagName === 'UL' || p.tagName === 'OL') level++;
@@ -251,7 +251,7 @@ export const articleSchema = new Schema({
         {
           tag: 'a[href]',
           getAttrs: (el) => {
-            const href = (el as HTMLElement).getAttribute('href');
+            const href = el.getAttribute('href');
             return isSafeArticleHref(href) ? { href } : false;
           },
         },
@@ -268,11 +268,11 @@ export const articleSchema = new Schema({
         {
           tag: 'b',
           // Google Docs wraps a whole paste in <b style="font-weight:normal">.
-          getAttrs: (el) => (el as HTMLElement).style.fontWeight !== 'normal' && null,
+          getAttrs: (el) => el.style.fontWeight !== 'normal' && null,
         },
         {
           style: 'font-weight',
-          getAttrs: (v) => /^(bold(er)?|[6-9]\d{2,})$/.test(v as string) && null,
+          getAttrs: (v) => /^(bold(er)?|[6-9]\d{2,})$/.test(v) && null,
         },
       ],
       toDOM: (): DOMOutputSpec => ['strong', 0],

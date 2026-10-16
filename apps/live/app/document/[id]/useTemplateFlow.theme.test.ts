@@ -50,7 +50,7 @@ describe('chooseTemplate theme', () => {
     elements: [],
     theme: 'slate',
     backgroundColor: '#123456',
-  } as Tab;
+  };
 
   it("paints a start-panel pick in the tab's own theme", async () => {
     const landed = await land(empty);

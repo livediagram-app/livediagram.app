@@ -21,7 +21,7 @@ describe('cardSourceOf', () => {
   const types = [
     ...ITEM_TYPES,
     {
-      ...ITEM_TYPES[0]!,
+      ...ITEM_TYPES[0],
       id: 'risk',
       label: 'Risk',
       custom: [{ id: 'f-sev', label: 'Severity', kind: 'number' as const }],

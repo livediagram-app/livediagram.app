@@ -169,8 +169,15 @@ describe('invertElementOps (docs/specs/024-agents/agent-changesets.md "Revert")'
 });
 
 describe('applyElementOps, batched', () => {
-  const box = (id: string, x = 0): Element =>
-    ({ id, type: 'shape', shape: 'square', x, y: 0, width: 10, height: 10 }) as Element;
+  const box = (id: string, x = 0): Element => ({
+    id,
+    type: 'shape',
+    shape: 'square',
+    x,
+    y: 0,
+    width: 10,
+    height: 10,
+  });
   const sequential = (elements: Element[], ops: ElementOp[]) =>
     ops.reduce(applyElementOp, elements);
 

@@ -257,12 +257,12 @@ describe('Setup Sheet', () => {
     const { columnsForCards } = await import('./SheetSetupStart');
     const types = [
       {
-        ...ITEM_TYPES[1]!,
+        ...ITEM_TYPES[1],
         id: 'a',
         fields: ['title', 'status', 'due', 'f-size'],
         custom: [{ id: 'f-size', label: 'Size', kind: 'text' as const }],
       },
-      { ...ITEM_TYPES[1]!, id: 'b', fields: ['title', 'assignee'] },
+      { ...ITEM_TYPES[1], id: 'b', fields: ['title', 'assignee'] },
     ];
     expect(columnsForCards([{ type: 'a' }], types)).toEqual([
       'Number',

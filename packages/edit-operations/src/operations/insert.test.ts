@@ -103,7 +103,7 @@ describe('insert', () => {
       y: 0,
       width: 40,
       height: 20,
-    } as Element);
+    });
     expect(refused(run('insert square between z t1', lonely)).details).toEqual(['no arrow z→t1']);
   });
 

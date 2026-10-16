@@ -94,7 +94,7 @@ export function chartPageGrounds(
 ): Map<string, readonly string[]> {
   const out = new Map<string, readonly string[]>();
   if (!pages.some((p) => p.background?.fill) || !elements.some(isPaletteChart)) return out;
-  const index = elementIndexFor(elements as Element[]);
+  const index = elementIndexFor(elements);
   // Each element's page, once; only pages with a fill and a chart on them are walked.
   const pageOf = new Map<string, LaidOutPage>();
   const walked = new Set<LaidOutPage>();

@@ -23,7 +23,6 @@ import {
   canAppendWebRow,
   withWebRows,
   type ComponentKind,
-  type ImageElement,
   type ShapeElement,
   type Tab,
 } from './index';
@@ -222,7 +221,7 @@ describe('headless render (docs/specs/009-elements/web-components-and-no-groups.
   });
 
   it('draws the hero caption over the image', () => {
-    const svg = svgOf([createHero(0, 0, '#000') as ImageElement]);
+    const svg = svgOf([createHero(0, 0, '#000')]);
     expect(svg).toContain('Hero title');
   });
 });

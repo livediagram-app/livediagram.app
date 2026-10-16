@@ -617,7 +617,7 @@ export function PlanBoardView({
                                     fields: {
                                       ...fields,
                                       ...(withLanes ? laneMove(lane).set : {}),
-                                    } as Item['fields'],
+                                    },
                                     status: cellStatus(setup, col.column.status, lane),
                                     after: cell[cell.length - 1]?.id ?? null,
                                   });

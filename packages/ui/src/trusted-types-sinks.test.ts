@@ -30,7 +30,7 @@ const files = ['apps', 'packages']
 // Where the expression handed to `__html` starts, for every dangerouslySetInnerHTML in a file.
 const htmlExpressions = (source: string) =>
   [...source.matchAll(/dangerouslySetInnerHTML=\{\{\s*__html:\s*/g)].map((m) =>
-    source.slice(m.index! + m[0].length, m.index! + m[0].length + 40),
+    source.slice(m.index + m[0].length, m.index + m[0].length + 40),
   );
 
 describe('Trusted Types sinks', () => {

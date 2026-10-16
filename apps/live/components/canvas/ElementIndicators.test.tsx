@@ -15,7 +15,7 @@ import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
 // pip when the element has no room.
 
 function shape(kind: ShapeKind, width: number, height: number): BoxedElement {
-  return { ...createShape(kind, 0, 0), width, height } as BoxedElement;
+  return { ...createShape(kind, 0, 0), width, height };
 }
 
 const items = (over: Partial<Parameters<typeof buildIndicatorItems>[0]> = {}) =>

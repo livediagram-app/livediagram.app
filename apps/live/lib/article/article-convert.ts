@@ -34,11 +34,11 @@ const RUN_MARKS: [keyof ArticleRun, string][] = [
 
 function marksOf(run: ArticleRun): Mark[] {
   const marks: Mark[] = [];
-  if (run.href && isSafeArticleHref(run.href)) marks.push(S.marks.link!.create({ href: run.href }));
+  if (run.href && isSafeArticleHref(run.href)) marks.push(S.marks.link.create({ href: run.href }));
   for (const [flag, name] of RUN_MARKS) if (run[flag]) marks.push(S.marks[name]!.create());
-  if (run.color && isArticleHex(run.color)) marks.push(S.marks.color!.create({ color: run.color }));
-  if (run.hl && isArticleHex(run.hl)) marks.push(S.marks.highlight!.create({ color: run.hl }));
-  if (run.note) marks.push(S.marks.note!.create({ id: run.note, kind: run.nk ?? 'comment' }));
+  if (run.color && isArticleHex(run.color)) marks.push(S.marks.color.create({ color: run.color }));
+  if (run.hl && isArticleHex(run.hl)) marks.push(S.marks.highlight.create({ color: run.hl }));
+  if (run.note) marks.push(S.marks.note.create({ id: run.note, kind: run.nk ?? 'comment' }));
   return marks;
 }
 
@@ -48,7 +48,7 @@ function inlineOf(runs: readonly ArticleRun[]): PMNode[] {
     const marks = marksOf(run);
     // A '\n' in a run is a line break in the block.
     run.text.split('\n').forEach((part, i) => {
-      if (i > 0) out.push(S.nodes.hard_break!.create());
+      if (i > 0) out.push(S.nodes.hard_break.create());
       if (part) out.push(S.text(part, marks));
     });
   }
@@ -59,12 +59,12 @@ function inlineOf(runs: readonly ArticleRun[]): PMNode[] {
 function blockToNode(b: ArticleBlock): PMNode {
   switch (b.type) {
     case 'paragraph':
-      return S.nodes.paragraph!.create(
+      return S.nodes.paragraph.create(
         { id: b.id, style: b.style ?? 'body', align: b.align ?? 'left' },
         inlineOf(b.runs),
       );
     case 'list':
-      return S.nodes.list_item!.create(
+      return S.nodes.list_item.create(
         {
           id: b.id,
           list: b.list,
@@ -75,13 +75,13 @@ function blockToNode(b: ArticleBlock): PMNode {
         inlineOf(b.runs),
       );
     case 'code':
-      return S.nodes.code_block!.create({ id: b.id }, b.text ? S.text(b.text) : undefined);
+      return S.nodes.code_block.create({ id: b.id }, b.text ? S.text(b.text) : undefined);
     case 'divider':
-      return S.nodes.divider!.create({ id: b.id });
+      return S.nodes.divider.create({ id: b.id });
     case 'pageBreak':
-      return S.nodes.page_break!.create({ id: b.id });
+      return S.nodes.page_break.create({ id: b.id });
     case 'zone':
-      return S.nodes.zone!.create({
+      return S.nodes.zone.create({
         id: b.id,
         zone: b.zone,
         wrap: b.wrap ?? 'inline',
@@ -95,7 +95,7 @@ function blockToNode(b: ArticleBlock): PMNode {
 
 /** The writing as an editor article. */
 export function blocksToDoc(blocks: readonly ArticleBlock[]): PMNode {
-  return S.nodes.doc!.create(null, blocks.map(blockToNode));
+  return S.nodes.doc.create(null, blocks.map(blockToNode));
 }
 
 function runsOf(node: PMNode): ArticleRun[] {

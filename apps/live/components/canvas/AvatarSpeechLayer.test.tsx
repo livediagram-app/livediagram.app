@@ -134,9 +134,9 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
   it('holds Send while cooling down, and says so', () => {
     layer([], { head: { x: 0, y: 0 }, coolingDown: true, onSend: () => true, onCancel: () => {} });
     fireEvent.change(screen.getByRole('textbox', { name: 'Message' }), { target: { value: 'hi' } });
-    expect(
-      (screen.getByRole('button', { name: 'Send message' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Send message' }).disabled).toBe(
+      true,
+    );
     expect(screen.getByText('One moment…')).toBeTruthy();
   });
 });

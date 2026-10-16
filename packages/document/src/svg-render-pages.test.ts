@@ -31,9 +31,9 @@ describe('an Illustrate tab drawn as its pages', () => {
   });
 
   it('has pages only in Illustrate', () => {
-    expect(laidOutPagesOf({ id: 't', name: 'T', elements: [] } as Tab)).toEqual([]);
+    expect(laidOutPagesOf({ id: 't', name: 'T', elements: [] })).toEqual([]);
     expect(laidOutPagesOf(tab([portrait('a')])).map((p) => p.id)).toEqual(['a']);
-    expect(renderPagesToSvg({ id: 't', name: 'T', elements: [] } as Tab)).toBeNull();
+    expect(renderPagesToSvg({ id: 't', name: 'T', elements: [] })).toBeNull();
   });
 
   it('draws one page as its sheet: its background, and only what reaches onto it', () => {

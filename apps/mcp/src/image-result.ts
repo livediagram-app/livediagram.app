@@ -102,7 +102,7 @@ async function planContentFor(
       el.type === 'shape' &&
       (el.shape === 'plan-board' || el.shape === 'plan-card' || el.shape === 'plan-view'),
   );
-  const frames = sheetFramesOf(tab.elements as never);
+  const frames = sheetFramesOf(tab.elements);
   // A chart linked to a sheet reads it live, framed on this tab or not.
   const charted = tab.elements.flatMap((el) => {
     const source = (el as { chartSource?: { sheetId?: string } }).chartSource;

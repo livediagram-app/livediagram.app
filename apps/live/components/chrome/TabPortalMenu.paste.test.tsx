@@ -41,7 +41,7 @@ function props(over: Partial<Props> = {}): Props {
       canPaste: true,
     },
     ...over,
-  } as Props;
+  };
 }
 
 const pasteRow = () => document.querySelector<HTMLElement>('[data-testid="canvas-paste-row"] > *');

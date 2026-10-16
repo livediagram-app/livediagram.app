@@ -9,7 +9,7 @@
 // and a single string-length walk converts between DOM points and character
 // offsets in both directions.
 
-import { normalizeRuns, type RunSize, type TextRun } from '@livediagram/document';
+import { normalizeRuns, type TextRun } from '@livediagram/document';
 
 // data-* attribute names carried on each rendered span. Render
 // (`dataAttrsForRun`) and read-back (`readRunsFromDom`) must agree, so they
@@ -99,7 +99,7 @@ function attrsFromElement(el: HTMLElement): Omit<TextRun, 'text'> {
   if (u !== undefined) out.underline = u;
   if (s !== undefined) out.strikethrough = s;
   const size = el.getAttribute(DATA.size);
-  if (size === 'xs' || size === 'sm' || size === 'md' || size === 'lg') out.size = size as RunSize;
+  if (size === 'xs' || size === 'sm' || size === 'md' || size === 'lg') out.size = size;
   const color = el.getAttribute(DATA.color);
   if (color) out.color = color;
   const link = el.getAttribute(DATA.link);

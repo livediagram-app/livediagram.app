@@ -11,7 +11,7 @@ import type { ArrowElement, Element, ShapeElement } from './index';
 // 2,000-node map, or a 1,000-deep chain, stays well inside a frame's budget.
 
 const node = (id: string, x: number, y: number, parent?: string): ShapeElement => ({
-  ...(createShape('mind-node', x, y) as ShapeElement),
+  ...createShape('mind-node', x, y),
   id,
   width: 250,
   height: 80,

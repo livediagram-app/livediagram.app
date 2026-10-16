@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createFreehand, type Element, type Tab } from '@livediagram/document';
+import { createFreehand, type Element } from '@livediagram/document';
 import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { useCanvasEraser } from './useCanvasEraser';
 
@@ -17,7 +17,7 @@ function setup() {
       editsBlocked: false,
       layerInertIds: new Set<string>(),
       activeId: 't',
-      activeTab: { id: 't', name: 'Tab', elements: [] } as unknown as Tab,
+      activeTab: { id: 't', name: 'Tab', elements: [] },
       tick: vi.fn(),
       markCheckpoint: () => 1,
       setSelectedId: vi.fn(),
@@ -78,7 +78,7 @@ describe('useCanvasEraser on a whiteboard (docs/specs/023-draw-mode/draw-mode.md
         editsBlocked: false,
         layerInertIds: new Set<string>(),
         activeId: 't',
-        activeTab: { id: 't', name: 'Tab', elements: [stroke] } as unknown as Tab,
+        activeTab: { id: 't', name: 'Tab', elements: [stroke] },
         tick,
         markCheckpoint: () => 1,
         setSelectedId: vi.fn(),
@@ -116,7 +116,7 @@ describe('useCanvasEraser on a whiteboard (docs/specs/023-draw-mode/draw-mode.md
         editsBlocked: false,
         layerInertIds: new Set<string>(),
         activeId: 't',
-        activeTab: { id: 't', name: 'Tab', elements: [stroke] } as unknown as Tab,
+        activeTab: { id: 't', name: 'Tab', elements: [stroke] },
         tick,
         markCheckpoint: () => 1,
         setSelectedId: vi.fn(),

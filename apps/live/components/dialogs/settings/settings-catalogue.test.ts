@@ -81,7 +81,7 @@ describe('settings catalogue', () => {
     // looks would silently be a switch that never moves.
     for (const row of TOGGLES) {
       for (const target of [true, false]) {
-        const next = row.write({} as UserPreferences, target);
+        const next = row.write({}, target);
         expect(row.read(next), `${row.key} -> ${target}`).toBe(target);
       }
     }
@@ -90,12 +90,12 @@ describe('settings catalogue', () => {
   it('round-trips every choice and slider too', () => {
     for (const row of CHOICES) {
       for (const option of row.options) {
-        expect(row.read(row.write({} as UserPreferences, option.id)), row.key).toBe(option.id);
+        expect(row.read(row.write({}, option.id)), row.key).toBe(option.id);
       }
     }
     for (const row of SLIDERS) {
       for (const value of [row.min, row.max]) {
-        expect(row.read(row.write({} as UserPreferences, value)), row.key).toBe(value);
+        expect(row.read(row.write({}, value)), row.key).toBe(value);
       }
     }
   });
@@ -238,21 +238,21 @@ describe('settings catalogue', () => {
       expect(TELEMETRY_TYPE_PATTERN.test(toggle.event.on), toggle.key).toBe(true);
       expect(TELEMETRY_TYPE_PATTERN.test(toggle.event.off), toggle.key).toBe(true);
       for (const value of [true, false]) {
-        expect(toggle.read(toggle.write({} as UserPreferences, value)), toggle.key).toBe(value);
+        expect(toggle.read(toggle.write({}, value)), toggle.key).toBe(value);
       }
     }
   });
 
   it('defaults every slider and choice to a value it actually offers', () => {
     for (const row of CHOICES) {
-      const fallback = row.read({} as UserPreferences);
+      const fallback = row.read({});
       expect(
         row.options.map((o) => o.id),
         row.key,
       ).toContain(fallback);
     }
     for (const row of SLIDERS) {
-      const fallback = row.read({} as UserPreferences);
+      const fallback = row.read({});
       expect(fallback, row.key).toBeGreaterThanOrEqual(row.min);
       expect(fallback, row.key).toBeLessThanOrEqual(row.max);
     }
@@ -447,7 +447,7 @@ describe('settings catalogue', () => {
 
   it('switches power user mode through the preset, not a bare flag', () => {
     const row = TOGGLES.find((r) => r.key === 'powerUserMode')!;
-    const on = row.write({ alignmentGuides: false } as UserPreferences, true);
+    const on = row.write({ alignmentGuides: false }, true);
     expect(on.alignmentGuides).toBe(true);
     expect(on.minimalChrome).toBe(true);
     expect(row.read(on)).toBe(true);

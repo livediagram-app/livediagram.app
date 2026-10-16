@@ -36,7 +36,7 @@ describe('focusing a newly added board, visualisation or Sheet', () => {
     view.rerender({ tabId: 't2', elements: [square, sheet, board] });
     expect(focus).not.toHaveBeenCalled();
     const other = setup('q9');
-    other.view.rerender({ tabId: 't1', elements: [square, { ...square, id: 'q9' } as Element] });
+    other.view.rerender({ tabId: 't1', elements: [square, { ...square, id: 'q9' }] });
     expect(other.focus).not.toHaveBeenCalled();
   });
 });

@@ -67,9 +67,9 @@ describe('while the detector is still looking', () => {
     expect(screen.getByAltText('The photographed wall').getAttribute('src')).toBe('blob:the-photo');
     expect(screen.getAllByText(/finding the stickies/i).length).toBeGreaterThan(0);
     // Nothing to add yet, and no way to add nothing.
-    expect(
-      (screen.getByRole('button', { name: /^Add 0 notes$/ }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: /^Add 0 notes$/ }).disabled).toBe(
+      true,
+    );
   });
 
   it('offers the retake advice when the detector found nothing', () => {
@@ -104,9 +104,9 @@ describe('when the detection arrives', () => {
         onCancel={noop}
       />,
     );
-    expect(
-      (screen.getByRole('button', { name: /^Add 3 notes$/ }) as HTMLButtonElement).disabled,
-    ).toBe(false);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: /^Add 3 notes$/ }).disabled).toBe(
+      false,
+    );
   });
 
   it('marks each box with its kind and the overlay with the detector, for tools that score it', () => {
@@ -544,9 +544,9 @@ describe('correcting a box', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete this box' }));
     expect(screen.queryByTestId('note-box-0')).toBeNull();
     // Nothing left to add.
-    expect(
-      (screen.getByRole('button', { name: /^Add 0 notes$/ }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: /^Add 0 notes$/ }).disabled).toBe(
+      true,
+    );
     expect(onConfirm).not.toHaveBeenCalled();
   });
 

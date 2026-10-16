@@ -49,7 +49,7 @@ function harness(elements: Element[], over: { createBlocked?: boolean } = {}) {
         get elements() {
           return live;
         },
-      } as Tab,
+      },
       createBlocked: over.createBlocked === true,
       layerInertIds: new Set<string>(),
       commit: (m) => {
@@ -58,7 +58,7 @@ function harness(elements: Element[], over: { createBlocked?: boolean } = {}) {
       },
       // The editor's real addBoxedAt semantics, minimally: build centred on
       // the point, ripple first when a slot came with it, one commit.
-      addBoxedAt: (<T extends BoxedElement>(
+      addBoxedAt: <T extends BoxedElement>(
         cx: number,
         cy: number,
         make: (x: number, y: number) => T,
@@ -69,7 +69,7 @@ function harness(elements: Element[], over: { createBlocked?: boolean } = {}) {
         steps += 1;
         live = opts?.insertion ? insertElementAt(live, opts.insertion, el) : [...live, el];
         if (opts?.edit) edited.push(el.id);
-      }) as never,
+      },
     }),
   );
   return {
@@ -154,7 +154,7 @@ describe('addNextNote', () => {
 
   it('does nothing on an element that is not a workshop note', () => {
     const h = harness([
-      { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 9, height: 9 } as Element,
+      { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 9, height: 9 },
     ]);
     h.api().addNextNote('s', 'before');
     expect(h.steps()).toBe(0);

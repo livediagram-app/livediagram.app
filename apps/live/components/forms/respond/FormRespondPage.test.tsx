@@ -124,7 +124,7 @@ describe('the form page', () => {
       'Keep it under 200',
     ],
   ])('says why a response was refused (%o)', async (reply, words) => {
-    replies.push({ status: 200, body: OPEN }, reply as Reply);
+    replies.push({ status: 200, body: OPEN }, reply);
     render(<FormRespondPage />);
     await screen.findByRole('heading', { name: 'Feedback' });
     answer();

@@ -86,7 +86,7 @@ function FlyingBubble({
   const put = (part: 'card' | 'tail', el: HTMLElement | null) => {
     const entry = nodes.current.get(id) ?? { card: null, tail: null };
     if (part === 'card') entry.card = el as HTMLDivElement | null;
-    else entry.tail = el as HTMLSpanElement | null;
+    else entry.tail = el;
     if (entry.card || entry.tail) nodes.current.set(id, entry);
     else nodes.current.delete(id);
   };

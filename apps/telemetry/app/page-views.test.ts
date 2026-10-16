@@ -5,8 +5,12 @@ import { pageViewRows } from './page-views';
 // The Pages tab's arithmetic (docs/specs/017-telemetry/page-view-telemetry.md): only page views count, split by the
 // app that serves each path.
 
-const row = (category: string, action: string, type: string | null, count: number) =>
-  ({ category, action, type, count }) as TelemetryCount;
+const row = (category: string, action: string, type: string | null, count: number) => ({
+  category,
+  action,
+  type,
+  count,
+});
 
 const ROWS = [
   row('Page', 'View', '/', 40),

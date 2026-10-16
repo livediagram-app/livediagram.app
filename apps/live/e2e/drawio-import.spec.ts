@@ -50,7 +50,7 @@ async function storedTabs(page: Page) {
         const got = (await (
           await fetch(`/api/documents/${id}/tabs/${t.id}`, { headers })
         ).json()) as StoredTab;
-        return { name: t.name, elements: (got.tab?.elements ?? []).length as number };
+        return { name: t.name, elements: (got.tab?.elements ?? []).length };
       }),
     );
   }, headers);
@@ -70,7 +70,7 @@ async function storedElements(page: Page) {
         const got = (await (
           await fetch(`/api/documents/${id}/tabs/${t.id}`, { headers })
         ).json()) as StoredTab;
-        return { name: t.name, elements: (got.tab?.elements ?? []) as unknown[] };
+        return { name: t.name, elements: got.tab?.elements ?? [] };
       }),
     );
   }, headers);

@@ -83,14 +83,14 @@ describe('elementTileSections', () => {
   });
 
   it("uses the document's own card types in Plan, and keeps the built-in ones out of elsewhere", () => {
-    const own = [{ ...ITEM_TYPES[0]!, id: 'custom', label: 'Custom' }];
+    const own = [{ ...ITEM_TYPES[0], id: 'custom', label: 'Custom' }];
     const { here, elsewhere } = elementTileSections({
       mode: 'plan',
       hasImage: true,
       planCardTiles: own.map(planCardTile),
     });
     expect(ids(here)).toContain('plan:card-custom');
-    expect(ids(here)).not.toContain(`plan:card-${ITEM_TYPES[0]!.id}`);
+    expect(ids(here)).not.toContain(`plan:card-${ITEM_TYPES[0].id}`);
     expect(elsewhere.filter((t) => t.section === 'plan-cards')).toEqual([]);
     expect(
       elementTileSections({ mode: 'plan', hasImage: true, planCardTiles: [] }).unavailable,

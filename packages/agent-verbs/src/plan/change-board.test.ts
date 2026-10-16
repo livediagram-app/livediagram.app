@@ -5,7 +5,7 @@ import { swimlanesNamed } from './change-board';
 // change_board's swimlanes by name (docs/specs/026-plan/plan-agents.md "Changing a board").
 
 const BUG: ItemTypeDef = {
-  ...ITEM_TYPES[1]!,
+  ...ITEM_TYPES[1],
   id: 'bug',
   label: 'Bug',
   fields: ['title', 'status', 'f-sev'],

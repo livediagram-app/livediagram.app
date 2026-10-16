@@ -27,7 +27,7 @@ type TabLike = { id: string; kind?: string; opensIn?: string };
 export function tabWindowMayShow(tab: TabLike, ownTabId: string | undefined): boolean {
   if (tab.id === ownTabId) return false;
   if (isPlanTabKind(tab.kind)) return false;
-  return opensInOf(tab as Parameters<typeof opensInOf>[0]) !== 'plan';
+  return opensInOf(tab) !== 'plan';
 }
 
 /** The tabs a window on `ownTabId` may show, in tab-bar order. */

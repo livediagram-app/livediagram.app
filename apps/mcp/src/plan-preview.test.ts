@@ -37,7 +37,7 @@ describe('planPreviewFor', () => {
     expect(board.tab.elements.every((e) => e.type === 'shape' && e.shape === 'plan-board')).toBe(
       true,
     );
-    const diagram: Tab = { ...at('Board'), kind: undefined, elements: [] } as Tab;
+    const diagram: Tab = { ...at('Board'), kind: undefined, elements: [] };
     expect(await planPreviewFor(diagram, undefined)).toBeNull();
   });
 });

@@ -38,7 +38,7 @@ function setup(active: Partial<Tab> = {}, over: Partial<BoardSceneImportDeps> = 
     refreshed: 0,
   };
   const deps: BoardSceneImportDeps = {
-    tabs: [{ id: 'a', name: 'A', elements: [], ...active } as Tab],
+    tabs: [{ id: 'a', name: 'A', elements: [], ...active }],
     activeId: 'a',
     drawMode: false,
     ownerId: 'o',

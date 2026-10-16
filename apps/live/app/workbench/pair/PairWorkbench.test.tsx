@@ -212,9 +212,9 @@ describe('PairWorkbench', () => {
 
     const allowing = screen.getByRole('button', { name: 'Allowing…' }) as HTMLButtonElement;
     expect(allowing.disabled).toBe(true);
-    expect(
-      (screen.getByRole('button', { name: 'Don’t allow' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Don’t allow' }).disabled).toBe(
+      true,
+    );
     expect(heading().textContent).toBe('Allow this workbench?');
     expect(api.apiAnswerPairingRequest).toHaveBeenCalledWith('user_1', CODE, 'approve');
 
@@ -242,12 +242,10 @@ describe('PairWorkbench', () => {
     render(<PairWorkbench />);
     fireEvent.click(await screen.findByRole('button', { name: 'Don’t allow' }));
 
-    expect((screen.getByRole('button', { name: 'Allow' }) as HTMLButtonElement).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Allow' }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Don’t allow' }).disabled).toBe(
       true,
     );
-    expect(
-      (screen.getByRole('button', { name: 'Don’t allow' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
     expect(api.apiAnswerPairingRequest).toHaveBeenCalledWith('user_1', CODE, 'decline');
 
     await act(async () => answer.resolve('declined'));

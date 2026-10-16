@@ -12,10 +12,10 @@ function arrow(id: string): Element {
     type: 'arrow',
     from: { kind: 'free', x: 0, y: 0 },
     to: { kind: 'free', x: 1, y: 1 },
-  } as Element;
+  };
 }
 function text(id: string): Element {
-  return { id, type: 'text', x: 0, y: 0, width: 1, height: 1 } as Element;
+  return { id, type: 'text', x: 0, y: 0, width: 1, height: 1 };
 }
 
 describe('buildFilterGroups', () => {

@@ -11,7 +11,7 @@ import { fitMindLabel, mindLabelFontPx, mindLabelHeight, mindLabelPadding } from
 // docs/specs/009-elements/mind-node.md "A node grows to fit its label".
 
 const mind = (patch: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...(createShape('mind-node', 0, 0) as ShapeElement),
+  ...createShape('mind-node', 0, 0),
   id: 'm',
   label: 'One\nTwo\nThree\nFour',
   ...patch,
@@ -45,7 +45,7 @@ describe('fitMindLabel', () => {
   });
 
   it('leaves a node whose label fits, and anything that is not a mind node', () => {
-    const els: Element[] = [mind(), { ...(createShape('square', 0, 0) as ShapeElement), id: 's' }];
+    const els: Element[] = [mind(), { ...createShape('square', 0, 0), id: 's' }];
     expect(fitMindLabel(els, 'm', () => () => ({ width: 1, height: 20 }))).toBe(els);
     expect(fitMindLabel(els, 's', () => () => ({ width: 1, height: 900 }))).toBe(els);
   });

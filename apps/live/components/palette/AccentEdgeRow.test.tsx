@@ -33,7 +33,7 @@ const show = (target: Element, o = ops()) => {
 };
 
 const square = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('square', 0, 0) as ShapeElement), ...over }) as ShapeElement;
+  ({ ...createShape('square', 0, 0), ...over }) as ShapeElement;
 
 describe('AccentEdgeRow', () => {
   it('renders nothing on a kind without an edge', () => {

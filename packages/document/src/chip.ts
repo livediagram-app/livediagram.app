@@ -155,7 +155,7 @@ export function renumberSteps(elements: Element[]): Element[] {
     if (label === undefined || (el as ShapeElement).label === label) return el;
     // The number is the label; a formatted label's runs would still say the old one.
     const { richText: _runs, ...rest } = el as ShapeElement;
-    return { ...rest, label } as Element;
+    return { ...rest, label };
   });
 }
 
@@ -174,6 +174,6 @@ export function withStepSequence(elements: Element[], on: boolean): Element[] {
     if (el.type !== 'shape' || el.shape !== 'step' || !!el.stepSequence === on) return el;
     if (on) return { ...el, stepSequence: true };
     const { stepSequence: _off, ...rest } = el;
-    return rest as Element;
+    return rest;
   });
 }

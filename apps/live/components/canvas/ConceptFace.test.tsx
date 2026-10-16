@@ -18,7 +18,7 @@ import { setConceptTourPreview } from '@/lib/concept-tour-preview';
 afterEach(cleanup);
 
 const make = (kind: ConceptShape, over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape(kind, 0, 0) as ShapeElement), ...over }) as ShapeElement & {
+  ({ ...createShape(kind, 0, 0), ...over }) as ShapeElement & {
     shape: ConceptShape;
   };
 

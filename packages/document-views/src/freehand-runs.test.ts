@@ -14,16 +14,14 @@ describe('isBareStroke', () => {
   });
 
   it('refuses a stroke carrying anything, or an arrow end, or a non-stroke', () => {
-    expect(isBareStroke({ ...stroke, label: 'Loop' } as Element, none)).toBe(false);
+    expect(isBareStroke({ ...stroke, label: 'Loop' }, none)).toBe(false);
     expect(isBareStroke({ ...stroke, note: 'n' } as Element, none)).toBe(false);
     const thread = {
       comments: [{ id: 'c', text: 't', createdAt: 0, authorName: 'A', authorColor: '#000' }],
       resolved: false,
     };
     expect(isBareStroke({ ...stroke, commentThread: thread } as Element, none)).toBe(false);
-    expect(
-      isBareStroke({ ...stroke, link: { kind: 'url', url: 'https://x' } } as Element, none),
-    ).toBe(false);
+    expect(isBareStroke({ ...stroke, link: { kind: 'url', url: 'https://x' } }, none)).toBe(false);
     expect(isBareStroke({ ...stroke, action: {} } as unknown as Element, none)).toBe(false);
     expect(isBareStroke({ ...stroke, actions: [] } as unknown as Element, none)).toBe(false);
     expect(isBareStroke(stroke, new Set(['s']))).toBe(false);

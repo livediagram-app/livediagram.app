@@ -242,7 +242,7 @@ export function designWrite(
   // Widths, grown with the cell size (a Roomy sheet's columns are wider too).
   const scale = size.width / SHEET_CELL_SIZES.default.width;
   const widthAt = (j: number) =>
-    design.widths[j] !== undefined ? Math.round(design.widths[j]! * scale) : size.width;
+    design.widths[j] !== undefined ? Math.round(design.widths[j] * scale) : size.width;
   design.widths.forEach((_, j) => {
     const c = colIds[j];
     if (c) changes.push({ k: 'size', axis: 'c', ids: [c], px: widthAt(j) });

@@ -16,8 +16,7 @@ vi.mock('@/lib/api-client', () => ({
 }));
 
 const DAY = 86_400_000;
-const link = (): TeamInviteLink =>
-  ({ token: 'tok', expiresAt: Date.now() + 3 * DAY }) as TeamInviteLink;
+const link = (): TeamInviteLink => ({ token: 'tok', expiresAt: Date.now() + 3 * DAY });
 
 type Props = Parameters<typeof TeamInviteLinkDialog>[0];
 const props = (over: Partial<Props> = {}): Props => ({

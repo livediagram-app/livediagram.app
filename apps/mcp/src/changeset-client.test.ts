@@ -20,8 +20,16 @@ import { connectTestClient } from './mcp-test-client';
 // The MCP onto changesets (docs/specs/015-api/mcp-server.md §4.3a, §4.4; blueprint
 // docs/specs/024-agents/blueprints/agent-changesets.md "MCP").
 
-const box = (id: string, label = id): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label }) as Element;
+const box = (id: string, label = id): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  label,
+});
 const tab: Tab & { rev: number } = { id: 't1', name: 'T', elements: [box('a'), box('b')], rev: 7 };
 
 describe('editsBase', () => {

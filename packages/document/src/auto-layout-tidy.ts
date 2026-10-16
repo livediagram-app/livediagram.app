@@ -214,7 +214,7 @@ export function tidyLayoutElements(
   const placed = elements.map((el): Element => {
     if (isBoxed(el)) {
       const d = shiftOf(el.id);
-      return d && (d.x || d.y) ? ({ ...el, x: el.x + d.x, y: el.y + d.y } as Element) : el;
+      return d && (d.x || d.y) ? { ...el, x: el.x + d.x, y: el.y + d.y } : el;
     }
     // A free end inside a unit (a note's pointer drawn in a panel) travels with the unit.
     if (el.type === 'arrow' && !locked?.has(el.id)) {

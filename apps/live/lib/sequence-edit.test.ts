@@ -7,7 +7,7 @@ import { resolveEditorCapabilities } from './editor-capabilities';
 // unlocked diagram; a Participant and a Viewer look.
 const seq = createShape('sequence', 0, 0);
 const can = (level: 'edit' | 'participate' | 'view') =>
-  resolveEditorCapabilities({ level, adderKey: 'key' } as never);
+  resolveEditorCapabilities({ level, adderKey: 'key' });
 
 describe('canEditSequence', () => {
   it('lets an Editor edit an unlocked diagram', () => {

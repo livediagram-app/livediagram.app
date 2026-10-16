@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { axisLabelRoom, axisScale, rightAxisSeries } from './chart-axis';
 import { barMarks, lineMarks } from './chart-marks';
 import { normaliseElement } from './element-normalise';
-import type { Element, Tab } from './index';
 import { renderElementsToSvg } from './svg-render';
 
 // docs/specs/009-elements/pie-chart.md "Show Axis", "A second axis".
@@ -89,7 +88,7 @@ describe('a series axis read in', () => {
         { name: 'a', values: [1], axis: 'right' },
         { name: 'b', values: [2], axis: 'left' },
       ],
-    } as unknown as Element) as { lineSeries: { axis?: string }[] };
+    }) as { lineSeries: { axis?: string }[] };
     expect(el.lineSeries.map((s) => s.axis)).toEqual(['right', undefined]);
   });
 });
@@ -115,9 +114,9 @@ describe('the axis in an export', () => {
               { name: 'Paid', values: [90, 170], axis: 'right', color: '#ff0000' },
             ],
             ...extra,
-          } as Element,
+          },
         ],
-      } as Tab);
+      });
     const on = chart({ chartAxis: true });
     expect(on).toContain('>1,500</text>');
     expect(on).toMatch(/text-anchor="start"[^>]*>200<\/text>/);
@@ -138,9 +137,9 @@ describe('the axis in an export', () => {
           height: 200,
           pieSlices: [{ label: 'Jul', value: 160 }],
           chartAxis: true,
-        } as Element,
+        },
       ],
-    } as Tab);
+    });
     expect(columns).toContain('>200</text>');
   });
 });

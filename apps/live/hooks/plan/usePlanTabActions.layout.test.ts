@@ -14,7 +14,7 @@ const ids = () => {
 };
 
 function run(dashboard: DashboardLayout, place: (a: ReturnType<typeof usePlanTabActions>) => void) {
-  let tabs: Tab[] = [{ id: 'd', name: 'D', kind: 'dashboard', elements: [], dashboard } as Tab];
+  let tabs: Tab[] = [{ id: 'd', name: 'D', kind: 'dashboard', elements: [], dashboard }];
   const write = (map: (ts: Tab[]) => Tab[]) => {
     tabs = map(tabs);
   };

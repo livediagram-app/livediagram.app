@@ -244,7 +244,7 @@ export function useQuickStyle(
     if (!subject || editsBlocked) return;
     if (subject.kind === 'pen') {
       // Choosing what the pen already has changes (and reports) nothing.
-      const pen = view!.pen!;
+      const pen = view.pen!;
       if (patch.colour !== undefined && patch.colour === pen.colour.value) return;
       if (patch.width !== undefined && patch.width === pen.width.value) return;
       // The pen's own setting, as its dock flyout sets it (and tracks it).

@@ -13,19 +13,18 @@ vi.mock('./PlanContext', () => ({ usePlan: () => undefined }));
 
 afterEach(cleanup);
 
-const item = (fields: Item['fields']): Item =>
-  ({
-    id: 'item0001',
-    type: 'task',
-    key: 3,
-    rank: 'i',
-    fields: { title: 'Ship', ...fields },
-    rev: 1,
-    createdAt: 0,
-    updatedAt: 0,
-    createdBy: { id: 'p', name: 'Sam', color: '#2563eb' },
-    updatedBy: { id: 'p', name: 'Sam', color: '#2563eb' },
-  }) as Item;
+const item = (fields: Item['fields']): Item => ({
+  id: 'item0001',
+  type: 'task',
+  key: 3,
+  rank: 'i',
+  fields: { title: 'Ship', ...fields },
+  rev: 1,
+  createdAt: 0,
+  updatedAt: 0,
+  createdBy: { id: 'p', name: 'Sam', color: '#2563eb' },
+  updatedBy: { id: 'p', name: 'Sam', color: '#2563eb' },
+});
 
 describe('flags', () => {
   it('sets the flag, then clears it, and counts each', () => {

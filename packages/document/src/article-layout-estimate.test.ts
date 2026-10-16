@@ -19,8 +19,11 @@ const p = (text: string, style?: string, align?: string): ArticleBlock =>
     ...(align ? { align } : {}),
     runs: [{ text }],
   }) as ArticleBlock;
-const li = (text: string, list: 'bullet' | 'numbered' | 'todo', extra: object = {}): ArticleBlock =>
-  ({ id: `l${Math.random()}`, type: 'list', list, runs: [{ text }], ...extra }) as ArticleBlock;
+const li = (
+  text: string,
+  list: 'bullet' | 'numbered' | 'todo',
+  extra: object = {},
+): ArticleBlock => ({ id: `l${Math.random()}`, type: 'list', list, runs: [{ text }], ...extra });
 
 function article(
   blocks: ArticleBlock[],
@@ -167,10 +170,10 @@ describe('an article estimated', () => {
 
   it('stops at the most pages an estimate grows to, and reads nothing of an article or page it lacks', () => {
     const endless = article(
-      Array.from(
-        { length: ARTICLE_ESTIMATE_PAGES_MAX + 2 },
-        () => ({ id: `x${Math.random()}`, type: 'pageBreak' }) as ArticleBlock,
-      ),
+      Array.from({ length: ARTICLE_ESTIMATE_PAGES_MAX + 2 }, () => ({
+        id: `x${Math.random()}`,
+        type: 'pageBreak',
+      })),
     );
     const est = estimateArticle(endless, 'f', laid(endless), '#000000');
     expect(est.overflows).toBe(true);

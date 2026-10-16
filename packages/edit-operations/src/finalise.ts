@@ -73,7 +73,7 @@ function normaliseTouched(state: EditState, log: EditLog): void {
       !written.some((k) => k === 'fillColor' || ALIAS_FIELDS[k]?.includes('fillColor'))
     )
       delete normalised.strokeColor;
-    noteCoercions(state, el as unknown as Raw, normalised, log, operation);
+    noteCoercions(state, el, normalised, log, operation);
     if (normalised.type === 'shape') {
       const shape = coerceShapeKind(normalised.shape);
       if (shape !== normalised.shape) {
@@ -220,7 +220,7 @@ export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
   // editor settles them on commit: an agent's key otherwise drew its empty hint.
   const settled = settleDiagramKeys(
     containersBehindMembers(lanesToFront(rebound)),
-    tagColoursOf(state.tab as { tagColours?: unknown }),
+    tagColoursOf(state.tab),
   );
   const elements = settled.map((el) => {
     const was = state.before.get(el.id);

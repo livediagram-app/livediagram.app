@@ -19,7 +19,7 @@ const carriesText = (el: Element) => isBoxed(el) || el.type === 'arrow';
 export function withTabFont(tab: Tab, font: string | null): Tab {
   const elements = tab.elements.map((el) => {
     if (!carriesText(el) || !('font' in el)) return el;
-    const next = { ...el } as Element & { font?: string };
+    const next = { ...el };
     delete next.font;
     return next;
   });
@@ -36,7 +36,7 @@ export function withTabTextSize(tab: Tab, size: TextSize): Tab {
     defaultTextSize: size,
     elements: tab.elements.map((el) =>
       carriesText(el) && (el as { textSize?: TextSize }).textSize !== size
-        ? ({ ...el, textSize: size } as Element)
+        ? { ...el, textSize: size }
         : el,
     ),
   };

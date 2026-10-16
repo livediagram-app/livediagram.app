@@ -71,7 +71,7 @@ function event(over: Partial<TimelineEvent>): TimelineEvent {
     actorId: 'me',
     snapshot: { documentId: 'd1', documentName: 'Payments' },
     ...over,
-  } as TimelineEvent;
+  };
 }
 
 function slotsFor(value: ExplorerStateValue, onDismiss = vi.fn()) {

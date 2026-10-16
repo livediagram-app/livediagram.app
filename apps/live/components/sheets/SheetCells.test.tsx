@@ -99,7 +99,7 @@ function draw(
   );
 }
 
-const textBox = (text: string) => screen.getByText(text) as HTMLElement;
+const textBox = (text: string) => screen.getByText<HTMLElement>(text);
 
 describe('the helpers', () => {
   it('sizes fonts from the point size, else the base', () => {

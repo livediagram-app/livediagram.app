@@ -144,7 +144,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       !guestSignatureEnforced(env, Date.now()) ||
       (!!claimedOwnerId &&
         (await verifyOwnerId(
-          env.GUEST_ID_HMAC_SECRET!,
+          env.GUEST_ID_HMAC_SECRET,
           claimedOwnerId,
           url.searchParams.get('os'),
         )));

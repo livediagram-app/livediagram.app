@@ -164,6 +164,6 @@ describe('DocumentRoom Q&A write queue', () => {
     expect(bad.status).toBe(400);
     const ok = await write(room, 'b', { type: 'vote', noteId: 'n1', on: true });
     expect(ok.status).toBe(200);
-    expect(((await ok.json()) as { rev: number }).rev).toBe(2);
+    expect((await ok.json<{ rev: number }>()).rev).toBe(2);
   });
 });

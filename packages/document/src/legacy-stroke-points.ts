@@ -73,7 +73,7 @@ function migrateStroke(el: Element): Element {
     pressures: rawPressures,
     ...rest
   } = el as FreehandElement & LegacyFreehandPoints;
-  const stroke = rest as FreehandElement;
+  const stroke = rest;
   if (typeof stroke.packedPoints === 'string') return stroke;
   const samples = legacySamples(rawPoints, rawPressures);
   const fitted = fitBox(stroke, samples.points);

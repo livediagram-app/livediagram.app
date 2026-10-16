@@ -87,7 +87,7 @@ const QUARTERS: Partial<Record<Anchor, readonly [Anchor, Anchor]>> = {
 // trunk's very point (it fans only among the ends that fan) and ride it: it moves to that side's quarter toward its
 // other end, beside the trunk, unless that other end lies straight ahead.
 function besideTrunks(elements: Element[]): Element[] {
-  const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b as BoxedElement] as const));
+  const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b] as const));
   const trunks = new Set<string>();
   for (const el of elements)
     if (el.type === 'arrow')
@@ -147,7 +147,7 @@ export function branchExits(elements: Element[], opts: BranchOptions): Element[]
   const tb = opts.axis === 'TB';
   const point: Anchor = tb ? 's' : 'e';
   const [before, after]: [Anchor, Anchor] = tb ? ['w', 'e'] : ['n', 's'];
-  const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b as BoxedElement] as const));
+  const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b] as const));
   const arrows = elements.filter((el): el is ArrowElement => el.type === 'arrow');
   // The boxes a side exit's one bend must clear: every box but the frames and lanes that hold them.
   const solid = [...boxes.values()].filter(

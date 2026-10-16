@@ -50,7 +50,7 @@ export function responsesSheetTab(heading: string, formTab: Tab, sheetId: string
   return {
     id: crypto.randomUUID(),
     name: `${heading} Responses`.slice(0, 80),
-    elements: [{ ...createShape('plan-sheet', 0, 0), planSheet: { sheetId } } as Element],
+    elements: [{ ...createShape('plan-sheet', 0, 0), planSheet: { sheetId } }],
     defaultTextSize: 'sm',
     kind: 'sheet',
     opensIn: 'plan',
@@ -248,7 +248,7 @@ export function withAutoBoardName(
     name,
     elements: tab.elements.map((el) =>
       el.type === 'shape' && el.shape === 'plan-board' && el.planBoard?.title === was
-        ? ({ ...el, planBoard: { ...el.planBoard, title: name } } as Element)
+        ? { ...el, planBoard: { ...el.planBoard, title: name } }
         : el,
     ),
   };

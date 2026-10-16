@@ -13,30 +13,30 @@ import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-
 import type { ElementTourApi } from './element-tour-api';
 
 const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
-  sankey: createShape('sankey', 0, 0) as Element,
-  'layer-stack': createShape('layer-stack', 0, 0) as Element,
-  pyramid: createShape('pyramid', 0, 0) as Element,
-  funnel: applyShapeVariant(createShape('pyramid', 0, 0) as ShapeElement, 'funnel') as Element,
-  cycle: createShape('cycle', 0, 0) as Element,
-  hub: createShape('hub', 0, 0) as Element,
-  onion: createShape('onion', 0, 0) as Element,
-  chevrons: createShape('chevrons', 0, 0) as Element,
-  'mind-node': createShape('mind-node', 0, 0) as Element,
-  flowchart: { ...createShape('square', 0, 0), flowchartId: 'f1' } as Element,
+  sankey: createShape('sankey', 0, 0),
+  'layer-stack': createShape('layer-stack', 0, 0),
+  pyramid: createShape('pyramid', 0, 0),
+  funnel: applyShapeVariant(createShape('pyramid', 0, 0), 'funnel'),
+  cycle: createShape('cycle', 0, 0),
+  hub: createShape('hub', 0, 0),
+  onion: createShape('onion', 0, 0),
+  chevrons: createShape('chevrons', 0, 0),
+  'mind-node': createShape('mind-node', 0, 0),
+  flowchart: { ...createShape('square', 0, 0), flowchartId: 'f1' },
   'org-chart': {
     ...createShape('mind-node', 0, 0),
     mindLook: 'person',
     label: 'Ana Kim',
-  } as Element,
-  sequence: createShape('sequence', 0, 0) as Element,
-  chart: createShape('line-chart', 0, 0) as Element,
-  stack: createShape('stack', 0, 0) as Element,
-  entity: createShape('entity', 0, 0) as Element,
-  'tab-window': createShape('tab-window', 0, 0) as Element,
-  lane: createShape('lane', 0, 0) as Element,
-  boundary: createShape('boundary', 0, 0) as Element,
-  'diagram-key': createShape('diagram-key', 0, 0) as Element,
-  portal: createShape('portal', 0, 0) as Element,
+  },
+  sequence: createShape('sequence', 0, 0),
+  chart: createShape('line-chart', 0, 0),
+  stack: createShape('stack', 0, 0),
+  entity: createShape('entity', 0, 0),
+  'tab-window': createShape('tab-window', 0, 0),
+  lane: createShape('lane', 0, 0),
+  boundary: createShape('boundary', 0, 0),
+  'diagram-key': createShape('diagram-key', 0, 0),
+  portal: createShape('portal', 0, 0),
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {
@@ -93,7 +93,7 @@ describe('ELEMENT_TOUR_DEFS', () => {
     const pie = createShape('pie-chart', 0, 0) as Element;
     const env = { hasMore: true, touch: false, elements: [pie] };
     expect(ELEMENT_TOUR_DEFS.chart.steps(pie, env)[0]!.body).toContain('Pie chart');
-    const line = createShape('line-chart', 0, 0) as ShapeElement;
+    const line = createShape('line-chart', 0, 0);
     expect(ELEMENT_TOUR_DEFS.chart.steps(line, env).map((s) => s.id)).toContain('data');
     const fromSheet: ShapeElement = {
       ...line,

@@ -62,8 +62,8 @@ export function PieChartView({
       readout={
         hover !== null && wedges[hover] ? (
           <ChartReadout
-            leftPct={(wedges[hover]!.tip.x / w) * 100}
-            topPct={(wedges[hover]!.tip.y / h) * 100}
+            leftPct={(wedges[hover].tip.x / w) * 100}
+            topPct={(wedges[hover].tip.y / h) * 100}
             label={slices[hover]!.label}
             value={slices[hover]!.value}
           />

@@ -140,7 +140,7 @@ export function RichTextEditor({
           if (
             toolbarWrapRef.current &&
             e.relatedTarget &&
-            toolbarWrapRef.current.contains(e.relatedTarget as Node)
+            toolbarWrapRef.current.contains(e.relatedTarget)
           ) {
             return;
           }

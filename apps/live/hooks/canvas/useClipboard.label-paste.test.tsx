@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement, Tab } from '@livediagram/document';
+import type { Element, StickyElement } from '@livediagram/document';
 import { serialiseElements } from '@/lib/clipboard-payload';
 import { useClipboard } from './useClipboard';
 
@@ -19,10 +19,10 @@ const copied: StickyElement = {
   width: 200,
   height: 200,
   label: 'Activity cancelled',
-} as StickyElement;
+};
 
 function harness(editingId: string | null) {
-  let elements: Element[] = [{ ...copied, id: 'open', label: '' } as Element];
+  let elements: Element[] = [{ ...copied, id: 'open', label: '' }];
   const setEditingId = vi.fn();
   renderHook(() =>
     useClipboard({
@@ -31,7 +31,7 @@ function harness(editingId: string | null) {
       readSelection: () => ({ selectedId: 'open', multiSelectedIds: new Set<string>() }),
       editingId,
       setEditingId,
-      activeTab: { id: 't', name: 'Board', elements } as Tab,
+      activeTab: { id: 't', name: 'Board', elements },
       commit: (m) => {
         elements = m(elements);
       },

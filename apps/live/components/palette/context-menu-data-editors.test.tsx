@@ -32,7 +32,7 @@ const cases = [
     editor: (rows: PieSlice[]) => <PieDataEditor slices={rows} onChange={vi.fn()} />,
     rows: [{ label: 'Cats', value: 3 }],
     changed: [{ label: 'Dogs', value: 3 }],
-    input: () => screen.getByPlaceholderText('Label') as HTMLInputElement,
+    input: () => screen.getByPlaceholderText('Label'),
     valueOf: (rows: PieSlice[]) => rows[0]!.label,
   } satisfies Case<PieSlice>,
   {
@@ -40,7 +40,7 @@ const cases = [
     editor: (rows: LegendItem[]) => <LegendDataEditor items={rows} onChange={vi.fn()} />,
     rows: [{ label: 'Cats' }],
     changed: [{ label: 'Dogs' }],
-    input: () => screen.getByPlaceholderText('Label') as HTMLInputElement,
+    input: () => screen.getByPlaceholderText('Label'),
     valueOf: (rows: LegendItem[]) => rows[0]!.label,
   } satisfies Case<LegendItem>,
   {
@@ -48,7 +48,7 @@ const cases = [
     editor: (rows: EntityField[]) => <EntityFieldsEditor fields={rows} onChange={vi.fn()} />,
     rows: [{ name: 'id', type: 'uuid' }],
     changed: [{ name: 'email', type: 'text' }],
-    input: () => screen.getByLabelText('Field 1 name') as HTMLInputElement,
+    input: () => screen.getByLabelText('Field 1 name'),
     valueOf: (rows: EntityField[]) => rows[0]!.name,
   } satisfies Case<EntityField>,
   {
@@ -56,7 +56,7 @@ const cases = [
     editor: (rows: ChecklistItem[]) => <ChecklistRowsEditor items={rows} onChange={vi.fn()} />,
     rows: [{ text: 'Plan', done: false }],
     changed: [{ text: 'Ship', done: false }],
-    input: () => screen.getByPlaceholderText('Task') as HTMLInputElement,
+    input: () => screen.getByPlaceholderText('Task'),
     valueOf: (rows: ChecklistItem[]) => rows[0]!.text,
   } satisfies Case<ChecklistItem>,
 ] as const;

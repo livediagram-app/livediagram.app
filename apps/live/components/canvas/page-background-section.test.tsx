@@ -324,14 +324,12 @@ describe('Animated custom colours', () => {
     onPreview = vi.fn();
     render(
       <BackgroundSection
-        page={
-          {
-            id: 's',
-            orientation: 'landscape',
-            kind: 'slide',
-            background: { fill },
-          } as IllustratePage
-        }
+        page={{
+          id: 's',
+          orientation: 'landscape',
+          kind: 'slide',
+          background: { fill },
+        }}
         themePresets={theme}
         onBackground={onBackground}
         onPreview={onPreview}
@@ -341,7 +339,7 @@ describe('Animated custom colours', () => {
   };
 
   it('marks Custom for colours that are not the theme’s, and keeps them through a motion change', () => {
-    const onBackground = slideWith(customFill as PageFill);
+    const onBackground = slideWith(customFill);
     expect(radio('Custom Colours').getAttribute('aria-checked')).toBe('true');
     fireEvent.click(radio('Aurora'));
     expect(onBackground).toHaveBeenLastCalledWith({

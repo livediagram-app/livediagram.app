@@ -32,7 +32,7 @@ function harness(created: Created, lookups: Record<string, unknown> = {}, lint?:
         requested.push(`${request.method} ${path}`);
         if (path === '/events') return new Response(null, { status: 204 });
         if (request.method === 'POST' && path === '/documents') {
-          posted.push((await request.json()) as Record<string, unknown>);
+          posted.push(await request.json<Record<string, unknown>>());
           return Response.json(created ? { document: { id: 'd', ...created } } : {});
         }
         // The lint summary of each created tab (docs/specs/024-agents/diagram-lint.md LN24).

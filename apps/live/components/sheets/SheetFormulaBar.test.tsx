@@ -15,8 +15,8 @@ function show(h: SheetHarness, opts: { canEdit?: boolean; canShape?: boolean; at
     opts,
   );
 }
-const nameBox = () => screen.getByLabelText('Name box') as HTMLInputElement;
-const fx = () => screen.getByLabelText('Formula bar') as HTMLTextAreaElement;
+const nameBox = () => screen.getByLabelText<HTMLInputElement>('Name box');
+const fx = () => screen.getByLabelText<HTMLTextAreaElement>('Formula bar');
 
 describe('the formula bar', () => {
   let h: SheetHarness;

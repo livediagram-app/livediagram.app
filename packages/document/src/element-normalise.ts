@@ -55,7 +55,7 @@ function normaliseTable(el: Raw): Raw {
   const cells = el.cells;
   if (!Array.isArray(cells) || !cells.every(Array.isArray)) return el;
   const stringCells = (cells as unknown[][]).map((row) => row.map(str));
-  return normalizeTable({ ...el, cells: stringCells } as unknown as TableElement) as unknown as Raw;
+  return normalizeTable({ ...el, cells: stringCells } as unknown as TableElement);
 }
 
 function normaliseCodeBlock(el: Raw): Raw {

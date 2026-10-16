@@ -18,7 +18,7 @@ import {
 const SIZE = SHAPE_DEFAULT_SIZE['mind-node'];
 
 const node = (id: string, x: number, y: number, parent?: string): ShapeElement => ({
-  ...(createShape('mind-node', x, y) as ShapeElement),
+  ...createShape('mind-node', x, y),
   id,
   ...(parent ? { mindParentId: parent } : {}),
 });
@@ -30,7 +30,7 @@ describe('mindChildren', () => {
   });
 
   it('ignores non-mind elements that happen to carry the id', () => {
-    const square = { ...(createShape('square', 0, 0) as ShapeElement), id: 's', mindParentId: 'r' };
+    const square = { ...createShape('square', 0, 0), id: 's', mindParentId: 'r' };
     expect(mindChildren([node('r', 0, 0), square], 'r')).toEqual([]);
   });
 });
@@ -84,7 +84,7 @@ describe('withMindBranches', () => {
   });
 
   it('ignores non-mind elements that carry a mindParentId', () => {
-    const square = { ...(createShape('square', 0, 0) as ShapeElement), id: 's', mindParentId: 'r' };
+    const square = { ...createShape('square', 0, 0), id: 's', mindParentId: 'r' };
     const ids = new Set(['r']);
     expect(withMindBranches([node('r', 0, 0), square], ids)).toBe(ids);
   });

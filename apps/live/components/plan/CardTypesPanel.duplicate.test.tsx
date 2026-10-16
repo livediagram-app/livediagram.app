@@ -43,7 +43,7 @@ describe('duplicating a card type', () => {
 
   it('is disabled with its reason when the catalogue is full, and hidden from a viewer', () => {
     const many = Array.from({ length: ITEM_TYPES_MAX }, (_, i) => ({
-      ...ITEM_TYPES[1]!,
+      ...ITEM_TYPES[1],
       id: `t${i}`,
       label: `T${i}`,
     }));
@@ -73,7 +73,7 @@ describe('duplicating a card type', () => {
       />,
     );
     expect(screen.getByText('New Card Type')).toBeTruthy();
-    expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('Task copy');
+    expect(screen.getByLabelText<HTMLInputElement>('Name').value).toBe('Task copy');
     expect(screen.queryByRole('button', { name: 'Duplicate' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     const saved = onSave.mock.calls[0]![0];
@@ -86,7 +86,7 @@ describe('duplicating a card type', () => {
     const onDuplicate = vi.fn();
     render(
       <ItemTypeEditor
-        type={ITEM_TYPES[1]!}
+        type={ITEM_TYPES[1]}
         types={ITEM_TYPES}
         itemCount={0}
         onSave={() => {}}

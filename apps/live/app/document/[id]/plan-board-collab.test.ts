@@ -11,17 +11,16 @@ import { applyRoomOpToTabs } from './room-op-apply';
 // ops. Before the set-up travelled as a delta, each took the other's whole element and the screens
 // diverged, each holding only the other's change.
 
-const board = (planBoard: PlanBoardSetup): Element =>
-  ({
-    id: 'b',
-    type: 'shape',
-    shape: 'plan-board',
-    x: 0,
-    y: 0,
-    width: 1200,
-    height: 600,
-    planBoard,
-  }) as Element;
+const board = (planBoard: PlanBoardSetup): Element => ({
+  id: 'b',
+  type: 'shape',
+  shape: 'plan-board',
+  x: 0,
+  y: 0,
+  width: 1200,
+  height: 600,
+  planBoard,
+});
 
 const tabWith = (planBoard: PlanBoardSetup): Tab => ({
   id: 't',
@@ -75,19 +74,15 @@ describe('two peers setting up one board', () => {
   });
 
   it('carry the set-up change beside a bulk whole-tab op, which the receiver merges keeping its own', () => {
-    const many = Array.from(
-      { length: EL_OP_BROADCAST_LIMIT + 1 },
-      (_, i) =>
-        ({
-          id: `s${i}`,
-          type: 'shape',
-          shape: 'square',
-          x: i,
-          y: 0,
-          width: 10,
-          height: 10,
-        }) as Element,
-    );
+    const many = Array.from({ length: EL_OP_BROADCAST_LIMIT + 1 }, (_, i): Element => ({
+      id: `s${i}`,
+      type: 'shape',
+      shape: 'square',
+      x: i,
+      y: 0,
+      width: 10,
+      height: 10,
+    }));
     const after: Tab = {
       ...base,
       elements: [board(renameColumn(setupOf([base]), todo.id, 'Ready')), ...many],

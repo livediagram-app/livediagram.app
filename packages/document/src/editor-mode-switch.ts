@@ -23,5 +23,5 @@ export function withEditorModeSwitched<T extends Tab>(
   if (moded === tab) return { tab, pagedContent: false };
   if (opensInOf(moded) !== 'illustrate') return { tab: moded, pagedContent: false };
   const paged = withContentOnAPage(moded);
-  return paged ? { tab: paged as T, pagedContent: true } : { tab: moded, pagedContent: false };
+  return paged ? { tab: paged, pagedContent: true } : { tab: moded, pagedContent: false };
 }

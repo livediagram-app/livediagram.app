@@ -122,7 +122,7 @@ export function ActionPanelCard() {
                 cx={x + 45}
                 cy={ry + 27}
                 r={5}
-                initial={r.who[0]!}
+                initial={r.who[0]}
                 colour={r.done ? 'emerald' : 'brand'}
               />
               <Label x={x + 54} y={ry + 27.5} size={10} tone="muted">

@@ -38,7 +38,7 @@ function harness(tabId: string) {
     illustratePageEdits({
       tabId,
       tab: tabs[0]!,
-      current: illustratePagesOf(tabs[0]!),
+      current: illustratePagesOf(tabs[0]),
       elements: tabs[0]!.elements,
       commitTabs,
       onGoTo: vi.fn(),
@@ -77,7 +77,7 @@ describe('re-inking from the page panel', () => {
           width: 80,
           height: 20,
           textColor: dark,
-        } as Element,
+        },
       ],
       overlay!,
     );

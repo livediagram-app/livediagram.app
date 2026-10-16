@@ -5,21 +5,32 @@ import { tabWindowArts, tabWindowTargets } from './useTabWindowExport';
 
 // docs/specs/009-elements/tab-window.md "Exports".
 
-const box = (id: string, label: string): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 60, label }) as Element;
-const win = (id: string, windowTabId?: string): Element =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'tab-window',
-    x: 0,
-    y: 0,
-    width: 640,
-    height: 360,
-    ...(windowTabId ? { windowTabId } : {}),
-  }) as Element;
-const tab = (id: string, name: string, elements: Element[], extra: Partial<Tab> = {}) =>
-  ({ id, name, elements, ...extra }) as Tab;
+const box = (id: string, label: string): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 120,
+  height: 60,
+  label,
+});
+const win = (id: string, windowTabId?: string): Element => ({
+  id,
+  type: 'shape',
+  shape: 'tab-window',
+  x: 0,
+  y: 0,
+  width: 640,
+  height: 360,
+  ...(windowTabId ? { windowTabId } : {}),
+});
+const tab = (id: string, name: string, elements: Element[], extra: Partial<Tab> = {}) => ({
+  id,
+  name,
+  elements,
+  ...extra,
+});
 
 describe('tabWindowTargets', () => {
   it('names each tab its windows show once, never its own, skipping unchosen windows', () => {

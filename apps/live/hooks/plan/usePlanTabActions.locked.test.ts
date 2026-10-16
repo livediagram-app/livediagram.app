@@ -22,7 +22,7 @@ function run(locked: boolean) {
       elements: [],
       dashboard: newDashboard(ids()),
       ...(locked ? { locked: true } : {}),
-    } as Tab,
+    },
   ];
   const write = (map: (ts: Tab[]) => Tab[]) => {
     tabs = map(tabs);

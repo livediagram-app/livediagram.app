@@ -21,8 +21,7 @@ const link = (over: Partial<FormLinkState> = {}): FormLinkState => ({
   ...over,
 });
 
-const publishButton = () =>
-  screen.getByRole('button', { name: 'Publish Form' }) as HTMLButtonElement;
+const publishButton = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Publish Form' });
 
 describe('Share Form, unpublished', () => {
   it('publishes a form that is ready', () => {
@@ -91,7 +90,7 @@ describe('Share Form, published and closed (forms.md "A live form is locked")', 
       },
     });
   const accepting = () =>
-    screen.getByRole('switch', { name: /Accepting Responses/ }) as HTMLButtonElement;
+    screen.getByRole<HTMLButtonElement>('switch', { name: /Accepting Responses/ });
 
   it('holds Accepting Responses off while the form has problems', () => {
     const l = closed();

@@ -192,7 +192,7 @@ describe('planBoardLayout swimlanes', () => {
       height: 420,
       planBoard: { ...presetSetup('kanban'), swimlaneBy: 'none' },
     } as BoxedElement;
-    const layout = planBoardLayout(board as never, items, ITEM_TYPES)!;
+    const layout = planBoardLayout(board, items, ITEM_TYPES)!;
     const col = layout.columns.find((c) => c.column.status === 'todo')!;
     expect(col.hidden).toBeGreaterThan(0);
     expect(col.cards.length + col.hidden).toBe(12);

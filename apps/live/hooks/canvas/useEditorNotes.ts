@@ -48,8 +48,8 @@ export function useEditorNotes(deps: EditorNotesDeps) {
       els.map((el) => {
         if (el.id !== elementId || !isBoxed(el)) return el;
         const { note: _dropNote, noteRich: _dropRuns, ...rest } = el;
-        if (!note) return rest as typeof el;
-        return (noteRich ? { ...rest, note, noteRich } : { ...rest, note }) as typeof el;
+        if (!note) return rest;
+        return noteRich ? { ...rest, note, noteRich } : { ...rest, note };
       }),
     );
   };

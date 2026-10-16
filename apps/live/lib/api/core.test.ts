@@ -255,11 +255,10 @@ describe('apiFetch / apiDelete write signal', () => {
 });
 
 describe('stripUiTabFields', () => {
-  const tab = (over: Partial<Tab> = {}): Tab =>
-    ({ id: 't', name: 'T', elements: [], ...over }) as Tab;
+  const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't', name: 'T', elements: [], ...over });
 
   it('drops the UI-only templateChosen + folder fields', () => {
-    const out = stripUiTabFields(tab({ templateChosen: true, folder: 'f1' } as Partial<Tab>));
+    const out = stripUiTabFields(tab({ templateChosen: true, folder: 'f1' }));
     expect('templateChosen' in out).toBe(false);
     expect('folder' in out).toBe(false);
     expect(out.id).toBe('t');
@@ -277,8 +276,7 @@ describe('stripUiTabFields', () => {
 // which one ran is a field you cannot trust. Every tab that goes out says
 // what it is.
 describe('tabForWire — tab kind', () => {
-  const tab = (over: Partial<Tab> = {}): Tab =>
-    ({ id: 't', name: 'T', elements: [], ...over }) as Tab;
+  const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't', name: 'T', elements: [], ...over });
 
   it('stamps the ordinary kind onto a tab that has none', () => {
     expect(tabForWire(tab()).kind).toBe('diagram');
@@ -294,7 +292,7 @@ describe('tabForWire — tab kind', () => {
   });
 
   it('still strips the UI-only fields', () => {
-    const out = tabForWire(tab({ templateChosen: true, folder: 'f1' } as Partial<Tab>));
+    const out = tabForWire(tab({ templateChosen: true, folder: 'f1' }));
     expect('templateChosen' in out).toBe(false);
     expect('folder' in out).toBe(false);
   });

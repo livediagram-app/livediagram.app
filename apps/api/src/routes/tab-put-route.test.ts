@@ -12,8 +12,16 @@ import { handleDocuments } from './documents';
 // read.
 
 const OWNER = 'user_owner';
-const box = (id: string, label = id): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label }) as Element;
+const box = (id: string, label = id): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  label,
+});
 
 function call(
   db: SqliteD1,
@@ -232,13 +240,13 @@ describe('the tab PUT', () => {
     // A changeset lands between the save's read and its write, once.
     const batch = db.env.DB.batch.bind(db.env.DB);
     let interleave = 1;
-    db.env.DB.batch = (async (statements: D1PreparedStatement[]) => {
+    db.env.DB.batch = async (statements: D1PreparedStatement[]) => {
       if (interleave > 0) {
         interleave -= 1;
         recordAdd(db, box(`raced${interleave}`));
       }
       return batch(statements);
-    }) as typeof db.env.DB.batch;
+    };
     expect((await save(db, [box('a', 'mine')], { 'X-Changeset-Seen': seen })).status).toBe(200);
     expect(stored(db).map((e) => e.id)).toEqual(['a', 'raced0']);
 
@@ -254,7 +262,7 @@ describe('the tab read', () => {
     await save(db, [box('a', 'b')]);
     const res = await call(db, 'GET', '/api/documents/D/tabs/t1');
     expect(res.headers.get('ETag')).toBe('W/"2"');
-    expect(((await res.json()) as { tab: { rev: number } }).tab.rev).toBe(2);
+    expect((await res.json<{ tab: { rev: number } }>()).tab.rev).toBe(2);
   });
 });
 
@@ -294,8 +302,8 @@ describe("someone else's tab id", () => {
       name: 'Taken',
       elements: [box('x', 'Overwritten')],
     });
-    expect(res!.status).toBe(409);
-    expect(await res!.json()).toEqual({ error: 'tab_id_taken' });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'tab_id_taken' });
     const oldData = JSON.parse(
       db.sql.prepare("SELECT data FROM tabs WHERE id = 'old'").get()!.data as string,
     ) as { elements: { label?: string }[] };
@@ -310,10 +318,10 @@ describe("someone else's tab id", () => {
     const fresh = await call(db, 'PUT', '/api/documents/D/tabs/t2', {
       body: { id: 't2', name: 'Second', elements: [box('b')] },
     });
-    expect(fresh!.status).toBeLessThan(300);
+    expect(fresh.status).toBeLessThan(300);
     const again = await call(db, 'PUT', '/api/documents/D/tabs/t1', {
       body: { id: 't1', name: 'Board', elements: [box('a', 'Edited')] },
     });
-    expect(again!.status).toBeLessThan(300);
+    expect(again.status).toBeLessThan(300);
   });
 });

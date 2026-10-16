@@ -4,7 +4,7 @@
 // live, a plan view or a chart from a Sheet at the slot's size (the element keeps its stored size; the slot lends it
 // its own), or a note.
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { isChartShape, type DashboardContent, type ShapeElement } from '@livediagram/document';
+import { isChartShape, type DashboardContent } from '@livediagram/document';
 import { PlanViewView } from '@/components/plan/views/PlanViewView';
 import { PlanBoardView } from '@/components/plan/PlanBoardView';
 import { PlanSheetView } from '@/components/sheets/PlanSheetView';
@@ -66,7 +66,7 @@ function SlotElement({ slotId, elementId }: { slotId: string; elementId: string 
   const ref = useRef<HTMLDivElement>(null);
   const size = useBoxSize(ref);
   const el = elements.get(elementId);
-  const shape = el?.type === 'shape' ? (el as ShapeElement) : null;
+  const shape = el?.type === 'shape' ? el : null;
   // The slot's size is the element's: a view, board or Sheet lays itself out at its element's size, worked on in
   // place (a board's changes are its own, usePlanSlice commitOn).
   const sized =

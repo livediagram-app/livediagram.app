@@ -102,10 +102,7 @@ describe('venn template', () => {
 
 describe('user journey template', () => {
   const els = buildTemplate('journey', 0, 0);
-  const stickies = els.filter((el) => el.type === 'sticky') as Extract<
-    Element,
-    { type: 'sticky' }
-  >[];
+  const stickies = els.filter((el) => el.type === 'sticky');
   const faces = shapesOf(els, 'sticker');
 
   it('lays five numbered stages across the top', () => {

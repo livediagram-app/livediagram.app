@@ -6,8 +6,13 @@ import { dashboardElement, dashboardViewElement } from './slot-elements';
 import { dashboardItemOf } from './dashboard-drop';
 
 // docs/specs/026-plan/plan-tabs.md "Dashboard tab".
-const tab = (over: Partial<Tab> = {}): Tab =>
-  ({ id: 'd', name: 'Overview', kind: 'dashboard', elements: [], ...over }) as Tab;
+const tab = (over: Partial<Tab> = {}): Tab => ({
+  id: 'd',
+  name: 'Overview',
+  kind: 'dashboard',
+  elements: [],
+  ...over,
+});
 
 describe('a Dashboard slot', () => {
   it('takes a plan view as an element on the tab, and drops it again when cleared', () => {
@@ -189,7 +194,7 @@ describe('a Visualisation tab started', () => {
   const start = async (name: string) => {
     const { renderHook } = await import('@testing-library/react');
     const { usePlanTabActions } = await import('./usePlanTabActions');
-    let tabs: Tab[] = [{ id: 'v', name, elements: [] } as unknown as Tab];
+    let tabs: Tab[] = [{ id: 'v', name, elements: [] }];
     const commitTabs = (map: (ts: Tab[]) => Tab[]) => {
       tabs = map(tabs);
     };

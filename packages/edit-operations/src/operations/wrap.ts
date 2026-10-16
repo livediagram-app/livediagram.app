@@ -193,7 +193,7 @@ export function applyWrap(
     if (resolution === 'absorb') {
       members = currentElements(state).filter(
         (el): el is BoxedElement =>
-          el.type !== 'arrow' && (memberIds.has(el.id) || bystanders.includes(el as BoxedElement)),
+          el.type !== 'arrow' && (memberIds.has(el.id) || bystanders.includes(el)),
       );
       memberIds = new Set(members.map((el) => el.id));
       container = sized(members);

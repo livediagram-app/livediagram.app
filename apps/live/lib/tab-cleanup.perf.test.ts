@@ -17,7 +17,7 @@ function bigDiagram(n: number): Element[] {
     els.push({
       ...createShape('square', (i * 137) % 2000, (i * 89) % 1400),
       id: `n${i}`,
-    } as Element);
+    });
   for (let i = 1; i < n; i++) {
     els.push({
       ...createPinnedArrow(`n${Math.floor((i - 1) / 2)}`, 's', `n${i}`, 'n'),

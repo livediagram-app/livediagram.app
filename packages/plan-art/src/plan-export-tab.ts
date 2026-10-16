@@ -27,8 +27,8 @@ const SHEET_IMAGE_MAX = 4000;
 
 // Its layer stays behind with the canvas, so the element is drawn whatever that layer's visibility.
 function unlayered(el: Element): Element {
-  const { layerId: _layer, ...rest } = el as Element & { layerId?: string };
-  return rest as Element;
+  const { layerId: _layer, ...rest } = el;
+  return rest;
 }
 
 const isShape = (el: Element, shape: string) => el.type === 'shape' && el.shape === shape;

@@ -4,22 +4,28 @@ import { placeElbowLabels } from './graph-look-labels';
 import { withoutNotches } from './graph-notches';
 import type { ArrowElement, Element } from './index';
 
-const box = (id: string, x: number, y: number, width = 200, height = 60): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y, width, height }) as Element;
+const box = (id: string, x: number, y: number, width = 200, height = 60): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width,
+  height,
+});
 
 // An elbow down from a to b, its middle run at the half height, ends where the boxes' anchors put them.
-const elbow = (id: string, from: string, to: string, dx: number): Element =>
-  ({
-    id,
-    type: 'arrow',
-    from: { kind: 'pinned', elementId: from, anchor: 's' },
-    to: { kind: 'pinned', elementId: to, anchor: 'n' },
-    arrowStyle: 'angled',
-    curvePoints: [
-      { dx: -dx / 2, dy: 0 },
-      { dx: dx / 2, dy: 0 },
-    ],
-  }) as Element;
+const elbow = (id: string, from: string, to: string, dx: number): Element => ({
+  id,
+  type: 'arrow',
+  from: { kind: 'pinned', elementId: from, anchor: 's' },
+  to: { kind: 'pinned', elementId: to, anchor: 'n' },
+  arrowStyle: 'angled',
+  curvePoints: [
+    { dx: -dx / 2, dy: 0 },
+    { dx: dx / 2, dy: 0 },
+  ],
+});
 
 const arrowOf = (els: Element[], id: string) => els.find((e) => e.id === id) as ArrowElement;
 

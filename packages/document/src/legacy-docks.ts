@@ -15,6 +15,6 @@ export function dropLegacyDocks(elements: Element[]): Element[] {
     if (!hasLegacyDock(el)) return el;
     const { esDock: _gone, ...rest } = el as Element & { esDock?: unknown };
     void _gone;
-    return rest as Element;
+    return rest;
   });
 }

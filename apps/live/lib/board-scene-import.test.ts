@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SceneItem } from '@/lib/board-scene/scene';
 import { boardScene, inkStroke } from '@/lib/board-scene/test-scenes';
-import type { Element, Tab } from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
 import {
   BOARD_TOO_BIG,
   importBoardsAsDocuments,
@@ -183,7 +183,7 @@ describe('importDocuments', () => {
         width: 10,
         height: 10,
         label,
-      } as Element,
+      },
     ],
   });
   const landed = { landed: { text: 2 }, degraded: [], skipped: [] };

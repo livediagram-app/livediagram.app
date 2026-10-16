@@ -12,9 +12,7 @@ const debugLog = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/debug-log', () => ({ debugLog }));
 
 function setup(over: { status?: 'loading' | 'ready'; attached?: boolean } = {}) {
-  let tabs: Tab[] = [
-    { id: 'tab1', name: 'Tab', elements: [{ id: 'old-board' }] as Element[] } as Tab,
-  ];
+  let tabs: Tab[] = [{ id: 'tab1', name: 'Tab', elements: [{ id: 'old-board' }] as Element[] }];
   const items = new Map<string, Item>();
   const writes: ItemWrite[] = [];
   const tickTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {

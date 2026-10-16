@@ -15,7 +15,7 @@ import { useMindMapSetters } from './useMindMapSetters';
 
 const node = (id: string, parent?: string) =>
   ({
-    ...(createShape('mind-node', 0, 0) as ShapeElement),
+    ...createShape('mind-node', 0, 0),
     id,
     label: id,
     ...(parent ? { mindParentId: parent } : { mindFlow: 'tree' }),

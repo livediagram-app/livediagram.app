@@ -102,11 +102,7 @@ describe('a Diagram tab in a slot', () => {
   });
 
   it('says it is loading while its content is on its way, and names a deleted one', () => {
-    showTab(
-      { id: 'd', name: 'Architecture', elements: [] } as unknown as Tab,
-      'diagram',
-      'loading',
-    );
+    showTab({ id: 'd', name: 'Architecture', elements: [] }, 'diagram', 'loading');
     expect(screen.getByText('Loading Architecture…')).toBeTruthy();
     cleanup();
     showTab(null, 'diagram');

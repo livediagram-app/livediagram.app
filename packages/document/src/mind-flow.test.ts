@@ -28,7 +28,7 @@ import {
 const SIZE = SHAPE_DEFAULT_SIZE['mind-node'];
 
 const node = (id: string, x: number, y: number, parent?: string): ShapeElement => ({
-  ...(createShape('mind-node', x, y) as ShapeElement),
+  ...createShape('mind-node', x, y),
   id,
   ...(parent ? { mindParentId: parent } : {}),
 });

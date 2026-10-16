@@ -26,7 +26,7 @@ type WorkerLike = {
 const newWorker = (): WorkerLike =>
   new Worker(new URL('./gif-encode.worker.ts', import.meta.url), {
     type: 'module',
-  }) as unknown as WorkerLike;
+  });
 
 export function openGifEncoder(
   width: number,

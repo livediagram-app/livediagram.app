@@ -479,7 +479,7 @@ export class Workbook {
         const sh = this.sheets.get(s);
         const rowId = sh?.layout.rows[r];
         const colId = sh?.layout.cols[c];
-        const input = rowId && colId ? sh!.cells.get(cellKey(rowId, colId))?.input : undefined;
+        const input = rowId && colId ? sh.cells.get(cellKey(rowId, colId))?.input : undefined;
         return !!input && 'f' in input;
       },
       grid: (s) => {

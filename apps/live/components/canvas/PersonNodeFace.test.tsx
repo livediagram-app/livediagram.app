@@ -12,7 +12,7 @@ afterEach(cleanup);
 
 const person = (over: Partial<ShapeElement> = {}) =>
   ({
-    ...applyShapeVariant(createShape('mind-node', 0, 0) as ShapeElement, 'org-chart'),
+    ...applyShapeVariant(createShape('mind-node', 0, 0), 'org-chart'),
     ...over,
   }) as ShapeElement;
 

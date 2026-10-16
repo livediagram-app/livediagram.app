@@ -107,18 +107,17 @@ describe('event-storming fields survive a tool write', () => {
 // docs/specs/021-event-storming/event-storming.md "Always on a lane": notes a call adds or moves on an
 // event-storming tab land on lanes; nothing already there moves.
 describe('landWorkshopArrivals', () => {
-  const note = (id: string, x: number, y: number): Element =>
-    ({
-      id,
-      type: 'sticky',
-      x,
-      y,
-      width: 200,
-      height: 200,
-      esKind: 'domain-event',
-      fillColor: '#fdba74',
-      fixedSize: true,
-    }) as Element;
+  const note = (id: string, x: number, y: number): Element => ({
+    id,
+    type: 'sticky',
+    x,
+    y,
+    width: 200,
+    height: 200,
+    esKind: 'domain-event',
+    fillColor: '#fdba74',
+    fixedSize: true,
+  });
   const es = (elements: Element[]) => ({
     id: 't',
     name: 'T',

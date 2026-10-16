@@ -58,7 +58,7 @@ describe('FormConnectCard', () => {
     ['a board', { destination: { tabId: 't', typeId: 'bug', status: 'new' } }],
     ['a sheet', { sheet: { tabId: 't', sheetId: 's' } }],
   ])('is gone once the form sends to %s', (_what, over) => {
-    setup(over as Partial<FormDefinition>);
+    setup(over);
     expect(box()).toBeNull();
   });
 

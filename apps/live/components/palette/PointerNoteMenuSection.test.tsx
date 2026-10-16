@@ -11,7 +11,7 @@ import type { ElementStyleOps } from '@/lib/element-style-ops';
 afterEach(cleanup);
 
 const note = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('pointer-note', 0, 0) as ShapeElement), ...over }) as ShapeElement;
+  ({ ...createShape('pointer-note', 0, 0), ...over }) as ShapeElement;
 
 function show(target: ShapeElement) {
   const ops: ElementStyleOps = {

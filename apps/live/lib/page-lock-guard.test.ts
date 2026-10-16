@@ -5,7 +5,7 @@ import { announcePageLocked, guardLockedPagesIn } from './page-lock-guard';
 // docs/specs/007-editor/illustrate-pages.md "Locking a page": the commit choke point's guard.
 const pages = [{ id: 'a', orientation: 'portrait' as const, locked: true as const }];
 const r = layOutIllustratePages(pages)[0]!.rect;
-const tab = (elements: Element[]): Tab => ({ id: 't', name: 'T', elements, pages }) as Tab;
+const tab = (elements: Element[]): Tab => ({ id: 't', name: 'T', elements, pages });
 const box = {
   id: 'x',
   type: 'shape',

@@ -51,7 +51,7 @@ function showBody(
 function show(overrides: Record<string, unknown>) {
   for (const key of Object.keys(plan)) delete plan[key];
   Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), announce: vi.fn() }, overrides);
-  render(<PlanBoardMenuSections element={board} flyoutProps={() => ({}) as never} />);
+  render(<PlanBoardMenuSections element={board} flyoutProps={() => ({})} />);
 }
 
 describe('PlanBoardMenuSections', () => {
@@ -75,7 +75,7 @@ describe('PlanBoardMenuSections', () => {
     for (const key of Object.keys(plan)) delete plan[key];
     Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), types: ITEM_TYPES });
     const archive = { ...board, planBoard: presetSetup('archive') } as ShapeElement;
-    render(<PlanBoardMenuSections element={archive} flyoutProps={() => ({}) as never} />);
+    render(<PlanBoardMenuSections element={archive} flyoutProps={() => ({})} />);
     expect(screen.queryByRole('button', { name: 'Supported Cards' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Columns' })).toBeNull();
   });
@@ -85,7 +85,7 @@ describe('PlanBoardMenuSections', () => {
       for (const key of Object.keys(plan)) delete plan[key];
       Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), types: ITEM_TYPES });
       const el = { ...board, planBoard: setupOf } as ShapeElement;
-      render(<PlanBoardMenuSections element={el} flyoutProps={() => ({}) as never} />);
+      render(<PlanBoardMenuSections element={el} flyoutProps={() => ({})} />);
       expect(screen.queryByRole('button', { name: 'Columns' })).toBeNull();
       cleanup();
     }
@@ -96,8 +96,8 @@ describe('PlanBoardMenuSections', () => {
 describe('Swimlanes by a field', () => {
   const types = [
     {
-      ...ITEM_TYPES[0]!,
-      fields: [...ITEM_TYPES[0]!.fields, 'f-customer'],
+      ...ITEM_TYPES[0],
+      fields: [...ITEM_TYPES[0].fields, 'f-customer'],
       custom: [{ id: 'f-customer', label: 'Customer', kind: 'text' as const }],
     },
   ];
@@ -121,11 +121,7 @@ describe('Swimlanes by a field', () => {
     cleanup();
     for (const key of Object.keys(plan)) delete plan[key];
     Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), announce: vi.fn(), types });
-    render(
-      <PlanSwimlaneSettings
-        element={{ ...board, planBoard: presetSetup('all-cards') } as ShapeElement}
-      />,
-    );
+    render(<PlanSwimlaneSettings element={{ ...board, planBoard: presetSetup('all-cards') }} />);
     expect(screen.getByRole('radio', { name: 'Status' })).toBeTruthy();
   });
 
@@ -194,7 +190,7 @@ describe('the board menu’s sections', () => {
   it('stay flyouts, never promoted into the menu', () => {
     for (const k of Object.keys(plan)) delete plan[k];
     Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), announce: vi.fn(), types: [] });
-    render(<PlanBoardMenuSections element={board} flyoutProps={() => ({}) as never} />);
+    render(<PlanBoardMenuSections element={board} flyoutProps={() => ({})} />);
     for (const title of ['Board Setup', 'Columns', 'Swimlanes', 'Card Layout'])
       expect(document.querySelector(`[data-flyout="${title}"]`)?.getAttribute('data-panel')).toBe(
         'yes',

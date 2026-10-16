@@ -97,7 +97,7 @@ async function drain(): Promise<void> {
     while (waiting) {
       const save = waiting;
       waiting = null;
-      const ok = await apiPutPreferences(save.ownerId, save.prefs as Record<string, unknown>);
+      const ok = await apiPutPreferences(save.ownerId, save.prefs);
       if (!ok) {
         console.warn('[preferences] save-not-confirmed, device copy kept');
       } else if (!waiting) {

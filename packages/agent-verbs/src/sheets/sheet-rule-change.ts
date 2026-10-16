@@ -188,7 +188,7 @@ function validationSettings(
         );
       const is = rule.type === 'number' ? 'num' : rule.type;
       if (op === 'valid' || op === 'email' || op === 'url')
-        return { ok: true, settings: { is, op: op as never, ...extra } };
+        return { ok: true, settings: { is, op: op, ...extra } };
       if (is === 'text') {
         const a = String(rule.value ?? '').trim();
         if (!a) return refuse('rule_invalid', 'Give the text as value.');

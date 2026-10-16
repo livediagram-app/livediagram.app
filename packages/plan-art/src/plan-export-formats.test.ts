@@ -24,6 +24,6 @@ describe('the formats a tab exports to', () => {
   it('leaves any other tab every format', () => {
     expect(exportFormatsFor({})).toBeUndefined();
     expect(exportFormatsFor({ kind: 'event-storming' })).toBeUndefined();
-    expect(planTabKindOf({ kind: 'diagram' as never })).toBeNull();
+    expect(planTabKindOf({ kind: 'diagram' })).toBeNull();
   });
 });

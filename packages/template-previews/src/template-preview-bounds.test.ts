@@ -80,7 +80,7 @@ describe('TemplatePreview bounds', () => {
     for (const t of TEMPLATES.filter((x) => !x.hidden)) {
       const el = TemplatePreview({ kind: t.kind });
       expect(el, `missing preview for '${t.kind}'`).not.toBeNull();
-      const svg = renderToStaticMarkup(el!);
+      const svg = renderToStaticMarkup(el);
       const vbMatch = svg.match(/viewBox="([\d.\- ]+)"/);
       expect(vbMatch, `preview for '${t.kind}' has no viewBox`).not.toBeNull();
       const [vx, vy, vw, vh] = vbMatch![1]!.split(' ').map(Number) as [

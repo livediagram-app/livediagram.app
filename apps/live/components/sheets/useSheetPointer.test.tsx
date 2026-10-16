@@ -74,9 +74,7 @@ describe('selecting cells', () => {
     const h = await mountGrid();
     down(h, cellPoint(1, 1));
     act(() => {
-      window.dispatchEvent(
-        new MouseEvent('pointermove', { ...cellPoint(3, 2), bubbles: true }) as PointerEvent,
-      );
+      window.dispatchEvent(new MouseEvent('pointermove', { ...cellPoint(3, 2), bubbles: true }));
       // The key arrives before the move's render.
       fireEvent.keyDown(h.grid, { key: 'b', ctrlKey: true });
     });

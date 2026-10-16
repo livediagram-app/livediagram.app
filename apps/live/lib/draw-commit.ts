@@ -21,7 +21,6 @@ import {
   REACTION_PAD_LABEL,
   type EventStormingNoteKind,
   type StickyElement,
-  type TextElement,
 } from '@livediagram/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
@@ -328,12 +327,7 @@ export function buildDrawnBoxed(
   // boxes"): it lands empty, one line tall, caret-sized at a click or at the dragged width.
   const hugged =
     base.type === 'text' && drawMode
-      ? placedTextBox(
-          { ...base, ...textSize } as TextElement,
-          isTap,
-          { x: startX, y: startY },
-          dragBox,
-        )
+      ? placedTextBox({ ...base, ...textSize }, isTap, { x: startX, y: startY }, dragBox)
       : {};
   return {
     ...base,

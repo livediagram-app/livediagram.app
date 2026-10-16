@@ -14,8 +14,14 @@ const shape = (id: string, kind: string, x: number, y: number, extra: object = {
     height: 100,
     ...extra,
   }) as unknown as Element;
-const tab = (elements: Element[], over: Partial<Tab> = {}): Tab =>
-  ({ id: 'p', name: 'Plan', opensIn: 'plan', kind: 'diagram', elements, ...over }) as Tab;
+const tab = (elements: Element[], over: Partial<Tab> = {}): Tab => ({
+  id: 'p',
+  name: 'Plan',
+  opensIn: 'plan',
+  kind: 'diagram',
+  elements,
+  ...over,
+});
 let n = 0;
 const createTab = (name: string) => ({ id: `new${++n}`, name, elements: [] }) as unknown as Tab;
 const newId = () => `x${++n}`;

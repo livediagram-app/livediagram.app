@@ -167,7 +167,7 @@ export function GanttRowGrip({
         className="absolute left-0.5 top-1/2 z-10 flex h-5 w-2.5 -translate-y-1/2 cursor-grab touch-none items-center justify-center rounded opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100 active:cursor-grabbing motion-reduce:transition-none"
         style={{ color: palette.muted }}
         onPointerDown={(e) =>
-          onGripDown((e.currentTarget as HTMLElement).closest<HTMLElement>('[data-gantt-row]'))(e)
+          onGripDown(e.currentTarget.closest<HTMLElement>('[data-gantt-row]'))(e)
         }
         onClick={stop}
         onDoubleClick={stop}

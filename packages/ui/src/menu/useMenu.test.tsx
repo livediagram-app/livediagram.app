@@ -348,7 +348,7 @@ describe('useMenu submenus', () => {
     key('ArrowRight');
     key('ArrowLeft');
     key('ArrowRight');
-    (screen.getByText('Use as default for') as HTMLElement).focus();
+    screen.getByText<HTMLElement>('Use as default for').focus();
     key('Enter');
     expect(focused()).toBe('Diagrams');
   });

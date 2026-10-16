@@ -182,7 +182,7 @@ const med = (xs: number[]) => {
 };
 
 function medianReading(ms: MoveReading[]) {
-  const pick = (k: keyof MoveReading) => ms.map((m) => m[k] ?? 0) as number[];
+  const pick = (k: keyof MoveReading) => ms.map((m) => m[k] ?? 0);
   return {
     mainThreadMs: med(pick('mainThreadMs')),
     longestTaskMs: med(pick('longestTaskMs')),

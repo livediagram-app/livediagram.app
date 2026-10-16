@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ArrowElement, Element, ShapeElement, Tab } from '@livediagram/document';
+import type { ArrowElement, Element, ShapeElement } from '@livediagram/document';
 import {
   copyTooLargeMessage,
   IN_APP_COPY_ELSEWHERE,
@@ -15,16 +15,15 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 // for the system clipboard pastes whole from the in-app buffer in the window
 // that copied it, never cut short, and says it cannot leave that window.
 
-const box = (i: number): ShapeElement =>
-  ({
-    id: `s${i}`,
-    type: 'shape',
-    shape: 'square',
-    x: i,
-    y: 0,
-    width: 10,
-    height: 10,
-  }) as ShapeElement;
+const box = (i: number): ShapeElement => ({
+  id: `s${i}`,
+  type: 'shape',
+  shape: 'square',
+  x: i,
+  y: 0,
+  width: 10,
+  height: 10,
+});
 
 const link: ArrowElement = {
   id: 'arrow',
@@ -69,7 +68,7 @@ function harness(start: Element[]) {
       }),
       editingId: null,
       setEditingId: () => {},
-      activeTab: { id: 't', name: 'Board', elements } as Tab,
+      activeTab: { id: 't', name: 'Board', elements },
       commit: (m) => {
         elements = m(elements);
       },

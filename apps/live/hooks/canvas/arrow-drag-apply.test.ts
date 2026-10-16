@@ -58,7 +58,7 @@ describe('applyArrowDragMove', () => {
       startFromY: 0,
       startToX: 100,
       startToY: 0,
-    } as ArrowDragState);
+    });
     const a = out[0] as Element & {
       from: { x: number; y: number };
       to: { x: number; y: number };
@@ -83,7 +83,7 @@ describe('applyArrowDragMove', () => {
         startFromY: 0,
         startToX: 100,
         startToY: 0,
-      } as ArrowDragState,
+      },
       dx: 5,
       dy: 5,
       noSnap: false,
@@ -155,7 +155,7 @@ describe('applyArrowDragMove', () => {
       startCanvasX: 100,
       startCanvasY: 0,
       reposition: true,
-    } as ArrowDragState);
+    });
     expect(onArrowConnected).not.toHaveBeenCalled();
   });
 
@@ -169,7 +169,7 @@ describe('applyArrowDragMove', () => {
       startClientX: 0,
       startClientY: 0,
       plan,
-    } as ArrowDragState);
+    });
     const a = out[0] as ArrowElement;
     expect(a.arrowStyle).toBe('curved');
     expect(a.curveOffset).toBeDefined();
@@ -184,7 +184,7 @@ describe('applyArrowDragMove', () => {
       startClientY: 0,
       box: { x: 0, y: 0, width: 100, height: 0 },
       start: arrow() as ArrowElement,
-    } as ArrowDragState);
+    });
     const a = out[0] as ArrowElement;
     expect(a.from).toEqual({ kind: 'free', x: 0, y: 0 });
     expect(a.to.kind === 'free' && a.to.x).toBeCloseTo(110);
@@ -231,7 +231,7 @@ describe('sliding an angled segment', () => {
         startClientX: 0,
         startClientY: 0,
         plan: planArrowBend(a, els, { x: 100, y: 50 }),
-      } as ArrowDragState,
+      },
       dx: 3,
       dy: 0,
       noSnap,

@@ -260,7 +260,7 @@ describe('handleTimeline read', () => {
     const scheduled: Promise<unknown>[] = [];
     ctx.waitUntil = (p) => scheduled.push(p);
     const res = await handleTimeline(ctx);
-    expect(((await res.json()) as { lastSeenAt: number }).lastSeenAt).toBe(2);
+    expect((await res.json<{ lastSeenAt: number }>()).lastSeenAt).toBe(2);
     await Promise.all(scheduled);
     expect(store.markScopeSeen).toHaveBeenCalled();
   });

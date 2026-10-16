@@ -12,8 +12,16 @@ import { handleDocuments } from './documents';
 // "Testing"): submit, list, one, revert, with a recording room.
 
 const OWNER = 'user_owner';
-const box = (id: string, label = id, x = 0): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y: 0, width: 120, height: 60, label }) as Element;
+const box = (id: string, label = id, x = 0): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y: 0,
+  width: 120,
+  height: 60,
+  label,
+});
 
 type Selection = { elementIds: string[]; name: string; color: string; mine: boolean };
 

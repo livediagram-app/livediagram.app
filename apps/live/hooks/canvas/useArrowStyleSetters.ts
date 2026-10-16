@@ -111,7 +111,7 @@ export function useArrowStyleSetters({ currentSelectionIds, commit }: ArrowStyle
       els.map((el) => {
         if (!ids.has(el.id) || el.type !== 'arrow') return el;
         const { strokeWidth: _w, strokeStyle: _s, flow: _f, flowSpeed: _fs, ...rest } = el;
-        return rest as typeof el;
+        return rest;
       }),
     );
     track('Element', 'Changed', 'StyleReset');

@@ -49,7 +49,7 @@ describe('elementTelemetryType', () => {
   // them separately, so a COPY of one has to land in the same bucket.
   it('splits the three freehand tools apart', () => {
     const free = (over: Record<string, unknown>) =>
-      elementTelemetryType(box({ type: 'freehand', closed: false, ...over } as Partial<Element>));
+      elementTelemetryType(box({ type: 'freehand', closed: false, ...over }));
     expect(free({})).toBe('Freehand');
     expect(free({ pen: 'highlighter' })).toBe('Highlighter');
     expect(free({ straightEdges: true })).toBe('Polyline');

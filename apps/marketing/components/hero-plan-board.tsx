@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react';
 import { FONT, at } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';
 import { CARD_H, CardFace, Sliders, type CardDef } from './hero-plan-card';
@@ -197,14 +196,12 @@ function Carried({
         </g>
         <g
           className="hm-cursor hm-carrier"
-          style={
-            at(arrive, {
-              '--sx': `${grab.x + 90}px`,
-              '--sy': `${grab.y + 80}px`,
-              '--cx': `${grab.x}px`,
-              '--cy': `${grab.y}px`,
-            }) as CSSProperties
-          }
+          style={at(arrive, {
+            '--sx': `${grab.x + 90}px`,
+            '--sy': `${grab.y + 80}px`,
+            '--cx': `${grab.x}px`,
+            '--cy': `${grab.y}px`,
+          })}
           aria-hidden
         >
           <CursorMark colour={colour} label={name} badge="name" />

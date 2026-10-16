@@ -162,21 +162,19 @@ describe('chartPageGrounds', () => {
     layOutIllustratePages([
       { id: 'p', orientation: 'portrait', ...(fill ? { background: { fill } } : {}) },
     ])[0]!;
-  const chartAt = (page: ReturnType<typeof pageWith>, id = 'c'): Element =>
-    ({
-      ...createShape('line-chart', page.rect.x + 40, page.rect.y + 300),
-      id,
-      width: 300,
-      height: 200,
-    }) as Element;
-  const cardUnder = (page: ReturnType<typeof pageWith>, fillColor: string): Element =>
-    ({
-      ...createShape('square', page.rect.x + 20, page.rect.y + 280),
-      id: 'card',
-      width: 400,
-      height: 260,
-      fillColor,
-    }) as Element;
+  const chartAt = (page: ReturnType<typeof pageWith>, id = 'c'): Element => ({
+    ...createShape('line-chart', page.rect.x + 40, page.rect.y + 300),
+    id,
+    width: 300,
+    height: 200,
+  });
+  const cardUnder = (page: ReturnType<typeof pageWith>, fillColor: string): Element => ({
+    ...createShape('square', page.rect.x + 20, page.rect.y + 280),
+    id: 'card',
+    width: 400,
+    height: 260,
+    fillColor,
+  });
 
   it('is empty on the plain paper', () => {
     const page = pageWith();
@@ -277,7 +275,7 @@ describe('cost', () => {
         width: 60,
         height: 40,
         fillColor: '#f1f5f9',
-      } as Element);
+      });
     }
     chartPageGrounds(els, [page]);
     const start = performance.now();

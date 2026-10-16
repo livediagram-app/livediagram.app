@@ -21,11 +21,11 @@ function workshop(id: string, x: number, y: number): StickyElement {
     esKind: 'domain-event',
     fillColor: '#fdba74',
     fixedSize: true,
-  } as StickyElement;
+  };
 }
 
 function shape(id: string, x: number, y: number): Element {
-  return { id, type: 'shape', shape: 'square', x, y, width: 100, height: 100 } as Element;
+  return { id, type: 'shape', shape: 'square', x, y, width: 100, height: 100 };
 }
 
 function harness(opts: {

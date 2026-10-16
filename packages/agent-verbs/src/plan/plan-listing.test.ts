@@ -60,7 +60,7 @@ describe('listedType', () => {
         .defaultStatus,
     ).toBe('gone');
     const deal = listedType({
-      ...ITEM_TYPES[1]!,
+      ...ITEM_TYPES[1],
       id: 'deal',
       label: 'Deal',
       fields: ['title', 'status', 'f-v', 'f-c', 'f-r', 'f-n'],

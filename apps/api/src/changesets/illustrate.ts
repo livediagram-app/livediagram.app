@@ -64,8 +64,8 @@ export function illustrateRoomOps(before: Tab, after: Tab): RoomOp[] {
     ops.push({
       kind: 'tab-meta',
       tabId: after.id,
-      patch: patch as Partial<Tab>,
-      ...(clear.length ? { clear: clear as (keyof Tab)[] } : {}),
+      patch: patch,
+      ...(clear.length ? { clear: clear } : {}),
     });
   ops.push(...tabArticleOps(before, after, { agent: true }));
   return ops;

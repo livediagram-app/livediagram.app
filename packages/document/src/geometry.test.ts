@@ -269,21 +269,21 @@ describe('type predicates', () => {
 
   it('isBoxed is true for every boxed-element kind, false for arrow', () => {
     expect(isBoxed(shape('a'))).toBe(true);
-    expect(isBoxed({ ...shape('b'), type: 'text' } as Element)).toBe(true);
-    expect(isBoxed({ ...shape('c'), type: 'sticky' } as Element)).toBe(true);
-    expect(isBoxed({ ...shape('d'), type: 'image', imageId: null } as Element)).toBe(true);
+    expect(isBoxed({ ...shape('b'), type: 'text' })).toBe(true);
+    expect(isBoxed({ ...shape('c'), type: 'sticky' })).toBe(true);
+    expect(isBoxed({ ...shape('d'), type: 'image', imageId: null })).toBe(true);
     // freehand: structurally a boxed element + a normalised polyline.
     // The runtime guard must match the type-union membership; a recent
     // bug left it false here and crashed elementBounds on commit.
-    expect(
-      isBoxed({ ...shape('e'), type: 'freehand', packedPoints: 'AQA=', closed: false } as Element),
-    ).toBe(true);
+    expect(isBoxed({ ...shape('e'), type: 'freehand', packedPoints: 'AQA=', closed: false })).toBe(
+      true,
+    );
     expect(isBoxed(arrow)).toBe(false);
   });
 
   it('supportsColours covers shape, text, sticky, arrow, freehand; not image', () => {
     expect(supportsColours(shape('a'))).toBe(true);
-    expect(supportsColours({ ...shape('b'), type: 'sticky' } as Element)).toBe(true);
+    expect(supportsColours({ ...shape('b'), type: 'sticky' })).toBe(true);
     expect(supportsColours(arrow)).toBe(true);
     expect(
       supportsColours({
@@ -291,7 +291,7 @@ describe('type predicates', () => {
         type: 'freehand',
         packedPoints: 'AQA=',
         closed: false,
-      } as Element),
+      }),
     ).toBe(true);
     // A text element shows the Colours category for its Text row only
     // (docs/specs/008-canvas/canvas-and-palette.md "Text element"): no background.
@@ -301,7 +301,7 @@ describe('type predicates', () => {
     // Image elements don't show the Colours accordion; the negative case
     // stops a future refactor that "simplifies" the predicate to
     // `isBoxed || arrow` and silently changes the surfaced fields.
-    expect(supportsColours({ ...shape('e'), type: 'image', imageId: null } as Element)).toBe(false);
+    expect(supportsColours({ ...shape('e'), type: 'image', imageId: null })).toBe(false);
   });
 
   it('supportsBorder is true for shape, freehand and path only', () => {
@@ -317,14 +317,12 @@ describe('type predicates', () => {
         type: 'freehand',
         packedPoints: 'AQA=',
         closed: false,
-      } as Element),
+      }),
     ).toBe(true);
-    expect(
-      supportsBorder({ ...shape('p'), type: 'path', nodes: [], closed: false } as Element),
-    ).toBe(true);
-    expect(supportsBorder({ ...shape('c'), type: 'sticky' } as Element)).toBe(false);
-    expect(supportsBorder({ ...shape('d'), type: 'text' } as Element)).toBe(false);
-    expect(supportsBorder({ ...shape('e'), type: 'image', imageId: null } as Element)).toBe(false);
+    expect(supportsBorder({ ...shape('p'), type: 'path', nodes: [], closed: false })).toBe(true);
+    expect(supportsBorder({ ...shape('c'), type: 'sticky' })).toBe(false);
+    expect(supportsBorder({ ...shape('d'), type: 'text' })).toBe(false);
+    expect(supportsBorder({ ...shape('e'), type: 'image', imageId: null })).toBe(false);
     expect(supportsBorder(arrow)).toBe(false);
   });
 });

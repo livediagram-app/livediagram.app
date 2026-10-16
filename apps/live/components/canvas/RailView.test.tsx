@@ -22,7 +22,7 @@ function draw(labels: string[], onSetLabel = vi.fn()) {
   return { ...utils, redraw: (l: string[]) => utils.rerender(view(l)), onSetLabel };
 }
 
-const fields = () => screen.getAllByPlaceholderText('Label') as HTMLTextAreaElement[];
+const fields = () => screen.getAllByPlaceholderText<HTMLTextAreaElement>('Label');
 
 afterEach(cleanup);
 

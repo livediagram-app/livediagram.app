@@ -65,7 +65,7 @@ export function withElementsMoved(
     if (isBoxed(el)) return { ...el, x: el.x + dx, y: el.y + dy };
     const move = <E extends Element & { type: 'arrow' }>(ep: E['from']): E['from'] =>
       ep.kind === 'free' ? { ...ep, x: ep.x + dx, y: ep.y + dy } : ep;
-    return { ...el, from: move(el.from), to: move(el.to) } as Element;
+    return { ...el, from: move(el.from), to: move(el.to) };
   });
 }
 
@@ -89,7 +89,7 @@ export function withZonesSettled<
   const byId = new Map(measured.map((m) => [m.id, m]));
   // Every zone's elements are read where everything stands now, before any zone moves: a zone
   // moving into another's old place must not take that one's elements.
-  const original = tab.elements as Element[];
+  const original = tab.elements;
   const moves: { ids: Set<string>; dx: number; dy: number }[] = [];
   let changed = false;
   const blocks = doc.blocks.map((b): ArticleBlock => {

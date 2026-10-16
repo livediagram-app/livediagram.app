@@ -23,7 +23,7 @@ const sheetEl = (id: string, sheetId: string, copyOf?: string) =>
     planSheet: { sheetId, ...(copyOf ? { copyOf } : {}) },
   }) as unknown as Element;
 
-const tab = (id: string, elements: Element[]): Tab => ({ id, name: id, elements }) as Tab;
+const tab = (id: string, elements: Element[]): Tab => ({ id, name: id, elements });
 
 const sheetRow = (doc: string, id: string, tabId: string, extra = '') =>
   sql.sql.exec(

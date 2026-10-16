@@ -133,7 +133,7 @@ export function parseDocumentEnvelope(
       document: {
         id: d.id,
         name: d.name,
-        presentation: (d.presentation as string | null | undefined) ?? null,
+        presentation: d.presentation ?? null,
         tabs: d.tabs,
         // Items that do not look like items are left behind; the api validates the rest.
         ...(Array.isArray(d.items) ? { items: d.items.filter(isItemLike) } : {}),

@@ -801,8 +801,16 @@ describe('storm', () => {
 });
 
 describe('frames as walls', () => {
-  const box = (id: string, x: number, y: number, extra: object = {}): Element =>
-    ({ id, type: 'shape', shape: 'square', x, y, width: 200, height: 60, ...extra }) as Element;
+  const box = (id: string, x: number, y: number, extra: object = {}): Element => ({
+    id,
+    type: 'shape',
+    shape: 'square',
+    x,
+    y,
+    width: 200,
+    height: 60,
+    ...extra,
+  });
 
   it('routes a line between two nodes outside a group round it, though it touches no member', () => {
     // a over b, a group between them whose one member stands clear of the line: the straight line runs through the
@@ -830,16 +838,22 @@ describe('frames as walls', () => {
 
 describe('routing against lines already routed', () => {
   it('prices sharing against a routed line where it is drawn, not the elbow it still carries', () => {
-    const box = (id: string, y: number): Element =>
-      ({ id, type: 'shape', shape: 'square', x: 0, y, width: 200, height: 60 }) as Element;
-    const arrow = (id: string, from: string, to: string): Element =>
-      ({
-        id,
-        type: 'arrow',
-        from: { kind: 'pinned', elementId: from, anchor: 'e' },
-        to: { kind: 'pinned', elementId: to, anchor: 'e' },
-        arrowStyle: 'angled',
-      }) as Element;
+    const box = (id: string, y: number): Element => ({
+      id,
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y,
+      width: 200,
+      height: 60,
+    });
+    const arrow = (id: string, from: string, to: string): Element => ({
+      id,
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: from, anchor: 'e' },
+      to: { kind: 'pinned', elementId: to, anchor: 'e' },
+      arrowStyle: 'angled',
+    });
     // R was routed by an earlier pass (a rejoin) down a track at x 218, right where the loop L would go round m.
     const routes: Routes = new Map([['R', { kind: 'track', axis: 'TB', at: 218 }]]);
     routeLoops(

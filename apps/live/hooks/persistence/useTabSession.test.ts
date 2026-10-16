@@ -15,7 +15,7 @@ function harness(
   initial: Partial<Tab> = {},
   opts: { editsBlocked?: boolean; sessionToolsBlocked?: boolean; isFacilitator?: boolean } = {},
 ) {
-  let tabs: Tab[] = [{ id: 't1', name: 'Tab 1', elements: [], ...initial } as Tab];
+  let tabs: Tab[] = [{ id: 't1', name: 'Tab 1', elements: [], ...initial }];
   const hook = renderHook(() =>
     useTabSession({
       editsBlocked: opts.editsBlocked ?? false,

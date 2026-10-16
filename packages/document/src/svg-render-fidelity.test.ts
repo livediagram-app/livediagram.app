@@ -10,12 +10,12 @@ import type { ShapeElement, Tab } from './index';
 // (docs/specs/020-import-export/export-fidelity.md "The behaviour faces").
 
 const shape = (kind: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...(createShape(kind as ShapeElement['shape'], 0, 0) as ShapeElement),
+  ...createShape(kind as ShapeElement['shape'], 0, 0),
   id: `el-${kind}`,
   ...overrides,
 });
 const svgOf = (el: ShapeElement, background?: string) =>
-  renderElementsToSvg({ id: 't', name: 'T', elements: [el] } as unknown as Tab, { background });
+  renderElementsToSvg({ id: 't', name: 'T', elements: [el] }, { background });
 
 describe('Behaviour face export', () => {
   it('draws a timer Session button as the idle dial: ticks, the kicker and its length', () => {
@@ -71,9 +71,12 @@ describe('Behaviour face export', () => {
     const pad = shape('reaction-pad', { reaction: 'applause', label: 'Applause' });
     expect(svgOf(pad)).toMatch(/dominant-baseline="central"[^>]*>👏</);
     const art = { viewBox: '0 0 36 36', markup: '<path d="M1 1"/>' };
-    const drawn = renderElementsToSvg({ id: 't', name: 'T', elements: [pad] } as unknown as Tab, {
-      resolveEmojiArt: (g) => (g === '👏' ? art : undefined),
-    });
+    const drawn = renderElementsToSvg(
+      { id: 't', name: 'T', elements: [pad] },
+      {
+        resolveEmojiArt: (g) => (g === '👏' ? art : undefined),
+      },
+    );
     expect(drawn).toContain('viewBox="0 0 36 36"><path d="M1 1"/></svg>');
     expect(drawn).not.toContain('>👏<');
   });
@@ -140,7 +143,7 @@ describe('Mode button glyph (docs/specs/020-import-export/export-fidelity.md)', 
   it('draws the mode’s own glyph from the shared data, not a placeholder ring', () => {
     for (const mode of SELECTION_MODES) expect(MODE_GLYPHS[mode], mode).toBeDefined();
     const el = { ...createShape('mode-button', 0, 0), mode: 'eraser' as const };
-    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] } as unknown as Tab);
+    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] });
     const eraser = MODE_GLYPHS.eraser!.prims[0] as { d: string };
     expect(svg).toContain(eraser.d);
   });

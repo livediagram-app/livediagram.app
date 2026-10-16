@@ -35,7 +35,7 @@ export function mirrorElement<T extends BoxedElement>(el: T, axisX: number): T {
       ...moved,
       nodes: moved.nodes.map(flipNode),
       ...(moved.subpaths ? { subpaths: moved.subpaths.map((c) => c.map(flipNode)) } : {}),
-    } as T;
+    };
   }
   if (moved.type === 'freehand') {
     const pts = decodeStrokePoints(moved.packedPoints);
@@ -44,9 +44,9 @@ export function mirrorElement<T extends BoxedElement>(el: T, axisX: number): T {
       ny: pts.ny[i]!,
     }));
     const pressures = pts.pressures ? Array.from(pts.pressures) : undefined;
-    return { ...moved, packedPoints: encodeStrokePoints(points, pressures) } as T;
+    return { ...moved, packedPoints: encodeStrokePoints(points, pressures) };
   }
-  return moved as T;
+  return moved;
 }
 
 export type MirrorUse = 'drawing' | 'copy';

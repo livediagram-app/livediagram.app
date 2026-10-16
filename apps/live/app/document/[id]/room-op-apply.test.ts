@@ -32,7 +32,7 @@ describe('applyRoomOpToTabs', () => {
       shape: 'idea-box',
       ideaCards: [...Array(299).fill('x'), 'mine'],
       ideaCardIds: [...Array(299).fill(''), 'm1'],
-    } as Partial<Element>);
+    });
     const tabs = [tab({ elements: [full] })];
     const op: RoomOp = {
       kind: 'el-delta',
@@ -220,17 +220,16 @@ describe('two people pressing one done check', () => {
 // apply as a peer's would, a created tab is appended first, and an op with no element ops (an
 // oversize relay that asks for a refetch) changes nothing here.
 describe('applyRoomOpToTabs: changeset', () => {
-  const changeset = (over: Record<string, unknown>): RoomOp =>
-    ({
-      kind: 'changeset',
-      tabId: 't1',
-      id: 'cs_0000000001',
-      rev: 2,
-      prevRev: null,
-      author: { name: 'Webber', color: '#0ea5e9' },
-      counts: { added: 1, changed: 1, removed: 0 },
-      ...over,
-    }) as RoomOp;
+  const changeset = (over: Record<string, unknown>): RoomOp => ({
+    kind: 'changeset',
+    tabId: 't1',
+    id: 'cs_0000000001',
+    rev: 2,
+    prevRev: null,
+    author: { name: 'Webber', color: '#0ea5e9' },
+    counts: { added: 1, changed: 1, removed: 0 },
+    ...over,
+  });
 
   it('applies every element op in order, merging over our copy', () => {
     const tabs = [tab()];

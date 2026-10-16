@@ -147,12 +147,12 @@ export function applyBoardStroke(el: Element, choice: PenColourChoice): Element 
     ...rest
   } = el as Element & Coloured & { strokeSwatch?: unknown };
   const cleared = rest.type === 'shape' ? { ...rest, colorPreset: undefined } : rest;
-  return { ...cleared, ...colourFields(choice, 'penColour', 'strokeColor') } as Element;
+  return { ...cleared, ...colourFields(choice, 'penColour', 'strokeColor') };
 }
 
 /** The Text colour row on a whiteboard: a text box's colour, any swatch binding replaced. */
 export function applyBoardTextColour(el: Element, choice: PenColourChoice): Element {
   if (!takesText(el) || el.type !== 'text') return el;
   const { textColor: _c, penTextColour: _n, textSwatch: _s, ...rest } = el;
-  return { ...rest, ...colourFields(choice, 'penTextColour', 'textColor') } as Element;
+  return { ...rest, ...colourFields(choice, 'penTextColour', 'textColor') };
 }

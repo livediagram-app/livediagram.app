@@ -41,7 +41,7 @@ describe('BrowserRepairPanel', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /copy diagnostics/i }));
     });
-    expect((screen.getByRole('textbox') as HTMLTextAreaElement).value).toBe('REPORT');
+    expect(screen.getByRole<HTMLTextAreaElement>('textbox').value).toBe('REPORT');
   });
 
   it('asks before repairing, then clears and reports the count', () => {

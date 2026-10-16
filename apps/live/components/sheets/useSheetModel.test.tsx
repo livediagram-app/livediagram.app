@@ -5,7 +5,7 @@
 // too big to travel; and the Plan cards handed over when a formula reads them.
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { emptyLayout, type SheetJson, type SheetWrite } from '@livediagram/sheets';
+import { emptyLayout, type SheetJson } from '@livediagram/sheets';
 import type { Element, ShapeElement } from '@livediagram/document';
 import type { SheetPresenceOp } from '@livediagram/api-schema';
 import { ApiError } from '@/lib/api/core';
@@ -46,17 +46,16 @@ const sheetJson = (id: string, over: Partial<SheetJson> = {}): SheetJson => ({
 const element = (
   planSheet: { sheetId: string; copyOf?: string; start?: string },
   id = 'el1',
-): ShapeElement =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'plan-sheet',
-    x: 0,
-    y: 0,
-    width: 400,
-    height: 300,
-    planSheet,
-  }) as ShapeElement;
+): ShapeElement => ({
+  id,
+  type: 'shape',
+  shape: 'plan-sheet',
+  x: 0,
+  y: 0,
+  width: 400,
+  height: 300,
+  planSheet,
+});
 
 type Fake = SheetsBridge & {
   handlers: SheetsHandlers | null;
@@ -487,7 +486,7 @@ describe('Plan cards', () => {
     const { typeInto } = await import('@livediagram/sheets');
     const t = typeInto(result.current.workbook, 'sheetCRD1', { r: 0, c: 0 }, '=CARDCOUNT()');
     if (!t?.ok) throw new Error('typed');
-    act(() => void result.current.store.write('sheetCRD1', t.write as SheetWrite));
+    act(() => void result.current.store.write('sheetCRD1', t.write));
     await waitFor(() => expect(setCards).toHaveBeenCalled());
     expect(result.current.workbook.value('sheetCRD1', 0, 0)).toBe(0);
   });

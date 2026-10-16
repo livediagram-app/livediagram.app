@@ -35,7 +35,7 @@ function props(over: Partial<Props> = {}): Props {
     canDelete: true,
     canClearContent: true,
     ...over,
-  } as Props;
+  };
 }
 
 const rowLabels = () =>

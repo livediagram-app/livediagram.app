@@ -30,7 +30,7 @@ describe('export -> import round trip', () => {
       ],
     }) as unknown as Tab;
 
-  const plainTab = (): Tab => ({ id: 'dest', name: 'Tab 1', elements: [] }) as Tab;
+  const plainTab = (): Tab => ({ id: 'dest', name: 'Tab 1', elements: [] });
 
   it('keeps the board a board', () => {
     const parsed = parseImportedTab(tabToJsonText(esBoard()));

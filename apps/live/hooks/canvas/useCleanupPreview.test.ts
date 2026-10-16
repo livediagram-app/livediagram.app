@@ -16,8 +16,12 @@ beforeAll(async () => {
   await loadTidyEngine();
 });
 
-const at = (id: string, x: number, y: number): Element =>
-  ({ ...createShape('square', x, y), id, width: 120, height: 60 }) as Element;
+const at = (id: string, x: number, y: number): Element => ({
+  ...createShape('square', x, y),
+  id,
+  width: 120,
+  height: 60,
+});
 const link = (from: string, to: string): Element => ({
   ...createPinnedArrow(from, 's', to, 'n'),
   id: `arr-${from}-${to}`,
@@ -47,7 +51,7 @@ function harness(opts: { editsBlocked?: boolean; tabs?: Tab[] } = {}) {
     useCleanupPreview({
       editsBlocked: opts.editsBlocked ?? false,
       activeId,
-      tabsRef: tabsRef as React.MutableRefObject<Tab[]>,
+      tabsRef: tabsRef,
       tickTabs: (map) => {
         ticks++;
         committed = map(committed);

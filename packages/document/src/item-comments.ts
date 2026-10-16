@@ -8,7 +8,6 @@ import {
   ITEM_COMMENTS_MAX,
   commentsByteSize,
   type Item,
-  type ItemFieldValue,
   type WriteContext,
 } from '@livediagram/items';
 import { sanitizeMentions } from './comment-mentions';
@@ -48,7 +47,7 @@ export function itemThread(item: Pick<Item, 'fields'>): CommentThread | undefine
 function withThread(item: Item, thread: CommentThread | undefined): Item['fields'] {
   const { [ITEM_COMMENTS_FIELD]: _drop, ...rest } = item.fields;
   // A CommentThread is JSON, but its optional keys keep TypeScript from seeing it as an ItemFieldValue.
-  return thread ? { ...rest, [ITEM_COMMENTS_FIELD]: thread as unknown as ItemFieldValue } : rest;
+  return thread ? { ...rest, [ITEM_COMMENTS_FIELD]: thread } : rest;
 }
 
 // One comment write, applied to the item as it stands: a new item (rev raised, changed by `ctx.by`), or why not.

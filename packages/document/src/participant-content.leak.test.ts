@@ -37,7 +37,7 @@ const IMAGE = ['imageId', 'naturalWidth', 'naturalHeight', 'alt', 'credit'];
 
 const theirs = (el: Element, id: string): Element => ({ ...el, id, addedBy: THEM }) as Element;
 
-const root = theirs({ ...createShape('mind-node', 0, 0), label: 'Root' } as Element, 'root');
+const root = theirs({ ...createShape('mind-node', 0, 0), label: 'Root' }, 'root');
 const SAMPLES: Sample[] = [
   { name: 'shape (square)', el: theirs(createShape('square', 0, 0), 'sq'), allowed: TEXT },
   {
@@ -47,13 +47,13 @@ const SAMPLES: Sample[] = [
   },
   {
     name: 'shape (mind node)',
-    el: theirs({ ...createShape('mind-node', 300, 0), mindParentId: 'root' } as Element, 'mn'),
+    el: theirs({ ...createShape('mind-node', 300, 0), mindParentId: 'root' }, 'mn'),
     allowed: [...TEXT, 'x', 'y'],
   },
   { name: 'text', el: theirs(createText(0, 0), 'tx'), allowed: TEXT },
   {
     name: 'text (sizes to its words)',
-    el: theirs({ ...createText(0, 0), sizing: 'fit' } as Element, 'tf'),
+    el: theirs({ ...createText(0, 0), sizing: 'fit' }, 'tf'),
     allowed: [...TEXT, 'width', 'height'],
   },
   { name: 'table', el: theirs(createTable(0, 0), 'tb'), allowed: [...TEXT, 'cells'] },
@@ -118,7 +118,7 @@ function tabFor(sample: Sample): Tab {
     sample.el.id === 'mn' || sample.el.id === 'ac'
       ? [root, ...(sample.el.id === 'ac' ? [SAMPLES[2]!.el] : []), sample.el]
       : [sample.el];
-  return { id: 't', name: 't', elements } as Tab;
+  return { id: 't', name: 't', elements };
 }
 
 describe('the participant content rule never leaks', () => {
@@ -137,7 +137,7 @@ describe('the participant content rule never leaks', () => {
       for (const field of fields) {
         if (field === 'id' || field === 'type' || field === 'addedBy') continue;
         for (const value of offers(stored[field])) {
-          const incoming = { ...stored, [field]: value } as Bag;
+          const incoming = { ...stored, [field]: value };
           if (value === undefined) delete incoming[field];
           const r = applyParticipantOp(tab, { kind: 'update', element: incoming as Element }, ME);
           if (r.result !== 'applied') continue;
@@ -169,7 +169,7 @@ describe('the participant content rule never leaks', () => {
     const verdict = (el: Element) =>
       applyParticipantOp(tab, { kind: 'add', element: el, at: 1 }, ME).result;
     for (const s of SAMPLES) {
-      const fresh = { ...(s.el as Bag) } as Bag;
+      const fresh = { ...(s.el as Bag) };
       delete fresh.addedBy;
       fresh.id = `new-${s.el.id}`;
       const ok = ['sticky', 'text', 'image'].includes(s.el.type) || s.el.id === 'mn';
@@ -194,10 +194,7 @@ describe('the participant content rule never leaks', () => {
       { theme: 'dark' },
       { locked: true },
     ]) {
-      expect(
-        participantTabChange(tab, { ...tab, ...meta } as Tab, ME),
-        JSON.stringify(meta),
-      ).toBeNull();
+      expect(participantTabChange(tab, { ...tab, ...meta }, ME), JSON.stringify(meta)).toBeNull();
     }
   });
 });

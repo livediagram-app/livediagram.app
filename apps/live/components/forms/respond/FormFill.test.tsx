@@ -81,7 +81,7 @@ describe('a form of two sections', () => {
     expect(screen.getByRole('heading', { name: 'Food' })).toBeTruthy();
     expect(screen.getByText('Tell us what you eat')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
-    expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe('Ada');
+    expect(screen.getByLabelText<HTMLInputElement>(/^Name/).value).toBe('Ada');
   });
 
   it('checks a field when it is left, but not an empty one', () => {
@@ -112,7 +112,7 @@ describe('a form of two sections', () => {
     expect(screen.getByRole('status').textContent).toContain('See you there!');
     expect(sessionStorage.getItem('k')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Submit Another Response' }));
-    expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe('');
+    expect(screen.getByLabelText<HTMLInputElement>(/^Name/).value).toBe('');
   });
 
   it('keeps what is typed across a reload of the page', () => {
@@ -120,7 +120,7 @@ describe('a form of two sections', () => {
     fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Grace' } });
     cleanup();
     fill();
-    expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe('Grace');
+    expect(screen.getByLabelText<HTMLInputElement>(/^Name/).value).toBe('Grace');
   });
 });
 

@@ -26,16 +26,15 @@ const by = { id: 'p', name: 'P', color: '#000000' };
 const R = (i: number) => `s0r${i}`;
 const C = (i: number) => `s0c${i}`;
 const base = (): Sheet => makeSheets({ 'Sheet 1': {} }, { rows: 10, cols: 4 })[0]!;
-const rule = (x: Partial<ValidationRule>, r1 = 1, c1 = 1, r2 = 5, c2 = c1): ValidationRule =>
-  ({
-    id: 'rule01',
-    r1: R(r1),
-    c1: C(c1),
-    r2: R(r2),
-    c2: C(c2),
-    is: 'check',
-    ...x,
-  }) as ValidationRule;
+const rule = (x: Partial<ValidationRule>, r1 = 1, c1 = 1, r2 = 5, c2 = c1): ValidationRule => ({
+  id: 'rule01',
+  r1: R(r1),
+  c1: C(c1),
+  r2: R(r2),
+  c2: C(c2),
+  is: 'check',
+  ...x,
+});
 const setRule = (r: ValidationRule): SheetWrite => ({
   kind: 'layout',
   changes: [{ k: 'vrule', id: r.id, rule: r }],
@@ -351,7 +350,7 @@ describe('rules in the layout', () => {
     expect(
       bad(
         rule({
-          is: 'list' as never,
+          is: 'list',
           opts: [{ v: 'a' }],
           src: { r1: R(0), c1: C(0), r2: R(0), c2: C(0) },
         }),

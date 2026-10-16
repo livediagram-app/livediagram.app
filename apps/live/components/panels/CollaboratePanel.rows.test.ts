@@ -25,8 +25,11 @@ const mk = (name: string, status: 'open' | 'done' = 'open'): ElementAction => ({
   status,
 });
 
-const card = (actions: ElementAction[]): BoxedElement =>
-  ({ ...createShape('action-card', 0, 0), id: 'card', actions }) as unknown as BoxedElement;
+const card = (actions: ElementAction[]): BoxedElement => ({
+  ...createShape('action-card', 0, 0),
+  id: 'card',
+  actions,
+});
 
 const openIds = (els: BoxedElement[]) =>
   rowsFor('open', 'all', [], actionRowsFromElements(els, null)).map((r) =>

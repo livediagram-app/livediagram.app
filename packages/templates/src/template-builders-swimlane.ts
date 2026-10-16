@@ -10,7 +10,6 @@ import {
   type ArrowElement,
   type Element,
   type ShapeElement,
-  type ShapeKind,
 } from '@livediagram/document';
 import { liveFlowchart } from './template-flowchart-live';
 import { swimlaneKey, type LaneHue } from './template-swimlane-kit';
@@ -116,7 +115,7 @@ export function buildSwimlane(cx: number, cy: number): Element[] {
     lane: number,
     look: Partial<ShapeElement> = {},
   ): ShapeElement => ({
-    ...createShape('square' as ShapeKind, gutter + col * 172, lane * seedLaneH + 50),
+    ...createShape('square', gutter + col * 172, lane * seedLaneH + 50),
     width: stepW,
     height: stepH,
     label,

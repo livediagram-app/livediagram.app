@@ -78,7 +78,7 @@ export function createBoundaryClient(createWorker: () => Worker): BoundaryClient
     }
     worker.addEventListener('message', (e) => onMessage((e as MessageEvent<WorkerResponse>).data));
     worker.addEventListener('error', (e) => {
-      console.warn('[photo-model] load-failed; the worker crashed', (e as ErrorEvent).message);
+      console.warn('[photo-model] load-failed; the worker crashed', e.message);
       failAll('load-failed');
     });
     return worker;

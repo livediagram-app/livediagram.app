@@ -175,7 +175,7 @@ describe('comment author ids stay off the wire (docs/specs/012-collaboration/col
     };
     const before = tab();
     const after = tab({
-      elements: [el('a', { x: 5, commentThread: thread } as Partial<Element>), el('b')],
+      elements: [el('a', { x: 5, commentThread: thread }), el('b')],
     });
     // What the socket actually sends: every op through `opForTheWire` (room.ts).
     const wire = (ops: unknown[]) => JSON.stringify(ops.map(opForTheWire));

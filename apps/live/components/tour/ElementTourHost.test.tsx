@@ -12,7 +12,6 @@ import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
 import { createSelectionStore, type SelectionStore } from '@/lib/selection-store';
 import { setActiveTour, activeTour } from '@/lib/tour-active';
 import { setStartPanelOpen } from '@/components/start/start-panel-open';
-import type { UserPreferences } from '@/lib/user-preferences';
 import type { TourEngine } from './useTourEngine';
 import type { SankeyElementTourApi } from './sankey-element-tour-steps';
 import { ElementTourHost } from './ElementTourHost';
@@ -50,7 +49,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     embedMode: false,
     can: { level: 'edit' },
     activeTab: { id: 'tab1', elements: [sankey, square, stack] },
-    userPreferences: {} as UserPreferences,
+    userPreferences: {},
     setUserPreferences,
     writeUserPreferences,
     selfParticipant: { id: 'me' },

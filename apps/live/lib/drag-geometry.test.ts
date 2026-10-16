@@ -66,17 +66,16 @@ describe('sameTargets', () => {
 });
 
 describe('computeSnapTargets', () => {
-  const shape = (over: Record<string, unknown> = {}): Element =>
-    ({
-      id: 's',
-      type: 'shape',
-      shape: 'square',
-      x: 0,
-      y: 0,
-      width: 100,
-      height: 60,
-      ...over,
-    }) as Element;
+  const shape = (over: Record<string, unknown> = {}): Element => ({
+    id: 's',
+    type: 'shape',
+    shape: 'square',
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 60,
+    ...over,
+  });
   // Arrows aren't boxed, so they never contribute anchors.
   const arrow = (): Element =>
     ({ id: 'a', type: 'arrow', from: { x: 0, y: 0 }, to: { x: 10, y: 10 } }) as Element;

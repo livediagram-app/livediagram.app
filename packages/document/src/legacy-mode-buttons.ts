@@ -15,6 +15,6 @@ export function migrateLegacyModeButtons(elements: Element[]): Element[] {
     if (!carriesRetiredMode(el)) return el;
     const { mode: _gone, ...rest } = el as Element & { mode?: unknown };
     void _gone;
-    return rest as Element;
+    return rest;
   });
 }

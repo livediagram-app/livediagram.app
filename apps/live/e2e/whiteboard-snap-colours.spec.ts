@@ -109,8 +109,8 @@ async function openSettings(page: Page) {
 async function placeDock(page: Page, position: 'top' | 'bottom') {
   await page.addInitScript(
     ([key, whiteboardDockPosition]) => {
-      const prefs = JSON.parse(localStorage.getItem(key as string) ?? '{}');
-      localStorage.setItem(key as string, JSON.stringify({ ...prefs, whiteboardDockPosition }));
+      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}');
+      localStorage.setItem(key, JSON.stringify({ ...prefs, whiteboardDockPosition }));
     },
     [PREFS_KEY, position] as const,
   );

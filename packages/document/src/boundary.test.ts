@@ -23,7 +23,7 @@ const boundary = (
   over: Partial<ShapeElement> = {},
 ) =>
   ({
-    ...(createShape('boundary', 0, 0) as ShapeElement),
+    ...createShape('boundary', 0, 0),
     id,
     x,
     y,
@@ -33,7 +33,7 @@ const boundary = (
   }) as ShapeElement;
 const square = (id: string, x: number, y: number) =>
   ({
-    ...(createShape('square', 0, 0) as ShapeElement),
+    ...createShape('square', 0, 0),
     id,
     x,
     y,
@@ -102,7 +102,7 @@ describe('boundary (docs/specs/009-elements/boundary.md)', () => {
         boundary('outer', 0, 0, 600, 400, { label: 'AWS', strokeColor: '#336699' }),
         boundary('inner', 50, 50, 300, 200, { label: 'VPC', strokeColor: '#336699' }),
       ],
-    } as never);
+    });
     expect(svg).toContain('>AWS<');
     expect(svg.match(/rgba\(51, 102, 153, 0\.06\)/g)).toHaveLength(2);
   });

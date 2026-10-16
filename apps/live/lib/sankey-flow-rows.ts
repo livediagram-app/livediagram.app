@@ -110,7 +110,7 @@ export function pasteRows(
   pasted: readonly SankeyFlow[],
 ): SankeyDraftRow[] {
   const incoming = rowsFromFlows(pasted);
-  const replace = rows[at] && isBlank(rows[at]!) ? 1 : 0;
+  const replace = rows[at] && isBlank(rows[at]) ? 1 : 0;
   const index = Math.min(rows.length, at + 1 - replace);
   return [...rows.slice(0, index), ...incoming, ...rows.slice(index + replace)].slice(
     0,

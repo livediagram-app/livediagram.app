@@ -12,12 +12,11 @@ vi.mock('@/lib/document-tombstones', () => ({ isDocumentDeleted: () => false }))
 
 const { useUnloadFlush } = await import('./useUnloadFlush');
 
-const tab = (label: string): Tab =>
-  ({
-    id: 't1',
-    name: 'T',
-    elements: [{ id: 'e', type: 'text', x: 0, y: 0, width: 10, height: 10, label }],
-  }) as Tab;
+const tab = (label: string): Tab => ({
+  id: 't1',
+  name: 'T',
+  elements: [{ id: 'e', type: 'text', x: 0, y: 0, width: 10, height: 10, label }],
+});
 
 function mount(tabs: Tab[], participant = false, send = vi.fn()) {
   return renderHook(() =>

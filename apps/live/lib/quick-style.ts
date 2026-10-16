@@ -314,8 +314,8 @@ export function applyQuickStroke(
   const { penColour: _named, strokeColor: _c, strokeSwatch: _s, ...rest } = el;
   const pick = strokePick(theme, slot, overrides);
   return rest.type === 'shape'
-    ? ({ ...rest, ...pick, colorPreset: undefined } as Element)
-    : ({ ...rest, ...pick } as Element);
+    ? { ...rest, ...pick, colorPreset: undefined }
+    : { ...rest, ...pick };
 }
 
 // What a Stroke row choice writes: Ink by name, or a swatch's colour with its binding.
@@ -342,9 +342,9 @@ export function applyQuickFill(
   )
     return el;
   if (slot === QUICK_TRANSPARENT) {
-    const { fillSwatch: _bound, ...rest } = el as typeof el & { fillSwatch?: unknown };
+    const { fillSwatch: _bound, ...rest } = el;
     return el.type === 'path'
-      ? ({ ...rest, fillColor: QUICK_TRANSPARENT } as Element)
+      ? { ...rest, fillColor: QUICK_TRANSPARENT }
       : ({ ...rest, fillColor: QUICK_TRANSPARENT, colorPreset: undefined } as Element);
   }
   const { colour, bind } = pickFor(theme, 'fill', slot, overrides);

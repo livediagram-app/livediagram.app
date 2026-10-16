@@ -11,13 +11,13 @@ vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => t
 import { usePointerNoteSetters } from './usePointerNoteSetters';
 
 const note = {
-  ...(createShape('pointer-note', 0, 0) as ShapeElement),
+  ...createShape('pointer-note', 0, 0),
   id: 'n',
   x: 0,
   y: 0,
 } as Element;
 const host = {
-  ...(createShape('square', 0, 0) as ShapeElement),
+  ...createShape('square', 0, 0),
   id: 'h',
   x: 300,
   y: 300,

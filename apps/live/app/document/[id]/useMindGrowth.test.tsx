@@ -17,7 +17,7 @@ import { useMindGrowth } from './useMindGrowth';
 // label editor; Escape on it while still empty removes it.
 
 const root = { ...createShape('mind-node', 0, 0), id: 'root', label: 'Offsite' };
-const startTab = (): Tab => ({ id: 't', name: 'Map', elements: [root] }) as unknown as Tab;
+const startTab = (): Tab => ({ id: 't', name: 'Map', elements: [root] });
 
 function setup() {
   const setEditingId = vi.fn();

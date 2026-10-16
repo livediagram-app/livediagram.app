@@ -46,9 +46,9 @@ function trailingNumber(t: string): [string, string, string] | null {
 function textNumbers(ts: string[], one: number): Series | null {
   const ms = ts.map(trailingNumber);
   if (ms.some((m) => !m) || new Set(ms.map((m) => m![1])).size !== 1) return null;
-  const prefix = ms[0]![1]!;
+  const prefix = ms[0]![1];
   const ns = ms.map((m) => Number(m![2]));
-  const width = ms[ms.length - 1]![2]!.length;
+  const width = ms[ms.length - 1]![2].length;
   const step = ns.length >= 2 ? ns[1]! - ns[0]! : one;
   for (let i = 2; i < ns.length; i++) if (ns[i]! - ns[i - 1]! !== step) return null;
   const last = ns[ns.length - 1]!;

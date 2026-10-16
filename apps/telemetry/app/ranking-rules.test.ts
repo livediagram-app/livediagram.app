@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { TelemetryCount } from '@livediagram/api-schema';
 import { isRecovery, isServerCrash } from './ExceptionsView';
 import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './LookAndFeelView';
 import { PALETTE_TYPE_ALIASES, SELECTION_MODES } from './PaletteView';
@@ -11,8 +10,12 @@ import { TOUR_STEP_TYPES, tourStepRows } from './tour-steps';
 // spellings into today's token, and keeping events that aren't the thing a
 // card names out of it.
 
-const row = (category: string, action: string, type: string | null, count: number) =>
-  ({ category, action, type, count }) as TelemetryCount;
+const row = (category: string, action: string, type: string | null, count: number) => ({
+  category,
+  action,
+  type,
+  count,
+});
 
 describe('foldAliases / rank', () => {
   it('folds an old spelling into its current token, summing the counts', () => {

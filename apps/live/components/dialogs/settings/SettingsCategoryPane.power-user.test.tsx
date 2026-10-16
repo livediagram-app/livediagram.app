@@ -17,7 +17,7 @@ function setViewport() {
     removeEventListener: () => {},
     addListener: () => {},
     removeListener: () => {},
-  })) as unknown as typeof window.matchMedia;
+  }));
 }
 
 function renderEditor(settings: UserPreferences, onGoToRow = vi.fn()) {

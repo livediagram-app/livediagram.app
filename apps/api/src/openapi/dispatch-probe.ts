@@ -191,10 +191,10 @@ export async function probeDispatch(
   } as unknown as ExecutionContext;
 
   const realFetch = globalThis.fetch;
-  globalThis.fetch = (() => {
+  globalThis.fetch = () => {
     state.touched = true;
     return Promise.reject(new StorageTrap('probe touched fetch'));
-  }) as typeof fetch;
+  };
   const results: ProbeResult[] = [];
   try {
     for (const path of candidates) {

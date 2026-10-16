@@ -98,7 +98,7 @@ export function pageLockSet<T extends PagesTab>(
     const { locked: _drop, ...rest } = p;
     return locked ? { ...rest, locked: true as const } : rest;
   });
-  return { tab: withIllustratePages(tab, next) as T };
+  return { tab: withIllustratePages(tab, next) };
 }
 
 /** A page's name set (trimmed, capped at PAGE_NAME_MAX); empty clears it. */
@@ -114,7 +114,7 @@ export function pageRenamed<T extends PagesTab>(tab: T, pageId: string, raw: str
     const { name: _drop, ...rest } = p;
     return name ? { ...rest, name } : rest;
   });
-  return { tab: withIllustratePages(tab, next) as T };
+  return { tab: withIllustratePages(tab, next) };
 }
 
 // A turn or a new size re-fits an infographic page's content into the page as it now is
@@ -128,9 +128,9 @@ function reshaped<T extends PagesTab>(
   const pages = pagesOf(tab);
   const reach = pagesSharing(pages, pageId);
   const next = pages.map((p) => (reach.has(p.id) ? patch(p) : p));
-  if (pages.find((p) => p.id === pageId)?.flow) return withIllustratePages(tab, next) as T;
+  if (pages.find((p) => p.id === pageId)?.flow) return withIllustratePages(tab, next);
   const ids = elementIdsOnPage(tab.elements, layOutIllustratePages(pages), pageId);
-  return withContentFittedToPage(withIllustratePages(tab, next), ids, pageId) as T;
+  return withContentFittedToPage(withIllustratePages(tab, next), ids, pageId);
 }
 
 /** A page turned. A page in a slide size, or the logo artboard, has no turn. */
@@ -267,7 +267,7 @@ export function pageAdded<T extends PagesTab>(
     page = { id, orientation: model?.orientation ?? 'portrait', ...(size ? { size } : {}) };
   }
   if (carried) page = { ...page, background: carried };
-  return { tab: withIllustratePages(tab, [...pages, page]) as T };
+  return { tab: withIllustratePages(tab, [...pages, page]) };
 }
 
 // The background a new page of `kind` carries over from the page before it: none for the paper,
@@ -298,10 +298,10 @@ export function pageDuplicated<T extends PagesTab>(
   if (!target) return refused('unknown_page');
   if (target.flow) {
     const out = withArticleDuplicated(tab, target.flow, flow);
-    return out ? { tab: out as T } : refused('page_limit');
+    return out ? { tab: out } : refused('page_limit');
   }
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
-  return { tab: withDuplicatedPage(tab, pageId, id) as T };
+  return { tab: withDuplicatedPage(tab, pageId, id) };
 }
 
 /** A page deleted with everything on it, the pages after it closing the gap; an article page
@@ -314,14 +314,14 @@ export function pageRemoved<T extends PagesTab>(tab: T, pageId: string): PageEdi
   if (pageUnits(pages).length <= 1) return refused('last_page');
   if (target.flow) {
     const out = withArticleRemoved(tab, target.flow);
-    return out ? { tab: out as T } : refused('last_page');
+    return out ? { tab: out } : refused('last_page');
   }
   const emptied = withPageContentReplaced(tab, pageId, []);
   return {
     tab: withIllustratePages(
       emptied,
       pages.filter((p) => p.id !== pageId),
-    ) as T,
+    ),
   };
 }
 
@@ -350,5 +350,5 @@ export function pageLaidOut<T extends PagesTab>(
   const pages = pagesOf(tab);
   if (!pages.some((p) => p.id === pageId)) return refused('unknown_page');
   if (pageLockRefuses(pages, pageId)) return refused('locked');
-  return { tab: withPageContentReplaced(tab, pageId, [...placed]) as T };
+  return { tab: withPageContentReplaced(tab, pageId, [...placed]) };
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import { planHidesCursors } from './plan-cursors';
 
-const tab = (over: Partial<Tab>) => ({ id: 't', name: 'T', elements: [], ...over }) as Tab;
+const tab = (over: Partial<Tab>) => ({ id: 't', name: 'T', elements: [], ...over });
 
 describe('participant cursors on Plan tabs', () => {
   it('are hidden on Board and Sheet tabs and any other Plan tab', () => {

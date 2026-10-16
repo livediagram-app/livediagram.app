@@ -12,21 +12,24 @@ let calls: Call[] = [];
 
 function recorder(): CanvasRenderingContext2D {
   const gradient = { addColorStop: () => undefined };
-  return new Proxy({} as Record<string | symbol, unknown>, {
-    get: (target, key) => {
-      if (key in target) return target[key];
-      if (key === 'getTransform') return () => ({ a: 2, b: 0 });
-      if (key === 'getContext') return undefined;
-      return (...args: unknown[]) => {
-        calls.push({ name: String(key), args });
-        return key.toString().startsWith('create') ? gradient : undefined;
-      };
+  return new Proxy<Record<string | symbol, unknown>>(
+    {},
+    {
+      get: (target, key) => {
+        if (key in target) return target[key];
+        if (key === 'getTransform') return () => ({ a: 2, b: 0 });
+        if (key === 'getContext') return undefined;
+        return (...args: unknown[]) => {
+          calls.push({ name: String(key), args });
+          return key.toString().startsWith('create') ? gradient : undefined;
+        };
+      },
+      set: (target, key, value) => {
+        target[key] = value;
+        return true;
+      },
     },
-    set: (target, key, value) => {
-      target[key] = value;
-      return true;
-    },
-  }) as unknown as CanvasRenderingContext2D;
+  ) as unknown as CanvasRenderingContext2D;
 }
 
 beforeEach(() => {

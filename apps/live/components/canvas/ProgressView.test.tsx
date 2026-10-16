@@ -12,18 +12,17 @@ import { ProgressView } from './ProgressView';
 // docs/specs/009-elements/progress.md "The percentage stays legible": the bar's percentage is inked
 // per part, each copy clipped to the part it sits over.
 
-const bar = (o: Partial<ShapeElement> = {}): ShapeElement =>
-  ({
-    id: 'pb',
-    type: 'shape',
-    shape: 'progress-bar',
-    x: 0,
-    y: 0,
-    width: 220,
-    height: 44,
-    progress: 73,
-    ...o,
-  }) as ShapeElement;
+const bar = (o: Partial<ShapeElement> = {}): ShapeElement => ({
+  id: 'pb',
+  type: 'shape',
+  shape: 'progress-bar',
+  x: 0,
+  y: 0,
+  width: 220,
+  height: 44,
+  progress: 73,
+  ...o,
+});
 
 // jsdom normalises a hex colour to rgb(); compare in that form.
 const rgb = (hex: string) => {

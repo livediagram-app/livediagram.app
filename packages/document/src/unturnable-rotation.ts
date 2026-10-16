@@ -15,6 +15,6 @@ export function dropUnturnableRotation(elements: Element[]): Element[] {
   return elements.map((el) => {
     if (!carriesUnturnableRotation(el)) return el;
     const { rotation: _turn, ...rest } = el as Element & { rotation?: number };
-    return rest as Element;
+    return rest;
   });
 }

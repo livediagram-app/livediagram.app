@@ -74,7 +74,7 @@ export function useElementLinks(deps: ElementLinksDeps) {
         if (!ids.has(el.id)) return el;
         if (link === null) {
           const { link: _drop, ...rest } = el;
-          return rest as typeof el;
+          return rest;
         }
         return { ...el, link };
       }),

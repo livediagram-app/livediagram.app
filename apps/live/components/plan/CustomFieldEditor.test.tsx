@@ -76,7 +76,7 @@ describe('the type editor', () => {
 
   it('keeps a field’s own uncommon currency in the list', () => {
     render(<CustomFieldForm field={{ ...VALUE, currency: 'NZD' }} onChange={vi.fn()} />);
-    expect((screen.getByLabelText('Currency') as HTMLSelectElement).value).toBe('NZD');
+    expect(screen.getByLabelText<HTMLSelectElement>('Currency').value).toBe('NZD');
   });
 
   it('previews each new kind with a sample value', () => {

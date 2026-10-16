@@ -108,7 +108,7 @@ export function useGifExport({
           preview ??= await snapshotPage(page.id, opts);
           if (cancelled) return;
           const drawer = createFrameDrawer(width, height, 'none');
-          const rgba = await drawer.draw({ page: 0, t: 0, mix: 1, delayCs: 0 }, () => preview!);
+          const rgba = await drawer.draw({ page: 0, t: 0, mix: 1, delayCs: 0 }, () => preview);
           const { sampleFrameBytes } = await import('@/lib/gif-export/gif-encode-core');
           const sample = sampleFrameBytes(rgba, width, height);
           const frames = gifTimeline({

@@ -19,7 +19,7 @@ import {
 } from './index';
 
 const card = (over: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...(createShape('card', 0, 0) as ShapeElement),
+  ...createShape('card', 0, 0),
   id: 'c1',
   ...over,
 });
@@ -208,7 +208,7 @@ describe('card lines and inline icons', () => {
     const { withInlineIcon } = await import('./card');
     expect(withInlineIcon(card({ cardMedia: undefined }), 'zap').cardMedia).toBe('tile');
     expect(withInlineIcon(card({ cardMedia: 'badge' }), 'zap').cardMedia).toBe('badge');
-    const sq = withInlineIcon(createShape('square', 0, 0) as ShapeElement, 'zap', 'left');
+    const sq = withInlineIcon(createShape('square', 0, 0), 'zap', 'left');
     expect(sq).toMatchObject({ iconId: 'zap', iconPosition: 'left' });
     expect('cardMedia' in sq).toBe(false);
   });

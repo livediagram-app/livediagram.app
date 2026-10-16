@@ -10,8 +10,15 @@ import {
   snapRouteEnds,
 } from './arrow-route';
 
-const box = (x: number, y: number, width: number, height: number): BoxedElement =>
-  ({ id: 'b', type: 'shape', shape: 'square', x, y, width, height }) as BoxedElement;
+const box = (x: number, y: number, width: number, height: number): BoxedElement => ({
+  id: 'b',
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width,
+  height,
+});
 
 describe('axisOf', () => {
   it('reads a segment less than a pixel off level as horizontal, and off plumb as vertical', () => {

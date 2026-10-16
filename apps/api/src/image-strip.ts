@@ -126,5 +126,5 @@ export function stripJpegMetadata(input: ArrayBuffer): ArrayBuffer {
     i = segEnd;
   }
 
-  return out.slice(0, outOffset).buffer as ArrayBuffer;
+  return out.slice(0, outOffset).buffer;
 }

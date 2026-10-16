@@ -30,8 +30,8 @@ describe('contentSummaryOf (R14)', () => {
     expect(contentSummaryOf(table)).toBe('3x3 Service | p99 \\| p50 | ');
     const odd = { ...createTable(0, 0), cells: [[1, 'x']] } as unknown as Element;
     expect(contentSummaryOf(odd)).toBe('1x2  | x');
-    expect(contentSummaryOf({ ...createTable(0, 0), cells: [] } as Element)).toBe('0x0');
-    expect(contentSummaryOf({ ...createTable(0, 0), cells: [[]] } as Element)).toBe('1x0');
+    expect(contentSummaryOf({ ...createTable(0, 0), cells: [] })).toBe('0x0');
+    expect(contentSummaryOf({ ...createTable(0, 0), cells: [[]] })).toBe('1x0');
   });
 
   it('gives a code block its language and line count (VW20)', () => {
@@ -99,7 +99,7 @@ describe('contentSummaryOf (R14)', () => {
   it("counts a Sankey's flows and the distinct nodes they join, as the diagram matches names", () => {
     expect(
       contentSummaryOf(
-        shape('sankey' as never, {
+        shape('sankey', {
           sankeyFlows: [
             { from: 'Salary', to: 'Budget ', value: 3 },
             { from: ' Budget', to: 'Rent', value: 1 },

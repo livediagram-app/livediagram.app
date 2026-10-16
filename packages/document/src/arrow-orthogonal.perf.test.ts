@@ -17,7 +17,7 @@ function board(n: number): Element[] {
       y: Math.floor(i / 40) * 200,
       width: 120,
       height: 60,
-    } as Element);
+    });
   for (let i = 0; i < n; i++)
     els.push({
       id: `a${i}`,
@@ -25,7 +25,7 @@ function board(n: number): Element[] {
       arrowStyle: 'angled',
       from: { kind: 'pinned', elementId: `b${i}`, anchor: 's' },
       to: { kind: 'pinned', elementId: `b${(i + 41) % n}`, anchor: 'n' },
-    } as Element);
+    });
   return els;
 }
 

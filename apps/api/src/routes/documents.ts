@@ -569,7 +569,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           scope = { tabScope: sharedRow.tabId };
       }
       if (!scope) return forbidden();
-      const body = (await request.json().catch(() => ({}) as { name?: unknown })) as {
+      const body = (await request.json().catch(() => ({}))) as {
         name?: unknown;
       };
       const newId = crypto.randomUUID();

@@ -2,15 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
 import { createShape } from './factories';
 import { fitLine, wrapLines } from './svg-render-face-kit';
-import type { QaNote, ShapeElement, Tab } from './index';
+import type { QaNote, ShapeElement } from './index';
 
 // Collaborate cards export without text running off the card
 // (docs/specs/020-import-export/export-fidelity.md): a long title, a long
 // driver, a long roll-call name; and a board whose notes are all discussed
 // shows its Discussed drawer, not "No notes yet".
 
-const svgOf = (el: ShapeElement) =>
-  renderElementsToSvg({ id: 't', name: 'Tab', elements: [el] } as unknown as Tab);
+const svgOf = (el: ShapeElement) => renderElementsToSvg({ id: 't', name: 'Tab', elements: [el] });
 // Each <text>'s content, by splitting rather than a backtracking regex (linear in the SVG's length).
 const texts = (svg: string) =>
   svg
@@ -37,7 +36,7 @@ describe('collab card title', () => {
   it('takes one line, cut short of the aside', () => {
     const long = 'A very long done check title that would run under the count and off the card';
     const el = {
-      ...(createShape('estimate', 0, 0) as ShapeElement),
+      ...createShape('estimate', 0, 0),
       label: long,
       estimateScale: 'fibonacci',
       responses: [{ participantId: 'a', value: '3', at: 1 }],
@@ -60,7 +59,7 @@ describe('Q&A board with every note discussed', () => {
       doneAt: i,
     });
     const el = {
-      ...(createShape('qa-board', 0, 0) as ShapeElement),
+      ...createShape('qa-board', 0, 0),
       qaNotes: [note(1), note(2)],
     } as ShapeElement;
     const all = texts(svgOf(el));
@@ -76,7 +75,7 @@ describe('decision drivers', () => {
       ...Array.from({ length: 19 }, (_, i) => `Driver ${i + 2}`),
     ];
     const el = {
-      ...(createShape('decision', 0, 0) as ShapeElement),
+      ...createShape('decision', 0, 0),
       label: 'Use Postgres',
       decisionDrivers: drivers,
     } as ShapeElement;
@@ -91,7 +90,7 @@ describe('decision drivers', () => {
 
   it('draws every driver, without a count, when they fit', () => {
     const el = {
-      ...(createShape('decision', 0, 0) as ShapeElement),
+      ...createShape('decision', 0, 0),
       decisionDrivers: ['Cheap', 'Fast'],
     } as ShapeElement;
     const all = texts(svgOf(el));
@@ -105,7 +104,7 @@ describe('roll call chips', () => {
   it('cuts a long name to its chip', () => {
     const name = 'Bartholomew Maximilian Featherstonehaugh-Cholmondeley the Third of Somewhere';
     const el = {
-      ...(createShape('roll-call', 0, 0) as ShapeElement),
+      ...createShape('roll-call', 0, 0),
       rollCall: [{ name, color: '#2563eb', at: 1_700_000_000_000 }],
     } as ShapeElement;
     const all = texts(svgOf(el));

@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PADDING_PX, createShape, type ShapeElement } from '@livediagram/document';
+import { PADDING_PX, createShape } from '@livediagram/document';
 import { useMindLabelFit } from './useMindLabelFit';
 
 // docs/specs/009-elements/mind-node.md "A node grows to fit its label": while typing, the node is
 // drawn as tall as its lines need. jsdom lays nothing out, so the measured block is stubbed.
 
-const venue = { ...(createShape('mind-node', 0, 0) as ShapeElement), id: 'venue' };
+const venue = { ...createShape('mind-node', 0, 0), id: 'venue' };
 
 function linesMeasure(height: number) {
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({

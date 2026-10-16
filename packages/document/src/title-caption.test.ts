@@ -44,7 +44,7 @@ describe('Title and Caption (docs/specs/009-elements/block-type-picker.md)', () 
 
   it('draws a muted run at reduced opacity in the export', () => {
     const el: ShapeElement = {
-      ...(createShape('square', 0, 0) as ShapeElement),
+      ...createShape('square', 0, 0),
       label: 'Payments\nStripe',
       richText: applyTitleCaption([{ text: 'Payments\nStripe' }]),
     };

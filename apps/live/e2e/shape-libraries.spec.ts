@@ -69,7 +69,7 @@ async function stored(page: Page): Promise<Stored[]> {
     const tab = (await (
       await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })
     ).json()) as StoredTab<Stored>;
-    return (tab.tab?.elements ?? []) as Stored[];
+    return tab.tab?.elements ?? [];
   }, headers);
 }
 const storedElements = async (page: Page) => (await stored(page)).length;

@@ -11,7 +11,7 @@ import type { ElementStyleOps } from '@/lib/element-style-ops';
 afterEach(cleanup);
 
 const seq = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('sequence', 0, 0) as ShapeElement), id: 'q', ...over }) as ShapeElement;
+  ({ ...createShape('sequence', 0, 0), id: 'q', ...over }) as ShapeElement;
 
 function show(target: ShapeElement, onEdit?: (id: string) => void) {
   const ops: ElementStyleOps = {

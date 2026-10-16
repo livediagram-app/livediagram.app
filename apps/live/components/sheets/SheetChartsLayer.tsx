@@ -98,7 +98,7 @@ export function SheetChartsLayer({ fontFamily }: { fontFamily?: string | undefin
     e.stopPropagation();
     e.preventDefault();
     setSelected(el.id);
-    (e.currentTarget.closest('[data-sheet-chart]') as HTMLElement | null)?.focus({
+    e.currentTarget.closest<HTMLElement>('[data-sheet-chart]')?.focus({
       preventScroll: true,
     });
     const target = e.currentTarget as HTMLElement;

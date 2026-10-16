@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
 import { arrow, box, frame, tabOf } from './build';
 import { routeMeasures } from './route-measures';
 
@@ -11,7 +10,7 @@ describe('routeMeasures', () => {
         { dx: 200, dy: 0 },
         { dx: -100, dy: 0 },
       ],
-    } as Partial<Element>);
+    });
     expect(routeMeasures(tabOf(box('a', 0, 0), box('b', 300, 0), back)).kinks).toBe(1);
     const notch = arrow('notch', 'a', 'b', ['e', 'w'], {
       arrowStyle: 'angled',
@@ -19,14 +18,14 @@ describe('routeMeasures', () => {
         { dx: 0, dy: -3 },
         { dx: 0, dy: 3 },
       ],
-    } as Partial<Element>);
+    });
     const low = box('b', 300, 6);
     expect(routeMeasures(tabOf(box('a', 0, 0), low, notch)).kinks).toBe(1);
   });
 
   it('counts a route that starts inside a frame heading, and reads an empty tab', () => {
     const tab = tabOf(
-      { ...frame('f', 0, 0, 600, 400), label: 'Core services' } as Element,
+      { ...frame('f', 0, 0, 600, 400), label: 'Core services' },
       box('a', 20, 4, { width: 40, height: 20 }),
       box('b', 300, 200),
       arrow('x', 'a', 'b'),
@@ -37,7 +36,7 @@ describe('routeMeasures', () => {
 
   it('counts a route that runs straight through a frame heading with both its ends outside', () => {
     const tab = tabOf(
-      { ...frame('f', 200, 0, 300, 300), label: 'Core services' } as Element,
+      { ...frame('f', 200, 0, 300, 300), label: 'Core services' },
       box('a', 0, 0, { width: 40, height: 20 }),
       box('b', 700, 0, { width: 40, height: 20 }),
       arrow('x', 'a', 'b', ['e', 'w']),

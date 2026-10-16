@@ -13,7 +13,7 @@ const er: ArrowElement = {
   arrowEnds: 'both',
   arrowheadShape: 'many',
   arrowheadStartShape: 'one',
-} as ArrowElement;
+};
 
 describe('the arrowhead shape picker', () => {
   it('sets both ends, so an ER relationship’s own start head can be made even again', () => {

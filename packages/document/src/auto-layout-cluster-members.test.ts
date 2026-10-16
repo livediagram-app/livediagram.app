@@ -65,8 +65,15 @@ describe('a row of members seats by its outside nodes', () => {
 
 describe('a member within a notch of its spot', () => {
   it('sits on it when the gap to its neighbour shrinks by no more than a notch', () => {
-    const box = (id: string, x: number, y: number): BoxedElement =>
-      ({ id, type: 'shape', shape: 'square', x, y, width: 100, height: 60 }) as BoxedElement;
+    const box = (id: string, x: number, y: number): BoxedElement => ({
+      id,
+      type: 'shape',
+      shape: 'square',
+      x,
+      y,
+      width: 100,
+      height: 60,
+    });
     // Two services whose stores want spots 8 px closer than a store's spacing: pooled, each sat 4 px off.
     const want0 = 50;
     const want1 = want0 + 100 + SIBLING_GAP - 8;

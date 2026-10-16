@@ -223,7 +223,7 @@ describe('apiAiReadNotes', () => {
   it('throws when EVERY batch fails, so the one message names the cause', async () => {
     globalThis.fetch = vi.fn(
       async () => new Response(JSON.stringify({ error: 'ai_not_configured' }), { status: 503 }),
-    ) as unknown as typeof fetch;
+    );
     await expect(apiAiReadNotes('o', crops(12))).rejects.toThrow('ai_not_configured');
   });
 
@@ -237,15 +237,13 @@ describe('apiAiReadNotes', () => {
     ] as const) {
       globalThis.fetch = vi.fn(
         async () => new Response(JSON.stringify({ error: token }), { status }),
-      ) as unknown as typeof fetch;
+      );
       await expect(apiAiReadNotes('o', crops(1))).rejects.toThrow(token);
     }
   });
 
   it('falls back to a usable token when the failure is not our envelope', async () => {
-    globalThis.fetch = vi.fn(
-      async () => new Response('<html>502</html>', { status: 502 }),
-    ) as unknown as typeof fetch;
+    globalThis.fetch = vi.fn(async () => new Response('<html>502</html>', { status: 502 }));
     await expect(apiAiReadNotes('o', crops(1))).rejects.toThrow('ai_error');
   });
 });

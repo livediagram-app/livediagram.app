@@ -244,7 +244,7 @@ export function preferNewerQa<T extends Element>(current: Element | undefined, i
   ) {
     return incoming;
   }
-  return { ...incoming, qaNotes: current.qaNotes, qaRev: current.qaRev } as T;
+  return { ...incoming, qaNotes: current.qaNotes, qaRev: current.qaRev };
 }
 
 // The same rule over a whole element list, matched by id.

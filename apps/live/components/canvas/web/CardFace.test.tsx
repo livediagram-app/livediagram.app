@@ -13,7 +13,7 @@ import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 afterEach(cleanup);
 
 const card = (over: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...(createShape('card', 0, 0) as ShapeElement),
+  ...createShape('card', 0, 0),
   ...over,
 });
 

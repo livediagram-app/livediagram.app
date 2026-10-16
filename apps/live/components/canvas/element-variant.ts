@@ -158,7 +158,7 @@ export function describeVariant(
             : remoteBorderColor
               ? 'solid'
               : // Guarded by useSvgBorder above: only CSS-native styles reach here.
-                (style as CSSProperties['borderStyle']),
+                style,
         },
       };
     }

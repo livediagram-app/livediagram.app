@@ -43,7 +43,7 @@ async function register(): Promise<string> {
     env,
   );
   expect(res.status).toBe(201);
-  return ((await res.json()) as { client_id: string }).client_id;
+  return (await res.json<{ client_id: string }>()).client_id;
 }
 
 describe('discovery', () => {
@@ -305,9 +305,8 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    const code = new URL(
-      ((await comp.json()) as { redirectTo: string }).redirectTo,
-    ).searchParams.get('code')!;
+    const { redirectTo } = (await comp.json()) as { redirectTo: string };
+    const code = new URL(redirectTo).searchParams.get('code')!;
 
     const bad = await app.request(
       '/oauth/token',
@@ -322,7 +321,7 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    expect(((await bad.json()) as { error: string }).error).toBe('invalid_grant');
+    expect((await bad.json<{ error: string }>()).error).toBe('invalid_grant');
 
     // The code was burned even on the failed attempt — a correct retry now fails.
     const retry = await app.request(
@@ -338,7 +337,7 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    expect(((await retry.json()) as { error: string }).error).toBe('invalid_grant');
+    expect((await retry.json<{ error: string }>()).error).toBe('invalid_grant');
   });
 
   it('refuses to redeem a code for a different client_id', async () => {
@@ -360,9 +359,8 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    const code = new URL(
-      ((await comp.json()) as { redirectTo: string }).redirectTo,
-    ).searchParams.get('code')!;
+    const { redirectTo } = (await comp.json()) as { redirectTo: string };
+    const code = new URL(redirectTo).searchParams.get('code')!;
     const res = await app.request(
       '/oauth/token',
       {
@@ -377,7 +375,7 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    expect(((await res.json()) as { error: string }).error).toBe('invalid_grant');
+    expect((await res.json<{ error: string }>()).error).toBe('invalid_grant');
   });
 
   it('rejects authorize for an unregistered redirect uri', async () => {
@@ -418,9 +416,8 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    const code = new URL(
-      ((await comp.json()) as { redirectTo: string }).redirectTo,
-    ).searchParams.get('code')!;
+    const { redirectTo } = (await comp.json()) as { redirectTo: string };
+    const code = new URL(redirectTo).searchParams.get('code')!;
     const tok = await app.request(
       '/oauth/token',
       {
@@ -434,7 +431,7 @@ describe('full authorize -> complete -> token flow', () => {
       },
       env,
     );
-    expect(((await tok.json()) as { error: string }).error).toBe('invalid_request');
+    expect((await tok.json<{ error: string }>()).error).toBe('invalid_request');
   });
 });
 

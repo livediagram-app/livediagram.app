@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react';
 import { at, TEAMMATE, YOU } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';
 import { cursorRide, type Point } from '@/lib/hero-motion';
@@ -185,7 +184,7 @@ function Cursor({
   ride: readonly Point[];
 }) {
   return (
-    <g className={className} style={cursorRide(ride) as CSSProperties} aria-hidden>
+    <g className={className} style={cursorRide(ride)} aria-hidden>
       <CursorMark colour={colour} label={name} />
     </g>
   );

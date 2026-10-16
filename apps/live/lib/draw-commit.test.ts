@@ -24,8 +24,12 @@ const themed = {
 } as unknown as ThemeDefinition;
 const bareTheme = {} as unknown as ThemeDefinition;
 
-const tab = (overrides: Partial<Tab> = {}): Tab =>
-  ({ id: 't', name: 'T', elements: [], ...overrides }) as unknown as Tab;
+const tab = (overrides: Partial<Tab> = {}): Tab => ({
+  id: 't',
+  name: 'T',
+  elements: [],
+  ...overrides,
+});
 
 // docs/specs/023-draw-mode/draw-mode.md "Shapes": the preview and the commit build one arrow.
 describe('buildDressedDrawnArrow', () => {

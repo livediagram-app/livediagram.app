@@ -135,7 +135,7 @@ describe('plan shapes in exports', () => {
   it('counts an open comment thread on a card (docs/specs/026-plan/items.md "Comments")', () => {
     const thread = { comments: [{ id: 'c1' }, { id: 'c2' }] };
     const talked = new Map([['item0001', item('item0001', { title: 'Hot', comments: thread })]]);
-    const tall = { ...card, height: 80 } as BoxedElement;
+    const tall = { ...card, height: 80 };
     expect(svgBoxed(tall, { items: talked })).toContain('💬 2');
     const resolved = new Map([
       ['item0001', item('item0001', { title: 'Hot', comments: { ...thread, resolved: true } })],

@@ -19,7 +19,6 @@ import {
   isLightColor,
   shade,
   tint,
-  type BackgroundPattern,
   type ShapeKind,
 } from '@livediagram/document';
 import type { CustomThemeDefinition } from '@livediagram/api-schema';
@@ -245,7 +244,7 @@ export function CustomThemeBuilder({
             <PatternButton
               key={p.id}
               active={def.backgroundPattern === p.id}
-              onClick={() => patch({ backgroundPattern: p.id as BackgroundPattern })}
+              onClick={() => patch({ backgroundPattern: p.id })}
               label={p.shortLabel}
             >
               <p.icon />
@@ -258,7 +257,7 @@ export function CustomThemeBuilder({
             <PatternButton
               key={p.id}
               active={def.backgroundPattern === p.id}
-              onClick={() => patch({ backgroundPattern: p.id as BackgroundPattern })}
+              onClick={() => patch({ backgroundPattern: p.id })}
               label={p.shortLabel}
             >
               <p.icon />

@@ -2,8 +2,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { lintResult } from './lint';
 
-const box = (id: string, x: number): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y: 0, width: 120, height: 60 }) as Element;
+const box = (id: string, x: number): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y: 0,
+  width: 120,
+  height: 60,
+});
 const where = { documentId: 'D', tabId: 't1' };
 
 afterEach(() => vi.restoreAllMocks());

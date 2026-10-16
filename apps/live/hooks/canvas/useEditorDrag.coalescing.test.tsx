@@ -29,8 +29,15 @@ import type { EditorDragDeps } from './useEditorDrag.types';
 //     every branch computes from the gesture's anchor rather than by
 //     accumulating deltas.
 
-const NOTE = (id: string, x: number): Element =>
-  ({ id, type: 'sticky', x, y: 0, width: 100, height: 60, label: id }) as Element;
+const NOTE = (id: string, x: number): Element => ({
+  id,
+  type: 'sticky',
+  x,
+  y: 0,
+  width: 100,
+  height: 60,
+  label: id,
+});
 
 function harness() {
   let elements: Element[] = [NOTE('drag', 0)];

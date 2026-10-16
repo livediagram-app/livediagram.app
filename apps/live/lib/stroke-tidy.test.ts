@@ -23,7 +23,7 @@ const stroke = (pts: { x: number; y: number }[], over: Partial<FreehandElement> 
 
 type Pt = { x: number; y: number };
 
-const corners = (p: PathElement) => pathWorldAnchors(p, pathContours(p)[0]!);
+const corners = (p: PathElement) => pathWorldAnchors(p, pathContours(p)[0]);
 
 describe('tidyUpStroke', () => {
   it('turns a wobbly near-level line into one level segment, keeping id and colour', () => {
@@ -77,7 +77,7 @@ describe('tidyUpStroke', () => {
       { x: 10, y: 10 },
       { x: 20, y: 0 },
     ];
-    expect(isTidyable(stroke(pts, { pen: 'highlighter' } as Partial<FreehandElement>))).toBe(false);
+    expect(isTidyable(stroke(pts, { pen: 'highlighter' }))).toBe(false);
     expect(
       isTidyable({ id: 'r', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 }),
     ).toBe(false);

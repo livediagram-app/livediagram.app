@@ -10,15 +10,17 @@ const board = (id: string, fillTab?: unknown): Element =>
     id,
     planBoard: { ...presetSetup('kanban'), ...(fillTab === undefined ? {} : { fillTab }) },
   }) as Element;
-const note = (id: string, locked = false): Element =>
-  ({ ...createShape('square', 0, 0), id, ...(locked ? { locked: true } : {}) }) as Element;
+const note = (id: string, locked = false): Element => ({
+  ...createShape('square', 0, 0),
+  id,
+  ...(locked ? { locked: true } : {}),
+});
 
-const sheet = (id: string, fillTab?: true): Element =>
-  ({
-    ...createShape('plan-sheet', 0, 0),
-    id,
-    planSheet: { sheetId: 'sheet0001', ...(fillTab ? { fillTab } : {}) },
-  }) as Element;
+const sheet = (id: string, fillTab?: true): Element => ({
+  ...createShape('plan-sheet', 0, 0),
+  id,
+  planSheet: { sheetId: 'sheet0001', ...(fillTab ? { fillTab } : {}) },
+});
 
 describe('fillTabElementOf', () => {
   it('is the first board or Sheet in canvas order with Fill Tab exactly on', () => {

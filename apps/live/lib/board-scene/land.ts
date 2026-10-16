@@ -18,7 +18,7 @@ import { landInk, landLine, landPath } from './land-marks';
 import { placementOffset, translateItem, type BoardScenePlacement } from './placement';
 import { mergeNotes, type BoardSceneReport } from './report';
 import { compactLanded } from './compact';
-import type { BoardScene, SceneAsset, SceneItem, SceneItemKind, ScenePolyline } from './scene';
+import type { BoardScene, SceneAsset, SceneItem, SceneItemKind } from './scene';
 import { debugLog } from '@/lib/debug-log';
 
 export type { BoardScenePlacement } from './placement';
@@ -98,7 +98,7 @@ function landBox(
         !whiteboard
           ? diagramFreehand(item, id, ctx)
           : item.points.length === 2
-            ? landLine(item as ScenePolyline, id, ctx)
+            ? landLine(item, id, ctx)
             : landPath(item, id, ctx),
       );
     case 'shape':

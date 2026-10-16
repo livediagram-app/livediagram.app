@@ -320,10 +320,10 @@ export function useTileGlyph({
   const tintStroke = !plain && !noTint ? baseStroke : undefined;
   const tintFill = tintStroke && filled ? baseFill : undefined;
   const glyphStyle: React.CSSProperties | undefined = tintStroke
-    ? ({
+    ? {
         color: tintStroke,
         ...(tintFill ? { '--tile-fill': tintFill } : {}),
-      } as React.CSSProperties)
+      }
     : undefined;
   const finishClass = finishAction ? paletteFinishClass(tabFinish, finishAction) : '';
   const glyphClass = `${tintFill ? 'palette-tile-filled ' : ''}${finishClass ? `${finishClass} ` : ''}`;

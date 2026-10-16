@@ -72,7 +72,7 @@ export function iconAnimationStyle(
   const style: Record<string, number> = {};
   if (resolved !== 'normal') style['--lvd-icon-anim-speed'] = ANIMATION_SPEED_FACTOR[resolved];
   if (repeat === false) style['--lvd-icon-anim-iter'] = 1;
-  return Object.keys(style).length > 0 ? (style as CSSProperties) : undefined;
+  return Object.keys(style).length > 0 ? style : undefined;
 }
 
 // The `--lvd-{prefix}-speed` / `-iter` custom properties the per-element
@@ -88,7 +88,7 @@ export function animSpeedVars(
   return {
     [`--lvd-${prefix}-speed`]: ANIMATION_SPEED_FACTOR[speed ?? DEFAULT_ANIMATION_SPEED],
     [`--lvd-${prefix}-iter`]: loops ? 'infinite' : 1,
-  } as CSSProperties;
+  };
 }
 
 // Fallback when an iconId isn't in the catalogue (e.g. a document saved

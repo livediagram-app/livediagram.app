@@ -31,22 +31,21 @@ import {
 // The image placeholder (docs/specs/009-elements/images.md "Placeholder rendering") is inked for
 // the paper it sits on, never the app's chrome, and its hint grows with the box.
 
-const blob = vi.hoisted(() => ({ state: { status: 'idle' } as { status: string } }));
+const blob = vi.hoisted(() => ({ state: { status: 'idle' } }));
 vi.mock('@/hooks/persistence/useImageBlobUrl', () => ({ useImageBlobUrl: () => blob.state }));
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
-const image = (over: Partial<ImageElement> = {}): ImageElement =>
-  ({
-    id: 'img',
-    type: 'image',
-    x: 0,
-    y: 0,
-    width: 600,
-    height: 300,
-    imageId: null,
-    ...over,
-  }) as ImageElement;
+const image = (over: Partial<ImageElement> = {}): ImageElement => ({
+  id: 'img',
+  type: 'image',
+  x: 0,
+  y: 0,
+  width: 600,
+  height: 300,
+  imageId: null,
+  ...over,
+});
 
 function draw(
   el: ImageElement,

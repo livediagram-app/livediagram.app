@@ -21,9 +21,9 @@ import {
 import { articleSchema, safeMarkColor } from './article-schema';
 
 const S = articleSchema;
-const PARAGRAPH = S.nodes.paragraph!;
-const LIST = S.nodes.list_item!;
-const CODE = S.nodes.code_block!;
+const PARAGRAPH = S.nodes.paragraph;
+const LIST = S.nodes.list_item;
+const CODE = S.nodes.code_block;
 
 /** The top-level blocks the selection touches, with their positions. */
 function selectedBlocks(state: EditorState): { node: PMNode; pos: number }[] {
@@ -164,13 +164,13 @@ export function setAlign(align: ArticleAlign): Command {
   };
 }
 
-export const toggleBold = toggleMark(S.marks.bold!);
-export const toggleItalic = toggleMark(S.marks.italic!);
-export const toggleUnderline = toggleMark(S.marks.underline!);
-export const toggleStrike = toggleMark(S.marks.strike!);
-export const toggleCode = toggleMark(S.marks.code!);
-export const toggleSup = toggleMark(S.marks.sup!);
-export const toggleSub = toggleMark(S.marks.sub!);
+export const toggleBold = toggleMark(S.marks.bold);
+export const toggleItalic = toggleMark(S.marks.italic);
+export const toggleUnderline = toggleMark(S.marks.underline);
+export const toggleStrike = toggleMark(S.marks.strike);
+export const toggleCode = toggleMark(S.marks.code);
+export const toggleSup = toggleMark(S.marks.sup);
+export const toggleSub = toggleMark(S.marks.sub);
 
 // A mark with attributes (a link, a colour) set over the selection, or taken off it with null.
 function setAttrMark(type: MarkType, attrs: Record<string, unknown> | null): Command {
@@ -198,23 +198,23 @@ export function setLink(href: string | null): Command {
     // A link on a caret with no selection spans the link the caret is in, if any.
     const { empty, $from } = state.selection;
     if (empty) {
-      const range = markRange($from, S.marks.link!);
+      const range = markRange($from, S.marks.link);
       if (!range) return false;
       if (dispatch) {
-        const tr = state.tr.removeMark(range.from, range.to, S.marks.link!);
-        if (href) tr.addMark(range.from, range.to, S.marks.link!.create({ href }));
+        const tr = state.tr.removeMark(range.from, range.to, S.marks.link);
+        if (href) tr.addMark(range.from, range.to, S.marks.link.create({ href }));
         dispatch(tr);
       }
       return true;
     }
-    return setAttrMark(S.marks.link!, href ? { href } : null)(state, dispatch);
+    return setAttrMark(S.marks.link, href ? { href } : null)(state, dispatch);
   };
 }
 
 export const setTextColor = (color: string | null): Command =>
-  setAttrMark(S.marks.color!, color && safeMarkColor(color) ? { color } : null);
+  setAttrMark(S.marks.color, color && safeMarkColor(color) ? { color } : null);
 export const setHighlight = (color: string | null): Command =>
-  setAttrMark(S.marks.highlight!, color && safeMarkColor(color) ? { color } : null);
+  setAttrMark(S.marks.highlight, color && safeMarkColor(color) ? { color } : null);
 
 /** Every mark off the selection. */
 export const clearFormatting: Command = (state, dispatch) => {
@@ -435,7 +435,7 @@ export const lineBreak: Command = (state, dispatch) => {
   if (!here) return false;
   if (dispatch) {
     if (here.node.type === CODE) dispatch(state.tr.insertText('\n').scrollIntoView());
-    else dispatch(state.tr.replaceSelectionWith(S.nodes.hard_break!.create()).scrollIntoView());
+    else dispatch(state.tr.replaceSelectionWith(S.nodes.hard_break.create()).scrollIntoView());
   }
   return true;
 };

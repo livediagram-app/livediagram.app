@@ -50,17 +50,16 @@ const freehand = (over: Partial<FreehandElement> = {}): FreehandElement => ({
 });
 const path = (over: Partial<PathElement> = {}): PathElement =>
   ({ id: 'p', type: 'path', x: 0, y: 0, width: 10, height: 10, ...over }) as PathElement;
-const text = (over: Partial<TextElement> = {}): TextElement =>
-  ({
-    id: 'x',
-    type: 'text',
-    x: 0,
-    y: 0,
-    width: 10,
-    height: 10,
-    label: 'Hi',
-    ...over,
-  }) as TextElement;
+const text = (over: Partial<TextElement> = {}): TextElement => ({
+  id: 'x',
+  type: 'text',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  label: 'Hi',
+  ...over,
+});
 
 const migrated = (el: Element): Element =>
   migrateWhiteboardKind(board({ elements: [el] })).elements[0]!;

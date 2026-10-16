@@ -20,7 +20,7 @@ vi.mock('../offline/offline-store', async (importOriginal) => ({
 // tabs, and the meta PUT only when order/name changed.
 
 function makeTab(id: string, extra: Partial<Tab> = {}): Tab {
-  return { id, name: id, elements: [], ...extra } as Tab;
+  return { id, name: id, elements: [], ...extra };
 }
 
 type FetchCall = { url: string; init: RequestInit };

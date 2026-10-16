@@ -62,12 +62,11 @@ export function finishPreviewSvg(
   // new text takes when one is given (the Text panel).
   const sample = tab.textSize
     ? FINISH_PREVIEW_ELEMENTS.map((el) =>
-        el.type === 'arrow' ? el : ({ ...el, textSize: tab.textSize } as Element),
+        el.type === 'arrow' ? el : { ...el, textSize: tab.textSize },
       )
     : [...FINISH_PREVIEW_ELEMENTS];
   const elements = tab.theme
-    ? withThemeApplied({ id: 'finish-preview', name: '', elements: sample } as Tab, tab.theme)
-        .elements
+    ? withThemeApplied({ id: 'finish-preview', name: '', elements: sample }, tab.theme).elements
     : sample;
   const previewTab = {
     id: 'finish-preview',

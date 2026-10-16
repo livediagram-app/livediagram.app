@@ -18,7 +18,7 @@ const event: StickyElement = {
   y: 500,
   width: 200,
   height: 200,
-} as StickyElement;
+};
 
 const policy: StickyElement = {
   ...event,
@@ -27,14 +27,14 @@ const policy: StickyElement = {
   x: 2000,
   width: 300,
   height: 180,
-} as StickyElement;
+};
 
 const command: StickyElement = {
   ...event,
   id: 'c',
   esKind: 'command',
   x: 1000 - ES_NOTE_GAP - 200,
-} as StickyElement;
+};
 
 function draw(
   elements: Element[],
@@ -91,7 +91,7 @@ describe('NextNoteButtons', () => {
   });
 
   it('offers nothing on a locked note', () => {
-    draw([{ ...event, locked: true } as Element], { selectedId: 'e' });
+    draw([{ ...event, locked: true }], { selectedId: 'e' });
     expect(anchors()).toHaveLength(0);
   });
 

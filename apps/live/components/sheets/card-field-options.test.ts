@@ -6,7 +6,7 @@ const plan = {
   types: [
     ...ITEM_TYPES,
     {
-      ...ITEM_TYPES[0]!,
+      ...ITEM_TYPES[0],
       id: 'deal',
       label: 'Deal',
       custom: [

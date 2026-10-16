@@ -43,9 +43,7 @@ describe('the status bar', () => {
       fireEvent.click(screen.getByRole('checkbox', { name: new RegExp(`^${name}`) }));
     expect(screen.getAllByRole('status').map((s) => s.textContent)).toEqual(['Max4']);
     // The last one shown stays.
-    expect((screen.getByRole('checkbox', { name: /^Max/ }) as HTMLButtonElement).disabled).toBe(
-      true,
-    );
+    expect(screen.getByRole<HTMLButtonElement>('checkbox', { name: /^Max/ }).disabled).toBe(true);
     fireEvent.keyDown(screen.getByRole('group', { name: 'Show in the status bar' }), {
       key: 'Escape',
     });

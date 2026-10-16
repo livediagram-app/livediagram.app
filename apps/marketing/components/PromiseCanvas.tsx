@@ -179,7 +179,7 @@ export function PromiseCanvas() {
                     className="promise-link-pulse"
                     r="4"
                     fill={look.stroke}
-                    style={{ offsetPath: `path('${d}')` } as CSSProperties}
+                    style={{ offsetPath: `path('${d}')` }}
                   />
                 </g>
               );

@@ -15,8 +15,13 @@ import {
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const board = (id = 'wb', over: Partial<Tab> = {}): Tab =>
-  ({ id, name: 'Board', opensIn: 'draw', elements: [], ...over }) as Tab;
+const board = (id = 'wb', over: Partial<Tab> = {}): Tab => ({
+  id,
+  name: 'Board',
+  opensIn: 'draw',
+  elements: [],
+  ...over,
+});
 const stroke = {
   id: 's1',
   type: 'freehand',
@@ -24,7 +29,7 @@ const stroke = {
   y: 0,
   points: [],
 } as unknown as Tab['elements'][number];
-const diagram: Tab = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] } as Tab;
+const diagram: Tab = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] };
 
 function setup(tab: Tab, pendingDraw: PendingDraw | null = null, canvasTool = 'select' as const) {
   const deps = {
@@ -331,7 +336,7 @@ describe('shapes from the catalogue', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { deps, hook } = setup(board());
     vi.mocked(deps.beginDraw).mockClear();
-    act(() => hook.result.current.pickShape('banner' as never));
+    act(() => hook.result.current.pickShape('banner'));
     expect(deps.beginDraw).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith('[whiteboard] unknown shape', 'banner');
     warn.mockRestore();

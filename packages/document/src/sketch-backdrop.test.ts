@@ -4,10 +4,25 @@ import { sketchBackdropIds } from './sketch-backdrop';
 import type { Element } from './index';
 
 // Sketch backdrops (docs/specs/008-canvas/finish.md "Sketch"): a shape something sits on keeps a solid fill.
-const shape = (id: string, x: number, y: number, w: number, h: number, over = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y, width: w, height: h, ...over }) as Element;
-const text = (id: string, x: number, y: number): Element =>
-  ({ id, type: 'text', x, y, width: 80, height: 20, label: id }) as Element;
+const shape = (id: string, x: number, y: number, w: number, h: number, over = {}): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width: w,
+  height: h,
+  ...over,
+});
+const text = (id: string, x: number, y: number): Element => ({
+  id,
+  type: 'text',
+  x,
+  y,
+  width: 80,
+  height: 20,
+  label: id,
+});
 
 describe('sketchBackdropIds', () => {
   it("marks a key's card that captions sit on, not the shapes standing alone", () => {

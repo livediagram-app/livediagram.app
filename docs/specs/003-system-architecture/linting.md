@@ -38,6 +38,7 @@ is the whole of what the repo enforces.
   - `no-implied-eval`
   - `no-misused-promises`
   - `no-redundant-type-constituents`
+  - `no-unnecessary-type-assertion`
   - `no-unsafe-argument`
   - `no-unsafe-call`
   - `no-unsafe-enum-comparison`

@@ -17,17 +17,16 @@ import {
 // the editor did not write: on every Cmd+V, whatever the OS clipboard happens
 // to hold. So the tests care mostly about what it REFUSES.
 
-const shape = (id: string, over: Partial<ShapeElement> = {}): ShapeElement =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'square',
-    x: 0,
-    y: 0,
-    width: 120,
-    height: 120,
-    ...over,
-  }) as ShapeElement;
+const shape = (id: string, over: Partial<ShapeElement> = {}): ShapeElement => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 120,
+  height: 120,
+  ...over,
+});
 
 describe('serialiseElements', () => {
   it('round-trips a selection', () => {
@@ -62,7 +61,7 @@ describe('serialiseElements', () => {
         ],
       },
       responses: [{ participantId: 'p1', value: 'done', at: 1 }],
-    } as Partial<ShapeElement>);
+    });
     const text = serialiseElements([withIdentity]);
     expect(text).not.toContain('Someone Else');
     expect(text).not.toContain('p1');
@@ -84,7 +83,7 @@ describe('serialiseElements', () => {
   it('leaves the source element untouched', () => {
     const el = shape('a', {
       commentThread: { comments: [], resolved: false },
-    } as Partial<ShapeElement>);
+    });
     serialiseElements([el]);
     expect(el.commentThread).toBeDefined();
   });

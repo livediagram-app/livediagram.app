@@ -24,7 +24,7 @@ describe('resolveEditorCapabilities', () => {
     for (const [key, value] of Object.entries(can)) {
       if (key === 'level') continue;
       if (typeof value === 'function') {
-        for (const el of els) expect((value as (e: Element) => boolean)(el), key).toBe(false);
+        for (const el of els) expect(value(el), key).toBe(false);
       } else expect(value, key).toBe(false);
     }
   });

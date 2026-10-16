@@ -19,8 +19,8 @@ export function usePointerNoteSetters(
         if (!isPointerNote(el)) return el;
         const snap = snapPointerTip(els, el, tipAbs);
         const { attachedTo: _host, attachAt: _at, ...free } = withPointerTip(el, snap.pointerTip);
-        if (!snap.attachedTo) return free as Element;
-        return { ...free, attachedTo: snap.attachedTo, attachAt: snap.attachAt } as Element;
+        if (!snap.attachedTo) return free;
+        return { ...free, attachedTo: snap.attachedTo, attachAt: snap.attachAt };
       };
       const now = latest.current;
       const note = now.find((el) => el.id === elementId);

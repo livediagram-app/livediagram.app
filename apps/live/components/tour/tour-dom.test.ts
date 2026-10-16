@@ -12,10 +12,10 @@ import { clickTour, findTour, waitForTour } from './tour-dom';
 function anchor(tourId: string, laidOut: boolean): HTMLElement {
   const el = document.createElement('div');
   el.setAttribute('data-tour-id', tourId);
-  el.getClientRects = (() =>
+  el.getClientRects = () =>
     laidOut
       ? ([{ left: 10, top: 10, width: 100, height: 20 }] as unknown as DOMRectList)
-      : ([] as unknown as DOMRectList)) as HTMLElement['getClientRects'];
+      : ([] as unknown as DOMRectList);
   document.body.append(el);
   return el;
 }

@@ -329,7 +329,7 @@ function zoneTarget(
       const rect = zoneCanvasRect(pages, zone);
       if (!rect) continue;
       const inside = selected.every((e) => {
-        const p = zoneAnchorOf(e, elements as Element[]);
+        const p = zoneAnchorOf(e, elements);
         return (
           p.x >= rect.x &&
           p.x <= rect.x + rect.width &&

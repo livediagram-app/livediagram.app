@@ -424,13 +424,13 @@ export function buildLayoutDeck(kind: LayoutDeckKind): Element[] {
     const slide = deck.slides[i]!;
     let at = 0;
     return buildPageLayout(slide.layout, page).map((el) => {
-      const own = el as Element & { label?: string };
-      const out = { ...el } as Element & { label?: string };
+      const own = el;
+      const out = { ...el };
       if (typeof own.label === 'string' && own.label.length > 0) {
         if (at < slide.labels.length) out.label = slide.labels[at]!;
         at += 1;
       }
-      return out as Element;
+      return out;
     });
   });
   // Each page's content inked for its background, as a fill picked in the editor is (re-inking):

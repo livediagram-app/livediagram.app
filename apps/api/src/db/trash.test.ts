@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livediagram/document';
 import { TRASH_RETENTION_MS } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { DAY, T0, liveDoc, insert, team } from './test-trash-fixtures';
@@ -47,7 +46,7 @@ function folder(sql: DatabaseSync, id: string, owner = 'owner', team: string | n
 }
 
 async function tab(db: SqliteD1, documentId: string, id: string) {
-  await upsertTab(db.env, documentId, { id, name: id, elements: [] } as unknown as Tab, 0);
+  await upsertTab(db.env, documentId, { id, name: id, elements: [] }, 0);
 }
 
 function column(sql: DatabaseSync, id: string, name: string): unknown {

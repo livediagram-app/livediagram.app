@@ -177,8 +177,7 @@ describe('upsertTab — tab kind', () => {
       savedAt: 1,
       tabs: [],
     }) satisfies OfflineDocumentRecord;
-  const tab = (over: Partial<Tab> = {}): Tab =>
-    ({ id: 't', name: 'T', elements: [], ...over }) as Tab;
+  const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't', name: 'T', elements: [], ...over });
 
   it('stamps the ordinary kind on the way in', () => {
     expect(upsertTab(rec(), tab(), 2).tabs[0]!.kind).toBe('diagram');

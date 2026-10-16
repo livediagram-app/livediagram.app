@@ -26,7 +26,7 @@ const TAB_LESS_SENDABLE = new Set(['poll-start', 'poll-answer', 'poll-end', 'fol
 type LooseOp = { kind?: unknown; tabId?: unknown; tabs?: unknown };
 
 function asOp(op: unknown): LooseOp | null {
-  return typeof op === 'object' && op !== null ? (op as LooseOp) : null;
+  return typeof op === 'object' && op !== null ? op : null;
 }
 
 // Whether an op is about the scoped tab. `undefined` = the op names no tab

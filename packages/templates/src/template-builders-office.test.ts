@@ -5,7 +5,7 @@ import { furnishRooms } from './template-office-parts';
 
 // docs/specs/012-collaboration/virtual-office-template.md
 describe('the Virtual Office template', () => {
-  const els = buildTemplate('virtual-office', 0, 0) as Element[];
+  const els = buildTemplate('virtual-office', 0, 0);
   const shapes = (kind: string) =>
     els.filter(
       (e): e is Extract<Element, { type: 'shape' }> => e.type === 'shape' && e.shape === kind,
@@ -70,7 +70,7 @@ describe('the Virtual Office template', () => {
 // Walking in through a doorway reaches the room: seating that catches a character the moment its feet enter it sat
 // anyone who came in when it stood just inside the door.
 describe('the Virtual Office layout', () => {
-  const els = buildTemplate('virtual-office', 0, 0) as Element[];
+  const els = buildTemplate('virtual-office', 0, 0);
   type Box = Element & { x: number; y: number; width: number; height: number };
   const of = (kind: string) =>
     els.filter((e) => e.type === 'shape' && e.shape === kind) as (Box & {
@@ -120,7 +120,7 @@ describe('the Virtual Office layout', () => {
 // docs/specs/012-collaboration/virtual-office-template.md "Spaces"
 describe('the space templates', () => {
   const build = (kind: 'coworking-space' | 'team-pod' | 'all-hands-hall') =>
-    buildTemplate(kind, 0, 0) as Element[];
+    buildTemplate(kind, 0, 0);
   const count = (els: Element[], shape: string) =>
     els.filter((e) => e.type === 'shape' && e.shape === shape).length;
 

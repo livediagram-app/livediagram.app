@@ -641,7 +641,7 @@ describe('mermaidFromTab fallbacks and line forms', () => {
           type: 'arrow',
           from: { kind: 'free', x: 0, y: 0 },
           to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
-        } as Element,
+        },
         arrow('to-nowhere', 'a', 'gone'),
         arrow('free-head', 'a', 'b', { to: { kind: 'free', x: 9, y: 9 } }),
       ],

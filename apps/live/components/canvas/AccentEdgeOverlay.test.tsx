@@ -10,7 +10,7 @@ import { AccentEdgeOverlay } from './AccentEdgeOverlay';
 afterEach(cleanup);
 
 const square = (over: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...(createShape('square', 0, 0) as ShapeElement),
+  ...createShape('square', 0, 0),
   width: 200,
   height: 100,
   ...over,

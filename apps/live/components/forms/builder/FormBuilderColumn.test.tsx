@@ -103,7 +103,7 @@ describe('an Editor', () => {
   it('selects a question to edit it, and Escape lets go', () => {
     render(<Harness canEdit />);
     fireEvent.click(screen.getByRole('button', { name: 'Edit question: Summary' }));
-    expect((screen.getByRole('textbox', { name: 'Question' }) as HTMLTextAreaElement).value).toBe(
+    expect(screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Question' }).value).toBe(
       'Summary',
     );
     expect(screen.getByText('Title')).toBeTruthy();

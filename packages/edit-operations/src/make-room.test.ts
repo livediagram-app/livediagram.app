@@ -45,7 +45,7 @@ describe('make room', () => {
       run('insert diamond width=140 height=120 between n2 n3', lockedFlow('f2')),
     ).tab;
     for (const id of ['f2', 'n4', 'n5']) expect(boxIn(tab, id)).toEqual(boxIn(checkoutFlow(), id));
-    expect(boxIn(tab, 'n3')[1]).toBe(boxIn(checkoutFlow(), 'n3')[1]! + 160);
+    expect(boxIn(tab, 'n3')[1]).toBe(boxIn(checkoutFlow(), 'n3')[1] + 160);
   });
 
   it('leaves a locked element carried inside a shifted container where it is (EO47)', () => {
@@ -54,7 +54,7 @@ describe('make room', () => {
     ).tab;
     expect(boxIn(tab, 'n4')).toEqual(boxIn(checkoutFlow(), 'n4'));
     for (const id of ['f2', 'n5'])
-      expect(boxIn(tab, id)[1]).toBe(boxIn(checkoutFlow(), id)[1]! + 160);
+      expect(boxIn(tab, id)[1]).toBe(boxIn(checkoutFlow(), id)[1] + 160);
   });
 
   it('leaves a locked container ungrown (EO47)', () => {
@@ -101,7 +101,7 @@ describe('make room', () => {
             type: 'arrow',
             from: { kind: 'pinned', elementId: 'n8', anchor: 'w' },
             to: { kind: 'pinned', elementId: 'n7', anchor: 'e' },
-          } as Element,
+          },
         ],
       }),
     ).tab;

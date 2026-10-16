@@ -22,8 +22,13 @@ const counter = (prefix: string) => {
 };
 const ids = () => ({ page: counter('pg'), flow: counter('art') });
 
-const tabOf = (extra: Partial<Tab> = {}): Tab =>
-  ({ id: 't', name: 'T', elements: [], opensIn: 'illustrate', ...extra }) as Tab;
+const tabOf = (extra: Partial<Tab> = {}): Tab => ({
+  id: 't',
+  name: 'T',
+  elements: [],
+  opensIn: 'illustrate',
+  ...extra,
+});
 const page = (id: string, extra: Partial<IllustratePage> = {}): IllustratePage => ({
   id,
   orientation: 'portrait',
@@ -185,7 +190,7 @@ describe('the writing', () => {
       y: r.y + 120,
       width: 40,
       height: 40,
-    } as Element;
+    };
     const tab = tabOf({
       pages,
       elements: [inZone],

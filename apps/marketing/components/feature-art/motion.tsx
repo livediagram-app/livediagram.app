@@ -85,7 +85,7 @@ export function AnimatedShapesArt() {
           height="32"
           rx="10"
           fill="#8b5cf6"
-          style={{ filter: 'blur(5px)' } as CSSProperties}
+          style={{ filter: 'blur(5px)' }}
         />
         <rect
           className="fill-(--art-ink-fill) stroke-violet-500"

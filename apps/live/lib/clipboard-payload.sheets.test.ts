@@ -25,20 +25,26 @@ const sheetJson = (id: string, text = ''): SheetJson => ({
   updatedBy: { id: 'me', name: 'Me', color: '#000000' },
 });
 
-const sheetEl = (id: string, planSheet: { sheetId: string; copyOf?: string }): Element =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'plan-sheet',
-    x: 0,
-    y: 0,
-    width: 400,
-    height: 300,
-    planSheet,
-  }) as Element;
+const sheetEl = (id: string, planSheet: { sheetId: string; copyOf?: string }): Element => ({
+  id,
+  type: 'shape',
+  shape: 'plan-sheet',
+  x: 0,
+  y: 0,
+  width: 400,
+  height: 300,
+  planSheet,
+});
 
-const rect = (id: string): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 }) as Element;
+const rect = (id: string): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+});
 
 afterEach(() => registerSheetSource(null));
 

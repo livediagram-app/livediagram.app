@@ -5,18 +5,17 @@ import { budgetSheet, SHEET_ID } from './sheet-chart-test-sheet';
 
 // docs/specs/026-plan/plan-tabs.md "Sheet Chart".
 const range = { r1: 'row0a', c1: 'colAa', r2: 'row2a', c2: 'colBa' };
-const chart = (id: string, over: Partial<ShapeElement> = {}): ShapeElement =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'bar-chart',
-    x: 40,
-    y: 60,
-    width: 260,
-    height: 220,
-    chartSource: { sheetId: SHEET_ID, range },
-    ...over,
-  }) as ShapeElement;
+const chart = (id: string, over: Partial<ShapeElement> = {}): ShapeElement => ({
+  id,
+  type: 'shape',
+  shape: 'bar-chart',
+  x: 40,
+  y: 60,
+  width: 260,
+  height: 220,
+  chartSource: { sheetId: SHEET_ID, range },
+  ...over,
+});
 const tab = (id: string, elements: unknown[], kind?: string) =>
   ({ id, name: id, kind, elements }) as unknown as Tab;
 
@@ -54,7 +53,7 @@ describe('a Sheet Chart', () => {
       locked: true,
       chartLegend: false,
       chartPalette: 'ocean',
-    } as Partial<ShapeElement>);
+    });
     const copy = slotChartFrom(src);
     expect(copy.id).not.toBe('a');
     expect(copy).toMatchObject({

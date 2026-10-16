@@ -3,13 +3,13 @@ import { renderElementsToSvg } from './svg-render';
 import { agendaFitHeight } from './svg-render-agenda';
 import { buildTab } from './tab-builders';
 import { createShape } from './factories';
-import type { ShapeElement, Tab } from './index';
+import type { ShapeElement } from './index';
 
 // The Agenda exports the way the canvas draws it (docs/specs/020-import-export/export-fidelity.md,
 // docs/specs/012-collaboration/agenda.md "The face").
 
 const agenda = (overrides: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...(createShape('agenda', 0, 0) as ShapeElement),
+  ...createShape('agenda', 0, 0),
   strokeColor: '#0ea5e9',
   label: 'Sprint review',
   agendaItems: [
@@ -19,8 +19,7 @@ const agenda = (overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   ],
   ...overrides,
 });
-const svgOf = (el: ShapeElement) =>
-  renderElementsToSvg({ id: 't', name: 'T', elements: [el] } as unknown as Tab);
+const svgOf = (el: ShapeElement) => renderElementsToSvg({ id: 't', name: 'T', elements: [el] });
 
 describe('Agenda export', () => {
   it('wraps a long step name over two lines rather than cutting it to one', () => {
@@ -93,6 +92,6 @@ describe('agendaFitHeight', () => {
       'preserve',
       undefined,
     );
-    expect(tab.elements[0]!.type === 'shape' && tab.elements[0]!.height).toBeGreaterThan(300);
+    expect(tab.elements[0]!.type === 'shape' && tab.elements[0].height).toBeGreaterThan(300);
   });
 });

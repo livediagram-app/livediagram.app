@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { TableCellStyle, TableElement, TextSize } from '@livediagram/document';
+import type { TableCellStyle, TableElement } from '@livediagram/document';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
@@ -111,7 +111,7 @@ export function TableCellMenu({
           </button>
         </div>
         <TextSizeControl
-          current={(sc?.textSize ?? element.textSize ?? 'md') as TextSize}
+          current={sc?.textSize ?? element.textSize ?? 'md'}
           presetPx={presetPxFor('table')}
           onSet={(textSize) => {
             onPreviewStyle?.(null);

@@ -31,7 +31,7 @@ export function buildMindTemplate(
     // order from the outline (a tie on position falls back to document order)
     // rather than from wherever a builder happened to put them.
     const el: ShapeElement = {
-      ...(createShape('mind-node', 0, 0) as ShapeElement),
+      ...createShape('mind-node', 0, 0),
       ...s.look,
       label: s.label,
       x: -s.look.width / 2,

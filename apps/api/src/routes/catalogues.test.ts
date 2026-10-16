@@ -49,7 +49,7 @@ describe('GET /api/icons', () => {
       more: number;
     };
     expect(body.icons.length).toBeLessThanOrEqual(ICON_SEARCH_DEFAULT_LIMIT);
-    expect((await get('/api/icons?query=database&limit=2').json()) as object).toMatchObject({
+    expect(await get('/api/icons?query=database&limit=2').json<object>()).toMatchObject({
       icons: [{}, {}],
     });
   });

@@ -39,8 +39,8 @@ describe('ER ends', () => {
 
   it("draws an arrow's start in its own shape when it differs", () => {
     const boxes: Element[] = [
-      { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 60 } as Element,
-      { id: 'b', type: 'shape', shape: 'square', x: 300, y: 0, width: 100, height: 60 } as Element,
+      { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 60 },
+      { id: 'b', type: 'shape', shape: 'square', x: 300, y: 0, width: 100, height: 60 },
     ];
     const arrow: ArrowElement = {
       id: 'r',
@@ -57,7 +57,7 @@ describe('ER ends', () => {
     // A crow's three prongs at one end, two bars at the other.
     expect(svg.match(/<polyline points/g)?.length).toBe(5);
     // Sketched, the heads are still drawn exactly when they differ.
-    const sketched = svgArrow({ ...arrow, finish: 'sketch' } as ArrowElement, [...boxes, arrow]);
+    const sketched = svgArrow({ ...arrow, finish: 'sketch' }, [...boxes, arrow]);
     expect(sketched.match(/<polyline points/g)?.length).toBe(5);
   });
 });

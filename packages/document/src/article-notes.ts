@@ -8,7 +8,7 @@ import { articleMarginPx } from './article-style';
 import { articlesOf, normaliseRuns } from './article-flow';
 import { withArticleFlow } from './article-pages';
 import { illustratePagesOf, layOutIllustratePages, type LaidOutPage } from './illustrate-page';
-import type { AnnotationElement, Element, Tab } from './index';
+import type { AnnotationElement, Tab } from './index';
 
 /** A margin note's marker size, canvas px: small enough for the narrowest margin (48 px). */
 export const ARTICLE_NOTE_SIZE = 32;
@@ -80,7 +80,7 @@ export function withNotesSettled<T extends NotesTab>(
     at.set(place.id, corner);
   }
   let moved = false;
-  const elements = (tab.elements as Element[]).map((el) => {
+  const elements = tab.elements.map((el) => {
     if (el.type !== 'annotation' || !el.articleNote) return el;
     const to = at.get(el.id);
     if (!to || (Math.abs(el.x - to.x) < 0.5 && Math.abs(el.y - to.y) < 0.5)) return el;
@@ -130,7 +130,7 @@ export function articleNoteIds(
  *  comment thread or action on deleted text goes with it. Markers no longer notes stay. */
 export function withNoteMarkersRemoved<T extends NotesTab>(tab: T, ids: ReadonlySet<string>): T {
   if (ids.size === 0) return tab;
-  const elements = (tab.elements as Element[]).filter(
+  const elements = tab.elements.filter(
     (el) => !(el.type === 'annotation' && el.articleNote && ids.has(el.id)),
   );
   return elements.length === tab.elements.length ? tab : { ...tab, elements };

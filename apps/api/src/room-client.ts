@@ -446,7 +446,7 @@ export async function deleteAgentPresence(
     throw new RoomUnavailableError(err);
   }
   if (!res.ok) throw new RoomUnavailableError(`status ${res.status}`);
-  return ((await res.json()) as { cleared: boolean }).cleared;
+  return (await res.json<{ cleared: boolean }>()).cleared;
 }
 
 // A token's changeset refreshes its presence on the tab (spec "Presence"); a refresh that fails is logged and the

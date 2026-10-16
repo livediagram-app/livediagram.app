@@ -155,7 +155,7 @@ describe('animOrigin', () => {
   it.each(Object.entries(ANIM_ORIGIN))('matches the stylesheet for %s', (name, origin) => {
     const rule = css.match(new RegExp(`\\.pm-${name} \\{([^}]*)\\}`))?.[1] ?? '';
     const pct = (f: number) => (f === 0 ? '0' : `${f * 100}%`);
-    expect(rule).toContain(`transform-origin: ${pct(origin![0])} ${pct(origin![1])};`);
+    expect(rule).toContain(`transform-origin: ${pct(origin[0])} ${pct(origin[1])};`);
   });
 });
 

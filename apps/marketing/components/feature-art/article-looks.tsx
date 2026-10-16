@@ -90,7 +90,7 @@ export function ArticleLooksArt() {
 
       {/* Report: a deep header band, a section number and a figure. */}
       <g className="fa-f-in" style={at(0.28)}>
-        <rect x={xs[2]!} y={8} width={W} height="17" rx="1.5" fill="#0f2a4a" />
+        <rect x={xs[2]} y={8} width={W} height="17" rx="1.5" fill="#0f2a4a" />
         <rect x={xs[2]! + 5} y={13} width="26" height="2.6" rx="1" fill="#fff" />
         <rect x={xs[2]! + 5} y={18.5} width="18" height="1.6" rx="0.8" fill="#7dd3fc" />
         <text

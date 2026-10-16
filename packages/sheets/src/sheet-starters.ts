@@ -267,7 +267,7 @@ export function cardsStarter(
     rows,
     widths: fields.map((f) => (f === 'Title' ? 260 : f === 'Number' ? 90 : 130)),
     ...(type && ids.every((id): id is string => !!id)
-      ? { cards: { fields: [...fields], ids: ids as string[], type } }
+      ? { cards: { fields: [...fields], ids: ids, type } }
       : {}),
   };
 }

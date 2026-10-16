@@ -11,17 +11,20 @@ import {
   type SheetJson,
 } from '@livediagram/sheets';
 
+// The element as a shape, when it is one: narrowing on `type` does not reach through a generic.
+const shapeOf = (el: Element): ShapeElement | undefined => (el.type === 'shape' ? el : undefined);
+
 export function chartsReadLive<E extends Element>(
   elements: readonly E[],
   sheets: readonly SheetJson[],
 ): E[] {
-  const linked = elements.some((el) => el.type === 'shape' && (el as ShapeElement).chartSource);
+  const linked = elements.some((el) => shapeOf(el)?.chartSource);
   if (!linked || sheets.length === 0) return [...elements];
   const wb = new Workbook({ sheets: sheets.map(sheetFromJson), locale: AGENT_LOCALE });
   return elements.map((el) => {
-    const source = el.type === 'shape' ? (el as ShapeElement).chartSource : undefined;
+    const source = shapeOf(el)?.chartSource;
     if (!source || !wb.sheet(source.sheetId)) return el;
     const table = sheetChartTable(wb, source, wb.locale);
-    return table ? ({ ...el, ...chartFieldsFromTable(el as ShapeElement, table) } as E) : el;
+    return table ? { ...el, ...chartFieldsFromTable(el as ShapeElement, table) } : el;
   });
 }

@@ -32,9 +32,7 @@ describe('the glyph picker', () => {
     expect(screen.getByRole('radio', { name: 'Chat glyph' }).getAttribute('aria-checked')).toBe(
       'true',
     );
-    expect((screen.getByLabelText('Glyph category') as HTMLSelectElement).value).toBe(
-      'communication',
-    );
+    expect(screen.getByLabelText<HTMLSelectElement>('Glyph category').value).toBe('communication');
   });
 
   it('switches category from its menu, or shows every glyph for All', () => {
@@ -57,7 +55,7 @@ describe('the glyph picker', () => {
     fireEvent.change(search, { target: { value: 'money' } });
     const names = screen.getAllByRole('radio').map((r) => r.getAttribute('aria-label'));
     expect(names).toEqual(expect.arrayContaining(['Coin glyph', 'Wallet glyph']));
-    expect((screen.getByLabelText('Glyph category') as HTMLSelectElement).value).toBe('all');
+    expect(screen.getByLabelText<HTMLSelectElement>('Glyph category').value).toBe('all');
     fireEvent.change(search, { target: { value: 'zzz' } });
     expect(screen.queryAllByRole('radio')).toHaveLength(0);
     expect(screen.getByText('No glyphs match “zzz”')).toBeTruthy();

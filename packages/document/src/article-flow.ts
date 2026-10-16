@@ -335,7 +335,7 @@ const parsedArticles = new WeakMap<object, Readonly<Record<string, ArticleFlow>>
 /** The tab's articles' writing by flow id, each read defensively (`parseArticleFlow`); the same
  *  object back for the same stored `articles`, so readers can memo on it. */
 export function articlesOf(tab: object | undefined): Readonly<Record<string, ArticleFlow>> {
-  const articles = (tab as { articles?: unknown } | undefined)?.articles;
+  const articles = tab && 'articles' in tab ? tab.articles : undefined;
   if (!articles || typeof articles !== 'object' || Array.isArray(articles)) return EMPTY_ARTICLES;
   const cached = parsedArticles.get(articles);
   if (cached) return cached;

@@ -64,7 +64,7 @@ describe('Add to Slot', () => {
 
 describe('starting a Dashboard', () => {
   const run = (name: string) => {
-    let tabs: Tab[] = [{ id: 'a', name, elements: [] } as unknown as Tab];
+    let tabs: Tab[] = [{ id: 'a', name, elements: [] }];
     const commit = (map: (ts: Tab[]) => Tab[]) => {
       tabs = map(tabs);
     };
@@ -154,7 +154,7 @@ describe('a Sheet Chart', () => {
 describe('starting a Board tab', () => {
   // docs/specs/026-plan/plan-tabs.md "Names": a default-named tab takes its board's name; a named one keeps its own.
   const start = (name: string) => {
-    let tabs: Tab[] = [{ id: 'a', name, elements: [] } as unknown as Tab];
+    let tabs: Tab[] = [{ id: 'a', name, elements: [] }];
     const commit = (map: (ts: Tab[]) => Tab[]) => {
       tabs = map(tabs);
     };
@@ -193,7 +193,7 @@ describe('starting a Board tab', () => {
 describe('a suggested Dashboard made on a tab', () => {
   // docs/specs/026-plan/plan-mode.md "Starting a board": a Dashboard built from the document's own work.
   it('makes its views as elements in their slots, shows its tabs, and names a default-named tab', () => {
-    let tabs: Tab[] = [{ id: 'a', name: 'Tab 3', elements: [] } as unknown as Tab];
+    let tabs: Tab[] = [{ id: 'a', name: 'Tab 3', elements: [] }];
     const commit = (map: (ts: Tab[]) => Tab[]) => {
       tabs = map(tabs);
     };
@@ -226,7 +226,7 @@ describe('a suggested Dashboard made on a tab', () => {
 describe('a Visualisation tab', () => {
   // docs/specs/026-plan/plan-tabs.md "A row that fills the page".
   it('is a Dashboard of one row filling the page, holding the chart', () => {
-    let tabs: Tab[] = [{ id: 'a', name: 'Tab 2', elements: [] } as unknown as Tab];
+    let tabs: Tab[] = [{ id: 'a', name: 'Tab 2', elements: [] }];
     const commit = (map: (ts: Tab[]) => Tab[]) => {
       tabs = map(tabs);
     };

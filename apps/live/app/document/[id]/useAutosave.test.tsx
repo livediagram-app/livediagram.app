@@ -335,7 +335,7 @@ describe('useAutosave and changesets', () => {
     const { rerender } = renderHook(({ tabs, seen }) => useSubject(tabs, 0, () => {}, seen), {
       initialProps: {
         tabs: [tab('mine')],
-        seen: new Map([['t1', 5]]) as ReadonlyMap<string, number>,
+        seen: new Map([['t1', 5]]),
       },
     });
     act(() => {
@@ -396,7 +396,7 @@ describe('useAutosave ordering', () => {
 describe('useAutosave and new tabs', () => {
   it('writes the tab order once the new tabs it names are saved', async () => {
     const { useSubject, refs } = setup();
-    const added = { ...tab('new'), id: 't2', name: 'Backlog' } as Tab;
+    const added = { ...tab('new'), id: 't2', name: 'Backlog' };
     refs.loadedTabIdsRef.current.add('t2');
     let land!: (rev: number | null) => void;
     apiSaveTab.mockImplementation((...a: unknown[]) =>
@@ -425,7 +425,7 @@ describe('useAutosave and new tabs', () => {
 
   it('still writes the order when a new tab fails to save', async () => {
     const { useSubject, refs } = setup();
-    const added = { ...tab('new'), id: 't2', name: 'Backlog' } as Tab;
+    const added = { ...tab('new'), id: 't2', name: 'Backlog' };
     refs.loadedTabIdsRef.current.add('t2');
     apiSaveTab.mockImplementationOnce(() => Promise.reject(new Error('offline')));
     renderHook(({ tabs }) => useSubject(tabs, 0), {

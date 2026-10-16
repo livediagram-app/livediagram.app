@@ -70,7 +70,7 @@ export function redactElementsForCommunity(elements: Element[]): Element[] {
     if (Array.isArray(e.rollCall)) {
       out.rollCall = e.rollCall.map((entry, i) => ({ ...entry, name: `Participant ${i + 1}` }));
     }
-    return out as Element;
+    return out;
   });
 }
 

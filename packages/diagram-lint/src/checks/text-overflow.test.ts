@@ -4,8 +4,16 @@ import { lint, of, tabOf } from '../fixtures/build';
 
 // LN text-overflow: on an Illustrate tab a text element's words fit its box; on any tab no two texts print over each
 // other.
-const text = (id: string, x: number, y: number, label: string, extra: object = {}): Element =>
-  ({ id, type: 'text', x, y, width: 200, height: 40, label, ...extra }) as Element;
+const text = (id: string, x: number, y: number, label: string, extra: object = {}): Element => ({
+  id,
+  type: 'text',
+  x,
+  y,
+  width: 200,
+  height: 40,
+  label,
+  ...extra,
+});
 const page = (...els: Element[]) => ({ ...tabOf(...els), opensIn: 'illustrate' as const });
 
 describe('text-overflow', () => {
@@ -102,9 +110,9 @@ describe('text-overflow', () => {
       expect.stringMatching(/prints over/),
     ]);
     // On one line it clears the subtitle.
-    expect(
-      of(lint(tabOf({ ...heading, label: 'Onboarding' } as Element, subtitle)), 'text-overflow'),
-    ).toEqual([]);
+    expect(of(lint(tabOf({ ...heading, label: 'Onboarding' }, subtitle)), 'text-overflow')).toEqual(
+      [],
+    );
   });
 
   it('leaves turned text out, drawn across its box', () => {

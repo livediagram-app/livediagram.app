@@ -3,10 +3,21 @@ import type { Element, Tab } from '@livediagram/document';
 import { rebaseLocalEdits } from './rebase-local-edits';
 
 // docs/specs/012-collaboration/resync-without-reload.md "Fault 2": a resync keeps what was not saved yet.
-const el = (id: string, x = 0): Element =>
-  ({ id, type: 'text', x, y: 0, width: 10, height: 10, label: id }) as Element;
-const tab = (els: Element[], extra: Partial<Tab> = {}): Tab =>
-  ({ id: 't', name: 'T', elements: els, ...extra }) as Tab;
+const el = (id: string, x = 0): Element => ({
+  id,
+  type: 'text',
+  x,
+  y: 0,
+  width: 10,
+  height: 10,
+  label: id,
+});
+const tab = (els: Element[], extra: Partial<Tab> = {}): Tab => ({
+  id: 't',
+  name: 'T',
+  elements: els,
+  ...extra,
+});
 
 describe('rebaseLocalEdits', () => {
   it("puts this editor's unsaved edits on top of the server's copy, keeping the peer's", () => {

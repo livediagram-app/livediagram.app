@@ -4,15 +4,14 @@ import type { ArrowElement } from './index';
 
 // docs/specs/008-canvas/arrow-anchors.md "End at exact anchor": a shared end's dashes are anchored there.
 
-const arrow = (extra: Partial<ArrowElement>): ArrowElement =>
-  ({
-    id: 'a',
-    type: 'arrow',
-    arrowStyle: 'straight',
-    from: { kind: 'free', x: 0, y: 0 },
-    to: { kind: 'free', x: 0, y: 100 },
-    ...extra,
-  }) as ArrowElement;
+const arrow = (extra: Partial<ArrowElement>): ArrowElement => ({
+  id: 'a',
+  type: 'arrow',
+  arrowStyle: 'straight',
+  from: { kind: 'free', x: 0, y: 0 },
+  to: { kind: 'free', x: 0, y: 100 },
+  ...extra,
+});
 
 describe('arrowDashOffset', () => {
   it("puts the pattern's start at the end of a dashed arrow with an exact end", () => {

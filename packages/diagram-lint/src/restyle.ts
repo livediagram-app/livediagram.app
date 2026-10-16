@@ -22,7 +22,7 @@ export function restyledRoutes(
     const { curvePoints: _bends, curveOffset: _bow, ...plain } = arrow;
     return {
       style,
-      route: arrowRoutePoints({ ...plain, arrowStyle: style }, ctx.visible as never),
+      route: arrowRoutePoints({ ...plain, arrowStyle: style }, ctx.visible),
     };
   });
 }

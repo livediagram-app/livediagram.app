@@ -112,7 +112,7 @@ describe('tabToMarkdownText with a plan', () => {
   });
 
   it("names a custom type by the document's label", () => {
-    const custom: ItemTypeDef = { ...ITEM_TYPES[1]!, id: 'bug', label: 'Bug' };
+    const custom: ItemTypeDef = { ...ITEM_TYPES[1], id: 'bug', label: 'Bug' };
     const bugs = new Map([['x', item('x', 9, { title: 'Crash', status: 'todo' }, 'bug')]]);
     const md = tabToMarkdownText(tabOf(card('x')), {
       items: bugs,

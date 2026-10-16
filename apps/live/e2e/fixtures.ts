@@ -51,7 +51,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   await context.addInitScript(
     ([key]) => {
       try {
-        localStorage.setItem(key as string, '*');
+        localStorage.setItem(key, '*');
       } catch {
         // A page with no storage (about:blank, a sandboxed frame) has no trace lines to show.
       }

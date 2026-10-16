@@ -10,7 +10,7 @@ vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
 
 afterEach(cleanup);
 
-function editor(type: ItemTypeDef = ITEM_TYPES[1]!) {
+function editor(type: ItemTypeDef = ITEM_TYPES[1]) {
   for (const key of Object.keys(plan)) delete plan[key];
   Object.assign(plan, { types: ITEM_TYPES, items: new Map(), statusNames: new Map() });
   render(
@@ -98,7 +98,7 @@ describe('the type editor’s tabs', () => {
       .map((t) => t.getAttribute('aria-label'))
       .filter((l) => /name$/.test(l ?? ''));
     expect(names).toEqual(['Details name', 'Tab 1 name']);
-    expect((screen.getByLabelText('Tab 1 name') as HTMLInputElement).value).toBe('Overview');
+    expect(screen.getByLabelText<HTMLInputElement>('Tab 1 name').value).toBe('Overview');
   });
 
   it('moves between tabs with the arrow keys', () => {
@@ -128,7 +128,7 @@ describe('the type editor’s tabs', () => {
         .querySelector('[aria-label="Needs attention"]');
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: '' } });
     expect(configuration()).toBeNull();
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: ITEM_TYPES[0]!.label } });
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: ITEM_TYPES[0].label } });
     expect(configuration()).not.toBeNull();
     expect(
       screen.getByRole('tab', { name: /States/ }).querySelector('[aria-label="Needs attention"]'),
@@ -151,7 +151,7 @@ describe('the type editor’s tabs', () => {
       { length: ITEM_TYPE_EXCLUDED_STATUSES_MAX + 1 },
       (_, i) => `s${i}`,
     );
-    editor({ ...ITEM_TYPES[1]!, excludedStatuses });
+    editor({ ...ITEM_TYPES[1], excludedStatuses });
     expect(screen.getByText(/Too many states turned off/)).toBeTruthy();
     expect(screen.queryByText(/A custom field needs a name/)).toBeNull();
     expect(
@@ -182,7 +182,7 @@ describe('deleting a type', () => {
     Object.assign(plan, { types: ITEM_TYPES, items: new Map(), statusNames: new Map() });
     render(
       <ItemTypeEditor
-        type={ITEM_TYPES[1]!}
+        type={ITEM_TYPES[1]}
         types={ITEM_TYPES}
         itemCount={2}
         onSave={vi.fn()}
@@ -213,7 +213,7 @@ describe('the Display tab', () => {
     Object.assign(plan, { types: ITEM_TYPES, items: new Map(), statusNames: new Map() });
     render(
       <ItemTypeEditor
-        type={ITEM_TYPES[1]!}
+        type={ITEM_TYPES[1]}
         types={ITEM_TYPES}
         itemCount={0}
         onSave={onSave}

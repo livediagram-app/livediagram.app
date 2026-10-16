@@ -110,16 +110,16 @@ describe('articles in the row', () => {
   it('grow and shrink an article to the pages its writing reaches, keeping pages with content', () => {
     const tab = { elements: [] as Element[], pages: [I('a'), D('b', 'f'), I('z')] };
     const grown = withArticlePageCount(tab, 'f', 3);
-    expect(grown.pages!.map((p) => p.flow ?? p.id)).toEqual(['a', 'f', 'f', 'f', 'z']);
-    const third = (grown.pages as IllustratePage[])[3]!.id;
-    expect(withArticlePageCount(grown, 'f', 1).pages!.map((p) => p.flow ?? p.id)).toEqual([
+    expect(grown.pages.map((p) => p.flow ?? p.id)).toEqual(['a', 'f', 'f', 'f', 'z']);
+    const third = grown.pages[3]!.id;
+    expect(withArticlePageCount(grown, 'f', 1).pages.map((p) => p.flow ?? p.id)).toEqual([
       'a',
       'f',
       'z',
     ]);
-    const on = centreOn(grown.pages as IllustratePage[], third);
+    const on = centreOn(grown.pages, third);
     const busy = { ...grown, elements: [box('x', on.x, on.y)] };
-    expect(withArticlePageCount(busy, 'f', 1).pages!.map((p) => p.flow ?? p.id)).toEqual([
+    expect(withArticlePageCount(busy, 'f', 1).pages.map((p) => p.flow ?? p.id)).toEqual([
       'a',
       'f',
       'f',

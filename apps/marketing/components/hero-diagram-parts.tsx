@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { IconPrim } from '@livediagram/icons';
 import { Prims } from '@livediagram/ui';
 import { cursorRide, type Point } from '@/lib/hero-motion';
@@ -171,7 +171,7 @@ export function Cursor({
   ride: readonly Point[];
 }) {
   return (
-    <g className={className} style={cursorRide(ride) as CSSProperties} aria-hidden>
+    <g className={className} style={cursorRide(ride)} aria-hidden>
       <CursorMark colour={color} label={name} badge="name" />
     </g>
   );

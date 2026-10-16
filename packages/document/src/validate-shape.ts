@@ -198,7 +198,7 @@ const isSankeyFlow = (item: unknown) =>
   isStrUpTo(SANKEY_NAME_MAX)(item.from) &&
   isStrUpTo(SANKEY_NAME_MAX)(item.to) &&
   isNum(item.value) &&
-  Math.abs(item.value as number) <= SANKEY_VALUE_MAX;
+  Math.abs(item.value) <= SANKEY_VALUE_MAX;
 
 const isSankeyNode = (item: unknown) =>
   isRecord(item) &&

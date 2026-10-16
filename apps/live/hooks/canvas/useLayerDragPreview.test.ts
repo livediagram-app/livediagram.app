@@ -37,7 +37,7 @@ function inputs(over: Partial<LayerPreviewInputs> = {}): LayerPreviewInputs {
       renderOf: () => NONE,
       labelRectOf: () => null,
       draftLayout: () => null,
-    } as unknown as LayerPreviewInputs['arrowLabels'],
+    },
     tabFinish: undefined,
     ...over,
   };

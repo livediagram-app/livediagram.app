@@ -63,7 +63,7 @@ export const MATH_FUNCTIONS: Record<string, FnDef> = {
     return isError(ns) ? ns : sum(ns);
   }),
   SUMPRODUCT: fn(1, MANY, (args, f) => {
-    const arrays = args.map((a) => arrayArg(a!, f));
+    const arrays = args.map((a) => arrayArg(a, f));
     const d = dims(arrays[0]!);
     if (arrays.some((a) => dims(a).rows !== d.rows || dims(a).cols !== d.cols))
       return err('#VALUE!', 'The arrays must be the same size');

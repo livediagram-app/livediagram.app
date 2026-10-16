@@ -15,17 +15,29 @@ import {
 
 type Listener = (event: Record<string, unknown>) => void;
 
+type Harness = {
+  now?: number;
+  links?: { href: string; sheet: unknown }[];
+  resources?: { name: string; responseStatus?: number }[];
+  build?: string | null;
+  liveBuild?: string | null;
+  storage?: Map<string, string>;
+  storageThrows?: boolean;
+  appRecovery?: boolean;
+  currentScript?: boolean;
+};
+
 function harness({
   now = 1_000,
-  links = [] as { href: string; sheet: unknown }[],
-  resources = [] as { name: string; responseStatus?: number }[],
-  build = 'b1' as string | null,
-  liveBuild = 'b1' as string | null,
+  links = [],
+  resources = [],
+  build = 'b1',
+  liveBuild = 'b1',
   storage = new Map<string, string>(),
   storageThrows = false,
   appRecovery = false,
   currentScript = true,
-} = {}) {
+}: Harness = {}) {
   const listeners: Record<string, Listener[]> = {};
   const docListeners: Record<string, Listener[]> = {};
   const reload = vi.fn();

@@ -250,7 +250,7 @@ export function DashboardPage({
   // the page draws nothing over it.
   const soloView = useFillsTab(
     dashboard.rows.length === 1 && dashboard.rows[0]!.slots[0]?.content?.type === 'element'
-      ? dashboard.rows[0]!.slots[0]!.content.elementId
+      ? dashboard.rows[0]!.slots[0].content.elementId
       : '',
   );
   if (soloView) return null;

@@ -57,7 +57,7 @@ function page(title: string, cells: Cell[]): string {
 it('writes the icon contact sheets', () => {
   mkdirSync(OUT, { recursive: true });
   const pages: [string, Cell[]][] = [
-    ['ui', cellsOf(uiIcons as Record<string, unknown>)],
+    ['ui', cellsOf(uiIcons)],
     ['palette-tiles', PALETTE_TILES.map((t) => ({ name: t.id, node: t.icon }))],
     ...Object.entries(modules).map(([path, mod]): [string, Cell[]] => [
       path

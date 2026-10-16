@@ -9,7 +9,7 @@ describe('RoomParticipantWrites', () => {
     const enqueue = vi.fn(() => new Promise<never>(() => {}));
     const writes = new RoomParticipantWrites({
       env: {} as never,
-      enqueue: enqueue as never,
+      enqueue: enqueue,
       sequence: () => 1,
       sendTo,
       position: () => ({ epoch: 'e', seq: 0 }),

@@ -7,22 +7,28 @@ import type { Anchor, ArrowElement, BoxedElement, Element } from './index';
 
 // docs/specs/015-api/mcp-server.md §4.7 "The graph look": trunks and buses, and a step's exits by side.
 
-const box = (id: string, x: number, y: number, w = 100, h = 60): BoxedElement =>
-  ({ id, type: 'shape', shape: 'square', x, y, width: w, height: h }) as BoxedElement;
+const box = (id: string, x: number, y: number, w = 100, h = 60): BoxedElement => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width: w,
+  height: h,
+});
 const arrow = (
   id: string,
   from: string,
   to: string,
   extra: Partial<ArrowElement> = {},
   anchors: [Anchor, Anchor] = ['s', 'n'],
-): ArrowElement =>
-  ({
-    id,
-    type: 'arrow',
-    from: { kind: 'pinned', elementId: from, anchor: anchors[0] },
-    to: { kind: 'pinned', elementId: to, anchor: anchors[1] },
-    ...extra,
-  }) as ArrowElement;
+): ArrowElement => ({
+  id,
+  type: 'arrow',
+  from: { kind: 'pinned', elementId: from, anchor: anchors[0] },
+  to: { kind: 'pinned', elementId: to, anchor: anchors[1] },
+  ...extra,
+});
 const byId = (els: Element[], id: string) => els.find((e) => e.id === id) as ArrowElement;
 const fromAnchor = (els: Element[], id: string) => {
   const a = byId(els, id);
@@ -431,7 +437,7 @@ describe('labels off other lines', () => {
           type: 'arrow',
           from: { kind: 'free', x: 300, y: 165 },
           to: { kind: 'free', x: 600, y: 165 },
-        } as ArrowElement,
+        },
       ],
       'TB',
     );

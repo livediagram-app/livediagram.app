@@ -29,9 +29,7 @@ describe('the page a preview draws', () => {
   });
 
   it('is refused on a tab with no pages, or by a name the tab lacks, naming its pages', () => {
-    expect(pageAsked({ id: 't', name: 'T', elements: [] } as Tab, 1)).toMatch(
-      /^That tab has no pages/,
-    );
+    expect(pageAsked({ id: 't', name: 'T', elements: [] }, 1)).toMatch(/^That tab has no pages/);
     expect(pageAsked(illustrate, 'Front')).toBe(
       'No page "Front" on that tab. Pages: 1 p-a, 2 p-b "Back".',
     );

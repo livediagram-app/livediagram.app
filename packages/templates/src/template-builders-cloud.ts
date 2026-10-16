@@ -158,7 +158,7 @@ export function buildCloudArchitecture(cx: number, cy: number): Element[] {
       pageSubtitle: _meta,
       tags: _tags,
       ...base
-    } = createShape('card', colX(col) - cardW / 2, rowY(row) - cardH / 2) as Node;
+    } = createShape('card', colX(col) - cardW / 2, rowY(row) - cardH / 2);
     return {
       ...base,
       width: cardW,

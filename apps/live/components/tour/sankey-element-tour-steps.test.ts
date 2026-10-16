@@ -15,7 +15,7 @@ import {
 
 vi.mock('./tour-dom', () => ({ waitForSelector: async () => null, revealTour: async () => {} }));
 
-const budget = createShape('sankey', 0, 0) as ShapeElement;
+const budget = createShape('sankey', 0, 0);
 
 const ctxOf = (over: Partial<SankeyElementTourContext> = {}): SankeyElementTourContext => ({
   elementId: 'sk1',
@@ -156,7 +156,7 @@ describe('sankeyTourParts', () => {
   });
 
   it('has nothing to lift on an empty diagram', () => {
-    expect(sankeyTourParts({ ...budget, sankeyFlows: [] } as ShapeElement)).toEqual({
+    expect(sankeyTourParts({ ...budget, sankeyFlows: [] })).toEqual({
       band: null,
       leftover: null,
     });
@@ -165,7 +165,7 @@ describe('sankeyTourParts', () => {
 
 describe('sankeyFlowsContextOf', () => {
   it('knows whether the dialog will show nodes and balance notes', () => {
-    expect(sankeyFlowsContextOf({ ...budget, sankeyFlows: [] } as ShapeElement)).toEqual({
+    expect(sankeyFlowsContextOf({ ...budget, sankeyFlows: [] })).toEqual({
       hasNodes: false,
       hasBalanceNotes: false,
     });

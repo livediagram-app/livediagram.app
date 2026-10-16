@@ -142,8 +142,7 @@ export function boxBlur(
     const lines = horizontal ? height : width;
     for (let c = 0; c < channels; c += 1) {
       for (let l = 0; l < lines; l += 1) {
-        const idx = (k: number) =>
-          ((horizontal ? l * width + k : k * width + l) * channels + c) as number;
+        const idx = (k: number) => (horizontal ? l * width + k : k * width + l) * channels + c;
         let sum = 0;
         for (let k = -radius; k <= radius; k += 1)
           sum += data[idx(Math.min(n - 1, Math.max(0, k)))]!;

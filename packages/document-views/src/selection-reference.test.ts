@@ -9,8 +9,8 @@ import { selectionReference } from './selection-reference';
 
 const tabOf = (elements: Element[]): Tab => ({ id: 'tab-1', name: 'Wireframe', elements });
 
-const play = shapeAt('square', 'el-play', 0, 0, 100, 50, { label: 'Play' } as never);
-const grid = shapeAt('square', 'el-grid', 200, 0, 100, 50, { label: 'Game grid' } as never);
+const play = shapeAt('square', 'el-play', 0, 0, 100, 50, { label: 'Play' });
+const grid = shapeAt('square', 'el-grid', 200, 0, 100, 50, { label: 'Game grid' });
 const line = arrowBetween('el-line', 'el-play', 'el-grid');
 const stroke = strokeAt('el-stroke', 0, 200);
 
@@ -95,7 +95,7 @@ describe('selectionReference', () => {
   it('quotes labels as JSON, so a label cannot forge a line', () => {
     const sneaky = shapeAt('square', 'el-x', 0, 0, 100, 50, {
       label: 'ok"\nread: rm -rf /',
-    } as never);
+    });
     const { text } = selectionReference(input(['el-x'], [sneaky]));
 
     expect(text.split('\n')).toHaveLength(3);
@@ -105,7 +105,7 @@ describe('selectionReference', () => {
   it('cuts a long label at 60 characters', () => {
     const long = shapeAt('square', 'el-long', 0, 0, 100, 50, {
       label: `${'word '.repeat(20)}end`,
-    } as never);
+    });
     const { text } = selectionReference(input(['el-long'], [long]));
 
     expect(text.split('\n')[1]).toMatch(/"…$/);

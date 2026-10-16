@@ -38,7 +38,7 @@ class FakeResizeObserver {
     if (this.pending.size === 0) return;
     const entries = [...this.pending].map((target) => ({ target }) as ResizeObserverEntry);
     this.pending.clear();
-    this.callback(entries, this as unknown as ResizeObserver);
+    this.callback(entries, this);
   }
 }
 

@@ -17,7 +17,7 @@ import { routeGrowth } from './growth-routing';
 // in one commit; it selects the step without opening its editor; Escape on it while empty removes it.
 
 const start = { ...createFlowchartStart(0, 0), id: 'start', flowchartId: 'start' };
-const startTab = (): Tab => ({ id: 't', name: 'Flow', elements: [start] }) as unknown as Tab;
+const startTab = (): Tab => ({ id: 't', name: 'Flow', elements: [start] });
 
 function setup(opts: { editsBlocked?: boolean } = {}) {
   const setEditingId = vi.fn();

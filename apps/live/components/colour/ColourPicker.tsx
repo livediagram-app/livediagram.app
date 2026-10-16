@@ -111,7 +111,7 @@ export function ColourPicker({
   const tabStop = pickedAt >= 0 ? pickedAt : 0;
 
   const previewEndOnLeave = (e: FocusEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) onPreviewEnd?.();
+    if (!e.currentTarget.contains(e.relatedTarget)) onPreviewEnd?.();
   };
 
   let index = 0;

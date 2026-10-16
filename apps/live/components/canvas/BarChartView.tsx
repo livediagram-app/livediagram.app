@@ -58,10 +58,10 @@ export function BarChartView({
       readout={
         hover !== null && data[hover] && bars[hover] ? (
           <ChartReadout
-            leftPct={(bars[hover]!.tip.x / w) * 100}
-            topPct={(bars[hover]!.tip.y / h) * 100}
-            label={data[hover]!.label}
-            value={data[hover]!.value}
+            leftPct={(bars[hover].tip.x / w) * 100}
+            topPct={(bars[hover].tip.y / h) * 100}
+            label={data[hover].label}
+            value={data[hover].value}
           />
         ) : null
       }

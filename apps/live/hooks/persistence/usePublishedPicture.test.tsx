@@ -5,7 +5,7 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const auth = vi.hoisted(() => ({
-  state: { isSignedIn: true, user: { pictureUrl: 'https://img.clerk.com/me' as string | null } },
+  state: { isSignedIn: true, user: { pictureUrl: 'https://img.clerk.com/me' } },
 }));
 vi.mock('@/components/providers/deferred-auth', () => ({ useDeferredAuth: () => auth.state }));
 const api = vi.hoisted(() => ({ apiSetProfilePicture: vi.fn(async () => 200) }));

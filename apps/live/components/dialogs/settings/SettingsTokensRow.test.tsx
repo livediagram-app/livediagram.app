@@ -81,7 +81,7 @@ describe('SettingsTokensRow', () => {
     render(<SettingsTokensRow row={ROW} />);
     // A chip fills the name; the field stays editable.
     fireEvent.click(await screen.findByRole('button', { name: 'CI Bot' }));
-    expect((screen.getByLabelText('What Is It For?') as HTMLInputElement).value).toBe('CI Bot');
+    expect(screen.getByLabelText<HTMLInputElement>('What Is It For?').value).toBe('CI Bot');
     api.apiListTokens.mockResolvedValue([TOKEN]);
     fireEvent.click(screen.getByRole('button', { name: 'Create Token' }));
     const reveal = await screen.findByRole('status', { name: 'New token created' });

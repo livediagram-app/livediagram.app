@@ -34,7 +34,7 @@ function setup() {
       ownerId: 'owner-1',
       documentList: list,
       setDocumentList,
-      confirm: vi.fn(async () => true) as never,
+      confirm: vi.fn(async () => true),
       toast: toast as never,
       deleteFolderFromHook: vi.fn(),
       afterDuplicate: vi.fn(),

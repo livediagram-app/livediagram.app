@@ -24,8 +24,15 @@ const refusal = (placement: Placement, moving: string[] = []) => {
   if (!('rejection' in out)) throw new Error('expected a refusal');
   return out.rejection;
 };
-const box = (id: string, x: number, y: number, w = 100, h = 40): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y, width: w, height: h }) as Element;
+const box = (id: string, x: number, y: number, w = 100, h = 40): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width: w,
+  height: h,
+});
 const withElements = (...extra: Element[]): Tab => ({
   ...checkoutFlow(),
   elements: [...checkoutFlow().elements, ...extra],
@@ -74,7 +81,7 @@ describe('after', () => {
         type: 'arrow',
         from: { kind: 'pinned', elementId: 'src', anchor: 'e' },
         to: { kind: 'pinned', elementId: 'dst', anchor: 'w' },
-      } as Element);
+      });
       return place({ rel: 'after', ref: 'src', gap: 1000 }, tab);
     };
     expect(flow(300, 0)).toMatchObject({ x: 2100 });
@@ -92,13 +99,13 @@ describe('after', () => {
         type: 'arrow',
         from: { kind: 'pinned', elementId: 'src', anchor: 'e' },
         to: { kind: 'free', x: 5000, y: 1000 },
-      } as Element,
+      },
       {
         id: 'dangling',
         type: 'arrow',
         from: { kind: 'pinned', elementId: 'src', anchor: 'e' },
         to: { kind: 'pinned', elementId: 'gone', anchor: 'w' },
-      } as Element,
+      },
     );
     expect(place({ rel: 'after', ref: 'src', gap: 0 }, tab)).toMatchObject({ y: 1040 });
   });
@@ -107,10 +114,12 @@ describe('after', () => {
 describe('inside', () => {
   it('takes the first free slot of the interior', () => {
     const empty = withElements(box('frame-x', 2000, 0, 400, 300));
-    const tab = {
+    const tab: Tab = {
       ...empty,
-      elements: empty.elements.map((el) => (el.id === 'frame-x' ? { ...el, shape: 'frame' } : el)),
-    } as Tab;
+      elements: empty.elements.map((el) =>
+        el.id === 'frame-x' && el.type === 'shape' ? { ...el, shape: 'frame' } : el,
+      ),
+    };
     expect(place({ rel: 'inside', ref: 'frame-x' }, tab)).toEqual({
       x: 2032,
       y: 64,

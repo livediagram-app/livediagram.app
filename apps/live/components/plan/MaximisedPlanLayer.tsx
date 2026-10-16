@@ -132,12 +132,10 @@ export function CanvasCover({
         // The header band (docs/specs/026-plan/plan-board.md "The header holds the top row"): the element's header
         // reads these, each with its own size as the fallback, so on the canvas nothing changes.
         // On a phone, the row it shares with the menu (canvas-layer-insets phoneRow): the same height and start, no more.
-        style={
-          {
-            ...insets,
-            ...(band ? bandVars(band, toolbarScale) : row ? rowVars(row) : {}),
-          } as CSSProperties
-        }
+        style={{
+          ...insets,
+          ...(band ? bandVars(band, toolbarScale) : row ? rowVars(row) : {}),
+        }}
       >
         {children}
       </div>

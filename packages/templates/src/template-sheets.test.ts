@@ -1,7 +1,7 @@
 // docs/specs/029-sheets/sheet-store.md "Template starts": a template's Sheets are made into sheets beside the tabs,
 // on their tab, tinted for its canvas, and the mark dropped; anything else is left as it is.
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element, type ShapeElement } from '@livediagram/document';
 import { hasTemplateSheets, materialiseTemplateSheets } from './template-sheets';
 import { buildPlanTemplate } from './template-builders-plan';
 
@@ -34,13 +34,9 @@ describe('materialiseTemplateSheets', () => {
       [tab('t', buildPlanTemplate('budget-planner', 0, 0))],
       NOW,
     );
-    const chart = out[0]!.elements.find((el) => el.type === 'shape' && el.shape === 'pie-chart') as
-      | (Element & {
-          chartSource?: { sheetId: string };
-          sheetAnchor?: unknown;
-          pieSlices?: unknown[];
-        })
-      | undefined;
+    const chart = out[0]!.elements.find(
+      (el): el is ShapeElement => el.type === 'shape' && el.shape === 'pie-chart',
+    );
     expect(chart?.chartSource?.sheetId).toBe(sheets[0]!.id);
     expect(chart?.sheetAnchor).toBeDefined();
     expect(chart?.pieSlices).toHaveLength(5);

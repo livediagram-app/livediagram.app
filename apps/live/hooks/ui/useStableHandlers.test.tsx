@@ -4,6 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { useStableHandlers } from './useStableHandlers';
 
 type Bag = { onA: ((n: number) => number) | undefined; onB: (() => string) | undefined };
+// The first props, checked as the type every rerender passes.
+const bag = (b: Bag): Bag => b;
 
 describe('useStableHandlers', () => {
   it('keeps one wrapper per key that calls the newest handler', () => {
@@ -30,7 +32,7 @@ describe('useStableHandlers', () => {
 
   it('changes the bag only when a handler flips presence, keeping each key its wrapper', () => {
     const { result, rerender } = renderHook((bag: Bag) => useStableHandlers(bag), {
-      initialProps: { onA: (n: number) => n, onB: () => 'b' } as Bag,
+      initialProps: bag({ onA: (n: number) => n, onB: () => 'b' }),
     });
     const before = result.current;
     const wrapperB = before.onB;

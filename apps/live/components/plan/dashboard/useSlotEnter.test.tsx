@@ -15,7 +15,7 @@ function Slot({ index }: { index: number }) {
 const animate = vi.fn();
 
 function mount(ready: boolean, index = 0) {
-  HTMLElement.prototype.animate = animate as unknown as HTMLElement['animate'];
+  HTMLElement.prototype.animate = animate;
   return render(
     <div {...(ready ? { 'data-dashboard-ready': '' } : {})}>
       <Slot index={index} />

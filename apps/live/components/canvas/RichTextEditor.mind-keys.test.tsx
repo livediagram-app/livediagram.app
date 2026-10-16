@@ -11,7 +11,7 @@ import { resetMindHandoff } from '@/lib/mind-handoff';
 // line in the label instead of growing the map.
 
 const venue: ShapeElement = {
-  ...(createShape('mind-node', 0, 0) as ShapeElement),
+  ...createShape('mind-node', 0, 0),
   id: 'venue',
   label: 'Venue',
 };

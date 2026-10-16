@@ -2,17 +2,16 @@ import type { BoxedElement } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 
-const shape = (over: Record<string, unknown> = {}): BoxedElement =>
-  ({
-    id: 's',
-    type: 'shape',
-    shape: 'square',
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 60,
-    ...over,
-  }) as BoxedElement;
+const shape = (over: Record<string, unknown> = {}): BoxedElement => ({
+  id: 's',
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 60,
+  ...over,
+});
 const make = (type: string, over: Record<string, unknown> = {}): BoxedElement =>
   ({ id: 'e', type, x: 0, y: 0, width: 100, height: 60, ...over }) as BoxedElement;
 

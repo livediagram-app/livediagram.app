@@ -118,7 +118,7 @@ describe('measureDrawnText', () => {
 // docs/specs/009-elements/mind-node.md "A node grows to fit its label".
 describe('measureDrawnMindLabel', () => {
   const mind = (patch: Partial<ShapeElement> = {}): ShapeElement => ({
-    ...(createShape('mind-node', 0, 0) as ShapeElement),
+    ...createShape('mind-node', 0, 0),
     label: 'Venue\nBudget',
     ...patch,
   });

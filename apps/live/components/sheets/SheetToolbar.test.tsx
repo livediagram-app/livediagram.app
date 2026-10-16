@@ -89,7 +89,7 @@ const btn = (name: string) => {
 // A menu row (a command menu's item), after its check mark or glyph if it has one.
 const row = (label: string) =>
   screen.getByRole('menuitem', { name: new RegExp(`^(\\S\\s*)?${esc(label)}$`) });
-const checked = (label: string) => row(label).textContent!.includes('✓');
+const checked = (label: string) => row(label).textContent.includes('✓');
 const open = (name: string) => fireEvent.click(btn(name));
 
 describe('the sheet toolbar', () => {
@@ -601,7 +601,7 @@ describe('the sheet toolbar', () => {
     const font = screen.getByRole('button', { name: /^Font: / });
     expect(font.style.borderColor).not.toBe('');
     const size = screen.getByLabelText('Font Size');
-    expect((size as HTMLElement).style.color).not.toBe('');
+    expect(size.style.color).not.toBe('');
   });
 
   it('opens Search as a menu', () => {

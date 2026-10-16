@@ -11,15 +11,14 @@ import { useIllustratePages } from './useIllustratePages';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const board = (): Tab =>
-  ({
-    id: 't',
-    name: 'T',
-    elements: [
-      { id: 'a', type: 'sticky', x: -1200, y: -100, width: 150, height: 92 },
-      { id: 'b', type: 'sticky', x: 1100, y: 400, width: 150, height: 92 },
-    ] as unknown as Element[],
-  }) as unknown as Tab;
+const board = (): Tab => ({
+  id: 't',
+  name: 'T',
+  elements: [
+    { id: 'a', type: 'sticky', x: -1200, y: -100, width: 150, height: 92 },
+    { id: 'b', type: 'sticky', x: 1100, y: 400, width: 150, height: 92 },
+  ] as unknown as Element[],
+});
 
 function enter(tab: Tab, opts: { canEdit?: boolean; mode?: EditorMode } = {}) {
   let tabs = [tab];

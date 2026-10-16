@@ -9,7 +9,7 @@ import {
   shortNumber,
 } from './chart-values';
 import { renderElementsToSvg } from './svg-render';
-import type { Element, Tab } from './index';
+import type { Tab } from './index';
 
 // Show Values (docs/specs/009-elements/pie-chart.md).
 
@@ -111,24 +111,23 @@ describe('value labels', () => {
 });
 
 describe('Show Values in an export', () => {
-  const tab = (chartValues: boolean): Tab =>
-    ({
-      id: 't',
-      name: 'T',
-      elements: [
-        {
-          id: 'c',
-          type: 'shape',
-          shape: 'bar-chart',
-          x: 0,
-          y: 0,
-          width: 320,
-          height: 240,
-          pieSlices: months,
-          chartValues,
-        } as Element,
-      ],
-    }) as Tab;
+  const tab = (chartValues: boolean): Tab => ({
+    id: 't',
+    name: 'T',
+    elements: [
+      {
+        id: 'c',
+        type: 'shape',
+        shape: 'bar-chart',
+        x: 0,
+        y: 0,
+        width: 320,
+        height: 240,
+        pieSlices: months,
+        chartValues,
+      },
+    ],
+  });
 
   it('prints the numbers and names only when asked', () => {
     const on = renderElementsToSvg(tab(true), {});

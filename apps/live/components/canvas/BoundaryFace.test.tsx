@@ -11,7 +11,7 @@ import { BoundaryFace } from './BoundaryFace';
 afterEach(cleanup);
 
 const make = (over: Partial<ShapeElement> = {}) =>
-  ({ ...(createShape('boundary', 0, 0) as ShapeElement), ...over }) as ShapeElement;
+  ({ ...createShape('boundary', 0, 0), ...over }) as ShapeElement;
 
 function show(element: ShapeElement, editable = true) {
   const onSetMeta = vi.fn<(value: string) => void>();

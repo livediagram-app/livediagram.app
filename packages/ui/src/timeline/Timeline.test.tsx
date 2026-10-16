@@ -19,7 +19,7 @@ function event(id: string): TimelineEvent {
     occurredAt: 1_700_000_000_000,
     actorId: ME,
     snapshot: { documentId: id, documentName: id },
-  } as TimelineEvent;
+  };
 }
 
 /** Controls whose only loaded events are the viewer's own, filtered to "Other people". */

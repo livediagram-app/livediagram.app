@@ -22,11 +22,23 @@ const counter = (prefix: string) => {
 };
 const ids = () => ({ page: counter('pg'), flow: counter('art') });
 
-const box = (id: string, x: number, y: number): Element =>
-  ({ id, type: 'shape', shape: 'square', x, y, width: 40, height: 40 }) as Element;
+const box = (id: string, x: number, y: number): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x,
+  y,
+  width: 40,
+  height: 40,
+});
 
-const tabOf = (extra: Partial<Tab> = {}): Tab =>
-  ({ id: 't', name: 'T', elements: [], opensIn: 'illustrate', ...extra }) as Tab;
+const tabOf = (extra: Partial<Tab> = {}): Tab => ({
+  id: 't',
+  name: 'T',
+  elements: [],
+  opensIn: 'illustrate',
+  ...extra,
+});
 
 const page = (id: string, extra: Partial<IllustratePage> = {}): IllustratePage => ({
   id,
@@ -448,8 +460,7 @@ describe('a layout on a themed tab', () => {
     const out = run(tabOf({ pages: [page('p1', { kind: 'slide' })], theme: 'mocha' }), [
       { op: 'layout', page: 1, layout: 'slide-three-points' },
     ]);
-    const circle = out.tab.elements.find((el) => el.type === 'shape' && el.shape === 'circle') as
-      (Element & { strokeColor?: string }) | undefined;
+    const circle = out.tab.elements.find((el) => el.type === 'shape' && el.shape === 'circle');
     expect(circle?.strokeColor).toBe(getBuiltInTheme('mocha').elementStroke);
   });
 });

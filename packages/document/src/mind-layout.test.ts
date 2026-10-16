@@ -17,7 +17,7 @@ const node = (
   parent?: string,
   at: { x?: number; y?: number; w?: number; h?: number } = {},
 ): ShapeElement => ({
-  ...(createShape('mind-node', at.x ?? 0, at.y ?? 0) as ShapeElement),
+  ...createShape('mind-node', at.x ?? 0, at.y ?? 0),
   id,
   width: at.w ?? 200,
   height: at.h ?? 60,
@@ -170,7 +170,7 @@ describe('reanchorMindConnectors', () => {
   it('joins a tree child by east and west however far down it sits', () => {
     const parent = node('p', undefined, { x: 0, y: 0 });
     const child = node('c', 'p', { x: 300, y: 600 });
-    const arrow = createPinnedArrow('p', 's', 'c', 'n') as ArrowElement;
+    const arrow = createPinnedArrow('p', 's', 'c', 'n');
     const out = reanchorMindConnectors(
       [parent, child, arrow],
       new Set(['p', 'c']),
@@ -183,7 +183,7 @@ describe('reanchorMindConnectors', () => {
   it('leaves a connector that is already right alone', () => {
     const parent = node('p', undefined, { x: 0, y: 0 });
     const child = node('c', 'p', { x: 300, y: 0 });
-    const arrow = createPinnedArrow('p', 'e', 'c', 'w') as ArrowElement;
+    const arrow = createPinnedArrow('p', 'e', 'c', 'w');
     expect(
       reanchorMindConnectors([parent, child, arrow], new Set(['p', 'c']), 'tree', new Map()),
     ).toEqual([]);
@@ -192,7 +192,7 @@ describe('reanchorMindConnectors', () => {
   it('handles a connector drawn child-to-parent', () => {
     const parent = node('p', undefined, { x: 0, y: 0 });
     const child = node('c', 'p', { x: 0, y: 300 });
-    const arrow = createPinnedArrow('c', 'e', 'p', 'e') as ArrowElement;
+    const arrow = createPinnedArrow('c', 'e', 'p', 'e');
     const out = reanchorMindConnectors(
       [parent, child, arrow],
       new Set(['p', 'c']),

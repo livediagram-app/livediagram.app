@@ -15,7 +15,7 @@ function show(value = 5, onCommit = vi.fn()) {
       onCommit={onCommit}
     />,
   );
-  return { onCommit, field: screen.getByLabelText('Width') as HTMLInputElement };
+  return { onCommit, field: screen.getByLabelText<HTMLInputElement>('Width') };
 }
 
 describe('the number stepper', () => {
@@ -38,9 +38,9 @@ describe('the number stepper', () => {
 
   it('turns its buttons off at the ends', () => {
     show(9);
-    expect(
-      (screen.getByRole('button', { name: 'Increase Width' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Increase Width' }).disabled).toBe(
+      true,
+    );
   });
 
   it('applies typing on Enter or blur, clamped, and drops an empty or escaped draft', () => {

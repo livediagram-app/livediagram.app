@@ -22,6 +22,6 @@ export function dressFlowchartConnector(
   from: ArrowElement | null,
 ): ArrowElement {
   if (!from) return connector;
-  const look = paintableArrowFields(from) as Partial<ArrowElement>;
+  const look = paintableArrowFields(from);
   return { ...connector, ...look, label: connector.label };
 }

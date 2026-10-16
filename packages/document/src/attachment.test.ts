@@ -11,7 +11,7 @@ import {
 } from './index';
 
 const host = (over: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...(createShape('square', 0, 0) as ShapeElement),
+  ...createShape('square', 0, 0),
   id: 'h',
   x: 100,
   y: 100,
@@ -21,7 +21,7 @@ const host = (over: Partial<ShapeElement> = {}): ShapeElement => ({
 });
 
 const badge = (over: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...(createShape('badge', 0, 0) as ShapeElement),
+  ...createShape('badge', 0, 0),
   id: 'b',
   ...over,
 });
@@ -115,9 +115,9 @@ describe('settleChips', () => {
   });
 
   it('numbers a new step and sizes its number to its disc', () => {
-    const one = { ...(createShape('step', 0, 0) as ShapeElement), id: 's1', x: 0, label: '1' };
+    const one = { ...createShape('step', 0, 0), id: 's1', x: 0, label: '1' };
     const fresh = {
-      ...(createShape('step', 0, 0) as ShapeElement),
+      ...createShape('step', 0, 0),
       id: 's2',
       x: 400,
       width: 60,
@@ -140,7 +140,7 @@ describe('settleChips', () => {
 
   it('numbers several new steps in one write in turn', () => {
     const step = (id: string, x: number) =>
-      ({ ...(createShape('step', 0, 0) as ShapeElement), id, x, label: '' }) as ShapeElement;
+      ({ ...createShape('step', 0, 0), id, x, label: '' }) as ShapeElement;
     const out = settleChips([], [step('a', 0), step('b', 100), step('c', 200)]);
     expect(['a', 'b', 'c'].map((id) => byId(out, id).label)).toEqual(['1', '2', '3']);
   });

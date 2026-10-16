@@ -104,12 +104,7 @@ describe('the frame drawer', () => {
         throw new DOMException('tainted', 'SecurityError');
       },
     };
-    const drawer = createFrameDrawer(
-      4,
-      2,
-      'none',
-      fakeDoc(ctx as unknown as CanvasRenderingContext2D),
-    );
+    const drawer = createFrameDrawer(4, 2, 'none', fakeDoc(ctx));
     await expect(drawer.draw(frame, () => snapshot)).rejects.toEqual(new GifExportError('tainted'));
   });
 

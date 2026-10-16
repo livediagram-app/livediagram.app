@@ -56,7 +56,7 @@ describe('CategoryPicker', () => {
   });
 
   it('describes the chosen category beneath', () => {
-    const first = COMMUNITY_CATEGORIES[0]!;
+    const first = COMMUNITY_CATEGORIES[0];
     render(<Picker start={first.id} />);
     expect(screen.getByText(first.blurb)).toBeTruthy();
   });

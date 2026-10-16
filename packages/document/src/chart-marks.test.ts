@@ -115,10 +115,9 @@ describe('chart marks (docs/specs/009-elements/pie-chart.md "Chart types")', () 
       }) as ShapeElement;
     for (const variant of ['area', 'scatter'] as const) {
       lineMarks(area, categories, series, variant);
-      svgLineChart(el(variant) as BoxedElement & { type: 'shape' }, '#000');
+      svgLineChart(el(variant), '#000');
       const t0 = performance.now();
-      for (let k = 0; k < 10; k++)
-        svgLineChart(el(variant) as BoxedElement & { type: 'shape' }, '#000');
+      for (let k = 0; k < 10; k++) svgLineChart(el(variant), '#000');
       const each = (performance.now() - t0) / 10;
       // Measured about 10.5 ms (area) and 3.3 ms (scatter) per export on a laptop, October 2026 (a line chart of the
       // same size: 8.3 ms); the budget leaves room for a loaded CI runner.

@@ -57,7 +57,7 @@ beforeEach(() => {
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement,
   ) {
-    if (this.hasAttribute('data-calendar-grid')) return { ...GRID, toJSON: () => GRID } as DOMRect;
+    if (this.hasAttribute('data-calendar-grid')) return { ...GRID, toJSON: () => GRID };
     return real.call(this);
   });
 });

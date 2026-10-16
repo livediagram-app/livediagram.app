@@ -10,7 +10,7 @@ vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => t
 
 import { useTagColourSetter } from './useTagColourSetter';
 
-const tab = (over: Partial<Tab> = {}) => ({ id: 't', name: 'T', elements: [], ...over }) as Tab;
+const tab = (over: Partial<Tab> = {}) => ({ id: 't', name: 'T', elements: [], ...over });
 
 function setter(activeTab: Tab, canEdit = true) {
   // The commit keeps its updater to run later, as React may.

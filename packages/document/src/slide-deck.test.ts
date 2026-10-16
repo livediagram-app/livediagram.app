@@ -16,17 +16,16 @@ import {
 } from './slide-deck';
 import type { ArrowElement, Element, ShapeElement, Tab } from './index';
 
-const shape = (id: string, over: Partial<ShapeElement> = {}): ShapeElement =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'square',
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 100,
-    ...over,
-  }) as ShapeElement;
+const shape = (id: string, over: Partial<ShapeElement> = {}): ShapeElement => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 100,
+  ...over,
+});
 
 const arrow = (id: string, from: string, to: string): ArrowElement =>
   ({

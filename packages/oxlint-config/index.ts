@@ -208,6 +208,7 @@ export default defineConfig({
         'typescript/no-implied-eval': 'error',
         'typescript/no-misused-promises': 'error',
         'typescript/no-redundant-type-constituents': 'error',
+        'typescript/no-unnecessary-type-assertion': 'error',
         'typescript/no-unsafe-argument': 'error',
         'typescript/no-unsafe-call': 'error',
         'typescript/no-unsafe-enum-comparison': 'error',

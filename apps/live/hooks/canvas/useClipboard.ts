@@ -410,7 +410,7 @@ export function useClipboard(deps: ClipboardDeps) {
       if (e.defaultPrevented) return;
       if (primaryPaste.current?.isPrimarySelectionPaste()) return;
       // A DOM target: `Element` in this file is the diagram element type.
-      const target = e.target as EventTarget | null;
+      const target = e.target;
       // An article's writing hands on what it cannot hold (docs/specs/007-editor/article-pages.md
       // "Zones": a pasted image or copied elements go into the writing as zones).
       const intoArticle =

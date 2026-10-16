@@ -2,8 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import { mergeImportedTab } from './import-merge';
 
-const tab = (over: Partial<Tab> = {}): Tab =>
-  ({ id: 't', name: 'T', elements: [], ...over }) as Tab;
+const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't', name: 'T', elements: [], ...over });
 
 describe('mergeImportedTab', () => {
   it('takes the imported elements and marks the template chosen', () => {

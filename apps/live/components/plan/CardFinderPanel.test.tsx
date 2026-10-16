@@ -28,7 +28,7 @@ const card = (title: string, type: string, updatedAt: number): Item => ({
   createdBy: SAM,
   updatedBy: SAM,
 });
-const PERSON = { ...ITEM_TYPES[1]!, id: 'person', label: 'Person', glyph: 'person' };
+const PERSON = { ...ITEM_TYPES[1], id: 'person', label: 'Person', glyph: 'person' };
 
 function open(statusTypes?: ReadonlyMap<string, 'all' | ReadonlySet<string>>) {
   for (const k of Object.keys(plan)) delete plan[k];

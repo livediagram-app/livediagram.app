@@ -19,7 +19,7 @@ const strokeColorOf = (el: Element | undefined) => (el as { strokeColor?: string
 describe('createStockColourProjector', () => {
   it('draws a named colour in its version for the canvas surface, on any tab', () => {
     const project = createStockColourProjector();
-    const a = stroke({ penColour: 'blue' } as Partial<Element>);
+    const a = stroke({ penColour: 'blue' });
     expect(strokeColorOf(project([a], 'light')[0])).toBe(penColourHex('blue', 'light'));
     expect(strokeColorOf(project([a], 'dark')[0])).toBe(penColourHex('blue', 'dark'));
   });
@@ -28,8 +28,8 @@ describe('createStockColourProjector', () => {
     // The element views are memoised: a fresh object per render would redraw
     // every stroke on every drag frame.
     const project = createStockColourProjector();
-    const a = stroke({ penColour: 'red' } as Partial<Element>);
-    const b = stroke({ penColour: 'green' } as Partial<Element>);
+    const a = stroke({ penColour: 'red' });
+    const b = stroke({ penColour: 'green' });
     const first = project([a, b], 'light');
     const second = project([a, b], 'light');
     expect(second[0]).toBe(first[0]);
@@ -40,14 +40,14 @@ describe('createStockColourProjector', () => {
     // A pan, zoom or marquee re-renders the editor without touching the elements; a fresh array
     // there rebuilt the Map and every derived pass on each frame (docs/specs/008-canvas/canvas-performance.md).
     const project = createStockColourProjector();
-    const board = [stroke({ penColour: 'red' } as Partial<Element>), stroke()];
+    const board = [stroke({ penColour: 'red' }), stroke()];
     const first = project(board, 'dark');
     expect(project(board, 'dark')).toBe(first);
   });
 
   it('returns a new board when the board changes', () => {
     const project = createStockColourProjector();
-    const a = stroke({ penColour: 'red' } as Partial<Element>);
+    const a = stroke({ penColour: 'red' });
     const first = project([a], 'dark');
     const next = project([a, stroke()], 'dark');
     expect(next).not.toBe(first);
@@ -56,7 +56,7 @@ describe('createStockColourProjector', () => {
 
   it('recomputes when the surface changes (an appearance switch)', () => {
     const project = createStockColourProjector();
-    const a = stroke({ penColour: 'teal' } as Partial<Element>);
+    const a = stroke({ penColour: 'teal' });
     const light = project([a], 'light');
     const dark = project([a], 'dark');
     expect(dark[0]).not.toBe(light[0]);

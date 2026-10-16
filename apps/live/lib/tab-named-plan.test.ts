@@ -44,7 +44,7 @@ describe('boards named after their tab', () => {
 
   it('follow a tab renamed away from its default name, only when titled that', () => {
     const els = [board('a', 'Tab 2'), board('b', 'Kanban'), { ...createShape('square', 0, 0) }];
-    expect(titles(boardsRenamedWithTab(els as Element[], 'Tab 2', 'Launch'))).toEqual([
+    expect(titles(boardsRenamedWithTab(els, 'Tab 2', 'Launch'))).toEqual([
       'Launch',
       'Kanban',
       undefined,

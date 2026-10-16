@@ -29,7 +29,7 @@ function setup(over: Partial<ShapeElement>) {
       height: 300,
       agendaItems: rows,
       ...over,
-    } as ShapeElement,
+    },
   ];
   const { result } = renderHook(() =>
     useDataShapeSetters({

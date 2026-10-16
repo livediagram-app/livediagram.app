@@ -119,7 +119,7 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
                 if (el.type === 'shape' && el.shape === 'action-card') {
                   return { ...rest, actions: next } as typeof el;
                 }
-                return (next[0] ? { ...rest, action: next[0] } : rest) as typeof el;
+                return next[0] ? { ...rest, action: next[0] } : rest;
               }),
             },
       ),
