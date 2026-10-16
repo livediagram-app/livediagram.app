@@ -33,6 +33,7 @@ is the whole of what the repo enforces.
   - `no-array-delete`
   - `no-base-to-string`
   - `no-duplicate-type-constituents`
+  - `no-floating-promises`
   - `no-for-in-array`
   - `no-implied-eval`
   - `no-misused-promises`

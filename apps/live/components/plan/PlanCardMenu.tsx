@@ -213,7 +213,7 @@ export function PlanCardMenuHost({
       archived={isArchived(item)}
       onArchive={() => {
         const was = isArchived(item);
-        plan.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });
+        void plan.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });
         plan.announce(was ? 'Card restored' : 'Card archived');
         if (was) track('Plan', 'Restored', 'Card');
         else track('Plan', 'Moved', 'Archive');

@@ -853,9 +853,13 @@ describe('reading a moved box again', () => {
     const onReread = vi.fn<(boxes: DetectedSticky[]) => void>();
     open(onReread);
     drag(0);
-    act(() => vi.advanceTimersByTime(7999));
+    act(() => {
+      vi.advanceTimersByTime(7999);
+    });
     expect(onReread).not.toHaveBeenCalled();
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(onReread).toHaveBeenCalledTimes(1);
     expect(onReread.mock.calls[0]![0].map((b: DetectedSticky) => b.id)).toEqual([0]);
   });
@@ -868,7 +872,9 @@ describe('reading a moved box again', () => {
     fireEvent.change(input, { target: { value: 'Order placed' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     drag(0);
-    act(() => vi.advanceTimersByTime(8000));
+    act(() => {
+      vi.advanceTimersByTime(8000);
+    });
     expect(onReread).not.toHaveBeenCalled();
   });
 

@@ -19,7 +19,7 @@ describe('the named ranges list', () => {
     const onClose = vi.fn();
     renderSheet(h, ({ actions }) => <SheetNamedRanges actions={actions} onClose={onClose} />);
     const { rows, cols } = h.ctl().sheet.layout;
-    act(() =>
+    act(() => {
       h.ctl().write(
         {
           kind: 'layout',
@@ -32,8 +32,8 @@ describe('the named ranges list', () => {
           ],
         },
         'Name',
-      ),
-    );
+      );
+    });
     const list = screen.getByRole('list', { name: 'Named ranges' });
     expect(within(list).getByText('Rate')).toBeTruthy();
     expect(within(list).getByText('A2')).toBeTruthy();
@@ -70,7 +70,7 @@ describe('the named ranges list', () => {
       canShape: false,
     });
     expect(screen.getByText(NO_NAMES_READ)).toBeTruthy();
-    act(() =>
+    act(() => {
       h.store.write(SHEET_ID, {
         kind: 'layout',
         changes: [
@@ -80,8 +80,8 @@ describe('the named ranges list', () => {
             range: { r1: rows[0]!, c1: cols[0]!, r2: rows[0]!, c2: cols[0]! },
           },
         ],
-      }),
-    );
+      });
+    });
     expect(screen.getByText('X')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Remove X' })).toBeNull();
   });

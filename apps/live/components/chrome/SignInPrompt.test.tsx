@@ -19,7 +19,9 @@ describe('SignInPrompt', () => {
   it('shows the prompt until dismissed, then the fallback, and remembers it', () => {
     render(<SignInPrompt fallback={<span>fallback</span>} />);
     expect(screen.getByText('Documents saved to this browser')).toBeTruthy();
-    act(() => fireEvent.click(screen.getByRole('button')));
+    act(() => {
+      fireEvent.click(screen.getByRole('button'));
+    });
     expect(screen.getByText('fallback')).toBeTruthy();
     expect(window.localStorage.getItem(KEY)).toBe('true');
   });

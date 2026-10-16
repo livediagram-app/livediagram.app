@@ -77,7 +77,9 @@ describe('Element Tours section', () => {
     render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
     fireEvent.click(header());
     expect(scroll).not.toHaveBeenCalled();
-    act(() => vi.advanceTimersByTime(200));
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
     expect(scroll).toHaveBeenCalledWith(expect.objectContaining({ block: 'nearest' }));
     vi.useRealTimers();
   });

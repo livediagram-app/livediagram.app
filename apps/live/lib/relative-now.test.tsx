@@ -20,15 +20,21 @@ describe('useRelativeNow', () => {
     const { result } = renderHook(() => useRelativeNow());
     const start = Date.parse('2026-09-28T10:00:00Z');
     expect(result.current).toBe(start);
-    act(() => vi.advanceTimersByTime(RELATIVE_TICK_MS));
+    act(() => {
+      vi.advanceTimersByTime(RELATIVE_TICK_MS);
+    });
     expect(result.current).toBe(start + RELATIVE_TICK_MS);
   });
 
   it('gives every subscriber the same instant', () => {
     const a = renderHook(() => useRelativeNow());
-    act(() => vi.advanceTimersByTime(12_000));
+    act(() => {
+      vi.advanceTimersByTime(12_000);
+    });
     const b = renderHook(() => useRelativeNow());
-    act(() => vi.advanceTimersByTime(RELATIVE_TICK_MS));
+    act(() => {
+      vi.advanceTimersByTime(RELATIVE_TICK_MS);
+    });
     expect(a.result.current).toBe(b.result.current);
   });
 });

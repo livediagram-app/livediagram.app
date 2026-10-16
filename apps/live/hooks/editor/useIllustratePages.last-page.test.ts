@@ -66,7 +66,9 @@ function mount(viewport: ViewportStore, tab = tabOf('t')) {
 // The view moved onto a page as a pan would leave it, then left to settle.
 const restOn = (viewport: ViewportStore, tab: Tab, pageId: string) => {
   act(() => viewport.setOffset(fitOf(tab, pageId).offset));
-  act(() => vi.advanceTimersByTime(LAST_ILLUSTRATE_PAGE_SETTLE_MS));
+  act(() => {
+    vi.advanceTimersByTime(LAST_ILLUSTRATE_PAGE_SETTLE_MS);
+  });
 };
 
 beforeEach(() => {
@@ -112,7 +114,9 @@ describe('landing on a tab of pages', () => {
     h.rerender(tabOf('u'));
     expect(readLastIllustratePage(lastIllustratePageKey('d', 't'))).toBe('p2');
     // The other tab, not yet framed, records nothing of the view it inherited.
-    act(() => vi.advanceTimersByTime(LAST_ILLUSTRATE_PAGE_SETTLE_MS));
+    act(() => {
+      vi.advanceTimersByTime(LAST_ILLUSTRATE_PAGE_SETTLE_MS);
+    });
     expect(readLastIllustratePage(lastIllustratePageKey('d', 'u'))).toBeUndefined();
   });
 

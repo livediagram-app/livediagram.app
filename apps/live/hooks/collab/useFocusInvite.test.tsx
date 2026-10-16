@@ -61,7 +61,9 @@ describe('useFocusInvite', () => {
     try {
       const { hook } = setup();
       act(() => hook.result.current.receiveFocusHere('alex', 'tab-a', AT));
-      act(() => vi.advanceTimersByTime(60_001));
+      act(() => {
+        vi.advanceTimersByTime(60_001);
+      });
       expect(hook.result.current.invite).toBeNull();
     } finally {
       vi.useRealTimers();

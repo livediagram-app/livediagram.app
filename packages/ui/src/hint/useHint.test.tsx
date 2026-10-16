@@ -50,7 +50,10 @@ function Harness({
 const wrapper = () => screen.getByTestId('wrapper');
 const button = () => screen.getByRole('button');
 const tip = () => screen.queryByRole('tooltip');
-const advance = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+const advance = (ms: number) =>
+  act(() => {
+    vi.advanceTimersByTime(ms);
+  });
 const mouse = { pointerType: 'mouse' };
 const touch = { pointerType: 'touch' };
 

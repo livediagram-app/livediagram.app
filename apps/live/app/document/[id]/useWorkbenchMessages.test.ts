@@ -85,7 +85,10 @@ function mount(initial: Partial<Props> & { workbench: WorkbenchSession | null })
   return { ...hook, selection, reveals, revealInView };
 }
 
-const settle = () => act(() => vi.advanceTimersByTime(WORKBENCH_SELECTION_SETTLE_MS));
+const settle = () =>
+  act(() => {
+    vi.advanceTimersByTime(WORKBENCH_SELECTION_SETTLE_MS);
+  });
 const ofType = (sent: PageToWorkbenchMessage[], type: string) =>
   sent.filter((m) => m.type === type);
 
@@ -153,9 +156,13 @@ describe('useWorkbenchMessages', () => {
     sent.length = 0;
 
     act(() => selection.setSelectedId('el-play'));
-    act(() => vi.advanceTimersByTime(WORKBENCH_SELECTION_SETTLE_MS - 1));
+    act(() => {
+      vi.advanceTimersByTime(WORKBENCH_SELECTION_SETTLE_MS - 1);
+    });
     act(() => selection.setMultiSelectedIds(new Set(['el-play', 'el-grid'])));
-    act(() => vi.advanceTimersByTime(WORKBENCH_SELECTION_SETTLE_MS - 1));
+    act(() => {
+      vi.advanceTimersByTime(WORKBENCH_SELECTION_SETTLE_MS - 1);
+    });
     expect(sent).toEqual([]);
     settle();
 

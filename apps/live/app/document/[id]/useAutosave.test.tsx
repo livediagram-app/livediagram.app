@@ -116,7 +116,9 @@ describe('useAutosave and peer ops', () => {
     renderHook(({ tabs, n }) => useSubject(tabs, n), {
       initialProps: { tabs: [tab('mine')], n: 0 },
     });
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
   });
 
@@ -127,11 +129,15 @@ describe('useAutosave and peer ops', () => {
     });
     // A peer op lands in the journal; the render carrying it has not happened yet.
     journal.current.next = 1;
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).not.toHaveBeenCalled();
     // The render that includes the op re-arms the timer.
     rerender({ tabs: [tab('mine')], n: 1 });
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
   });
 });
@@ -244,7 +250,9 @@ describe('hasUnsavedChanges', () => {
       initialProps: { tabs: [tab('mine')], n: 0 },
     });
     expect(result.current.hasUnsavedChanges()).toBe(true);
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
     expect(result.current.hasUnsavedChanges()).toBe(true);
     await act(async () => {
@@ -330,7 +338,9 @@ describe('useAutosave and changesets', () => {
         seen: new Map([['t1', 5]]) as ReadonlyMap<string, number>,
       },
     });
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).toHaveBeenLastCalledWith(
       'me',
       'd1',
@@ -363,7 +373,9 @@ describe('useAutosave ordering', () => {
     const { rerender } = renderHook(({ tabs }) => useSubject(tabs, 0, () => {}), {
       initialProps: { tabs: [tab('first')] },
     });
-    act(() => vi.advanceTimersByTime(600));
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
     rerender({ tabs: [tab('second')] });
     await act(async () => {

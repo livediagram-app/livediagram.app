@@ -88,9 +88,13 @@ describe('DrawTourHost offer', () => {
   it('offers itself after the settle delay when the person is in Draw', () => {
     editor();
     render(<DrawTourHost />);
-    act(() => vi.advanceTimersByTime(799));
+    act(() => {
+      vi.advanceTimersByTime(799);
+    });
     expect(offered()).toBe(false);
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
     expect(stage.helpHref).toBe('/help/canvas/draw-mode/');
@@ -99,11 +103,15 @@ describe('DrawTourHost offer', () => {
   it('waits for the person to enter Draw', () => {
     editor({ editorMode: { mode: 'diagram' } });
     const { rerender } = render(<DrawTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor();
     rerender(<DrawTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -118,7 +126,9 @@ describe('DrawTourHost offer', () => {
   ])('makes no offer when %s', (_why, over) => {
     editor(over);
     render(<DrawTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 
@@ -127,7 +137,9 @@ describe('DrawTourHost offer', () => {
     markTourPending();
     editor({ userPreferences: {} });
     render(<DrawTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
     expect(stage.engine?.hasWelcome).toBe(true);
   });
@@ -136,10 +148,14 @@ describe('DrawTourHost offer', () => {
     setActiveTour('welcome', true);
     editor();
     render(<DrawTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     act(() => setActiveTour('welcome', false));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -147,19 +163,25 @@ describe('DrawTourHost offer', () => {
     setActiveTour('facilitate', true);
     editor();
     render(<DrawTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 
   it('reruns from Settings in Draw', () => {
     editor({ userPreferences: { tourSeen: true, drawTourSeen: true } });
     const { rerender } = render(<DrawTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor();
     rerender(<DrawTourHost />);
     act(() => requestDrawTourRelaunch());
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -167,7 +189,9 @@ describe('DrawTourHost offer', () => {
     editor({ editorMode: { mode: 'diagram' } });
     render(<DrawTourHost />);
     act(() => requestDrawTourRelaunch());
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 });
@@ -176,7 +200,9 @@ describe('DrawTourHost end', () => {
   const start = () => {
     editor();
     const r = render(<DrawTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     return r;
   };
 
@@ -211,10 +237,14 @@ describe('DrawTourHost end', () => {
     act(() => setStartPanelOpen(true));
     editor();
     render(<DrawTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     act(() => setStartPanelOpen(false));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 

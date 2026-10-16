@@ -46,9 +46,13 @@ describe('the hero headline word', () => {
     const { container } = render(<HeroTitleLine> together</HeroTitleLine>);
     const seen = [shownWord(container)];
     for (let i = 0; i < 7; i++) {
-      act(() => vi.advanceTimersByTime(2499));
+      act(() => {
+        vi.advanceTimersByTime(2499);
+      });
       expect(shownWord(container)).toBe(seen.at(-1));
-      act(() => vi.advanceTimersByTime(1));
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
       seen.push(shownWord(container));
     }
     expect(seen).toEqual([
@@ -66,7 +70,9 @@ describe('the hero headline word', () => {
   it('holds Diagram under reduced motion', () => {
     stubMotion(true);
     const { container } = render(<HeroTitleLine> together</HeroTitleLine>);
-    act(() => vi.advanceTimersByTime(10000));
+    act(() => {
+      vi.advanceTimersByTime(10000);
+    });
     expect(shownWord(container)).toBe('Diagram');
   });
 });

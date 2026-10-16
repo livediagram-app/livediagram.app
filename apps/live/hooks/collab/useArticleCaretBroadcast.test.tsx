@@ -41,7 +41,9 @@ describe('useArticleCaretBroadcast', () => {
     expect(ops()).toEqual([
       { kind: 'article-caret', tabId: 't', flow: 'f', blockId: 'b', offset: 1 },
     ]);
-    act(() => vi.advanceTimersByTime(BROADCAST_THROTTLE_MS));
+    act(() => {
+      vi.advanceTimersByTime(BROADCAST_THROTTLE_MS);
+    });
     expect(ops().at(-1)).toEqual({
       kind: 'article-caret',
       tabId: 't',

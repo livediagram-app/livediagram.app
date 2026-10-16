@@ -65,8 +65,8 @@ export function CustomFieldEditor({
           onBlur={(e) => {
             const raw = e.target.value.trim();
             if (raw === text) return;
-            if (raw === '') onSave(undefined);
-            else if (LINK.test(raw)) onSave(raw);
+            if (raw === '') void onSave(undefined);
+            else if (LINK.test(raw)) void onSave(raw);
             else e.target.value = text;
           }}
         />
@@ -84,8 +84,8 @@ export function CustomFieldEditor({
           onBlur={(e) => {
             const raw = e.target.value.trim();
             const n = Number(raw);
-            if (raw === '') onSave(undefined);
-            else if (Number.isFinite(n) && n !== value) onSave(n);
+            if (raw === '') void onSave(undefined);
+            else if (Number.isFinite(n) && n !== value) void onSave(n);
           }}
         />
       );
@@ -107,8 +107,8 @@ export function CustomFieldEditor({
             onBlur={(e) => {
               const raw = e.target.value.trim();
               const n = Math.round(Number(raw) * 100) / 100;
-              if (raw === '') onSave(undefined);
-              else if (Number.isFinite(n) && n !== value) onSave(n);
+              if (raw === '') void onSave(undefined);
+              else if (Number.isFinite(n) && n !== value) void onSave(n);
             }}
           />
         </div>
@@ -130,8 +130,8 @@ export function CustomFieldEditor({
             onBlur={(e) => {
               const raw = e.target.value.trim();
               if (raw === text) return;
-              if (raw === '') onSave(undefined);
-              else if (isEmailAddress(raw)) onSave(raw);
+              if (raw === '') void onSave(undefined);
+              else if (isEmailAddress(raw)) void onSave(raw);
               else e.target.value = text;
             }}
           />
@@ -202,7 +202,7 @@ export function CustomFieldEditor({
                   const next = options.filter((x) =>
                     x === o ? e.target.checked : picks.includes(x),
                   );
-                  onSave(next.length ? next : undefined);
+                  void onSave(next.length ? next : undefined);
                 }}
               />
               {o}

@@ -41,7 +41,9 @@ describe('useDragPreviewBroadcast', () => {
         patches: [{ id: 'a', x: 10, y: 0, width: a.width, height: a.height }],
       },
     ]);
-    act(() => vi.advanceTimersByTime(DRAG_PREVIEW_SEND_MS));
+    act(() => {
+      vi.advanceTimersByTime(DRAG_PREVIEW_SEND_MS);
+    });
     expect(ops(sent).at(-1)).toEqual({
       kind: 'drag-preview',
       tabId: 't',
@@ -90,7 +92,9 @@ describe('the end message', () => {
     act(() => setLocalPreview('t', [{ ...a, x: 10 }, b, ab], doc));
     act(() => clearLocalPreview('landed'));
     expect(ops(sent).at(-1)).toEqual({ kind: 'drag-preview', tabId: 't', end: true, landed: true });
-    act(() => vi.advanceTimersByTime(DRAG_PREVIEW_SEND_MS));
+    act(() => {
+      vi.advanceTimersByTime(DRAG_PREVIEW_SEND_MS);
+    });
     act(() => setLocalPreview('t', [{ ...a, x: 20 }, b, ab], doc));
     act(() => clearLocalPreview('cancelled'));
     expect(ops(sent).at(-1)).toEqual({ kind: 'drag-preview', tabId: 't', end: true });

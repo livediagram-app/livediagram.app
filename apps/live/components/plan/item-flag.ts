@@ -12,7 +12,7 @@ export function toggleFlag(
   item: Item,
 ): void {
   const was = isFlagged(item);
-  plan.patchItem(item.id, was ? { clear: ['flagged'] } : { set: { flagged: true } });
+  void plan.patchItem(item.id, was ? { clear: ['flagged'] } : { set: { flagged: true } });
   plan.announce(was ? 'Flag removed' : 'Card flagged');
   track('Plan', 'Toggled', was ? 'FlagOff' : 'FlagOn');
 }

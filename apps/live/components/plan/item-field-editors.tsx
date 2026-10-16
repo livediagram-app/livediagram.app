@@ -200,7 +200,7 @@ export function PersonPicker({
       value={current?.id ?? ''}
       onChange={(e) => {
         const p = options.find((o) => o.id === e.target.value);
-        onSave(p ? { ...p } : undefined);
+        void onSave(p ? { ...p } : undefined);
       }}
     >
       <option value="">No one</option>
@@ -271,11 +271,11 @@ export function LabelsEditor({
       const l = t.trim().replace(/^#/, '');
       if (l && !next.includes(l)) next.push(l);
     }
-    if (next.length !== labels.length) onSave(next);
+    if (next.length !== labels.length) void onSave(next);
   };
   const remove = (l: string) => {
     const next = labels.filter((x) => x !== l);
-    onSave(next.length ? next : undefined);
+    void onSave(next.length ? next : undefined);
   };
   const offered = suggestions.filter((s) => !labels.includes(s));
   return (
@@ -464,9 +464,9 @@ export function ChecklistEditor({
                 }}
                 onBlur={(e) => {
                   const text = e.target.value.trim();
-                  if (!text) save(rows.filter((_, j) => j !== i));
+                  if (!text) void save(rows.filter((_, j) => j !== i));
                   else if (text !== r.text)
-                    save(rows.map((x, j) => (j === i ? { ...x, text } : x)));
+                    void save(rows.map((x, j) => (j === i ? { ...x, text } : x)));
                 }}
               />
             )}
@@ -501,7 +501,7 @@ export function ChecklistEditor({
             onKeyDown={(e) => {
               if (e.key === 'Enter' && draft.trim()) {
                 e.preventDefault();
-                save([...rows, { text: draft.trim().slice(0, 200), done: false }]);
+                void save([...rows, { text: draft.trim().slice(0, 200), done: false }]);
                 setDraft('');
               }
             }}

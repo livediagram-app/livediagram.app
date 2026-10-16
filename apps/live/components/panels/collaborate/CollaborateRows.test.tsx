@@ -33,7 +33,9 @@ describe('ActionRowItem', () => {
     list(<ActionRowItem row={action()} index={0} onClick={() => {}} onToggleDone={onToggleDone} />);
     fireEvent.click(screen.getByRole('button', { name: 'Mark "Confirm the retry budget" done' }));
     expect(onToggleDone).not.toHaveBeenCalled();
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(onToggleDone).toHaveBeenCalledWith(true);
   });
 
@@ -49,7 +51,9 @@ describe('ActionRowItem', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Reopen "Confirm the retry budget"' }));
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(onToggleDone).toHaveBeenCalledWith(false);
   });
 

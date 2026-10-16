@@ -7,7 +7,10 @@ import { resetHintRegistry } from './hint/hint-registry';
 import { HINT_FOLLOW_IDLE_FRAMES } from './hint/HintSurface';
 
 const mouse = { pointerType: 'mouse' };
-const advance = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+const advance = (ms: number) =>
+  act(() => {
+    vi.advanceTimersByTime(ms);
+  });
 const hint = () => screen.queryByRole('tooltip');
 
 beforeEach(() => {

@@ -87,9 +87,13 @@ describe('AvatarTourHost offer', () => {
   it('offers itself after the settle delay in Avatar mode, linking to its article', () => {
     editor();
     render(<AvatarTourHost />);
-    act(() => vi.advanceTimersByTime(799));
+    act(() => {
+      vi.advanceTimersByTime(799);
+    });
     expect(offered()).toBe(false);
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(offered()).toBe(true);
     expect(stage.helpHref).toBe('/help/selection-modes/avatar-mode/');
   });
@@ -97,11 +101,15 @@ describe('AvatarTourHost offer', () => {
   it('waits for the person to walk as an avatar', () => {
     editor({ canvasTool: 'select' });
     const { rerender } = render(<AvatarTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor();
     rerender(<AvatarTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -109,7 +117,9 @@ describe('AvatarTourHost offer', () => {
   it('offers itself to a Viewer, without the Say Something step', () => {
     editor({ isReadOnly: true, can: { takePart: false } });
     render(<AvatarTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
     expect(stage.engine!.countableSteps).toBe(4);
   });
@@ -117,7 +127,9 @@ describe('AvatarTourHost offer', () => {
   it('counts five steps for someone who may speak', () => {
     editor();
     render(<AvatarTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(stage.engine!.countableSteps).toBe(5);
   });
 
@@ -129,7 +141,9 @@ describe('AvatarTourHost offer', () => {
   ])('makes no offer when %s', (_why, over) => {
     editor(over);
     render(<AvatarTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 
@@ -137,10 +151,14 @@ describe('AvatarTourHost offer', () => {
     setActiveTour('draw', true);
     editor();
     render(<AvatarTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     act(() => setActiveTour('draw', false));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -148,16 +166,22 @@ describe('AvatarTourHost offer', () => {
     editor({ canvasTool: 'select', userPreferences: { tourSeen: true } });
     const { rerender } = render(<AvatarTourHost />);
     act(() => requestAvatarTourRelaunch());
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor({ userPreferences: { tourSeen: true, avatarTourSeen: true } });
     rerender(<AvatarTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor();
     rerender(<AvatarTourHost />);
     act(() => requestAvatarTourRelaunch());
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -165,10 +189,14 @@ describe('AvatarTourHost offer', () => {
     act(() => setStartPanelOpen(true));
     editor();
     render(<AvatarTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     act(() => setStartPanelOpen(false));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 });
@@ -177,7 +205,9 @@ describe('AvatarTourHost end', () => {
   const start = () => {
     editor();
     const r = render(<AvatarTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     return r;
   };
 

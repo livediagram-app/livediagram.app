@@ -57,7 +57,9 @@ describe('holding a card', () => {
     const { onPress, el } = card(onLongPress);
     fireEvent.pointerDown(el, { pointerType: 'touch', button: 0, clientX: 30, clientY: 40 });
     expect(onPress).toHaveBeenCalledOnce();
-    act(() => vi.advanceTimersByTime(LONG_PRESS_MS + 10));
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS + 10);
+    });
     expect(onLongPress).toHaveBeenCalledWith(item, { x: 30, y: 40 });
   });
 
@@ -65,11 +67,15 @@ describe('holding a card', () => {
     const onLongPress = vi.fn();
     const { el } = card(onLongPress);
     fireEvent.pointerDown(el, { pointerType: 'mouse', button: 0, clientX: 30, clientY: 40 });
-    act(() => vi.advanceTimersByTime(LONG_PRESS_MS + 10));
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS + 10);
+    });
     expect(onLongPress).not.toHaveBeenCalled();
     cleanup();
     const { el: bare } = card();
     fireEvent.pointerDown(bare, { pointerType: 'touch', button: 0, clientX: 30, clientY: 40 });
-    act(() => vi.advanceTimersByTime(LONG_PRESS_MS + 10));
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS + 10);
+    });
   });
 });

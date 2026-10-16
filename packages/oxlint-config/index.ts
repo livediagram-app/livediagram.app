@@ -203,6 +203,7 @@ export default defineConfig({
         'typescript/no-array-delete': 'error',
         'typescript/no-base-to-string': 'error',
         'typescript/no-duplicate-type-constituents': 'error',
+        'typescript/no-floating-promises': 'error',
         'typescript/no-for-in-array': 'error',
         'typescript/no-implied-eval': 'error',
         'typescript/no-misused-promises': 'error',

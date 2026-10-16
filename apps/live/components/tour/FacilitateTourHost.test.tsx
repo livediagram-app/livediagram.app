@@ -88,9 +88,13 @@ describe('FacilitateTourHost offer', () => {
   it('offers itself after the settle delay when the person is in Facilitate', () => {
     editor();
     render(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(799));
+    act(() => {
+      vi.advanceTimersByTime(799);
+    });
     expect(offered()).toBe(false);
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
     expect(stage.helpHref).toBe('/help/canvas/facilitate-mode/');
@@ -99,11 +103,15 @@ describe('FacilitateTourHost offer', () => {
   it('waits for the person to enter Facilitate', () => {
     editor({ editorMode: { mode: 'diagram' } });
     const { rerender } = render(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor();
     rerender(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -118,7 +126,9 @@ describe('FacilitateTourHost offer', () => {
   ])('makes no offer when %s', (_why, over) => {
     editor(over);
     render(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 
@@ -127,7 +137,9 @@ describe('FacilitateTourHost offer', () => {
     markTourPending();
     editor({ userPreferences: {} });
     render(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
     expect(stage.engine?.hasWelcome).toBe(true);
   });
@@ -136,10 +148,14 @@ describe('FacilitateTourHost offer', () => {
     setActiveTour('welcome', true);
     editor();
     render(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     act(() => setActiveTour('welcome', false));
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -147,19 +163,25 @@ describe('FacilitateTourHost offer', () => {
     setActiveTour('plan', true);
     editor();
     render(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 
   it('reruns from Settings in Facilitate', () => {
     editor({ userPreferences: { tourSeen: true, facilitateTourSeen: true } });
     const { rerender } = render(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
     editor();
     rerender(<FacilitateTourHost />);
     act(() => requestFacilitateTourRelaunch());
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     expect(offered()).toBe(true);
   });
 
@@ -167,7 +189,9 @@ describe('FacilitateTourHost offer', () => {
     editor({ editorMode: { mode: 'diagram' } });
     render(<FacilitateTourHost />);
     act(() => requestFacilitateTourRelaunch());
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(offered()).toBe(false);
   });
 });
@@ -176,7 +200,9 @@ describe('FacilitateTourHost end', () => {
   const start = () => {
     editor();
     const r = render(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(800));
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
     return r;
   };
 

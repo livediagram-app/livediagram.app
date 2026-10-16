@@ -81,7 +81,9 @@ describe('useEditorBroadcast avatar packets', () => {
         // Picked again inside the window: held, not dropped.
         hook.result.current.broadcastAvatar(packet('meeting'));
       });
-      act(() => vi.advanceTimersByTime(100));
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
       const statuses = sent
         .filter((m) => m.kind === 'op' && m.op.kind === 'avatar')
         .map((m) => (m.kind === 'op' && m.op.kind === 'avatar' ? m.op.avatar?.status : null));

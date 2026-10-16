@@ -127,7 +127,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           const type = typeIn(ctx.types, typeId);
           const status = newCardStatus(type, ctx.statusNames);
           const id = newItemId();
-          ctx.addItem({
+          void ctx.addItem({
             type: typeId,
             fields: { title: type.newTitle, [group.fieldId]: item.id },
             status,
@@ -146,7 +146,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         onFlag={() => toggleFlag(ctx, item)}
         onArchive={() => {
           const was = isArchived(item);
-          ctx.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });
+          void ctx.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });
           ctx.announce(was ? 'Card restored' : 'Card archived');
           if (was) track('Plan', 'Restored', 'Card');
           else track('Plan', 'Moved', 'Archive');

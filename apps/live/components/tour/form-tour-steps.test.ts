@@ -23,7 +23,7 @@ describe('formTourSteps', () => {
     expect(ids).not.toContain('destination');
   });
 
-  it('opens the board or sheet for its step and comes back after', () => {
+  it('opens the board or sheet for its step and comes back after', async () => {
     const steps = formTourSteps({ destination: 'sheet', hasQuestions: true });
     const dest = steps.find((s) => s.id === 'destination')!;
     expect(dest.title).toBe('Responses Land Here');
@@ -33,7 +33,7 @@ describe('formTourSteps', () => {
       openTab: vi.fn(),
       backToForm: vi.fn(),
     };
-    dest.prepare!(api);
+    await dest.prepare!(api);
     expect(api.openTab).toHaveBeenCalledWith('sheet-tab');
     dest.cleanup!(api);
     expect(api.backToForm).toHaveBeenCalled();
@@ -41,7 +41,7 @@ describe('formTourSteps', () => {
       (s) => s.id === 'destination',
     )!;
     expect(board.selector!(null as never)).toBe('[data-plan-board]');
-    board.prepare!({ ...api, destination: () => null });
+    await board.prepare!({ ...api, destination: () => null });
     expect(api.openTab).toHaveBeenCalledTimes(1);
   });
 
