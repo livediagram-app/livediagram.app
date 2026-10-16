@@ -28,6 +28,11 @@ export const TEMPLATE_STARTS = [
   'guest-list',
   'grade-book',
   'habit-tracker',
+  // The companion Sheets of three Diagram templates (docs/specs/026-plan/plan-templates.md "How a template with
+  // tabs is made"): each named for the template it follows.
+  'threat-model',
+  'metric-tree',
+  'value-stream-map',
   // Blank Spreadsheet (docs/specs/026-plan/plan-templates.md "Spreadsheet templates"): an empty sheet, no template.
   'blank-spreadsheet',
 ] as const;
@@ -55,6 +60,9 @@ export const TEMPLATE_START_SHEETS: Record<DesignedStartId, SheetTemplateId> = {
   'guest-list': 'guests',
   'grade-book': 'grades',
   'habit-tracker': 'habits',
+  'threat-model': 'threats',
+  'metric-tree': 'drivers',
+  'value-stream-map': 'value-stream',
 };
 
 // A blank start's sheet's title.

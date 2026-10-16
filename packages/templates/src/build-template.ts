@@ -17,6 +17,7 @@ import {
 } from './template-builders-wireframes';
 import { buildSlideDeck } from './template-builders-slides';
 import { buildPlanTemplate, isPlanTemplateKind, planTemplateTabs } from './template-builders-plan';
+import { companionTemplateTabs } from './template-companions';
 import {
   buildComicStrip,
   buildDoodleWarmup,
@@ -359,9 +360,13 @@ export type TemplateTabDef = {
   // The tab's own fields, given every tab's id in order: a Plan template's kind and Dashboard
   // (docs/specs/026-plan/plan-tabs.md "Templates").
   tab?: (ids: readonly string[]) => Partial<Tab>;
+  // A companion Sheet (template-companions.ts): takes the theme but none of the template's canvas overrides
+  // (templateCanvasOverrides: its pattern, layers, mode and pages), which are the drawing's.
+  ownCanvas?: true;
 };
 
 export function templateTabs(kind: TemplateKind): TemplateTabDef[] {
   if (isPlanTemplateKind(kind)) return planTemplateTabs(kind);
-  return [{ name: null, build: (cx, cy) => buildTemplate(kind, cx, cy) }];
+  const build = (cx: number, cy: number) => buildTemplate(kind, cx, cy);
+  return companionTemplateTabs(kind, build) ?? [{ name: null, build }];
 }

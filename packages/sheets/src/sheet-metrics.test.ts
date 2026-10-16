@@ -153,7 +153,8 @@ describe('a column of a template’s sheet', () => {
   });
 
   // Every template whose main table heads row 4 (the Loan's and the Invoice's sit lower, under fields: above): each
-  // column of it holding numbers reads under its own header, its body's numbers exactly, never its total row.
+  // column of it holding numbers reads under its own header, its body's numbers exactly, never its total row (nor a
+  // table stacked under one that has no total).
   it.each(SHEET_TEMPLATE_IDS.filter((id) => id !== 'loan' && id !== 'invoice'))(
     'reads every main-table column of %s under its header',
     (id) => {
@@ -161,8 +162,14 @@ describe('a column of a template’s sheet', () => {
       const { rows, cols } = wb.extent(sheet.id);
       const fmt = (r: number, c: number) =>
         sheet.cells.get(cellKey(sheet.layout.rows[r]!, sheet.layout.cols[c]!))?.format;
+      // The main table ends at its total row, or (a table with none) at its first empty row.
       let end = HEAD_ROW + 1;
-      while (end < rows && !(fmt(end, 0)?.b && fmt(end, 0)?.bt)) end++;
+      while (
+        end < rows &&
+        !(fmt(end, 0)?.b && fmt(end, 0)?.bt) &&
+        wb.value(sheet.id, end, 0) !== null
+      )
+        end++;
       let checked = 0;
       for (let c = 0; c < cols; c++) {
         const head = wb.value(sheet.id, HEAD_ROW, c);

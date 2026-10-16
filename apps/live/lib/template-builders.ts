@@ -71,7 +71,8 @@ function themedTab(
       patternColor: theme.patternColor,
       ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
       templateChosen: true,
-      ...templateCanvasOverrides(kind),
+      // A companion Sheet takes the theme only; the template's canvas is its drawing's (template-companions.ts).
+      ...(def.ownCanvas ? {} : templateCanvasOverrides(kind)),
       ...def.tab?.(ids),
     },
     kind,

@@ -74,7 +74,7 @@ export function buildTemplateTabs(
           themeId,
         ),
         templateChosen: true,
-        ...templateCanvasOverrides(kind),
+        ...(def.ownCanvas ? {} : templateCanvasOverrides(kind)),
         ...def.tab?.(ids),
       }),
       kind,

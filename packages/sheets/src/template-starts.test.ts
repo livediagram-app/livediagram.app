@@ -19,7 +19,7 @@ let seed = 1;
 const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 
 describe('template starts', () => {
-  it('names the twelve designed starts and the blank one, and nothing else', () => {
+  it('names the fifteen designed starts and the blank one, and nothing else', () => {
     expect(TEMPLATE_STARTS).toEqual([
       'budget-planner',
       'timesheet',
@@ -33,6 +33,9 @@ describe('template starts', () => {
       'guest-list',
       'grade-book',
       'habit-tracker',
+      'threat-model',
+      'metric-tree',
+      'value-stream-map',
       'blank-spreadsheet',
     ]);
     expect(isTemplateStart('timesheet')).toBe(true);

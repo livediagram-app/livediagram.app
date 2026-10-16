@@ -228,6 +228,18 @@ export function useTemplateFlow(opts: {
         name: def.name ?? '',
         elements: recolourElementsForTheme(raw, theme),
         ...(def.tab ? { fields: def.tab(ids) } : {}),
+        // A companion Sheet wears the theme's backdrop, not the drawing's pattern (template-companions.ts).
+        ...(def.ownCanvas
+          ? {
+              ownCanvas: {
+                backgroundPattern: theme.backgroundPattern,
+                patternColor: theme.patternColor,
+                ...(theme.backgroundOpacity != null
+                  ? { backgroundOpacity: theme.backgroundOpacity }
+                  : {}),
+              },
+            }
+          : {}),
       };
     });
     // A Plan template's boards bring their card types, every tab's (docs/specs/026-plan/plan-templates.md "Card
