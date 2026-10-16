@@ -136,12 +136,12 @@ function formatNumberSection(n: number, toks: Tok[]): string {
   value *= 100 ** pctCount;
   const firstPh = toks.findIndex((t) => t.k === 'ph');
   const dotAt = toks.findIndex((t) => t.k === 'dot');
-  const expTok = toks.find((t) => t.k === 'exp') as Extract<Tok, { k: 'exp' }> | undefined;
+  const expTok = toks.find((t) => t.k === 'exp');
   const expAt = toks.findIndex((t) => t.k === 'exp');
   const intEnd = dotAt >= 0 ? dotAt : expAt >= 0 ? expAt : toks.length;
   const intPh = toks.slice(0, intEnd).filter((t) => t.k === 'ph');
   const fracToks = dotAt >= 0 ? toks.slice(dotAt + 1, expAt >= 0 ? expAt : undefined) : [];
-  const fracPh = fracToks.filter((t) => t.k === 'ph') as Extract<Tok, { k: 'ph' }>[];
+  const fracPh = fracToks.filter((t) => t.k === 'ph');
   // Commas between integer placeholders group thousands; trailing commas after them scale by 1000.
   const intToks = toks.slice(firstPh < 0 ? 0 : firstPh, intEnd);
   const lastPhInInt = intToks.map((t) => t.k).lastIndexOf('ph');

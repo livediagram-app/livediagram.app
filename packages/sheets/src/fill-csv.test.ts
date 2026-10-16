@@ -26,7 +26,7 @@ describe('fillSeries', () => {
     [[s('a'), undefined], 3, false, [s('a'), undefined, s('a')]],
     [[s('Item 1'), s('Item 2'), s('Item 9')], 1, false, [s('Item 1')]],
   ])('%j for %i', (src, count, copy, out) => {
-    expect(fillSeries(src as never, count as number, copy as boolean)).toEqual(out);
+    expect(fillSeries(src as never, count, copy)).toEqual(out);
   });
   it('counts down when filling up or left', () => {
     expect(fillSeries([s('Mon')], 2, false, false, true)).toEqual([s('Sun'), s('Sat')]);

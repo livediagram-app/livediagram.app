@@ -265,9 +265,7 @@ class Parser {
     if (!t) throw new Fail('unexpected_token', this.end);
     if (t.k === 'bad') {
       throw new Fail(
-        t.v === 'unterminated_string' || t.v === 'unknown_sheet_quote'
-          ? (t.v as ParseFailure)
-          : 'unexpected_token',
+        t.v === 'unterminated_string' || t.v === 'unknown_sheet_quote' ? t.v : 'unexpected_token',
         t.start,
       );
     }

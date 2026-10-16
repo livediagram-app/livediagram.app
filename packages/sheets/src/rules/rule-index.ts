@@ -31,7 +31,7 @@ export function ruleIndex<T extends IdRange>(
       else index.set(c, [entry]);
     }
   }
-  byList.set(list, index as RuleIndex<IdRange>);
+  byList.set(list, index);
   return index;
 }
 

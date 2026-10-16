@@ -77,7 +77,7 @@ export function typeInto(
     change.f = {
       nf: read.hint.nf,
       ...(read.hint.cur ? { cur: read.hint.cur } : {}),
-    } as FormatPatch;
+    };
   return { ok: true, write: { kind: 'cells', cells: [change] }, read };
 }
 
@@ -338,7 +338,7 @@ export function fillRange(
       let i: CellChange['i'] = series ? (series[k] ?? null) : (src?.input ?? null);
       if (src?.input && 'f' in src.input)
         i = { f: shiftForCopy(src.input.f, pos.r - from.r, pos.c - from.c, ctx) };
-      cells.push({ ...ids, i, f: (src?.format ?? null) as FormatPatch | null });
+      cells.push({ ...ids, i, f: src?.format ?? null });
     }
   }
   return { kind: 'cells', cells };

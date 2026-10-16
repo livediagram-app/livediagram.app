@@ -123,7 +123,7 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
   CLEAN: textFn(1, 1, 1, ([t]) => [...t!].filter((ch) => ch.charCodeAt(0) >= 32).join('')),
   SUBSTITUTE: textFn(3, 4, 3, ([t, from, to], [nth]) => {
     if (from === '') return t!;
-    if (nth === undefined) return t!.split(from!).join(to!);
+    if (nth === undefined) return t!.split(from!).join(to);
     if (nth < 1) return err('#VALUE!');
     let at = -1;
     for (let k = 0; k < nth; k++) {
@@ -137,7 +137,7 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
     const s = toNumber(start!);
     const len = toNumber(n!);
     const rep = toText(by!);
-    for (const x of [text, s, len, rep]) if (isError(x as Value)) return x as Value;
+    for (const x of [text, s, len, rep]) if (isError(x)) return x;
     if ((s as number) < 1 || (len as number) < 0) return err('#VALUE!');
     const chars = [...(text as string)];
     chars.splice((s as number) - 1, len as number, rep as string);
@@ -193,8 +193,8 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
     const delim = textArg(args[1]!, f);
     const each = opt(args, 2, f, boolArg, true);
     const dropEmpty = opt(args, 3, f, boolArg, true);
-    for (const x of [text, delim, each, dropEmpty]) if (isError(x as Value)) return x as Value;
-    if (delim === '') return text as string;
+    for (const x of [text, delim, each, dropEmpty]) if (isError(x)) return x;
+    if (delim === '') return text;
     let parts: string[];
     if (each) {
       const set = new Set([...(delim as string)]);

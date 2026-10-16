@@ -77,7 +77,7 @@ export function setValidationRule(
     rules: (layout.rules ?? []).filter((x) => x.id !== own),
   };
   const changes = subtractRange(others, [range], rand, taken);
-  changes.push({ k: 'vrule', id: own, rule: { ...settings, id: own, ...ids } as ValidationRule });
+  changes.push({ k: 'vrule', id: own, rule: { ...settings, id: own, ...ids } });
   return { write: { kind: 'layout', changes }, id: own };
 }
 

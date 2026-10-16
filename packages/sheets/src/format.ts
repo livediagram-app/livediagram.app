@@ -142,7 +142,7 @@ export function mergeFormat(
     if (v === null || v === undefined) delete out[k];
     else out[k] = v;
   }
-  return Object.keys(out).length === 0 ? undefined : (out as CellFormat);
+  return Object.keys(out).length === 0 ? undefined : out;
 }
 
 export function formatEquals(a: CellFormat | undefined, b: CellFormat | undefined): boolean {

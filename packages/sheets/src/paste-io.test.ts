@@ -380,7 +380,7 @@ describe('find, filter and render', () => {
     [{ op: 'gt', a: 'x' }, 4, '4', false],
     [{}, 'x', 'x', true],
   ])('condition %j on %j', (cond, v, shown, ok) => {
-    expect(conditionMatches(cond as never, v as never, shown as string, 'en-GB')).toBe(ok);
+    expect(conditionMatches(cond as never, v as never, shown, 'en-GB')).toBe(ok);
   });
   it("carries the sheet's look into the model", () => {
     const b = book({ A1: '1' });

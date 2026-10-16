@@ -94,7 +94,7 @@ export const STATS_FUNCTIONS: Record<string, FnDef> = {
   AVERAGEIFS: ifs('avg'),
   MINIFS: ifs('min'),
   MAXIFS: ifs('max'),
-  MEDIAN: aggregate((ns) => (ns.length === 0 ? err('#NUM!') : (percentile(ns, 0.5) as number))),
+  MEDIAN: aggregate((ns) => (ns.length === 0 ? err('#NUM!') : percentile(ns, 0.5))),
   MODE: aggregate((ns) => {
     const counts = new Map<number, number>();
     let best: number | null = null;

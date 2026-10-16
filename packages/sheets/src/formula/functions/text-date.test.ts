@@ -168,7 +168,7 @@ describe('dates', () => {
     ['=WORKDAY(A1, 1, DATE(2026,10,9))', d(2026, 10, 12)],
   ])('%s', (f, out) => {
     const v = calc(f, DATES);
-    expect(v as number).toBeCloseTo(out as number, 9);
+    expect(v as number).toBeCloseTo(out, 9);
   });
   it('works out year fractions on every basis', () => {
     const f = (b: number) => calc(`=YEARFRAC(DATE(2026,1,1), DATE(2026,7,1), ${b})`) as number;

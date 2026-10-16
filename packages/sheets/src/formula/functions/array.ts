@@ -19,7 +19,7 @@ export const ARRAY_FUNCTIONS: Record<string, FnDef> = {
   FILTER: fn(2, MANY, (args, f) => {
     const range = arrayArg(args[0]!, f);
     const d = dims(range);
-    const conds = args.slice(1).map((a) => arrayArg(a!, f));
+    const conds = args.slice(1).map((a) => arrayArg(a, f));
     // Conditions run along the rows (a column of TRUE/FALSE) or along the columns (a row of them).
     const byRows = conds.every((c) => dims(c).rows === d.rows && dims(c).cols === 1);
     const byCols = !byRows && conds.every((c) => dims(c).cols === d.cols && dims(c).rows === 1);
