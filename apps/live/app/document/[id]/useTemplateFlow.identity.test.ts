@@ -18,6 +18,8 @@ function flow() {
       activeId: 't1',
       tabs: [{ id: 't1', name: '', elements: [] }],
       selfParticipant: me,
+      documentName: 'Q3 roadmap',
+      nameDocument: vi.fn(),
       getViewportCenter: () => ({ x: 0, y: 0 }),
       commitTabs: vi.fn(),
       confirmName,

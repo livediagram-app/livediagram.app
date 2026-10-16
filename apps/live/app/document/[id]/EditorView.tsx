@@ -136,7 +136,7 @@ export function EditorView() {
     deleteTab,
     documentId,
     documentList,
-    setDocumentList,
+    nameDocument,
     documentName,
     documentShareable,
     documentTeamId,
@@ -164,7 +164,6 @@ export function EditorView() {
     selfParticipant,
     sessionRole,
     sessionShareCode,
-    setDocumentName,
     setExportOpen,
     setExportScope,
     setSearchOpen,
@@ -320,14 +319,7 @@ export function EditorView() {
             // docs/specs/006-document/name-length.md: capped here so the header rename can't outrun the
             // limit the auto-namer and the Explorer renames both respect.
             const nextTrim = truncateName(next);
-            setDocumentName(nextTrim);
-            // Keep the Explorer panel's row for THIS document in sync —
-            // autosave persists the name, but the in-memory list would
-            // otherwise show the old name until a reload re-fetched it.
-            if (nextTrim && documentId)
-              setDocumentList((prev) =>
-                prev.map((d) => (d.id === documentId ? { ...d, name: nextTrim } : d)),
-              );
+            nameDocument(nextTrim);
             if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
           }}
         />

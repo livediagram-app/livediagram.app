@@ -35,6 +35,10 @@ export function useTemplateFlow(opts: {
   // about to land on is genuinely empty (see chooseTemplate's backstop).
   tabs: Tab[];
   selfParticipant: Participant;
+  // The document's name, and naming it (docs/specs/007-editor/templates-by-mode.md "The document's name"): a template
+  // picked on the first tab names a still-untitled document after itself.
+  documentName: string;
+  nameDocument: (name: string) => void;
   getViewportCenter: () => { x: number; y: number };
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   confirmName: () => void;
@@ -58,6 +62,8 @@ export function useTemplateFlow(opts: {
     activeId,
     tabs,
     selfParticipant,
+    documentName,
+    nameDocument,
     getViewportCenter,
     commitTabs,
     confirmName,
@@ -92,17 +98,28 @@ export function useTemplateFlow(opts: {
     // A start on a tab is the new-tab entry (docs/specs/023-draw-mode/draw-mode.md "Telemetry").
     if (kind === 'whiteboard') track('Draw', 'Created', 'NewTab');
     confirmName();
+    // Dynamic-import the heavy builders module only when the user
+    // actually picks a template. The ~1700 lines of build* code stays
+    // out of the editor's initial chunk; returning users opening an
+    // existing document never download it.
+    const {
+      templateTabs,
+      templateCanvasOverrides,
+      isDefaultDocumentName,
+      untitledNameForTemplate,
+    } = await import('@/lib/template-builders');
+    // The first tab's template names a document still on a default name ("Untitled Flowchart",
+    // docs/specs/007-editor/templates-by-mode.md "The document's name"); a name someone gave it stays.
+    if (tabs[0]?.id === activeId && isDefaultDocumentName(documentName)) {
+      const named = untitledNameForTemplate(kind);
+      if (named !== documentName) nameDocument(named);
+    }
     // A form template: the tab becomes its form, its board or sheet made as Start Planning makes them.
     if (isFormTemplateKind(kind) && startForm) {
       startForm(formTemplateStarter(kind));
       return;
     }
     const centre = getViewportCenter();
-    // Dynamic-import the heavy builders module only when the user
-    // actually picks a template. The ~1700 lines of build* code stays
-    // out of the editor's initial chunk; returning users opening an
-    // existing document never download it.
-    const { templateTabs, templateCanvasOverrides } = await import('@/lib/template-builders');
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md): the first lands here.
     const [first, ...rest] = templateTabs(kind);
     const rawElements = first!.build(centre.x, centre.y);

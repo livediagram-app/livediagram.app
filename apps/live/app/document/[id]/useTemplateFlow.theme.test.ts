@@ -18,6 +18,8 @@ async function land(tab: Tab): Promise<Tab> {
       activeId: tab.id,
       tabs,
       selfParticipant: { id: 'me', name: 'Me', color: '#000' } as never,
+      documentName: 'Q3 roadmap',
+      nameDocument: vi.fn(),
       getViewportCenter: () => CENTRE,
       commitTabs: (update) => {
         tabs = update(tabs);

@@ -16,6 +16,8 @@ describe('chooseTemplate with a form template', () => {
         activeId: 't1',
         tabs,
         selfParticipant: { id: 'me', name: 'Me', color: '#000' } as never,
+        documentName: 'Q3 roadmap',
+        nameDocument: vi.fn(),
         getViewportCenter: () => ({ x: 0, y: 0 }),
         commitTabs: (update) => {
           tabs = update(tabs);

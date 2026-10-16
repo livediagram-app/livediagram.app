@@ -210,6 +210,18 @@ unchanged; only the mode they open in moved from Diagram.
   (a Plan template's tabs), else for a Board or Sheet template the board's title, else the template's title. It does
   so whatever the tab was called before. A blank template leaves the name as it was (`templateTabName`).
 
+## The document's name
+
+- A template picked on a start names the **document** after itself too, as /new names a document after the template
+  it is made from: "Untitled Flowchart", "Untitled Kanban Board", a blank naming what it makes ("Untitled
+  Whiteboard"), Blank Diagram "Untitled document" (`untitledNameForTemplate`).
+- Only while the document still has a default name: one of those untitled names (`isDefaultDocumentName`, any
+  template's, or the legacy "Untitled diagram"). A name someone gave it, or the first element's label the editor
+  named it after ([Name length](../006-document/name-length.md)), is kept.
+- Only for the document's **first** tab: a template filling a later tab names that tab, not the document.
+- It is the document's name like any other: saved with it, shown in the header and the Explorer at once, and changed
+  by renaming. No telemetry: it is not a person's rename.
+
 ## Slide deck templates
 
 Besides the **Slide Deck** (a six-slide seed pitch), four decks are built from the slide layouts

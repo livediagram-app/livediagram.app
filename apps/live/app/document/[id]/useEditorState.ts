@@ -2637,12 +2637,23 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     confirmName,
   });
 
+  // Name the open document: its own name, and its row in the Explorer panel's in-memory list, which would otherwise
+  // show the old name until a reload (autosave persists the name). Shared by the header's rename and a template naming
+  // a still-untitled document after itself.
+  const nameDocument = (name: string) => {
+    setDocumentName(name);
+    if (name && documentId)
+      setDocumentList((prev) => prev.map((d) => (d.id === documentId ? { ...d, name } : d)));
+  };
+
   // Template and identity actions. See useTemplateFlow. confirmName
   // stays in the page (also wired into useShareLinks) and is passed in.
   const { chooseTemplate, confirmIdentity, cancelIdentity } = useTemplateFlow({
     activeId,
     tabs,
     selfParticipant,
+    documentName,
+    nameDocument,
     getViewportCenter,
     commitTabs,
     confirmName,
@@ -4365,6 +4376,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     shortcutsEnabled,
     confirmIdentity,
     cancelIdentity,
+    nameDocument,
     shiftDupGhostIds,
     snapGuideStore,
     tabLoadErrors,
