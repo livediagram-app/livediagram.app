@@ -308,7 +308,7 @@ describe('add <kind>', () => {
     const empty: Tab = {
       id: 't',
       name: 'T',
-      elements: [{ ...createShape('frame', 0, 0), id: 'f', width: 200, height: 40 } as Element],
+      elements: [{ ...createShape('frame', 0, 0), id: 'f', width: 200, height: 40 }],
     };
     const f = applied(run('add square label=One inside:f', empty)).tab.elements.find(
       (e) => e.id === 'f',
@@ -366,18 +366,17 @@ describe('add <kind> beside template-look siblings', () => {
   });
 
   it('matches siblings taller than the palette box of their shape', () => {
-    const tall = (id: string, x: number): Element =>
-      ({
-        id,
-        type: 'shape',
-        shape: 'square',
-        x,
-        y: 0,
-        width: 160,
-        height: 180,
-        label: id,
-        textSize: 'sm',
-      }) as Element;
+    const tall = (id: string, x: number): Element => ({
+      id,
+      type: 'shape',
+      shape: 'square',
+      x,
+      y: 0,
+      width: 160,
+      height: 180,
+      label: id,
+      textSize: 'sm',
+    });
     const tab: Tab = { id: 't', name: 'T', elements: [tall('a', 0), tall('b', 300)] };
     const el = applied(run('add square label=Next right-of:b', tab)).tab.elements.find(
       (e) => e.id === 'next',
@@ -449,7 +448,7 @@ describe('a frame grown to hold a new box', () => {
   it('keeps a locked element where it is when what holds it moves on', () => {
     const tab = checkoutFlow();
     const below: Element[] = [
-      { ...createShape('frame', 0, 900), id: 'g', width: 400, height: 200, label: '' } as Element,
+      { ...createShape('frame', 0, 900), id: 'g', width: 400, height: 200, label: '' },
       {
         id: 'pinned-note',
         type: 'shape',
@@ -460,7 +459,7 @@ describe('a frame grown to hold a new box', () => {
         height: 60,
         label: 'Kept',
         locked: true,
-      } as Element,
+      },
     ];
     const outcome = run('add square label=Retry inside:f2', {
       ...tab,

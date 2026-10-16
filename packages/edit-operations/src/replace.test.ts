@@ -54,7 +54,7 @@ describe('applyReplace: elements sent back', () => {
 
   it('keeps the look of the elements the tab already holds', () => {
     const { tab: next } = applied(
-      applyReplace(tab, { elements: tab.elements, layout: 'preserve' } as ReplaceBody, options),
+      applyReplace(tab, { elements: tab.elements, layout: 'preserve' }, options),
     );
     const arrow = next.elements.find((e) => e.id === 'a1')!;
     expect(arrow).not.toHaveProperty('arrowStyle');
@@ -66,11 +66,7 @@ describe('applyReplace: elements sent back', () => {
   it('gives an element new to the tab the raw defaults', () => {
     const fresh = arrowBetween('a2', 'n2', 'n3');
     const { tab: next } = applied(
-      applyReplace(
-        tab,
-        { elements: [...tab.elements, fresh], layout: 'preserve' } as ReplaceBody,
-        options,
-      ),
+      applyReplace(tab, { elements: [...tab.elements, fresh], layout: 'preserve' }, options),
     );
     expect(next.elements.find((e) => e.id === 'a2')).toHaveProperty('arrowStyle');
   });

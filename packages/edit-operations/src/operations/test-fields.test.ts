@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
 import { applied, refused } from '../fixtures/outcomes';
 import { applyEditOperations } from '../apply';
 import { checkoutFlow } from '../fixtures/checkout-flow';
@@ -35,7 +34,7 @@ describe('test', () => {
   it('compares strings exactly and labels without the cap', () => {
     expect(refused(run('test n3 label=login')).code).toBe('test_failed');
     const long = 'A'.repeat(200);
-    const tab = flowWith((el) => (el.id === 'n3' ? ({ ...el, label: long } as Element) : el));
+    const tab = flowWith((el) => (el.id === 'n3' ? { ...el, label: long } : el));
     expect(applied(run(`test n3 label="${long}"`, tab))).toBeTruthy();
   });
 

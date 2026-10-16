@@ -100,7 +100,7 @@ function background(v: unknown, change: number): PageBackgroundInput {
   if (v.angle !== undefined) {
     if (typeof v.angle !== 'number' || !Number.isFinite(v.angle) || v.gradient === undefined)
       bad('"background.angle" is a number of degrees, beside a gradient.', change);
-    out.angle = (((Math.round(v.angle as number) % 360) + 360) % 360) as number;
+    out.angle = ((Math.round(v.angle as number) % 360) + 360) % 360;
   }
   if (v.pattern !== undefined)
     out.pattern = oneOf(

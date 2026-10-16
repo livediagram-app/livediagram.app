@@ -43,7 +43,7 @@ describe('placement combinations', () => {
       y: 240,
       width: 600,
       height: 300,
-    } as Element;
+    };
     const nested = { ...tab, elements: [outer, ...tab.elements] };
     const { tab: out } = applied(run('add square id=x label=X inside:outer right-of:n4', nested));
     expect(at(out, 'x').x).toBeGreaterThan(at(out, 'n4').x);

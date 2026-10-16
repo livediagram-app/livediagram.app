@@ -33,7 +33,7 @@ const fan = (): Tab =>
       },
     }).graph!,
     undefined,
-  ) as Tab;
+  );
 
 const into = (tab: Tab, id: string) =>
   tab.elements.find(

@@ -33,7 +33,7 @@ const architecture = (): Tab =>
       },
     }).graph!,
     undefined,
-  ) as Tab;
+  );
 
 const box = (tab: Tab, id: string) => tab.elements.find((e) => e.id === id) as BoxedElement;
 

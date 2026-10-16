@@ -37,18 +37,17 @@ describe('containersBehindMembers', () => {
 });
 
 describe('workshop landings', () => {
-  const note = (id: string, x: number, y: number): Element =>
-    ({
-      id,
-      type: 'sticky',
-      x,
-      y,
-      width: 200,
-      height: 200,
-      esKind: 'domain-event',
-      fillColor: '#fdba74',
-      fixedSize: true,
-    }) as Element;
+  const note = (id: string, x: number, y: number): Element => ({
+    id,
+    type: 'sticky',
+    x,
+    y,
+    width: 200,
+    height: 200,
+    esKind: 'domain-event',
+    fillColor: '#fdba74',
+    fixedSize: true,
+  });
   const wall = (): Tab => ({
     id: 'es',
     name: 'Wall',
@@ -158,7 +157,7 @@ describe("a diagram key's rows", () => {
         box('b', 200, 0, 60),
         { ...box('k', 0, 200, 100, 'diagram-key') },
       ],
-    } as Tab;
+    };
     const out = run('connect a -> b\nset a->b border=dashed', tab);
     if (!('tab' in out)) throw new Error(JSON.stringify(out));
     const key = out.tab.elements.find((el) => el.id === 'k') as { keyRows?: { id: string }[] };
