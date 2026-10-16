@@ -31,7 +31,10 @@ async function closeSettings(page: Page) {
 }
 
 async function storedPrefs(page: Page): Promise<Record<string, unknown>> {
-  return page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? '{}'), PREFS_KEY);
+  return page.evaluate(
+    (key) => JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>,
+    PREFS_KEY,
+  );
 }
 
 async function setPowerUserMode(page: Page, on: boolean) {

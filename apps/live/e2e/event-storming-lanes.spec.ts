@@ -45,9 +45,14 @@ async function boardTab(page: Page, settle = 1500): Promise<BoardTab> {
   return page.evaluate(
     async ({ base, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
-      const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
-      const tabId = liveDoc.document.tabs[0].id;
-      return (await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json()).tab;
+      const liveDoc = (await (await fetch(`${base}/documents/${id}`, { headers })).json()) as {
+        document: { tabs: { id: string }[] };
+      };
+      const tabId = liveDoc.document.tabs[0]!.id;
+      const got = (await (
+        await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
+      ).json()) as { tab: BoardTab };
+      return got.tab;
     },
     { base: API, headers },
   );

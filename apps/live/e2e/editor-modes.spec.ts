@@ -23,10 +23,14 @@ async function savedOpensIn(page: Page): Promise<unknown> {
   return page.evaluate(
     async ({ base, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
-      const doc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
+      const doc = (await (await fetch(`${base}/documents/${id}`, { headers })).json()) as {
+        document?: { tabs?: { id: string }[] };
+      };
       const tabId = doc.document?.tabs?.[0]?.id;
       if (!tabId) return undefined;
-      const got = await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json();
+      const got = (await (
+        await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
+      ).json()) as { tab?: { opensIn?: unknown } };
       return got.tab?.opensIn;
     },
     { base: apiBase, headers },
