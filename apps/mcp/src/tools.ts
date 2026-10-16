@@ -67,6 +67,7 @@ import { elementsIssue, graphIconIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
 import { searchIcons } from '@livediagram/icons/search';
 import { imageResult } from './image-result';
+import { imageIdIssue, registerImageTools } from './image-tools';
 import {
   baseFor,
   changesetErrorText,
@@ -104,6 +105,8 @@ export function registerTools(server: McpServer, env: Env): void {
   // Sheets, by title and A1 (docs/specs/029-sheets/sheet-store.md "Agents").
   registerSheetTools(server, env);
   registerIllustrateTools(server, env);
+  // The user's image gallery, for image elements (docs/specs/015-api/mcp-server.md §4.5b).
+  registerImageTools(server, env);
   registerFormTools(server, env);
   registerTool(server, env, mcpFindDocuments, async (args, extra) => {
     const token = requireToken(extra);
@@ -136,6 +139,9 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(server, env, mcpCreateDocument, async (args, extra) => {
     const token = requireToken(extra);
+    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
+    const imageIssue = await imageIdIssue(env, token, args);
+    if (imageIssue) return errorResult(imageIssue);
     // Accept either `tabs` (preferred) or a single `tab` alias, checked here against the tab shape.
     const single =
       args.tabs || args.tab === undefined ? null : createDocumentTab.safeParse(args.tab);
@@ -302,6 +308,9 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(server, env, mcpAddTab, async (args, extra) => {
     const token = requireToken(extra);
+    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
+    const imageIssue = await imageIdIssue(env, token, args);
+    if (imageIssue) return errorResult(imageIssue);
     const tabId = crypto.randomUUID();
     // Template tab (docs/specs/015-api/mcp-server.md §4.5): resolved up front so an unknown kind
     // fails before any network round trip.
@@ -392,6 +401,9 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(server, env, mcpUpdateDocument, async (args, extra) => {
     const token = requireToken(extra);
+    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
+    const imageIssue = await imageIdIssue(env, token, args);
+    if (imageIssue) return errorResult(imageIssue);
     const loaded = await loadTab(env, token, args.documentId, args.tabId);
     if (!loaded) return errorResult('That document has no tabs.');
     const { tab } = loaded;

@@ -254,7 +254,7 @@ const AUTHED = { authInfo: { token: 'tok_test' } };
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('registerTools', () => {
-  it('registers the twenty-seven documented tools, each with a description', () => {
+  it('registers the twenty-eight documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -271,6 +271,7 @@ describe('registerTools', () => {
       'create_document',
       'delete_document',
       'find_documents',
+      'list_images',
       'list_items',
       'list_sheets',
       'list_templates',
@@ -385,6 +386,8 @@ describe('tool annotations', () => {
     rename_document: 'write',
     list_trash: 'read',
     restore_document: 'write',
+    // docs/specs/015-api/mcp-server.md §4.5b: the gallery is read, never written.
+    list_images: 'read',
     update_document: 'destructive',
     delete_document: 'destructive',
     // Items (docs/specs/026-plan/plan-mode.md "Agents"): change_items may delete.
@@ -449,6 +452,7 @@ describe('tool annotations', () => {
       .sort();
     expect(readOnly).toEqual([
       'find_documents',
+      'list_images',
       'list_items',
       'list_sheets',
       'list_templates',

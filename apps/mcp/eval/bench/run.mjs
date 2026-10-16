@@ -15,6 +15,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { seedGalleries } from './gallery-seed.mjs';
 import { connect, DEFAULT_MCP_URL } from './mcp-client.mjs';
 import { snapshot } from './snapshot.mjs';
 import { selectTasks, taskById } from './tasks/index.mjs';
@@ -44,7 +45,7 @@ if (!opts.round) throw new Error('--round is required');
 const OUT = resolve(HERE, '../runs', opts.round);
 mkdirSync(OUT, { recursive: true });
 
-// Every run's plain token, minted into local D1 in one write before the round starts.
+// Every run's plain token and its owner, minted into local D1 in one write before the round starts.
 function mintTokens(count) {
   const now = Date.now();
   const tokens = [];
@@ -53,7 +54,7 @@ function mintTokens(count) {
     const token = `lvd_${randomBytes(32).toString('base64url')}`;
     const owner = `bench_${opts.round}_${randomUUID().slice(0, 8)}`;
     const hash = createHash('sha256').update(token).digest('hex');
-    tokens.push(token);
+    tokens.push({ token, owner });
     rows.push(
       `insert into api_tokens(id,owner_id,token_hash,name,created_at,expires_at,revoked,read_only) values` +
         `('${randomUUID()}','${owner}','${hash}','bench',${now},${now + TOKEN_TTL_MS},0,0);`,
@@ -142,6 +143,8 @@ async function runJob(job) {
   try {
     const client = await connect({ url: MCP_URL, token });
     const touched = new Set(task.setup ? await task.setup(client) : []);
+    // The pictures the prompt says the user has uploaded, seeded into this run's own gallery before the round.
+    const { gallery } = job;
     let resume;
     if (task.after) {
       const base = await claudeTurn({ prompt: taskById(task.after).prompt, model, token, cwd });
@@ -154,7 +157,7 @@ async function runJob(job) {
     writeFileSync(join(OUT, `${name}.jsonl`), turn.transcript);
     if (turn.code !== 0) writeFileSync(join(OUT, `${name}.stderr.txt`), turn.stderr);
     parseTranscript(turn.transcript).documentIds.forEach((id) => touched.add(id));
-    const snap = await snapshot(client, [...touched]);
+    const snap = { ...(await snapshot(client, [...touched])), ...(gallery ? { gallery } : {}) };
     writeFileSync(join(OUT, `${name}.snapshot.json`), JSON.stringify(snap));
     console.log(
       `done ${name} in ${Math.round((Date.now() - started) / 1000)}s (exit ${turn.code})`,
@@ -175,7 +178,7 @@ async function main() {
   for (let n = 1; n <= repeat; n++)
     for (const model of models) for (const task of tasks) jobs.push({ task, model, n });
   const tokens = mintTokens(jobs.length);
-  jobs.forEach((j, i) => (j.token = tokens[i]));
+  jobs.forEach((j, i) => Object.assign(j, tokens[i]));
   // Each run's token (local D1 only; runs/ is gitignored), so its library can be read again after the round.
   const prior = existsSync(join(OUT, 'tokens.json'))
     ? JSON.parse(readFileSync(join(OUT, 'tokens.json'), 'utf8'))
@@ -186,6 +189,15 @@ async function main() {
     else prior[name] = j.token;
   }
   writeFileSync(join(OUT, 'tokens.json'), JSON.stringify(prior, null, 1));
+  // Every gallery a task needs, seeded now: the seeding blocks, so it must finish before any run starts.
+  const toSeed = jobs.filter(
+    (j) => j.task.gallery && !existsSync(join(OUT, `${j.task.id}-${j.model}-${j.n}.snapshot.json`)),
+  );
+  const galleries = seedGalleries(
+    opts['api-dir'],
+    toSeed.map((j) => ({ owner: j.owner, pictures: j.task.gallery })),
+  );
+  for (const j of toSeed) j.gallery = galleries.get(j.owner);
   // The tool list this round ran against, so a later round can compare what the assistant was offered.
   const client = await connect({ url: MCP_URL, token: tokens[0] });
   writeFileSync(

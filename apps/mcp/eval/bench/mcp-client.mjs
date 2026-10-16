@@ -3,7 +3,23 @@
 
 export const DEFAULT_MCP_URL = 'http://127.0.0.1:8798/mcp';
 
+// The local dev server now and then drops a request ("Error: Network connection lost", or no answer at all): a read
+// is retried this many times, a second apart, before the error stands.
+const RETRIES = 2;
+const RETRY_DELAY_MS = 1000;
+
 async function post(url, token, body, session) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await postOnce(url, token, body, session);
+    } catch (err) {
+      if (attempt >= RETRIES) throw err;
+      await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+    }
+  }
+}
+
+async function postOnce(url, token, body, session) {
   const res = await fetch(url, {
     method: 'POST',
     headers: {

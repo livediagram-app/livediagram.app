@@ -128,10 +128,54 @@ describe('pagesOf', () => {
     ].join('\n');
     const snap = { documents: [{ id: 'd', tabs: [{ id: 't', elements: [], pages }] }] };
     expect(pagesOf(snap)).toEqual([
-      { tabId: 't', n: 1, name: null, kind: 'slide', format: 'Slide (16:9)', elements: 3 },
-      { tabId: 't', n: 2, name: 'Tip 2', kind: 'infographic', format: 'Square', elements: 16 },
-      { tabId: 't', n: 3, name: 'Badge', kind: 'logo', format: '1024 x 1024', elements: 5 },
-      { tabId: 't', n: 4, name: null, kind: 'article', format: 'A4', elements: null },
+      {
+        tabId: 't',
+        n: 1,
+        name: null,
+        kind: 'slide',
+        format: 'Slide (16:9)',
+        x: -960,
+        y: -540,
+        width: 1920,
+        height: 1080,
+        elements: 3,
+      },
+      {
+        tabId: 't',
+        n: 2,
+        name: 'Tip 2',
+        kind: 'infographic',
+        format: 'Square',
+        x: 636,
+        y: -540,
+        width: 1080,
+        height: 1080,
+        elements: 16,
+      },
+      {
+        tabId: 't',
+        n: 3,
+        name: 'Badge',
+        kind: 'logo',
+        format: '1024 x 1024',
+        x: -512,
+        y: -512,
+        width: 1024,
+        height: 1024,
+        elements: 5,
+      },
+      {
+        tabId: 't',
+        n: 4,
+        name: null,
+        kind: 'article',
+        format: 'A4',
+        x: -397,
+        y: -561,
+        width: 794,
+        height: 1123,
+        elements: null,
+      },
     ]);
   });
 });

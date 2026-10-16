@@ -68,6 +68,10 @@ const CONTENT_KINDS =
   'the classic amber note. A sticky with "esKind" (domain-event, command, actor, policy, read-model, ' +
   'external-system, aggregate, hotspot) is an event-storming note of that kind (its paper, size and lane on a ' +
   'storm board): add one to a board with the edit `add sticky label="Courier" esKind=actor`. ' +
+  'type "image": a picture from the user\'s gallery: "imageId" is an id from list_images (one not in the ' +
+  'gallery is refused); without it the element is a placeholder the user fills in the editor. "objectFit" ' +
+  'contain (default, the whole picture) or cover (fills the box, cropping); "alt" describes it. A box in the ' +
+  "picture's own proportions (its width and height from list_images, scaled) shows it uncropped. " +
   'type "table": "cells" is rows of strings (ragged rows are padded), "headerRow" / ' +
   '"headerColumn" style the first row / column, "zebra" tints alternate rows. ' +
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +
