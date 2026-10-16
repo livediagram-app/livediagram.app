@@ -42,23 +42,25 @@ afterEach(() => {
 });
 
 describe('revealInScrollers', () => {
-  it('scrolls a target below the fold up by the least that shows it', () => {
+  // Centred, not hugging an edge: a phone's undo and redo float over the foot of a form's panel.
+  it('centres a target below the fold in its panel', () => {
     const { target, scrollBy } = panel('auto', 900);
     expect(revealInScrollers(target)).toBe(true);
-    // Its bottom (940) lands at the panel's bottom (600) less the margin.
-    expect(scrollBy).toHaveBeenCalledWith({
-      top: 940 - (600 - REVEAL_MARGIN_PX),
-      left: 0,
-      behavior: 'smooth',
-    });
+    // Its middle (920) lands on the panel's (350).
+    expect(scrollBy).toHaveBeenCalledWith({ top: 920 - 350, left: 0, behavior: 'smooth' });
   });
 
-  it('scrolls a target above the top down to it', () => {
+  it('centres a target above the top', () => {
     const { target, scrollBy } = panel('auto', -200);
     revealInScrollers(target);
-    expect(scrollBy).toHaveBeenCalledWith(
-      expect.objectContaining({ top: -200 - (100 + REVEAL_MARGIN_PX) }),
-    );
+    expect(scrollBy).toHaveBeenCalledWith(expect.objectContaining({ top: -180 - 350 }));
+  });
+
+  // Inside the panel but within the margin of its edge: the ring would be clipped, so it moves.
+  it('moves a target that sits in the margin at an edge', () => {
+    const { target, scrollBy } = panel('auto', 600 - REVEAL_MARGIN_PX - 30);
+    expect(revealInScrollers(target)).toBe(true);
+    expect(scrollBy).toHaveBeenCalled();
   });
 
   it('leaves a target already in view alone', () => {
@@ -113,7 +115,7 @@ describe('revealInScrollers', () => {
     document.body.append(target);
     expect(revealInScrollers(target)).toBe(true);
     expect(pageBy).toHaveBeenCalledWith(
-      expect.objectContaining({ top: 1540 - (window.innerHeight - REVEAL_MARGIN_PX) }),
+      expect.objectContaining({ top: 1520 - window.innerHeight / 2 }),
     );
     pageBy.mockClear();
     // The longhand: jsdom does not expand the shorthand as a browser's computed style does.
@@ -141,11 +143,9 @@ describe('revealInScrollers', () => {
     outer.append(innerPanel);
     document.body.append(outer);
     revealInScrollers(target);
-    const dy = 940 - (600 - REVEAL_MARGIN_PX);
+    const dy = 920 - 350;
     expect(inner).toHaveBeenCalledWith(expect.objectContaining({ top: dy }));
-    // After the inner scroll the target sits at 900 - dy .. 940 - dy; the outer shows 0..300.
-    expect(outerBy).toHaveBeenCalledWith(
-      expect.objectContaining({ top: 940 - dy - (300 - REVEAL_MARGIN_PX) }),
-    );
+    // After the inner scroll the target's middle sits at 920 - dy; the outer's middle is 150.
+    expect(outerBy).toHaveBeenCalledWith(expect.objectContaining({ top: 920 - dy - 150 }));
   });
 });

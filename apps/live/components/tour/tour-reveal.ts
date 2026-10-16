@@ -1,26 +1,26 @@
 // Bringing a tour step's target into view (docs/specs/007-editor/editor-tour.md "Mechanics"): a target below the fold
 // of a scrolling panel (a long form's Add bar, a dialog's lower section) is scrolled to before the ring lands, so the
-// highlight and its popover never point off-screen. Only real scroll containers move (overflow auto or scroll), each
-// by the least that shows the target: never an overflow:hidden box such as the canvas, whose pan is its own, and
+// highlight and its popover never point off-screen. Only real scroll containers move (overflow auto or scroll), and
+// only when the target is not wholly in view; it is then centred, clear of chrome floating over a panel's edges (a
+// phone's undo and redo over a form's foot): never an overflow:hidden box such as the canvas, whose pan is its own, and
 // never `scrollIntoView`, which also nudges the page under the fixed header.
 
 // The room kept between a revealed target and its scroller's edge: the ring's pad plus a little air.
 export const REVEAL_MARGIN_PX = 16;
 
-export type RevealBlock = 'nearest' | 'start';
+export type RevealBlock = 'center' | 'start';
 
 type Box = { top: number; bottom: number; left: number; right: number };
 
 const scrolls = (overflow: string) =>
   overflow === 'auto' || overflow === 'scroll' || overflow === 'overlay';
 
-// How far to scroll one axis so [from, to] sits inside [min, max]: 0 when it already does; aligned to the start when
-// asked, or when it is too big to fit; else the nearest edge.
+// How far to scroll one axis so [from, to] sits inside [min, max]: aligned to the start when asked, or when it is too
+// big to fit; else 0 when it already fits, or centred.
 function delta(from: number, to: number, min: number, max: number, block: RevealBlock): number {
   if (block === 'start' || to - from > max - min) return from - min;
-  if (from < min) return from - min;
-  if (to > max) return to - max;
-  return 0;
+  if (from >= min && to <= max) return 0;
+  return (from + to) / 2 - (min + max) / 2;
 }
 
 // The visible part of a scroller: its box, clipped to the viewport (a scroller taller than the window shows only part).
@@ -36,7 +36,7 @@ function visibleBox(node: Element): Box {
 
 // Scrolls `el` into view within each scrolling ancestor, innermost first, then the page if it scrolls. Returns whether
 // anything moved. Smooth unless motion is reduced; the engine's tracker re-measures, so the ring follows the scroll.
-export function revealInScrollers(el: HTMLElement, block: RevealBlock = 'nearest'): boolean {
+export function revealInScrollers(el: HTMLElement, block: RevealBlock = 'center'): boolean {
   const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   const behavior: ScrollBehavior = reduce ? 'auto' : 'smooth';
   const r = el.getBoundingClientRect();
@@ -46,7 +46,7 @@ export function revealInScrollers(el: HTMLElement, block: RevealBlock = 'nearest
   const scrollBy = (node: Element, box: Box, canY: boolean, canX: boolean) => {
     const m = REVEAL_MARGIN_PX;
     const dy = canY ? delta(at.top, at.bottom, box.top + m, box.bottom - m, block) : 0;
-    const dx = canX ? delta(at.left, at.right, box.left + m, box.right - m, 'nearest') : 0;
+    const dx = canX ? delta(at.left, at.right, box.left + m, box.right - m, 'center') : 0;
     if (!dy && !dx) return;
     node.scrollBy?.({ top: dy, left: dx, behavior });
     at.top -= dy;

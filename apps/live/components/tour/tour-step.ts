@@ -26,8 +26,8 @@ export type TourStepOf<Api> = {
   // The layer this step's ring draws at, over the stage's own: 'modal' for a step inside a dialog the tour opened
   // (the Sankey tour's Flows dialog steps, docs/specs/007-editor/element-tours.md), so the ring is not under it.
   layer?: 'overlay' | 'modal';
-  // Where the engine scrolls the target to when it is out of view (tour-reveal.ts): 'nearest' (the default) moves
-  // its scroller the least; 'start' brings it to the top (a section further down a dialog, read from its heading).
+  // Where the engine scrolls the target to (tour-reveal.ts): 'center' (the default) centres it in its scroller when it
+  // is not wholly in view; 'start' brings it to the top (a section further down a dialog, read from its heading).
   revealAt?: RevealBlock;
   // Centred bookend cards, outside the step count, each with its own
   // illustration and button set: 'welcome' offers the tour (accept /

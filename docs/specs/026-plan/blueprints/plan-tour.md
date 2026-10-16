@@ -59,8 +59,8 @@ targetRect, countableSteps, start, next, back, skip, stop }`. Behaviour is the w
    direction it was going (`stepDirRef`): backward to the step before unless that is index 0's welcome card or
    there is none, else forward (direction set `forward`), or finishes from the last step. A found target is revealed
    (`revealInScrollers(el, step.revealAt)`, `tour-reveal.ts`: each `overflow: auto | scroll` ancestor, innermost
-   first, then an unlocked page, scrolled by the least that shows it inside a `REVEAL_MARGIN_PX` (16) margin, or to
-   the top for `'start'` or a target taller than its scroller; `smooth`, `auto` under reduced motion), then measured.
+   first, then an unlocked page, left alone when it wholly shows the target inside a `REVEAL_MARGIN_PX` (16) margin,
+   else scrolled to centre it, or to the top for `'start'` or a target taller than its scroller; `smooth`, `auto` under reduced motion), then measured.
 3. Every 150 ms the target is re-measured; a detached target re-runs prepare and re-awaits (healing), revealing what
    it finds; a heal that finds nothing clears the rect, so the ring lets go and the popover centres. A target that
    only moves is followed, never re-revealed.
@@ -69,7 +69,7 @@ targetRect, countableSteps, start, next, back, skip, stop }`. Behaviour is the w
    call `onFinish(outcome)` with `'completed'`, or `'skipped'` / `'declined'` (declined from the welcome card).
 5. `stop()` ends without an outcome (the host ending it for its own reasons).
 
-`TourStep<Api>` gains `selector?: (api) => string | null` and `revealAt?: 'nearest' | 'start'` (default nearest). `target` stays the data-tour-id anchor; a step has
+`TourStep<Api>` gains `selector?: (api) => string | null` and `revealAt?: 'center' | 'start'` (default center). `target` stays the data-tour-id anchor; a step has
 an anchor when either is set.
 
 ### Offer (`PlanTourHost`)
