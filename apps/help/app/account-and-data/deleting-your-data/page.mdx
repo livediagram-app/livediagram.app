@@ -1,6 +1,5 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { DeleteDialog } from '@/components/illustrations/account';
 
 export const metadata = helpMetadata({
   title: 'Deleting Your Data',
@@ -15,14 +14,7 @@ You own your documents, and removing one is straightforward. It helps to know ho
 
 ## Deleting a document
 
-You can delete a document from the [Explorer](/explorer/recent) or from the editor. Open the document's **⋯** menu (on its row or card, or in the Current Document section of the Explorer panel) and choose **Delete**. A short confirmation names the document (**Delete "System overview"?**) and, when it applies, adds that it is deleted for the whole team, that its share links stop working, or that tabs it shares with other documents stay there. Its **Delete** button is the ordinary blue one rather than red, because nothing is lost yet.
-
-<Figure
-  caption="The delete confirmation names the document and says when its share links will stop working."
-  width="narrow"
->
-  <DeleteDialog />
-</Figure>
+You can delete a document from the [Explorer](/explorer/recent) or from the editor. Open the document's **⋯** menu (on its row or card, or in the Current Document section of the Explorer panel) and choose **Delete**. It goes straight away, without a question, because nothing is lost yet: **Document deleted** appears with **Undo**, which puts it back where it was. Deleting the document you have open takes you to the Explorer, where the same **Undo** waits.
 
 Deleting a document moves it to the [Trash](/help/account-and-data/trash/), where it waits for 30 days before it is removed for good, along with the content that belongs only to it, such as its tabs and comments. While it waits, its share links stop working and it disappears from your lists, and you can restore it with everything it had. To remove it straight away, delete it permanently from the Trash.
 

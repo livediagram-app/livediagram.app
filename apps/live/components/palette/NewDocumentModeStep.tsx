@@ -4,14 +4,15 @@
 // making, as the five editor modes, never a template. Each mode is a card of one build and one height: a fan of its own
 // templates' previews on top, then its mark, its name and its number key, then a line on what it makes, so the choice
 // reads as the work it leads to. In the mode switch's order, three then two (one column on a phone), so Diagram, first
-// there and where most start, leads the top row as an equal. Choosing one moves on to where the document lives; the
-// document then opens on that mode's own start (Start Diagramming, Start Planning, ...), where the templates are. Arrow
-// keys move between the cards, and 1 to 5 (printed on each card) choose one straight away.
+// there and where most start, leads the top row as an equal. Choosing one creates the document at once, which opens on
+// that mode's own start (Start Diagramming, Start Planning, ...), where the templates are. Arrow keys move between the
+// cards, and 1 to 5 (printed on each card) choose one straight away.
 import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { EDITOR_MODES, editorModeLabel, type EditorMode } from '@livediagram/document';
 import { PreviewFan } from '@livediagram/template-previews';
 import { isBlankTemplate, popularKindsFor, type TemplateKind } from '@livediagram/templates';
+import { Spinner } from './template-picker-icons';
 
 // The modes in the order every mode list shows them (the mode switch's dropdown, Opens in): the catalogue's.
 export const NEW_DOCUMENT_MODES: readonly EditorMode[] = EDITOR_MODES;
@@ -41,12 +42,15 @@ function ModeCard({
   mode,
   index,
   selected,
+  creating,
   onChoose,
   register,
 }: {
   mode: EditorMode;
   index: number;
   selected: boolean;
+  // This card's document is being made: its key gives way to a spinner.
+  creating: boolean;
   onChoose: () => void;
   register: (el: HTMLButtonElement | null) => void;
 }) {
@@ -59,6 +63,7 @@ function ModeCard({
       type="button"
       data-new-mode={mode}
       aria-pressed={selected}
+      aria-busy={creating || undefined}
       aria-keyshortcuts={String(index + 1)}
       onClick={onChoose}
       className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white text-left transition duration-micro ease-out hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-xl hover:shadow-brand-900/10 focus-visible:-translate-y-0.5 focus-visible:border-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:bg-slate-900 dark:hover:border-brand-400 dark:hover:shadow-black/40 ${modeCardSpan(index)} ${
@@ -90,11 +95,16 @@ function ModeCard({
             <span className="sr-only">: </span>
           </span>
           {/* The card's number key, as the keyboard picks it (aria-keyshortcuts carries it for assistive technology);
-              left off a phone, which has no keys to press. */}
+              left off a phone, which has no keys to press. While its document is made, a spinner in its place. */}
+          {creating ? (
+            <span data-mode-creating className="ml-auto flex text-brand-700 dark:text-brand-300">
+              <Spinner />
+            </span>
+          ) : null}
           <kbd
             aria-hidden
             data-mode-key
-            className="ml-auto hidden h-5 min-w-5 items-center justify-center rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-400 sm:flex dark:border-slate-700 dark:text-slate-400"
+            className={`ml-auto h-5 min-w-5 items-center justify-center rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-400 dark:border-slate-700 dark:text-slate-400 ${creating ? 'hidden' : 'hidden sm:flex'}`}
           >
             {/* Trimmed to its cap band, so centring lands on the digit, whatever the face (optical-alignment.md). */}
             <span className="text-optical-centre">{index + 1}</span>
@@ -110,10 +120,13 @@ function ModeCard({
 
 export function NewDocumentModeStep({
   selected,
+  creating = false,
   onChoose,
 }: {
-  // The mode picked so far (a `?mode=` preset, or the last choice when stepping back).
+  // The mode picked so far: a `?mode=` preset, or the one being created.
   selected: EditorMode | null;
+  // The chosen mode's document is being made.
+  creating?: boolean;
   onChoose: (mode: EditorMode) => void;
 }) {
   const cards = useRef<(HTMLButtonElement | null)[]>([]);
@@ -149,6 +162,7 @@ export function NewDocumentModeStep({
             mode={mode}
             index={i}
             selected={selected === mode}
+            creating={creating && selected === mode}
             onChoose={() => onChoose(mode)}
             register={(el) => {
               cards.current[i] = el;

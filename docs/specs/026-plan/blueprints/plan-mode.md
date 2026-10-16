@@ -65,7 +65,7 @@ Derived from [Plan templates](../plan-templates.md).
   from `seedDate(today, days)` (UTC), assignees `seedPerson(who)` (`example-<who>` ids), votes one dot each from
   `example-voter-<n>`, and `example: true` on every card. `seedToday()` is the local calendar day.
 - Seeded by `/new` (cloud: `items` on `apiCreateDocument`; Offline Mode: one `offlineWriteItem` create after
-  `offlineCreateDocument`, by `seedAuthor(self)`) and Quick Start (`useTemplateFlow`'s `seedCards`, wired to
+  `offlineCreateDocument`, by `seedAuthor(self)`) and a start screen's template (`useTemplateFlow`'s `seedCards`, wired to
   `plan.context.addItems`, after the tabs land). Never by the MCP, the CLI or the api's seeded create.
 - `ExampleCardsNotice` (`apps/live/components/plan/ExampleCardsNotice.tsx`) renders under `PlanBoardHeader` when
   `canEdit` and the board shows an example card: Clear Example Cards is `trashItems(every example id)`, Keep Them is
@@ -86,14 +86,14 @@ cy)` lays the board at the origin, then metrics (`PLAN_METRIC_SIZE`, 20px gaps, 
 - `templateTabs(kind)` (`build-template.ts`) is the generic list: Plan kinds give theirs, every other kind one
   unnamed tab of `buildTemplate`. `buildTemplateTabs(first, kind, newId, themeId?)` (`template-tab.ts`) makes
   them as `buildTemplateTab` makes one.
-- Consumers: `/new` (`buildTemplatedTabs` in `apps/live/lib/template-builders.ts`), Quick Start
+- Consumers: `/new` (`buildTemplatedTabs` in `apps/live/lib/template-builders.ts`), a start screen
   (`useTemplateFlow` with `template-tab-set.ts`: the followers take `newTabSeed(landed)` and the canvas
   overrides, inserted after the active tab, each `markTabLoaded`), the MCP's `create_document` and the api's
   `compileSeededTabs` (the followers after the compiled tab, fresh ids). A replace fills its one tab with the
   first.
 - Card types on every path ([Item types](../item-types.md#the-type-catalogue)), each through
   `catalogueWithBoardTypes(stored, elements, hasCards)`: `/new` passes `itemTypes: catalogueWithBoardTypes(null,
-elements)` to the create (cloud and Offline Mode), so a template's document has exactly its types; Quick Start
+elements)` to the create (cloud and Offline Mode), so a template's document has exactly its types; a start screen's pick
   calls `bring(elements)` (`usePresetCardTypes`) for every tab it makes before `commitTabs`, so the open-tab effect
   then finds nothing to change; `compileSeededTabs` returns the template tabs' `templateElements` and the create
   route applies them to the catalogue the body gave (or null) with `hasCards` from its seed items; the MCP's
@@ -121,7 +121,7 @@ elements)` to the create (cloud and Offline Mode), so a template's document has 
 | Template set-ups validate, fit | `template-builders-plan.test.ts`                                                              |
 | Hand-offs, tab layout          | `template-builders-plan.test.ts`                                                              |
 | Template tabs on create        | `document-create-seeded.test.ts`, `create-document-placement.test.ts`, `template-tab.test.ts` |
-| Quick Start adds the tabs      | `template-tab-set.test.ts`                                                                    |
+| A start's pick adds the tabs   | `template-tab-set.test.ts`                                                                    |
 | Document-wide statuses, sweep  | `usePlanStatusNames.test.ts`, `usePlanTabSweep.test.ts`                                       |
 | Shift+D wraps over four        | `e2e/editor-modes.spec.ts`                                                                    |
 | A board survives a mode switch | `e2e/editor-modes.spec.ts`                                                                    |

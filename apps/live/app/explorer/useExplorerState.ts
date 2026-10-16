@@ -31,6 +31,7 @@ import { useTokens } from '@/hooks/persistence/useTokens';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useDocumentListActions } from '@/hooks/persistence/useDocumentListActions';
 import { useToast } from '@/hooks/ui/useToast';
+import { useDeleteUndoHandoff } from '@/hooks/persistence/useDeleteUndoHandoff';
 import { explorerPathFor, selectedFromRoute } from './routes';
 import { useExplorerLens } from './lens/useExplorerLens';
 import { carriedHref, lensViewOf } from './lens/lens-views';
@@ -285,6 +286,11 @@ export function useExplorerState() {
   useEffect(() => {
     if (loadOwner) void load(loadOwner);
   }, [loadOwner, load]);
+  // The open document deleted from the editor: its Undo, offered here on arrival.
+  useDeleteUndoHandoff(loadOwner, () => {
+    if (loadOwner) void load(loadOwner);
+    refreshTeamLibraries();
+  });
   // A change made in Google Drive reaches this page without a reload
   // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow"). Quietly:
   // no skeleton, the lists just settle.
@@ -391,7 +397,7 @@ export function useExplorerState() {
   const deleteDocument = async (
     id: string,
     beforeRemove?: () => Promise<void> | void,
-    opts?: { skipConfirm?: boolean },
+    opts?: { onRestored?: () => void },
   ) => {
     await listDeleteDocument(id, beforeRemove, opts);
     refreshIfTeamDocument(id);

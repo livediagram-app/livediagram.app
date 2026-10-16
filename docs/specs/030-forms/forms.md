@@ -398,8 +398,8 @@ Tour** stack beside the Draw tour's.
   saw, and an answer to a question since removed is dropped, never refused.
 - A Board or Sheet tab a form sends its responses to warns before it is deleted: Delete's confirmation ("Delete this
   tab?") carries an amber line, "“<Form>” sends its responses here: it stops taking them, keeping its link, until it has somewhere to send them." ("<n> forms
-  send their responses here: they stop taking them, keeping their links, until they have somewhere to send them." for several), above "Unless another
-  document also holds it, its content can't be recovered." Deleting it **pauses** each such form in the same request
+  send their responses here: they stop taking them, keeping their links, until they have somewhere to send them." for several), under "Delete this
+  tab?": the one tab delete that asks first, as an undo cannot reopen the forms. Deleting it **pauses** each such form in the same request
   (its link stops taking responses on the api, whoever deletes the tab, and keeps its code and count); the form's
   connect box then asks again, and once it has somewhere to send them Accepting Responses opens the same link again.
   An undo brings the tab back; the form stays paused until an Editor reopens it.
@@ -414,7 +414,7 @@ Tour** stack beside the Draw tour's.
   disabled with "Fix this form's problems first: Share Form lists them." (Settings) or "Closed until the problems
   below are fixed." (Share Form), and the api refuses it as it refuses a publish (409 `form_destination_missing` /
   `form_not_ready`). Closing always works.
-- A Form tab deleted deletes its form link in the same request. A document copied, a tab duplicated or a document
+- A Form tab deleted deletes its form link in the same request. Its Delete asks first, as an undo brings the form back but not its link: "If this form has a link, the link is deleted with it: undo brings the form back, not its link." (`FORM_TAB_DELETE_WARNING`). A document copied, a tab duplicated or a document
   restored from a file copies the form **unpublished**: a copy never answers the original's link.
 - A copy keeps its destination: a duplicated tab's still names the document's board; a copied document's names a tab
   the copy may not hold, and then reads as needing a choice (below) until one is made.

@@ -120,3 +120,4 @@ export {
 } from './sheets';
 export * from './illustrate';
 export * from './forms';
+export * from './images';

@@ -29,7 +29,7 @@ board of the template shows some, and every plan view on its Dashboard has somet
 - **They are marked.** Every example card carries the `example` flag ([Items](items.md#example-cards)), so the
   document knows which cards a template made however they have since moved.
 - **Where they are made.** Only where a **person** makes the template: the New Document wizard (the cards ride the
-  create, or an Offline Mode document's first item write) and Quick Start on an empty tab (the cards are one write,
+  create, or an Offline Mode document's first item write) and a start screen on an empty tab (the cards are one write,
   one undo step, after the tabs land). **Agents** (the MCP's `create_document` and `add_tab`, the api's seeded create)
   get the set-up alone: an agent fills a board with real cards, and examples would be cards it then had to find and
   delete.
@@ -70,9 +70,9 @@ board of the template shows some, and every plan view on its Dashboard has somet
 - **Where a person makes one**:
   - **The New Document wizard** makes the document with all the template's tabs, named as the template names
     them; the first is the one that opens.
-  - **Quick Start on an empty tab** puts the first template tab on that tab (renaming it to the template tab's
-    name) and adds the others straight after it, in order. The tab Quick Start was opened on stays the active
-    one.
+  - **A start screen on an empty tab** (Start Planning, or another start's search) puts the first template tab on
+    that tab (renaming it to the template tab's name) and adds the others straight after it, in order. The tab it was
+    picked on stays the active one.
   - **Agents**: the MCP's `create_document` and the api's seeded create (the CLI's `--template`) add all the
     template's tabs where the template is named; the first takes the name given, the rest the template's names.
     A name given that is one of the template's later tabs (an agent naming the tab it wanted) leaves the first its
@@ -119,9 +119,9 @@ The catalogue below still lists, per tab, the metrics, charts and rail it brings
   ready-made types its boards take, in the order they name them, and no others: a Hiring Pipeline has Role,
   Candidate and Onboarding Task, never a Project or a Note
   ([Item types](item-types.md#the-type-catalogue)). Added to a document that already has card types or cards
-  (Quick Start on a new tab), its boards add each type they take that the document lacks, after the ones it has.
+  (a start screen on a new tab), its boards add each type they take that the document lacks, after the ones it has.
   Either way it is one change, on every path that makes the tabs: the New Document wizard (the document is created
-  with them), Quick Start (every tab it adds, not only the one it lands on), and agents (the MCP's
+  with them), a start screen (every tab it adds, not only the one it lands on), and agents (the MCP's
   `create_document` and `add_tab`, the api's seeded create). A document that already has a type of that id keeps
   its own. The [Plan mode](plan-mode.md#no-palette) rule holds: only a board being made brings types, so a type
   someone deleted stays deleted.
@@ -164,7 +164,7 @@ each a [ready-made type](#ready-made-card-types); the document has those and no 
 ### Blank Plan
 
 One tab (named as any new tab is), empty: no board, so the tab shows Plan's **Start Planning** picker
-([Plan mode](plan-mode.md#starting-a-board)), where the person picks the board that fits (or opens the Quick Start).
+([Plan mode](plan-mode.md#starting-a-board)), where the person picks the board that fits (or searches for a template).
 The mode's blank, as Blank Diagram is Diagram's.
 
 ### Project Planner
@@ -328,7 +328,7 @@ templates, and bring no card types. Whether the Sheet fills its tab is decided p
   table says.
 - **The sheet is made with the document.** The template's Sheet element names its start (`start` on the element,
   [Sheet store](../029-sheets/sheet-store.md#template-starts)); every path that makes the tabs makes the sheet
-  from it there and then: the New Document wizard (stored with the document, cloud or Local only), Quick Start (as
+  from it there and then: the New Document wizard (stored with the document, cloud or Local only), a start screen (as
   it adds the tabs), and agents (the MCP's `create_document` and `add_tab`, the api's seeded create). So the sheet
   is there for everyone, an agent's `read_sheet` included, the moment the document is.
 - The eight added with the template catalogue's categories (Invoice, Expense Report, Loan Calculator, Sales Pipeline,

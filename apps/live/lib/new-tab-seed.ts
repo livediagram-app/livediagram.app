@@ -1,4 +1,4 @@
-// What a tab added from the tab bar (or Quick Start's new tab) starts with: the theme, canvas
+// What a tab added from the tab bar starts with: the theme, canvas
 // styling and type of the tab it was added from, so a user mid-diagram who hits "+ tab" keeps
 // their visual context. Each tab keeps its own styling once created. Never an editor mode: the mode
 // is newTabOpening's, until a template chosen for it says otherwise (docs/specs/007-editor/editor-modes.md
@@ -24,11 +24,11 @@ export function newTabSeed(source: Tab | undefined): Partial<Tab> {
 // otherwise in `creatorMode`, the mode of the tab its maker was on, for everyone: an Illustrate tab's + makes an
 // Illustrate tab. Diagram is left unwritten (an absent `opensIn` reads as Diagram). Every mode's empty tab starts on
 // its own chooser (Start Diagramming, Start Drawing, Start Facilitating, Start Illustrating, Start Planning:
-// start-diagramming.md), so none opens the Quick Start over it.
+// start-diagramming.md).
 export function newTabOpening(
   creatorMode: EditorMode,
   mode?: EditorMode,
-): { opensIn?: EditorMode; quickStart: false } {
+): { opensIn?: EditorMode } {
   const opensIn = mode ?? creatorMode;
-  return opensIn !== 'diagram' ? { opensIn, quickStart: false } : { quickStart: false };
+  return opensIn !== 'diagram' ? { opensIn } : {};
 }

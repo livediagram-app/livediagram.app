@@ -440,40 +440,42 @@ export function PlanBoardPickerScene() {
       <line x1={20} y1={52} x2={400} y2={52} className="stroke-slate-200" strokeWidth={1} />
       {/* The rail: Boards chosen. */}
       <line x1={112} y1={52} x2={112} y2={282} className="stroke-slate-200" strokeWidth={1} />
-      {[
-        'Recommended',
-        'Boards',
-        'Spreadsheets',
-        'Visualisations',
-        'Dashboards',
-        'Inspiration',
-        'Something Else',
-      ].map((name, i) => (
-        <g key={name}>
-          {i === 1 ? (
-            <rect x={26} y={60 + i * 22} width={80} height={18} rx={5} className="fill-brand-50" />
-          ) : null}
-          {i === 6 ? (
-            <line
-              x1={30}
-              y1={60 + i * 22 - 3}
-              x2={102}
-              y2={60 + i * 22 - 3}
-              className="stroke-slate-200"
-              strokeWidth={1}
-            />
-          ) : null}
-          <Label
-            x={34}
-            y={72 + i * 22}
-            size={8.5}
-            weight={i === 1 ? 700 : 500}
-            tone={i === 1 ? 'accent' : 'strong'}
-          >
-            {name}
-          </Label>
-        </g>
-      ))}
+      {['Recommended', 'Boards', 'Spreadsheets', 'Visualisations', 'Dashboards', 'Inspiration'].map(
+        (name, i) => (
+          <g key={name}>
+            {i === 1 ? (
+              <rect
+                x={26}
+                y={60 + i * 22}
+                width={80}
+                height={18}
+                rx={5}
+                className="fill-brand-50"
+              />
+            ) : null}
+            {/* Inspiration sits under a hairline. */}
+            {i === 5 ? (
+              <line
+                x1={30}
+                y1={60 + i * 22 - 3}
+                x2={102}
+                y2={60 + i * 22 - 3}
+                className="stroke-slate-200"
+                strokeWidth={1}
+              />
+            ) : null}
+            <Label
+              x={34}
+              y={72 + i * 22}
+              size={8.5}
+              weight={i === 1 ? 700 : 500}
+              tone={i === 1 ? 'accent' : 'strong'}
+            >
+              {name}
+            </Label>
+          </g>
+        ),
+      )}
       {tiles.map((t, i) => {
         const col = i % 3;
         const row = Math.floor(i / 3);

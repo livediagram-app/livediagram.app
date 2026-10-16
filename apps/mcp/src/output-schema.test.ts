@@ -244,6 +244,21 @@ async function api(request: Request): Promise<Response> {
     const applied = applySheetWrite(sheetFromJson(SHEET), write, { now: 0, by: NOBODY }).applied;
     return json({ applied, rev: 2, cells: [] });
   }
+  if (path === '/images') {
+    return json({
+      images: [
+        {
+          id: 'img1',
+          contentType: 'image/png',
+          byteSize: 2048,
+          width: 1280,
+          height: 800,
+          originalName: 'Shot.png',
+          createdAt: 1,
+        },
+      ],
+    });
+  }
   if (path === '/trash') {
     return json({
       trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2, reason: 'empty' }],
@@ -338,6 +353,7 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { documentId: 'd1', tabId: 't1' },
   },
   { tool: 'list_trash', output: 'listTrashOutput', args: {} },
+  { tool: 'list_images', output: 'listImagesOutput', args: { query: 'shot' } },
   { tool: 'restore_document', output: 'restoreDocumentOutput', args: { documentId: 'd2' } },
   { tool: 'list_items', output: 'listItemsOutput', args: { documentId: 'd1' } },
   {

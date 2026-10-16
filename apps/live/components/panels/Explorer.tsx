@@ -10,7 +10,6 @@ import { apiCreateFolder } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
 import {
   isTreeSection,
@@ -36,7 +35,6 @@ import { sidebarDivider } from '@/app/explorer/sidebar/sidebar-structure';
 import type { ExplorerProps } from './Explorer.types';
 import { useExplorerViewModel } from './useExplorerViewModel';
 import { useExplorerRowDelete } from './useExplorerRowDelete';
-import { deleteConfirmationMessage } from '@/lib/delete-confirmation';
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
 // default. Symmetric to the Palette in shape and behaviour.
@@ -123,16 +121,13 @@ function ExplorerImpl({
     section: '',
     id: null,
   });
-  // Row delete lifecycle (confirm popover, exit animation, optimistic
-  // team-row hide + pruning) lives in useExplorerRowDelete.
-  const {
-    exitingDocumentIds,
-    deleteConfirm,
-    setDeleteConfirm,
-    deletedTeamIds,
-    openDeleteConfirm,
-    runDelete,
-  } = useExplorerRowDelete({ documents: liveDocs, teamDocuments, ownerId, onDeleteDocument });
+  // Row delete lifecycle (exit animation, optimistic team-row hide + pruning, Undo) lives in useExplorerRowDelete.
+  // A delete asks nothing first (docs/specs/013-workspace/trash.md "Deleting").
+  const { exitingDocumentIds, deletedTeamIds, deleteRow } = useExplorerRowDelete({
+    documents: liveDocs,
+    teamDocuments,
+    onDeleteDocument,
+  });
 
   // (Previously: `if (hideOnMobile) return null;` — Explorer now
   // renders on mobile too, banner-collapsed by default. The panel
@@ -191,9 +186,8 @@ function ExplorerImpl({
     }
   };
 
-  // The anchor argument survives in the row-callback signature (the
-  // delete flow's ConfirmPopover still anchors), but the move flow is
-  // a centred modal now (docs/specs/013-workspace/folders.md) and ignores it.
+  // The row callbacks still hand up an anchor, but the move flow is a centred modal
+  // (docs/specs/013-workspace/folders.md) and the delete asks nothing, so neither reads it.
   const openMovePicker = (documentId: string) => {
     setMoveTarget({ id: documentId, teamId: null });
   };
@@ -205,9 +199,7 @@ function ExplorerImpl({
     expanded: expandedFolders,
     onToggle: toggleFolder,
     onOpenDocument,
-    onDeleteDocument: openDeleteConfirm
-      ? (id: string, anchor: HTMLElement | null) => void openDeleteConfirm(id, anchor)
-      : undefined,
+    onDeleteDocument: deleteRow ? (id: string) => deleteRow(id) : undefined,
     onDuplicateDocument,
     onMoveDocumentRequest: onMoveDocumentToFolder ? openMovePicker : undefined,
     // A team row's move opens the picker for that team; the pick then routes through
@@ -290,9 +282,7 @@ function ExplorerImpl({
         ownerId={ownerId}
         onOpen={() => onOpenDocument(current.id)}
         onRename={onRenameCurrent}
-        onDelete={
-          openDeleteConfirm ? (anchor) => void openDeleteConfirm(current.id, anchor) : undefined
-        }
+        onDelete={deleteRow ? () => deleteRow(current.id) : undefined}
         onDuplicate={onDuplicateDocument ? () => onDuplicateDocument(current.id) : undefined}
         onMoveRequest={onMoveDocumentToFolder ? () => openMovePicker(current.id) : undefined}
       />
@@ -305,9 +295,7 @@ function ExplorerImpl({
       onRename={onRenameCurrent}
       // Any joined member may delete a team document (docs/specs/013-workspace/team-shared-documents.md); the api
       // enforces team membership.
-      onDelete={
-        openDeleteConfirm ? (anchor) => void openDeleteConfirm(currentTeam.id, anchor) : undefined
-      }
+      onDelete={deleteRow ? () => deleteRow(currentTeam.id) : undefined}
       onMoveRequest={
         onMoveDocumentTo
           ? () => setMoveTarget({ id: currentTeam.id, teamId: currentTeam.team.id })
@@ -517,30 +505,6 @@ function ExplorerImpl({
             );
           })()
         : null}
-
-      {deleteConfirm ? (
-        <ConfirmPopover
-          anchor={deleteConfirm.anchor}
-          message={(() => {
-            const personal = liveDocs.find((d) => d.id === deleteConfirm.id);
-            const team = teamDocuments.find((d) => d.id === deleteConfirm.id);
-            const doc = personal ?? team;
-            return deleteConfirmationMessage({
-              name: doc?.name,
-              hasShareLinks: (doc?.shareCode ?? null) !== null,
-              sharedTabsNotice: deleteConfirm.notice,
-              team: !personal && !!team,
-            });
-          })()}
-          confirmLabel="Delete"
-          onConfirm={() => {
-            const id = deleteConfirm.id;
-            setDeleteConfirm(null);
-            runDelete(id);
-          }}
-          onCancel={() => setDeleteConfirm(null)}
-        />
-      ) : null}
     </MovablePanel>
   );
 }

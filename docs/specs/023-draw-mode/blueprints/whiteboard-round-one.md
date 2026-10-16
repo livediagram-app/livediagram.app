@@ -51,7 +51,7 @@ Scope, by file:
 | `apps/live/components/canvas/CanvasChrome.tsx` and friends        | Hidden chrome; the dock's mount                                           |
 | `apps/live/hooks/canvas/useCanvasSurfaceGestures.ts`              | Pen versus touch; the eraser frame                                        |
 | `apps/live/components/canvas/useCanvasDrawGesture.ts`             | Hands a whiteboard pen press to `useWhiteboardPenGesture`                 |
-| `apps/live/components/palette/TemplatePicker*.tsx`                | Whiteboard quick-pick; no theme step                                      |
+| `apps/live/components/palette/NewDocumentWizard.tsx`              | The Draw mode card (Blank Whiteboard); no theme step                      |
 | `apps/help/app/canvas/draw-mode/page.mdx`                         | Help article, registered in `packages/help-registry`                      |
 
 ## Domain and naming
@@ -91,15 +91,13 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 ### Creation
 
 - `templateCanvasOverrides('whiteboard')` returns `{ opensIn: 'draw', backgroundPattern: WHITEBOARD_DEFAULT_PATTERN }`
-  (`'graph'`, Grid, the tab's Diagram pattern): every creation path (the /new wizard, Quick Start on a
+  (`'graph'`, Grid, the tab's Diagram pattern): every creation path (the /new wizard, a start on a
   tab, the MCP worker) goes through it.
   `buildTemplate('whiteboard', …)` returns `[]`. Category: `design` (nominal, like Blank: the picker
   shows it only as a quick-pick) (D1).
-- Quick Start overview: `Blank`, then `Whiteboard`, then the category cards.
-- `onTemplateCommit('whiteboard')`: welcome wizard sets `themeId = 'brand'` and goes to the settings
-  step; the in-editor templates flow calls `onPick('whiteboard', name, 'brand', …)` at once.
-- `chooseTemplate` tracks `Draw / Created / NewTab` when `kind === 'whiteboard'` in the
-  `templates` mode and releases the tab's pinned opening mode, so its maker enters Draw; the /new
+- The wizard's Draw card creates a Blank Whiteboard at once, on the `brand` theme (`NewDocumentWizard`).
+- `chooseTemplate` (a start's pick, Blank Whiteboard found from another mode's search included) tracks
+  `Draw / Created / NewTab` when `kind === 'whiteboard'` and releases the tab's pinned opening mode, so its maker enters Draw; the /new
   route tracks `Draw / Created / Template`.
 
 ### Dock state
@@ -922,7 +920,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
 - Copy: buttons "Select", "Marker 1", "Marker 2", "Marker 3" (2 and 3 adding their colour, e.g. "Marker 2, blue, medium"; `PEN_NAMES`), "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition"; pen flyout "Colour" (second and third pens only), "Width" with "Fine", "Medium", "Bold", "Thick", "Heavy", "Broad"; eraser flyout
   "Stroke", "Partial" with hints "Remove whole strokes" / "Erase part of a stroke"; Settings flyout
-  "Background" with "Plain", "Dots", "Grid"; Quick Start card "Whiteboard", "Free drawing without distractions"
+  "Background" with "Plain", "Dots", "Grid"; the template card "Whiteboard", "Free drawing without distractions"
 - Recognition chip: a pill 44 px tall and at least 44 px wide, `px-4`, `text-sm` medium, full
   radius, `shadow-lg`; `bg-slate-900 text-white` in light, `bg-slate-100 text-slate-900` in dark
   (the dock hint's pair), so it stands off either board. Copy "Make shape" / "Keep drawing".
@@ -1020,7 +1018,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Pen versus touch on the canvas                                                                | `apps/live/hooks/canvas/useCanvasSurfaceGestures.whiteboard.test.tsx`                    |
 | A pinch discards a whiteboard stroke                                                          | `apps/live/components/canvas/useCanvasDrawGesture.whiteboard.test.tsx`                   |
 | Line / arrow heads, no colour                                                                 | `apps/live/lib/draw-commit.test.ts`                                                      |
-| No theme step for a whiteboard                                                                | `apps/live/components/palette/template-picker-wizard.test.tsx`                           |
+| No theme step for a whiteboard                                                                | `apps/live/components/palette/NewDocumentWizard.test.tsx`                                |
 | Sticky and text open for typing                                                               | `apps/live/lib/draw-mode.test.ts`                                                        |
 | Telemetry vocabulary and dashboard                                                            | `apps/live/lib/telemetry-coverage.test.ts`, `apps/telemetry/app/metric-emitters.test.ts` |
 | End to end                                                                                    | playwright-cli walkthrough, light / dark, desktop / narrow                               |

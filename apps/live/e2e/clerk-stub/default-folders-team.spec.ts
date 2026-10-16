@@ -69,13 +69,12 @@ test('a team folder becomes a member’s default, and new boards land in it', as
   await page.keyboard.press('Escape');
   await expect(page.locator('[data-default-marker]').first()).toBeVisible();
 
-  // The wizard asks for a mode; the Kanban template is picked on Start Planning, and the new document moves to the
-  // template's default folder, since no folder was chosen on the Location step ("Move on template pick").
+  // The wizard asks for a mode and creates at once; the Kanban template is picked on Start Planning, and the new
+  // document moves to the template's default folder, since no folder was chosen ("A template picked after creation").
   await page.goto('/new');
   const plan = page.locator('[data-new-mode="plan"]');
   await untilHydrated(plan);
   await plan.click();
-  await page.getByRole('button', { name: 'Create', exact: true }).click();
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}$/, { timeout: 30_000 });
   const start = page.getByRole('region', { name: 'Start Planning' });
   await start.locator('[data-rail="inspiration"]').click();

@@ -30,6 +30,25 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Help', 'View', 'popular')).toBe(false);
   });
 
+  it("retires the wizard's Location step and the Quick Start, not their successors", () => {
+    for (const type of [
+      'SkipLocationStepOn',
+      'SkipLocationStepOff',
+      'TemplateShelfExpanded',
+      'TemplateShelfCollapsed',
+      'TemplateModeAll',
+      'TemplateModeDiagram',
+      'TemplateModeDraw',
+      'TemplateModeFacilitate',
+      'TemplateModeIllustrate',
+      'TemplateModePlan',
+    ])
+      expect(isRetiredEvent('UI', 'Toggled', type)).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'StartOtherMode')).toBe(false);
+    expect(isRetiredEvent('UI', 'Closed', 'NewDocument')).toBe(false);
+    expect(isRetiredEvent('Template', 'Used', 'Kanban')).toBe(false);
+  });
+
   it('retires Settings › Experimental and its mode switches, not the modes', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsExperimental')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'IllustrateModeOn')).toBe(true);

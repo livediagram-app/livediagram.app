@@ -72,9 +72,6 @@ type TabActionsDeps = {
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
   setFormatSourceId: (id: string | null) => void;
-  // Switches the template picker into its lighter "templates" mode for
-  // a freshly added tab.
-  setTemplatePickerMode: (mode: 'welcome' | 'templates' | 'identity') => void;
   // Surfaces an import parse error in the header (null clears it).
   setImportError: (message: string | null) => void;
   // Frames the tab once replaced content has rendered (useTabEntryEffects).
@@ -107,7 +104,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setTemplatePickerMode,
     setImportError,
     requestFit,
     refreshDocumentList,
@@ -124,7 +120,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
     // window), falling back to brand defaults the same way Tab 1 does.
     const seed = newTabSeed(tabs.find((t) => t.id === activeId));
-    // A new tab opens on its mode's own start (Start Diagramming, Start Drawing...), with no Quick Start (newTabOpening).
+    // A new tab opens on its mode's own start (Start Diagramming, Start Drawing...) (newTabOpening).
     const opening = newTabOpening(deps.editorMode, mode);
     const tab: Tab = {
       ...createTab(defaultTabName(tabs.length + 1)),
@@ -138,9 +134,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setSelectedId(null);
     setEditingId(null);
     setFormatSourceId(null);
-    // The lighter template picker (just the template grid), should an opening ask for it. None does today: every
-    // mode's new tab opens on its own start instead (newTabOpening).
-    if (opening.quickStart) setTemplatePickerMode('templates');
   };
 
   // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)
@@ -293,8 +286,8 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Duplicated');
   };
 
-  // Confirmation is handled by the inline ConfirmPopover anchored to the
-  // tab menu's Delete row (TabBar), so this just performs the delete. The
+  // Asks nothing: one commit, so undo brings the tab back (the tab menu asks first only when deleting does what an
+  // undo cannot take back, deleteTabWarning). The
   // menu's Delete item is already gated on `canDelete` (tabs.length > 1);
   // the guards here are belt-and-suspenders.
   const deleteTab = (id: string) => {

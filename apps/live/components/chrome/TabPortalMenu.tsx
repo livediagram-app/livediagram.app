@@ -106,9 +106,8 @@ export function PortalMenu({
   // the outside-click dismisser below; the modal owns its own dismissal
   // and closes the whole menu with it.
   const [view, setView] = useState<'actions' | 'copyTo' | 'folder'>('actions');
-  // Delete confirmation: an inline popover anchored to the Delete row
-  // (rather than the jarring full-screen modal). Rendered inside this
-  // menu's container so the outside-click handler treats it as "inside".
+  // Delete asks nothing (undo brings a tab back), except for what an undo cannot take back (deleteTabWarning):
+  // then an inline popover anchored to the Delete row, rendered so the outside-click handler treats it as "inside".
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleteRow, setDeleteRow] = useState<HTMLDivElement | null>(null);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -344,11 +343,16 @@ export function PortalMenu({
                 icon={<TrashIcon />}
                 label="Delete"
                 description={
-                  locked
-                    ? 'This tab is locked. Unlock it before deleting.'
-                    : "Delete this tab. Unless another document also holds it, its content can't be recovered."
+                  locked ? 'This tab is locked. Unlock it before deleting.' : 'Delete this tab.'
                 }
-                onClick={() => setConfirmingDelete(true)}
+                onClick={() => {
+                  if (deleteWarning) {
+                    setConfirmingDelete(true);
+                    return;
+                  }
+                  onDelete();
+                  onClose();
+                }}
                 disabled={!canDelete || locked}
               />
             </div>
@@ -422,9 +426,7 @@ export function PortalMenu({
     confirmingDelete && deleteRow ? (
       <ConfirmPopover
         anchor={deleteRow}
-        // A tab added to another document lives on there (docs/specs/006-document/tab-document-many-to-many.md),
-        // and the menu can't tell which tabs are, so the copy says so rather than overclaiming.
-        message="Delete this tab? Unless another document also holds it, its content can't be recovered."
+        message="Delete this tab?"
         warning={deleteWarning}
         confirmLabel="Delete"
         onConfirm={() => {
