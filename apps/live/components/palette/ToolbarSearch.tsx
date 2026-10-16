@@ -85,7 +85,7 @@ export function ToolbarSearchPanel({
   const [pens] = useState(loadWhiteboardPrefs);
   const surface = useCanvasSurface();
   // Icons, Stickers and Technology load as a chunk of their own: re-rendered when it lands.
-  useIconCatalogs();
+  const cataloguesLoaded = useIconCatalogs();
   const elements = searchElementTiles({
     query,
     mode,
@@ -94,7 +94,7 @@ export function ToolbarSearchPanel({
     tabElements,
     drawTiles: markerTiles(pens, surface),
   });
-  const catalogues = searchCatalogueTiles({ query, mode, tabElements });
+  const catalogues = searchCatalogueTiles({ query, mode, tabElements, loaded: cataloguesLoaded });
   // One ranking per section across element types and catalogue entries: name matches first.
   const here = mergeByName(query, elements.here, catalogues.here);
   const elsewhere = mergeByName(query, elements.elsewhere, catalogues.elsewhere);
