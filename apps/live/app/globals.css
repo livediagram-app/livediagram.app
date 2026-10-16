@@ -725,23 +725,29 @@
    rotates sheet and shadow together. A user-set element shadow (docs/specs/008-canvas/element-shadows.md)
    replaces the whole treatment — element-variant.ts drops this class when
    one is set. Recipe hand-tuned on a live canvas against Miro's renderer
-   (the numbers are the winner of a 25-variant bake-off; see docs/specs/008-canvas/canvas-and-palette.md). */
+   (the numbers are the winner of a 25-variant bake-off; see docs/specs/008-canvas/canvas-and-palette.md).
+
+   The caster is drawn as a picture of itself already blurred, never as a live
+   `filter: blur()`: Safari re-ran the blur for every note on screen on every
+   frame of a pan or zoom (docs/specs/008-canvas/canvas-performance.md). The
+   picture is computed from the same recipe (lib/sticky-peel-image.ts) and its
+   border-image and inset arrive as custom properties on the canvas root; the
+   sides stretch to the note's height, so the ramp keeps its proportions. */
 .lvd-sticky-peel::before {
   content: '';
   position: absolute;
   z-index: -2;
-  inset: 0 -3px -5px;
-  filter: blur(2px);
-  background: linear-gradient(#0f172a00 10%, #0f172a52 77% 100%);
+  inset: var(--lvd-sticky-peel-inset, 0);
+  border: 0 solid transparent;
+  border-image: var(--lvd-sticky-peel, none);
 }
 /* On a DARK canvas the peel's ink has to go deeper: the slate above is
    tuned against light paper, and on a dark wall it all but disappears —
-   the note stops lifting. Same construction (gradient in the paint, one
-   blur, no mask), stronger ink and a slightly longer throw. The canvas
-   surface flags itself (see isDarkCanvas). */
+   the note stops lifting. Same construction, stronger ink and a slightly
+   longer throw. The canvas surface flags itself (see isDarkCanvas). */
 [data-dark-canvas] .lvd-sticky-peel::before {
-  inset: 0 -4px -7px;
-  background: linear-gradient(#00000000 10%, #000000a8 77% 100%);
+  inset: var(--lvd-sticky-peel-dark-inset, 0);
+  border-image: var(--lvd-sticky-peel-dark, none);
 }
 
 .lvd-sticky-peel::after {
