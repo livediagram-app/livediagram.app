@@ -7,8 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { ElementTourApi } from './element-tour-api';
 import { sequenceTourSteps, type SequenceTourContext } from './sequence-tour-steps';
 
-const revealTour = vi.hoisted(() => vi.fn(async () => null));
-vi.mock('./tour-dom', () => ({ waitForSelector: async () => null, revealTour }));
+vi.mock('./tour-dom', () => ({ waitForSelector: async () => null }));
 
 const ctxOf = (over: Partial<SequenceTourContext> = {}): SequenceTourContext => ({
   elementId: 'sq',
@@ -58,8 +57,6 @@ describe('sequenceTourSteps', () => {
     await kind.prepare!(a);
     expect(a.openSequence).toHaveBeenCalled();
     expect(a.showSequenceTab).toHaveBeenLastCalledWith('messages');
-    // Scrolled into view, for a phone's sheet where it may sit below the fold.
-    expect(revealTour).toHaveBeenLastCalledWith('sequence-kind');
     const text = steps.find((s) => s.id === 'text')!;
     await text.prepare!(a);
     expect(a.showSequenceTab).toHaveBeenLastCalledWith('text');

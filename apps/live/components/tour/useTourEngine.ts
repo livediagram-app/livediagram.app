@@ -3,13 +3,15 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useAssignRef } from '@/hooks/ui/useLatest';
 import { findTour, waitForSelector } from './tour-dom';
+import { revealInScrollers } from './tour-reveal';
 import { hasAnchor, type TourStepOf } from './tour-step';
 
 // The step runner every guided tour shares (docs/specs/007-editor/editor-tour.md "Mechanics",
 // docs/specs/026-plan/blueprints/plan-tour.md "Engine"): the Diagram, Plan and Facilitate tours each own
 // their offer, their steps and what ending means, and hand this the rest. Each step runs prepare
 // (opening the real panel / dropdown / menu it explains), waits for its target node, then reports a
-// rect for the dimming highlight ring. A watcher re-measures the target every 150ms so the highlight
+// rect for the dimming highlight ring, scrolling the target into view first when it sits below a panel's fold
+// (tour-reveal.ts). A watcher re-measures the target every 150ms so the highlight
 // tracks layout changes, and re-runs prepare if the target is dismissed mid-step (an outside click
 // closing a menu). The last rect is kept while the next step prepares, so the ring GLIDES between
 // targets (transition-all) instead of blinking out and back.
@@ -160,6 +162,7 @@ export function useTourEngine<Api>({
         return;
       }
       targetElRef.current = el;
+      revealInScrollers(el, step.revealAt);
       setTargetRect(measureStep(el, step.alsoHighlight));
     })();
     return () => {
@@ -187,6 +190,7 @@ export function useTourEngine<Api>({
             const next = await waitForAnchor(step, apiRef.current);
             if (token === runTokenRef.current) {
               targetElRef.current = next;
+              if (next) revealInScrollers(next, step.revealAt);
               // Gone for good (a box deleted while its step is up): the ring lets go rather than framing nothing.
               setTargetRect(next ? measureStep(next, step.alsoHighlight) : null);
             }

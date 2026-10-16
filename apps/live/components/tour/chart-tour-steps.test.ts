@@ -7,8 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { ElementTourApi } from './element-tour-api';
 import { chartTourSteps, type ChartTourContext } from './chart-tour-steps';
 
-const revealTour = vi.hoisted(() => vi.fn(async () => null));
-vi.mock('./tour-dom', () => ({ waitForSelector: async () => null, revealTour }));
+vi.mock('./tour-dom', () => ({ waitForSelector: async () => null }));
 
 const ctxOf = (over: Partial<ChartTourContext> = {}): ChartTourContext => ({
   elementId: 'ch',
@@ -82,7 +81,7 @@ describe('chartTourSteps', () => {
     expect(b.closeChartData).toHaveBeenCalled();
   });
 
-  it('opens the dialog on each dialog step, over it, and scrolls its control in', async () => {
+  it('opens the dialog on each dialog step, over it, and rings its control', async () => {
     const steps = chartTourSteps(ctxOf());
     for (const [id, target] of [
       ['data', 'chart-data-table'],
@@ -96,7 +95,6 @@ describe('chartTourSteps', () => {
       const a = api();
       await step.prepare!(a);
       expect(a.openChartData).toHaveBeenCalled();
-      expect(revealTour).toHaveBeenLastCalledWith(target);
     }
   });
 

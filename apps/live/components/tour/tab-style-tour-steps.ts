@@ -2,7 +2,6 @@
 // the dialog's home, run on the dialog itself. Each step brings the home forward (a panel may be open) and scrolls
 // its control into view; the control stays usable, so the person can pick a look or open a panel while it is up.
 import type { TourStepOf } from './tour-step';
-import { revealTour } from './tour-dom';
 
 export type TabStyleTourApi = {
   // Brings the home (the looks and the Fine-tune rows) forward.
@@ -16,10 +15,7 @@ const step = (id: string, title: string, body: string, target: string): TabStyle
   title,
   body,
   target,
-  prepare: async (api) => {
-    api.showHome();
-    await revealTour(target);
-  },
+  prepare: (api) => api.showHome(),
 });
 
 const LOOKS = step(

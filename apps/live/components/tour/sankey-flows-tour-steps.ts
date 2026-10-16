@@ -2,7 +2,6 @@
 // Sankey's flows, run on the dialog itself. Each step brings forward the tab its control sits on and scrolls the
 // control into view; the control stays usable, so the person can type a flow or rename a node while the step is up.
 import type { TourStepOf } from './tour-step';
-import { revealTour } from './tour-dom';
 
 export type SankeyFlowsTourApi = {
   // Brings the Table tab forward (the Text tab may be showing).
@@ -32,10 +31,9 @@ const step = (
   title,
   body,
   target,
-  prepare: async (api) => {
+  prepare: (api) => {
     if (tab === 'table') api.showTable();
     if (tab === 'text') api.showText();
-    await revealTour(target);
   },
 });
 
