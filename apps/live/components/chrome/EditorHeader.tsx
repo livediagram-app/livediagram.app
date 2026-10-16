@@ -12,6 +12,7 @@ import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
 import { useFormShareHost } from '@/lib/form-share-store';
+import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 
 // The autosave's sync state. No header pill shows it any more: the failure
 // states each raise a toast (editor-persistence.ts), so silent failures
@@ -122,8 +123,9 @@ export function EditorHeader({
       className="relative z-[var(--z-modal)] flex shrink-0 items-center justify-between gap-2 border-y border-slate-200 bg-white sm:gap-4 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
     >
       <div className="flex w-auto items-center gap-2.5">
+        {/* The editor's logo goes up one level, to the Explorer home; the Explorer's goes to the homepage. */}
         <Brand
-          href="/"
+          href={EXPLORER_LANDING_PATH}
           size="md"
           accentColor={brandAccent}
           wordmarkClassName="hidden sm:inline"
