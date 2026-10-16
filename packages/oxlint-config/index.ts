@@ -216,6 +216,8 @@ export default defineConfig({
         'typescript/no-unsafe-return': 'error',
         'typescript/no-unsafe-unary-minus': 'error',
         'typescript/only-throw-error': 'error',
+        // A reason caught and passed on unchanged is unknown, as only-throw-error allows by default.
+        'typescript/prefer-promise-reject-errors': ['error', { allowThrowingUnknown: true }],
         'typescript/restrict-plus-operands': 'error',
         'typescript/restrict-template-expressions': 'error',
       },
