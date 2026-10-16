@@ -1,26 +1,44 @@
 import Link from 'next/link';
 import { categoryHref, type Category } from '@/lib/articles';
-import { CategoryIllustration } from '@/components/CategoryIllustration';
-import { CountPill } from '@/components/CountPill';
+import { CategoryArt } from '@/components/category-art';
+import { ArrowRightIcon } from '@/lib/chrome-icons';
 
-export function CategoryCard({ category }: { category: Category }) {
+/** "12 guides", or nothing for a category with none. */
+export function guideCount(n: number): string {
+  return n > 0 ? `${n} ${n === 1 ? 'guide' : 'guides'}` : '';
+}
+
+// A category's card (docs/specs/018-help/help-pages.md "Category art"): its scene across the top, then its title,
+// its description and how many guides it holds. `wide` lays the scene beside the copy instead, for a section
+// with only two cards, where a stacked card would run a full screen tall.
+export function CategoryCard({ category, wide = false }: { category: Category; wide?: boolean }) {
+  const count = guideCount(category.articleCount);
   return (
     <Link
       href={categoryHref(category.slug)}
-      className="card-glow group block overflow-hidden rounded-xl bg-white transition-colors duration-micro hover:bg-brand-50/30 dark:hover:bg-brand-500/10 dark:bg-slate-900"
+      className={`card-glow group flex overflow-hidden rounded-2xl bg-white dark:bg-slate-900 ${
+        wide ? 'flex-col sm:flex-row' : 'flex-col'
+      }`}
     >
-      {/* On-brand banner illustration evoking this area of the app (docs/specs/018-help/help-app.md). */}
-      <div className="h-16 w-full overflow-hidden border-b border-slate-100 bg-gradient-to-b from-brand-100 to-brand-50 dark:border-slate-800 dark:from-brand-500/15 dark:to-brand-500/5">
-        <CategoryIllustration slug={category.slug} />
+      <div
+        aria-hidden
+        className={`aspect-[400/220] shrink-0 overflow-hidden border-slate-100 dark:border-slate-800 ${
+          wide ? 'border-b sm:aspect-auto sm:w-1/2 sm:border-b-0 sm:border-r' : 'border-b'
+        }`}
+      >
+        <CategoryArt slug={category.slug} />
       </div>
-      <div className="p-5 sm:p-6">
-        <h3 className="mb-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <h3 className="text-lg font-semibold text-slate-900 transition-colors group-hover:text-brand-700 dark:text-slate-100 dark:group-hover:text-brand-200">
           {category.title}
         </h3>
-        <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+        <p className="mt-1.5 flex-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           {category.description}
         </p>
-        <CountPill count={category.articleCount} noun="article" />
+        <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 dark:text-brand-300">
+          {count ? `Browse ${count}` : 'Open'}
+          <ArrowRightIcon className="transition-transform group-hover:translate-x-0.5" />
+        </span>
       </div>
     </Link>
   );

@@ -37,6 +37,7 @@ export function SearchInput({ large = false }: { large?: boolean }) {
   const [dismissed, setDismissed] = useState(false);
   const [search, setSearch] = useState<Search | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const prepareSearch = () => {
     if (search) return;
     loadSearch().then(
@@ -68,6 +69,25 @@ export function SearchInput({ large = false }: { large?: boolean }) {
   // open is equivalent: typing or focusing clears `dismissed` anyway.
   useClickOutside(wrapperRef, () => setDismissed(true), isOpen);
 
+  // `/` searches from anywhere on the page (docs/specs/018-help/help-pages.md "Search"), unless the reader is
+  // already typing somewhere. A page with the large search box gives it the key; the header's box takes it
+  // everywhere else.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (!large && document.querySelector('[data-help-search="large"]')) return;
+      const input = inputRef.current;
+      // The header's box is hidden on a phone; a hidden box never takes the key.
+      if (!input || input.offsetParent === null) return;
+      e.preventDefault();
+      input.focus();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [large]);
+
   return (
     <div ref={wrapperRef} className="relative w-full text-left">
       <div className="relative">
@@ -76,6 +96,8 @@ export function SearchInput({ large = false }: { large?: boolean }) {
           size={large ? 22 : 18}
         />
         <input
+          ref={inputRef}
+          data-help-search={large ? 'large' : 'header'}
           type="text"
           placeholder="Search help articles..."
           value={query}
@@ -89,11 +111,27 @@ export function SearchInput({ large = false }: { large?: boolean }) {
             setDismissed(false);
           }}
           onPointerEnter={prepareSearch}
+          onKeyDown={(e) => {
+            if (e.key !== 'Escape') return;
+            if (isOpen) setDismissed(true);
+            else e.currentTarget.blur();
+          }}
           aria-label="Search help articles"
+          aria-keyshortcuts="/"
           className={`w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 shadow-sm transition-all duration-micro focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 ${
-            large ? 'py-4 pl-12 pr-4 text-lg' : 'py-2.5 pl-10 pr-4 text-sm'
+            large ? 'py-4 pl-12 pr-12 text-lg' : 'py-2.5 pl-10 pr-10 text-sm'
           }`}
         />
+        {query === '' && (
+          <kbd
+            aria-hidden
+            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-md border pointer-coarse:hidden border-slate-200 bg-slate-50 font-sans font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500 ${
+              large ? 'right-4 px-2 py-0.5 text-sm' : 'right-3 px-1.5 text-xs'
+            }`}
+          >
+            /
+          </kbd>
+        )}
       </div>
       {isOpen && results.length > 0 && (
         <div className="scrollbar-slim absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
@@ -107,11 +145,14 @@ export function SearchInput({ large = false }: { large?: boolean }) {
               }}
               className="block border-b border-slate-100 px-4 py-3 transition-colors last:border-b-0 hover:bg-brand-50/60 dark:border-slate-800 dark:hover:bg-slate-800"
             >
-              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
+                {article.category}
+              </p>
+              <p className="mt-0.5 text-sm font-medium text-slate-900 dark:text-slate-100">
                 {article.title}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                {article.category} &middot; {article.description}
+              <p className="mt-0.5 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">
+                {article.description}
               </p>
             </Link>
           ))}
