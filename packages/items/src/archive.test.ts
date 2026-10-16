@@ -70,9 +70,7 @@ describe('widget quick filters', () => {
     expect(quickFilterMatches({ due: { to: '2026-10-07' } }, item({ title: 'c' }))).toBe(false);
     // A window with a start, and the done status left out.
     expect(quickFilterMatches({ due: { from: '2026-10-08', to: '2026-10-30' } }, a)).toBe(false);
-    expect(
-      quickFilterMatches({ due: { to: '2026-10-07', doneStatus: String(a.fields['status']) } }, a),
-    ).toBe(false);
+    expect(quickFilterMatches({ due: { to: '2026-10-07', doneStatus: 'todo' } }, a)).toBe(false);
   });
 });
 

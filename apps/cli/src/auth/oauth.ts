@@ -38,7 +38,12 @@ async function postForm(io: CliIo, url: string, fields: Record<string, string>) 
   const body: unknown = await res.json().catch(() => ({}));
   const field = (key: string): unknown =>
     typeof body === 'object' && body !== null ? Reflect.get(body, key) : undefined;
-  return { ok: res.ok, field };
+  // A field the server answers as text (an OAuth `error` code), or undefined.
+  const text = (key: string): string | undefined => {
+    const value = field(key);
+    return typeof value === 'string' ? value : undefined;
+  };
+  return { ok: res.ok, field, text };
 }
 
 // The host's authorization server, from its metadata; every endpoint must be on the issuer's own origin.
@@ -136,9 +141,7 @@ export async function loginWithBrowser(
   });
   const token = answer.field('access_token');
   if (!answer.ok || typeof token !== 'string')
-    throw authError(
-      `the sign-in server refused the code (${String(answer.field('error') ?? 'no token')})`,
-    );
+    throw authError(`the sign-in server refused the code (${answer.text('error') ?? 'no token'})`);
   return token;
 }
 
@@ -154,9 +157,7 @@ export async function loginWithDevice(
   });
   const deviceCode = started.field('device_code');
   if (!started.ok || typeof deviceCode !== 'string')
-    throw authError(
-      `device sign-in could not start (${String(started.field('error') ?? 'no code')})`,
-    );
+    throw authError(`device sign-in could not start (${started.text('error') ?? 'no code'})`);
   io.stderr(
     `Open ${String(started.field('verification_uri'))} and enter ${String(started.field('user_code'))}. Waiting for approval…\n` +
       `Or open ${String(started.field('verification_uri_complete'))}\n`,
@@ -179,7 +180,7 @@ export async function loginWithDevice(
     });
     const token = poll.field('access_token');
     if (poll.ok && typeof token === 'string') return token;
-    const error = String(poll.field('error') ?? 'unknown');
+    const error = poll.text('error') ?? 'unknown';
     log(`oauth device ${error}`);
     if (error === 'authorization_pending') continue;
     if (error === 'slow_down') {

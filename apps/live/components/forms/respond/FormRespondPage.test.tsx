@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { PublicFormResponse } from '@livediagram/api-schema';
 import { formLook } from '@livediagram/document';
@@ -71,7 +72,7 @@ describe('the form page', () => {
     await submit();
     expect(await screen.findByText('Thank you!')).toBeTruthy();
     expect(calls[1]!.url).toBe(`/api/forms/${CODE}/responses`);
-    expect(JSON.parse(String(calls[1]!.init!.body))).toEqual({
+    expect(sentJson(calls[1]!.init)).toEqual({
       answers: { q: 'Great' },
       other: {},
       website: '',
@@ -146,7 +147,7 @@ describe('Report This Form', () => {
     });
     await act(async () => fireEvent.click(send));
     expect(await screen.findByText('Thanks. We’ve recorded your report.')).toBeTruthy();
-    const body = JSON.parse(String(calls[1]!.init!.body));
+    const body = sentJson(calls[1]!.init) as Record<string, unknown>;
     expect(body).toMatchObject({ reason: 'phishing', note: 'Asks for my bank login' });
     expect(body.browser).toBe(localStorage.getItem('livediagram:form-browser'));
   });

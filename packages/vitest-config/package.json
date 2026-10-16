@@ -18,6 +18,10 @@
     "./inline-script": {
       "types": "./inline-script.d.ts",
       "default": "./inline-script.js"
+    },
+    "./sent-request": {
+      "types": "./sent-request.d.ts",
+      "default": "./sent-request.js"
     }
   },
   "scripts": {

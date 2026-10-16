@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readItemCreate, type PlanBoardSetup } from '@livediagram/items';
+import { itemTitle, readItemCreate, type PlanBoardSetup } from '@livediagram/items';
 import { planTemplateSeedItems, seedDate, seedToday } from './plan-template-seeds';
 import { PLAN_TEMPLATE_SEEDS } from './plan-template-seed-data';
 import {
@@ -50,9 +50,8 @@ describe('Plan template example cards', () => {
     for (const kind of PLAN_TEMPLATE_KINDS) {
       for (const create of planTemplateSeedItems(kind, TODAY, ids)) {
         const read = readItemCreate(create);
-        expect(typeof read, `${kind}: ${String(create.fields['title'])} ${String(read)}`).toBe(
-          'object',
-        );
+        const rejected = typeof read === 'string' ? read : null;
+        expect(rejected, `${kind}: ${itemTitle(create)}`).toBeNull();
       }
     }
   });

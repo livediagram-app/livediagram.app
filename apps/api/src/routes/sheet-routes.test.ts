@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import type { SheetResponse, SheetsResponse, SheetWriteResponse } from '@livediagram/api-schema';
 import { emptyLayout, type SheetWrite } from '@livediagram/sheets';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -10,7 +11,8 @@ import { handleDocuments } from './documents';
 // tab-scoped links, every rejection, the rev guard, the json_each writes, caps, the relay, copies and seeds.
 
 let sql: SqliteD1;
-let relayed: { op: Record<string, unknown> }[];
+type Relayed = { op: Record<string, unknown> };
+let relayed: Relayed[];
 
 type Call = {
   method?: string;
@@ -79,7 +81,7 @@ beforeEach(() => {
     idFromName: (x: string) => x,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
-        relayed.push(JSON.parse(String(init.body)));
+        relayed.push(sentJson(init) as Relayed);
         return new Response(null, { status: 204 });
       },
     }),

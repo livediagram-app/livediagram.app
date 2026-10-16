@@ -31,6 +31,7 @@ is the whole of what the repo enforces.
   findings ([#711](https://github.com/livediagram-app/livediagram.app/issues/711)); on so far:
   - `await-thenable`
   - `no-array-delete`
+  - `no-base-to-string`
   - `no-duplicate-type-constituents`
   - `no-for-in-array`
   - `no-implied-eval`

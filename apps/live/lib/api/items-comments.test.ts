@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { __setOfflineBackend } from '../offline/offline-store';
 import { memBackend } from '../offline/offline-test-utils';
 import { writeItemComment } from './items';
@@ -42,9 +43,9 @@ describe('writeItemComment', () => {
     expect(url.pathname).toBe('/api/documents/doc-cloud/items/item-one/comments');
     expect(url.searchParams.get('tabId')).toBe('t1');
     expect(init.method).toBe('POST');
-    expect(JSON.parse(String(init.body))).toEqual({ text: 'Hi @ann', mentions: [mention] });
+    expect(sentJson(init)).toEqual({ text: 'Hi @ann', mentions: [mention] });
     await writeItemComment(scope, 'item-one', { kind: 'add', text: 'plain' }, who);
-    expect(JSON.parse(String(sent(fetch, 1).init.body))).toEqual({ text: 'plain' });
+    expect(sentJson(sent(fetch, 1).init)).toEqual({ text: 'plain' });
   });
 
   it('deletes, resolves and reopens on their own paths', async () => {

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentForm } from '@livediagram/vitest-config/sent-request';
 import type { Env } from '../types';
 import {
   exchangeCode,
@@ -22,7 +23,7 @@ function stubFetch(status: number, body: unknown) {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string, init: RequestInit) => {
-      calls.push({ url, form: new URLSearchParams(String(init.body)) });
+      calls.push({ url, form: sentForm(init) });
       return new Response(JSON.stringify(body), { status });
     }),
   );

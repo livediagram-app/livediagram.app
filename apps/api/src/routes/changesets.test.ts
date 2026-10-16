@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
 import { elementFingerprint, type Element } from '@livediagram/document';
 import { createShareLink } from '../db/share';
@@ -22,7 +23,7 @@ function room(selections: Selection[] | 'down' = []) {
     idFromName: (name: string) => name,
     get: () => ({
       fetch: async (input: string, init?: RequestInit) => {
-        calls.push({ url: input, body: init?.body ? JSON.parse(String(init.body)) : null });
+        calls.push({ url: input, body: init?.body ? sentJson(init) : null });
         if (input.includes('/selections')) {
           return selections === 'down'
             ? new Response('no', { status: 500 })

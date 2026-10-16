@@ -9,6 +9,7 @@ import { book, makeSheets } from '../testing/book';
 import { renderWindow } from '../engine/render';
 import { resetSheetWrite } from '../sheet-starters';
 import type { FormatRule, Sheet } from '../sheet';
+import type { Value } from '../formula/values';
 import {
   conditionValues,
   formatRuleLine,
@@ -18,6 +19,10 @@ import {
   percentileOf,
   scaleColour,
 } from './format-rules';
+
+// A scalar as the shown text the rules read; an error or an array shows nothing here.
+const shownOf = (v: Value): string =>
+  typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean' ? String(v) : '';
 
 const by = { id: 'p', name: 'P', color: '#000000' };
 const R = (i: number) => `s0r${i}`;
@@ -41,7 +46,7 @@ function ruled(cells: Record<string, string>, rules: FormatRule[]) {
   b.wb.updateSheet(sheet);
   const style = (r: number, c = 0) => {
     const v = b.wb.value(sheet.id, r, c);
-    return formatRuleStyle(b.wb, sheet.id, r, c, v, v === null ? '' : String(v));
+    return formatRuleStyle(b.wb, sheet.id, r, c, v, shownOf(v));
   };
   return { b, sheet, style };
 }
@@ -368,7 +373,7 @@ describe('the drawing budget', () => {
           for (let r = 0; r < 60; r++)
             for (let c = 0; c < 26; c++) {
               const v = b.wb.value(sheet.id, r, c);
-              formatRuleStyle(b.wb, sheet.id, r, c, v, v === null ? '' : String(v));
+              formatRuleStyle(b.wb, sheet.id, r, c, v, shownOf(v));
             }
       });
     // The fastest of several passes, so a cold first pass never fails a fast path; a slow one fails every pass.

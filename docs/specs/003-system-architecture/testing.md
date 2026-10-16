@@ -66,6 +66,10 @@ export default defineProject({ test: { environment: 'jsdom' } });
   `@livediagram/vitest-config/inline-script`: a classic script in its own realm whose globals are
   the stubs it is handed (`document`, `localStorage`, a clock, `URL`) and nothing of the test's,
   never through `new Function`.
+- **A stubbed fetch reads what it was sent** through `@livediagram/vitest-config/sent-request`:
+  `sentJson(init)` and `sentText(init)` read a string body, `sentForm(init)` a form, and
+  `sentUrl(input)` the URL of a string, a URL or a Request. A body of any other kind fails the
+  test rather than read as `[object Blob]`.
 - **A tight budget is written for a developer's machine and widened on CI and under coverage.** CI's
   shared runners, under coverage, run the same work about 4x slower than an
   M-series Mac (the Tidy Up hover: 24 ms locally, 101 to 104 ms on CI), so a

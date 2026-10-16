@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentForm } from '@livediagram/vitest-config/sent-request';
 import { bytesToBase64 } from '@livediagram/api-schema';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { deleteAccount } from '../db/account';
@@ -49,8 +50,7 @@ function stubRevoke(status = 200) {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string, init: RequestInit) => {
-      if (url === 'https://oauth.test/revoke')
-        revoked.push(new URLSearchParams(String(init.body)).get('token')!);
+      if (url === 'https://oauth.test/revoke') revoked.push(sentForm(init).get('token')!);
       return new Response('{}', { status });
     }),
   );

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import type { FormLinkResponse, PublicFormResponse } from '@livediagram/api-schema';
 import { FROM_FORM_FIELD, type FormDefinition } from '@livediagram/forms';
 import { ITEMS_MAX, presetSetup, type Item } from '@livediagram/items';
@@ -13,7 +14,8 @@ import { FORM_RESPONSES_PER_HOUR } from '../forms/respond';
 // into cards, every refusal, reports, and a deleted tab taking its link.
 
 let sql: SqliteD1;
-let relayed: { op: { kind: string; upserts: Item[] } }[];
+type Relayed = { op: { kind: string; upserts: Item[] } };
+let relayed: Relayed[];
 
 const form = (extra: Partial<FormDefinition> = {}): FormDefinition => ({
   v: 1,
@@ -94,7 +96,7 @@ beforeEach(() => {
     idFromName: (n: string) => n,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
-        relayed.push(JSON.parse(String(init.body)));
+        relayed.push(sentJson(init) as Relayed);
         return new Response(null, { status: 204 });
       },
     }),

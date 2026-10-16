@@ -23,8 +23,14 @@ const TOKEN = /^[#A-Za-z0-9][\w#.:-]*$/;
 const signed = (n: number) => (n < 0 ? `${n}` : `+${n}`);
 const at = ([x, y]: readonly [number, number] | readonly number[]) => `@${x},${y}`;
 
-// A scalar value: structured ones print as `(changed)` before they reach here.
-export function formatValue(key: string, v: JsonValue | undefined): string {
+type JsonStructure = JsonValue[] | { [key: string]: JsonValue };
+type JsonScalar = Exclude<JsonValue, JsonStructure>;
+
+const isStructured = (v: JsonValue | undefined): v is JsonStructure =>
+  typeof v === 'object' && v !== null;
+
+// A scalar value: a structured one prints as `(changed)` instead.
+export function formatValue(key: string, v: JsonScalar | undefined): string {
   if (v === undefined) return '';
   if (typeof v !== 'string') return String(v);
   return TOKEN.test(v) && !TEXT_KEYS.has(key)
@@ -36,14 +42,14 @@ const isPoint = (v: JsonValue | undefined): v is [number, number] =>
   Array.isArray(v) && v.length === 2 && v.every((n) => typeof n === 'number');
 
 function formatChange({ key, from, to }: FieldChange): string {
-  // Where `order` put it: `order front`, `order above n5`.
-  if (key === 'order') return `order ${String(to)}`;
+  // Where `order` put it: `order front`, `order above n5`, printed bare.
+  if (key === 'order') return `order ${typeof to === 'string' ? to : '(changed)'}`;
   if (key === 'at' && isPoint(from) && isPoint(to)) return `${at(from)}→${at(to)}`;
   if ((key === 'from' || key === 'to') && (isPoint(from) || isPoint(to))) {
-    const end = (v: JsonValue | undefined) => (isPoint(v) ? at(v) : formatValue(key, v));
+    const end = (v: JsonValue | undefined) =>
+      isPoint(v) ? at(v) : isStructured(v) ? '(changed)' : formatValue(key, v);
     return `${key} ${end(from)}→${end(to)}`;
   }
-  const isStructured = (v: JsonValue | undefined) => typeof v === 'object' && v !== null;
   if (isStructured(from) || isStructured(to)) return `${key} (changed)`;
   return `${key} ${formatValue(key, from)}→${formatValue(key, to)}`;
 }

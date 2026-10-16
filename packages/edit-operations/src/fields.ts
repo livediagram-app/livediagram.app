@@ -235,10 +235,10 @@ export function writeFieldsOnto<T extends Element>(
   return { next: merged as T, written: Object.keys(fields), warnings, capped };
 }
 
-const overridesTheme = (ref: string, key: string, value: FieldValue): EditWarning => ({
+const overridesTheme = (ref: string, key: string, value: string): EditWarning => ({
   code: 'colour_overrides_theme',
   ref,
-  message: `${ref} ${key} ${String(value)} overrides the theme; a theme colour follows a theme change`,
+  message: `${ref} ${key} ${value} overrides the theme; a theme colour follows a theme change`,
 });
 
 function writeAlias(

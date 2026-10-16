@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import type { ItemResponse, ItemsResponse } from '@livediagram/api-schema';
 import { itemPersonId, presetSetup, type Item } from '@livediagram/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -54,7 +55,7 @@ beforeEach(() => {
     idFromName: (n: string) => n,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
-        relayed.push(JSON.parse(String(init.body)));
+        relayed.push(sentJson(init));
         return new Response(null, { status: 204 });
       },
     }),

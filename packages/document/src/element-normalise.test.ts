@@ -99,6 +99,29 @@ describe('content kinds', () => {
     });
   });
 
+  it('reads a label that is no text and no number as empty, never as [object Object]', () => {
+    const [pie] = normaliseElements([
+      {
+        id: 'p',
+        type: 'shape',
+        shape: 'pie-chart',
+        ...box,
+        pieSlices: [
+          { label: { text: 'A' }, value: 1 },
+          { label: ['B'], value: 2 },
+          { label: true, value: 3 },
+        ],
+      },
+    ]);
+    expect(pie).toMatchObject({
+      pieSlices: [
+        { label: '', value: 1 },
+        { label: '', value: 2 },
+        { label: 'true', value: 3 },
+      ],
+    });
+  });
+
   it('gives a coloured sticky the borderless palette look', () => {
     expect(
       normaliseElement({ id: 's', type: 'sticky', ...box, fillColor: '#bae6fd' }),

@@ -43,7 +43,13 @@ const num = (v: unknown) => {
   const n = typeof v === 'number' ? v : Number(v);
   return Number.isFinite(n) ? n : 0;
 };
-const str = (v: unknown) => (typeof v === 'string' ? v : v == null ? '' : String(v));
+// Text as given, a number or a flag as written; anything else (an object, a list) is no text.
+const str = (v: unknown) =>
+  typeof v === 'string'
+    ? v
+    : typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint'
+      ? String(v)
+      : '';
 
 function normaliseTable(el: Raw): Raw {
   const cells = el.cells;

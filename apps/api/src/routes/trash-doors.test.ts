@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livediagram/document';
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
@@ -36,7 +37,7 @@ function world(): SqliteD1 & Room {
       get: () => ({
         fetch: async (url: string, init?: RequestInit) => {
           if (String(url).endsWith('/broadcast')) {
-            room.broadcasts.push(JSON.parse(String(init?.body)));
+            room.broadcasts.push(sentJson(init));
           }
           return new Response(null, { status: 204 });
         },

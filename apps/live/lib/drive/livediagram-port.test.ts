@@ -1,5 +1,6 @@
 import { DOCUMENT_ENVELOPE_KIND, type DocumentEnvelope } from '@livediagram/document';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { createApiLivediagramPort } from './livediagram-port';
 
 // The Drive port's copy into the account (docs/specs/013-workspace/default-folders.md "Creation
@@ -13,7 +14,7 @@ beforeEach(() => {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (_url: string, init?: RequestInit) => {
-      if (init?.method === 'POST') createBodies.push(JSON.parse(String(init.body)));
+      if (init?.method === 'POST') createBodies.push(sentJson(init) as Record<string, unknown>);
       return new Response(JSON.stringify({ document: { id: 'new' } }), { status: 201 });
     }),
   );

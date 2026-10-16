@@ -11,7 +11,7 @@ import {
   responseCard,
   type FormDefinition,
 } from '@livediagram/forms';
-import { readItemCreate, typesOf, type ItemPerson } from '@livediagram/items';
+import { itemTitle, readItemCreate, typesOf, type ItemPerson } from '@livediagram/items';
 import { claimResponseNumber, getDocument, getFormLink, type FormLinkRow } from '../db';
 import { notifyFormResponse } from '../email/notifications';
 import { json } from '../responses';
@@ -224,7 +224,7 @@ export async function respond(
     code,
     number,
     preview,
-    title: String(made.items[0]?.fields['title'] ?? ''),
+    title: made.items[0] ? itemTitle(made.items[0]) : '',
   });
 }
 

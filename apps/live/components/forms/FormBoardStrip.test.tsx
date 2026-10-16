@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentUrl } from '@livediagram/vitest-config/sent-request';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { Tab } from '@livediagram/document';
 import { formsFeeding } from '@/hooks/forms/forms-feeding';
@@ -96,7 +97,7 @@ describe('FormBoardStrip', () => {
     expect(await screen.findByText(/3 responses/)).toBeTruthy();
     expect(screen.getByText(/1 new/)).toBeTruthy();
     // Read, never the form-seen door.
-    expect(String(vi.mocked(fetch).mock.calls[0]![0])).toMatch(/form-link$/);
+    expect(sentUrl(vi.mocked(fetch).mock.calls[0]![0])).toMatch(/form-link$/);
     fireEvent.click(screen.getByRole('button', { name: 'Open form Bug Report' }));
     expect(v.openTab).toHaveBeenCalledWith('f1');
     expect(screen.getByRole('button', { name: 'Copy form link' })).toBeTruthy();

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { sqliteD1, type SqliteD1 } from './test-sqlite-d1';
 import type { Env } from './types';
 import { endWorkbenchAccess } from './workbench-end';
@@ -21,7 +22,7 @@ function arrange(roomOk = true): {
       idFromName: (name: string) => name,
       get: (doc: string) => ({
         fetch: async (_url: string, init: RequestInit) => {
-          closes.push({ doc, body: JSON.parse(String(init.body)) });
+          closes.push({ doc, body: sentJson(init) });
           return new Response(null, { status: roomOk ? 204 : 500 });
         },
       }),

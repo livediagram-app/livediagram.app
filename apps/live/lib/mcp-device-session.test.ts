@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { MCP_ORIGIN } from './mcp-config';
 import { completeDevice, denyDevice, fetchDeviceSession, userCodeOf } from './mcp-device-session';
 
@@ -7,7 +8,7 @@ import { completeDevice, denyDevice, fetchDeviceSession, userCodeOf } from './mc
 function stubFetch(answer: (url: string, init?: RequestInit) => Response | Promise<Response>) {
   const calls: { url: string; body?: unknown }[] = [];
   vi.stubGlobal('fetch', async (url: string, init?: RequestInit) => {
-    calls.push({ url, ...(init?.body ? { body: JSON.parse(String(init.body)) } : {}) });
+    calls.push({ url, ...(init?.body ? { body: sentJson(init) } : {}) });
     return answer(url, init);
   });
   return calls;

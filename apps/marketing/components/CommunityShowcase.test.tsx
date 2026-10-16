@@ -2,6 +2,7 @@
 import { communityPostFixture } from '@livediagram/api-schema/testing';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentUrl } from '@livediagram/vitest-config/sent-request';
 import type { CommunityPost } from '@livediagram/api-schema';
 import { resetCommunityEnabledForTests } from '@livediagram/ui';
 import { CommunityShowcase } from './CommunityShowcase';
@@ -76,7 +77,7 @@ describe('CommunityShowcase', () => {
 
   it('asks only for the featured posts, never the capabilities (a 404 already says it is off)', async () => {
     render(<CommunityShowcase />);
-    const urls = () => vi.mocked(fetch).mock.calls.map(([url]) => String(url));
+    const urls = () => vi.mocked(fetch).mock.calls.map(([url]) => sentUrl(url));
     await waitFor(() =>
       expect(urls().some((url) => url.endsWith('/community/featured'))).toBe(true),
     );

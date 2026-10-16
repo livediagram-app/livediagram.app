@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { sentUrl } from '@livediagram/vitest-config/sent-request';
 import { embeddedFontFaceCss, latinFaceBlocks } from './export-fonts';
 
 // An export leaves the browser that made it: a font-family the reader hasn't
@@ -28,7 +29,7 @@ const GOOGLE_CSS = `
 
 function stubFetch() {
   return vi.fn(async (input: RequestInfo | URL) => {
-    const url = String(input);
+    const url = sentUrl(input);
     if (new URL(url).hostname === 'fonts.googleapis.com') {
       return new Response(GOOGLE_CSS, { status: 200 });
     }

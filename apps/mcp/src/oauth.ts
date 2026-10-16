@@ -15,6 +15,7 @@ import {
 import type { Hono } from 'hono';
 import type { Env } from './env';
 import { lookupClient, type ClientReg } from './oauth-clients';
+import { formText } from './oauth-form';
 import { handleDeviceToken, registerDeviceRoutes } from './oauth-device';
 
 // ---- KV record shapes (all short-lived) ----
@@ -270,13 +271,13 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
 
   // --- Token: redeem code + PKCE verifier for the lvd_ access token ---
   app.post('/oauth/token', async (c) => {
-    const form = await c.req.parseBody().catch(() => ({}) as Record<string, unknown>);
-    const grantType = String(form.grant_type ?? '');
+    const form: Record<string, unknown> = await c.req.parseBody().catch(() => ({}));
+    const grantType = formText(form, 'grant_type');
     if (grantType === DEVICE_CODE_GRANT) return handleDeviceToken(c, form);
-    const code = String(form.code ?? '');
-    const verifier = String(form.code_verifier ?? '');
-    const redirectUri = String(form.redirect_uri ?? '');
-    const clientId = String(form.client_id ?? '');
+    const code = formText(form, 'code');
+    const verifier = formText(form, 'code_verifier');
+    const redirectUri = formText(form, 'redirect_uri');
+    const clientId = formText(form, 'client_id');
     if (grantType !== 'authorization_code' || !code || !verifier) {
       return c.json({ error: 'invalid_request' }, 400);
     }

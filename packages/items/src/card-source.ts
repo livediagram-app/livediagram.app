@@ -61,6 +61,13 @@ function dateSerial(text: string): number | null {
     : null;
 }
 
+// A list entry as text: a value as written, an entry object (a link, a checklist row) by its `text`.
+function listEntryText(x: unknown): string {
+  if (typeof x !== 'object' || x === null) return String(x);
+  const text = 'text' in x ? x.text : undefined;
+  return typeof text === 'string' ? text : '';
+}
+
 function asScalar(v: unknown): Scalar {
   if (v === null || v === undefined) return null;
   if (typeof v === 'string') {
@@ -68,14 +75,7 @@ function asScalar(v: unknown): Scalar {
     return d ?? v;
   }
   if (typeof v === 'number' || typeof v === 'boolean') return v;
-  if (Array.isArray(v))
-    return v
-      .map((x) =>
-        typeof x === 'object' && x !== null
-          ? String((x as { text?: unknown }).text ?? '')
-          : String(x),
-      )
-      .join(', ');
+  if (Array.isArray(v)) return v.map(listEntryText).join(', ');
   if (typeof v === 'object' && typeof (v as { name?: unknown }).name === 'string')
     return (v as { name: string }).name;
   return null;
