@@ -12,7 +12,7 @@ vi.mock('@/lib/api-client', () => ({
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/api/trash', () => ({ apiRestoreDocument: vi.fn() }));
 
-const { apiDeleteDocument } = await import('@/lib/api-client');
+const { apiDeleteDocument, apiSetDocumentFolder } = await import('@/lib/api-client');
 const { track } = await import('@/lib/telemetry');
 const { isDocumentDeleted } = await import('@/lib/document-tombstones');
 const { apiRestoreDocument } = await import('@/lib/api/trash');
@@ -21,7 +21,7 @@ const { useDocumentListActions } = await import('./useDocumentListActions');
 // Deleting from an Explorer list (docs/specs/013-workspace/trash.md "Deleting"): nothing is asked first, the row
 // leaves at once, and only a delete the api accepted is said, with an Undo that puts it back.
 
-const row = (id: string) => ({ id, name: id }) as DocumentListItem;
+const row = (id: string) => ({ id, name: id, folderId: null }) as DocumentListItem;
 
 function setup() {
   const confirm = vi.fn(async () => true);
@@ -43,7 +43,13 @@ function setup() {
       afterDuplicate: vi.fn(),
     }),
   );
-  return { actions: result.current, toast, confirm, ids: () => list.map((d) => d.id) };
+  return {
+    actions: result.current,
+    toast,
+    confirm,
+    ids: () => list.map((d) => d.id),
+    folderOf: (id: string) => list.find((d) => d.id === id)?.folderId,
+  };
 }
 
 beforeEach(() => {
@@ -93,5 +99,31 @@ describe('deleteDocument from a list', () => {
     expect(track).not.toHaveBeenCalled();
     // Its editor may save it again.
     expect(isDocumentDeleted('b')).toBe(false);
+  });
+});
+
+// docs/specs/013-workspace/folders.md "A move that fails says so".
+describe('moveDocumentToFolder', () => {
+  it('says where it went once the api accepted it', async () => {
+    vi.mocked(apiSetDocumentFolder).mockResolvedValueOnce(undefined);
+    const { actions, toast } = setup();
+    actions.moveDocumentToFolder('b', 'f1');
+    await vi.waitFor(() => expect(toast.success).toHaveBeenCalledWith('Moved to folder'));
+    expect(track).toHaveBeenCalledWith('Document', 'Moved');
+  });
+
+  it('puts the row back, says so and logs it when the move fails', async () => {
+    vi.mocked(apiSetDocumentFolder).mockRejectedValueOnce(new Error('offline'));
+    const { actions, toast, folderOf } = setup();
+    actions.moveDocumentToFolder('b', 'f1');
+    expect(folderOf('b')).toBe('f1');
+    await vi.waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith('Could not move the document. Please try again.'),
+    );
+    expect(folderOf('b')).toBeNull();
+    expect(track).not.toHaveBeenCalled();
+    expect(vi.mocked(console.warn).mock.calls.map(([message]) => String(message))).toEqual([
+      '[explorer-move] document failed document=b: offline',
+    ]);
   });
 });
