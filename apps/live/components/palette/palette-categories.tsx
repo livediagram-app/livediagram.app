@@ -28,7 +28,7 @@ import {
   EventStormingTabIcon,
   LogoTabIcon,
   ParticipateTabIcon,
-} from './palette-tab-icons';
+} from '@livediagram/ui';
 import {
   AskGroupIcon,
   FacilitateGroupIcon,
@@ -36,7 +36,7 @@ import {
   MoveGroupIcon,
   ReactionGroupIcon,
   RecordGroupIcon,
-} from './palette-group-icons';
+} from '@livediagram/ui';
 import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
 import { SheetArt } from '@/components/sheets/sheet-art';
 import { lucideGlyph } from '@livediagram/ui';

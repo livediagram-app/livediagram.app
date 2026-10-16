@@ -1,8 +1,8 @@
-import { ctaHref, type CtaSurface } from '@livediagram/api-schema';
+import type { CtaSurface } from '@livediagram/api-schema';
 import type { ReactNode } from 'react';
 import { Brand } from './Brand';
 import { BuildWithAiLink } from './BuildWithAiLink';
-import { ButtonContent, buttonClassName } from './Button';
+import { HeaderPrimaryCta } from './HeaderPrimaryCta';
 import { ProductNav, type ProductNavKey } from './ProductNav';
 import { ShareRail } from './ShareRail';
 import { StartBlankMenu } from './StartBlankMenu';
@@ -97,7 +97,8 @@ export function SiteHeader({
 // escape. `max-sm:hidden` (a variant, so it wins over the base inline-flex). Beside a centre slot (help's
 // search) it waits for `md`, so the search box keeps room to read on a small tablet. Brand + dropdown +
 // "Choose Template" need about 367px, so below 380px (a 360px Android phone ran 7px past its screen,
-// a 320px one ~35px) the primary drops "Choose "; the aria-label keeps its full name.
+// a 320px one ~35px) the primary drops its verb; the aria-label keeps its full name. Signed in, the
+// primary is Open Explorer instead (HeaderPrimaryCta).
 function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy: boolean }) {
   return (
     <>
@@ -105,20 +106,7 @@ function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy:
         ctaSurface={ctaSurface}
         className={roomy ? 'max-sm:hidden' : 'max-md:hidden'}
       />
-      <a
-        href={ctaSurface ? ctaHref('/new', `${ctaSurface}.Header`) : '/new'}
-        aria-label="Choose Template"
-        className={buttonClassName({
-          size: 'md',
-          className: 'relative shrink-0 shadow-sm touch-target-y',
-        })}
-      >
-        <ButtonContent>
-          <span className="text-optical-line">
-            <span className="max-[379px]:hidden">Choose </span>Template
-          </span>
-        </ButtonContent>
-      </a>
+      <HeaderPrimaryCta ctaSurface={ctaSurface} />
     </>
   );
 }

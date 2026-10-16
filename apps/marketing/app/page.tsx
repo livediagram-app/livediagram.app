@@ -3,7 +3,7 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { PrivacySection } from '@/components/PrivacySection';
-import { PromiseCanvas } from '@/components/PromiseCanvas';
+import { PromisePrism } from '@/components/PromisePrism';
 import { StartDrawingCta } from '@/components/StartDrawingCta';
 import { StoryBeat } from '@/components/StoryBeat';
 import { LANDING_SECTIONS } from '@/lib/landing-content';
@@ -32,7 +32,7 @@ export default function LandingPage() {
         <Hero />
         <TemplateGallery />
         <CommunityShowcase />
-        <PromiseCanvas />
+        <PromisePrism />
         {LANDING_SECTIONS.map((section, index) => (
           <StoryBeat key={section.id} section={section} index={index} />
         ))}

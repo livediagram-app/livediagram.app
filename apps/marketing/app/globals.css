@@ -2,6 +2,8 @@
 @import '@livediagram/tailwind-config';
 @import '@livediagram/template-previews/preview-art-tile.css';
 @import '@livediagram/template-previews/preview-motion.css';
+@import './hero-band.css';
+@import './hero-fan.css';
 @import './hero-animations.css';
 @import './hero-mode-animations.css';
 @import './hero-scenes/diagram.css';

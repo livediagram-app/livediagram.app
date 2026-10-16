@@ -1,6 +1,8 @@
 import { lucidePenTool, lucideSparkles, lucideVote } from '@livediagram/icons/lucide';
-import { Glyph, Prims } from '@livediagram/ui';
-// The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), lifted out of
+import { Glyph } from '../icons/Glyph';
+import { Prims } from '../icons/Prims';
+// The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), shared so the editor's
+// palette and the marketing site's mock of it draw the same ones; lifted out of
 // the palette's category definitions so the palette file reads as wiring
 // rather than ~180 lines of inline SVG. Each is the universal symbol
 // for its category, readable at tab size.

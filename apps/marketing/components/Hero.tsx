@@ -1,49 +1,52 @@
 import { HeroConnectors } from './HeroConnectors';
-import { HeroIllustration } from './HeroIllustration';
-import { HeroTitleLine } from './HeroTitleLine';
+import { HeroFan } from './HeroFan';
+import { HeroSearch } from './HeroSearch';
+
+// The landing page's hero (docs/specs/019-marketing/marketing-site.md "Hero"), intent-led: it asks
+// what the visitor is making and takes them straight to a starting point, so it grows with the product
+// instead of naming one mode. A band in the brand mark's colours (app/hero-band.css): the promise
+// badge, the question, the template search, then a fan along its foot:
+// templates dealt every few seconds, or a returning visitor's own documents (HeroFanMine).
+const BADGE =
+  'inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3.5 py-1.5 text-sm font-medium text-(--hero-chip-text)';
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[600px] bg-gradient-to-b from-brand-100 via-brand-50 to-transparent dark:from-brand-500/20 dark:via-brand-500/5"
-      />
-      <div className="relative mx-auto max-w-6xl px-4 pt-24 sm:px-6 pb-20 text-center sm:pt-32 sm:pb-28">
-        {/* An arrow from the headline to the illustration, drawn on load (HeroConnectors). */}
+    // On a wide screen its height is its content's, with room to breathe; on a phone it fills the
+    // screen under the header, the fan along its foot.
+    <section className="hero-band relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col">
+      <div aria-hidden className="hero-band-dots pointer-events-none absolute inset-0" />
+      <div className="relative mx-auto flex w-full max-w-6xl flex-col px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-36 lg:pt-44">
+        {/* An arrow drawn on load from the end of the question down onto the search. */}
         <HeroConnectors />
-        {/* Says what it is and the one thing that sets it apart (docs/specs/019-marketing/marketing-site.md). */}
-        {/* Lifted above the stage below it, so the word card opens over the windows. */}
-        <h1 className="relative z-20 mx-auto whitespace-nowrap text-[clamp(1.5rem,9.4vw,4.5rem)] font-semibold sm:text-[clamp(1.5rem,8.2vw,4.5rem)] leading-tight tracking-tight text-slate-900 dark:text-slate-100">
-          {/* The rotating first word (HeroTitleLine) is decorative: the stable headline is what
-              screen readers and crawlers read. One line from `sm`, the size scaling with the viewport
-              so the longest word still fits; on a phone "live." takes a second line, so the words
-              can be larger. */}
-          <span className="sr-only">Diagram together, live.</span>
-          <span aria-hidden>
-            <HeroTitleLine>
-              {' '}
-              together,
-              <span className="max-sm:hidden">
-                {' '}
-                <span className="text-brand-700 dark:text-brand-300">live</span>.
-              </span>
-            </HeroTitleLine>
-          </span>
-          <span aria-hidden className="block sm:hidden">
-            <span className="text-brand-700 dark:text-brand-300">live</span>.
-          </span>
+        {/* Two promises, each its own badge and each true today (free, MIT, no account needed). A
+            phone keeps the first only, so the row stays one line. */}
+        <ul aria-label="Our promises" className="flex justify-center gap-2.5">
+          <li className={BADGE}>
+            <span aria-hidden className="h-2 w-2 rounded-full bg-emerald-500" />
+            Free and open source
+          </li>
+          <li className={`${BADGE} max-sm:hidden`}>
+            <span aria-hidden className="h-2 w-2 rounded-full bg-sky-500" />
+            No sign-up to start
+          </li>
+        </ul>
+        <h1
+          data-hero-anchor="title"
+          className="mx-auto mt-7 max-w-4xl text-balance text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02] tracking-tight"
+        >
+          What are you making today?
         </h1>
         <p
           data-hero-anchor="lead"
-          className="mx-auto mt-6 max-w-3xl text-pretty text-lg leading-relaxed text-slate-600 sm:text-xl dark:text-slate-300"
+          className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl"
         >
-          Make whatever&rsquo;s on your mind, from diagrams and whiteboards to illustrations and
-          documents. Share a link and your team builds it with you in real time.
+          Pick a starting point and release what&rsquo;s inside your mind. Diagram, sketch, plan,
+          run a session or publish, then share one link and build it together.
         </p>
-
-        <HeroIllustration />
+        <HeroSearch />
       </div>
+      <HeroFan />
     </section>
   );
 }
