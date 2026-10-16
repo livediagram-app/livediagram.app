@@ -132,7 +132,10 @@ describe('WhatHappened', () => {
 
   it('says so when nothing happened, and keeps the link', () => {
     renderIt([]);
-    expect(screen.getByText('Nothing from others in the last 14 days.')).toBeTruthy();
+    expect(screen.getByText('No updates yet')).toBeTruthy();
+    expect(
+      screen.getByText('What others do in your documents over the last 14 days shows here.'),
+    ).toBeTruthy();
     expect(screen.getByRole('link', { name: 'See timeline' })).toBeTruthy();
   });
 

@@ -3,7 +3,8 @@
 // share looks the same in Home and in the Timeline.
 
 import type { HomeVerb, KnownTimelineEventType } from '@livediagram/api-schema';
-import { Glyph } from '@livediagram/ui';
+import { Glyph, lucideGlyph } from '@livediagram/ui';
+import { lucideFile, lucideHistory } from '@livediagram/icons/lucide';
 import { EVENT_GLYPH_PATHS } from '@/app/explorer/timeline/icons';
 
 const glyphOf = (type: KnownTimelineEventType) => EVENT_GLYPH_PATHS[type] ?? '';
@@ -35,3 +36,7 @@ export function ChevronGlyph({ size = 16 }: { size?: number }) {
     </Glyph>
   );
 }
+
+// The glyphs in Home's empty states' brand badges (docs/specs/004-interface-design/empty-states.md).
+export const JumpBackInEmptyIcon = lucideGlyph(lucideFile, 18);
+export const WhatHappenedEmptyIcon = lucideGlyph(lucideHistory, 18);

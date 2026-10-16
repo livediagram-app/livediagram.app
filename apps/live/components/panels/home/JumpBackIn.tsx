@@ -5,7 +5,7 @@
 // See more in the heading row; on a phone the alternating strip that ends in its See more tile. The
 // two halves carry no titles: the documents are one list named Jump back in (Calm by default).
 
-import { useMediaQuery } from '@livediagram/ui';
+import { CompactEmptyState, useMediaQuery } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import type { JumpBackInSet } from '@/app/explorer/home/home-model';
@@ -13,7 +13,8 @@ import { HomeSection } from './HomeSection';
 import { GridSkeleton, StripSkeleton } from './HomeSkeletons';
 import { JumpBackInStrip } from './JumpBackInStrip';
 import { JumpBackInTile } from './JumpBackInTile';
-import { GRID, GRID_MIN_HEIGHT, GRID_THUMB, MUTED } from './home-styles';
+import { GRID, GRID_MIN_HEIGHT, GRID_THUMB } from './home-styles';
+import { JumpBackInEmptyIcon } from './home-icons';
 
 /** The grid from the spec's `md:` up: desktop and tablet. */
 export const HOME_WIDE_QUERY = '(min-width: 768px)';
@@ -68,7 +69,13 @@ export function JumpBackIn({
       ) : loading ? (
         <GridSkeleton />
       ) : empty ? (
-        <p className={`${GRID_MIN_HEIGHT} text-sm ${MUTED}`}>{HOME_COPY.jumpBackInEmpty}</p>
+        // The shared empty state (docs/specs/004-interface-design/empty-states.md), in the grid's reserved box.
+        <CompactEmptyState
+          className={GRID_MIN_HEIGHT}
+          icon={<JumpBackInEmptyIcon />}
+          title={HOME_COPY.jumpBackInEmptyTitle}
+          description={HOME_COPY.jumpBackInEmpty}
+        />
       ) : (
         <ul aria-labelledby={HEADING_ID} className={GRID}>
           {set.mostUsed.map((item) => (

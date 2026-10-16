@@ -6,10 +6,12 @@
 // goes.
 
 import { useEffect, useRef, useState } from 'react';
+import { CompactEmptyState } from '@livediagram/ui';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { phoneOrder, stripFade, type JumpBackInSet } from '@/app/explorer/home/home-model';
 import { JumpBackInTile, SeeMoreTile } from './JumpBackInTile';
-import { MUTED, STRIP_HEIGHT, STRIP_THUMB, STRIP_TILE } from './home-styles';
+import { JumpBackInEmptyIcon } from './home-icons';
+import { STRIP_HEIGHT, STRIP_THUMB, STRIP_TILE } from './home-styles';
 
 export function JumpBackInStrip({
   ownerId,
@@ -49,9 +51,13 @@ export function JumpBackInStrip({
         className={`scrollbar-slim -mx-1 flex ${STRIP_HEIGHT} snap-x gap-3 overflow-x-auto px-1 pb-2 pt-1`}
       >
         {tiles.length === 0 ? (
-          <p className={`flex w-48 shrink-0 items-center text-sm ${MUTED}`}>
-            {HOME_COPY.jumpBackInEmpty}
-          </p>
+          // The heading alone: the strip's height holds no second line, and See more beside it is the way forward.
+          <CompactEmptyState
+            size="small"
+            className="w-48 shrink-0"
+            icon={<JumpBackInEmptyIcon />}
+            title={HOME_COPY.jumpBackInEmptyTitle}
+          />
         ) : (
           <ul aria-labelledby={labelledBy} className="flex shrink-0 gap-3">
             {tiles.map(({ item, group }) => (
