@@ -10,7 +10,7 @@ import {
   lucideUsers,
   lucideZap,
 } from '@livediagram/icons/lucide';
-import { lucideGlyph, REPO_URL } from '@livediagram/ui';
+import { CONTACT_FORM_URL, lucideGlyph, REPO_URL } from '@livediagram/ui';
 import type { ReactNode } from 'react';
 
 // The /faq page's content (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"): questions grouped
@@ -692,13 +692,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'How do I get in touch?',
         a: (
           <>
-            Use the <a href="/help/contact/">contact page</a>, or email{' '}
-            <a href="mailto:hello@livediagram.app">hello@livediagram.app</a>. Bug reports and ideas
-            are welcome on GitHub too.
+            Use the <a href="/help/contact/">contact page</a>, or send us a message through the{' '}
+            <a href={CONTACT_FORM_URL} target="_blank" rel="noopener noreferrer">
+              contact form
+            </a>
+            . Bug reports and ideas are welcome on GitHub too.
           </>
         ),
         aText:
-          'Use the contact page, or email hello@livediagram.app. Bug reports and ideas are welcome on GitHub too.',
+          'Use the contact page, or send us a message through the contact form. Bug reports and ideas are welcome on GitHub too.',
       },
     ],
   },

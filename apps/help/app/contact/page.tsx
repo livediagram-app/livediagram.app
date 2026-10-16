@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { helpMetadata } from '@/lib/seo';
-import { buttonClassName, REPO_URL, ButtonContent } from '@livediagram/ui';
+import { buttonClassName, CONTACT_FORM_URL, REPO_URL, ButtonContent } from '@livediagram/ui';
 import { ExternalLinkIcon } from '@/lib/chrome-icons';
 
 export const metadata: Metadata = helpMetadata({
@@ -27,14 +27,22 @@ export default function ContactPage() {
         <div className="space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white p-5 transition-all duration-micro hover:border-slate-300 sm:p-6 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-600">
             <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Email Us
+              Message Us
             </h2>
             <p className="mb-4 leading-relaxed text-slate-600 dark:text-slate-300">
-              Questions, feedback, or trouble with a feature? Email the team and we will get back to
-              you.
+              Questions, feedback, or trouble with a feature? Send the team a message through the
+              contact form and we will get back to you.
             </p>
-            <a href="mailto:hello@livediagram.app" className={buttonClassName({ size: 'cta-sm' })}>
-              <ButtonContent>hello@livediagram.app</ButtonContent>
+            <a
+              href={CONTACT_FORM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonClassName({ size: 'cta-sm' })}
+            >
+              <ButtonContent>
+                Open the contact form
+                {ExternalIcon}
+              </ButtonContent>
             </a>
           </div>
 
