@@ -1,4 +1,4 @@
-import { createInMode, dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
+import { createInMode, expect, expectNoPageErrors, test } from './fixtures';
 
 // A start's search finds templates in other modes (docs/specs/007-editor/start-diagramming.md "Found in other
 // modes"): they show under In Other Modes, each saying where it leads, and choosing one lands it and switches the tab
@@ -33,8 +33,8 @@ test('Start Diagramming finds a Facilitate template and switches the tab to it',
   page,
   pageErrors,
 }) => {
+  // No tour dismissal: the tours wait while a start is open, and this one leaves for Facilitate.
   await createInMode(page, 'diagram');
-  await dismissQuickTour(page);
   const start = page.getByRole('region', { name: 'Start Diagramming' });
   await start.getByRole('textbox', { name: 'Find a template' }).fill('sailboat');
   await expect(start.getByRole('status')).toHaveText(
