@@ -127,9 +127,9 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
   `ItemTypeLayoutEditor`). The tab's one panel scrolls (`overflow-y-auto`). Red-dot flags: a clashing name, a tab
   problem or a custom field problem flag `configuration`; a left-out status problem flags `statuses`.
 - Show Me steps (`card-type-tour-steps.ts`): `general` shows `configuration` and focuses the Name input (focus
-  scrolls it into view); `fields` shows `configuration` and scrolls `card-type-fields` to the panel's top
-  (`revealTour(target, 'start')` from `tour-dom.ts`: `scrollIntoView({ block: 'start' })`, instant under reduced
-  motion); `states` and `display` show their tabs. The button and the running tour are the shared `ShowMeButton` /
+  scrolls it into view); `fields` shows `configuration` and asks for `card-type-fields` at the panel's top
+  (`revealAt: 'start'`: the tour engine's `revealInScrollers` from `tour-reveal.ts` scrolls it there, instant under
+  reduced motion); `states` and `display` show their tabs. The button and the running tour are the shared `ShowMeButton` /
   `ShowMeStage` (`ShowMe.tsx`, [Show Me](../../007-editor/show-me.md)); `CardTypeTour.tsx` keeps the literal telemetry.
 
 ## Tabs

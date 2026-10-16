@@ -1,3 +1,5 @@
+import type { RevealBlock } from './tour-reveal';
+
 // The shape of a guided-tour step, shared by the Diagram tour (tour-steps.ts,
 // docs/specs/007-editor/editor-tour.md) and the Plan tour (plan-tour-steps.ts,
 // docs/specs/026-plan/plan-tour.md). `Api` is the facade each tour's host builds, so a step's prepare
@@ -24,6 +26,9 @@ export type TourStepOf<Api> = {
   // The layer this step's ring draws at, over the stage's own: 'modal' for a step inside a dialog the tour opened
   // (the Sankey tour's Flows dialog steps, docs/specs/007-editor/element-tours.md), so the ring is not under it.
   layer?: 'overlay' | 'modal';
+  // Where the engine scrolls the target to (tour-reveal.ts): 'center' (the default) centres it in its scroller when it
+  // is not wholly in view; 'start' brings it to the top (a section further down a dialog, read from its heading).
+  revealAt?: RevealBlock;
   // Centred bookend cards, outside the step count, each with its own
   // illustration and button set: 'welcome' offers the tour (accept /
   // decline, declining is permanent via the done-guard); 'outro' wraps it

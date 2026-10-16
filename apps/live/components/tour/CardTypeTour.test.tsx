@@ -32,19 +32,13 @@ function Editor({ showTab }: { showTab: (tab: string) => void }) {
 }
 
 describe('Show Me', () => {
-  it('scrolls Configuration’s Fields section into view for its step', async () => {
-    const section = document.createElement('section');
-    section.dataset.tourId = 'card-type-fields';
-    const scrollIntoView = vi.fn();
-    section.scrollIntoView = scrollIntoView;
-    // jsdom lays nothing out: give the section a box so the reveal sees it rendered.
-    section.getClientRects = () => [{}] as unknown as DOMRectList;
-    document.body.append(section);
+  // The engine scrolls it there (tour-reveal.ts): Fields sits under General, below the panel's fold.
+  it('brings Configuration’s Fields section to the top of the panel for its step', async () => {
+    const fields = CARD_TYPE_TOUR_STEPS.find((s) => s.id === 'fields')!;
+    expect(fields.revealAt).toBe('start');
     const showTab = vi.fn();
-    await CARD_TYPE_TOUR_STEPS.find((s) => s.id === 'fields')!.prepare!({ showTab });
+    await fields.prepare!({ showTab });
     expect(showTab).toHaveBeenCalledWith('configuration');
-    expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ block: 'start' }));
-    section.remove();
   });
 
   it('starts on its first step when pressed, opens Configuration and puts the caret in Name', async () => {

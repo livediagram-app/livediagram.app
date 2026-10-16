@@ -125,6 +125,13 @@ menu alone.
   step before (never onto the welcome card); otherwise forward. If an open menu is dismissed mid-step (outside
   click), the step re-prepares itself; a target that still does not come back lets go of its ring, and the card
   waits centred.
+- **A target is brought into view before the ring lands.** A target below the fold of a scrolling panel (a long
+  form's add bar, a dialog's lower section) is centred in each scrolling ancestor that does not wholly show it
+  (inside a 16 px margin), clear of chrome floating over a panel's edges (`revealInScrollers`, `tour-reveal.ts`),
+  smoothly unless motion is reduced; a target already in view stays put, and a step may ask for its target at the
+  panel's top instead (`revealAt: 'start'`). Only real scroll containers move (overflow `auto` or
+  `scroll`): never the canvas, which clips and pans itself, and never a page whose overflow is hidden. It runs as a
+  step's target lands and again when a heal brings it back, never while the step is up, so the person can scroll away.
 - **A target has to render to count.** Chrome a surface hides can stay in the DOM (`display:none`), so an
   anchor with no client rects is treated as absent: it is never clicked and never measured. That is the safety
   net; the step list itself is filtered up front (`tourStepsFor`, by viewport and tab kind) so the "N of M"

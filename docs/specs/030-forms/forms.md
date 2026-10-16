@@ -355,7 +355,8 @@ card asks "Getting started with forms?" over a starter's picture; its steps poin
 6. **Responses Arrive Here** (a board) or **Responses Land Here** (a sheet): it opens the tab the form's responses go
    to and comes back to the form after, only when the form has one;
 
-then its closing card, **That Is a Form**. Opening any tab but the form or where its responses go ends it as skipped.
+then its closing card, **That Is a Form**. A step's target below the fold of a long form (the add bar) is scrolled into
+view as its ring lands, as every tour's is ([Mechanics](../007-editor/editor-tour.md#mechanics)). Opening any tab but the form or where its responses go ends it as skipped.
 Seen is `formTourSeen` (synced preferences); **Show Me Around** at the foot of the cog's panel reruns it at once, seen
 or not, as Settings' Tours › **Forms Tour** does. Its events are `UI` `Opened`/`Closed` `FormTourOffer`, `Started`
 `FormTour`, `View` `FormTourStep<Step>` and `Ended` `FormTourCompleted`/`FormTourSkipped`, charted as the **Forms
