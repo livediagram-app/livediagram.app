@@ -8,6 +8,7 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { OtherCategories } from '@/components/OtherCategories';
 import { FeatureGrid, Section } from '@/components/Section';
+import { SectionTemplates } from '@/components/SectionTemplates';
 import { StartDrawingCta } from '@/components/StartDrawingCta';
 import {
   getLandingSection,
@@ -80,6 +81,7 @@ export default async function FeatureCategoryPage({
             <FeatureGrid items={section.items} />
           )}
         </Section>
+        <SectionTemplates sectionId={section.id} label={section.label} />
         <OtherCategories currentId={section.id} />
         <StartDrawingCta surface="Feature" />
       </main>

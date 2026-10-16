@@ -90,7 +90,7 @@ function FeatureCard({ title, description, art, href }: FeatureProps) {
         </p>
       </div>
       {href ? (
-        <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-6 py-3 text-sm font-medium text-brand-700 transition-colors group-hover:bg-brand-50 dark:group-hover:bg-brand-500/15 group-hover:text-brand-800 dark:border-slate-800 dark:bg-slate-900/70 dark:text-brand-300 dark:group-hover:text-brand-200">
+        <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-6 py-3 text-sm font-medium text-brand-700 transition-colors group-hover:bg-brand-50 dark:group-hover:bg-brand-500/15 group-hover:text-brand-800 dark:border-slate-700 dark:bg-slate-800/40 dark:text-brand-300 dark:group-hover:text-brand-200">
           <span>
             Learn more<span className="sr-only"> (opens in a new tab)</span>
           </span>
@@ -106,8 +106,10 @@ function FeatureCard({ title, description, art, href }: FeatureProps) {
   // The card is an anchor target: the landing page's feature badges link to
   // it (docs/specs/019-marketing/marketing-site.md). scroll-mt keeps it clear of the sticky header on arrival.
   const id = featureAnchor(title);
+  // In dark the card shares its band's slate-900, so its border is all that draws its edge: slate-700,
+  // since slate-800 on slate-900 was close to invisible.
   const className =
-    'group flex h-full scroll-mt-24 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-micro hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500/60';
+    'group flex h-full scroll-mt-24 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-micro hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-500/60';
 
   return href ? (
     <a

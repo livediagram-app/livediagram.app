@@ -44,6 +44,7 @@ describe('CTA_SOURCES', () => {
       'Feature.HeaderPlan',
       'Feature.HeaderSession',
       'Feature.Hero',
+      'Feature.Templates',
       'Feature.Closing',
       'Compare.Header',
       'Compare.HeaderDraw',
