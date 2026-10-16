@@ -16,6 +16,9 @@
 >   package was created.
 >
 > The rest of this spec (URL shape, password exclusion, share dialog) holds.
+>
+> The same drawing, fitted onto a 1200 x 630 PNG, is what a pasted share link previews with in a chat app:
+> [Share-link previews](share-link-previews.md).
 
 A share option that serves the document as a **live image**: an `<img>`-able URL
 that serves the current document as SVG, so it can be embedded in a README / wiki

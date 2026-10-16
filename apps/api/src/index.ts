@@ -68,6 +68,7 @@ import { handleActivity } from './routes/activity';
 import { handleHome } from './routes/home';
 import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
+import { isSharePreviewPath } from './routes/share-preview';
 import { handleTeams } from './routes/teams';
 import { handleShared } from './routes/shared';
 import { handleTelemetry } from './routes/telemetry';
@@ -379,9 +380,12 @@ async function routeApiRequest(
   // read (GET /api/share/<code>), which carries the optional share
   // password and is otherwise an unauthenticated read exempt from the
   // write limiter above. Per-IP. Absent binding → allow (self-host).
+  // A link preview's two reads (docs/specs/013-workspace/share-link-previews.md) take their own bucket, so a room
+  // of people opening one link together never spends the editor's share resolve on previews.
   if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
     const ip = clientRateKey(request);
-    if (!(await env.SHARE_RATE_LIMITER.limit({ key: ip })).success) return rateLimited();
+    const key = isSharePreviewPath(segments) ? `share-preview:${ip}` : ip;
+    if (!(await env.SHARE_RATE_LIMITER.limit({ key })).success) return rateLimited();
   }
 
   // Dispatch on the resource segment to its route module. Each

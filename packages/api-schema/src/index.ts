@@ -693,6 +693,8 @@ export * from './community-authors';
 export * from './community-paths';
 export * from './community-query';
 export * from './document-paths';
+// Share-link previews (docs/specs/013-workspace/share-link-previews.md).
+export * from './share-preview';
 export * from './http-errors';
 export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).

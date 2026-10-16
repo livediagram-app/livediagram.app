@@ -8,6 +8,7 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./worker": "./src/worker.ts",
     "./fonts/Inter-Regular.ttf": "./fonts/Inter-Regular.ttf",
     "./fonts/Inter-Bold.otf": "./fonts/Inter-Bold.otf"
   },

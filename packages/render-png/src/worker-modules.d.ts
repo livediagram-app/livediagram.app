@@ -1,11 +1,9 @@
-// wrangler bundles a `.wasm` import as a compiled WebAssembly.Module.
+// What wrangler hands a Worker for these imports: a `.wasm` as a compiled WebAssembly.Module, a font as raw bytes
+// (the `Data` module rule).
 declare module '*.wasm' {
   const mod: WebAssembly.Module;
   export default mod;
 }
-
-// `.ttf` imports are bundled as raw bytes via the `Data` module rule in
-// wrangler.toml — used to embed a font for the resvg PNG renderer.
 declare module '*.ttf' {
   const data: ArrayBuffer;
   export default data;

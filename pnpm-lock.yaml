@@ -83,6 +83,9 @@ importers:
       '@livediagram/plan-art':
         specifier: workspace:*
         version: link:../../packages/plan-art
+      '@livediagram/render-png':
+        specifier: workspace:*
+        version: link:../../packages/render-png
       '@livediagram/sheets':
         specifier: workspace:*
         version: link:../../packages/sheets

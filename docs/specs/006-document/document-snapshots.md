@@ -191,6 +191,14 @@ document renders lazily.
   embed stays close to live without hammering the origin (the bytes come
   from R2; the worker only re-renders when the document was saved since).
 
+## Delivery path 3: Share card (public, share-code-scoped)
+
+`GET /api/share/:code/image.png`, the picture a pasted share link previews with
+([Share-link previews](../013-workspace/share-link-previews.md)): the same drawing,
+behind the same gate, fitted onto a 1200 x 630 PNG. The PNG is cached in R2 beside
+the snapshots (`og/<documentId>`, `og-community/<documentId>`), stamped with its
+own render time, and deleted with them.
+
 ### Share dialog
 
 A per-active-link **Live image** control (non-password links only) opens

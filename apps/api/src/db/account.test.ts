@@ -49,8 +49,12 @@ describe('deleteAccount snapshot cleanup (docs/specs/006-document/document-snaps
     expect(del).toHaveBeenCalledWith([
       'thumb/d1',
       'thumb-community/d1',
+      'og/d1',
+      'og-community/d1',
       'thumb/d2',
       'thumb-community/d2',
+      'og/d2',
+      'og-community/d2',
     ]);
   });
 

@@ -23,6 +23,7 @@ import {
   redactDocumentForScope,
 } from '../redact-document';
 import { sharePasswordOf, type RouteContext } from './context';
+import { handleSharePreview } from './share-preview';
 
 // Resolve a share code to its document + role. Used by visitors
 // landing on /live/document/shared?s=<code>. Returns 404 if the
@@ -36,6 +37,9 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
   if (segments.length === 4 && segments[3] === 'image.svg' && request.method === 'GET') {
     return handleShareImage(ctx, segments[2]!);
   }
+  // /api/share/<code>/card and /image.png: what a link preview reads (docs/specs/013-workspace/share-link-previews.md).
+  const preview = await handleSharePreview(ctx);
+  if (preview) return preview;
   if (segments.length !== 3) return notFound();
   const code = segments[2]!;
   if (request.method === 'GET') {

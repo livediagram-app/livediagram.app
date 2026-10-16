@@ -2,6 +2,13 @@ name = "livediagram-api"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 
+# Bundle the share card's fonts (packages/render-png/fonts, Inter Regular and Bold) as raw bytes for the resvg PNG
+# renderer (docs/specs/013-workspace/share-link-previews.md): a Worker has no system fonts, so without this the card
+# draws shapes but no text. Inheritable, so staging takes it too.
+[[rules]]
+type = "Data"
+globs = ["**/*.ttf", "**/*.otf"]
+
 # Plain (non-secret) vars. Everything here is every fork's default too, so
 # what only livediagram.app runs with is NOT here: TELEMETRY_ENABLED and the
 # image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
