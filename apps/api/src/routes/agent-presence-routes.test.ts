@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as roomClient from '../room-client';
 import { makeTestRouteContext } from './test-route-context';
@@ -10,8 +10,8 @@ import { handleDocuments } from './documents';
 
 let sql: SqliteD1;
 let pending: Promise<unknown>[];
-let put: ReturnType<typeof vi.spyOn>;
-let del: ReturnType<typeof vi.spyOn>;
+let put: MockInstance<typeof roomClient.putAgentPresence>;
+let del: MockInstance<typeof roomClient.deleteAgentPresence>;
 
 type Call = {
   method?: string;
