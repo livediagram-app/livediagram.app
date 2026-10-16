@@ -14,7 +14,8 @@ function legacyLinkTarget(value: Record<string, unknown>): string | null {
 export function upgradeLegacyLinks<T>(value: T): T {
   if (Array.isArray(value)) {
     let changed = false;
-    const next = value.map((item) => {
+    const items: readonly unknown[] = value;
+    const next = items.map((item) => {
       const upgraded = upgradeLegacyLinks(item);
       if (upgraded !== item) changed = true;
       return upgraded;
@@ -41,7 +42,10 @@ export function upgradeLegacyLinks<T>(value: T): T {
 // The reverse, for a client that still speaks the old names (the deprecated api alias): a
 // current link {kind: "document", documentId} becomes {kind: "diagram", diagramId}.
 export function downgradeLinks<T>(value: T): T {
-  if (Array.isArray(value)) return value.map((item) => downgradeLinks(item)) as T;
+  if (Array.isArray(value)) {
+    const items: readonly unknown[] = value;
+    return items.map((item) => downgradeLinks(item)) as T;
+  }
   if (value === null || typeof value !== 'object') return value;
   const record = value as Record<string, unknown>;
   if (record.kind === 'document' && typeof record.documentId === 'string') {

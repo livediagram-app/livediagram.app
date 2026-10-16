@@ -5,7 +5,7 @@ import type { Element } from '@livediagram/document';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { ownLineText, type ViewEdge } from './edges';
-import { arrayField, isObject, stringField, textField, threadOf } from './fields';
+import { arrayField, isObject, listOf, stringField, textField, threadOf } from './fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
 import { outlineLine } from './outline';
@@ -24,7 +24,7 @@ export function normaliseFind(text: string): string {
 function searchedTexts(el: Element): [FindField, string[]][] {
   const strings = (values: readonly unknown[]) =>
     values.filter((v): v is string => typeof v === 'string');
-  const rows = arrayField(el, 'cells').flatMap((row) => (Array.isArray(row) ? row : []));
+  const rows = arrayField(el, 'cells').flatMap(listOf);
   const entityFields = arrayField(el, 'entityFields').filter(isObject);
   const thread = threadOf(el);
   return [

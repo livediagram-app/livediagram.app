@@ -188,7 +188,7 @@ describe('applyElementOps, batched', () => {
       { kind: 'update', element: box('c', 5) },
     ];
     expect(applyElementOps(elements, ops)).toEqual(sequential(elements, ops));
-    expect(elements.map((el) => Reflect.get(el, 'x'))).toEqual([0, 0, 0]);
+    expect(elements.map((el): unknown => Reflect.get(el, 'x'))).toEqual([0, 0, 0]);
   });
 
   it('writes every place of an id held twice, as the single op does', () => {

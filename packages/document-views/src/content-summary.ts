@@ -2,7 +2,7 @@
 // summaries", VW18 to VW21).
 import type { Element } from '@livediagram/document';
 import { ENTITY_FIELDS_SHOWN } from './constants';
-import { arrayField, flagField, isObject, stringField } from './fields';
+import { arrayField, flagField, isObject, listOf, stringField } from './fields';
 import { cellText } from './text';
 import { shapeKindOf } from './view-attribute';
 
@@ -19,7 +19,7 @@ function entitySummary(el: Element): string {
 
 // Columns are the longest row's length (E26); the first row's missing cells print empty.
 function tableSummary(el: Element): string {
-  const rows = arrayField(el, 'cells').map((row) => (Array.isArray(row) ? row : []));
+  const rows = arrayField(el, 'cells').map(listOf);
   const cols = rows.reduce((max, row) => Math.max(max, row.length), 0);
   if (rows.length === 0 || cols === 0) return `${rows.length}x${cols}`;
   const header = Array.from({ length: cols }, (_, i) => {
