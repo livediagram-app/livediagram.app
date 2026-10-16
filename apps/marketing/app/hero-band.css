@@ -50,12 +50,13 @@
 .hero-recent-slot:not(:empty) {
   margin-top: 2.5rem;
 }
+/* The row's height is fixed per breakpoint (its previews are), measured: 248px on a phone, 280px from sm. */
 [data-returning] .hero-recent-slot {
-  min-height: 13.5rem;
+  min-height: 15.5rem;
 }
-@media (min-width: 64rem) {
+@media (min-width: 40rem) {
   [data-returning] .hero-recent-slot {
-    min-height: 9rem;
+    min-height: 17.5rem;
   }
 }
 

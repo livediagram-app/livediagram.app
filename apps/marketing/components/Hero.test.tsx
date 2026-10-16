@@ -103,6 +103,19 @@ describe('the hero', () => {
     expect(box.value).toBe('');
   });
 
+  it('closes the matches when focus moves to the Start Blank menu in the bar', () => {
+    render(<Hero />);
+    const box = screen.getByLabelText('Search templates');
+    fireEvent.focus(box);
+    fireEvent.change(box, { target: { value: 'retro' } });
+    expect(screen.getByRole('list', { name: 'Matching templates' })).toBeTruthy();
+    const blank = within(screen.getByRole('search')).getByRole('button', { name: /Start Blank/ });
+    fireEvent.focus(blank);
+    expect(screen.queryByRole('list', { name: 'Matching templates' })).toBeNull();
+    fireEvent.focus(box);
+    expect(screen.getByRole('list', { name: 'Matching templates' })).toBeTruthy();
+  });
+
   it('says so when nothing matches', () => {
     render(<Hero />);
     const box = screen.getByLabelText('Search templates');

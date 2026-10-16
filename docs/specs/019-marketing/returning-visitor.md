@@ -53,12 +53,14 @@ on the same origin (the router serves `/` and `/explorer` from one host).
 
 - **Where:** in place of the hero's Or try pills, under the search, on the same dark band.
 - **Heading:** "Pick up where you left off" (small, quiet, above the tiles).
-- **Tiles:** up to four, in a row on a wide window and two by two below `lg`, each a compact card the height of
-  a button row: a small thumbnail beside the diagram's name (one line, truncated) over how long since it was saved
-  ("2 hours ago"). The thumbnail takes the diagram's own background colour, as the Explorer's cards do; with no
-  thumbnail, a quiet placeholder with the diagram's mode glyph. Hovering a tile lifts it and brightens its border.
-  Fewer than four diagrams shows only those. The row's box is held open from first paint only for a returning
-  visitor (`.hero-recent-slot`), so someone new gets no empty gap.
+- **Tiles:** up to four across from `sm`, the two most recent on a phone (so the hero still fits its screen),
+  each a **preview of the document**: its snapshot (the one the editor caches on each save) on the diagram's own
+  background colour, as the Explorer's cards draw it, over the diagram's name (one line, truncated) and how long
+  since it was saved ("2 hours ago"). With no snapshot, a quiet placeholder with the diagram's mode glyph. The
+  preview is a fixed height (96 px on a phone, 128 px from `sm`), so the row is too (248 px, 280 px) and its box is
+  held open at exactly that from first paint, only for a returning visitor (`.hero-recent-slot`): someone new gets
+  no empty gap, and the tiles drawing after hydration move nothing. Hovering a tile lifts it and brightens its
+  border. Fewer than four diagrams shows only those.
 - **Team mark:** a diagram from a team's library has the team icon (the Explorer's team mark) before its
   name; your own diagrams have none.
 - **Pressing a tile** opens the diagram (`/document/<id>`).

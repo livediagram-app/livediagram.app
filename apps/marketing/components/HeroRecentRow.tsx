@@ -12,7 +12,8 @@ import { useState } from 'react';
 import { useRecentDiagrams, useRecentThumb } from './useRecentDiagrams';
 
 // Pick up where you left off (docs/specs/019-marketing/returning-visitor.md): a returning visitor's four
-// most recent diagrams under the hero's search, and a link to Explorer Home. Nothing for someone new.
+// most recent diagrams under the hero's search, each a preview of the document, and a link to Explorer
+// Home. Nothing for someone new.
 // Its box is reserved before first paint only when <html data-returning> says this browser holds a
 // recent-diagrams note (.hero-recent-slot in app/hero-band.css), so drawing the tiles after hydration
 // moves nothing below, and a new visitor gets no empty gap.
@@ -36,12 +37,13 @@ function RecentRow({ diagrams }: { diagrams: readonly RecentDiagram[] }) {
       <p id="hero-recent-label" className="text-sm text-(--hero-muted)">
         Pick up where you left off
       </p>
+      {/* Four across from sm; a phone shows the two most recent, so the hero still fits its screen. */}
       <ul
         aria-labelledby="hero-recent-label"
-        className="grid w-full grid-cols-2 gap-2.5 lg:flex lg:w-auto lg:flex-nowrap lg:justify-center"
+        className="grid w-full max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4"
       >
-        {diagrams.map((d) => (
-          <li key={d.id} className="min-w-0">
+        {diagrams.map((d, i) => (
+          <li key={d.id} className={`min-w-0 ${i >= 2 ? 'max-sm:hidden' : ''}`}>
             <RecentTile diagram={d} now={now} />
           </li>
         ))}
@@ -57,16 +59,19 @@ function RecentRow({ diagrams }: { diagrams: readonly RecentDiagram[] }) {
   );
 }
 
+// A diagram's preview (a fixed height per breakpoint, so the row's height is known before it draws and
+// can be held open from first paint): its snapshot from this browser's cache (the editor leaves one on each save) on
+// its own background, as the Explorer's cards draw it, over its name and how long since it was saved.
 function RecentTile({ diagram, now }: { diagram: RecentDiagram; now: number }) {
   const thumb = useRecentThumb(diagram.id, diagram.savedAt);
   const Icon = EDITOR_MODE_ICONS[diagram.mode ?? 'diagram'];
   return (
     <a
       href={`/document/${encodeURIComponent(diagram.id)}`}
-      className="group flex h-14 items-center gap-3 rounded-xl border border-(--hero-chip-border) bg-(--hero-chip-bg) p-2 pr-4 text-left transition duration-micro hover:border-(--hero-chip-border-hover) motion-safe:hover:-translate-y-0.5 lg:w-56"
+      className="group flex flex-col gap-2 rounded-2xl border border-(--hero-chip-border) bg-(--hero-chip-bg) p-2 text-left shadow-[0_12px_30px_-20px_var(--hero-card-shadow)] transition duration-micro hover:border-(--hero-chip-border-hover) motion-safe:hover:-translate-y-0.5"
     >
       <span
-        className="relative h-10 w-16 shrink-0 overflow-hidden rounded-md bg-(--hero-thumb)"
+        className="relative block h-24 overflow-hidden rounded-xl bg-(--hero-thumb) sm:h-32"
         style={
           thumb.status === 'ready' && thumb.backgroundColor
             ? { backgroundColor: thumb.backgroundColor }
@@ -78,15 +83,15 @@ function RecentTile({ diagram, now }: { diagram: RecentDiagram; now: number }) {
           <img
             src={thumb.url}
             alt=""
-            className="hero-recent-thumb absolute inset-0 h-full w-full object-contain p-0.5"
+            className="hero-recent-thumb absolute inset-0 h-full w-full object-contain p-1.5"
           />
         ) : thumb.status === 'none' ? (
           <span className="absolute inset-0 flex items-center justify-center text-(--hero-icon)">
-            <Icon size={18} />
+            <Icon size={28} />
           </span>
         ) : null}
       </span>
-      <span className="min-w-0">
+      <span className="min-w-0 px-1 pb-0.5">
         <span className="flex min-w-0 items-center gap-1 text-sm font-semibold text-(--hero-chip-text)">
           {diagram.teamName != null ? (
             <TeamIcon size={12} data-team-mark="" className="shrink-0 text-(--hero-muted)" />

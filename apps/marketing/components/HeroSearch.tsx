@@ -61,7 +61,9 @@ export function HeroSearch() {
         if (top) window.location.assign(createHref(top.kind));
       }}
       onKeyDown={onKeyDown}
-      onFocus={() => setFocused(true)}
+      // The results are for the box and the list: focus moving to the Start Blank menu in the bar
+      // closes them, so picking a blank never shows the matches for what was typed.
+      onFocus={(e) => setFocused(!(e.target as HTMLElement).closest('[data-hero-blank]'))}
       onBlur={(e) => {
         if (!rootRef.current?.contains(e.relatedTarget)) setFocused(false);
       }}
@@ -90,11 +92,13 @@ export function HeroSearch() {
           aria-describedby={statusId}
           className="min-w-0 flex-1 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-500 sm:text-lg [&::-webkit-search-cancel-button]:hidden"
         />
-        <StartBlankMenu
-          ctaSurface="Home"
-          place="HeroBlank"
-          triggerClassName="inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl bg-(--hero-cta) px-4 text-sm font-semibold text-white transition-colors hover:bg-(--hero-cta-hover) sm:px-5 sm:text-base"
-        />
+        <span data-hero-blank="" className="contents">
+          <StartBlankMenu
+            ctaSurface="Home"
+            place="HeroBlank"
+            triggerClassName="inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl bg-(--hero-cta) px-4 text-sm font-semibold text-white transition-colors hover:bg-(--hero-cta-hover) sm:px-5 sm:text-base"
+          />
+        </span>
       </div>
 
       {/* Said once the list settles, for a screen reader: how many matched, or that none did. */}
