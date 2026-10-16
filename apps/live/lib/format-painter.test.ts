@@ -466,7 +466,8 @@ describe('fitPaintToTarget', () => {
   });
 
   it('drops a body animation onto another set, but keeps the Text animation for its words', () => {
-    const out = fitPaintToTarget(shape, createSticky(0, 0), paintableBoxedFields(shape));
+    const pulse = { ...shape, animation: 'pulse' as const };
+    const out = fitPaintToTarget(pulse, createSticky(0, 0), paintableBoxedFields(pulse));
     expect('animation' in out).toBe(false);
     expect((out as { textAnimation?: string }).textAnimation).toBe('typewriter');
   });
@@ -487,6 +488,33 @@ describe('fitPaintToTarget', () => {
     const icon = createShape('icon', 0, 0);
     const out = fitPaintToTarget(shape, icon, paintableBoxedFields(shape));
     expect('textAnimation' in out).toBe(false);
+  });
+});
+
+// docs/specs/028-animation/element-animations.md "Shape motions".
+describe('fitPaintToTarget with Shape motions', () => {
+  const image = { ...createShape('square', 0, 0), type: 'image' } as unknown as BoxedElement;
+  const paint = (source: BoxedElement, target: BoxedElement) =>
+    fitPaintToTarget(source, target, paintableBoxedFields(source));
+
+  it('paints a motion onto any element that takes it', () => {
+    const bounce = { ...createShape('square', 0, 0), animation: 'bounce' as const };
+    expect(paint(bounce, image).animation).toBe('bounce');
+    expect(paint(bounce, createShape('pie-chart', 0, 0)).animation).toBe('bounce');
+    expect(paint({ ...image, animation: 'float' }, createSticky(0, 0)).animation).toBe('float');
+  });
+
+  it('keeps an outline effect and an own-set value to their own members', () => {
+    const pulse = { ...createShape('square', 0, 0), animation: 'pulse' as const };
+    expect('animation' in paint(pulse, image)).toBe(false);
+    const flutter = { ...createSticky(0, 0), animation: 'flutter' as const };
+    expect('animation' in paint(flutter, image)).toBe(false);
+  });
+
+  it('never paints a motion onto an icon or a text element', () => {
+    const bounce = { ...createShape('square', 0, 0), animation: 'bounce' as const };
+    expect('animation' in paint(bounce, createShape('icon', 0, 0))).toBe(false);
+    expect('animation' in paint(bounce, createText(0, 0))).toBe(false);
   });
 });
 

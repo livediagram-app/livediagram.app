@@ -19,6 +19,33 @@ describe('animation set writes', () => {
     expect(withSetAnimation(image, 'shape', 'pulse')).toBe(image);
   });
 
+  // docs/specs/028-animation/element-animations.md "Shape motions".
+  it('writes a Shape motion to an element beside its own set, replacing its own value', () => {
+    expect(withSetAnimation(image, 'shape', 'bounce')).toMatchObject({ animation: 'bounce' });
+    const ken = { ...image, animation: 'kenburns' } as Element;
+    expect(withSetAnimation(ken, 'shape', 'bounce')).toMatchObject({ animation: 'bounce' });
+    const icon = createShape('icon', 0, 0);
+    expect(withSetAnimation(icon, 'shape', 'bounce')).toBe(icon);
+  });
+
+  it('None clears only its own section’s value', () => {
+    const bounce = { ...image, animation: 'bounce' } as Element;
+    expect(withSetAnimation(bounce, 'media', null)).toBe(bounce);
+    expect('animation' in withSetAnimation(bounce, 'shape', null)).toBe(false);
+    const ken = { ...image, animation: 'kenburns' } as Element;
+    expect(withSetAnimation(ken, 'shape', null)).toBe(ken);
+    expect('animation' in withSetAnimation(ken, 'media', null)).toBe(false);
+  });
+
+  it('reads a body value in the section it belongs to', () => {
+    const bounce = { ...image, animation: 'bounce' } as Element;
+    expect(setAnimationState([bounce], 'shape')?.value).toBe('bounce');
+    expect(setAnimationState([bounce], 'media')?.value).toBeNull();
+    const ken = { ...image, animation: 'kenburns' } as Element;
+    expect(setAnimationState([ken], 'shape')?.value).toBeNull();
+    expect(setAnimationState([ken], 'media')?.value).toBe('kenburns');
+  });
+
   it('writes Text to any element that carries words, beside its body animation', () => {
     const shape = { ...createShape('square', 0, 0), animation: 'pulse' as const };
     const next = withSetAnimation(shape, 'text', 'typewriter');

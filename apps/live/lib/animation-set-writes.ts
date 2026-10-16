@@ -7,8 +7,10 @@
 // that trio, so a text element never carries both.
 
 import {
+  animationSectionOf,
   inAnimationSet,
   isAnimationInSet,
+  shapeAnimationsFor,
   type AnimationSetId,
   type AnimationSpeed,
   type Element,
@@ -34,6 +36,11 @@ const playsLegacy = (el: Element) =>
 const fieldsFor = (set: AnimationSetId, el: Element) =>
   set === 'text' && playsLegacy(el) ? BODY : fieldsOf(set);
 
+const offers = (set: AnimationSetId, el: Element, value: string) =>
+  set === 'shape'
+    ? (shapeAnimationsFor(el) as readonly string[]).includes(value)
+    : isAnimationInSet(set, value);
+
 function patch(el: Element, entries: Record<string, unknown>): Element {
   const next: Record<string, unknown> = { ...el };
   for (const [k, v] of Object.entries(entries)) {
@@ -48,7 +55,18 @@ export function withSetAnimation(el: Element, set: AnimationSetId, value: string
   if (!inAnimationSet(set, el)) return el;
   // A value the set does not offer (a kept tile's old value) is already what the element plays:
   // writing it would store an invalid value and drop the one that is playing.
-  if (value !== null && !isAnimationInSet(set, value)) return el;
+  // A Shape category offers each member only its own share of the set (a boundary's six, a photo's motions).
+  if (value !== null && !offers(set, el, value)) return el;
+  // None clears only its own section's value: a photo's Media None leaves the Bounce its Shape section shows.
+  const stored = (el as { animation?: string }).animation;
+  if (
+    value === null &&
+    set !== 'text' &&
+    stored != null &&
+    animationSectionOf(el, stored) !== set
+  ) {
+    return el;
+  }
   const f = fieldsOf(set);
   // The legacy trio goes; a Speed chosen for it (in the Text section) carries over to the pick.
   const rec = el as unknown as Record<string, unknown>;
@@ -110,9 +128,11 @@ export function setAnimationState(
   const f = fieldsFor(set, first);
   const rec = first as unknown as Record<string, unknown>;
   // A text element's legacy body value shows in its Text category, as the kept tile.
-  const value =
+  const stored =
     (rec[f.value] as string | undefined) ??
     (set === 'text' && first.type === 'text' ? (rec.animation as string | undefined) : undefined);
+  // A body value shows in the one section it belongs to: a photo's Bounce in Shape, its Ken Burns in Media.
+  const value = set === 'text' || animationSectionOf(first, stored) === set ? stored : undefined;
   return {
     value: value ?? null,
     speed: rec[f.speed] as AnimationSpeed | undefined,

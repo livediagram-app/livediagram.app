@@ -9,6 +9,7 @@ import {
   isOfficeShape,
   isSeatingShape,
   keptAnimation,
+  SHAPE_MOTIONS,
   type BoxedElement,
   type ShapeAnimation,
   STEP_SEQUENCE_BEAT_S,
@@ -36,7 +37,7 @@ const SHARED_WITH_SHAPE = new Set(['pulse', 'glow', 'highlight']);
 
 /**
  * The Shape-set value the wrapper draws (docs/specs/028-animation/element-animations.md): a Shape
- * member's own value; a value kept from before the sets split on any other element; and, on a
+ * member's own value; a Shape motion or a value kept from before the sets split on any other element; and, on a
  * sticky or table, the motions it shares with the Shape set. Undefined when the element's own set
  * draws its animation, or when a text element's Text animation replaces its legacy one.
  */
@@ -48,11 +49,15 @@ export function wrapperShapeAnimation(element: BoxedElement): ShapeAnimation | u
       ? undefined
       : (value as ShapeAnimation);
   }
-  // Concept graphics and sequences animate their rows by their own fields: a Shape value from before has nothing to
-  // clear it from, so it does not play.
-  if (hasOwnBodySet(element)) return undefined;
+  // Concept graphics and sequences animate their rows by their own fields; their Shape section offers the motions
+  // alone, so an older Shape value has nothing to clear it from and does not play.
+  if (hasOwnBodySet(element)) {
+    return (SHAPE_MOTIONS as readonly string[]).includes(value)
+      ? (value as ShapeAnimation)
+      : undefined;
+  }
   const set = bodyAnimationSetOf(element);
-  // Icons, charts, progress and rating own other fields; an old value here plays as it did.
+  // Icons, charts, progress and rating own other fields; a Shape motion, or an old value, here plays.
   if (set === undefined || set === 'shape') return value as ShapeAnimation;
   if ((set === 'sticky' || set === 'table') && SHARED_WITH_SHAPE.has(value)) {
     return value as ShapeAnimation;
