@@ -40,14 +40,14 @@ import { loadWorkbenchDocument } from './workbench-bootstrap';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
+const isCallable = (v: unknown): v is (...args: unknown[]) => unknown => typeof v === 'function';
+
 // Every function of `fns`, doing nothing once `live` says its run was superseded.
 function guardRun<T extends object>(fns: T, live: () => boolean): T {
   return new Proxy(fns, {
     get: (target, name) => {
       const fn: unknown = Reflect.get(target, name);
-      return typeof fn === 'function'
-        ? (...args: unknown[]) => (live() ? fn(...args) : undefined)
-        : fn;
+      return isCallable(fn) ? (...args: unknown[]) => (live() ? fn(...args) : undefined) : fn;
     },
   });
 }
