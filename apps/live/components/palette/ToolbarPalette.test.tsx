@@ -5,6 +5,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
+import { ensureIconCatalogs } from '@/lib/icon-registry';
 import type { EsBoardControls } from './EventStormingBoardRows';
 import { COLLABORATE_CATEGORY_GROUPS } from './palette-tile-defs';
 import { paletteCategoriesFor } from './palette-layouts';
@@ -441,6 +442,10 @@ describe('ToolbarPalette', () => {
   });
 
   describe('Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type")', () => {
+    // The icon catalogues load as a chunk of their own, as the editor loads them on its first paint: loaded
+    // before the searches run, so what they find never depends on whether the chunk happened to land.
+    beforeAll(() => ensureIconCatalogs());
+
     const openSearch = () => {
       fireEvent.click(screen.getByRole('button', { name: 'Search elements' }));
       return document.querySelector('[data-toolbar-search]') as HTMLElement;
@@ -477,9 +482,10 @@ describe('ToolbarPalette', () => {
     it("keeps other modes' elements in a closed accordion until asked", () => {
       const { h } = show();
       const popover = openSearch();
-      type(popover, 'pie chart');
+      // A pie chart's other name: the Diagram icons include a pie chart glyph, which `pie chart` finds here.
+      type(popover, 'doughnut');
       expect(within(popover).queryByRole('button', { name: 'Add Pie Chart' })).toBeNull();
-      expect(popover.textContent).toContain('No Diagram elements match “pie chart”');
+      expect(popover.textContent).toContain('No Diagram elements match “doughnut”');
       expect(popover.textContent).toContain('Other modes have');
       const accordion = within(popover).getByRole('button', { name: /Elements From Other Modes/ });
       expect(accordion.getAttribute('aria-expanded')).toBe('false');
