@@ -18,7 +18,7 @@ describe('label plates and frame borders', () => {
   it('keeps every publish label off the Services frame border', () => {
     const input = JSON.parse(
       readFileSync(join(__dirname, 'routing/graph-flow-13-bus.json'), 'utf8'),
-    );
+    ) as Parameters<typeof resolveGraphInput>[0];
     const tab = buildGraphTab('t', 'T', resolveGraphInput(input).graph!, undefined);
     const frames = tab.elements.filter(
       (e): e is BoxedElement => e.type === 'shape' && e.shape === 'frame',

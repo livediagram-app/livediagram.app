@@ -21,17 +21,20 @@ const SHEET_EL = {
   planSheet: { sheetId: 'sheet_blank1' },
 };
 
+// A changeset the flow sent, as far as these tests read it.
+type SentChangeset = { operations: { op: string; element: Record<string, unknown> }[] };
+
 function setup(
   opts: { background?: string; elements?: unknown[]; changesets?: (r: Request) => Response } = {},
 ): {
   api: ApiClient;
   server: SheetServer;
-  sent: { operations: { op: string; element: Record<string, unknown> }[] }[];
+  sent: SentChangeset[];
 } {
   const server = sheetServer(DOC_A, [
     sheetJson({ id: 'sheet_blank1', tabId: ONE, title: 'Sheet 1' }),
   ]);
-  const sent: { operations: { op: string; element: Record<string, unknown> }[] }[] = [];
+  const sent: SentChangeset[] = [];
   const api = fakeApi(
     Object.assign(server.routes, {
       ...tabsOfA,
@@ -45,7 +48,7 @@ function setup(
       },
       [`/documents/${DOC_A}/tabs/${ONE}/changesets`]: async (r: Request) => {
         if (opts.changesets) return opts.changesets(r);
-        sent.push(await r.json());
+        sent.push((await r.json()) as SentChangeset);
         return Response.json({ changeset: { id: 'cs', rev: 4 } });
       },
     }),

@@ -205,7 +205,9 @@ describe('writeFieldsOnto', () => {
     expect(refusal(square, { id: 'x' }).details[0]).toBe('id="x": cannot be changed');
     expect(refusal(square, { addedBy: 'x' }).details[0]).toBe('addedBy="x": cannot be changed');
     expect(refusal(square, { [LIVE_ELEMENT_FIELDS[0]!]: [] }).code).toBe('invalid_value');
-    expect(refusal(square, JSON.parse('{"__proto__":1}')).code).toBe('unknown_field');
+    // JSON.parse makes `__proto__` an own key, which an object literal cannot.
+    const proto = JSON.parse('{"__proto__":1}') as Fields;
+    expect(refusal(square, proto).code).toBe('unknown_field');
     const unknown = refusal(arrow, { fill: 'red' });
     expect(unknown.details).toEqual([
       'arrow has no field "fill"',

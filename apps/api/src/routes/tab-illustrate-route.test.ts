@@ -59,12 +59,20 @@ async function setUp(status = 204, tab: Record<string, unknown> = {}) {
   return { db, room };
 }
 
+// The stored tab, as far as these tests read it.
+type StoredTab = {
+  elements: unknown[];
+  opensIn?: string;
+  pages?: unknown[];
+  articles: Record<string, unknown>;
+};
+
 const stored = (db: SqliteD1) => {
   const row = db.sql.prepare("SELECT data, rev FROM tabs WHERE id = 't1'").get() as {
     data: string;
     rev: number;
   };
-  return { ...JSON.parse(row.data), rev: row.rev };
+  return { ...(JSON.parse(row.data) as StoredTab), rev: row.rev };
 };
 
 afterEach(() => vi.restoreAllMocks());

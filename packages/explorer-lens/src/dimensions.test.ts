@@ -32,7 +32,7 @@ describe('the dimension catalogue', () => {
   it('never calls a mode, a tab kind or a template family a type, nor a dimension a board', () => {
     const copy = [
       ...Object.values(DIMENSION_LABELS),
-      ...Object.values(VALUE_LABELS).flatMap(Object.values),
+      ...Object.values(VALUE_LABELS).flatMap((labels) => Object.values(labels)),
     ];
     expect(copy.filter((label) => /\b(type|board)\b/i.test(label))).toEqual([]);
   });
