@@ -15,7 +15,7 @@ import {
 import { LABEL_FONT_PX } from './label-font';
 import { reanchorArrow, type Pt } from './auto-layout-shared';
 import { BRANCH_CLEAR } from './graph-branches';
-import { labelWidth } from './graph-look';
+import { labelWidth } from './graph-look-labels';
 import { isBoxed, type BoxedElement, type Element } from './index';
 
 // The swimlane template's grid: header strip (as wide as the longest lane title needs, between the bounds), padding

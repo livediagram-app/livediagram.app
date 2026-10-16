@@ -2,13 +2,14 @@
 // LN3): oriented rects, so a rotated box is measured as drawn.
 
 import {
-  isBoxed,
-  isContainer,
-  rotatePoint,
+  boundsOfPoints,
   type BoxedElement,
   type Element,
+  isBoxed,
+  isContainer,
   type Point,
   type Rect,
+  rotatePoint,
 } from '@livediagram/document';
 import { LINT_OVERLAP_TOLERANCE_PX } from './constants';
 
@@ -38,12 +39,7 @@ export function boxCorners(el: BoxedElement): Point[] {
 
 // The axis-aligned bounds of the box as drawn.
 export function boxBounds(el: BoxedElement): Rect {
-  const corners = boxCorners(el);
-  const xs = corners.map((p) => p.x);
-  const ys = corners.map((p) => p.y);
-  const x = Math.min(...xs);
-  const y = Math.min(...ys);
-  return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
+  return boundsOfPoints(boxCorners(el))!;
 }
 
 // The edge normals of a rect drawn by its corners.

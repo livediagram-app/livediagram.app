@@ -25,7 +25,6 @@ import {
 import {
   applyRoutes,
   isFlowchart,
-  placeElbowLabels,
   routeLoops,
   sideRejoins,
   sideStepEdges,
@@ -37,6 +36,7 @@ import {
   type LookNode,
   type Routes,
 } from './graph-look';
+import { placeElbowLabels } from './graph-look-labels';
 import { unionRects } from './geometry-primitives';
 import { isBoxed } from './index';
 import { withHeaderAndKey, type GraphKey } from './graph-header';
