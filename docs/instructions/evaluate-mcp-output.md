@@ -13,9 +13,9 @@ The kit lives in `apps/mcp/eval/`:
   (an edit, run as a second turn of the same session), an optional `setup` (what the prompt takes for granted,
   made in the run's empty library) and an optional `gallery` (pictures from `bench/fixtures/` the user has uploaded,
   seeded into the run's image gallery before the round starts, under the names the prompt's user would have). Ids are stable: rounds compare on the ids they share.
-- `bench/checks.mjs`: the readers checks are written with (boxes, arrows, cards, card types, sheet cells, forms,
+- `apps/mcp/eval/bench/checks.mjs`: the readers checks are written with (boxes, arrows, cards, card types, sheet cells, forms,
   pages, the reply), each answering yes or no, with a reason on a no.
-- `bench/run.mjs`: runs a round. `bench/score.mjs`: scores one, offline. `bench/summary.mjs`: the report.
+- `apps/mcp/eval/bench/run.mjs`: runs a round. `apps/mcp/eval/bench/score.mjs`: scores one, offline. `apps/mcp/eval/bench/summary.mjs`: the report.
 - `mcp-call.mjs`: calls one tool by hand, to replay a call from a transcript.
 - `token.env`, `tokens.env` and `runs/` are gitignored.
 
@@ -106,7 +106,7 @@ The kit lives in `apps/mcp/eval/`:
 - `--bare` would strip that context too, but it needs an API key and never reads the CLI's sign-in: use the flags in
   step 8 instead.
 - A tool result can carry its JSON and then a lint as separate text parts; read the first part that parses, not the
-  joined text (`resultJson` in `bench/mcp-client.mjs`).
+  joined text (`resultJson` in `apps/mcp/eval/bench/mcp-client.mjs`).
 - `read_document` with `format: "json"` puts the elements under `tab.elements`, not at the top.
 - A token minted into an earlier session's D1 copy is refused after copying main's state again ("the token is not
   accepted"); `run.mjs` mints its own into the copy each round.
