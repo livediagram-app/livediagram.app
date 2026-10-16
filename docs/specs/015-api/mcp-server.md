@@ -1151,8 +1151,15 @@ descriptions.
 
 The tools named for the container were `*_diagram` / `find_diagrams` before it became a document ([Document](../006-document/document.md)). Each `*_document` tool is also registered under its old name until **30 April 2027** (`apps/mcp/src/legacy-tool-names.ts`, wired in `registerTool`):
 
-- The alias is the same tool: the same handler, input and output schemas and behaviour annotations.
-- Its title ends in "(deprecated)" and its description opens with "Deprecated: use `<new name>` instead; this name is removed on 2027-04-30.", so a model reading the tool list prefers the new name.
+- The alias is the same tool: the same handler, behaviour annotations and output schema, and its input checked
+  against the same schema, refused in the SDK's own words (`Input validation error: Invalid arguments for tool <old
+name>: ...`).
+- Its title ends in "(deprecated)" and its description is one line: "Deprecated: use `<new name>` instead; this name
+  is removed on 2027-04-30. It takes the same input as `<new name>`.", so a model reading the tool list prefers the
+  new name.
+- It lists an open input (any object), so the tool list carries each input schema once. The element format inside
+  `create_document` and `update_document` is most of the list: listing it again under the old names made them 22% of
+  every tool list (67,937 of 308,741 characters); without it they are 4% (10,733 of 251,537).
 - A call logs `[mcp] deprecated tool name <old> -> <new>` and counts as `Mcp·Used·<NewName>`, so the feature's history stays one line.
 
 The output literals that named the container changed with it: `renamed`, `deleted` and `restored` report `document` where they reported `diagram`.
