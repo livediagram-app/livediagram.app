@@ -119,7 +119,7 @@ Shapes`; `Pens`, `Outlines`, `Connectors`; `Diagrams`, `Layout and Parts`; `Char
   the glyph on a plate beside the name and its one-line blurb, two to a row (one, in a narrower flyout, for a
   category of three tiles or fewer, such as Media). A shortcut shows as a key cap beside the name.
 - **A footer** saying what the pointed-at tile does and its key, without the hover card's wait; before anything is
-  pointed at, "Click to add one, or drag it onto the canvas."
+  pointed at, "Click to add one, or drag it onto the canvas." ("Tap to add one, …" on a touch screen).
 - Under Minimal Chrome ([Power user mode](power-user-mode.md)) a picture tile shows its icon alone, named by a
   Tooltip; a card keeps its name, which is its content.
 - Every tile places, arms, drags onto the canvas (with the canvas ghost), shows its armed and refused states and

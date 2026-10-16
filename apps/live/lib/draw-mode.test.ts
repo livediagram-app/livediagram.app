@@ -105,15 +105,26 @@ describe('drawBannerMessage', () => {
     );
   });
 
-  it('uses the friendly shape label (square->Rectangle, circle->Oval) in the shape copy', () => {
+  // The banner names the shape as the tile just picked does: the palette's Square and Circle (and the selection
+  // badge's), Draw mode's dock its Rectangle and Ellipse. Its own aliases (Rectangle, Oval) matched neither.
+  it('names the shape as the tile that armed it', () => {
     expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toBe(
-      'Tap to drop or drag to draw Rectangle',
+      'Tap to drop or drag to draw Square',
     );
     expect(drawBannerMessage({ type: 'shape', kind: 'circle' }, false)).toBe(
-      'Tap to drop or drag to draw Oval',
+      'Tap to drop or drag to draw Circle',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'square', board: true }, false)).toBe(
+      'Tap to drop or drag to draw Rectangle',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'circle', board: true }, false)).toBe(
+      'Tap to drop or drag to draw Ellipse',
     );
     expect(drawBannerMessage({ type: 'shape', kind: 'diamond' }, false)).toBe(
       'Tap to drop or drag to draw Diamond',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'pie-chart' }, false)).toBe(
+      'Tap to drop or drag to draw Pie chart',
     );
   });
 
