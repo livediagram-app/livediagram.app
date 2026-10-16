@@ -135,7 +135,7 @@ export function SearchPanelArt() {
                 )}
                 <g
                   transform={`translate(80 ${ry + 11})`}
-                  className={r.active ? 'text-brand-600' : 'text-slate-500'}
+                  className={r.active ? 'text-brand-700' : 'text-slate-500'}
                 >
                   {r.glyph}
                 </g>

@@ -92,7 +92,7 @@ export function SelectionModesArt() {
               )}
               <g
                 transform={`translate(42 ${y + 11.5})`}
-                className={on ? 'text-brand-600' : 'text-slate-500'}
+                className={on ? 'text-brand-700' : 'text-slate-500'}
               >
                 {m.glyph}
               </g>
