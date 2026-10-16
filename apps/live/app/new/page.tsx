@@ -18,6 +18,7 @@ import type { NewDocumentSettings } from './new-document-settings';
 import { DocumentLoading } from '@/components/chrome/DocumentLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { RecentDocumentsCard } from './RecentDocumentsCard';
+import { EARLY_MODE_SCRIPT, EARLY_MODE_STYLE } from './early-mode-choice';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
@@ -563,6 +564,9 @@ export default function NewDocumentPage() {
         }}
       />
       <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-preset] [data-wizard-only]{visibility:hidden}`}</style>
+      {/* A mode card chosen before hydration is kept, not lost (early-mode-choice.ts). */}
+      <script dangerouslySetInnerHTML={{ __html: trustedHtml(EARLY_MODE_SCRIPT) }} />
+      <style>{EARLY_MODE_STYLE}</style>
       <EditorHeader
         documentName="New document"
         hideTitle

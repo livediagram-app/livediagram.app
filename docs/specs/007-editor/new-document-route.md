@@ -367,6 +367,17 @@ shows over the canvas. (The in-editor **Quick Start**, the whole catalogue acros
 removed with the starts' **Something Else**: each start already holds every template of its mode, and the mode
 switch reaches the others.)
 
+### A choice before hydration
+
+`/new` is a static export, so the mode cards are on screen before React attaches their handlers. A card clicked in
+that gap is **kept, not lost**: an inline script in the page (`app/new/early-mode-choice.ts`), running as the HTML
+parses, takes a click on a mode card until the wizard mounts, remembers the mode, and shows the progress cursor. The
+wizard's first layout effect turns the script off and creates the remembered mode, exactly as if the click had landed
+after hydration. The script listens on `window` in the capture phase, ahead of React's root listener, so a click it
+takes never also reaches the card, and only one document is made. Before this, a click in the gap did nothing and said
+nothing, and the slower the device the wider the gap (issue #238). Number keys pressed before hydration are not kept:
+the cards are not focused until the wizard mounts.
+
 ### The empty-canvas hint
 
 The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), shown while the
