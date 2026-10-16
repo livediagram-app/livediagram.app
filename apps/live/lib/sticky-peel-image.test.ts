@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   PEEL_BLUR,
@@ -97,6 +99,15 @@ describe('the peel in CSS', () => {
   it('hangs the caster flush with the top, out to where the blur fades', () => {
     expect(peelInset(PEEL_LIGHT)).toBe('0 -9px -11px');
     expect(peelInset(PEEL_DARK)).toBe('0 -10px -13px');
+  });
+
+  // The caster runs 9px past a note's sides, more than the gap between notes on an event storming row: as
+  // a hit target it swallowed a drop between two notes (e2e smoke "a note dropped between two notes").
+  it('takes no pointer, so a click or a drop beside a note reaches the board', () => {
+    const css = readFileSync(fileURLToPath(new URL('../app/globals.css', import.meta.url)), 'utf8');
+    const rule = /\.lvd-sticky-peel::before \{([^}]*)\}/.exec(css);
+    if (!rule) throw new Error('the peel caster rule is missing from globals.css');
+    expect(rule[1]).toContain('pointer-events: none');
   });
 
   it('sets nothing off the browser', () => {

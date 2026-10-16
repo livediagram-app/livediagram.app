@@ -732,11 +732,16 @@
    frame of a pan or zoom (docs/specs/008-canvas/canvas-performance.md). The
    picture is computed from the same recipe (lib/sticky-peel-image.ts) and its
    border-image and inset arrive as custom properties on the canvas root; the
-   sides stretch to the note's height, so the ramp keeps its proportions. */
+   sides stretch to the note's height, so the ramp keeps its proportions.
+
+   The caster's box runs 9px past the note's sides and 11px below it (10px and
+   13px on a dark canvas), wider than many gaps between notes, so it takes no pointer:
+   a click or a drop just beside a note reaches the board, not the note. */
 .lvd-sticky-peel::before {
   content: '';
   position: absolute;
   z-index: -2;
+  pointer-events: none;
   inset: var(--lvd-sticky-peel-inset, 0);
   border: 0 solid transparent;
   border-image: var(--lvd-sticky-peel, none);

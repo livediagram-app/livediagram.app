@@ -50,7 +50,7 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   filter on screen again on every frame of a pan, a zoom or a page glide, and fifty sticky notes'
   blurred peel cost about 180 ms a frame in WebKit at a phone's size. The sticky note's peel is a
   border-image computed from its recipe ([Canvas and palette](canvas-and-palette.md) "Sticky notes
-  read as paper"). A filter a person chooses for one element (an element shadow, the Sketch finish)
+  read as paper"); it takes no pointer, so a click or a drop beside a note reaches the board. A filter a person chooses for one element (an element shadow, the Sketch finish)
   stays a filter.
 - **A pan or zoom renders the canvas, not the editor.** The view (pan offset and zoom) is held in
   one viewport store per editor, not as the editor's render state. A wheel tick, a pinch frame, a
