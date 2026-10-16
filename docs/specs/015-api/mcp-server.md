@@ -360,6 +360,11 @@ so the model never has to re-emit — or accidentally mangle — a curated layou
 The recommended flow for "make me a kanban board"-style asks: `list_templates`
 → create with `template` → `update_document` (`ops`) to fill in real content.
 
+A `template` that names no kind is refused before anything is written, offering the kinds it most likely meant first:
+those whose kind or title has a word starting with a word of it of 3 letters or more (`closestTemplateKinds`, at most
+`CLOSEST_TEMPLATES_MAX` (5)), then every kind: `Unknown template "retro". Closest: retrospective, team-retro, four-ls,
+sailboat. Valid kinds: ...`. The CLI's and api's template bodies refuse with the same hint.
+
 ### 4.5a `search_icons`
 
 Finds icons by what they show, best match first, across the line-art set and the Technology set (brand, cloud and

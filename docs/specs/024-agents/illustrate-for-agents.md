@@ -76,6 +76,11 @@ changes before it would have done.
   first page. Likewise a blank of the kind asked for (the tab's only page already of that kind, unnamed and holding
   nothing, as the Blank Slide Deck makes it) becomes the page added, so a deck made from it does not open on an empty
   slide.
+- **A delete of the page an add took**: once an `add` has taken the first page that way, the empty page is gone, so a
+  later `delete` in the same call naming that page (by place or id) means the empty page and is done already: it
+  deletes nothing and says so (`Page 1 was the empty first page, which change 1 made the page it added; nothing
+deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and without this the delete would remove the
+  page it just added, or be refused as the tab's only page.
 - **Sizes**: a page takes only the sizes its kind offers (`pageSizesFor`); any other is refused (`size_not_offered`)
   naming the ones it takes. Fit to Content is never chosen (`size_not_offered`). A slide or logo page has no
   orientation; turning one is refused (`no_orientation`).

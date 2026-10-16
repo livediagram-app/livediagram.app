@@ -4,6 +4,9 @@ import {
   buildTemplateTab,
   buildTemplateTabs,
   resolveTemplate,
+  closestTemplateKinds,
+  closestTemplatesHint,
+  CLOSEST_TEMPLATES_MAX,
   templateTabName,
   validTemplateKinds,
 } from './template-tab';
@@ -98,5 +101,31 @@ describe('templateTabName', () => {
     expect(templateTabName(undefined, 'hiring-pipeline')).toBe(names[0]);
     expect(templateTabName('  ', 'hiring-pipeline')).toBe(names[0]);
     expect(templateTabName(undefined, 'flowchart')).toBe('Tab 1');
+  });
+});
+
+// docs/specs/015-api/mcp-server.md §4.5: an unknown kind is refused with the ones it most likely meant.
+describe('closestTemplateKinds', () => {
+  it('offers the kinds with a word starting with a word of it', () => {
+    expect(closestTemplateKinds('retro')).toEqual([
+      'retrospective',
+      'team-retro',
+      'four-ls',
+      'sailboat',
+    ]);
+    expect(closestTemplateKinds('Kanban Board')).toContain('kanban');
+    expect(closestTemplatesHint('retro')).toBe(
+      'Closest: retrospective, team-retro, four-ls, sailboat. ',
+    );
+  });
+
+  it('offers nothing for a word under 3 letters or one no template has', () => {
+    expect(closestTemplateKinds('ab')).toEqual([]);
+    expect(closestTemplateKinds('zzzq')).toEqual([]);
+    expect(closestTemplatesHint('zzzq')).toBe('');
+  });
+
+  it('offers at most CLOSEST_TEMPLATES_MAX', () => {
+    expect(closestTemplateKinds('blank')).toHaveLength(CLOSEST_TEMPLATES_MAX);
   });
 });

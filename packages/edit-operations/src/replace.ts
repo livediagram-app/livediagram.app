@@ -26,6 +26,7 @@ import {
 import {
   buildDashboardTab,
   buildTemplateTab,
+  closestTemplatesHint,
   resolveTemplate,
   validTemplateKinds,
 } from '@livediagram/templates';
@@ -142,7 +143,7 @@ function build(
       if (!kind)
         return invalidBody(
           `template=${JSON.stringify(template)}: not a template`,
-          `templates: ${validTemplateKinds()}`,
+          `${typeof template === 'string' ? closestTemplatesHint(template) : ''}templates: ${validTemplateKinds()}`,
         );
       const tabOf = (tabId: string, name: string) => buildTemplateTab(tabId, name, kind, themeId);
       return { elements: tabOf('template', 'template').elements, tab: tabOf };

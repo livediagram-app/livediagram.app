@@ -77,7 +77,10 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
    - `apply_background_to_all`: `pageBackgroundSpread` (no ink memory, as `set`); refused `no_other_pages` with
      no other page of the kind. Line: `Gave 34 other slide pages the background of page 1` plus `; 2 locked kept
 their own` when it skipped any;
-   - `delete`: `pageRemoved`; refused `last_page` when one unit is left. Line: `Deleted page 2 and 4 elements on it`
+   - `delete`: a page an earlier `add` in this call took as its blank (the first two `add` branches; kept in
+     `tookBlank`, page id to that change's 1-based number) deletes nothing. Line: `Page 1 was the empty first page,
+which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved`; refused `last_page` when one
+     unit is left. Line: `Deleted page 2 and 4 elements on it`
      (an article: `Deleted article "Brief" (3 pages)`);
    - a `refused` from a pure edit maps to its code (`unknown_page` → `page_unknown`, `locked` → `page_locked`,
      the rest the same name) and stops: `{ refusal: { code, message, change: i } }`, nothing to write.
@@ -227,6 +230,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 | Pattern on a logo page                                        | `pattern_not_offered`                                                  |
 | `apply_background_to_all` with no other page of the kind      | `no_other_pages`                                                       |
 | Layout of another kind                                        | `layout_unknown` with the kind's layouts                               |
+| Delete, in the same call, the page an `add` took as its blank | nothing deleted, line says the empty page became the added one         |
 | Delete the only unit                                          | `last_page`                                                            |
 | 101st page                                                    | `page_limit`                                                           |
 | Locked page / any locked page of an article                   | `page_locked`                                                          |
