@@ -102,6 +102,31 @@ describe('revealInScrollers', () => {
     }
   });
 
+  // A page that scrolls for the person (a standalone page) is scrolled too; the editor pins its page, so it never is.
+  it('scrolls the page only when its overflow is not hidden', () => {
+    const page = document.scrollingElement ?? document.documentElement;
+    Object.defineProperty(page, 'scrollHeight', { value: 3000, configurable: true });
+    const pageBy = vi.fn();
+    page.scrollBy = pageBy;
+    const target = document.createElement('div');
+    box(target, { top: 1500, height: 40 });
+    document.body.append(target);
+    expect(revealInScrollers(target)).toBe(true);
+    expect(pageBy).toHaveBeenCalledWith(
+      expect.objectContaining({ top: 1540 - (window.innerHeight - REVEAL_MARGIN_PX) }),
+    );
+    pageBy.mockClear();
+    // The longhand: jsdom does not expand the shorthand as a browser's computed style does.
+    document.body.style.overflowY = 'hidden';
+    try {
+      expect(revealInScrollers(target)).toBe(false);
+      expect(pageBy).not.toHaveBeenCalled();
+    } finally {
+      document.body.style.overflowY = '';
+      Object.defineProperty(page, 'scrollHeight', { value: 0, configurable: true });
+    }
+  });
+
   // An outer panel aims for where the inner scroll will leave the target, not where it is mid-way.
   it('accounts for an inner scroll when an outer panel scrolls too', () => {
     const { target, scrollBy: inner } = panel('auto', 900);
