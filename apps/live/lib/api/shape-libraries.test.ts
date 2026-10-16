@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import { ApiError } from './core';
 import {
   apiCreateShapeLibrary,
@@ -23,7 +24,7 @@ beforeEach(() => {
       calls.push({
         url: String(url),
         method: init?.method ?? 'GET',
-        body: init?.body ? JSON.parse(String(init.body)) : undefined,
+        body: init?.body ? sentJson(init) : undefined,
       });
       return reply.clone();
     }),

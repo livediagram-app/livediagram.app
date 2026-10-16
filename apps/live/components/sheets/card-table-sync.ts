@@ -25,6 +25,7 @@ import {
   type FormatPatch,
   type Sheet,
   type SheetWrite,
+  type Value,
   type Workbook,
 } from '@livediagram/sheets';
 
@@ -104,10 +105,11 @@ export type RowSave =
   | { kind: 'none' }
   | { kind: 'refused'; message: string };
 
-// A cell's value as a card field takes it: a date serial as an ISO date for a date field.
-function fieldValue(v: unknown, field: string): unknown {
+// A cell's value as a card field takes it: a date serial as an ISO date for a date field; an error or an
+// array writes nothing.
+function fieldValue(v: Value, field: string): string | number | boolean | null | undefined {
   if (typeof v === 'number' && isCardDateField(field)) return isoFromSerial(v);
-  if (typeof v === 'object' && v !== null) return undefined; // an error or an array: nothing to write
+  if (typeof v === 'object' && v !== null) return undefined;
   return v;
 }
 

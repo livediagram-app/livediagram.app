@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentText } from '@livediagram/vitest-config/sent-request';
 import type { Tab } from '@livediagram/document';
 import { apiLoadTabRevisioned, apiSaveTab, flushDocumentSavesBeacon } from './tabs';
 import * as offlineStore from '../offline/offline-store';
@@ -231,7 +232,7 @@ describe('the changeset seen revision', () => {
     const timeout = vi.spyOn(AbortSignal, 'timeout');
     const tab = makeTab('a', { name: 'x'.repeat(64 * 1024) });
     await apiSaveTab('owner-1', 'diag-1', tab);
-    const bytes = new TextEncoder().encode(String(calls.at(-1)!.init.body)).byteLength;
+    const bytes = new TextEncoder().encode(sentText(calls.at(-1)!.init)).byteLength;
     expect(timeout).toHaveBeenCalledWith(saveTimeoutMs(bytes));
     expect(calls.at(-1)!.init.signal).toBeInstanceOf(AbortSignal);
     timeout.mockRestore();

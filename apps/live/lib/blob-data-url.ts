@@ -3,7 +3,11 @@
 export function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
+    // A data URL read always answers a string.
+    reader.onload = () =>
+      typeof reader.result === 'string'
+        ? resolve(reader.result)
+        : reject(new Error('image read gave no data URL'));
     reader.onerror = () => reject(reader.error ?? new Error('image read failed'));
     reader.readAsDataURL(blob);
   });

@@ -2,6 +2,7 @@
 // owner id and share code, a tab-scoped session names its tab on every call, named sheets are read 50 a call, and a
 // refusal maps to an ApiError with its code. An offline document never reaches the network.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sentJson } from '@livediagram/vitest-config/sent-request';
 import type { SheetJson } from '@livediagram/sheets';
 import { __setOfflineBackend, offlinePutRecord } from '../offline/offline-store';
 import { memBackend, testRecord } from '../offline/offline-test-utils';
@@ -135,7 +136,7 @@ describe('writing on a cloud document', () => {
     expect(c.init.method).toBe('POST');
     expect(header(c, 'Content-Type')).toBe('application/json');
     expect(header(c, 'X-Share-Code')).toBe('share-9');
-    expect(JSON.parse(String(c.init.body))).toEqual(create);
+    expect(sentJson(c.init)).toEqual(create);
   });
 
   it('maps a refused create to its code', async () => {
@@ -155,7 +156,7 @@ describe('writing on a cloud document', () => {
     const c = calls[0]!;
     expect(c.url).toBe(`${base}/sheet%2F1/writes`);
     expect(c.init.method).toBe('POST');
-    expect(JSON.parse(String(c.init.body))).toEqual(req);
+    expect(sentJson(c.init)).toEqual(req);
   });
 
   it('maps a refused write to its code', async () => {
