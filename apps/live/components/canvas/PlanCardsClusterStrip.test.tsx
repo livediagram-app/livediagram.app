@@ -30,7 +30,7 @@ const strip = () =>
   );
 
 // The Trash's count follows its name.
-const NAMES = ['Trash1', 'New Card', 'Find a Card', 'Card Types'];
+const NAMES = ['Trash1', 'New', 'Find', 'Types'];
 
 describe('the Plan strip’s names', () => {
   it('names every button beside its icon on a wide desktop, in order', () => {
