@@ -117,10 +117,19 @@ editor mounts, reads the real id from `window.location.pathname`
 about), and loads the document via the API. The address bar stays
 on `/document/<uuid>`; nothing about the URL needs to lie.
 
-Behaviour for genuinely-unknown routes (e.g. `/live/typo`) is
-benign: the editor mounts, tries to load a document with id `typo`,
-the API 404s, the in-app `<NotFound>` card surfaces — branded with
-a "Create a new document" CTA.
+### Unknown addresses
+
+A genuinely unknown address (a mistyped page, `/explorer/mine`, or a page an
+older build had) reaches the editor through the same slot. It names no
+document (`documentIdFromPath` reads no id off anything but
+`/document/<id>`) and carries no share link, so the editor shows the in-app
+`<NotFound>` card over the Explorer at once, titled **Page not found**
+("There is no page at this address. Open a document from the Explorer or
+start fresh.") with its "Create a new document" button, and asks the API for
+nothing. Only the editor's own empty route (`/document`,
+`/document/placeholder`) hands off to `/new`. Before, every address without a
+document id went to `/new`, so a mistyped or retired page opened the New
+Document wizard with no word of what went wrong.
 
 ### A failed load is not a missing document
 

@@ -13,9 +13,12 @@ import { Button, CircleXIcon } from '@livediagram/ui';
 
 type NotFoundProps = {
   onCreateNew: () => void;
+  // The address names no document at all (a mistyped or retired page, docs/specs/007-editor/new-document-route.md
+  // "Unknown addresses"): the card speaks of a page, not a document.
+  page?: boolean;
 };
 
-export function NotFound({ onCreateNew }: NotFoundProps) {
+export function NotFound({ onCreateNew, page = false }: NotFoundProps) {
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
       <div className="pointer-events-auto flex max-w-md animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">
@@ -26,11 +29,12 @@ export function NotFound({ onCreateNew }: NotFoundProps) {
           404
         </p>
         <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Document not found
+          {page ? 'Page not found' : 'Document not found'}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-          This document doesn&apos;t exist or isn&apos;t yours. Open one from the Explorer or start
-          fresh.
+          {page
+            ? 'There is no page at this address. Open a document from the Explorer or start fresh.'
+            : 'This document doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.'}
         </p>
         <Button size="md" onClick={onCreateNew} className="mt-6 shadow-sm">
           <SparkleIcon />

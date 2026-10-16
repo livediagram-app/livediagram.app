@@ -13,9 +13,9 @@
 // `window.location.pathname` on mount and loads the document via the
 // API; if the API actually 404s (genuinely deleted / never existed),
 // the in-app NotFound card surfaces — branded, with a CTA. Any
-// non-document path that lands here (e.g. /live/typo) hits that same
-// API-404 surface, which is good enough until we have a proper
-// routing story for unknown paths.
+// non-document path that lands here (e.g. /typo) shows that card as
+// "Page not found" without asking the API (new-document-route.md
+// "Unknown addresses").
 //
 // Loaded lazily, the way /new loads it: Next ships the root not-found
 // slot's code with EVERY route, so a static import here put the whole
