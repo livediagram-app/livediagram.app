@@ -67,11 +67,11 @@ describe('template categories', () => {
       mindmaps: 8,
       timelines: 7,
       flowcharts: 5,
-      strategy: 12,
-      hierarchies: 5,
-      design: 11,
+      strategy: 15,
+      hierarchies: 7,
+      design: 12,
       presentations: 17,
-      technical: 8,
+      technical: 10,
       games: 5,
     });
   });

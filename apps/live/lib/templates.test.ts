@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "132 templates (11 default + 121 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "140 templates (11 default + 129 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -106,6 +106,14 @@ describe('TEMPLATES catalogue', () => {
     'crazy-eights',
     'stakeholder-map',
     'risk-matrix',
+    'wardley-map',
+    'threat-model',
+    'service-blueprint',
+    'metric-tree',
+    'value-proposition-canvas',
+    'working-backwards',
+    'family-tree',
+    'value-stream-map',
     'user-persona',
     'meeting-agenda',
     'objectives-planner',
@@ -172,21 +180,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "132 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "140 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 132 templates (11 default + 121 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(132);
+  it('lists exactly 140 templates (11 default + 129 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(140);
   });
 
-  it('splits cleanly into 11 default + 121 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 129 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(121);
+    expect(extras).toHaveLength(129);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -227,6 +235,7 @@ describe('TEMPLATES catalogue', () => {
         kind === 'blank' ||
         kind === 'whiteboard' ||
         kind === 'article' ||
+        kind === 'working-backwards' ||
         kind === 'blank-illustration' ||
         // One empty page of a chosen kind.
         kind === 'blank-slide-deck' ||
@@ -261,6 +270,32 @@ describe('templateCanvasOverrides', () => {
     expect(o.opensIn).toBe('illustrate');
     expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-brief' })]);
     expect(o.articles?.['art-brief']?.blocks.length).toBeGreaterThan(5);
+  });
+
+  // docs/specs/008-canvas/canvas-and-palette.md "Templates": Working Backwards is a PR/FAQ article in the Report look.
+  it('makes Working Backwards a PR/FAQ article: press release, a page break, both FAQs and a review list', () => {
+    const o = templateCanvasOverrides('working-backwards');
+    expect(o.opensIn).toBe('illustrate');
+    expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-prfaq' })]);
+    const flow = o.articles!['art-prfaq']!;
+    expect(flow.style).toEqual({ look: 'report' });
+    const text = (b: (typeof flow.blocks)[number]) =>
+      'runs' in b ? b.runs.map((r) => r.text).join('') : '';
+    const styled = (style: string) =>
+      flow.blocks.filter((b) => b.type === 'paragraph' && b.style === style).map(text);
+    expect(flow.blocks[0]).toMatchObject({ type: 'paragraph', style: 'title' });
+    expect(flow.blocks[1]).toMatchObject({ type: 'paragraph', style: 'subtitle' });
+    expect(styled('h1')).toEqual(['Customer FAQ', 'Internal FAQ', 'Before the review']);
+    expect(flow.blocks.filter((b) => b.type === 'pageBreak')).toHaveLength(1);
+    expect(styled('quote')).toHaveLength(2);
+    // Every block has its own id, the same on every build.
+    const ids = flow.blocks.map((b) => b.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(
+      templateCanvasOverrides('working-backwards').articles!['art-prfaq']!.blocks.map((b) => b.id),
+    ).toEqual(ids);
+    // No raw Markdown survives the read.
+    expect(flow.blocks.map(text).join(' ')).not.toMatch(/\*\*|^#|\[ \]/);
   });
 
   it('makes an event-storming board already settled on its lanes', () => {
@@ -574,6 +609,33 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // people, 3 objectives (chip, sticker, sentence, KRs + bars, steps,
     // support, rating) and the Today chip.
     'objectives-planner': { names: ['Planner', 'Objectives'], scaffold: 65, content: 44 },
+    // The strategy and systems batch (canvas-and-palette.md "Templates").
+    // Map: caption, 4 stage bands with name, trait and 3 rules, 2 axes and 4 axis words, 3 panel headings (3 each),
+    // the legend's 5 labels and 5 samples. Components: title, the user, their line and name, 12 chips, 11 needs,
+    // 2 ghosts and movements, the inertia bar and caption, 3 play markers, 3 play cards (4 each), the questions.
+    'wardley-map': { names: ['Map', 'Components'], scaffold: 41, content: 52 },
+    // Model: caption, 3 trust boundaries, 9 DFD nodes, 9 flows, the STRIDE heading and six rows (3 each), the other
+    // two headings. Threats: title, 2 chips, 10 badges, 3 top-threat cards (4 each), the checklist.
+    'threat-model': { names: ['Model', 'Threats'], scaffold: 49, content: 26 },
+    // Blueprint: caption, 5 stage headers, 5 bands (3 each), 3 lines and their names, the legend's 3 samples and 3
+    // labels. Service: title, 25 cards, 4 left-to-right and 15 downward arrows, 5 evidence links, 5 faces, 4 marks
+    // and their notes, the star, the Fix first card (3).
+    'service-blueprint': { names: ['Blueprint', 'Service'], scaffold: 33, content: 67 },
+    // Levels: caption, 4 level bands with name and meaning. Tree: title, goal chip, 12 cards and their trend badges,
+    // 7 input / carried tags, the ring, 11 connectors, 6 operators, the levers card.
+    'metric-tree': { names: ['Levels', 'Tree'], scaffold: 13, content: 52 },
+    // Canvas: caption, 2 titles, 3 sections, 3 headings (3 each), the circle, 2 chords, 3 headings (3 each), 3 rail
+    // labels. Notes: title, 4 + 3 + 3 map notes, 12 profile notes and their ranks, 4 fit lines, the rail card,
+    // timer, vote and rating.
+    'value-proposition-canvas': { names: ['Canvas', 'Notes'], scaffold: 30, content: 43 },
+    // Generations: caption, 3 bands with name, the key heading, 4 line rows (2 each), the has-died sample and label,
+    // Family stories heading. People: title, 14 cards, 5 unions (dot, 2 lines, caption), 7 child lines, the how-to,
+    // 3 stories and their pins.
+    'family-tree': { names: ['Generations', 'People'], scaffold: 19, content: 50 },
+    // Map: caption, 6 process headers, 5 push arrows, 2 information cards and 3 flows, 23 ladder rungs, the key's 4
+    // samples and labels. Stream: title, 2 chips, 6 data boxes, 6 triangles and waits, 2 bursts and fixes, 12 rung
+    // figures, the totals and the future state.
+    'value-stream-map': { names: ['Map', 'Stream'], scaffold: 48, content: 39 },
   };
 
   it('pins each layered template’s names and scaffold / content split', () => {

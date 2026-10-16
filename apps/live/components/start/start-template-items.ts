@@ -118,7 +118,12 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       id: 'strategy',
       name: 'Strategy',
       line: 'Map the business, the people and the opportunities.',
-      kinds: ['business-model-canvas', 'stakeholder-map', 'opportunity-solution-tree'],
+      kinds: [
+        'business-model-canvas',
+        'value-proposition-canvas',
+        'stakeholder-map',
+        'opportunity-solution-tree',
+      ],
     },
     {
       id: 'decisions',
@@ -171,7 +176,7 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       id: 'articles',
       name: 'Articles',
       line: 'Articles, résumés and cards of text on pages.',
-      kinds: ['blank-article', 'article', 'resume', 'recipe-card'],
+      kinds: ['blank-article', 'article', 'working-backwards', 'resume', 'recipe-card'],
     },
     {
       id: 'posters',

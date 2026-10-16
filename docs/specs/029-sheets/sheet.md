@@ -89,7 +89,8 @@ the left beside Cell Size and Freeze Header Row on the right.
   sheet no longer awaits setup. A template's chart is then placed over its cells, its own undo step (as Insert
   Chart's). The grid then selects A1. Telemetry: `Sheet · Created · <Start>` (`Blank`, `Cards`, each template's
   name without spaces (`Budget`, `Tracker`, `Timesheet`, `Contacts`, `Invoice`, `ExpenseReport`, `SalesPipeline`,
-  `Inventory`, `GuestList`, `GradeBook`, `HabitTracker`, `LoanCalculator`); `Csv` counts choosing Import CSV,
+  `Inventory`, `ThreatRegister`, `DriverModel`, `ValueStream`, `GuestList`, `GradeBook`, `HabitTracker`,
+  `LoanCalculator`); `Csv` counts choosing Import CSV,
   `Imported · Csv` the file read).
 - Plan Cards makes the rows a **card table**: the rows are the cards (Card tables, below).
 - Any cell arriving (a peer, an agent, an undo) puts the card away; a sheet cleared later does not show it again.

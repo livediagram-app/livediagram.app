@@ -21,6 +21,7 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'blank-infographic': 'illustrate',
   'blank-logo': 'illustrate',
   article: 'illustrate',
+  'working-backwards': 'illustrate',
   'slide-deck': 'illustrate',
   'logo-design': 'illustrate',
   'live-card': 'illustrate',
@@ -111,6 +112,7 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'user-story-map': 'facilitate',
   'business-model-canvas': 'facilitate',
   'stakeholder-map': 'facilitate',
+  'value-proposition-canvas': 'facilitate',
   'opportunity-solution-tree': 'facilitate',
   'user-persona': 'facilitate',
 };

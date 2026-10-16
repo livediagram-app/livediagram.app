@@ -103,6 +103,13 @@ import { buildCrazyEights } from './template-builders-crazy-eights';
 import { buildUserPersona } from './template-builders-persona';
 import { buildMeetingAgenda } from './template-builders-meeting';
 import { buildObjectivesPlanner } from './template-builders-objectives';
+import { buildWardleyMap } from './template-builders-wardley';
+import { buildThreatModel } from './template-builders-threat-model';
+import { buildServiceBlueprint } from './template-builders-service-blueprint';
+import { buildMetricTree } from './template-builders-metric-tree';
+import { buildValuePropositionCanvas } from './template-builders-value-proposition';
+import { buildFamilyTree } from './template-builders-family-tree';
+import { buildValueStreamMap } from './template-builders-value-stream';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
@@ -230,6 +237,20 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildMeetingAgenda(cx, cy);
     case 'objectives-planner':
       return buildObjectivesPlanner(cx, cy);
+    case 'wardley-map':
+      return buildWardleyMap(cx, cy);
+    case 'threat-model':
+      return buildThreatModel(cx, cy);
+    case 'service-blueprint':
+      return buildServiceBlueprint(cx, cy);
+    case 'metric-tree':
+      return buildMetricTree(cx, cy);
+    case 'value-proposition-canvas':
+      return buildValuePropositionCanvas(cx, cy);
+    case 'family-tree':
+      return buildFamilyTree(cx, cy);
+    case 'value-stream-map':
+      return buildValueStreamMap(cx, cy);
     case 'roadmap':
       return buildRoadmap(cx, cy);
     case 'raci-matrix':
@@ -300,6 +321,7 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     // illustration is its one empty page, which asks what it is for, and a blank of a page kind its one
     // empty page of that kind (blank-page-templates.ts).
     case 'article':
+    case 'working-backwards':
     case 'blank-illustration':
     case 'blank-slide-deck':
     case 'blank-article':

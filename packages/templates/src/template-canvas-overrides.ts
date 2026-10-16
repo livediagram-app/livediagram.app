@@ -8,6 +8,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { articleTemplateOverrides } from './article-template';
+import { workingBackwardsOverrides } from './template-working-backwards';
 import { blankPageTemplateOverrides } from './blank-page-templates';
 import { templateLayers } from './template-layers';
 import { templateEditorMode } from './template-modes';
@@ -159,6 +160,17 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'crazy-eights': 'grid',
   'stakeholder-map': 'graph',
   'risk-matrix': 'graph',
+  // The strategy and systems batch: the drawn notations ride graph paper; the Wardley map's axes are its page, so
+  // its canvas is blank; the Value Proposition Canvas is a sticky-note board on the dot grid; Working Backwards is an
+  // article, its page the paper.
+  'threat-model': 'graph',
+  'service-blueprint': 'graph',
+  'metric-tree': 'graph',
+  'family-tree': 'graph',
+  'value-stream-map': 'graph',
+  'wardley-map': 'blank',
+  'value-proposition-canvas': 'grid',
+  'working-backwards': 'blank',
   'user-persona': 'grid',
   'meeting-agenda': 'grid',
   // An article's surround stays plain: the page is the paper.
@@ -241,6 +253,8 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   if (mode !== 'diagram') overrides.opensIn = mode;
   // The Article opens in Illustrate on its one article page (docs/specs/007-editor/article-pages.md).
   if (kind === 'article') Object.assign(overrides, articleTemplateOverrides());
+  // Working Backwards is an article too: its PR/FAQ flows onto pages in the Report look (template-working-backwards.ts).
+  if (kind === 'working-backwards') Object.assign(overrides, workingBackwardsOverrides());
   // A blank of a page kind opens in Illustrate on its one page, its kind already chosen (blank-page-templates.ts).
   const blankPage = blankPageTemplateOverrides(kind);
   if (blankPage) Object.assign(overrides, blankPage);

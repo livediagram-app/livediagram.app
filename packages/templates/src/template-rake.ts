@@ -34,3 +34,31 @@ export const sideRake = (from: Point, to: Point, atX: number) => {
     { dx: atX - mx, dy: to.y - my },
   ];
 };
+
+// The sixteen compass anchors, clockwise from north, as Anchor lists them.
+const COMPASS: readonly Anchor[] = [
+  'n',
+  'nne',
+  'ne',
+  'ene',
+  'e',
+  'ese',
+  'se',
+  'sse',
+  's',
+  'ssw',
+  'sw',
+  'wsw',
+  'w',
+  'wnw',
+  'nw',
+  'nnw',
+];
+
+// The anchor on a box at `from` that faces `to` (both centres): a straight line between two boxes leaves and
+// arrives on the sides that face each other (the Wardley map's needs, the threat model's flows).
+export function anchorToward(from: Point, to: Point): Anchor {
+  // Clockwise from north, in sixteenths of a turn (canvas y grows downward).
+  const turn = Math.atan2(to.x - from.x, from.y - to.y) / (2 * Math.PI);
+  return COMPASS[(Math.round(turn * 16) + 16) % 16]!;
+}
