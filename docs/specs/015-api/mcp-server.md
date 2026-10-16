@@ -381,9 +381,8 @@ size, uploadedAt }], more }`, newest first, `query` matching the name, `limit` 2
 in bytes. An id is what an `image` element's `imageId` takes. Names are often a camera's or a screenshot tool's
 ("Screenshot 2026-10-12 at 14.03.png"), so `image: true` adds a **contact sheet**: one PNG of the listed images (the
 first 12), each drawn to fit a cell above its place in the list and its name, through the same image embedding as
-the preview ([§5](#5-visualise--inline-image-render)). The renderer decodes each picture at full size, about 0.65 s a
-megapixel (a 2880x1800 screenshot took 3.4 s, twelve of them 14.9 s), so the sheet draws pictures in order only
-while they stay within 16 megapixels (`CONTACT_SHEET_MAX_PIXELS`: three full-screen retina screenshots); each one past
+the preview ([§5](#5-visualise--inline-image-render)). The sheet spends the preview's picture budget itself, from the
+sizes and dimensions the gallery lists: it draws pictures in order only while they stay within it, and each one past
 that keeps a placeholder captioned "too large to draw here", and its bytes are not fetched. The gallery is the caller's own (`GET /api/images`, owner
 only): a teammate's uploads are not in it. Read-only, so a read-only token may call it. A deployment without image
 storage answers that images are not available here.
@@ -925,6 +924,10 @@ built with the editor's own edits (`@livediagram/forms`) and started as Start Pl
   `settings` changes go through.
 - **`share_form`** (write): `publish`, `close` or `delete_link`, through the form link routes as Share Form calls
   them; a form not ready answers every problem.
+- **`try_form`** (write): fills the form in as the builder's Preview does, answers by question id or prompt checked
+  first (a wrong one refused with why, nothing sent), then the "Preview: ..." card or row a response makes: through
+  `.../form-preview` for a published or sheet form (a published form counts it), else the card through the items
+  route. Answers what it made, where, and its number.
 - `read_document` lists a Form tab as `kind=form` with a line naming `read_form`; its `image` draws the form as
   `read_form` does.
 
@@ -1013,11 +1016,11 @@ which is how the gap was found.
 Three behaviours cover the twenty tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                     |
-| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                 |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`, `change_pages`, `write_article`, `change_form`                 |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                 |
+| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                             |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`, `change_pages`, `write_article`, `change_form`                             |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -1237,13 +1240,21 @@ Worker (no DOM, no React).
   `imageResult` prefetches their bytes (owner-authed via the caller's token,
   `GET /api/images/:id`) and inlines them as base64 data URIs through the
   renderer's `resolveImageHref` hook — resvg (WASM) can't fetch, so the bytes
-  must be inline. Each image is capped (2 MB) so a large upload doesn't bloat the
-  preview's own base64 payload; over the cap, or on any fetch failure, it falls
-  back to the placeholder rectangle (the structured elements still carry the id).
-  A tab with no images does no extra work. The fetch-and-inline core is
+  must be inline. A tab with no images does no extra work. The fetch-and-inline core is
   `embedTabImages` in `@livediagram/api-schema`, shared with the api worker's
-  snapshot render ([Document SVG snapshots](../006-document/document-snapshots.md)), which passes its own byte source (R2) and a total
-  budget instead of this per-image cap. The data URL takes the image's stored
+  snapshot render ([Document SVG snapshots](../006-document/document-snapshots.md)), which passes its own byte source
+  (R2) and a total byte budget.
+- **Picture budget.** resvg decodes every picture at full size and holds them all while it draws: about 4 bytes a
+  pixel on top of about 28 MB for a 2048 px preview, in wasm memory that never shrinks. Measured: one 2880x1800
+  screenshot 49 MB, four 112 MB, and a flat 8000x8000 PNG of 0.19 MB 461 MB, against a Worker's 128 MB in all. Time
+  is the smaller cost (0.02 to 0.15 s a megapixel). So one preview draws pictures in document order while they stay
+  within 8 million pixels together (`PREVIEW_IMAGE_BUDGET_PIXELS`, one full-screen retina screenshot or several
+  ordinary ones) and 6 MB together (`PREVIEW_IMAGE_BUDGET_BYTES`, carried inline as base64), each at most 2 MB
+  (`PREVIEW_IMAGE_MAX_BYTES`), all in `apps/mcp/src/preview-budget.ts`. A picture's pixels are read from its header
+  (`imagePixelSize`), never decoded; one whose header cannot be read is not drawn. A picture past a limit, or that
+  fails to fetch, keeps the placeholder rectangle (the structured elements still carry its id), and a preview that
+  left any out for a limit says so in a line before the picture ("2 pictures are drawn as a placeholder in this
+  preview, which draws only so many pixels; ..."), so the model does not take one for a failed placement. The data URL takes the image's stored
   type; one stored without an image type (`application/octet-stream`) is
   labelled by sniffing its bytes, and bytes that match no accepted format keep
   the placeholder.

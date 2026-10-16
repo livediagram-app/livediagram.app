@@ -275,6 +275,7 @@ async function api(request: Request): Promise<Response> {
   if (path.endsWith('/changesets')) return json(CHANGESET);
   if (path.endsWith('/name')) return json({ tab: { id: 't1', name: 'Renamed', orderIndex: 0 } });
   if (path.endsWith('/form-link')) return json(FORM_LINK);
+  if (path.endsWith('/form-preview')) return json({ number: 4 });
   if (path.endsWith('/tabs/f1/form')) return json({ tabId: 'f1', rev: 3, name: 'Bug Report' });
   if (path.endsWith('/tabs/f1')) return json({ tab: FORM_TAB });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
@@ -311,6 +312,11 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     },
   },
   { tool: 'share_form', output: 'shareFormOutput', args: { documentId: 'd1', action: 'close' } },
+  {
+    tool: 'try_form',
+    output: 'tryFormOutput',
+    args: { documentId: 'd1', answers: { Summary: 'Login fails', Severity: 'S1', 'How bad?': 4 } },
+  },
   { tool: 'find_documents', output: 'findDocumentsOutput', args: {} },
   { tool: 'read_document', output: 'readDocumentOutput', args: { documentId: 'd1' } },
   {

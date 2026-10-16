@@ -68,6 +68,7 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
     command: 'form share',
     what: 'publishing, closing or deleting a form’s link',
   },
+  { type: 'FormTry', command: 'form try', what: 'filling in a form as a preview response' },
   { type: 'TypeLs', command: 'type ls', what: 'listing a document’s card types' },
   { type: 'TypeApply', command: 'type apply', what: 'changing card types from a file' },
   { type: 'ChangesetApply', command: 'edit', what: 'applying edit operations from a file' },

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library } from '../testing/fake-api';
 import { formPlan, formTabBody } from '../testing/forms';
-import { formAdd, formChange, formGet, formShare } from './form';
+import { formAdd, formChange, formGet, formShare, formTry } from './form';
 
 // The form verbs (docs/specs/030-forms/forms.md "Agents"; docs/specs/015-api/cli.md "Commands").
 const plan = formPlan();
@@ -39,6 +39,10 @@ function ctxWith(input = '') {
       return Response.json(
         r.method === 'PUT' ? { ...LINK, link: { ...LINK.link, open: true } } : LINK,
       );
+    },
+    [`${base}/tabs/form/form-preview`]: (r: Request) => {
+      writes.push(`${r.method} form-preview`);
+      return Response.json({ number: 5 }, { status: 201 });
     },
     [`${base}/tabs/form/form`]: (r: Request) => {
       writes.push(`${r.method} form`);
@@ -175,5 +179,37 @@ describe('the form verbs, every path', () => {
     const starter = await formAdd.run!(ctx, formAdd.input.parse({ starter: 'rsvp' }));
     expect(starter.heading).toBe('Event RSVP');
     expect(formChange.quiet!(starter)).toEqual([starter.tabId]);
+  });
+});
+
+describe('form try', () => {
+  it('sends answers read from stdin as a counted preview of a published form', async () => {
+    const { ctx, writes } = ctxWith('{"Summary": "Crash on save", "Severity": "High"}');
+    const out = await formTry.run!(ctx, formTry.input.parse({ doc: DOC_A, answers: '-' }));
+    expect(writes).toEqual(['POST form-preview']);
+    expect(formTry.text!(out)).toEqual([
+      expect.stringMatching(
+        /^\+ card "Preview: Crash on save" in the ".+" board, column .+, response #5$/,
+      ),
+    ]);
+    expect(formTry.quiet!(out)).toEqual([]);
+  });
+
+  it('refuses a wrong answer, with the fix, sending nothing', async () => {
+    const { ctx, writes } = ctxWith('{"Severity": "Medium"}');
+    await expect(
+      formTry.run!(ctx, formTry.input.parse({ doc: DOC_A, answers: '-' })),
+    ).rejects.toMatchObject({ code: 'invalid_answers' });
+    await expect(
+      formTry.run!(ctx, formTry.input.parse({ doc: DOC_A, answers: '-' })),
+    ).rejects.toBeInstanceOf(VerbRefusal);
+    expect(writes).toEqual([]);
+  });
+
+  it('refuses answers that are not JSON', async () => {
+    const { ctx } = ctxWith('Summary: x');
+    await expect(
+      formTry.run!(ctx, formTry.input.parse({ doc: DOC_A, answers: '-' })),
+    ).rejects.toMatchObject({ code: 'usage' });
   });
 });

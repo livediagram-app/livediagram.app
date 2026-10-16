@@ -10,6 +10,7 @@ export {
   type FormDone,
   type ShareAction,
 } from './form-calls';
+export { tryForm, type FormTryDone, type FormTryResult } from './form-try';
 export type { FormChange, SectionRuleInput } from './form-changes';
 export type { RespondsToInput } from './form-draft';
 export type { QuestionInput, QuestionSet } from './form-question';

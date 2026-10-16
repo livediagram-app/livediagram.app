@@ -117,8 +117,9 @@ The kit lives in `apps/mcp/eval/`:
   blaming the assistant's pace.
 - Links point at livediagram.app when the local server has no public host set; a check on a link compares its code,
   never its host.
-- A form's responses cannot be submitted through the tools, so a check can only see where a response would land
-  (`read_form`'s `goesTo` and `column`); a response's landing is proven by the api's own tests.
+- A form's response lands through `try_form`: a check reads the "Preview: ..." card with `list_items` (or the row
+  with `read_sheet`) to see each answer where `read_form`'s `goesTo` and `column` say it goes. On a published form a
+  preview counts as a response, so a check on the response count allows for it.
 - A lint finding that names a template's own design (its colours, its shape) invites the agent to undo it. Check
   `templates.test.ts` stays clean after a lint change, and lint a fresh template of each kind the round touched.
 - Measure a new layout pass at 2,000 boxes and 2,000 arrows before the PR: a per-arrow scan of the tab looked free on

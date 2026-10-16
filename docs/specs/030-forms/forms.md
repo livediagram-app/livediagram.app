@@ -582,7 +582,7 @@ session can add content elsewhere, never to a form.
 
 ## Agents
 
-An agent builds, reads and publishes a form as an Editor does, through four MCP tools
+An agent builds, reads, tries and publishes a form as an Editor does, through five MCP tools
 ([MCP server](../015-api/mcp-server.md) §4.9e) and the CLI's `form` commands, one engine for both
 (`packages/agent-verbs/src/forms/`). A form's responses stay what they are everywhere: cards (`list_items`,
 `change_items`, `fromForm` among their fields) or rows (`read_sheet`). `read_document` shows a Form tab as `kind=form`
@@ -643,6 +643,18 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
 - **`share_form`** (write): `publish` (makes the form link; on a closed form, opens it again), `close`, or
   `delete_link`. A form with problems is refused with every problem, as Share Form lists them. The answer is the
   state, the link and the count.
+- **`try_form`** (write): the builder's [Preview](#preview) for an agent, to check a form end to end. `answers` by
+  question id or prompt, as a respondent gives them (an option for a single choice, a list for several; on a choice
+  with **Other**, text that is no option is the Other answer). They are checked as the form link checks them before
+  anything is sent: a wrong one is refused (`invalid_answers`) with each question's error in the form's own words and
+  a choice's options, an unknown question with the questions there are, and nothing is written. Answers to a section
+  that does not show for these answers are left out and said so. Then it makes what Submit in Preview makes, titled
+  "Preview: ...": on a **published** form, or one whose responses go to a **sheet**, through `.../form-preview` (a
+  published form counts it: its number, toward the total and the limit, taken while closed too, no email); on an
+  unpublished board form, the card through the items route, numbered by nothing, as the editor makes it itself. A
+  form whose responses go nowhere, or an unpublished one whose board is gone, is refused
+  (`form_destination_missing`). It answers what it made (a card or a row), where (the board and column, or the
+  sheet), the response number or none, the card's title, and the card's id when it made the card itself.
 - **A live form is locked for agents too**: while it takes responses, `change_form` refuses every change but
   `settings`, saying to close it with `share_form` first (its link stays); the api refuses a changeset that changes
   anything else about it (`form_locked`), whoever sends it.
@@ -657,7 +669,8 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
   makes a Board or Sheet tab (`replace` of elements with `kind`), its sheet made under the id the form names. Every
   check is made before anything is written, so a refusal leaves the document as it was.
 - **The CLI**: `form get`, `form add` (`--starter`, or `--from` a JSON file of `add_form` input), `form change` (a
-  JSON file of changes, or stdin) and `form share` (`publish`, `close`, `delete_link`).
+  JSON file of changes, or stdin), `form share` (`publish`, `close`, `delete_link`) and `form try` (a JSON file of
+  answers, or stdin).
 - An empty list of changes is a read: nothing is written.
 
 ## Telemetry
