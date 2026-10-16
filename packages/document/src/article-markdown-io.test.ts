@@ -81,6 +81,22 @@ describe('Markdown into an article', () => {
   });
 });
 
+describe('a written article read back', () => {
+  it('keeps text that is bold and italic at once', () => {
+    const runs = [
+      { text: 'a ' },
+      { text: 'both', b: true as const, i: true as const },
+      { text: ' end' },
+    ];
+    const back = articleFromMarkdown(
+      articleToMarkdown({ blocks: [{ id: 'p', type: 'paragraph', runs }] }),
+    );
+    expect(
+      'blocks' in back && back.blocks.map((b) => (b.type === 'paragraph' ? b.runs : null)),
+    ).toEqual([runs]);
+  });
+});
+
 describe('a Markdown table', () => {
   it('is written as a list, its header in bold, and counted; never inside a code fence', () => {
     const out = articleFromMarkdown(
