@@ -627,7 +627,8 @@ describe('an agent’s form write (docs/specs/030-forms/forms.md "Agents")', () 
       rev: number;
       data: string;
     };
-    return { name: row.name, rev: row.rev, form: JSON.parse(row.data).form as FormDefinition };
+    const data = JSON.parse(row.data) as { form: FormDefinition };
+    return { name: row.name, rev: row.rev, form: data.form };
   };
 
   it('replaces the form at the revision read, the tab taking its heading, and tells open editors', async () => {
@@ -649,7 +650,7 @@ describe('an agent’s form write (docs/specs/030-forms/forms.md "Agents")', () 
     const row = sql.sql.prepare(`SELECT data FROM tabs WHERE id = 'ftab'`).get() as {
       data: string;
     };
-    expect(JSON.parse(row.data).theme).toBe('forest');
+    expect(JSON.parse(row.data)).toHaveProperty('theme', 'forest');
     expect(relayed.at(-1)?.op).toMatchObject({ kind: 'tab-meta', patch: { theme: 'forest' } });
     expect((await owner('POST', 'form', { body: { form: form(), theme: 7 } })).status).toBe(400);
   });
