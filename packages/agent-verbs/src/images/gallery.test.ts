@@ -80,6 +80,7 @@ describe('imageName', () => {
   it('names an upload without a file name by its type and id', () => {
     expect(imageName(image('0123456789', 1))).toBe('(unnamed png 01234567)');
     expect(imageName(image('x', 1, '  '))).toBe('(unnamed png x)');
+    expect(imageName({ ...image('y', 1), contentType: 'unknown' })).toBe('(unnamed image y)');
   });
 });
 

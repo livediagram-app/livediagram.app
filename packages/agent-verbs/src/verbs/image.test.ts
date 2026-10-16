@@ -37,7 +37,7 @@ describe('image ls', () => {
   });
 
   it('says how pictures get there when there are none', async () => {
-    const api = fakeApi({ '/images': { images: [] } });
+    const api = fakeApi({ '/images': {} });
     const none = await imageLs.run!(contextOf(api), imageLs.input.parse({}));
     expect(imageLs.text!(none)).toEqual(['no images; upload them in the editor']);
   });
