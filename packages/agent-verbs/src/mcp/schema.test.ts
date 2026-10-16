@@ -12,8 +12,10 @@ import {
   elementSchemaDoc,
   findDocumentsShape,
   renameDocumentShape,
+  SERVER_INSTRUCTIONS,
   updateDocumentShape,
 } from './schema';
+import { resolveTemplate } from '@livediagram/templates';
 
 describe('elementSchemaDoc', () => {
   it('lists element types, the pinned-arrow convention, and the no-colour rule', () => {
@@ -171,5 +173,18 @@ describe('graph input caps', () => {
         graph: { nodes: nodes(2), edges: edges(GRAPH_LAYOUT_MAX_EDGES + 1) },
       }),
     ).toThrow();
+  });
+});
+
+// The benchmark's F1: the instructions once gave "retro" as an example, and models passed it as a template kind.
+describe('SERVER_INSTRUCTIONS template examples', () => {
+  it('names only kinds create_document takes', () => {
+    const list = /not a node\/edge graph \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
+    const examples = list
+      .split(/,\s*/)
+      .map((s) => s.trim())
+      .filter((s) => s && s !== '...');
+    expect(examples.length).toBeGreaterThan(3);
+    for (const kind of examples) expect(resolveTemplate(kind), kind).not.toBeNull();
   });
 });
