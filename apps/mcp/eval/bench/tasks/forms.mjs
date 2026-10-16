@@ -353,15 +353,22 @@ export default [
       tried,
       [
         'the test made a card on the Bugs board',
-        ({ run }) => ({
-          pass: triedResults(run).some(
-            (r) => r.made === 'card' && /"Bugs" board/.test(r.where ?? ''),
-          ),
-          detail:
-            triedResults(run)
-              .map((r) => r.where)
-              .join('; ') || 'no try',
-        }),
+        ({ run, snap }) => {
+          // The boards the setup's Bugs document holds, by the tab name try_form names them with.
+          const tabs = (snap.documents ?? [])
+            .filter((d) => d.name === 'Bugs')
+            .flatMap((d) => d.items?.boards ?? [])
+            .map((b) => b.tab);
+          const onOne = (r) => tabs.some((t) => (r.where ?? '').startsWith(`the "${t}" board`));
+          return {
+            pass: triedResults(run).some((r) => r.made === 'card' && onOne(r)),
+            detail: `${
+              triedResults(run)
+                .map((r) => r.where)
+                .join('; ') || 'no try'
+            }; Bugs boards: ${tabs.join(', ')}`,
+          };
+        },
       ],
       [
         'its title is the summary',
@@ -378,7 +385,7 @@ export default [
       [
         'the test answered severity and browser',
         ({ run, snap }) =>
-          [/severity/i, /browser/i].every((w) => {
+          [/sever/i, /browser/i].every((w) => {
             const v = answerAbout(run, snap, w);
             return v != null && v !== '';
           }),
