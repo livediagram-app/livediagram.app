@@ -95,6 +95,9 @@ describe('parseTranscript', () => {
     ]);
     expect(run.calls[0].error).toBe('Give a starter or questions, not both.');
     expect(run.calls[1].images).toBe(1);
+    // A successful result's text is kept for checks; a refusal's is not.
+    expect(run.calls[1].result).toBe(`{"documentId":"${DOC}"}`);
+    expect(run.calls[0].result).toBeNull();
   });
 
   it('finds the documents a successful result names', () => {
