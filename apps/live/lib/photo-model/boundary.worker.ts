@@ -26,7 +26,7 @@ function fail(id: number | null, err: unknown) {
   scope.postMessage({ type: 'failed', id, reason, detail: String(err) });
 }
 
-scope.addEventListener('message', async ({ data: request }) => {
+async function handle(request: WorkerRequest): Promise<void> {
   let ready: BoundaryRuntime;
   try {
     ready = await load();
@@ -47,4 +47,7 @@ scope.addEventListener('message', async ({ data: request }) => {
   } catch (err) {
     fail(request.id, err);
   }
-});
+}
+
+// Each failure is answered to the page inside `handle`.
+scope.addEventListener('message', ({ data }) => void handle(data));
