@@ -1,4 +1,4 @@
-import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
+import { Arrow, Label, Shape, DiscText } from '@/components/illustrations/primitives';
 import { Stage, Window } from './parts';
 
 // A numbered callout: the anatomy diagram's way of pointing at one part of the editor.
@@ -6,9 +6,9 @@ function Callout({ cx, cy, n }: { cx: number; cy: number; n: number }) {
   return (
     <g>
       <circle cx={cx} cy={cy} r={9} className="fill-brand-500 stroke-white" strokeWidth={2} />
-      <Label x={cx} y={cy + 0.5} anchor="middle" size={10} weight={800} tone="onAccent">
+      <DiscText cx={cx} cy={cy} size={10} weight={800}>
         {n}
-      </Label>
+      </DiscText>
     </g>
   );
 }

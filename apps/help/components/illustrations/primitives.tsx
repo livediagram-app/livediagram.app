@@ -14,6 +14,7 @@
 // figure scales down on mobile.
 
 import { useId, type ReactNode } from 'react';
+import { capBandBaselineY } from '@livediagram/icons';
 
 // --- Scene shell -------------------------------------------------------------
 
@@ -91,6 +92,39 @@ export function Label({
       textAnchor={anchor}
       dominantBaseline="middle"
       className={toneClass}
+      style={{ fontFamily: 'system-ui, sans-serif' }}
+    >
+      {children}
+    </text>
+  );
+}
+
+/** A glyph in a disc (an initial, a numeral), white on the disc's solid fill, centred on its cap band rather than
+ *  its em box: SVG has no text trimming, so `dominant-baseline: middle` leaves the letters low
+ *  (docs/specs/004-interface-design/optical-alignment.md, "SVG text centres on its cap band too"). */
+export function DiscText({
+  cx,
+  cy,
+  size,
+  weight = 700,
+  className = 'fill-white help-art-as-drawn',
+  children,
+}: {
+  cx: number;
+  cy: number;
+  size: number;
+  weight?: number;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <text
+      x={cx}
+      y={capBandBaselineY(cy, size)}
+      fontSize={size}
+      fontWeight={weight}
+      textAnchor="middle"
+      className={className}
       style={{ fontFamily: 'system-ui, sans-serif' }}
     >
       {children}
@@ -375,9 +409,9 @@ export function Avatar({
     <g>
       <circle cx={cx} cy={cy} r={r} className={`${fill} stroke-white`} strokeWidth={2.5} />
       {initial && (
-        <Label x={cx} y={cy + 1} anchor="middle" tone="onAccent" size={r} weight={700}>
+        <DiscText cx={cx} cy={cy} size={r}>
           {initial}
-        </Label>
+        </DiscText>
       )}
     </g>
   );

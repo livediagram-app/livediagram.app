@@ -1,4 +1,11 @@
-import { Arrow, Avatar, Cursor, Label, Shape } from '@/components/illustrations/primitives';
+import {
+  Arrow,
+  Avatar,
+  Cursor,
+  Label,
+  Shape,
+  DiscText,
+} from '@/components/illustrations/primitives';
 import { Card, Stage, TickDisc } from './parts';
 
 // A numbered step disc, sitting on the top edge of its card.
@@ -6,9 +13,9 @@ function Step({ cx, cy, n }: { cx: number; cy: number; n: number }) {
   return (
     <g>
       <circle cx={cx} cy={cy} r={11} className="fill-brand-500 stroke-white" strokeWidth={2.5} />
-      <Label x={cx} y={cy + 0.5} anchor="middle" size={11} weight={800} tone="onAccent">
+      <DiscText cx={cx} cy={cy} size={11} weight={800}>
         {n}
-      </Label>
+      </DiscText>
     </g>
   );
 }
@@ -121,7 +128,7 @@ export function GettingStartedArt() {
           Copy link
         </Label>
         <Avatar cx={302} cy={145} r={9} initial="A" colour="emerald" />
-        <Avatar cx={316} cy={145} r={9} initial="J" colour="amber" />
+        <Avatar cx={316} cy={145} r={9} initial="T" colour="amber" />
         <Avatar cx={330} cy={145} r={9} initial="R" colour="rose" />
         <TickDisc cx={356} cy={145} r={8} />
         <Label x={328} y={170} anchor="middle" size={10.5} weight={700} tone="strong">
